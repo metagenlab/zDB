@@ -24,7 +24,13 @@ module add SequenceAnalysis/OrthologyAnalysis/orthomclSoftware/2.0.9;
 
 - add orthomcl path
 
+```
+#!bash
+
+
 echo 'export PATH=~/orthomcl/:$PATH' >> ~./bashrc
+```
+
 
 * Configuration
 * Dependencies
@@ -33,7 +39,13 @@ Requires repository Utilitaires cloned and within PATH.
 
 Requires blast module 
 
+
+```
+#!bash
+
 module add Blast/ncbi-blast/2.2.28+;
+```
+
 
 1. scripts python:
 
@@ -69,7 +81,13 @@ oracleIndexTblSpc=NONE
 
 ## BASIC USAGE ##
 
+
+```
+#!python
+
 orthomcl.py -i file_1.faa file_2.faa ...
+```
+
 
 ### Contribution guidelines ###
 
