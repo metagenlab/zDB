@@ -13,7 +13,9 @@ This README would normally document whatever steps are necessary to get your app
 * Summary of set up
 
 - add orthomcl module 
+
 module add SequenceAnalysis/OrthologyAnalysis/orthomclSoftware/2.0.9;
+
 - add orthomcl path
 
 echo 'export PATH=~/orthomcl/:$PATH' >> ~./bashrc
@@ -22,11 +24,14 @@ echo 'export PATH=~/orthomcl/:$PATH' >> ~./bashrc
 * Dependencies
 
 1. scripts python:
+
 - generate_bsub_file 
+
 - splitFasta
+
 - shell_command
 
-* Database configuration
+## Database configuration ##
 
 
 ```
