@@ -171,7 +171,7 @@ if __name__ == '__main__':
     parser.add_argument("-i", '--input_fasta',type=str,help="input fasta file", nargs='+')
     parser.add_argument("-n", '--number',type=int,help="number of sequences per file", default = 1000)
     parser.add_argument("-x", '--index',type=int,help="index for orthmcl tables", default=1)
-    parser.add_argument("-b", '--BLAST_file',type=int,help="BLAST file", default=False)
+    parser.add_argument("-b", '--BLAST_file',type=str,help="BLAST file", default=False)
 
     working_dir = os.getcwd()
     
