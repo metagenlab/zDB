@@ -34,6 +34,11 @@ class Orthomcl():
 
 
 		else:
+			self.generate_config_file(index_mysql_tables, working_dir)
+			print "install shchema"
+			ortho_install_shema = "orthomclInstallSchema orthomcl_config.txt install_schema.log"
+			sterr, stout, process = shell_command(ortho_install_shema)
+
 			print "Parsing %s BLAST file" % BLAST_file
 			ortho_blast_parser = "orthomclBlastParser %s fasta >> similarSequences.txt" % (BLAST_file)
 			script = generate_bsub_file.BSUB_script(command=ortho_blast_parser, mem_in_GB=2, name="format", log_file="out_BlastParser.txt", error_file="err_BlastParser.txt")
