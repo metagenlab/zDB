@@ -21,8 +21,7 @@ V1.0
 
 * Summary of set up
 
-- add orthomcl module 
-
+add orthomcl module 
 
 ```
 #!bash
@@ -31,12 +30,12 @@ module add SequenceAnalysis/OrthologyAnalysis/orthomclSoftware/2.0.9;
 ```
 
 
-- add orthomcl path
+add orthomcl path
 
 ```
 #!bash
 
-echo 'export PATH=~/bin/orthomcl/:$PATH' >> ~./bashrc
+echo 'export PATH=~/bin/orthomcl/:$PATH' >> ~/.bashrc
 ```
 
 
@@ -44,18 +43,15 @@ echo 'export PATH=~/bin/orthomcl/:$PATH' >> ~./bashrc
 * Dependencies
 
 Requires repository utilitaires cloned and within PATH.
-
-- add utilitaires to path
+Add utilitaires to path
 
 ```
 #!bash
 
-echo 'export PATH=~/bin/utilitaires/:$PATH' >> ~./bashrc
+echo 'export PATH=~/bin/utilitaires/:$PATH' >> ~/.bashrc
 ```
 
-
 Requires blast module 
-
 
 ```
 #!bash
