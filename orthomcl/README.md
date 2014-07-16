@@ -14,7 +14,13 @@ This README would normally document whatever steps are necessary to get your app
 
 - add orthomcl module 
 
+
+```
+#!bash
+
 module add SequenceAnalysis/OrthologyAnalysis/orthomclSoftware/2.0.9;
+```
+
 
 - add orthomcl path
 
@@ -26,6 +32,8 @@ echo 'export PATH=~/orthomcl/:$PATH' >> ~./bashrc
 Requires repository Utilitaires cloned and within PATH.
 
 Requires blast module 
+
+module add Blast/ncbi-blast/2.2.28+;
 
 1. scripts python:
 
