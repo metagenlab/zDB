@@ -1,0 +1,13 @@
+dbVendor=mysql
+dbConnectString=dbi:mysql:orthomcl;host=sib-sql04.vital-it.ch
+dbLogin=orthomcl
+dbPassword=orthomcl
+similarSequencesTable=similar_table
+orthologTable=ortho_table_test
+orthologTable=ortholog
+inParalogTable=in_paralog
+coOrthologTable=co_ortholog
+interTaxonMatchView=inter_taxon_match
+percentMatchCutoff=50
+evalueExponentCutoff=-5
+oracleIndexTblSpc=NONE
