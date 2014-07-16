@@ -54,6 +54,11 @@ oracleIndexTblSpc=NONE
 * How to run tests
 * Deployment instructions
 
+
+## BASIC USAGE ##
+
+orthomcl.py -i file_1.faa file_2.faa ...
+
 ### Contribution guidelines ###
 
 * Writing tests
