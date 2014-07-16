@@ -23,6 +23,9 @@ echo 'export PATH=~/orthomcl/:$PATH' >> ~./bashrc
 * Configuration
 * Dependencies
 
+Requires repository Utilitaires cloned and within PATH.
+
+
 1. scripts python:
 
 - generate_bsub_file 
