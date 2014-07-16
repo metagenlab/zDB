@@ -25,6 +25,7 @@ echo 'export PATH=~/orthomcl/:$PATH' >> ~./bashrc
 
 Requires repository Utilitaires cloned and within PATH.
 
+Requires blast module 
 
 1. scripts python:
 
