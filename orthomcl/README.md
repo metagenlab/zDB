@@ -1,6 +1,9 @@
 # README #
 
 This README would normally document whatever steps are necessary to get your application up and running.
+###TODO###
+
+- change formatdb to new equivalent
 
 ### What is this repository for? ###
 
@@ -42,7 +45,7 @@ Requires blast module
 
 ```
 #!bash
-
+module add Blast/blast/2.2.26;
 module add Blast/ncbi-blast/2.2.28+;
 ```
 
