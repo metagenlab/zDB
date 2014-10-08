@@ -428,6 +428,10 @@ def seqfeature_id2feature_location(server, seqfeature_id):
     return result[0]
     
 
+def get_orthology_table(server, biodb_name):
+    sql ='select * from orthology_%s' % biodb_name
+    result = server.adaptor.execute_and_fetchall(sql, seqfeature_id)
+    return result
     
 
     
