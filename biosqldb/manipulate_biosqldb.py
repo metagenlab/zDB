@@ -430,7 +430,10 @@ def get_orthology_table(server, biodb_name):
     result = server.adaptor.execute_and_fetchall(sql,)
     return result
 
-
+def get_orthology_table_subset(server, biodb_name, reference_taxon_id):
+    sql = 'select * from orthology_%s where `%s` > 0' % reference_taxon_id
+    result = server.adaptor.execute_and_fetchall(sql,)
+    return result
 
     
 if __name__ == '__main__':
