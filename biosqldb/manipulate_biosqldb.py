@@ -78,9 +78,6 @@ def get_orthogroup(orthogroup_id, biodatabase_name):
 
 # get all seqfeature qualifiers from seqfeature id
 # SELECT name, value FROM seqfeature_qualifier_value join term using (term_id) WHERE seqfeature_id = 5498;
-
-
-
 def seqfeature_id2seqfeature_object_dict(*DBSeqRecord_objects):
     seqfeature_id2seqfeature_object = {}
     for DBSeqRecord_object in DBSeqRecord_objects:
@@ -89,11 +86,6 @@ def seqfeature_id2seqfeature_object_dict(*DBSeqRecord_objects):
             temp_dict[seqfeature._seqfeature_id] = seqfeature
         seqfeature_id2seqfeature_object.update(temp_dict)
     return seqfeature_id2seqfeature_object
-
-
-
-
-
 
 # get seqfeature_if from protein_name
 # Attention: should filter by biodatabase
@@ -138,9 +130,14 @@ def get_bioentry_id_from_locus_tag(server, locus_tag, biodatabase_name):
 
 
 
-
-
-    
+def taxon_id2genome_description(server, biodatabase_name):
+    print "bonjour"
+    sql = 'select taxon_id, bioentry.description from bioentry ' \
+          ' inner join biodatabase on biodatabase.biodatabase_id = bioentry.biodatabase_id' \
+          ' where biodatabase.name = "%s"' % biodatabase_name
+    print sql
+    result = server.adaptor.execute_and_fetchall(sql, )
+    return _to_dict(result)
 
 def locus_tag2bioentry_id_dict(server, biodatabase_name):
     
@@ -195,7 +192,7 @@ def protein_id2seqfeature_id_dict(server, biodatabase_name):
     return protein_id2seqfeature_id
 
 
-    
+
 #def locus_tag2seqfeature_id(server, locus_tag, biodatabase_name):
 #    sql_locus_tag_seqfeature_id_table = "select value, seqfeature.seqfeature_id from seqfeature_qualifier_value" \
 #    " inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = %s and value = %s" \
@@ -430,7 +427,7 @@ def seqfeature_id2feature_location(server, seqfeature_id):
 
 def get_orthology_table(server, biodb_name):
     sql ='select * from orthology_%s' % biodb_name
-    result = server.adaptor.execute_and_fetchall(sql, seqfeature_id)
+    result = server.adaptor.execute_and_fetchall(sql,)
     return result
     
 
