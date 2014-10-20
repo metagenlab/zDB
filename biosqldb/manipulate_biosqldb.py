@@ -134,7 +134,7 @@ def taxon_id2genome_description(server, biodatabase_name):
     print "bonjour"
     sql = 'select taxon_id, bioentry.description from bioentry ' \
           ' inner join biodatabase on biodatabase.biodatabase_id = bioentry.biodatabase_id' \
-          ' where biodatabase.name = "%s" group by taxon_id' % biodatabase_name
+          ' where biodatabase.name = "%s" and bioentry.description not like "%%%%plasmid%%%%" ' % biodatabase_name
     print sql
     result = server.adaptor.execute_and_fetchall(sql, )
     return _to_dict(result)
@@ -429,7 +429,8 @@ def get_orthology_table(server, biodb_name):
     sql ='select * from orthology_%s' % biodb_name
     result = server.adaptor.execute_and_fetchall(sql,)
     return result
-    
+
+
 
     
 if __name__ == '__main__':
