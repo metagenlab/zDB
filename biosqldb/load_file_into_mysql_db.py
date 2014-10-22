@@ -27,22 +27,22 @@ def import_gbk(gbk_name, server_name, db_name):
     server_name.adaptor.commit()
 
 
+def import_swiss(swiss_dat_file, server_name, db):
+
+    db.load(SeqIO.parse(swiss_dat_file, "swiss"))
+    server_name.adaptor.commit()
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-
-    
-    parser.add_argument("-g", '--gbk',type=str,help="gbk file", nargs='+')
-    parser.add_argument("-d", '--db_name', type=str,help="db name")
+    parser.add_argument("-g", '--gbk', type=str,help="gbk file", nargs='+')
+    parser.add_argument("-u", '--uniprot', type=str,help="uniprot dat file", nargs='+')
+    parser.add_argument("-d", '--db_name', type=str,help="db name", required=True)
     parser.add_argument("-r", '--remove_db', type=str,help="remove db")
 
     
     args = parser.parse_args()
 
-    if not args.db_name:
-        raise "db name?"
-        
     server, db = load_db(args.db_name)
 
     if args.gbk:
@@ -55,4 +55,6 @@ if __name__ == '__main__':
             del server[args.remove_db]
             server.commit()
 
-        
+    if args.uniprot:
+        for swiss in args.uniprot:
+            import_swiss(swiss, server, db)
