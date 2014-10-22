@@ -281,11 +281,10 @@ def get_all_orthogroup_protein_fasta(server, biodatabase_name, out_dir):
 def get_all_orthogroup_protein_fasta_by_taxon(server, biodatabase_name, out_dir):
 
     all_groups = get_all_orthogroup_size(server, biodatabase_name).keys()
-    
+    locus_or_protein_id2taxon_id = manipulate_biosqldb.locus_or_protein_id2taxon_id(server, biodatabase_name)
     for group in all_groups:
         print "group", group
         seqfeature_ids = manipulate_biosqldb.orthogroup_id2seqfeature_id_list(server, group, biodatabase_name)
-        sql = 'select taxon_id from seqfeature_qualifier_value inner join seqfeature as t2 on t2.seqfeature_id = seqfeature_qualifier_value.seqfeature_id inner join bioentry on t2.bioentry_id = bioentry.bioentry_id where value = "%s" limit 1'
         # do not consider singletons
         one_fasta = ""
         if len(seqfeature_ids) > 0:
@@ -294,15 +293,14 @@ def get_all_orthogroup_protein_fasta_by_taxon(server, biodatabase_name, out_dir)
                 values = manipulate_biosqldb.seqfeature_id2seqfeature_qualifier_values(server, seqfeature_id, biodatabase_name)
                 #print values
                 try:
-                    taxon = server.adaptor.execute_and_fetchall(sql % values['locus_tag'], )[0][0]
+                    taxon = locus_or_protein_id2taxon_id[values['locus_tag']]
                     one_fasta += "> %s \n%s\n" % (taxon, values['translation'])
                 except:
-                    taxon = server.adaptor.execute_and_fetchall(sql % values['protein_id'], )[0][0]
+                    taxon = locus_or_protein_id2taxon_id[values['protein_id']]
                     one_fasta += "> %s \n%s\n" % (taxon, values['translation'])
             out_name = os.path.join(out_dir, "%s.txt" % group)
             f = open(out_name, "w")
             f.write(one_fasta)
-
 
 def circos_fasta_draft(fasta_file_name):
     from Bio import SeqIO
@@ -490,11 +488,10 @@ if __name__ == '__main__':
 
     """
     get_all_orthogroup_protein_fasta(server, args.db_name, "/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta/" % args.db_name)
+    """
     get_all_orthogroup_protein_fasta_by_taxon(server, args.db_name, "/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_by_taxons/" % args.db_name)
 
-    """
 
-    
     core_ortho = get_conserved_core_groups(server, "saureus1")
     import shutil
     for group in core_ortho:

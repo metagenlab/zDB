@@ -381,11 +381,11 @@ def locus_tag2CDS_seqfeature_id(server, locus_tag, biodatabase_name):
 
 def locus_or_protein_id2taxon_id(server, db_name):
     sql = 'select value, taxon_id, term.name from seqfeature_qualifier_value' \
-          'inner join term on term.term_id = seqfeature_qualifier_value.term_id' \
+          ' inner join term on term.term_id = seqfeature_qualifier_value.term_id' \
           ' inner join seqfeature as t2 on t2.seqfeature_id = seqfeature_qualifier_value.seqfeature_id' \
           ' inner join bioentry on t2.bioentry_id = bioentry.bioentry_id' \
           ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' \
-          ' where term.name = "locus_tag" or term.name = "protein_id"'' % db_name
+          ' where term.name = "locus_tag" or term.name = "protein_id" ' % db_name
 
     result = server.adaptor.execute_and_fetchall(sql, )
     return _to_dict(result)
