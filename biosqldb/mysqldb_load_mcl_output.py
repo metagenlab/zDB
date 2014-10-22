@@ -274,6 +274,10 @@ def get_all_orthogroup_protein_fasta(server, biodatabase_name, out_dir):
             f = open(out_name, "w")
             f.write(one_fasta)
 
+
+
+
+
 def get_all_orthogroup_protein_fasta_by_taxon(server, biodatabase_name, out_dir):
 
     all_groups = get_all_orthogroup_size(server, biodatabase_name).keys()
@@ -489,6 +493,8 @@ if __name__ == '__main__':
     get_all_orthogroup_protein_fasta_by_taxon(server, args.db_name, "/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_by_taxons/" % args.db_name)
 
     """
+
+    
     core_ortho = get_conserved_core_groups(server, "saureus1")
     import shutil
     for group in core_ortho:

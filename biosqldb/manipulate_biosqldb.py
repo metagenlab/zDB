@@ -378,7 +378,20 @@ def locus_tag2CDS_seqfeature_id(server, locus_tag, biodatabase_name):
         
     result = server.adaptor.execute_and_fetchall(sql, )
     return result[0][0]
-    
+
+def locus_or_protein_id2taxon_id(server, db_name):
+    sql = 'select value, taxon_id, term.name from seqfeature_qualifier_value' \
+          'inner join term on term.term_id = seqfeature_qualifier_value.term_id' \
+          ' inner join seqfeature as t2 on t2.seqfeature_id = seqfeature_qualifier_value.seqfeature_id' \
+          ' inner join bioentry on t2.bioentry_id = bioentry.bioentry_id' \
+          ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' \
+          ' where term.name = "locus_tag" or term.name = "protein_id"'' % db_name
+
+    result = server.adaptor.execute_and_fetchall(sql, )
+    return _to_dict(result)
+
+
+
 
 def bioentry_name2orthoup_size(server, biodatabase_name, bioentry_name):
 
@@ -516,11 +529,18 @@ LEFT JOIN c on b.otherfield=c.otherfield
 
 """
 # return group_1 accession and description
-select bioentry.accession, bioentry.description from seqfeature_qualifier_value
-inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = "orthogroup" and value = "group_1"
+select * from seqfeature_qualifier_value
 inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id
 inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id
-inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "Chlamydiales_subgroup_no_estrella"
+inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "uniprot_test"
+"""
+
+"""
+select * from bioentry_qualifier_value
+inner join bioentry on bioentry_qualifier_value.bioentry_id = bioentry.bioentry_id
+inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "uniprot_test"
+inner join term on term.term_id = bioentry_qualifier_value.term_id
+where accession = "P0A5B8";
 """
 
 """
