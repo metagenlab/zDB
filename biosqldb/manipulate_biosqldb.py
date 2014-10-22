@@ -45,6 +45,7 @@ def query_yes_no(question, default="yes"):
             sys.stdout.write("Please respond with 'yes' or 'no' "\
                              "(or 'y' or 'n').\n")
 
+
 def load_db(db_name=False):
     
     server = BioSeqDatabase.open_database(driver="MySQLdb", user="tpillone",
@@ -63,6 +64,7 @@ def load_db(db_name=False):
     else:
         return server
 
+
 def _to_dict(tuple_list):
     temp_dict = {}
     for i in tuple_list:
@@ -71,9 +73,11 @@ def _to_dict(tuple_list):
         else:
             temp_dict[i[0]] = i[1]
     return temp_dict
-    
+
+
 def get_orthogroup(orthogroup_id, biodatabase_name):
     sql = ""
+
 
 
 # get all seqfeature qualifiers from seqfeature id
@@ -86,6 +90,7 @@ def seqfeature_id2seqfeature_object_dict(*DBSeqRecord_objects):
             temp_dict[seqfeature._seqfeature_id] = seqfeature
         seqfeature_id2seqfeature_object.update(temp_dict)
     return seqfeature_id2seqfeature_object
+
 
 # get seqfeature_if from protein_name
 # Attention: should filter by biodatabase
@@ -115,8 +120,6 @@ def get_bioentry_and_seqfeature_id_from_locus_tag_list(server, locus_tag_list, b
     return (bioentry_id_list, seqfeature_id_list)
 
 
-    
-
 def get_bioentry_id_from_locus_tag(server, locus_tag, biodatabase_name):
     
     sql_specific_locus_tag = "select bioentry.name from seqfeature_qualifier_value" \
@@ -129,7 +132,6 @@ def get_bioentry_id_from_locus_tag(server, locus_tag, biodatabase_name):
     return b[0][0]
 
 
-
 def taxon_id2genome_description(server, biodatabase_name):
     print "bonjour"
     sql = 'select taxon_id, bioentry.description from bioentry ' \
@@ -138,6 +140,7 @@ def taxon_id2genome_description(server, biodatabase_name):
     print sql
     result = server.adaptor.execute_and_fetchall(sql, )
     return _to_dict(result)
+
 
 def accession2description(server, biodatabase_name):
     sql = 'select bioentry.accession, bioentry.description from bioentry' \
@@ -183,6 +186,7 @@ def locus_tag2seqfeature_id_dict(server, biodatabase_name):
         locus_tag2seqfeature_id[locus_tag[0]] = locus_tag[1]
     return locus_tag2seqfeature_id
 
+
 def protein_id2seqfeature_id_dict(server, biodatabase_name):
 
     sql_protein_id2_seqfeature_id_table = "select value, seqfeature.seqfeature_id from seqfeature_qualifier_value" \
@@ -199,8 +203,6 @@ def protein_id2seqfeature_id_dict(server, biodatabase_name):
        protein_id2seqfeature_id[protein[0]] = protein[1]
     return protein_id2seqfeature_id
 
-
-
 #def locus_tag2seqfeature_id(server, locus_tag, biodatabase_name):
 #    sql_locus_tag_seqfeature_id_table = "select value, seqfeature.seqfeature_id from seqfeature_qualifier_value" \
 #    " inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = %s and value = %s" \
@@ -212,8 +214,6 @@ def protein_id2seqfeature_id_dict(server, biodatabase_name):
 #    return result[0][0]
 
 
-
-    
 def bioentry_id2genome_name_dict(server, biodatabase_name):
 
     sql_bioentry_id2genome_name = "select bioentry.name, bioentry.description from bioentry" \
@@ -237,10 +237,7 @@ def locus_tag2bioentry_accession_and_description(server, locus_tag, biodatabase_
     result = server.adaptor.execute_and_fetchall(sql, ("locus_tag", locus_tag, biodatabase_name))
 
     return [i for i in result[0]]
- 
 
-
-    
 
 def locus_tag2orthogroup_id(server, locus_tag, biodatabase_name):
     sql_locus_tag2 = "select value, seqfeature.seqfeature_id from seqfeature_qualifier_value" \
@@ -250,6 +247,7 @@ def locus_tag2orthogroup_id(server, locus_tag, biodatabase_name):
     " inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = %s"
     
     result = server.adaptor.execute_and_fetchall(sql_locus_tag_seqfeature_id_table, ("locus_tag", biodatabase_name))
+
 
 def seqfeature_id2seqfeature_qualifier_values(server, seqfeature_id, biodatabase_name):
     
@@ -263,18 +261,12 @@ def seqfeature_id2seqfeature_qualifier_values(server, seqfeature_id, biodatabase
     return _to_dict(result)
 
 
-
-    
 def locus_tag2seqfeature_qualifier_values(server, locus_tag, biodatabase_name):
 
     seqfeature_id = locus_tag2CDS_seqfeature_id(server, locus_tag, biodatabase_name)
     
     return seqfeature_id2seqfeature_qualifier_values(server, seqfeature_id, biodatabase_name)
 
-
-
-
-    
 
 def orthogroup_id2seqfeature_id_list(server, orthogroup_id, biodatabase_name):
     sql ="select seqfeature.seqfeature_id   from seqfeature_qualifier_value" \
@@ -301,6 +293,7 @@ def get_genome_description_list(server, biodatabase_name):
     " inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = %s" 
     result = server.adaptor.execute_and_fetchall(sql, (biodatabase_name))
     return [i[0] for i in result]
+
 
 def get_taxon_id_list(server, biodatabase_name):
 
@@ -336,6 +329,7 @@ def orthogroup_id2locus_tag_list(server, orthogroup_id, biodatabase_name):
     result = server.adaptor.execute_and_fetchall(sql_seqfeature_id2locus_tag,)
     return result
 
+
 def protein_id2seqfeature_id(server, protein_id, biodatabase_name):
     
     sql = 'select seqfeature_qualifier_value.seqfeature_id from seqfeature_qualifier_value' \
@@ -368,6 +362,7 @@ def locus_tag2seqfeature_ids(server, locus_tag, biodatabase_name):
     result = server.adaptor.execute_and_fetchall(sql_locus_tag_seqfeature_id, (locus_tag, biodatabase_name))
     return [i[0] for i in result]
 
+
 def locus_tag2CDS_seqfeature_id(server, locus_tag, biodatabase_name):
     seqfeature_ids = locus_tag2seqfeature_ids(server, locus_tag, biodatabase_name)
 
@@ -384,9 +379,6 @@ def locus_tag2CDS_seqfeature_id(server, locus_tag, biodatabase_name):
     result = server.adaptor.execute_and_fetchall(sql, )
     return result[0][0]
     
-
-
-
 
 def bioentry_name2orthoup_size(server, biodatabase_name, bioentry_name):
 
@@ -409,9 +401,7 @@ def get_column_names(server, table):
   result = server.adaptor.execute_and_fetchall(sql, )
   return [i[0] for i in result]
   
-  
 
-    
 def taxon_id2orthogroup_size(server, biodatabase_name, taxon_id):
 
     # get number of proteins for each orthogroup of taxon_id 4
@@ -427,6 +417,7 @@ def taxon_id2orthogroup_size(server, biodatabase_name, taxon_id):
     result = _to_dict(result)
     return result
 
+
 def seqfeature_id2feature_location(server, seqfeature_id):
     sql ='select start_pos, end_pos, strand from location where seqfeature_id= %s and rank = 1'
     result = server.adaptor.execute_and_fetchall(sql, seqfeature_id)
@@ -437,6 +428,7 @@ def get_orthology_table(server, biodb_name):
     sql ='select * from orthology_%s' % biodb_name
     result = server.adaptor.execute_and_fetchall(sql,)
     return result
+
 
 def get_orthology_table_subset(server, biodb_name, reference_taxon_id):
     sql = 'select * from orthology_%s where `%s` > 0' % reference_taxon_id
@@ -523,7 +515,7 @@ LEFT JOIN c on b.otherfield=c.otherfield
 
 
 """
-# return group_1 accession and description 
+# return group_1 accession and description
 select bioentry.accession, bioentry.description from seqfeature_qualifier_value
 inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = "orthogroup" and value = "group_1"
 inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id
