@@ -139,6 +139,14 @@ def taxon_id2genome_description(server, biodatabase_name):
     result = server.adaptor.execute_and_fetchall(sql, )
     return _to_dict(result)
 
+def accession2description(server, biodatabase_name):
+    sql = 'select bioentry.accession, bioentry.description from bioentry' \
+          ' inner join biodatabase on biodatabase.biodatabase_id = bioentry.biodatabase_id' \
+          ' where biodatabase.name = "%s"' % biodatabase_name
+    result = server.adaptor.execute_and_fetchall(sql, )
+    return _to_dict(result)
+
+
 def locus_tag2bioentry_id_dict(server, biodatabase_name):
     
     sql_locus_tag_bioentry_id_table = "select value, bioentry.name from seqfeature_qualifier_value" \

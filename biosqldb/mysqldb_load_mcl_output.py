@@ -266,7 +266,7 @@ def get_all_orthogroup_protein_fasta(server, biodatabase_name, out_dir):
                             one_fasta += "> %s | %s\n%s\n" % (values['locus_tag'], values['product'], values['translation'])
                         except:
                             try:
-                                print values
+                                #print values
                                 one_fasta += "> %s \n%s\n" % (values['locus_tag'], values['translation'])
                             except:
                                 one_fasta += "> %s \n%s\n" % (values['protein_id'], values['translation'])
@@ -482,13 +482,18 @@ if __name__ == '__main__':
         print stderr
         print return_code
     """
+
+
     """
-    get_all_orthogroup_protein_fasta_by_taxon(server, args.db_name, "/home/trestan/Dropbox/dev/django/test_1/assets/Chlamydiales_2bis_fasta/")
-    
-    core_ortho = get_conserved_core_groups(server, "Chlamydiales_2")
+    get_all_orthogroup_protein_fasta(server, args.db_name, "/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta/" % args.db_name)
+    get_all_orthogroup_protein_fasta_by_taxon(server, args.db_name, "/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_by_taxons/" % args.db_name)
+
+    """
+    core_ortho = get_conserved_core_groups(server, "saureus1")
     import shutil
     for group in core_ortho:
-        shutil.copy("/home/trestan/Dropbox/dev/django/test_1/assets/Chlamydiales_2bis_fasta/%s.txt" % group,"/home/trestan/Dropbox/dev/django/test_1/assets/Chlamydiales_2bis_fasta_core/%s.txt" % group)
-    """
+        shutil.copy("/home/trestan/Dropbox/dev/django/test_1/assets/saureus1_fasta/%s.txt" % group,"/home/trestan/Dropbox/dev/django/test_1/assets/saureus1_fasta_core/%s.txt" % group)
+   
     
     config_file, accessions_name = circos_draft(server, args.db_name, "5", args.fasta_draft)
+ 
