@@ -71,7 +71,7 @@ def _to_dict(tuple_list):
         if len(i[1:]) >1:
             temp_dict[i[0]] = i[1:]
         else:
-            temp_dict[i[0]] = i[1]
+            temp_dict[str(i[0])] = i[1]
     return temp_dict
 
 
@@ -133,13 +133,26 @@ def get_bioentry_id_from_locus_tag(server, locus_tag, biodatabase_name):
 
 
 def taxon_id2genome_description(server, biodatabase_name):
-    print "bonjour"
     sql = 'select taxon_id, bioentry.description from bioentry ' \
           ' inner join biodatabase on biodatabase.biodatabase_id = bioentry.biodatabase_id' \
           ' where biodatabase.name = "%s" and bioentry.description not like "%%%%plasmid%%%%" ' % biodatabase_name
     print sql
     result = server.adaptor.execute_and_fetchall(sql, )
     return _to_dict(result)
+
+
+def gene_regex2seqfeature_ids(server, biodatabase_name, gene_regex):
+    sql = 'select seqfeature_qualifier_value.seqfeature_id from seqfeature_qualifier_value' \
+          ' inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id' \
+          ' and seqfeature_qualifier_value.value REGEXP "%s"' \
+          ' inner join term on seqfeature_qualifier_value.term_id = term.term_id and term.name = "gene"' \
+          ' inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id' \
+          ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id' \
+          ' and biodatabase.name = "%s"' % (gene_regex, biodatabase_name)
+
+
+
+    #seqfeature_values = manipulate_biosqldb.locus_tag2seqfeature_qualifier_values(server, accession, biodb)
 
 
 def accession2description(server, biodatabase_name):
@@ -380,7 +393,7 @@ def locus_tag2CDS_seqfeature_id(server, locus_tag, biodatabase_name):
     return result[0][0]
 
 def locus_or_protein_id2taxon_id(server, db_name):
-    sql = 'select value, taxon_id, term.name from seqfeature_qualifier_value' \
+    sql = 'select value, taxon_id from seqfeature_qualifier_value' \
           ' inner join term on term.term_id = seqfeature_qualifier_value.term_id' \
           ' inner join seqfeature as t2 on t2.seqfeature_id = seqfeature_qualifier_value.seqfeature_id' \
           ' inner join bioentry on t2.bioentry_id = bioentry.bioentry_id' \

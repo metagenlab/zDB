@@ -495,7 +495,7 @@ if __name__ == '__main__':
     core_ortho = get_conserved_core_groups(server, "saureus1")
     import shutil
     for group in core_ortho:
-        shutil.copy("/home/trestan/Dropbox/dev/django/test_1/assets/saureus1_fasta/%s.txt" % group,"/home/trestan/Dropbox/dev/django/test_1/assets/saureus1_fasta_core/%s.txt" % group)
+        shutil.copy("/home/trestan/Dropbox/dev/django/test_1/assets/saureus1_fasta_by_taxons/%s.txt" % group,"/home/trestan/Dropbox/dev/django/test_1/assets/saureus1_fasta_core/%s.txt" % group)
    
     
     config_file, accessions_name = circos_draft(server, args.db_name, "5", args.fasta_draft)
