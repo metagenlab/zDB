@@ -18,7 +18,9 @@ V1.0
 * Configuration
 * Dependencies
 
-Requires the installation of python package eutils: https://pypi.python.org/pypi/eutils
+Requires the installation of python package eutils: 
+eutils -- a simplified interface to NCBI E-Utilities
+https://pypi.python.org/pypi/eutils
 
 * Database configuration
 * How to run tests
