@@ -26,7 +26,7 @@ def _begin(output,format,new,ratio=1.375,**kwargs):
         if output is None:
             output = unique_filename_in()
         if format == 'pdf':
-            robjects.r('pdf("%s",paper="a4",height=8*%f,width=8)' %(output,ratio))
+                robjects.r('pdf("%s",paper="a4",height=8*%f,width=8)' %(output,ratio))
         elif format == 'png':
             robjects.r('png("%s",height=800*%f,width=800,type="cairo")' %(output,ratio))
         else:
@@ -59,7 +59,8 @@ def randomize_table(M):
 
     for x in range(0, len(M[:,0])):
         for y in range(0, len(M[0,:])):
-            M[x, y] = M[x, y] + random.uniform(0.01, -0.01)
+            value = float(M[x, y]) + random.uniform(0.01, -0.01)
+            M[x, y] = value
     return M
 
 def heatmap(M,output=None,format='pdf',new=True,breaks=None, last=True,
@@ -68,12 +69,110 @@ def heatmap(M,output=None,format='pdf',new=True,breaks=None, last=True,
     
     """Creates a heatmap of the matrix *M* using *rows* as row labels and *columns* as column labels.
     If either *orderRows* or *orderCols* is True, will cluster accordingly and display a dendrogram."""
+
+    print M
+    print "cols", columns
+    plotopt,output = _begin(output=output,format=format,new=new,**kwargs)
+    print "ok"
+    robjects.r.assign('Mdata',numpy2ri.numpy2ri(M))
+    if rows is not None:
+        import numpy as np
+        rows = np.chararray(rows)
+        robjects.r.assign('labRow',numpy2ri.numpy2ri(rows))
+        plotopt += ",labRow=labRow"
+    if columns is not None:
+        import numpy as np
+        print "cols", columns
+        columns = np.asarray(columns, dtype='a50')
+        print (len(columns))
+        robjects.r.assign('labCol',numpy2ri.numpy2ri(columns))
+        plotopt += ",labCol=labCol"
+    if cor:
+
+        robjects.r("myCor = function(x) {as.dist(1-cor(t(x),use='pairwise.complete.obs'))}")
+        plotopt += ", distfun=myCor"
+    if return_rowInd:
+        orderRows = True
+        robjects.r("""
+if (exists("myCor")){hrow = as.dendrogram(hclust(myCor(Mdata)))} else {hrow = as.dendrogram(hclust(dist(Mdata)))}
+odhrow = rev(order.dendrogram(hrow))
+labRow = rep('',nrow(Mdata))
+nb_IDs = ceiling(nrow(Mdata)/30)
+labRow[seq(1,nrow(Mdata),nb_IDs)] = seq(1,nrow(Mdata),nb_IDs)
+labRow[odhrow] = labRow""")
+        plotopt += ",Rowv=hrow"
+    if orderCols and orderRows:
+        plotopt += ",dendrogram='both',lhei=c(2,10,1,2),lwid=c(1,3),mar=c(2,2),lmat=matrix(c(0,2,0,0,3,1,0,4),ncol=2)"
+    elif orderCols:
+        plotopt += ",Rowv=F,dendrogram='column',lhei=c(2,10,1,2),lwid=c(1),mar=c(2,2),lmat=matrix(c(3,1,2,4),ncol=1)"
+    elif orderRows:
+        plotopt += ",Colv=F,dendrogram='row',lhei=c(10,1,2),lwid=c(1,3),mar=c(2,2),lmat=matrix(c(2,0,3,1,0,4),ncol=2)"
+    else:
+        plotopt += ",Colv=F,Rowv=F,dendrogram='none',lhei=c(10,1,1,2),lwid=c(1),mar=c(2,2),lmat=matrix(c(1,2,3,4),ncol=1)"
+    if kwargs.get('ymin') is not None:
+        robjects.r("ymin=%f" %float(kwargs['ymin']))
+    else:
+        robjects.r("ymin=floor(min(Mdata,na.rm=T))")
+    if breaks is not None:
+        robjects.r("myBreaks = c(%s)" % breaks)
+    else:
+        robjects.r("myBreaks = seq(ymin,ymax,length.out=15)")
+    if kwargs.get('ymax') is not None:
+        robjects.r("ymax=%f" %float(kwargs['ymax']))
+    else:
+        robjects.r("ymax=ceiling(max(Mdata,na.rm=T))")
+    try:
+        ncol = int(kwargs.get('nb_colors'))
+    except (ValueError, TypeError):
+        ncol = 10
+    ncol = max(3,ncol)
+    robjects.r("""
+library(gplots)
+library(RColorBrewer)
+print(myBreaks)
+myColors=c("white","blue","red")
+#myColors = rev(colorRampPalette(brewer.pal(%i,"RdYlBu"))(length(myBreaks)-1))
+par(oma = c(22, 0, 0, 5), xpd=TRUE)
+par(mar = c(1,1,1,1))
+par(cex.main=1,oma=c(22,0,0,5), xpd=TRUE, new=TRUE)
+heatmap.2(as.matrix(Mdata),
+          col=myColors, trace="none", breaks=myBreaks, key="False",
+          na.rm=TRUE, density.info='none'%s)
+
+#legend("topright", inset=c(0.4,1.5), y=NULL, legend=c("single copy", "multicopy"), lty=c(1,1), lwd=c(2.5,2.5),col=c("blue","red"))
+
+
+
+    """ %(ncol, plotopt)) # 
+    _end("",last,**kwargs)
+    if return_rowInd:
+        return (output,array(robjects.r("odhrow")))
+    else:
+        return output
+
+def heatmap_ksnp(M,output=None,format='pdf',new=True,breaks=None, last=True,
+            rows=None,columns=None,orderRows=True,orderCols=True,
+            return_rowInd=False,cor=False,**kwargs):
+
+    """Creates a heatmap of the matrix *M* using *rows* as row labels and *columns* as column labels.
+    If either *orderRows* or *orderCols* is True, will cluster accordingly and display a dendrogram."""
+        
     plotopt,output = _begin(output=output,format=format,new=new,**kwargs)
     robjects.r.assign('Mdata',numpy2ri.numpy2ri(M))
+    robjects.r("""
+    rowsums <- rowSums(Mdata)
+    w <-which(rowsums<50)
+    Mdata <-Mdata[w,]
+
+
+    """)
     if rows is not None:
         robjects.r.assign('labRow',numpy2ri.numpy2ri(rows))
         plotopt += ",labRow=labRow"
     if columns is not None:
+        print "columns", columns
+        import numpy as np
+        columns = np.asarray(columns, dtype='a50')
         robjects.r.assign('labCol',numpy2ri.numpy2ri(columns))
         plotopt += ",labCol=labCol"
     if cor:
@@ -118,19 +217,20 @@ labRow[odhrow] = labRow""")
 library(gplots)
 library(RColorBrewer)
 print(myBreaks)
-
-myColors=c("white","blue","red")
-#myColors = rev(colorRampPalette(brewer.pal(%i,"RdYlBu"))(length(myBreaks)-1))    
-par(cex.main=1,oma=c(0,5,0,15))
+myColors=c("blue","red","white")
+#myColors = rev(colorRampPalette(brewer.pal(%i,"RdYlBu"))(length(myBreaks)-1))
+par(oma = c(22, 0, 0, 5), xpd=TRUE)
+par(mar = c(1,1,1,1))
+par(cex.main=1,oma=c(22,0,0,5), xpd=TRUE, new=TRUE)
 heatmap.2(as.matrix(Mdata),
           col=myColors, trace="none", breaks=myBreaks, key="False",
           na.rm=TRUE, density.info='none'%s)
 
-legend("bottom", y=NULL, legend=c("single copy", "multicopy"), lty=c(1,1), lwd=c(2.5,2.5),col=c("blue","red"))
+#legend("topright", inset=c(0.4,1.5), y=NULL, legend=c("single copy", "multicopy"), lty=c(1,1), lwd=c(2.5,2.5),col=c("blue","red"))
 
 
 
-    """ %(ncol, plotopt)) # 
+    """ %(ncol, plotopt)) #
     _end("",last,**kwargs)
     if return_rowInd:
         return (output,array(robjects.r("odhrow")))
