@@ -1,52 +1,29 @@
 #!/usr/bin/env python
 
+# get complete genome sequences from ncbi using eutils
+# TODO replace prints by sys.stdout/err.write
+# Author: Trestan Pillonel (trestan.pillonel[]gmail.com)
+# Date: 01.2015
+# ---------------------------------------------------------------------------
+
 from Bio import Entrez, SeqIO
-import eutils
+
+
 Entrez.email = "trestan.pillonel@unil.ch"
 
-def gbk2faa(seq_record, outname):
-    output_handle = open(outname, "w")
-    for seq_feature in seq_record.features :
-        if seq_feature.type=="CDS" :
-            #print seq_feature
-            assert len(seq_feature.qualifiers['translation'])==1
-            # gi|83716028|ref|YP_443839.1| matrix protein [Avian metapneumovirus]
-            try:
-                output_handle.write(">gi|%s|ref|%s| %s [%s]\n%s\n" % (
-                        seq_feature.qualifiers["db_xref"][0].split(":")[1],
-                        seq_feature.qualifiers["protein_id"][0],
-                        seq_feature.qualifiers["note"][0],
-                        seq_record.description,
-                        seq_feature.qualifiers['translation'][0]))
-            except:
-                output_handle.write(">gi|%s|ref|%s| [%s]\n%s\n" % (
-                        seq_feature.qualifiers["db_xref"][0].split(":")[1],
-                        seq_feature.qualifiers["protein_id"][0],
-                        #seq_feature.qualifiers["note"][0],
-                        seq_record.description,
-                        seq_feature.qualifiers['translation'][0]))
+"""
+plsmids: not working?
+handle_plasmids = Entrez.elink(dbfrom="genome", db="nuccore", id=one_genome_id, term="srcdb+ddbj/embl/genbank[prop] AND gene+in+plasmid[prop]")
+record_plasmids = Entrez.read(handle_plasmids)
 
-def gbk2ffn(seq_record, outname):
-    output_handle = open(outname, "w")
-    for seq_feature in seq_record.features :
-        if seq_feature.type=="CDS" :
-            #print seq_feature
-            assert len(seq_feature.qualifiers['translation'])==1
-            # gi|83716028|ref|YP_443839.1| matrix protein [Avian metapneumovirus]
-            try:
-                output_handle.write(">gi|%s|ref|%s| %s [%s]\n%s\n" % (
-                        seq_feature.qualifiers["db_xref"][0].split(":")[1],
-                        seq_record.id,
-                        seq_feature.qualifiers["note"][0],
-                        seq_record.description,
-                        seq_feature.extract(seq_record.seq)))
-            except:
-                output_handle.write(">gi|%s|ref|%s| [%s]\n%s\n" % (
-                        seq_feature.qualifiers["db_xref"][0].split(":")[1],
-                        seq_record.id,
-                        seq_record.description,
-                        seq_feature.extract(seq_record.seq)))
 
+if len(record_plasmids[0]["LinkSetDb"][0]["Link"]) == 0:
+    print "No plasmid seq for %s" % one_genome_id
+else:
+    linked_plasmids = [link["Id"] for link in record_plasmids[0]["LinkSetDb"][0]["Link"]]
+    print "Plasmid(s):", linked_plasmids
+    genome_record_id_list += linked_plasmids
+"""
 
 
 def download_one_wgs(wgs_link):
@@ -88,6 +65,7 @@ def download_one_wgs(wgs_link):
                     SeqIO.write(record, output_handle, "fasta")
         output_handle.close()    
 
+
 def get_wgs_links(one_species_link):
 
         # get all WGS linked to this species
@@ -100,8 +78,7 @@ def get_wgs_links(one_species_link):
             linked = [link["Id"] for link in record[0]["LinkSetDb"][0]["Link"]]
             #print "WGS genome(s):", linked
             return linked
-            
-                
+
 
 def multiple_wgs_links(ncbi_taxon):
     #handle = Entrez.esearch(db="genome", term="klebsiella+pneumoniae[orgn]")
@@ -154,21 +131,6 @@ def get_complete_genomes_data(ncbi_taxon):
         else:
             print "Whole genome data for %s " % one_genome_id
             print record
-
-
-            
-            """
-            handle_plasmids = Entrez.elink(dbfrom="genome", db="nuccore", id=one_genome_id, term="srcdb+ddbj/embl/genbank[prop] AND gene+in+plasmid[prop]")
-            record_plasmids = Entrez.read(handle_plasmids)
-                
-
-            if len(record_plasmids[0]["LinkSetDb"][0]["Link"]) == 0:
-                print "No plasmid seq for %s" % one_genome_id
-            else:
-                linked_plasmids = [link["Id"] for link in record_plasmids[0]["LinkSetDb"][0]["Link"]]
-                print "Plasmid(s):", linked_plasmids
-                genome_record_id_list += linked_plasmids
-            """
             
             linked = [link["Id"] for link in record[0]["LinkSetDb"][0]["Link"]]
             print "Complete genome(s):", linked
@@ -246,9 +208,6 @@ def get_complete_genomes_data(ncbi_taxon):
                 handle_genbank = Entrez.elink(dbfrom="nuccore", db="nuccore", id=link, term="srcdb+ddbj/embl/genbank[prop]")
                 record_genbank = Entrez.read(handle_genbank)
                 sequences_links.append(record_genbank[0]["LinkSetDb"][1]["Link"][0]["Id"])
-            
-
-
 
         print "Sequences links:", sequences_links
 
