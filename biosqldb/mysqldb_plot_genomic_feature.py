@@ -15,6 +15,7 @@ import manipulate_biosqldb
 from multiprocessing import Process, Queue, JoinableQueue
 import math
 from Bio.Seq import Seq
+import orthogroup_identity_db
 
 def get_feature_neighborhood(feature_start, feature_end, contig_or_genome_record, neighborhood_size_bp, record_name):
 
@@ -130,7 +131,11 @@ def plot_multiple_regions_crosslink2(target_protein_list, region_record_list, pl
         x += 1
 
     print "max", max_len
-    hauteur = 250*len(region_record_list)
+    print "n records", len(region_record_list)
+    if len(region_record_list) == 2:
+        hauteur = 700
+    else:
+        hauteur = 250*len(region_record_list)
     largeur = max(record_length)/30
     print "hauteur", hauteur
     print "largeur", largeur
@@ -143,7 +148,59 @@ def plot_multiple_regions_crosslink2(target_protein_list, region_record_list, pl
     
     gd_diagram.write(out_name, "SVG")
 
+
+
+
+
+def clamp(val, minimum=0, maximum=255):
+    if val < minimum:
+        return minimum
+    if val > maximum:
+        return maximum
+    return val
+
+def colorscale(hexstr, scalefactor):
+    """
+    Scales a hex string by ``scalefactor``. Returns scaled hex string.
+
+    To darken the color, use a float value between 0 and 1.
+    To brighten the color, use a float value greater than 1.
+
+    >>> colorscale("#DF3C3C", .5)
+    #6F1E1E
+    >>> colorscale("#52D24F", 1.6)
+    #83FF7E
+    >>> colorscale("#4F75D2", 1)
+    #4F75D2
+    """
+
+    hexstr = hexstr.strip('#')
+
+    if scalefactor < 0 or len(hexstr) != 6:
+        return hexstr
+
+    r, g, b = int(hexstr[:2], 16), int(hexstr[2:4], 16), int(hexstr[4:], 16)
+
+    r = clamp(r * scalefactor)
+    g = clamp(g * scalefactor)
+    b = clamp(b * scalefactor)
+
+    return "#%02x%02x%02x" % (r, g, b)
+
+
+
 def plot_multiple_regions_crosslink(target_protein_list, region_record_list, plasmid_list, out_name):
+
+    biodb_name = "saureus_01_15"
+    import MySQLdb
+    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
+                                user="root", # your username
+                                passwd="agnathe3", # your password
+                                db="orth_%s" % biodb_name) # name of the data base
+    cursor = conn.cursor()
+
+
+
     gd_diagram = GenomeDiagram.Diagram("geomic_region")
     feature_sets = []
     max_len = 0
@@ -173,6 +230,8 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
         set_X = feature_sets[x]
         set_Y = feature_sets[x+1]
         for feature_1 in features_X:
+
+
             if feature_1.type != "CDS":
                 continue
             for feature_2 in features_Y:
@@ -186,15 +245,78 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
                 except:
                         group1 = "one_singleton"
                         group2 = "two_singleton"
-                print "group1, group2", group1, group2
+                #print "group1, group2", group1, group2
                 if group1 == group2:
                     border = colors.lightgrey
                     color = colors.lightgrey
+                    try:
+                        identity = orthogroup_identity_db.check_identity(cursor, feature_1.qualifiers["orthogroup"][0],
+                                                                     feature_1.qualifiers["locus_tag"][0],
+                                                                     feature_2.qualifiers["locus_tag"][0])
+                    except:
+                        identity = 0
+                        print "problem with identity table %s and locus %s %s" % (group1,
+                                                                                  feature_1.qualifiers["locus_tag"][0],
+                                                                                  feature_1.qualifiers["locus_tag"][0])
+                    print "Identity:", identity
+
+                    if identity == 100:
+                        color2 = colors.HexColor('#1AFF00')
+                        border2 = colors.HexColor('#1AFF00')
+
+                    elif 95 <= identity < 100:
+                        color2 = colors.HexColor('#08298A')
+                        border2 = colors.HexColor('#08298A')
+
+                    elif 90 <= identity < 95:
+                        color2 = colors.HexColor('#0431B4')
+                        border2 = colors.HexColor('#0431B4')
+
+                    elif 85 <= identity < 90:
+                        color2 = colors.HexColor('#013ADF')
+                        border2 = colors.HexColor('#013ADF')
+
+                    elif 80 <= identity < 85:
+
+                        color2 = colors.HexColor('#0040FF')
+                        border2 = colors.HexColor('#0040FF')
+
+                    elif 75 <= identity < 80:
+                        color2 = colors.HexColor('#2E64FE')
+                        border2 = colors.HexColor('#2E64FE')
+
+                    elif 70 <= identity < 75:
+                        color2 = colors.HexColor('#5882FA')
+                        border2 = colors.HexColor('#5882FA')
+
+                    elif 65 <= identity < 70:
+                        color2 = colors.HexColor('#819FF7')
+                        border2 = colors.HexColor('#819FF7')
+
+                    elif 55 <= identity < 60:
+                        color2 = colors.HexColor('#A9BCF5')
+                        border2 = colors.HexColor('#A9BCF5')
+
+                    elif 50 <= identity < 55:
+                        color2 = colors.HexColor('#CED8F6')
+                        border2 = colors.HexColor('#CED8F6')
+                    else:
+                        color2 = colors.lightgrey
+                        border2 = colors.lightgrey
+
+                    #else:
+
+                    """
+                    color = colors.HexColor(colorscale("004DFF", identity/50.))
+                    border = colors.HexColor(colorscale("004DFF", identity/50.))
+                    """
+
+
                     F_x = set_X.add_feature(SeqFeature(FeatureLocation(feature_1.location.start, feature_1.location.end, strand=0)),
                                     color=color, border=border)
                     F_y = set_Y.add_feature(SeqFeature(FeatureLocation(feature_2.location.start, feature_2.location.end, strand=0)),
                                     color=color, border=border)
-                    gd_diagram.cross_track_links.append(CrossLink(F_x, F_y, color, border))
+                    gd_diagram.cross_track_links.append(CrossLink(F_x, F_y, color2, border2))
 
     #for x in range(0,len(region_record_list)-1):
     x = 0
@@ -213,40 +335,70 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
 
 
         for feature in record.features:
-            if feature.type != "CDS":
-                continue
-            try:
-                a = feature.qualifiers["locus_tag"]
-            except:
-                # cas des pseudogenes qui sont des CDS mais n'ont pas de protein ID
-                continue
 
-            if len(gd_feature_set) % 2 == 0:
-                color = color1
+            if feature.type == "assembly_gap":
+                print "gap", feature
+                feature.location.strand = None
+                gd_feature_set.add_feature(feature, sigil="BOX", color="red", label=True, label_position="middle", label_strand=1, label_size=14, label_angle=40)
+
+            if feature.type == "rRNA":
+
+                gd_feature_set.add_feature(feature, sigil="ARROW", color="orange", label=True, label_position="middle", label_strand=1, label_size=10, label_angle=40)
+
+            if feature.type == "tRNA":
+
+                gd_feature_set.add_feature(feature, sigil="ARROW", color="orange", label=True, label_position="middle", label_strand=1, label_size=10, label_angle=40)
+
+
+            if feature.type == "repeat_region":
+
+                gd_feature_set.add_feature(feature, sigil="BOX", color="blue", label=True, label_position="middle", label_strand=1, label_size=14, label_angle=40)
+
+
+            elif feature.type != "CDS":
+                continue
             else:
-                color = color2
 
-            #try:
-            #    try:
-            #            group = protein_id2group[feature.qualifiers["protein_id"][0]]
-            #    except:
-            #            group = protein_id2group[feature.qualifiers["protein_id"][1]]
-            #except:
-            #    # no group attributed: singleton => special color
-            #    color = colors.HexColor('#E104C0')
+                try:
+                    a = feature.qualifiers["locus_tag"]
+                except:
+                    # cas des pseudogenes qui sont des CDS mais n'ont pas de protein ID
+                    continue
+
+                if len(gd_feature_set) % 2 == 0:
+                    color = color1
+                else:
+                    color = color2
+
+                #try:
+                #    try:
+                #            group = protein_id2group[feature.qualifiers["protein_id"][0]]
+                #    except:
+                #            group = protein_id2group[feature.qualifiers["protein_id"][1]]
+                #except:
+                #    # no group attributed: singleton => special color
+                #    color = colors.HexColor('#E104C0')
 
 
-            for target_protein in target_protein_list:
-                    if target_protein in feature.qualifiers["locus_tag"]:
-                        print "target prot!"
-                        color = colors.red
+                for target_protein in target_protein_list:
+                        if target_protein in feature.qualifiers["locus_tag"]:
+                            print "target prot!"
+                            color = colors.red
 
-            gd_feature_set.add_feature(feature, sigil="ARROW", color=color, label=True, label_position="middle",label_strand=1, label_size=10, label_angle=40)
-            i += 1
+                gd_feature_set.add_feature(feature, sigil="ARROW", color=color, label=True, label_position="middle",label_strand=1, label_size=10, label_angle=40)
+                i += 1
+
+
+
         x += 1
 
     print "max", max_len
-    hauteur = 100*len(region_record_list)
+    print "n record", len(region_record_list)
+
+    if len(region_record_list) == 2:
+        hauteur = 300
+    else:
+        hauteur = 150*len(region_record_list)
     largeur = max(record_length)/30
     print "hauteur", hauteur
     print "largeur", largeur
@@ -258,6 +410,46 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
     print "writing diagram", out_name
     
     gd_diagram.write(out_name, "SVG")
+
+def plot_simple_region(region_record, out_name):
+    gd_diagram = GenomeDiagram.Diagram("geomic_region")
+
+    gd_track_for_features = gd_diagram.new_track(1, name=region_record.name, greytrack=True, height=0.5, start=0, end=len(region_record))
+
+    gd_feature_set = gd_track_for_features.new_set()
+
+    color1 = colors.HexColor('#40F13A')
+    color2 = colors.HexColor('#0F600C')
+
+    for feature in region_record.features:
+        if feature.type != "CDS":
+            continue
+        try:
+            a = feature.qualifiers["locus_tag"]
+        except:
+            # cas des pseudogenes qui sont des CDS mais n'ont pas de protein ID
+            continue
+
+        if len(gd_feature_set) % 2 == 0:
+                color = color1
+        else:
+                color = color2
+        gd_feature_set.add_feature(feature, sigil="ARROW", color=color, label=True, label_position="middle",label_strand=1, label_size=10, label_angle=40)
+
+    hauteur = 250
+    largeur = len(region_record)/30
+    print "hauteur", hauteur
+    print "largeur", largeur
+
+    if hauteur > largeur:
+            gd_diagram.draw(format="linear", pagesize=(hauteur,largeur), orientation='portrait', fragments=1,start=0, end=len(region_record))
+    else:
+            gd_diagram.draw(format="linear", pagesize=(hauteur,largeur), orientation='landscape', fragments=1,start=0, end=len(region_record))
+    print "writing diagram", out_name
+
+    gd_diagram.write(out_name, "SVG")
+
+
 
 
     
@@ -280,7 +472,7 @@ def chunks(l, n):
 
 out_q = Queue()
 
-def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, region_size_bp, loaded_records):
+def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, region_size_bp, cache):
     plasmid_list = []
     sub_record_list = []
     
@@ -289,7 +481,7 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
     #print "seqfeature_id_list", seqfeature_id_list
     #print "getting records..."
     
-    #print "formatting records..."
+    print "formatting records..."
    
     #n_cpu = 8
     #n_poc_per_list = math.ceil(len(bioentry_id_list)/float(n_cpu))
@@ -324,32 +516,55 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
     unloaded_bioentry = []
     loaded_bioentry = []
 
-    print "bientry id list", bioentry_id_list
-    print "loaded bioentry:"
-    for i in loaded_records.keys():
-        print i
+    #print "bientry id list", bioentry_id_list
+    #print "loaded bioentry:"
+    #for i in loaded_records.keys():
+    #    print i
+    print
     for bioentry in bioentry_id_list:
-        if bioentry in loaded_records.keys():
-            loaded_bioentry.append(loaded_records[bioentry])
+        key = biodb_name + "_" + bioentry
+        biorecord = cache.get(key)
+        if biorecord:
+            print key, "in memory"
+            #loaded_bioentry.append(loaded_records[bioentry])
+            continue
         else:
-            unloaded_bioentry.append(bioentry) 
-            
+            print key, "NOT in memory"
+            cache_time = None
+            #unloaded_bioentry.append(bioentry)
+            new_record = biodb.lookup(accession=bioentry)
+            new_record_reformat = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
+                                                             id=new_record.id, name=new_record.name,
+                                                             description=new_record.description,
+                                                             dbxrefs =new_record.dbxrefs,
+                                                             features=new_record.features,
+                                                             annotations=new_record.annotations)
+            record_id = biodb_name + "_" + new_record_reformat.id.split(".")[0]
+            cache.set(key, new_record_reformat, cache_time)
+            biorecord = cache.get(key)
+            if biorecord:
+                print key, "in memory"
 
-    all_records = [biodb.lookup(accession=one_bioentry) for one_bioentry in bioentry_id_list]
-    unloaded_records = [biodb.lookup(accession=one_bioentry) for one_bioentry in unloaded_bioentry]
-    reformat_records = [SeqRecord(Seq(temp_record.seq.data, temp_record.seq.alphabet), id=temp_record.id, name=temp_record.name, description=temp_record.description, dbxrefs =temp_record.dbxrefs, features=temp_record.features, annotations=temp_record.annotations) for temp_record in unloaded_records]
-    reformat_records = reformat_records + loaded_bioentry
+    #all_records = [biodb.lookup(accession=one_bioentry) for one_bioentry in bioentry_id_list]
+    #unloaded_records = [biodb.lookup(accession=one_bioentry) for one_bioentry in unloaded_bioentry]
+    #reformat_records = [SeqRecord(Seq(temp_record.seq.data, temp_record.seq.alphabet), id=temp_record.id, name=temp_record.name, description=temp_record.description, dbxrefs =temp_record.dbxrefs, features=temp_record.features, annotations=temp_record.annotations) for temp_record in unloaded_records]
+    #reformat_records = reformat_records + loaded_bioentry
 
-    print "all_record :", reformat_records
+    #print "all_record :", cache
     
     #print "creating seqfeature_id2seqfeature..."
     #seqfeature_id2seqfeature = manipulate_biosqldb.seqfeature_id2seqfeature_object_dict(*all_records)
     #print "done"
     #print "region size", region_size_bp
    
-    for seqfeature_id, record in zip(seqfeature_id_list, reformat_records):
+    for seqfeature_id, record_id in zip(seqfeature_id_list, bioentry_id_list):
+        key = biodb_name + "_" + record_id
+        record = cache.get(key)
+        if not record:
+            print key, "still not in memory"
+
         #print "seqfeature_id", seqfeature_id
-        #print "record", record
+        print "record", record
         target_feature_start,  target_feature_end, strand = manipulate_biosqldb.seqfeature_id2feature_location(server, seqfeature_id)
         
         #target = seqfeature_id2seqfeature[seqfeature_id]
@@ -361,28 +576,54 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
             plas = False
             plasmid_list.append(False)
         if plas:
-            genome_list.append(record)
+            sub_record_list.append(record)
         else:
+            print "Getting region from %s" % record_id
             sub_record = get_feature_neighborhood(target_feature_start,  target_feature_end, record, region_size_bp, "rec")
             sub_record_list.append(sub_record)
             
     plot_multiple_regions_crosslink(locus_tag_list, sub_record_list, plasmid_list, out_name)
 
     
-    for record in reformat_records:
-        print "record id", record.id
-        print "record name", record.name
-        if record.id not in loaded_records.keys():
+    #for record in reformat_records:
+    #    print "record id", record.id
+    #    print "record name", record.name
+    #    if record.id not in loaded_records.keys():
             
-            loaded_records[record.id] = record
+    #        loaded_records[record.id] = record
             
-    return loaded_records
+    #return loaded_records
 
 
 #server, db = manipulate_biosqldb.load_db("chlamydiales")
 #proteins_id2cossplot(server, db, "chlamydiales", ["CAQ48442.1"], "first_test.svg", 16000)
 
 
+
+def location2simpleplot(biodb, biodb_name, bioentry, location_start, location_stop, out_name, cache):
+
+    key = biodb_name + "_" + bioentry
+    biorecord = cache.get(key)
+    if biorecord:
+        print key, "in memory"
+
+    else:
+        print key, "NOT in memory"
+
+        new_record = biodb.lookup(accession=bioentry)
+        new_record_reformat = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
+                                                             id=new_record.id, name=new_record.name,
+                                                             description=new_record.description,
+                                                             dbxrefs =new_record.dbxrefs,
+                                                             features=new_record.features,
+                                                             annotations=new_record.annotations)
+        record_id = biodb_name + "_" + new_record_reformat.id.split(".")[0]
+        cache.set(record_id, new_record_reformat)
+
+
+    record = cache.get(biodb_name + "_" + bioentry)
+    sub_record = record[location_start:location_stop]
+    plot_simple_region(sub_record, out_name)
 
 
 

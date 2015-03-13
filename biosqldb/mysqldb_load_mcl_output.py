@@ -7,6 +7,13 @@ from parse_mclOtput import parse_orthomcl_output
 import manipulate_biosqldb
 import os
 import shell_command
+import numpy as np
+import numpy
+from multiprocessing import Process, Queue
+import time
+from multiprocessing import cpu_count
+import MySQLdb
+
 
 def add_orthogroup_term(server):
     # => ajouter orthogroup à la liste des term_id si n'existe pas
@@ -49,7 +56,7 @@ def get_all_orthogroup_size(server, biodatabase_name):
     return a dictonary with orthogroup size"
     """
 
-    
+
     sql = ' select seqfeature_qualifier_value.value, COUNT(*) from seqfeature_qualifier_value' \
 ' inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = "orthogroup"' \
 ' inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id' \
@@ -60,6 +67,24 @@ def get_all_orthogroup_size(server, biodatabase_name):
     result = server.adaptor.execute_and_fetchall(sql, (biodatabase_name))
 
     return manipulate_biosqldb._to_dict(result)
+
+def get_family_size(server, biodatabase_name):
+    '''
+    return number of genomes in which the family is present (multiple copies are only counted ones)
+
+
+    '''
+    table = manipulate_biosqldb.get_orthology_table2(server, biodatabase_name)
+    groupid2family_size = {}
+    for row in table:
+        #
+        family = 0
+        for i in row[1:-1]:
+            if i >0:
+                family+=1
+        groupid2family_size[row[0]] = family
+    return groupid2family_size
+
 
 
 def plot_orthogroup_size_distrib(server, biodatabase_name, out_name = "orthogroup_size_distrib.svg", taxon_id = False):
@@ -75,7 +100,7 @@ def plot_orthogroup_size_distrib(server, biodatabase_name, out_name = "orthogrou
     if not taxon_id:
 
         all_taxons = manipulate_biosqldb.get_taxon_id_list(server, biodatabase_name)
-
+        print all_taxons
         all_data = {}
         for taxon in all_taxons:
             sql = 'select orthogroup,`%s` from orthology_%s where `%s` >0' % (taxon, biodatabase_name, taxon)
@@ -172,25 +197,28 @@ def get_orthology_matrix_merging_plasmids(server, biodatabase_name):
 
     all_orthogroups = get_all_orthogroup_size(server, biodatabase_name)
     n_groups = len(all_orthogroups.keys())
-    print "ngroups", n_groups
+    #print "ngroups", n_groups
 
     
     all_taxons = manipulate_biosqldb.get_taxon_id_list(server, biodatabase_name)
-    print all_taxons
+    #print all_taxons
 
     detailed_orthology_count = {}
     for group in all_orthogroups.keys():
         detailed_orthology_count[group] = {}
         for taxon_id in all_taxons:
-            detailed_orthology_count[group][taxon_id]= 0
+            detailed_orthology_count[group][int(taxon_id)]= 0
     
     
     for taxon_id in all_taxons:
         #print taxon_id
         dico = manipulate_biosqldb.taxon_id2orthogroup_size(server, biodatabase_name, taxon_id)
-        print "taxon", taxon_id
+        #print dico
+        #import time
+        #time.sleep(3)
+        #print "taxon", taxon_id
         for group in dico.keys():
-            detailed_orthology_count[group][taxon_id] += dico[group]
+            detailed_orthology_count[group][int(taxon_id)] += dico[group]
     #print detailed_orthology_count
     return detailed_orthology_count
 
@@ -201,7 +229,7 @@ def create_orthology_mysql_table(server, orthogroup2detailed_count, biodatabase_
     """
     CREATE TABLE table_name (column_name column_type);    
     """
-
+    print 
     taxon_id_list = orthogroup2detailed_count[orthogroup2detailed_count.keys()[0]].keys()
     
     sql = "CREATE TABLE orthology_%s(orthogroup VARCHAR(100) NOT NULL" % biodatabase_name
@@ -238,16 +266,18 @@ def get_taxon_id_description_table(server, biodatabase_name, taxon_id_list):
     result = server.adaptor.execute_and_fetchall(sql, )
     return result
 
+def _chunks(l, n):
+    return [l[i:i+n] for i in range(0, len(l), n)]
 
 
 
 
-def get_all_orthogroup_protein_fasta(server, biodatabase_name, out_dir):
 
-    all_groups = get_all_orthogroup_size(server, biodatabase_name).keys()
     
-    for group in all_groups:
-        print "group", group
+def get_one_group_data(group_list, biodatabase_name, out_dir):#, out_q):
+    server = manipulate_biosqldb.load_db()
+    for group in group_list:
+        print "group", group, "biodb", biodatabase_name
         seqfeature_ids = manipulate_biosqldb.orthogroup_id2seqfeature_id_list(server, group, biodatabase_name)
         # do not consider singletons
         one_fasta = ""
@@ -255,7 +285,6 @@ def get_all_orthogroup_protein_fasta(server, biodatabase_name, out_dir):
             for seqfeature_id in seqfeature_ids:
                 # get data
                 values = manipulate_biosqldb.seqfeature_id2seqfeature_qualifier_values(server, seqfeature_id, biodatabase_name)
-                #print values
                 try:
                     one_fasta += "> %s | %s, %s | %s\n%s\n" % (values['locus_tag'],  values['gene'], values['product'], values['protein_id'], values['translation'])
                 except:
@@ -273,16 +302,74 @@ def get_all_orthogroup_protein_fasta(server, biodatabase_name, out_dir):
             out_name = os.path.join(out_dir, "%s.txt" % group)
             f = open(out_name, "w")
             f.write(one_fasta)
+        f.close()
+        #out_q.put(group)
 
+    
 
-
-
-
-def get_all_orthogroup_protein_fasta_by_taxon(server, biodatabase_name, out_dir):
+def get_all_orthogroup_protein_fasta(server, biodatabase_name, out_dir):
 
     all_groups = get_all_orthogroup_size(server, biodatabase_name).keys()
-    locus_or_protein_id2taxon_id = manipulate_biosqldb.locus_or_protein_id2taxon_id(server, biodatabase_name)
+    #out_q = Queue()
+    n_cpu = 8
+    n_poc_per_list = int(numpy.ceil(len(all_groups)/float(n_cpu)))
+    query_lists = _chunks(all_groups, n_poc_per_list)
+    procs = []
+    for one_list in query_lists:
+        proc = Process(target=get_one_group_data, args=(one_list, biodatabase_name, out_dir))#, out_q))
+        procs.append(proc)
+        proc.start()
+
+        
+    print "join proc"
+    time.sleep(5)
+    for proc in procs:
+        proc.join()
+        
+
+def get_all_orthogroup_protein_fasta2(server, biodatabase_name, out_dir):
+
+    all_groups = get_all_orthogroup_size(server, biodatabase_name).keys()
+    
     for group in all_groups:
+        print "group", group
+        seqfeature_ids = manipulate_biosqldb.orthogroup_id2seqfeature_id_list(server, group, biodatabase_name)
+        # do not consider singletons
+        one_fasta = ""
+        if len(seqfeature_ids) > 0:
+            for seqfeature_id in seqfeature_ids:
+                # get data
+                values = manipulate_biosqldb.seqfeature_id2seqfeature_qualifier_values(server, seqfeature_id, biodatabase_name)
+                try:
+                    one_fasta += "> %s | %s, %s | %s\n%s\n" % (values['locus_tag'],  values['gene'], values['product'], values['protein_id'], values['translation'])
+                except:
+                    try:
+                        one_fasta += "> %s | %s, %s\n%s\n" % (values['locus_tag'], values['gene'], values['product'], values['translation'])
+                    except:
+                        try:
+                            one_fasta += "> %s | %s\n%s\n" % (values['locus_tag'], values['product'], values['translation'])
+                        except:
+                            try:
+                                #print values
+                                one_fasta += "> %s \n%s\n" % (values['locus_tag'], values['translation'])
+                            except:
+                                one_fasta += "> %s \n%s\n" % (values['protein_id'], values['translation'])
+            out_name = os.path.join(out_dir, "%s.txt" % group)
+            f = open(out_name, "w")
+            f.write(one_fasta)
+        f.close() 
+
+
+
+
+
+
+
+
+
+def get_one_group_data_taxon(group_list, locus_or_protein_id2taxon_id, biodatabase_name, out_dir):#, out_q):
+    server = manipulate_biosqldb.load_db()
+    for group in group_list:
         print "group", group
         seqfeature_ids = manipulate_biosqldb.orthogroup_id2seqfeature_id_list(server, group, biodatabase_name)
         # do not consider singletons
@@ -301,17 +388,31 @@ def get_all_orthogroup_protein_fasta_by_taxon(server, biodatabase_name, out_dir)
             out_name = os.path.join(out_dir, "%s.txt" % group)
             f = open(out_name, "w")
             f.write(one_fasta)
+        #out_q.put(group)
 
-def circos_fasta_draft(fasta_file_name):
-    from Bio import SeqIO
-    contigs = []
-    start = 1 
-    handle = open(fasta_file_name)
-    for seq_record in SeqIO.parse(handle, "fasta"):
-        stop = start + len(seq_record.seq)
-        contigs.append([seq_record.name, start, stop])
-        start = stop+1
-    return contigs
+
+        
+def get_all_orthogroup_protein_fasta_by_taxon(server, biodatabase_name, out_dir):
+
+    all_groups = get_all_orthogroup_size(server, biodatabase_name).keys()
+    locus_or_protein_id2taxon_id = manipulate_biosqldb.locus_or_protein_id2taxon_id(server, biodatabase_name)
+
+    #out_q = Queue()
+    n_cpu = 8
+    n_poc_per_list = int(numpy.ceil(len(all_groups)/float(n_cpu)))
+    query_lists = _chunks(all_groups, n_poc_per_list)
+    procs = []
+    
+    for one_list in query_lists:
+        proc = Process(target=get_one_group_data_taxon, args=(one_list, locus_or_protein_id2taxon_id, biodatabase_name, out_dir))#, out_q))
+        procs.append(proc)
+        proc.start()
+        
+    print "join proc"
+    time.sleep(5)
+    for proc in procs:
+        proc.join()
+    
 
             
 def circos(server, biodatabase_name, reference_taxon_id):
@@ -429,10 +530,120 @@ def get_conserved_core_groups(server, biodatabase_name):
     sql_taxons += ' `%s` = 1' % all_taxons_id[-1]
         
     sql = "select orthogroup from orthology_%s where %s;" % (biodatabase_name, sql_taxons)
+    #print sql
     result = server.adaptor.execute_and_fetchall(sql,)
+    
     return [i[0] for i in result]
 
-    
+
+def get_cds_sequences(record, locus_tag2taxon_id):
+    from Bio.SeqRecord import SeqRecord
+    cds = {}
+    for i in record.features:
+        if i.type == "CDS":
+            try:
+                taxon_id = locus_tag2taxon_id[str(i.qualifiers['locus_tag'][0])]
+                #print str(i.qualifiers['locus_tag'][0])
+                if str(i.qualifiers['locus_tag'][0]) == "HMPREF0772_11479":
+                    print i
+                    print len(i)
+                    print i.location
+                    print i.extract(record.seq)
+                    print len(i.extract(record.seq))
+                    #import sys
+                    #sys.exit()
+                #if i.location.strand == -1:
+                #    print "reverse!"
+                #seq = i.extract(record.seq)[::-1]
+                #else:
+                #    print "not reverse!"
+                seq = i.extract(record.seq)
+                cds[str(i.qualifiers['locus_tag'][0])] = SeqRecord(seq, id=str(taxon_id), description=i.qualifiers['locus_tag'][0], name=i.qualifiers['locus_tag'][0])
+            except:
+                #sys.exit()
+                print i
+    return cds
+
+
+def get_group_nucl_fasta(biodb_name, locus_tag2nucl_sequence, path, group_list):
+    from Bio import SeqIO
+
+    for group in group_list:
+        server = manipulate_biosqldb.load_db()
+        locus_list = manipulate_biosqldb.orthogroup_id2locus_tag_list(server, group, biodb_name)
+        seqs = []
+
+        for locus in locus_list:
+            #print locus
+            seq = locus_tag2nucl_sequence[str(locus[2])]
+            #print seq
+            seqs.append(locus_tag2nucl_sequence[str(locus[2])])
+        with open(os.path.join(path, group + "_nucl.txt"), "w") as f:
+            SeqIO.write(seqs, f, "fasta")
+
+
+
+def locus_tag2nucl_sequence_dict(server, db, biodb_name):
+    sql = 'select accession from bioentry' \
+          ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' % biodb_name
+    print sql
+
+    accessions = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+    locus_or_protein_id2taxon_id = manipulate_biosqldb.locus_or_protein_id2taxon_id(server, biodb_name)
+
+    locus_tag2nucl_sequence = {}
+    for accession in accessions:
+        print accession
+        record_data = db.lookup(accession=accession)
+        sequences = get_cds_sequences(record_data, locus_or_protein_id2taxon_id)
+        locus_tag2nucl_sequence.update(sequences)
+    return locus_tag2nucl_sequence_dict
+
+
+def orthogroup2nucleotide_seq_list(locus_tag2nucl_sequence, group, biodb_name):
+        server = manipulate_biosqldb.load_db()
+        locus_list = manipulate_biosqldb.orthogroup_id2locus_tag_list(server, group, biodb_name)
+        seqs = []
+        for locus in locus_list:
+            seq = locus_tag2nucl_sequence[str(locus[2])]
+            seqs.append(locus_tag2nucl_sequence[str(locus[2])])
+        return seqs
+
+
+def get_nucleotide_core_fasta(server, db, biodb_name, path):
+    from Bio import SeqIO
+    core_ortho = get_conserved_core_groups(server, biodb_name)
+
+    locus_tag2nucl_sequence = locus_tag2nucl_sequence_dict(server, db, biodb_name)
+
+    for group in core_ortho:
+        seqs = orthogroup2nucleotide_seq_list(locus_tag2nucl_sequence, group, biodb_name)
+        with open(os.path.join(path,  group + "_nucl.txt"), "w") as f:
+            SeqIO.write(seqs, f, "fasta")
+
+
+
+
+    '''
+    n_cpu = 8
+    n_poc_per_list = int(numpy.ceil(len(core_ortho)/float(n_cpu)))
+    query_lists = _chunks(core_ortho, n_poc_per_list)
+    procs = []
+
+    for one_list in query_lists:
+        proc = Process(target=get_group_nucl_fasta, args=(biodb_name, locus_tag2nucl_sequence, path, one_list))#, out_q))
+        procs.append(proc)
+        proc.start()
+
+    print "join proc"
+    time.sleep(5)
+    for proc in procs:
+        proc.join()
+
+    '''
+
+
     
 def get_accession_list_from_taxon_id(server, biodatabase_name, taxon_id):
     sql = "select accession from bioentry" \
@@ -454,27 +665,27 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     server, db = manipulate_biosqldb.load_db(args.db_name)
-
-
-    
+      
     #print len(get_conserved_core_groups(server, "Chlamydiales_1"))
-
-    """
+    '''
     print "creating locus_tag2seqfeature_id"
     locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, args.db_name)
     print "creating protein_id2seqfeature_id"
     protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, args.db_name)
     protein_id2orthogroup_id, orthomcl_groups2proteins, genome_orthomcl_code2proteins, protein_id2genome_ortho_mcl_code = parse_orthomcl_output(args.mcl)
     add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
-    
-    orthogroup2detailed_count = get_orthology_matrix_merging_plasmids(server, args.db_name)
-    create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
-    plot_orthogroup_size_distrib(server, args.db_name)
-    """
 
-    """
+    orthogroup2detailed_count = get_orthology_matrix_merging_plasmids(server, args.db_name)
+    #print orthogroup2detailed_count
+    create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
+    
+    plot_orthogroup_size_distrib(server, args.db_name)
+    
+
     ortho_table = "orthology_%s" % args.db_name
     all_taxon_ids = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
+
+
     print "all_taxon_ids", all_taxon_ids
     for reference_taxon_id in all_taxon_ids:
         print "reference taxon:", reference_taxon_id
@@ -483,20 +694,30 @@ if __name__ == '__main__':
         print stdout
         print stderr
         print return_code
-    """
 
 
-    """
+    import os
+    if not os.path.exists("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta/" % args.db_name):
+        os.makedirs("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta/" % args.db_name)
+
     get_all_orthogroup_protein_fasta(server, args.db_name, "/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta/" % args.db_name)
-    """
+    
+    if not os.path.exists("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_by_taxons/" % args.db_name):
+        os.makedirs("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_by_taxons/" % args.db_name)
+
     get_all_orthogroup_protein_fasta_by_taxon(server, args.db_name, "/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_by_taxons/" % args.db_name)
 
-
-    core_ortho = get_conserved_core_groups(server, "saureus1")
+    if not os.path.exists("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_core/" % args.db_name):
+        os.makedirs("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_core/" % args.db_name)
+    
+    core_ortho = get_conserved_core_groups(server, args.db_name)
     import shutil
     for group in core_ortho:
-        shutil.copy("/home/trestan/Dropbox/dev/django/test_1/assets/saureus1_fasta_by_taxons/%s.txt" % group,"/home/trestan/Dropbox/dev/django/test_1/assets/saureus1_fasta_core/%s.txt" % group)
+        shutil.copy("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_by_taxons/%s.txt" % (args.db_name, group),"/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_core/%s.txt" % (args.db_name, group))
    
     
-    config_file, accessions_name = circos_draft(server, args.db_name, "5", args.fasta_draft)
+    #config_file, accessions_name = circos_draft(server, args.db_name, "5", args.fasta_draft)
  
+    '''
+
+    get_nucleotide_core_fasta(server, db, args.db_name, ".")
