@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+<ul><li><a href="{% url 'contact' %}">Home</a></li>
+  <li><a href="{% url 'orthogroups' %}">Orthogroups</a></li>
+  <li><a href="{% url 'circos' %}">Circos</a></li>
+    <li><a href="{% url 'search' %}">Search</a></li>
+   <li><a href="{% url 'blast' %}">Blast</a></li>
+   <li><a href="{% url 'circos2genomes' %}">Circos2Genomes</a></li>
+   <li><a href="{% url 'crossplot' %}">Crossplot</a></li>
+  <!--
+  <li>
+    Portfolio
+    <ul>
+      <li>Web Design</li>
+      <li>Web Development</li>
+      <li>Illustrations</li>
+    </ul>
+  </li>
+  -->
+  <li><a href="http://127.0.0.1:8765/vista-alignment">GenomeVista</a></li>
+  <li><a href="http://127.0.0.17/jbrowse/JBrowse-1.11.4/">GBrowse</a></li>
+</ul>
+
+
+<!--
+<form action="{% url "biodb.views.crossplot" %}" method="post">{% csrf_token %}
+{{ form.as_p }}
+ <input type="submit" name="GO" value="GO" id="id_GO" /> 
+</form>
+-->
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+
+{% block content %}
+  <form action='' method='post' enctype='multipart/form-data'>
+  {{ form.as_p }}
+  {% csrf_token %}
+  <input type='submit' value='submit' />
+  </form>
+{% endblock %}
+
+
+
+{% if envoi %}
+
+    <h2>Region</h2>
+    {% load static %}
+    <img src="{% static name %}" id="genomic_region" />
+
+
+     
+{% endif %}
+
+
+
+
+
+    
+</body>
+</html>

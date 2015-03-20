@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+{% include "chlamdb/menu.html" %}
+
+
+<section>
+
+<!--
+<form action="{% url "biodb.views.crossplot" %}" method="post">{% csrf_token %}
+{{ form.as_p }}
+ <input type="submit" name="GO" value="GO" id="id_GO" /> 
+</form>
+-->
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+
+{% block content %}
+  <form action="{% url "chlamdb.views.crossplot" %}" method="post" enctype='multipart/form-data'>
+  {% csrf_token %}
+
+  <table id="table_input_genome">
+  <tr>  
+  <td>{{ form.as_p }}</td>
+  </tr>
+  </table>
+  
+  <input type='submit' value='submit' />
+  </form>
+{% endblock %}
+
+
+
+{% if envoi %}
+
+    <h2>Region</h2>
+    {% load static %}
+    <img src="{% static name %}" id="genomic_region" />
+
+
+     
+{% endif %}
+
+
+
+
+
+</section>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+function hide_submenus(hidden_menu) {
+
+    var menu_ul = $('.' + hidden_menu +'> ul'),
+        menu_a  = $('.' + hidden_menu +'> a');
+
+    menu_ul.hide();
+
+    menu_a.click(function(e) {
+        e.preventDefault();
+        if(!$(this).hasClass('active')) {
+            menu_a.removeClass('active');
+            menu_ul.filter(':visible').slideUp('normal');
+            $(this).addClass('active').next().stop(true,true).slideDown('normal');
+        } else {
+            $(this).removeClass('active');
+            $(this).next().stop(true,true).slideUp('normal');
+        }
+    });
+
+};
+
+$(hide_submenus("rollmenu"))
+
+</script>
+
+
+
+
+</body>
+</html>

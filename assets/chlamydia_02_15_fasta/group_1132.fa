@@ -1,0 +1,126 @@
+> CSEC_0832 | Nudix hydrolase
+-------------------------------MEEKTHIGV--------------------
+------------------------------------------------------------
+-------------------YG--------ILLKNDQLLFVRK-TRGPYKGKLDLPGGRPN
+FGEDLSLTLLREIEEETGVVVKKASLFKNLSCLVKYKEEGKEKS--LYHIALVYLIFDFD
+ESQLEKKNSEDVNGYEWVSIEEASKKELSEMA----------------------------
+------------------------------------------------------SLTLKL
+ILS---------------------------------------------------------
+----------
+> Knic_02601 | nucleoside triphosphate pyrophosphohydrolase
+-------------------------------MKQVTRLGV--------------------
+------------------------------------------------------------
+-------------------YG--------IALEGNKILLVSKGPNGCYRNKLDLPGGGIE
+FGESSEETLRREFLEETGRAFQTMHLVNNVSHVLEVLDLPSPYH--FHHLGQLYFISGLD
+AIP-----STPYEQHDWYDFQQLKPEQLTPFAEIVIKDLQK-------------------
+------------------------------------------------------QLQIKN
+VFRN--------------------------------------------------------
+----------
+> NeoE_01926 | rppH_2, RNA pyrophosphohydrolase | Prokka:NeoE_01926
+-------------------------------MNQIIRHGA--------------------
+------------------------------------------------------------
+-------------------YG--------VIFQDSKILLTQK-TSGPYEGLWGLPGGAIE
+FGETPEATLKRELWEESSIAISKLEFLSVATSTGNYDNNGVPYG--FHQVGLLYKILGWE
+KQ----PGLVPQEENRWVRLTDILQKELTPFALHAISNLPT-------------------
+------------------------------------------------------------
+------------------------------------------------------------
+-------SEI
+> NeoE_01927 | nudI, Nucleoside triphosphatase NudI | Prokka:NeoE_01927
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+----MLVCEVLNDDGVLKGWGPIGGGIEFGESAEEALKREIYEELGCNLVITGEPIVCEN
+IFEHHGIKGHEIIFAFLIKLSDETIYTINRFQIYEDRGSAHWVEWIPLDRFERSEAILFP
+SIIVDKIAEI
+> NeoS_01679 | nudI, Nucleoside triphosphatase NudI | Prokka:NeoS_01679
+-------------------------------MNQIVRHGA--------------------
+------------------------------------------------------------
+-------------------YG--------VIFQDSKILLTQK-NSGPYEGLWGLPGGAIE
+FGETPEATLKRELLEESSIAISKLEFLSVATSTGNYDNNGVPYG--FHQVGLLYKILGWE
+KQ----PGFVPQEENRWVRLTDILQKELTPFALHAIYNLPTSKIWRPHNRIRGKVIGLAK
+HENRLLVCEVLNDDGVLKGWGPIGGGIEFGESAEEALKREIYEELGCNLVITGEPIFCEN
+IFEHHGIKGHEIIFAFLIKLSDETIYTKNRFQIYEDRGSAHWVEWIPLDRFERSEAILFP
+SIIVDKIAEI
+> NeoT_00228 | nudI, Nucleoside triphosphatase NudI | Prokka:NeoT_00228
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+----MLVCEVLNDDGVLKGWCPIGGGIEFSESAGEALKREIYEELGCNLVITGEPIVCKN
+IFEHHGIKGHEIIFAFLIKLSDKTIYTKKSF-----------------------------
+-------SDL
+> NeoT_00229 | rppH, RNA pyrophosphohydrolase | Prokka:NeoT_00229
+MTLLDFSKILFLINSYCLSSKSLVGEDRSDNMNQIIRHGA--------------------
+------------------------------------------------------------
+-------------------YG--------VIFQDSKILLTQK-KSGPYEGLWGLPGGAIE
+FGETPEATLKRELLEESSIAISKVEFLSIATSTGNYDNNGVSYG--FHQVGLLYKILGWE
+KQ----PGLVPQEENRWVRLTDILQKELTPFALHAISNLPT-------------------
+------------------------------------------------------------
+------------------------------------------------------------
+-------SEK
+> NHA_113 
+M------------------------------LKNVTRVGV--------------------
+------------------------------------------------------------
+-------------------YG--------LIQDAEKLLLVQQ-PRGPFKGRWDFPGGGIE
+VGETVEQTLRRELIEEIHASFDSMHFFENLTCTTSISSTSEDQNILFFQIGLIYKVQGLT
+FLE---LQSTTLLSYAWVKIDQLEPSNTSPLL----------------------------
+-------------------W----------------------------------KLLSQN
+FL----------------------------------------------------------
+----------
+> PaHS_01930 | hypothetical protein
+MVYTSFPM-----------------------IERMTRIGT--------------------
+------------------------------------------------------------
+-------------------YG--------VCQVNQTLLLVPK-KSGPYQGCLDLPGGRLE
+FGETPEETLRREFLEETAGEFSMARLLFNTSCTF----IKQNYE--LYHIGLIYNVLGWK
+PL----SNRCPEDEFYWIDFSQLATINLTPFAQDAVSYLKL-------------------
+------------------------------------------------------------
+------------------------------------------------------------
+----------
+> pc1584 | hypothetical protein
+M-----------------------------------------------------------
+------------------------------------------------------------
+-------------------RG-----------------LLKD---------WCSLGGGVE
+FGETFEEAIHREIFE---------------------------------------------
+------------------------------------------------------------
+-------------------------------------------GLGCQITILNNSTVCEN
+IFEHYGIKGHEVI-----------------------------------------------
+----------
+> PnaD_02221 | nucleoside triphosphate pyrophosphohydrolase
+-------------------------------MKQVTRLGV--------------------
+------------------------------------------------------------
+-------------------YG--------IALEGNKILLVSKGPNGCYRNKLDLPGGGIE
+FGESSEETLRREFLEETGRAFQTMHLVNNVSHVLEVLDLPSPYH--FHHLGQLYFISGLD
+AIP-----STPYEQHDWYDFQQLKPEQLTPFAEIVIKDLQK-------------------
+------------------------------------------------------QLQIKN
+VFRN--------------------------------------------------------
+----------
+> PR18_01625 | nudI_1, Nucleoside triphosphatase NudI | Prokka:PR18_01625
+M-----------------------------------------------------------
+------------------------------------------------------------
+-------------------RG-----------------LLKD---------WCSLGGGVE
+FGETFEKAIRREIFE---------------------------------------------
+------------------------------------------------------------
+-------------------------------------------GLGCQITILNNSTVCEN
+IFEHYGIKEHEVI-----------------------------------------------
+----------
+> PR18_02123 | nudI_2, Nucleoside triphosphatase NudI | Prokka:PR18_02123
+MK-KSFNQF----------------------QDKIIRHGA--------------------
+------------------------------------------------------------
+-------------------YG--------VVLQDAKILLTQK-KTGPYQGLWGLPGGAIE
+FGETPEETLKRELLEESSLEILGLELLNIATATGEYNKNGEPYG--FHQIGLIYRVVNWI
+KQ----LSVTPEEENRWASLNNITHQELTPFARHAIANLPTNKTWRPNNSIRGKVIGLAK
+HENRLLVCEVLNDDGVLKGWSPIGGGIEFGETAQEALKREIQEELGCHVSITSDPIICEN
+IFEHHGVKGHEIIFAFPIRLEDQAIYGKNRFQIHEYKGSSHWVEWIPIEHFEQGRAVLFP
+SILTNKIAAI
+> RB12441 | nudF, probable ADP-ribose pyrophosphatase | CAD77590.1
+M--KKKPSA---------A-----------TVKKLTKKSASRKSAKKSSRKSTRSSHPAA
+HPTSKSSVGRSTTKKPKKSTKKTAKKSAVKSVRKKSSAPPKRSQEPIEKAFRYCPSCQTP
+NDNPGEIPFRCHECGFAFFFGPVAAVGGLIVNEDQELLLVRR-ARDPGKGQWGLPGGFVD
+RGESIEEALRREVTEETQLKVTELSLL-----------TTGPNN--YTYAGVTADVIDLF
+FV-------CKVHANAKI---QLEPSELTEFK----------------------------
+-------------------WCV-------------PTKRELN-----NMAFPSNRIAVEQ
+WLQE--------------------------------------------------------
+----RKKTSK

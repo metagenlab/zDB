@@ -1,0 +1,110 @@
+> CSEC_1205 | Small multidrug resistance protein
+---------MAYFFLLI-------------------------------------------
+-------------------------------------AMLFEIMATSSLNLSHGFTRFIP
+SIISILGYAISFYFLSLTLLT-IPVGVAYAIWSGVGIVLISVIGFFAFGQRLDLAAIIGI
+SFIIAGVLIIHLLS--GTASH----------TQG
+> CSEC_1432 | Small multidrug resistance protein
+---------MSWVYLFL-------------------------------------------
+-------------------------------------AGILEIVWAYFLKKVDGFSKPFS
+LAIMILAMILSFWLLNLSLRT-LPLGLAYAVWTGIGIAGTVIVGILFLGEEFDILKIVCI
+AMILVGIFGLKLLT--P-----------------
+> CspR_00130 | sugE, Quaternary ammonium compound-resistance protein SugE | Prokka:CspR_00130
+---------MYWFFLLL-------------------------------------------
+-------------------------------------AGLFEIGWAVGLKFTEGFTKLIP
+STFTLIAMVFSLWFLSLSLKA-IPIGTAYGIWTGIGTFGTALFGIVYYGESTSLLRIISF
+ILILAGIAGLKLSH--N-----------------
+> ElaC_00252 | sugE, Quaternary ammonium compound-resistance protein SugE | Prokka:ElaC_00252
+---------MNWLVLLL-------------------------------------------
+-------------------------------------AGLFEVGFTTCLKLSEQFTKPLP
+TIGFILFAGASFYALSYSIKT-IPIGTAYAIWTGIGAFGTAIIGINCFGEPMDAARLFFL
+FLLIFSLVGLKLVS--------------------
+> Knic_01796 | qacC, Quaternary ammonium determinant C | Prokka:Knic_01796
+---------MEWIYLFT-------------------------------------------
+-------------------------------------AIFTEVISTAALKSSEGFTKFWP
+SLIVIVGYAIAFYFLSLTLKT-IPVGVAYAIWSGMGIVLISVIGAVLFRQYLDFPALLGI
+GLILTGVIILNVFS----AAH-------------
+> LarH_02827 | emrE, Multidrug transporter EmrE | Prokka:LarH_02827
+---------MNYLYLAI-------------------------------------------
+-------------------------------------AILAEVIATSALKSAEGFSKIGP
+SLLVILGYGVAFYCLSLVLRT-IPVGVAYAIWSGVGIVLVSIVAYFLHNQKLDLPAVIGI
+TLIITGVIIINVFS--NSSAH-------------
+> NeoE_01640 | emrE, Multidrug transporter EmrE | Prokka:NeoE_01640
+--------MEAYLYLLM-------------------------------------------
+-------------------------------------AIAGEVVGTSALKASYGMTKLFP
+SLVVVVGYGLTFWSLSIALKT-LPVGVVYAIWSGLGIVSIILIGVYFFNEAFSLMHLLGT
+ALILAGVAVLMLFT--GPVSE-------------
+> NeoS_02041 | emrE, Multidrug transporter EmrE | Prokka:NeoS_02041
+--------MEAYLYLLM-------------------------------------------
+-------------------------------------AIAGEVVGTSALKASYGMTKLFP
+SLVVLVGYGLTFWSLSIALKT-LPVGIVYAIWSGLGIVSIILIGVYFFNEAFSLMHLLGT
+ALILAGVAVLMLFT--GPVSE-------------
+> NeoT_00529 | emrE, Multidrug transporter EmrE | Prokka:NeoT_00529
+--------MEAYLYLLM-------------------------------------------
+-------------------------------------AIAGEVVGTSALKASYGMTKLFP
+SLVVLVGYGLTFWSLSIALKT-LPVGVVYAIWSGLGIVSIILIGVYFFNEAFSLMHLLGT
+ALILAGVAVLMLFT--GPVSE-------------
+> NHA_2362 
+MVMNKGVFVEAYLYLLI-------------------------------------------
+-------------------------------------AIAGEVIGTSALKASYGMSKLWP
+SVIVIIGYAVTFWSLSISLKT-LPVGTVYAIWSGLGIVSIFIIGTYFYHEEFTLLHLLGT
+CLIITGIVILMMLA--SPIKE-------------
+> PacO_01599 | emrE, Multidrug transporter EmrE | Prokka:PacO_01599
+--------MQPYLYLFL-------------------------------------------
+-------------------------------------AIITEIIATSALKVSDGFTKPLA
+SIIVLVGYFFAFWLLSLTLKV-LPVSIVYAIWSGLGILGISCIGIWYFKEMFGVWHFIGT
+ALILAGVVILSIVTPNNNSPH-------------
+> PUV_21990 | qacE, quaternary ammonium compound-resistance protein qacE | YP_004653003.1
+--------MQPYLYLFL-------------------------------------------
+-------------------------------------AIITEIIATSALKVSDGFTKPLA
+SIIVLVGYFFAFWLLSLTLKV-LPVSIVYAIWSGLGILGISCIGIWYFKEMFGVWHFIGT
+ALILAGVVILSIVTPNNNSPH-------------
+> PaHS_01786 | emrE, Multidrug transporter EmrE | Prokka:PaHS_01786
+---------MAYFYLMI-------------------------------------------
+-------------------------------------SIVAETFATLSMKSSKGFTILGP
+SLVVMTGYVIAFYCLSLTLND-IPVGIVYATWSGLGIVIISLCGYFLQNQPLDAFAIIGM
+IFIILGVLFMNLLS--HSSAH-------------
+> PamE_00768 | sugE, Quaternary ammonium compound-resistance protein SugE | Prokka:PamE_00768
+---------MGWIYLLI-------------------------------------------
+-------------------------------------AGLFEIGFTTFLKLSNNFTRLWP
+TAIFFIFSVCSFLALSLSLKT-ISLGTAYAIWTGMGAVGTAVIGILYFGESIDFWRLFFL
+VCLIISIIGLKIAS--A-----------------
+> pc0715 | sugE, sugE protein | YP_007714.1
+MLR----FNLGWIYLLI-------------------------------------------
+-------------------------------------AGLFEIGFTTFLKLSNNFTRLWP
+TAIFFIFSVCSFLALSLSLKT-IPLGTAYAIWTGMGAVGTAVIGILYFGESIDFWRLFFL
+VCLIISIIGLKISS--A-----------------
+> PnaD_00125 | sugE, Quaternary ammonium compound-resistance protein SugE | Prokka:PnaD_00125
+---------MNWIYLLI-------------------------------------------
+-------------------------------------AGLFEVGFTTFLKLSENFTRFWP
+TVGFFLLAIMSFFSLSLSLKS-IPIGTAYAIWTGIGAFGTALVGILYFGESTDFWRLFFL
+FCLISSIIGLKLVY--SG----------------
+> PnaD_01565 | qacC, Quaternary ammonium determinant C | Prokka:PnaD_01565
+---------MEWIYLFT-------------------------------------------
+-------------------------------------AIFTEVISTAALKSSEGFTKFWP
+SLIVIVGYAIAFYFLSLTLKT-IPVGVAYAIWSGMGIVLISVIGAVLFRQYLDFPALLGI
+GLILTGVIILNVFS----AAH-------------
+> PR18_01369 | sugE, Quaternary ammonium compound-resistance protein SugE | Prokka:PR18_01369
+---------MGWIYLLI-------------------------------------------
+-------------------------------------AGLFEIGFTTFLKLSNNFTRLWP
+TAIFFIFSVCSFLALSLSLKT-IPLGTAYAIWTGMGAVGTAMIGILYFGESIDFWRLFFL
+ACLIISIIGLKIAS--A-----------------
+> Psta_3354 | small multidrug resistance protein
+---------MGWLLLVI-------------------------------------------
+-------------------------------------AGLLEIGFTTMMKLSHGFTHVWP
+TLGFLFFAILSFVVLNRALSAGIPLGTAYAVWTGIGACGTAVVGMIFFGDPISAARIILL
+CTLVGSVIGLKMVS--AH----------------
+> RB10978 | sugE, sugE protein-putative transmembrane protein | CAD77096.1
+---------MAWGYLLI-------------------------------------------
+-------------------------------------AGLLEIGWAVGLKYTDGFSRPVP
+TVITIVIMIASFFTLSLALRE-IPLGTGYAVWTGIGAVGTAIAGMILFGESKDAIRLACI
+AVIVAGIVGLKLAS--SSGASIEASETLNASSES
+> VspiD_02165 | emrE, Methyl viologen resistance protein C | Prokka:VspiD_02165
+---------MVFIHLASRKSSANWETLTPKGVSPPAGSPLPDGQHLGTLGTPAAGSGTRL
+FVSAKPDAVICRRLGRASDRIPLSDHVPFHHLRHPDGAIILEVIATSYLQKTEQFTKPLP
+TVVTTLCYAGAFYFLSISLKT-LPVSIAYAIWSGLGIVLIAAVGWIVFKQKLDTPAIIGL
+GFIIIGVVIVNGFS--KSVAH-------------
+> VspiD_03652 | sugE, Quaternary ammonium compound-resistance protein SugE | Prokka:VspiD_03652
+---------MAWIILLL-------------------------------------------
+-------------------------------------AGIFEVAWTIGLKYSQGFTKLGP
+SLWTGAALIISFALLGNAVRT-LPLGTAYAIWTGIGAVGAIIAGIVLFHEPLTLTRCLFG
+MLIVVGMVGLKFTS--GH----------------

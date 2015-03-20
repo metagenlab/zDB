@@ -1,0 +1,70 @@
+> LarH_04155 | ytrA, HTH-type transcriptional repressor YtrA | Prokka:LarH_04155
+--------------MNLSINTGS--NTP------LYAQITEQLEQHIILGQYKFGDKLPS
+LRQVSKDLCVNYLTVKQAYSELEKRGLVYIEQGKGAFISSN-------------------
+------------------------------------------------------------
+----------QSRRQEVIHQKCS------------------DLVELAKQV----------
+----------------------------GLNVNDLTEI----------------------
+------------------------------------------------------------
+------------------------------------------------LRNIEEEN----
+------------------------------------------------------------
+-------------------------------------
+> RB1862 | gntR, transcription regulator GntR related protein ytrA | CAD72304.1
+--------------MFFTVDPSN--GVP------IYSQIVRQVKFAVAEQTLRPGQLLPS
+VRQLSQQLAVNPNTVARAFQDLQSEGVIETLRGRGVVVCKGAVER---------------
+------------------------------------------------------------
+---------CRKQRRSILAERLS------------------AVLTEALQA----------
+----------------------------GLSAKEVRKLVDEQ------------------
+------------------------------------------------------------
+-------------------LRTL----------------------DGTIEAIAELQ----
+------------------------------------------------------------
+-------------------------------------
+> RB8116 | gntR, probable transcription regulator GntR related protein ytrA | CAD78476.1
+MHRLVSRTPSQETPMFFSIDAAS--DVP------IYEQIVRQVKLAVADGTLVGGQMLPS
+VRQLSRDIALNPNTIARAYRELQAQEILKPLRGRGMVVRRDAIEA---------------
+------------------------------------------------------------
+---------CTSARDDLVGDGVR------------------RALADAIAG----------
+----------------------------GMSPDQLRSLFESE------------------
+------------------------------------------------------------
+-------------------LARLSAAATKSNSD------------ESNLESASSSNNE--
+-------------------------------PSH--------------------------
+------------------------------------E
+> RB8695 | transcription regulator GntR related protein ytrA
+MK------------IHLSDD-----GVP------LYQQVVQQIRHRILSGQLSGGDEMPA
+IRTLAEQLRVNPNTIARAYRELEQAGLVEKRRTRGTFVSSS-------------------
+-----------------------------------------PTSM---------------
+---------SAKGKREAIEPAID------------------QLLVLSQGL----------
+----------------------------GVDAKELSQWILRR------------------
+------------------------------------------------------------
+---------------------------------------------DEELQRKRGETS---
+------------------------------------------------------------
+-------------------------------------
+> VspiD_04692 | ydcR_1, putative HTH-type transcriptional regulator YdcR | Prokka:VspiD_04692
+M-------------IHESTDHDS-----------LYRQVCQKVEGLIRGGTWRPGDRIPS
+VRQASRQHGVSITTVLQAYLALEDQGLIEARPKSGFFVRPQLLKPVAEPKVSRPRSAVTA
+VTVGGLQSRLFEASRIP-----GIVPLGGAA----PGAELLPVEKLNRILAGVARRHGRS
+AVSYDVPPGSAALRREIARRSVDAGA-NLAPDEIITTSGGTEALMLALRAVTRPGDVVAV
+ELPAYFGVLHALEVLQLKVVGIPMHPRTGMDLDVLEKVLKTRSVAACVAVPNFSNPLGSL
+MPDSHKERLVELLAAREVPLIEDDIFGELYFGDHRPRTALSYDRKGLVILCSSFSKTLAP
+GYRVGWIV-PGRFYKEIQALKLTSTLATATLPELAVAEFLANGGYDHYLRSIRRTYADNV
+GRFRQ-AVAASFPGPVTITQPQGGFVLWVELPKGVDALRLDDAALEQKISIAPGPMFSPK
+PDFGNFIRLSCAHPWNARMERAIGTLGRLAAQQPRTA
+> VspiD_04749 | ydcR_2, putative HTH-type transcriptional regulator YdcR | Prokka:VspiD_04749
+M----------------SVSPKSPPLVPPEGVGNLYERVAGHIQDLIEKGTLRPGERIPS
+VRRLSEQQGVSVSTVLQAYTLLEDRGVIEARPQSGYYVRVQSWKPPAEPEMSRPATRATQ
+VTVGELVMKVMKAIRDP-----GLVALGAAI----PSPELLPTRQLNRAMAALGRRSPEL
+GSSYDVPPGLTALRIQIARRALDAGC-ALSPDEIVTTCGGMEALHLSLSAVAKAGDTIAI
+ESPTYFGILQCIESLGMKALEIPTHPRDGVSLDALAYALEHQPIAACLFVLNFNNPLGSC
+MPDENKRLLVEMLAEREIPLIEDDIYGDVSFTPQRPKTAKAFDKKGLVLLCDSFSKTLAP
+GYRVGWVA-PGRFQEKVELLKTVSTIATATLPQMAIADFLANGGYAHHLRRVQRVYADQV
+NLVSE-AIAKYFPEETKLTRPSGGQVLWVELPSRIDSLELFHRALSEKISIAPGPIFSAK
+QKFKNFIRLNCGNPWSNTIDRALKTLGRIVATM---R
+> VspiD_05694 | gabR, HTH-type transcriptional regulatory protein GabR | Prokka:VspiD_05694
+MARKASL-------QELALRPAPE-GTP------LFRWIYEELRLAIAEGRLKPGMRLPS
+TRDLATQYGVARGTVLVTFEQLKAEGYVESEVGSGTRVAGNLPERFFAPAPSLQATPAS-
+VTPSRARLSAWSQTLRPLFPLRGVAPTGVAFEPNQPALDLFPTTLWSRLAGRRLRRASGL
+QLGVAEAHGYRPLREAVAAYLGSARAVHCTADQVVIVSGTQQTLDLTARLVLDPGDKVWM
+EDPGYIGAVGAFRSVGARLVAIPV-DEDGLDVAQGRKLAADAKLAYVTPAHEF--PLGTS
+LSLERRLALLQWAQEAGAWIFEDDYDSEYRYQGRPLPSMQGLDGSGCVIFAGSFNKMLFP
+NLRLGYVVLPPRLVEPFAVARSLSDRFPPLLDQAVLCDFITEGHFGQHIRRMREAYAERL
+GTLMEMAATGPLAGLIEIAPIHAGMQTAGHLPPEMNDHAVAEAAARQGVRCMTLSMFQIR
+RKNVNGLLLGFGGYRPDLIREGARKLARVLEG----R

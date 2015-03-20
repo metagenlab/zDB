@@ -1,0 +1,340 @@
+> CAB978 | glucosamine-1-phosphate N-acetyltransferase
+------------------------------------------------------------
+-------------------------MILASVLF----SPEDFSFP-------------EL
+ITEAYYT----WDILALIDKKLSSHVFSGIQG----------------------------
+-------------------------TVESGAFL---------------------------
+-------------------------KNIESIEIAEGAYVESGAYIVGPCIIGPQTEVRHG
+AYLRGSVITGTGCVIGHCTEVKKAYLGHYAKAGHFAYIGDSVLSSEVNLGAGVRCANFRL
+DGKNISVHC---AEGRVDTQLRKVGAFLGKNVSVGCNTVINPGQCIPAHTKIYP--GKVI
+------------------------------------------------------------
+------
+> Cav1_00803 | glmU, Bifunctional protein GlmU | Prokka:Cav1_00803
+------------------------------------------------------------
+--------------------------MLASILF----SPEDFPFP-------------EL
+ITEAYYV----WDILGLLSQKLSQHVFSGIHG----------------------------
+-------------------------IVEKGAFL---------------------------
+-------------------------KNIESIEIGEGAYVESGAYIVGPCIIGPQTEVRHG
+AYLRGGVITGTQCVIGHCSELKNSYLGHHTKASHFAYVGDSVLSAEVNLGAGVRCANFRL
+DGQTISISG---EEGQINTKLRKVGAFIGKQASVGCNVVINPGRCLPAYTQIYP--GKVI
+------------------------------------------------------------
+------
+> CCA01008 | LpxA family transferase
+------------------------------------------------------------
+-------------------------MIFASVLF----SPEDFPFP-------------EL
+ITEAYYT----WDILALIDKKLSTHVFSGIHG----------------------------
+-------------------------TVESGAFL---------------------------
+-------------------------KNIESIEIAEGAYVESGAYIVGPCIIGPQTEVRHG
+AYLRGGVITGTGCVIGHCTEVKNSYFGHYAKAGHFAYVGDSVLGAEVNLGAGVRCANFRL
+DGKNISVTC---KEGKVDTQLRKVGAFLGTKVSIGCNTVINPGHCISAHTTIYP--GTVT
+------------------------------------------------------------
+------
+> CF0004 | glmU, UDP-GlcNAc pyrophosphorylase | YP_514921.1
+------------------------------------------------------------
+-------------------------MIFASVLF----SPEDFPFP-------------EL
+ITEAYYT----WDILALIDKKLSSHTFSGIHG----------------------------
+-------------------------TVESGAFL---------------------------
+-------------------------KNIESIEISEGAYVESGAYIVGPCIIGPQTEIRHG
+AYLRGGVITGTGCVIGHCSEVKNSYFGHHAKAGHFAYVGNSVLSSEVNLGAGVRCANFRL
+DGKNITVNS---EEGKVDTQLRKVGAFLGKKASVGCNTVINPGRSIPALTTIHP--GKVI
+------------------------------------------------------------
+------
+> cgal_00365 | glmU, Bifunctional protein GlmU | Prokka:cgal_00365
+------------------------------------------------------------
+--------------------------MLASILF----SPEDFPFP-------------EL
+ITEAHYV----WDILALLSKKLSTHTFSGIHG----------------------------
+-------------------------TVEKGAFL---------------------------
+-------------------------KNIQSIEIGEGAYVESGAYISGPCIIGPQTEIRHG
+AYLRGGVITGTQCVIGHCSELKNSYLGHHTKASHFAYVGDSVLSAEVNLGAGVRCANFRL
+DGKTISITS---EEGRINTQLRKVGAFLGKQVSVGCNVVINPGHCSPAHTKIYP--GRVI
+------------------------------------------------------------
+------
+> Cib1_00629 | glmU, Bifunctional protein GlmU | Prokka:Cib1_00629
+------------------------------------------------------------
+-------------------------MTLASSLF----SPEDFPFP-------------EL
+ITEADYA----WDILSLIKKKLSSHIFSGIHG----------------------------
+-------------------------TVESGVYL---------------------------
+-------------------------KNPETIEISKDAYVESGAYIVGPCILGPGTQVRHG
+AYLRGGVITGSCCVIGHCTEVKNAYFGHYAKAAHFAYIGDSVLSAEVNLGAGVRCANFRL
+DGKEIFAIA---ENEKIPTNLRKVGAFLGKKVSVGCNVVINPGHCIPAYSKIHP--GKVI
+------------------------------------------------------------
+------
+> TC0918 | UDP-N-acetylglucosamine pyrophosphorylase GlmU-related enzyme
+------------------MFKYQT------------------------------------
+------------------MLYQELSMVLASSLF----SPEEFLYP-------------EI
+VSQAEFV----WSILTLLEQKLSSHSFSGIQG----------------------------
+-------------------------HLEEGVYL---------------------------
+-------------------------KNKETIEIQEGAYVESGAYLCGPCIIGPYTQVRHG
+AYIRGGVITGAHCVVGHCSEIKNSYLGHYAKAAHFAYVGDSVLGSRVNLGAGVRCANFRL
+DGGNIFLRY---SGDRYDTQRKKLGAFLGKGVSIGCNTVLNPGCCVVSATKILP--NQTI
+Y-----------------------------------------------------------
+------
+> G5S_0292 | grad, UDP-GLNAC pyrophosphorylase | YP_004377004.1
+------------------------------------------------------------
+------------------------------------------------------------
+-----------------MEEFLTTYCFSGIHG----------------------------
+-------------------------TVEPGVFL---------------------------
+-------------------------KNESQIEIAENAYVESGAYLIGPCIIGPYTQIRHG
+AYLRGGVITSNHCILGHCTEAKNVYLGNHAKAAHFAYLGDSVLGAGVNLGAGVRCANFRL
+DGKNITVRS---ESLKIDTQRRKLGGFLGKNASVGCNTVINPGHHIPAYSMIGP--GKTI
+------------------------------------------------------------
+------
+> CP1124 | UDP-N-acetlyglucosamine pyrophosphorylase GlmU-related enzyme
+------------------------------------------------------------
+------------------------------------------------------------
+-----------------MDQMLENHVFSGIHG----------------------------
+-------------------------TVESGVTL---------------------------
+-------------------------KNIEKIEIAEDAYVESGAYIVGPCILGSQTEVRHG
+AYLRGNVITGSRCVVGHCTEIKNSYLGHHTKAAHFAYLGDSVLSSEVNLGAGVRCANFRL
+DGRNIYVRSTSDKSKKIDTGRRKLGAFLGKGVAIGCNVVINPGQHILPHTRIRP--GQVI
+------------------------------------------------------------
+------
+> CPSIT_1068 | putative glucosamine-1-phosphate N-acetyltransferase
+------------------------------------------------------------
+-------------------------MILASVLF----SPEDFSFP-------------EL
+ITEAYYT----WDILALIDRKLSTHVFSGIHG----------------------------
+-------------------------TVESGAFL---------------------------
+-------------------------KNIESIEIAEGAYVESGAYIVGPCIIGPQTEVRHG
+AYIRGSVITGTGCVIGHCTEVKKAYFGHYAKAGHFAYIGDSVLGSEVNLGAGVRCANFRL
+DGKNISVNC---AEGRVDTKLRKVGAFLGKNVSVGCNTVINPGHCIPAHTTIYP--GKVI
+------------------------------------------------------------
+------
+> CSEC_1629 | glmU, Putative glucosamine-1-phosphate N-acetyltransferase
+------------------MWK-------------------NCKQL----------LLLTV
+EKKKISLENTGKIVV---HKGRFVNFFRPQQLF----QKKDSFLT-------------SF
+FDRFEWP----WELLPEIHSFLLTLPLGDIKS----------------------------
+-------------------------KIPDGVYL---------------------------
+-------------------------ENRESISIEEDCIIESGAFIRGPCFIGRGSEIRHG
+AYIRGDVIAGEKVVIGHTTEVKNAIFCSHAKAAHFAYIGDSILGENVNLGAGTKCANLKF
+DHSAVSVRT---QDQTFETGLKKMGAFFGADAQTGCNTVTNPGTIFLRNAKSYP--NSTV
+CGV------------VPENHIFIKRN---------------------------EFKPV--
+------
+> CspR_00360 | glmU, Bifunctional protein GlmU | Prokka:CspR_00360
+------------------MLKLR------------AYLDINLKLLK-------------F
+STKDLKFLNSK-------ISKLVMNNFSPNYFI----NLSDLKHK-------------EL
+FS-VSYI----WEVIAKLEEYLSNYKLGKIEI----------------------------
+-------------------------DIPRGVYL---------------------------
+-------------------------ENPELISIGRGTVLEPGAYIKGPVIIEANCVIRHG
+AYIRGNVIAEEGSLIGHATEAKNCFLSPGAHAAHFSYLGDSILGINVNLGAGTICSNVKL
+NREEITIKD---QGKIYQTGLKKMGAVIGDGCQLGCNTVTNPGAIIGKKASSFP--NSTI
+FGV------------VPANAIIKPHS---------------------FRKT--EVEI---
+------
+> CsuM_00669 | glmU, Bifunctional protein GlmU | Prokka:CsuM_00669
+------------------------------------------------------------
+-------------------------MVLAASFF----SPEDFLYP-------------EI
+VSQAEFV----WSILTLLEKKLSSHTFSGILG----------------------------
+-------------------------HLESGVYL---------------------------
+-------------------------KNAETIEIQEGAYVESGAYICGPCIIGPYTQVRHG
+AYIRGGVITGAHSVVGHCSEIKNSYLGHHVKAAHFAYVGDSVLGARVNLGAGVRCANFRL
+DGKTVFFRY---SGERYDTQRKKLGAFLGRGVSVGCNTVLNPGCSVVSTTKILP--NQTV
+D-----------------------------------------------------------
+------
+> CT629 | glmU, glucosamine-1-phosphate acetyltransferase | NP_220146.1
+------------------------------------------------------------
+-------------------------MVLSSSLF----SPEEFLYP-------------EI
+VSQAEFV----WSILTLLEEKLASHTFSGIHG----------------------------
+-------------------------HLEEGVYL---------------------------
+-------------------------KNKETIEIQEGAYVESGAYICGPCIIGPYTQVRHG
+AYIRGGVITSSHCVIGHCSEIKNSYLGHHAKAAHFAYVGDSVFGSRVNLGAGVRCANFRL
+DGKTIFFHH---SGERCNTKRKKLGAFLGRGVSVGCNTVLNPGCYVASATKILP--NQTI
+Y-----------------------------------------------------------
+------
+> ElaC_01137 | glmU, Bifunctional protein GlmU | Prokka:ElaC_01137
+------------------------------------------------------------
+-----------------------MNDFSPTKLF----DLSGFKHA-------------SI
+FDGCEYA----WEALPKIHLFLEGLELGRIES----------------------------
+-------------------------PVPKEAHL---------------------------
+-------------------------VNPELITIESGCLIDPGVYIKGPCYLGRGTEVRFG
+AYIRGDVIAGEGVVIGHTTEVKNSILLNKAHAAHFAYVGDSILGCGVNLGAGTKLANLKL
+TRSQVRVRH---KGSSIATNLRKFGAILADGAQTGCNCVTNPGTIMGRDSSAFP--CTNI
+GGF------------IPSKHIFNHEG---------------------------KLVAMSV
+HHV---
+> Minf_1422 | gcd1, Nucleoside-diphosphate-sugar pyrophosphorylase involved in lipopolysaccharide biosynthesis/translation initiation factor 2B, gamma/epsilon subunit | ACD83476.1
+------------------------------------------------------------
+------------------MGDQSLLPFHPSRFF----DLSQTSHP-------------LL
+FKEVENV----WLVLEKIKVYLEEILVPGIHG----------------------------
+-------------------------NIPGNCYV---------------------------
+---------------------------GQKVFIGKGTRVYPGAVIEGPAWIGENCSIRAG
+CFIRQNVIVEEGCVLGNSCEFKNSFLFKNCQVPHFNYVGDSILGRQVHLGAGVILSNLKL
+NGTEVKIKL---DDKIYSTGLRKFGAILGDETQIGCNAVLNPGSIIGKKTLIFP--GVIW
+HGI-----------LLSEGKVIKNKQ---------------------------ELEIL--
+------
+> Knic_01241 | glmU, Bifunctional protein GlmU | Prokka:Knic_01241
+------------------------------------------------------------
+------------------------MSLQSSYFF----DVTQFSHA-------------AL
+FENDPEP----WNILGRLESYIKQLPLGKILG----------------------------
+-------------------------EVSSEAYL---------------------------
+-------------------------INPELIFLDEGSVVEPGAYIQGPCWIGKNSVVRHG
+AYIRGNFLAGERCVIGHDTEVKNSLFLDRAHAAHFAYVGDSILGNQVNLGAGTKCANFKL
+DQKTITVHY---QGERIPTQLRKFGAIIGDRSQIGCNSVTNPGTLIGQEVRCYP--CLNI
+GGW------------IPTRSLIKPSH---------------------------EVKISSY
+------
+> LarH_03385 | glmU, Bifunctional protein GlmU | Prokka:LarH_03385
+-------------------MKFDFIPGENPSYFESLRRDASISELP--------VAGTTV
+RQAQIDFLEATDHE----FSKEAPEVLLADNFWYAPEDLENFSRG-------------ED
+LSENSFALRFPWDLLRLNEILVAHIDTDFIEA----------------------------
+-------------------------HVYDGA-----------------------------
+-------------------------QNEGFLYAGKGTKILPGVFIEGNVIIGDNCKIGPN
+CYIRGNTFIGDNCHIGQSVEIKNSLIMNNTNVGHLSYIGDSVLGEKVNLGAGTVSSNLRH
+DGSNHRSEF---HGELIDTGRRKFGVIIGDGVHTGINTSFYPGRKLYPETTTLP--GQIV
+QKD------------LKA------------------------------------------
+------
+> NeoE_00393 | glmU, Bifunctional protein GlmU | Prokka:NeoE_00393
+------------------------------------------------------------
+------------------------------------------------------------
+--------------MSLIPSYLQTLALGEIEA----------------------------
+-------------------------PVPQGTYL---------------------------
+-------------------------VNPHLISIGHGTIIEPGAYIKGPCIIGQNCSVRHG
+AYIRGNFIAGNECVIGHATEVKNAIMFDKAQAGHFAYLGDTILGSRVNLGAGTKCANLRL
+NRQNVSIYL---DGDFIETDLKKFGAIIGDDSQVGCNSVTNPGTLWGKQVICYP--CVNA
+GGY------------IASHQLIRSSQ---------------------------KAIVTPL
+------
+> NeoS_01099 | glmU, Bifunctional protein GlmU | Prokka:NeoS_01099
+------------------------------------------------------------
+-----------------------MNNFSPDYFF----DLTTFAHA-------------RL
+FKSCTFV----WNALSLIPSYLQTLALGEIEV----------------------------
+-------------------------PVPQGTYL---------------------------
+-------------------------VNPHLISIGQGTIIEPGAYIKGPCIIGQNCSVRHG
+AYIRGNFIAGNECVIGHATEVKNAIMFDKAQAGHFAYLGDTILGSRVNLGAGTKCANLRL
+NRQNVSIYL---DGDFIETDLKKFGAIIGDDSQVGCNSVTNPGTLWGKQVICYP--CVNA
+GGY------------IASHQLIRSSQ---------------------------KAIITPL
+------
+> NeoT_01772 | glmU, Bifunctional protein GlmU | Prokka:NeoT_01772
+------------------------------------------------------------
+-----------------------MNNFSPDYFF----DLTTFAHA-------------KL
+FKSCTFV----WNALSLIPSYLKTLALGEIEA----------------------------
+-------------------------PVPQGTYL---------------------------
+-------------------------VNPHLISIGQGTIIEPGAYIKGPCIIGQNCSVRHG
+AYIRGNFIAGNECVIGHATEVKNAIMFDKAQAGHFAYLGDTILGSRVNLGAGTKCANLRL
+NRQNVSIYL---DGSFIETNLKKFGAIIGDDSQIGCNSVTNPGTLWGKKVICYP--CVNA
+GGY------------IASHQLIRSSQ---------------------------KAIITPL
+------
+> NHA_1390 | hypothetical protein
+------------------------------------------------------------
+-----------------------MKTLSPDYFF----NLSLFAHA-------------EL
+FKDCVHV----WEALTRINTYLLKLPLGKIEV----------------------------
+-------------------------DVPHGTFL---------------------------
+-------------------------INPELISIGKGTVLEPGAYIRGPCVIGENCSVRHG
+AYIRGDFIAGNGCVIGHDTEVKNAVMLDKAQAGHFAYLGDTILGNRVNLGAGTKCANFRL
+DHMPIKVSF---EGKNLPTGLKKFGAIIGDESQLGCNSVTNPGSLIGKQVLCYP--CINM
+GGF------------VPSRQIIRSNQ---------------------------QIVITPY
+------
+> PacO_02171 | glmU_2, Bifunctional protein GlmU | Prokka:PacO_02171
+------------------------------------------------------------
+-----------------------MDFLLPSYFF----DLDTYTHK-------------DL
+FEPNAHV----WTALNRLESYLEKMSFQKQEA----------------------------
+-------------------------IVSPSAYL---------------------------
+-------------------------VNPDQIHLGKGTVVEPGAYIQGPCWIGDRCVVRHG
+AYIRGFVVTGNDCVIGHDTEIIRSILLDHAHAAHFAYLGQSILGNHVNLGAGTKCANLKL
+DNRPVSIVV---EHQKYQTGLRKLGAIIGDSSQIGCNVVTNPGTLLGKNVLCYP--TLNC
+GGF------------IPSFHIIKSRA---------------------------QTMTIPI
+QRGQNG
+> PUV_00040 | bifunctional protein glmU
+------------------------------------------------------------
+-----------------------MDFLLPSYFF----DLDTYTHK-------------DL
+FEPNAHV----WTALNRLESYLEKMSFQKQEA----------------------------
+-------------------------IVSPSAYL---------------------------
+-------------------------VNPDQIHLGKGTVVEPGAYIQGPCWIGDRCVVRHG
+AYIRGFVVTGNDCVIGHDTEIIRSILLDHAHAAHFAYLGQSILGNHVNLGAGTKCANLKL
+DNRPVSIVV---EHQKYQTGLRKLGAIIGDSSQIGCNVVTNPGTLLGKNVLCYP--TLNC
+GGF------------IPSFHIIKSRA---------------------------QTMTIPI
+QRGQNG
+> PaHS_00637 | glmU_1, Bifunctional protein GlmU | Prokka:PaHS_00637
+------------------------------------------------------------
+--------------------MSLDLLVKNQSLF----NLSSYQHV-------------EL
+FNDCQYL----WDVIKNIKTYLKQYPLGSINA----------------------------
+-------------------------LIHPGAHL---------------------------
+-------------------------IHPESIAIGKGTIVEPGAFIQGPCIIGENCQIRKG
+AYIRGNVITGNHCVIG--SELKNVALLNNANVAHFNYVGDSILGNHVNLGAGVKCANLRL
+DRQEIVIRN---EGNQISSGLKKFGSILGDFTQVGCNSVLLPGTITGQKTFIYP--CLSI
+GGI------------IPSSTLVKTSS---------------------------S------
+------
+> PamE_01951 | glmU_2, Bifunctional protein GlmU | Prokka:PamE_01951
+------------------------------------------------------------
+------------------------MDIKSSDFF----NLSTFTHT-------------AL
+FEKDPAP----WIILTRLASYLKKLKLGVLLG----------------------------
+-------------------------SISPQAYL---------------------------
+-------------------------IRPEEITIGEGSIVEPGAYIQGPCWIGNHCVIRHG
+AYIRGHVITGDYCVIGHDTEVKNSLFLNRAHAAHFAYVGDTILGHDVNLGAGTKCANFKL
+DQQTVSVVY---KHQRFNTQLRKFGAIIGDRSQIGCNTVTNPGSLIGMDVRAYP--CLNI
+GGW------------IPHRSIVKPGS---------------------------QVRISSY
+------
+> pc1997 | glmU, UDP-N-acetylglucosamine diphosphorylase | YP_008996.1
+------------------------------------------------------------
+------------------------MDIKSSDFF----NLSTFTHT-------------AL
+FEKDPAP----WIILTRLASYLKKLKLGVLLG----------------------------
+-------------------------SISPQAYL---------------------------
+-------------------------IRPEEITIGEGSIVEPGAYIQGPCWIGNHCVIRHG
+AYIRGYVITGDYCVIGHDTEVKNSLFLNRAHAAHFAYVGDTILGHDVNLGAGTKCANFKL
+DQQTVSVVY---KHQHFDTQLRKFGAIIGDRSQIGCNTVTNPGSLIGMDVRAYP--CLNI
+GGW------------IPHRSIVKPGS---------------------------QVRISSY
+------
+> PnaD_01121 | glmU, Bifunctional protein GlmU | Prokka:PnaD_01121
+------------------------------------------------------------
+------------------------MSLQSSYFF----DVTQFSHA-------------AL
+FENDPEP----WNILGRLESYIKQLPLGKILG----------------------------
+-------------------------EVSSEAYL---------------------------
+-------------------------INPELIFLDEGSVVEPGAYIQGPCWIGKNSVVRHG
+AYIRGNFLAGERCVIGHDTEVKNSLFLDRAHAAHFAYVGDSILGNQVNLGAGTKCANFKL
+DQKTITVHY---QGERIPTQLRKFGAIIGDRSQIGCNSVTNPGTLIGQEVRCYP--CLNI
+GGW------------IPTRSLIKPSH---------------------------EVKISSY
+------
+> PR18_00475 | glmU_1, Bifunctional protein GlmU | Prokka:PR18_00475
+------------------------------------------------------------
+------------------------MDIKSSDFF----NLSTFTHT-------------AL
+FEKDPAP----WIILTRLASYLKKLKLGVLLG----------------------------
+-------------------------SISPQAYL---------------------------
+-------------------------IRPEEITIGEGSIVEPGAYIQGPCWIGNHCVIRHG
+AYIRGHVITGDYCVIGHDTEVKNSLFLNRAHAAHFAYVGDTILGHDVNLGAGTKCANFKL
+DQQTVSVVY---KHQHFNTQLRKFGAIIGDRSQIGCNTVTNPGSLIGMDVRAYP--CLNI
+GGW------------IPHRSIVKPSS---------------------------QVRISSY
+------
+> Psta_0489 | hypothetical protein
+-------------------MQLV------------LFEDEFVPKLYPITVGRPAFATTVG
+SYRLIDWMSFLAQDVGA-----KIRAVVRPHLT----TILHIDYP-QLAAVPSPGDLPVL
+LVNARMVPS--RTVCENLLALLKTGQSGLVRSGD-----ALAAALITDPALLPPTSNDLK
+KFLDYLHSSVWAKLP----------TISGNFPL--LDYPHDTVRHNLSIIDENLAHRLAR
+GNFQEIATGVFAAEGATLGAYCVTDTSKGPVLLDQGATVGPYTLLRGPAYIGPKSRVLEH
+SAIKDAVSLGHTTKIG--GEVEASIVEPYTNKQHHGFLGHSYLGSWINLGAGTCNSDLKN
+TYGMVKMEY---RGEHVQTGMQFVGCMMGDYSKSAINTGIFTGKTVGACSMVYGFVTTNV
+PSFVNYARLFGQVTELPPDVMIATQQRMFQRRSVSQRPCDSQLIHDMYELTRHERQLAGE
+PLSL--
+> RB4043 | probable glucose-1-phosphate thymidylyltransferase
+MQPVCRLAASLSLPRLVPLMQIL------------CFEDSRVEQLCPIVHARPAYAITCA
+SFRLLDWLKTLASECGTGTKACQIQGLIREYLL----PIQEADHGLQAPATEMPSDEDVL
+LVNARLVPS--VQTYETLKQLLKAGETASVIGKDNGVDTELLAAFI--------TAADVA
+K-LNGSAASDADQTPMARMEELARKNISPRFNLKAFQWPHEVVSSHMDAMNDSVNYRIEH
+GDYTQREDGVFVRPGVSIGEYGSIHTSGGAIVLEEDVRVGPFCFLEGPLHAGHSTRVIEH
+SAIKDGVSLGHTVKIG--GEVEASVIEAYTNKQHHGFLGHSYLGSWINLGAGTCNSDLKN
+TYGKINIEY---GDRKMATGMQFLGCVMGDYSKSAINTGIFTGKVIGVCSMLYGFVTSNV
+PSYVNYARLFGQTSLLPPDVMINTQARMFARRKVEQRQCDMDLIQAMYDRTESERETSDQ
+-LAL--
+> SNE_A00680 | bifunctional protein glmU
+------------------------------------------------------------
+-----------------------MNRLSYELFF----DLESFEHR-------------SL
+FKEGVPV----WNALKHLKAYLESLSLGKIEC----------------------------
+-------------------------DIPSSTIL---------------------------
+-------------------------DHPELISIGKGTVVEPGAYIQGPCVIGKNCQVRHG
+SYIRPYLLTGDDCVIGHATETKHAIFLNGAKAPHFNYVGDSILGRDVNIGAGVICANFRL
+DKKLVPVRV---WGEQFSSELKKFGAIVGDSSQIGCNTVLNPGLLLRKRSLIRS--CES-
+---------------VSESNLRKDVS---------------------------HV-----
+------
+> VspiD_00743 | glmU, Bifunctional protein GlmU | Prokka:VspiD_00743
+------------------------------------------------------------
+-------------------------MFSAGNYL----DLSRTIHG-------------LL
+FDDEQPV----WSALTRIEGYLQFKLKPEILG----------------------------
+-------------------------NVSPKATL---------------------------
+---------------------------GDQVFIDEGSVVEAGAVIKGPAWIGKNCHIRSG
+AYIRENVIVGDGCVLGNSCEFKNCILFDNCEVPHFNYVGDAVLGYKAHLGAGVILSNVRL
+DRAPVVVHH---GSERIATGLRKFSAVVGDHAEVGCNSVLSPGTLIGRRSIVYP--CANF
+AGV------------LPESSILKVRQ---------------------------QHEVAER
+R-----
+> wcw_0013 | glmU1, UDP-GlcNAc pyrophosphorylase | YP_003708396.1
+------------------------------------------------------------
+-----------------------MEPFSPLELF----DLSSYPHK-------------AL
+LENCTYA----WEALLFLKKYLTQQNLGNLQG----------------------------
+-------------------------TISSNAYL---------------------------
+-------------------------VNKNQIFIGKGTVIEPGAYIEGPCWIGENCTIRHG
+AYIRGNVITGHGCILGHDSEFKHSILLNGSQAAHFAYVGDSILGNHINLGAGTICANLKL
+DKQPVEVKF---ESHRIHTGLRKLGAILGDNAQTGCHAVLNPGTVFGKAALCYP--CLNV
+SGY------------LSPGTKMKMEK----------------------------------
+------

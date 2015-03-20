@@ -1,0 +1,15 @@
+<h1>Login</h1>
+
+{% if error %}
+<p><strong>Unkown User or Wrong Password</strong></p>
+{% endif %}
+
+{% if user.is_authenticated %}
+Vous êtes connectéYou are logged in, {{ user.username }} !
+{% else %}
+<form method="post" action=".">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Login" />
+</form>
+{% endif %}

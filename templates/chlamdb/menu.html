@@ -1,0 +1,86 @@
+
+<html>
+<head>
+    {% load staticfiles %}
+    </head>
+<body>
+
+
+<div id="wrapper">
+
+    <ul class="menu">
+        <li class="item4"><a href="{% url 'home' biodb %}">Home</a>
+
+        </li>
+
+        <li class="rollmenu"><a href="">Search</a>
+             <ul>
+            <li class="item5"><a href="{% url 'blast' biodb %}">Blast</a>
+            </li>
+            <li class="item6"><a href="{% url 'search' biodb %}">Text search</a>
+            </li>
+            <li class="item6"><a href="{% url 'motif_search' biodb %}">Motif search</a>
+            </li>
+            <li class="item6"><a href="{% url 'primer_search' biodb %}">Primer search</a>
+            </li>
+
+
+            </ul>
+        </li>
+
+        <li class="rollmenu"><a href="">Homology</a>
+
+             <ul>
+            <li class="item5"><a href="{% url 'homology' biodb %}">Get homologues</a>
+            </li>
+            <li class="item6"><a href="{% url 'circos' biodb %}">Circos</a>
+            </li>
+            <li class="item6"><a href="{% url 'circos2genomes' biodb %}">Circos 2 genomes</a>
+            </li>
+            <li class="item6"><a href="{% url 'extract' biodb %}">Extract homologous genes</a>
+            </li>
+
+            </ul>
+
+        </li>
+
+    </ul>
+</div>
+
+
+<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>-->
+<script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
+
+
+
+<!--
+<script type="text/javascript">
+$(function() {
+
+    var menu_ul = $('.rollmenu > ul'),
+        menu_a  = $('.rollmenu > a');
+
+    menu_ul.hide();
+
+    menu_a.click(function(e) {
+        e.preventDefault();
+        if(!$(this).hasClass('active')) {
+            menu_a.removeClass('active');
+            menu_ul.filter(':visible').slideUp('normal');
+            $(this).addClass('active').next().stop(true,true).slideDown('normal');
+        } else {
+            $(this).removeClass('active');
+            $(this).next().stop(true,true).slideUp('normal');
+        }
+    });
+
+});
+</script>
+-->
+
+
+
+</body>
+</html>

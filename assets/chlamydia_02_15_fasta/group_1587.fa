@@ -1,0 +1,66 @@
+> CSEC_0799 | csaA, Putative protein CsaA
+------------------------------------------------------------
+------------------------------------------------ME----------
+-------SQDKNLE----------------------LIQFAD-FLKVEIRVGTIVSVEDY
+PEARKPAYKLTIDF-G-ELGVK---KSSAQITDRYPKETLLGKQVIAVVNFPKKQIGKFI
+SEVLTLGLP---DENGHVVLLEPTYKIPNGGRLF----
+> ElaC_01920 | tRNA-binding protein
+------------------------------------------------------------
+------------------------------------------------MD----------
+------------------------------------QIEWKD-FEKVHIVAGTILSAEPF
+PEAKKAAYKLTIDL-GPFIGIK---RSSAQITKLYSLEDLIGKQVLCVVNFPTKKIGPFI
+SEVLTMGFI----EGEEVVLAIPERKVENGTRLL----
+> Knic_00754 | ygjH, tRNA-binding protein YgjH | Prokka:Knic_00754
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------MITYQE-FEKVDIRVGTIIQADLF
+PQARKPAYQLRIDF-GEKIGIK---RSSAQITQHYQLQELIGKQVLAVVNFAPKQIGPFV
+SEVLVLGLS---DPIGQIVLIAPDKQVPNGGKLH----
+> NHA_838 | Conserved hypothetical protein
+------------------------------------------------------------
+------------------------------------------------MS----------
+--------------------------------EEKPIVSKEDTFDKLEIRLGRVISVEKE
+PAALKKSYRLKVDF-G-KFGIK---TSIGRFTQ-HSPEEIKGKLVLGILNFMPKQLGETI
+SEVLILGVQFPKAESGEATFITPFAEAKIGGKLF----
+> PacO_00153 | tRNA-binding protein
+------------------------------------------------------------
+------------------------------------------------ML----------
+---------------------------------EKPTISIQE-FNKVEMAIGKVVAISIN
+PHAKIPAYLLDLQFNGPLMGNKGFYSGSAQFTSNHTTDEIMNQQVACILNFPRKQIGSHY
+VRLLSDG----------------------GSKNYWNVR
+> PUV_06940 | hypothetical protein
+------------------------------------------------------------
+------------------------------------------------ML----------
+---------------------------------EKPTISIQE-FNKVEMAIGKVVAISIN
+PHAKIPAYLLDLQFNGPLMGNKGFYSGSAQFTSNHTTDEIMNQQVACILNFPRKQIGSHY
+VRLLSDG----------------------GSKNYWNVR
+> PnaD_00156 | metG_1, Methionine--tRNA ligase | Prokka:PnaD_00156
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------MITYQE-FEKVDIRVGTIIQADLF
+PQARKPAYQLRIDF-GEEIGIK---RSSAQITQHYQPQELIGKQILAVVNFAPKQIGPFV
+SEVLVLGLS---DPIGQILLIAPDKQVPNGGKLH----
+> RB11112 | csaA, CsaA protein | CAD77166.1
+------------------------------------------------------------
+------------------------------------------------MS----------
+------------------------------------LITWQE-FENVDVRVGTITLVEDF
+PEARKPAYKITVDF-GEELGTK---RTSAQITVHYTKEELLGRQILGVVNFPPKQIGPIT
+SEFLLTGLY---REDGSVILAVPDKAMPNGAKLG----
+> RB11510 | chaperonin involved in protein secretion (CsaA protein)
+MCTMSDYPYNFDVKITETLVYLPKHIVSQLDFGKSKRLRIDGEINGIRIECGLMPDKGKW
+CFMVSKKLQKLCGIAPGDTASVSFDIADSEAVVVPKELQFALEANDAAMSAWEKWTAGKR
+RAQCHRVSSAKRVETRERRAEEVIALCLAELGMQAGVTPWQA-FENLDMRAGTITAVANL
+PKARKPAYKVTADF-GSELGTK---RTSAQITVNYSKDELVGRQIIGVVNIPPKQIGTFM
+SEFLIVGFY---RDDGSVILAIPDKSIPNGAKLA----
+> SNE_A19260 | csaA, protein CsaA | YP_004672294.1
+------------------------------------------------------------
+------------------------------------------------MT----------
+--------------------------------LQS-EISFEE-FTKVELRSGTIVKAEPF
+PKAHKPAYKIWVDF-GSEIGTK---QTSAQVTINYTLENLIGKRVIGCVNLGTKNIGGFT
+SEFLLVGFE---DEGGAISLATIDSDVPNGKKLH----
+> VspiD_03866 | ygjH, tRNA-binding protein YgjH | Prokka:VspiD_03866
+MLIME-------------------------------------------------------
+------------------------------------------------ME----------
+------------------------------------TIEWSD-FTKVQLRVGRVLSAQPF
+PQARKPAYILQVDF-GPELGVK---KSSAQITALYTPENLVGRLVLAVINFPKKQIGPIQ
+SECLVTGFY---NKDGHVVLCAPDQDVPLGTRLL----

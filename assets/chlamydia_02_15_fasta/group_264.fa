@@ -1,0 +1,340 @@
+> CAB386 | phosphatase
+-----------MQNTVDF---DYFGLSDIGMVRSRNEDFWQVNLSS--------------
+----------RAVAIADGMGGCSGGDVASHEAIFSLMELIDARQPYLAE---FKDDQYRE
+ALKVILSEVNDTLYEHSLMETRLRGMGTTLSFMQFFREKAWLLHVGDSRIYR-LRGDELA
+CLTEDHSLANQLKNRYGLSKQLD-KVYPYRHILTNVLGSRPY--VTPDIR-DISYEKEDL
+FVFCSDGLTNMVSDADIRDILLQ-TTTLEE---GGNILISLANSRGGSDNVTIVLVRIQ-
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> Cav1_00209 | stp, Serine/threonine phosphatase stp | Prokka:Cav1_00209
+-----------MHKFVNF---DYFGLSDIGMVRSRNEDYWEVNLTS--------------
+----------RVVAIADGMGGHLGGDVASHEAILNLMELIDAQQSQLIR---FQDDQYRE
+TVRGILSKINELIYDHSLMESHLQGMGTTLSYMQFLRNKAWVVHVGDSRIYR-LRGEEFY
+CLTEDHSLANRLKNRYSLSQQLD-KVYPYRHILTNVLGSRPH--VVPDIQ-DISYEENDL
+FLFCSDGLTNMVSDRDVRDILLG-SSSLEE---SGNLLISLANSRGGVDNVTVVLVRIQ-
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> CCA00399 | serine/threonine protein phosphatase
+-----------MQSTVDF---DYFGLSDIGMVRSKNEDFWQVNLSS--------------
+----------RAVAIADGMGGCLGGDVASHEAIFSLMELIDARQSQLEE---FQDDQYRE
+MLTIILSEVNGLIYEHGLMESRLQGMGTTLSFMQFLRDKAWLLHVGDSRIYR-LRGEELS
+CLTEDHSLANQLKNRYGLSKQSD-KVYPYRHILTNVLGSRPH--VTPDIR-DISYEKEDL
+FVFCSDGLTNMVSDVDIRDTLLQ-TATLEE---SGNLLISLANSRGGSDNVTVVLVRIQ-
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> CF0608 | pp2C, PP2C-like serine/threonine phosphatase | YP_515525.1
+-----------MQNTVDF---DYFGLSDIGMVRSRNEDFWQVNLYS--------------
+----------KAVAIADGMGGCSGGDVASHEAIFSLMELIDARQSQLAE---FKDDRYRE
+ALKVILSEVNGLIYEHGLMDSHLQGMGTTLSFMQFFQEKAWVLHVGDSRIYR-LRGEKLS
+CLTEDHSLANQLKNRYGLSKQSD-KMYPYRHILTNVLGSRPQ--VTPDIR-DISYEKEDL
+FVFCSDGLTNMVSDADMRDILLQ-TTTLEE---SGNILISLANSRGGSDNVTVVLVRIQ-
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> cgal_00590 | stp, Serine/threonine phosphatase stp | Prokka:cgal_00590
+-----------MHKSVNF---DYFGLSDIGMVRSRNEDFWQVNLTS--------------
+----------QVVAIADGMGGHLGGDVASHEAIINLMEMIDAQQPQLVR---FQDDQYRK
+TVRDILSKVNELIYDHSLMESHLRGMGTTLSCMQFLASKAWVFHVGDSRIYR-LREEEFC
+CLTEDHSLANRLKHRYGLSQQLD-KLYPYRHILTNVLGSRPH--VVPDIR-DITYEEKDL
+FLFCSDGLTNMVSDRDMRDILLS-SSSLEE---SGNLLISLANSRGGVDNVTIVLVRIQ-
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> Cib1_00298 | stp, Serine/threonine phosphatase stp | Prokka:Cib1_00298
+-----------MQKTVEL---EYFGLSDIGMVRTRNEDFWQVNLDS--------------
+----------RVVAIADGMGGRLGGEVASYEAVVRLIEMINAYHENLED---LEDEKYKE
+ALQMILSKVNGLIYEHSLVEAHLRGMGTTLSFMHFLQNKAWLFHIGDSRIYR-LRNGVLS
+CLTEDHSLENRLKNRYKLPKQSD-KMYSYRHILTNVLGSRPY--IVPDIR-EITYEKEDL
+YVLCSDGLTNMVSDADIREILTQ-PSTLEE---SSNILISLANSRGGSDNVTVVLVRVQ-
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> TC0530 | serine/threonine protein phosphatase
+-----------MMIVAEF---EYFGLSDVGLVRHNNEDFWQVNCAS--------------
+----------QIIAIADGMGGHLAGDVASYEAVCNLMELVDLHKVDLAR---LEDEQYKE
+SIKTILSEVNLSIYRQGLSNEQFKGMGTTLSCMQFRRGKAWLFHVGDCRVYR-LRNKMLE
+RLTEDHSLANHLASRYGLSKQNV-KRYPGQHVLTNVLGRRPH--VSPDIR-EMSYEKEDL
+FVFCSDGLTSMVSDHDMLEILTQ-STTLEE---GGNILISLANSRGGRDNATVVLVRMR-
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> G5S_0742 | PP2C phosphatase family
+-------------------------MSDIGKVRARNEDFWKVDISS--------------
+----------QLVAIADGLGGCLGGDIASQEAVLHLIELMSQKYAELMA---CEDEWYKE
+SVQGILSKINRIIYEHGLVETHLQGMGTTLSFMQFRKNKAWICHIGDSRIYR-LRGEELC
+CLTEDHSLANQLKHRYKLPKQSK-KVYPYRHILTNALGSRPY--VVPDIR-DIPCEQEDL
+FCLCSDGLTNVVSDRDIRTILTQ-YQTLEE---CGNTLISLANSRGGSDNITVVLVRIQ-
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> CP0358 | serine/threonine protein phosphatase
+---------------MDF---DYFGLSDIGRVRARNEDFWQVNLMS--------------
+----------QVVAIADGVGGRLGGDIASQEAVTSLMELIDEQQSKLMG---YEDDQYKE
+TLKKILLEVNGVVYEHGQMEEHLQGMGTTLSFIQFRKDRAWLFHVGDSRIYR-IREGELR
+RLTEDHSLENQLKNRYGLPKQSD-KVYSYRHILTNVLGSRPY--VMPDIR-NLPCEKEDL
+YCLCSDGLTNMVPDIDIRDILNQ-PATLEE---RGNALISLANTRGGDDNATVVLVRIQ-
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> CPSIT_0433 | protein phosphatase 1
+-----------MQNTVDF---DYFGLSDIGMVRSRNEDFWQVNLSL--------------
+----------RAVAIADGMGGCSGGDVASHEAIFSLMELIDARQPYLAE---FKDDQYRE
+ALKVILSEVNGTIYEHSLMETRLRGMGTTLSFMQFFREKAWLLHVGDSRIYR-LRGDELA
+CLTEDHSLANQLKNRYGLSKQSD-KVYPYRHILTNVLGSRPY--VTPDIR-DISYEKEDL
+FVFCSDGLTNMVSDADIRDILLQ-TTTLEE---GGNILISLANSRGGSDNVTIVLVRIQ-
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> CSEC_0846 | Serine/threonine protein phosphatase
+-------------MPFKI---QVYGLSDIGLQRENNEDVWAELPEE--------------
+----------HLYVLADGMGGHQAGEVASSEAVSCFCELMRKVLAKENR--ILNLKEMRF
+AIKSGIELVNQIIYEMGRGDEILLGMGTTLCCLHFHEEGIIYAHVGDSRIYR-LRNDKLS
+QLTKDHSLLRELVDKGSISESDS-KEFAYRNIITKAVGTEPY--VTPTVQ-TTDYRNDDL
+YLMCSDGLTDLISKHEIETVLKE-NADLKN---CAEVLVQAAKDKGGFDNITVVLLKLTT
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> CspR_01700 | stp, Serine/threonine phosphatase stp | Prokka:CspR_01700
+-------MVIRIKMPYSI---ISYGLSDIGLVRQKNEDYWAEIQPL--------------
+----------HFYILADGMGGHLGGEVAAKEAVKTVVGFIQKVFA--KK--DFSVEEAQG
+IIHYAFEYANKVVYEKGCENYSLKGMGTTLCCAFFYKKSVIIASVGDSRIYR-LRDNQFE
+QLTKDHSLLREMLDKGQLDEDQA-TEFLYKNIITKAIGTEVA--IEPFLY-SEECQVGDI
+LLLCSDGLTDMLSNEEIQKILQ--QLKPEL---AAKKLIALAKKRGGYDNITVIVLQVQE
+------------------------------------------------------------
+------SL----------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> CsuM_00275 | stp, Serine/threonine phosphatase stp | Prokka:CsuM_00275
+------------MTVAEF---EYFGLSDIGLVRNNNEDFWQVNRDS--------------
+----------QIIAIADGMGGRRAGEVASYEAVCNLMELVDLRKMDLAR---FEDEQYKE
+SIKTILSEVNLSIYRQGLLNEQFKGMGTTLSGMQFRRGKAWLFHVGDCRVYR-LRNKILE
+RLTEDHSLANHLAARYGLPKQSM-NRYPGRHVLTNVLGSRPH--VSPDIR-EIFYEKEDL
+FVFCSDGLTSMVSDHDMLEVLTQ-TTTLEE---GGNILISLANSRGGKDNATVVLVRMR-
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> CT259 | PP2C phosphatase
+------------MIVADF---EYFGLSDVGLVRHNNEDFWQVNYDS--------------
+----------QLIAIADGMGGHRAGEVASYEAVGNLMQLVDLHKVDLER---FGDEQYKE
+SIKTIVSEINLLIYRQGLSNEQFKGMGTTLSCMQFRRGKAWLFHVGDCRVYR-LRNKMLE
+RLTEDHSLANHLASRYGLSKQSV-KRYPGRNVLTNVLGSRPH--VSLDIR-EMSYEKEDL
+FVFCSDGLTSAVSDHDMLDILTQ-TTTLEE---GGNILISLANSRGGRDNATVILVRMR-
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> ElaC_02177 | Putative protein phosphatase 2C-type
+-------MVLQL-MSYKI---SASGLSDVGLVRENNEDIWAELPEE--------------
+----------KFYVLADGMGGHQAGEIASQEAVFNFLEIIRKVLTSSSR--KLSLKEMKD
+AIKESIEEVNKTIYEMGRSDQQLGGMGTTFCCVHFHPEAVIYAHVGDSRIYH-FGKEGLQ
+QLTKDHSLMSELVELGYLSEPEA-KEFLYKNILTRAIGTESS--IVPAVG-SREVQADDI
+FIMCSDGLSDLVSIQEIEAIIRE-SPTIDD---CAQALVSEAKRKGGYDNITVVLLKVLD
+DDSTKR------------------------------------------------------
+------NLSR--------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> Knic_00022 | Putative protein phosphatase 2C-type
+-------MALQV-MLYKI---SVYGISDVGLVRQNNEDFWNHLLED--------------
+----------QFFVLADGMGGHQAGEVASHEAVNQLCMRFKEKISLLNK----SLPVCTQ
+HIIETIQEVNYAIYRMGRENDKLKGMGTTLCCVFLHGDGIVFGHVGDSRIYR-FRNNHLE
+QITQDHSLLRELIDLGQLNEQQA-NDFAYKNIITKAIGTEPF--VEPTVS-SDSIHAGDI
+IVMCTDGLSDLLTRKEMQRIIA--ENPEED---IAKKLVKAAKCKGGYDNITVVIIKIQD
+KY-EPT------------------------------------------------------
+------DLS---------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> LarH_01428 | stp, Serine/threonine phosphatase stp | Prokka:LarH_01428
+MFK----AFKKATPSSAIGPDQVAGGTHVGLIREHNEDSYLYVTLP--------------
+------GDKITLVVVTDGMGGHEGGEFASYFATEALGRIWGQSAHVTTA--K--LRESEQ
+ILVETIKMCNDKIFAINEKLNVSRAMGTTITAGLFVPGKLIVAQVGDSRAYM-QRGRNLV
+QITEDQTWVAKMVKLGNLKAEEA-ENHPLSHLLSNCMGAGSA--LDVQVN-ICRRRAGDR
+YLFCTDGLYGSLTHQVMTDLMAD-LRNPQK---ILTELINRSLDAGGKDNITGIVI----
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+----FDD-------------------------------------------------
+> NeoE_00859 | stp, Serine/threonine phosphatase stp | Prokka:NeoE_00859
+-------MFMNL-KYYKV---SVYGISDKGLVRSNNEDFWTHVHEL--------------
+----------DFVVLTDGMGGHRAGEVAAREAAKALCEHLQQTLAIAGP--SLSIDEAHG
+LIQLSIEHANHTVYELSKAEKEWRGMGTTLCCLLCHPQGIIYAHVGDSRIYR-LHNARLR
+QLTKDHSLLRELVDLGQVNERSK-DKFIYKNIITKAVGTEKS--VEPSVH-ISDVAKNDI
+YLMCSDGLTDMLSTKEIESVLNS-IQNIEA---AAHILVAKANAKGGHDNITLVIIKIDE
+TR-E--------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> NeoS_00697 | stp, Serine/threonine phosphatase stp | Prokka:NeoS_00697
+---------MNL-KYYKV---SVYGISDKGLVRSNNEDFWTHVHEL--------------
+----------DFVVLTDGMGGHRAGEVAAREAAKALCEHLQQTLAIAGP--SLSIDEAHG
+LIQLSIEHANHTVYELSKAEKEWRGMGTTLCCLLCHPQGIIYAHVGDSRIYR-LHNARLR
+QLTKDHSLLRELVDLGQVNERSK-DKFIYKNIITKAVGTEKS--VEPSVH-ISDVAKNDI
+YLMCSDGLTDMLSTKEIESVLNS-IQNIEV---AAHILVAKANEKGGHDNITLVIVKIDE
+TR-E--------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> NeoT_01288 | stp, Serine/threonine phosphatase stp | Prokka:NeoT_01288
+-------MFMNL-KYYKV---SVYGISDKGLVRSNNEDFWTHVHEL--------------
+----------DFVVLTDGMGGHRAGEVAAREAAKALCEHLQQTLAIAGP--SLSIDEAHG
+LIQLSIEHANHTVYELSKAEKEWRGMGTTLCCLLCHPQGIIYAHVGDSRIYR-LHNARLR
+QLTKDHSLLRELVDLGQVNERSK-DKFIYKNIITKAVGTEKS--VEPSVH-ISDVAKNDI
+YLMCSDGLTDMLSTKEIESVLNS-VQNIEV---AARILVAKANEKGGHDNITLVIVKIDE
+TR-E--------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> NHA_2221 | hypothetical protein
+-------MAMK--TTYQV---FAYGITDIGLVRQNNEDCWEQVPEL--------------
+----------KFYVLADGMGGHRAGEVASREAVKALCEHFRQTIAIAGP--NLSIDEAHG
+LVQLSIEHANQAVYDLSKTDPELQGMGTTICCIYCHSKGIIYAHVGDSRIYR-LHNHKLE
+QLTKDHSLLRELVDMGQIDEYTA-EDFLYKNIITKAVGTEKS--IDPSVH-ICDIKNHDV
+FFMCSDGLSDMLTLKEMEKIILE-NQNIES---AAKILVDQAKAKGGLDNITVVIIKINE
+LN-EK-------------------------------------------------------
+------SLSR--------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> PacO_01302 | stp, Serine/threonine phosphatase stp | Prokka:PacO_01302
+-------MVLPL-MSYKV---ITFGLSDVGLVRQNNEDVWDQVPTI--------------
+----------RFFVLADGMGGHQAGEVAAKETVHHLCKLAQKKFNALLK--P-SLKESYQ
+TLKHAIVQVNKHIYKMSRESSDLKGMGTTLCCLYFHTEGVIYGHVGDSRIYR-LRDKKLE
+QLTKDHSLLCEMMDLGQIHEQQM-PNFLYKNIITKAIGTELI--VDPSIA-ITDFMYGDI
+FMMCTDGLSDLLSQKEMENILNH-ASSPQE---AVEKLVKAAKNKGGYDNVTVVMLHVIK
+EN-ESE------------------------------------------------------
+------NLSR--------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> PUV_18970 | prpC-A, protein phosphatase prpC | YP_004652701.1
+-------------MSYKV---ITFGLSDVGLVRQNNEDVWDQVPTI--------------
+----------RFFVLADGMGGHQAGEVAAKETVHHLCKLAQKKFNALLK--P-SLKESYQ
+TLKHAIVQVNKHIYKMSRESSDLKGMGTTLCCLYFHTEGVIYGHVGDSRIYR-LRDKKLE
+QLTKDHSLLCEMMDLGQIHEQQM-PNFLYKNIITKAIGTELI--VDPSIA-ITDFMYGDI
+FMMCTDGLSDLLSQKEMENILNH-ASSPQE---AVEKLVKAAKNKGGYDNVTVVMLHVIK
+EN-ESE------------------------------------------------------
+------NLSR--------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> PaHS_01605 | Putative protein phosphatase 2C-type
+-------------MPLKV---SSTGISDVGLVRQNNEDVWAEIPDL--------------
+----------CFYVLADGMGGHQAGEIAAKEAVNSLCHLIKKAFK---E--PKTLEEYVE
+IIKVAFEQVNSYVYKLGRSSSDYKGMGTTLCALLLCENGVIFAHVGDSRIYR-FRKEKLE
+QVTKDHSLICELVELGQIDEVQA-SEFVYKNIITRAIGTEPY--VEPSIQ-SSNLEEGDI
+YLLCSDGLSDLLSLKEIEHIIKN-ESLLCQ---TAKALVDRSKAKGGHDNITVVMVKVAK
+PNEEAR------------------------------------------------------
+------NLS---------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> PamE_00773 | Putative protein phosphatase 2C-type
+-------MALQA-MFYKT---LVYGISDVGLVRQNNEDSWGQILED--------------
+----------HFFVLADGMGGHRAGEVASKEAVSQLCAKFKEKFSRCSK----DIKSSFE
+MIKESIQEVNYNIYKMGREQEILRGMGTTLCCVCLHSEGVIFGHVGDSRIYR-LRDNNLK
+QITQDHSLLRELIELGQLSEHQA-CEFAYKNIITKAIGTGPY--VEPSLK-IDSIEVGDV
+ILMCTDGLSDLLSIQDIQQILS--DTPDDE---VTKKLVKVAKSRGGHDNITVVVIKVQG
+KY-ESA------------------------------------------------------
+------SLS---------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> pc0720 | serine/threonine phosphoprotein phosphatase
+-------MALQA-MFYKT---LVYGISDVGLVRQNNEDSWGQILED--------------
+----------HFFVLADGMGGHRAGEVASKEAVSQLCAKFKEKFSRCSK----DIKSSFE
+MIKESIQEVNYNIYKMGREQEILRGMGTTLCCVCLHSEGVIFGHVGDSRIYR-LRDNNLK
+QITQDHSLLRELIELGQLSEHQA-CEFAYKNIITKAIGTGPF--VEPSLK-IDSIEVGDV
+ILMCTDGLSDLLSIQDIQQILS--DTPDDE---VTKKLVKVAKSRGGHDNITVVVIKVQG
+KY-ESA------------------------------------------------------
+------SLS---------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> PnaD_00774 | Putative protein phosphatase 2C-type
+-------MALQV-MLYKI---SVYGISDVGLVRQNNEDFWNHLLED--------------
+----------QFFVLADGMGGHQAGEVASHEAVNQLCMRFKEKISLLNK----SLPVCTQ
+HIIETIQEVNYAIYRMGRENDKLKGMGTTLCCVFLHGDGIVFGHVGDSRIYR-FRNNHLE
+QITQDHSLLRELIDLGQLNEQQA-NDFAYKNIITKAIGTEPF--VEPTVS-SDSIHAGDI
+IVMCTDGLSDLLTRKEMQRIIA--ENPEED---IAKKLVKAAKCKGGYDNITVVIIKIQD
+KY-EPT------------------------------------------------------
+------DLS---------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> PR18_00024 | Putative protein phosphatase 2C-type
+-------MALQG-MFYKT---LVYGISDVGLVRQNNEDSWGQILED--------------
+----------HFFVLADGMGGHRAGEVASKEAVSQLCAKFKEKFSHCSK----DIKSSFE
+MIKESIQEVNYNIYKMGREQEILRGMGTTLCCVCLHSEGVIFGHVGDSRIYR-LRDNNLK
+QITQDHSLLRELIELGQLSEHQA-CEFAYKNIITKAIGTGPY--VEPSLK-IDSIEVGDV
+ILMCTDGLSDLLSIQDIQQILS--DTPDDE---VTKKLVKVAKSRGGHDNITVVVIKVQG
+KY-ESA------------------------------------------------------
+------SLS---------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> Psta_1567 | protein serine/threonine phosphatase
+-----------MTSSTGL---QVAATTDVGMRRTTNQDSHSLICAD--------------
+TPNLW-LTRGHFFMVADGMGAHAAGELASKLAADGVPYLYHKYVE----------HSAPE
+ALERAIRETNAEVNRRGMANPDFHNMGTTASCLVILPQGAILAHIGDSRVYR-LRGGQVQ
+QLTFDHSLQWELRASGALPEGSDLSAAVPKNVITRSLGPNPT--VQVDLEGPHPVAVGDV
+YMLCSDGLTGRVEDHELGMILG--CLPAEE---ASQALVDLANLRGGPDNITVLVARVES
+PQVATG-G-TPAGALTIGGKNEPKH----VSPILWIVAGVAALTAAL-------TAVLSL
+YYVAIGSLAIGAVALGIALINR--------------------------YSGVNRG----T
+AL--------------TGGRMLGRGPYTSTPAVPNREFFDKLAATVEELREAAQESNSQV
+NWARFDEFVRRASAAAKSNDIAEGICQYCRCISTTLAELRAQNNNKKASDSAIQY-
+> RB3245 | protein phosphatase 1
+-----------MNTESSI---RAAGRTDVGQRRKDNQDQFLIAELRKSMQIHSTSLALDE
+ECMLFGGRSGELLVVADGMGGHAAGRRASNLAVDHLISQLLNNIHWFLHLDEDHDEAFIE
+SLKALLQQTHTKLLAEAQDATEHRGMGTTLTLAYLVWPRMYVVHAGDSRCYL-VRDGKCE
+QLTTDHTLAKQLVDAGGMKPEDE-ASSRWSNVLWNVLGGHGHNELIAEVR-RVELQKNDT
+VVLCSDGLTRYIDDATLLSIVQQYGDDVDE---MADHLIALANGSGGIDNITVVVSRPDG
+NGRSVRDGDLPRSVPLVQLDDESD------------------------------------
+---LQPDLSESM------------------------------------------------
+------------------------------------------------------------
+----------------------------------SLEELQSFANEDTLPDERSKSE
+> RB8362 | Pph1, probable protein phosphatase 1 | CAD78601.1
+---------MSGSWRPGV---KFAEQTHVGMRRANNQDSSAVLIAESAERL---------
+------NQRGHLFVVADGMGAHAAGELASQIASERISMHYYQSRE----------EAPEH
+AISEAVHLANAAIYERGQSNPEFLNMGTTASSLVLVNGAAYVAHVGDSRVYR-LRQGVLE
+QLTFDHSLVWEMQASGKVHSDSVFSKSIPKNVITRSLGPSPE--VLVDLEGPFDLEVGDR
+FMVCSDGLTGQIEDDELAVLLD--SLDVDK---AARVMIDLANLRGGPDNITLIVVEVDD
+EHLTQNDG-APRKARSLGADEVSSRALIGTTAFCWTGAVGFGLAAALVSPRFVGSAIVAF
+---ILGSISAAVWASGVFKPNERRRPLKTRRVRDRNSAGASSNPGMPGQSGAGQGGSSDP
+ALAGDAWDSGESLDIGSGETALGTGPYRRFKANSHEAFLLRMDDVITQLRQTSEERNWML
+DWQNVDQLLQQARQATKEQAWGTAVSSYCDATLAAMEQLRK-HQDDSASDTVVDL-
+> SNE_A14430 | putative protein phosphatase 2C-type
+---------MNH-FRFKL---SSYGLSDIGLVRSNNEDVWSYLDES--------------
+----------GFFALADGMGGHNAGEVAAKEAVRFVCSSVEELFVSSEK--EWNIFDLCS
+FTKLCIENANSWVHHLGKKRKEYSGMGTTLCTLLFHEHSLIYGHVGDSRIYR-FRQGQLD
+QLTIDHSLKNELISQGKFYESPN-KPFPYKNVLTRAIGTHGD--VEAEIH-IAPVNVDDL
+YLMCSDGLTDCVTDQEISSILRQ-SKDPKD---ITLELIELAKKNGGNDNITIVSVHVNE
+E-----------------------------------------------------------
+------DLSRS-------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> VspiD_04246 | stp, Serine/threonine phosphatase stp | Prokka:VspiD_04246
+-------------------------MTHRGRVRVNNEDTFLALTFDAHEVRYLGKIG---
+ESTL--AESDFIFAVSDGMGGAKSGEFASRIAVEKITRLLPRSFKFSAQ--R-LVPGFAD
+ILTLLFDNIHTELTRMGRVYDECAGMGATLSLGWFTPGWMYFGHLGDSRIYYFPKDGEMT
+QVSHDHSHVGWLRRTGKINEREA-RTHPRRNVLQQALGAGHQ-LLDPQVG-AVSCQAGDR
+FLFCTDGLMDGLWDRAIKDLVMT-PSPAQRELPVAQLLVENALAESGKDNITALMVEML-
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------
+> wcw_0947 | serine/threonine PP2C protein phosphatase
+MIKLPETMTAKT-KPFTF---RSSGLTDTGQVRENNEDAWKVIPES--------------
+----------NVIVLADGMGGHTAGEIAAQEAVDHYASFIEAKSG------EITPRNAKS
+LLAEVIKEVNSSVFRLAKADRELRGMGTTICCGIFVEDFFFFAHVGDSRIYR-FRDQKIK
+QLTADHSLVQELIELGELNKRQA-QEFNQRNIITKAIGTEPQ--VEPSID-SCDIRPGDI
+VMMCSDGLSDLLSNKEIEKILSL-SADINK---KTELFVQSANRRGGMDNITVILLEIS-
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------------------

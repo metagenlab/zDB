@@ -1,0 +1,90 @@
+> Minf_0142 | smtA, SAM-dependent methyltransferase | ACD82202.1
+M-----------------------IPSVYPIKF-----FFWVLF---------------L
+IPCLGLS-------LALGQEMDKESIQ------QKAKE----------------GYHHSF
+H----DVEHYAQIFESRQRDKWQKPDRVVEALDIKPGYSIADLGAGTGYFTRRFSKEVGE
+K-----------------------------GTVYALDSEPAMIKYLKKEVKEKKLKNVVV
+KQVQPGNPSLESQSVNIIFLCEVYHHIDNRIAYLKKLSSSLKKGGKIVLIDFYPHAPYGP
+P------RKHRLSEETAIAEFKLAG--YKLLKKHGF-LPYQYFLEFVPK-----------
+-----------NEP----------------------------------------------
+------------------------------------------------------------
+------------------------------
+> Minf_1922 | smtA, SAM-dependent methyltransferase | ACD83976.1
+M-------------------------KIPPFMK-KAKAFFSRGV---------------L
+CLCFSLF-------F-RGHAATADSFS------QS----------------------YRF
+K----DPYLWSREFDSASRDKWQKPQAVLHALRLKPGEKIVDIGAGTGYFAVKFARAVGP
+E-----------------------------GEVLALDREPAMVDYLRKRAQKEGLNNLKV
+RHVPTNDPKLKKQSADLIFFCNSYHHIHNP-GYLKKLANALKENGRICVIDIKEGSPRLF
+PSTAKFKKHLKLSAQSVVEDFTKAG--FYLDKEFFF-LPYQYFLEF--------------
+------------KPGP--------------------------------------------
+--------------------------------------------------------IPSR
+QL----------------------------
+> LarH_02102 | ubiE_1, Ubiquinone/menaquinone biosynthesis C-methyltransferase UbiE | Prokka:LarH_02102
+MHK--------------------------------------------------------L
+FLVLT---------F-FTFAVFAENKI------NTSKPKV------------YMGRQIAW
+TMHC-NAAHWLTR---TEREKEENTSEMLRELKLKPGMVVADVGCGNGYHALTMAKTVGE
+K-----------------------------GKILCVDVQLKMLEFLQERAKEAGIKNCVS
+ILGEFTDPKLPKNSVDLILLVDAYHEFTEPESMLKKMRESLKPEGVLVLVEFRKEDKKVP
+I-----KEDHKMSKVQMDKELTANG--FKVVRSYDK-LPWQHMVFYGKDK----------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------
+> Psta_0639 | Methyltransferase type 11
+MHRA--EPFENIIDGP-------ALLRLRSCKV-LGAVAMSLRICHPHEAGNFVGRALLL
+ALLLA---------L-STAAIAQDSTP------LDDLPKAPVKRTGPPALVEYKGRRIAQ
+TMHY-LGAEWLTR---DNREQEERCSLMLTSLGIKQGMTICDMGCGNGFYTLKLAKMVGP
+E-----------------------------GHLYAVDIQPEMLKFLNERADAAEISNLSP
+ILGTFTDPRLPKGKLDLVLMVDVYHEFSHPEQMLAAIRNSLSEKGLAVLVEFRSEDPKVP
+I-----KAEHKMSKEQILKELPANG--FKLVKEFDG-LPWQHMMFFGRDNSWKAP-----
+-----------TAPAAE-------------------------------------------
+------------------------------------------------------------
+------------------------------
+> Psta_3458 | Methyltransferase type 11
+MDYTLIEPTDSRLHEPRLPL---PFAKGSPM---WSQPFFCRAL---------------L
+VLLASLP-------L---AAFAQE---------KSVKP----------------GINDSF
+QKP--DVEAFVERFEVESREVFLHREAILAACRIEPGQTVADIGAGTGLYTRLFSQAVGP
+E-----------------------------GRVIAVDIAQEFLDHIQASSRAADQKNVET
+IRCKPDSTELAPSSIDVAFICDTYHHFEFPGKTMSSLHTALKPGGRLILVDFRRIEGEST
+PWT---LNHVRAGQEVFEAEIKAAG--FRKIGERKGLLKENYFVEFQKLETEPSELKMFL
+IEGTGGVAPLTGAPAAPRAGARVVFDVTAAAKPTEINPGLERAARLLNLYGAAGLKSSDI
+HIAIVLHGDAAAAALTDEAYAKQQSVEKNPNAPLIATLRAAGVDVTICGQTLARKNIPHR
+DIAEGVVIVTSALTSLINHQSRGHSLLLVP
+> Psta_4430 | Methyltransferase type 11
+M-------------GPKVAMRNC-------------------AI---------------L
+SLIVAVFA-----HM-AGCGPQKENAVTEITNNKQASQHE------PPK---HGGHKHAF
+T----DPADRAKKWNDPERDKWQRPDEIVAALALTPGATVADIGAGTGYMVAHLSKAAGK
+D-----------------------------GTVIAIDASTQMIEYLTKRSADLGPAKIVP
+RMVRPDDPEIQPDSVDGVLTLDTWHHVNSQEAYAKKVYEGLKQGGRFVVVEYEVESEIGP
+P------KEMRLESAQVTKQLESAG--FRVEIVRES-MPRHYMVVGHKD-----------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------
+> RB2908 | conserved hypothetical protein
+MKS---------------------NAKLLPITLRKSTMRFS--------------TWLAL
+WMLIGSATIHTGNAF-ATDAVATEAKTDVARQNEKSRPKEEARRT-------YMGRIVAQ
+PMSH-RGAAWLVR---PERDDEEKAGESFDRLGLKPGMTVVDLGCGNGYWTIPMARAVAI
+KAPSDPSGADASEADSDDAKVADDESKSLDGQVLAVDIQREMLQMLQRNAARAKLDNIQP
+ILGAIDDPKLPAGKVDLVLLVDVYHEFSHPESMLWAIRQSLKSDGVIALLEYRAEDPAVP
+I-----KPLHKMSKSQIMQEYKASD--LKLVREYNG-LPWQHLMFFARDDSPLPE-----
+-----------IEPEPFT------------------------------------------
+----------------------QE------------------------------------
+------------------------------
+> RB5029 | conserved hypothetical protein-putative methyltransferase
+M----------------------------------TLQRFCLAV---------------L
+AVICSVH---------SNDSNAQETVS------DSINP----------------GINDAF
+LDPELDVDAWLQRFEVESREVYAAKDQIVAAMKLKPGDQVADVGTGTGLFLEPFSDAVGK
+D-----------------------------GWIFAIDIAPKFIERVSRISELKRLGNVTP
+VLGLPDDICLPPNSITAAFVCDVYHHFEYPANSLKSIFDAMKPGGQLVVIDFERIEGKSR
+EWT---MGHVRAGKETFRKEIEAAGFVFREEVKLDG-FDENYFLRF--------------
+-----------GRP----------------------------------------------
+------------------------------------------------------------
+------------------------------
+> VspiD_03071 | rebM_2, Demethylrebeccamycin-D-glucose O-methyltransferase | Prokka:VspiD_03071
+MLR---------------------LMRLYPLTL-ASTALLS------------------L
+TLILG----------------RDDARA------QNVDPAE---AFAPPAVTEYLGRTVAQ
+TMHW-SGSGWLIR---HKREREEAASLMREKLELKPGMVVCDLGCGNGYHTFPMGRAVAP
+G-----------------------------GKVYGVEIQEPYLRMLEEGAVKAGVTNFVP
+VLGKLYDPGLPDATFDLMLLVDVYHEFSHPEQMLSAMHKALKPDGVVVLVEFRAEDDTVP
+I-----KPEHKMTKAQIDKEMTANG--YKLVKSFDG-LPWQHMLWYGKGESSGNP-----
+-----------NKS----------------------------------------------
+------------------------------------------------------------
+------------------------------

@@ -1,0 +1,2 @@
+> SNE_A20100 | sctC-B, type III secretion outer membrane ring component | YP_004672378.1
+MGISAHLFFRNKKRDLKAANFFPSKKRMHVKKPLKQY

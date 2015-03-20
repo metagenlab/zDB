@@ -1,0 +1,2 @@
+> RB3659 | hypothetical protein-signal peptide and transmembrane prediction
+MTVFFFHISLLCQFALVADEPAELCPTKRQRSPKNPADALKLSGQNAPNGCYRNRFRRR

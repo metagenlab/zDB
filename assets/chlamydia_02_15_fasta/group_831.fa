@@ -1,0 +1,160 @@
+> CSEC_0681 | hldC, D-beta-D-heptose 1-phosphate adenosyltransferase
+MRLSESKAT--------RAWKEDCRFKWIPPKELESKVRELRKNGKTIATLNGSFDLLHA
+GHLHIIYEASQLADVLIVALNSDSSIHLYKGKHLPIVPLVYRLEMLSAIGFVSYVTWFDE
+LDPCSLLDEIKPDVHVNGIEYGENCI---EAEVVKRNGGILHLTERLPGLATSDLIKKIK
+KNQ---------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> CspR_01646 | hldE_2, Bifunctional protein HldE | Prokka:CspR_01646
+-----------------MPWTTAYQAKLVKPEQLPEKVEEIKQSGKTIATLNGSFDLMHA
+GHLHIIYEASKTADVLMVALNSDRSIQQYKSHSRPIIPLEYRLQMMAALEFVSYVTWFDE
+TNPIELLEIIRPNVHVNGSEYGNNCI---ESEVVKKHGGKLYIVEKIDGLSTSKVLQKIH
+HLGIE-------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> ElaC_00327 | hldE_2, Bifunctional protein HldE | Prokka:ElaC_00327
+MNLRDPRVYIP--EENLPTWEQASQGIIIPREKVEEVALNLRRSGKTIVTLNGSFDLMHA
+GHLYMIHRASLLADCLILALNTDRSIQNYKSKDRPIVPLKWRLQMAAALRFVSYVTSFDE
+PDPRAILELIKPDIHVNGAEWGQNCI---EREVVERNGGKLHIVERIEGLSTTELIAKIQ
+TLTS--------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> Minf_0794 | rfaE, ADP-heptose synthase, bifunctional sugar kinase/adenylyltransferase | ACD82849.1
+MNDLSML---PPAGQNF--W-------FIPMEQVALFRRFLK--GKRVVVTNGCFDLFHV
+GHLTLLNEAKKLGDFLWVGINGDQSVRELKGDNRPFFPAWERAAIVGSLKGIDAVTIFTE
+KRATRFLSLVKPAVYVKGADYTSQSLDQEEKEVLSSCQALIKFIPLYPDRSTSSTVERIR
+KGS---------------------------------------------------------
+------------------------------------------------------------
+--------LMAE------------------------------------------------
+---QNK---------------------------------------
+> Knic_00551 | hldE_2, Bifunctional protein HldE | Prokka:Knic_00551
+MHETLEF----------LPWSAAYRQKVIDPAQLSERVQTLRQQGKTIVTLNGSFDLLHA
+GHLHIIHEASQLSDVLIVALNSDSSIKQYKSPKRPLIPLEYRMQMMAALGFVDFVTWFEE
+TDPIRLLSVIKPDVHVNGSEYGQNCI---EAETIQQGGGKIHIVKLIPGLSTSSIIKKIQ
+DEGA--------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> LarH_01825 | hldE_1, Bifunctional protein HldE | Prokka:LarH_01825
+MANTD---------------------KIISLSELTQWKAEFT---GKIVATNGVFDLLHP
+GHMEYLEEASELGDALVIALNSDASVKALKDPRRPIINEDDRAYMLASLDCVSKVFIFED
+LEALNTLLEIQPHIYVKGGDYTIDTINQNERRALEARDIEIQILKFKAGFSTTLMIDKII
+KAY---------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------------------------------G
+> NeoE_01702 | hldE_2, Bifunctional protein HldE | Prokka:NeoE_01702
+MSKT---------------WSIECLKKYITPLNLAQKIKELREQGQKIATVNGSFDLLHA
+GHLQILFEASQQADILIVALNSDQSIKQYKSPWRPIIPLEFRLQMMSALSFIDYVTWFEE
+TNPIELLKIIKPDVHVNGSEYGENCL---EAETVRASGGRLHLVNLIPGLSTSQILKKIS
+SLPS--------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> NeoS_01344 | hldE_1, Bifunctional protein HldE | Prokka:NeoS_01344
+MSKT---------------WSIECLKKYITPLNLAQKIEELREQGQKIATVNGSFDLLHA
+GHLQILFEASQQADILIVALNSDQSIKQYKSPWRPIIPLEFRLQMMSALSFIDYVTWFEE
+TNPIELLKIIKPDVHVNGSEYGENCL---EAETVRASGGRLHLVNLIPGLSTSQILKKIS
+SLPS--------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> NeoT_00464 | hldE_1, Bifunctional protein HldE | Prokka:NeoT_00464
+MSKT---------------WSIECLKKYITPLNLAQKIEELREQGQKIATVNGSFDLLHA
+GHLQILFEASQQADILIVALNSDQSIKQYKSPWRPIIPLEFRLQMMSALSFIDYVTWFEE
+TNPIELLKIIKPDVHVNGSEYGENCL---EAETVRASGGRLHLVNLIPGLSTSQILKKIS
+SLPS--------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> NHA_2284 | hldC, heptose adenosyltransferase
+MDKH---------------WSEEWKKKYIDPLDLPSKIHEIRLQNKKIATLNGSFDLMHA
+GHLHIIYEASQQADILIVALNSDQSIQKYKSPTRPIISLPYRLQMMSALSFVNYVTYFDE
+TTPLKILNEIKPDVHVNGSEYGENCL---EAETVKSHGGRLHIVPLIPGLSTSQILQKIS
+ALHSQGA-----------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> PacO_02466 | hldE_2, Bifunctional protein HldE | Prokka:PacO_02466
+MEKT---------------WKKACEKKVCPPDQIESFVAGIRQAGKTIATLNGSFDLLHA
+GHLQILFEASQVGDCLIVALNTDRSIQAYKNPLRPIISLEYRIEMMAALEFVYAVTWFDE
+TDPRSILSKIKPDVHVNGSEYGLNCI---EADIVKAHGGRIHIVDLVPGLSTSQIVQKVA
+AIH---------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> PUV_03050 | hypothetical protein
+MEKT---------------WKKACEKKVCPPDQIESFVAGIRQAGKTIATLNGSFDLLHA
+GHLQILFEASQVGDCLIVALNTDRSIQAYKNPLRPIISLEYRIEMMAALEFVYAVTWFDE
+TDPRSILSKIKPDVHVNGSEYGLNCI---EADIVKAHGGRIHIVDLVPGLSTSQIVQKVA
+AIH---------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> PaHS_00264 | hldE_1, Bifunctional protein HldE | Prokka:PaHS_00264
+MRES---------------WHQAFRRKLIEPDLIEETVLSIKKTGKRVATLNGSFDLLHA
+GHLHIIYEASKQADILIVALNSDASIKKYKSIHRPLIPLEYRLQMMTALSFVDFVTWFDE
+TDPRSLLNKIKPHVHVNGSEYGLNCL---EALTVEQHGGKVHIVSLVPGLSTTEIIKKIQ
+VTPQ--------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> PamE_00487 | hldE_1, Bifunctional protein HldE | Prokka:PamE_00487
+MSKTIEL----------VPWSIAYKQKVIVPEELNQKITSLRSNEAVIVTLNGSFDLLHA
+GHLQIIYEASQLGDVLIVALNSDESIKRYKNPNRPLISLEYRLQMMAALEFVNFVTWFEE
+MDPCHLLSKIKPNIHVNGSEYGHQCI---EAETVCQNGGKIHIVPLMPGLSTSSIIKKIQ
+GLI---------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> pc0461 | rfaE, ADP-heptose synthase | YP_007460.1
+MSKTIEL----------VPWSIAYKQKVIVPEELNQKITSLRSNEAVIVTLNGSFDLLHA
+GHLQIIYEASQLGDVLIVALNSDESIKRYKNPNRPLISLEYRLQMMAALEFVNFVTWFEE
+MDPCHLLSKIKPNIHVNGSEYGHQCI---EAETVCQNGGKIHIVPLMPGLSTSSIIKKIQ
+GLI---------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> PnaD_00330 | hldE_1, Bifunctional protein HldE | Prokka:PnaD_00330
+MHETLEF----------LPWSAAYRQKVIDPAQLSERVQTLRQQGKTIVTLNGSFDLLHA
+GHLHIIHEASQLGNVLIVALNSDSSIKQYKSPKRPLIPLEYRMQMMAALGFVDFVTWFEE
+TDPIRLLSVIKPDVHVNGSEYGQNCI---EAETIQQGGGKIHIVKLIPGLSTSSIIKKIQ
+DEGA--------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> PR18_00141 | hldE_1, Bifunctional protein HldE | Prokka:PR18_00141
+MSKTIEL----------VPWSIAYKQKVIVPEELNQKITSLRSNEAVIVTLNGSFDLLHA
+GHLQIIYEASQLGDVLIVALNSDESIKRYKNPNRPLISLEYRLQMMAALEFVNFVTWFEE
+MDPCHLLSEIKPDIHVNGSEYGHQCI---EAETVCQNGGKIHIVPLMPGLSTSSIIKKIQ
+GLI---------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> SNE_A20530 | hypothetical protein
+MMNA----------------------KQVPPEKLAETVAAIRKSGRTIATLNGSFDLLHA
+GHLKIIHEAKKQADCLIMALNTDRSIKEYKSPDRPLITLKHRLEMVAALEAVDYVTWFDE
+TDPCKLLSVIQPDVHVNGSEYGKDCI---EADTVRKYGGKIHIVSLVPGLSTSQIIDKIK
+SLT---------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------------------------------
+> VspiD_05590 | purN, Phosphoribosylglycinamide formyltransferase | Prokka:VspiD_05590
+MTDPLQD-FEP------ETW-------LCTVDQVREFRAQLEALGQKLVFTNGCFDLLHA
+GHVRYLRQARALGDALVVALNSDASVRELKGPTRPVNTEEDRAEILMALECVNAVVKFEE
+PRVTKLIEAIAPHVYAKGGDYTVETLNPEEKAALDQVGAEIKILPLVPGRSTTATLKRVK
+AGEQGQAQGAQSPAAPAGKRAGGAATQDSGPLRIGILGSGHGSNFEAIHRAVAEGHLEAD
+IRVVISDQADSRILRKAREAGLSTIHVDAGGAGWKLPASAQKEICDHLKRHDVQVVVLAG
+FMRVLKDPLLSEFADRIVNVHPSLLPKYKGKEAWVQALEEGELETGATVHLVNAEIDGGR
+ILAQGKVPIHIGDTADAVLERIHTVEHEIYPKVLADWRKLGLPTG
+> wcw_1443 | hldC, heptose adenosyltransferase | YP_003709798.1
+M----------------PLWVDDYQKKLLRPEELEDAVEGIKSRNRTIATLNGSFDLLHA
+GHLHIIYSASQTADCLIVALNTDASIQRYKSYDRPIIPLPFRLQMMAALEFVDFVTYFDE
+TDPIKILSIIKPDIHVNGAEYGENCI---EAETVKAYGGRVETVELVDGLSTSNIINKIA
+SLKTHAS----SP-----------------------------------------------
+------------------------------------------------------------
+-------------------------------------------------HL---------
+---------------------------------------------

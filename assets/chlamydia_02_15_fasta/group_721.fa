@@ -1,0 +1,132 @@
+> CspR_02186 | splicing factor, CC1-like family
+--------------------------MNA-------------------------------
+---------------PKKKIFVGNLAWKATEDSLRNLFSTVGEVESVKIVMDSYSGKSRG
+FGFVEMVTEEDAERAVRSLDKKPFLERELRVSLAEDKNDRP---R---------------
+SSSNGPRQFNGH-----------------------------------------------N
+SRPYNSRNP-TR
+> Minf_0286 | RNA-binding protein (RRM domain)
+MFFALFPVYSVSGKKQFREKSVLAVLLDADLRFELM-----------------------L
+KEMSVFM--------NRTRLYVGNLPFRISENDLREIFEQYGQVNEINLIVDKMTGQSRG
+FAFVTMESSQAAQSAINNLNGSSVSGRQIVVNEAKPREERP--HR---------------
+-----HRENSGRSRRG--------------------------------------------
+------------
+> Knic_02745 | splicing factor, CC1-like family
+------------------------------------------------------------
+----------------MKKIFVGNLSWKTSEDQLKAHFEAFGKVVSAKIVTDQMTGKSKG
+FGFVEMENATDAETAIRELNGKPLVDRNLRVSLAQERDRS--------------------
+-ERRDPRSFG----DRPSF-G--------------------------------------G
+DRRSNYRS----
+> NeoE_01420 | RNA recognition motif. (a.k.a. RRM, RBD, or RNP domain)
+------------------------------------------------------------
+----------------MKKIFVGNLSWKASEETLKPLFEAFGTVVSIKIIKDQYTGKSKG
+FGFVEMETDDEAAKCIHELNEKPFLERNLRLSPAQERQAGA-------------------
+GGGRDNRSPRGNGGDSYHR-G--------------------------------------G
+QRSNRDRSFASE
+> NeoS_02486 | RNA recognition motif. (a.k.a. RRM, RBD, or RNP domain)
+------------------------------------------------------------
+----------------MKKIFVGNLSWKASEETLKPLFEAFGTVVSIKIIKDQYTGKSKG
+FGFVEMETDDEAAKCIHELNEKPFLERNLRLSPAQERQAGA-------------------
+GGGRDNRSPRGNGGDSYHR-G--------------------------------------G
+QRSNRDRSFASE
+> NeoT_00745 | RNA recognition motif. (a.k.a. RRM, RBD, or RNP domain)
+------------------------------------------------------------
+----------------MKKIFVGNLSWKASEETLKPLFEAFGTVVSIKIIKDQYTGKSKG
+FGFVEMETDDEAAKCIHELNEKPFLERNLRLSPAQERQAGA-------------------
+GGGRDNRSPRGNGGDSYHR-G--------------------------------------G
+QRSNRDRSFASE
+> NHA_253 
+------------------------------------------------------------
+----------------MKKIFVGNLSWKASEETLKPLFEAYGTVVSIKIIRDQYTGKSKG
+FGFVEMETEDDAARCIQELNEKPFLERNMRLSPAQERQAGG-------------------
+STGGGRSSHRGNGGDSYNRGG--------------------------------------G
+QRHRGERSFASE
+> PacO_00843 | RNA recognition motif. (a.k.a. RRM, RBD, or RNP domain)
+------------------------------------------------------------
+---------------MKKKIFVGNLSWKVTDDILRSVFEKIGKVVSVKIITDQYTGKSKG
+FGFVEMESSEDADKAIRELNETAVLDRNIRVSLAQERSER--------------------
+SGNREPRESHGGGRS-----G--------------------------------------G
+FRNARTSNM---
+> PUV_14080 | hypothetical protein
+------------------------------------------------------------
+---------------MKKKIFVGNLSWKVTDDILRSVFEKIGKVVSVKIITDQYTGKSKG
+FGFVEMESSEDADKAIRELNETAVLDRNIRVSLAQERSER--------------------
+SGNREPRESHGGGRS-----G--------------------------------------G
+FRNARTSNM---
+> PaHS_00452 | RNA recognition motif. (a.k.a. RRM, RBD, or RNP domain)
+------------------------------------------------------------
+----------------MKKIFVGNLPWKATEDELKKLFEAFGVVLSVKIVLDQYTGKSKG
+FGFVEMEESDAAEAAIRELNEKPFLDRTLRVSLALDRPAR------------------RD
+GSGSGHRSHSGFS-------G--------------------------------------G
+ERSYRSRDR---
+> PamE_00931 | RNA recognition motif. (a.k.a. RRM, RBD, or RNP domain)
+------------------------------------------------------------
+----------------MKKIFVGNLSWKTSEEQLKAHFEAFGKVVSAKIVTDQMTGKSKG
+FGFVEMESANDAENAIRELNGKPLVDRSLRVSLAQERDRS--------------------
+-ERREPRSFGGGDRDRSSF-G--------------------------------------G
+DRRSNYRS----
+> pc0893 | rbp, nucleic acid-binding protein | YP_007892.1
+------------------------------------------------------------
+----------------MKKIFVGNLSWKTSEEQLKAHFEAFGKVVSAKIVTDQMTGKSKG
+FGFVEMESANDAENAIRELNGKPLVDRSLRVSLAQERDRS--------------------
+-ERREPRSFGGGDRDRSSF-G--------------------------------------G
+DRRSNYRS----
+> PnaD_02333 | splicing factor, CC1-like family
+------------------------------------------------------------
+----------------MKKIFVGNLSWKTSEDQLKAHFEAFGKVVSAKIVTDQMTGKSKG
+FGFVEMENATDAETAIRELNGKPLVDRNLRVSLAQERDRS--------------------
+-ERREPRSFG----DRPSF-G--------------------------------------G
+DRRSNYRS----
+> PR18_01891 | RNA recognition motif. (a.k.a. RRM, RBD, or RNP domain)
+------------------------------------------------------------
+----------------MKKIFVGNLSWKTSEEQLKAHFEAFGKVVSAKIVTDQMTGKSKG
+FGFVEMESANDAENAIRELNGKPLVDRSLRVSLAQERDRS--------------------
+-ERREPRSFGGGDRDRSSF-G--------------------------------------G
+DRRSNYRS----
+> Psta_1506 | RNP-1 like RNA-binding protein
+------------------------------------------------------------
+---------------MGMKLYVGNLSYDVNNQSLEELFSQFGAVRSAQVIQDRETGRSKG
+FGFVEMQDDNAARSAIQALHEKQHNGRPLTVNEARPREERP---R---------------
+GGGGGDRGGYGRR-----------------------------------------------
+------------
+> Psta_3879 | RNP-1 like RNA-binding protein
+------------------------------------------------------------
+---------------MTKRIYVGNLPWTYSSSDLEALFKPFGDVAAAEVIMDRETGRSRG
+FGFVQMANDADCEPAVNGLNGTNCNGRPLVVNEARERAPRP-------AGGGGGGGG-GR
+GGYGGGRGGYGGGGGGRDGGGYGGGGGYGGGGGGGYG----GGGGGGYGGGGGRGGRDGG
+GRY---------
+> RB10458 | grp, RNA-binding protein | CAD78892.1
+MF------------REFRGRGKKMGLTGVSGWFTLRSQLSTTFGLVGLFWKRFPVKRARM
+REASCLVGDGLQGIRLVTNIYVGNLSFKATEEELRGAFEQYGEVSAVNIIMDRETGRSRG
+FAFVEMADAEGAKDAIENLNGHEIDGRSVTVNEARPREPRS-------GGGGGGGGY-GG
+GGGGRGRGGGGGGYGG--GGG-NRGGGY-GGGGGGYG----GGGGGGYGGR--------G
+DR----------
+> SNE_A03650 | rbpA, putative RNA-binding protein rbpA | YP_004670733.1
+-------------------------MVNVTVLGSIKV----------LFWSGF-------
+--IHYLIW------RKLMKLFVGNLPKEYTEDDLLQLLTEFGSPKNPKIIKDRDTGQSRG
+FGFVELESKEEGTAAIEKLNGKEIGGRALTVSEAREQS----------------GG--GG
+GGRGGPRGGGGRGGPPRRGGG--------------------------------------G
+FRH---------
+> VspiD_00098 | splicing factor, CC1-like family
+------------------------------------------------------------
+---------------MNTKMYVGNLPWTATEDDVRSLFSAHGEVREVNMPTDRTSGRPRG
+FAFVTMDSADAMQGAIRALGGKEWMQRKLEVSEARPRTDRP------------EGQF-SN
+SGSGGGR-----------------------------------------------------
+--W---------
+> VspiD_02594 | splicing factor, CC1-like family
+------------------------------------------------------------
+---------------MNTKMYVGNLAWSATEQDVRELFSQYGAVTEVSLPTDRDTGRPRG
+FAFVAMDTKEAMDAAIKGLNGLEWMGRALTVNEARPREERP-------SYSGGGGGY-SG
+GGGGGGRKGGGGGYGG--GGG----GGY-GGGGGGRGDRRSGGGGGGYGGG---GGSRGG
+DRW---------
+> VspiD_05718 | splicing factor, CC1-like family
+------------------------------------------------------------
+-----------------MNLYVSNLSYNMTDNELRESFERYGLVSHARIILDRETGRSRG
+FAFVEMPNDEEARAAINGLNNVELAGRPLKVVEARPREERPFSPRPAGGGAGGGGGYKGG
+GGGGGYSGGGGGGGGGYKGGG--GGGGYKGGGGGGGGY--KGGGGGGFRDK-DKGNWDRG
+KRDGFGGGD-WE
+> wcw_0715 | rbp, RNA-binding protein | YP_003709088.1
+------------------------------------------------------------
+-----------------MKLYVGNLSYRVSEDQFKDYFASFGEVLSAKIITDRFTGQSKG
+FGFVEFADKEAAEEAIKELNGSNFEGRSIVVNEAKPMEDRP-------------------
+-----PRRSKTRG-----------------------------------------------
+------------

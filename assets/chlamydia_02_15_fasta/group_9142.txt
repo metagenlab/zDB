@@ -1,0 +1,2 @@
+> PacO_00757 | groS_1, 10 kDa chaperonin | Prokka:PacO_00757
+MEKYSGQEVTLGDQEYVIVRGDDLIAIIQN

@@ -1,0 +1,56 @@
+> CSEC_1651 | tatA, Sec-independent protein translocase protein tatA/E
+M-----------------------------------------LGTFELIVIFCIALLLFG
+SKRLPEIAKSLGQGVREFRRACQTDE--------------------KEAA----SYDTRE
+DSNPK-----
+> CspR_00396 | tatAy, Sec-independent protein translocase protein TatAy | Prokka:CspR_00396
+M-----------------------------------------IGTGELIVILLIVMVLFG
+GKKVPELAKSLGKGIKEFKKATQ--------------------DVEEELI----SLEDKD
+HSKD------
+> ElaC_01150 | tatAy, Sec-independent protein translocase protein TatAy | Prokka:ElaC_01150
+M-----------------------------------------LGTGELIVILCIVLLLFG
+GKKLPEVAKSLGQGIREFKKAAAGED-------------SSSGSCGGDCS----SCPNKE
+PPTKE-----
+> Knic_01199 | tatAy, Sec-independent protein translocase protein TatAy | Prokka:Knic_01199
+M-----------------------------------------MGTGEILVIMVVILILFG
+GKKLPEFAQSLGKGIREFKKACNGED---------EETISVPTKVEKESV----SSKNSK
+DSE-------
+> LarH_04781 | tatAy, Sec-independent protein translocase protein TatAy | Prokka:LarH_04781
+M-------------NTTLA----------------------FLGTPEIIMIVVAVLLIFG
+PKKIPQLARSLGKAKREFNEAKSAFNDAVDEEESKEEPKKIAPPAEEDIVTDEKPTAKEE
+EKEKAKSESK
+> NHA_1360 
+M-----------------------------------------IGYGELIVILCVILILFG
+GKKLPELAKSLGKGIREFKKALNGDL---------------PEDQEVEKI---VALKEDE
+NELRK-----
+> PacO_02135 | tatAy, Sec-independent protein translocase protein TatAy | Prokka:PacO_02135
+M-----------------------------------------IGTGELIVIFCVILLLFG
+GKKLPELAKSLGRAIREFKKACEEDE-------------SQEKKLEPSRI----RVEESN
+PSNDL-----
+> PUV_27550 | tatA, Sec-independent protein translocase protein TatA/E-like protein | YP_004653559.1
+M-----------------------------------------IGTGELIVIFCVILLLFG
+GKKLPELAKSLGRAIREFKKACEEDE-------------SQEKKLEPSRI----RVEESN
+PSNDL-----
+> PaHS_00656 | tatA, Sec-independent protein translocase protein TatA | Prokka:PaHS_00656
+M-----------------------------------------FGTGELILILGAVLLLFG
+GKRLPEFARNLGQGIREFKKACNEEE-----------------DVQVQVI----PIDEEK
+NRQGE-----
+> PnaD_01084 | tatAy, Sec-independent protein translocase protein TatAy | Prokka:PnaD_01084
+M-----------------------------------------MGTGEILVIMVVILILFG
+GKKLPEFAQSLGKGIREFKKACNGED---------EETISVPTKVEKESV----SSKNSK
+DSE-------
+> Psta_0932 | sec-independent translocation protein mttA/Hcf106
+M---------FQANHLQLF----GIF---------------GIGQFELIVVGVIILILFG
+-HRLPTMMFSLGKGIKDFKKGINSTE-------------------EDEPA----PADTTS
+KKSDS-----
+> RB6180 | similar to component of Sec-independent protein secretion pathway
+MRWSARCVSRWHGSHTTLFSGIDGMLMTVSSMATGLFLAFGFPGLPEMLIVLVICLVLFG
+GAKLPSLMRNLGRSANEFKRGMAESG-----------------DDEDE------ATDRTD
+EKA-------
+> VspiD_02577 | tatA, Sec-independent protein translocase protein TatA | Prokka:VspiD_02577
+M--------------------------------SSPFLAIGPLGTWEMVIIAVLVLVLFG
+AKKLPTFARSLGKSMGEFKKAREEFE-------------HELTRAQDDVVNSPAPTKEPE
+QKRIPTTTEV
+> wcw_0021 | tatA, Sec-independent protein translocase | YP_003708404.1
+M-----------------------------------------IGSAEVIVILCLILLLFG
+GKKLPEFARSLGKGIREFKRAVHGEE----------------------------TTDDND
+GKQ-------

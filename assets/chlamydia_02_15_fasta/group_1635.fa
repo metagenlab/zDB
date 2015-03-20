@@ -1,0 +1,60 @@
+> ElaC_01837 | mutT, 8-oxo-dGTP diphosphatase | Prokka:ElaC_01837
+MS-------------------------------------GALS--------KAN------
+-------------------------------AKSVRVGVGVIVVKDDALLLGKRKGSH-G
+SETWAPPGGHLEFGETPEECAKRELLEETGITA--------------LECALGPWSNDYF
+QNENKHYITLF-------------VFVKAFSGQPRVLEPGK-----CAEWRYFPISDLPH
+---PLF-LPMESMLRSGRLDLAGSR----------
+> Knic_02940 | mutator mutT protein
+M-----------------------------------------------------------
+------------------------------------------------------------
+-----------EHGETVEECVQRELQEEANLTP--------------LSIKQGPWINNHM
+EA-NKHYVTLF-------------MFVQDFTGDLKLMEPDK-----CEGWEWFAWDQLPT
+---PLF-EPIVSLIAKVGLENLKSL----------
+> LarH_03634 | nudG, CTP pyrophosphohydrolase | Prokka:LarH_03634
+MA----------------------------------------------------------
+-------------------------------QKIINVSAGIII-KDDQVLICQRREAH-H
+KGAWEFPGGKIELNESHQEALKRELNEELSIN-----------------CEIG-------
+----QHFHSVFYKLNISTQLNLHAYLIKSFIGTPKCLVHSKILWITLQELSYYNF--LPA
+D-LPLV-ENLLNRHKKEPVKTGSKR----------
+> PacO_01181 | mutT, 8-oxo-dGTP diphosphatase | Prokka:PacO_01181
+MD-------------------------------------NVDEQILDINELQNF------
+-------------------------------KKRPLIGVAVVVFKNNKVLLGKRKNSH-E
+EGKWAFPGGHLEFGESVEGCASRELMEEVGLQA--------------ISLKIGPWVENIM
+DAGKKHYITLF-------------VFVDSFSGEPQLLEPDK-----CEGWEWFEWENLPS
+---PIF-PTIITLKNKISISDLTNEA---------
+> PUV_17600 | nuDT1, nudix hydrolase 1 | YP_004652564.1
+MD-------------------------------------NVDEQILDINELQNF------
+-------------------------------KKRPLIGVAVVVFKNNKVLLGKRKNSH-E
+EGKWAFPGGHLEFGESVEGCASRELMEEVGLQA--------------ISLKIGPWVENIM
+DAGKKHYITLF-------------VFVDSFSGEPQLLEPDK-----CEGWEWFEWENLPS
+---PIF-PTIITLKNKISISDLTNEA---------
+> PamE_00515 | mutX, 8-oxo-dGTP diphosphatase | Prokka:PamE_00515
+MG-------------------------------------TIQD-----------------
+-------------------------------KPKPSVGVGIVVVKDGKVLLGNRKGAH-G
+SGEWSFAGGHLEFGEDVKECALRELSEETGLKA--------------LSVQMGPWVNDVI
+EE-NKHYVTLF-------------VFVNEFEGSPQLLEPDK-----CEGWEWFDWHSLPS
+---PLF-TPILSLIKKISIEKLSITPSFNEVIRML
+> pc0487 | mutT, mutT protein | YP_007486.1
+MG-------------------------------------TIQD-----------------
+-------------------------------KPKPRVGVGIVVVKGGKVLLGKRKGAH-G
+SGEWSFAGGHLEFGEDVKECALRELSEETGLKA--------------LSVQMGPWVNDII
+EE-SKHYVTLF-------------VFVNEFEGSPQLLEPDK-----CEGWEWFDWHSLPS
+---PLF-TPILSLIKKISIEKLSITPSSNEVIRML
+> PnaD_02459 | Bifunctional NMN adenylyltransferase/Nudix hydrolase
+MSKPLLPSLSDEAQLLQKGIYEHYKGHHYRVLAIAHHSETLEECVV----YQSLEGEQKV
+WVRPLNLFSDTVCTDTQEKLPRFKLQKKIVVKDPPRVGVGIAVIKQGKVLLGKRRGSH-G
+TGYWAFPGGHLEHGETVEECVQRELQEEANLTP--------------LSIKQGPWINNHM
+EA-NKHYVTLF-------------MFVQDFTGDLKLMEPDK-----CEGWEWFAWDQLPT
+---PLF-EPIVSLIAKVGLENLKSL----------
+> PR18_00537 | mutX, 8-oxo-dGTP diphosphatase | Prokka:PR18_00537
+MG-------------------------------------TIED-----------------
+-------------------------------KPKPSVGVGIVVVKDGKVLLGKRKGAH-G
+SGEWSFAGGHLEFGEDVKECALRELSEETGLKA--------------LSVQMGPWVNDII
+EE-NKHYVTLF-------------VFVNEFEGSPQLLEPDK-----CEGWEWFDWHSLPS
+---PLF-TPILSLIKKISIEKLSITPSFNEVIRML
+> SNE_A03360 | nudF-A, ADP-ribose pyrophosphatase | YP_004670704.1
+MMV------------------------------------TAQF-------YQSEK-----
+------------------------------RRFKMKVGVSLVLFRQEEVLLLRRYNTGID
+DGCYVLPMGGVDRDETAIEALVREAKEEVNITVHPDAFELVHTMHRLHHLPDG----NYF
+EQ-----IDLF-------------FKLKYFSGEVKNMEPHK-----CDEVSFYPLDALPK
+TTVPFICQALDNIRNGVSYSECGWEKATV------

@@ -1,0 +1,350 @@
+> CAB300 | ksgA, dimethyladenosine transferase | YP_219717.1
+---------------------------MSRSS-------------------------PEQ
+LSRFLAEV-------HGRPKKGLSQNFLIDGNILRKILAVS---CVQAGDWVLEIGPGFG
+ALTEVLVNQGAHVVALEKDSMLEETLKQL-------PI-HLEITDACKYPL---------
+--SQL-QDQGWQGKGRVV----ANLPYHITTPLLRKLFLEAPNQWKTVTVMIQDEVARRI
+TAQPGGKEYGSLTIFLQFFVDVHYAFKVSPGCFLPKPQVASAVVHMTVKENFPLEE-PLR
+TKFFSLTRAAFGQRRKLLANALKDLYPKE----RVFEALSQLHFSDKTRPETLSLDDYLK
+LFYLL-------------------------------------------------------
+---------------------------------SLPA-----------------------
+-----------------------------------------------------------
+> Cav1_00125 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:Cav1_00125
+---------------------------MSRSS-------------------------PEQ
+LIRFLKEV-------RGHPKKGLSQNFLIDGNILKKILEVS---SVQKGDWVLEIGPGYG
+ALTEVLVNQGAHVIALEKDSMFEGALRFL-------SI-NLKIIDACKYPL---------
+--TNL-SQEGWQGKGRII----ANLPYHITTPLLIKFFTETPHQWKTVTVMVQDEVARRI
+TAQPGGKDYSAITVFLNFFADVHYAFKVNPGCFFPKPQVASAVVHMTVKDSFPLKD-QDH
+AAFFTLTRTAFGKRRKFLVNALKDLYPKE----KVLLALQKLHFSEKVRPEILSLHDYLN
+LFYFL-------------------------------------------------------
+---------------------------------SQSSL----------------------
+-----------------------------------------------------------
+> CCA00303 | ksgA, dimethyladenosine transferase | NP_829174.1
+---------------------------MSRSS-------------------------PDQ
+LTRFLAQV-------QGRPKKGLSQNFLIDGNILRKILAVS---CVEAGDWVLEIGPGFG
+ALTEVLVNQGAHVVALEKDPMFEETLKQL-------PI-DLEITDACKYPL---------
+--SQL-EEKGWQGKGRVV----ANLPYHITTPLLTKLFLEVPNQWKTVTVMMQDEVARRI
+TAQPGGKEYGSLTIFLQFFADVRYAFKVSPGCFFPKPQVSSAVVHMTVKETFPLET-SLH
+QKFFSLTRAAFGQRRKLLANALKDLYPKE----LVFSALNQLNFSEKTRPETLSLNEYLQ
+LFHLL-------------------------------------------------------
+---------------------------------SSNA-----------------------
+-----------------------------------------------------------
+> CF0700 | ksgA, dimethyladenosine transferase | YP_515617.1
+----------------MALGD-----LLSRSS-------------------------PDQ
+LTRFLAQV-------HGHPKKGLSQNFLIDGNILRKILAVS---CVEAGDWVLEIGPGFG
+ALTEVLVNQGAHVVALEKDPMFEETLKQL-------PI-DLEITDACKYPL---------
+--SQL-QEKGWQGKGRVV----ANLPYHITTPLLTKLFLEVPNQWKTITVMMQDEVARRI
+TAQPGGKEYGSLTIFLQFFADVRYAFKVSSGCFFPKPQVSSAVVHMTVKDTFPLEE-SLH
+KKFFSLTRAAFGQRRKLLANALKNLYPKD----LVFSALNQLNFSEKTRPETLSLDEYLK
+LFQLL-------------------------------------------------------
+---------------------------------SLNS-----------------------
+-----------------------------------------------------------
+> cgal_00865 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:cgal_00865
+---------------------------MSRSS-------------------------PEQ
+LIQFLKEV-------RGYPKKGLSQNFLIDGNILKKILEIS---CVQPEDWVLEVGPGYG
+ALTEVLVNRGARVIALEKDSMFASTLRLL-------PI-NVHITDACKYPL---------
+--ASL-PQEGYRGKGRIV----ANLPYHITTPLLVKFFTETPNLWKTVTVMVQDEVARRI
+TAQPGGKEYSALTVFLNFFSDVRYAFKVSPSCFFPKPNVGSAVVHMVVKDTFPLKD-QDH
+DAFFTLTRTAFGKRRKFLANALKDLYPKA----KVLLALQELHFSDKTRPETLSLHDYIR
+LFHLL-------------------------------------------------------
+---------------------------------SQS------------------------
+-----------------------------------------------------------
+> Cib1_00952 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:Cib1_00952
+---------------------------MLRSS-------------------------PEQ
+LLRFLSEV-------HGRPKKSLSQNFLIDGNILRKIIQVS---GVKEGDWVLEIGPGFG
+ALTQQLVNEGANVIALEKDSMFADTLREL-------PI-HLEITDACKYCL---------
+--ASL-KDKGWSGQGRVV----ANLPYHITTPLLTKLFLEAPKQWKTITVMMQDEVARRL
+TSQPGNKDYGSLTVFLNFFANIQYAFKVSPSCFYPKPQVCSAVVHMQVKDRFPLDD-SLL
+SSFFSLTRAAFNQRRKFLANTLKNLYDKE----IVISALTNLGFSEKVRPEMLSLEDYLR
+LFHSL-------------------------------------------------------
+---------------------------------NV-------------------------
+-----------------------------------------------------------
+> TC0633 | ksgA, dimethyladenosine transferase | NP_297007.1
+---------------------------MARSS-------------------------IEQ
+LTSFLKSV-------NGRAKKALSQNFLVDGNILRKILATA---DVQPGDWVLEIGPGFG
+ALSEVLVSQGANVIALEKDPMFEESLSQL-------PI-DIEITDACKYPL---------
+--ASL-DDKGWKGKGRIV----ANLPYHITTPLLTKFFLECPNRWKTVTVMIQDEVARRI
+TANPGDKDYSSLTVFLRFFADVQYAFKVSPNCFYPKPSVSSAVVHMRVHEDFPLSG-SEI
+DEFFALTRAAFGQRRKLLANSLKNLYPKD----KVFQVLEHLGFSEKTRPETISLEEYLK
+IFRLL-------------------------------------------------------
+---------------------------------KDF------------------------
+-----------------------------------------------------------
+> G5S_0645 | ksgA, dimethyladenosine transferase | YP_004377305.1
+----------------MV---------LSRSS-------------------------PER
+LTRFLAEI-------RESPKKGLSQNFLIDGNIIRKILSES---QVQEGEWVLEIGPGFG
+ALTEGLVSSGAHVIALEKDPKFATTLSEL-------PLSHLEITDARTYPL---------
+--QKL-SELGWEGKGRMI----ANLPYHITTPLLIKIFSEAPHMWKSVTVMVQDEVARRI
+IAQPGNKDYGSLTIFLQFFAHVRYAFKVRASCFYPQPQVHSAVVHMEVKEHFPLPE-TVF
+KDFFTLTRTAFQQRRKYLTNTLKDLFPKE----LLLSALQQLRISDKARPETLSLEDYLA
+LFKLL-------------------------------------------------------
+---------------------------------SFS------------------------
+-----------------------------------------------------------
+> CP0791 | ksgA, dimethyladenosine transferase | NP_445330.1
+---------------------------MTRSS-------------------------PAQ
+LSRFLSEI-------QNKPKKSLSQNFLVDQNIVKKIVATS---EVIPQDWVLEIGPGFG
+ALTEELIAAGAQVIAIEKDPMFAPSLEEL-------PI-RLEIIDACKYPL---------
+--DQL-QEYKTLGKGRVV----ANLPYHITTPLLTKLFLEAPDFWKTVTVMVQDEVARRI
+VAQPGGRDYGSLTIFLQFFADIHYAFKVSASCFYPKPQVQSAVIHMKVKETLPLSD-EEI
+PVFFTLTRTAFQQRRKVLANTLKGLYPKE----QVEQALKELGLLLNVRPEVLSLNDYLA
+LFHKM-------------------------------------------------------
+---------------------------------QAG------------------------
+-----------------------------------------------------------
+> CPSIT_0334 | ksgA, dimethyladenosine transferase | YP_004422155.1
+---------------------------MSRSS-------------------------PEQ
+LTRFLAEV-------HGHPKKGLSQNFLIDGNILRKILAVS---CVQAGDWVLEIGPGFG
+ALTEVLVNQGAHVVALEKDPMFEETLKQL-------PI-HLEITDACKYPL---------
+--SQL-QDKGWQGKGRVV----ANLPYHVTTPLLTKLFLEVPNQWKTVTVMIQDEVARRI
+KAQPGGKEYGSLTIFLQFFVDVRYAFKVSPGCFLPKPQVSSAVVHMTVKDRFPLEE-PLR
+TKFFSLTRAAFGQRRKLLANALKDLYPKE----RVFEALSQLNFSDKTRPETLSLDDYLK
+LFELL-------------------------------------------------------
+---------------------------------SLHA-----------------------
+-----------------------------------------------------------
+> CSEC_0200 | rsmA, Ribosomal RNA small subunit methyltransferase A
+---------------------------MPLYR-------------------------PSE
+LTAFLEKE-------GLHAKKALSQNFLIDGNLVKRILEDA---NVQEGDVILEIGPGPG
+VLTEALLEKNVDLYAVEKDHKFAKLLPRLTENKEGGRL-TVFEEDALKFDL---------
+--VSFEKSIKP-KKAKLI----ANLPYNITTPILTHYVKAK-DCFEKLVVMVQAEVADRI
+TSKPSTKEYGSITVFLNFFSNPSFCFKVKKQSFIPAPSVDSAVIKLDLKDPPLTSV-EEQ
+EMFFQIVRGGFSQRRKMLRTSLKSLFPHV----DWNQALISIGINELSRPENLSLQDFLN
+LYQSV-------------------------------------------------------
+---------------------------------KKEFPLP--------------------
+-----------------------------------------------------------
+> CspR_00958 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:CspR_00958
+---------------------------MPIYK-------------------------PSE
+LKNFLNQL-------GIHPKKSLSQNFLIDGNIVHKIIELA---NLSENDVVLEIGPGPG
+CLTEAMLERKAKIIAVDKDTILSEQLQRF--DQSGQLL-TIYNEDIMQFDLE--------
+--KHFFPLLN-GAKGKVI----ANLPYHLTTPIIANLVTQF-DHFSDLILMVQEEVARRF
+VAKPNTPDYSSFTIFLNAYCDPLYAFKVKKGSFFPEPKVDSAIVHLKLKALPNF-----S
+EKVFELTRRSFEQRRKMLKSSLKDLYPSE----KIEEGLKTIGKNPLSRPENLSLQEFVN
+LYNYL-------------------------------------------------------
+---------------------------------DQLPLNK--------------------
+-----------------------------------------------------------
+> CsuM_00369 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:CsuM_00369
+---------------------------MARSS-------------------------IEQ
+LTSFLKSV-------NGRAKKALSQNFLVDGNILRKIIATA---DVQPGDWVLEIGPGFG
+ALSEVLASQGANVIALEKDPMFEASLSQL-------PI-NVEITDACKYPL---------
+--ASL-DDKGWRGKGRVV----ANLPYHITTPLLTKFFLECPYRWKTVTVMIQDEVARRI
+TANPGDKDYGSLTVFLRFFADVQYAFKVSPNCFYPKPSVHSAVVHMRVHENFALEG-LDI
+EKFFMLTRAAFGQRRKLLANSLKNLYPKE----RVFEVLEQLGFSEKTRPETISLEEYLK
+IFSLL-------------------------------------------------------
+---------------------------------KDC------------------------
+-----------------------------------------------------------
+> CT354 | ksgA, dimethyladenosine transferase | NP_219862.1
+---------------------------MARSS-------------------------IEQ
+LTSFLRSV-------NGRAKKALSQNFLVDGNILRKILTTA---EVQPGDWVLEIGPGFG
+ALSEVLLSQGANVIALEKDPMFEESLSQL-------PM-DIEITDACKYPL---------
+--TSL-EDKGWKGKGRIV----ANLPYHITTPLLTKFFLECPYRWKTVTVMIQDEVARRI
+TAKPGDKDYGSLTVFLSFFADVQYAFKVSPNCFYPKPSVHSAVVHMRVHEQFALAD-SEI
+EEFFTLTRAAFGQRRKLLANSLKNLYPKD----KVFQVLEQLGFSEKTRPETIFLEEYLK
+IFHLL-------------------------------------------------------
+---------------------------------KDI------------------------
+-----------------------------------------------------------
+> ElaC_01652 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:ElaC_01652
+---------------------------MPIYR-------------------------PNE
+LFSFLAKE-------NLAPKKGLSQNFLIDGNIIRKIVEEA---DVQAGDFIVEIGPGPG
+VLTEAMLDKGASVLAIEKDSGFADKLTRF--QDKG-RL-TILNEDILEVDIA--------
+--AEI-KKMGVEGPLKVI----SNLPYHITTPIIVKLLAMG-KAFSSIVVMVQEEVAQRF
+AGKPKTKEYGSITVFLSFFADVRYGFKVKRSCFMPQPKVDSAIVIFHPKDPPIQDE-EQQ
+TRFLHLVRLAFNQRRKTLRSALEREHEKA----LVVKALKQANFSDCARAEELSLDEFLL
+FYSSL-------------------------------------------------------
+---------------------------------LLVEKEQPEKPAS--------------
+-----------------------------------------------------------
+> Minf_0259 | ksgA, Dimethyladenosine transferase (rRNA methylation) | ACD82319.1
+---------------------------MTLFE----------------------------
+IKSLLSSN-------HLSPSKKLGQNFLIDQNLAKFIVRETL-EGVPLPQEIYEIGPGLG
+SLTEFFLQQNVFLKAIEIDRGFCKVLLER--FSANPRF-ELIQANALDFSFP------QS
+THGKI-----------LV----GNLPYTISSPLLAKLALLA-VPFPRMIFTLQQEVASRL
+MAKTRTKDFGALSVLMQYFFEIKKMRKVPKEVFYPVPKIESAVVFFEPKNTAFRMDAPEK
+YSFYAFVRRCFSQRRKKLGKILHIPLDH--------------------RPDEIPPECWAN
+LWMEL-------------------------------------------------------
+---------------------------------KDSRMEKSGGSCKN-------------
+-----------------------------------------------------------
+> Minf_2438 | Isopentenyl-diphosphate delta-isomerase
+---------------------------MEEEYFDIVDDNDRVIGKDTRKNVHFKNLKHRA
+VHILLQNQKEEIFLQKRSPLKDINPN-CWDSSCSGHVLSEEDYDRAAHRELVEELG----
+-------------------------LEHL--ERPLIKL----------------------
+--FKLPADTKTGNEFIWVYLGFSNGPFNLNPL----------------------EIAE--
+------------------------------GRFYPPSWINWKLA----------------
+-----------------------------------------------AEPQSFS-NAFIV
+IWNFF-------------------------------------------------------
+---------------------------------RSKKFAGY-------------------
+-----------------------------------------------------------
+> Knic_00635 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:Knic_00635
+------------------------------------------------------------
+------------------------------------------------------------
+-MTQAMLEAGAHIVAVEKDSTLAQALERL--QTPSKQL-EVFCEDIMLFPVQ--------
+--KELPLRLKEDQRAKVI----ANLPYHLTTPILSEMVVHR-HLFASLTVMVQEEVARRM
+TAAPGTSDYSSFTIFLNFYSTPRYAFTVSRNCFYPAPKVDSAIVVLELKEPPPNV---NT
+EEFFKITRTAFEHRRKMLRASLKSLFDPH----QISEALEAIGQNPLARPEVLSLDDFLK
+LYHIL-------------------------------------------------------
+---------------------------------RK-------------------------
+-----------------------------------------------------------
+> LarH_03856 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:LarH_03856
+---------------------------MKKAE----------------------------
+LLSTLEKY-------GIAPAKSRGQNFLIDNNLLDAMCRSM---DIQAGETILEVGPGAG
+VLTREMLKLGGIVHAVEFDFAIQRYLSE---NLEHEKF-TLHKGDACKVDYK--------
+------EILDLPREFRCL----ANLPYAISSIFIAIMSELE-SPPLEMYFLLQREMAERL
+AADNSTKNYGSLTVRVQALYDVNILRIVPPEVFFPPPKVQSAFVTLKLKENPPSP--KVL
+KKLNSIVRAAFSQRRKVAFKLMKGT-AGP----KLEEAYETVGLDRKARAEQITIEQYIQ
+LAETL-------------------------------------------------------
+------------------------------------------------------------
+----------------------LA-----------------------------------
+> NeoE_01760 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:NeoE_01760
+MLATYKANRSAYFENLLRFNREGKFKIMPIYR-------------------------PSE
+LHHFLNNL-------GVSPKKGLSQNFLIDGNITRKIVAYA---ALSPHDIVVEIGPGPG
+CLSEEIIKHGSQLLTIEKDPVMAQALQRL--QTESNRL-EIFCEDVLEFPLR--------
+--EKLLEILKPGQKAIIV----GNLPYHLTTPILIQLVKLY-PYVSKVVVMVQEEVARRF
+TAQPGTSEYSSFTVFLNYYSTPRYAFMVRRGCFHPIPNVDSAVVTLDLHQPPFVA---NE
+EDFFKMTRTAFGQRRKMMRTSLKELYCSQ----AVSQALLQIGRDVKSRPEELSLEDFMH
+LYRKL-------------------------------------------------------
+---------------------------------NNSV-----------------------
+-----------------------------------------------------------
+> NeoS_01184 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:NeoS_01184
+MLATYKANRSAYFENLLRFNREGKFKIMPIYR-------------------------PSE
+LHHFLNNL-------GVSPKKGLSQNFLIDGNITRKIVAYA---ALSPHDLVVEIGPGPG
+CLSEEIIKHGSQLLTIEKDPVMAQALQRL--QTESNRL-EIFCEDVLEFPLR--------
+--EKLLEILKPGQKAIIV----GNLPYHLTTPILIQLVKLY-PYISKVVVMVQEEVARRF
+TAQPGTSEYSSFTVFLNYYSTSRYAFMVRRACFHPIPNVDSAVVTLDLHQPPFVA---NE
+EDFFKMTRTAFGQRRKMMRTSLKELYCSQ----AVSQALLQIGRDVKSRPEELSLEDFMH
+LYRKL-------------------------------------------------------
+---------------------------------NNSV-----------------------
+-----------------------------------------------------------
+> NeoT_00406 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:NeoT_00406
+MLATYKANRSAYLENLLSFNREGKFKIMPIYR-------------------------PSE
+LHHFLNKL-------GVSPKKGLSQNFLIDGNITRKIVAYA---ALSPHDLVVEIGPGPG
+CLSEEIIKHGSQLLTIEKDPVMAQALQRL--QTESNRL-EIFCEDVLEFPLG--------
+--EKLLEILKPGQKAIIV----GNLPYHLTTPILIQLVKLY-PYVSKVVVMVQEEVARRF
+TAQPGTSEYSSFTVFLNYYSTPRYAFMVRRACFHPIPNVDSAVVTLDLHQPPFVA---NE
+EDFFKMTRTAFGQRRKMMRTSLKELYCSQ----AVSQALLQIGRDVKSRPEELSLEDFMH
+LYRKL-------------------------------------------------------
+---------------------------------NNSV-----------------------
+-----------------------------------------------------------
+> NHA_681 | rsmA, Ribosomal RNA small subunit methyltransferase A
+---------------------------MPIYR-------------------------PSE
+LHQFLNDL-------GVHPKKGLSQNFLIDGNIIRKIVASA---SISSEDVVLEIGPGPG
+CLSEEILNTGAHLIAVEKDPVMAKALERL--NAPNKEL-EVFSSDILEFPIE--------
+--QSLSKRLKPGKKAVIL----GNLPYHLTTPILAKLVNLH-SCVSRIVIMVQEEVARRF
+TAKAGTSEYSSFTVFLNYYTSPKYGFMVRKSCFYPIPNVDSGVVVLDLHQPPVVS---NE
+EAFFELTRTAFGQRRKMMRASLKELYPSQ----DITEGLIKIGLPGEARPEQLTLENFIH
+LFDYL-------------------------------------------------------
+---------------------------------QVLKAQPG-------------------
+-----------------------------------------------------------
+> PacO_01623 | rsmA_2, Ribosomal RNA small subunit methyltransferase A | Prokka:PacO_01623
+---------------------------MPLYK-------------------------PNE
+LFAFLNSL-------GIRPKKGLSQNFLIDGNIIRKIAATA---AASSDDVILEIGPGPG
+SLTECLLETGAQVIAVEKDNQLAEALIRL--QTPAQTL-QVHCEDILKFPIE--------
+--SVFKQELKAGKKAKVI----ANLPYHLTSSILAELAPLH-AYFSTITVMVQEEVARRF
+TAMPGSREFSAFTLFLNFFSNPVYNFKVGKQCFYPAPKVDSAVMTLHLKSPPQV----DQ
+QGFFTLTRKAFEQRRKMIKSALKSIYEPE----KVMQALEGIGINPLVRAEDLSLDDYLK
+LFAIL-------------------------------------------------------
+---------------------------------KKTE---------G-------------
+-----------------------------------------------------------
+> PUV_22240 | rsmA, ribosomal RNA smaLL subunit methyltransferase A | YP_004653028.1
+---------------------------MPLYK-------------------------PNE
+LFAFLNSL-------GIRPKKGLSQNFLIDGNIIRKIAATA---AASSDDVILEIGPGPG
+SLTECLLETGAQVIAVEKDNQLAEALIRL--QTPAQTL-QVHCEDILKFPIE--------
+--SVFKQELKAGKKAKVI----ANLPYHLTSSILAELAPLH-AYFSTITVMVQEEVARRF
+TAMPGSREFSAFTLFLNFFSNPVYNFKVGKQCFYPAPKVDSAVMTLHLKSPPQV----DQ
+QGFFTLTRKAFEQRRKMIKSALKSIYEPE----KVMQALEGIGINPLVRAEDLSLDDYLK
+LFAIL-------------------------------------------------------
+---------------------------------KKTE---------G-------------
+-----------------------------------------------------------
+> PaHS_01175 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:PaHS_01175
+---------------------------MPIYQ-------------------------PTE
+LHAFLYSL-------NTFPKKGLSQNFLIDGNIVKKIIDEA---KISPFDTVLEIGPGPG
+ALTEMVLPIANQVIAVEKDNLFAQHLSRF--DPAGLKL-KVMCQDILDVDL---------
+------SWLK--QKIKVI----GNLPYHITTPILIKFLSEYRDKVTSMTFMVQDEVAKRM
+IAPPKTADYSSLTIFLNFYCDVSYAFKVNKNCFFPTPSVDSAIITLIPKTITGTI---DT
+DKFFEITRTAFQMRRKTLKKSLKSLYPEE----KILKGLHDNGLNPLVRPEELSVEQFIQ
+LYQSL-------------------------------------------------------
+---------------------------------QA-------------------------
+-----------------------------------------------------------
+> PamE_00423 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:PamE_00423
+---------------------------MPIYK-------------------------PSE
+LRLFLNQL-------GIFPKKGLSQNFLIDGNIIRKIVRAS---DVQPGNLVLEIGPGPG
+SLTQAMLEAEAHVVAVEKDSILARELKRF--QTPSKQL-EIFCEDILMFSVE--------
+--EELQSRLRDDQKAKVI----ANLPYHLTTPILAKMVVRR-KLFSSLTVMVQEEVARRM
+TALPGQSDYSSFTIFLNFYSKPRYGFTVSRNCFYPAPKVDSAIVVLELKEPPPNI---DA
+QVFFKITRTAFEQRRKMLRASLKSLFDPS----KISSALEIIGQNPQARPEVLSLEDFIK
+LYHEL-------------------------------------------------------
+---------------------------------YSSERH---------------------
+-----------------------------------------------------------
+> pc0395 | ksgA, dimethyladenosine transferase | YP_007394.2
+---------------------------MPIYK-------------------------PSE
+LRLFLNQL-------GIFPKKGLSQNFLIDGNIIRKIVRAS---DVQPGNLVLEIGPGPG
+SLTQAMLEVEAHVVAVEKDFVLARELKRF--QTPSKQL-EIFCEDILMFSVE--------
+--EELQSRLRDDQKAKVI----ANLPYHLTTPILAEMVVRR-KLFSSLTVMVQEEVARRM
+TALPGQSDYSSFTIFLNFYSKPRYGFTVSRNCFYPAPKVDSAIVVLELKEPPPNI---DA
+QVFFKITRTAFEQRRKMLRASLKSLFDPS----KISNALEIIGQNPQARPEVLSLEDFIK
+LYHEL-------------------------------------------------------
+---------------------------------YSSERH---------------------
+-----------------------------------------------------------
+> PnaD_00255 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:PnaD_00255
+---------------------------MPIYK-------------------------PSE
+LRLFLNEL-------GIFPKKGLSQNFLIDGNIIRKIVKAS---AVQPDDLVLEIGPGPG
+SLTQAMLEAGAHIVAVEKDSTLAQALERL--QTPSKQL-EVFCEDIMLFPVQ--------
+--KELPLRLKEDQRAKVI----ANLPYHLTTPILSEMVVHR-HLFASLTVMVQEEVARRM
+TAAPGTSDYSSFTIFLNFYSTPRYAFTVSRNCFYPAPKVDSAIVVLELKDPPPNV---NP
+EEFFKITRTAFEHRRKMLRASLKSLFDPQ----QISEALEAIGQNPLARPEVLSLDDFLK
+LYHIL-------------------------------------------------------
+---------------------------------RK-------------------------
+-----------------------------------------------------------
+> PR18_01397 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:PR18_01397
+---------------------------MPIYK-------------------------PSE
+LRLFLNQL-------GIFPKKGLSQNFLIDGNIIRKIVRAS---DVQPGNLVLEIGPGPG
+SLTQAMLEAEAHVVAVEKDSILARELKRF--QTPSKQL-EIFCEDILMFSVE--------
+--EELQSRLRDDQKAKVI----ANLPYHLTTPILAEMVVRR-KLFSSLTVMVQEEVARRM
+TALPGQSDYSSFTIFLNFYSKPRYGFTVSRNCFYPAPKVDSAIVVLELKEPPPNI---DA
+QVFFKITRTAFEQRRKMLRASLKSLFDPS----KISSALEIIGQNPQARPEVLSLEDFIK
+LYHEL-------------------------------------------------------
+---------------------------------YSSERH---------------------
+-----------------------------------------------------------
+> Psta_2598 | dimethyladenosine transferase
+---------------------------MTSARQ-----------------------TVSY
+LTSRFREA-------GIRPEIRHGQNFLVDLNLLDLLADAA---QITEDDVVLEVGTGLG
+SLTSRLAERAAEVVTIEIDERLAAMAEEE--LEDFDNV-TLVLRDALESKHKLSTEVMDI
+VRAKL-AEAP-GRRFKLA----ANLPYNVATLIISNLLASD-PCPVSMTVTIQKELADRI
+VAPHGTKDYSGLSIWVQSQCEAKIVRIIPPQVFWPPPKVHSAILHLEHSQALASQL-RDP
+AYFHSFIRAIFLHRRKFLRGVLAKLFDGQLTKNDIDQLFVEKQLTPETRAEELPVATLVE
+LSHWL-------------------------------------------------------
+-----------------------LDRG------LKVELASDQK-----------------
+-----------------------------------------------------------
+> RB12377 | ksgA, dimethyladenosine transferase | CAD77548.1
+------------------------------------------------------------
+----------------MRPVSKYGQNFLIDLNLVELIARSA---EIGPSDIVLEIGTGVG
+SLTSIMASQAGAILTVEIDQNLFQLASEE--LAPFPHV-KMIQGDALKNKSTFRDDIMES
+IREAK-SRLPDDSKFMLV----ANLPYNVATPIVSNLLHQD-PPPDRIVVTIQKELGERM
+VAGPGSKDYGALSIWIQATCRAEIVRILPPTVFWPRPKVDSAIVRLDVDHERGNAI-PDL
+KYFHQTVRALFFHRRKFLRSVVISAMKGRLDKPAIDEILGRLGHGETARAEELNLEQISD
+LVEAL-------------------------------------------------------
+---------------------------------RQAELANE-------------------
+-----------------------------------------------------------
+> SNE_A21460 | rsmA, ribosomal RNA small subunit methyltransferase A | YP_004672514.1
+---------------------------MGLYQ-------------------------PKA
+LKKLLEDL-------KTHPKKSLSQNFLIDGNIVRKIIESS---RVTDGDHVLEVGPGPG
+VLTEALLGKGAYVTAIEKDDRFATALEDW--NHP--KL-TIVHDDFLKVDLL--------
+--SVL------KEKTKVV----ANIPYSITGILLQKLLPMG-KQIASLTLMVQKEVAERL
+VAKKGTNSYSSFTLFAFYYSTPQLLFSVEPTCFYPRPKVTSAVVQLTLKE----VN-ENA
+PSPLQLIRIAFQQRRKMLRASLKSLYTAT----QVESALKEMGLSVTTRPQELSLEEFQK
+LYNLL-------------------------------------------------------
+---------------------------------AQ-------------------------
+-----------------------------------------------------------
+> VspiD_02476 | rsmA, Ribosomal RNA small subunit methyltransferase A | Prokka:VspiD_02476
+------------------------------------------------------------
+MRYVLRDMA-----SSFAPKKSLGQNFLHDAGIAKWIADEI---KPDGAPLVVEIGPGQG
+AMTTHLVGRAAKTLLLEKDNTLAADLKVK--FEGREDV-EVWHGDATRFDLRP----L--
+--FKF-------GGVKVI----GNLPYSMGGEILRHVLTPP-TPVTEAVFMLQKEVCQRL
+AADQEDDAYGGLSLVVQHDWEVEIRRIIPPEVFKPRPKVDSAIVRLTPRPPGDLPV-HDR
+AVFDRLVRMGFSQRRKQLKNLLPECPGGW------DSLMGSLSKPLTVRAEELTLWDWVA
+LTRHYEGRHEEDRGQKASEIFDVVDENNVVIGQAPRGEVHAKGLKHRAVHIFVFNKHGEL
+WLQKRSHLKDVHPLTWDSSAAGHLDSGEDYATSAARELQEEIGISAPTRCVATIPACEAT
+GWEFVELHVAEHNGPMKYAPDEIATGLFFRVEEIQAWIETRPQDFATGFIECFARWRKL
+> wcw_1517 | ksgA, dimethyladenosine transferase | YP_003709872.1
+M------------KSLMTSNP------LRLSN-------------------------PSQ
+LRQYLEIL-------GISPKKSLSQNFLIDGNIIDKIISLA---EINAQDQVLEIGPGPG
+ALTDALHQHGARVLAVEKDRILAKAL-----QERGGDI-RVICEDVLKVDLE--------
+--KEL------SERATVI----ANLPYNITSPILTSLLPKT-HVFKRIVVMVQLEVAERL
+TASPGNKTYGSLTVFSNLFSTPQWGFKVSRRCFFPEPNVDSAVVRFDLSPPPKEV---ED
+EAFFQLIRTAFGQRRKMLKSSLKKLYPSS----SVMQALAGIGFQETARPEELSSNQFVE
+FYRHL-------------------------------------------------------
+---------------------------------IYMRS----------------------
+-----------------------------------------------------------

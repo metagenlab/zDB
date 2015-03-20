@@ -1,0 +1,896 @@
+Cgal0 696 1740 fill_color=black
+Cgal0 1733 3104
+Cgal0 3912 4215 fill_color=black
+Cgal0 4255 5176 fill_color=black
+Cgal0 7552 8641 fill_color=black
+Cgal0 8814 9570
+Cgal0 9664 11482
+Cgal0 11605 11914 fill_color=black
+Cgal0 11959 13594
+Cgal0 13733 14528 fill_color=black
+Cgal0 14743 15955 fill_color=black
+Cgal0 16050 16842 fill_color=black
+Cgal0 16985 18011 fill_color=black
+Cgal0 18497 20702 fill_color=black
+Cgal0 20707 22363
+Cgal0 22362 22662 fill_color=black
+Cgal0 22658 23273
+Cgal0 23269 23917 fill_color=black
+Cgal0 23967 24333
+Cgal0 24341 25412
+Cgal0 25432 25792
+Cgal0 25782 27126
+Cgal0 27173 28028
+Cgal0 27981 29067
+Cgal0 29383 29701
+Cgal0 29798 30530 fill_color=black
+Cgal0 30819 32706 fill_color=black
+Cgal0 32745 35883
+Cgal0 36550 37012 fill_color=black
+Cgal0 37030 38332 fill_color=black
+Cgal0 38653 39388 fill_color=black
+Cgal0 39505 40723 fill_color=black
+Cgal0 40831 41896
+Cgal0 41892 43236
+Cgal0 43433 44228 fill_color=black
+Cgal0 44224 45493 fill_color=black
+Cgal0 45616 46996 fill_color=black
+Cgal0 47365 48808
+Cgal0 49076 54500
+Cgal0 54501 57306 fill_color=black
+Cgal0 57333 60156
+Cgal0 60203 60671 fill_color=black
+Cgal0 60651 61077 fill_color=black
+Cgal0 61183 63130 fill_color=black
+Cgal0 63120 63747 fill_color=black
+Cgal0 63731 65048 fill_color=black
+Cgal0 65056 66832 fill_color=black
+Cgal0 66825 67626 fill_color=black
+Cgal0 67684 68311 fill_color=black
+Cgal0 68426 69179 fill_color=black
+Cgal0 69187 69568 fill_color=black
+Cgal0 69624 70608 fill_color=black
+Cgal0 70729 74911
+Cgal0 74936 78695
+Cgal0 78849 79242
+Cgal0 79284 79797
+Cgal0 79810 80509
+Cgal0 80528 80954
+Cgal0 81060 81603
+Cgal0 81607 81853 fill_color=black
+Cgal0 82017 83202
+Cgal0 83394 83616
+Cgal0 83922 84873 fill_color=black
+Cgal0 84875 85325 fill_color=black
+Cgal0 85528 86113 fill_color=black
+Cgal0 86357 86936 fill_color=black
+Cgal0 87099 87447 fill_color=black
+Cgal0 87557 88424
+Cgal0 88432 89752
+Cgal0 89739 90741
+Cgal0 90900 91638
+Cgal0 91820 92657 fill_color=black
+Cgal0 92637 93276 fill_color=black
+Cgal0 93356 94442 fill_color=black
+Cgal0 94594 95590
+Cgal0 95565 96738
+Cgal0 96701 97313
+Cgal0 97320 98601
+Cgal0 98582 99257 fill_color=black
+Cgal0 99320 100631
+Cgal0 100593 101115
+Cgal0 101111 102191
+Cgal0 102187 103324
+Cgal0 103304 104738
+Cgal0 104772 105579 fill_color=black
+Cgal0 105654 106980 fill_color=black
+Cgal0 107002 107590 fill_color=black
+Cgal0 107599 109060 fill_color=black
+Cgal0 109205 110249 fill_color=black
+Cgal0 110235 111063 fill_color=black
+Cgal0 111083 112070 fill_color=black
+Cgal0 112555 114142
+Cgal0 114213 115113
+Cgal0 115109 115397 fill_color=black
+Cgal0 115771 117208 fill_color=black
+Cgal0 117204 117726 fill_color=black
+Cgal0 117736 119260 fill_color=black
+Cgal0 119276 120764 fill_color=black
+Cgal0 120778 121507 fill_color=black
+Cgal0 121469 122399
+Cgal0 122485 124276 fill_color=black
+Cgal0 124393 125677 fill_color=black
+Cgal0 125937 127638 fill_color=black
+Cgal0 127634 129017
+Cgal0 129066 130902
+Cgal0 130810 131461 fill_color=black
+Cgal0 131546 132164 fill_color=black
+Cgal0 132173 132791 fill_color=black
+Cgal0 132800 133679
+Cgal0 133635 134895 fill_color=black
+Cgal0 134925 135111 fill_color=black
+Cgal0 135344 135830 fill_color=black
+Cgal0 135877 136396 fill_color=black
+Cgal0 136411 136936 fill_color=black
+Cgal0 137011 137731 fill_color=black
+Cgal0 137710 137941 fill_color=black
+Cgal0 137921 138404
+Cgal0 138633 138903
+Cgal0 138948 141036
+Cgal0 141168 143913
+Cgal0 144076 145027
+Cgal0 145145 146222 fill_color=black
+Cgal0 146225 147329 fill_color=black
+Cgal0 147297 149340 fill_color=black
+Cgal0 149638 150664
+Cgal0 150676 151042
+Cgal0 151057 151252
+Cgal0 151229 151790
+Cgal0 152222 152720
+Cgal0 152759 153665
+Cgal0 153661 154237 fill_color=black
+Cgal0 155206 156247 fill_color=black
+Cgal0 156266 159416
+Cgal0 159797 160604
+Cgal0 160600 161986 fill_color=black
+Cgal0 161989 164914 fill_color=black
+Cgal0 165394 166858
+Cgal0 167141 168029
+Cgal0 168037 169204
+Cgal0 169274 170132
+Cgal0 170150 170867 fill_color=black
+Cgal0 170903 172097 fill_color=black
+Cgal0 172162 173989
+Cgal0 174001 175375
+Cgal0 175815 177099 fill_color=black
+Cgal0 177272 178958
+Cgal0 179459 181283 fill_color=black
+Cgal0 181294 181432 fill_color=black
+Cgal0 181628 182171 fill_color=black
+Cgal0 182195 183017 fill_color=black
+Cgal0 183891 184716 fill_color=black
+Cgal0 185174 187268 fill_color=black
+Cgal0 187381 192043 fill_color=black
+Cgal0 192147 193098 fill_color=black
+Cgal0 193116 193299 fill_color=black
+Cgal0 193316 193778 fill_color=black
+Cgal0 194067 195600
+Cgal0 195610 196612 fill_color=black
+Cgal0 196608 199491 fill_color=black
+Cgal0 199431 200784 fill_color=black
+Cgal0 200964 201186 fill_color=black
+Cgal0 201186 202047
+Cgal0 202101 202626
+Cgal0 202646 202895
+Cgal0 202912 203251
+Cgal0 203270 203837
+Cgal0 203840 204398
+Cgal0 204873 206307
+Cgal0 206301 206907
+Cgal0 207165 210186 fill_color=black
+Cgal0 210255 210708 fill_color=black
+Cgal0 210851 211307 fill_color=black
+Cgal0 212072 212345 fill_color=black
+Cgal0 212449 214222
+Cgal0 214472 216956
+Cgal0 216958 218770
+Cgal0 218776 219256 fill_color=black
+Cgal0 219781 220294 fill_color=black
+Cgal0 220339 220645
+Cgal0 220667 220805 fill_color=black
+Cgal0 221329 221653
+Cgal0 221594 222647
+Cgal0 223035 224466
+Cgal0 224477 226058
+Cgal0 226275 226776
+Cgal0 226867 227644 fill_color=black
+Cgal0 227592 229839
+Cgal0 229788 230877 fill_color=black
+Cgal0 230899 232528
+Cgal0 232545 233310 fill_color=black
+Cgal0 233405 234386 fill_color=black
+Cgal0 234382 235432
+Cgal0 235600 236251 fill_color=black
+Cgal0 236308 236758
+Cgal0 236760 238011
+Cgal0 238026 238386
+Cgal0 238443 239082 fill_color=black
+Cgal0 239078 240737 fill_color=black
+Cgal0 240823 241888
+Cgal0 241869 242898
+Cgal0 242908 243241
+Cgal0 243315 244104 fill_color=black
+Cgal0 244100 244427
+Cgal0 244525 244951 fill_color=black
+Cgal0 244995 247440 fill_color=black
+Cgal0 247443 248523 fill_color=black
+Cgal0 248506 249589 fill_color=black
+Cgal0 249608 250319 fill_color=black
+Cgal0 250308 251577 fill_color=black
+Cgal0 251581 252628 fill_color=black
+Cgal0 252646 253993 fill_color=black
+Cgal0 254355 255873 fill_color=black
+Cgal0 256105 256978
+Cgal0 257012 257234 fill_color=black
+Cgal0 257292 257865
+Cgal0 258051 258918 fill_color=black
+Cgal0 258911 260909
+Cgal0 261171 263802
+Cgal0 263771 267029
+Cgal0 267038 268040
+Cgal0 268012 269386
+Cgal0 269382 270687
+Cgal0 270618 273168 fill_color=black
+Cgal0 273531 273888 fill_color=black
+Cgal0 274036 275281 fill_color=black
+Cgal0 275340 275691
+Cgal0 275811 277107
+Cgal0 283285 285682
+Cgal0 285685 286477
+Cgal0 286495 287137 fill_color=black
+Cgal0 287142 287595
+Cgal0 287747 287900 fill_color=black
+Cgal0 287860 288496 fill_color=black
+Cgal0 288730 290092 fill_color=black
+Cgal0 290865 292233 fill_color=black
+Cgal0 292252 292720
+Cgal0 292739 293978
+Cgal0 294073 295177
+Cgal0 295220 296501
+Cgal0 296539 297286 fill_color=black
+Cgal0 297307 299281 fill_color=black
+Cgal0 299282 300422 fill_color=black
+Cgal0 300461 301034
+Cgal0 301007 301553 fill_color=black
+Cgal0 301560 302277
+Cgal0 302432 303116 fill_color=black
+Cgal0 303070 304228
+Cgal0 304224 305043 fill_color=black
+Cgal0 305144 306170 fill_color=black
+Cgal0 306184 306718 fill_color=black
+Cgal0 306714 308031 fill_color=black
+Cgal0 308011 308371 fill_color=black
+Cgal0 308390 309776
+Cgal0 309772 310777 fill_color=black
+Cgal0 310902 311937 fill_color=black
+Cgal0 311933 313100 fill_color=black
+Cgal0 313118 315371 fill_color=black
+Cgal0 315472 317281 fill_color=black
+Cgal0 317277 318378 fill_color=black
+Cgal0 318382 321889
+Cgal0 322178 323498
+Cgal0 323677 324289
+Cgal0 324298 325564
+Cgal0 325595 326828
+Cgal0 326934 328347
+Cgal0 328418 328958 fill_color=black
+Cgal0 329013 331920
+Cgal0 332094 333420 fill_color=black
+Cgal0 333485 334385
+Cgal0 334548 335880
+Cgal0 335869 336523
+Cgal0 336650 337880 fill_color=black
+Cgal0 337915 341503 fill_color=black
+Cgal0 341530 341992 fill_color=black
+Cgal0 342254 343646
+Cgal0 343642 344593
+Cgal0 344782 345763 fill_color=black
+Cgal0 345762 346596 fill_color=black
+Cgal0 346743 347433 fill_color=black
+Cgal0 347447 348359
+Cgal0 348368 348653
+Cgal0 348659 349532
+Cgal0 349628 350069 fill_color=black
+Cgal0 350162 351167 fill_color=black
+Cgal0 351170 351725 fill_color=black
+Cgal0 351709 352138 fill_color=black
+Cgal0 352142 352523 fill_color=black
+Cgal0 352542 353718
+Cgal0 353730 355224
+Cgal0 355210 357481 fill_color=black
+Cgal0 357481 358801 fill_color=black
+Cgal0 358922 360002
+Cgal0 359998 361729
+Cgal0 361953 362646 fill_color=black
+Cgal0 362673 363039 fill_color=black
+Cgal0 363079 364531 fill_color=black
+Cgal0 364557 365853 fill_color=black
+Cgal0 365913 366816 fill_color=black
+Cgal0 366993 368901
+Cgal0 368934 369699
+Cgal0 369702 370455 fill_color=black
+Cgal0 370458 371016 fill_color=black
+Cgal0 371023 372073
+Cgal0 372069 374037
+Cgal0 374177 375449
+Cgal0 375670 377578 fill_color=black
+Cgal0 377574 379377 fill_color=black
+Cgal0 379539 382428 fill_color=black
+Cgal0 382424 383210
+Cgal0 383220 385095
+Cgal0 385098 385989
+Cgal0 386071 386869
+Cgal0 387011 389159
+Cgal0 389280 389979 fill_color=black
+Cgal0 389975 390383
+Cgal0 390385 391105 fill_color=black
+Cgal0 391121 392408 fill_color=black
+Cgal0 392418 392994 fill_color=black
+Cgal0 392983 393598 fill_color=black
+Cgal0 393695 394094 fill_color=black
+Cgal0 394090 394681
+Cgal0 394900 396535 fill_color=black
+Cgal0 396619 397858
+Cgal0 398063 398684
+Cgal0 398666 398900 fill_color=black
+Cgal0 398896 399586 fill_color=black
+Cgal0 399670 401584
+Cgal0 401590 402865
+Cgal0 402867 403665 fill_color=black
+Cgal0 404124 406701
+Cgal0 406703 407687
+Cgal0 407692 407962 fill_color=black
+Cgal0 408026 409454 fill_color=black
+Cgal0 409450 410038 fill_color=black
+Cgal0 410028 411318 fill_color=black
+Cgal0 411698 412748
+Cgal0 412853 413579 fill_color=black
+Cgal0 413535 414036
+Cgal0 414032 415376
+Cgal0 415372 415771 fill_color=black
+Cgal0 415773 417480
+Cgal0 417583 418789 fill_color=black
+Cgal0 419065 419362
+Cgal0 419393 420185 fill_color=black
+Cgal0 420198 421737 fill_color=black
+Cgal0 421726 423553 fill_color=black
+Cgal0 423751 424408
+Cgal0 424504 425116
+Cgal0 425126 426008 fill_color=black
+Cgal0 426112 426367 fill_color=black
+Cgal0 426450 428037 fill_color=black
+Cgal0 428330 429323
+Cgal0 429348 430749
+Cgal0 430770 431205 fill_color=black
+Cgal0 431317 433474
+Cgal0 433618 434830
+Cgal0 434889 435978 fill_color=black
+Cgal0 435916 439042 fill_color=black
+Cgal0 439028 442082 fill_color=black
+Cgal0 442173 443772
+Cgal0 443801 444776
+Cgal0 444991 445621
+Cgal0 445690 446566 fill_color=black
+Cgal0 446627 448271 fill_color=black
+Cgal0 448374 449640 fill_color=black
+Cgal0 449748 451626 fill_color=black
+Cgal0 451811 454439 fill_color=black
+Cgal0 454640 457130 fill_color=black
+Cgal0 457211 457388 fill_color=black
+Cgal0 457384 458107
+Cgal0 458113 458599 fill_color=black
+Cgal0 458595 459405
+Cgal0 459759 459996 fill_color=black
+Cgal0 460101 461073
+Cgal0 461195 461510 fill_color=black
+Cgal0 461514 461805 fill_color=black
+Cgal0 461913 463359 fill_color=black
+Cgal0 463362 465168 fill_color=black
+Cgal0 465648 466668
+Cgal0 467001 467400 fill_color=black
+Cgal0 467419 469867 fill_color=black
+Cgal0 469913 470165 fill_color=black
+Cgal0 470186 470447 fill_color=black
+Cgal0 470465 470915 fill_color=black
+Cgal0 470950 471625 fill_color=black
+Cgal0 471626 472955
+Cgal0 472972 473491 fill_color=black
+Cgal0 473477 474320 fill_color=black
+Cgal0 474332 475448 fill_color=black
+Cgal0 475463 476966
+Cgal0 476962 479680 fill_color=black
+Cgal0 480008 481079
+Cgal0 481062 481581
+Cgal0 481964 482507
+Cgal0 482508 483243
+Cgal0 483255 484104
+Cgal0 484100 485012
+Cgal0 485369 486557 fill_color=black
+Cgal0 487093 490381 fill_color=black
+Cgal0 490443 491439 fill_color=black
+Cgal0 491744 493199
+Cgal0 493203 493977
+Cgal0 493970 495248
+Cgal0 495231 496476
+Cgal0 496487 497228 fill_color=black
+Cgal0 497231 497393 fill_color=black
+Cgal0 497416 498073 fill_color=black
+Cgal0 498312 499146
+Cgal0 499164 500160
+Cgal0 500152 501112
+Cgal0 501165 501840 fill_color=black
+Cgal0 501847 503128 fill_color=black
+Cgal0 503164 504400
+Cgal0 504686 505808 fill_color=black
+Cgal0 505834 506983 fill_color=black
+Cgal0 507102 508269 fill_color=black
+Cgal0 508317 509415
+Cgal0 509435 509783 fill_color=black
+Cgal0 509865 511161 fill_color=black
+Cgal0 511260 511662 fill_color=black
+Cgal0 511670 512096 fill_color=black
+Cgal0 512082 512682 fill_color=black
+Cgal0 512698 513652 fill_color=black
+Cgal0 513802 514687 fill_color=black
+Cgal0 514683 518406
+Cgal0 518431 519799
+Cgal0 519996 520191 fill_color=black
+Cgal0 520252 521545
+Cgal0 521519 523274
+Cgal0 523340 524105
+Cgal0 524101 524587
+Cgal0 524566 524875
+Cgal0 525459 526176 fill_color=black
+Cgal0 526154 526613
+Cgal0 526615 527365 fill_color=black
+Cgal0 527469 527940 fill_color=black
+Cgal0 527947 529570
+Cgal0 529599 530442
+Cgal0 530456 530921
+Cgal0 530930 531767
+Cgal0 532078 533035 fill_color=black
+Cgal0 533330 533990
+Cgal0 534006 534684
+Cgal0 534699 535035
+Cgal0 535059 535962
+Cgal0 535968 536235
+Cgal0 536247 536583
+Cgal0 536591 537260
+Cgal0 537289 537706
+Cgal0 537709 537928 fill_color=black
+Cgal0 537920 538172
+Cgal0 538189 538558
+Cgal0 538573 538912
+Cgal0 538913 539453
+Cgal0 539478 539874
+Cgal0 539905 540457
+Cgal0 540486 540858
+Cgal0 540870 541374
+Cgal0 541366 541801
+Cgal0 541823 543197
+Cgal0 543252 543621
+Cgal0 543641 544040
+Cgal0 544062 545193
+Cgal0 545199 545628
+Cgal0 545669 546677
+Cgal0 546687 547512 fill_color=black
+Cgal0 547898 548621 fill_color=black
+Cgal0 548739 549225
+Cgal0 549235 549844
+Cgal0 549920 550352
+Cgal0 550358 551066
+Cgal0 551043 552888
+Cgal0 553301 554720
+Cgal0 555196 555706 fill_color=black
+Cgal0 555724 555907 fill_color=black
+Cgal0 555939 557565 fill_color=black
+Cgal0 557663 557975 fill_color=black
+Cgal0 558090 559101
+Cgal0 559126 561742
+Cgal0 561735 562344
+Cgal0 562340 563735
+Cgal0 563953 564211 fill_color=black
+Cgal0 564268 564889
+Cgal0 564988 566311
+Cgal0 566373 567117 fill_color=black
+Cgal0 567113 567701
+Cgal0 567906 568629 fill_color=black
+Cgal0 568603 569590
+Cgal0 569668 570676 fill_color=black
+Cgal0 570709 571063 fill_color=black
+Cgal0 571411 571564 fill_color=black
+Cgal0 572226 574332 fill_color=black
+Cgal0 574313 575795 fill_color=black
+Cgal0 575802 577536 fill_color=black
+Cgal0 577532 578066 fill_color=black
+Cgal0 578055 579027 fill_color=black
+Cgal0 579023 581405
+Cgal0 581506 582592 fill_color=black
+Cgal0 582515 582833 fill_color=black
+Cgal0 582813 583608 fill_color=black
+Cgal0 583893 584487 fill_color=black
+Cgal0 584487 585180 fill_color=black
+Cgal0 585185 585749 fill_color=black
+Cgal0 585699 586383 fill_color=black
+Cgal0 586668 587829
+Cgal0 587955 590955 fill_color=black
+Cgal0 590959 592021
+Cgal0 591998 592328 fill_color=black
+Cgal0 592559 593246 fill_color=black
+Cgal0 593367 594066 fill_color=black
+Cgal0 594008 594815
+Cgal0 594811 595450
+Cgal0 595439 596411
+Cgal0 596492 596756 fill_color=black
+Cgal0 597130 598120
+Cgal0 598119 598632 fill_color=black
+Cgal0 598661 599180 fill_color=black
+Cgal0 599195 599912
+Cgal0 599987 602636 fill_color=black
+Cgal0 602855 604187 fill_color=black
+Cgal0 604181 605873
+Cgal0 605882 606530 fill_color=black
+Cgal0 606526 607177
+Cgal0 607173 608088
+Cgal0 608090 608843
+Cgal0 609382 610423 fill_color=black
+Cgal0 610591 614800
+Cgal0 615214 616351 fill_color=black
+Cgal0 616996 617542 fill_color=black
+Cgal0 617779 619318
+Cgal0 619319 619520 fill_color=black
+Cgal0 619927 620194 fill_color=black
+Cgal0 620360 622019
+Cgal0 622200 622665 fill_color=black
+Cgal0 622738 624670 fill_color=black
+Cgal0 624803 625067 fill_color=black
+Cgal0 625172 626096 fill_color=black
+Cgal0 626294 626666
+Cgal0 626713 627187
+Cgal0 627223 629308
+Cgal0 629314 629632
+Cgal0 629655 630708
+Cgal0 630704 631211
+Cgal0 631504 631894 fill_color=black
+Cgal0 632242 632563
+Cgal0 632606 632855
+Cgal0 632954 633959
+Cgal0 633856 634735 fill_color=black
+Cgal0 634731 635451 fill_color=black
+Cgal0 635447 636287 fill_color=black
+Cgal0 638652 639477 fill_color=black
+Cgal0 639524 640628
+Cgal0 640631 641018 fill_color=black
+Cgal0 641188 641974 fill_color=black
+Cgal0 641977 642622 fill_color=black
+Cgal0 643165 643483 fill_color=black
+Cgal0 643743 644103 fill_color=black
+Cgal0 644664 645414
+Cgal0 645442 646558
+Cgal0 646561 647776 fill_color=black
+Cgal0 647768 649007
+Cgal0 649014 649341 fill_color=black
+Cgal0 649350 649923 fill_color=black
+Cgal0 650486 651500
+Cgal0 651496 652312 fill_color=black
+Cgal0 652312 654295
+Cgal0 654427 654928 fill_color=black
+Cgal0 655317 655794 fill_color=black
+Cgal0 655823 657326
+Cgal0 657467 658031 fill_color=black
+Cgal0 658168 659128 fill_color=black
+Cgal0 659260 660496 fill_color=black
+Cgal0 660542 661835 fill_color=black
+Cgal0 661900 663022
+Cgal0 663011 663458 fill_color=black
+Cgal0 663609 666333
+Cgal0 666329 667424
+Cgal0 667426 668170 fill_color=black
+Cgal0 668181 669993
+Cgal0 670197 671160 fill_color=black
+Cgal0 671192 671297 fill_color=black
+Cgal0 671403 672405 fill_color=black
+Cgal0 672437 672710 fill_color=black
+Cgal0 672989 674744 fill_color=black
+Cgal0 674818 675589
+Cgal0 675585 675849 fill_color=black
+Cgal0 675995 677234
+Cgal0 677247 678693
+Cgal0 678769 680644
+Cgal0 680764 682372 fill_color=black
+Cgal0 682577 683081 fill_color=black
+Cgal0 683554 684517
+Cgal0 684509 685289
+Cgal0 685292 686642
+Cgal0 686638 687616
+Cgal0 687662 688802
+Cgal0 688814 690683 fill_color=black
+Cgal0 690633 691614
+Cgal0 691688 692801 fill_color=black
+Cgal0 692800 693901
+Cgal0 694112 694565
+Cgal0 694548 695397
+Cgal0 695465 696326
+Cgal0 696316 696832 fill_color=black
+Cgal0 697050 697344 fill_color=black
+Cgal0 697692 699435 fill_color=black
+Cgal0 699436 699919 fill_color=black
+Cgal0 699915 700980 fill_color=black
+Cgal0 701083 702823
+Cgal0 702853 703123 fill_color=black
+Cgal0 703279 704869
+Cgal0 704985 705426 fill_color=black
+Cgal0 705442 706642 fill_color=black
+Cgal0 706669 708796
+Cgal0 708795 709878
+Cgal0 710169 711261
+Cgal0 711238 712150
+Cgal0 712133 712841
+Cgal0 712881 713244
+Cgal0 713250 715908
+Cgal0 715864 717169
+Cgal0 717260 719006
+Cgal0 719173 720109
+Cgal0 720100 720472
+Cgal0 720478 720925 fill_color=black
+Cgal0 721007 721895 fill_color=black
+Cgal0 721987 724357 fill_color=black
+Cgal0 724429 725812 fill_color=black
+Cgal0 725829 726180 fill_color=black
+Cgal0 726417 728862
+Cgal0 728896 730186 fill_color=black
+Cgal0 730189 731176 fill_color=black
+Cgal0 731168 732197 fill_color=black
+Cgal0 732337 733372 fill_color=black
+Cgal0 733361 734456
+Cgal0 734483 735020 fill_color=black
+Cgal0 735104 737471
+Cgal0 737617 738220
+Cgal0 738344 739340
+Cgal0 739350 740277
+Cgal0 740276 741026
+Cgal0 741130 741370
+Cgal0 741449 741866 fill_color=black
+Cgal0 741877 744646 fill_color=black
+Cgal0 744735 745281 fill_color=black
+Cgal0 745319 745937 fill_color=black
+Cgal0 746014 747502 fill_color=black
+Cgal0 747498 748722 fill_color=black
+Cgal0 748821 749949 fill_color=black
+Cgal0 750128 752243 fill_color=black
+Cgal0 752223 753696
+Cgal0 753915 755232 fill_color=black
+Cgal0 755308 756718 fill_color=black
+Cgal0 756733 757783
+Cgal0 757969 759700 fill_color=black
+Cgal0 760081 760549 fill_color=black
+Cgal0 760731 761082 fill_color=black
+Cgal0 761089 763507
+Cgal0 763524 766008
+Cgal0 766036 766663
+Cgal0 766646 767504
+Cgal0 767500 768217
+Cgal0 768431 769304
+Cgal0 769300 770272 fill_color=black
+Cgal0 770268 771261 fill_color=black
+Cgal0 771392 772451 fill_color=black
+Cgal0 773263 774169
+Cgal0 774170 774749
+Cgal0 776111 776969
+Cgal0 777032 777776 fill_color=black
+Cgal0 777898 778393 fill_color=black
+Cgal0 778739 779564 fill_color=black
+Cgal0 779560 780415 fill_color=black
+Cgal0 780417 781227 fill_color=black
+Cgal0 781256 782636
+Cgal0 782735 782894 fill_color=black
+Cgal0 782940 784452 fill_color=black
+Cgal0 784454 785126
+Cgal0 785106 785358 fill_color=black
+Cgal0 785389 785839
+Cgal0 785852 786254
+Cgal0 786576 787416 fill_color=black
+Cgal0 787440 788073
+Cgal0 788220 789453 fill_color=black
+Cgal0 789494 789899 fill_color=black
+Cgal0 789946 790888 fill_color=black
+Cgal0 790955 791732
+Cgal0 791756 793301
+Cgal0 793510 795094
+Cgal0 795039 796134
+Cgal0 796437 797088 fill_color=black
+Cgal0 797084 797771 fill_color=black
+Cgal0 797798 798533 fill_color=black
+Cgal0 798646 802069 fill_color=black
+Cgal0 802068 803352
+Cgal0 803420 804230 fill_color=black
+Cgal0 804376 805357 fill_color=black
+Cgal0 805704 806400
+Cgal0 806386 806944
+Cgal0 806975 807473
+Cgal0 807472 808828
+Cgal0 809049 809370 fill_color=black
+Cgal0 809438 818801 fill_color=black
+Cgal0 819028 819778 fill_color=black
+Cgal0 820010 820970 fill_color=black
+Cgal0 821374 821818 fill_color=black
+Cgal0 822133 822820 fill_color=black
+Cgal0 822954 824073
+Cgal0 824184 824595 fill_color=black
+Cgal0 824587 825286 fill_color=black
+Cgal0 825495 826728
+Cgal0 826684 827446 fill_color=black
+Cgal0 827442 828147
+Cgal0 828394 828550 fill_color=black
+Cgal0 828916 829609 fill_color=black
+Cgal0 829782 830547
+Cgal0 830522 832136
+Cgal0 832128 832587
+Cgal0 832756 834124 fill_color=black
+Cgal0 834407 836006
+Cgal0 836198 837170
+Cgal0 837200 838049
+Cgal0 838041 838899 fill_color=black
+Cgal0 838895 839669 fill_color=black
+Cgal0 839923 840697 fill_color=black
+Cgal0 840683 842096 fill_color=black
+Cgal0 842184 843840
+Cgal0 843950 844766
+Cgal0 844775 846395
+Cgal0 846993 848307
+Cgal0 848303 850763
+Cgal0 850993 851950 fill_color=black
+Cgal0 852079 853609 fill_color=black
+Cgal0 853661 857957 fill_color=black
+Cgal0 858070 860053
+Cgal0 860060 861914 fill_color=black
+Cgal0 862355 862877 fill_color=black
+Cgal0 863131 863437 fill_color=black
+Cgal0 863447 863834 fill_color=black
+Cgal0 863901 865389 fill_color=black
+Cgal0 865811 866054 fill_color=black
+Cgal0 867588 872865
+Cgal0 873049 875848 fill_color=black
+Cgal0 876072 876378 fill_color=black
+Cgal0 876938 878336 fill_color=black
+Cgal0 878348 878843 fill_color=black
+Cgal0 878849 879224
+Cgal0 879254 879713
+Cgal0 879931 880531
+Cgal0 880546 881374
+Cgal0 881361 882165
+Cgal0 882409 883510
+Cgal0 883513 884764
+Cgal0 884777 885941
+Cgal0 885966 886956
+Cgal0 887378 888146
+Cgal0 888439 889543 fill_color=black
+Cgal0 890046 890718 fill_color=black
+Cgal0 890950 892441
+Cgal0 892460 893039 fill_color=black
+Cgal0 893007 893793 fill_color=black
+Cgal0 893944 894928 fill_color=black
+Cgal0 894936 895638
+Cgal0 895615 896398
+Cgal0 896370 897474
+Cgal0 897451 897661 fill_color=black
+Cgal0 897678 899541 fill_color=black
+Cgal0 899601 899952 fill_color=black
+Cgal0 900067 901204
+Cgal0 901205 901655
+Cgal0 901695 901857 fill_color=black
+Cgal0 901873 902035 fill_color=black
+Cgal0 902159 902819
+Cgal0 903036 903618
+Cgal0 903617 905636
+Cgal0 905793 907761
+Cgal0 907791 908358
+Cgal0 908354 909518 fill_color=black
+Cgal0 909641 911372 fill_color=black
+Cgal0 911626 912802 fill_color=black
+Cgal0 912910 913840 fill_color=black
+Cgal0 913844 914135
+Cgal0 914121 915159 fill_color=black
+Cgal0 915155 916352
+Cgal0 916919 918158 fill_color=black
+Cgal0 918154 920347 fill_color=black
+Cgal0 920379 921249 fill_color=black
+Cgal0 921245 921578
+Cgal0 921622 923242 fill_color=black
+Cgal0 923230 923470 fill_color=black
+Cgal0 923766 925107 fill_color=black
+Cgal0 925172 925367 fill_color=black
+Cgal0 925488 926217
+Cgal0 926336 929378 fill_color=black
+Cgal0 929499 930255 fill_color=black
+Cgal0 930418 931120 fill_color=black
+Cgal0 931170 931995
+Cgal0 931998 933351
+Cgal0 933490 934756
+Cgal0 934752 935739 fill_color=black
+Cgal0 935751 937944
+Cgal0 938058 939849 fill_color=black
+Cgal0 939991 941968 fill_color=black
+Cgal0 942156 944964 fill_color=black
+Cgal0 945827 947795 fill_color=black
+Cgal0 947984 950954 fill_color=black
+Cgal0 950979 953910 fill_color=black
+Cgal0 954191 958073 fill_color=black
+Cgal0 958292 958568 fill_color=black
+Cgal0 958747 959068
+Cgal0 959086 960565
+Cgal0 960561 962025
+Cgal0 962144 963233 fill_color=black
+Cgal0 963456 963912 fill_color=black
+Cgal0 964011 964965 fill_color=black
+Cgal0 965158 966055 fill_color=black
+Cgal0 966295 966727 fill_color=black
+Cgal0 966984 968304 fill_color=black
+Cgal0 968732 970088 fill_color=black
+Cgal0 971520 973626 fill_color=black
+Cgal0 973730 974804 fill_color=black
+Cgal0 974812 975646
+Cgal0 975829 976000 fill_color=black
+Cgal0 976028 977960
+Cgal0 977956 978214 fill_color=black
+Cgal0 978235 978463
+Cgal0 978482 980135
+Cgal0 980272 981040
+Cgal0 981215 981527 fill_color=black
+Cgal0 981711 983799 fill_color=black
+Cgal0 983808 985512 fill_color=black
+Cgal0 985493 986084
+Cgal0 986120 987716
+Cgal0 987756 988695
+Cgal0 988736 989654 fill_color=black
+Cgal0 989744 990377 fill_color=black
+Cgal0 990512 992972 fill_color=black
+Cgal0 993364 994006 fill_color=black
+Cgal0 994204 994381 fill_color=black
+Cgal0 994404 995577
+Cgal0 995623 997660 fill_color=black
+Cgal0 997656 998751 fill_color=black
+Cgal0 998839 1000279 fill_color=black
+Cgal0 1000311 1001031 fill_color=black
+Cgal0 1001003 1001390 fill_color=black
+Cgal0 1001390 1003094
+Cgal0 1003090 1003381 fill_color=black
+Cgal0 1003384 1004701
+Cgal0 1005033 1005810
+Cgal0 1005787 1007149 fill_color=black
+Cgal0 1007114 1007819
+Cgal0 1007925 1008387 fill_color=black
+Cgal0 1008489 1010298
+Cgal0 1010438 1011053
+Cgal0 1011127 1011967
+Cgal0 1012097 1012541 fill_color=black
+Cgal0 1012542 1013019
+Cgal0 1013023 1013701
+Cgal0 1013802 1014906 fill_color=black
+Cgal0 1015072 1016737 fill_color=black
+Cgal0 1016760 1017375 fill_color=black
+Cgal0 1017384 1017954 fill_color=black
+Cgal0 1018037 1019120
+Cgal0 1019100 1021644
+Cgal0 1022009 1022732
+Cgal0 1022728 1024150 fill_color=black
+Cgal0 1024266 1026342 fill_color=black
+Cgal0 1026342 1026684
+Cgal0 1026799 1027099 fill_color=black
+Cgal0 1027113 1027452 fill_color=black
+Cgal0 1027458 1028247
+Cgal0 1028249 1028891
+Cgal0 1028877 1029840
+Cgal0 1029840 1031352
+Cgal0 1031433 1032036 fill_color=black
+Cgal0 1031998 1032577 fill_color=black
+Cgal0 1032592 1033945
+Cgal0 1034107 1034539 fill_color=black
+Cgal0 1034542 1035094 fill_color=black
+Cgal0 1035264 1036164
+Cgal0 1036160 1036448 fill_color=black
+Cgal0 1036434 1038381 fill_color=black
+Cgal0 1038677 1040129
+Cgal0 1040085 1040829 fill_color=black
+Cgal0 1041179 1041482
+Cgal0 1041607 1042789 fill_color=black
+Cgal0 1042885 1043860
+Cgal0 1043825 1045784
+Cgal0 1045749 1046421 fill_color=black
+Cgal0 1046404 1047172
+Cgal0 1047168 1047858 fill_color=black
+Cgal0 1047866 1048343 fill_color=black
+Cgal0 1048379 1048877 fill_color=black
+Cgal0 1049120 1050017 fill_color=black
+Cgal0 1049997 1050903
+Cgal0 1051472 1051817 fill_color=black

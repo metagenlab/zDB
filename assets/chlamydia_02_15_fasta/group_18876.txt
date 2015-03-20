@@ -1,0 +1,2 @@
+> Cav1_00009 | ispU, Ditrans,polycis-undecaprenyl-diphosphate synthase ((2E,6E)-farnesyl-diphosphate specific) | Prokka:Cav1_00009
+MRVSNFLLWQIAYTELYVTDVLWPDFQPSHLMDAIKDYQQRPRRGGK

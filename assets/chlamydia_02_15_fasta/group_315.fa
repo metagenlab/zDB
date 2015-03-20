@@ -1,0 +1,132 @@
+> CAB303 | xseB, exodeoxyribonuclease VII small subunit | YP_219720.1
+M--------------------EEITFEKAMERLEEIVDLMNQPSTSLDASLKFYEEADAL
+MRICESRIRKAEERVRELSEKRNEDFLSEEESF---------------------------
+------------------------VH
+> Cav1_00129 | exodeoxyribonuclease VII small subunit
+M--------------------EEIPFEKAMDRLEEIVDLMSQPTTSLDTSLQLYEEAESL
+MRICESRIRQAEERVRQLSEKRKEDFPSLEEVP---------------------------
+-----------------------YTH
+> CCA00306 | xseB, exodeoxyribonuclease VII small subunit | NP_829177.1
+M--------------------EEIPFENAMARLEEIVDLMNQPSTSLDSSLKLYEEADAL
+MRICESRIRKAEDRVRELSEKRNETLLSEEESC---------------------------
+------------------------TH
+> CF0697 | xseB, exodeoxyribonuclease VII small subunit | YP_515614.1
+M--------------------EEIPFENAMERLEEIVDLMNQPSTSLDSSLKLYEEADAL
+MRICESRIRKAEDRVRELSERRNETLLSEEESF---------------------------
+------------------------AH
+> cgal_00869 | exodeoxyribonuclease VII small subunit
+M--------------------EEISFEKAMDRLEEIVDLMSQPTTSLDASLQLYEEAESL
+MRICESRIRQAEERVRQLSEKHKEEFPALEEVP---------------------------
+------------------------TH
+> Cib1_00955 | exodeoxyribonuclease VII small subunit
+M--------------------EEIPFEKAMQRLEEIVDLMNQPTTSLDASLALYEEADSL
+MRICDTRIRQVEQRVRELSERRHEDFFPSEEEL---------------------------
+------------------------SL
+> TC0606 | xseB, exodeoxyribonuclease VII small subunit | NP_296982.1
+MTK-------------KAKNVEKVPFEDAMKRLEEIIDLMNQPTTALEASLALYEEADQL
+MRICESRIQEVEARIKQLSDQRSES-----------------------------------
+--------------------------
+> G5S_0649 | xseB, exodeoxyribonuclease VII small subunit | YP_004377309.1
+MM-------------------DEIPFETAMQRLEEIVDLMNQSSTSLDASLALYEEADAL
+MRICEARIHQVEQRVRELSKKRLESSLVKEETA---------------------------
+------------------------VH
+> CP0788 | xseB, exodeoxyribonuclease VII small subunit | NP_445327.1
+M--------------------EEVPFENAMQRLEEIVDLMNQPTTSLDASLALYEEADAL
+MRICESRIRQVEQRVRELAEKRHESSLFEEQAV---------------------------
+------------------------VR
+> CPSIT_0337 | exonuclease VII small subunit
+M--------------------EEIPFEKAMERLEEIVDLMNQPSTSLDASLKFYEEADAL
+MRICESRIRKAEERVRELSEKRNDDFLSEEESF---------------------------
+------------------------VH
+> CSEC_2395 | xseB, Exodeoxyribonuclease 7 small subunit
+MS------------------QAKQTFESAFHRLEEILEIMNSDTVTLDDSLKLYEEADNL
+IRFCSKKLNDAETKVEMLMKNREGDLLIGQDKKPLTQDFPSGND----------------
+--------------------------
+> CspR_01113 | exodeoxyribonuclease VII small subunit
+MT--------------QNYDLNSLSFEKGFLRLEEILEKMNSETIELEESLKLYEEADQL
+IQLCNKKLNDAEKKIEVLIKGRNGEIIMSADRQPLTQDFQDNSPPTS-------------
+--------------------------
+> ElaC_02126 | exodeoxyribonuclease VII small subunit
+MT--------------------QHTFESAFARLEEIVEKMNQDAIALDDSLKLYEEGDSL
+IQFCAKKLQDAETKIETLIKNRDGELVMGDDKRPATQEFSPPKNGAAQ------------
+--------------------------
+> Minf_1538 | xseB, Exonuclease VII small subunit | ACD83592.1
+MSL----------CEANAPEEKEMRFEEAFKKLQEIVHSLESGQLPLEDLLQKYEEGRRL
+LKICDDKLNQAEQRIIHLSRRENNSI----------------------------------
+--------------------------
+> Knic_02404 | xseB, Exodeoxyribonuclease 7 small subunit | Prokka:Knic_02404
+MKCT---------PVNNNTPQDSTSFETALSRLEEILERMNGGTISLDESLKLYEEADQL
+IAICNKRLNEAERKIEILVKNRSGELAIGSDDKPLVQDYKIPSA----------------
+--------------------------
+> LarH_03220 | xseB, Exodeoxyribonuclease 7 small subunit | Prokka:LarH_03220
+M--------------------KEKKFEEALGELEKIVQEMEQGELSLEDSFKKFEKGSDL
+AKVCSAKLAEVEKKVKVLKG-------ISEEG-PEWENLD--------------------
+--------------------------
+> NeoE_01109 | xseB, Exodeoxyribonuclease 7 small subunit | Prokka:NeoE_01109
+MN------------------DKELSFEAAFVRLEEILEKMNSGAISLDESLKLYEEADRL
+ISSCQKRLLEAERKIEILVKNRNGEVVLDPDKKPLTQEFN--------------S-----
+--------------------------
+> NeoS_00895 | xseB_1, Exodeoxyribonuclease 7 small subunit | Prokka:NeoS_00895
+MN------------------EKELSFEAAFVRLEEILEKMNSGAISLDESLKLYEEADRL
+ISSCQKRLLEAERKIEILVKNRNGEVVLDPDKKPLTQEFN--------------S-----
+--------------------------
+> NeoS_00927 | xseB_2, Exodeoxyribonuclease 7 small subunit | Prokka:NeoS_00927
+MN------------------EKELSFEAAFVRLEEILEKMNSGAISLDESLKLYEEADRL
+ISSCQKRLLEAERKIEILVKNRNGEVVLDPDKKPLTQEFN--------------S-----
+--------------------------
+> NeoT_01043 | xseB, Exodeoxyribonuclease 7 small subunit | Prokka:NeoT_01043
+MN------------------EKELSFEAAFVRLEEILEKMNSGAISLDESLKLYEEADRL
+ISSCQKRLLEAERKIEILVKNRNGEVVLDPDKKPLTQEFN--------------S-----
+--------------------------
+> NHA_1978 
+MN------------------EKDLSFEASFARLEEILEKMNSGSISLDESLKLYEEADRL
+IQNCQKKLGSAERKIEMLVKNRNGEVIVDEDQKPLTQDFN--------------L-----
+--------------------------
+> PacO_00457 | xseB, Exodeoxyribonuclease 7 small subunit | Prokka:PacO_00457
+MEK------------ETNSNKQEKNFEAAFARLEEILEKMNSGAVSLDESLLLYEEADRL
+IASCTQRLNDAERRIEVLIKNRQGDLSLDPNQNPKVQNFSDSGNGNSTTKLMSP------
+--------------------------
+> PUV_10120 | xseB, exodeoxyribonuclease 7 smaLL subunit | YP_004651816.1
+MEK------------ETNSNKQEKNFEAAFARLEEILEKMNSGAVSLDESLLLYEEADRL
+IASCTQRLNDAERRIEVLIKNRQGDLSLDPNQNPKVQNFSDSGNGNSTTKLMSP------
+--------------------------
+> PaHS_01525 | xseB, Exodeoxyribonuclease 7 small subunit | Prokka:PaHS_01525
+MT----------------EIEKEASFEAAFSRLEEILEKMHSGALSLDESIQLYEEADKL
+IVQCNQRLSDAERKIEILIKNRNGELALGADQKPSTQPFTPTNGNKL-------------
+--------------------------
+> PamE_00665 | xseB, Exodeoxyribonuclease 7 small subunit | Prokka:PamE_00665
+MN-------------NPSDQEPTTSFETALCRLEEILEKMNSGTVSLDESLKLYEEADQL
+IIICNKRLNDAERKIEILVKNRSGELTLGNDDKPIIQDFKIASTS---------------
+--------------------------
+> pc0620 | xseB, exodeoxyribonuclease VII, small chain | YP_007619.1
+MN-------------NPSDQEPTASFETALCRLEEILEKMNSGTVSLDESLKLYEEADQL
+IIICNKRLNDAERKIEILVKNRSGELTLGNDDKPIIQDFKIASTS---------------
+--------------------------
+> PnaD_02075 | xseB, Exodeoxyribonuclease 7 small subunit | Prokka:PnaD_02075
+MKCT---------PVNNNTPQDSTSFETALSRLEEILERMNGGTISLDESLKLYEEADQL
+IAICNKRLNEAERKIEILVKNRSGELAIGSDDKPLVQDYKIPSA----------------
+--------------------------
+> PR18_00627 | xseB, Exodeoxyribonuclease 7 small subunit | Prokka:PR18_00627
+MN-------------NPSDQEPTTSFETALCRLEEILEKMNSGTVSLDESLKLYEEADQL
+IIICNKRLNDAERKIEILVKNRSGELTLGNDDKPIIQDFKIASTS---------------
+--------------------------
+> Psta_3972 | Exonuclease VII small subunit
+MSTDSK-------PTEPKPIDKSLSFEESLTKVEQVVRSLEEGQLGLGPSIEAYERAVSH
+LKYCYGLLAAAERRVELLTA-------VSPEGEALTAPFDDVATQAASEAAPARRKR---
+AIKKGSTGGDASGDAAADLLSGLD--
+> RB2146 | xseB, similar to exodeoxyribonuclease VII small subunit | CAD72451.1
+MAKKKRNPSAEEAGDGEQTAAELGDFETTLGDVETIVRKLESGALTLDDSLKQYEVAVAK
+MRQCYQLLDVAERKISVLAG-------VDAEGRPVTEPLENMSGGESLVQKQASRGKRRG
+AVAPDHSASDTTGVDSADLDSAEDDE
+> SNE_A08890 | xseB, exodeoxyribonuclease 7 small subunit | YP_004671257.1
+MI---------------EKTAGSFSFEEAYARLETILEELNSGELSLEKSLKLYEEADKL
+IAHCNEKLSNAEQKIQTLIKNREGQVVMNDAAQPKMEAFSHQTSYDPAT-----------
+--------------------------
+> VspiD_06210 | xseB, Exodeoxyribonuclease 7 small subunit | Prokka:VspiD_06210
+MT-------------EEERLPEDLSFEEAMESLEAIVSSLESERMPLEEMVQSYERGARL
+LSQCRSRIESARQRVEMITADLDGRGRVSLSDFAAMEETATPTAAGNPASEESPKPR---
+-VPRKKPAPEESNEGEIRLF------
+> wcw_1157 | xseB, Exodeoxyribonuclease 7 small subunit | YP_003709520.1
+MT------------------KKEPDFEKNFQRLEEILEAMNSGEAGLDKSLKLYEEANDL
+IIACGKRLNEAEQKIEKLIKQRDGELALSDDGAPAVESFE--------------------
+--------------------------

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+</head>
+
+<body>
+
+
+
+
+{% include "chlamdb/user.html" %}
+{% include "chlamdb/menu.html" %}
+
+
+
+<section>
+
+
+
+<!--
+{% load static %}
+<img src="{% static 'im_1.jpg' %}" alt="Mon image" />
+-->
+
+
+<form action="{% url "chlamdb.views.homology" biodb %}" method="post">
+{% csrf_token %}
+
+
+<table>
+  <tr>
+  <td>{{ form.as_p }}</td>
+</tr>
+
+<tr>
+  <td><input type="submit" value="Submit" /></td>
+</tr>
+
+
+</table>
+
+
+</form>
+
+
+
+
+
+
+{% if envoi %}
+
+    {% if not valid_id %}
+
+        Unknown accession!
+        Accept protein ids and locus tags
+        <!--
+        Existing accessions are:
+        <table>
+        <tr>
+        <th>accession</th>
+        <th>Name</th>
+        </tr>
+        {% for key, value  in accession_dict.items %}
+    
+        <tr>
+        <td>{{key}}</td>
+        <td>{{value}}</td>
+        </tr>
+
+
+        {% endfor %}
+        </ul>
+        -->
+
+    {% else %}
+
+
+
+    {% if not plot_region %}
+
+    <table>
+    <tr> 
+    <td>{{bioentry_accession}}</td>
+    <td>{{bioentry_name}}  </td>  
+    </tr>
+    </table>
+
+     &nbsp
+
+
+
+
+     
+    &nbsp
+
+
+     
+    <h2>Features of {{accession}}</h2>
+  
+    <table>
+    <tr>
+    <th id="entete">Feature</th>
+    <th>Value</th>
+    </tr>
+
+    {% for key, value  in seqfeature_values.items %}
+
+        <tr>
+        <td>{{key}}</td>
+        <td id="entete_features">{{value}}</td>
+        </tr>
+    {% endfor %}
+    </table>
+
+    &nbsp
+
+
+
+
+    {% if orthologs %}
+
+
+
+    <h2>Sequences</h2>
+    <table>
+    <tr>
+    <td id="entete_sequences"><a href="{% static fasta %}">Protein sequences (fasta)</a> </td>
+    </tr>
+    <tr>
+    <td><a href="{% static alignment %}">Protein alignment (html)</a> </td>
+    </tr>
+    <tr>
+    <td><a href="{% static alignment_fasta %}">Protein alignment (fasta)</a> </td>
+    </tr>
+
+    <td><a href="{% static tree_unrooted %}"> Phylogenetic tree (unrooted)</a> </td>
+    </tr>
+
+    <td><a href="{% static tree_rooted %}">Phylogenetic tree (midproint rooted)</a> </td>
+    </tr>
+
+    <td><a href="{% static tree_file %}">Phylogenetic tree file (newick)</a> </td>
+    </tr>
+
+
+    </table>
+
+
+    <h2>Homologs</h2>
+
+
+    <table>
+    <tr>
+    <th> </th> 
+    <th>Accession</th>
+    <th>Locus tag</th>
+    <th>Identity (%)</th>
+    <th>start</th>
+    <th>stop</th>
+    <th>strand</th>
+
+    <th>Organism</th>
+
+
+    </tr>
+    {% for values in ortho_detail %}
+        <tr>
+        <td>{{values.0}}</td>
+        <td>{{values.1}}</td>
+	<td>{{values.3}}</td>
+    <td>{{values.5}}</td>
+    <td>{{values.6}}</td>
+    <td>{{values.7}}</td>
+    <td>{{values.8}}</td>
+	<td>{{values.4}}</td>
+
+        </tr>
+    {% endfor %}
+    </table>
+
+    {% else %}
+    <h2>Homologs</h2>
+    No homologs
+
+    {% endif %}
+    {% endif %}
+    {% endif %}
+
+    {% if plot_region %}
+    &nbsp
+    <h2>Region</h2>
+    {% load static %}
+    <img src="{% static name %}" id="genomic_region" />
+    {% endif %}
+
+{% endif %}
+
+
+
+</section>
+
+
+
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+
+
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script>
+  var update_fields = function () {
+    if ($("#id_plot_region").is(":checked")) {
+
+        $('#id_region_size').show();
+        $('#id_genomes').show();
+       $('label[for="id_genomes"]').show();
+       $('label[for="id_region_size"]').show();
+
+    }
+    else {
+
+       $('#id_region_size').hide();
+       $('#id_genomes').hide();
+       $('label[for="id_genomes"]').hide();
+       $('label[for="id_region_size"]').hide();
+    }
+  };
+  $(update_fields);
+  $("#id_plot_region").change(update_fields);
+</script>
+
+
+
+<!--
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script>
+  var update_fields = function () {
+    if ($("#id_plot_region").is(":checked")) {
+
+        $('#id_region_size').prop('disabled', false);
+    }
+    else {
+
+       $('#id_region_size').prop('disabled', 'disabled');
+    }
+  };
+  $(update_fields);
+  $("#id_plot_region").change(update_fields);
+</script>
+-->
+
+
+
+
+
+</body>
+</html>

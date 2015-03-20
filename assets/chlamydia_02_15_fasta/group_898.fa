@@ -1,0 +1,119 @@
+> CSEC_0860 | osmY, Putative hyperosmotically inducible periplasmic protein
+MKK-HFVIYLFVLSLFSCETK-EKPRK-PPLNHGVQNQ----------------------
+-----------------------P------------------------------------
+------------------------------------------------------------
+---------------------ENPSKKSPKRNFLSHGIVQSLEEDKDRQITQNIRKHLMN
+DKTLSFIARNITVITEDGVVTLRGKVPTEVEKNKISQKINLIPSIVTLNNKLEVSDD---
+-----------------
+> CspR_01223 | periplasmic protein
+MKKLFICLSLLGLTLVSCENH-SKSRE-NPQT----------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+-------------------------------------------VQQDRQVVGQVREIIIQ
+DPSLSPTAKNVEIIAEEGVVTLRGQVNDSQEAKVIEEKVKRIPGVSKVKNELQSRNK---
+-----------------
+> CspR_02339 | outer membrane lipoprotein
+MRK-FLYLSAIPFLLFSCERA-DNTKKMPPHTQNYTDQKVEQNKLPADQSKVNDLRVNES
+QKTRLEQERSRGYFNQDTLDQNSPRSMEPRRELDRERGRGYFNQDAVNQGRLNQSQRSNY
+SNQSMEDPSLRSRERSSIQQDSFNGSRERADVNLFNKSGLSAQETGINKSPAPFLKDREI
+DKRMNYSSEKSNVDKSSSYDVDNTGINVRDRNADAKTPFDQSESSADLKITQDIRKALVD
+DNQLSMDAKNIKVITQNGVVVLRGPVVDQKEISIILDKISKVPGVKKVDNFLEVTRKH--
+-----------------
+> Knic_02079 | periplasmic protein
+MKKQLFILSSLCLMLSACENTAHNT---APGA----------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------DNTARNA--RNGHAVTAGDQAENEADRGITQKVRQALLE
+DDSLSTNAKNIKIITINGVITLRGPVNNDREKNEIGKKAKAVSGVRNVDNQLEVIREVNV
+NRLDNAMRSEGRSDINR
+> NeoE_01663 | periplasmic protein
+MKK-VFLMTLLSLAVISCDTK-DKS---VPSS----------------------------
+-----------------------PKG----------------------------------
+------------------------------------------------------------
+-------------------EPSDYLRDKADRYAVEKTPLDQSESEADRTITQKIRQAIVK
+DDSLSMNAKNIRIITIDGVVTLRGPIATLEEREIIIGKTKEIPGIRKIENQLEITGKKY-
+-----------------
+> NeoS_01618 | periplasmic protein
+MKK-IFLMTLLSLAVISCDNK-DKS---VPSS----------------------------
+-----------------------PKG----------------------------------
+------------------------------------------------------------
+-------------------EHSDYLRDKADRYAVEKTPLDQSESEADRTITQKIRQAIVK
+DDSLSMNAKNIRIITIDGVVTLRGPIATLEEREIIIGKTKEIPGIKKIENQLEITGKKY-
+-----------------
+> NeoT_00509 | periplasmic protein
+MKK-VFLMTLLSLAVISCDTK-DKS---VPSS----------------------------
+-----------------------PKG----------------------------------
+------------------------------------------------------------
+-------------------EPSDYLRDKADRYAVEKTPLDQSESEADRTITQKIRQAIVK
+DDSLSMNAKNIRIITIDGVVTLRGPIATLEEREIIIGKTKEIPGIRKIENQLEITGKKY-
+-----------------
+> NHA_878 
+MKK-FVLMAMLSLSLIGCDQQ-GKPNN-PPQS----------------------------
+-------------------------------------------------GQ---------
+------------------------------------------------------------
+-------------------DYDNTGINTRDRDSGTKTPLNQSESEADRTITQKIRQAIMA
+DDTLSTNAKNIKIITINGVVTLRGPVANTQEKDAIARKVSAVQGIIKVDNQLEVTRNNY-
+-----------------
+> PacO_02262 | periplasmic protein
+MKSKLLILPALSIMLVGCEQHVTNPP--PPKSPTQQNSSI--------------------
+------------------LDA-APSETNTNRNLQ--------------------------
+------------------------------------------------------------
+-------------DRRASDDADNTSRNVRDRIEGALTPFDQSESVGDRITLQSIRKALVE
+NKILSTYAKNIKVITANGVVTLRGPVNSAAEKEAIERIVSLIPGVTKVDNQLEVLQNAEK
+-----------------
+> PUV_00930 | osmy, hyperosmoticaLLy inducible periplasmic protein | YP_004650897.1
+MKSKLLILPALSIMLVGCEQHVTNPP--PPKSPTQQNSSI--------------------
+------------------LDA-APSETNTNRNLQ--------------------------
+------------------------------------------------------------
+-------------DRRASDDADNTSRNVRDRIEGALTPFDQSESVGDRITLQSIRKALVE
+NKILSTYAKNIKVITANGVVTLRGPVNSAAEKEAIERIVSLIPGVTKVDNQLEVLQNAEK
+-----------------
+> PaHS_00724 | periplasmic protein
+MLKQFFGLSVLSLSLVGCNVD-QNTSV-SPMRDGTTLT----------------------
+-----------------------P------------------------------------
+------------------------------------------------------------
+---------------------DRTTLGSERGMHVDQGALEQGENESDRHVTQVIRQMLMA
+DDKLSLQSKNITIVTKNGVVTLKGIVNSDSEKQKIVKKAQAAPGVRNVIDQLLVSEKNKL
+---------------SR
+> PamE_01378 | periplasmic protein
+MKKHLFALTALSLALTACENT-HQT-----------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+-------------------NADNTARNARDRNGHTLTPIDQSETEADRAITQKIRQALVE
+EEALSTNGKNVKIITINGVVTLRGPVNSEDEKNQISKKAKSINGVKNVDNQLEVIREIPV
+-------KAE-----NR
+> pc1171 | osmY, hypothetical protein | YP_008170.1
+MKKHLFALTALSLALTACENT-HQT-----------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+-------------------NADNTARNARDRNGHTLTPIDQSETEADRAITQKIRQALVE
+EETLSINGKNVKIITINGVVTLRGPVNSEDEKNQISKKAKSINGVKNVDNQLEVIREIPV
+-------KAE-----NR
+> PnaD_01813 | periplasmic protein
+MKKQLFILSSLCLMLSACENTAHNT---APGA----------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------DNTARNA--RNGHAVTAGDQAENEADRGITQKVRQALLE
+DDSLSTNAKNIKIITINGVITLRGPVNNDREKNEIGKKAKAVSGVRNVDNQLEVIREVNV
+NRLDNAMRSEGRSDINR
+> PR18_00188 | periplasmic protein
+MKKHLFALTALSLALTACENT-HQT-----------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+-------------------NADNTARNARDRNGHTLTPIDQSETEADRAITQKIRQALVE
+EEALSTNGKNVKIITINGVVTLRGPVNSEDEKNQISKKAKSINGVKNVDNQLEVIREIPV
+-------KAE-----NR
+> PR18_01554 | periplasmic protein
+MKKHLFALTALSLALTACENT-HQT-----------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+-------------------NADNTARNARDRNGHTLTPIDQSETEADRAITQKIRQALVE
+EEALSTNGKNVKIITINGVVTLRGPVNSEDEKNQISKKAKSINGVKNVDNQLEVIREIPV
+-------KAE-----NR
+> Psta_0007 | transport-associated
+MKR--FILGALCIVALGCNTS-------TPTADNDRLN----------------------
+-------------------D----------------------------------------
+------------------------------------------------------------
+-------------DTNQVVDRDNTAVNARDRSIAATTPFDQKENQSDIDITAKIRSQVVG
+TD-MSLNAQNVKIMTKDGNVTLRGPVATADEKLKIGRLANEVAGTQNVDNQLEVQP----
+-----------------

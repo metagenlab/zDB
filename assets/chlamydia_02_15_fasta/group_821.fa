@@ -1,0 +1,171 @@
+> CSEC_1392 | Conserved hypothetical protein
+MNSE------------------------------LAQIIYLNGPSSSGKTTLAKALQQAF
+EKPYLHVGIDKIIGWMPEK-------LNDWTGNSNPQGYSWKEGKDESGALIQELQAGPY
+AKKIEEVFRKIVLTLAKMGHPLIVDDISFGKHEIDLWKVVLKDFSVLWVGIRAPLFVLES
+REKERCNRIIGSARGQIQKVHA-GMVYDLEVNTHESSISDIVESIKKAALNKILAEKRKY
+EVTLVKAEDKDKETIQNLGRFYVYEMSRHCGFLEGWEVPCNGLFECRHLSSYIEKPDRHA
+FLIKVDGELAGFVLINKVGSTFDVDWN---VGEFFVVSKFQEKGIGKIVAEQIFNQFPGI
+WETAQIPENRAARDFWEKVVSQYTD-------GQYEKSVKTIEYPTPHPMVVLKFSSKIF
+KD--
+> CspR_00740 | putative acetyltransferase
+M-----------------------------------------------------------
+------------------------------------------------------------
+--------------------QITIDLVNTN------------------------------
+------------------------------------------------------------
+----------KKEIIQNLARFYVYEMSRFCGFLPGWKTPSDGLYTCFDLSRYWTEPHRFP
+YLIHVDEELAGFALIHKIGSLPTIDWT---IGEFFVIAKYQNKGVGKFVAHNIFDQFKGM
+WEVCQIPENKPAIIFWEKIIKEYSS-------DNYTKNSIIVQEPSPHPMIALQFMS---
+----
+> CspR_01946 | Chloramphenicol 3-O phosphotransferase
+MNFS-------------------------------YQIIYINGPSSSGKTTLAKALQQEL
+DEPFLHVSLDKVIGMMPEK-------INNWEGGFAPDGFSWKEAYDETGNLIQELQMGPF
+AKKISQTFKEIVLTLAKNGHYLIIDDISFGKTEVDEWRKLLKDYNVLWVGLSIPLALLEE
+REKKRGNRIIGSARAQYSKVHK-DVIYDIEFEMSQITL----------------------
+-----------DDTIKILKK-------KFC------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+----
+> ElaC_01931 | Chloramphenicol 3-O phosphotransferase
+MVIQ----YFLD-FLCLFSHPVVGGDILPKTEKALYQIIYINGPSSSGKSTLIKQLQHTL
+KDPYLHVGIDQLINMMPEK-------VNDWTGGEASHGFSWKAATDIDGKPMQLLQIGPF
+AKKVSETLKQIVQLMAESGYFIIIDDIAFGKEGVDAWREALRGYQVIYIGIHTPLPVLEE
+RERARGDRMIGSARAQFLSVHR-GVSYDLEFDTSKVSV----------------------
+-----------NQIVKSIGQ----------------------------------------
+---------------------------------------------------KVY------
+--------------------------------------------PSVHTQ----------
+----
+> LarH_01370 | Chloramphenicol 3-O phosphotransferase
+M----------------------------------SKLIYLNGASSSGKTEISKELQIIF
+EETFLHISSDTFSSFYPPK----KAPLKNYSA--------------EYLSAVRKNLKSQE
+KPSIVQLYNSFILSMLKEGMNVIADTTFLKYMTIEEIKK-LAIEEAYLIDVTCDLEIMEE
+REKKRADRPIGAAKTHV------EFCYD--------------------------------
+-----------------------YKSNDFC------------------------------
+-----------------------IDTS-----------KLDAETCAEQIKKMILSKTP--
+-------------QAFTQIIRKYQDQPQFSLFENWTKNQ---------------------
+----
+> LarH_02779 | hypothetical protein
+M-------------------------------------IYINLSKKNTKKIISNLMQL--
+---YLH-DMSEFTNEAPNE-----------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+----------------------------------------SGLYVSKYLDLYWTDSDRFP
+YIILENQKPIGFALVR------ELDLNSFSIAEFFIIKHARSKGYGITAAKEIFNKHDGL
+WHVAQIEENIPAQRFWRKVISSYTNGDYE---EKWSGSS--PKGPL------QTFKTKDL
+TN--
+> NHA_778 | hypothetical protein
+M-----------------------------------------------------------
+------------------------------------------------------------
+-----------------------------------------KHFEI---------SLCEA
+SEK---------------------------------------------------------
+----------DKETIQNLGRFYVYEMSRYCGFLPTWETPSNGLFECIDLSSYCEKPDRHA
+FLIKANSELAGFVLINKVGSTPDVDWN---IGEFFVVSKFQGKGIGRYAAEQVFNQFPGI
+WETSQIPENKAALDFWEKVVDGYAS-------GQYEKSLKTIAEPKPHPMVVLKFASK-G
+KG--
+> PacO_01184 | Chloramphenicol 3-O phosphotransferase
+M----------------------------------SKIIYLNGPSSSGKTTVAKALQNAF
+IEPYLHISLDKMIGFMPEK-------INNWEGGAAPLGFSWRPAVDPTGHPIYKIHAGPF
+ADKISRTLKDVAILLVSQQYNLIIDDVAFGILEVGEWKQALKDYPVLYVGVTTPLDILEK
+RERLRGNRFAGGARGQYFKVHE-NVAYDLEIDTHAQSL----------------------
+-----------EENIEKIKQ----------------------------------------
+--------------------------------------AFSEKENSKQV-----------
+------------------------------------------------------------
+----
+> PacO_01329 | hypothetical protein
+M-----------------------------------------------------------
+------------------------------------------------------------
+--------------------NMTISKASLD------------------------------
+------------------------------------------------------------
+----------DWQTVQNLARFYVYDMARYCGFLPGWETPPNGLYTCDDLSSYFTDSDRYS
+FLIKVDHELAGFVLINKVGSIPEVDWN---MGEFFVISKFQGKGVGRTAAEQIFMQFPGL
+WEVMQIPENKGAIAFWNKVIQRYTN-------GHFMHTQTLIPKPIAHIMEVLRFDSLLN
+FNHL
+> PUV_17630 | chloramphenicol 3-O phosphotransferase
+M----------------------------------SKIIYLNGPSSSGKTTVAKALQNAF
+IEPYLHISLDKMIGFMPEK-------INNWEGGAAPLGFSWRPAVDPTGHPIYKIHAGPF
+ADKISRTLKDVAILLVSQQYNLIIDDVAFGILEVGEWKQALKDYPVLYVGVTTPLDILEK
+RERLRGNRFAGGARGQYFKVHE-NVAYDLEIDTHAQSL----------------------
+-----------EENIEKIKQ----------------------------------------
+--------------------------------------AFSEKENSKQV-----------
+------------------------------------------------------------
+----
+> PUV_19260 | hypothetical protein
+M-----------------------------------------------------------
+------------------------------------------------------------
+--------------------NMTISKASLD------------------------------
+------------------------------------------------------------
+----------DWQTVQNLARFYVYDMARYCGFLPGWETPPNGLYTCDDLSSYFTDSDRYS
+FLIKVDHELAGFVLINKVGSIPEVDWN---MGEFFVISKFQGKGVGRTAAEQIFMQFPGL
+WEVMQIPENKGAIAFWNKVIQRYTN-------GHFMHTQTLIPKPIAHIMEVLRFDSLLN
+FNHL
+> PaHS_01061 | Chloramphenicol 3-O phosphotransferase
+MRRKDVLAIFLDGLLFIFS------------EAQVTKIIYLNGPSSSGKTTLAKALQEAL
+LEPYLHVGIDKIIGFMPAK-------INNWEGGSAPLGFSWEAATDPTGHPIYNIHVGPF
+AQKVARSLKDIAHLLASQNYHLIIDDVAFGAIEVEEWKKTLKNYKVIYVGVTAPLEILEE
+RECARGNRFVGSARAQYFKVHE-NVSYDLEIDSHLETL----------------------
+-----------DTNVKRILR----------------------------------------
+--------------------------------------ALSEK-----------------
+------------------------------------------------------------
+----
+> PaHS_01069 | hypothetical protein
+M-----------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+---------------------VIFEIVDFC------------------------------
+--------------------------------------------VGKNMAFAVFNKHPGP
+WRVRQIPSSEAATKFWRRVIGEYVN-------ENYTESQ--IENPC------WGFVNLPA
+I---
+> PamE_00557 | Chloramphenicol 3-O phosphotransferase
+MTNE------------------------------SIQIIYLNGPSSSEKTTLAKALQHAF
+EGPFLHIGIDRIIGWMPEK-------VNDWTDGEAPIGYSWKKSEDEFDNPIQELQAGPY
+AQKIGKTFQEVVLALAKMGHRIIIDDVSFGKQQLDEWKGILKDF----------------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+----
+> PamE_00577 | Chloramphenicol 3-O phosphotransferase
+MELK-----------------------------QIFQIIYINGPSSSGKTTLAQALQEAL
+YQPFLHIGIDRVIGMMPNK-------LNNWKGGEAFQGFSWKSFIDETNHPVYEIQMGPF
+AQKIE----------------------------------------------SNP------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+----
+> pc0531 | cpt, chloramphenicol 3-O phosphotransferase | YP_007530.1
+MKQA----I----------------------------------------------LSMKF
+RWDLLH------------------------------------------------------
+-KKLSQTLKEIVLPLAKMKHFIIIDDVAFDSNAVNAWREVLKDYKVLWIWIKTPLPILEE
+REKLRGNRMHGTARAQF-------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+----
+> PR18_00853 | Chloramphenicol 3-O phosphotransferase
+M---------------------------------------------------------TF
+RWGLLH------------------------------------------------------
+-KKLSQILKEIVLTLAKMKHFIIIDDVAFDSTAVNIWREVLKDYKVLWIGIKTPLPILEE
+REKLRGNRMHVTARAQYFKVHK-DITYYPEFDTSKEFM----------------------
+-----------ENIVQTIKE-------KLC------------------------------
+---QTDH-----------------------------------------------------
+------------------------------------------------------------
+----
+> PR18_00854 | Chloramphenicol 3-O phosphotransferase
+MKPK-----------------------------EIFQIIYINGTSSSGKTTLVQALQEAL
+YQPFLHIGIDRVIGMMPNK-------LNNWEGGKAPQGFSWKSSIDETSHPVYDIQMGPF
+AQKIE----------------------------------------------SNP------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+------------------------------------------------------------
+----
+> wcw_0090 | Chloramphenicol 3-O phosphotransferase
+MK---------------------------------GAIIILDGSPSVGKSTIAKEIQEIA
+EEPYYYLPIDEFVNKLPSRWIHFTDDLTDIEG----IGFH--PTTDSEGNAEIKFKAGPL
+GEKLIRGYINAVKGFSKAGNHVVADAIITDLKWLDWLTKQLSQYPVVFIGLHAPLKVLEQ
+REKERFE-LQGTARGRYQEVYGMKKPYDLEIDTSLISP----------------------
+------------------------------------------------------------
+----------------------------------------------KEAAVKILNK----
+-----------------------------------SKKS---------------------
+----

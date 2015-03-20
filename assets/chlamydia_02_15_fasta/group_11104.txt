@@ -1,0 +1,2 @@
+> RB3044 | hypothetical protein-signal peptide prediction
+MRLKVSLKSPACACLETLLSMKAVGSWPCCISFEAICLTPYFAREMR

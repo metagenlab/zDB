@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+
+
+
+
+{% include "chlamdb/user.html" %}
+{% include "chlamdb/menu.html" %}
+
+
+<section>
+    <h1>Chlamydiales Database</h1>
+
+
+Welcome! {{ user.username }}
+</section>
+
+
+
+
+
+</body>
+</html>
+

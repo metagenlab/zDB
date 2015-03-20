@@ -1,0 +1,2 @@
+> Knic_02415 | tdh_2, L-threonine 3-dehydrogenase | Prokka:Knic_02415
+MGATHAVNIKNTSLDEAMRSLGIDYGFTVGLEMSGHPNGLATLTEK

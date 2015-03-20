@@ -1,0 +1,77 @@
+> CSEC_1850 | otsB, Trehalose-phosphate phosphatase
+MV---------------------------------------------------YEK----
+------------------------------------------------------------
+-----------------TAFLNDHKE----------------------------------
+------------------------------------------------------------
+-------------ELMALAKMNA---------PFLFFDFDGTLTPIVATPDLAFLSEHRK
+KILSDIK--MKMPIAIVSGRNLIDLKERV-GVEG-IYYVGSHGLEIET--PEGELFQIPI
+PRLAQEEYMEVTSVLQKKISPLPG-------IFIENKHFCFAVHYRLADVEVEKKALELV
+FNSLSKTKY------LSLQHGKRVVEVKPNVDWHKGSAVLWILEREDSKKKIEPLVFYFG
+DDATDENA---FKTLDGKAVTVCVMNPLRK----TNAGYFLNDVE--EVYSFIASLDF--
+----L
+> CspR_01366 | otsB, Trehalose-6-phosphate phosphatase | Prokka:CspR_01366
+MS-------------DEV--------------TNIFASF--------------FDK----
+------------------------------------------------------------
+--------------------IKANTH----------------------------------
+------------------------------------------------------------
+--------------------------------SLLLTDYDGTLAPHQIDRLKALPPQEIF
+DKLRILNSCPRVDVIIISGRSLVELKKML-NINSKLVIYGSYGMERIQ--GNSKIERAVI
+THKQKLGLQQIENELAKIIDAKN----------LEIKPLSIALHWRGLHEGEQTQLKRMF
+QQVVEKVAVNADLAFLPFNGG---LEIMPR-GRAKSDAIHEIIS----QYNSEIPLAYLG
+DDYSDEAA---FEAIGMRGLKILVSDTDRS----TLADVIIKPGS--SVVAFFDRW-IKA
+AQCEP
+> ElaC_00772 | otsB, Trehalose-phosphate phosphatase | Prokka:ElaC_00772
+------------------------------------------------------------
+------------------------------------------------------------
+--------------------MTSAKD----------------------------------
+------------------------------------------------------------
+-------------KPSALVRWQEIQDKLQGKRPLFFLDYDGTLSPITAHPKDARLPPKMK
+EVLEDLS--RRYFTAVISGRALADIKELL-GDMP-LYISGSHGFVIET--DAGVVFRLPE
+AARYRKDLEEAYLLLKEKISSLPG-------VVLENKDFSIAIHDRMVEEGFKPIIRTTV
+AETSTLFPR------LKMNAGKCLFELKPALDWDKGKAVQWILDSISFDPKRECPI-VIG
+DDVTDEDA---FRAVKGNGVSIFVMGEKTE----THADYILQNTE--EV-ALFLQL-FST
+MQ---
+> PacO_00442 | otsB, Trehalose-6-phosphate phosphatase | Prokka:PacO_00442
+MN--------------------------------VLERF--------------FSE----
+------------------------------------------------------------
+--------------------LSAKKK----------------------------------
+------------------------------------------------------------
+--------------------------------CLFLLDYDGTLAPLLADRSQAFPYEGVK
+ERLQDLSDYKNYRMVIISGRSLEDLERFLKSIDPRLELWGSHGLEHLN--QSGQRKCEPI
+DPSIQEGLQKALEACLLYCPSQR----------CEIKPFGIAFHWRGIDEKAREKIKQVI
+LPDWEKITQAYPLHIYQFDGG---LELKPR-DRNKGDVVKELLQ----NTPSDVPVVYMG
+DDQTDEDA---FKVLGERGLKVLVRKEFRP----TLADVHLVPPE--ELLTFFDRC-KSM
+A----
+> PUV_09950 | hypothetical protein
+MN--------------------------------VLERF--------------FSE----
+------------------------------------------------------------
+--------------------LSAKKK----------------------------------
+------------------------------------------------------------
+--------------------------------CLFLLDYDGTLAPLLADRSQAFPYEGVK
+ERLQDLSDYKNYRMVIISGRSLEDLERFLKSIDPRLELWGSHGLEHLN--QSGQRKCEPI
+DPSIQEGLQKALEACLLYCPSQR----------CEIKPFGIAFHWRGIDEKAREKIKQVI
+LPDWEKITQAYPLHIYQFDGG---LELKPR-DRNKGDVVKELLQ----NTPSDVPVVYMG
+DDQTDEDA---FKVLGERGLKVLVRKEFRP----TLADVHLVPPE--ELLTFFDRC-KSM
+A----
+> VspiD_06567 | ycjU, Beta-phosphoglucomutase | Prokka:VspiD_06567
+MP-------------DLS------------------------------------------
+------------------------------------------------------------
+--------------------LSATTG----------------------------------
+------------------------------------------------------------
+----------------------------------FIFDWDGVIIDSHAQHEESW-----Q
+LLFQEL------------GRPMPE-----------GFFKATFGMRNQQIIPMCFDFVAPD
+DHAEIARLGNRKEELYREILRRDGIVPLPGVVTLLEELLSLGIPTSVGSSTPRLNIETIM
+GMTGLDCYFQHIVSAEDVTVG------KPD-----PQVFLKAAEKLG-RPPERCVVF---
+-----EDAHVGIEAGKRAGMKVVAVATTHPLESLGQADVAYSNLEGLRVETIIAATGL--
+-----
+> wcw_0140 | beta-phosphoglucomutase hydrolase
+MKAVISPENHHAVIFDLDGIITRTASVHAKAWKKMFDDFLKARAEEYKEAFVPFDENVDY
+LNYVDGKPRYEGIQSFLSSRSINLPMGDPNDGPESLTIYGLGNKKNQLFIDVLQADGIEV
+YETTIALIHEIRRLGVKTALISSSKNCRSIIKQVGAEDLFDARIDGLDAIERKIKGKPAP
+DIFLKAAEDLGVDPSHAVVIEDAISGVQAGKKGGFAEVIGVDRSDQRQALLENGADVVVK
+DLREVEVIDQTAKKPHALENIDKVRERLAGKTPVIFFDYDGTLTPITSHPDKALLDPAIK
+KTLENMK--KRFMIAVISGRDRLDVQEKI-NIDG-IFYAGSHGFDISG--PNGQHFEIDE
+GKKKLPMLGAAEEELNERIPEVKG-------AWVERKRYSIAIHYRGVSKEKEAEVESIV
+DEIHRRYKKD-----LRKAIGKKIFELQPDIPWNKGKALKKLLELFDLDRPEVCPV-YLG
+DDVTDEDA---FFAISENGLGIAVQDEDQP----THAHFTVNNVE--EVHSFLLQL-FND
+A----

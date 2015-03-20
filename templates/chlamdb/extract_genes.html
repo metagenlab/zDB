@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+<script type="text/javascript" id="js">$(document).ready(function() {
+// call the tablesorter plugin
+$("table").tablesorter({
+// change the default sorting order from 'asc' to 'desc'
+sortInitialOrder: 1
+});
+}); </script>
+
+</head>
+<body>
+
+{% include "chlamdb/user.html" %}
+{% include "chlamdb/menu.html" %}
+
+
+
+<section id="extract_form">
+
+
+<form action="{% url "chlamdb.views.extract" biodb %}" method="post">{% csrf_token %}
+{{ form.as_p }}
+<input type="submit" name="submit_extract" value="extract homologues" id="id_extract" />
+
+</form>
+</section>
+
+
+<section>
+
+
+
+{% if envoi_venn %}
+
+    {% load static %}
+    Faire un diagramme de Venn avec les groupes séléctionnés
+{% endif %}
+
+
+
+{% if envoi_extract %}
+
+    <table id="myTable2" class="sortable">
+    <thead>
+    <tr>
+    <th></th>
+    <th id="entete_locus">Locus / Protein id</th>
+    <th id="entete_product">Product</th>
+    <th id="entete3">Orthogroup</th>
+    <th id="entete3">Gene</th>
+    <th id="entete_search">Translation</th>
+
+    </tr>
+    </thead>
+    <tbody>
+    {% for values in search_result %}
+        <tr>
+            <td>{{values.0}}</td>
+
+            <td>{{values.2}}<br>{{values.3}}</td>
+	    <td>{{values.4}}</td>
+	    <td>{{values.5}}<br>{{values.8}}/{{values.9}}</td>
+	    <td>{{values.6}}</td>
+	    <td>>{{values.1}}<br>{{values.7}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+
+
+
+
+{% endif %}
+
+
+
+
+</section>
+
+
+
+
+<!--
+-->
+
+
+
+<script type="text/javascript">$(document).ready( function(){ $("#jqtest").html("JQuery installed successfully!"); } ); </script>
+
+
+<p id="jqtest"></p>
+
+</body>
+</html>
