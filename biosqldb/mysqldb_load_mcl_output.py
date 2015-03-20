@@ -51,6 +51,38 @@ def add_orthogroup_to_seq(server, protein_id2orthogroup, protein_id2seqfeature_i
     server.adaptor.commit()
         #select term_id from term where name = "orthogroup";
 
+def create_orthogroup_table(server, biodatabase_name,
+                            orthomcl_groups2proteins,
+                            protein_id2seqfeature_id_dico,
+                            locus_tag2seqfeature_id_dico,
+                            protein_id2taxon_dico,
+                            locus_tag2taxon_dico):
+
+
+    sql = 'CREATE TABLE orthology_detail_%s(orthogroup VARCHAR(100) NOT NULL, ' \
+          ' taxon_id INT, ' \
+          'seqfeature_id INT)' % biodatabase_name
+
+    server.adaptor.execute(sql)
+
+    for i in range(0, len(orthomcl_groups2proteins.keys())):
+        group = "group_%s" % i
+        proteins = orthomcl_groups2proteins[group]
+        for protein in proteins:
+            try:
+                seqfeature_id = locus_tag2seqfeature_id_dico[protein]
+                taxon_id = locus_tag2taxon_dico[protein]
+            except KeyError:
+                try:
+                    seqfeature_id = protein_id2seqfeature_id_dico[protein]
+                    taxon_id = protein_id2taxon_dico[protein]
+                except:
+                    print protein
+            sql = 'INSERT INTO orthology_detail_%s(orthogroup, taxon_id, seqfeature_id) values ("%s", %s, %s);' % (biodatabase_name, group, taxon_id, seqfeature_id)
+
+            server.adaptor.execute(sql)
+            server.adaptor.commit()
+
 def get_all_orthogroup_size(server, biodatabase_name):
     """
     return a dictonary with orthogroup size"
@@ -79,6 +111,7 @@ def get_family_size(server, biodatabase_name):
     for row in table:
         #
         family = 0
+        # todo really -1?????
         for i in row[1:-1]:
             if i >0:
                 family+=1
@@ -667,12 +700,26 @@ if __name__ == '__main__':
     server, db = manipulate_biosqldb.load_db(args.db_name)
       
     #print len(get_conserved_core_groups(server, "Chlamydiales_1"))
-    '''
+
     print "creating locus_tag2seqfeature_id"
     locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, args.db_name)
     print "creating protein_id2seqfeature_id"
     protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, args.db_name)
+
+    print "creating locus_tag2taxon_id dictionnary..."
+    locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, args.db_name)
+    protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, args.db_name)
+
     protein_id2orthogroup_id, orthomcl_groups2proteins, genome_orthomcl_code2proteins, protein_id2genome_ortho_mcl_code = parse_orthomcl_output(args.mcl)
+
+
+    create_orthogroup_table(server, args.db_name,
+                            orthomcl_groups2proteins,
+                            protein_id2seqfeature_id,
+                            locus_tag2seqfeature_id,
+                            protein_id2genome_taxon_id,
+                            locus_tag2genome_taxon_id)
+    '''
     add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
 
     orthogroup2detailed_count = get_orthology_matrix_merging_plasmids(server, args.db_name)
@@ -717,7 +764,6 @@ if __name__ == '__main__':
    
     
     #config_file, accessions_name = circos_draft(server, args.db_name, "5", args.fasta_draft)
- 
-    '''
 
     get_nucleotide_core_fasta(server, db, args.db_name, ".")
+    '''

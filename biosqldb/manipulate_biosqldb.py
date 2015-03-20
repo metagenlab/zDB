@@ -382,7 +382,7 @@ def seqfeature_id2seqfeature_qualifier_values(server, seqfeature_id, biodatabase
     sql2 = 'select bioentry.description from seqfeature' \
            ' inner join bioentry on bioentry.bioentry_id = seqfeature.bioentry_id and seqfeature_id = %s' % seqfeature_id
 
-    #print sql, seqfeature_id, biodatabase_name
+
     
     description = server.adaptor.execute_and_fetchall(sql2, )[0][0]
 
@@ -820,6 +820,22 @@ def locus_tag2genome_taxon_id(server, biodatabase_name):
        locus_tag2taxon_id[protein[0]] = protein[1]
     return locus_tag2taxon_id
 
+def protein_id2genome_taxon_id(server, biodatabase_name):
+
+    sql = 'select t2.value, t6.taxon_id from biosqldb.seqfeature as t1' \
+          ' inner join seqfeature_qualifier_value as t2 on t1.seqfeature_id = t2.seqfeature_id' \
+          ' inner join term as t3 on t2.term_id = t3.term_id and t3.name = "protein_id"' \
+          ' inner join term as t4 on t1.type_term_id = t4.term_id and t4.name = "CDS"' \
+          ' inner join term as t5 on t1.source_term_id = t5.term_id' \
+          ' inner join bioentry as t6 on t1.bioentry_id = t6.bioentry_id' \
+          ' inner join biodatabase as t7 on t6.biodatabase_id = t7.biodatabase_id and t7.name = "%s"' % biodatabase_name
+
+    result = server.adaptor.execute_and_fetchall(sql,)
+
+    protein_id2taxon_id = {}
+    for protein in result:
+       protein_id2taxon_id[protein[0]] = protein[1]
+    return protein_id2taxon_id
 
 def locus_tag2location(server, locus_tag, biodatabase_name):
     sql_locus_tag_seqfeature_id = 'select seqfeature_qualifier_value.seqfeature_id from seqfeature_qualifier_value' \
