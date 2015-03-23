@@ -1,9 +1,9 @@
 from django.db import models
-from smart_selects.db_fields import GroupedForeignKey
-from smart_selects.db_fields import ChainedForeignKey
+#from smart_selects.db_fields import GroupedForeignKey
+#from smart_selects.db_fields import ChainedForeignKey
 
 
-
+'''
 
 class Database(models.Model):
     db_name = models.CharField(max_length=100)
@@ -16,7 +16,7 @@ class Genome(models.Model):
     database = models.ForeignKey(Database)
     def __str__(self):
         return self.genome_name
-
+'''
 
 
 """
@@ -29,7 +29,7 @@ class GenDB(models.Model):
     def __unicode__(self):
         return '%s %s' % (self.database, self.genome)
 """
-
+'''
 class GenDB(models.Model):
     database = models.ForeignKey(Database)
     ref_genome = GroupedForeignKey(Genome, "database", related_name="ref_genome")
@@ -39,3 +39,4 @@ class GenDB(models.Model):
 
     def __unicode__(self):
         return '%s %s' % (self.database, self.genome)
+'''

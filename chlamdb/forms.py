@@ -3,8 +3,8 @@ from django import forms
 #import models
 from manipulate_biosqldb import load_db, get_biodatabase_list
 from blah import *
-from models import GenDB
-from models import Genome
+#from models import GenDB
+#from models import Genome
 from django.forms import ModelForm
 
 server = load_db()
@@ -234,8 +234,9 @@ class DBForm(ModelForm):
     accession = forms.CharField(max_length=100)
     region_size = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
     #target_region = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
+    '''
     class Meta:
         model=GenDB
         fields = ["ref_genome", "query_genome"]
-
+    '''
 
