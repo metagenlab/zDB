@@ -17,7 +17,7 @@ urlpatterns = patterns('chlamdb.views',
                        url(r'^circos2genomes/([a-zA-Z0-9_]+)/$', 'circos2genomes', name="circos2genomes"),
                        url(r'^crossplot/$', 'crossplot', name="crossplot"),
                        url(r'^login/$', 'chlamdb_login', name='chlamdb_login'),
-                       url(r'^chaining/', include('smart_selects.urls')),
+                       #url(r'^chaining/', include('smart_selects.urls')),
                        url(r'^autocomplete/', include('autocomplete_light.urls')),
                         url(r'^logout/$', 'logout_view', name="logout_view"),
 )

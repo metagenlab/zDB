@@ -27,9 +27,16 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+'''
 ADMINS = (
     ('Trestan Pillonel', 'trestan.pillonel@gmail.com')
 )
+EMAIL_USE_TLS = False
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'trest_p@hotmail.com'
+EMAIL_HOST_PASSWORD = 'agnathe3'
+EMAIL_PORT = 25
+'''
 
 LOGIN_URL = '/chlamdb/login/'
 LOGOUT_URL = '/chlamdb/logout/'
@@ -163,14 +170,14 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "assets"),
 )
 
+PROJECT_DIR = "/webapps/chlamdb_django/chlamdb/"
 
+STATIC_ROOT = os.path.join(PROJECT_DIR, 'assets')
 
-#STATIC_ROOT = "/home/trestan/Dropbox/dev/django/chlamydia/assets/"
-
-STATIC_ROOT = '/static/'
+#STATIC_ROOT = '/static/'
 
 TEMPLATE_DIRS = (
-    "/home/trestan/Dropbox/dev/django/chlamydia/templates/",
+    "/webapps/chlamdb_django/chlamdb/templates/",
 )
 
 APPEND_SLASH = True  # Ajoute un slash en fin d'URL
