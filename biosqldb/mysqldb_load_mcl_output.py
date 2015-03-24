@@ -694,6 +694,7 @@ if __name__ == '__main__':
     parser.add_argument("-m", '--mcl',type=str,help="mcl file")
     parser.add_argument("-d", '--db_name', type=str,help="db name")
     parser.add_argument("-f", '--fasta_draft', type=str,help="draft reference genome")
+    parser.add_argument("-p", '--asset_path', type=str,help="asset path")
     
     args = parser.parse_args()
     
@@ -708,24 +709,25 @@ if __name__ == '__main__':
 
     print "creating locus_tag2taxon_id dictionnary..."
     locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, args.db_name)
+    print "creating protein_id2taxon_id dictionnary..."
     protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, args.db_name)
-
+    print "parsing mcl file"
     protein_id2orthogroup_id, orthomcl_groups2proteins, genome_orthomcl_code2proteins, protein_id2genome_ortho_mcl_code = parse_orthomcl_output(args.mcl)
 
-
+    print "creating otzhology table 1"
     create_orthogroup_table(server, args.db_name,
                             orthomcl_groups2proteins,
                             protein_id2seqfeature_id,
                             locus_tag2seqfeature_id,
                             protein_id2genome_taxon_id,
                             locus_tag2genome_taxon_id)
-    '''
+    print "adding orthogroup to seqfeature_qualifier_values"
     add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
 
     orthogroup2detailed_count = get_orthology_matrix_merging_plasmids(server, args.db_name)
     #print orthogroup2detailed_count
     create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
-    
+    '''
     plot_orthogroup_size_distrib(server, args.db_name)
     
 
@@ -741,7 +743,6 @@ if __name__ == '__main__':
         print stdout
         print stderr
         print return_code
-
 
     import os
     if not os.path.exists("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta/" % args.db_name):
