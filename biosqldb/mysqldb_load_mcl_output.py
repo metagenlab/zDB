@@ -94,9 +94,9 @@ def get_all_orthogroup_size(server, biodatabase_name):
 ' inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id' \
 ' inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id' \
 ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = %s' \
-' group by seqfeature_qualifier_value.value'
+' group by seqfeature_qualifier_value.value' % biodatabase_name
 
-    result = server.adaptor.execute_and_fetchall(sql, (biodatabase_name))
+    result = server.adaptor.execute_and_fetchall(sql,)
 
     return manipulate_biosqldb._to_dict(result)
 
