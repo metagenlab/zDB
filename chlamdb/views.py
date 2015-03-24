@@ -442,8 +442,6 @@ def circos(request, biodb):
             reference_taxon = form.cleaned_data['reference']
 
             description2accession_dict = manipulate_biosqldb.description2accession_dict(server, biodb)
-            #reference_taxon = description2accession_dict[reference_description]
-            #reference_taxon = manipulate_biosqldb.description2taxon_id(server, reference_description, biodb)
 
             reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb)
 
