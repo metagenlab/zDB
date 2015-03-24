@@ -298,7 +298,10 @@ def homology(request, biodb):
                     for count, value in enumerate(ortho_detail):
                         locus_2 = value[3]
                         ortho_detail[count] = value + (orthogroup2identity_dico[accession][locus_2],)
-                        location = manipulate_biosqldb.seqfeature_id2feature_location(server, ortho_detail[count][2])
+                        print ortho_detail
+                        print "count", count
+                        print ortho_detail[count]
+                        location = manipulate_biosqldb.seqfeature_id2feature_location(server, int(ortho_detail[count][2]))
                         print "location",location
                         ortho_detail[count] = ortho_detail[count] + location
                         print ortho_detail
