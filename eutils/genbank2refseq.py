@@ -5,20 +5,22 @@ from Bio import Entrez
 
 Entrez.email = "trestan.pillonel@unil.ch"
 
+def gi(ncbi_term, database="nuccore"):
+
+    handle = Entrez.esearch(db=database, term=ncbi_term)
+    record= Entrez.read(handle)
+
+    return record["IdList"]
+
 
 def genbank2refseq(ncbi_id):
     '''
     :param genbank id
     :return: refseq_id
     '''
-    handle = Entrez.esearch(db="nuccore", term=ncbi_id)
-    record = Entrez.read(handle)
-
-    # get gi
-    genome_id = record["IdList"]
 
     # get link from genbank 2 refseq
-    handle = Entrez.elink(dbfrom="nuccore", db="nuccore", id=genome_id, term="srcdb+refseq[prop]")
+    handle = Entrez.elink(dbfrom="nuccore", db="nuccore", id=gi(ncbi_id), term="srcdb+refseq[prop]")
     record = Entrez.read(handle)
 
     try:
@@ -36,13 +38,8 @@ def refseq2genbank(ncbi_id):
     :param refseq_id
     :return: genbank id
     '''
-    handle = Entrez.esearch(db="nuccore", term=ncbi_id)
-    record = Entrez.read(handle)
 
-    # get genome overview id
-    genome_id = record["IdList"]
-
-    handle = Entrez.elink(dbfrom="nuccore", db="nuccore", id=genome_id, term="srcdb+ddbj/embl/genbank[prop]")
+    handle = Entrez.elink(dbfrom="nuccore", db="nuccore", id=gi(ncbi_id), term="srcdb+ddbj/embl/genbank[prop]")
     record = Entrez.read(handle)
     try:
         genbank_id = record[0]['LinkSetDb'][0]['Link'][0]['Id'] #['IdList']
@@ -53,6 +50,19 @@ def refseq2genbank(ncbi_id):
     return genbank_accession.read()
 
 
+def identify_id(ncbi_id, database = "nuccore"):
+
+    '''
+    :param refseq_id
+    :return: genbank id
+    '''
+
+    my_gi = gi(ncbi_id, database)
+
+    record = Entrez.efetch(db=database, id=my_gi, rettype="gb")
+
+    print record.read()
+
 
 if __name__ == '__main__':
     import argparse
@@ -61,7 +71,10 @@ if __name__ == '__main__':
     parser.add_argument("-y",'--seq_id_refseq', default=False, type=str, help="refseq2genbank")
 
     args = parser.parse_args()
+
     if args.seq_id_genbank:
         print genbank2refseq(args.seq_id_genbank)
     if args.seq_id_refseq:
         print refseq2genbank(args.seq_id_refseq)
+
+    identify_id(args.seq_id_genbank)
