@@ -25,21 +25,28 @@ else:
     genome_record_id_list += linked_plasmids
 """
 
+def download_wgs(ncbi_taxon_id):
+    links = multiple_wgs_links(ncbi_taxon_id)
+    for link in links:
+        download_one_wgs(link)
 
 def download_one_wgs(wgs_link):
         handle = Entrez.elink(dbfrom="nuccore", db="nuccore", id=wgs_link)
         record = Entrez.read(handle)
-
         # get the list of link
-        sublinks = [link["Id"] for link in record[0]["LinkSetDb"][1]["Link"]]
+        try:
+            sublinks = [link["Id"] for link in record[0]["LinkSetDb"][0]["Link"]]
+        except IndexError:
+            print "No link for %s" % wgs_link
+            return None
         #print "sublinks", sublinks
 
-        if len(sublinks) > 500:
-            print "More than 500 contigs, aborting download for id %s" % wgs_link
-            return None
-        
-        # for each sublink (contig, scaffold,...), get record and append the sequence to a single file 
-        output_handle = open("%s.fasta" % wgs_link, "a")
+#        if len(sublinks) > 500:
+#            print "More than 500 contigs, aborting download for id %s" % wgs_link
+#            return None
+
+        # for each sublink (contig, scaffold,...), get record and append the sequence to a single file
+        output_handle = open("%s.gbk" % wgs_link, "a")
         no_sequences = False
 
         
@@ -49,7 +56,7 @@ def download_one_wgs(wgs_link):
                 output_handle.close()
                 
                 import os
-                os.remove("%s.fasta" % wgs_link)
+                os.remove("%s.gbk" % wgs_link)
                 
                 break
             handle = Entrez.efetch(db="nucleotide", id=seq_link, rettype="gb", retmode="text")
@@ -62,7 +69,7 @@ def download_one_wgs(wgs_link):
                     no_sequences = True
                     break
                 else:
-                    SeqIO.write(record, output_handle, "fasta")
+                    SeqIO.write(record, output_handle, "genbank")
         output_handle.close()    
 
 
@@ -72,7 +79,7 @@ def get_wgs_links(one_species_link):
         handle = Entrez.elink(dbfrom="genome", db="nuccore", id=one_species_link, term="wgs[prop]")
         record = Entrez.read(handle)
         if len(record[0]["LinkSetDb"][0]["Link"]) == 0:
-            print "No WGS genome seq for %s" % one_genome_id
+            print "No WGS genome seq for %s" % one_species_link
             return False
         else:
             linked = [link["Id"] for link in record[0]["LinkSetDb"][0]["Link"]]
@@ -95,7 +102,8 @@ def multiple_wgs_links(ncbi_taxon):
     genome_record_id_list = []
     for one_genome_id in genome_id_list:
         one_genome_ids = get_wgs_links(one_genome_id)
-        genome_record_id_list += one_genome_ids
+        if one_genome_ids:
+            genome_record_id_list += one_genome_ids
         
     return genome_record_id_list
         
@@ -230,8 +238,20 @@ if __name__ == '__main__':
     parser.add_argument("-w",'--wgs',type=str,help="download one wgs link")
     parser.add_argument("-c",'--complete_genomes',type=str,help="taxonomic id (get complete genomes only")
 
+    parser.add_argument("-a",'--all_genomes', type=str,help="taxonomic id (get all genomes (wgs + complete)")
+
+
+
     
     args = parser.parse_args()
+    if args.all_genomes:
+        download_wgs(args.all_genomes)
+        get_complete_genomes_data(args.all_genomes)
+
+        import sys
+        sys.exit()
+
+
 
     if args.taxon_id:
         print "getting link to wgs records for taxon %s ..." % args.taxon_id
