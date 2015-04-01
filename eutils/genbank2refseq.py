@@ -13,7 +13,7 @@ def gi(ncbi_term, database="nuccore"):
     return record["IdList"]
 
 
-def genbank2refseq(ncbi_id):
+def genbank2refseq(ncbi_id, database=nuccore):
     '''
     :param genbank id
     :return: refseq_id
@@ -56,24 +56,28 @@ def identify_id(ncbi_id, database = "nuccore"):
     :param refseq_id
     :return:
     '''
-    import SeqIO
+    from Bio import SeqIO
 
     my_gi = gi(ncbi_id, database)
 
     handle = Entrez.efetch(db=database, id=my_gi, rettype="gb")
 
-    list(SeqIO.parse(handle, "genbank"))
+    return list(SeqIO.parse(handle, "genbank"))
 
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i",'--seq_id_genbank', default=False, type=str, help="genbank2refseq")
-    parser.add_argument("-y",'--seq_id_refseq', default=False, type=str, help="refseq2genbank")
+    parser.add_argument("-g",'--seq_id_genbank', default=False, type=str, help="genbank2refseq")
+    parser.add_argument("-r",'--seq_id_refseq', default=False, type=str, help="refseq2genbank")
+    parser.add_argument("-i",'--info', default=False, type=str, help="Get search result from input identifier")
+    parser.add_argument("-i",'--database', default="nuccore", type=str, help="Target database (genome, protein, nucccore, bioproject,...")
 
     args = parser.parse_args()
 
     if args.seq_id_genbank:
-        print genbank2refseq(args.seq_id_genbank)
+        print genbank2refseq(args.seq_id_genbank, args.database)
     if args.seq_id_refseq:
-        print refseq2genbank(args.seq_id_refseq)
+        print refseq2genbank(args.seq_id_refseq, args.database)
+    if args.info:
+        print identify_id(args.seq_id_refseq, args.database)
