@@ -54,14 +54,15 @@ def identify_id(ncbi_id, database = "nuccore"):
 
     '''
     :param refseq_id
-    :return: genbank id
+    :return:
     '''
+    import SeqIO
 
     my_gi = gi(ncbi_id, database)
 
-    record = Entrez.efetch(db=database, id=my_gi, rettype="gb")
+    handle = Entrez.efetch(db=database, id=my_gi, rettype="gb")
 
-    print record.read()
+    list(SeqIO.parse(handle, "genbank"))
 
 
 if __name__ == '__main__':
@@ -76,5 +77,3 @@ if __name__ == '__main__':
         print genbank2refseq(args.seq_id_genbank)
     if args.seq_id_refseq:
         print refseq2genbank(args.seq_id_refseq)
-
-    identify_id(args.seq_id_genbank)
