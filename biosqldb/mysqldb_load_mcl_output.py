@@ -93,8 +93,10 @@ def get_all_orthogroup_size(server, biodatabase_name):
 ' inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = "orthogroup"' \
 ' inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id' \
 ' inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id' \
-' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = %s' \
+' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' \
 ' group by seqfeature_qualifier_value.value' % biodatabase_name
+
+    print sql
 
     result = server.adaptor.execute_and_fetchall(sql,)
 
@@ -103,8 +105,6 @@ def get_all_orthogroup_size(server, biodatabase_name):
 def get_family_size(server, biodatabase_name):
     '''
     return number of genomes in which the family is present (multiple copies are only counted ones)
-
-
     '''
     table = manipulate_biosqldb.get_orthology_table2(server, biodatabase_name)
     groupid2family_size = {}
@@ -447,7 +447,7 @@ def get_all_orthogroup_protein_fasta_by_taxon(server, biodatabase_name, out_dir)
         proc.join()
     
 
-            
+'''            
 def circos(server, biodatabase_name, reference_taxon_id):
 
     
@@ -550,7 +550,7 @@ def circos_draft(server, biodatabase_name, reference_taxon_id, fasta_draft_refer
     
     print taxon_id2description
     return (config_file, "circos" + accessions_name)
-
+'''
 
     
 def get_conserved_core_groups(server, biodatabase_name):
@@ -646,11 +646,13 @@ def orthogroup2nucleotide_seq_list(locus_tag2nucl_sequence, group, biodb_name):
 
 def get_nucleotide_core_fasta(server, db, biodb_name, path):
     from Bio import SeqIO
-    core_ortho = get_conserved_core_groups(server, biodb_name)
+
+    all_groups = get_all_orthogroup_size(server, biodb_name).keys()
+    #core_ortho = get_conserved_core_groups(server, biodb_name)
 
     locus_tag2nucl_sequence = locus_tag2nucl_sequence_dict(server, db, biodb_name)
 
-    for group in core_ortho:
+    for group in all_groups:
         seqs = orthogroup2nucleotide_seq_list(locus_tag2nucl_sequence, group, biodb_name)
         with open(os.path.join(path,  group + "_nucl.txt"), "w") as f:
             SeqIO.write(seqs, f, "fasta")
@@ -719,7 +721,7 @@ if __name__ == '__main__':
                             locus_tag2seqfeature_id,
                             protein_id2genome_taxon_id,
                             locus_tag2genome_taxon_id)
-    '''
+    
     add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
 
     orthogroup2detailed_count = get_orthology_matrix_merging_plasmids(server, args.db_name)
@@ -733,37 +735,30 @@ if __name__ == '__main__':
     all_taxon_ids = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
 
 
-    print "all_taxon_ids", all_taxon_ids
-    for reference_taxon_id in all_taxon_ids:
-        print "reference taxon:", reference_taxon_id
-        config_file, accessions_name = circos(server, args.db_name, reference_taxon_id)
-        (stdout, stderr, return_code) = shell_command.shell_command("circos -outputfile %s -conf %s" % (accessions_name, config_file))
-        print stdout
-        print stderr
-        print return_code
-
+    asset_path = "/home/trestan/Dropbox/dev/django/chlamydia/assets/"
 
     import os
-    if not os.path.exists("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta/" % args.db_name):
-        os.makedirs("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta/" % args.db_name)
+    if not os.path.exists(os.path.join(asset_path, "%s_fasta/" % args.db_name)):
+        os.makedirs(os.path.join(asset_path, "%s_fasta/" % args.db_name))
 
-    get_all_orthogroup_protein_fasta(server, args.db_name, "/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta/" % args.db_name)
+    get_all_orthogroup_protein_fasta(server, args.db_name, os.path.join(asset_path, "%s_fasta/" % args.db_name))
     
-    if not os.path.exists("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_by_taxons/" % args.db_name):
-        os.makedirs("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_by_taxons/" % args.db_name)
+    if not os.path.exists(os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name)):
+        os.makedirs(os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name))
 
-    get_all_orthogroup_protein_fasta_by_taxon(server, args.db_name, "/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_by_taxons/" % args.db_name)
+    get_all_orthogroup_protein_fasta_by_taxon(server, args.db_name, os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name))
 
-    if not os.path.exists("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_core/" % args.db_name):
-        os.makedirs("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_core/" % args.db_name)
+    if not os.path.exists(os.path.join(asset_path, "%s_fasta_core/" % args.db_name)):
+        os.makedirs(os.path.join(asset_path, "%s_fasta_core/" % args.db_name))
     
     core_ortho = get_conserved_core_groups(server, args.db_name)
     import shutil
     for group in core_ortho:
-        shutil.copy("/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_by_taxons/%s.txt" % (args.db_name, group),"/home/trestan/Dropbox/dev/django/test_1/assets/%s_fasta_core/%s.txt" % (args.db_name, group))
+        shutil.copy(os.path.join(asset_path, "%s_fasta_by_taxons/%s.txt" % (args.db_name, group)),
+                    os.path.join(asset_path, "%s_fasta_core/%s.txt" % (args.db_name, group)))
    
     
     #config_file, accessions_name = circos_draft(server, args.db_name, "5", args.fasta_draft)
 
     get_nucleotide_core_fasta(server, db, args.db_name, ".")
-    '''
+    
