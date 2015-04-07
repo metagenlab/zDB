@@ -19,6 +19,7 @@ from forms import SearchForm
 from forms import BiodatabaseForm
 from forms import make_circos_form
 from forms import make_circos2genomes_form
+from forms import make_mummer_form
 from forms import BlastForm
 from forms import make_crossplot_form
 from forms import ConnexionForm
@@ -40,6 +41,12 @@ from Bio import SeqIO
 from gbk2table import Record
 import models
 import simplejson
+import string
+import random
+
+def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
+   return ''.join(random.choice(chars) for _ in range(size))
+
 
 def extract_alphanumeric(input_string):
     from string import ascii_letters, digits
@@ -263,6 +270,7 @@ def homology(request, biodb):
 
                 alignment = "%s_fasta/%s.html" % (biodb, orthogroup)
                 alignment_fasta = "%s_fasta/%s.fa" % (biodb, orthogroup)
+                alignment_fasta_nucl = "%s_fasta_nucl/%s_nucl.txt" % (biodb, orthogroup)
                 tree_unrooted = "%s_fasta/%s_tree.svg" % (biodb, orthogroup)
                 tree_rooted = "%s_fasta/%s_tree_reroot.svg" % (biodb, orthogroup)
                 tree_file = "%s_fasta/%s.phy_phyml_tree.txt" % (biodb, orthogroup)
@@ -555,24 +563,67 @@ def alignment(request, input_fasta):
 
 
 def format_seqfeature_values(server, biodb, seqfeature_id):
-    seqfeature_values = manipulate_biosqldb.seqfeature_id2seqfeature_qualifier_values(server, seqfeature_id, biodb)
+    seqfeature_data = manipulate_biosqldb.seqfeature_id2seqfeature_qualifier_values(server, seqfeature_id, biodb)
+    if not 'translation' in seqfeature_data.keys():
+        # TODO add handeling of other kind of features than CDS
+        return None
+
     sql_family_size = 'select count(*) as `n_rows` from ' \
            ' (select * from orthology_detail_chlamydia_02_15 ' \
-           ' where orthogroup = "%s" group by taxon_id) a' % (seqfeature_values["orthogroup"])
+           ' where orthogroup = "%s" group by taxon_id) a' % (seqfeature_data["orthogroup"])
     sql_n_homologues = 'select count(*) as `n_rows` from ' \
            ' (select * from orthology_detail_chlamydia_02_15 ' \
-           ' where orthogroup = "%s") a' % (seqfeature_values["orthogroup"])
+           ' where orthogroup = "%s") a' % (seqfeature_data["orthogroup"])
 
     n_family = int(server.adaptor.execute_and_fetchall(sql_family_size,)[0][0])
     n_homologues = int(server.adaptor.execute_and_fetchall(sql_n_homologues,)[0][0])
 
-    if not 'translation' in seqfeature_values.keys():
-        # TODO add handeling of other kind of features than CDS
-        return None
-    else:
+    # 0 seqfeature_values["description"],
+    # 1 seqfeature_values["locus_tag"],
+    # 2 seqfeature_values["protein_id"],
+    # 3 seqfeature_values["product"],
+    # 4 seqfeature_values["orthogroup"],
+    # 5 seqfeature_values["gene"],
+    # 6 seqfeature_values["translation"],
+    # 7 n_family,
+    # 8 n_homologues
+    template = ["-"] * 9
+    try:
+        template[0] = seqfeature_data["description"]
+    except KeyError:
+        pass
+    try:
+        template[1] = seqfeature_data["locus_tag"]
+    except KeyError:
+        pass
+    try:
+        template[2] = seqfeature_data["protein_id"]
+    except KeyError:
+        pass
+    try:
+        template[3] = seqfeature_data["product"]
+    except KeyError:
+        pass
+    try:
+        template[4] = seqfeature_data["orthogroup"]
+    except KeyError:
+        pass
+    try:
+        template[5] = seqfeature_data["gene"]
+    except KeyError:
+        pass
+    try:
+        template[6] = seqfeature_data["translation"]
+    except KeyError:
+        pass
 
+    template[7] = n_family
+    template[8] = n_homologues
+
+    return template
+    '''
         try:
-            return [seqfeature_values["description"], seqfeature_values["locus_tag"], seqfeature_values["protein_id"], seqfeature_values["product"], seqfeature_values["orthogroup"], seqfeature_values["gene"], seqfeature_values["translation"], n_family, n_homologues]
+            return []
         except KeyError:
             try:
                 return [seqfeature_values["description"], "-", seqfeature_values["protein_id"], seqfeature_values["product"], seqfeature_values["orthogroup"], seqfeature_values["gene"], seqfeature_values["translation"], n_family, n_homologues]
@@ -587,13 +638,14 @@ def format_seqfeature_values(server, biodb, seqfeature_id):
                             return [seqfeature_values["description"], seqfeature_values["locus_tag"] , seqfeature_values["protein_id"], seqfeature_values["product"], seqfeature_values["orthogroup"], "-", seqfeature_values["translation"], n_family, n_homologues]
                         except KeyError:
                             return [seqfeature_values["description"], seqfeature_values["locus_tag"] , seqfeature_values["protein_id"], "-", seqfeature_values["orthogroup"], "-", seqfeature_values["translation"], n_family, n_homologues]
+    '''
 
 
 
 
-
-
-
+def format_search(count, seqfeature_data):
+    # [y, i["description"], i["locus_tag"] + " / " + i["protein_id"], i["product"], i["orthogroup"],  i["gene"], i["translation"]]
+    pass
 
 
 @login_required
@@ -618,6 +670,19 @@ def search(request, biodb):
                 seqfeature_ids = manipulate_biosqldb.product_regex2seqfeature_ids(server, biodb, search_term)
 
             print seqfeature_ids
+            n = 1
+            search_result = []
+            for feature_id in seqfeature_ids:
+
+                data = format_seqfeature_values(server, biodb, feature_id)
+                if data:
+                    search_result.append([n] + data)
+                    n+=1
+                    print n
+
+
+
+            '''
             seqfeature_data = []
             for one_id in seqfeature_ids:
                 print one_id
@@ -631,24 +696,11 @@ def search(request, biodb):
                 print i.keys()
                 print i
                 #  ['locus_tag', 'orthogroup', 'transl_table', 'product', 'translation', 'gene']
-                try:
-                    search_result.append([y, i["description"], i["locus_tag"] + " / " + i["protein_id"], i["product"], i["orthogroup"], i["gene"], i["translation"]])
-                except KeyError:
-                    try:
-                        search_result.append([y, i["description"], "-" + " / " + i["protein_id"], i["product"], i["orthogroup"], i["gene"], i["translation"]])
-                    except KeyError:
-                        try:
-                            search_result.append([y, i["description"], i["locus_tag"] + " / " + "-", i["product"], i["orthogroup"], i["gene"], i["translation"]])
-                        except KeyError:
-                            try:
-                                search_result.append([y, i["description"], "-" + " / " + "-", i["product"], i["orthogroup"], i["gene"], i["translation"]])
-                            except KeyError:
-                                try:
-                                    #['locus_tag', 'description', 'codon_start', 'product', 'transl_table', 'note', 'orthogroup', 'translation', 'protein_id']
-                                    search_result.append([y, i["description"], i["locus_tag"] + " / " + i["protein_id"], i["product"], i["orthogroup"], "-", i["translation"]])
-                                except KeyError:
-                                    search_result.append([y, i["description"], i["locus_tag"] + " / " + i["protein_id"], "-", i["orthogroup"], "-", i["translation"]])
+                search_result.append(format_search(y, i))
+
+
                 y+=1
+            '''
             envoi = True
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
@@ -843,6 +895,79 @@ def get_record_from_memory(biodb, cache_obj, record_key, accession):
         return biorecord
 
 
+
+
+
+@login_required
+def mummer(request, biodb):
+
+    server = manipulate_biosqldb.load_db()
+    mummer_form_class = make_mummer_form(biodb)
+
+    cache = get_cache('default')
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+        #make_circos2genomes_form
+        plot = True
+        form = mummer_form_class(request.POST)
+        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+            server, db = manipulate_biosqldb.load_db(biodb)
+            reference_taxon = form.cleaned_data['reference_genome']
+            query_taxon = form.cleaned_data['query_genome']
+
+            reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb)
+            query_accessions = manipulate_biosqldb.taxon_id2accessions(server, query_taxon, biodb)
+
+
+            ref_accession = manipulate_biosqldb.taxon_id2chromosome_accession(server, biodb, reference_taxon)
+            query_accession = manipulate_biosqldb.taxon_id2chromosome_accession(server, biodb, query_taxon)
+            #result = result[0]
+            print "mummer acc", ref_accession, query_accession
+
+
+            from django.conf import settings
+
+            print settings.STATIC_ROOT, type(settings.STATIC_ROOT)
+
+            reference_path = settings.BASE_DIR + '/assets/chlamdb/fna/%s.fna' % ref_accession
+            query_path = settings.BASE_DIR + '/assets/chlamdb/fna/%s.fna' % query_accession
+
+            rand = id_generator(5)
+
+            out_delta = settings.BASE_DIR + '/assets/temp/promer_%s' % rand
+            out_plot = settings.BASE_DIR + '/assets/temp/promer_%s' % rand
+
+
+
+
+            cmd1 = 'promer -l 2 -p %s %s %s' % (out_delta, reference_path, query_path)
+            cmd2 = 'mummerplot -layout -small -png -p %s %s.delta' % (out_plot, out_delta)
+
+            print cmd1
+
+            from shell_command import shell_command
+
+            out, err, log = shell_command(cmd1)
+            print out
+            print err
+            out, err, log = shell_command(cmd2)
+
+            plot_path = 'temp/promer_%s.png' % rand
+
+            if not os.path.exists(settings.BASE_DIR + '/assets/' + plot_path):
+                plot = False
+
+            envoi = True
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = mummer_form_class()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/mummer.html', locals())
+
+
+
+
+
 @login_required
 def circos2genomes(request, biodb):
     import circos
@@ -858,14 +983,14 @@ def circos2genomes(request, biodb):
         form = circos2genomes_form_class(request.POST)
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             server, db = manipulate_biosqldb.load_db(biodb)
-            reference_genome = form.cleaned_data['reference_genome']
-            query_genome = form.cleaned_data['query_genome']
+            reference_taxon = form.cleaned_data['reference_genome']
+            query_taxon = form.cleaned_data['query_genome']
             import re
             protein_locus_list = re.sub(" ", "", form.cleaned_data['locus_list'])
             protein_locus_list = list(protein_locus_list.split(","))
 
-            reference_taxon = manipulate_biosqldb.description2taxon_id(server, reference_genome, biodb)
-            query_taxon = manipulate_biosqldb.description2taxon_id(server, query_genome, biodb)
+            #reference_taxon = manipulate_biosqldb.description2taxon_id(server, reference_genome, biodb)
+            #query_taxon = manipulate_biosqldb.description2taxon_id(server, query_genome, biodb)
 
             reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb)
             query_accessions = manipulate_biosqldb.taxon_id2accessions(server, query_taxon, biodb)
@@ -891,9 +1016,10 @@ def circos2genomes(request, biodb):
 
             #accession2description = manipulate_biosqldb.accession2description_dict(server, biodb)
 
-            print "reference_genome", reference_genome
-            reference_name = reference_genome
-            query_name = query_genome
+            #print "reference_genome", reference_genome
+            taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+            reference_name = taxon_id2description[reference_taxon]
+            query_name = taxon_id2description[query_taxon]
 
             accession2taxon_id = manipulate_biosqldb.accession2taxon_id(server, biodb)
             taxon_id_reference = accession2taxon_id[reference_accessions[0]]
@@ -918,7 +1044,7 @@ def circos2genomes(request, biodb):
             import circos
 
             biplot = circos.CircosAccession2biplot(server, db, biodb, reference_records, query_records,
-                                                   orthogroup_list, "/home/trestan/Dropbox/dev/django/test_1/assets/circos/")
+                                                   orthogroup_list, "/home/trestan/Dropbox/dev/django/chlamydia/assets/circos/")
 
             reference_file = "circos/%s" % biplot.reference_circos
             query_file = "circos/%s" % biplot.query_circos

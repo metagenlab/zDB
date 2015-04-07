@@ -24,11 +24,13 @@ def get_accessions(database_name, all=False, plasmid=False):
     if not plasmid:
         sql ='SELECT bioentry.taxon_id, bioentry.description FROM bioentry ' \
              'inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id ' \
-             'where biodatabase.name ="%s"and bioentry.description not like "%%%%plasmid%%%%"' % database_name #
+             'where biodatabase.name ="%s"and bioentry.description not like "%%%%plasmid%%%%"' \
+             'order by bioentry.description' % database_name #
     else:
         sql ='SELECT bioentry.taxon_id, bioentry.description FROM bioentry ' \
              'inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id ' \
-             'where biodatabase.name ="%s"' % database_name
+             'where biodatabase.name ="%s"' \
+             'order by bioentry.description' % database_name
     result = server.adaptor.execute_and_fetchall(sql, )
     accession_list = [i for i in result]
     print "acc", accession_list
@@ -41,6 +43,7 @@ def get_accessions(database_name, all=False, plasmid=False):
 
 
     import re
+    accessions = {}
     for i, accession in enumerate(accession_choices):
         print i, accession
         description = accession[1]
@@ -52,7 +55,17 @@ def get_accessions(database_name, all=False, plasmid=False):
         description = re.sub(" complete genome\.", "", description)
         description = re.sub(" chromosome", "", description)
         description = re.sub(" DNA", "S.", description)
+        description = re.sub("Merged record from ", "", description)
+        description = re.sub(", wgs", "", description)
+        description = re.sub("Candidatus ", "", description)
+        description = re.sub(".contig.0_1, whole genome shotgun sequence.", "", description)
         accession_choices[i] = (accession[0], description)
+        accessions[description] = accession[0]
+
+    accession_choices = []
+    for description in sorted(accessions.keys()):
+        accession_choices.append([accessions[description], description])
+    print accession_choices
 
     return accession_choices
 
@@ -202,6 +215,23 @@ def make_circos2genomes_form(database_name):
             self.query_genome = self.cleaned_data["query_genome"]
 
     return Circos2genomesForm
+
+
+def make_mummer_form(database_name):
+
+    accession_choices = get_accessions(database_name)
+
+    class Circos2genomesForm(forms.Form):
+
+        reference_genome = forms.ChoiceField(choices=accession_choices)
+        query_genome = forms.ChoiceField(choices=accession_choices)
+
+        def save(self):
+            self.reference_genome = self.cleaned_data["reference_genome"]
+            self.query_genome = self.cleaned_data["query_genome"]
+
+    return Circos2genomesForm
+
 
 
 def make_crossplot_form(database_name):
