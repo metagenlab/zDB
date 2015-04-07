@@ -217,6 +217,23 @@ def make_circos2genomes_form(database_name):
     return Circos2genomesForm
 
 
+def make_mummer_form(database_name):
+
+    accession_choices = get_accessions(database_name)
+
+    class Circos2genomesForm(forms.Form):
+
+        reference_genome = forms.ChoiceField(choices=accession_choices)
+        query_genome = forms.ChoiceField(choices=accession_choices)
+
+        def save(self):
+            self.reference_genome = self.cleaned_data["reference_genome"]
+            self.query_genome = self.cleaned_data["query_genome"]
+
+    return Circos2genomesForm
+
+
+
 def make_crossplot_form(database_name):
 
 

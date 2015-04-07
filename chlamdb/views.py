@@ -19,6 +19,7 @@ from forms import SearchForm
 from forms import BiodatabaseForm
 from forms import make_circos_form
 from forms import make_circos2genomes_form
+from forms import make_mummer_form
 from forms import BlastForm
 from forms import make_crossplot_form
 from forms import ConnexionForm
@@ -263,6 +264,7 @@ def homology(request, biodb):
 
                 alignment = "%s_fasta/%s.html" % (biodb, orthogroup)
                 alignment_fasta = "%s_fasta/%s.fa" % (biodb, orthogroup)
+                alignment_fasta_nucl = "%s_fasta_nucl/%s_nucl.txt" % (biodb, orthogroup)
                 tree_unrooted = "%s_fasta/%s_tree.svg" % (biodb, orthogroup)
                 tree_rooted = "%s_fasta/%s_tree_reroot.svg" % (biodb, orthogroup)
                 tree_file = "%s_fasta/%s.phy_phyml_tree.txt" % (biodb, orthogroup)
@@ -888,6 +890,52 @@ def get_record_from_memory(biodb, cache_obj, record_key, accession):
                                                              annotations=new_record.annotations)
             cache_obj.set(record_key, biorecord)
         return biorecord
+
+
+@login_required
+def mummer(request, biodb):
+
+    server = manipulate_biosqldb.load_db()
+    mummer_form_class = make_mummer_form(biodb)
+
+    cache = get_cache('default')
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+        #make_circos2genomes_form
+
+        form = mummer_form_class(request.POST)
+        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+            server, db = manipulate_biosqldb.load_db(biodb)
+            reference_taxon = form.cleaned_data['reference_genome']
+            query_taxon = form.cleaned_data['query_genome']
+
+            reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb)
+            query_accessions = manipulate_biosqldb.taxon_id2accessions(server, query_taxon, biodb)
+
+            reference_records = []
+            for accession in reference_accessions:
+                reference_records.append(get_record_from_memory(db, cache, biodb + "_" + accession, accession))
+
+            query_records = []
+            for accession in query_accessions:
+                query_records.append(get_record_from_memory(db, cache, biodb + "_" + accession, accession))
+
+            print "genomes", reference_records, query_records
+
+
+
+
+
+
+            envoi = True
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = mummer_form_class()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/mummer.html', locals())
+
+
+
 
 
 @login_required

@@ -33,16 +33,33 @@
              <ul>
             <li class="item5"><a href="{% url 'homology' biodb %}">Get homologues</a>
             </li>
-            <li class="item6"><a href="{% url 'circos' biodb %}">Circos</a>
-            </li>
-            <li class="item6"><a href="{% url 'circos2genomes' biodb %}">Circos 2 genomes</a>
-            </li>
             <li class="item6"><a href="{% url 'extract' biodb %}">Extract homologous genes</a>
             </li>
 
             </ul>
 
         </li>
+
+        <li class="rollmenu"><a href="">Plots</a>
+
+             <ul>
+            <li class="item5"><a href="{% url 'mummer' biodb %}">Mummer plots</a>
+            </li>
+            <li class="item6"><a href="{% url 'circos' biodb %}">Circos</a>
+            </li>
+            <li class="item6"><a href="{% url 'circos2genomes' biodb %}">Circos 2 genomes</a>
+            </li>
+             <ul>
+            <li class="item5"><a href="{% url 'homology' biodb %}">Plot region</a>
+            </li>
+            </ul>
+
+        </li>
+
+
+
+
+
 
     </ul>
 </div>
