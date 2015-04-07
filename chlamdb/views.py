@@ -41,6 +41,12 @@ from Bio import SeqIO
 from gbk2table import Record
 import models
 import simplejson
+import string
+import random
+
+def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
+   return ''.join(random.choice(chars) for _ in range(size))
+
 
 def extract_alphanumeric(input_string):
     from string import ascii_letters, digits
@@ -892,6 +898,9 @@ def get_record_from_memory(biodb, cache_obj, record_key, accession):
         return biorecord
 
 
+
+
+
 @login_required
 def mummer(request, biodb):
 
@@ -902,7 +911,7 @@ def mummer(request, biodb):
 
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         #make_circos2genomes_form
-
+        plot = True
         form = mummer_form_class(request.POST)
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             server, db = manipulate_biosqldb.load_db(biodb)
@@ -912,20 +921,44 @@ def mummer(request, biodb):
             reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb)
             query_accessions = manipulate_biosqldb.taxon_id2accessions(server, query_taxon, biodb)
 
-            reference_records = []
-            for accession in reference_accessions:
-                reference_records.append(get_record_from_memory(db, cache, biodb + "_" + accession, accession))
 
-            query_records = []
-            for accession in query_accessions:
-                query_records.append(get_record_from_memory(db, cache, biodb + "_" + accession, accession))
-
-            print "genomes", reference_records, query_records
+            ref_accession = manipulate_biosqldb.taxon_id2chromosome_accession(server, biodb, reference_taxon)
+            query_accession = manipulate_biosqldb.taxon_id2chromosome_accession(server, biodb, query_taxon)
+            #result = result[0]
+            print "mummer acc", ref_accession, query_accession
 
 
+            from django.conf import settings
+
+            print settings.STATIC_ROOT, type(settings.STATIC_ROOT)
+
+            reference_path = settings.BASE_DIR + '/assets/chlamdb/fna/%s.fna' % ref_accession
+            query_path = settings.BASE_DIR + '/assets/chlamdb/fna/%s.fna' % query_accession
+
+            rand = id_generator(5)
+
+            out_delta = settings.BASE_DIR + '/assets/temp/promer_%s' % rand
+            out_plot = settings.BASE_DIR + '/assets/temp/promer_%s' % rand
 
 
 
+
+            cmd1 = 'promer -l 2 -p %s %s %s' % (out_delta, reference_path, query_path)
+            cmd2 = 'mummerplot -layout -small -png -p %s %s.delta' % (out_plot, out_delta)
+
+            print cmd1
+
+            from shell_command import shell_command
+
+            out, err, log = shell_command(cmd1)
+            print out
+            print err
+            out, err, log = shell_command(cmd2)
+
+            plot_path = 'temp/promer_%s.png' % rand
+
+            if not os.path.exists(settings.BASE_DIR + '/assets/' + plot_path):
+                plot = False
 
             envoi = True
 

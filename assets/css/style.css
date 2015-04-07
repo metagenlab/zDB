@@ -24,6 +24,12 @@ h1 {
     text-align: center;
 }
 
+#section_head{
+    background:#E6E6E6;
+    margin-top: 29px;
+    margin-left: 29px;
+    margin-right: 29px;
+}
 
 P.blocktext {
     text-align: left;

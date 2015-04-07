@@ -13,12 +13,12 @@
 {% include "chlamdb/menu.html" %}
 
   
-<!--
-{% load static %}
-<img src="{% static 'im_1.jpg' %}" alt="Mon image" />
--->
-
 <section>
+
+<section id="section_head">
+Dot plot constructed using <a href="http://mummer.sourceforge.net/">Promer</a>
+</section>
+
 
 <form action="{% url "chlamdb.views.mummer" biodb %}" method="post">{% csrf_token %}
 
@@ -40,11 +40,18 @@
 
 {% if envoi %}
 
-    &nbsp
+
+    {% if not plot %}
+
+    Sequences are too distant to compute promer plots
+
+    {% else %}
+
+
     {% load static %}
     <h2>Promer plot</h2>
 
-    <img src="{% static promer_file %}" style="float: left; width: 99%; margin-right: 1%; margin-bottom: 0.5em;">
+    <img src="{% static plot_path %}" style="float: left; width: 50%; margin-right: 1%; margin-bottom: 0.5em;">
 
     <div id="promer_plot">
 
@@ -68,7 +75,7 @@
 
   
 {% endif %}
-
+{% endif %}
 
 
 
