@@ -5,7 +5,8 @@ This README would normally document whatever steps are necessary to get your app
 ### What is this repository for? ###
 
 * Quick summary
-Various python scripts to use eutils to retrieve genomes,fasta of proteins or nucleotides, etc.
+
+Various python scripts to use eutils or Entrez to retrieve genomes, fasta of proteins or nucleotides, etc from NCBI database
 
 * Version
 V1.0
@@ -15,8 +16,13 @@ V1.0
 ### How do I get set up? ###
 
 * Summary of set up
+
+
+
 * Configuration
 * Dependencies
+
+Requires python packages: argparse, Bio, sys, pandas
 
 Requires the installation of python package eutils: 
 eutils -- a simplified interface to NCBI E-Utilities
@@ -25,6 +31,12 @@ https://pypi.python.org/pypi/eutils
 * Database configuration
 * How to run tests
 * Deployment instructions
+
+### Functions ###
+
+* get_fasta.py
+Scritp to retrieve nucleotide or protein fasta based on a list of GIs or a table with GIs in a column. Possibility to as for a single multifasta file as an output.
+
 
 ### Contribution guidelines ###
 
