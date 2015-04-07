@@ -53,14 +53,30 @@ def add_orthogroup_to_seq(server, protein_id2orthogroup, protein_id2seqfeature_i
 
 def create_orthogroup_table(server, biodatabase_name,
                             orthomcl_groups2proteins,
-                            protein_id2seqfeature_id_dico,
                             locus_tag2seqfeature_id_dico,
+                            protein_id2seqfeature_id_dico,
+                            locus_tag2taxon_dico,
                             protein_id2taxon_dico,
-                            locus_tag2taxon_dico):
-
+                            locus_tag2accession_dico,
+                            protein_id2accession_dico,
+                            seqfeature_id2locus_tag_dico,
+                            seqfeature_id2protein_id_dico,
+                            seqfeature_id2gene_dico,
+                            seqfeature_id2product_dico,
+                            seqfeature_id2translation_dico,
+                            seqfeature2location_dico):
 
     sql = 'CREATE TABLE orthology_detail_%s(orthogroup VARCHAR(100) NOT NULL, ' \
           ' taxon_id INT, ' \
+          ' accession VARCHAR(100) NOT NULL, ' \
+          ' locus_tag VARCHAR(100) NOT NULL, ' \
+          ' protein_id VARCHAR(100) NOT NULL, ' \
+          ' start INT, ' \
+          ' stop INT, ' \
+          ' strand INT, ' \
+          ' gene VARCHAR(100) NOT NULL, ' \
+          ' product VARCHAR(10000) NOT NULL, ' \
+          ' translation VARCHAR(100000) NOT NULL, ' \
           'seqfeature_id INT)' % biodatabase_name
 
     server.adaptor.execute(sql)
@@ -72,13 +88,70 @@ def create_orthogroup_table(server, biodatabase_name,
             try:
                 seqfeature_id = locus_tag2seqfeature_id_dico[protein]
                 taxon_id = locus_tag2taxon_dico[protein]
-            except KeyError:
+                accession = locus_tag2accession_dico[protein]
+                start = seqfeature2location_dico[seqfeature_id][0]
+                end = seqfeature2location_dico[seqfeature_id][1]
+                strand = seqfeature2location_dico[seqfeature_id][2]
                 try:
-                    seqfeature_id = protein_id2seqfeature_id_dico[protein]
-                    taxon_id = protein_id2taxon_dico[protein]
-                except:
-                    print protein
-            sql = 'INSERT INTO orthology_detail_%s(orthogroup, taxon_id, seqfeature_id) values ("%s", %s, %s);' % (biodatabase_name, group, taxon_id, seqfeature_id)
+                    gene = seqfeature_id2gene_dico[str(seqfeature_id)]
+                except KeyError:
+                    gene = "-"
+                try:
+                    product = seqfeature_id2product_dico[str(seqfeature_id)]
+                except KeyError:
+                    product = "-"
+                translation = seqfeature_id2translation_dico[str(seqfeature_id)]
+
+                try:
+                    protein_id = seqfeature_id2protein_id_dico[str(seqfeature_id)]
+                except KeyError:
+                    protein_id = "-"
+
+                locus_tag = protein
+
+            except KeyError:
+
+                #protein = manipulate_biosqldb.protein_id2locus_tag(server, protein, biodatabase_name)
+                seqfeature_id = protein_id2seqfeature_id_dico[protein]
+                taxon_id = protein_id2taxon_dico[protein]
+                accession = protein_id2accession_dico[protein]
+                start = seqfeature2location_dico[seqfeature_id][0]
+                end = seqfeature2location_dico[seqfeature_id][1]
+                strand = seqfeature2location_dico[seqfeature_id][2]
+                #print "location ok"
+                #print seqfeature_id2locus_tag_dico.keys()[0:10]
+                locus_tag = seqfeature_id2locus_tag_dico[str(seqfeature_id)]
+
+                try:
+                    gene = seqfeature_id2gene_dico[str(seqfeature_id)]
+                except KeyError:
+                    gene = "-"
+                try:
+                    product = seqfeature_id2product_dico[str(seqfeature_id)]
+                except KeyError:
+                    product = "-"
+                translation = seqfeature_id2translation_dico[str(seqfeature_id)]
+
+
+
+
+                protein_id = protein
+
+                #except:
+                #    print "poblem with protein", protein
+
+            sql = 'INSERT INTO orthology_detail_%s(orthogroup, taxon_id, accession, locus_tag, protein_id, start, stop, strand, gene, product, translation, seqfeature_id) ' \
+                  ' values ("%s", %s, "%s", "%s", "%s", %s, %s, %s, "%s", "%s", "%s", %s);' % (biodatabase_name,
+                                                                                               group, taxon_id,
+                                                                                               accession,
+                                                                                               locus_tag,
+                                                                                               protein_id,
+                                                                                               start, end,
+                                                                                               strand,
+                                                                                               gene,
+                                                                                               product,
+                                                                                               translation,
+                                                                                               seqfeature_id)
 
             server.adaptor.execute(sql)
             server.adaptor.commit()
@@ -91,12 +164,11 @@ def get_all_orthogroup_size(server, biodatabase_name):
 
 
     sql = ' select seqfeature_qualifier_value.value, COUNT(*) from seqfeature_qualifier_value' \
-' inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = "orthogroup"' \
-' inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id' \
-' inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id' \
-
-' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' \
-' group by seqfeature_qualifier_value.value' % biodatabase_name
+          ' inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = "orthogroup"' \
+          ' inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id' \
+          ' inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id' \
+          ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' \
+          ' group by seqfeature_qualifier_value.value' % biodatabase_name
 
     print sql
 
@@ -707,7 +779,7 @@ if __name__ == '__main__':
 
 
     #print len(get_conserved_core_groups(server, "Chlamydiales_1"))
-    '''
+
     print "creating locus_tag2seqfeature_id"
     locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, args.db_name)
     print "creating protein_id2seqfeature_id"
@@ -717,16 +789,54 @@ if __name__ == '__main__':
     locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, args.db_name)
     print "creating protein_id2taxon_id dictionnary..."
     protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, args.db_name)
+
+    print "creating locus_tag2accession dictionnary..."
+    locus_tag2accession = manipulate_biosqldb.locus_tag2accession(server, args.db_name)
+    print "creating protein_id2accession dictionnary..."
+    protein_id2accession = manipulate_biosqldb.protein_id2accession(server, args.db_name)
+
+    print "getting location"
+    seqfeature_id2seqfeature_location = manipulate_biosqldb.seqfeature_id2feature_location_dico(server, args.db_name)
+
+    print "getting seqfeature_id2locus_tag"
+    seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, args.db_name)
+
+    print "getting seqfeature_id2protein_id"
+    seqfeature_id2protein_id = manipulate_biosqldb.seqfeature_id2protein_id_dico(server, args.db_name)
+
+
     print "parsing mcl file"
     protein_id2orthogroup_id, orthomcl_groups2proteins, genome_orthomcl_code2proteins, protein_id2genome_ortho_mcl_code = parse_orthomcl_output(args.mcl)
+
+    print "getting seqfeature_id2gene"
+    seqfeature_id2gene = manipulate_biosqldb.seqfeature_id2gene_dico(server, args.db_name)
+
+    print "getting seqfeature_id2product"
+    seqfeature_id2product = manipulate_biosqldb.seqfeature_id2product_dico(server, args.db_name)
+
+    print "getting seqfeature_id2translation"
+    seqfeature_id2translation = manipulate_biosqldb.seqfeature_id2translation_dico(server, args.db_name)
+
+
 
     print "creating otzhology table 1"
     create_orthogroup_table(server, args.db_name,
                             orthomcl_groups2proteins,
-                            protein_id2seqfeature_id,
                             locus_tag2seqfeature_id,
+                            protein_id2seqfeature_id,
+                            locus_tag2genome_taxon_id,
                             protein_id2genome_taxon_id,
-                            locus_tag2genome_taxon_id)
+                            locus_tag2accession,
+                            protein_id2accession,
+                            seqfeature_id2locus_tag,
+                            seqfeature_id2protein_id,
+                            seqfeature_id2gene,
+                            seqfeature_id2product,
+                            seqfeature_id2translation,
+                            seqfeature_id2seqfeature_location)
+
+
+    '''
 
     print "adding orthogroup to seqfeature_qualifier_values"
 
@@ -734,18 +844,20 @@ if __name__ == '__main__':
 
     orthogroup2detailed_count = get_orthology_matrix_merging_plasmids(server, args.db_name)
     #print orthogroup2detailed_count
+
+
+
     create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
-    '''
+
+
+
     plot_orthogroup_size_distrib(server, args.db_name)
     
 
     ortho_table = "orthology_%s" % args.db_name
     all_taxon_ids = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
 
-
-
     import os
-
 
     if not os.path.exists(os.path.join(asset_path, "%s_fasta/" % args.db_name)):
         os.makedirs(os.path.join(asset_path, "%s_fasta/" % args.db_name))
@@ -772,4 +884,4 @@ if __name__ == '__main__':
     #config_file, accessions_name = circos_draft(server, args.db_name, "5", args.fasta_draft)
 
     get_nucleotide_core_fasta(server, db, args.db_name, ".")
-
+    '''
