@@ -34,7 +34,8 @@ https://pypi.python.org/pypi/eutils
 
 ### Functions ###
 
-get_fasta.py: can be used to retrieve nucleotide or protein fasta based on a list of GIs or a table with GIs in a column
+* get_fasta.py
+Scritp to retrieve nucleotide or protein fasta based on a list of GIs or a table with GIs in a column. Possibility to as for a single multifasta file as an output.
 
 
 ### Contribution guidelines ###
