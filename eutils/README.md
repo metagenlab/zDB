@@ -5,7 +5,8 @@ This README would normally document whatever steps are necessary to get your app
 ### What is this repository for? ###
 
 * Quick summary
-Various python scripts to use eutils to retrieve genomes, fasta of proteins or nucleotides, etc.
+
+Various python scripts to use eutils or Entrez to retrieve genomes, fasta of proteins or nucleotides, etc from NCBI database
 
 * Version
 V1.0
