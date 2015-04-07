@@ -87,12 +87,14 @@ def get_all_orthogroup_size(server, biodatabase_name):
     """
     return a dictonary with orthogroup size"
     """
+    print "asdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 
     sql = ' select seqfeature_qualifier_value.value, COUNT(*) from seqfeature_qualifier_value' \
 ' inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = "orthogroup"' \
 ' inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id' \
 ' inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id' \
+
 ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' \
 ' group by seqfeature_qualifier_value.value' % biodatabase_name
 
@@ -696,6 +698,7 @@ if __name__ == '__main__':
     parser.add_argument("-m", '--mcl',type=str,help="mcl file")
     parser.add_argument("-d", '--db_name', type=str,help="db name")
     parser.add_argument("-f", '--fasta_draft', type=str,help="draft reference genome")
+    parser.add_argument("-p", '--asset_path', type=str,help="asset path")
     
     args = parser.parse_args()
     
@@ -712,30 +715,32 @@ if __name__ == '__main__':
 
     print "creating locus_tag2taxon_id dictionnary..."
     locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, args.db_name)
+    print "creating protein_id2taxon_id dictionnary..."
     protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, args.db_name)
-
+    print "parsing mcl file"
     protein_id2orthogroup_id, orthomcl_groups2proteins, genome_orthomcl_code2proteins, protein_id2genome_ortho_mcl_code = parse_orthomcl_output(args.mcl)
 
-
+    print "creating otzhology table 1"
     create_orthogroup_table(server, args.db_name,
                             orthomcl_groups2proteins,
                             protein_id2seqfeature_id,
                             locus_tag2seqfeature_id,
                             protein_id2genome_taxon_id,
                             locus_tag2genome_taxon_id)
-    
+
+    print "adding orthogroup to seqfeature_qualifier_values"
+
     add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
 
     orthogroup2detailed_count = get_orthology_matrix_merging_plasmids(server, args.db_name)
     #print orthogroup2detailed_count
     create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
-    
+    '''
     plot_orthogroup_size_distrib(server, args.db_name)
     
 
     ortho_table = "orthology_%s" % args.db_name
     all_taxon_ids = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
-
 
 
 
@@ -765,5 +770,6 @@ if __name__ == '__main__':
    
     
     #config_file, accessions_name = circos_draft(server, args.db_name, "5", args.fasta_draft)
-    '''
+
     get_nucleotide_core_fasta(server, db, args.db_name, ".")
+

@@ -48,7 +48,7 @@ def query_yes_no(question, default="yes"):
 
 def load_db(db_name=False):
     
-    server = BioSeqDatabase.open_database(driver="MySQLdb", user="tpillone",
+    server = BioSeqDatabase.open_database(driver="MySQLdb", user="root",
                        passwd = "agnathe3", host = "localhost", db="biosqldb")
     if db_name:
         try:
@@ -708,8 +708,10 @@ def taxon_id2orthogroup_size(server, biodatabase_name, taxon_id):
 
 
 def seqfeature_id2feature_location(server, seqfeature_id):
-    sql ='select start_pos, end_pos, strand from location where seqfeature_id= %s and rank = 1'
-    result = server.adaptor.execute_and_fetchall(sql, seqfeature_id)
+    sql ='select start_pos, end_pos, strand from location where seqfeature_id= %s and rank = 1' % seqfeature_id
+    print sql
+    result = server.adaptor.execute_and_fetchall(sql, )
+    print "res", result
     result = [int(i) for i in result[0]]
     return tuple(result)
     

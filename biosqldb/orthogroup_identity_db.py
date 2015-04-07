@@ -454,6 +454,7 @@ def orthogroup2average_identity(biodatabase_name):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
+
     parser.add_argument("-a",'--align_files', type=str, help="aliphment files", nargs='+')
     parser.add_argument("-d",'--db_name', type=str, help="database_name")
 
