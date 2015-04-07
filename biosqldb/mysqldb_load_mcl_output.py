@@ -631,7 +631,7 @@ def locus_tag2nucl_sequence_dict(server, db, biodb_name):
         record_data = db.lookup(accession=accession)
         sequences = get_cds_sequences(record_data, locus_or_protein_id2taxon_id)
         locus_tag2nucl_sequence.update(sequences)
-    return locus_tag2nucl_sequence_dict
+    return locus_tag2nucl_sequence
 
 
 def orthogroup2nucleotide_seq_list(locus_tag2nucl_sequence, group, biodb_name):
@@ -650,10 +650,10 @@ def get_nucleotide_core_fasta(server, db, biodb_name, path):
     all_groups = get_all_orthogroup_size(server, biodb_name).keys()
     #core_ortho = get_conserved_core_groups(server, biodb_name)
 
-    locus_tag2nucl_sequence = locus_tag2nucl_sequence_dict(server, db, biodb_name)
+    my_locus_tag2nucl_sequence = locus_tag2nucl_sequence_dict(server, db, biodb_name)
 
     for group in all_groups:
-        seqs = orthogroup2nucleotide_seq_list(locus_tag2nucl_sequence, group, biodb_name)
+        seqs = orthogroup2nucleotide_seq_list(my_locus_tag2nucl_sequence, group, biodb_name)
         with open(os.path.join(path,  group + "_nucl.txt"), "w") as f:
             SeqIO.write(seqs, f, "fasta")
 
@@ -700,9 +700,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     server, db = manipulate_biosqldb.load_db(args.db_name)
-      
-    #print len(get_conserved_core_groups(server, "Chlamydiales_1"))
+    asset_path = "/home/trestan/Dropbox/dev/django/chlamydia/assets/"
 
+
+    #print len(get_conserved_core_groups(server, "Chlamydiales_1"))
+    '''
     print "creating locus_tag2seqfeature_id"
     locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, args.db_name)
     print "creating protein_id2seqfeature_id"
@@ -735,14 +737,18 @@ if __name__ == '__main__':
     all_taxon_ids = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
 
 
-    asset_path = "/home/trestan/Dropbox/dev/django/chlamydia/assets/"
+
 
     import os
+
+
     if not os.path.exists(os.path.join(asset_path, "%s_fasta/" % args.db_name)):
         os.makedirs(os.path.join(asset_path, "%s_fasta/" % args.db_name))
 
     get_all_orthogroup_protein_fasta(server, args.db_name, os.path.join(asset_path, "%s_fasta/" % args.db_name))
-    
+
+
+
     if not os.path.exists(os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name)):
         os.makedirs(os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name))
 
@@ -759,6 +765,5 @@ if __name__ == '__main__':
    
     
     #config_file, accessions_name = circos_draft(server, args.db_name, "5", args.fasta_draft)
-
+    '''
     get_nucleotide_core_fasta(server, db, args.db_name, ".")
-    

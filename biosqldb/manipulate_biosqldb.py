@@ -169,6 +169,15 @@ def taxon_id2genome_description(server, biodatabase_name):
     return _to_dict(result)
 
 
+def taxon_id2chromosome_accession(server, biodatabase_name, taxon_id):
+    sql ='SELECT bioentry.accession FROM bioentry' \
+                 ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id ' \
+                 ' where biodatabase.name ="%s" and bioentry.taxon_id = %s and bioentry.description not like "%%%%plasmid%%%%"' % (biodatabase_name, taxon_id)
+
+    print sql
+    result = server.adaptor.execute_and_fetchall(sql, )[0][0]
+    return result
+
 def gene_regex2seqfeature_ids(server, biodatabase_name, gene_regex):
     sql = 'select seqfeature_qualifier_value.seqfeature_id from seqfeature_qualifier_value' \
           ' inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id' \

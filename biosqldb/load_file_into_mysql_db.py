@@ -35,10 +35,10 @@ def import_swiss(swiss_dat_file, server_name, db):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-g", '--gbk', type=str,help="gbk file", nargs='+')
-    parser.add_argument("-u", '--uniprot', type=str,help="uniprot dat file", nargs='+')
-    parser.add_argument("-d", '--db_name', type=str,help="db name", required=True)
-    parser.add_argument("-r", '--remove_db', type=str,help="remove db")
+    parser.add_argument("-g", '--gbk', type=str, help="gbk file", nargs='+')
+    parser.add_argument("-u", '--uniprot', type=str, help="uniprot dat file", nargs='+')
+    parser.add_argument("-d", '--db_name', type=str, help="db name", required=True)
+    parser.add_argument("-r", '--remove_db', type=str, help="remove db")
 
     
     args = parser.parse_args()

@@ -193,7 +193,7 @@ class Orthogroup_Identity_DB:
 
         sql = 'select orthogroup from orthology_%s' % biodatabase_name
 
-        self._create_orthogroup_average_identity_column(server, biodatabase_name)
+        #self._create_orthogroup_average_identity_column(server, biodatabase_name)
 
         groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql, )]
         print len(groups)
@@ -206,7 +206,7 @@ class Orthogroup_Identity_DB:
                 #print np.mean(id_matrix)
                 #print self._get_average_identity_from_identity_matrix(id_matrix)
                 av_id = round(np.mean(id_matrix[np.triu_indices(len(id_matrix), k=1)]), 2)
-                print
+                print av_id
             except:
                 av_id = 0
 
@@ -455,10 +455,11 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-a",'--align_files', type=str, help="aliphment files", nargs='+')
+    parser.add_argument("-d",'--db_name', type=str, help="database_name")
 
     args = parser.parse_args()
 
-    tata = Orthogroup_Identity_DB("chlamydia_02_15")
+    tata = Orthogroup_Identity_DB(args.db_name)
     #tata.import_alignments(tata.cursor, args.align_files)
-    tata.add_average_orthogroup_identity("chlamydia_02_15")
+    tata.add_average_orthogroup_identity(args.db_name)
     #check_identity("Chlamydia_12_14", "group_825", "Cav1_00733", "CT565")
