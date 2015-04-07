@@ -87,6 +87,7 @@ def get_all_orthogroup_size(server, biodatabase_name):
     """
     return a dictonary with orthogroup size"
     """
+    print "asdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 
     sql = ' select seqfeature_qualifier_value.value, COUNT(*) from seqfeature_qualifier_value' \
@@ -94,9 +95,9 @@ def get_all_orthogroup_size(server, biodatabase_name):
 ' inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id' \
 ' inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id' \
 ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = %s' \
-' group by seqfeature_qualifier_value.value' % biodatabase_name
-
-    result = server.adaptor.execute_and_fetchall(sql,)
+' group by seqfeature_qualifier_value.value' #% (biodatabase_name, 0)
+    print sql
+    result = server.adaptor.execute_and_fetchall(sql,([biodatabase_name]))
 
     return manipulate_biosqldb._to_dict(result)
 
