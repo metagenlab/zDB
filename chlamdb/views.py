@@ -29,7 +29,7 @@ from forms import PCRForm
 from forms import make_extract_form
 from Bio.SeqRecord import SeqRecord
 from django.contrib.auth import logout
-
+from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 
@@ -765,7 +765,11 @@ def primer_search(request, biodb):
             query_file = NamedTemporaryFile()
             SeqIO.write(my_record, query_file, "fasta")
             query_file.flush()
-            blastp_cline = NcbiblastpCommandline(query=query_file.name, db="~/Dropbox/dev/django/test_1/assets/blast_db/%s.faa" % biodb, evalue=0.001, outfmt=0)
+
+            blastdb = settings.BASE_DIR + '/assets/blast_db/%s.faa' % biodb
+
+
+            blastp_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=0.001, outfmt=0)
             stdout, stderr = blastp_cline()
             print "blast!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             print stdout
@@ -860,7 +864,6 @@ def blast(request, biodb):
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             from Bio.Blast.Applications import NcbiblastpCommandline
             from Bio.Blast.Applications import NcbiblastnCommandline
-            #from StringIO import StringIO
             from tempfile import NamedTemporaryFile
             from Bio.Seq import Seq
             from Bio.SeqRecord import SeqRecord
@@ -887,7 +890,7 @@ def blast(request, biodb):
             query_file = NamedTemporaryFile()
             SeqIO.write(my_record, query_file, "fasta")
             query_file.flush()
-            blastdb = "~/Dropbox/dev/django/chlamydia/assets/chlamdb/%s/%s.%s" % (data_type, target_accession, data_type)
+            blastdb = settings.BASE_DIR + "/assets/chlamdb/%s/%s.%s" % (data_type, target_accession, data_type)
             print blastdb
             if data_type == 'faa':
                 print "faa!!!"
@@ -963,7 +966,7 @@ def mummer(request, biodb):
             print "mummer acc", ref_accession, query_accession
 
 
-            from django.conf import settings
+
 
             print settings.STATIC_ROOT, type(settings.STATIC_ROOT)
 
