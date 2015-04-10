@@ -16,7 +16,7 @@
 <img src="{% static 'im_1.jpg' %}" alt="Mon image" />
 -->
 
-<section>
+<section id="head_section">
 <form action="{% url "chlamdb.views.search" biodb %}" method="post">{% csrf_token %}
 
 <table>
@@ -35,76 +35,76 @@
 
 {% if envoi %}
 
-    &nbsp
+<div id=help_text>
+<table>
+   <tr><td>S</td> <td> strand</td> </tr>
+   <tr><td>nH</td> <td> total number of homologues</td> </tr>
+   <tr><td>nG</td> <td> number of genomes in which at least one homologous protein is present</td> </tr>
+   <tr><td>TM</td> <td> Transmmembrane domains</td> </tr>
+   <tr><td>SP</td> <td> Signl peptide</td> </tr>
+</table>
+</div>
+</section>
 
+<section id="table_search_section">
 
-    <table id="myTable2" class="sortable">
+    <div id="export_bouttons">
+    <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+
+    <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+    <br/>
+    </div>
+
+    <table id="search_table" class="sortable">
     <thead>
     <tr>
     <th></th>
-    <th id="entete_locus">Locus / Protein id</th>
-    <th id="entete_product">Product</th>
-    <th id="entete3">Orthogroup</th>
-    <th id="entete3">Gene</th>
-    <th id="entete_search">Translation</th>
+    <th id="entete_locus" class="rotate">Orthogroup</th>
+    <th id="entete_locus" class="rotate">Locus</th>
+    <th id="entete_locus" class="rotate">Protein id</th>
+    <th id="entete_gene" class="rotate">Start</th>
+    <th id="entete_gene" class="rotate">Stop</th>
+    <th id="entete_strand" class="rotate">S.</th>
+    <th id="entete_gene" class="rotate">Gene</th>
+    <th id="entete_n" class="rotate">nH</th>
+    <th id="entete_n" class="rotate">nG</th>
+    <th id="entete_n" class="rotate">TM</th>
+    <th id="entete_n" class="rotate">SP</th>
+    <th id="entete_product" class="rotate">Product</th>
+    <th id="entete_organism" class="rotate">Organism</th>
+    <th id="entete_translation" class="rotate">Translation</th>
 
     </tr>
     </thead>
     <tbody>
     {% for values in search_result %}
         <tr>
-            <td>{{values.0}}</td>
+        <td>{{values.0}}</td>
 
-            <td>{{values.2}}<br>{{values.3}}</td>
+        <td>{{values.1}}</td>
+        <td>{{values.2}}</td>
+	    <td>{{values.3}}</td>
 	    <td>{{values.4}}</td>
-	    <td>{{values.5}}<br>{{values.8}}/{{values.9}}</td>
-	    <td>{{values.6}}</td>
-	    <td>>{{values.1}}<br>{{values.7}}</td>
+        <td>{{values.5}}</td>
+        <td>{{values.6}}</td>
+	    <td>{{values.7}}</td>
+	    <td>{{values.8}}</td>
+        <td>{{values.9}}</td>
+        <td>{{values.10}}</td>
+        <td>{{values.11}}</td>
+        <td>{{values.12}}</td>
+        <td>{{values.13}}</td>
+        <td>{{values.14}}</td>
         </tr>
     {% endfor %}
     </tbody>
     </table>
 
-
-
-
-
-
-
-
-
-
-
-    <!--
-    <table>
-    <tr>
-    <th></th>
-    <th id="entete3">Locus / Protein id</th>
-    <th id="entete3">Product</th>
-    <th id="entete3">Orthogroup</th>
-    <th id="entete3">Gene</th>
-    <th id="entete_search">Translation</th>
-
-    </tr>
-    {% for values in search_result %}
-        <tr>
-            <td>{{values.0}}</td>
-
-            <td>{{values.2}}</td>
-	    <td>{{values.3}}</td>
-	    <td>{{values.4}}</td>
-	    <td>{{values.5}}</td>
-	    <td>>{{values.1}}<br>{{values.6}}</td>
-        </tr>
-    {% endfor %}
-    </table>
-    -->
-
-{% endif %}
-
 </section>
 
-
+{% else %}
+</section>
+{% endif %}
 
 
 

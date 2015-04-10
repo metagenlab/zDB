@@ -11,7 +11,7 @@
 {% include "chlamdb/user.html" %}
 {% include "chlamdb/menu.html" %}
 
-<section>
+<section  id="head_section">
 <form action="{% url "chlamdb.views.circos2genomes" biodb %}" method="post">{% csrf_token %}
 
 <table>

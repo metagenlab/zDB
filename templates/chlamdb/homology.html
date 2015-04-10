@@ -21,8 +21,11 @@
 
 
 
-<section>
-
+<section id="head_section">
+<section id="section_head">
+<p>Get annotation, sequences and homologous proteins of a target protein</p>
+<p>INPUT: locus tag or protein ID</p>
+</section>
 
 
 <!--
@@ -111,13 +114,38 @@
     <th>Value</th>
     </tr>
 
-    {% for key, value  in seqfeature_values.items %}
+        <tr>
+        <td>orthogroup</td>
+        <td id="entete_features">{{ data.0 }}</td>
+        </tr>
 
         <tr>
-        <td>{{key}}</td>
-        <td id="entete_features">{{value}}</td>
+        <td>locus_tag</td>
+        <td id="entete_features">{{ data.1 }}</td>
         </tr>
-    {% endfor %}
+        <tr>
+        <td>protein_id</td>
+        <td id="entete_features">{{ data.2 }}</td>
+        </tr>
+
+        <tr>
+        <td>start</td>
+        <td id="entete_features">{{ data.3 }}</td>
+        </tr>
+        <tr>
+        <td>stop</td>
+        <td id="entete_features">{{ data.4 }}</td>
+        </tr>
+         <tr>
+        <td>strand</td>
+        <td id="entete_features">{{ data.5 }}</td>
+        </tr>
+        <tr>
+        <td>organism</td>
+        <td id="entete_features">{{ data.6 }}</td>
+        </tr>
+
+
     </table>
 
     &nbsp
@@ -161,12 +189,19 @@
 
     <h2>Homologs</h2>
 
+    <div id="export_bouttons">
+    <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'homologues_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
-    <table>
+    <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'homologues_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+    <br/>
+    </div>
+
+
+    <table id="homologues_table" class="sortable">
     <tr>
     <th> </th> 
-    <th>Accession</th>
     <th>Locus tag</th>
+    <th>Protein ID</th>
     <th>Identity (%)</th>
     <th>start</th>
     <th>stop</th>
@@ -176,16 +211,16 @@
 
 
     </tr>
-    {% for values in ortho_detail %}
+    {% for values in homologues %}
         <tr>
-        <td>{{values.0}}</td>
+        <td>{{values.8}}</td>
         <td>{{values.1}}</td>
-	<td>{{values.3}}</td>
-    <td>{{values.5}}</td>
-    <td>{{values.6}}</td>
+	<td>{{values.2}}</td>
     <td>{{values.7}}</td>
-    <td>{{values.8}}</td>
-	<td>{{values.4}}</td>
+    <td>{{values.4}}</td>
+    <td>{{values.3}}</td>
+    <td>{{values.5}}</td>
+	<td>{{values.6}}</td>
 
         </tr>
     {% endfor %}

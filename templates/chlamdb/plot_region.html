@@ -17,93 +17,16 @@
 
 
 
-<nav>
-
-<div id="wrapper">
-
-
-    <ul class="menu">
-        <li class="item1"><a href="">Home</a>
-             <ul>
-            <li class="item5"><a href="/biodb/contact/saureus_CR">S. aureus</a>
-            </li>
-            <li class="item6"><a href="/biodb/contact/Chlamydia_11_14">Chlamydiales v. 11.14</a>
-            </li>
-            <li class="item6"><a href="/biodb/contact/Chlamydia_12_14">Chlamydiales v. 12.14</a>
-            </li>
-            <li class="item6"><a href="/biodb/contact/Chlamydia_12_14_2">Chlamydiales v. 12.14.2</a>
-            </li>
+{% include "chlamdb/user.html" %}
+{% include "chlamdb/menu.html" %}
 
 
-
-
-            </ul>
-
-
-        </li>
-
-        <li class="rollmenu"><a href="">Circos</a>
-             <ul>
-            <li class="item5"><a href="/biodb/circos/saureus_CR">S. aureus</a>
-            </li>
-            <li class="item6"><a href="/biodb/circos/Chlamydia_11_14">Chlamydiales v. 11.14</a>
-            </li>
-            <li class="item6"><a href="/biodb/circos/Chlamydia_12_14">Chlamydiales v. 12.14</a>
-            </li>
-            <li class="item6"><a href="/biodb/circos/Chlamydia_12_14_2">Chlamydiales v. 12.14.2</a>
-            </li>
-
-
-
-            </ul>
-        </li>
-        <li class="item4"><a href="{% url 'search' %}">Search</a>
-        </li>
-        <li class="item5"><a href="{% url 'blast' %}">Blast</a>
-        </li>
-        <li class="rollmenu"><a href="">Circos2Genomes</a>
-
-             <ul>
-            <li class="item5"><a href="/biodb/circos2genomes/saureus_CR">saureus_CR</a>
-            </li>
-            <li class="item6"><a href="/biodb/circos2genomes/Chlamydia_11_14">Chlamydia_11_14</a>
-            </li>
-            <li class="item6"><a href="/biodb/circos2genomes/Chlamydia_12_14">Chlamydia_11_14</a>
-            </li>
-            <li class="item6"><a href="/biodb/circos2genomes/Chlamydia_12_14_2">Chlamydia_11_14</a>
-            </li>
-
-
-
-
-            </ul>
-
-        </li>
-
-        <li class="item7"><a href="http://127.0.0.1:8765/vista-alignment">GenomeVista</a>
-        </li>
-        <li class="item8"><a href="http://127.0.0.17/jbrowse/JBrowse-1.11.4/">GBrowse</a>
-    </ul>
-
-</div>
-
-</nav>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<section>
-
+<section  id="head_section">
+<section id="section_head">
+<p>Plot genomic features in the neighborhood of a target locus. Coloured links reflect sequence identity:
+    dark blue features are highly conserved, grey features present less than 50% identity</p>
+<p>INPUT: locus tag or protein ID.</p>
+</section>
 
 
 <!--
@@ -153,31 +76,6 @@
 
 
 
-
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script type="text/javascript">
-$(function() {
-
-    var menu_ul = $('.rollmenu > ul'),
-        menu_a  = $('.rollmenu > a');
-
-    menu_ul.hide();
-
-    menu_a.click(function(e) {
-        e.preventDefault();
-        if(!$(this).hasClass('active')) {
-            menu_a.removeClass('active');
-            menu_ul.filter(':visible').slideUp('normal');
-            $(this).addClass('active').next().stop(true,true).slideDown('normal');
-        } else {
-            $(this).removeClass('active');
-            $(this).next().stop(true,true).slideUp('normal');
-        }
-    });
-
-});
-</script>
 
 
 
