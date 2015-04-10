@@ -15,17 +15,19 @@
 {% include "chlamdb/user.html" %}
 {% include "chlamdb/menu.html" %}
 
-<!git--
+<!--
 <section>
-    <h1>Chlamydiales Database</h1>
-
-
 Welcome! {{ user.username }}
 </section>
 -->
-<section>
+<section  id="head_section">
     <h1>Overview</h1>
+    <div id="export_bouttons">
+    <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'genomes_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
+    <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'genomes_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+    <br/>
+    </div>
 {% include "chlamdb/chlam_genomes_detail.html" %}
 </section>
 

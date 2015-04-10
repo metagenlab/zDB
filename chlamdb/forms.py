@@ -22,12 +22,14 @@ def get_accessions(database_name, all=False, plasmid=False):
     import manipulate_biosqldb
     server = manipulate_biosqldb.load_db()
     if not plasmid:
+        print "no plasmid"
         sql ='SELECT bioentry.taxon_id, bioentry.description FROM bioentry ' \
              'inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id ' \
-             'where biodatabase.name ="%s"and bioentry.description not like "%%%%plasmid%%%%"' \
+             'where biodatabase.name ="%s"and bioentry.description not like "%%%%plasmid%%%%" and bioentry.description not like "%%%%phage%%%%"' \
              'order by bioentry.description' % database_name #
     else:
-        sql ='SELECT bioentry.taxon_id, bioentry.description FROM bioentry ' \
+        print 'plasmid'
+        sql ='SELECT bioentry.accession, bioentry.description FROM bioentry ' \
              'inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id ' \
              'where biodatabase.name ="%s"' \
              'order by bioentry.description' % database_name
@@ -35,8 +37,8 @@ def get_accessions(database_name, all=False, plasmid=False):
     accession_list = [i for i in result]
     print "acc", accession_list
     accession_choices = []
-    if all:
-        accession_choices.append(("all", "all"))
+
+
 
     for accession in accession_list:
         accession_choices.append((accession[0], accession[1]))
@@ -48,6 +50,7 @@ def get_accessions(database_name, all=False, plasmid=False):
         print i, accession
         description = accession[1]
         description = re.sub(", complete genome\.", "", description)
+        description = re.sub(", complete genome", "", description)
         description = re.sub(", complete sequence\.", "", description)
         description = re.sub("strain ", "", description)
         description = re.sub("str\. ", "", description)
@@ -65,7 +68,9 @@ def get_accessions(database_name, all=False, plasmid=False):
     accession_choices = []
     for description in sorted(accessions.keys()):
         accession_choices.append([accessions[description], description])
-    print accession_choices
+
+    if all:
+        accession_choices = [["all", "all"]] + accession_choices
 
     return accession_choices
 
@@ -80,29 +85,28 @@ choices = tuple(choices)
 
 def make_contact_form(server, database_name):
 
-    accession_choices = get_accessions(database_name)
+    #accession_choices = get_accessions(database_name)
 
 
     class ContactForm(forms.Form):
 
         accession = forms.CharField(max_length=100)
         #biodatabase = forms.ChoiceField(choices=choices)
-        plot_region = forms.NullBooleanField(widget=forms.CheckboxInput())
-        region_size = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
-        genomes = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "30" }), required = False)
+        #plot_region = forms.NullBooleanField(widget=forms.CheckboxInput())
+        #region_size = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
+        #genomes = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "30" }), required = False)
     return ContactForm
 
 def make_plot_form(database_name):
 
-
     accession_choices = get_accessions(database_name)
 
-
     class PlotForm(forms.Form):
-
-        location_start = forms.CharField(max_length=9, label="sart (bp)", required=False)
-        location_stop = forms.CharField(max_length=9, label="end (bp)", required=False)
-        genome = forms.ChoiceField(choices=accession_choices, required=True)
+        accession = forms.CharField(max_length=100)
+        #location_start = forms.CharField(max_length=9, label="sart (bp)", required=False)
+        #location_stop = forms.CharField(max_length=9, label="end (bp)", required=False)
+        region_size = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
+        genomes = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "30" }), required = False)
     return PlotForm
 
 
@@ -120,7 +124,7 @@ def make_circos_form(database_name):
     
     class CircosForm(forms.Form):
         reference = forms.ChoiceField(choices=accession_choices)
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % len(accession_choices) }), required = False)
+        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (len(accession_choices)/2) }), required = False)
         get_region = forms.NullBooleanField(widget=forms.CheckboxInput())
         region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = False)
         
@@ -133,12 +137,14 @@ def make_circos_form(database_name):
             
     return CircosForm
 
-def make_extract_form(database_name):
+def make_extract_form(database_name, plasmid=False):
 
-    accession_choices = get_accessions(database_name)
-
+    if not plasmid:
+        accession_choices = get_accessions(database_name)
+    else:
+        accession_choices = get_accessions(database_name, plasmid=True)
     class ExtractForm(forms.Form):
-        orthologs_in = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "20" }), required = False, label="")
+        orthologs_in = forms.MultipleChoiceField(label='', choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "20" }), required = False)
         no_orthologs_in = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "20" }), required = False, label="")
 
 
@@ -156,14 +162,17 @@ class SearchForm(forms.Form):
 
 
 
+def make_blast_form(biodb):
 
+    accession_choices =  get_accessions(biodb, plasmid=True, all=True)
 
-class BlastForm(forms.Form):
+    class BlastForm(forms.Form):
+        data = forms.ChoiceField(choices=[("ffn", "dna"), ("faa", "aa")])
+        target = forms.ChoiceField(choices=accession_choices)
+        blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 20}))
+        #biodatabase = forms.ChoiceField(choices=choices)
 
-    blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 20}))
-    #biodatabase = forms.ChoiceField(choices=choices)
-
-
+    return BlastForm
 
 def make_motif_form(database_name):
 

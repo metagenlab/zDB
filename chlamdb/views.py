@@ -20,7 +20,7 @@ from forms import BiodatabaseForm
 from forms import make_circos_form
 from forms import make_circos2genomes_form
 from forms import make_mummer_form
-from forms import BlastForm
+from forms import make_blast_form
 from forms import make_crossplot_form
 from forms import ConnexionForm
 from forms import DBForm
@@ -50,7 +50,7 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase +
 
 def extract_alphanumeric(input_string):
     from string import ascii_letters, digits
-    return "".join([ch for ch in input_string if ch in (ascii_letters + digits + '_-')])
+    return "".join([ch for ch in input_string if ch in (ascii_letters + digits + '_-.')])
 
 
 def choose_db(request):
@@ -163,16 +163,32 @@ def extract(request, biodb):
             sql_include+=include[-1]
             n = 1
             search_result = []
-            for group in match_groups:
-                sql_2 = 'select seqfeature_id from orthology_detail_%s where orthogroup = "%s" and (%s)' % (biodb, group, sql_include)
-                all_features = [ i[0] for i in server.adaptor.execute_and_fetchall(sql_2,)]
-                for feature_id in all_features:
 
-                    data = format_seqfeature_values(server, biodb, feature_id)
-                    search_result.append([n] + data)
-                    n+=1
-                    print n
-            print search_result
+            group_filter = 'where ('
+
+            for i, group in enumerate(match_groups):
+                if i == 0:
+                    group_filter += 'orthogroup="%s"' % group
+                else:
+                    group_filter += ' or orthogroup="%s"' % group
+            group_filter+=')'
+            print group_filter
+
+
+            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+            sql_2 = 'select %s from orthology_detail_%s %s' % (columns, biodb, group_filter)
+            print sql_2
+            raw_data = server.adaptor.execute_and_fetchall(sql_2,)
+
+            n = 1
+            extract_result = []
+            for one_hit in raw_data:
+                extract_result.append((n,) + one_hit)
+                n+=1
+                print n
+            print extract_result
+
             envoi_extract = True
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
@@ -210,64 +226,22 @@ def homology(request, biodb):
         #form2 = ContactForm(request.POST)
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             valid_id = True
-            # Ici nous pouvons traiter les données du formulaire
+
             accession = extract_alphanumeric(form.cleaned_data['accession'])
-            #biodb = form.cleaned_data['biodatabase']
-            plot_region = form.cleaned_data['plot_region']
+
             server, db = manipulate_biosqldb.load_db(biodb)
-            print "plot_region", plot_region
-            region_size = form.cleaned_data['region_size']
-            print "region size", region_size
-            print "biodb", biodb
-            #if biodb not in bioentry_in_memory.keys():
-            #    bioentry_in_memory[biodb] = {}
 
-
-
-            locus_tag2seqfeature_id = cache.get("locus_tag2seqfeature_id_%s" % biodb)
-
-            if locus_tag2seqfeature_id is None:
-                locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, biodb)
-                cache.set("locus_tag2seqfeature_id_%s" % biodb, locus_tag2seqfeature_id)
-            else:
-                print "locus_tag2seqfeature_id in memory"
-
-            protein_id2seqfeature_id = cache.get("protein_id2seqfeature_id_%s" % biodb)
-
-            if protein_id2seqfeature_id is None:
-                protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, biodb)
-                cache.set("protein_id2seqfeature_id_%s" % biodb, protein_id2seqfeature_id)
-            else:
-                print "protein_id2seqfeature_id in memory"
-
-            try:
-                seqid = locus_tag2seqfeature_id[accession]
-                #seqfeature_values = manipulate_biosqldb.locus_tag2seqfeature_qualifier_values(server, accession, biodb)
-                #print "seqfeature_values", seqfeature_values
-            except KeyError:
-                try:
-                    print "not a locus tag!"
-                    print "trying to convert protein id to locus tag..."
-                    #print protein_id2seqfeature_id.keys()[1:10]
-                    seqid = protein_id2seqfeature_id[accession]
-
-                    accession = manipulate_biosqldb.protein_id2locus_tag(server, accession, biodb)
-                    #print "locus_tag", accession
-                    #seqfeature_values = manipulate_biosqldb.locus_tag2seqfeature_qualifier_values(server, accession, biodb)
-                    #print "seqfeature_values", seqfeature_values
-                except KeyError:
+            #sql1 = 'SELECT column_name FROM information_schema.columns WHERE table_name="orthology_detail_chlamydia_03_15"'
+            sql2 = 'select orthogroup, locus_tag, protein_id, start, stop, strand, organism from orthology_detail_%s where locus_tag like "%%%%%s%%%%" or protein_id like "%%%%%s%%%%"' % (biodb, accession, accession)
+            print sql2
+            data = server.adaptor.execute_and_fetchall(sql2, )[0]
+            print "seqfeature_id", data
+            if not data:
                     valid_id = False
-
             if valid_id:
-                print "getting seqfeature values for seqfeature id %s" % seqid
-                seqfeature_values = manipulate_biosqldb.seqfeature_id2seqfeature_qualifier_values(server, seqid, biodb)
-                print seqfeature_values
-                print "getting bioentry data"
-                bioentry = manipulate_biosqldb.locus_tag2bioentry_accession_and_description(server, accession, biodb)
-                print bioentry
-                orthogroup = seqfeature_values["orthogroup"]
-                fasta = "%s_fasta/%s.txt" % (biodb, orthogroup)
+                orthogroup = data[0]
 
+                fasta = "%s_fasta/%s.txt" % (biodb, orthogroup)
                 alignment = "%s_fasta/%s.html" % (biodb, orthogroup)
                 alignment_fasta = "%s_fasta/%s.fa" % (biodb, orthogroup)
                 alignment_fasta_nucl = "%s_fasta_nucl/%s_nucl.txt" % (biodb, orthogroup)
@@ -275,50 +249,33 @@ def homology(request, biodb):
                 tree_rooted = "%s_fasta/%s_tree_reroot.svg" % (biodb, orthogroup)
                 tree_file = "%s_fasta/%s.phy_phyml_tree.txt" % (biodb, orthogroup)
 
-                bioentry_accession = bioentry[0]
-                bioentry_name = bioentry[1]
 
-                print "getting orthologs data"
-                ortho_detail = list(manipulate_biosqldb.orthogroup_id2locus_tag_list(server, orthogroup, biodb))
+                sql3 = 'select orthogroup, locus_tag, protein_id, start, stop, strand, organism from orthology_detail_%s where orthogroup = "%s" ' % (biodb, orthogroup)
+                print sql3
+                homologues = list(server.adaptor.execute_and_fetchall(sql3, ))
+                print homologues
 
-
-                print "ortho_detail", ortho_detail
-
-                new_list = []
-                locus_tag_target_genomes = []
-                for i in range(0, len(ortho_detail)):
-
-                    if ortho_detail[i][3] in form.cleaned_data['genomes']:
-                        locus_tag_target_genomes.append(ortho_detail[i][2])
-                    print ortho_detail[i]
-                    new_list.append((i + 1,) + ortho_detail[i])
-
-                ortho_detail = new_list
-
-                if len(ortho_detail) >1:
+                if len(homologues) >1:
                     orthologs = True
                 else:
                     orthologs = False
                 import orthogroup_identity_db
-                if len(ortho_detail) > 1:
+                if len(homologues) > 1:
                     orthogroup2identity_dico = orthogroup_identity_db.orthogroup2identity_dico(biodb, orthogroup)
-                    print "orthologs", orthologs, len(ortho_detail)
-                    for count, value in enumerate(ortho_detail):
-                        locus_2 = value[3]
-                        ortho_detail[count] = value + (orthogroup2identity_dico[accession][locus_2],)
-                        print ortho_detail
-                        print "count", count
-                        print ortho_detail[count]
-                        location = manipulate_biosqldb.seqfeature_id2feature_location(server, int(ortho_detail[count][2]))
-                        print "location",location
-                        ortho_detail[count] = ortho_detail[count] + location
-                        print ortho_detail
+                    print "orthologs", orthologs, len(homologues)
+                    for count, value in enumerate(homologues):
+                        locus_2 = value[1]
+                        print  value + (orthogroup2identity_dico[data[1]][locus_2],)
+                        homologues[count] = value + (orthogroup2identity_dico[data[1]][locus_2],) + (count+1,)
+                        print homologues[count]
+                        print
+
                 else:
-                    ortho_detail[0] = ortho_detail[0] + (100,)
+                    homologues[0] = homologues[0] + (100,)
 
 
 
-                if plot_region:
+                if plot_region == "boinjour":
                     print "plotting!!!!!!!!!!!!!!"
                     print "locus_tag_list", locus_tag_target_genomes
                     home_dir = os.path.dirname(__file__)
@@ -362,10 +319,74 @@ def homology(request, biodb):
     return render(request, 'chlamdb/homology.html', locals())
 
 
+@login_required
+def plot_region(request, biodb):
+
+    cache = get_cache('default')
+    print "cache", cache
+
+    #bioentry_in_memory = cache.get("biodb")
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+    plot_region_form_class = make_plot_form(biodb)
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+        form = plot_region_form_class(request.POST)  # Nous reprenons les données
+        #form2 = ContactForm(request.POST)
+        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+            valid_id = True
+
+            accession = extract_alphanumeric(form.cleaned_data['accession'])
+
+            server, db = manipulate_biosqldb.load_db(biodb)
+
+            region_size = form.cleaned_data['region_size']
+
+            genomes = form.cleaned_data['genomes']
 
 
 
+            sql2 = 'select orthogroup, locus_tag, protein_id, start, stop, strand, organism from orthology_detail_%s where locus_tag like "%%%%%s%%%%" or protein_id like "%%%%%s%%%%"' % (biodb, accession, accession)
+            print sql2
+            data = server.adaptor.execute_and_fetchall(sql2, )[0]
+            print "seqfeature_id", data
+            if not data:
+                    valid_id = False
+            if valid_id:
+                orthogroup = data[0]
 
+                select = 'and (taxon_id = %s' % genomes[0]
+                if len(genomes) >1:
+                    for i in range(0, len(genomes)-1):
+                        select+= ' or taxon_id = %s' % genomes[i]
+                    select+= ' or taxon_id = %s)' % genomes[-1]
+                sql3 = 'select locus_tag from orthology_detail_%s where orthogroup = "%s" %s' % (biodb, orthogroup, select)
+                print sql3
+                locus_tag_target_genomes = [i[0] for i in server.adaptor.execute_and_fetchall(sql3, )]
+
+                if plot_region:
+                    print "plotting!!!!!!!!!!!!!!"
+                    print "locus_tag_list", locus_tag_target_genomes
+                    home_dir = os.path.dirname(__file__)
+                    print "home_dir", home_dir
+                    temp_location = os.path.join(home_dir, "../assets")
+                    print "temp loc", temp_location
+                    temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
+                    print "temp file", temp_file.name
+                    name = os.path.basename(temp_file.name)
+                    mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, locus_tag_target_genomes,
+                                                                                      temp_file.name, int(region_size),
+                                                                                      cache)
+
+            envoi = True
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = plot_region_form_class()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/plot_region.html', locals())
+
+'''
 @login_required
 def plot_region(request, biodb):
     plot_form_class = make_plot_form(biodb)
@@ -379,26 +400,11 @@ def plot_region(request, biodb):
         form = plot_form_class(request.POST)  # Nous reprenons les données
 
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
-            invalid_id = False
-            # Ici nous pouvons traiter les données du formulaire
-            location_start = form.cleaned_data['location_start']
-            location_stop = form.cleaned_data['location_stop']
 
-            genome = form.cleaned_data['genome']
 
-            server, db = manipulate_biosqldb.load_db(biodb)
 
-            home_dir = os.path.dirname(__file__)
-            print "home_dir", home_dir
-            temp_location = os.path.join(home_dir, "../assets")
-            print "temp loc", temp_location
-            temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-            print "temp file", temp_file.name
-            name = os.path.basename(temp_file.name)
 
-            bioentry = manipulate_biosqldb.description2accession(server, genome, biodb)
-            print "bioentry", bioentry
-            mysqldb_plot_genomic_feature.location2simpleplot(db, biodb, bioentry, int(location_start), int(location_stop), temp_file.name, cache)
+
 
             envoi = True
 
@@ -406,6 +412,8 @@ def plot_region(request, biodb):
         form = plot_form_class()  # Nous créons un formulaire vide
 
     return render(request, 'chlamdb/plot_region.html', locals())
+'''
+
 
 @login_required
 def comparative_extract():
@@ -566,20 +574,26 @@ def alignment(request, input_fasta):
 
 
 def format_seqfeature_values(server, biodb, seqfeature_id):
+
+
     seqfeature_data = manipulate_biosqldb.seqfeature_id2seqfeature_qualifier_values(server, seqfeature_id, biodb)
     if not 'translation' in seqfeature_data.keys():
         # TODO add handeling of other kind of features than CDS
         return None
-
-    sql_family_size = 'select count(*) as `n_rows` from ' \
+    try:
+        sql_family_size = 'select count(*) as `n_rows` from ' \
            ' (select * from orthology_detail_chlamydia_02_15 ' \
            ' where orthogroup = "%s" group by taxon_id) a' % (seqfeature_data["orthogroup"])
-    sql_n_homologues = 'select count(*) as `n_rows` from ' \
+        sql_n_homologues = 'select count(*) as `n_rows` from ' \
            ' (select * from orthology_detail_chlamydia_02_15 ' \
            ' where orthogroup = "%s") a' % (seqfeature_data["orthogroup"])
+        n_family = int(server.adaptor.execute_and_fetchall(sql_family_size,)[0][0])
+        n_homologues = int(server.adaptor.execute_and_fetchall(sql_n_homologues,)[0][0])
+    except KeyError:
+        n_family = '-'
+        n_homologues = '-'
 
-    n_family = int(server.adaptor.execute_and_fetchall(sql_family_size,)[0][0])
-    n_homologues = int(server.adaptor.execute_and_fetchall(sql_n_homologues,)[0][0])
+
 
     # 0 seqfeature_values["description"],
     # 1 seqfeature_values["locus_tag"],
@@ -667,22 +681,26 @@ def search(request, biodb):
             server, db = manipulate_biosqldb.load_db(biodb)
             print "biodb", biodb
 
-            if search_type == "gene":
-                seqfeature_ids = manipulate_biosqldb.gene_regex2seqfeature_ids(server, biodb, search_term)
-            if search_type == "product":
-                seqfeature_ids = manipulate_biosqldb.product_regex2seqfeature_ids(server, biodb, search_term)
+            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
 
-            print seqfeature_ids
+            if search_type == "gene":
+
+                sql = 'select %s from orthology_detail_%s where gene REGEXP "%s"' % (columns, biodb, search_term)
+                raw_data = server.adaptor.execute_and_fetchall(sql,)
+
+            if search_type == "product":
+                sql = 'select %s from orthology_detail_%s where product REGEXP "%s"' % (columns, biodb, search_term)
+                raw_data = server.adaptor.execute_and_fetchall(sql,)
+
+
             n = 1
             search_result = []
-            for feature_id in seqfeature_ids:
-
-                data = format_seqfeature_values(server, biodb, feature_id)
-                if data:
-                    search_result.append([n] + data)
-                    n+=1
-                    print n
-
+            for one_hit in raw_data:
+                search_result.append((n,) + one_hit)
+                n+=1
+                print n
+            print search_result
 
 
             '''
@@ -831,12 +849,16 @@ def motif_search(request, biodb):
 @login_required
 def blast(request, biodb):
     server = manipulate_biosqldb.load_db()
+
+    blast_form_class = make_blast_form(biodb)
+
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
-        form = BlastForm(request.POST)  # Nous reprenons les données
+        form = blast_form_class(request.POST)  # Nous reprenons les données
 
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             from Bio.Blast.Applications import NcbiblastpCommandline
+            from Bio.Blast.Applications import NcbiblastnCommandline
             #from StringIO import StringIO
             from tempfile import NamedTemporaryFile
             from Bio.Seq import Seq
@@ -848,6 +870,11 @@ def blast(request, biodb):
 
 
             input_sequence = form.cleaned_data['blast_input']
+
+            target_accession = form.cleaned_data['target']
+
+            data_type = form.cleaned_data['data']
+            print "data_type", data_type
             input_sequence = extract_alphanumeric(input_sequence)
             print input_sequence
 
@@ -859,8 +886,15 @@ def blast(request, biodb):
             query_file = NamedTemporaryFile()
             SeqIO.write(my_record, query_file, "fasta")
             query_file.flush()
-            blastp_cline = NcbiblastpCommandline(query=query_file.name, db="~/Dropbox/dev/django/test_1/assets/blast_db/%s.faa" % biodb, evalue=0.001, outfmt=0)
-            stdout, stderr = blastp_cline()
+            blastdb = "~/Dropbox/dev/django/chlamydia/assets/chlamdb/%s/%s.%s" % (data_type, target_accession, data_type)
+            print blastdb
+            if data_type == 'faa':
+                print "faa!!!"
+                blast_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=0.001, outfmt=0)
+            if data_type == 'ffn':
+                print "ffn!!!"
+                blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=0.001, outfmt=0)
+            stdout, stderr = blast_cline()
             blast_file = NamedTemporaryFile()
             blast_file.write(stdout)
             mview_cmd = 'mview -in blast -ruler on -html data -css on -coloring identity %s' % blast_file.name
@@ -876,7 +910,7 @@ def blast(request, biodb):
             envoi = True
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = BlastForm()  # Nous créons un formulaire vide
+        form = blast_form_class()  # Nous créons un formulaire vide
 
     return render(request, 'chlamdb/blast.html', locals())
 
