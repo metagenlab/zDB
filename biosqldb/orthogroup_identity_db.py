@@ -193,7 +193,7 @@ class Orthogroup_Identity_DB:
 
         sql = 'select orthogroup from orthology_%s' % biodatabase_name
 
-        #self._create_orthogroup_average_identity_column(server, biodatabase_name)
+        self._create_orthogroup_average_identity_column(server, biodatabase_name)
 
         groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql, )]
         print len(groups)
