@@ -262,6 +262,7 @@ def homology(request, biodb):
                 import orthogroup_identity_db
                 if len(homologues) > 1:
                     orthogroup2identity_dico = orthogroup_identity_db.orthogroup2identity_dico(biodb, orthogroup)
+
                     print "orthologs", orthologs, len(homologues)
                     for count, value in enumerate(homologues):
                         locus_2 = value[1]
