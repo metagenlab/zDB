@@ -192,9 +192,10 @@ class Orthogroup_Identity_DB:
         server, db = manipulate_biosqldb.load_db(biodatabase_name)
 
         sql = 'select orthogroup from orthology_%s' % biodatabase_name
-
-        self._create_orthogroup_average_identity_column(server, biodatabase_name)
-
+        try:
+            self._create_orthogroup_average_identity_column(server, biodatabase_name)
+        except:
+            print "column already created?"
         groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql, )]
         print len(groups)
 
@@ -461,6 +462,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     tata = Orthogroup_Identity_DB(args.db_name)
-    #tata.import_alignments(tata.cursor, args.align_files)
-    tata.add_average_orthogroup_identity(args.db_name)
+    tata.import_alignments(tata.cursor, args.align_files)
+    #tata.add_average_orthogroup_identity(args.db_name)
     #check_identity("Chlamydia_12_14", "group_825", "Cav1_00733", "CT565")
