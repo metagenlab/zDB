@@ -796,15 +796,12 @@ if __name__ == '__main__':
     parser.add_argument("-f", '--fasta_draft', type=str,help="draft reference genome")
     parser.add_argument("-p", '--asset_path', type=str,help="asset path")
     parser.add_argument("-t", '--phobius_files', type=str,help="phobis TM ST  short files", nargs='+')
+    parser.add_argument("-s", '--get_sequences', type=str, default=False, help="Create aa and nucleotide alignment directories in asset path")
     
     args = parser.parse_args()
     
     server, db = manipulate_biosqldb.load_db(args.db_name)
     asset_path = "/home/trestan/Dropbox/dev/django/chlamydia/assets/"
-
-
-
-
 
 
     #print len(get_conserved_core_groups(server, "Chlamydiales_1"))
@@ -833,7 +830,6 @@ if __name__ == '__main__':
     print "getting seqfeature_id2protein_id"
     seqfeature_id2protein_id = manipulate_biosqldb.seqfeature_id2protein_id_dico(server, args.db_name)
 
-
     print "parsing mcl file"
     protein_id2orthogroup_id, orthomcl_groups2proteins, genome_orthomcl_code2proteins, protein_id2genome_ortho_mcl_code = parse_orthomcl_output(args.mcl)
 
@@ -854,7 +850,6 @@ if __name__ == '__main__':
 
     protein_id2phobius = parse_phobius.parse_short_phobius(*args.phobius_files)
 
-    '''
     print "adding orthogroup to seqfeature_qualifier_values"
 
     add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
@@ -865,7 +860,6 @@ if __name__ == '__main__':
 
     create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
 
-    '''
 
     group2group_size = get_all_orthogroup_size(server, args.db_name)
     group2family_size = get_family_size(server, args.db_name)
@@ -892,9 +886,6 @@ if __name__ == '__main__':
 
 
 
-
-    '''
-
     print "plotting orthogroup_size"
     plot_orthogroup_size_distrib(server, args.db_name)
     
@@ -904,29 +895,31 @@ if __name__ == '__main__':
     all_taxon_ids = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
 
 
-    if not os.path.exists(os.path.join(asset_path, "%s_fasta/" % args.db_name)):
-        os.makedirs(os.path.join(asset_path, "%s_fasta/" % args.db_name))
+    if args.get_sequences:
 
-    get_all_orthogroup_protein_fasta(server, args.db_name, os.path.join(asset_path, "%s_fasta/" % args.db_name))
+        if not os.path.exists(os.path.join(asset_path, "%s_fasta/" % args.db_name)):
+            os.makedirs(os.path.join(asset_path, "%s_fasta/" % args.db_name))
+
+        get_all_orthogroup_protein_fasta(server, args.db_name, os.path.join(asset_path, "%s_fasta/" % args.db_name))
 
 
 
-    if not os.path.exists(os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name)):
-        os.makedirs(os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name))
+        if not os.path.exists(os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name)):
+            os.makedirs(os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name))
 
-    get_all_orthogroup_protein_fasta_by_taxon(server, args.db_name, os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name))
+        get_all_orthogroup_protein_fasta_by_taxon(server, args.db_name, os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name))
 
-    if not os.path.exists(os.path.join(asset_path, "%s_fasta_core/" % args.db_name)):
-        os.makedirs(os.path.join(asset_path, "%s_fasta_core/" % args.db_name))
-    
-    core_ortho = get_conserved_core_groups(server, args.db_name)
-    import shutil
-    for group in core_ortho:
-        shutil.copy(os.path.join(asset_path, "%s_fasta_by_taxons/%s.txt" % (args.db_name, group)),
+        if not os.path.exists(os.path.join(asset_path, "%s_fasta_core/" % args.db_name)):
+            os.makedirs(os.path.join(asset_path, "%s_fasta_core/" % args.db_name))
+        
+        core_ortho = get_conserved_core_groups(server, args.db_name)
+        import shutil
+        for group in core_ortho:
+            shutil.copy(os.path.join(asset_path, "%s_fasta_by_taxons/%s.txt" % (args.db_name, group)),
                     os.path.join(asset_path, "%s_fasta_core/%s.txt" % (args.db_name, group)))
-   
+        
     
-    #config_file, accessions_name = circos_draft(server, args.db_name, "5", args.fasta_draft)
+        #config_file, accessions_name = circos_draft(server, args.db_name, "5", args.fasta_draft)
 
-    get_nucleotide_core_fasta(server, db, args.db_name, ".")
-    '''
+        get_nucleotide_core_fasta(server, db, args.db_name, ".")
+    
