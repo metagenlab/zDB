@@ -64,7 +64,11 @@ def create_orthogroup_table(server, biodatabase_name,
                             seqfeature_id2gene_dico,
                             seqfeature_id2product_dico,
                             seqfeature_id2translation_dico,
-                            seqfeature2location_dico):
+                            seqfeature_id2organism_dico,
+                            seqfeature2location_dico,
+                            group2orthogroup_size,
+                            group2family_size,
+                            protein_id2phobius):
 
     sql = 'CREATE TABLE orthology_detail_%s(orthogroup VARCHAR(100) NOT NULL, ' \
           ' taxon_id INT, ' \
@@ -77,12 +81,19 @@ def create_orthogroup_table(server, biodatabase_name,
           ' gene VARCHAR(100) NOT NULL, ' \
           ' product VARCHAR(10000) NOT NULL, ' \
           ' translation VARCHAR(100000) NOT NULL, ' \
+          ' organism VARCHAR(1000) NOT NULL, ' \
+          ' orthogroup_size INT,' \
+          ' n_genomes INT,' \
+          ' TM INT,' \
+          ' SP VARCHAR(1),' \
           'seqfeature_id INT)' % biodatabase_name
 
     server.adaptor.execute(sql)
 
     for i in range(0, len(orthomcl_groups2proteins.keys())):
         group = "group_%s" % i
+        orthogroup_size = group2orthogroup_size[group]
+        n_genomes = group2family_size[group]
         proteins = orthomcl_groups2proteins[group]
         for protein in proteins:
             try:
@@ -92,6 +103,7 @@ def create_orthogroup_table(server, biodatabase_name,
                 start = seqfeature2location_dico[seqfeature_id][0]
                 end = seqfeature2location_dico[seqfeature_id][1]
                 strand = seqfeature2location_dico[seqfeature_id][2]
+                organism = seqfeature_id2organism_dico[str(seqfeature_id)]
                 try:
                     gene = seqfeature_id2gene_dico[str(seqfeature_id)]
                 except KeyError:
@@ -104,7 +116,11 @@ def create_orthogroup_table(server, biodatabase_name,
 
                 try:
                     protein_id = seqfeature_id2protein_id_dico[str(seqfeature_id)]
+                    SP = protein_id2phobius[protein_id]["SP"]
+                    TM = protein_id2phobius[protein_id]["TM"]
                 except KeyError:
+                    SP = protein_id2phobius[protein]["SP"]
+                    TM = protein_id2phobius[protein]["TM"]
                     protein_id = "-"
 
                 locus_tag = protein
@@ -118,10 +134,13 @@ def create_orthogroup_table(server, biodatabase_name,
                 start = seqfeature2location_dico[seqfeature_id][0]
                 end = seqfeature2location_dico[seqfeature_id][1]
                 strand = seqfeature2location_dico[seqfeature_id][2]
+                organism = seqfeature_id2organism_dico[str(seqfeature_id)]
+
                 #print "location ok"
                 #print seqfeature_id2locus_tag_dico.keys()[0:10]
                 locus_tag = seqfeature_id2locus_tag_dico[str(seqfeature_id)]
-
+                SP = protein_id2phobius[protein]["SP"]
+                TM = protein_id2phobius[protein]["TM"]
                 try:
                     gene = seqfeature_id2gene_dico[str(seqfeature_id)]
                 except KeyError:
@@ -140,8 +159,9 @@ def create_orthogroup_table(server, biodatabase_name,
                 #except:
                 #    print "poblem with protein", protein
 
-            sql = 'INSERT INTO orthology_detail_%s(orthogroup, taxon_id, accession, locus_tag, protein_id, start, stop, strand, gene, product, translation, seqfeature_id) ' \
-                  ' values ("%s", %s, "%s", "%s", "%s", %s, %s, %s, "%s", "%s", "%s", %s);' % (biodatabase_name,
+            sql = 'INSERT INTO orthology_detail_%s(orthogroup, taxon_id, accession, locus_tag, protein_id, start, ' \
+                  'stop, strand, gene, product, translation, organism, orthogroup_size, n_genomes, TM, SP, seqfeature_id) ' \
+                  ' values ("%s", %s, "%s", "%s", "%s", %s, %s, %s, "%s", "%s", "%s", "%s", %s, %s, %s, "%s", %s);' % (biodatabase_name,
                                                                                                group, taxon_id,
                                                                                                accession,
                                                                                                locus_tag,
@@ -151,6 +171,11 @@ def create_orthogroup_table(server, biodatabase_name,
                                                                                                gene,
                                                                                                product,
                                                                                                translation,
+                                                                                               organism,
+                                                                                               orthogroup_size,
+                                                                                               n_genomes,
+                                                                                               TM,
+                                                                                               SP,
                                                                                                seqfeature_id)
 
             server.adaptor.execute(sql)
@@ -160,8 +185,6 @@ def get_all_orthogroup_size(server, biodatabase_name):
     """
     return a dictonary with orthogroup size"
     """
-    print "asdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-
 
     sql = ' select seqfeature_qualifier_value.value, COUNT(*) from seqfeature_qualifier_value' \
           ' inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = "orthogroup"' \
@@ -186,7 +209,7 @@ def get_family_size(server, biodatabase_name):
         #
         family = 0
         # todo really -1?????
-        for i in row[1:-1]:
+        for i in row[1:]:
             if i >0:
                 family+=1
         groupid2family_size[row[0]] = family
@@ -766,16 +789,22 @@ def get_accession_list_from_taxon_id(server, biodatabase_name, taxon_id):
     
 if __name__ == '__main__':
     import argparse
+    import parse_phobius
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", '--mcl',type=str,help="mcl file")
     parser.add_argument("-d", '--db_name', type=str,help="db name")
     parser.add_argument("-f", '--fasta_draft', type=str,help="draft reference genome")
     parser.add_argument("-p", '--asset_path', type=str,help="asset path")
+    parser.add_argument("-t", '--phobius_files', type=str,help="phobis TM ST  short files", nargs='+')
     
     args = parser.parse_args()
     
     server, db = manipulate_biosqldb.load_db(args.db_name)
     asset_path = "/home/trestan/Dropbox/dev/django/chlamydia/assets/"
+
+
+
+
 
 
     #print len(get_conserved_core_groups(server, "Chlamydiales_1"))
@@ -817,7 +846,29 @@ if __name__ == '__main__':
     print "getting seqfeature_id2translation"
     seqfeature_id2translation = manipulate_biosqldb.seqfeature_id2translation_dico(server, args.db_name)
 
+    print "getting seqfeature_id2organism"
 
+    seqfeature_id2organism = manipulate_biosqldb.seqfeature_id2organism_dico(server, args.db_name)
+
+    print "getting protein_id2phobius"
+
+    protein_id2phobius = parse_phobius.parse_short_phobius(*args.phobius_files)
+
+    '''
+    print "adding orthogroup to seqfeature_qualifier_values"
+
+    add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
+
+    print "creating orthology table merging plasmid"
+    orthogroup2detailed_count = get_orthology_matrix_merging_plasmids(server, args.db_name)
+    #print orthogroup2detailed_count
+
+    create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
+
+    '''
+
+    group2group_size = get_all_orthogroup_size(server, args.db_name)
+    group2family_size = get_family_size(server, args.db_name)
 
     print "creating otzhology table 1"
     create_orthogroup_table(server, args.db_name,
@@ -833,31 +884,25 @@ if __name__ == '__main__':
                             seqfeature_id2gene,
                             seqfeature_id2product,
                             seqfeature_id2translation,
-                            seqfeature_id2seqfeature_location)
+                            seqfeature_id2organism,
+                            seqfeature_id2seqfeature_location,
+                            group2group_size,
+                            group2family_size,
+                            protein_id2phobius)
+
+
 
 
     '''
 
-    print "adding orthogroup to seqfeature_qualifier_values"
-
-    add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
-
-    orthogroup2detailed_count = get_orthology_matrix_merging_plasmids(server, args.db_name)
-    #print orthogroup2detailed_count
-
-
-
-    create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
-
-
-
+    print "plotting orthogroup_size"
     plot_orthogroup_size_distrib(server, args.db_name)
     
 
+    print "writing fasta files"
     ortho_table = "orthology_%s" % args.db_name
     all_taxon_ids = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
 
-    import os
 
     if not os.path.exists(os.path.join(asset_path, "%s_fasta/" % args.db_name)):
         os.makedirs(os.path.join(asset_path, "%s_fasta/" % args.db_name))

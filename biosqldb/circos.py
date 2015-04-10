@@ -225,14 +225,22 @@ class CircosAccession2multiplot():
 
         #print "taxon_id2description_ref", taxon_id2description_reference
         chr_spacing_list = []
+        print "reference_records", len(reference_records), reference_records
+        print "draft fasta", len(draft_fasta), draft_fasta
         if len(reference_records) > 0 and draft_fasta is False:
             for i in range(0, len(reference_records)-1):
                 chr_spacing_list.append([reference_records[i].id, reference_records[i+1].id])
             chr_spacing_list.append([reference_records[-1].id, reference_records[0].id])
         elif len(reference_records) == 2 and draft_fasta is not False:
-            chr_spacing_list.append([draft_fasta[0][-1][0], draft_fasta[1][0][0]])
-            chr_spacing_list.append([draft_fasta[0][0][0], draft_fasta[1][-1][0]])
 
+            try:
+                chr_spacing_list.append([draft_fasta[0][-1][0], draft_fasta[1][0][0]])
+                chr_spacing_list.append([draft_fasta[0][0][0], draft_fasta[1][-1][0]])
+            except:
+                chr_spacing_list.append([draft_fasta[0][-1][0], reference_records[-1].name])
+                chr_spacing_list.append([draft_fasta[0][0][0], reference_records[-1].name])
+
+        print chr_spacing_list
 
         circos_reference = gbk2circos.Circos_config(circos_files_reference["contigs"], chr_spacing_list)
 

@@ -498,6 +498,14 @@ def seqfeature_id2translation_dico(server, biodatabase_name):
     result = server.adaptor.execute_and_fetchall(sql,)
     return _to_dict(result)
 
+def seqfeature_id2organism_dico(server, biodatabase_name):
+    sql = 'select t1.seqfeature_id, t5.description from seqfeature_qualifier_value as t1 ' \
+          ' inner join seqfeature as t2 on t1.seqfeature_id = t2.seqfeature_id ' \
+          ' inner join term as t3 on t1.term_id = t3.term_id and t3.name = "translation" ' \
+          ' inner join bioentry as t5 on t2.bioentry_id = t5.bioentry_id ' \
+          ' inner join biodatabase on t5.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' % biodatabase_name
+    result = server.adaptor.execute_and_fetchall(sql,)
+    return _to_dict(result)
 
 def seqfeature_id2protein_id_dico(server, biodatabase_name):
     sql = 'select t1.seqfeature_id, t1.value from seqfeature_qualifier_value as t1 ' \

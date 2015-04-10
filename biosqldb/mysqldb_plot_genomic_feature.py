@@ -19,12 +19,18 @@ import orthogroup_identity_db
 
 def get_feature_neighborhood(feature_start, feature_end, contig_or_genome_record, neighborhood_size_bp, record_name):
 
+    print "INITIAL start, stop", feature_start, feature_end
+
     start = feature_start - neighborhood_size_bp
     end = feature_end + neighborhood_size_bp
-    if contig_or_genome_record.features[0].location.start > start:
-            start = 0
-    if contig_or_genome_record.features[0].location.end < end:
-            end = contig_or_genome_record.features[0].location.end
+    print "feature_end + neighborhood_size_bp", feature_end, neighborhood_size_bp, "donne", feature_end + neighborhood_size_bp
+    print "hasjhs", feature_end, end
+    #if contig_or_genome_record.features[0].location.start > start:
+    #        start = 0
+    #if contig_or_genome_record.features[0].location.end < end:
+    #        end = contig_or_genome_record.features[0].location.end
+    print "TARGET start, stop", start, end
+
     record = contig_or_genome_record[int(start):int(end)]
     return record
 
@@ -159,6 +165,8 @@ def clamp(val, minimum=0, maximum=255):
         return maximum
     return val
 
+
+
 def colorscale(hexstr, scalefactor):
     """
     Scales a hex string by ``scalefactor``. Returns scaled hex string.
@@ -191,7 +199,7 @@ def colorscale(hexstr, scalefactor):
 
 def plot_multiple_regions_crosslink(target_protein_list, region_record_list, plasmid_list, out_name):
 
-    biodb_name = "saureus_01_15"
+    biodb_name = "chlamydia_03_15"
     import MySQLdb
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
@@ -205,6 +213,9 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
     feature_sets = []
     max_len = 0
     records = dict((rec.name, rec) for rec in region_record_list)
+
+    print "records.......", records
+
     n_records = len(region_record_list)
     
     record_length = [len(record) for record in region_record_list] 
@@ -477,8 +488,8 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
     sub_record_list = []
     
     bioentry_id_list, seqfeature_id_list = manipulate_biosqldb.get_bioentry_and_seqfeature_id_from_locus_tag_list(server, locus_tag_list, biodb_name)
-    #print "bioentry_id_list", bioentry_id_list
-    #print "seqfeature_id_list", seqfeature_id_list
+    print "bioentry_id_list", bioentry_id_list
+    print "seqfeature_id_list", seqfeature_id_list
     #print "getting records..."
     
     print "formatting records..."
@@ -564,9 +575,9 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
             print key, "still not in memory"
 
         #print "seqfeature_id", seqfeature_id
-        print "record", record
+        print "record OKKKKK", record
         target_feature_start,  target_feature_end, strand = manipulate_biosqldb.seqfeature_id2feature_location(server, seqfeature_id)
-        
+        print "target_feature_start,  target_feature_end strand", target_feature_start,  target_feature_end, strand
         #target = seqfeature_id2seqfeature[seqfeature_id]
         try:
             plasmid = record.features[0].qualifiers["plasmid"]
@@ -581,7 +592,9 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
             print "Getting region from %s" % record_id
             sub_record = get_feature_neighborhood(target_feature_start,  target_feature_end, record, region_size_bp, "rec")
             sub_record_list.append(sub_record)
-            
+            print
+            print "sub_record", sub_record
+            print
     plot_multiple_regions_crosslink(locus_tag_list, sub_record_list, plasmid_list, out_name)
 
     
