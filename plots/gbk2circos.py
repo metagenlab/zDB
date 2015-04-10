@@ -172,7 +172,7 @@ class Record:
         return feature_list
 """
 
-def print_circos_record_file(record_list, out_name = "circos_contigs.txt", draft_data = False):
+def print_circos_record_file(record_list, out_name = "circos_contigs.txt", draft_data = False, draft_coordinates=False):
     i = 1
     f = open(out_name, "w")
     x = 0
@@ -180,12 +180,21 @@ def print_circos_record_file(record_list, out_name = "circos_contigs.txt", draft
 
       try:
           for contig in draft_data[x]:
-              if i%2 == 0:
-                  f.write("chr - %s %s %s %s spectral-5-div-%s\n" % (contig[0], contig[0], 0, contig[2]-contig[1], 3))
+              if draft_coordinates:
+                  if i%2 == 0:
+                      f.write("chr - %s %s %s %s spectral-5-div-%s\n" % (contig[0], contig[0], 0, contig[2]-contig[1], 3))
+                  else:
+                      #print "chr -", record.contig, record.contig, "0",len(record.seq), "spectral-5-div-%s" % (4)
+                      f.write("chr - %s %s %s %s spectral-5-div-%s\n" % (contig[0], contig[0], 0, contig[2]-contig[1], 4))
+                  i+=1
               else:
-                  #print "chr -", record.contig, record.contig, "0",len(record.seq), "spectral-5-div-%s" % (4)
-                  f.write("chr - %s %s %s %s spectral-5-div-%s\n" % (contig[0], contig[0], 0, contig[2]-contig[1], 4))
-              i+=1
+                  if i%2 == 0:
+                      f.write("chr - %s %s %s %s spectral-5-div-%s\n" % (contig[0], contig[0], contig[1], contig[2], 3))
+                  else:
+                      #print "chr -", record.contig, record.contig, "0",len(record.seq), "spectral-5-div-%s" % (4)
+                      f.write("chr - %s %s %s %s spectral-5-div-%s\n" % (contig[0], contig[0], contig[1], contig[2], 4))
+                  i+=1
+
           x+=1
       except:
             if i%2 == 0:
@@ -200,7 +209,8 @@ def print_circos_record_file(record_list, out_name = "circos_contigs.txt", draft
 def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                            out_name = "circos_genes_plus.txt",
                            locus_highlight=[], draft_data=False,
-                           group_id2orthologs_presence=False, query_taxon_id=False, color_missing=True):
+                           group_id2orthologs_presence=False, query_taxon_id=False,
+                           color_missing=True, draft_coordinates=False):
 
     print "highlight:", locus_highlight
     
@@ -211,19 +221,28 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
     if strand == "-1":
         f = open(out_name, "w")
 
-    y = 0
-    for record in record_list:
+
+    for y, record in enumerate(record_list):
         for feature in record.features:
             if feature.type == feature_type:
                 if str(feature.strand) == strand:
                     try:
-
+                        #print "draft_data[y]", draft_data[y]
                         for i in draft_data[y]:
+                            # determine to which contig the feature belong
+
                             if feature.location.start >= i[1] and feature.location.end <= i[2]:
-                                contig = i[0]
-                                start = feature.location.start - i[1]
-                                end = feature.location.end - i[1]
-                    except:
+                                if draft_coordinates:
+                                    contig = i[0]
+                                    start = feature.location.start - i[1]
+                                    end = feature.location.end - i[1]
+                                else:
+                                    contig = i[0]
+                                    start = feature.location.start
+                                    end = feature.location.end
+                    # in case the second record is not fragmented in several contigs (no draft data)
+                    except IndexError:
+                        print "no draft for", record.id
                         contig = record.id # fill_color=violet
                         start = feature.location.start
                         end = feature.location.end
@@ -235,7 +254,11 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                     if 'pseudo' in feature.qualifiers:
 
                         continue
-
+                    try:
+                        a = feature.qualifiers['orthogroup']
+                    except:
+                        print "problem with", feature
+                        continue
 
                     if feature.qualifiers['orthogroup'][0] in locus_highlight:
 
@@ -327,10 +350,15 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                 if str(feature.strand) == strand:
                     try:
                         for i in draft_data[y]:
-                            if feature.location.start >= i[1] and feature.location.end <= i[2]:
-                                contig = i[0]
-                                start = feature.location.start - i[1]
-                                end = feature.location.end - i[1]
+                            if draft_coordinates:
+                                if feature.location.start >= i[1] and feature.location.end <= i[2]:
+                                    contig = i[0]
+                                    start = feature.location.start - i[1]
+                                    end = feature.location.end - i[1]
+                                else:
+                                    contig = i[0]
+                                    start = feature.location.start
+                                    end = feature.location.end
                     except:
                         contig = record.id # fill_color=violet
                         start = feature.location.start
@@ -358,7 +386,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                     f.write('%s %s %s fill_color=pred\n ' % (contig,
                                                             start,
                                                             end))
-        y += 1
+
     f.close()
 """
                 else :
@@ -411,7 +439,8 @@ def print_circos_GC_file(record_list, feature_type="CDS", out_name="circos_GC.tx
 
   
 def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_name, out_dir, locus_highlight=[],
-                           feature_type="CDS", taxon_list=False, draft_data=False, query_taxon_id=False, color_missing=True):
+                           feature_type="CDS", taxon_list=False, draft_data=False, query_taxon_id=False,
+                           draft_coordinates=False, color_missing=True):
 
     print "highlight", locus_highlight
 
@@ -514,15 +543,23 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                             if int(feature.location.start) >= i[1] and int(feature.location.end) <= i[2]:
                                 #print "OKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                                 contig = i[0]
-                                start = feature.location.start - i[1]
-                                end = feature.location.end - i[1]
+                                if draft_coordinates:
+                                    start = feature.location.start - i[1]
+                                    end = feature.location.end - i[1]
+                                else:
+                                    start = feature.location.start
+                                    end = feature.location.end
 
                     except:
                         contig = record.id
                         start = feature.location.start
                         end = feature.location.end
                     #print "contig", contig
-                    line = "%s %s %s %s\n" % (contig, start, end, ortho_size[feature.qualifiers['orthogroup'][0]])
+                    try:
+                        line = "%s %s %s %s\n" % (contig, start, end, ortho_size[feature.qualifiers['orthogroup'][0]])
+                    except:
+                        print "problem ith", feature
+                        continue
                     line2 = "%s %s %s %s\n" % (contig, start, end, ortho_identity[feature.qualifiers['orthogroup'][0]])
                     line3 = "%s %s %s %s\n" % (contig, start, end, ortho_family_size[feature.qualifiers['orthogroup'][0]])
                     f.write(line)
@@ -578,8 +615,8 @@ class Circos_config:
                               " fill_color         = black\n" \
                               " \n" \
                               " # fractional radius position of chromosome ideogram within image\n" \
-                              " radius             = 0.85r\n" \
-                              " show_label         = no\n" \
+                              " radius             = 0.75r\n" \
+                              " show_label         = yes\n" \
                               " label_font         = default\n" \
                               " label_radius       = dims(ideogram,radius) + 0.175r\n" \
                               " label_size         = 30\n" \
@@ -637,20 +674,20 @@ class Circos_config:
 
     self.settings ="<colors>\n" \
                    " <<include colors.rn.conf>>\n" \
-                   " <<include /usr/local/bin/circos-0.64/etc/brewer.all.conf>>\n" \
+                   " <<include brewer.all.conf>>\n" \
                    " </colors>\n" \
                    " <image>\n"\
                    " image_map_use      = yes\n" \
                    " image_map_overlay  = yes\n" \
                    " image_map_overlay_stroke_color     = red\n" \
-                   " <<include etc/image.conf>>\n" \
+                   " <<include image.conf>>\n" \
                    " </image>\n" \
                    " #includes  etc/colors.conf\n" \
                    " #          etc/fonts.conf\n" \
                    " #          etc/patterns.conf\n" \
-                   " <<include etc/colors_fonts_patterns.conf>>\n" \
+                   " <<include colors_fonts_patterns.conf>>\n" \
                    " # system and debug settings\n" \
-                   " <<include etc/housekeeping.conf>>\n" \
+                   " <<include housekeeping.conf>>\n" \
                    " anti_aliasing*     = no\n"
 
     self.complete_file = self.template_caryotype + self.template_ideograms + self.template_ticks + "%s %s" + self.settings
