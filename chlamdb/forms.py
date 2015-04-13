@@ -160,7 +160,14 @@ class SearchForm(forms.Form):
     search_term = forms.CharField(max_length=100)
     #biodatabase = forms.ChoiceField(choices=choices)
 
+def make_circos_orthology_form(biodb):
 
+    accession_choices =  get_accessions(biodb, plasmid=True, all=True)
+
+    class Circos_orthology(forms.Form):
+        accession = forms.CharField(max_length=100)
+        targets = forms.ChoiceField(choices=accession_choices)
+    return Circos_orthology
 
 def make_blast_form(biodb):
 
