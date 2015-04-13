@@ -850,6 +850,7 @@ if __name__ == '__main__':
 
     protein_id2phobius = parse_phobius.parse_short_phobius(*args.phobius_files)
 
+    '''
     print "adding orthogroup to seqfeature_qualifier_values"
 
     add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
@@ -859,12 +860,12 @@ if __name__ == '__main__':
     #print orthogroup2detailed_count
 
     create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
-
+    '''
 
     group2group_size = get_all_orthogroup_size(server, args.db_name)
     group2family_size = get_family_size(server, args.db_name)
 
-    print "creating otzhology table 1"
+    print "creating orthology table 1"
     create_orthogroup_table(server, args.db_name,
                             orthomcl_groups2proteins,
                             locus_tag2seqfeature_id,

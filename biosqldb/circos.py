@@ -258,7 +258,7 @@ class CircosAccession2multiplot():
         out_file = "%s.svg" % out_name
         config_file = "%s.config" % out_name
         config_file_reference = os.path.join(out_directory, config_file)
-        out_file = os.path.join(out_directory, out_file)
+        #out_file = os.path.join(out_directory, out_file)
 
         self.add_gene_tracks(circos_files_reference,
                              circos_reference,
@@ -266,8 +266,13 @@ class CircosAccession2multiplot():
                              config_file_reference)
 
 
+        cmd = "circos -outputfile %s -outputdir %s -conf %s" % (out_file, out_directory, config_file_reference)
+        print cmd
+        (stdout, stderr, return_code) = shell_command.shell_command(cmd)
 
-        (stdout, stderr, return_code) = shell_command.shell_command("circos -outputfile %s -outputdir %s -conf %s" % (out_file, out_directory, config_file_reference))
+        print stdout
+        print stderr
+        print return_code
 
         #cmd1 = "inkscape -g --verb=FitCanvasToDrawing --verb=FileSave --verb=FileClose --file=%s" % out_file
         #print cmd1
@@ -465,7 +470,7 @@ class CircosAccession2nested_plot2():
         out_file = "%s.svg" % reference_accession
         config_file = "%s.config" % reference_accession
         config_file_reference = os.path.join(out_directory, config_file)
-        out_file = os.path.join(out_directory, out_file)
+        #out_file = os.path.join(out_directory, out_file)
 
         print "out file", config_file_reference
 
