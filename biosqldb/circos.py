@@ -266,8 +266,14 @@ class CircosAccession2multiplot():
                              config_file_reference)
 
 
+        cmd = "circos -outputfile %s -outputdir %s -conf %s" % (out_file, out_directory, config_file_reference)
+        print cmd
+        (stdout, stderr, return_code) = shell_command.shell_command(cmd)
+        print stdout
+        print stderr
+        print return_code
 
-        (stdout, stderr, return_code) = shell_command.shell_command("circos -outputfile %s -outputdir %s -conf %s" % (out_file, out_directory, config_file_reference))
+
 
         #cmd1 = "inkscape -g --verb=FitCanvasToDrawing --verb=FileSave --verb=FileClose --file=%s" % out_file
         #print cmd1
