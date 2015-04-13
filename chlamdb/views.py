@@ -1170,7 +1170,7 @@ def circos2genomes(request, biodb):
 
             import circos
 
-            path = settings.BASEDIR + "/assets/circos"
+            path = settings.BASE_DIR + "/assets/circos"
 
 
             biplot = circos.CircosAccession2biplot(server, db, biodb, reference_records, query_records,
