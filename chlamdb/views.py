@@ -7,6 +7,9 @@
 #from django.shortcuts import render
 #from datetime import datetime
 from django.shortcuts import render
+from Bio.SeqRecord import SeqRecord
+from Bio.Seq import Seq
+import circos_orthology
 # from django.core.cache import cache
 #import pylibmc
 #from django.core.cache import cache
@@ -27,9 +30,10 @@ from forms import DBForm
 from forms import make_motif_form
 from forms import PCRForm
 from forms import make_extract_form
+from forms import make_circos_orthology_form
 from Bio.SeqRecord import SeqRecord
 from django.contrib.auth import logout
-
+from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 
@@ -121,6 +125,87 @@ def substription():
 
 #cache = pylibmc.Client(['127.0.0.1:8000'])
 
+
+@login_required
+def circos_homology(request, biodb):
+
+
+    cache = get_cache('default')
+    print "loading db..."
+    server, db = manipulate_biosqldb.load_db(biodb)
+    print "db loaded..."
+
+    circos_orthology_form_class = make_circos_orthology_form(biodb)
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+        form = circos_orthology_form_class(request.POST)
+
+        if form.is_valid():
+
+            accession = form.cleaned_data['accession']
+
+            print "accession", accession
+
+            sql = 'select accession from bioentry' \
+                  ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id' \
+                  ' and biodatabase.name = "%s"' % biodb
+
+            all_accession = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+            columns = 'orthogroup, accession, start, stop'
+            sql_ref = 'select %s from orthology_detail_%s where locus_tag = "%s" or protein_id = "%s" or orthogroup = "%s"' % (columns,
+                                                                                                          biodb,
+                                                                                                          accession,
+                                                                                                          accession, accession)
+
+
+
+
+            ref_record = server.adaptor.execute_and_fetchall(sql_ref,)[0]
+
+            orthogroup = ref_record[0]
+
+            columns = 'accession, start, stop'
+            sql_targets = 'select %s from orthology_detail_%s where orthogroup ="%s"' % (columns,
+                                                                                          biodb,
+                                                                                          orthogroup)
+
+            target_records = server.adaptor.execute_and_fetchall(sql_targets,)
+
+            print "ref_record", ref_record
+            print "target_records", target_records
+
+            record_list = []
+            for accession in all_accession:
+                if accession == "CP001848" or accession == "BX119912":
+                    continue
+                print "accession", accession
+                biorecord = cache.get(biodb + "_" + accession)
+
+
+                if not biorecord:
+                    print biodb + "_" + accession, "NOT in memory"
+                    new_record = db.lookup(accession=accession)
+                    biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
+                                                             id=new_record.id, name=new_record.name,
+                                                             description=new_record.description,
+                                                             dbxrefs =new_record.dbxrefs,
+                                                             features=new_record.features,
+                                                             annotations=new_record.annotations)
+                    record_id = biorecord.id.split(".")[0]
+                    cache.set(biodb + "_" + record_id, biorecord)
+                    record_list.append(biorecord)
+                else:
+                    record_list.append(biorecord)
+
+            circos_orthology.circos_orthology(record_list, ref_record[1:], target_records)
+            circos_file = "circos/circos.svg"
+            envoi_circos = True
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = circos_orthology_form_class()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/circos_homology.html', locals())
 
 
 @login_required
@@ -446,8 +531,7 @@ def orthogroups(request):
 
 @login_required
 def circos(request, biodb):
-    from Bio.SeqRecord import SeqRecord
-    from Bio.Seq import Seq
+
     import gbk2circos
     circos_form_class = make_circos_form(biodb)
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -526,6 +610,7 @@ def circos(request, biodb):
                                           out_directory=temp_location,
                                           draft_fasta=draft_data)
                 envoi_circos = True
+
             if 'submit_region' in request.POST:
                 envoi_region = True
                 from Bio.SeqRecord import SeqRecord
@@ -765,7 +850,11 @@ def primer_search(request, biodb):
             query_file = NamedTemporaryFile()
             SeqIO.write(my_record, query_file, "fasta")
             query_file.flush()
-            blastp_cline = NcbiblastpCommandline(query=query_file.name, db="~/Dropbox/dev/django/test_1/assets/blast_db/%s.faa" % biodb, evalue=0.001, outfmt=0)
+
+            blastdb = settings.BASE_DIR + '/assets/blast_db/%s.faa' % biodb
+
+
+            blastp_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=0.001, outfmt=0)
             stdout, stderr = blastp_cline()
             print "blast!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             print stdout
@@ -860,7 +949,6 @@ def blast(request, biodb):
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             from Bio.Blast.Applications import NcbiblastpCommandline
             from Bio.Blast.Applications import NcbiblastnCommandline
-            #from StringIO import StringIO
             from tempfile import NamedTemporaryFile
             from Bio.Seq import Seq
             from Bio.SeqRecord import SeqRecord
@@ -887,7 +975,7 @@ def blast(request, biodb):
             query_file = NamedTemporaryFile()
             SeqIO.write(my_record, query_file, "fasta")
             query_file.flush()
-            blastdb = "~/Dropbox/dev/django/chlamydia/assets/chlamdb/%s/%s.%s" % (data_type, target_accession, data_type)
+            blastdb = settings.BASE_DIR + "/assets/chlamdb/%s/%s.%s" % (data_type, target_accession, data_type)
             print blastdb
             if data_type == 'faa':
                 print "faa!!!"
@@ -963,7 +1051,7 @@ def mummer(request, biodb):
             print "mummer acc", ref_accession, query_accession
 
 
-            from django.conf import settings
+
 
             print settings.STATIC_ROOT, type(settings.STATIC_ROOT)
 
