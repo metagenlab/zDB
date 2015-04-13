@@ -199,6 +199,7 @@ def circos_homology(request, biodb):
                     record_list.append(biorecord)
 
             path = os.path.join(settings.BASE_DIR, "/assets/circos")
+
             circos_orthology.circos_orthology(record_list, ref_record[1:], target_records, location = path)
             circos_file = "circos/circos.svg"
             envoi_circos = True
