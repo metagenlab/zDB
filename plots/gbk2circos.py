@@ -269,6 +269,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
 
                         print "COLORS!!!!!!!!!!!!!!!!!!!"
                         try:
+                            '''
                             f.write('%s %s %s fill_color=violet, id=locus:_%s_gene:_%s_product:_%s\n' % (contig,
                                                                                                      start,
                                                                                                      end,
@@ -276,7 +277,14 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                                                                                                      feature.qualifiers['gene'][0],
                                                                                                      re.sub("[ |\-|(|)|\[|\]|\.|,]", "_",
                                                                                                      feature.qualifiers['product'][0])))
+                            '''
+                            f.write('%s %s %s fill_color=violet' % (contig,
+                                                                    start,
+                                                                    end))
+
+
                         except:
+                            '''
                             f.write('%s %s %s fill_color=violet, id=locus:_%s_gene:_%s_product:_%s\n' % (contig,
                                                                                                      start,
                                                                                                      end,
@@ -284,9 +292,29 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                                                                                                      "-",
                                                                                                      re.sub("[ |\-|(|)|\[|\]|\.|,]", "_",
                                                                                                      feature.qualifiers['product'][0])))
+                            '''
+                            f.write('%s %s %s fill_color=violet' % (contig,
+                                                                    start,
+                                                                    end))
+
+
 
                     elif group_id2orthologs_presence and query_taxon_id and color_missing:
                         if group_id2orthologs_presence[feature.qualifiers['orthogroup'][0]][int(query_taxon_id)] == 0:
+                            f.write('%s %s %s fill_color=orange' % (contig,
+                                                                    start,
+                                                                    end))
+                        else:
+                            f.write('%s %s %s' % (contig,
+                                                  start,
+                                                  end))
+                    else:
+
+                        f.write('%s %s %s' % (contig,
+                                              start,
+                                              end))
+
+                        '''
                             try:
                                 f.write('%s %s %s fill_color=orange, id=locus:_%s_gene:_%s_product:_%s\n' % (contig,
                                                                                                              start,
@@ -349,7 +377,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                                                                                  '-',
                                                                                  re.sub("[ |\-|(|)|\[|\]|\.|,]", "_",
                                                                                         "-")))
-
+                        '''
 
             if feature.type == 'rRNA':
                 if str(feature.strand) == strand:
