@@ -421,6 +421,10 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
     print "writing diagram", out_name
     
     gd_diagram.write(out_name, "SVG")
+    cmd = 'chmod 004 %s' % out_name
+    import shell_command
+    print cmd
+    shell_command.shell_command(cmd)
 
 def plot_simple_region(region_record, out_name):
     gd_diagram = GenomeDiagram.Diagram("geomic_region")
