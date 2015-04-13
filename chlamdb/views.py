@@ -31,7 +31,7 @@ from forms import make_motif_form
 from forms import PCRForm
 from forms import make_extract_form
 from forms import make_circos_orthology_form
-from Bio.SeqRecord import SeqRecord
+
 from django.contrib.auth import logout
 from django.conf import settings
 from django.contrib.auth import authenticate, login
@@ -613,7 +613,7 @@ def circos(request, biodb):
 
             if 'submit_region' in request.POST:
                 envoi_region = True
-                from Bio.SeqRecord import SeqRecord
+
                 from Bio.Seq import Seq
 
 
@@ -829,7 +829,7 @@ def primer_search(request, biodb):
             #from StringIO import StringIO
             from tempfile import NamedTemporaryFile
             from Bio.Seq import Seq
-            from Bio.SeqRecord import SeqRecord
+
             from Bio.Alphabet import IUPAC
             import os
             import shell_command
@@ -951,7 +951,6 @@ def blast(request, biodb):
             from Bio.Blast.Applications import NcbiblastnCommandline
             from tempfile import NamedTemporaryFile
             from Bio.Seq import Seq
-            from Bio.SeqRecord import SeqRecord
             from Bio.Alphabet import IUPAC
             import os
             import shell_command
@@ -1006,7 +1005,6 @@ def blast(request, biodb):
 
 def get_record_from_memory(biodb, cache_obj, record_key, accession):
         from Bio.Seq import Seq
-        from Bio.SeqRecord import SeqRecord
         biorecord = cache_obj.get(record_key)
         if not biorecord:
             print record_key, "NOT in memory"
