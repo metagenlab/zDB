@@ -198,9 +198,13 @@ def circos_homology(request, biodb):
                 else:
                     record_list.append(biorecord)
 
-            path = os.path.join(settings.BASE_DIR, "/assets/circos")
+
+            print "settings.BASE_DIR", settings.BASE_DIR
+
+            path = settings.BASE_DIR + "/assets/circos"
+            print "path", path
             circos_orthology.circos_orthology(record_list, ref_record[1:], target_records, location = path)
-            circos_file = "circos/circos.svg"
+            circos_file = "circos/circos_ortho.svg"
             envoi_circos = True
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
