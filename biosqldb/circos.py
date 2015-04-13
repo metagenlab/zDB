@@ -102,10 +102,10 @@ class CircosAccession2biplot():
         self.query_circos = "%s.svg" % accessions_name_query
 
         config_file_reference = os.path.join(out_directory, config_file_reference)
-        accessions_name_reference = os.path.join(out_directory, accessions_name_reference)
+        accessions_name_reference = accessions_name_reference
 
         config_file_query = os.path.join(out_directory, config_file_query)
-        accessions_name_query = os.path.join(out_directory, accessions_name_query)
+        accessions_name_query = accessions_name_query
 
         (stdout, stderr, return_code) = shell_command.shell_command("circos -outputfile %s -outputdir %s -conf %s" % (accessions_name_reference, out_directory, config_file_reference))
         (stdout, stderr, return_code) = shell_command.shell_command("circos -outputfile %s -outputdir %s -conf %s" % (accessions_name_query, out_directory, config_file_query))
