@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+{% include "chlamdb/user.html" %}
+{% include "chlamdb/menu.html" %}
+
+
+<section  id="head_section">
+<section id="section_head">
+<p>Create circos plots indicating location of homologues in other genomes</p>
+</section>
+
+<form action="{% url "chlamdb.views.circos_homology" biodb %}" method="post">
+{% csrf_token %}
+
+
+<table>
+  <tr>
+  <td>{{ form.as_p }}</td>
+</tr>
+
+<tr>
+  <td><input type="submit" value="Submit" /></td>
+</tr>
+
+
+</table>
+
+
+
+
+{% block extrahead %}
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script>
+  var update_fields = function () {
+    if ($("#id_get_region").is(":checked")) {
+
+        $('#id_region').prop('disabled', false);
+        $('#id_submit_region').show();
+        $('#id_submit_circos').hide();
+    }
+    else {
+
+       $('#id_region').prop('disabled', 'disabled');
+       $('#id_submit_region').hide();
+       $('#id_submit_circos').show();
+    }
+  };
+  $(update_fields);
+  $("#id_get_region").change(update_fields);
+
+</script>
+
+
+{% endblock %}
+
+
+{% if envoi_circos %}
+    circos plot
+    {% load static %}
+    <img src="{% static ""%}{{circos_file}}" id="circos_plot"/>
+{% endif %}
+
+
+
+</section>
+    
+</body>
+</html>
