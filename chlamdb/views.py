@@ -614,7 +614,7 @@ def circos(request, biodb):
             if 'submit_region' in request.POST:
                 envoi_region = True
 
-                from Bio.Seq import Seq
+
 
 
                 record = db.lookup(accession=reference_accession)
@@ -828,7 +828,7 @@ def primer_search(request, biodb):
             from Bio.Blast.Applications import NcbiblastpCommandline
             #from StringIO import StringIO
             from tempfile import NamedTemporaryFile
-            from Bio.Seq import Seq
+
 
             from Bio.Alphabet import IUPAC
             import os
@@ -950,7 +950,7 @@ def blast(request, biodb):
             from Bio.Blast.Applications import NcbiblastpCommandline
             from Bio.Blast.Applications import NcbiblastnCommandline
             from tempfile import NamedTemporaryFile
-            from Bio.Seq import Seq
+
             from Bio.Alphabet import IUPAC
             import os
             import shell_command
@@ -1004,7 +1004,7 @@ def blast(request, biodb):
 
 
 def get_record_from_memory(biodb, cache_obj, record_key, accession):
-        from Bio.Seq import Seq
+
         biorecord = cache_obj.get(record_key)
         if not biorecord:
             print record_key, "NOT in memory"
