@@ -5,6 +5,7 @@ def circos_orthology(all_record_list, ref_record_and_location, target_record_and
     import os
     import re
     import shell_command
+    print location
 
     with open(os.path.join(location, "circos.kar"), "w") as contig_file:
         i = 0
@@ -62,7 +63,11 @@ def circos_orthology(all_record_list, ref_record_and_location, target_record_and
     with open(os.path.join(location, "circos.config"), "w") as f:
         f.write(circos_conf.get_file())
 
-    (stdout, stderr, return_code) = shell_command.shell_command("circos -outputfile %s -outputdir %s -conf %s" % (os.path.join(location, "circos"), location, os.path.join(location, "circos.config")))
+    cmd = "circos -outputfile %s -outputdir %s -conf %s" % ("circos_ortho", location, os.path.join(location, "circos.config"))
+    print cmd 
+    (stdout, stderr, return_code) = shell_command.shell_command(cmd)
+    print stdout
+    print stderr 
 
 
 
