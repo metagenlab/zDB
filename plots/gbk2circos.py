@@ -246,6 +246,11 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                         contig = record.id # fill_color=violet
                         start = feature.location.start
                         end = feature.location.end
+                    except TypeError:
+                        print "no draft for", record.id
+                        contig = record.id # fill_color=violet
+                        start = feature.location.start
+                        end = feature.location.end
                     #print "longueur", len(feature.location), type(len(feature.location)), feature.location.start, feature.location.end
 
                     if numpy.abs(feature.location.start-feature.location.end) > 50000:
@@ -584,10 +589,11 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
 
 
 class Circos_config:
-  def __init__(self, caryotype_file, chr_spacing_list=[]):
+  def __init__(self, caryotype_file, chr_spacing_list=[], show_ticks="yes", show_tick_labels="yes", ideogram_spacing=0, radius=0.75, label_radius=0.175):
     import re
 
     self.plots = ""
+    self.links = ""
     self.highlights = ""
     
     self.template_caryotype= "karyotype = %s\n" \
@@ -595,12 +601,9 @@ class Circos_config:
                              " chromosomes_display_default = yes\n" % caryotype_file
 
 
-
-
-
     self.template_ideograms = "<ideogram>\n" \
                               " <spacing>\n" \
-                              " default            = 0u\n" \
+                              " default            = %su\n" \
                               " %s" \
                               " </spacing>\n" \
                               " \n" \
@@ -615,10 +618,10 @@ class Circos_config:
                               " fill_color         = black\n" \
                               " \n" \
                               " # fractional radius position of chromosome ideogram within image\n" \
-                              " radius             = 0.75r\n" \
+                              " radius             = %sr\n" \
                               " show_label         = yes\n" \
                               " label_font         = default\n" \
-                              " label_radius       = dims(ideogram,radius) + 0.175r\n" \
+                              " label_radius       = dims(ideogram,radius) + %sr\n" \
                               " label_size         = 30\n" \
                               " label_parallel     = no\n" \
                               " \n" \
@@ -632,10 +635,10 @@ class Circos_config:
                               " fill_bands         = yes\n" \
                               " band_transparency  = 1\n" \
                               " \n" \
-                              " </ideogram>\n" % self.add_spacing(chr_spacing_list)
+                              " </ideogram>\n" % (ideogram_spacing, self.add_spacing(chr_spacing_list), radius, label_radius)
 
-    self.template_ticks = "show_ticks         = yes\n" \
-                          " show_tick_labels   = yes\n" \
+    self.template_ticks = "show_ticks         = %s\n" \
+                          " show_tick_labels   = %s\n" \
                           " \n" \
                           " <ticks>\n" \
                           " tick_label_font    = condensed\n" \
@@ -651,7 +654,7 @@ class Circos_config:
                           " label_multiplier  = 1e-3\n" \
                           " show_label        = yes\n" \
                           " label_size        = 35p\n" \
-                          " format            = %%d kb\n" \
+                          " format            = %s kb\n" \
                           " thickness         = 5p\n" \
                           " </tick>\n" \
                           " \n" \
@@ -660,10 +663,12 @@ class Circos_config:
                           " size              = 8p\n" \
                           " show_label        = no\n" \
                           " label_size        = 5p\n" \
-                          " format            = %%d\n" \
+                          " format            = %s\n" \
                           " </tick>\n" \
                           " \n" \
-                          " </ticks>\n"
+                          " </ticks>\n" % (show_ticks, show_tick_labels, "%%d", "%%d")
+    print self.template_ticks
+
 
 
 
@@ -690,7 +695,7 @@ class Circos_config:
                    " <<include housekeeping.conf>>\n" \
                    " anti_aliasing*     = no\n"
 
-    self.complete_file = self.template_caryotype + self.template_ideograms + self.template_ticks + "%s %s" + self.settings
+    self.complete_file = self.template_caryotype + self.template_ideograms + self.template_ticks + "%s %s %s" + self.settings
 
   def _template_spacing(self, chr1, chr2):
     template = '<pairwise %s %s>\n' \
@@ -721,6 +726,17 @@ class Circos_config:
                " </rule>\n" % (condition, fill_color)
     return template
 
+  def _template_link(self, link_file, color="black_a5", thickness=1):
+    template = "<link>\n" \
+               "file          = %s\n" \
+               "color         = %s\n" \
+               "radius        = 0.99r\n" \
+               "bezier_radius = 0.1r\n" \
+               "thickness     = %s\n" \
+               " </link>\n" % (link_file, color, thickness)
+    return template
+
+
   def _template_highlight(self, file, fill_color="grey_a1", r1="1.55r", r0="1.50r"):
     template ="<highlight>\n" \
               " fill_color = %s\n" \
@@ -742,7 +758,20 @@ class Circos_config:
       self.plots = self.plots + plot + "</plots>\n"
     else:
       self.plots = "<plots>\n" + plot + "</plots>\n"
-      
+
+
+
+  def add_link(self, link_file, color="black_a5", thickness=1):
+    link = self._template_link(link_file, color=color, thickness=thickness)
+    if len(re.findall("</links>", self.plots))>0:
+      # remove end balise
+      self.links = re.sub("</links>", "", self.plots)
+      # add new plot and end balise
+      self.links = self.links + link + "</links>\n"
+    else:
+      self.links = "<links>\n" + link + "</links>\n"
+
+
   def add_highlight(self, file, fill_color="grey_a1", r1="1.55r", r0="1.50r"):
     highlight = self._template_highlight(file, fill_color, r1, r0)
     if len(re.findall("</highlights>", self.highlights))>0:
@@ -763,7 +792,8 @@ class Circos_config:
           return all_spacing
     
   def get_file(self):
-    return self.complete_file % (self.plots, self.highlights)
+    print self.complete_file
+    return self.complete_file % (self.plots, self.highlights, self.links)
 
 
 def get_circos_GC_config_files(biodatabase_name, accession_list):
