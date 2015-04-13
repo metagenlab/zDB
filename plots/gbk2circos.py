@@ -278,7 +278,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                                                                                                      re.sub("[ |\-|(|)|\[|\]|\.|,]", "_",
                                                                                                      feature.qualifiers['product'][0])))
                             '''
-                            f.write('%s %s %s fill_color=violet' % (contig,
+                            f.write('%s %s %s fill_color=violet\n' % (contig,
                                                                     start,
                                                                     end))
 
@@ -293,7 +293,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                                                                                                      re.sub("[ |\-|(|)|\[|\]|\.|,]", "_",
                                                                                                      feature.qualifiers['product'][0])))
                             '''
-                            f.write('%s %s %s fill_color=violet' % (contig,
+                            f.write('%s %s %s fill_color=violet\n' % (contig,
                                                                     start,
                                                                     end))
 
@@ -301,16 +301,16 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
 
                     elif group_id2orthologs_presence and query_taxon_id and color_missing:
                         if group_id2orthologs_presence[feature.qualifiers['orthogroup'][0]][int(query_taxon_id)] == 0:
-                            f.write('%s %s %s fill_color=orange' % (contig,
+                            f.write('%s %s %s fill_color=orange\n' % (contig,
                                                                     start,
                                                                     end))
                         else:
-                            f.write('%s %s %s' % (contig,
+                            f.write('%s %s %s\n' % (contig,
                                                   start,
                                                   end))
                     else:
 
-                        f.write('%s %s %s' % (contig,
+                        f.write('%s %s %s\n' % (contig,
                                               start,
                                               end))
 
