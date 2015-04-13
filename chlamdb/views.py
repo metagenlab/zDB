@@ -1170,8 +1170,11 @@ def circos2genomes(request, biodb):
 
             import circos
 
+            path = settings.BASEDIR + "/assets/circos"
+
+
             biplot = circos.CircosAccession2biplot(server, db, biodb, reference_records, query_records,
-                                                   orthogroup_list, "/home/trestan/Dropbox/dev/django/chlamydia/assets/circos/")
+                                                   orthogroup_list, path)
 
             reference_file = "circos/%s" % biplot.reference_circos
             query_file = "circos/%s" % biplot.query_circos
