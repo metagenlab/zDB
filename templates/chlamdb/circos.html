@@ -65,7 +65,9 @@
 {% if envoi_circos %}
 
     {% load static %}
-    <img src="{% static ""%}{{circos_file}}" id="circos_plot"/>
+    <a href={{ circos_new_file }}>With links</a>
+    <img src="{% static ""%}{{circos_file}}" id="circos_plot">
+
 {% endif %}
 
 

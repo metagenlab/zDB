@@ -11,61 +11,14 @@
 
 </head>
 
-<body>
+<body id="locus_body">
 
-
-
-
-{% include "chlamdb/user.html" %}
-{% include "chlamdb/menu.html" %}
-
-
-
-<section id="head_section">
-<section id="section_head">
-<p>Get annotation, sequences and homologous proteins of a target protein</p>
-<p>INPUT: locus tag or protein ID</p>
-</section>
-
-
-<!--
-{% load static %}
-<img src="{% static 'im_1.jpg' %}" alt="Mon image" />
--->
-
-
-
-
-
-<table>
-  <tr>
-  <td>
-      <form action="{% url "chlamdb.views.homology" biodb %}" method="post">
-{% csrf_token %}
-      {{ form.as_p }}</td>
-</tr>
-
-<tr>
-  <td><input type="submit" value="Submit" /></td>
-</tr>
-
-
-</table>
-
-
-</form>
-
-
-
-
-
-
-{% if envoi %}
 
     {% if not valid_id %}
-
+        <section id="locus_section">
         Unknown accession!
-        Accept protein ids and locus tags
+        Accept protein ids and locus tags of CDS only
+        <section>
         <!--
         Existing accessions are:
         <table>
@@ -91,25 +44,7 @@
 
     {% if not plot_region %}
 
-    <table>
-    <tr> 
-    <td>{{bioentry_accession}}</td>
-    <td>{{bioentry_name}}  </td>  
-    </tr>
-    </table>
-
-     &nbsp
-
-
-
-
-     
-    &nbsp
-
-    {% if not group %}
-     
-    <h2>Features of {{accession}}</h2>
-  
+    <section id="locus_section">
     <table>
     <tr>
     <th id="entete">Feature</th>
@@ -172,11 +107,6 @@
 
     </table>
 
-    &nbsp
-    {% endif %}
-
-
-
     {% if orthologs %}
 
 
@@ -213,14 +143,16 @@
 
     <h2>Homologs</h2>
 
-    <div id="export_bouttons">
-    <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'homologues_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
-    <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'homologues_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+<section id="homology_section">
+
+    <div id="export_bouttons">
+    <a download="locus_{{ data.1 }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+    <a download="locus{{ data.1 }}.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to CSV</a>
     <br/>
     </div>
 
-   <table id="homologues_table" class="sortable">
+    <table id="search_table" class="sortable">
     <thead>
     <tr>
     <th></th>
@@ -267,9 +199,7 @@
     </tbody>
     </table>
 
-
-
-
+</section>
 
 
     {% else %}
@@ -287,9 +217,6 @@
     <img src="{% static name %}" id="genomic_region" />
     {% endif %}
 
-{% endif %}
-
-
 
 </section>
 
@@ -299,8 +226,10 @@
 
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-
-
+<script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
 
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>

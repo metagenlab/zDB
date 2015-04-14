@@ -48,6 +48,35 @@ P.blocktext {
     position:absolute;
 }
 
+#homology_section{
+    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+    top: 780px;
+	color: #444;
+    margin-left: 2px;
+    border: 0px solid blue;
+    padding: 2px;
+    position:absolute;
+}
+
+
+.plot_region_div {
+  width: 1500px;
+  background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+
+
+#table_plot_section{
+    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+	color: #444;
+    margin-left: -150px;
+    border: 0px solid blue;
+    padding: 2px;
+    position:relative;
+}
+
 #extract_section{
     background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
     top: 550px;
@@ -109,7 +138,7 @@ th, tr, td {
 
 #entete_translation{
  border:1px solid black;
- width: 600px;
+ width: 800px;
     }
 
 #entete_organism{
@@ -118,7 +147,7 @@ th, tr, td {
     }
 
 #entete_locus{
- width: 153px;
+ width: 113px;
     }
 #entete_product{
  width: 300px;
@@ -131,7 +160,14 @@ th, tr, td {
  width: 15px;
     }
 
-
+#theFrame{
+  background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+  padding-top: 18px;
+  padding-left: 0;
+  border: 0px solid blue;
+  width: 100%;
+  height: 800px;
+}
 
 
 #file_names_col{
@@ -320,6 +356,17 @@ body {
 	color: #444;
 	font: 100%/30px 'Helvetica Neue', helvetica, arial, sans-serif;
     top: 25px;
+}
+
+#locus_body {
+	background: black;
+    background-image: ;
+	color: #444;
+	font: 100%/30px 'Helvetica Neue', helvetica, arial, sans-serif;
+    top: 25px;
+    padding-top: 0px;
+}
+
 }
 
 strong {
@@ -571,6 +618,18 @@ nav
     margin-left: 146px;
     border: 0px solid blue;
     padding: 2px;
+
+}
+
+#locus_section
+{
+    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+    top:2px;
+	color: #444;
+    margin-left: 0px;
+    border: 0px solid blue;
+    padding: 2px;
+    padding-top: -10px;
 
 }
 

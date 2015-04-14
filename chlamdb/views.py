@@ -151,6 +151,8 @@ def circos_homology(request, biodb):
                   ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id' \
                   ' and biodatabase.name = "%s"' % biodb
 
+
+
             all_accession = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
             columns = 'orthogroup, accession, start, stop'
             sql_ref = 'select %s from orthology_detail_%s where locus_tag = "%s" or protein_id = "%s" or orthogroup = "%s"' % (columns,
@@ -285,6 +287,79 @@ def extract(request, biodb):
     return render(request, 'chlamdb/extract_genes.html', locals())
 
 
+@login_required
+def locusx(request, biodb, locus):
+
+
+    print biodb, locus, "OK!!!!!!!"
+
+    cache = get_cache('default')
+    print "cache", cache
+    #cache.clear()
+
+    #bioentry_in_memory = cache.get("biodb")
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+    if request.method == 'GET':  # S'il s'agit d'une requête POST
+
+        valid_id = True
+
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+        #sql1 = 'SELECT column_name FROM information_schema.columns WHERE table_name="orthology_detail_chlamydia_03_15"'
+        columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                  'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+        sql2 = 'select %s from orthology_detail_%s where locus_tag like "%%%%%s%%%%" or protein_id like "%%%%%s%%%%"' % (columns, biodb, locus, locus)
+
+        try:
+            data = server.adaptor.execute_and_fetchall(sql2, )[0]
+        except IndexError:
+            valid_id = False
+            return render(request, 'chlamdb/locus.html', locals())
+
+        if not data:
+                valid_id = False
+        if valid_id:
+            orthogroup = data[0]
+
+            fasta = "%s_fasta/%s.txt" % (biodb, orthogroup)
+            alignment = "%s_fasta/%s.html" % (biodb, orthogroup)
+            alignment_fasta = "%s_fasta/%s.fa" % (biodb, orthogroup)
+            alignment_fasta_nucl = "%s_fasta_nucl/%s_nucl.txt" % (biodb, orthogroup)
+            tree_unrooted = "%s_fasta/%s_tree.svg" % (biodb, orthogroup)
+            tree_rooted = "%s_fasta/%s_tree_reroot.svg" % (biodb, orthogroup)
+            tree_file = "%s_fasta/%s.phy_phyml_tree.txt" % (biodb, orthogroup)
+
+            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                  'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+            sql3 = 'select %s from orthology_detail_%s where orthogroup = "%s" ' % (columns, biodb, orthogroup)
+
+            homologues = list(server.adaptor.execute_and_fetchall(sql3, ))
+            print homologues
+
+            if len(homologues) >1:
+                orthologs = True
+            else:
+                orthologs = False
+            import orthogroup_identity_db
+            if len(homologues) > 1:
+                orthogroup2identity_dico = orthogroup_identity_db.orthogroup2identity_dico(biodb, orthogroup)
+
+                print "orthologs", orthologs, len(homologues)
+                for count, value in enumerate(homologues):
+                    locus_2 = value[1]
+                    print value + (orthogroup2identity_dico[data[1]][locus_2],)
+                    homologues[count] = (count+1,) + value + (orthogroup2identity_dico[data[1]][locus_2],)
+                    print homologues[count]
+
+            else:
+                homologues[0] = homologues[0] + (100,)
+
+        envoi = True
+
+
+    return render(request, 'chlamdb/locus.html', locals())
 
 
 
@@ -317,13 +392,28 @@ def homology(request, biodb):
 
             accession = extract_alphanumeric(form.cleaned_data['accession'])
 
+            import re
+            pattern_group = re.compile(".*group.*")
+
+            if re.match(pattern_group, accession):
+                group = True
+            else:
+                group = False
+
             server, db = manipulate_biosqldb.load_db(biodb)
 
-            #sql1 = 'SELECT column_name FROM information_schema.columns WHERE table_name="orthology_detail_chlamydia_03_15"'
-            sql2 = 'select orthogroup, locus_tag, protein_id, start, stop, strand, organism from orthology_detail_%s where locus_tag like "%%%%%s%%%%" or protein_id like "%%%%%s%%%%"' % (biodb, accession, accession)
-            print sql2
-            data = server.adaptor.execute_and_fetchall(sql2, )[0]
-            print "seqfeature_id", data
+            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+            sql2 = 'select %s from orthology_detail_%s where locus_tag like "%%%%%s%%%%" or protein_id like "%%%%%s%%%%" or orthogroup= "%s"' % (columns, biodb, accession, accession, accession)
+
+
+
+            try:
+                data = server.adaptor.execute_and_fetchall(sql2, )[0]
+            except IndexError:
+                valid_id = False
+                return render(request, 'chlamdb/locus.html', locals())
+
             if not data:
                     valid_id = False
             if valid_id:
@@ -337,9 +427,10 @@ def homology(request, biodb):
                 tree_rooted = "%s_fasta/%s_tree_reroot.svg" % (biodb, orthogroup)
                 tree_file = "%s_fasta/%s.phy_phyml_tree.txt" % (biodb, orthogroup)
 
+                columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+                sql3 = 'select %s from orthology_detail_%s where orthogroup = "%s" ' % (columns, biodb, orthogroup)
 
-                sql3 = 'select orthogroup, locus_tag, protein_id, start, stop, strand, organism from orthology_detail_%s where orthogroup = "%s" ' % (biodb, orthogroup)
-                print sql3
                 homologues = list(server.adaptor.execute_and_fetchall(sql3, ))
                 print homologues
 
@@ -354,10 +445,9 @@ def homology(request, biodb):
                     print "orthologs", orthologs, len(homologues)
                     for count, value in enumerate(homologues):
                         locus_2 = value[1]
-                        print  value + (orthogroup2identity_dico[data[1]][locus_2],)
-                        homologues[count] = value + (orthogroup2identity_dico[data[1]][locus_2],) + (count+1,)
+                        print value + (orthogroup2identity_dico[data[1]][locus_2],)
+                        homologues[count] = (count+1,) + value + (orthogroup2identity_dico[data[1]][locus_2],)
                         print homologues[count]
-                        print
 
                 else:
                     homologues[0] = homologues[0] + (100,)
@@ -401,10 +491,8 @@ def homology(request, biodb):
                     #try:
 
             envoi = True
-
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = contact_form_class()  # Nous créons un formulaire vide
-
+        form = make_contact_form(server, biodb)  # Nous créons un formulaire vide
     return render(request, 'chlamdb/homology.html', locals())
 
 
@@ -464,9 +552,31 @@ def plot_region(request, biodb):
                     temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
                     print "temp file", temp_file.name
                     name = os.path.basename(temp_file.name)
-                    mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, locus_tag_target_genomes,
+                    locus_tags = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, locus_tag_target_genomes,
                                                                                       temp_file.name, int(region_size),
                                                                                       cache)
+
+                    columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                              'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+
+
+                    sql_locus = 'locus_tag="%s"' % locus_tags[0]
+                    for locus in range(1, len(locus_tags)):
+                        sql_locus += ' or locus_tag="%s"' % locus_tags[locus]
+
+                    sql = 'select %s from orthology_detail_%s where %s' % (columns, biodb, sql_locus)
+                    print sql
+
+                    raw_data = server.adaptor.execute_and_fetchall(sql,)
+
+                    n = 1
+                    search_result = []
+                    for one_hit in raw_data:
+                        search_result.append((n,) + one_hit)
+                        n+=1
+                        print n
+                    print search_result
+
 
             envoi = True
 
@@ -582,6 +692,8 @@ def circos(request, biodb):
                     ref_name += i
                 circos_file = "circos/%s.svg" % ref_name
                 import circos
+                import shell_command
+
 
                 querries = manipulate_biosqldb.get_genome_accessions(server, biodb)
                 target_taxons = form.cleaned_data['targets']
@@ -612,6 +724,40 @@ def circos(request, biodb):
                                           locus_highlight=[],
                                           out_directory=temp_location,
                                           draft_fasta=draft_data)
+
+
+
+                original_map_file = settings.BASE_DIR + "/assets/circos/%s.html" % ref_name
+                with open(original_map_file, "r") as f:
+                    map_string = ''.join([line for line in f.readlines()])
+
+                circos_html = '<!DOCTYPE html>\n' \
+                              ' <html>\n' \
+                              ' <body>\n' \
+                              ' %s\n' \
+                              ' <img src="%s.svg" usemap="#%s">' \
+                              ' </body>\n' \
+                              ' </html>\n' % (map_string, ref_name, ref_name)
+
+
+                circos_new_file = '/assets/circos/circos_clic.html'
+
+                with open(settings.BASE_DIR + circos_new_file, "w") as f:
+                    f.write(circos_html)
+
+                #target_map_file = settings.BASE_DIR + "/templates/circos/%s.html" % ref_name
+                original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % ref_name
+                #target_map_file_svg = settings.BASE_DIR + "/templates/circos/%s.svg" % ref_name
+                map_file = "circos/%s.html" % ref_name
+                svg_file = "circos/%s.svg" % ref_name
+                #a, b, c = shell_command.shell_command("mv %s %s" % (original_map_file, target_map_file))
+                #a, b, c = shell_command.shell_command("cp %s %s" % (original_map_file_svg, target_map_file_svg))
+                #print a,b,c
+                map_name = ref_name
+
+
+
+
                 envoi_circos = True
 
             if 'submit_region' in request.POST:
@@ -952,6 +1098,8 @@ def blast(request, biodb):
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             from Bio.Blast.Applications import NcbiblastpCommandline
             from Bio.Blast.Applications import NcbiblastnCommandline
+            from Bio.Blast.Applications import NcbitblastnCommandline
+            from Bio.Blast.Applications import NcbiblastxCommandline
             from tempfile import NamedTemporaryFile
 
             from Bio.Alphabet import IUPAC
@@ -964,27 +1112,40 @@ def blast(request, biodb):
 
             target_accession = form.cleaned_data['target']
 
-            data_type = form.cleaned_data['data']
-            print "data_type", data_type
-            input_sequence = extract_alphanumeric(input_sequence)
-            print input_sequence
+            blast_type = form.cleaned_data['blast']
 
-            #biodb = form.cleaned_data['biodatabase']
+
+            input_sequence = extract_alphanumeric(input_sequence)
+            print "one", input_sequence
+
             input_sequence = input_sequence.rstrip(os.linesep)
-            print input_sequence
+            print "two", input_sequence
+
             my_record = SeqRecord(Seq(input_sequence, IUPAC.protein), id="INPUT", description="INPUT")
-            print my_record
+
             query_file = NamedTemporaryFile()
             SeqIO.write(my_record, query_file, "fasta")
             query_file.flush()
-            blastdb = settings.BASE_DIR + "/assets/chlamdb/%s/%s.%s" % (data_type, target_accession, data_type)
-            print blastdb
-            if data_type == 'faa':
-                print "faa!!!"
-                blast_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=0.001, outfmt=0)
-            if data_type == 'ffn':
-                print "ffn!!!"
-                blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=0.001, outfmt=0)
+
+
+            if blast_type=='blastn_ffn':
+                blastdb = settings.BASE_DIR + "/assets/chlamdb/ffn/%s.ffn" % (target_accession)
+                blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+            if blast_type=='blastn_fna':
+                blastdb = settings.BASE_DIR + "/assets/chlamdb/fna/%s.fna" % (target_accession)
+                blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+            if blast_type=='blastp':
+                blastdb = settings.BASE_DIR + "/assets/chlamdb/faa/%s.faa" % (target_accession)
+                blast_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+            if blast_type=='tblastn':
+                blastdb = settings.BASE_DIR + "/assets/chlamdb/fna/%s.fna" % (target_accession)
+                blast_cline = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+            if blast_type=='blastx':
+                blastdb = settings.BASE_DIR + "/assets/chlamdb/faa/%s.faa" % (target_accession)
+                blast_cline = NcbiblastxCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+
+
+            print blast_cline
             stdout, stderr = blast_cline()
             blast_file = NamedTemporaryFile()
             blast_file.write(stdout)
@@ -995,8 +1156,6 @@ def blast(request, biodb):
             #print blast_result
             #blast_record = next(blast_result)
             #print blast_record
-
-
 
             envoi = True
 
@@ -1075,8 +1234,6 @@ def mummer(request, biodb):
             from shell_command import shell_command
 
             out, err, log = shell_command(cmd1)
-            print out
-            print err
             out, err, log = shell_command(cmd2)
 
             plot_path = 'temp/promer_%s.png' % rand

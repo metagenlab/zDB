@@ -106,7 +106,8 @@ def make_plot_form(database_name):
         #location_start = forms.CharField(max_length=9, label="sart (bp)", required=False)
         #location_stop = forms.CharField(max_length=9, label="end (bp)", required=False)
         region_size = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
-        genomes = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "30" }), required = False)
+        genomes = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" }), required = False)
+        get_annotation = forms.NullBooleanField(widget=forms.CheckboxInput())
     return PlotForm
 
 
@@ -174,7 +175,11 @@ def make_blast_form(biodb):
     accession_choices =  get_accessions(biodb, plasmid=True, all=True)
 
     class BlastForm(forms.Form):
-        data = forms.ChoiceField(choices=[("ffn", "dna"), ("faa", "aa")])
+        blast = forms.ChoiceField(choices=[("blastn_ffn", "blastn_ffn"),
+                                           ("blastn_fna", "blastn_fna"),
+                                           ("blastp", "blastp"),
+                                           ("blastx", "blastx"),
+                                           ("tblastn", "tblastn")])
         target = forms.ChoiceField(choices=accession_choices)
         blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 20}))
         #biodatabase = forms.ChoiceField(choices=choices)
@@ -191,12 +196,12 @@ def make_motif_form(database_name):
          choix fuzznuc / fuzzpro
         '''
         DATA_CHOICES = (('nucleotide', 'nucleotide'), ('protein','protein'))
-        search = forms.ChoiceField(choices=DATA_CHOICES)
+        #search = forms.ChoiceField(choices=DATA_CHOICES)
         n_missmatch = forms.CharField(max_length=3, label="N. mismatches", required=False, initial=0)
-        input_file = forms.FileField(
-            label='Select a file',
-            help_text='max. 42 megabytes', required=False
-        )
+        #input_file = forms.FileField(
+        #    label='Select a file',
+        #    help_text='max. 42 megabytes', required=False
+        #)
         motif_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 20}),
                                       help_text="ex: Y-G-G-[LIV]-T-{I}-{N}-x(2)-N (PROSITE style patterns)",
                                       required=False)
