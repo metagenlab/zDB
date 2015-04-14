@@ -233,7 +233,8 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
            print "already in feature_sets!"
            print record
            quit
-        
+
+
     for x in range(0,len(region_record_list)-1):
         print "x", x
         features_X = region_record_list[x].features
@@ -245,6 +246,7 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
 
             if feature_1.type != "CDS":
                 continue
+
             for feature_2 in features_Y:
                 if feature_2.type != "CDS":
                     continue
@@ -324,13 +326,17 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
 
 
                     F_x = set_X.add_feature(SeqFeature(FeatureLocation(feature_1.location.start, feature_1.location.end, strand=0)),
-                                    color=color, border=border)
+                                    color=color, border=border, set_id=feature_1.qualifiers["locus_tag"])
                     F_y = set_Y.add_feature(SeqFeature(FeatureLocation(feature_2.location.start, feature_2.location.end, strand=0)),
                                     color=color, border=border)
                     gd_diagram.cross_track_links.append(CrossLink(F_x, F_y, color2, border2))
 
+
+                    print set_X
+
     #for x in range(0,len(region_record_list)-1):
     x = 0
+    all_locus = []
     for n, record in enumerate(region_record_list):
         gd_feature_set = feature_sets[n]
         i = 0
@@ -344,7 +350,7 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
             color2 = colors.HexColor('#0F600C')
 
 
-
+        one_row_locus = []
         for feature in record.features:
 
             if feature.type == "assembly_gap":
@@ -355,11 +361,11 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
             if feature.type == "rRNA":
 
                 gd_feature_set.add_feature(feature, sigil="ARROW", color="orange", label=True, label_position="middle", label_strand=1, label_size=10, label_angle=40)
-
+                one_row_locus.append(feature.qualifiers["locus_tag"][0])
             if feature.type == "tRNA":
 
                 gd_feature_set.add_feature(feature, sigil="ARROW", color="orange", label=True, label_position="middle", label_strand=1, label_size=10, label_angle=40)
-
+                one_row_locus.append(feature.qualifiers["locus_tag"][0])
 
             if feature.type == "repeat_region":
 
@@ -398,7 +404,8 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
 
                 gd_feature_set.add_feature(feature, sigil="ARROW", color=color, label=True, label_position="middle",label_strand=1, label_size=10, label_angle=40)
                 i += 1
-
+                one_row_locus.append(feature.qualifiers["locus_tag"][0])
+        all_locus = one_row_locus + all_locus
 
 
         x += 1
@@ -419,12 +426,35 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
     else:
             gd_diagram.draw(format="linear", pagesize=(hauteur,largeur), orientation='landscape', fragments=1,start=0, end=max_len)
     print "writing diagram", out_name
-    
-    gd_diagram.write(out_name, "SVG")
-    cmd = 'chmod 004 %s' % out_name
+
+    #gd_diagram.write(out_name, "SVG")
+
+
+
+    import StringIO
+    import edit_svg
+
+    svg_diagram = StringIO.StringIO()
+
+    gd_diagram.write(svg_diagram, "SVG")
+    svg_diagram.flush()
+    #gd_diagram
+
+    with_links = edit_svg.edit_svg(svg_diagram.getvalue(), all_locus, biodb_name)
+
+    with_links.write(out_name)
+
+    try:
+        cmd = 'chmod 444 %s' % out_name
+    except:
+        pass
     import shell_command
     print cmd
     shell_command.shell_command(cmd)
+
+    return all_locus
+
+
 
 def plot_simple_region(region_record, out_name):
     gd_diagram = GenomeDiagram.Diagram("geomic_region")
@@ -599,8 +629,8 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
             print
             print "sub_record", sub_record
             print
-    plot_multiple_regions_crosslink(locus_tag_list, sub_record_list, plasmid_list, out_name)
-
+    region_locus_list = plot_multiple_regions_crosslink(locus_tag_list, sub_record_list, plasmid_list, out_name)
+    return region_locus_list
     
     #for record in reformat_records:
     #    print "record id", record.id
