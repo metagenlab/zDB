@@ -31,7 +31,7 @@ def circos_orthology(all_record_list, ref_record_and_location, target_record_and
             description = re.sub(", wgs", "", description)
             description = re.sub("Candidatus ", "", description)
             description = re.sub(".contig.0_1, whole genome shotgun sequence.", "", description)
-            description = re.sub(" ", "_", description)
+            description = re.sub(" ", "-", description)
             description = re.sub("Chlamydia_", "C_", description)
             description = re.sub("Chlamydophila_", "C_", description)
             description = re.sub("Simkania_", "S_", description)

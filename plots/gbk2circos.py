@@ -278,9 +278,9 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                                                                                                      re.sub("[ |\-|(|)|\[|\]|\.|,]", "_",
                                                                                                      feature.qualifiers['product'][0])))
                             '''
-                            f.write('%s %s %s fill_color=violet\n' % (contig,
+                            f.write('%s %s %s fill_color=violet, id=%s\n' % (contig,
                                                                     start,
-                                                                    end))
+                                                                    end, feature.qualifiers['locus_tag'][0]))
 
 
                         except:
@@ -293,9 +293,10 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                                                                                                      re.sub("[ |\-|(|)|\[|\]|\.|,]", "_",
                                                                                                      feature.qualifiers['product'][0])))
                             '''
-                            f.write('%s %s %s fill_color=violet\n' % (contig,
+                            f.write('%s %s %s fill_color=violet, id=%s\n' % (contig,
                                                                     start,
-                                                                    end))
+                                                                    end,
+                                                                    feature.qualifiers['locus_tag'][0]))
 
 
 
@@ -305,14 +306,14 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                                                                     start,
                                                                     end))
                         else:
-                            f.write('%s %s %s\n' % (contig,
+                            f.write('%s %s %s id=%s\n' % (contig,
                                                   start,
-                                                  end))
+                                                  end, feature.qualifiers['locus_tag'][0]))
                     else:
 
-                        f.write('%s %s %s\n' % (contig,
+                        f.write('%s %s %s id=%s\n' % (contig,
                                               start,
-                                              end))
+                                              end, feature.qualifiers['locus_tag'][0]))
 
                         '''
                             try:
@@ -602,10 +603,10 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                         #print group_id2orthologs_presence[feature.qualifiers['orthogroup'][0]]
                         if group_id2orthologs_presence[feature.qualifiers['orthogroup'][0]][int(taxon_id)] > 0:
                             if feature.qualifiers['orthogroup'][0] not in locus_highlight:
-                                taxon_file.write("%s %s %s\n" % (contig, start, end))
+                                taxon_file.write("%s %s %s id=%s\n" % (contig, start, end, feature.qualifiers['locus_tag'][0]))
                             else:
                                 print "COLORS!!!!!!!!!!!!!!!!!!!"
-                                taxon_file.write("%s %s %s fill_color=violet\n" % (contig, start, end))
+                                taxon_file.write("%s %s %s fill_color=violet, id=%s\n" % (contig, start, end, feature.qualifiers['locus_tag'][0]))
                         elif color_missing:
                             taxon_file.write("%s %s %s fill_color=black\n" % (contig, start, end))
                         else:
@@ -765,14 +766,14 @@ class Circos_config:
     return template
 
 
-  def _template_highlight(self, file, fill_color="grey_a1", r1="1.55r", r0="1.50r"):
+  def _template_highlight(self, file, fill_color="grey_a1", r1="1.55r", r0="1.50r", url="/chlamdb/locusx/chlamydia_03_15/"):
     template ="<highlight>\n" \
               " fill_color = %s\n" \
               " file       = %s\n" \
               " r1         = %s\n" \
               " r0         = %s\n" \
-              " url = [id]\n" \
-              " </highlight>\n" % (fill_color, file, r1, r0)
+              " url = %s[id]\n" \
+              " </highlight>\n" % (fill_color, file, r1, r0, url)
 
     return template
 
