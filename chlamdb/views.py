@@ -1048,10 +1048,11 @@ def motif_search(request, biodb):
             input_pattern = form.cleaned_data['motif_input']
             n_missmatch = form.cleaned_data['n_missmatch']
             target_taxon_id = form.cleaned_data['search_in']
+            print "target", target_taxon_id
 
-            accessions = manipulate_biosqldb.taxon_id2accessions(server, target_taxon_id, biodb)
+            if target_taxon_id != "all":
+                accessions = manipulate_biosqldb.taxon_id2accessions(server, target_taxon_id, biodb)
 
-            print "accessions", accessions
 
             #input_pattern = ExtractAlphanumeric(input_pattern)
             print input_pattern
@@ -1065,7 +1066,12 @@ def motif_search(request, biodb):
 
             PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
-            db_path = os.path.join(PROJECT_ROOT,"../assets/blast_db/"+accessions[0] + ".faa")
+
+
+            if target_taxon_id != "all":
+                db_path = os.path.join(PROJECT_ROOT,"../assets/chlamdb/faa/"+accessions[0] + ".faa")
+            else:
+                db_path = os.path.join(PROJECT_ROOT,"../assets/chlamdb/faa/all.faa")
             print "path", db_path
 
             cmd = 'fuzzpro -sequence %s -pmismatch %s -rformat seqtable -auto -stdout -pattern "%s"' % (db_path ,n_missmatch ,input_pattern)

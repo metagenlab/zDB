@@ -188,7 +188,7 @@ def make_blast_form(biodb):
 
 def make_motif_form(database_name):
 
-    accession_choices = get_accessions(database_name, all=False)
+    accession_choices = get_accessions(database_name, all=True)
 
     class MotifForm(forms.Form):
         '''
