@@ -126,8 +126,8 @@ def make_circos_form(database_name):
     class CircosForm(forms.Form):
         reference = forms.ChoiceField(choices=accession_choices)
         targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (len(accession_choices)/2) }), required = False)
-        get_region = forms.NullBooleanField(widget=forms.CheckboxInput())
-        region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = False)
+        #get_region = forms.NullBooleanField(widget=forms.CheckboxInput())
+        #region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = False)
         
         def save(self):
             self.reference = self.cleaned_data["reference"]

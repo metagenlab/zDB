@@ -54,7 +54,8 @@ P.blocktext {
 	color: #444;
     margin-left: 2px;
     border: 0px solid blue;
-    padding: 2px;
+
+    padding-top: 2px;
     position:absolute;
 }
 

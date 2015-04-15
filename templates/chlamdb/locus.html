@@ -45,6 +45,7 @@
     {% if not plot_region %}
 
     <section id="locus_section">
+
     <table>
     <tr>
     <th id="entete">Feature</th>
@@ -125,26 +126,12 @@
     <tr>
     <td><a href="{% static alignment_fasta_nucl %}">Nucleotide sequences (fasta)</a> </td>
     </tr>
-
-        <!--
-
-    <td><a href="{% static tree_unrooted %}"> Phylogenetic tree (unrooted)</a> </td>
-    </tr>
-
-    <td><a href="{% static tree_rooted %}">Phylogenetic tree (midproint rooted)</a> </td>
-    </tr>
-
-    <td><a href="{% static tree_file %}">Phylogenetic tree file (newick)</a> </td>
-    </tr>
--->
-
     </table>
 
 
-    <h2>Homologs</h2>
 
 
-<section id="homology_section">
+
 
     <div id="export_bouttons">
     <a download="locus_{{ data.1 }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
@@ -153,6 +140,7 @@
     </div>
 
     <table id="search_table" class="sortable">
+    <h2>Homologs</h2>
     <thead>
     <tr>
     <th></th>
@@ -199,7 +187,6 @@
     </tbody>
     </table>
 
-</section>
 
 
     {% else %}
