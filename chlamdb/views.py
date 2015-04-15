@@ -1049,7 +1049,8 @@ def motif_search(request, biodb):
             n_missmatch = form.cleaned_data['n_missmatch']
             target_taxon_id = form.cleaned_data['search_in']
 
-            accessions = manipulate_biosqldb.taxon_id2accessions(server,target_taxon_id,biodb)
+            accessions = manipulate_biosqldb.taxon_id2accessions(server, target_taxon_id, biodb)
+
             print "accessions", accessions
 
             #input_pattern = ExtractAlphanumeric(input_pattern)
