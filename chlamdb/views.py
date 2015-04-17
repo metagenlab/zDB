@@ -928,6 +928,10 @@ def search(request, biodb):
                 sql = 'select %s from orthology_detail_%s where product REGEXP "%s"' % (columns, biodb, search_term)
                 raw_data = server.adaptor.execute_and_fetchall(sql,)
 
+            if search_type == "locus_tag":
+                sql = 'select %s from orthology_detail_%s where locus_tag REGEXP "%s"' % (columns, biodb, search_term)
+                raw_data = server.adaptor.execute_and_fetchall(sql,)
+
 
             n = 1
             search_result = []

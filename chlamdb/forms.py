@@ -155,7 +155,7 @@ def make_extract_form(database_name, plasmid=False):
 
 class SearchForm(forms.Form):
 
-    SEARCH_CHOICES = (('gene', 'gene'), ('product','product'))
+    SEARCH_CHOICES = (('gene', 'gene'), ('product','product'), ('locus_tag','locus_tag'))
 
     search_type = forms.ChoiceField(choices=SEARCH_CHOICES)
     search_term = forms.CharField(max_length=100)
