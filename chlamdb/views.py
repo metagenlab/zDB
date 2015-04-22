@@ -959,7 +959,11 @@ def search(request, biodb):
             n = 1
             search_result = []
             for one_hit in raw_data:
-                search_result.append((n,) + one_hit)
+                if one_hit[2] != '-':
+                    interpro_id = one_hit[2]
+                else:
+                    interpro_id = one_hit[1]
+                search_result.append((n,) + one_hit + (interpro_id,))
                 n+=1
                 print n
             print search_result

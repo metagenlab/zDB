@@ -4,6 +4,8 @@
 <html>
 <head>
 {% load staticfiles %}
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 </head>
 <body>
@@ -82,7 +84,7 @@
         <td>{{values.0}}</td>
 
         <td>{{values.1}}</td>
-        <td>{{values.2}}</td>
+        <td><a href="{{ STATIC_PREFIX }}chlamdb/interpro/{{ values.15 }}.html" target="_blank">{{values.2}}</a></td>
 	    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
 	    <td>{{values.4}}</td>
         <td>{{values.5}}</td>
