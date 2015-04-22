@@ -147,8 +147,8 @@ def make_extract_form(database_name, plasmid=False):
     class ExtractForm(forms.Form):
         orthologs_in = forms.MultipleChoiceField(label='', choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "20" }), required = False)
         no_orthologs_in = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "20" }), required = False, label="")
-
-
+        get_groups = forms.NullBooleanField(widget=forms.CheckboxInput())
+        single_copy = forms.NullBooleanField(widget=forms.CheckboxInput())
 
     return ExtractForm
 

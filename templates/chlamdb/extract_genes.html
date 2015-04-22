@@ -36,6 +36,17 @@ A
 B
 </p>
 
+<p id="checkbox_extract_single_copy">
+Get single copy/genome only
+</p>
+
+<p id="checkbox_show_groups">
+Show groups
+</p>
+
+
+
+
 <form action="{% url "chlamdb.views.extract" biodb %}" method="post">{% csrf_token %}
 {{ form.as_p }}
 <input type="submit" name="submit_extract" value="extract homologues" id="extract_button" />
@@ -56,8 +67,8 @@ B
 
 {% if envoi_extract %}
 
-
-    <div id=help_text_extract>
+<!--
+<div id=help_text_extract>
 <table>
    <tr><td>S</td> <td> strand</td> </tr>
    <tr><td>nH</td> <td> total number of homologues</td> </tr>
@@ -66,6 +77,8 @@ B
    <tr><td>SP</td> <td> Signl peptide</td> </tr>
 </table>
 </div>
+-->
+
 </section>
 
 
@@ -80,10 +93,10 @@ B
 
 
     <section id="extract_section">
-    <div id="export_bouttons">
-    <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'myTable2', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+    <div id="export_bouttons_detail">
+    <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
-    <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'myTable2');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+    <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
     <br/>
     </div>
 
@@ -109,6 +122,8 @@ B
     </tr>
     </thead>
     <tbody>
+
+
     {% for values in extract_result %}
         <tr>
         <td>{{values.0}}</td>
@@ -131,15 +146,40 @@ B
     {% endfor %}
     </tbody>
     </table>
-    </section>
+</section>
+
+
+<section id="extract_section">
+    <div id="export_bouttons_groups">
+    <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+
+    <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+    <br/>
+    </div>
+
+{{ sum_group }}
+
+<table class="sortable" id="table_groups">
+
+<thead>
+<tr>
+<th id="entete_locus" class="rotate">Orthogroup</th>
+</tr>
+</thead>
+
+{% for value in match_groups %}
+<tr><td>{{value}}</td></tr>
+{% endfor %}
+</table>
+</section>
 
 
 {% else %}
 
 
+
 </section>
-
-
+</section>
 </section>
 
 
@@ -162,7 +202,36 @@ B
 
 -->
 
+<script>
+  var update_fields = function () {
+    if ($("#id_get_groups").is(":checked")) {
 
+        $('#id_region').prop('disabled', false);
+        $('#search_table').show();
+        $('#export_bouttons_detail').show();
+
+        $('#table_groups').hide();
+        $('#export_bouttons_groups').hide();
+    }
+
+
+
+    else {
+
+       $('#id_get_groups').prop('disabled', false);
+       $('#search_table').hide();
+       $('#export_bouttons_detail').hide();
+       $('#table_groups').show();
+       $('#export_bouttons_groups').show();
+    }
+  };
+  $(update_fields);
+  $("#id_get_groups").change(update_fields);
+
+
+
+
+</script>
 
 
 

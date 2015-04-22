@@ -229,23 +229,40 @@ def extract(request, biodb):
 
             include = form.cleaned_data['orthologs_in']
             exclude = form.cleaned_data['no_orthologs_in']
+            single_copy = form.cleaned_data['single_copy']
 
-            sql_include = ''
-            for i in range(0, len(include)-1):
-                sql_include += ' `%s` > 0 and ' % include[i]
-            sql_include+='`%s` > 0 and ' % include[-1]
+            print "single_copy", single_copy
+
+
+            if single_copy:
+                sql_include = ''
+                if len(include) > 0:
+                    for i in range(0, len(include)-1):
+                        sql_include += ' `%s` = 1 and ' % include[i]
+                    sql_include+='`%s` = 1' % include[-1]
+            else:
+                sql_include = ''
+                if len(include) > 0:
+                    for i in range(0, len(include)-1):
+                        sql_include += ' `%s` > 0 and ' % include[i]
+                    sql_include+='`%s` > 0' % include[-1]
 
             sql_exclude = ''
-            for i in range(0, len(exclude)-1):
-                sql_exclude += ' `%s` = 0 and ' % exclude[i]
-            sql_exclude+='`%s` = 0' % exclude[-1]
+            if len(exclude) > 0:
+                sql_exclude = 'and '
+                for i in range(0, len(exclude)-1):
+                    sql_exclude += ' `%s` = 0 and ' % exclude[i]
+                sql_exclude+='`%s` = 0' % exclude[-1]
 
             server, db = manipulate_biosqldb.load_db(biodb)
 
             sql ='select orthogroup from orthology_%s where %s %s' % (biodb, sql_include, sql_exclude)
 
+            print sql
 
-            match_groups = [ i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+            match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+            sum_group = len(match_groups)
+
 
             sql_include = 'taxon_id ='
             for i in range(0, len(include)-1):
@@ -262,13 +279,13 @@ def extract(request, biodb):
                 else:
                     group_filter += ' or orthogroup="%s"' % group
             group_filter+=')'
-            print group_filter
+            #print group_filter
 
 
             columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                       'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
             sql_2 = 'select %s from orthology_detail_%s %s' % (columns, biodb, group_filter)
-            print sql_2
+            #print sql_2
             raw_data = server.adaptor.execute_and_fetchall(sql_2,)
 
             n = 1
@@ -276,8 +293,8 @@ def extract(request, biodb):
             for one_hit in raw_data:
                 extract_result.append((n,) + one_hit)
                 n+=1
-                print n
-            print extract_result
+                #print n
+            #print extract_result
 
             envoi_extract = True
 
@@ -349,8 +366,12 @@ def locusx(request, biodb, locus):
                 print "orthologs", orthologs, len(homologues)
                 for count, value in enumerate(homologues):
                     locus_2 = value[1]
+                    if value[2] != '-':
+                        interpro_id = value[2]
+                    else:
+                        interpro_id = value[1]
                     print value + (orthogroup2identity_dico[data[1]][locus_2],)
-                    homologues[count] = (count+1,) + value + (orthogroup2identity_dico[data[1]][locus_2],)
+                    homologues[count] = (count+1,) + value + (orthogroup2identity_dico[data[1]][locus_2],) + (interpro_id,)
                     print homologues[count]
 
             else:
@@ -445,14 +466,16 @@ def homology(request, biodb):
                     print "orthologs", orthologs, len(homologues)
                     for count, value in enumerate(homologues):
                         locus_2 = value[1]
+                        if value[2] != '-':
+                            interpro_id = value[2]
+                        else:
+                            interpro_id = value[1]
                         print value + (orthogroup2identity_dico[data[1]][locus_2],)
-                        homologues[count] = (count+1,) + value + (orthogroup2identity_dico[data[1]][locus_2],)
+                        homologues[count] = (count+1,) + value + (orthogroup2identity_dico[data[1]][locus_2],) + (interpro_id,)
                         print homologues[count]
 
                 else:
                     homologues[0] = homologues[0] + (100,)
-
-
 
                 if plot_region == "boinjour":
                     print "plotting!!!!!!!!!!!!!!"

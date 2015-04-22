@@ -265,6 +265,30 @@ text-align: left;
    padding-right: 20px;
 }
 
+#checkbox_extract_single_copy{
+   position:absolute;
+   top:140px;
+   left:828px;
+   margin-left: 174px;
+   padding-right: 20px;
+   	font-size: 10px;
+	line-height: 12px;
+}
+
+#checkbox_show_groups{
+   	font-size: 10px;
+	line-height: 12px;
+   position:absolute;
+   top:240px;
+   left:828px;
+   margin-left: 174px;
+   padding-right: 20px;
+}
+
+
+
+
+
 #extract_form{
     background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
     margin-top:0px;
@@ -305,7 +329,22 @@ body {
     float: right;
 
 }
+#id_get_groups{
+   position:absolute;
+   top:250px;
+   left:810px;
+   margin-left: 174px;
+   padding-right: 20px;
 
+}
+#id_single_copy{
+   position:absolute;
+   top:150px;
+   left:810px;
+   margin-left: 174px;
+   padding-right: 20px;
+
+}
 
 #table_input_genome {
 
