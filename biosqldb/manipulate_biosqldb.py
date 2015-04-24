@@ -145,7 +145,7 @@ def taxon_id2accessions(server, taxon_id, biodatabase_name):
     sql = 'select t1.accession from bioentry as t1 ' \
           'inner join biodatabase as t2 on t1.biodatabase_id = t2.biodatabase_id ' \
           'and taxon_id = %s and t2.name = "%s"' % (taxon_id, biodatabase_name)
-
+    print sql
     result = server.adaptor.execute_and_fetchall(sql,)
     return [i[0] for i in result]
 
