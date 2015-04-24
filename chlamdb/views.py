@@ -31,6 +31,7 @@ from forms import make_motif_form
 from forms import PCRForm
 from forms import make_extract_form
 from forms import make_circos_orthology_form
+from forms import make_interpro_from
 
 from django.contrib.auth import logout
 from django.conf import settings
@@ -922,6 +923,68 @@ def format_search(count, seqfeature_data):
     # [y, i["description"], i["locus_tag"] + " / " + i["protein_id"], i["product"], i["orthogroup"],  i["gene"], i["translation"]]
     pass
 
+@login_required
+def interpro(request, biodb):
+    server = manipulate_biosqldb.load_db()
+
+    interproform = make_interpro_from(biodb)
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+        form = interproform(request.POST)  # Nous reprenons les données
+        #form2 = ContactForm(request.POST)
+        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+            invalid_id = False
+            # Ici nous pouvons traiter les données du formulaire
+            search_type = form.cleaned_data['search_type']
+            search_term = form.cleaned_data['search_term']
+            taxon_ids = form.cleaned_data['targets']
+            #biodb = form.cleaned_data['biodatabase']
+            server, db = manipulate_biosqldb.load_db(biodb)
+
+            columns = 'accession,' \
+                      'locus_tag,' \
+                      'organism, ' \
+                      'analysis, ' \
+                      'signature_accession, ' \
+                      'signature_description, ' \
+                      'interpro_accession, ' \
+                      'interpro_description,' \
+                      'start, ' \
+                      'stop, ' \
+                      'score, ' \
+                      'GO_terms'
+
+            taxon_limit = '(taxon_id=%s' % taxon_ids[0]
+            if len(taxon_ids) > 1:
+                for i in range(1, len(taxon_ids)-1):
+                    taxon_limit+= ' or taxon_id=%s' % taxon_ids[i]
+                taxon_limit+=' or taxon_id=%s)' % taxon_ids[-1]
+            else:
+                taxon_limit += ')'
+
+            if search_type == "description":
+
+                sql = 'select %s from interpro_%s where %s and (interpro_description REGEXP "%s" or signature_description REGEXP "%s")' % (columns, biodb, taxon_limit, search_term, search_term)
+                print sql
+                raw_data = server.adaptor.execute_and_fetchall(sql,)
+
+            if search_type == "GO":
+                sql = 'select %s from interpro_%s where %s and (GO_terms REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
+                raw_data = server.adaptor.execute_and_fetchall(sql,)
+
+            if search_type == "EC":
+                sql = 'select %s from interpro_%s where %s and (pathways REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
+                raw_data = server.adaptor.execute_and_fetchall(sql,)
+            if search_type == "interpro_accession":
+                sql = 'select %s from interpro_%s where %s and (interpro_accession REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
+                raw_data = server.adaptor.execute_and_fetchall(sql,)
+            envoi = True
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = interproform()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/interpro.html', locals())
 
 @login_required
 def search(request, biodb):

@@ -111,6 +111,39 @@ def make_plot_form(database_name):
     return PlotForm
 
 
+
+def make_interpro_from(database_name):
+
+    accession_choices = get_accessions(database_name)
+
+    '''
+    database_choices =  [["Coils", "Coils"],
+                        ["Gene3D", "Gene3D"],
+                        ["Hamap", "Hamap"],
+                        ["Pfam", "Pfam"],
+                        ["Phobius", "Phobius"],
+                        ["PIRSF", "PIRSF"],
+                        ["PRINTS", "PRINTS"],
+                        ["ProDom", "ProDom"],
+                        ["ProSitePatterns", "ProSitePatterns"],
+                        ["ProSiteProfiles", "ProSiteProfiles"],
+                        ["SignalP_EUK", "SignalP_EUK"],
+                        ["SignalP_GRAM_NEGATIVE", "SignalP_GRAM_NEGATIVE"],
+                        ["SignalP_GRAM_POSITIVE", "SignalP_GRAM_POSITIVE"],
+                        ["SMART", "SMART"],
+                        ["SUPERFAMILY", "SUPERFAMILY"],
+                        ["TIGRFAM", "TIGRFAM"]]
+    '''
+    class InterproForm(forms.Form):
+        SEARCH_CHOICES = (('description', 'Description'), ('GO','GO Number'), ('EC','EC Number'), ('interpro_accession','Interpro Accession'))
+        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (len(accession_choices)/2) }), required = False)
+        search_type = forms.ChoiceField(choices=SEARCH_CHOICES)
+        search_term = forms.CharField(max_length=100)
+
+    return InterproForm
+
+
+
 class BiodatabaseForm(forms.Form):
     biodatabase = forms.ChoiceField(choices=choices, required = False)
 

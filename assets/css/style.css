@@ -40,7 +40,17 @@ P.blocktext {
 
 #table_search_section{
     background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
-    top: 450px;
+    top: 480px;
+	color: #444;
+    margin-left: 2px;
+    border: 0px solid blue;
+    padding: 2px;
+    position:absolute;
+}
+
+#table_interpro_section{
+    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+    top: 560px;
 	color: #444;
     margin-left: 2px;
     border: 0px solid blue;
