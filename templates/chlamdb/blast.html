@@ -175,12 +175,10 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
 {% if blast_result %}
     {% autoescape off %}{{blast_result}}{% endautoescape %}
 {% elif blast_no_hits %}
-      No significant hits
       <pre id=blast_result>
        {{blast_no_hits}}
       </pre>
 {% elif blast_err %}
-      Blast error
       <pre id=blast_result>
        {{blast_err}}
       </pre>
