@@ -1247,12 +1247,32 @@ def blast(request, biodb):
 
 
             print blast_cline
-            stdout, stderr = blast_cline()
-            blast_file = NamedTemporaryFile()
-            blast_file.write(stdout)
-            mview_cmd = 'mview -in blast -ruler on -html data -css on -coloring identity %s' % blast_file.name
-            stdout, stderr, code = shell_command.shell_command(mview_cmd)
-            blast_result = stdout
+            blast_stdout, blast_stderr = blast_cline()
+
+            print "blast_stderr", blast_stderr
+            print "blast_stdout", blast_stdout
+
+            no_match = re.compile('.* No hits found .*', re.DOTALL)
+
+            if no_match.match(blast_stdout):
+                print "no blast hit"
+                blast_no_hits = blast_stdout
+            elif len(blast_stderr) != 0:
+                print "blast error"
+                blast_err = blast_stderr
+            else:
+                print "running mview"
+                blast_file = NamedTemporaryFile()
+                blast_file.write(blast_stdout)
+                mview_cmd = 'mview -in blast -ruler on -html data -css on -coloring identity %s' % blast_file.name
+                print mview_cmd
+                stdout, stderr, code = shell_command.shell_command(mview_cmd)
+
+                if len(stdout) == 0:
+                    blast_no_hits = blast_stdout
+                    blast_result = None
+                else:
+                    blast_result = stdout
             #blast_result = NCBIXML.parse(StringIO(stdout))
             #print blast_result
             #blast_record = next(blast_result)
