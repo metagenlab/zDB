@@ -10,7 +10,15 @@
 # ---------------------------------------------------------------------------
 
 
-def interpro2biosql(server, seqfeature_id2locus_tag, locus_tag2genome_taxon_id, protein_id2genome_taxon_id,locus_tag2seqfeature_id, protein_id2seqfeature_id, seqfeature_id2organism, db_name, *input_files):
+def interpro2biosql(server,
+                    seqfeature_id2locus_tag,
+                    locus_tag2genome_taxon_id,
+                    protein_id2genome_taxon_id,
+                    locus_tag2seqfeature_id,
+                    protein_id2seqfeature_id,
+                    seqfeature_id2organism,
+                    db_name,
+                    *input_files):
     import re
     '''
     1. Protein Accession (e.g. P51587)
