@@ -306,7 +306,7 @@ def extract(request, biodb):
 
 
 @login_required
-def locusx(request, biodb, locus):
+def locusx(request, biodb, locus, menu=False):
 
 
     print biodb, locus, "OK!!!!!!!"
@@ -383,6 +383,57 @@ def locusx(request, biodb, locus):
 
     return render(request, 'chlamdb/locus.html', locals())
 
+
+
+@login_required
+def blastnr(request, biodb, locus_tag):
+
+
+    print biodb, locus_tag
+
+    cache = get_cache('default')
+    print "cache", cache
+    #cache.clear()
+
+    #bioentry_in_memory = cache.get("biodb")
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+    if request.method == 'GET':  # S'il s'agit d'une requête POST
+
+
+
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+        sql = 'select * from blastnr_%s where locus_tag = "%s"' % (biodb, locus_tag)
+
+        blast_data = [i for i in server.adaptor.execute_and_fetchall(sql,)]
+
+
+
+        if len(blast_data) > 0:
+            valid_id = True
+            blast_query_locus = blast_data[0][4]
+            blast_query_protein_id = blast_data[0][1]
+            blast_query_organism = blast_data[0][5]
+            if blast_query_protein_id == blast_query_locus:
+                 blast_query_protein_id = ''
+
+            for n, one_hit in enumerate(blast_data):
+                blast_data[n] = [i for i in one_hit]
+                subject_taxids = one_hit[11].split(', ')
+                subject_scientific_names = one_hit[10].split(', ')
+                all_taxonomy = ''
+                for taxon, name in zip(subject_taxids, subject_scientific_names):
+                    all_taxonomy += '<a href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s">%s<a> ' % (taxon, name)
+                blast_data[n][11] = all_taxonomy
+                blast_data[n][24] = one_hit[24].split('[')[0]
+
+
+        return render(request, 'chlamdb/blastnr.html', locals())
+
+
+    return render(request, 'chlamdb/blastnr.html', locals())
 
 
 @login_required
@@ -1263,10 +1314,20 @@ def blast(request, biodb):
             else:
                 print "running mview"
                 blast_file = NamedTemporaryFile()
-                blast_file.write(blast_stdout)
-                mview_cmd = 'mview -in blast -ruler on -html data -css on -coloring identity %s' % blast_file.name
+
+                f = open('/tmp/blast.temp', 'w')
+                f.write(blast_stdout)
+                f.close()
+
+                #blast_file.write(blast_stdout)
+                out, err, code = shell_command.shell_command('cat /temp/blast.temp | wc -l')
+                print 'n lines', out
+                mview_cmd = 'mview -in blast -srs on -ruler on -html data -css on -coloring identity /tmp/blast.temp' #% blast_file.name
                 print mview_cmd
                 stdout, stderr, code = shell_command.shell_command(mview_cmd)
+
+                print "mview stdout", stdout
+                print "mview error", stderr
 
                 if len(stdout) == 0:
                     blast_no_hits = blast_stdout

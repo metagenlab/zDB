@@ -42,12 +42,19 @@
         -->
 
     {% else %}
+   {%  if menu %}
+   {% include "chlamdb/menu.html" %}
+   <section  id="head_section">
+   {% else %}
+
+<section id="locus_section">
+    {% endif %}
 
 
 
     {% if not plot_region %}
 
-    <section id="locus_section">
+
 
     <table>
     <tr>
@@ -129,6 +136,10 @@
     <tr>
     <td><a href="{% static alignment_fasta_nucl %}">Nucleotide sequences (fasta)</a> </td>
     </tr>
+        </tr>
+        <td><a href="{% url "chlamdb.views.blastnr" biodb data.1  %}">BLAST NR</a> </td>
+    </tr>
+
     </table>
 
 

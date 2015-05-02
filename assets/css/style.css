@@ -171,6 +171,14 @@ th, tr, td {
  width: 15px;
     }
 
+#blast_taxonomy {
+    width: 250px;
+}
+#blast_subject_title {
+    width: 250px;
+}
+
+
 #theFrame{
   background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
   padding-top: 18px;

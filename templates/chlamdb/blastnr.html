@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+{% load staticfiles %}
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+</head>
+
+<body>
+
+{% include "chlamdb/user.html" %}
+{% include "chlamdb/menu.html" %}
+
+{% if not valid_id %}
+
+    <section id="head_section">
+    Invalid ID or 0 significant NR hits
+    </section>
+
+
+{% else %}
+
+<section id="head_section">
+    <h2> NCBI nr hit (21.04.15 database) for: </h2>
+    <A HREF={% url 'locusx' biodb blast_query_locus True%}>{{ blast_query_locus }}</A>
+        {{ blast_query_protein_id }}
+        ({{ blast_query_organism }})
+
+
+
+<div id="export_bouttons">
+<a download="blast_nr_{{ locus_tag }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'blast_nr_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+<a download="blast_nr_{{ locus_tag }}.csv" href="#" onclick="return ExcellentExport.csv(this, 'blast_nr_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+<br/>
+</div>
+
+
+    <table id="blast_nr_table" class="sortable">
+    <thead>
+    <tr>
+    <th>n</th>
+    <th>Subject</th>
+    <th>Kingdom</th>
+    <th>eval.</th>
+    <th>ID(%)</th>
+    <th>N pos.</th>
+    <th>N gaps</th>
+    <th>Len.</th>
+    <th>Q. start</th>
+    <th>Q. end</th>
+    <th>Q. cov.</th>
+    <th>S. start</th>
+    <th>S. end</th>
+    <th id=blast_subject_title>S. title</th>
+    <th id=blast_taxonomy>Taxonomy</th>
+    </tr>
+    </thead>
+    <tbody>
+
+
+{% for values in blast_data %}
+    <tr>
+        <td>{{ values.2 }}</td>
+        <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{ values.8 }}">{{ values.8 }}<a></td>
+        <td>{{ values.9 }}</td>
+        <td>{{ values.12 }}</td>
+        <td>{{ values.14 }}</td>
+        <td>{{ values.15 }}</td>
+        <td>{{ values.16 }}</td>
+        <td>{{ values.17 }}</td>
+        <td>{{ values.18 }}</td>
+        <td>{{ values.19 }}</td>
+        <td>{{ values.20 }}</td>
+        <td>{{ values.21 }}</td>
+        <td>{{ values.22 }}</td>
+        <td>{{ values.24 }}</td>
+        <td>{{ values.11 | safe }}</td>
+
+    </tr>
+{%  endfor %}
+</tbody>
+</table>
+
+{% endif %}
+
+</section>
+
+</body>
+</html>
