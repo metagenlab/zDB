@@ -8,7 +8,7 @@
 import argparse
 from Bio import Entrez
 from shell_command import shell_command
-
+import re
 
 Entrez.email = "claire.bertelli@chuv.ch"
 
