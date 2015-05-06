@@ -160,13 +160,34 @@ def description2taxon_id(server, genome_description, biodatabase_name):
     return result[0][0]
 
 
-def taxon_id2genome_description(server, biodatabase_name):
+def taxon_id2genome_description(server, biodatabase_name, filter_names=False):
     sql = 'select taxon_id, bioentry.description from bioentry ' \
           ' inner join biodatabase on biodatabase.biodatabase_id = bioentry.biodatabase_id' \
           ' where biodatabase.name = "%s" and bioentry.description not like "%%%%plasmid%%%%" ' % biodatabase_name
-    #print sql
+    import re
     result = server.adaptor.execute_and_fetchall(sql, )
-    return _to_dict(result)
+    if filter_names:
+        taxon_id2genome = {}
+        for i, accession in enumerate(result):
+            description = accession[1]
+            description = re.sub(", complete genome\.", "", description)
+            description = re.sub(", complete genome", "", description)
+            description = re.sub(", complete sequence\.", "", description)
+            description = re.sub("strain ", "", description)
+            description = re.sub("str\. ", "", description)
+            description = re.sub(" complete genome sequence\.", "", description)
+            description = re.sub(" complete genome\.", "", description)
+            description = re.sub(" chromosome", "", description)
+            description = re.sub(" DNA", "S.", description)
+            description = re.sub("Merged record from ", "", description)
+            description = re.sub(", wgs", "", description)
+            description = re.sub("Candidatus ", "", description)
+            description = re.sub(".contig.0_1, whole genome shotgun sequence.", "", description)
+            taxon_id2genome[accession[0]] = description
+
+        return taxon_id2genome
+    else:
+        return _to_dict(result)
 
 
 def taxon_id2chromosome_accession(server, biodatabase_name, taxon_id):
@@ -980,6 +1001,14 @@ where value ="CP0034";
 """
 
 
+def location2sequence(server, accession, biodb, start, end):
+    sql = 'select substring(seq, %s, %s) from biosequence ' \
+          'inner join bioentry on bioentry.bioentry_id=biosequence.bioentry_id ' \
+          'inner join biodatabase on bioentry.biodatabase_id=biodatabase.biodatabase_id ' \
+          'where accession="%s" and biodatabase.name="%s"' % (start, end, accession, biodb)
+    #print sql
+    sequence = server.adaptor.execute_and_fetchall(sql,)
+    return sequence[0][0]
 
 if __name__ == '__main__':
 

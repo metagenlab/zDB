@@ -75,45 +75,419 @@
     parvorder
 '''
 
+def _chunks(l, n):
+    return [l[i:i+n] for i in range(0, len(l), n)]
 
 
-def blastnr2biosql(server,
-                    seqfeature_id2locus_tag,
-                    locus_tag2genome_taxon_id,
-                    protein_id2genome_taxon_id,
-                    locus_tag2seqfeature_id,
-                    protein_id2seqfeature_id,
-                    seqfeature_id2organism,
-                    db_name, create_tables=False, *input_blast_files):
+def insert_hit(conn,
+               cursor,
+               db_name,
+               locus_tag2accession,
+               hit_n,
+               query_accession,
+               line,
+               locus_tag):
 
-    import sequence_id2scientific_classification
+        import re
+        subject_accession = line[3]
+        query_gi = int(line[0])
+        subject_gi = int(line[2])
+
+        subject_kingdom = line[5]
+        subject_scientific_names = line[4]
+        subject_taxids = line[6]
+        subject_title = re.sub('\"', '', line[19]).split('[')[0]
+
+
+
+
+
+
+        sql_blast_hit = 'INSERT INTO blastnr_hits_%s_%s(hit_number, ' \
+                    'query_accession, ' \
+                    'locus_tag, ' \
+                    'query_gi, ' \
+                    'subject_gi, ' \
+                    'subject_accession, ' \
+                    'subject_kingdom, ' \
+                    'subject_scientific_name, ' \
+                    'subject_taxid, ' \
+                    'subject_title)' \
+                    ' values (%s,"%s","%s",%s,%s,"%s","%s","%s","%s","%s");' % (db_name,
+                                                    locus_tag2accession[locus_tag],
+                                                    hit_n,
+                                                    query_accession,
+                                                    locus_tag,
+                                                    query_gi,
+                                                    subject_gi,
+                                                    subject_accession,
+                                                    subject_kingdom,
+                                                    subject_scientific_names,
+                                                    subject_taxids,
+                                                    subject_title
+                                                    )
+
+        sql_id = 'SELECT `AUTO_INCREMENT`' \
+                 ' FROM  INFORMATION_SCHEMA.TABLES' \
+                 ' WHERE TABLE_SCHEMA = "blastnr"' \
+                 ' AND   TABLE_NAME   = "blastnr_hits_%s_%s";' % (db_name, locus_tag2accession[locus_tag])
+
+
+        cursor.execute(sql_blast_hit)
+        conn.commit()
+        cursor.execute(sql_id)
+        return int(cursor.fetchall()[0][0])-1
+
+        #except:
+        #print 'problem with:'
+        #print sql_blast_hit
+        #import sys
+        #sys.exit()
+
+
+def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
+                                locus_tag2seqfeature_id,
+                                protein_id2seqfeature_id,
+                                locus_tag2accession,
+                                db_name,
+                                mysql_host,
+                                mysql_user,
+                                mysql_pwd,
+                                mysql_db,
+                                input_blast_files):
+
+    '''
+    Load tabulated blast results into sql table blastnr_`db_name`
+    Ab unique identifier (primary sql key) is attributed to each blast hsp
+
+    :param seqfeature_id2locus_tag: dictionnary with whole data for `biodb` biodatabase
+    :param locus_tag2seqfeature_id: dictionnary with whole data for `biodb` biodatabase
+    :param protein_id2seqfeature_id: dictionnary with whole data for `biodb` biodatabase
+    :param db_name: name of the biodatabase
+    :param input_blast_files: all input tabulated blast files
+    :return: None
+    '''
+
     import time
+    import re
 
-    sql_blast = 'CREATE TABLE IF NOT EXISTS blastnr_%s (nr_hit_id INT AUTO_INCREMENT PRIMARY KEY, ' \
-                ' query_accession varchar(200),' \
-                ' hit_number int,' \
-                ' taxon_id int,' \
-                ' locus_tag VARCHAR(100), ' \
-                ' organism VARCHAR(100), ' \
-                ' query_gi int,' \
-                ' subject_gi int,' \
-                ' subject_accession varchar(200),' \
-                ' subject_kingdom varchar(200),' \
-                ' subject_scientific_name TEXT(2000000), ' \
-                ' subject_taxid TEXT(2000000),' \
-                ' evalue float,' \
-                ' n_identical int,' \
-                ' percent_identity float,' \
-                ' positive int,' \
-                ' gaps int,' \
-                ' length int,' \
-                ' query_start int,' \
-                ' query_end int,' \
-                ' query_cov int,' \
-                ' subject_start int,' \
-                ' subject_end int,' \
-                ' subject_strand VARCHAR(5), ' \
-                ' subject_title VARCHAR(2000))' % db_name
+    import MySQLdb
+    conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
+                                user=mysql_user, # your username
+                                passwd=mysql_pwd, # your password
+                                db=mysql_db) # name of the data base
+    cursor = conn.cursor()
+
+
+
+    for one_blast_file in input_blast_files:
+        with open(one_blast_file, 'r') as f:
+            print 'Loading', one_blast_file, '...'
+            input_file = [i.rstrip().split('\t') for i in f]
+
+            print 'loading blast results into database...'
+            for n, line in enumerate(input_file):
+                # qgi qacc sgi sacc sscinames sskingdoms staxids evalue nident pident positive gaps length qstart qend qcovs sstart send sstrand stitle
+                if n%1000 == 0:
+                    print time.ctime() + ': ' + str(round((float(n)/len(input_file))*100,2)) + '%...'
+
+                query_accession = line[1].split("|")[3]
+                try:
+                    seqfeature_id = protein_id2seqfeature_id[query_accession]
+                except KeyError:
+                    seqfeature_id = locus_tag2seqfeature_id[query_accession]
+                locus_tag = seqfeature_id2locus_tag[str(seqfeature_id)]
+
+                # first hit of the file
+                if n == 0:
+                    blast_n = 1
+                    hit_n = 1
+                    hsp_n = 1
+                    # new hit, insert new entry into blast_hit table
+
+
+                    hit_id = insert_hit(conn,
+                                       cursor,
+                                       db_name,
+                                       locus_tag2accession,
+                                       hit_n,
+                                       query_accession,
+                                       line,
+                                       locus_tag)
+
+                # check if new query accession)
+                elif line[1] != input_file[n-1][1]:
+                    # new query => insert its first hit into blastnrdb
+                    blast_n += 1
+                    hit_n = 1
+                    hsp_n = 1
+
+                    hit_id = insert_hit(conn,
+                                       cursor,
+                                       db_name,
+                                       locus_tag2accession,
+                                       hit_n,
+                                       query_accession,
+                                       line,
+                                       locus_tag)
+                # same query
+                else:
+                    # same hit ==> multiple hsps ==> hit id remain the same
+                    if line[3] == input_file[n-1][3]:
+                        # same hit
+                        hsp_n+=1
+                    # different hit of the same query
+                    else:
+                        hit_n+=1
+                        # new hit, insert new entry into blast_hit table
+
+                        hit_id = insert_hit(conn,
+                                           cursor,
+                                           db_name,
+                                           locus_tag2accession,
+                                           hit_n,
+                                           query_accession,
+                                           line,
+                                           locus_tag)
+
+
+
+
+                evalue = line[7]
+                n_identical = int(line[8])
+                percent_identity = float(line[9])
+                positive = int(line[10])
+                gaps = int(line[11])
+                length = int(line[12])
+                query_start = int(line[13])
+                query_end = int(line[14])
+                query_cov = int(line[15])
+                subject_start = int(line[16])
+                subject_end = int(line[17])
+                subject_strand = line[18]
+
+                # todo check if blast hit already loaded
+                #sql = 'select * from blastnr_%s where (query_accession="%s" and subject_accession="%s" and subject_start=%s and subject_end=%s)' % (biodb, query_accession, subject_accession,subject_start, subject_end)
+
+                #check = server.adaptor.execute_and_fetchall(sql,)
+
+                #if len(check) != 0:
+                #    print 'Hit %s VS %s already into database' % (query_accession, subject_accession)
+                #    continue
+
+
+                sql_blast_hsp = 'INSERT INTO blastnr_hsps_%s_%s(nr_hit_id, ' \
+                        'evalue, ' \
+                        'n_identical, ' \
+                        'percent_identity, ' \
+                        'positive, ' \
+                        'gaps, ' \
+                        'length, ' \
+                        'query_start, ' \
+                        'query_end, ' \
+                        'query_cov, ' \
+                        'subject_start, ' \
+                        'subject_end, ' \
+                        'subject_strand)' \
+                        ' values (%s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,"%s")' % (db_name,
+                                                                                locus_tag2accession[locus_tag],
+                                                                                hit_id,
+                                                                                evalue,
+                                                                                n_identical,
+                                                                                percent_identity,
+                                                                                positive,
+                                                                                gaps,
+                                                                                length,
+                                                                                query_start,
+                                                                                query_end,
+                                                                                query_cov,
+                                                                                subject_start,
+                                                                                subject_end,
+                                                                                subject_strand,
+                                                                                )
+
+
+
+
+
+
+                #print sql_blast_hsp
+                cursor.execute(sql_blast_hsp)
+                conn.commit()
+
+
+
+def _load_taxonomic_data(biodb, mysql_host, mysql_user, mysql_pwd, mysql_db, accession_list):
+    '''
+
+    Creating new entries for a chunck of nr_id_list
+
+    :param biodb:
+    :param nrhit2taxon_id_list: dictionnary of unique identifier for each blast hsp and the corresponding hits taxon ids (semi colon separeted)
+    taxon1;taxon2;taxon3;...
+    :param nr_id_list: list of unique hsps hits to add into the sql table
+    :return:
+    '''
+
+    import MySQLdb
+    conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
+                                user=mysql_user, # your username
+                                passwd=mysql_pwd, # your password
+                                db=mysql_db) # name of the data base
+    cursor = conn.cursor()
+
+    for accession in accession_list:
+
+        sql1 = 'select nr_hit_id, subject_taxid from blastnr_hits_%s_%s' % (biodb, accession)
+        cursor.execute(sql1)
+        nr_hit_id2taxon_ids = manipulate_biosqldb.to_dict(cursor.fetchall())
+        for nr_hit in nr_hit_id2taxon_ids.keys():
+            # new table for the multiples taxons ids/hits
+            for taxon in nr_hit_id2taxon_ids[nr_hit].split(';'):
+                if taxon != 'N/A':
+                    sql = 'INSERT INTO blastnr_hits_taxonomy_%s_%s (' \
+                        'nr_hit_id, subject_taxon_id) values (%s, %s)' % (biodb,
+                                                                  accession,
+                                                                  nr_hit,
+                                                                  taxon)
+                #try:
+                    cursor.execute(sql)
+                    conn.commit()
+                #except:
+                #    print "problem with"
+                #    print sql
+                else:
+                    print 'N/A taxon for hit %s' % nr_hit
+
+
+def blastnr2biodb_taxonomic_table(db_name,
+                                  locus_tag2accession,
+                                  mysql_host,
+                                  mysql_user,
+                                  mysql_pwd,
+                                  mysql_db,
+                                  n_procs):
+    '''
+    Add data to table blastnr_taxonomy_`db_name`
+    Foreach hit, list the taxonomic ids (each hit can have multiple taxon id => MULTISPECIES)
+    :param db_name: biodatabase name
+    :return:
+    '''
+
+    import MySQLdb
+    conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
+                                user=mysql_user, # your username
+                                passwd=mysql_pwd, # your password
+                                db=mysql_db) # name of the data base
+    cursor = conn.cursor()
+
+
+    import numpy
+    from multiprocessing import Process
+
+    sql = 'select accession from bioentry' \
+          ' inner join biodatabase on bioentry.biodatabase_id=biodatabase.biodatabase_id where biodatabase.name="%s"' % db_name
+
+    all_accessions = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+
+
+    n_cpu = n_procs
+    n_poc_per_list = int(numpy.ceil(len(all_accessions)/float(n_cpu)))
+    query_lists = _chunks(all_accessions, n_poc_per_list)
+
+    procs = []
+    for one_list in query_lists:
+        proc = Process(target=_load_taxonomic_data, args=(db_name, mysql_host, mysql_user, mysql_pwd, mysql_db, one_list))
+        procs.append(proc)
+        proc.start()
+
+    # Wait for all worker processes to finish
+    for proc in procs:
+        proc.join()
+
+
+
+def create_sql_blastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_db='blastnr', main_blastnr_table=False, alternate_tables=True):
+    import MySQLdb
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    sql = 'select accession from bioentry' \
+          ' inner join biodatabase on bioentry.biodatabase_id=biodatabase.biodatabase_id where biodatabase.name="%s"' % db_name
+
+    all_accessions = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+    conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
+                                user=mysql_user, # your username
+                                passwd=mysql_pwd, # your password
+                                db=mysql_db) # name of the data base
+    cursor = conn.cursor()
+
+
+    if alternate_tables:
+
+        for accession in all_accessions:
+
+            sql_blast_hsps = 'CREATE TABLE IF NOT EXISTS blastnr_hsps_%s_%s (hsp_id INT AUTO_INCREMENT PRIMARY KEY, ' \
+                        ' nr_hit_id INT,' \
+                        ' evalue varchar(200),' \
+                        ' n_identical int,' \
+                        ' percent_identity float,' \
+                        ' positive int,' \
+                        ' gaps int,' \
+                        ' length int,' \
+                        ' query_start int,' \
+                        ' query_end int,' \
+                        ' query_cov float,' \
+                        ' subject_start int,' \
+                        ' subject_end int,' \
+                        ' subject_strand VARCHAR(5))' % (db_name, accession)
+
+            sql_blast_hsps2 = 'ALTER TABLE blastnr.blastnr_hsps_%s_%s ADD CONSTRAINT fk_blast_hsp_hit_id_%s ' \
+                              'FOREIGN KEY (nr_hit_id) REFERENCES blastnr_hits_%s_%s(nr_hit_id);' % (db_name, accession, accession, db_name, accession)
+
+
+            sql_blast_hits = 'CREATE TABLE IF NOT EXISTS blastnr_hits_%s_%s (nr_hit_id INT AUTO_INCREMENT PRIMARY KEY, ' \
+                            ' query_accession varchar(200),' \
+                            ' hit_number int,' \
+                            ' locus_tag VARCHAR(100), ' \
+                            ' query_gi int,' \
+                            ' subject_gi int,' \
+                            ' subject_accession varchar(200),' \
+                            ' subject_kingdom varchar(200),' \
+                            ' subject_scientific_name TEXT(2000000), ' \
+                            ' subject_taxid TEXT(2000000),' \
+                            ' subject_title VARCHAR(2000))' % (db_name, accession)
+
+
+            sql_blast_taxonomy = 'CREATE TABLE blastnr.blastnr_hits_taxonomy_%s_%s (nr_hit_id INT, ' \
+                                 'subject_taxon_id int)' % (db_name, accession)
+
+            sql_blast_taxonomy2 = 'ALTER TABLE blastnr.blastnr_hits_taxonomy_%s_%s ADD CONSTRAINT fk_blast_hit_id_%s ' \
+                                  'FOREIGN KEY (nr_hit_id) REFERENCES blastnr_hits_%s_%s(nr_hit_id);' % (db_name, accession, accession, db_name, accession)
+
+
+            #print sql_blast_hits
+            #cursor.execute(sql_blast_hits)
+            #print 'sql hits ok'
+            #conn.commit()
+
+            #print sql_blast_hsps
+            #cursor.execute(sql_blast_hsps)
+            #conn.commit()
+            #print 'sql hsps1 ok'
+            #cursor.execute(sql_blast_hsps2)
+            #print 'sql hsps2 ok'
+            #conn.commit()
+
+
+            print sql_blast_taxonomy
+            cursor.execute(sql_blast_taxonomy)
+            conn.commit()
+            cursor.execute(sql_blast_taxonomy2)
+            print "sql_taxonomy ok "
+            conn.commit()
 
     sql_taxonomy1 = 'CREATE TABLE IF NOT EXISTS blastnr_taxonomy (taxon_id int unique, ' \
                     ' no_rank VARCHAR(200) default "-", ' \
@@ -147,283 +521,171 @@ def blastnr2biosql(server,
                     ' parvorder VARCHAR(200) default "-")'
 
 
-    sql_taxonomy2 = 'CREATE TABLE IF NOT EXISTS blastnr_taxonomy_%s (nr_hit_id INT, ' \
-                    ' hit_number int(10),' \
-                    ' taxon_id int)' % (db_name)
+    if main_blastnr_table:
+        cursor.execute(sql_taxonomy1)
+        conn.commit()
 
-    sql_taxonomy3 = 'ALTER TABLE blastnr_taxonomy_%s ADD CONSTRAINT fk_blast_nr_hit_id FOREIGN KEY (nr_hit_id) REFERENCES blastnr_%s(nr_hit_id);' % (db_name, db_name)
 
-    #try:
-    #print sql_blast
-    if create_tables:
-        server.adaptor.execute(sql_blast)
-        #print sql_taxonomy
-        server.adaptor.execute(sql_taxonomy1)
-        server.adaptor.execute(sql_taxonomy2)
-        server.adaptor.execute(sql_taxonomy3)
-        #server.adaptor.commit()
-        #except:
-        #    print 'blastnr tables already exist!'
-    print 'all blast files'
-    print input_blast_files
+
+def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *input_blast_files):
+    '''
+    Update the main blastnr taxonomical table containing taxon ids and their full taxonomical path:
+    kindom, class, order, family,...  => include all current (april 2015) NCBI taxonomical ranks
+
+    Full taxonomical path obtained from NCBI using the taxon_id2scientific_classification function using entrez utilities
+
+    If path is not complete, missing rank are indicated with minus symbol '-',
+    ie. taxon  51291 (chlamydiales order) only contain:
+        cellular organisms; Bacteria; Chlamydiae/Verrucomicrobia group; Chlamydiae; Chlamydiia
+
+    Structure of the table:
+    taxon_id, rank1, rank2, rank3,..., rankn
+
+    ==> for each taxon added in the various biodatabases, a new entry is created (if it does not already exist)
+
+    :param server:
+    :param input_blast_files:
+    :return:
+    '''
+
+    import sequence_id2scientific_classification
+    import MySQLdb
+
+    print 'host', mysql_host
+
+    print 'user', mysql_user
+
+    conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
+                                user=mysql_user, # your username
+                                passwd=mysql_pwd, # your password
+                                db=mysql_db) # name of the data base
+    cursor = conn.cursor()
+
+
+    sql = 'SELECT taxon_id from blastnr_taxonomy'
+    all_taxon_ids = []
+    cursor.execute(sql,)
+    database_taxon_ids = [str(i[0]) for i in cursor.fetchall()]
+    taxid2classification = {}
+    print "Number of taxons into database: ", len(database_taxon_ids)
     for one_blast_file in input_blast_files:
                 print 'blast file %s' % one_blast_file
                 with open(one_blast_file, 'r') as f:
                     input_file = [i.rstrip().split('\t') for i in f]
-                    hit_n = 0
-                    sql = 'SELECT taxon_id from blastnr_taxonomy'
-                    all_taxon_ids = []
-                    database_taxon_ids = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
-                    print "Number of taxons into database: ", len(database_taxon_ids)
                     for n, line in enumerate(input_file):
                         temp_subject_taxids = line[6].split(';')
                         # store taxon_ids
                         for i in temp_subject_taxids:
                             if i not in database_taxon_ids and i not in all_taxon_ids:
                                 all_taxon_ids.append(i)
-                    print 'Fetching ncbi taxonomy... for %s taxons' % str(len(all_taxon_ids))
-                    taxid2classification = sequence_id2scientific_classification.taxon_id2scientific_classification(all_taxon_ids)
+                print 'Number of noew taxons:', len(all_taxon_ids)
 
-                    print 'Updating blastnr_taxonomy table...'
-                    for taxon_id in all_taxon_ids:
-                            if taxon_id == 'N/A':
-                                continue
-                            import re
-                            import MySQLdb
-                            sql = 'INSERT INTO blastnr_taxonomy(taxon_id) values (%s)' % (taxon_id)
-                            try:
+    print 'Fetching ncbi taxonomy... for %s taxons' % str(len(all_taxon_ids))
 
-                                server.adaptor.execute(sql)
-                                server.adaptor.commit()
-                            except MySQLdb.IntegrityError:
-                                print 'Taxon %s already in database' % str(taxon_id)
-                                continue
-                            for rank in taxid2classification[taxon_id].keys():
+    # subdivide the taxon list in smaller lists, otherwise NCBI will limit the results to? 10000 (observed once only)
+    id_lists = _chunks(all_taxon_ids, 5000)
+    for one_list in id_lists:
+        try:
+            taxid2classification.update(sequence_id2scientific_classification.taxon_id2scientific_classification(one_list))
+        except:
+            print 'no data recocered for taxons:', all_taxon_ids
+            pass
 
-                                sql_id = re.sub(' ', '_', rank)
+    print 'Number of taxon id retrieved:', len(taxid2classification.keys())
 
-                                value = taxid2classification[taxon_id][rank]
-                                sql = 'UPDATE blastnr_taxonomy SET `%s`="%s" where taxon_id=%s' % (sql_id, value, taxon_id)
-                                #print sql
+    print 'Updating blastnr_taxonomy table with %s new taxons' % str(len(all_taxon_ids))
+    for taxon_id in all_taxon_ids:
+            if taxon_id == 'N/A':
+                continue
+            import re
+            import MySQLdb
+            sql = 'INSERT INTO blastnr_taxonomy(taxon_id) values (%s)' % (taxon_id)
+            try:
 
-                                server.adaptor.execute(sql)
-                                server.adaptor.commit()
+                cursor.execute(sql)
+                conn.commit()
+            except MySQLdb.IntegrityError:
+                print 'Taxon %s already in database' % str(taxon_id)
+                continue
+            for rank in taxid2classification[taxon_id].keys():
 
-                            '''
+                sql_id = re.sub(' ', '_', rank)
 
-                            sql_taxonomy_insert =   'INSERT INTO blastnr_taxonomy(taxon_id, ' \
-                                                    'no_rank, ' \
-                                                    'superkingdom, ' \
-                                                    'kingdom, ' \
-                                                    'subkingdom, ' \
-                                                    'superphylum, ' \
-                                                    'phylum, ' \
-                                                    'subphylum, ' \
-                                                    'superclass, ' \
-                                                    'class, ' \
-                                                    'subclass, ' \
-                                                    'superorder, ' \
-                                                    'taxorder, ' \
-                                                    'suborder, ' \
-                                                    'superfamily, ' \
-                                                    'family, ' \
-                                                    'subfamily, ' \
-                                                    'genus, ' \
-                                                    'subgenus, ' \
-                                                    'species, ' \
-                                                    'species_subgroup, ' \
-                                                    'species_group, ' \
-                                                    'subspecies, ' \
-                                                    'tribe, ' \
-                                                    'infraorder, ' \
-                                                    'subtribe, ' \
-                                                    'forma, ' \
-                                                    'infraclass, ' \
-                                                    'varietas, ' \
-                                                    'parvorder)' \
-                                                    ' values (%s, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s",' \
-                                                    '"%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s",' \
-                                                    ' "%s", "%s");' % (taxon_id,
-                                                       taxid2classification[taxon_id]['no rank'],
-                                                        taxid2classification[taxon_id]['superkingdom'],
-                                                        taxid2classification[taxon_id]['kingdom'],
-                                                        taxid2classification[taxon_id]['subkingdom'],
-                                                        taxid2classification[taxon_id]['superphylum'],
-                                                        taxid2classification[taxon_id]['phylum'],
-                                                        taxid2classification[taxon_id]['subphylum'],
-                                                        taxid2classification[taxon_id]['superclass'],
-                                                        taxid2classification[taxon_id]['class'],
-                                                        taxid2classification[taxon_id]['subclass'],
-                                                        taxid2classification[taxon_id]['superorder'],
-                                                        taxid2classification[taxon_id]['order'],
-                                                        taxid2classification[taxon_id]['suborder'],
-                                                        taxid2classification[taxon_id]['superfamily'],
-                                                        taxid2classification[taxon_id]['family'],
-                                                        taxid2classification[taxon_id]['subfamily'],
-                                                        taxid2classification[taxon_id]['genus'],
-                                                        taxid2classification[taxon_id]['subgenus'],
-                                                        taxid2classification[taxon_id]['species'],
-                                                        taxid2classification[taxon_id]['species_subgroup'],
-                                                        taxid2classification[taxon_id]['species_group'],
-                                                        taxid2classification[taxon_id]['subspecies'],
-                                                        taxid2classification[taxon_id]['tribe'],
-                                                        taxid2classification[taxon_id]['infraorder'],
-                                                        taxid2classification[taxon_id]['subtribe'],
-                                                        taxid2classification[taxon_id]['forma'],
-                                                        taxid2classification[taxon_id]['infraclass'],
-                                                        taxid2classification[taxon_id]['varietas'],
-                                                        taxid2classification[taxon_id]['parvorder']
-                                                        )
+                value = taxid2classification[taxon_id][rank]
+                sql = 'UPDATE blastnr_taxonomy SET `%s`="%s" where taxon_id=%s' % (sql_id, value, taxon_id)
+                #print sql
 
-                            '''
-
-                    print 'loading blast results into database...'
-                    for n, line in enumerate(input_file):
-                        # qgi qacc sgi sacc sscinames sskingdoms staxids evalue nident pident positive gaps length qstart qend qcovs sstart send sstrand stitle
-
-                        if n%1000 == 0:
-                            print time.ctime() + ': ' + round((float(n)/len(input_file))*100,2), '%...'
-                        query_accession = line[1].split("|")[3]
-
-                        if n == 0:
-                            hit_n+=1
-                            pass
-                        elif line[1] != input_file[n-1][1]:
-                            hit_n = 1
-                        else:
-                            # handleling of multiple hsp
-                            if line[3] != input_file[n-1][3]:
-                                hit_n+=1
-                            pass
-
-                        subject_accession = line[3]
-                        query_gi = int(line[0])
-                        subject_gi = int(line[2])
-
-                        temp_subject_scientific_names = line[4].split(';')
-
-                        if len(temp_subject_scientific_names) == 1:
-                            subject_scientific_names = temp_subject_scientific_names[0]
-                        else:
-                            subject_scientific_names = ''
-                            for i in range(0, len(temp_subject_scientific_names)-1):
-                                subject_scientific_names += '%s, ' % temp_subject_scientific_names[i]
-                            subject_scientific_names += temp_subject_scientific_names[-1]
-
-                        subject_kingdom = line[5]
-                        temp_subject_taxids = line[6].split(';')
+                cursor.execute(sql)
+                conn.commit()
 
 
-                        if len(temp_subject_taxids) == 1:
-                            subject_taxids = temp_subject_taxids[0]
-                        else:
-                            subject_taxids = ''
-                            for i in range(0, len(temp_subject_taxids)-1):
-                                subject_taxids += '%s, ' % temp_subject_taxids[i]
-                            subject_taxids += temp_subject_taxids[-1]
+def blastnr2biosql(seqfeature_id2locus_tag,
+                    locus_tag2seqfeature_id,
+                    protein_id2seqfeature_id,
+                    locus_tag2accession,
+                    db_name,
+                    n_procs,
+                    mysql_host,
+                    mysql_user,
+                    mysql_pwd,
+                    mysql_db,
+                    *input_blast_files):
+
+    import numpy
+    from multiprocessing import Process
+    print 'host1', mysql_host
+    print 'user1', mysql_user
+    '''
+    # add eventual new taxons to the main blastnr taxonomy table
+    update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *input_blast_files)
+
+    # load blast data into blastnr_ db_name table
+    n_cpu = n_procs
+    n_poc_per_list = int(numpy.ceil(len(input_blast_files)/float(n_cpu)))
+    query_lists = _chunks(input_blast_files, n_poc_per_list)
+
+    procs = []
+    for one_list in query_lists:
+        proc = Process(target=_load_blastnr_file_into_db, args=(seqfeature_id2locus_tag,
+                                                                locus_tag2seqfeature_id,
+                                                                protein_id2seqfeature_id,
+                                                                locus_tag2accession,
+                                                                db_name,
+                                                                mysql_host,
+                                                                mysql_user,
+                                                                mysql_pwd,
+                                                                mysql_db,
+                                                                one_list))
+        procs.append(proc)
+        proc.start()
+
+    # Wait for all worker processes to finish
+    for proc in procs:
+        proc.join()
+    '''
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    sql = 'select accession from bioentry' \
+          ' inner join biodatabase on bioentry.biodatabase_id=biodatabase.biodatabase_id where biodatabase.name="%s"' % db_name
+
+    all_accessions = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+
+    import MySQLdb
+    conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
+                                user=mysql_user, # your username
+                                passwd=mysql_pwd, # your password
+                                db=mysql_db) # name of the data base
+    cursor = conn.cursor()
+
+    print all_accessions
+
+    blastnr2biodb_taxonomic_table(db_name, locus_tag2accession, mysql_host, mysql_user, mysql_pwd, mysql_db, n_procs)
 
 
 
-                        evalue = float(line[7])
-                        n_identical = int(line[8])
-                        percent_identity = float(line[9])
-                        positive = int(line[10])
-                        gaps = int(line[11])
-                        length = int(line[12])
-                        query_start = int(line[13])
-                        query_end = int(line[14])
-                        query_cov = int(line[15])
-                        subject_start = int(line[16])
-                        subject_end = int(line[17])
-                        subject_strand = line[18]
-                        subject_title = line[19]
 
-
-
-                        try:
-                            taxon_id = protein_id2genome_taxon_id[query_accession]
-                            seqfeature_id = protein_id2seqfeature_id[query_accession]
-                        except KeyError:
-                            taxon_id = locus_tag2genome_taxon_id[query_accession]
-                            seqfeature_id = locus_tag2seqfeature_id[query_accession]
-                        organism = seqfeature_id2organism[str(seqfeature_id)]
-                        locus_tag = seqfeature_id2locus_tag[str(seqfeature_id)]
-
-                        sql_blast = 'INSERT INTO blastnr_%s(hit_number, ' \
-                                    'query_accession, ' \
-                                'taxon_id, ' \
-                                'locus_tag, ' \
-                                'organism, ' \
-                                'query_gi, ' \
-                                'subject_gi, ' \
-                                'subject_accession, ' \
-                                'subject_kingdom, ' \
-                                'subject_scientific_name, ' \
-                                'subject_taxid, ' \
-                                'evalue, ' \
-                                'n_identical, ' \
-                                'percent_identity, ' \
-                                'positive, ' \
-                                'gaps, ' \
-                                'length, ' \
-                                'query_start, ' \
-                                'query_end, ' \
-                                'query_cov, ' \
-                                'subject_start, ' \
-                                'subject_end, ' \
-                                'subject_strand, ' \
-                                'subject_title)' \
-                                ' values (%s,"%s", %s,"%s","%s",%s,%s,"%s","%s","%s","%s",%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,"%s","%s")' % (db_name,
-                                                                                                                        hit_n,
-                                                                                                                        query_accession,
-                                                                                                                        taxon_id,
-                                                                                                                        locus_tag,
-                                                                                                                        organism,
-                                                                                                                        query_gi,
-                                                                                                                        subject_gi,
-                                                                                                                        subject_accession,
-                                                                                                                        subject_kingdom,
-                                                                                                                        subject_scientific_names,
-                                                                                                                        subject_taxids,
-                                                                                                                        evalue,
-                                                                                                                        n_identical,
-                                                                                                                        percent_identity,
-                                                                                                                        positive,
-                                                                                                                        gaps,
-                                                                                                                        length,
-                                                                                                                        query_start,
-                                                                                                                        query_end,
-                                                                                                                        query_cov,
-                                                                                                                        subject_start,
-                                                                                                                        subject_end,
-                                                                                                                        subject_strand,
-                                                                                                                        subject_title
-                                                                                                                        )
-
-
-                        try:
-                            server.adaptor.execute(sql_blast)
-                            server.adaptor.commit()
-                        except:
-                            print 'problem with:'
-                            print sql_blast
-                            print line
-                            import sys
-                            sys.exit()
-                        sql1 = 'select nr_hit_id from blastnr_%s where (locus_tag="%s" and hit_number=%s)' % (db_name,
-                                                                                                              locus_tag,
-                                                                                                              hit_n)
-                        blast_id = server.adaptor.execute_and_fetchall(sql1,)[0][0]
-
-                        # new table for the multiples taxons ids/hits
-                        for taxon in temp_subject_taxids:
-                            sql = 'INSERT INTO blastnr_taxonomy_%s (' \
-                                  'nr_hit_id, hit_number, taxon_id) values (%s, %s, %s)' % (db_name, blast_id, hit_n, taxon)
-                            try:
-                                server.adaptor.execute(sql)
-                            except:
-                                print "problem with"
-                                print sql
 
 if __name__ == '__main__':
     import argparse
@@ -434,10 +696,28 @@ if __name__ == '__main__':
     parser.add_argument("-i", '--input_blast', type=str, help="input interpro xml file", nargs='+')
     parser.add_argument("-d", '--mysql_database', type=str, help="Biosql biodatabase name")
     parser.add_argument("-t", '--create_tables', action='store_true', help="Create SQL tables")
+    parser.add_argument("-p", '--n_procs', type=int, help="Number of threads to use (default=4)", default=4)
 
     args = parser.parse_args()
 
-    print args.input_blast
+    '''
+
+    Structure of the data in the biosql database: 3 tables
+
+    - one main taxonomical table /blastnr_taxonomy/ with
+            taxon id: taxonomical data
+
+    - for each biodatabase:
+        - one table storing the blast data (blastnr_ db_name)
+        - one table storing taxon ids of each hsps (blastnr_taxonomy_ db_name)
+        => TODO this last table is redundant as each hsp of a single hit should have the same taxon ids??
+
+    '''
+
+    mysql_host = 'localhost'
+    mysql_user = 'root'
+    mysql_pwd = 'agnathe3'
+    mysql_db = 'blastnr'
 
     biodb = args.mysql_database
 
@@ -449,30 +729,25 @@ if __name__ == '__main__':
     print "creating protein_id2seqfeature_id"
     protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, biodb)
 
-    print "getting seqfeature_id2organism"
-    seqfeature_id2organism = manipulate_biosqldb.seqfeature_id2organism_dico(server, biodb)
-
-    print "creating locus_tag2taxon_id dictionnary..."
-    locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, biodb)
-
-    print "creating protein_id2taxon_id dictionnary..."
-    protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, biodb)
-
     print "getting seqfeature_id2locus_tag"
     seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, biodb)
 
-    #with open(args.input_taxonomy, 'r') as f:
-    #    taxon_id2taxonomy = json.load(f)
-    taxon_id2taxonomy = ''
+    print "getting locus_tag2accession"
+    locus_tag2accession = manipulate_biosqldb.locus_tag2accession(server, args.mysql_database)
 
-    blastnr2biosql(server,
-                    seqfeature_id2locus_tag,
-                    locus_tag2genome_taxon_id,
-                    protein_id2genome_taxon_id,
+    if args.create_tables:
+        create_sql_blastnr_tables(args.mysql_database, mysql_host, mysql_user, mysql_pwd, mysql_db, main_blastnr_table=False, alternate_tables=True)
+
+    blastnr2biosql(seqfeature_id2locus_tag,
                     locus_tag2seqfeature_id,
                     protein_id2seqfeature_id,
-                    seqfeature_id2organism,
-                    biodb, args.create_tables,
+                    locus_tag2accession,
+                    biodb,
+                    args.n_procs,
+                    mysql_host,
+                    mysql_user,
+                    mysql_pwd,
+                    mysql_db,
                     *args.input_blast)
 
 
