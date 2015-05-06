@@ -468,18 +468,18 @@ def create_sql_blastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
                                   'FOREIGN KEY (nr_hit_id) REFERENCES blastnr_hits_%s_%s(nr_hit_id);' % (db_name, accession, accession, db_name, accession)
 
 
-            #print sql_blast_hits
-            #cursor.execute(sql_blast_hits)
-            #print 'sql hits ok'
-            #conn.commit()
+            print sql_blast_hits
+            cursor.execute(sql_blast_hits)
+            print 'sql hits ok'
+            conn.commit()
 
-            #print sql_blast_hsps
-            #cursor.execute(sql_blast_hsps)
-            #conn.commit()
-            #print 'sql hsps1 ok'
-            #cursor.execute(sql_blast_hsps2)
-            #print 'sql hsps2 ok'
-            #conn.commit()
+            print sql_blast_hsps
+            cursor.execute(sql_blast_hsps)
+            conn.commit()
+            print 'sql hsps1 ok'
+            cursor.execute(sql_blast_hsps2)
+            print 'sql hsps2 ok'
+            conn.commit()
 
 
             print sql_blast_taxonomy
@@ -635,7 +635,7 @@ def blastnr2biosql(seqfeature_id2locus_tag,
     from multiprocessing import Process
     print 'host1', mysql_host
     print 'user1', mysql_user
-    '''
+
     # add eventual new taxons to the main blastnr taxonomy table
     update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *input_blast_files)
 
@@ -662,7 +662,7 @@ def blastnr2biosql(seqfeature_id2locus_tag,
     # Wait for all worker processes to finish
     for proc in procs:
         proc.join()
-    '''
+
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -677,9 +677,6 @@ def blastnr2biosql(seqfeature_id2locus_tag,
                                 user=mysql_user, # your username
                                 passwd=mysql_pwd, # your password
                                 db=mysql_db) # name of the data base
-    cursor = conn.cursor()
-
-    print all_accessions
 
     blastnr2biodb_taxonomic_table(db_name, locus_tag2accession, mysql_host, mysql_user, mysql_pwd, mysql_db, n_procs)
 
@@ -736,7 +733,7 @@ if __name__ == '__main__':
     locus_tag2accession = manipulate_biosqldb.locus_tag2accession(server, args.mysql_database)
 
     if args.create_tables:
-        create_sql_blastnr_tables(args.mysql_database, mysql_host, mysql_user, mysql_pwd, mysql_db, main_blastnr_table=False, alternate_tables=True)
+        create_sql_blastnr_tables(args.mysql_database, mysql_host, mysql_user, mysql_pwd, mysql_db, main_blastnr_table=True, alternate_tables=True)
 
     blastnr2biosql(seqfeature_id2locus_tag,
                     locus_tag2seqfeature_id,
