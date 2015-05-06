@@ -18,14 +18,19 @@ def sequence_id2scientific_classification(ncbi_id, protein=False):
         handle = Entrez.esearch(db="nucleotide", term=ncbi_id)
     record = Entrez.read(handle)
     try:
-
         uid = record["IdList"][0]
     except IndexError:
         return None
-    handle = Entrez.elink(dbfrom="nuccore", db="taxonomy", id=uid)
-    record = Entrez.read(handle)
+    if protein:
+        handle = Entrez.elink(dbfrom="protein", db="taxonomy", id=uid)
 
-    link = record[0]["LinkSetDb"][0]["Link"][0]["Id"]
+    else:
+        handle = Entrez.elink(dbfrom="nuccore", db="taxonomy", id=uid)
+    record = Entrez.read(handle)
+    try:
+        link = record[0]["LinkSetDb"][0]["Link"][0]["Id"]
+    except IndexError:
+        print record
 
     handle = Entrez.efetch(db="taxonomy", id=link, rettype="xml")
     records = Entrez.parse(handle)
@@ -38,6 +43,46 @@ def sequence_id2scientific_classification(ncbi_id, protein=False):
             scientific_name = level["ScientificName"]
             classification[rank] = scientific_name
         return classification
+
+def taxon_id2scientific_classification(taxon_id_list):
+    '''
+    :param ncbi taxon id
+    :param key
+    :return: dictionary with taxon id as primary key and a nested dictionnary as value. The nested dictionary contain
+    the classification in the form:
+
+    {'superkingdom': 'bacteria'; 'phylum': chlamydiae;...}
+
+    NOTE: if taxon is not completely classified (i.e. unclassified bacteria), it will return the available data only
+
+    {'superkingdom': 'bacteria'; 'no rank': 'unclassified bacteria'}
+
+    '''
+
+    if type(taxon_id_list) is not list:
+        raise TypeError('Expect a list of taxon id(s)')
+
+    # check if N/A are not presents in the taxon list (i.e can happen with blast results)
+    new_taxon = [value for value in taxon_id_list if value != 'N/A']
+
+    merged_taxons = ','.join(new_taxon)
+    handle = Entrez.efetch(db="taxonomy", id=merged_taxons, rettype="xml")
+    records = Entrez.parse(handle)
+    records = [i for i in records]
+    all_classifications = {}
+
+    for taxon, record in zip(new_taxon, records):
+        # get scientific names of all classification levels
+        classification = {}
+        #print record
+        for level in record['LineageEx']:
+
+            rank = level["Rank"]
+            scientific_name = level["ScientificName"]
+            classification[rank] = scientific_name
+        all_classifications[taxon] = classification
+    return all_classifications
+
 
 if __name__ == '__main__':
     import argparse
