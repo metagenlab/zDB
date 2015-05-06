@@ -22,11 +22,15 @@ V1.0
 * Configuration
 * Dependencies
 
-Requires python packages: argparse, Bio, sys, pandas
-
-Requires the installation of python package eutils: 
+Requires the installation of python packages: 
+argparse
+Bio
+sys
+pandas
 eutils -- a simplified interface to NCBI E-Utilities
 https://pypi.python.org/pypi/eutils
+As well as scripts from the repository "utilitaires"
+
 
 * Database configuration
 * How to run tests
@@ -35,7 +39,7 @@ https://pypi.python.org/pypi/eutils
 ### Functions ###
 
 * get_fasta.py
-Scritp to retrieve nucleotide or protein fasta based on a list of GIs or a table with GIs in a column. Possibility to as for a single multifasta file as an output.
+Script to retrieve nucleotide or protein fasta based on a list of GIs or a table with GIs in a column. Possibility to write individual fasta files or a single multifasta file as an output.
 
 
 ### Contribution guidelines ###
