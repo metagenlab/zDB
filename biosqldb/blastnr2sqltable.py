@@ -585,11 +585,8 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
     # subdivide the taxon list in smaller lists, otherwise NCBI will limit the results to? 10000 (observed once only)
     id_lists = _chunks(all_taxon_ids, 5000)
     for one_list in id_lists:
-        try:
-            taxid2classification.update(sequence_id2scientific_classification.taxon_id2scientific_classification(one_list))
-        except:
-            print 'no data recocered for taxons:', all_taxon_ids
-            pass
+        taxid2classification.update(sequence_id2scientific_classification.taxon_id2scientific_classification(one_list))
+
 
     print 'Number of taxon id retrieved:', len(taxid2classification.keys())
 

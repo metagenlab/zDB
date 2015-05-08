@@ -69,6 +69,7 @@ def create_orthogroup_table(server, biodatabase_name,
                             group2orthogroup_size,
                             group2family_size,
                             protein_id2phobius):
+    import re
 
     sql = 'CREATE TABLE orthology_detail_%s(orthogroup VARCHAR(100) NOT NULL, ' \
           ' taxon_id INT, ' \
@@ -146,7 +147,7 @@ def create_orthogroup_table(server, biodatabase_name,
                 except KeyError:
                     gene = "-"
                 try:
-                    product = seqfeature_id2product_dico[str(seqfeature_id)]
+                    product = re.sub('\%', '', seqfeature_id2product_dico[str(seqfeature_id)])
                 except KeyError:
                     product = "-"
                 translation = seqfeature_id2translation_dico[str(seqfeature_id)]
@@ -177,10 +178,12 @@ def create_orthogroup_table(server, biodatabase_name,
                                                                                                TM,
                                                                                                SP,
                                                                                                seqfeature_id)
-
-            server.adaptor.execute(sql)
-            server.adaptor.commit()
-
+            try:
+                server.adaptor.execute(sql)
+                server.adaptor.commit()
+            except:
+                print 'problem with:'
+                print sql
 def get_all_orthogroup_size(server, biodatabase_name):
     """
     return a dictonary with orthogroup size"
@@ -850,17 +853,15 @@ if __name__ == '__main__':
 
     protein_id2phobius = parse_phobius.parse_short_phobius(*args.phobius_files)
 
-    '''
+
     print "adding orthogroup to seqfeature_qualifier_values"
 
     add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
-
     print "creating orthology table merging plasmid"
     orthogroup2detailed_count = get_orthology_matrix_merging_plasmids(server, args.db_name)
     #print orthogroup2detailed_count
 
     create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
-    '''
 
     group2group_size = get_all_orthogroup_size(server, args.db_name)
     group2family_size = get_family_size(server, args.db_name)
