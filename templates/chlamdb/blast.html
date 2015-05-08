@@ -184,6 +184,31 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
       </pre>
 {% endif %}
 
+{% if all_data %}
+
+    <table id="tblastn">
+    <h2>Hits</h2>
+    {% for values in all_data %}
+
+    <tr><th id="tblastn_first_col">Accession</th><td><span style="color: #0000FF;">{{ values.0 }}, {{ values.10 }}</span></td></tr>
+    <tr><th>SEQ</th><td>{{ values.11 }}</td></tr>
+    <tr><th></th><td>start: {{ values.1 }}, end: {{ values.2 }}, length: {{ values.3 }}</td></tr>
+    <tr><th>Frame 1</th><td>{{ values.4 }}</td></tr>
+    <tr><th>Frame 2</th><td>{{ values.5 }}</td></tr>
+    <tr><th>Frame 3</th><td>{{ values.6 }}</td></tr>
+    <tr><th>Frame -1</th><td>{{ values.7 }}</td></tr>
+    <tr><th>Frame -2</th><td>{{ values.8 }}</td></tr>
+    <tr><th>Frame -3</th><td>{{ values.9 }}</td></tr>
+    <tr id="inter_tblastn"></tr>
+
+
+    {% endfor %}
+    </table>
+
+{% endif %}
+
+
+
 </div>
 <!--
 <table>
@@ -217,6 +242,32 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
+<script>
+function addColor(domNode, color, letter){
+	if(domNode.nodeType!=1||!domNode.hasAttribute('edited')){
+		if(domNode.nodeType==3){
+			var newText=document.createElement('span');
+			newText.innerHTML=domNode.textContent;
+			newText.setAttribute('edited', true);
+			var text = newText.innerHTML.split('').map(function(el){
+			  if(el==letter){
+				return '<i style=\"color:'+color+'\">'+el+'</i>';
+			  }
+			  else{
+				return el;
+			  }
+		  }).join('');
+		  newText.innerHTML=text;
+		  domNode.parentNode.replaceChild(newText,domNode);
+		}
+		for(var i=0; i<domNode.childNodes.length;i++){
+			addColor(domNode.childNodes[i], color, letter);
+		}
+	}
+}
+addColor(document.getElementById('tblastn'), 'red', '*');
+
+</script>
 
 
 

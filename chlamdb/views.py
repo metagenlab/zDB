@@ -32,6 +32,7 @@ from forms import PCRForm
 from forms import make_extract_form
 from forms import make_circos_orthology_form
 from forms import make_interpro_from
+from forms import make_extract_region_form
 
 from django.contrib.auth import logout
 from django.conf import settings
@@ -305,6 +306,110 @@ def extract(request, biodb):
     return render(request, 'chlamdb/extract_genes.html', locals())
 
 
+
+
+
+@login_required
+def extract_region(request, biodb):
+    extract_region_form_class = make_extract_region_form(biodb)
+    server, db = manipulate_biosqldb.load_db(biodb)
+    from Bio.Alphabet import generic_protein
+    import re
+
+    cache = get_cache('default')
+
+    if request.method == 'POST':
+
+        form = extract_region_form_class(request.POST)
+
+        if form.is_valid():
+            genome_accession = form.cleaned_data['genome']
+
+            region = form.cleaned_data['region']
+
+            start_stop = re.sub(' ', '', form.cleaned_data['region']).split(",")
+
+            extract = form.cleaned_data['extract']
+
+            genome_description = manipulate_biosqldb.accession2description(server, biodb)[genome_accession]
+
+
+            if extract == 'annotation':
+                get_annotation = True
+                columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                          'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+
+
+                sql2 = 'select %s from orthology_detail_%s where start > %s and stop < %s and accession="%s"' % (columns,
+                                                                                                                 biodb,
+                                                                                                                 start_stop[0],
+                                                                                                                 start_stop[1],
+                                                                                                                 genome_accession)
+
+
+                try:
+                    raw_data = server.adaptor.execute_and_fetchall(sql2, )
+                except IndexError:
+                    valid_id = False
+                    return render(request, 'chlamdb/extract_region.html', locals())
+                if not raw_data:
+                        valid_id = False
+                else:
+                    n = 1
+                    search_result = []
+                    for one_hit in raw_data:
+                        if one_hit[2] != '-':
+                            interpro_id = one_hit[2]
+                        else:
+                            interpro_id = one_hit[1]
+                        search_result.append((n,) + one_hit + (interpro_id,))
+                        n+=1
+            if extract == 'sequence' or extract == 'sequence_trans':
+                get_sequence = True
+                seq = manipulate_biosqldb.location2sequence(server, genome_accession, biodb, start_stop[0], int(start_stop[1])-int(start_stop[0]))
+
+                record = SeqRecord(Seq(seq, generic_protein),
+                   id="%s_%s_%s" % (genome_accession, start_stop[0], start_stop[1]), description=genome_description)
+
+                temp_file = os.path.join(settings.BASE_DIR, "assets/temp/%s_region.fa" % genome_accession)
+                temp_location = "temp/%s_region.fa" % genome_accession
+                print "temp_file", temp_file
+                with open(temp_file, 'w') as f:
+                    SeqIO.write(record, f, 'fasta')
+
+
+                if extract == 'sequence_trans':
+                    extract_trans = True
+                    from Bio.Seq import reverse_complement, translate
+                    anti = reverse_complement(seq)
+                    comp = anti[::-1]
+                    length = len(seq)
+                    frames = {}
+                    for i in range(0, 3):
+                        fragment_length = 3 * ((length-i) // 3)
+                        frames[i+1] = translate(seq[i:i+fragment_length], 1)
+                        frames[-(i+1)] = translate(anti[i:i+fragment_length], 1)[::-1]
+
+
+
+                    frame_plus_1 = frames[1]
+                    frame_plus_2 = frames[2]
+                    frame_plus_3 = frames[3]
+                    frame_minus_1 = frames[-1]
+                    frame_minus_2 = frames[-2]
+                    frame_minus_3 = frames[-3]
+
+
+
+            envoi = True
+
+    else:
+        form = extract_region_form_class()
+    return render(request, 'chlamdb/extract_region.html', locals())
+
+
+
+
 @login_required
 def locusx(request, biodb, locus, menu=False):
 
@@ -405,29 +510,45 @@ def blastnr(request, biodb, locus_tag):
 
         server, db = manipulate_biosqldb.load_db(biodb)
 
-        sql = 'select * from blastnr_%s where locus_tag = "%s"' % (biodb, locus_tag)
+        sql = 'select accession, organism from orthology_detail_%s where locus_tag="%s"' % (biodb, locus_tag)
+        data = server.adaptor.execute_and_fetchall(sql,)[0]
+        accession = data[0]
+        organism = data[1]
 
-        blast_data = [i for i in server.adaptor.execute_and_fetchall(sql,)]
+        import MySQLdb
+        conn = MySQLdb.connect(host='localhost', # your host, usually localhost
+                                    user='root', # your username
+                                    passwd='agnathe3', # your password
+                                    db='blastnr') # name of the data base
+        cursor = conn.cursor()
 
+
+        columns = 't1.hit_number, t1.locus_tag, t1.query_accession, t1.subject_accession, t1.subject_taxid, t1.subject_scientific_name,' \
+                  't1.subject_title, t1.subject_kingdom, t2.evalue, t2.percent_identity, t2.positive, t2.gaps, t2.length,' \
+                  't2.query_start, t2.query_end, t2.query_cov, t2.subject_start, t2.subject_end, t1.subject_title'
+        sql = 'select %s from blastnr.blastnr_hits_%s_%s as t1 inner join blastnr.blastnr_hsps_%s_%s as t2 on' \
+              ' t1.nr_hit_id = t2.nr_hit_id where  t1.locus_tag="%s" ' % (columns, biodb, accession, biodb, accession, locus_tag)
+        print sql
+        cursor.execute(sql)
+        blast_data = [i for i in cursor.fetchall()]
 
 
         if len(blast_data) > 0:
             valid_id = True
-            blast_query_locus = blast_data[0][4]
-            blast_query_protein_id = blast_data[0][1]
-            blast_query_organism = blast_data[0][5]
+            blast_query_locus = blast_data[0][1]
+            blast_query_protein_id = blast_data[0][2]
             if blast_query_protein_id == blast_query_locus:
                  blast_query_protein_id = ''
 
             for n, one_hit in enumerate(blast_data):
                 blast_data[n] = [i for i in one_hit]
-                subject_taxids = one_hit[11].split(', ')
-                subject_scientific_names = one_hit[10].split(', ')
+                subject_taxids = one_hit[4].split(';')
+                subject_scientific_names = one_hit[5].split(';')
                 all_taxonomy = ''
                 for taxon, name in zip(subject_taxids, subject_scientific_names):
                     all_taxonomy += '<a href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s">%s<a> ' % (taxon, name)
-                blast_data[n][11] = all_taxonomy
-                blast_data[n][24] = one_hit[24].split('[')[0]
+                blast_data[n][5] = all_taxonomy
+
 
 
         return render(request, 'chlamdb/blastnr.html', locals())
@@ -571,6 +692,8 @@ def homology(request, biodb):
     return render(request, 'chlamdb/homology.html', locals())
 
 
+
+
 @login_required
 def plot_region(request, biodb):
 
@@ -627,6 +750,9 @@ def plot_region(request, biodb):
                     temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
                     print "temp file", temp_file.name
                     name = os.path.basename(temp_file.name)
+                    print name.split('.')
+                    name_png = name.split('.')[0] + '.png'
+
                     locus_tags = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, locus_tag_target_genomes,
                                                                                       temp_file.name, int(region_size),
                                                                                       cache)
@@ -1006,30 +1132,39 @@ def interpro(request, biodb):
                       'score, ' \
                       'GO_terms'
 
-            taxon_limit = '(taxon_id=%s' % taxon_ids[0]
-            if len(taxon_ids) > 1:
-                for i in range(1, len(taxon_ids)-1):
-                    taxon_limit+= ' or taxon_id=%s' % taxon_ids[i]
-                taxon_limit+=' or taxon_id=%s)' % taxon_ids[-1]
+            if len(taxon_ids) == 0:
+                invalid_id = True
             else:
-                taxon_limit += ')'
 
-            if search_type == "description":
+                taxon_limit = '(taxon_id=%s' % taxon_ids[0]
+                if len(taxon_ids) > 1:
+                    for i in range(1, len(taxon_ids)-1):
+                        taxon_limit+= ' or taxon_id=%s' % taxon_ids[i]
+                    taxon_limit+=' or taxon_id=%s)' % taxon_ids[-1]
+                else:
+                    taxon_limit += ')'
 
-                sql = 'select %s from interpro_%s where %s and (interpro_description REGEXP "%s" or signature_description REGEXP "%s")' % (columns, biodb, taxon_limit, search_term, search_term)
-                print sql
-                raw_data = server.adaptor.execute_and_fetchall(sql,)
+                if search_type == "description":
 
-            if search_type == "GO":
-                sql = 'select %s from interpro_%s where %s and (GO_terms REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
-                raw_data = server.adaptor.execute_and_fetchall(sql,)
+                    sql = 'select %s from interpro_%s where %s and (interpro_description REGEXP "%s" or signature_description REGEXP "%s")' % (columns, biodb, taxon_limit, search_term, search_term)
 
-            if search_type == "EC":
-                sql = 'select %s from interpro_%s where %s and (pathways REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
-                raw_data = server.adaptor.execute_and_fetchall(sql,)
-            if search_type == "interpro_accession":
-                sql = 'select %s from interpro_%s where %s and (interpro_accession REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
-                raw_data = server.adaptor.execute_and_fetchall(sql,)
+                if search_type == "GO":
+                    sql = 'select %s from interpro_%s where %s and (GO_terms REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
+
+
+                if search_type == "EC":
+                    sql = 'select %s from interpro_%s where %s and (pathways REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
+
+                if search_type == "interpro_accession":
+                    sql = 'select %s from interpro_%s where %s and (interpro_accession REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
+
+
+                try:
+                    raw_data = server.adaptor.execute_and_fetchall(sql, )
+                except IndexError:
+                    invalid_id = True
+
+
             envoi = True
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
@@ -1292,6 +1427,7 @@ def blast(request, biodb):
             if blast_type=='tblastn':
                 blastdb = settings.BASE_DIR + "/assets/chlamdb/fna/%s.fna" % (target_accession)
                 blast_cline = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+                blast_cline2 = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=5)
             if blast_type=='blastx':
                 blastdb = settings.BASE_DIR + "/assets/chlamdb/faa/%s.faa" % (target_accession)
                 blast_cline = NcbiblastxCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
@@ -1300,8 +1436,39 @@ def blast(request, biodb):
             print blast_cline
             blast_stdout, blast_stderr = blast_cline()
 
-            print "blast_stderr", blast_stderr
-            print "blast_stdout", blast_stdout
+            if blast_type=='tblastn':
+                from Bio.SeqUtils import six_frame_translations
+                from StringIO import StringIO
+                blast_stdout2, blast_stderr2 = blast_cline2()
+                from Bio.Blast import NCBIXML
+                blast_records = NCBIXML.parse(StringIO(blast_stdout2))
+                all_data = []
+                for record in blast_records:
+                    for alignment in record.alignments:
+                        accession = alignment.title.split(' ')[1]
+                        sql = 'select description from bioentry where accession="%s" ' % accession
+                        description = server.adaptor.execute_and_fetchall(sql,)[0][0]
+                        for hsp in alignment.hsps:
+                            start = hsp.sbjct_start
+                            end = hsp.sbjct_end
+                            length = end-start
+                            #print 'seq for acc', accession, start, end,
+                            leng = end-start
+                            seq = manipulate_biosqldb.location2sequence(server, accession, biodb, start-300, leng+600)
+                            print seq
+                            from Bio.Seq import reverse_complement, translate
+                            anti = reverse_complement(seq)
+                            comp = anti[::-1]
+                            length = len(seq)
+                            frames = {}
+                            for i in range(0, 3):
+                                fragment_length = 3 * ((length-i) // 3)
+                                tem1 = translate(seq[i:i+fragment_length], 1)
+                                frames[i+1] = '<span style="color: #181407;">%s</span><span style="color: #bb60d5;">%s</span><span style="color: #181407;">%s</span>' % (tem1[0:100], tem1[100:len(tem1)-99], tem1[len(tem1)-99:])
+                                tmp2 = translate(anti[i:i+fragment_length], 1)[::-1]
+                                frames[-(i+1)] = tmp2
+                            all_data.append([accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq])
+
 
             no_match = re.compile('.* No hits found .*', re.DOTALL)
 
@@ -1319,15 +1486,16 @@ def blast(request, biodb):
                 f.write(blast_stdout)
                 f.close()
 
+
+
                 #blast_file.write(blast_stdout)
                 out, err, code = shell_command.shell_command('cat /temp/blast.temp | wc -l')
                 print 'n lines', out
-                mview_cmd = 'mview -in blast -srs on -ruler on -html data -css on -coloring identity /tmp/blast.temp' #% blast_file.name
-                print mview_cmd
+                if blast_type=='blastp':
+                    mview_cmd = 'mview -in blast -srs on -ruler on -html data -css on -coloring identity /tmp/blast.temp' #% blast_file.name
+                else:
+                    mview_cmd = 'mview -in blast -ruler on -html data -css on -coloring identity /tmp/blast.temp'
                 stdout, stderr, code = shell_command.shell_command(mview_cmd)
-
-                print "mview stdout", stdout
-                print "mview error", stderr
 
                 if len(stdout) == 0:
                     blast_no_hits = blast_stdout
@@ -1448,6 +1616,7 @@ def circos2genomes(request, biodb):
 
         form = circos2genomes_form_class(request.POST)
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+            valid_id = True
             server, db = manipulate_biosqldb.load_db(biodb)
             reference_taxon = form.cleaned_data['reference_genome']
             query_taxon = form.cleaned_data['query_genome']
@@ -1476,47 +1645,55 @@ def circos2genomes(request, biodb):
             if len(protein_locus_list) > 0:
                 for protein in protein_locus_list:
                     print "protein", protein
-                    protein_group = manipulate_biosqldb.locus_tag2orthogroup_id(server, protein, biodb)
-                    orthogroup_list.append(protein_group)
-            print "LOCUS:", orthogroup_list
+                    sql = 'select orthogroup from orthology_detail_%s where protein_id="%s" or locus_tag="%s"' % (biodb, protein, protein)
+                    print sql
+                    try:
+                        protein_group = server.adaptor.execute_and_fetchall(sql,)[0][0]
+                        orthogroup_list.append(protein_group)
+                    except IndexError:
+                        valid_id = False
 
-            #accession2description = manipulate_biosqldb.accession2description_dict(server, biodb)
+                    #protein_group = manipulate_biosqldb.locus_tag2orthogroup_id(server, protein, biodb)
+            if valid_id:
+                print "LOCUS:", orthogroup_list
 
-            #print "reference_genome", reference_genome
-            taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
-            reference_name = taxon_id2description[reference_taxon]
-            query_name = taxon_id2description[query_taxon]
+                #accession2description = manipulate_biosqldb.accession2description_dict(server, biodb)
 
-            accession2taxon_id = manipulate_biosqldb.accession2taxon_id(server, biodb)
-            taxon_id_reference = accession2taxon_id[reference_accessions[0]]
-            taxon_id_query = accession2taxon_id[query_accessions[0]]
+                #print "reference_genome", reference_genome
+                taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+                reference_name = taxon_id2description[reference_taxon]
+                query_name = taxon_id2description[query_taxon]
 
-            reference_n_orthogroups = manipulate_biosqldb.get_genome_number_of_orthogroups(server, biodb, taxon_id_reference)
-            reference_n_proteins = manipulate_biosqldb.get_genome_number_of_proteins(server, biodb, taxon_id_reference)
+                accession2taxon_id = manipulate_biosqldb.accession2taxon_id(server, biodb)
+                taxon_id_reference = accession2taxon_id[reference_accessions[0]]
+                taxon_id_query = accession2taxon_id[query_accessions[0]]
 
-            query_n_orthogroups = manipulate_biosqldb.get_genome_number_of_orthogroups(server, biodb, taxon_id_query)
-            query_n_proteins = manipulate_biosqldb.get_genome_number_of_proteins(server, biodb, taxon_id_query)
+                reference_n_orthogroups = manipulate_biosqldb.get_genome_number_of_orthogroups(server, biodb, taxon_id_reference)
+                reference_n_proteins = manipulate_biosqldb.get_genome_number_of_proteins(server, biodb, taxon_id_reference)
 
-            n_shared_orthogroups = manipulate_biosqldb.get_number_of_shared_orthogroups(server, biodb, taxon_id_reference, taxon_id_query)
+                query_n_orthogroups = manipulate_biosqldb.get_genome_number_of_orthogroups(server, biodb, taxon_id_query)
+                query_n_proteins = manipulate_biosqldb.get_genome_number_of_proteins(server, biodb, taxon_id_query)
 
-            print "n_orthogroups", reference_n_orthogroups, query_n_orthogroups
-            print "n_proteins", reference_n_proteins, query_n_proteins
+                n_shared_orthogroups = manipulate_biosqldb.get_number_of_shared_orthogroups(server, biodb, taxon_id_reference, taxon_id_query)
 
-            print "n_shared", n_shared_orthogroups
+                print "n_orthogroups", reference_n_orthogroups, query_n_orthogroups
+                print "n_proteins", reference_n_proteins, query_n_proteins
 
-            print reference_name, query_name
+                print "n_shared", n_shared_orthogroups
 
-
-            import circos
-
-            path = settings.BASE_DIR + "/assets/circos"
+                print reference_name, query_name
 
 
-            biplot = circos.CircosAccession2biplot(server, db, biodb, reference_records, query_records,
-                                                   orthogroup_list, path)
+                import circos
 
-            reference_file = "circos/%s" % biplot.reference_circos
-            query_file = "circos/%s" % biplot.query_circos
+                path = settings.BASE_DIR + "/assets/circos"
+
+
+                biplot = circos.CircosAccession2biplot(server, db, biodb, reference_records, query_records,
+                                                       orthogroup_list, path)
+
+                reference_file = "circos/%s" % biplot.reference_circos
+                query_file = "circos/%s" % biplot.query_circos
 
             envoi = True
 

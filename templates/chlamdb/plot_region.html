@@ -64,6 +64,16 @@
     <div id="plot_region_section">
     &nbsp
     <h2>Region</h2>
+
+       <div id="export_bouttons">
+    <a download="region.svg" href="{% static name %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to SVG</a>
+    <a download="region.png" href="{% static name_png %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to PNG</a>
+
+    <br/>
+    </div>
+
+
+
     {% load static %}
     <a href="#">
     <object type="image/svg+xml" data="{% static name %}" id="genomic_region">

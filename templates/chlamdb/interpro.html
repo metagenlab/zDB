@@ -37,9 +37,20 @@
 
 {% if envoi %}
 
+
+
+
+
 </section>
 
 <section id="table_interpro_section">
+
+
+{% if invalid_id %}
+
+Invalid search
+
+{% else %}
 
     <div id="export_bouttons">
     <a download="interpro_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'interpro_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
@@ -90,6 +101,7 @@
     </table>
 
 </section>
+{% endif %}
 
 {% else %}
 </section>

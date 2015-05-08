@@ -29,12 +29,10 @@
 {% else %}
 
 <section id="head_section">
-    <h2> NCBI nr hit (21.04.15 database) for: </h2>
+    <h2> NCBI nr hit (26 Mar 2015 database, 64'057'457 sequences) for: </h2>
     <A HREF={% url 'locusx' biodb blast_query_locus True%}>{{ blast_query_locus }}</A>
         {{ blast_query_protein_id }}
-        ({{ blast_query_organism }})
-
-
+        ({{ organism }})
 
 <div id="export_bouttons">
 <a download="blast_nr_{{ locus_tag }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'blast_nr_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
@@ -68,21 +66,21 @@
 
 {% for values in blast_data %}
     <tr>
-        <td>{{ values.2 }}</td>
-        <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{ values.8 }}">{{ values.8 }}<a></td>
+        <td>{{ values.0 }}</td>
+        <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{ values.3 }}">{{ values.3 }}<a></td>
+        <td>{{ values.7 }}</td>
+        <td>{{ values.8 }}</td>
         <td>{{ values.9 }}</td>
+        <td>{{ values.10 }}</td>
+        <td>{{ values.11 }}</td>
         <td>{{ values.12 }}</td>
+        <td>{{ values.13 }}</td>
         <td>{{ values.14 }}</td>
         <td>{{ values.15 }}</td>
-        <td>{{ values.16 }}</td>
+        <td>{{ values.16}}</td>
         <td>{{ values.17 }}</td>
         <td>{{ values.18 }}</td>
-        <td>{{ values.19 }}</td>
-        <td>{{ values.20 }}</td>
-        <td>{{ values.21 }}</td>
-        <td>{{ values.22 }}</td>
-        <td>{{ values.24 }}</td>
-        <td>{{ values.11 | safe }}</td>
+        <td>{{ values.5 | safe }}</td>
 
     </tr>
 {%  endfor %}

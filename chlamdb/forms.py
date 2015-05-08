@@ -152,6 +152,24 @@ class BiodatabaseForm(forms.Form):
 
 
 
+
+def make_extract_region_form(database_name):
+
+    accession_choices = get_accessions(database_name, plasmid=True)
+
+    extraction_choices = [['annotation', 'Get annotation'],['sequence', 'Get sequence'],['sequence_trans', 'Get sequence + translation']]
+
+    class ExtractRegionForm(forms.Form):
+        genome = forms.ChoiceField(choices=accession_choices)
+        region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = False)
+        extract = forms.ChoiceField(choices=extraction_choices, widget=forms.RadioSelect, label='')
+        #get_annotation = forms.NullBooleanField(widget=forms.CheckboxInput())
+        #get_sequence = forms.NullBooleanField(widget=forms.CheckboxInput())
+
+    return ExtractRegionForm
+
+
+
 def make_circos_form(database_name):
 
     accession_choices = get_accessions(database_name)
@@ -166,9 +184,6 @@ def make_circos_form(database_name):
             self.reference = self.cleaned_data["reference"]
             self.get_region = self.cleaned_data["get_region"]
             self.region = self.cleaned_data["region"]
-            
-
-            
     return CircosForm
 
 def make_extract_form(database_name, plasmid=False):
