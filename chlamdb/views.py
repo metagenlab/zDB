@@ -1454,7 +1454,7 @@ def blast(request, biodb):
                             length = end-start
                             #print 'seq for acc', accession, start, end,
                             leng = end-start
-                            seq = manipulate_biosqldb.location2sequence(server, accession, biodb, start-300, leng+600)
+                            seq = manipulate_biosqldb.location2sequence(server, accession, biodb, start, leng)
                             print seq
                             from Bio.Seq import reverse_complement, translate
                             anti = reverse_complement(seq)
