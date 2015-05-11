@@ -103,7 +103,7 @@ def insert_hit(conn,
 
 
 
-        sql_blast_hit = 'INSERT INTO blastnr_hits4_%s_%s(hit_number, ' \
+        sql_blast_hit = 'INSERT INTO blastnr_hits_%s_%s(hit_number, ' \
                     'query_accession, ' \
                     'locus_tag, ' \
                     'query_gi, ' \
@@ -174,7 +174,7 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
     import MySQLdb
 
 
-    sql_blast_hsp_head = 'INSERT INTO blastnr_hsps4_%s_%s(nr_hit_id, ' \
+    sql_blast_hsp_head = 'INSERT INTO blastnr_hsps_%s_%s(nr_hit_id, ' \
             'evalue, ' \
             'n_identical, ' \
             'percent_identity, ' \
@@ -425,7 +425,7 @@ def _load_taxonomic_data(biodb, mysql_host, mysql_user, mysql_pwd, mysql_db, acc
             # new table for the multiples taxons ids/hits
             for taxon in nr_hit_id2taxon_ids[nr_hit].split(';'):
                 if taxon != 'N/A':
-                    sql = 'INSERT INTO blastnr_hits_taxonomy4_%s_%s (' \
+                    sql = 'INSERT INTO blastnr_hits_taxonomy_%s_%s (' \
                         'nr_hit_id, subject_taxon_id) values (%s, %s)' % (biodb,
                                                                   accession,
                                                                   nr_hit,
@@ -507,7 +507,7 @@ def create_sql_blastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
 
         for accession in all_accessions:
 
-            sql_blast_hsps = 'CREATE TABLE IF NOT EXISTS blastnr_hsps4_%s_%s (hsp_id INT AUTO_INCREMENT PRIMARY KEY, ' \
+            sql_blast_hsps = 'CREATE TABLE IF NOT EXISTS blastnr_hsps_%s_%s (hsp_id INT AUTO_INCREMENT PRIMARY KEY, ' \
                         ' nr_hit_id INT,' \
                         ' evalue varchar(200),' \
                         ' n_identical int,' \
@@ -522,11 +522,11 @@ def create_sql_blastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
                         ' subject_end int,' \
                         ' subject_strand VARCHAR(5))' % (db_name, accession)
 
-            sql_blast_hsps2 = 'ALTER TABLE blastnr.blastnr_hsps_%s_%s ADD CONSTRAINT fk_blast_hsp_hit_id4_%s ' \
+            sql_blast_hsps2 = 'ALTER TABLE blastnr.blastnr_hsps_%s_%s ADD CONSTRAINT fk_blast_hsp_hit_id_%s ' \
                               'FOREIGN KEY (nr_hit_id) REFERENCES blastnr_hits_%s_%s(nr_hit_id);' % (db_name, accession, accession, db_name, accession)
 
 
-            sql_blast_hits = 'CREATE TABLE IF NOT EXISTS blastnr_hits4_%s_%s (nr_hit_id INT AUTO_INCREMENT PRIMARY KEY, ' \
+            sql_blast_hits = 'CREATE TABLE IF NOT EXISTS blastnr_hits_%s_%s (nr_hit_id INT AUTO_INCREMENT PRIMARY KEY, ' \
                             ' query_accession varchar(200),' \
                             ' hit_number int,' \
                             ' locus_tag VARCHAR(100), ' \
@@ -539,10 +539,10 @@ def create_sql_blastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
                             ' subject_title VARCHAR(2000))' % (db_name, accession)
 
 
-            sql_blast_taxonomy = 'CREATE TABLE blastnr.blastnr_hits_taxonomy4_%s_%s (nr_hit_id INT, ' \
+            sql_blast_taxonomy = 'CREATE TABLE blastnr.blastnr_hits_taxonomy_%s_%s (nr_hit_id INT, ' \
                                  'subject_taxon_id int)' % (db_name, accession)
 
-            sql_blast_taxonomy2 = 'ALTER TABLE blastnr.blastnr_hits_taxonomy_%s_%s ADD CONSTRAINT fk_blast_hit_id4_%s ' \
+            sql_blast_taxonomy2 = 'ALTER TABLE blastnr.blastnr_hits_taxonomy_%s_%s ADD CONSTRAINT fk_blast_hit_id_%s ' \
                                   'FOREIGN KEY (nr_hit_id) REFERENCES blastnr_hits_%s_%s(nr_hit_id);' % (db_name, accession, accession, db_name, accession)
 
             try:
