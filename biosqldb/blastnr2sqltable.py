@@ -759,9 +759,9 @@ def del_blastnr_table_content(db_name):
     all_accessions = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
     for accession in all_accessions:
-        sql1 = 'delete from blastnr.blastnr_hsps4_%s_%s' % (db_name, accession)
-        sql2 = 'delete from blastnr_hits4_%s_%s' % (db_name, accession)
-        sql3 = 'delete from blastnr.blastnr_hits_taxonomy4_%s_%s' % (db_name, accession)
+        sql1 = 'delete from blastnr.blastnr_hsps_%s_%s' % (db_name, accession)
+        sql2 = 'delete from blastnr_hits_%s_%s' % (db_name, accession)
+        sql3 = 'delete from blastnr.blastnr_hits_taxonomy_%s_%s' % (db_name, accession)
         server.adaptor.execute(sql1)
         server.adaptor.execute(sql2)
         server.adaptor.execute(sql3)
