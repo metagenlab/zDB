@@ -103,7 +103,7 @@ def insert_hit(conn,
 
 
 
-        sql_blast_hit = 'INSERT INTO blastnr_hits_%s_%s(hit_number, ' \
+        sql_blast_hit = 'INSERT INTO blastnr_hits4_%s_%s(hit_number, ' \
                     'query_accession, ' \
                     'locus_tag, ' \
                     'query_gi, ' \
@@ -174,7 +174,7 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
     import MySQLdb
 
 
-    sql_blast_hsp_head = 'INSERT INTO blastnr_hsps_%s_%s(nr_hit_id, ' \
+    sql_blast_hsp_head = 'INSERT INTO blastnr_hsps4_%s_%s(nr_hit_id, ' \
             'evalue, ' \
             'n_identical, ' \
             'percent_identity, ' \
@@ -425,7 +425,7 @@ def _load_taxonomic_data(biodb, mysql_host, mysql_user, mysql_pwd, mysql_db, acc
             # new table for the multiples taxons ids/hits
             for taxon in nr_hit_id2taxon_ids[nr_hit].split(';'):
                 if taxon != 'N/A':
-                    sql = 'INSERT INTO blastnr_hits_taxonomy_%s_%s (' \
+                    sql = 'INSERT INTO blastnr_hits_taxonomy4_%s_%s (' \
                         'nr_hit_id, subject_taxon_id) values (%s, %s)' % (biodb,
                                                                   accession,
                                                                   nr_hit,
@@ -507,7 +507,7 @@ def create_sql_blastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
 
         for accession in all_accessions:
 
-            sql_blast_hsps = 'CREATE TABLE IF NOT EXISTS blastnr_hsps_%s_%s (hsp_id INT AUTO_INCREMENT PRIMARY KEY, ' \
+            sql_blast_hsps = 'CREATE TABLE IF NOT EXISTS blastnr_hsps4_%s_%s (hsp_id INT AUTO_INCREMENT PRIMARY KEY, ' \
                         ' nr_hit_id INT,' \
                         ' evalue varchar(200),' \
                         ' n_identical int,' \
@@ -522,11 +522,11 @@ def create_sql_blastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
                         ' subject_end int,' \
                         ' subject_strand VARCHAR(5))' % (db_name, accession)
 
-            sql_blast_hsps2 = 'ALTER TABLE blastnr.blastnr_hsps_%s_%s ADD CONSTRAINT fk_blast_hsp_hit_id_%s ' \
+            sql_blast_hsps2 = 'ALTER TABLE blastnr.blastnr_hsps_%s_%s ADD CONSTRAINT fk_blast_hsp_hit_id4_%s ' \
                               'FOREIGN KEY (nr_hit_id) REFERENCES blastnr_hits_%s_%s(nr_hit_id);' % (db_name, accession, accession, db_name, accession)
 
 
-            sql_blast_hits = 'CREATE TABLE IF NOT EXISTS blastnr_hits_%s_%s (nr_hit_id INT AUTO_INCREMENT PRIMARY KEY, ' \
+            sql_blast_hits = 'CREATE TABLE IF NOT EXISTS blastnr_hits4_%s_%s (nr_hit_id INT AUTO_INCREMENT PRIMARY KEY, ' \
                             ' query_accession varchar(200),' \
                             ' hit_number int,' \
                             ' locus_tag VARCHAR(100), ' \
@@ -539,33 +539,43 @@ def create_sql_blastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
                             ' subject_title VARCHAR(2000))' % (db_name, accession)
 
 
-            sql_blast_taxonomy = 'CREATE TABLE blastnr.blastnr_hits_taxonomy3_%s_%s (nr_hit_id INT, ' \
+            sql_blast_taxonomy = 'CREATE TABLE blastnr.blastnr_hits_taxonomy4_%s_%s (nr_hit_id INT, ' \
                                  'subject_taxon_id int)' % (db_name, accession)
 
-            sql_blast_taxonomy2 = 'ALTER TABLE blastnr.blastnr_hits_taxonomy_%s_%s ADD CONSTRAINT fk_blast_hit_id_%s ' \
+            sql_blast_taxonomy2 = 'ALTER TABLE blastnr.blastnr_hits_taxonomy_%s_%s ADD CONSTRAINT fk_blast_hit_id4_%s ' \
                                   'FOREIGN KEY (nr_hit_id) REFERENCES blastnr_hits_%s_%s(nr_hit_id);' % (db_name, accession, accession, db_name, accession)
 
+            try:
 
-            print sql_blast_hits
-            cursor.execute(sql_blast_hits)
-            print 'sql hits ok'
-            conn.commit()
+                cursor.execute(sql_blast_hits)
+                print 'sql hits ok'
+                conn.commit()
+            except:
+                print sql_blast_hits
+                print 'not created'
 
-            print sql_blast_hsps
-            cursor.execute(sql_blast_hsps)
-            conn.commit()
-            print 'sql hsps1 ok'
-            cursor.execute(sql_blast_hsps2)
-            print 'sql hsps2 ok'
-            conn.commit()
+            try:
 
+                cursor.execute(sql_blast_hsps)
+                conn.commit()
+                print 'sql hsps1 ok'
+                cursor.execute(sql_blast_hsps2)
+                print 'sql hsps2 ok'
+                conn.commit()
+            except:
+                print sql_blast_hsps
+                print 'not created'
 
-            print sql_blast_taxonomy
-            cursor.execute(sql_blast_taxonomy)
-            conn.commit()
-            cursor.execute(sql_blast_taxonomy2)
-            print "sql_taxonomy ok "
-            conn.commit()
+            try:
+
+                cursor.execute(sql_blast_taxonomy)
+                conn.commit()
+                cursor.execute(sql_blast_taxonomy2)
+                print "sql_taxonomy ok "
+                conn.commit()
+            except:
+                print sql_blast_taxonomy
+                print 'not created'
 
     sql_taxonomy1 = 'CREATE TABLE IF NOT EXISTS blastnr_taxonomy (taxon_id int unique, ' \
                     ' no_rank VARCHAR(200) default "-", ' \
@@ -741,6 +751,20 @@ def blastnr2biosql(seqfeature_id2locus_tag,
     blastnr2biodb_taxonomic_table(db_name, locus_tag2accession, mysql_host, mysql_user, mysql_pwd, mysql_db, n_procs)
 
 
+def del_blastnr_table_content(db_name):
+    server, db = manipulate_biosqldb.load_db(db_name)
+    sql = 'select accession from bioentry' \
+      ' inner join biodatabase on bioentry.biodatabase_id=biodatabase.biodatabase_id where biodatabase.name="%s"' % db_name
+
+    all_accessions = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+    for accession in all_accessions:
+        sql1 = 'delete from blastnr.blastnr_hsps4_%s_%s' % (db_name, accession)
+        sql2 = 'delete from blastnr_hits4_%s_%s' % (db_name, accession)
+        sql3 = 'delete from blastnr.blastnr_hits_taxonomy4_%s_%s' % (db_name, accession)
+        server.adaptor.execute(sql1)
+        server.adaptor.execute(sql2)
+        server.adaptor.execute(sql3)
 
 
 
@@ -754,8 +778,14 @@ if __name__ == '__main__':
     parser.add_argument("-d", '--mysql_database', type=str, help="Biosql biodatabase name")
     parser.add_argument("-t", '--create_tables', action='store_true', help="Create SQL tables")
     parser.add_argument("-p", '--n_procs', type=int, help="Number of threads to use (default=8)", default=8)
+    parser.add_argument("-c", '--clean_tables', action='store_true', help="delete all sql tables")
+
+
 
     args = parser.parse_args()
+
+    if args.clean_tables:
+        del_blastnr_table_content(args.mysql_database)
 
     '''
 
