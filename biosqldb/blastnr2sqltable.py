@@ -134,9 +134,9 @@ def insert_hit(conn,
         '''
 
         cursor.execute(sql_blast_hit)
-
+        index = conn.insert_id()
         conn.commit()
-        return conn.insert_id()
+        return index
 
         #except:
         #print 'problem with:'
