@@ -760,7 +760,7 @@ def del_blastnr_table_content(db_name):
 
     for accession in all_accessions:
         sql1 = 'delete from blastnr.blastnr_hsps_%s_%s' % (db_name, accession)
-        sql2 = 'delete from blastnr_hits_%s_%s' % (db_name, accession)
+        sql2 = 'delete from blastnr.blastnr_hits_%s_%s' % (db_name, accession)
         sql3 = 'delete from blastnr.blastnr_hits_taxonomy_%s_%s' % (db_name, accession)
         server.adaptor.execute(sql1)
         server.adaptor.execute(sql2)
