@@ -231,9 +231,12 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
                             sql_hsps = sql_blast_hsp_head % (db_name, locus_tag2accession[locus_tag_previous_line], values[0:-1])
 
                             #print sql_hsps
-                            cursor.execute(sql_hsps)
-                            conn.commit()
-                            values = ''
+                            try:
+                                cursor.execute(sql_hsps)
+                                conn.commit()
+                                values = ''
+                            except:
+                                print sql_hsps
 
                 evalue = line[7]
                 n_identical = int(line[8])
