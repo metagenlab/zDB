@@ -763,12 +763,15 @@ def del_blastnr_table_content(db_name):
         sql2 = 'DROP TABLE blastnr.blastnr_hits_%s_%s' % (db_name, accession)
         sql3 = 'DROP TABLE blastnr.blastnr_hits_taxonomy_%s_%s' % (db_name, accession)
 
-        server.adaptor.execute(sql2)
-        server.adaptor.commit()
+
+
         server.adaptor.execute(sql1)
         server.adaptor.commit()
         server.adaptor.execute(sql3)
         server.adaptor.commit()
+        server.adaptor.execute(sql2)
+        server.adaptor.commit()
+
 
 
 
