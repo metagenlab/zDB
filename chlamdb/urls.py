@@ -5,6 +5,7 @@ from django.conf.urls import include
 urlpatterns = patterns('chlamdb.views',
                        url(r'^home/([a-zA-Z0-9_]+)$', 'home', name="home"),
                        url(r'^homology/([a-zA-Z0-9_]+)$', 'homology', name="homology"),
+                       url(r'^search_taxonomy/([a-zA-Z0-9_]+)$', 'search_taxonomy', name="search_taxonomy"),
                        url(r'^locusx/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)$', 'locusx', name="locusx"),
                        url(r'^locusx/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)$', 'locusx', name="locusx"),
                        url(r'^blastnr/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$', 'blastnr', name="blastnr"),

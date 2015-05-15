@@ -358,12 +358,18 @@ def extract_region(request, biodb):
                     n = 1
                     search_result = []
                     for one_hit in raw_data:
+
+                        sql = 'select contig from '
+
+
                         if one_hit[2] != '-':
                             interpro_id = one_hit[2]
                         else:
                             interpro_id = one_hit[1]
                         search_result.append((n,) + one_hit + (interpro_id,))
                         n+=1
+
+
             if extract == 'sequence' or extract == 'sequence_trans':
                 get_sequence = True
                 seq = manipulate_biosqldb.location2sequence(server, genome_accession, biodb, start_stop[0], int(start_stop[1])-int(start_stop[0]))
@@ -1100,6 +1106,212 @@ def format_search(count, seqfeature_data):
     # [y, i["description"], i["locus_tag"] + " / " + i["protein_id"], i["product"], i["orthogroup"],  i["gene"], i["translation"]]
     pass
 
+
+@login_required
+def search_taxonomy(request, biodb):
+    from collections import Counter
+    server = manipulate_biosqldb.load_db()
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+        print request.POST
+
+        if len(request.POST['Phylum']) == 0:
+            genome_accession = request.POST['Genome']
+            superkingdom = request.POST['Superkingdom'].split('_')[-1]
+            print "genome_accession", genome_accession
+            print 'sdfsdf', superkingdom[0]
+            if 'unclassified' in superkingdom:
+                superkingdom = '-'
+
+            if len(superkingdom) == 0:
+                sql= 'select t1.locus_tag, ' \
+                          ' t2.subject_taxon_id,' \
+                          ' t4.nr_hit_id,' \
+                          ' t1.subject_accession, ' \
+                          ' t3.kingdom, ' \
+                          ' t3.phylum, ' \
+                          ' t3.order, ' \
+                          ' t3.family, ' \
+                          ' t3.genus, ' \
+                          ' t3.species, ' \
+                          ' t4.evalue, ' \
+                          ' t4.percent_identity, ' \
+                          ' t4.query_start, ' \
+                          ' t4.query_end, ' \
+                          ' t1.subject_title, ' \
+                          ' t3.taxon_id ' \
+                          ' from blastnr.blastnr_hits_%s_%s as t1 ' \
+                          ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
+                          ' inner join blastnr.blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
+                          ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
+                          ' where t1.hit_number=%s"' % (biodb,
+                                                         genome_accession,
+                                                         biodb,
+                                                         genome_accession,
+                                                         biodb,
+                                                         genome_accession,
+                                                         1)
+
+            else:
+                sql= 'select t1.locus_tag, ' \
+                          ' t2.subject_taxon_id,' \
+                          ' t4.nr_hit_id,' \
+                          ' t1.subject_accession, ' \
+                          ' t3.kingdom, ' \
+                          ' t3.phylum, ' \
+                          ' t3.order, ' \
+                          ' t3.family, ' \
+                          ' t3.genus, ' \
+                          ' t3.species, ' \
+                          ' t4.evalue, ' \
+                          ' t4.percent_identity, ' \
+                          ' t4.query_start, ' \
+                          ' t4.query_end, ' \
+                          ' t1.subject_title, ' \
+                          ' t3.taxon_id ' \
+                          ' from blastnr.blastnr_hits_%s_%s as t1 ' \
+                          ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
+                          ' inner join blastnr.blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
+                          ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
+                          ' where t1.hit_number=%s and t3.superkingdom="%s"' % (biodb,
+                                                                         genome_accession,
+                                                                         biodb,
+                                                                         genome_accession,
+                                                                         biodb,
+                                                                         genome_accession,
+                                                                         1,
+                                                                         superkingdom)
+
+        else:
+            genome_accession = request.POST['Genome']
+            superkingdom = request.POST['Superkingdom'].split('_')[-1]
+
+            if request.POST['Phylum'] == 'Unclassified':
+                phylum = '-'
+            else:
+                phylum = request.POST['Phylum'].split('_')[-1]
+
+            if len(phylum) ==0:
+                sql= 'select t1.locus_tag, ' \
+                          ' t2.subject_taxon_id,' \
+                          ' t4.nr_hit_id,' \
+                          ' t1.subject_accession, ' \
+                          ' t3.kingdom, ' \
+                          ' t3.phylum, ' \
+                          ' t3.order, ' \
+                          ' t3.family, ' \
+                          ' t3.genus, ' \
+                          ' t3.species, ' \
+                          ' t4.evalue, ' \
+                          ' t4.percent_identity, ' \
+                          ' t4.query_start, ' \
+                          ' t4.query_end, ' \
+                          ' t1.subject_title, ' \
+                          ' t3.taxon_id ' \
+                          ' from blastnr.blastnr_hits_%s_%s as t1 ' \
+                          ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
+                          ' inner join blastnr.blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
+                          ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
+                          ' where t1.hit_number=%s and t3.superkingdom="%s"' % (biodb,
+                                                                         genome_accession,
+                                                                         biodb,
+                                                                         genome_accession,
+                                                                         biodb,
+                                                                         genome_accession,
+                                                                         1,
+                                                                         superkingdom)
+            else:
+                sql= 'select t1.locus_tag, ' \
+                          ' t2.subject_taxon_id,' \
+                          ' t4.nr_hit_id,' \
+                          ' t1.subject_accession, ' \
+                          ' t3.kingdom, ' \
+                          ' t3.phylum, ' \
+                          ' t3.order, ' \
+                          ' t3.family, ' \
+                          ' t3.genus, ' \
+                          ' t3.species, ' \
+                          ' t4.evalue, ' \
+                          ' t4.percent_identity, ' \
+                          ' t4.query_start, ' \
+                          ' t4.query_end, ' \
+                          ' t1.subject_title, ' \
+                          ' t3.taxon_id,' \
+                          ' t3.superkingdom' \
+                          ' from blastnr.blastnr_hits_%s_%s as t1 ' \
+                          ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
+                          ' inner join blastnr.blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
+                          ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
+                          ' where t1.hit_number=%s and t3.superkingdom="%s" and t3.phylum="%s";' % (biodb,
+                                                                         genome_accession,
+                                                                         biodb,
+                                                                         genome_accession,
+                                                                         biodb,
+                                                                         genome_accession,
+                                                                         1,
+                                                                         superkingdom,
+                                                                         phylum)
+        print sql
+        raw_data = server.adaptor.execute_and_fetchall(sql, )
+
+        n = 1
+        data = []
+        families = []
+        phylum = []
+        superkingdom = []
+        order = []
+        for i, one_hit in enumerate(raw_data):
+            if n == 1:
+                data.append(one_hit + (n,))
+                families.append(one_hit[7])
+                phylum.append(one_hit[5])
+                superkingdom.append(one_hit[-1])
+                n+=1
+            else:
+                if raw_data[i][0] == raw_data[i-1][0]:
+                    data.append(one_hit + (n,))
+                else:
+                    n+=1
+                    data.append(one_hit + (n,))
+                    families.append(one_hit[7])
+                    phylum.append(one_hit[5])
+                    superkingdom.append(one_hit[-1])
+        if not 'Phylum' in request.POST and not 'Superkingdom' in request.POST:
+            classif_table = dict(Counter(superkingdom))
+
+        elif not 'Phylum' in request.POST and 'Superkingdom' in request.POST:
+            classif_table = dict(Counter(phylum))
+
+        else:
+            classif_table = dict(Counter(families))
+
+        print classif_table
+
+        '''
+        import pandas
+        frame = pandas.DataFrame(data, columns= ['n',
+                                                 'locus_tag',
+                                                 'subject_taxon_id',
+                                                 'nr_hit_id',
+                                                 'subject_accession',
+                                                 'kingdom',
+                                                 'phylum',
+                                                 'order',
+                                                 'family',
+                                                 'genus',
+                                                 'species',
+                                                 'evalue',
+                                                 'percent_identity','query_start','query_end','subject_title','taxon_id'])
+
+        print frame
+        '''
+        envoi = True
+
+
+    return render(request, 'chlamdb/search_taxonomy.html', locals())
+
+
 @login_required
 def interpro(request, biodb):
     server = manipulate_biosqldb.load_db()
@@ -1491,7 +1703,7 @@ def blast(request, biodb):
                 #blast_file.write(blast_stdout)
                 out, err, code = shell_command.shell_command('cat /temp/blast.temp | wc -l')
                 print 'n lines', out
-                if blast_type=='blastp':
+                if blast_type=='blastp' or blast_type=='blastn_ffn':
                     mview_cmd = 'mview -in blast -srs on -ruler on -html data -css on -coloring identity /tmp/blast.temp' #% blast_file.name
                 else:
                     mview_cmd = 'mview -in blast -ruler on -html data -css on -coloring identity /tmp/blast.temp'
