@@ -212,6 +212,7 @@ def get_family_size(server, biodatabase_name):
         #
         family = 0
         # todo really -1?????
+        # row[1:] because first column is the orthogroup name
         for i in row[1:]:
             if i >0:
                 family+=1

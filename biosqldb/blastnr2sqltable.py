@@ -464,6 +464,7 @@ def blastnr2biodb_taxonomic_table(db_name,
                                 db=mysql_db) # name of the data base
     cursor = conn.cursor()
 
+    server, db = manipulate_biosqldb.load_db(db_name)
 
     import numpy
     from multiprocessing import Process
@@ -640,6 +641,8 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
     '''
 
     import sequence_id2scientific_classification
+
+
     import MySQLdb
 
     print 'host', mysql_host
@@ -721,9 +724,10 @@ def blastnr2biosql(seqfeature_id2locus_tag,
 
     import numpy
     from multiprocessing import Process
+    import biosql_own_sql_tables
     print 'host1', mysql_host
     print 'user1', mysql_user
-
+    '''
     # add eventual new taxons to the main blastnr taxonomy table
     #update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *input_blast_files)
 
@@ -750,9 +754,11 @@ def blastnr2biosql(seqfeature_id2locus_tag,
     # Wait for all worker processes to finish
     for proc in procs:
         proc.join()
+    '''
 
     blastnr2biodb_taxonomic_table(db_name, locus_tag2accession, mysql_host, mysql_user, mysql_pwd, mysql_db, n_procs)
 
+    biosql_own_sql_tables.clean_multispecies_blastnr_record(db_name, create_new_sql_tables=True)
 
 def del_blastnr_table_content(db_name):
     server, db = manipulate_biosqldb.load_db(db_name)
