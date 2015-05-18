@@ -225,7 +225,7 @@ class CircosAccession2multiplot():
         #print "taxon_id2description_ref", taxon_id2description_reference
         chr_spacing_list = []
         print "reference_records", len(reference_records), reference_records
-        if len(reference_records) > 0 and draft_fasta[0] is None and draft_fasta[1] is None:
+        if len(reference_records) == 1 and draft_fasta[0] is None:
             for i in range(0, len(reference_records)-1):
                 chr_spacing_list.append([reference_records[i].id, reference_records[i+1].id])
             chr_spacing_list.append([reference_records[-1].id, reference_records[0].id])
@@ -237,6 +237,8 @@ class CircosAccession2multiplot():
             except:
                 chr_spacing_list.append([draft_fasta[0][-1][0], reference_records[-1].name])
                 chr_spacing_list.append([draft_fasta[0][0][0], reference_records[-1].name])
+        else:
+            chr_spacing_list.append([reference_records[-1].id, reference_records[0].id])
 
         print chr_spacing_list
 
