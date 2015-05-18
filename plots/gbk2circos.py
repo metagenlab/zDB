@@ -36,7 +36,7 @@ def circos_fasta_draft_misc_features(record):
             contigs.append([record.name + "_%s" % 1, 0, int(gap_locations[i].start)])
         else:
             contigs.append([record.name + "_%s" % (i+1), int(gap_locations[i-1].end), int(gap_locations[i].start)])
-    contigs.append([record.name + "_%s" % (i+1), int(gap_locations[-1].end), int(len(record.seq))])
+    contigs.append([record.name + "_%s" % (i+2), int(gap_locations[-1].end), int(len(record.seq))])
     return contigs
 
 
