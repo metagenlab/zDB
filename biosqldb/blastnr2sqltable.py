@@ -420,6 +420,7 @@ def _load_taxonomic_data(biodb, mysql_host, mysql_user, mysql_pwd, mysql_db, acc
     cursor = conn.cursor()
 
     for accession in accession_list:
+        print 'Loading...', accession
 
         sql1 = 'select nr_hit_id, subject_taxid from blastnr_hits_%s_%s' % (biodb, accession)
         cursor.execute(sql1)

@@ -25,6 +25,8 @@ def get_feature_neighborhood(feature_start, feature_end, contig_or_genome_record
     end = feature_end + neighborhood_size_bp
     print "feature_end + neighborhood_size_bp", feature_end, neighborhood_size_bp, "donne", feature_end + neighborhood_size_bp
     print "hasjhs", feature_end, end
+    if start < 0:
+        start = 0
     #if contig_or_genome_record.features[0].location.start > start:
     #        start = 0
     #if contig_or_genome_record.features[0].location.end < end:

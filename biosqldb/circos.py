@@ -216,17 +216,20 @@ class CircosAccession2multiplot():
                                                                                                    locus_superantigens2,
                                                                                                    taxon_list = queries_taxon_id,
                                                                                                    query_taxon_id=False,
-                                                                                                   draft_data=draft_fasta)
+                                                                                               draft_data=draft_fasta)
+
+
+
 
 
         #print "taxon_id2description_ref", taxon_id2description_reference
         chr_spacing_list = []
         print "reference_records", len(reference_records), reference_records
-        if len(reference_records) > 0 and draft_fasta is False:
+        if len(reference_records) > 0 and draft_fasta[0] is None and draft_fasta[1] is None:
             for i in range(0, len(reference_records)-1):
                 chr_spacing_list.append([reference_records[i].id, reference_records[i+1].id])
             chr_spacing_list.append([reference_records[-1].id, reference_records[0].id])
-        elif len(reference_records) == 2 and draft_fasta is not False:
+        elif len(reference_records) == 2 and draft_fasta[0] is not None:
 
             try:
                 chr_spacing_list.append([draft_fasta[0][-1][0], draft_fasta[1][0][0]])
@@ -487,7 +490,8 @@ class CircosAccession2blastnr_plot():
                  reference_records,
                  out_directory,
                  locus_highlight=[],
-                 queries_accession=[]):
+                 queries_accession=[],
+                 exclude_family=False):
 
         import manipulate_biosqldb
         import gbk2circos
@@ -513,19 +517,23 @@ class CircosAccession2blastnr_plot():
         draft_fasta = []
         for record in reference_records:
             draft_fasta.append(gbk2circos.circos_fasta_draft_misc_features(record))
-
+        print '###### draft ########'
+        print draft_fasta
+        print '###### draft ########'
         #print record_list
         circos_files_reference = gbk2circos.orthology_circos_files(server,
-                                                                                                   reference_records,
-                                                                                                   reference_taxon_id,
-                                                                                                   biodatabase_name,
-                                                                                                   out_directory,
-                                                                                                   locus_highlight,
-                                                                                                   taxon_list = queries_taxon_id,
-                                                                                                   query_taxon_id=False,
-                                                                                                   draft_data=draft_fasta)
+                                                                   reference_records,
+                                                                   reference_taxon_id,
+                                                                   biodatabase_name,
+                                                                   out_directory,
+                                                                   locus_highlight,
+                                                                   taxon_list = queries_taxon_id,
+                                                                   query_taxon_id=False,
+                                                                   draft_data=draft_fasta)
 
 
+        print '################ draft fasta ################'
+        print draft_fasta
 
         # add spacing between chromosome and plasmids
         chr_spacing_list = []
@@ -543,7 +551,7 @@ class CircosAccession2blastnr_plot():
                 chr_spacing_list.append([draft_fasta[0][0][0], reference_records[-1].name])
 
         # get circos config object
-        circos_reference = gbk2circos.Circos_config(circos_files_reference["contigs"], chr_spacing_list)
+        circos_reference = gbk2circos.Circos_config(circos_files_reference["contigs"], chr_spacing_list, ideogram_spacing=4)
 
         # add plus minus genes
 
@@ -559,7 +567,7 @@ class CircosAccession2blastnr_plot():
         # writing n blast non chlamydiae
 
 
-        blastnr_files = gbk2circos.print_blasnr_circos_files(reference_records, biodatabase_name, out_directory, draft_coordinates=False)
+        blastnr_files = gbk2circos.print_blasnr_circos_files(reference_records, biodatabase_name, out_directory, draft_coordinates=False, exclude_family=exclude_family)
 
         '''
         all_file_names['file_n_genomes'] = os.path.join(out_directory,"circos_n_genome_presence.txt")
@@ -586,6 +594,8 @@ class CircosAccession2blastnr_plot():
         conditions = circos_reference.template_rules % (circos_reference.template_rule('var(value) < 25', 'not_conserved') +
                                                         circos_reference.template_rule('var(value) > 25', 'group_size'))
 
+        backgrounds = circos_reference.template_backgrounds % (circos_reference.template_background('back'))
+
         circos_reference.add_plot(blastnr_files['file_n_genomes'],
                                   thickness="0.5p",
                                   fill_color="vlgreen",
@@ -593,10 +603,13 @@ class CircosAccession2blastnr_plot():
                                   r1="0.54r",
                                   r0= "0.49r",
                                   type="histogram",
-                                  rules=conditions)
+                                  rules=conditions,
+                                  backgrounds=backgrounds)
 
         conditions = circos_reference.template_rules % (circos_reference.template_rule('var(value) < 100', 'not_conserved') +
                                                         circos_reference.template_rule('var(value) > 99', 'non_chlamydiales'))
+
+        backgrounds = circos_reference.template_backgrounds % (circos_reference.template_background('back'))
 
         circos_reference.add_plot(blastnr_files['file_n_blastnr'],
                                   thickness="0.5p",
@@ -605,19 +618,23 @@ class CircosAccession2blastnr_plot():
                                   r1="0.60r",
                                   r0= "0.55r",
                                   type="histogram",
-                                  rules=conditions)
+                                  rules=conditions,
+                                  backgrounds=backgrounds)
 
+
+        backgrounds = circos_reference.template_backgrounds % (circos_reference.template_background('back'))
         circos_reference.add_plot(blastnr_files['file_n_blast_eukaryote'],
                                   thickness="0.5p",
                                   fill_color="not_conserved",
                                   color="black",
                                   r1="0.66r",
                                   r0= "0.61r",
-                                  type="histogram")
+                                  type="histogram",
+                                  backgrounds=backgrounds)
 
         conditions = circos_reference.template_rules % (circos_reference.template_rule('var(value) < 100', 'not_conserved') +
                                                         circos_reference.template_rule('var(value) > 99', 'non_chlamydiales'))
-
+        backgrounds = circos_reference.template_backgrounds % (circos_reference.template_background('back'))
         circos_reference.add_plot(blastnr_files['file_n_blast_bacteria'],
                                   thickness="0.5p",
                                   fill_color="vlgreen",
@@ -625,30 +642,50 @@ class CircosAccession2blastnr_plot():
                                   r1="0.72r",
                                   r0= "0.67r",
                                   type="histogram",
-                                  rules=conditions)
+                                  rules=conditions,
+                                  backgrounds=backgrounds)
 
         #conditions = circos_reference.template_rules % (circos_reference.template_rule("var(value) < 100", "not_conserved"),
         #                                                circos_reference.template_rule("var(value) > 99", "non_chlamydiales"))
-
+        backgrounds = circos_reference.template_backgrounds % (circos_reference.template_background('back'))
         circos_reference.add_plot(blastnr_files['file_n_blast_chlamydiae'],
                                   thickness="0.5p",
                                   fill_color="vlgreen",
                                   color="black",
                                   r1="0.78r",
                                   r0= "0.73r",
-                                  type="histogram")
+                                  type="histogram",
+                                  backgrounds=backgrounds)
 
 
         #conditions = circos_reference.template_rules % (circos_reference.template_rule("var(value) < 100", "not_conserved"),
         #                                                circos_reference.template_rule("var(value) > 99", "non_chlamydiales"))
+        backgrounds = circos_reference.template_backgrounds % (circos_reference.template_background('back'))
 
         circos_reference.add_plot(blastnr_files['file_n_blast_non_chlamydiae'],
                                   thickness="0.5p",
-                                  fill_color="non_chlamydiales",
+                                  fill_color="green, blue",
                                   color="black",
                                   r1="0.84r",
                                   r0= "0.79r",
-                                  type="histogram")
+                                  type="histogram",
+                                  z=1,
+                                  backgrounds=backgrounds)
+
+        backgrounds = circos_reference.template_backgrounds % (circos_reference.template_background('back'))
+
+        circos_reference.add_plot(blastnr_files['file_stacked_chlamydiales'],
+                                  thickness="0.5p",
+                                  fill_color="non_chlamydiales",
+                                  color="black",
+                                  r0= "0.85r",
+                                  type="histogram",
+                                  z=1,
+                                  backgrounds=backgrounds)
+
+
+
+
 
         out_name = ''
         for accession in reference_accessions:
@@ -671,13 +708,22 @@ class CircosAccession2blastnr_plot():
         (stdout, stderr, return_code) = shell_command.shell_command(cmd)
 
 
+if __name__ == '__main__':
 
-import manipulate_biosqldb
-server, db = manipulate_biosqldb.load_db('chlamydia_03_15')
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db('chlamydia_03_15')
 
-refernce = db.lookup(accession="AE001273")
+    #refernce = db.lookup(accession="AE001273") trachomatis
 
-a = CircosAccession2blastnr_plot(server,
-                 'chlamydia_03_15',
-                 [refernce],
-                 "/home/trestan/Dropbox/projets/rhabdo/circos_overview/test")
+
+
+    #refernce =  db.lookup(accession="NC_015713") # simkania
+    #plamsid = db.lookup(accession="NC_015710") # simkania plasmid
+
+    reference =  db.lookup(accession="Rhab")
+
+
+    a = CircosAccession2blastnr_plot(server,
+                     'chlamydia_03_15',
+                     [reference],
+                     "/home/trestan/Dropbox/projets/rhabdo/circos_overview/test")

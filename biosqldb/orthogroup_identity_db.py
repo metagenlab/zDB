@@ -463,5 +463,5 @@ if __name__ == '__main__':
 
     tata = Orthogroup_Identity_DB(args.db_name)
     tata.import_alignments(tata.cursor, args.align_files)
-    #tata.add_average_orthogroup_identity(args.db_name)
+    tata.add_average_orthogroup_identity(args.db_name)
     #check_identity("Chlamydia_12_14", "group_825", "Cav1_00733", "CT565")

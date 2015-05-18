@@ -18,7 +18,7 @@ def import_gbk(gbk_name, server_name, db_name):
         print "genbank file contains more than one record (if the assembly contain more than one contig, contactenate contigs into a single record before importing it the the sql database"
         sys.exit()
     #With this iterator, the loading of the database is another one-liner:
-
+    db_name.load(iterator)
     try:
         db_name.load(iterator)
     except:
