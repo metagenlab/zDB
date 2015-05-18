@@ -26,7 +26,7 @@ def _begin(output,format,new,ratio=1.375,**kwargs):
         if output is None:
             output = unique_filename_in()
         if format == 'pdf':
-                robjects.r('pdf("%s",paper="a4",height=8*%f,width=8)' %(output,ratio))
+                robjects.r('library(Cairo);CairoPDF("%s",paper="a4",height=8*%f,width=8)' %(output,ratio))
         elif format == 'png':
             robjects.r('png("%s",height=800*%f,width=800,type="cairo")' %(output,ratio))
         else:
@@ -127,9 +127,11 @@ labRow[odhrow] = labRow""")
         ncol = 10
     ncol = max(3,ncol)
     robjects.r("""
+
 library(gplots)
 library(RColorBrewer)
 print(myBreaks)
+print('Drawing heatmap')
 myColors=c("white","blue","red")
 #myColors = rev(colorRampPalette(brewer.pal(%i,"RdYlBu"))(length(myBreaks)-1))
 par(oma = c(22, 0, 0, 5), xpd=TRUE)

@@ -18,8 +18,8 @@ def biodb2heatmap(bio_db_name):
 
     group_names = matrix[:,0]
     taxons_ids = manipulate_biosqldb.get_taxon_id_list(server, bio_db_name)
-    print taxons_ids
-    print len(taxons_ids)
+
+    print 'Number of taxons:', len(taxons_ids)
     taxons_ids = [taxon_id2description[str(i)] for i in taxons_ids]
 
 
@@ -144,11 +144,11 @@ def convert_tree_accession2genome(biodb_name, input_tree, output_tree ):
 #####################################
 
 if __name__ == '__main__':
-    convert_tree("saureus_01_15",
-             "/home/trestan/Dropbox/projets/saureus/results/MiSeq/final/trees/saureus_MLST_BioNJ_tree.phyloxml",
-             '/home/trestan/Dropbox/projets/saureus/results/MiSeq/final/trees/saureus_MLST_BioNJ_tree_renamed.tree')
+    #convert_tree("saureus_01_15",
+    #         "/home/trestan/Dropbox/projets/saureus/results/MiSeq/final/trees/saureus_MLST_BioNJ_tree.phyloxml",
+    #         '/home/trestan/Dropbox/projets/saureus/results/MiSeq/final/trees/saureus_MLST_BioNJ_tree_renamed.tree')
 
-    #biodb2heatmap("Chlamydia_01_15")
+    biodb2heatmap("chlamydia_03_15")
     #write_ortho_matrix("giant_virus_12_14")
 
 

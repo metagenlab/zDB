@@ -29,14 +29,14 @@ def circos_fasta_draft_misc_features(record):
         if feature.type == "assembly_gap":
             gap_locations.append(feature.location)
     if len(gap_locations) == 0:
-        return []
+        return None
     contigs = []
     for i in range(0, len(gap_locations)):
         if i == 0:
             contigs.append([record.name + "_%s" % 1, 0, int(gap_locations[i].start)])
         else:
             contigs.append([record.name + "_%s" % (i+1), int(gap_locations[i-1].end), int(gap_locations[i].start)])
-    contigs.append([record.name + "_%s" % (len(gap_locations)+1), int(gap_locations[-1].end), len(record.seq)])
+
     return contigs
 
 
@@ -176,6 +176,7 @@ def print_circos_record_file(record_list, out_name = "circos_contigs.txt", draft
     i = 1
     f = open(out_name, "w")
     x = 0
+
     for record in record_list:
 
       try:
@@ -208,7 +209,7 @@ def print_circos_record_file(record_list, out_name = "circos_contigs.txt", draft
 
 def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                            out_name = "circos_genes_plus.txt",
-                           locus_highlight=[], draft_data=False,
+                           locus_highlight=[], draft_data=[None],
                            group_id2orthologs_presence=False, query_taxon_id=False,
                            color_missing=True, draft_coordinates=False):
 
@@ -221,13 +222,13 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
     if strand == "-1":
         f = open(out_name, "w")
 
+    print 'n records:', len(record_list)
 
     for y, record in enumerate(record_list):
         for feature in record.features:
             if feature.type == feature_type:
                 if str(feature.strand) == strand:
                     try:
-                        #print "draft_data[y]", draft_data[y]
                         for i in draft_data[y]:
                             # determine to which contig the feature belong
 
@@ -240,18 +241,30 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                                     contig = i[0]
                                     start = feature.location.start
                                     end = feature.location.end
-                    # in case the second record is not fragmented in several contigs (no draft data)
                     except IndexError:
-                        print "no draft for", record.id
                         contig = record.id # fill_color=violet
                         start = feature.location.start
                         end = feature.location.end
                     except TypeError:
-                        print "no draft for", record.id
                         contig = record.id # fill_color=violet
                         start = feature.location.start
                         end = feature.location.end
+
+                    '''
+                    # in case the second record is not fragmented in several contigs (no draft data)
+                    except IndexError:
+                        #print "no draft for", record.id
+                        contig = record.id # fill_color=violet
+                        start = feature.location.start
+                        end = feature.location.end
+                    except TypeError:
+                        #print "no draft for", record.id
+                        contig = record.id # fill_color=violet
+                        start = feature.location.start
+                        end = feature.location.end
+                    '''
                     #print "longueur", len(feature.location), type(len(feature.location)), feature.location.start, feature.location.end
+
 
                     if numpy.abs(feature.location.start-feature.location.end) > 50000:
                         continue
@@ -261,46 +274,51 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                         continue
                     try:
                         a = feature.qualifiers['orthogroup']
+                        orthology_tag = True
                     except:
-                        print "problem with", feature
-                        continue
+                        orthology_tag = False
 
-                    if feature.qualifiers['orthogroup'][0] in locus_highlight:
+                    if orthology_tag:
+                        if feature.qualifiers['orthogroup'][0] in locus_highlight:
 
-                        print "COLORS!!!!!!!!!!!!!!!!!!!"
-                        try:
-                            '''
-                            f.write('%s %s %s fill_color=violet, id=locus:_%s_gene:_%s_product:_%s\n' % (contig,
-                                                                                                     start,
-                                                                                                     end,
-                                                                                                     feature.qualifiers['locus_tag'][0],
-                                                                                                     feature.qualifiers['gene'][0],
-                                                                                                     re.sub("[ |\-|(|)|\[|\]|\.|,]", "_",
-                                                                                                     feature.qualifiers['product'][0])))
-                            '''
-                            f.write('%s %s %s fill_color=violet, id=%s\n' % (contig,
-                                                                    start,
-                                                                    end, feature.qualifiers['locus_tag'][0]))
-
-
-                        except:
-                            '''
-                            f.write('%s %s %s fill_color=violet, id=locus:_%s_gene:_%s_product:_%s\n' % (contig,
-                                                                                                     start,
-                                                                                                     end,
-                                                                                                     feature.qualifiers['locus_tag'][0],
-                                                                                                     "-",
-                                                                                                     re.sub("[ |\-|(|)|\[|\]|\.|,]", "_",
-                                                                                                     feature.qualifiers['product'][0])))
-                            '''
-                            f.write('%s %s %s fill_color=violet, id=%s\n' % (contig,
-                                                                    start,
-                                                                    end,
-                                                                    feature.qualifiers['locus_tag'][0]))
+                            print "COLORS!!!!!!!!!!!!!!!!!!!"
+                            try:
+                                '''
+                                f.write('%s %s %s fill_color=violet, id=locus:_%s_gene:_%s_product:_%s\n' % (contig,
+                                                                                                         start,
+                                                                                                         end,
+                                                                                                         feature.qualifiers['locus_tag'][0],
+                                                                                                         feature.qualifiers['gene'][0],
+                                                                                                         re.sub("[ |\-|(|)|\[|\]|\.|,]", "_",
+                                                                                                         feature.qualifiers['product'][0])))
+                                '''
+                                f.write('%s %s %s fill_color=violet, id=%s\n' % (contig,
+                                                                        start,
+                                                                        end, feature.qualifiers['locus_tag'][0]))
 
 
+                            except:
+                                '''
+                                f.write('%s %s %s fill_color=violet, id=locus:_%s_gene:_%s_product:_%s\n' % (contig,
+                                                                                                         start,
+                                                                                                         end,
+                                                                                                         feature.qualifiers['locus_tag'][0],
+                                                                                                         "-",
+                                                                                                         re.sub("[ |\-|(|)|\[|\]|\.|,]", "_",
+                                                                                                         feature.qualifiers['product'][0])))
+                                '''
+                                f.write('%s %s %s fill_color=violet, id=%s\n' % (contig,
+                                                                        start,
+                                                                        end,
+                                                                        feature.qualifiers['locus_tag'][0]))
 
-                    elif group_id2orthologs_presence and query_taxon_id and color_missing:
+                        else:
+
+                            f.write('%s %s %s id=%s\n' % (contig,
+                                                  start,
+                                                  end, feature.qualifiers['locus_tag'][0]))
+
+                    if group_id2orthologs_presence and query_taxon_id and color_missing:
                         if group_id2orthologs_presence[feature.qualifiers['orthogroup'][0]][int(query_taxon_id)] == 0:
                             f.write('%s %s %s fill_color=orange\n' % (contig,
                                                                     start,
@@ -437,7 +455,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
 
 
 
-def print_circos_GC_file(record_list, feature_type="CDS", out_name="circos_GC.txt", draft_data = False):
+def print_circos_GC_file(record_list, feature_type="CDS", out_directory=""):
 
 
     """
@@ -455,13 +473,17 @@ def print_circos_GC_file(record_list, feature_type="CDS", out_name="circos_GC.tx
         f.write("%s %s %s %s\n" % (contig, feature.start, feature.stop, feature.GC))
     """
     import GC
+    import os
 
-    f = open('circos_GC_var_%s.txt' % record_list[0].name, 'w')
-    g = open('circos_GC_skew_%s.txt' % record_list[0].name, 'w')
+    out_var_file = os.path.join(out_directory, 'circos_GC_var_%s.txt' % record_list[0].name)
+    out_skew_file = os.path.join(out_directory, 'circos_GC_skew_%s.txt' % record_list[0].name)
+    f = open(out_var_file, 'w')
+    g = open(out_skew_file, 'w')
 
     out_var = ''
     out_skew = ''
     for record in record_list:
+        # this function handle scaffolds (split sequence when encountering NNNNN regions)
         out_var += GC.circos_gc_var(record)
         out_skew += GC.circos_gc_skew(record)
     f.write(out_var)
@@ -469,19 +491,209 @@ def print_circos_GC_file(record_list, feature_type="CDS", out_name="circos_GC.tx
 
 
 
+    return (out_var_file, out_skew_file)
+
+
+def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordinates=False, exclude_family=False):
+    '''
+    :param record:
+    :return: circos string with difference as compared to the average GC
+    ex: average = 32
+        GC(seq[3000:4000]) = 44
+        diff = 44 - 32 = 12%
+
+    '''
+    import numpy
+
+    print '##########  %s  ###############' % exclude_family
+
+    accessions = []
+    for record in record_list:
+        accessions.append(record.id.split('.')[0])
+
+    import biosql_own_sql_tables as bsql
+
+    locus_tag2n_genomes_dico = bsql.locus_tag2presence_in_n_genomes(db_name)
+
+    locus_tag2n_blastnr_dico = {}
+    locus_tag2n_blast_bacteria = {}
+    locus_tag2n_blast_eukariota = {}
+    locus_tag2n_archae = {}
+    locus_tag2n_chlamydiae = {}
+    locus_tag2n_non_chlamydiae = {}
+    locus_tag2n_paralogs = {}
+
+    print 'getting dictionnaries'
+    for accession in accessions:
+        locus_tag2n_blastnr_dico.update(bsql.locus_tag2n_nr_hits(db_name, accession, exclude_family=exclude_family))
+        locus_tag2n_blast_bacteria.update(bsql.locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", exclude_family=exclude_family))
+        locus_tag2n_blast_eukariota.update(bsql.locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Eukaryota"))
+        locus_tag2n_archae.update(bsql.locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Archaea"))
+        locus_tag2n_chlamydiae.update(bsql.locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", reverse=False, exclude_family=exclude_family))
+        locus_tag2n_non_chlamydiae.update(bsql.locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", reverse=True, exclude_family=exclude_family))
+        locus_tag2n_paralogs.update(bsql.locus_tag2n_paralogs(db_name, accession))
+
+
+
+
+    circos_string_n_genome_presence = ''
+    circos_string_n_blastnr = ''
+    circos_string_n_blast_bacteria = ''
+    circos_string_n_blast_eukariota = ''
+    circos_string_n_archae = ''
+    circos_string_n_chlamydiae = ''
+    circos_string_n_non_chlamydiae = ''
+    circos_string_n_paralogs = ''
+    circos_string_stacked_chlamydiales = ''
+
+
+    draft_data = []
+    for biorecord in record_list:
+        temp = circos_fasta_draft_misc_features(biorecord)
+        draft_data.append(temp)
+
+
+
+    y = 0
+    for record in record_list:
+        for feature in record.features:
+            if feature.type == 'CDS':
+                if numpy.abs(feature.location.start-feature.location.end) > 50000:
+                    continue
+                if not 'pseudo' in feature.qualifiers:
+                    try:
+                        for i in draft_data[y]:
+                            # find in which contig the feature is located
+                            if int(feature.location.start) >= i[1] and int(feature.location.end) <= i[2]:
+                                contig = i[0]
+                                # keep contig coordinates or not
+                                if draft_coordinates:
+                                    start = feature.location.start - i[1]
+                                    end = feature.location.end - i[1]
+                                else:
+                                    start = feature.location.start
+                                    end = feature.location.end
+                    # in case we have draft data for one record and not the other (i.e not for a plasmid)
+
+                    except:
+                        contig = record.id
+                        start = feature.location.start
+                        end = feature.location.end
+                    #print "contig", contig
+
+                    try:
+                        n_genomes = locus_tag2n_genomes_dico[feature.qualifiers['locus_tag'][0]]
+                    except KeyError:
+                        import sys
+                        print 'problem with n homologs in', feature
+                        sys.exit()
+
+                    try:
+                        n_blastnr = locus_tag2n_blastnr_dico[feature.qualifiers['locus_tag'][0]]
+                        if n_blastnr == None:
+                            n_blastnr = 0
+                    except:
+                        n_blastnr = 0
+                    try:
+                        n_blast_bacteria = locus_tag2n_blast_bacteria[feature.qualifiers['locus_tag'][0]]
+                    except KeyError:
+                        n_blast_bacteria = 0
+
+                    try:
+                        n_blast_eukariota = locus_tag2n_blast_eukariota[feature.qualifiers['locus_tag'][0]]
+                    except KeyError:
+                        n_blast_eukariota = 0
+                    try:
+                        n_archae = locus_tag2n_archae[feature.qualifiers['locus_tag'][0]]
+                    except KeyError:
+                        n_archae = 0
+
+                    try:
+                        n_chlamydiae = locus_tag2n_chlamydiae[feature.qualifiers['locus_tag'][0]]
+                    except KeyError:
+                        n_chlamydiae = 0
+
+                    try:
+                        n_non_chlamydiae = locus_tag2n_non_chlamydiae[feature.qualifiers['locus_tag'][0]]
+                    except KeyError:
+                        n_non_chlamydiae = 0
+
+                    try:
+                        n_paralogs = locus_tag2n_paralogs[feature.qualifiers['locus_tag'][0]]
+                    except KeyError:
+                        n_paralogs = 0
+
+                    circos_string_n_genome_presence += "%s %s %s %s\n" % (contig, start, end, n_genomes)
+                    circos_string_n_blastnr += "%s %s %s %s\n" % (contig, start, end, n_blastnr)
+                    circos_string_n_blast_bacteria += "%s %s %s %s\n" % (contig, start, end, n_blast_bacteria)
+                    circos_string_n_blast_eukariota += "%s %s %s %s\n" % (contig, start, end, n_blast_eukariota)
+                    circos_string_n_archae += "%s %s %s %s\n" % (contig, start, end, n_archae)
+                    circos_string_n_chlamydiae += "%s %s %s %s\n" % (contig, start, end, n_chlamydiae)
+                    circos_string_n_non_chlamydiae += "%s %s %s %s\n" % (contig, start, end, n_non_chlamydiae)
+                    circos_string_n_paralogs += "%s %s %s %s\n" % (contig, start, end, n_paralogs)
+                    circos_string_stacked_chlamydiales += "%s %s %s %s,%s\n" % (contig, start, end, n_chlamydiae, n_non_chlamydiae)
+
+        y += 1
+    import os
+    all_file_names = {}
+    all_file_names['file_n_genomes'] = os.path.join(out_directory,"circos_n_genome_presence.txt")
+    all_file_names['file_n_blastnr'] = os.path.join(out_directory,"circos_n_blastnr.txt")
+    all_file_names['file_n_blast_bacteria'] = os.path.join(out_directory,"circos_n_blast_bactera.txt")
+    all_file_names['file_n_blast_eukaryote'] = os.path.join(out_directory,"circos_n_blast_eukaryota.txt")
+    all_file_names['file_n_blast_archae'] = os.path.join(out_directory,"circos_n_blast_archae.txt")
+    all_file_names['file_n_blast_chlamydiae'] = os.path.join(out_directory,"circos_n_blast_chlamydiae.txt")
+    all_file_names['file_n_blast_non_chlamydiae'] = os.path.join(out_directory,"circos_n_blast_non_chlamydiae.txt")
+    all_file_names['file_n_paralogs'] = os.path.join(out_directory,"circos_n_paralogs.txt")
+    all_file_names['file_stacked_chlamydiales'] = os.path.join(out_directory,"circos_stacked_chlamydiales.txt")
+
+    all_file_names['gc_var_file'], all_file_names['gc_skew_file'] = print_circos_GC_file(record_list, feature_type="CDS", out_directory=out_directory)
+
+    with open(all_file_names['file_n_genomes'], "w") as f:
+        f.write(circos_string_n_genome_presence)
+
+    with open(all_file_names['file_n_blastnr'], "w") as f:
+        f.write(circos_string_n_blastnr)
+
+    with open(all_file_names['file_n_blast_bacteria'], "w") as f:
+        f.write(circos_string_n_blast_bacteria)
+
+    with open(all_file_names['file_n_blast_eukaryote'], "w") as f:
+        f.write(circos_string_n_blast_eukariota)
+
+    with open(all_file_names['file_n_blast_archae'], "w") as f:
+        f.write(circos_string_n_archae)
+
+    with open(all_file_names['file_n_blast_chlamydiae'], "w") as f:
+        f.write(circos_string_n_chlamydiae)
+
+    with open(all_file_names['file_n_blast_non_chlamydiae'], "w") as f:
+        f.write(circos_string_n_non_chlamydiae)
+
+    with open(all_file_names['file_n_paralogs'], "w") as f:
+        f.write(circos_string_n_paralogs)
+
+    with open(all_file_names['file_stacked_chlamydiales'], "w") as f:
+        f.write(circos_string_stacked_chlamydiales)
+    #all_file_names.update(gc_files)
+
+    # return blastnr + GC files names
+    return all_file_names
+
+
+
 
 
   
 def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_name, out_dir, locus_highlight=[],
-                           feature_type="CDS", taxon_list=False, draft_data=False, query_taxon_id=False,
+                           feature_type="CDS", taxon_list=False, draft_data=[None], query_taxon_id=False,
                            draft_coordinates=False, color_missing=True):
 
     print "highlight", locus_highlight
 
     import os
-    print "orthology_circos_files"
-    print "draft_data", draft_data
-    print "locus highlight", locus_highlight
+    #print "orthology_circos_files"
+    #print "draft_data", draft_data
+    #print "locus highlight", locus_highlight
     all_file_names = {}
     ortho_size = mysqldb_load_mcl_output.get_all_orthogroup_size(server, biodatabase_name)
     ortho_identity = orthogroup_identity_db.orthogroup2average_identity(biodatabase_name)
@@ -489,7 +701,7 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
     ortho_family_size = mysqldb_load_mcl_output.get_family_size(server, biodatabase_name)
 
 
-    print ortho_family_size
+    #print ortho_family_size
 
     ortho_table = "orthology_%s" % biodatabase_name
     print "ortho_table", ortho_table
@@ -500,32 +712,25 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
 
     #print "all_taxon_ids", taxon_list
 
-    taxon_id2destription = {}
-
-    for taxon in taxon_list:
-        sql = 'select accession from bioentry where taxon_id=%s limit 1;' % taxon
-        description = server.adaptor.execute_and_fetchall(sql)[0]
-        taxon_id2destription[taxon] = description[0]
-
-
 
     #print "taxon_id2destription", taxon_id2destription
 
+    reference_taxon_id = str(reference_taxon_id)
 
     all_file_names["contigs"] = os.path.join(out_dir,
-                                           "circos_contigs_%s.txt" % taxon_id2destription[reference_taxon_id])
+                                           "circos_contigs_%s.txt" % reference_taxon_id)
     all_file_names["minus"] = os.path.join(out_dir,
-                                         "circos_genes_minus_%s.txt" % taxon_id2destription[reference_taxon_id])
+                                         "circos_genes_minus_%s.txt" % reference_taxon_id)
     all_file_names["plus"] = os.path.join(out_dir,
-                                        "circos_genes_plus_%s.txt" % taxon_id2destription[reference_taxon_id])
+                                        "circos_genes_plus_%s.txt" % reference_taxon_id)
     all_file_names["GC"] = os.path.join(out_dir,
-                                      "circos_GC_%s.txt" % taxon_id2destription[reference_taxon_id])
+                                      "circos_GC_%s.txt" % reference_taxon_id)
     all_file_names["orthogroups"] = os.path.join(out_dir,
-                                               "circos_orthogroup_size_%s.txt"  % taxon_id2destription[reference_taxon_id])
+                                               "circos_orthogroup_size_%s.txt"  % reference_taxon_id)
     all_file_names["orthogroups_identity"] = os.path.join(out_dir,
-                                               "circos_orthogroup_identity_%s.txt"  % taxon_id2destription[reference_taxon_id])
+                                               "circos_orthogroup_identity_%s.txt"  % reference_taxon_id)
     all_file_names["orthogroups_family"] = os.path.join(out_dir,
-                                               "circos_orthogroup_family_size_%s.txt"  % taxon_id2destription[reference_taxon_id])
+                                               "circos_orthogroup_family_size_%s.txt"  % reference_taxon_id)
 
     print "writing record file"
     print_circos_record_file(record_list, out_name = all_file_names["contigs"], draft_data=draft_data)
@@ -533,12 +738,14 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
     print_circos_gene_file(record_list, strand="-1", out_name = all_file_names["minus"], draft_data=draft_data,
                          locus_highlight=locus_highlight, group_id2orthologs_presence=group_id2orthologs_presence,
                          query_taxon_id=query_taxon_id)
+
     print "writing plus strand file"
     print_circos_gene_file(record_list, strand="1", out_name = all_file_names["plus"], draft_data=draft_data,
                          locus_highlight=locus_highlight, group_id2orthologs_presence=group_id2orthologs_presence,
                          query_taxon_id=query_taxon_id)
     print "writing GC file"
-    print_circos_GC_file(record_list, out_name = all_file_names["GC"], draft_data=draft_data)
+
+    all_file_names["GC_var"], all_file_names["GC_skew"] = print_circos_GC_file(record_list, out_directory = out_dir)
 
 
 
@@ -550,20 +757,23 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
     taxon_files = []
     all_file_names["genomes"] = []
 
-    #print "all_taxon_ids2", taxon_list
+    print "all_taxon_ids2", taxon_list
 
+    from copy import copy
 
+    temp_taxon_list = [int(i) for i in taxon_list]
     for i in range(0, len(taxon_list)):
         print i
         #print "taxon", taxon_list[i]
         if int(taxon_list[i]) == int(reference_taxon_id):
             rem = i
+            temp_taxon_list.pop(temp_taxon_list.index(int(reference_taxon_id)))
         else:
-            file_name = os.path.join(out_dir, "circos_taxon_%s_vs_%s.txt" % (taxon_id2destription[reference_taxon_id], taxon_id2destription[taxon_list[i]]))
+            file_name = os.path.join(out_dir, "circos_taxon_%s_vs_%s.txt" % (reference_taxon_id, taxon_list[i]))
             all_file_names["genomes"].append(file_name)
             taxon_files.append(open(file_name, "w"))
 
-    taxon_list.pop(rem)
+    taxon_list = temp_taxon_list
     y = 0
     for record in record_list:
         for feature in record.features:
@@ -589,10 +799,13 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                         start = feature.location.start
                         end = feature.location.end
                     #print "contig", contig
+
                     try:
                         line = "%s %s %s %s\n" % (contig, start, end, ortho_size[feature.qualifiers['orthogroup'][0]])
                     except:
                         print "problem ith", feature
+                        print contig, start, end
+                        print feature
                         continue
                     line2 = "%s %s %s %s\n" % (contig, start, end, ortho_identity[feature.qualifiers['orthogroup'][0]])
                     line3 = "%s %s %s %s\n" % (contig, start, end, ortho_family_size[feature.qualifiers['orthogroup'][0]])
@@ -612,7 +825,7 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                         else:
                             pass #taxon_file.write("%s %s %s\n" % (contig, feature.start, feature.stop))
         y += 1
-    return (all_file_names, taxon_id2destription)
+    return all_file_names
         
   #print manipulate_biosqldb.get_taxon_id_list(server, biodatabase_name)
 
@@ -705,6 +918,10 @@ class Circos_config:
                           " %s\n" \
                           "</rules>\n"
 
+    self.template_backgrounds = "<backgrounds>\n" \
+                          " %s\n" \
+                          "</backgrounds>\n"
+
 
     self.settings ="<colors>\n" \
                    " <<include colors.rn.conf>>\n" \
@@ -732,7 +949,7 @@ class Circos_config:
                '</pairwise>\n' % (chr1, chr2)
     return template
     
-  def _template_plot(self, file, type="line", r0=1, r1=1.05, color="black", fill_color="red", thickness = "2p", z = 1, rules =""):
+  def _template_plot(self, file, type="line", r0=1, r1=1.05, color="black", fill_color="red", thickness = "2p", z = 1, rules ="", backgrounds=""):
     template = "<plot>\n" \
                "type		    = %s\n" \
                " #min               = -0.4\n" \
@@ -745,7 +962,8 @@ class Circos_config:
                " file               = %s\n" \
                " z                  = %s\n" \
                " %s\n" \
-               " </plot>\n" % (type, r0, r1, color, fill_color, thickness, file, z, rules)
+               " %s\n" \
+               " </plot>\n" % (type, r0, r1, color, fill_color, thickness, file, z, rules, backgrounds)
     return template
 
   def template_rule(self, condition, fill_color):
@@ -754,6 +972,14 @@ class Circos_config:
                " fill_color         = %s\n" \
                " </rule>\n" % (condition, fill_color)
     return template
+
+  def template_background(self, color):
+    template = "<background>\n" \
+               " color         = %s\n" \
+               " </background>\n" % (color)
+    return template
+
+
 
   def _template_link(self, link_file, color="black_a5", thickness=1):
     template = "<link>\n" \
@@ -778,8 +1004,8 @@ class Circos_config:
     return template
 
 
-  def add_plot(self, file, type="line", r0=1, r1=1.05, color="black", fill_color="grey_a1", thickness = "2p", z = 1, rules =""):
-    plot = self._template_plot(file, type, r0, r1, color, fill_color, thickness, z, rules)
+  def add_plot(self, file, type="line", r0=1, r1=1.05, color="black", fill_color="grey_a1", thickness = "2p", z = 1, rules ="", backgrounds=""):
+    plot = self._template_plot(file, type, r0, r1, color, fill_color, thickness, z, rules, backgrounds)
     if len(re.findall("</plots>", self.plots))>0:
       # remove end balise
       self.plots = re.sub("</plots>", "", self.plots)
@@ -867,7 +1093,7 @@ def get_circos_GC_config_files(biodatabase_name, accession_list):
 
 if __name__ == '__main__':
     
-    
+    import shell_command
     parser = OptionParser()
 
     parser.add_option("-i", "--input",dest="input_file",action="store", type="string", help="genbank file", metavar="FILE")
@@ -880,9 +1106,9 @@ if __name__ == '__main__':
     # get list of all records present in the gbk file
     record_list=[]
    
-    for gb_record in SeqIO.parse(open(gb_file,"r"), "genbank") :
+    record_list = list(SeqIO.parse(open(gb_file,"r"), "genbank"))
         #print gb_record
-        record_list.append(Record(gb_record))
+
     
 
     # format output tab delimited table
@@ -897,7 +1123,25 @@ if __name__ == '__main__':
     #    else:
     #      print "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (feature.contig, feature.type, feature.start, feature.stop, feature.length, feature.GC, feature.strand, feature.gene, feature.product, feature.inference, feature.gi, feature.locus, feature.translation, feature.seq)
         
-    print_circos_record_file(record_list)
-    print_circos_gene_file(record_list)
-    print_circos_GC_file(record_list)
-    print_circos_GC_file(record_list)
+    print_circos_record_file(record_list, 'circos_contigs.txt')
+    print_circos_gene_file(record_list, strand="-1", out_name = 'circos_minus.txt')
+    print_circos_gene_file(record_list, strand="1", out_name = 'circos_plus.txt')
+    circos_GC, circos_skew = print_circos_GC_file(record_list)
+
+
+    circos_conf = Circos_config('circos_contigs.txt')
+
+    circos_conf.add_highlight('circos_plus.txt', fill_color="grey_a1", r1="0.8r", r0="0.75r")
+    circos_conf.add_highlight('circos_minus.txt', fill_color="grey_a1", r1="0.75r", r0="0.7r")
+
+    conditions = circos_conf.template_rules % (circos_conf.template_rule('var(value) < 0', 'lred') +
+                                                        circos_conf.template_rule('var(value) > 0', 'lblue'))
+    circos_conf.add_plot(circos_GC, fill_color="green", r1="0.99r", r0= "0.82r", type="line", rules=conditions)
+
+
+    t = open('circos_config.txt', "w")
+    t.write(circos_conf.get_file())
+    t.close()
+    cmd = "circos -outputfile circos -outputdir . -conf circos_config.txt"
+    print cmd
+    (stdout, stderr, return_code) = shell_command.shell_command(cmd)
