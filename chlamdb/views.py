@@ -909,17 +909,15 @@ def circos(request, biodb):
 
                 target_accessions = [manipulate_biosqldb.taxon_id2accessions(server,int(i),biodb)[0] for i in target_taxons]
 
+                print 'targets!', target_accessions
 
                 target_accessions += reference_accessions
                 print target_accessions
 
                 draft_data = []
                 for biorecord in record_list:
-                    temp = gbk2circos.circos_fasta_draft_misc_features(biorecord)
-                    if len(temp) > 0:
-                        draft_data.append(temp)
-                if len(draft_data) == 0:
-                    draft_data = False
+                    draft_data.append(gbk2circos.circos_fasta_draft_misc_features(biorecord))
+
                 home_dir = os.path.dirname(__file__)
                 print "home_dir", home_dir
                 temp_location = os.path.join(home_dir, "../assets/circos/")
@@ -1899,6 +1897,7 @@ def circos2genomes(request, biodb):
                 import circos
 
                 path = settings.BASE_DIR + "/assets/circos"
+
 
 
                 biplot = circos.CircosAccession2biplot(server, db, biodb, reference_records, query_records,
