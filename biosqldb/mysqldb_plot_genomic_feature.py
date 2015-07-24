@@ -631,6 +631,7 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
             sub_record_list.append(record)
         else:
             print "Getting region from %s" % record_id
+            print record
             sub_record = get_feature_neighborhood(target_feature_start,  target_feature_end, record, region_size_bp, "rec")
             sub_record_list.append(sub_record)
             print

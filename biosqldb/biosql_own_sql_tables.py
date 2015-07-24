@@ -15,6 +15,38 @@ def superkingdom_table():
 
 
 
+def COG_tables():
+    pass
+
+'''
+
+
+<domain-id>, <genome-name>, <protein-id>,<protein-length>,
+<domain-start>, <domain-end>, <COG-id>, <membership-class>,
+
+* Example:
+
+333894695,Alteromonas_SN2_uid67349,333894695,427,1,427,COG0001,0,
+
+CREATE TABLE cog_3014 (domain_id varchar(100),
+                        genome_name varchar(200),
+                        protein_id INT,
+                        protein_length INT,
+                        domain_start INT,
+                        domain_end INT,
+                        COG_id varchar(100),
+                        membership_class INT)
+
+# COG	func	name
+
+CREATE table cog_names_2014 (COG_id varchar(100),
+                            functon varchar(10),
+                             name varchar(200))
+
+create table locus_tag2COG_chlamydia_03_15 (locus_tag varchar(100), COG_id varchar (100))
+
+
+'''
 
 
 def create_contig_table(db_name):
@@ -749,6 +781,130 @@ def orthogroup2gene(db_name, accession=False):
 
     return ortho2gene
 
+
+
+
+
+
+def orthogroup2cog(db_name, group_list, accession=False):
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    group_list_form = '"' + '","'.join(group_list) + '"'
+
+    if not accession:
+        sql =  'select t1.orthogroup, t2.cog_id from (select * from biosqldb.orthology_detail_%s ' \
+               ' where orthogroup in (%s)) t1 left join COG.locus_tag2gi_hit_%s ' \
+               'as t2 on t1.locus_tag=t2.locus_tag;' % (db_name, group_list_form, db_name)
+    else:
+        sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join COG.locus_tag2gi_hit_%s ' \
+              'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
+
+    print 'df', sql
+    data = server.adaptor.execute_and_fetchall(sql,)
+
+    ortho2cog = {}
+
+    for row in data:
+        if row[0] not in ortho2cog:
+            ortho2cog[row[0]] = {}
+            ortho2cog[row[0]][row[1]] = 1
+        else:
+            if row[1] in ortho2cog[row[0]]:
+                ortho2cog[row[0]][row[1]] += 1
+            else:
+                ortho2cog[row[0]][row[1]] = 1
+
+    return ortho2cog
+
+def orthogroup2pfam(db_name, accession=False):
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    if not accession:
+        sql =  'select orthogroup, signature_accession from biosqldb.interpro_%s ' \
+               ' where analysis="Pfam"' % (db_name, )
+    else:
+        sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join (COG.locus_tag2gi_hit_%s ' \
+              'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
+
+    print 'df', sql
+    data = server.adaptor.execute_and_fetchall(sql,)
+
+    ortho2pfam = {}
+
+    for row in data:
+        if row[0] not in ortho2pfam:
+            ortho2pfam[row[0]] = {}
+            ortho2pfam[row[0]][row[1]] = 1
+        else:
+            if row[1] in ortho2pfam[row[0]]:
+                ortho2pfam[row[0]][row[1]] += 1
+            else:
+                ortho2pfam[row[0]][row[1]] = 1
+
+    return ortho2pfam
+
+
+def orthogroup2interpro(db_name, group_list, accession=False):
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    group_list_form = '"' + '","'.join(group_list) + '"'
+
+    if not accession:
+        sql =  'select t1.orthogroup, t2.cog_id from (select * from biosqldb.orthology_detail_%s ' \
+               ' where orthogroup in (%s)) t1 left join COG.locus_tag2gi_hit_%s ' \
+               'as t2 on t1.locus_tag=t2.locus_tag;' % (db_name, group_list_form, db_name)
+    else:
+        sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join COG.locus_tag2gi_hit_%s ' \
+              'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
+
+    print 'df', sql
+    data = server.adaptor.execute_and_fetchall(sql,)
+
+    ortho2cog = {}
+
+    for row in data:
+        if row[0] not in ortho2cog:
+            ortho2cog[row[0]] = {}
+            ortho2cog[row[0]][row[1]] = 1
+        else:
+            if row[1] in ortho2cog[row[0]]:
+                ortho2cog[row[0]][row[1]] += 1
+            else:
+                ortho2cog[row[0]][row[1]] = 1
+
+    return ortho2cog
+
+
+def pfam2description(db_name, accession=False):
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+
+    if not accession:
+        sql =  'select signature_accession, signature_description from biosqldb.interpro_%s ' \
+               ' where analysis="Pfam" group by signature_accession' % (db_name)
+    else:
+        sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join COG.locus_tag2gi_hit_%s ' \
+              'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
+
+
+    data = server.adaptor.execute_and_fetchall(sql,)
+
+
+
+    return manipulate_biosqldb.to_dict(data)
+
+
+
+
+
+
+
+
+
 def orthogroup2product(db_name, accession=False):
 
     server, db = manipulate_biosqldb.load_db(db_name)
@@ -853,9 +1009,9 @@ def get_cooccurring_groups(db_name, accession1, accession2, windows_size=10, min
         ref_window = reference_groups[start:start+windows_size]
         for start_query in range(0, len(query_groups)):
             query_window = query_groups[start_query:start_query+windows_size]
-
+            #print query_window, ref_window
             identical_groups = list(set(ref_window).intersection(query_window))
-            if len(identical_groups) > min_number_cooccurring:
+            if len(identical_groups) >= min_number_cooccurring:
                 for i in identical_groups:
                     if i in exclude:
                         break
@@ -865,6 +1021,31 @@ def get_cooccurring_groups(db_name, accession1, accession2, windows_size=10, min
 
     return conserved_regions
 
+def orthogroup2protein_id_list(db_name):
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    sql1 = 'select orthogroup, protein_id, locus_tag from orthology_detail_%s;' % db_name
+
+    data1 = server.adaptor.execute_and_fetchall(sql1)
+
+    orthogroup2protein_id_list_dico = {}
+    for i in data1:
+        orthogroup = i[0]
+        if i[1] == '-':
+            protein_id = i[2]
+        else:
+            protein_id = i[1]
+        if not orthogroup in orthogroup2protein_id_list_dico:
+            orthogroup2protein_id_list_dico[orthogroup] = [protein_id]
+        else:
+            orthogroup2protein_id_list_dico[orthogroup].append(protein_id)
+
+    return orthogroup2protein_id_list_dico
+
+
+
+
+
 if __name__ == '__main__':
     #print taxonomical_form('chlamydia_03_15')
     #locus_tag2best_hit_n_taxon_ids('chlamydia_03_15', 'Rhab')
@@ -872,7 +1053,7 @@ if __name__ == '__main__':
 
     #locus_tag2n_nr_hits('chlamydia_03_15', 'Rhab')
     #locus_tag2n_blast_bacteria('chlamydia_03_15', 'Rhab')
-    calculate_average_protein_identity('chlamydia_03_15')
+    #calculate_average_protein_identity('chlamydia_03_15')
     #
     '''
     ribosomal_proteins = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'CP001928', 10, 9)
@@ -884,16 +1065,121 @@ if __name__ == '__main__':
     print len(test)
     for i in test:
         print i
+    '''
+    wcw_syntheny = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'CP001928',3,3)
+    simkania_syntheny = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'NC_015713',3,3)
+    trachomatis_syntheny = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'AE001273',3,3)
+    para_proto_syntheny = get_cooccurring_groups('chlamydia_03_15', 'NC_005861', 'KNic',3,3)
+    tracho_muridarum = get_cooccurring_groups('chlamydia_03_15', 'NC_002620', 'AE001273',3,3)
+    print len(wcw_syntheny), len(simkania_syntheny), len(trachomatis_syntheny)
+    print len(para_proto_syntheny), len(tracho_muridarum)
 
+
+def _chunks(l, n):
+    return [l[i:i+n] for i in range(0, len(l), n)]
+
+
+def update_interpro_table(biodb, locus_list, locus2ortho, i):
+    server, db = manipulate_biosqldb.load_db(biodb)
+    y = 0
+    for locus in locus_list:
+        y+=1
+        print i,y, len(locus_list), locus
+        sql = 'UPDATE interpro_%s SET orthogroup="%s" WHERE  locus_tag="%s";' % (biodb, locus2ortho[locus], locus)
+        server.adaptor.execute(sql,)
+        server.commit()
+
+def add_orthogroup_to_interpro_table(biodb_name):
+    import numpy
+    from multiprocessing import Process
+    #sql = 'alter table interpro_%s ADD orthogroup VARCHAR(100);' % biodb_name
+    server, db = manipulate_biosqldb.load_db(biodb_name)
+    #server.adaptor.execute(sql,)
+    import time
+    locus2ortho = locus_tag2orthogroup(biodb_name)
+
+    n_cpu = 8
+    n_poc_per_list = int(numpy.ceil(len(locus2ortho)/float(n_cpu)))
+    query_lists = _chunks(locus2ortho.keys(), n_poc_per_list)
+    print len(query_lists)
+    time.sleep(5)
+    procs = []
+    i = 0
+    for one_list in query_lists:
+        i+= 1
+        proc = Process(target=update_interpro_table, args=(biodb_name, one_list, locus2ortho, i))#, out_q))
+        procs.append(proc)
+        proc.start()
+
+
+    print "join proc"
+    time.sleep(5)
+    for proc in procs:
+        proc.join()
+
+
+
+
+    '''
 
     import json
+    import re
     server, db = manipulate_biosqldb.load_db('chlamydia_03_15')
     taxon_id2genome_description = manipulate_biosqldb.taxon_id2genome_description(server, 'chlamydia_03_15')
+
+    for i, accession in enumerate(taxon_id2genome_description):
+        #print i, accession
+        description = taxon_id2genome_description[accession]
+        description = re.sub(", complete genome\.", "", description)
+        description = re.sub(", complete genome", "", description)
+        description = re.sub(", complete sequence\.", "", description)
+        description = re.sub("strain ", "", description)
+        description = re.sub("str\. ", "", description)
+        description = re.sub(" complete genome sequence\.", "", description)
+        description = re.sub(" complete genome\.", "", description)
+        description = re.sub(" chromosome", "", description)
+        description = re.sub(" DNA", "S.", description)
+        description = re.sub("Merged record from ", "", description)
+        description = re.sub(", wgs", "", description)
+        description = re.sub("Candidatus ", "", description)
+        description = re.sub(".contig.0_1, whole genome shotgun sequence.", "", description)
+        description = re.sub("Protochlamydia", "P.", description)
+        description = re.sub("Chlamydia", "C.", description)
+        description = re.sub("Chlamydophila", "E.", description)
+        description = re.sub("Estrella", "E.", description)
+        description = re.sub("Rhodopirellula", "R.", description)
+        description = re.sub("Methylacidiphilum", "M.", description)
+        description = re.sub(" phage", "", description)
+        description = re.sub("Parachlamydia", "P.", description)
+        description = re.sub("Neochlamydia", "Neo.", description)
+        description = re.sub("Simkania", "S.", description)
+        description = re.sub("Waddlia", "W.", description)
+        description = re.sub("Pirellula", "P.", description)
+        description = re.sub("Rhabdochlamydiaceae sp.", "Rhabdo", description)
+
+        taxon_id2genome_description[accession] = description
+        #taxon_id2genome_description[description] = accession[0]
+
+
     with open('genome_identity_dico.json', 'r') as f:
         genome_identity = json.load(f)
+    header = '\t'
+    genome_identity['316'] = {}
     for i in genome_identity:
-        print taxon_id2genome_description[i]
-        for y in genome_identity[i]:
-            print genome_identity[i]
-            print taxon_id2genome_description[str(y)], genome_identity[i][y]
-    '''
+        header += '%s\t' % taxon_id2genome_description[str(i)]
+
+    print header
+    for i in genome_identity:
+        row_string = '%s\t' % taxon_id2genome_description[str(i)]
+        for y in genome_identity:
+            #print y,i
+            try:
+                row_string += '%s\t' % round(genome_identity[i][y][0],2)
+
+            except KeyError:
+                try:
+                    row_string += '%s\t' % round(genome_identity[y][i][0],2)
+                except KeyError:
+                    row_string += '-\t'
+        print row_string
+'''

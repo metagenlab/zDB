@@ -33,7 +33,6 @@ class Orthogroup_Identity_DB:
             self.cursor = self.conn.cursor()
         self.conn.commit()
 
-
     def import_alignments(self, cursor, alignment_files):
 
         all_matrix = self._get_group_id2identity_matrix(alignment_files)
@@ -43,7 +42,6 @@ class Orthogroup_Identity_DB:
             self._create_identity_table(cursor, all_matrix[one_matrix], one_matrix)
             self._add_identity_data(cursor, all_matrix[one_matrix], one_matrix)
             self.conn.commit()
-
 
     def _create_identity_table(self, server, group_matrix, group_name):
 
@@ -281,7 +279,15 @@ def locus_tag2identity_best_hit_all_genomes(biodb_name, locus, group_name, locus
             for genome2 in genomes:
                 genome2genome[str(genome1)][str(genome2)] = []
 
-    identity_table = np.array(get_orthogroup_identity_table(biodb_name, group_name))
+    try:
+        identity_table = np.array(get_orthogroup_identity_table(biodb_name, group_name))
+        all_locus = identity_table[:, 0]
+    except:
+        genome2best_hit = {}
+        for genome1 in genomes:
+            genome2best_hit[genome1] = 0
+        return genome2best_hit
+
     print "identity table", len(identity_table)
 
     #locus_tag2genome_name = manipulate_biosqldb.locus_tag2genome_description(server, biodb_name)
@@ -289,7 +295,7 @@ def locus_tag2identity_best_hit_all_genomes(biodb_name, locus, group_name, locus
 
     print "locus_tag2taxonomic_id ok"
 
-    all_locus = identity_table[:, 0]
+
     locus_index_ref = list(all_locus).index(locus)
 
     '''
@@ -315,12 +321,12 @@ def locus_tag2identity_best_hit_all_genomes(biodb_name, locus, group_name, locus
 
 
 
-def locus_list2identity_in_other_genomes(locus_list):
-    server, db = manipulate_biosqldb.load_db("saureus_01_15")
+def locus_list2identity_in_other_genomes(locus_list, biodb):
+    server, db = manipulate_biosqldb.load_db(biodb)
 
-    locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, "saureus_01_15")
+    locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, biodb)
 
-    taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, "saureus_01_15")
+    taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
     import re
     for i in taxon_id2description.keys():
@@ -336,7 +342,7 @@ def locus_list2identity_in_other_genomes(locus_list):
 
 
     header = 'orthogroup\t'
-    dico = locus_tag2identity_best_hit_all_genomes("saureus_01_15", 'SaC_00362', 'group_2200')
+    dico = locus_tag2identity_best_hit_all_genomes(biodb, 'wcw_1594', 'group_417')
     for i in dico.keys():
 
         header += taxon_id2description[i] + '\t'
@@ -346,9 +352,9 @@ def locus_list2identity_in_other_genomes(locus_list):
     for locus in locus_list:
         print "locus", i
         seqfeature_id = locus_tag2seqfeature_id[locus]
-        orthogroup = manipulate_biosqldb.seqfeature_id2orthogroup(server, seqfeature_id, "saureus_01_15")
+        orthogroup = manipulate_biosqldb.seqfeature_id2orthogroup(server, seqfeature_id, biodb)
         print "ortho", orthogroup
-        dico = locus_tag2identity_best_hit_all_genomes("saureus_01_15", locus, orthogroup)
+        dico = locus_tag2identity_best_hit_all_genomes(biodb, locus, orthogroup)
         print "dico done..."
         out = '%s\t' % orthogroup
         for i in dico.keys():
