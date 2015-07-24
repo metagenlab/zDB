@@ -7,308 +7,303 @@
 
 <head>
 {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 
 </head>
 
 <body>
 
 
-
-
-{% include "chlamdb/user.html" %}
-{% include "chlamdb/menu.html" %}
-
-
-
-<section id="head_section">
-<section id="section_head">
-<p>Get annotation, sequences and homologous proteins of a target protein</p>
-<p>INPUT: locus tag or protein ID</p>
-</section>
-
-
-<!--
-{% load static %}
-<img src="{% static 'im_1.jpg' %}" alt="Mon image" />
--->
-
-
-
-
-
-<table>
-  <tr>
-  <td>
-      <form action="{% url "chlamdb.views.homology" biodb %}" method="post">
-{% csrf_token %}
-      {{ form.as_p }}</td>
-</tr>
-
-<tr>
-  <td><input type="submit" value="Submit" /></td>
-</tr>
-
-
-</table>
-
-
-</form>
-
-
-
-
-
-
-{% if envoi %}
-
-    {% if not valid_id %}
-
-        Unknown accession!
-        Accept protein ids and locus tags
-        <!--
-        Existing accessions are:
-        <table>
-        <tr>
-        <th>accession</th>
-        <th>Name</th>
-        </tr>
-        {% for key, value  in accession_dict.items %}
-    
-        <tr>
-        <td>{{key}}</td>
-        <td>{{value}}</td>
-        </tr>
-
-
-        {% endfor %}
-        </ul>
-        -->
-
-    {% else %}
-
-
-
-    {% if not plot_region %}
-
-    <table>
-    <tr> 
-    <td>{{bioentry_accession}}</td>
-    <td>{{bioentry_name}}  </td>  
-    </tr>
-    </table>
-
-     &nbsp
-
-
-
-
-     
-    &nbsp
-
-    {% if not group %}
-     
-    <h2>Features of {{accession}}</h2>
-  
-    <table>
-    <tr>
-    <th id="entete">Feature</th>
-    <th>Value</th>
-    </tr>
-
-        <tr>
-        <td>orthogroup</td>
-        <td id="entete_features">{{ data.0 }}</td>
-        </tr>
-
-        <tr>
-        <td>locus_tag</td>
-        <td id="entete_features">{{ data.1 }}</td>
-        </tr>
-        <tr>
-        <td>protein_id</td>
-        <td id="entete_features">{{ data.2 }}</td>
-        </tr>
-
-        <tr>
-        <td>start</td>
-        <td id="entete_features">{{ data.3 }}</td>
-        </tr>
-        <tr>
-        <td>stop</td>
-        <td id="entete_features">{{ data.4 }}</td>
-        </tr>
-         <tr>
-        <td>strand</td>
-        <td id="entete_features">{{ data.5 }}</td>
-        </tr>
-        <td>gene</td>
-        <td id="entete_features">{{ data.6 }}</td>
-        </tr>
-        <td>orthogroup size</td>
-        <td id="entete_features">{{ data.7 }}</td>
-        </tr>
-
-        <td>n genomes</td>
-        <td id="entete_features">{{ data.8 }}</td>
-        </tr>
-        <td>TM</td>
-        <td id="entete_features">{{ data.9 }}</td>
-        </tr>
-        <td>SP</td>
-        <td id="entete_features">{{ data.10 }}</td>
-        </tr>
-        <td>Product</td>
-        <td id="entete_features">{{ data.11 }}</td>
-        </tr>
-        <td>Organism</td>
-        <td id="entete_features">{{ data.12 }}</td>
-        </tr>
-        <tr>
-        <td>Translation</td>
-        <td id="entete_features">{{ data.13 }}</td>
-        </tr>
-
-
-    </table>
-
-    &nbsp
-    {% endif %}
-
-
-
-    {% if orthologs %}
-
-
-
-    <h2>Sequences</h2>
-    <table>
-    <tr>
-    <td id="entete_sequences"><a href="{% static fasta %}">Protein sequences (fasta)</a> </td>
-    </tr>
-    <tr>
-    <td><a href="{% static alignment %}">Protein alignment (html)</a> </td>
-    </tr>
-    <tr>
-    <td><a href="{% static alignment_fasta %}">Protein alignment (fasta)</a> </td>
-    </tr>
-    <tr>
-    <td><a href="{% static alignment_fasta_nucl %}">Nucleotide sequences (fasta)</a> </td>
-    </tr>
-        <td><a href="{% url "chlamdb.views.blastnr" biodb data.1  %}">BLAST NR</a> </td>
-    </tr>
-
-
-
-        <!--
-
-    <td><a href="{% static tree_unrooted %}"> Phylogenetic tree (unrooted)</a> </td>
-    </tr>
-
-    <td><a href="{% static tree_rooted %}">Phylogenetic tree (midproint rooted)</a> </td>
-    </tr>
-
-    <td><a href="{% static tree_file %}">Phylogenetic tree file (newick)</a> </td>
-    </tr>
--->
-
-    </table>
-
-
-    <h2>Homologs</h2>
-
-    <div id="export_bouttons">
-    <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'homologues_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-
-    <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'homologues_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-    <br/>
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
     </div>
 
-   <table id="homologues_table" class="sortable">
-    <thead>
-    <tr>
-    <th></th>
-    <th id="entete_locus" class="rotate">Orthogroup</th>
-    <th id="entete_gene" class="rotate">ID(%)</th>
-    <th id="entete_locus" class="rotate">Locus</th>
-    <th id="entete_locus" class="rotate">Protein id</th>
-    <th id="entete_gene" class="rotate">Start</th>
-    <th id="entete_gene" class="rotate">Stop</th>
-    <th id="entete_strand" class="rotate">S.</th>
-    <th id="entete_gene" class="rotate">Gene</th>
-    <th id="entete_n" class="rotate">nH</th>
-    <th id="entete_n" class="rotate">nG</th>
-    <th id="entete_n" class="rotate">TM</th>
-    <th id="entete_n" class="rotate">SP</th>
-    <th id="entete_product" class="rotate">Product</th>
-    <th id="entete_organism" class="rotate">Organism</th>
-    <th id="entete_translation" class="rotate">Translation</th>
+    <div id="header">
 
-    </tr>
-    </thead>
-    <tbody>
-    {% get_static_prefix as STATIC_PREFIX %}
-    {% for values in homologues %}
-        <tr>
-        <td>{{values.0}}</td>
-
-        <td>{{values.1}}</td>
-        <td>{{values.15}}</td>
-        <td><a href="{{ STATIC_PREFIX }}chlamdb/interpro/{{ values.16 }}.html" target="_blank">{{values.2}}</a></td>
-	    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
-	    <td>{{values.4}}</td>
-        <td>{{values.5}}</td>
-        <td>{{values.6}}</td>
-	    <td>{{values.7}}</td>
-	    <td>{{values.8}}</td>
-        <td>{{values.9}}</td>
-        <td>{{values.10}}</td>
-        <td>{{values.11}}</td>
-        <td>{{values.12}}</td>
-        <td>{{values.13}}</td>
-        <td>{{values.14}}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-    </table>
+    </div>
+        {% include "chlamdb/user.html" %}
+    <div id="content">
 
 
 
+            <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                  <div class="panel-heading" style="width:100%">
+                    <h3 class="panel-title">Help</h3>
+                    </div>
+            <p style="margin: 10px 10px 10px 10px"><p>Get annotation, sequences and homologous proteins of a target protein</p>
+            <p>INPUT: locus tag, protein ID or orthogroup ID</p>
+            </div>
+
+        <form action="{% url "chlamdb.views.homology" biodb %}" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Submit" />
+
+        </form>
+
+        {% if envoi %}
+
+            {% if not valid_id %}
+
+                Unknown accession!
+                Accept protein ids and locus tags
+                <!--
+                Existing accessions are:
+                <table>
+                <tr>
+                <th>accession</th>
+                <th>Name</th>
+                </tr>
+                {% for key, value  in accession_dict.items %}
+
+                <tr>
+                <td>{{key}}</td>
+                <td>{{value}}</td>
+                </tr>
+
+
+                {% endfor %}
+                </ul>
+                -->
+
+            {% else %}
+
+                {% if not group %}
+                    <h2>Features of {{accession}}</h2>
+
+                    <table>
+                    <tr>
+                    <th id="entete">Feature</th>
+                    <th>Value</th>
+                    </tr>
+
+                        <tr>
+                        <td>orthogroup</td>
+                        <td id="entete_features">{{ data.0 }}</td>
+                        </tr>
+
+                        <tr>
+                        <td>locus_tag</td>
+                        <td id="entete_features">{{ data.1 }}</td>
+                        </tr>
+                        <tr>
+                        <td>protein_id</td>
+                        <td id="entete_features">{{ data.2 }}</td>
+                        </tr>
+
+                        <tr>
+                        <td>start</td>
+                        <td id="entete_features">{{ data.3 }}</td>
+                        </tr>
+                        <tr>
+                        <td>stop</td>
+                        <td id="entete_features">{{ data.4 }}</td>
+                        </tr>
+                         <tr>
+                        <td>strand</td>
+                        <td id="entete_features">{{ data.5 }}</td>
+                        </tr>
+                        <td>gene</td>
+                        <td id="entete_features">{{ data.6 }}</td>
+                        </tr>
+                        <td>orthogroup size</td>
+                        <td id="entete_features">{{ data.7 }}</td>
+                        </tr>
+
+                        <td>n genomes</td>
+                        <td id="entete_features">{{ data.8 }}</td>
+                        </tr>
+                        <td>TM</td>
+                        <td id="entete_features">{{ data.9 }}</td>
+                        </tr>
+                        <td>SP</td>
+                        <td id="entete_features">{{ data.10 }}</td>
+                        </tr>
+                        <td>Product</td>
+                        <td id="entete_features">{{ data.11 }}</td>
+                        </tr>
+                        <td>Organism</td>
+                        <td id="entete_features">{{ data.12 }}</td>
+                        </tr>
+                        <tr>
+                        <td>Translation</td>
+                        <td id="entete_features">{{ data.13 }}</td>
+                        </tr>
+                        {%if cog_data %}
+                            <tr>
+                            <td>COG</td>
+                            <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
+                            </tr>
+                        {% endif %}
+
+                    </table>
+
+
+                    {%if cog_data %}
+                        <h3>Interpro</h3>
+
+                        <table>
+                            <tr>
+                            <th id="entete">Analysis</th>
+                            <th>Name</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Description</th>
+                            <th>Interpro</th>
+                            </tr>
+                            <tr>
+
+                            {% for values in interpro_data %}
+                            <tr>
+                                <td>{{values.0}}</td>
+
+                                {% if values.0 == 'SUPERFAMILY' %}
+                                   <td><a href="http://supfam.cs.bris.ac.uk/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{values.1}}">{{values.1}}</a></td>
+
+                                 {% elif values.0 = 'Pfam' %}
+                                   <td><a href="http://pfam.xfam.org/family/{{values.1}}">{{values.1}}</a></td>
+
+                                 {% elif values.0 = 'SMART' %}
+                                   <td><a href="http://smart.embl-heidelberg.de/smart/do_annotation.pl?ACC={{values.1}}&BLAST=DUMMY">{{values.1}}</a></td>
+
+                                 {% elif values.0 = 'Gene3D' %}
+                                   <td><a href="http://www.cathdb.info/version/latest/superfamily/{{values.1|slice:"6:"}}">{{values.1}}</a></td>
+
+                                 {% elif values.0 = 'ProSiteProfiles' %}
+                                   <td><a href="http://prosite.expasy.org/{{values.1}}">{{values.1}}</a></td>
+
+                                 {% elif values.0 = 'ProSitePatterns' %}
+                                   <td><a href="http://prosite.expasy.org/{{values.1}}">{{values.1}}</a></td>
+
+                                 {% elif values.0 = 'PRINTS' %}
+                                   <td><a href="http://www.bioinf.manchester.ac.uk/cgi-bin/dbbrowser/sprint/searchprintss.cgi?display_opts=Prints&category=None&queryform=false&prints_accn={{values.1}}">{{values.1}}</a></td>
+
+                                 {% elif values.0 = 'TIGRFAM' %}
+                                   <td><a href="http://www.jcvi.org/cgi-bin/tigrfams/HmmReportPage.cgi?acc={{values.1}}">{{values.1}}</a></td>
+
+                                {% else %}
+                                     <td>{{values.1}}</td>
+
+                                {% endif %}
+                                <td>{{values.2}}</td>
+                                <td>{{values.3}}</td>
+                                {% if values.4 != '0' %}
+                                   <td><a href="http://www.ebi.ac.uk/interpro/entry/{{values.3}}">{{values.4}}: {{values.5}}</a></td>
+                                {% else %}
+                                   <td>-</td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    {% endif %}
+
+
+                {% endif %}
 
 
 
-    {% else %}
-    <h2>Homologs</h2>
-    No homologs
 
-    {% endif %}
-    {% endif %}
-    {% endif %}
-
-    {% if plot_region %}
-    &nbsp
-    <h2>Region</h2>
-    {% load static %}
-    <img src="{% static name %}" id="genomic_region" />
-    {% endif %}
-
-{% endif %}
-
-
-
-</section>
+                    <h2>Sequences</h2>
+                    <table>
+                    <tr>
+                    <td id="entete_sequences"><a href="{% static fasta %}">Protein sequences (fasta)</a> </td>
+                    </tr>
+                    <tr>
+                    <td><a href="{% static alignment %}">Protein alignment (html)</a> </td>
+                    </tr>
+                    <tr>
+                    <td><a href="{% static alignment_fasta %}">Protein alignment (fasta)</a> </td>
+                    </tr>
+                    <tr>
+                    <td><a href="{% static alignment_fasta_nucl %}">Nucleotide sequences (fasta)</a> </td>
+                    </tr>
+                        <td><a href="{% url "chlamdb.views.blastnr" biodb data.1  %}">BLAST NR</a> </td>
+                    </tr>
 
 
 
+                    <!--
+
+                    <td><a href="{% static tree_unrooted %}"> Phylogenetic tree (unrooted)</a> </td>
+                    </tr>
+
+                    <td><a href="{% static tree_rooted %}">Phylogenetic tree (midproint rooted)</a> </td>
+                    </tr>
+
+                    <td><a href="{% static tree_file %}">Phylogenetic tree file (newick)</a> </td>
+                    </tr>
+                    -->
+
+                    </table>
 
 
+                    <h2>Homologs</h2>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+                    <div id="export_bouttons">
+                    <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'homologues_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
+                    <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'homologues_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                    <br/>
+                    </div>
 
+                   <table id="homologues_table" class="sortable">
+                    <thead>
+                    <tr>
+                    <th></th>
+                    <th id="entete_locus" class="rotate">Orthogroup</th>
+                    <th id="entete_gene" class="rotate">ID(%)</th>
+                    <th id="entete_locus" class="rotate">Locus</th>
+                    <th id="entete_locus" class="rotate">Protein id</th>
+                    <th id="entete_gene" class="rotate">Start</th>
+                    <th id="entete_gene" class="rotate">Stop</th>
+                    <th id="entete_strand" class="rotate">S.</th>
+                    <th id="entete_gene" class="rotate">Gene</th>
+                    <th id="entete_n" class="rotate">nH</th>
+                    <th id="entete_n" class="rotate">nG</th>
+                    <th id="entete_n" class="rotate">TM</th>
+                    <th id="entete_n" class="rotate">SP</th>
+                    <th id="entete_product" class="rotate">Product</th>
+                    <th id="entete_organism" class="rotate">Organism</th>
+                    <th id="entete_translation" class="rotate">Translation</th>
 
+                    </tr>
+                    </thead>
+                    <tbody>
 
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+                    {% for values in homologues %}
+                    {% load static %}
+                    {% get_static_prefix as STATIC_PREFIX %}
+                        <tr>
+                        <td>{{values.0}}</td>
+
+                        <td>{{values.1}}</td>
+                        <td>{{values.15}}</td>
+                        <td><a href="{{ STATIC_PREFIX }}chlamdb/interpro/{{ values.16 }}.html" target="_blank">{{values.2}}</a></td>
+                        <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
+                        <td>{{values.4}}</td>
+                        <td>{{values.5}}</td>
+                        <td>{{values.6}}</td>
+                        <td>{{values.7}}</td>
+                        <td>{{values.8}}</td>
+                        <td>{{values.9}}</td>
+                        <td>{{values.10}}</td>
+                        <td>{{values.11}}</td>
+                        <td>{{values.12}}</td>
+                        <td>{{values.13}}</td>
+                        <td>{{values.14}}</td>
+                        </tr>
+
+                    {% endfor %}
+                    </tbody>
+                    </table>
+
+            {% endif %}
+
+        {% endif %}
+
+    </div>
+</div>
+
 <script>
   var update_fields = function () {
     if ($("#id_plot_region").is(":checked")) {

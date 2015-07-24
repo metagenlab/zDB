@@ -15,228 +15,280 @@
 </head>
 
 <body id="locus_body">
-
-
-    {% if not valid_id %}
-        <section id="locus_section">
-        Unknown accession!
-        Accept protein ids and locus tags of CDS only
-        <section>
-        <!--
-        Existing accessions are:
-        <table>
-        <tr>
-        <th>accession</th>
-        <th>Name</th>
-        </tr>
-        {% for key, value  in accession_dict.items %}
-    
-        <tr>
-        <td>{{key}}</td>
-        <td>{{value}}</td>
-        </tr>
-
-
-        {% endfor %}
-        </ul>
-        -->
-
-    {% else %}
-   {%  if menu %}
-   {% include "chlamdb/menu.html" %}
-   <section  id="head_section">
-   {% else %}
-
-<section id="locus_section">
-    {% endif %}
-
-
-
-    {% if not plot_region %}
-
-
-
-    <table>
-    <tr>
-    <th id="entete">Feature</th>
-    <th>Value</th>
-    </tr>
-
-        <tr>
-        <td>orthogroup</td>
-        <td id="entete_features">{{ data.0 }}</td>
-        </tr>
-
-        <tr>
-        <td>locus_tag</td>
-        <td id="entete_features">{{ data.1 }}</td>
-        </tr>
-        <tr>
-        <td>protein_id</td>
-        <td id="entete_features">{{ data.2 }}</td>
-        </tr>
-
-        <tr>
-        <td>start</td>
-        <td id="entete_features">{{ data.3 }}</td>
-        </tr>
-        <tr>
-        <td>stop</td>
-        <td id="entete_features">{{ data.4 }}</td>
-        </tr>
-         <tr>
-        <td>strand</td>
-        <td id="entete_features">{{ data.5 }}</td>
-        </tr>
-        <td>gene</td>
-        <td id="entete_features">{{ data.6 }}</td>
-        </tr>
-        <td>orthogroup size</td>
-        <td id="entete_features">{{ data.7 }}</td>
-        </tr>
-
-        <td>n genomes</td>
-        <td id="entete_features">{{ data.8 }}</td>
-        </tr>
-        <td>TM</td>
-        <td id="entete_features">{{ data.9 }}</td>
-        </tr>
-        <td>SP</td>
-        <td id="entete_features">{{ data.10 }}</td>
-        </tr>
-        <td>Product</td>
-        <td id="entete_features">{{ data.11 }}</td>
-        </tr>
-        <td>Organism</td>
-        <td id="entete_features">{{ data.12 }}</td>
-        </tr>
-        <tr>
-        <td>Translation</td>
-        <td id="entete_features">{{ data.13 }}</td>
-        </tr>
-
-
-    </table>
-
-    {% if orthologs %}
-
-
-
-    <h2>Sequences</h2>
-    <table>
-    <tr>
-    <td id="entete_sequences"><a href="{% static fasta %}">Protein sequences (fasta)</a> </td>
-    </tr>
-    <tr>
-    <td><a href="{% static alignment %}">Protein alignment (html)</a> </td>
-    </tr>
-    <tr>
-    <td><a href="{% static alignment_fasta %}">Protein alignment (fasta)</a> </td>
-    </tr>
-    <tr>
-    <td><a href="{% static alignment_fasta_nucl %}">Nucleotide sequences (fasta)</a> </td>
-    </tr>
-        </tr>
-        <td><a href="{% url "chlamdb.views.blastnr" biodb data.1  %}">BLAST NR</a> </td>
-    </tr>
-
-    </table>
+<div id="container">
 
 
 
 
 
 
-    <div id="export_bouttons">
-    <a download="locus_{{ data.1 }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-    <a download="locus{{ data.1 }}.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to CSV</a>
-    <br/>
+        {% if not valid_id %}
+
+            <div id="content">
+            <div id="sidebar">
+                {% include "chlamdb/menu.html" %}
+            </div>
+            <div id="header">
+                {% include "chlamdb/user.html" %}
+            </div>
+            <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
+
+       {% else %}
+           {%  if menu %}
+
+                <div id="sidebar">
+                    {% include "chlamdb/menu.html" %}
+                </div>
+                <div id="header">
+                    {% include "chlamdb/user.html" %}
+                </div>
+
+           {% else %}
+                <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
+                <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
+                <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
+                <!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
+                <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
+                <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
+                <script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
+                <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+                <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
+
+                <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
+                <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
+                <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+
+                <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
+                <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
+                <style> #container {padding:0 0 0 0;}</style>
+                <section id="locus_section">
+           {% endif %}
+
+            {% if input_type != 'orthogroup' %}
+                <table>
+                <tr>
+                <th id="entete">Feature</th>
+                <th>Value</th>
+                </tr>
+
+                    <tr>
+                    <td>orthogroup</td>
+                    <td id="entete_features">{{ data.0 }}</td>
+                    </tr>
+
+                    <tr>
+                    <td>locus_tag</td>
+                    <td id="entete_features">{{ data.1 }}</td>
+                    </tr>
+                    <tr>
+                    <td>protein_id</td>
+                    <td id="entete_features">{{ data.2 }}</td>
+                    </tr>
+
+                    <tr>
+                    <td>start</td>
+                    <td id="entete_features">{{ data.3 }}</td>
+                    </tr>
+                    <tr>
+                    <td>stop</td>
+                    <td id="entete_features">{{ data.4 }}</td>
+                    </tr>
+                     <tr>
+                    <td>strand</td>
+                    <td id="entete_features">{{ data.5 }}</td>
+                    </tr>
+                    <td>gene</td>
+                    <td id="entete_features">{{ data.6 }}</td>
+                    </tr>
+                    <td>orthogroup size</td>
+                    <td id="entete_features">{{ data.7 }}</td>
+                    </tr>
+
+                    <td>n genomes</td>
+                    <td id="entete_features">{{ data.8 }}</td>
+                    </tr>
+                    <td>TM</td>
+                    <td id="entete_features">{{ data.9 }}</td>
+                    </tr>
+                    <td>SP</td>
+                    <td id="entete_features">{{ data.10 }}</td>
+                    </tr>
+                    <td>Product</td>
+                    <td id="entete_features">{{ data.11 }}</td>
+                    </tr>
+                    <td>Organism</td>
+                    <td id="entete_features">{{ data.12 }}</td>
+                    </tr>
+                    <tr>
+                    <td>Translation</td>
+                    <td id="entete_features">{{ data.13 }}</td>
+                    </tr>
+                    {%if cog_data %}
+                        <tr>
+                        <td>COG</td>
+                        <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
+                        </tr>
+                    {% endif %}
+
+                </table>
+
+
+
+                {%if cog_data %}
+                    <h3>Interpro</h3>
+
+                    <table>
+                        <tr>
+                        <th id="entete">Analysis</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Interpro</th>
+                        </tr>
+                        <tr>
+
+                        {% for values in interpro_data %}
+                        <tr>
+                            <td>{{values.0}}</td>
+
+                                {% if values.0 == 'SUPERFAMILY' %}
+                                   <td><a href="http://supfam.cs.bris.ac.uk/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{values.1}}">{{values.1}}</a></td>
+
+                                 {% elif values.0 = 'Pfam' %}
+                                   <td><a href="http://pfam.xfam.org/family/{{values.1}}">{{values.1}}</a></td>
+
+                                 {% elif values.0 = 'SMART' %}
+                                   <td><a href="http://smart.embl-heidelberg.de/smart/do_annotation.pl?ACC={{values.1}}&BLAST=DUMMY">{{values.1}}</a></td>
+
+                                 {% elif values.0 = 'Gene3D' %}
+                                   <td><a href="http://www.cathdb.info/version/latest/superfamily/{{values.1|slice:"6:"}}">{{values.1}}</a></td>
+
+                                {% else %}
+                                     <td>{{values.1}}</td>
+
+
+
+                            {% endif %}
+                            <td>{{values.2}}</td>
+                            {% if values.3 != '0' %}
+                               <td><a href="http://www.ebi.ac.uk/interpro/entry/{{values.3}}">{{values.3}}: {{values.4}}</a></td>
+                            {% else %}
+                               <td>-</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </table>
+                {% endif %}
+            {% endif %}
+            {% if not orthologs %}
+                <h2>Homologs</h2>
+                No homologs
+            {% else %}
+                <h2>Homologs</h2>
+                <ol>
+                    <li>{{homologues|length}} homologs</li>
+                </ol>
+            {% endif %}
+
+
+                <h3>Sequence(s)</h3>
+                <table>
+                <tr>
+                <td id="entete_sequences"><a href="{% static fasta %}">Protein sequences (fasta)</a> </td>
+                </tr>
+                <tr>
+                <td><a href="{% static alignment %}">Protein alignment (html)</a> </td>
+                </tr>
+                <tr>
+                <td><a href="{% static alignment_fasta %}">Protein alignment (fasta)</a> </td>
+                </tr>
+                <tr>
+                <td><a href="{% static alignment_fasta_nucl %}">Nucleotide sequences (fasta)</a> </td>
+                </tr>
+                    </tr>
+                    <td><a href="{% url "chlamdb.views.blastnr" biodb data.1  %}">BLAST NR</a> </td>
+                </tr>
+
+                </table>
+
+
+
+
+
+
+                <div id="export_bouttons">
+                <a download="locus_{{ data.1 }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+                <a download="locus{{ data.1 }}.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to CSV</a>
+                <br/>
+                </div>
+
+                <table id="search_table" class="sortable">
+                <h3>Detail</h3>
+                <thead>
+                <tr>
+                <th></th>
+                <th id="entete_locus" class="rotate">Orthogroup</th>
+                <th id="entete_gene" class="rotate">ID(%)</th>
+                <th id="entete_locus" class="rotate">Locus</th>
+                <th id="entete_locus" class="rotate">Protein id</th>
+                <th id="entete_gene" class="rotate">Start</th>
+                <th id="entete_gene" class="rotate">Stop</th>
+                <th id="entete_strand" class="rotate">S.</th>
+                <th id="entete_gene" class="rotate">Gene</th>
+                <th id="entete_n" class="rotate">nH</th>
+                <th id="entete_n" class="rotate">nG</th>
+                <th id="entete_n" class="rotate">TM</th>
+                <th id="entete_n" class="rotate">SP</th>
+                <th id="entete_product" class="rotate">Product</th>
+                <th id="entete_organism" class="rotate">Organism</th>
+                <th id="entete_translation" class="rotate">Translation</th>
+
+                </tr>
+                </thead>
+                <tbody>
+
+
+
+                {% for values in homologues %}
+                    <tr>
+                    <td>{{values.0}}</td>
+
+                    <td>{{values.1}}</td>
+                    <td>{{values.15}}</td>
+                    <td><a href="{{ STATIC_PREFIX }}chlamdb/interpro/{{ values.3 }}.html" target="_blank">{{values.2}}</a></td>
+                    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
+                    <td>{{values.4}}</td>
+                    <td>{{values.5}}</td>
+                    <td>{{values.6}}</td>
+                    <td>{{values.7}}</td>
+                    <td>{{values.8}}</td>
+                    <td>{{values.9}}</td>
+                    <td>{{values.10}}</td>
+                    <td>{{values.11}}</td>
+                    <td>{{values.12}}</td>
+                    <td>{{values.13}}</td>
+                    <td>{{values.14}}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+
+
+
+       {% endif %}
+
+
+
+
     </div>
-
-    <table id="search_table" class="sortable">
-    <h2>Homologs</h2>
-    <thead>
-    <tr>
-    <th></th>
-    <th id="entete_locus" class="rotate">Orthogroup</th>
-    <th id="entete_gene" class="rotate">ID(%)</th>
-    <th id="entete_locus" class="rotate">Locus</th>
-    <th id="entete_locus" class="rotate">Protein id</th>
-    <th id="entete_gene" class="rotate">Start</th>
-    <th id="entete_gene" class="rotate">Stop</th>
-    <th id="entete_strand" class="rotate">S.</th>
-    <th id="entete_gene" class="rotate">Gene</th>
-    <th id="entete_n" class="rotate">nH</th>
-    <th id="entete_n" class="rotate">nG</th>
-    <th id="entete_n" class="rotate">TM</th>
-    <th id="entete_n" class="rotate">SP</th>
-    <th id="entete_product" class="rotate">Product</th>
-    <th id="entete_organism" class="rotate">Organism</th>
-    <th id="entete_translation" class="rotate">Translation</th>
-
-    </tr>
-    </thead>
-    <tbody>
-
-
-
-    {% for values in homologues %}
-        <tr>
-        <td>{{values.0}}</td>
-
-        <td>{{values.1}}</td>
-        <td>{{values.15}}</td>
-        <td><a href="{{ STATIC_PREFIX }}chlamdb/interpro/{{ values.16 }}.html" target="_blank">{{values.2}}</a></td>
-	    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
-	    <td>{{values.4}}</td>
-        <td>{{values.5}}</td>
-        <td>{{values.6}}</td>
-	    <td>{{values.7}}</td>
-	    <td>{{values.8}}</td>
-        <td>{{values.9}}</td>
-        <td>{{values.10}}</td>
-        <td>{{values.11}}</td>
-        <td>{{values.12}}</td>
-        <td>{{values.13}}</td>
-        <td>{{values.14}}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-    </table>
-
-
-
-    {% else %}
-    <h2>Homologs</h2>
-    No homologs
-
-    {% endif %}
-    {% endif %}
-    {% endif %}
-
-    {% if plot_region %}
-    &nbsp
-    <h2>Region</h2>
-    {% load static %}
-    <img src="{% static name %}" id="genomic_region" />
-    {% endif %}
-
-
-</section>
+</div>
 
 
 
 
 
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
 
-
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script>
   var update_fields = function () {
     if ($("#id_plot_region").is(":checked")) {

@@ -1,17 +1,14 @@
-body {
-    background-color: #FAFAF5;
 
-}
 
 
 .user_panel{
-   background:white;
+   background:#fafafa;
    color: black;
-   position:absolute;
-   top:4px;
-   right:10px;
-    padding-right: 20px;
-    padding-left: 20px;
+   right: 10px;
+    padding-right: 10px;
+    padding-left: 10px;
+    height: 8px;
+    position: absolute;
 
   }
 
@@ -128,7 +125,7 @@ table {
 }
 
 th, tr, td {
- text-align: left;  
+ text-align: left;
  border:1px solid black;
  width: auto;
  padding: 2px;
@@ -255,34 +252,46 @@ text-align: left;
     padding-right: 20px;
     padding-left: 20px;
     margin-right: 180px;
-    margin-top: 150px;
+    margin-top: 200px;
+    left: 120px;
 }
 #id_no_orthologs_in {
    position:absolute;
+   margin-right: 20px;
    top:4px;
-   left:580px;
-
-    margin-left: 50px;
-    margin-top: 150px;
+    margin-left: 300px;
+    margin-top: 200px;
 }
 #extract_button{
    position:absolute;
-   top:510px;
-   left:30px;
-    margin-left: 174px;
+    left: 10px;
+    margin-top: 310px;
+    margin-left: 130px;
    padding-right: 20px;
 }
+#venn_button{
+   position:absolute;
+   top:420px;
+   left:20px;
+    margin-left: 130px;
+   padding-right: 20px;
+}
+
+
+
 #extract_panel_A{
    position:absolute;
-   top:100px;
+   top:180px;
    left:15px;
-   margin-left: 174px;
+    font-size: 20px;
+   margin-left: 230px;
    padding-right: 20px;
 }
 #extract_panel_B{
    position:absolute;
-   top:100px;
-   left:460px;
+   top:180px;
+   left:350px;
+   font-size: 20px;
    margin-left: 174px;
    padding-right: 20px;
 }
@@ -333,11 +342,11 @@ background: #81F7F3;
     background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
     margin-top:0px;
 	color: #444;
-    margin-left: 154px;
+    margin-left: 0px;
     border: 0px solid blue;
     padding: 1px;
     width: 90%;
-    height: 500px;
+    height: 480px;
 }
 
 #id_blast_input {
@@ -357,11 +366,7 @@ background: #81F7F3;
 }
 
 
-body {
-  padding: 35px 0px 10px;
-  font-size: 13px;
 
-}
 
 #export_bouttons{
     padding: 0px 30px 0px;
@@ -372,7 +377,7 @@ body {
 #id_get_groups{
    position:absolute;
    top:250px;
-   left:810px;
+   left:510px;
    margin-left: 174px;
    padding-right: 20px;
 
@@ -380,7 +385,7 @@ body {
 #id_single_copy{
    position:absolute;
    top:150px;
-   left:810px;
+   left:510px;
    margin-left: 174px;
    padding-right: 20px;
 
@@ -589,20 +594,22 @@ ul ul {
 
 #wrapper {
     text-align: left;
-    float: left;
-    width: 140px;
-    margin: 0px auto;
-    font-size: 0.8125em;
-
+    left:0;
+    width: 100%;
+    font-size: 12px;
+    padding: 0 0 0 0;
 }
 .menu {
-    width: auto;
-    height: auto;
+
+    list-style: none;
+    padding: 0 0 0 0;
+
     -webkit-box-shadow: 0px 1px 3px 0px rgba(0,0,0,.73), 0px 0px 18px 0px rgba(0,0,0,.13);
     -moz-box-shadow: 0px 1px 3px 0px rgba(0,0,0,.73), 0px 0px 18px 0px rgba(0,0,0,.13);
     box-shadow: 0px 1px 3px 0px rgba(0,0,0,.73), 0px 0px 18px 0px rgba(0,0,0,.13);
 }
 .menu > li > a {
+
     background-color: #616975;
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(114, 122, 134)),to(rgb(80, 88, 100)));
     background-image: -webkit-linear-gradient(top, rgb(114, 122, 134), rgb(80, 88, 100));
@@ -615,16 +622,16 @@ ul ul {
     -webkit-box-shadow: inset 0px 1px 0px 0px #878e98;
     -moz-box-shadow: inset 0px 1px 0px 0px #878e98;
     box-shadow: inset 0px 1px 0px 0px #878e98;
-    width: 100%;
+
     height: 2.00em;
     line-height: 2.00em;
     text-indent: 2.0em;
     display: block;
-    position: relative;
+
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 600;
     color: #fff;
-    text-shadow: 0px 1px 0px rgba(0,0,0,.5);
+    text-shadow: 0 1px 0 rgba(0,0,0,.5);
 }
 
 .menu ul li a {
@@ -673,7 +680,7 @@ ul ul {
     width: 1em;
     height: 1em;
     top: 0;
-    left: -2.7em;
+    left: -1.7em;
 }
 
 .menu > li > ul li:hover a,
@@ -681,14 +688,6 @@ ul ul {
 .menu > li > ul li:hover a:before {
     color: #32373D;
 }
-
-nav
-{
-    float: left;
-    width: 250px;
-    border: 0px solid black;
-}
-
 
 #head_section
 {
@@ -737,4 +736,80 @@ A{text-decoration:none}
     line-height: 10pt;
 }
 
+/*supprime les marges en bordure de page */
+html{
+  position:relative;
+  min-height: 100vh;
+}
+/*Normalize html and body elements,this style is just good to have*/
+html,body{
+  margin:0 0 0 0;
+  padding:1px 1px 1px 1px;
+  overflow:auto;
 
+}
+
+#container {
+    height: 100%;
+    min-height: 100vh;
+    margin-bottom:0;
+    position:relative;
+    padding:0 0 0 135px;
+    background-color: #FAFAF5;
+}
+
+#sidebar {
+    position:absolute;
+    top:22px; bottom:0; left:0;
+    width:130px;
+    background:lightgrey;
+    height:100%;
+}
+
+#header {
+    border:0px solid #000;
+    width:100%;
+    height:30px;
+    margin:0 0 5px 0;
+}
+
+#content {
+    border:1px solid #000;
+    width:100%;
+    height: 100%;
+    margin:0 0 0 0;
+}
+
+#footer {
+    background-color: orange;
+
+    left: 0;
+    bottom: 0;
+    height: 20px;
+    width: 100%;
+
+    overflow:hidden;
+}
+.navbar {
+width: 100%;
+}
+.navbar-nav > li > a, .navbar-brand {
+    padding-top:2px !important;
+    padding-bottom:0 !important;
+    height: 22px;
+}
+.navbar {min-height:22px !important;}
+
+#list_strains { margin: 2px; padding: 8px; height: 15px; left: 15px;}
+
+ol {
+  list-style-position: inside;
+  padding-left: 40px;
+  list-style-type: square;
+    font-size: 12px;
+}
+ul {
+  list-style-position: inside;
+  padding-left: 40px;
+  list-style-type: decimal
+}

@@ -7,159 +7,164 @@
 
 <head>
 {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+<script type="text/javascript">
+    jQuery(document).ready(function ($) {
+        $('#tabs').tab();
+    });
+</script>
+
 
 </head>
 
 <body>
 
+<div id="container">
 
 
-
-
-{% include "chlamdb/user.html" %}
-{% include "chlamdb/menu.html" %}
-
-
-<section  id="head_section">
-<section id="section_head">
-<p>Plot genomic features in the neighborhood of a target locus. Coloured links reflect sequence identity:
-    dark blue features are highly conserved, grey features present less than 50% identity</p>
-<p>INPUT: locus tag or protein ID.</p>
-</section>
-
-
-<!--
-{% load static %}
-<img src="{% static 'im_1.jpg' %}" alt="Mon image" />
--->
-
-
-<form action="{% url "chlamdb.views.plot_region" biodb %}" method="post">
-{% csrf_token %}
-
-
-<table>
-  <tr>
-  <td>{{ form.as_p }}</td>
-</tr>
-
-<tr>
-  <td><input type="submit" value="Submit" /></td>
-</tr>
-
-
-</table>
-
-
-</form>
-
-
-
-
-
-
-{% if envoi %}
-
-    <div id="plot_region_section">
-    &nbsp
-    <h2>Region</h2>
-
-       <div id="export_bouttons">
-    <a download="region.svg" href="{% static name %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to SVG</a>
-    <a download="region.png" href="{% static name_png %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to PNG</a>
-
-    <br/>
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
     </div>
 
-
-
-    {% load static %}
-    <a href="#">
-    <object type="image/svg+xml" data="{% static name %}" id="genomic_region">
-    </object>
-    </a>
-    <div>
-
-
-
-<section id="table_plot_section">
-
-    <div id="export_bouttons">
-    <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-
-    <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-    <br/>
+    <div id="header">
+        {% include "chlamdb/user.html" %}
     </div>
 
-    <table id="search_table" class="sortable">
-    <thead>
-    <tr>
-    <th></th>
-    <th id="entete_locus" class="rotate">Orthogroup</th>
-    <th id="entete_locus" class="rotate">Locus</th>
-    <th id="entete_locus" class="rotate">Protein id</th>
-    <th id="entete_gene" class="rotate">Start</th>
-    <th id="entete_gene" class="rotate">Stop</th>
-    <th id="entete_strand" class="rotate">S.</th>
-    <th id="entete_gene" class="rotate">Gene</th>
-    <th id="entete_n" class="rotate">nH</th>
-    <th id="entete_n" class="rotate">nG</th>
-    <th id="entete_n" class="rotate">TM</th>
-    <th id="entete_n" class="rotate">SP</th>
-    <th id="entete_product" class="rotate">Product</th>
-    <th id="entete_organism" class="rotate">Organism</th>
-    <th id="entete_translation" class="rotate">Translation</th>
+    <div id="content">
 
-    </tr>
-    </thead>
-    <tbody>
-    {% for values in search_result %}
-        <tr>
-        <td>{{values.0}}</td>
 
-        <td>{{values.1}}</td>
-        <td>{{values.2}}</td>
-	    <td>{{values.3}}</td>
-	    <td>{{values.4}}</td>
-        <td>{{values.5}}</td>
-        <td>{{values.6}}</td>
-	    <td>{{values.7}}</td>
-	    <td>{{values.8}}</td>
-        <td>{{values.9}}</td>
-        <td>{{values.10}}</td>
-        <td>{{values.11}}</td>
-        <td>{{values.12}}</td>
-        <td>{{values.13}}</td>
-        <td>{{values.14}}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-    </table>
-
-</section>
+        <div class="panel panel-warning" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 0px 0px 0px 10px">Plot genomic features in the neighborhood of a target locus. Coloured links reflect sequence identity:
+                dark blue features are highly conserved, grey features present less than 50% identity</p>
+            <p style="margin: 0px 0px 0px 10px">INPUT: locus tag or protein ID.</p>
+        </div>
 
 
 
+
+
+        <form action="{% url "chlamdb.views.plot_region" biodb %}" method="post">
+        {% csrf_token %}
+
+
+        {{ form.as_p }}
+        <input type="submit" value="Submit" />
+
+        </form>
+
+
+
+
+
+
+        {% if envoi %}
+            <h2>Region</h2>
+
+
+
+
+
+
+            {% load static %}
+
+            <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                <li class="active"><a href="#red" data-toggle="tab">Plot</a></li>
+                <li><a href="#orange" data-toggle="tab">Annotation detail</a></li>
+            </ul>
+
+
+            <div id="my-tab-content" class="tab-content">
+                <div class="tab-pane active" id="red">
+
+                    <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                        <div class="panel-heading" style="width:100%">
+                            <h3 class="panel-title">Help</h3>
+                        </div>
+                        <p style="margin: 0px 0px 0px 10px">Click on ORFs to get annotations and lists of homologs </p>
+                    </div>
+
+                    <div id="export_bouttons">
+                        <a download="region.svg" href="{% static name %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to SVG</a>
+                        <a download="region.png" href="{% static name_png %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to PNG</a>
+
+                        <br/>
+                    </div>
+
+                    <a href="#">
+                    <object type="image/svg+xml" data="{% static name %}" id="genomic_region">
+                    </object>
+                    </a>
+                </div>
+
+                <div class="tab-pane" id="orange">
+
+                    <div id="export_bouttons">
+                        <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+
+                        <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                        <br/>
+                    </div>
+                    <table id="search_table" class="sortable">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th id="entete_locus" class="rotate">Orthogroup</th>
+                                <th id="entete_locus" class="rotate">Locus</th>
+                                <th id="entete_locus" class="rotate">Protein id</th>
+                                <th id="entete_gene" class="rotate">Start</th>
+                                <th id="entete_gene" class="rotate">Stop</th>
+                                <th id="entete_strand" class="rotate">S.</th>
+                                <th id="entete_gene" class="rotate">Gene</th>
+                                <th id="entete_n" class="rotate">nH</th>
+                                <th id="entete_n" class="rotate">nG</th>
+                                <th id="entete_n" class="rotate">TM</th>
+                                <th id="entete_n" class="rotate">SP</th>
+                                <th id="entete_product" class="rotate">Product</th>
+                                <th id="entete_organism" class="rotate">Organism</th>
+                                <th id="entete_translation" class="rotate">Translation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for values in search_result %}
+                            <tr>
+                            <td>{{values.0}}</td>
+                            <td>{{values.1}}</td>
+                            <td>{{values.2}}</td>
+                            <td>{{values.3}}</td>
+                            <td>{{values.4}}</td>
+                            <td>{{values.5}}</td>
+                            <td>{{values.6}}</td>
+                            <td>{{values.7}}</td>
+                            <td>{{values.8}}</td>
+                            <td>{{values.9}}</td>
+                            <td>{{values.10}}</td>
+                            <td>{{values.11}}</td>
+                            <td>{{values.12}}</td>
+                            <td>{{values.13}}</td>
+                            <td>{{values.14}}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+    </div>
+</div>
 
 
 {% endif %}
 
 
-
-</section>
+<iframe name="theFrame" id="theFrame"></iframe>
 
 </body>
 
-<iframe name="theFrame" id="theFrame"></iframe>
 
 
 
-
-
-
-
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script>
   var update_fields = function () {
     if ($("#id_get_annotation").is(":checked")) {

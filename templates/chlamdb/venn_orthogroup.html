@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+    <script type="text/javascript" id="js">
+        $(document).ready(function() {
+        // call the tablesorter plugin
+        $("table").tablesorter({
+        // change the default sorting order from 'asc' to 'desc'
+        sortInitialOrder: 1
+        });
+        });
+    </script>
+    <script type="text/javascript">
+        jQuery(document).ready(function ($) {
+            $('#tabs').tab();
+        });
+    </script>
+    <script type="text/javascript">
+        jQuery(document).ready(function ($) {
+            $('#tabs1').tab();
+        });
+    </script>
+
+<head>
+
+
+<div id="container">
+
+
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+
+    </div>
+
+    <div id="content">
+
+        <nav>
+        <ul id="tabs" class="nav nav-tabs">
+            <li ><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
+            <li class="active"><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
+        </ul>
+        </nav>
+
+
+                <div id="extract_form">
+                    <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                          <div class="panel-heading" style="width:100%">
+                            <h3 class="panel-title">Help</h3>
+                            </div>
+                    <p style="margin: 10px 10px 10px 10px">Venn diagramm, max 6 genomes</p>
+                    </div>
+
+
+
+                    <form action="{% url "chlamdb.views.venn_orthogroup" biodb %}" method="post">
+                        {% csrf_token %}
+                        {{ form_venn.as_p }}
+                        <input type="submit" name="venn" value="extract homologues" id="venn_button" />
+
+                    </form>
+
+                </div>
+
+     {% if envoi_venn %}
+
+        {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=orthogroup2description %}
+
+    {% endif %}
+
+
+
+    </div>
+
+</div>
+<div id="footer"></div>
+<!--
+<script type="text/javascript">$(document).ready( function(){ $("#jqtest").html("JQuery installed successfully!"); } ); </script>
+
+-->
+
+<script>
+  var update_fields = function () {
+    if ($("#id_get_groups").is(":checked")) {
+
+        $('#id_region').prop('disabled', false);
+        $('#search_table').show();
+        $('#export_bouttons_detail').show();
+
+        $('#table_groups').hide();
+        $('#export_bouttons_groups').hide();
+    }
+
+
+
+    else {
+
+       $('#id_get_groups').prop('disabled', false);
+       $('#search_table').hide();
+       $('#export_bouttons_detail').hide();
+       $('#table_groups').show();
+       $('#export_bouttons_groups').show();
+    }
+  };
+  $(update_fields);
+  $("#id_get_groups").change(update_fields);
+
+</script>
+
+
+
+<p id="jqtest"></p>
+
+</body>
+</html>

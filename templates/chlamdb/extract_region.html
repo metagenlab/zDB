@@ -10,151 +10,136 @@
 </head>
 <body>
 
-{% include "chlamdb/user.html" %}
-{% include "chlamdb/menu.html" %}
 
 
-
-
-<section id="head_section">
-
-<h2>Extract specific genomic range annotation or sequence</h2>
-
-
-
-<form action="{% url "chlamdb.views.extract_region" biodb %}" method="post">{% csrf_token %}
-
-<table>
-<tr>
-  <td colspan="2">{{ form.as_p }}</td>
-</tr>
-<tr><td colspan="2"></td></tr>
-
-  <tr><td>Extract genomic range</td><td><input type="submit" name="extract_range" value="Submit" /></td></tr>
-
-
-<!--<tr><td>Extract Locus region</td><td><input type="submit" name="extract_locus" value="Submit" /></td></tr>-->
-
-
-</table>
-
-</form>
-
-</section>
-
-
-{% if envoi %}
-<section id="head_section">
-
-{% if get_annotation %}
-
-
-    <div id="export_bouttons">
-    <a download="extract_{{ start_stop.0 }}_{{ start_stop.1 }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'extract_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-
-    <a download="extract_{{ start_stop.0 }}_{{ start_stop.1 }}.xls" href="#" onclick="return ExcellentExport.csv(this, 'extract_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-    <br/>
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+    <div id="header">
+        {% include "chlamdb/user.html" %}
     </div>
 
-    <h2>Region {{ start_stop.0 }}-{{ start_stop.1 }}</h2>
+    <div id="content">
 
-    <table id="extract_table" class="sortable">
-    <thead>
-    <tr>
-    <th></th>
-    <th id="entete_locus" class="rotate">Orthogroup</th>
-    <th id="entete_locus" class="rotate">Locus</th>
-    <th id="entete_locus" class="rotate">Protein id</th>
-    <th id="entete_gene" class="rotate">Start</th>
-    <th id="entete_gene" class="rotate">Stop</th>
-    <th id="entete_strand" class="rotate">S.</th>
-    <th id="entete_gene" class="rotate">Gene</th>
-    <th id="entete_n" class="rotate">nH</th>
-    <th id="entete_n" class="rotate">nG</th>
-    <th id="entete_n" class="rotate">TM</th>
-    <th id="entete_n" class="rotate">SP</th>
-    <th id="entete_product" class="rotate">Product</th>
-    <th id="entete_organism" class="rotate">Organism</th>
-    <th id="entete_translation" class="rotate">Translation</th>
 
-    </tr>
-    </thead>
-    <tbody>
-    {% for values in search_result %}
-        <tr>
-        <td>{{values.0}}</td>
-        <td><a href="{% url 'locusx' biodb values.2 True%}">{{values.1}}</a></td>
-        <td><a href="{{ STATIC_PREFIX }}chlamdb/interpro/{{ values.15 }}.html" target="_blank">{{values.2}}</a></td>
-	    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
-	    <td>{{values.4}}</td>
-        <td>{{values.5}}</td>
-        <td>{{values.6}}</td>
-	    <td>{{values.7}}</td>
-	    <td>{{values.8}}</td>
-        <td>{{values.9}}</td>
-        <td>{{values.10}}</td>
-        <td>{{values.11}}</td>
-        <td>{{values.12}}</td>
-        <td>{{values.13}}</td>
-        <td>{{values.14}}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-    </table>
-{% endif %}
 
-{% if get_sequence %}
-<!--accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq])-->
+        <h3>Extract specific genomic range annotation or sequence</h3>
 
-<div id="export_bouttons">
-{% load static %}
-    <a download="extract_{{ start_stop.0 }}_{{ start_stop.1 }}.fa" href="{% static ""%}{{temp_location}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export sequence</a>
 
+        <form action="{% url "chlamdb.views.extract_region" biodb %}" method="post">{% csrf_token %}
+          {{ form.as_p }}
+          Extract genomic range: <input type="submit" name="extract_range" value="Submit"/>
+        </form>
+
+
+
+
+        {% if envoi %}
+
+
+            {% if get_annotation %}
+
+
+                <div id="export_bouttons">
+                    <a download="extract_{{ start_stop.0 }}_{{ start_stop.1 }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'extract_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+
+                    <a download="extract_{{ start_stop.0 }}_{{ start_stop.1 }}.xls" href="#" onclick="return ExcellentExport.csv(this, 'extract_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                    <br/>
+                </div>
+
+                <h2>Region {{ start_stop.0 }}-{{ start_stop.1 }}</h2>
+
+                <table id="extract_table" class="sortable">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th id="entete_locus" class="rotate">Orthogroup</th>
+                            <th id="entete_locus" class="rotate">Locus</th>
+                            <th id="entete_locus" class="rotate">Protein id</th>
+                            <th id="entete_gene" class="rotate">Start</th>
+                            <th id="entete_gene" class="rotate">Stop</th>
+                            <th id="entete_strand" class="rotate">S.</th>
+                            <th id="entete_gene" class="rotate">Gene</th>
+                            <th id="entete_n" class="rotate">nH</th>
+                            <th id="entete_n" class="rotate">nG</th>
+                            <th id="entete_n" class="rotate">TM</th>
+                            <th id="entete_n" class="rotate">SP</th>
+                            <th id="entete_product" class="rotate">Product</th>
+                            <th id="entete_organism" class="rotate">Organism</th>
+                            <th id="entete_translation" class="rotate">Translation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for values in search_result %}
+                        <tr>
+                            <td>{{values.0}}</td>
+                            <td><a href="{% url 'locusx' biodb values.2 True%}">{{values.1}}</a></td>
+                            <td><a href="{{ STATIC_PREFIX }}chlamdb/interpro/{{ values.15 }}.html" target="_blank">{{values.2}}</a></td>
+                            <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
+                            <td>{{values.4}}</td>
+                            <td>{{values.5}}</td>
+                            <td>{{values.6}}</td>
+                            <td>{{values.7}}</td>
+                            <td>{{values.8}}</td>
+                            <td>{{values.9}}</td>
+                            <td>{{values.10}}</td>
+                            <td>{{values.11}}</td>
+                            <td>{{values.12}}</td>
+                            <td>{{values.13}}</td>
+                            <td>{{values.14}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+
+            {% if get_sequence %}
+                <!--accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq])-->
+
+                <div id="export_bouttons">
+                    {% load static %}
+                    <a download="extract_{{ start_stop.0 }}_{{ start_stop.1 }}.fa" href="{% static ""%}{{temp_location}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export sequence</a>
+
+                </div>
+
+                {% if extract_trans %}
+
+                    <table id="extract_sequence">
+                    <h2>Hits</h2>
+
+                    <tr><th id="tblastn_first_col">Accession</th><td><span style="color: #0000FF;">{{ genome_accession }}</span></td></tr>
+                    <tr><th></th><td>start: {{ start_stop.0 }}, end: {{ start_stop.1 }}, length: {{ length }}</td></tr>
+                    <tr><th>SEQ</th><td>{{ seq }}</td></tr>
+                    <tr><th>Frame 1</th><td>{{ frame_plus_1 }}</td></tr>
+                    <tr><th>Frame 2</th><td>{{ frame_plus_2 }}</td></tr>
+                    <tr><th>Frame 3</th><td>{{ frame_plus_3 }}</td></tr>
+                    <tr><th>Frame -1</th><td>{{ frame_minus_1 }}</td></tr>
+                    <tr><th>Frame -2</th><td>{{ frame_minus_2 }}</td></tr>
+                    <tr><th>Frame -3</th><td>{{ frame_minus_3 }}</td></tr>
+                    <tr id="inter_tblastn"></tr>
+
+                    </table>
+                {% else %}
+
+                    <table id="extract_sequence">
+                        <tr><th id="tblastn_first_col">Accession</th><td><span style="color: #0000FF;">{{ genome_accession }}</span></td></tr>
+                        <tr><th></th><td>start: {{ start_stop.0 }}, end: {{ start_stop.1 }}, length: {{ length }}</td></tr>
+
+                        <tr><th>SEQ</th><td>{{ seq }}</td></tr>
+
+                        <tr id="inter_tblastn"></tr>
+                    </table>
+
+                {% endif %}
+
+            {% endif %}
+
+        {% endif %}
     </div>
+    <div id="footer"></div>
+</div>
 
-    {% if extract_trans %}
-
-    <table id="extract_sequence">
-    <h2>Hits</h2>
-
-    <tr><th id="tblastn_first_col">Accession</th><td><span style="color: #0000FF;">{{ genome_accession }}</span></td></tr>
-    <tr><th></th><td>start: {{ start_stop.0 }}, end: {{ start_stop.1 }}, length: {{ length }}</td></tr>
-    <tr><th>SEQ</th><td>{{ seq }}</td></tr>
-    <tr><th>Frame 1</th><td>{{ frame_plus_1 }}</td></tr>
-    <tr><th>Frame 2</th><td>{{ frame_plus_2 }}</td></tr>
-    <tr><th>Frame 3</th><td>{{ frame_plus_3 }}</td></tr>
-    <tr><th>Frame -1</th><td>{{ frame_minus_1 }}</td></tr>
-    <tr><th>Frame -2</th><td>{{ frame_minus_2 }}</td></tr>
-    <tr><th>Frame -3</th><td>{{ frame_minus_3 }}</td></tr>
-    <tr id="inter_tblastn"></tr>
-
-    </table>
-   {% else %}
-
-    <table id="extract_sequence">
-    <h2>Hits</h2>
-
-    <tr><th id="tblastn_first_col">Accession</th><td><span style="color: #0000FF;">{{ genome_accession }}</span></td></tr>
-    <tr><th></th><td>start: {{ start_stop.0 }}, end: {{ start_stop.1 }}, length: {{ length }}</td></tr>
-
-    <tr><th>SEQ</th><td>{{ seq }}</td></tr>
-
-    <tr id="inter_tblastn"></tr>
-
-
-   {% endif %}
-
-{% endif %}
-
-
-
-
-
-
-</section>
-
-
-{% endif %}
 
 <script>
 function addColor(domNode, color, letter){
@@ -182,7 +167,7 @@ function addColor(domNode, color, letter){
 addColor(document.getElementById('extract_sequence'), 'red', '*');
 
 </script>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
 <script>
   var update_fields = function () {
     if ($("#id_get_annotation").is(":checked")) {

@@ -107,7 +107,6 @@ def make_plot_form(database_name):
         #location_stop = forms.CharField(max_length=9, label="end (bp)", required=False)
         region_size = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
         genomes = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" }), required = False)
-        get_annotation = forms.NullBooleanField(widget=forms.CheckboxInput())
     return PlotForm
 
 
@@ -141,6 +140,25 @@ def make_interpro_from(database_name):
         search_term = forms.CharField(max_length=100)
 
     return InterproForm
+
+
+def make_venn_from(database_name):
+
+    accession_choices = get_accessions(database_name)
+
+    class VennForm(forms.Form):
+        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (len(accession_choices)/2) }), required = False)
+
+        def clean_venn(self):
+            value = self.cleaned_data['targets']
+            if len(value) > 6:
+                raise forms.ValidationError("You can't select more than 6 items.")
+            return value
+    return VennForm
+
+
+
+
 
 
 
@@ -195,8 +213,7 @@ def make_extract_form(database_name, plasmid=False):
     class ExtractForm(forms.Form):
         orthologs_in = forms.MultipleChoiceField(label='', choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "20" }), required = False)
         no_orthologs_in = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "20" }), required = False, label="")
-        get_groups = forms.NullBooleanField(widget=forms.CheckboxInput())
-        single_copy = forms.NullBooleanField(widget=forms.CheckboxInput())
+
 
     return ExtractForm
 

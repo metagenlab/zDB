@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+
+
+
+
+{% load staticfiles %}
+    {% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+</head>
+<body>
+
+{% include "chlamdb/user.html" %}
+{% include "chlamdb/menu.html" %}
+
+
+
+
+<section id="extract_form">
+
+<ul class="nav nav-tabs">
+  <li role="presentation" class="active"><a href="#">Home</a></li>
+  <li role="presentation"><a href="#">Profile</a></li>
+  <li role="presentation"><a href="#">Messages</a></li>
+</ul>
+
+<section id="section_head">
+
+
+
+<p>Venn diag</p>
+</section>
+
+
+
+
+<form action="{% url "chlamdb.views.venn_cog" biodb %}" method="post">{% csrf_token %}
+{{ form.as_p }}
+
+
+<input type="submit" name="submit_extract" value="extract homologues" id="extract_button" />
+
+</form>
+
+
+
+
+
+{% if envoi_venn %}
+
+    {% include "chlamdb/venn_template_COGs.html" with series=series description_dico=cog2description %}
+
+{% endif %}
+
+
+
+
+</body>
+</html>

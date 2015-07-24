@@ -1,14 +1,11 @@
 
-<html>
-<head>
-    {% load staticfiles %}
-    </head>
-<body>
+
+{% load staticfiles %}
 
 
 <div id="wrapper">
-
     <ul class="menu">
+
         <li class="item4"><a href="{% url 'home' biodb %}">Home</a>
 
         </li>
@@ -39,11 +36,15 @@
              <ul>
             <li class="item5"><a href="{% url 'homology' biodb %}">Get homologues</a>
             </li>
-            <li class="item6"><a href="{% url 'extract' biodb %}">Compare genomes</a>
+            <li class="item6"><a href="{% url 'extract_orthogroup' biodb %}">Orthogroups</a>
             </li>
-
+            <li class="item6"><a href="{% url 'extract_cog' biodb %}">COGs</a>
+            </li>
+            <li class="item6"><a href="{% url 'extract_pfam' biodb %}">Pfam</a>
+            </li>
+            <li class="item6"><a href="{% url 'extract_interpro' biodb %}">Interpro</a>
+            </li>
             </ul>
-
         </li>
 
         <li class="rollmenu"><a href="">Plots</a>
@@ -55,7 +56,6 @@
             </li>
             <li class="item6"><a href="{% url 'circos2genomes' biodb %}">Circos 2 genomes</a>
             </li>
-
             <li class="item5"><a href="{% url 'circos_homology' biodb %}">Homologues location</a>
             </li>
             <li class="item5"><a href="{% url 'mummer' biodb %}">Dot plots</a>
@@ -83,10 +83,28 @@
 <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>
+<!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
 <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+
+<script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
+
+
+
+
+
+
+
+
 
 <!--
 <script type="text/javascript">
@@ -113,7 +131,3 @@ $(function() {
 </script>
 -->
 
-
-
-</body>
-</html>

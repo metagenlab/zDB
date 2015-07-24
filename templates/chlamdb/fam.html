@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+{% load staticfiles %}
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+</head>
+
+<body id="locus_body">
+<div id="container">
+
+
+        {% if not valid_id %}
+
+            <div id="content">
+            <div id="sidebar">
+                {% include "chlamdb/menu.html" %}
+            </div>
+            <div id="header">
+                {% include "chlamdb/user.html" %}
+            </div>
+            <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
+
+       {% else %}
+           <div id="content">
+           {%  if menu %}
+
+                <div id="sidebar">
+                    {% include "chlamdb/menu.html" %}
+                </div>
+                <div id="header">
+                    {% include "chlamdb/user.html" %}
+                </div>
+           {% endif %}
+
+           {%  if type == 'cog' %}
+
+                <h3>{{ info.0 }} </h3>
+                <ol>
+                     <li>{{ info.3 }} ({{ info.2 }})</li>
+                    <li>This cog is present in <strong>{{ all_locus_data|length }} copies</strong></li>
+                    <li>This cog is present in <strong>{{ group_count|length }} different orthogroups</strong></li>
+                    <ul>
+                        {% for group in group_count %}
+                        <li><a href="{% url 'locusx' biodb group True%}">{{group}}</a></li>
+                        {% endfor %}
+                    </ul>
+                </ol>
+           {% endif %}
+
+
+                <div id="export_bouttons">
+                <a download="locus_{{ data.1 }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+                <a download="locus{{ data.1 }}.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to CSV</a>
+                <br/>
+                </div>
+
+                <table id="search_table" class="sortable">
+                <h3>Detail</h3>
+                <thead>
+                <tr>
+                <th></th>
+                <th id="entete_locus" class="rotate">Orthogroup</th>
+                <th id="entete_locus" class="rotate">Locus</th>
+                <th id="entete_locus" class="rotate">Protein id</th>
+                <th id="entete_gene" class="rotate">Start</th>
+                <th id="entete_gene" class="rotate">Stop</th>
+                <th id="entete_strand" class="rotate">S.</th>
+                <th id="entete_gene" class="rotate">Gene</th>
+                <th id="entete_n" class="rotate">nH</th>
+                <th id="entete_n" class="rotate">nG</th>
+                <th id="entete_n" class="rotate">TM</th>
+                <th id="entete_n" class="rotate">SP</th>
+                <th id="entete_product" class="rotate">Product</th>
+                <th id="entete_organism" class="rotate">Organism</th>
+                <th id="entete_translation" class="rotate">Translation</th>
+
+                </tr>
+                </thead>
+                <tbody>
+
+                {% load static %}
+                {% get_static_prefix as STATIC_PREFIX %}
+
+                {% for values in all_locus_data %}
+                    <tr>
+                    <td>{{values.0}}</td>
+
+                    <td>{{values.1}}</td>
+                    <td><a href="{{ STATIC_PREFIX }}chlamdb/interpro/{{ values.3 }}.html" target="_blank">{{values.2}}</a></td>
+                    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
+                    <td>{{values.4}}</td>
+                    <td>{{values.5}}</td>
+                    <td>{{values.6}}</td>
+                    <td>{{values.7}}</td>
+                    <td>{{values.8}}</td>
+                    <td>{{values.9}}</td>
+                    <td>{{values.10}}</td>
+                    <td>{{values.11}}</td>
+                    <td>{{values.12}}</td>
+                    <td>{{values.13}}</td>
+                    <td><a href="{% url "chlamdb.views.blastnr" biodb values.2  %}">{{values.14}}</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+
+
+
+       {% endif %}
+
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>

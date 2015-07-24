@@ -126,150 +126,114 @@ FONT.S109{background-color:#fefeb3;color:#000000} FONT.T109{color:#fefeb3} /* fi
 FONT.S110{background-color:#4a007f;color:#FFFFFF} FONT.T110{color:#4a007f} /* find-R */
 FONT.S111{background-color:#e903a8;color:#FFFFFF} FONT.T111{color:#e903a8} /* find-S */
 FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* find-T */
--->
+#container{font-size: 10px; line-height: 12px;}
+#blast_res {font-size: 8px; line-height: 10px;}
 </STYLE>
 
-{% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 </head>
 <body>
-
-{% include "chlamdb/user.html" %}
-{% include "chlamdb/menu.html" %}
-
-  
-<!--
-{% load static %}
-<img src="{% static 'im_1.jpg' %}" alt="Mon image" />
--->
-
-<section id="head_section">
-
-<form action="{% url "chlamdb.views.blast" biodb %}" method="post">{% csrf_token %}
-
-<table>
-<tr>
-  <td>{{ form.as_p }}</td>
-</tr>
-
-<tr>
-  <td><input type="submit" value="Submit" /></td>
-</tr>
-</table>
+<div id="container">
 
 
 
-</form>
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+    <div id="content">
+
+        <form action="{% url "chlamdb.views.blast" biodb %}" method="post">{% csrf_token %}
+          {{ form.as_p }}
+          <input type="submit" value="Submit" />
+        </form>
 
 
 
-{% if envoi %}
+        {% if envoi %}
+            &nbsp
+            <h2>Blast result</h2>
 
-    &nbsp
+        {% if blast_result %}
+             <div id="blast_res">
+            {% autoescape off %}{{blast_result}}{% endautoescape %}</div>
+        {% elif blast_no_hits %}
+              <pre id=blast_result>
+               {{blast_no_hits}}
+              </pre>
+        {% elif blast_err %}
+              <pre id=blast_result>
+               {{blast_err}}
+              </pre>
+        {% endif %}
 
-    <h2>Blast result</h2>
+        {% if all_data %}
 
+            <table id="tblastn">
+            <h2>Hits</h2>
+            {% for values in all_data %}
 
-
-<div id="formatted_blast">
-{% if blast_result %}
-    {% autoescape off %}{{blast_result}}{% endautoescape %}
-{% elif blast_no_hits %}
-      <pre id=blast_result>
-       {{blast_no_hits}}
-      </pre>
-{% elif blast_err %}
-      <pre id=blast_result>
-       {{blast_err}}
-      </pre>
-{% endif %}
-
-{% if all_data %}
-
-    <table id="tblastn">
-    <h2>Hits</h2>
-    {% for values in all_data %}
-
-    <tr><th id="tblastn_first_col">Accession</th><td><span style="color: #0000FF;">{{ values.0 }}, {{ values.10 }}</span></td></tr>
-    <tr><th>SEQ</th><td>{{ values.11 }}</td></tr>
-    <tr><th></th><td>start: {{ values.1 }}, end: {{ values.2 }}, length: {{ values.3 }}</td></tr>
-    <tr><th>Frame 1</th><td>{{ values.4 }}</td></tr>
-    <tr><th>Frame 2</th><td>{{ values.5 }}</td></tr>
-    <tr><th>Frame 3</th><td>{{ values.6 }}</td></tr>
-    <tr><th>Frame -1</th><td>{{ values.7 }}</td></tr>
-    <tr><th>Frame -2</th><td>{{ values.8 }}</td></tr>
-    <tr><th>Frame -3</th><td>{{ values.9 }}</td></tr>
-    <tr id="inter_tblastn"></tr>
+            <tr><th id="tblastn_first_col">Accession</th><td><span style="color: #0000FF;">{{ values.0 }}, {{ values.10 }}</span></td></tr>
+            <tr><th>SEQ</th><td>{{ values.11 }}</td></tr>
+            <tr><th></th><td>start: {{ values.1 }}, end: {{ values.2 }}, length: {{ values.3 }}</td></tr>
+            <tr><th>Frame 1</th><td>{{ values.4 }}</td></tr>
+            <tr><th>Frame 2</th><td>{{ values.5 }}</td></tr>
+            <tr><th>Frame 3</th><td>{{ values.6 }}</td></tr>
+            <tr><th>Frame -1</th><td>{{ values.7 }}</td></tr>
+            <tr><th>Frame -2</th><td>{{ values.8 }}</td></tr>
+            <tr><th>Frame -3</th><td>{{ values.9 }}</td></tr>
+            <tr id="inter_tblastn"></tr>
 
 
-    {% endfor %}
-    </table>
+            {% endfor %}
+            </table>
 
-{% endif %}
+        {% endif %}
+
+
+        </table>
 
 
 
+
+        {% endif %}
+    </div>
 </div>
-<!--
-<table>
-<tr>
-  <td>
-   <pre id=blast_result>
 
-       {{blast_result}}
-
-        <pre id=blast_result>
-       {{ blast_no_hits }}
-       </pre>
+<div id="footer"></div>
 
 
 
+</body>
 
-
-  </td>
-</tr>
--->
-
-</table>
-
-</section>
-
-  
-{% endif %}
-
-
-
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
 <script>
 function addColor(domNode, color, letter){
-	if(domNode.nodeType!=1||!domNode.hasAttribute('edited')){
-		if(domNode.nodeType==3){
-			var newText=document.createElement('span');
-			newText.innerHTML=domNode.textContent;
-			newText.setAttribute('edited', true);
-			var text = newText.innerHTML.split('').map(function(el){
-			  if(el==letter){
-				return '<i style=\"color:'+color+'\">'+el+'</i>';
-			  }
-			  else{
-				return el;
-			  }
-		  }).join('');
-		  newText.innerHTML=text;
-		  domNode.parentNode.replaceChild(newText,domNode);
-		}
-		for(var i=0; i<domNode.childNodes.length;i++){
-			addColor(domNode.childNodes[i], color, letter);
-		}
-	}
+    if(domNode.nodeType!=1||!domNode.hasAttribute('edited')){
+        if(domNode.nodeType==3){
+            var newText=document.createElement('span');
+            newText.innerHTML=domNode.textContent;
+            newText.setAttribute('edited', true);
+            var text = newText.innerHTML.split('').map(function(el){
+              if(el==letter){
+                return '<i style=\"color:'+color+'\">'+el+'</i>';
+              }
+              else{
+                return el;
+              }
+          }).join('');
+          newText.innerHTML=text;
+          domNode.parentNode.replaceChild(newText,domNode);
+        }
+        for(var i=0; i<domNode.childNodes.length;i++){
+            addColor(domNode.childNodes[i], color, letter);
+        }
+    }
 }
 addColor(document.getElementById('tblastn'), 'red', '*');
 
 </script>
 
 
-
-</body>
 </html>

@@ -3,40 +3,66 @@
 
 <html>
 <head>
+
 {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+{% load static %}
+
+
+
+
+
 </head>
 <body>
 
+<div id="container">
+    <div id="sidebar">
 
-
-
-
-{% include "chlamdb/user.html" %}
-{% include "chlamdb/menu.html" %}
-
-<!--
-<section>
-Welcome! {{ user.username }}
-</section>
--->
-<section  id="head_section">
-    <h1>Overview</h1>
-    <div id="export_bouttons">
-    <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'genomes_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-
-    <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'genomes_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-    <br/>
+    {% include "chlamdb/menu.html" %}
     </div>
-{% include "chlamdb/chlam_genomes_detail.html" %}
+    <div id="header">
+
+    {% include "chlamdb/user.html" %}
+
+    </div>
+    <div id="content">
+        <h1>Overview</h1>
 
 
-{% load static %}
-<img src="{% static 'chlam_tree.png' %}" width="80%"
-
-</section>
 
 
+
+
+
+
+
+
+
+
+<i class="disabled users icon"></i>
+
+        <div id="export_bouttons">
+            <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'genomes_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+
+            <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'genomes_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+            <br/>
+        </div>
+        {% include "chlamdb/chlam_genomes_detail.html" %}
+
+
+
+        <img src="{% static 'chlam_tree.png' %}" width="80%"
+
+
+
+    </div>
+    <div id="footer"></div>
+</div>
+
+<script>
+
+$('.dropdown-toggle').dropdown()
+
+</script>
 </body>
 </html>
 

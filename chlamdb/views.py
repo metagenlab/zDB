@@ -33,6 +33,8 @@ from forms import make_extract_form
 from forms import make_circos_orthology_form
 from forms import make_interpro_from
 from forms import make_extract_region_form
+from forms import make_venn_from
+
 
 from django.contrib.auth import logout
 from django.conf import settings
@@ -214,25 +216,32 @@ def circos_homology(request, biodb):
 
     return render(request, 'chlamdb/circos_homology.html', locals())
 
-
 @login_required
-def extract(request, biodb):
+def extract_orthogroup(request, biodb):
 
     cache = get_cache('default')
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
     extract_form_class = make_extract_form(biodb)
+
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
-        #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
 
+        #form2 = ContactForm(request.POST)
+        if 'comparison' in request.POST and form.is_valid():  # Nous vérifions que les données envoyées sont valides
+
+            print request.POST
+            print form.cleaned_data.keys()
             include = form.cleaned_data['orthologs_in']
             exclude = form.cleaned_data['no_orthologs_in']
-            single_copy = form.cleaned_data['single_copy']
 
+            try:
+                single_copy = request.POST['button_single_copy']
+                single_copy = True
+            except:
+                single_copy = False
             print "single_copy", single_copy
 
 
@@ -260,10 +269,384 @@ def extract(request, biodb):
 
             sql ='select orthogroup from orthology_%s where %s %s' % (biodb, sql_include, sql_exclude)
 
+
+
+            match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+            sum_group = len(match_groups)
+
+
+            sql_include = 'taxon_id ='
+            for i in range(0, len(include)-1):
+                sql_include+='%s or taxon_id =' % include[i]
+            sql_include+=include[-1]
+            n = 1
+            search_result = []
+
+            group_filter = 'where orthogroup in ('
+
+            for i, group in enumerate(match_groups[0:-1]):
+                    group_filter += '"%s",' % group
+            group_filter = group_filter[0:-1]+'"%s")' % match_groups[-1][1]
+
+
+            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+            sql_2 = 'select %s from orthology_detail_%s %s' % (columns, biodb, group_filter)
+
+            raw_data = server.adaptor.execute_and_fetchall(sql_2,)
+            import biosql_own_sql_tables
+            orthogroup2genes = biosql_own_sql_tables.orthogroup2gene(biodb)
+            orthogroup2products = biosql_own_sql_tables.orthogroup2product(biodb)
+            orthogroup2cogs = biosql_own_sql_tables.orthogroup2cog(biodb, match_groups)
+            orthogroup2pfam = biosql_own_sql_tables.orthogroup2pfam(biodb)
+
+            match_groups_data = []
+            group_data = ''
+
+            for i, group in enumerate(match_groups):
+                genes_data = ''
+                for gene in orthogroup2genes[group]:
+                    genes_data += '%s (%s)<br/>' % (gene, orthogroup2genes[group][gene])
+                genes_data = genes_data[0:-5]
+                product_data = ''
+                for product in orthogroup2products[group]:
+                    product_data += '%s (%s)<br/>' % (product, orthogroup2products[group][product])
+                cog_data = ''
+                for cog in orthogroup2cogs[group]:
+                    if cog == None:
+                        cog_data += '<p>- (%s)</p><br/>' % (orthogroup2cogs[group][cog])
+                    else:
+                        cog_data += '<a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid=%s">' \
+                                    '%s (%s)</a><br/>' % (cog,cog, orthogroup2cogs[group][cog])
+                cog_data = cog_data[0:-5]
+                pfam_data = ''
+                try:
+                    for pfam in orthogroup2pfam[group]:
+
+                        pfam_data += '<a href="http://pfam.xfam.org/family/%s">%s (%s)</a><br/>' % (pfam,pfam, orthogroup2pfam[group][pfam])
+                    pfam_data = pfam_data[0:-5]
+                except:
+                    pfam_data += ' <p>-</p> '
+                    pfam_data = pfam_data[0:-5]
+
+
+
+                match_groups_data.append([i, group, genes_data, product_data, cog_data, pfam_data])
+
+            n = 1
+            extract_result = []
+            for one_hit in raw_data:
+                extract_result.append((n,) + one_hit)
+                n+=1
+                #print n
+            #print extract_result
+
+            envoi_extract = True
+
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = extract_form_class()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/extract_orthogroup.html', locals())
+
+
+
+
+@login_required
+def venn_orthogroup(request, biodb):
+
+    cache = get_cache('default')
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+    venn_form_class = make_venn_from(biodb)
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+        form_venn = venn_form_class(request.POST)
+        #form2 = ContactForm(request.POST)
+        if 'venn' in request.POST and form_venn.is_valid():
+            targets = form_venn.cleaned_data['targets']
+
+            server, db = manipulate_biosqldb.load_db(biodb)
+
+            all_orthogroups_list = []
+            series = '['
+            taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+            for target in targets:
+                template_serie = '{name: "%s", data: %s}'
+                sql ='select orthogroup from orthology_%s where `%s` > 0' % (biodb, target)
+                print sql
+                orthogroups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+                all_orthogroups_list += orthogroups
+                data = '"' + '","'.join(orthogroups) + '"'
+                series+=template_serie % (taxon_id2genome[target], orthogroups) + ','
+            series = series[0:-1] + ']'
+
+
+            #h['Marilyn Monroe'] = 1;
+
+            orthogroup2description = ''
+            sql = 'select orthogroup, gene from orthology_detail_chlamydia_03_15'
+            data = server.adaptor.execute_and_fetchall(sql,)
+            orthogroup2genes = {}
+            for i in data:
+                if i[0] not in orthogroup2genes:
+                    orthogroup2genes[i[0]] = [i[1]]
+                else:
+                    if i[1] in orthogroup2genes[i[0]]:
+                        pass
+                    else:
+                        orthogroup2genes[i[0]].append(i[1])
+            sql = 'select orthogroup, product from orthology_detail_chlamydia_03_15'
+            data = server.adaptor.execute_and_fetchall(sql,)
+            orthogroup2product = {}
+            for i in data:
+                if i[0] not in orthogroup2product:
+                    orthogroup2product[i[0]] = [i[1]]
+                else:
+                    if i[1] in orthogroup2product[i[0]]:
+                        pass
+                    else:
+                        orthogroup2product[i[0]].append(i[1])
+
+            for i in orthogroup2genes:
+                if i in all_orthogroups_list:
+                    genes = '<br>'.join(orthogroup2genes[i])
+                    products = '<br>'.join(orthogroup2product[i])
+                    orthogroup2description+='h["%s"] = "%s</td><td>%s;"\n' % (i, genes, products)
+                else:
+                    continue
+            print orthogroup2description
+            #print series
+            envoi_venn = True
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+        form_venn = venn_form_class()
+    return render(request, 'chlamdb/venn_orthogroup.html', locals())
+
+
+@login_required
+def extract_pfam(request, biodb):
+
+    cache = get_cache('default')
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+    extract_form_class = make_extract_form(biodb)
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+        form = extract_form_class(request.POST)  # Nous reprenons les données
+
+        #form2 = ContactForm(request.POST)
+        if 'comparison' in request.POST and form.is_valid():  # Nous vérifions que les données envoyées sont valides
+
+            print request.POST
+            print form.cleaned_data.keys()
+            include = form.cleaned_data['orthologs_in']
+            exclude = form.cleaned_data['no_orthologs_in']
+
+            try:
+                single_copy = request.POST['button_single_copy']
+                single_copy = True
+            except:
+                single_copy = False
+            print "single_copy", single_copy
+
+
+            if single_copy:
+                sql_include = ''
+                if len(include) > 0:
+                    for i in range(0, len(include)-1):
+                        sql_include += ' `%s` = 1 and ' % include[i]
+                    sql_include+='`%s` = 1' % include[-1]
+            else:
+                sql_include = ''
+                if len(include) > 0:
+                    for i in range(0, len(include)-1):
+                        sql_include += ' `%s` > 0 and ' % include[i]
+                    sql_include+='`%s` > 0' % include[-1]
+
+            sql_exclude = ''
+            if len(exclude) > 0:
+                sql_exclude = 'and '
+                for i in range(0, len(exclude)-1):
+                    sql_exclude += ' `%s` = 0 and ' % exclude[i]
+                sql_exclude+='`%s` = 0' % exclude[-1]
+
+            server, db = manipulate_biosqldb.load_db(biodb)
+
+            sql ='select id from comparative_tables.Pfam_%s where %s %s' % (biodb, sql_include, sql_exclude)
+
             print sql
 
             match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
             sum_group = len(match_groups)
+
+
+            sql_include = 'taxon_id ='
+            for i in range(0, len(include)-1):
+                sql_include+='%s or taxon_id =' % include[i]
+            sql_include+=include[-1]
+            n = 1
+            search_result = []
+
+            group_filter = 'where ('
+
+            for i, group in enumerate(match_groups):
+                if i == 0:
+                    group_filter += 'orthogroup="%s"' % group
+                else:
+                    group_filter += ' or orthogroup="%s"' % group
+            group_filter+=')'
+            #print group_filter
+
+
+            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+            sql_2 = 'select %s from orthology_detail_%s %s' % (columns, biodb, group_filter)
+            #print sql_2
+            raw_data = server.adaptor.execute_and_fetchall(sql_2,)
+
+
+            import biosql_own_sql_tables
+            pfam2descr = biosql_own_sql_tables.pfam2description(biodb)
+            match_groups_data = []
+            for i, pfam in enumerate(match_groups):
+                match_groups_data.append([i, pfam, pfam2descr[pfam]])
+
+
+
+            n = 1
+            extract_result = []
+            for one_hit in raw_data:
+                extract_result.append((n,) + one_hit)
+                n+=1
+                #print n
+            #print extract_result
+
+            envoi_extract = True
+
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = extract_form_class()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/extract_Pfam.html', locals())
+
+
+
+
+@login_required
+def venn_pfam(request, biodb):
+
+    cache = get_cache('default')
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+    venn_form_class = make_venn_from(biodb)
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+        form_venn = venn_form_class(request.POST)
+        #form2 = ContactForm(request.POST)
+        if 'venn' in request.POST and form_venn.is_valid():
+            targets = form_venn.cleaned_data['targets']
+
+            server, db = manipulate_biosqldb.load_db(biodb)
+
+            all_pfam_list = []
+            series = '['
+            taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+            for target in targets:
+                template_serie = '{name: "%s", data: %s}'
+                sql ='select id from comparative_tables.Pfam_%s where `%s` > 0' % (biodb, target)
+                print sql
+                cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+                all_pfam_list += cogs
+                data = '"' + '","'.join(cogs) + '"'
+                series+=template_serie % (taxon_id2genome[target], cogs) + ','
+            series = series[0:-1] + ']'
+
+
+            pfam2description = ''
+            sql = 'select signature_accession, signature_description, count(*) from interpro_chlamydia_03_15 where analysis="Pfam" group by signature_accession;'
+            data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+            for i in data:
+                if i in all_pfam_list:
+                    print 'ok'
+                    pfam2description+='h["%s"] = "%s </td><td>%s";' % (i, data[i][0], data[i][1])
+                else:
+                    print 'pas ok'
+            print pfam2description
+            #print series
+
+            envoi_venn = True
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+        form_venn = venn_form_class()
+    return render(request, 'chlamdb/venn_Pfam.html', locals())
+
+@login_required
+def extract_interpro(request, biodb):
+
+    cache = get_cache('default')
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+    extract_form_class = make_extract_form(biodb)
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+        form = extract_form_class(request.POST)  # Nous reprenons les données
+
+        #form2 = ContactForm(request.POST)
+        if 'comparison' in request.POST and form.is_valid():  # Nous vérifions que les données envoyées sont valides
+
+            print request.POST
+            print form.cleaned_data.keys()
+            include = form.cleaned_data['orthologs_in']
+            exclude = form.cleaned_data['no_orthologs_in']
+
+            try:
+                single_copy = request.POST['button_single_copy']
+                single_copy = True
+            except:
+                single_copy = False
+            print "single_copy", single_copy
+
+
+            if single_copy:
+                sql_include = ''
+                if len(include) > 0:
+                    for i in range(0, len(include)-1):
+                        sql_include += ' `%s` = 1 and ' % include[i]
+                    sql_include+='`%s` = 1' % include[-1]
+            else:
+                sql_include = ''
+                if len(include) > 0:
+                    for i in range(0, len(include)-1):
+                        sql_include += ' `%s` > 0 and ' % include[i]
+                    sql_include+='`%s` > 0' % include[-1]
+
+            sql_exclude = ''
+            if len(exclude) > 0:
+                sql_exclude = 'and '
+                for i in range(0, len(exclude)-1):
+                    sql_exclude += ' `%s` = 0 and ' % exclude[i]
+                sql_exclude+='`%s` = 0' % exclude[-1]
+
+            server, db = manipulate_biosqldb.load_db(biodb)
+
+            sql ='select id from comparative_tables.interpro_%s where %s %s' % (biodb, sql_include, sql_exclude)
+
+            print sql
+
+            match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+            sum_group = len(match_groups)
+
+            filter = '"' + '","'.join(match_groups) + '"'
+
+            sql2 = 'select interpro_accession, interpro_description from interpro_%s' \
+            ' where interpro_accession in (%s) group by interpro_accession;' % (biodb, filter)
+
+            match_data = list(server.adaptor.execute_and_fetchall(sql2,))
 
 
             sql_include = 'taxon_id ='
@@ -300,12 +683,220 @@ def extract(request, biodb):
 
             envoi_extract = True
 
+
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
         form = extract_form_class()  # Nous créons un formulaire vide
 
-    return render(request, 'chlamdb/extract_genes.html', locals())
+    return render(request, 'chlamdb/extract_interpro.html', locals())
 
 
+
+
+@login_required
+def venn_interpro(request, biodb):
+
+    cache = get_cache('default')
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+    venn_form_class = make_venn_from(biodb)
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+        form_venn = venn_form_class(request.POST)
+        #form2 = ContactForm(request.POST)
+        if 'venn' in request.POST and form_venn.is_valid():
+            targets = form_venn.cleaned_data['targets']
+
+            server, db = manipulate_biosqldb.load_db(biodb)
+
+            all_pfam_list = []
+            series = '['
+            taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+            for target in targets:
+                template_serie = '{name: "%s", data: %s}'
+                sql ='select id from comparative_tables.interpro_%s where `%s` > 0' % (biodb, target)
+                print sql
+                cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+                all_pfam_list += cogs
+                data = '"' + '","'.join(cogs) + '"'
+                series+=template_serie % (taxon_id2genome[target], cogs) + ','
+            series = series[0:-1] + ']'
+
+
+            interpro2description = ''
+            sql = 'select interpro_accession,interpro_description, count(*) from interpro_chlamydia_03_15 group by interpro_accession;'
+            data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+            for i in data:
+                if i in all_pfam_list:
+                    print 'ok'
+                    interpro2description+='h["%s"] = "%s </td><td>%s";' % (i, data[i][0], data[i][1])
+                else:
+                    print 'pas ok'
+            print interpro2description
+            #print series
+
+            envoi_venn = True
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+        form_venn = venn_form_class()
+    return render(request, 'chlamdb/venn_interpro.html', locals())
+
+
+@login_required
+def extract_cog(request, biodb):
+
+    cache = get_cache('default')
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+    extract_form_class = make_extract_form(biodb)
+
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+        form = extract_form_class(request.POST)  # Nous reprenons les données
+        #form2 = ContactForm(request.POST)
+        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+
+            include = form.cleaned_data['orthologs_in']
+            exclude = form.cleaned_data['no_orthologs_in']
+            try:
+                single_copy = request.POST['button_single_copy']
+                single_copy = True
+            except:
+                single_copy = False
+            print "single_copy", single_copy
+
+            print "single_copy", single_copy
+
+
+            if single_copy:
+                sql_include = ''
+                if len(include) > 0:
+                    for i in range(0, len(include)-1):
+                        sql_include += ' `%s` = 1 and ' % include[i]
+                    sql_include+='`%s` = 1' % include[-1]
+            else:
+                sql_include = ''
+                if len(include) > 0:
+                    for i in range(0, len(include)-1):
+                        sql_include += ' `%s` > 0 and ' % include[i]
+                    sql_include+='`%s` > 0' % include[-1]
+
+            sql_exclude = ''
+            if len(exclude) > 0:
+                sql_exclude = 'and '
+                for i in range(0, len(exclude)-1):
+                    sql_exclude += ' `%s` = 0 and ' % exclude[i]
+                sql_exclude+='`%s` = 0' % exclude[-1]
+
+            server, db = manipulate_biosqldb.load_db(biodb)
+
+            sql ='select id from comparative_tables.COG_%s where %s %s' % (biodb, sql_include, sql_exclude)
+
+            print sql
+
+            match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+            sum_group = len(match_groups)
+
+            cog_data = []
+            for i in match_groups:
+                sql = 'select * from COG.cog_names_2014 where COG_id ="%s"' % i
+                cog_data.append(list(server.adaptor.execute_and_fetchall(sql,)[0]))
+            print cog_data
+
+            '''
+            sql_include = 'taxon_id ='
+            for i in range(0, len(include)-1):
+                sql_include+='%s or taxon_id =' % include[i]
+            sql_include+=include[-1]
+            n = 1
+            search_result = []
+
+            group_filter = 'where ('
+
+            for i, group in enumerate(match_groups):
+                if i == 0:
+                    group_filter += 'orthogroup="%s"' % group
+                else:
+                    group_filter += ' or orthogroup="%s"' % group
+            group_filter+=')'
+            #print group_filter
+
+
+            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+            sql_2 = 'select %s from orthology_detail_%s %s' % (columns, biodb, group_filter)
+            #print sql_2
+            raw_data = server.adaptor.execute_and_fetchall(sql_2,)
+
+            n = 1
+            extract_result = []
+            for one_hit in raw_data:
+                extract_result.append((n,) + one_hit)
+                n+=1
+                #print n
+            #print extract_result
+            '''
+            envoi_extract = True
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = extract_form_class()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/extract_cogs.html', locals())
+
+
+
+@login_required
+def venn_cog(request, biodb):
+
+    cache = get_cache('default')
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+    venn_form_class = make_venn_from(biodb)
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+        form_venn = venn_form_class(request.POST)  # Nous reprenons les données
+        #form2 = ContactForm(request.POST)
+        if form_venn.is_valid():  # Nous vérifions que les données envoyées sont valides
+
+            targets = form_venn.cleaned_data['targets']
+
+            server, db = manipulate_biosqldb.load_db(biodb)
+
+            all_cog_list = []
+            series = '['
+            taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+            for target in targets:
+                template_serie = '{name: "%s", data: %s}'
+                sql ='select id from comparative_tables.COG_%s where `%s` > 0' % (biodb, target)
+                print sql
+                cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+                all_cog_list += cogs
+                data = '"' + '","'.join(cogs) + '"'
+                series+=template_serie % (taxon_id2genome[target], cogs) + ','
+            series = series[0:-1] + ']'
+
+
+            #h['Marilyn Monroe'] = 1;
+
+            cog2description = ''
+            sql = 'select * from COG.cog_names_2014'
+            data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+            for i in data:
+                if i in all_cog_list:
+                    print 'ok'
+                    cog2description+='h["%s"] = "%s </td><td>%s";' % (i, data[i][0], data[i][1])
+                else:
+                    print 'pas ok'
+            print cog2description
+            #print series
+            envoi_venn = True
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form_venn = venn_form_class()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/venn_cogs.html', locals())
 
 
 
@@ -419,17 +1010,10 @@ def extract_region(request, biodb):
 @login_required
 def locusx(request, biodb, locus, menu=False):
 
-
-    print biodb, locus, "OK!!!!!!!"
-
     cache = get_cache('default')
-    print "cache", cache
+
     #cache.clear()
 
-    #bioentry_in_memory = cache.get("biodb")
-    print "loading db..."
-    server = manipulate_biosqldb.load_db()
-    print "db loaded..."
     if request.method == 'GET':  # S'il s'agit d'une requête POST
 
         valid_id = True
@@ -437,19 +1021,47 @@ def locusx(request, biodb, locus, menu=False):
         server, db = manipulate_biosqldb.load_db(biodb)
 
         #sql1 = 'SELECT column_name FROM information_schema.columns WHERE table_name="orthology_detail_chlamydia_03_15"'
-        columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                  'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-        sql2 = 'select %s from orthology_detail_%s where locus_tag like "%%%%%s%%%%" or protein_id like "%%%%%s%%%%"' % (columns, biodb, locus, locus)
+
+        sql1 =   'SELECT' \
+                 ' CASE' \
+                 '   WHEN locus_tag = "%s" THEN "locus_tag"' \
+                 '   WHEN protein_id = "%s" THEN "protein_i"' \
+                 '   WHEN orthogroup = "%s" THEN "orthogroup"'\
+                 ' END AS "which_column"'\
+                 ' FROM' \
+                 ' orthology_detail_%s where locus_tag="%s" or protein_id like "%%%%%s%%%%" or orthogroup="%s"' % (locus,
+                                                                                                                   locus,
+                                                                                                                   locus,
+                                                                                                                   biodb,
+                                                                                                                   locus,
+                                                                                                                   locus,
+                                                                                                                   locus)
+
+
 
         try:
-            data = server.adaptor.execute_and_fetchall(sql2, )[0]
+            input_type = server.adaptor.execute_and_fetchall(sql1, )[0][0]
         except IndexError:
             valid_id = False
             return render(request, 'chlamdb/locus.html', locals())
 
-        if not data:
-                valid_id = False
-        if valid_id:
+        else:
+            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+            sql2 = 'select %s from orthology_detail_%s where %s="%s"' % (columns, biodb, input_type, locus)
+            if input_type == 'locus_tag':
+                sql3 = 'select t2.COG_id,t2.functon,t2.name from COG.locus_tag2gi_hit_%s ' \
+                       ' as t1 inner join COG.cog_names_2014 as t2 on t1.COG_id=t2.COG_id where locus_tag="%s"' % (biodb, locus)
+                sql4 = 'select analysis, signature_accession, signature_description, interpro_accession, interpro_description ' \
+                       ' from interpro_%s where locus_tag="%s";' % (biodb, locus)
+                cog_data = server.adaptor.execute_and_fetchall(sql3, )[0]
+                interpro_data = server.adaptor.execute_and_fetchall(sql4, )
+                print cog_data
+                print interpro_data
+
+            data = server.adaptor.execute_and_fetchall(sql2, )[0]
+
+
             orthogroup = data[0]
 
             fasta = "%s_fasta/%s.txt" % (biodb, orthogroup)
@@ -477,22 +1089,171 @@ def locusx(request, biodb, locus, menu=False):
 
                 print "orthologs", orthologs, len(homologues)
                 for count, value in enumerate(homologues):
+                    value = list(value)
                     locus_2 = value[1]
                     if value[2] != '-':
                         interpro_id = value[2]
                     else:
-                        interpro_id = value[1]
-                    print value + (orthogroup2identity_dico[data[1]][locus_2],)
-                    homologues[count] = (count+1,) + value + (orthogroup2identity_dico[data[1]][locus_2],) + (interpro_id,)
+                        value[2] = value[1]
+                    print value + [orthogroup2identity_dico[data[1]][locus_2]]
+                    homologues[count] = [count+1] + value + [orthogroup2identity_dico[data[1]][locus_2]]
                     print homologues[count]
 
             else:
-                homologues[0] = homologues[0] + (100,)
+                homologues[0] = (1,) + homologues[0] + (100,)
 
         envoi = True
 
 
     return render(request, 'chlamdb/locus.html', locals())
+
+
+@login_required
+def fam(request, biodb, fam, type):
+
+    cache = get_cache('default')
+
+    #cache.clear()
+
+    if request.method == 'GET':  # S'il s'agit d'une requête POST
+
+        valid_id = True
+
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+        print 'type', type
+
+        #sql1 = 'SELECT column_name FROM information_schema.columns WHERE table_name="orthology_detail_chlamydia_03_15"'
+        if type =='pfam':
+            sql1 =   'select locus_tag, signature_description, count(*) from interpro_%s where signature_accession="%s" group by locus_tag' % (biodb, fam)
+        elif type == 'cog':
+            sql1 = 'select locus_tag from COG.locus_tag2gi_hit_%s where COG_id="%s"' % (biodb, fam)
+            sql2 = 'select COG_id,functon, description, name from (select * from COG.cog_names_2014 where COG_id = "%s") A inner join COG.code2category as B on A.functon=B.code;' % (fam)
+            info = server.adaptor.execute_and_fetchall(sql2, )[0]
+
+
+
+        elif type == 'interpro':
+            sql1 = 'select locus_tag, signature_description, count(*) from interpro_%s where interpro_accession="%s" group by locus_tag' % (biodb, fam)
+        else:
+            valid_id = False
+            return render(request, 'chlamdb/fam.html', locals())
+
+        try:
+            locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql1, )]
+            print 'locus', locus_list
+            locus_list_form = '"' + '","'.join(locus_list) + '"'
+        except IndexError:
+            valid_id = False
+            return render(request, 'chlamdb/fam.html', locals())
+
+        else:
+            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+            sql2 = 'select %s from orthology_detail_%s where locus_tag in (%s)' % (columns, biodb, locus_list_form)
+
+            all_locus_raw_data = server.adaptor.execute_and_fetchall(sql2, )
+            all_locus_data = []
+            group_count = []
+            for i in range(0, len(all_locus_raw_data)):
+                 all_locus_data.append([i] + list(all_locus_raw_data[i]))
+                 if all_locus_raw_data[i][0] not in group_count:
+                    group_count.append(all_locus_raw_data[i][0])
+        envoi = True
+        menu = True
+
+
+    return render(request, 'chlamdb/fam.html', locals())
+
+
+@login_required
+def sunburst(request, biodb, locus):
+
+    cache = get_cache('default')
+
+    #cache.clear()
+
+    if request.method == 'GET':  # S'il s'agit d'une requête POST
+        print 'okkkkkkkkkkkkkkk'
+        valid_id = True
+
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+        sql = 'select accession from orthology_detail_%s where locus_tag = "%s"' % (biodb, locus)
+        accession = server.adaptor.execute_and_fetchall(sql,)[0][0]
+        print accession
+        try:
+            sql1 = 'select t3.superkingdom,  t3.phylum,  t3.order,  t3.family,  t3.genus,  t3.species  from ' \
+                   ' blastnr.blastnr_hits_chlamydia_03_15_%s as t1  inner join blastnr.blastnr_hits_taxonomy_filtered_chlamydia_03_15_%s ' \
+                   ' as t2 on t1.nr_hit_id = t2.nr_hit_id  inner join blastnr.blastnr_taxonomy as t3 on ' \
+                   ' t2.subject_taxon_id = t3.taxon_id inner join blastnr.blastnr_hsps_chlamydia_03_15_%s as t4 ' \
+                   ' on t1.nr_hit_id=t4.nr_hit_id where t1.locus_tag="%s"' % (accession, accession, accession, locus)
+            print sql
+            raw_data = server.adaptor.execute_and_fetchall(sql1,)
+
+        except:
+            valid_id = False
+            return render(request, 'chlamdb/sunburst.html', locals())
+
+
+        dico =  {}
+
+        y = 1
+        for data in raw_data:
+
+            if data[0] not in dico:
+                dico[data[0]] = {}
+            else:
+                if data[1] not in dico[data[0]]:
+                    dico[data[0]][data[1]] = {}
+
+                if data[2] not in dico[data[0]][data[1]]:
+                    dico[data[0]][data[1]][data[2]] = {}
+
+                if data[3] not in dico[data[0]][data[1]][data[2]]:
+                    dico[data[0]][data[1]][data[2]][data[3]] = {}
+
+                if data[4] not in dico[data[0]][data[1]][data[2]][data[3]]:
+                    dico[data[0]][data[1]][data[2]][data[3]][data[4]] = {}
+
+                if data[5] not in dico[data[0]][data[1]][data[2]][data[3]][data[4]]:
+                    dico[data[0]][data[1]][data[2]][data[3]][data[4]][data[5]] = 1
+
+                dico[data[0]][data[1]][data[2]][data[3]][data[4]][data[5]] += 1
+                #print y
+                y += 1
+        i = 1
+
+        tt = settings.BASE_DIR + '/assets/out.tab'
+        print 'sdsdfsdf', tt
+        out = open(tt, 'w')
+        for superkingdom in dico:
+            for phylum in dico[superkingdom]:
+                for order in dico[superkingdom][phylum]:
+                    for family in dico[superkingdom][phylum][order]:
+                        for genus in dico[superkingdom][phylum][order][family]:
+                            for species in dico[superkingdom][phylum][order][family][genus]:
+                                out.write('%s, %s, %s, %s\n' % (i, 1, superkingdom, 0))
+                                out.write("%s, %s, %s, %s\n" % (i, 2, phylum, 0))
+                                out.write("%s, %s, %s, %s\n" % (i, 3, order, 0))
+                                out.write("%s, %s, %s, %s\n" % (i, 4, family, 0))
+                                out.write("%s, %s, %s, %s\n" % (i, 5, genus, 0))
+                                out.write("%s, %s, %s, %s\n" % (i, 6, species, dico[superkingdom][phylum][order][family][genus][species]))
+                                i+=1
+
+                                print '\'%s, %s, %s, %s\\n\' +' % (i, 1, superkingdom[1:-1], 0)
+                                print "\'%s, %s, %s, %s\\n\' +" % (i, 2, phylum[1:-1], 0)
+                                print "\'%s, %s, %s, %s\\n\' +" % (i, 3, order[1:-1], 0)
+                                print "\'%s, %s, %s, %s\\n\' +" % (i, 4, family[1:-1], 0)
+                                print "\'%s, %s, %s, %s\\n\' +" % (i, 5, genus[1:-1], 0)
+                                print "\'%s, %s, %s, %s\\n\' +" % (i, 6, species[1:-1], dico[superkingdom][phylum][order][family][genus][species])
+        out.close()
+
+        envoi = True
+        menu = True
+
+
+    return render(request, 'chlamdb/sunburst.html', locals())
 
 
 
@@ -606,7 +1367,15 @@ def homology(request, biodb):
                       'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
             sql2 = 'select %s from orthology_detail_%s where locus_tag like "%%%%%s%%%%" or protein_id like "%%%%%s%%%%" or orthogroup= "%s"' % (columns, biodb, accession, accession, accession)
 
-
+            if not group:
+                sql3 = 'select t2.COG_id,t2.functon,t2.name from COG.locus_tag2gi_hit_%s ' \
+                       ' as t1 inner join COG.cog_names_2014 as t2 on t1.COG_id=t2.COG_id where locus_tag="%s"' % (biodb, accession)
+                sql4 = 'select analysis, signature_accession, start, stop, signature_description, interpro_accession, interpro_description ' \
+                       ' from interpro_%s where locus_tag="%s";' % (biodb, accession)
+                cog_data = server.adaptor.execute_and_fetchall(sql3, )[0]
+                interpro_data = server.adaptor.execute_and_fetchall(sql4, )
+                print cog_data
+                print interpro_data
 
             try:
                 data = server.adaptor.execute_and_fetchall(sql2, )[0]

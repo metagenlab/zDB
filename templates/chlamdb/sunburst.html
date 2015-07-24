@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html ng-app="Sunburst">
+
+<head>
+
+{% load staticfiles %}
+  <meta charset="utf-8">
+  <title>D3 Sunburst Sequence</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.1/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,600">
+
+
+</head>
+
+
+<div id="container">
+
+
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+
+    </div>
+
+    <div id="content" style="min-height:500px;">
+
+        <nav>
+            <ul id="tabs_main" class="nav nav-tabs">
+                <li><a href="{% url 'blastnr' biodb locus %}">Detailed result</a></li>
+                <li class="active"><a href="{% url 'sunburst' biodb locus %}">Vizual</a></li>
+            </ul>
+        </nav>
+
+      <div class="main" ng-controller="MainCtrl as sunburst">
+
+            <!-- visualization -->
+
+            <div class="visualization">
+              <sunburst data="sunburst.data"></sunburst>
+            </div>
+        </div>
+        </div>
+
+    </div>
+    <div id="footer"></div>
+
+  <script src="http://code.angularjs.org/1.3.5/angular.js"></script>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+(function() {
+  angular.module("Sunburst", [])
+    .directive("sunburst", sunburst)
+    .directive("onReadFile", onReadFile)
+    .controller("MainCtrl", MainCtrl);
+
+  // controller function MainCtrl
+  function MainCtrl($http) {
+    var ctrl = this;
+    init();
+
+
+    // function init
+    function init() {
+      // initialize controller variables
+      ctrl.examples = [
+          '/assets/out'
+      ];
+      ctrl.exampleSelected = ctrl.examples[0];
+      ctrl.getData = getData;
+      ctrl.selectExample = selectExample;
+
+      // initialize controller functions
+      ctrl.selectExample(ctrl.exampleSelected);
+    }
+
+    // function getData
+    function getData($fileContent) {
+      ctrl.data = $fileContent;
+    }
+
+    // function selectExample
+    function selectExample(item) {
+      var file = item + ".tab";
+      $http.get(file).success(function(data) {
+        ctrl.data = data;
+      });
+    }
+  }
+
+
+  // directive function sunburst
+  function sunburst() {
+    return {
+      restrict: "E",
+      scope: {
+        data: "=",
+      },
+      link: sunburstDraw
+    };
+  }
+
+
+  // directive function onReadFile
+  function onReadFile($parse) {
+    return {
+      restrict: "A",
+      scope: false,
+      link: function(scope, element, attrs) {
+        var fn = $parse(attrs.onReadFile);
+        element.on("change", function(onChangeEvent) {
+          var reader = new FileReader();
+          reader.onload = function(onLoadEvent) {
+            scope.$apply(function() {
+              fn(scope, {
+                $fileContent: onLoadEvent.target.result
+              });
+            });
+          };
+          reader.readAsText((onChangeEvent.srcElement || onChangeEvent.target).files[0]);
+        });
+      }
+    };
+  }
+})();
+
+
+
+
+
+</script>
+<script type="text/javascript" src="{% static 'js/sunburst.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/sunburst.css' %}" />
+</body>
+</html>

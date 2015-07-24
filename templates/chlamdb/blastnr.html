@@ -15,81 +15,103 @@
 </head>
 
 <body>
+<div id="container">
+    <div id="sidebar">
 
-{% include "chlamdb/user.html" %}
-{% include "chlamdb/menu.html" %}
+            {% include "chlamdb/menu.html" %}
+    </div>
 
-{% if not valid_id %}
-
-    <section id="head_section">
-    Invalid ID or 0 significant NR hits
-    </section>
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
 
 
-{% else %}
+    <div id="content">
 
-<section id="head_section">
-    <h2> NCBI nr hit (26 Mar 2015 database, 64'057'457 sequences) for: </h2>
-    <A HREF={% url 'locusx' biodb blast_query_locus True%}>{{ blast_query_locus }}</A>
-        {{ blast_query_protein_id }}
-        ({{ organism }})
 
-<div id="export_bouttons">
-<a download="blast_nr_{{ locus_tag }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'blast_nr_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-<a download="blast_nr_{{ locus_tag }}.csv" href="#" onclick="return ExcellentExport.csv(this, 'blast_nr_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-<br/>
+        {% if not valid_id %}
+
+            <section id="head_section">
+            Invalid ID or 0 significant NR hits
+            </section>
+
+
+        {% else %}
+
+            <nav>
+                <ul id="tabs_main" class="nav nav-tabs">
+                    <li class="active"><a href="{% url 'blastnr' biodb blast_query_locus %}">Detailed result</a></li>
+                    <li><a href="{% url 'sunburst' biodb blast_query_locus %}">Vizual</a></li>
+                </ul>
+            </nav>
+
+
+
+            <h3> NCBI nr hit (26 Mar 2015 database, 64'057'457 sequences) for: </h3>
+            <ul>
+             <li><A HREF={% url 'locusx' biodb blast_query_locus True%}>{{ blast_query_locus }} ({{ organism }})</A></li>
+              <li>N. NCBI nr hits: {{ blast_data|length }}</li>
+
+
+            </ul>
+
+
+            <div id="export_bouttons">
+            <a download="blast_nr_{{ locus_tag }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'blast_nr_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+            <a download="blast_nr_{{ locus_tag }}.csv" href="#" onclick="return ExcellentExport.csv(this, 'blast_nr_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+            <br/>
+            </div>
+
+
+                <table id="blast_nr_table" class="sortable">
+                <thead>
+                <tr>
+                <th>n</th>
+                <th>Subject</th>
+                <th>Kingdom</th>
+                <th>eval.</th>
+                <th>ID(%)</th>
+                <th>N pos.</th>
+                <th>N gaps</th>
+                <th>Len.</th>
+                <th>Q. start</th>
+                <th>Q. end</th>
+                <th>Q. cov.</th>
+                <th>S. start</th>
+                <th>S. end</th>
+                <th id=blast_subject_title>S. title</th>
+                <th id=blast_taxonomy>Taxonomy</th>
+                </tr>
+                </thead>
+                <tbody>
+
+
+            {% for values in blast_data %}
+                <tr>
+                    <td>{{ values.0 }}</td>
+                    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{ values.3 }}">{{ values.3 }}<a></td>
+                    <td>{{ values.7 }}</td>
+                    <td>{{ values.8 }}</td>
+                    <td>{{ values.9 }}</td>
+                    <td>{{ values.10 }}</td>
+                    <td>{{ values.11 }}</td>
+                    <td>{{ values.12 }}</td>
+                    <td>{{ values.13 }}</td>
+                    <td>{{ values.14 }}</td>
+                    <td>{{ values.15 }}</td>
+                    <td>{{ values.16}}</td>
+                    <td>{{ values.17 }}</td>
+                    <td>{{ values.18 }}</td>
+                    <td>{{ values.5 | safe }}</td>
+
+                </tr>
+            {%  endfor %}
+            </tbody>
+            </table>
+
+        {% endif %}
+
+    </div>
 </div>
-
-
-    <table id="blast_nr_table" class="sortable">
-    <thead>
-    <tr>
-    <th>n</th>
-    <th>Subject</th>
-    <th>Kingdom</th>
-    <th>eval.</th>
-    <th>ID(%)</th>
-    <th>N pos.</th>
-    <th>N gaps</th>
-    <th>Len.</th>
-    <th>Q. start</th>
-    <th>Q. end</th>
-    <th>Q. cov.</th>
-    <th>S. start</th>
-    <th>S. end</th>
-    <th id=blast_subject_title>S. title</th>
-    <th id=blast_taxonomy>Taxonomy</th>
-    </tr>
-    </thead>
-    <tbody>
-
-
-{% for values in blast_data %}
-    <tr>
-        <td>{{ values.0 }}</td>
-        <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{ values.3 }}">{{ values.3 }}<a></td>
-        <td>{{ values.7 }}</td>
-        <td>{{ values.8 }}</td>
-        <td>{{ values.9 }}</td>
-        <td>{{ values.10 }}</td>
-        <td>{{ values.11 }}</td>
-        <td>{{ values.12 }}</td>
-        <td>{{ values.13 }}</td>
-        <td>{{ values.14 }}</td>
-        <td>{{ values.15 }}</td>
-        <td>{{ values.16}}</td>
-        <td>{{ values.17 }}</td>
-        <td>{{ values.18 }}</td>
-        <td>{{ values.5 | safe }}</td>
-
-    </tr>
-{%  endfor %}
-</tbody>
-</table>
-
-{% endif %}
-
-</section>
-
 </body>
 </html>

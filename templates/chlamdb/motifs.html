@@ -3,73 +3,71 @@
 
 <html>
 <head>
-
-{% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 </head>
-<body>
 
-{% include "chlamdb/user.html" %}
-{% include "chlamdb/menu.html" %}
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
 
-  
-<!--
-{% load static %}
-<img src="{% static 'im_1.jpg' %}" alt="Mon image" />
--->
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
 
-<section  id="head_section">
+    <div id="content">
 
-<form action="{% url "chlamdb.views.motif_search" biodb %}" method="post">{% csrf_token %}
+        <section  id="head_section">
 
-<table>
-<tr>
-  <td>{{ form.as_p }}</td>
-</tr>
+        <form action="{% url "chlamdb.views.motif_search" biodb %}" method="post">{% csrf_token %}
 
-<tr>
-  <td><input type="submit" value="Submit" /></td>
-</tr>
-</table>
+        <table>
+        <tr>
+          <td>{{ form.as_p }}</td>
+        </tr>
 
-
-
-</form>
+        <tr>
+          <td><input type="submit" value="Submit" /></td>
+        </tr>
+        </table>
 
 
 
-{% if envoi %}
-
-    &nbsp
-
-    <h2>Motif search result</h2>
+        </form>
 
 
-<pre>
-<div id="formatted_blast">
-{{std_out}}
+
+        {% if envoi %}
+
+            &nbsp
+
+            <h2>Motif search result</h2>
+
+
+        <pre>
+        <div id="formatted_blast">
+        {{std_out}}
+        </div>
+            </pre>
+        <!--
+        <table>
+        <tr>
+          <td>
+           <pre id=blast_result>
+            {{blast_result}}
+           </pre>
+
+          </td>
+        </tr>
+        -->
+
+        </table>
+
+        </section>
+
+
+        {% endif %}
+    </div>
 </div>
-    </pre>
-<!--
-<table>
-<tr>
-  <td>
-   <pre id=blast_result>
-    {{blast_result}}
-   </pre>
-
-  </td>
-</tr>
--->
-
-</table>
-
-</section>
-
-  
-{% endif %}
-
-
 
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>

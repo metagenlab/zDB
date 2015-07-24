@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+
+
+<html>
+    <head>
+        <script type="text/javascript" id="js">
+            $(document).ready(function() {
+            // call the tablesorter plugin
+            $("table").tablesorter({
+            // change the default sorting order from 'asc' to 'desc'
+            sortInitialOrder: 1
+            });
+            });
+        </script>
+        <script type="text/javascript">
+            jQuery(document).ready(function ($) {
+                $('#tabs_main').tab();
+            });
+        </script>
+        <script type="text/javascript">
+            jQuery(document).ready(function ($) {
+                $('#tabs1').tab();
+            });
+        </script>
+    </head>
+
+
+    <div id="container">
+
+
+        <div id="sidebar">
+            {% include "chlamdb/menu.html" %}
+        </div>
+
+        <div id="header">
+            {% include "chlamdb/user.html" %}
+        </div>
+
+        <div id="content">
+
+
+
+            <nav>
+                <ul id="tabs_main" class="nav nav-tabs">
+                    <li class="active"><a href="{% url 'extract_cog' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_cog' biodb %}">Venn diagram</a></li>
+                </ul>
+            </nav>
+
+                     <div id="extract_form">
+                        <form action="{% url "chlamdb.views.extract_cog" biodb %}" method="post">
+
+
+                        <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                            <div class="panel-heading" style="width:100%">
+                                <h3 class="panel-title">Help</h3>
+                            </div>
+                            <p style="margin: 10px 10px 10px 10px">Get COG list of COGs shared between genomes selected in panel A and absent in genomes of panel B</p>
+                        </div>
+
+                        <div style="position: absolute;margin-top:310px">
+                            <div style="height:40px;margin-left: 180px;width:280px;border: 2px solid #8AC007; border-radius: 15px;">
+                                <div style="width: 100%; float: left; margin-left: 10px;margin-top:3px">
+                                    <p>Consider single copy groups only</p>
+                                </div >
+
+                                <div style="height: 40px; margin-left: 180px;margin-top:3px;">
+                                    <label class="switch-light well" onclick="" style="margin: 5px 0px 0px 0px; padding: 0 0 0 0; position: absolute">
+                                        <input type="checkbox" style="padding: 0 0px 0 0" id="button_single_copy" name="button_single_copy">
+                                        <span>
+                                        <span>Off</span>
+                                        <span>On</span>
+                                        </span>
+                                        <a class="btn btn-success btn-xs"></a>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p id="extract_panel_A">
+                            A
+                        </p>
+                        <p id="extract_panel_B">
+                            B
+                        </p>
+
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                         <input type="submit" name="comparison" value="extract homologues 2" id="extract_button" />
+                         </form>
+                    </div>
+
+
+
+            {% if envoi_extract %}
+
+                <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                    <li class="active"><a href="#red" data-toggle="tab">Orthogroups</a></li>
+                    <li><a href="#orange" data-toggle="tab">Table detail</a></li>
+                </ul>
+
+                <div id="my-tab-content" class="tab-content">
+
+                    <div class="tab-pane active" id="red">
+
+
+                        <div id="export_bouttons_groups">
+                            <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+
+                            <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                            <br/>
+                        </div>
+
+                        <p>Number of orthogroups: {{ sum_group }} </p>
+
+                        <table class="sortable" id="table_groups">
+
+                            <thead>
+                                <tr>
+                                    <th>COG</th>
+                                    <th>Category</th>
+                                    <th>Name</th>
+                                </tr>
+                            </thead>
+
+                            {% for value in cog_data %}
+                                <tr>
+                                    <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{value.0}}">{{value.0}}</a></td>
+                                    <td>{{value.1}}</td>
+                                    <td><a href="{% url 'fam' biodb value.0 'cog' %}">{{value.2}}</a></td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+
+
+                    </div>
+                    <div class="tab-pane" id="orange">
+                            <div id="export_bouttons_groups">
+                                <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'datatable', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+
+                                <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'datatable');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                                <br/>
+                            </div>
+
+
+                            <p>Number of orthogroups: {{ sum_group }} </p>
+
+                            <table class="sortable" id="datatable">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th id="entete_locus" class="rotate">Orthogroup</th>
+                                        <th id="entete_locus" class="rotate">Locus</th>
+                                        <th id="entete_locus" class="rotate">Protein id</th>
+                                        <th id="entete_gene" class="rotate">Start</th>
+                                        <th id="entete_gene" class="rotate">Stop</th>
+                                        <th id="entete_strand" class="rotate">S.</th>
+                                        <th id="entete_gene" class="rotate">Gene</th>
+                                        <th id="entete_n" class="rotate">nH</th>
+                                        <th id="entete_n" class="rotate">nG</th>
+                                        <th id="entete_n" class="rotate">TM</th>
+                                        <th id="entete_n" class="rotate">SP</th>
+                                        <th id="entete_product" class="rotate">Product</th>
+                                        <th id="entete_organism" class="rotate">Organism</th>
+                                        <th id="entete_translation" class="rotate">Translation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+
+                                    {% for values in extract_result %}
+                                        <tr>
+                                            <td>{{values.0}}</td>
+                                            <td>{{values.1}}</td>
+                                            <td>{{values.2}}</td>
+                                            <td>{{values.3}}</td>
+                                            <td>{{values.4}}</td>
+                                            <td>{{values.5}}</td>
+                                            <td>{{values.6}}</td>
+                                            <td>{{values.7}}</td>
+                                            <td>{{values.8}}</td>
+                                            <td>{{values.9}}</td>
+                                            <td>{{values.10}}</td>
+                                            <td>{{values.11}}</td>
+                                            <td>{{values.12}}</td>
+                                            <td>{{values.13}}</td>
+                                            <td>{{values.14}}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                    </div>
+
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+
+    <div id="footer">
+
+    </div>
+
+    </body>
+</html>
