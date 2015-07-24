@@ -8,23 +8,64 @@ from Bio import Phylo
 
 # heatmap Chlamydiales pan-genome
 
-def biodb2heatmap(bio_db_name):
 
+def biodb2randomized_matrix(bio_db_name):
     server, db = manipulate_biosqldb.load_db(bio_db_name)
     matrix = np.array(manipulate_biosqldb.get_orthology_table(server, bio_db_name))
 
     taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, bio_db_name)
     #print taxon_id2description
 
-    group_names = matrix[:,0]
+    #group_names = matrix[:,0]
     taxons_ids = manipulate_biosqldb.get_taxon_id_list(server, bio_db_name)
 
     print 'Number of taxons:', len(taxons_ids)
     taxons_ids = [taxon_id2description[str(i)] for i in taxons_ids]
 
+    import re
+    for i, accession in enumerate(taxons_ids):
+        #print i, accession
+        description = taxons_ids[i]
+        description = re.sub(", complete genome\.", "", description)
+        description = re.sub(", complete genome", "", description)
+        description = re.sub(", complete sequence\.", "", description)
+        description = re.sub("strain ", "", description)
+        description = re.sub("str\. ", "", description)
+        description = re.sub(" complete genome sequence\.", "", description)
+        description = re.sub(" complete genome\.", "", description)
+        description = re.sub(" chromosome", "", description)
+        description = re.sub(" DNA", "S.", description)
+        description = re.sub("Merged record from ", "", description)
+        description = re.sub(", wgs", "", description)
+        description = re.sub("Candidatus ", "", description)
+        description = re.sub(".contig.0_1, whole genome shotgun sequence.", "", description)
+        description = re.sub("Protochlamydia", "P.", description)
+        description = re.sub("Chlamydia", "C.", description)
+        description = re.sub("Chlamydophila", "E.", description)
+        description = re.sub("Estrella", "E.", description)
+        description = re.sub("Rhodopirellula", "R.", description)
+        description = re.sub("Methylacidiphilum", "M.", description)
+        description = re.sub(" phage", "", description)
+        description = re.sub("Parachlamydia", "P.", description)
+        description = re.sub("Neochlamydia", "Neo.", description)
+        description = re.sub("Simkania", "S.", description)
+        description = re.sub("Waddlia", "W.", description)
+        description = re.sub("Pirellula", "P.", description)
+        description = re.sub("Rhabdochlamydiaceae sp.", "Rhabdo", description)
+        taxons_ids[i] = description
 
     M = matrix.astype(float) # [:, 1:]
     M = heatmap.randomize_table(M)
+    return (M, taxons_ids)
+
+
+
+
+
+def biodb2heatmap(bio_db_name):
+
+    M, taxons_ids = biodb2randomized_matrix(bio_db_name)
+
     print len(M[:,1])
     print len(M[1,:])
     heatmap.heatmap(M, output="heatmap.pdf", breaks="-0.5, 0.5, 1.5, 2.5", rows=None, columns=taxons_ids, format="pdf", orderCols=True)
