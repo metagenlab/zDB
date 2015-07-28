@@ -143,11 +143,12 @@ if __name__ == '__main__':
     import manipulate_biosqldb
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", '--input_interpro', type=str, help="input interpro xml file", nargs='+')
+    parser.add_argument("-i", '--input_interpro', type=str, help="input interpro csv file", nargs='+')
+    parser.add_argument("-d", '--database_name', type=str, help="database name")
 
     args = parser.parse_args()
 
-    biodb = 'chlamydia_03_15'
+    biodb = args.database_name
 
     server, db = manipulate_biosqldb.load_db(biodb)
     print "creating locus_tag2seqfeature_id"

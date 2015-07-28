@@ -199,9 +199,10 @@ def colorscale(hexstr, scalefactor):
 
 
 
-def plot_multiple_regions_crosslink(target_protein_list, region_record_list, plasmid_list, out_name):
+def plot_multiple_regions_crosslink(target_protein_list, region_record_list, plasmid_list, out_name, biodb_name="chlamydia_03_15"):
 
-    biodb_name = "chlamydia_03_15"
+    #biodb_name = "chlamydia_03_15"
+    print 'DB name!!!!', biodb_name
     import MySQLdb
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
@@ -637,7 +638,7 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
             print
             print "sub_record", sub_record
             print
-    region_locus_list = plot_multiple_regions_crosslink(locus_tag_list, sub_record_list, plasmid_list, out_name)
+    region_locus_list = plot_multiple_regions_crosslink(locus_tag_list, sub_record_list, plasmid_list, out_name, biodb_name)
     return region_locus_list
     
     #for record in reformat_records:

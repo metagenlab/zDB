@@ -53,7 +53,7 @@ def gi2COG(*protein_gi):
 
     return cursor.fetchall()
 
-def load_locus2cog_into_sqldb(input_blast_files):
+def load_locus2cog_into_sqldb(input_blast_files, biodb):
     import MySQLdb
     import manipulate_biosqldb
     mysql_host = 'localhost'
@@ -70,10 +70,10 @@ def load_locus2cog_into_sqldb(input_blast_files):
         print 'file', input_blast
         locus2hit_accession = blast2COG(input_blast)
 
-        sql = 'select locus_tag, accession from orthology_detail_chlamydia_03_15'
+        sql = 'select locus_tag, accession from orthology_detail_%s' % biodb
         sql3 = 'select protein_id, COG_id from COG.cog_2014;'
-        sql2 = 'select protein_id, locus_tag from orthology_detail_chlamydia_03_15'
-        server, db = manipulate_biosqldb.load_db('chlamydia_03_15')
+        sql2 = 'select protein_id, locus_tag from orthology_detail_%s' % biodb
+        server, db = manipulate_biosqldb.load_db(biodb)
         locus2genome_accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
         protein_id2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
         protein_id2COG = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3))
@@ -82,18 +82,18 @@ def load_locus2cog_into_sqldb(input_blast_files):
 
         for locus in locus2hit_accession:
             try:
-                sql = 'INSERT into locus_tag2gi_hit_chlamydia_03_15 (accession, locus_tag, gi, COG_id) VALUES ("%s", "%s", %s, "%s")' % (locus2genome_accession[locus], locus, locus2hit_accession[locus], protein_id2COG[locus2hit_accession[locus]])
+                sql = 'INSERT into locus_tag2gi_hit_%s (accession, locus_tag, gi, COG_id) VALUES ("%s", "%s", %s, "%s")' % (biodb, locus2genome_accession[locus], locus, locus2hit_accession[locus], protein_id2COG[locus2hit_accession[locus]])
                 cursor.execute(sql)
                 conn.commit()
             except:
                 locus_t = protein_id2locus_tag[locus]
-                sql = 'INSERT into locus_tag2gi_hit_chlamydia_03_15 (accession, locus_tag, gi, COG_id) VALUES ("%s", "%s", %s, "%s")' % (locus2genome_accession[locus_t], locus_t, locus2hit_accession[locus], protein_id2COG[locus2hit_accession[locus]])
+                sql = 'INSERT into locus_tag2gi_hit_%s (accession, locus_tag, gi, COG_id) VALUES ("%s", "%s", %s, "%s")' % (biodb, locus2genome_accession[locus_t], locus_t, locus2hit_accession[locus], protein_id2COG[locus2hit_accession[locus]])
                 cursor.execute(sql)
                 conn.commit()
 
 
 
-def locus2function( input_blast_files, display_print=False,):
+def locus2function(input_blast_files, display_print=False,):
 
     import MySQLdb
     mysql_host = 'localhost'
@@ -122,11 +122,8 @@ def locus2function( input_blast_files, display_print=False,):
                 function = list(gi2cog_data[int(locus2hit_accession[locus])][1])
                 locus2function_dico[locus] = function
             except:
-                sql = 'select * from cog_2014 where protein_id =338733187'
-                cursor.execute(sql)
-                data = cursor.fetchall()
-                locus2function_dico[locus] = data
-        #print locus2function_dico
+                print 'problem with locus %s, skipping...' % locus
+
     if display_print:
         for locus in locus2function_dico:
             for function in locus2function_dico[locus]:
@@ -214,11 +211,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--input_blast', type=str, help="blast tab file", nargs='+')
     parser.add_argument("-o", '--outname', type=str, help="putput_name", default=False)
+    parser.add_argument("-d", '--database_name', type=str, help="database name", default=False)
 
 
     args = parser.parse_args()
 
-    load_locus2cog_into_sqldb(args.input_blast)
+    load_locus2cog_into_sqldb(args.input_blast, args.database_name)
     '''
     locus2function_dico = locus2function(args.input_blast, display_print=False)
     print 'locus2f', len(locus2function_dico)
