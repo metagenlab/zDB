@@ -1289,13 +1289,7 @@ def blastnr(request, biodb, locus_tag):
         accession = data[0]
         organism = data[1]
 
-        import MySQLdb
-        conn = MySQLdb.connect(host='localhost', # your host, usually localhost
-                                    user='root', # your username
-                                    passwd='agnathe3', # your password
-                                    db='blastnr') # name of the data base
-        cursor = conn.cursor()
-
+        server, db = manipulate_biosqldb.load_db(biodb)
 
         columns = 't1.hit_number, t1.locus_tag, t1.query_accession, t1.subject_accession, t1.subject_taxid, t1.subject_scientific_name,' \
                   't1.subject_title, t1.subject_kingdom, t2.evalue, t2.percent_identity, t2.positive, t2.gaps, t2.length,' \
@@ -1303,8 +1297,8 @@ def blastnr(request, biodb, locus_tag):
         sql = 'select %s from blastnr.blastnr_hits_%s_%s as t1 inner join blastnr.blastnr_hsps_%s_%s as t2 on' \
               ' t1.nr_hit_id = t2.nr_hit_id where  t1.locus_tag="%s" ' % (columns, biodb, accession, biodb, accession, locus_tag)
         print sql
-        cursor.execute(sql)
-        blast_data = [i for i in cursor.fetchall()]
+        blast_data = list(server.adaptor.execute_and_fetchall(sql))
+        #blast_data = [i for i in ]
 
 
         if len(blast_data) > 0:
