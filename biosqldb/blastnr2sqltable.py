@@ -820,7 +820,7 @@ if __name__ == '__main__':
 
     mysql_host = 'localhost'
     mysql_user = 'root'
-    mysql_pwd = 'agnathe3'
+    mysql_pwd = 'estrella33'
     mysql_db = 'blastnr'
 
     biodb = args.mysql_database

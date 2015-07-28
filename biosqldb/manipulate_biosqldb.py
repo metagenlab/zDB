@@ -49,7 +49,7 @@ def query_yes_no(question, default="yes"):
 def load_db(db_name=False):
     
     server = BioSeqDatabase.open_database(driver="MySQLdb", user="root",
-                       passwd = "agnathe3", host = "localhost", db="biosqldb")
+                       passwd = "estrella3", host = "localhost", db="biosqldb")
     if db_name:
         try:
             db = server[db_name]
