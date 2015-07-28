@@ -567,7 +567,7 @@ def venn_pfam(request, biodb):
 
 
             pfam2description = ''
-            sql = 'select signature_accession, signature_description, count(*) from interpro_chlamydia_03_15 where analysis="Pfam" group by signature_accession;'
+            sql = 'select signature_accession, signature_description, count(*) from interpro_%s where analysis="Pfam" group by signature_accession;' % biodb
             data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
             for i in data:
                 if i in all_pfam_list:
@@ -724,7 +724,7 @@ def venn_interpro(request, biodb):
 
 
             interpro2description = ''
-            sql = 'select interpro_accession,interpro_description, count(*) from interpro_chlamydia_03_15 group by interpro_accession;'
+            sql = 'select interpro_accession,interpro_description, count(*) from interpro_%s group by interpro_accession;' % biodb
             data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
             for i in data:
                 if i in all_pfam_list:
@@ -1054,8 +1054,14 @@ def locusx(request, biodb, locus, menu=False):
                        ' as t1 inner join COG.cog_names_2014 as t2 on t1.COG_id=t2.COG_id where locus_tag="%s"' % (biodb, locus)
                 sql4 = 'select analysis, signature_accession, signature_description, interpro_accession, interpro_description ' \
                        ' from interpro_%s where locus_tag="%s";' % (biodb, locus)
-                cog_data = server.adaptor.execute_and_fetchall(sql3, )[0]
-                interpro_data = server.adaptor.execute_and_fetchall(sql4, )
+                try:
+                    cog_data = server.adaptor.execute_and_fetchall(sql3, )[0]
+                except IndexError:
+                    cog_data = False
+                try:
+                    interpro_data = server.adaptor.execute_and_fetchall(sql4, )
+                except IndexError:
+                    interpro_data= False
                 print cog_data
                 print interpro_data
 
@@ -1128,7 +1134,8 @@ def fam(request, biodb, fam, type):
             sql1 =   'select locus_tag, signature_description, count(*) from interpro_%s where signature_accession="%s" group by locus_tag' % (biodb, fam)
         elif type == 'cog':
             sql1 = 'select locus_tag from COG.locus_tag2gi_hit_%s where COG_id="%s"' % (biodb, fam)
-            sql2 = 'select COG_id,functon, description, name from (select * from COG.cog_names_2014 where COG_id = "%s") A inner join COG.code2category as B on A.functon=B.code;' % (fam)
+            sql2 = 'select COG_id,functon, name from COG.cog_names_2014 where COG_id = "%s"' % (fam)
+            print 'cog type', sql2
             info = server.adaptor.execute_and_fetchall(sql2, )[0]
 
 
@@ -1184,10 +1191,10 @@ def sunburst(request, biodb, locus):
         print accession
         try:
             sql1 = 'select t3.superkingdom,  t3.phylum,  t3.order,  t3.family,  t3.genus,  t3.species  from ' \
-                   ' blastnr.blastnr_hits_chlamydia_03_15_%s as t1  inner join blastnr.blastnr_hits_taxonomy_filtered_chlamydia_03_15_%s ' \
+                   ' blastnr.blastnr_hits_%s_%s as t1  inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s ' \
                    ' as t2 on t1.nr_hit_id = t2.nr_hit_id  inner join blastnr.blastnr_taxonomy as t3 on ' \
                    ' t2.subject_taxon_id = t3.taxon_id inner join blastnr.blastnr_hsps_chlamydia_03_15_%s as t4 ' \
-                   ' on t1.nr_hit_id=t4.nr_hit_id where t1.locus_tag="%s"' % (accession, accession, accession, locus)
+                   ' on t1.nr_hit_id=t4.nr_hit_id where t1.locus_tag="%s"' % (biodb, accession, biodb, accession, accession, locus)
             print sql
             raw_data = server.adaptor.execute_and_fetchall(sql1,)
 
@@ -1220,7 +1227,7 @@ def sunburst(request, biodb, locus):
                     dico[data[0]][data[1]][data[2]][data[3]][data[4]][data[5]] = 1
 
                 dico[data[0]][data[1]][data[2]][data[3]][data[4]][data[5]] += 1
-                #print y
+
                 y += 1
         i = 1
 
@@ -1372,8 +1379,14 @@ def homology(request, biodb):
                        ' as t1 inner join COG.cog_names_2014 as t2 on t1.COG_id=t2.COG_id where locus_tag="%s"' % (biodb, accession)
                 sql4 = 'select analysis, signature_accession, start, stop, signature_description, interpro_accession, interpro_description ' \
                        ' from interpro_%s where locus_tag="%s";' % (biodb, accession)
-                cog_data = server.adaptor.execute_and_fetchall(sql3, )[0]
-                interpro_data = server.adaptor.execute_and_fetchall(sql4, )
+                try:
+                    cog_data = server.adaptor.execute_and_fetchall(sql3, )[0]
+                except IndexError:
+                    cog_data = False
+                try:
+                    interpro_data = server.adaptor.execute_and_fetchall(sql4, )
+                except IndexError:
+                    interpro_data = False
                 print cog_data
                 print interpro_data
 
@@ -2328,9 +2341,9 @@ def motif_search(request, biodb):
 
 
             if target_taxon_id != "all":
-                db_path = os.path.join(PROJECT_ROOT,"../assets/chlamdb/faa/"+accessions[0] + ".faa")
+                db_path = os.path.join(PROJECT_ROOT,"../assets/%s/faa/" % biodb +accessions[0] + ".faa")
             else:
-                db_path = os.path.join(PROJECT_ROOT,"../assets/chlamdb/faa/all.faa")
+                db_path = os.path.join(PROJECT_ROOT,"../assets/%s/faa/all.faa" % biodb)
             print "path", db_path
 
             cmd = 'fuzzpro -sequence %s -pmismatch %s -rformat seqtable -auto -stdout -pattern "%s"' % (db_path ,n_missmatch ,input_pattern)
@@ -2395,20 +2408,20 @@ def blast(request, biodb):
 
 
             if blast_type=='blastn_ffn':
-                blastdb = settings.BASE_DIR + "/assets/chlamdb/ffn/%s.ffn" % (target_accession)
+                blastdb = settings.BASE_DIR + "/assets/%s/ffn/%s.ffn" % (biodb, target_accession)
                 blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
             if blast_type=='blastn_fna':
-                blastdb = settings.BASE_DIR + "/assets/chlamdb/fna/%s.fna" % (target_accession)
+                blastdb = settings.BASE_DIR + "/assets/%s/fna/%s.fna" % (biodb, target_accession)
                 blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
             if blast_type=='blastp':
-                blastdb = settings.BASE_DIR + "/assets/chlamdb/faa/%s.faa" % (target_accession)
+                blastdb = settings.BASE_DIR + "/assets/%s/faa/%s.faa" % (biodb, target_accession)
                 blast_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
             if blast_type=='tblastn':
-                blastdb = settings.BASE_DIR + "/assets/chlamdb/fna/%s.fna" % (target_accession)
+                blastdb = settings.BASE_DIR + "/assets/%s/fna/%s.fna" % (biodb, target_accession)
                 blast_cline = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
                 blast_cline2 = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=5)
             if blast_type=='blastx':
-                blastdb = settings.BASE_DIR + "/assets/chlamdb/faa/%s.faa" % (target_accession)
+                blastdb = settings.BASE_DIR + "/assets/%s/faa/%s.faa" % (biodb, target_accession)
                 blast_cline = NcbiblastxCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
 
 
@@ -2544,8 +2557,8 @@ def mummer(request, biodb):
 
             print settings.STATIC_ROOT, type(settings.STATIC_ROOT)
 
-            reference_path = settings.BASE_DIR + '/assets/chlamdb/fna/%s.fna' % ref_accession
-            query_path = settings.BASE_DIR + '/assets/chlamdb/fna/%s.fna' % query_accession
+            reference_path = settings.BASE_DIR + '/assets/%s/fna/%s.fna' % (biodb, ref_accession)
+            query_path = settings.BASE_DIR + '/assets/%s/fna/%s.fna' % (biodb, query_accession)
 
             rand = id_generator(5)
 

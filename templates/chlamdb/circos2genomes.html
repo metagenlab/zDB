@@ -8,112 +8,117 @@
 </head>
 <body>
 
-{% include "chlamdb/user.html" %}
-{% include "chlamdb/menu.html" %}
-
-<section  id="head_section">
-<form action="{% url "chlamdb.views.circos2genomes" biodb %}" method="post">{% csrf_token %}
-
-<table>
-<tr>
-  <td>{{ form.as_p }}</td>
-</tr>
-
-<tr>
-  <td><input type="submit" name="GO" value="GO" id="id_GO" /> </td>
-</tr>
-</table>
-
-
-</form>
 
 
 
-
-
-
-
-
-
-
-
-
-{% if envoi %}
-
-
-    {% if not valid_id %}
-
-    Invalid identifier
-
-    {% else %}
-
-    {% load static %}
-
-
-     <div style="border:1px solid red; padding:5px;">
-       <table>
-	<tr> 
-      <th>{{ reference_name }}</th>
-      <th>{{ query_name }}</th>
-      </tr>
-     <tr>
-     <td>  
-    <img src="{% static reference_file %}" style="float: left; width: 99%; margin-right: 1%; margin-bottom: 0.5em;">
-    </td>
-     <td>
-    <img src="{% static query_file %}" style="float: left; width: 99%; margin-right: 1%; margin-bottom: 0.5em;">
-    </td>
-    <p style="clear: both;">
-     </tr>
-
- <tr>
-<th> N orthogroups </th>
-<th> </th>   
-</tr> 
-<tr>
-<td>{{ reference_n_orthogroups }} </td>
-<td>{{ query_n_orthogroups }} </td>   
-</tr>
-
- <tr>
-<th> N proteins </th>
-<th> </th>   
-</tr> 
-<tr>
-
- <tr>
-<td>{{ reference_n_proteins }} </td>
-<td>{{ query_n_proteins }} </td>   
-</tr>
- 
- <tr>
-<th> N shared </th>
-<th> </th>   
-</tr> 
-<tr>
-
- <tr>
-<td> {{n_shared_orthogroups}} </td>
-<td> </td>   
-</tr> 
-<tr>  
- 
-  </table>   
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
     </div>
 
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+
+    <div id="content">
+
+
+    <form action="{% url "chlamdb.views.circos2genomes" biodb %}" method="post">{% csrf_token %}
+    {{ form.as_p }}
+
+    <input type="submit" name="GO" value="GO" id="id_GO" />
 
 
 
-     
-{% endif %}
+    </form>
 
 
 
 
-</section>
 
-{% endif %}
 
+
+
+
+
+
+
+    {% if envoi %}
+
+
+        {% if not valid_id %}
+
+            Invalid identifier
+
+        {% else %}
+
+            {% load static %}
+
+
+            <div style="border:1px solid red; padding:5px;">
+                <table>
+                    <tr>
+                        <th>{{ reference_name }}</th>
+                        <th>{{ query_name }}</th>
+                    </tr>
+                        <tr>
+                        <td>
+                        <img src="{% static reference_file %}" style="float: left; width: 99%; margin-right: 1%; margin-bottom: 0.5em;">
+                        </td>
+                        <td>
+                        <img src="{% static query_file %}" style="float: left; width: 99%; margin-right: 1%; margin-bottom: 0.5em;">
+                        </td>
+                        <p style="clear: both;">
+                    </tr>
+
+                    <tr>
+                        <th> N orthogroups </th>
+                        <th> </th>
+                        </tr>
+                        <tr>
+                        <td>{{ reference_n_orthogroups }} </td>
+                        <td>{{ query_n_orthogroups }} </td>
+                    </tr>
+
+                    <tr>
+                        <th> N proteins </th>
+                        <th> </th>
+                        </tr>
+                    <tr>
+
+                    <tr>
+                        <td>{{ reference_n_proteins }} </td>
+                        <td>{{ query_n_proteins }} </td>
+                    </tr>
+
+                    <tr>
+                        <th> N shared </th>
+                        <th> </th>
+                    </tr>
+                    <tr>
+
+                    <tr>
+                        <td> {{n_shared_orthogroups}} </td>
+                        <td> </td>
+                    </tr>
+                    <tr>
+
+                </table>
+            </div>
+
+
+
+
+
+        {% endif %}
+
+
+
+
+    {% endif %}
+
+    </div>
+</div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script type="text/javascript">

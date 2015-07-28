@@ -147,7 +147,7 @@ def make_venn_from(database_name):
     accession_choices = get_accessions(database_name)
 
     class VennForm(forms.Form):
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (len(accession_choices)/2) }), required = False)
+        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'20' }), required = False)
 
         def clean_venn(self):
             value = self.cleaned_data['targets']
@@ -194,7 +194,7 @@ def make_circos_form(database_name):
     
     class CircosForm(forms.Form):
         reference = forms.ChoiceField(choices=accession_choices)
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (len(accession_choices)/2) }), required = False)
+        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'20'}), required = False)
         #get_region = forms.NullBooleanField(widget=forms.CheckboxInput())
         #region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = False)
         
