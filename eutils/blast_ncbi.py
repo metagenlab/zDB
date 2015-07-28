@@ -21,11 +21,14 @@ def blast_fasta(blast_flavor, input, blastdb, evalue, nb_hit, local):
     output_name = re.sub("([a-zA-Z_0-9]+)\.([a-zA-Z]+)","\\1.tab",input)
     if local:
         cmd="%s -task %s -query %s -out blast%s.tab -db %s -evalue %s -max_target_seqs %s -outfmt '6 qgi qacc sgi sacc sscinames sskingdoms staxids evalue nident pident positive gaps length qstart qend qcovs sstart send sstrand stitle'" %  (blast_flavor,blast_flavor, input, output_name, blastdb, evalue, nb_hit)
-        shell_command(cmd)
-
+        print cmd
+        out, err, code = shell_command(cmd)
+        if code != 0:
+            print err
     else:
         cmd="%s -remote -task %s -query %s -out blast%s.tab -db %s -evalue %s -max_target_seqs %s -outfmt '6 qgi qacc sgi sacc sscinames sskingdoms staxids evalue nident pident positive gaps length qstart qend qcovs sstart send sstrand stitle'" %  (blast_flavor,blast_flavor, input, output_name, blastdb, evalue, nb_hit)
-        shell_command(cmd)
+        out, err, code = shell_command(cmd)
+        
 
 
 if __name__ == '__main__':
