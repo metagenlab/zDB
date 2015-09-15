@@ -51,6 +51,7 @@ def download_one_wgs(wgs_link):
 
         
         for seq_link in sublinks:
+            print 'considering seq link %s' % seq_link
             if no_sequences:
                 print "No sequences fo record %s" % wgs_link
                 output_handle.close()
@@ -59,14 +60,15 @@ def download_one_wgs(wgs_link):
                 os.remove("%s.gbk" % wgs_link)
                 
                 break
-
-            while not handle:
+            i = 0
+            one_handle = False
+            while not one_handle:
                 print i
                 if i == 10:
                     print 'reached max iteration number, %s could not be downloaded' % record_id
                     return
                 try:
-                    handle = Entrez.efetch(db="nucleotide", id=seq_link, rettype="gb", retmode="text")
+                    one_handle = Entrez.efetch(db="nucleotide", id=seq_link, rettype="gb", retmode="text")
                 except (urllib2.URLError, urllib2.HTTPError) as e:
                     print 'url error, trying again...'
                     time.sleep(1)
