@@ -74,7 +74,7 @@ def download_one_wgs(wgs_link):
                     time.sleep(1)
                     i+=1                
             
-            seq_records = list(SeqIO.parse(handle, "genbank"))
+            seq_records = list(SeqIO.parse(one_handle, "genbank"))
             # in case multiple record for a single link (shouldn't append???)
             for record in seq_records:
                 print record.name
