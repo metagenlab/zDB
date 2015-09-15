@@ -59,7 +59,19 @@ def download_one_wgs(wgs_link):
                 os.remove("%s.gbk" % wgs_link)
                 
                 break
-            handle = Entrez.efetch(db="nucleotide", id=seq_link, rettype="gb", retmode="text")
+
+            while not handle_assembly:
+                print i
+                if i == 10:
+                    print 'reached max iteration number, %s could not be downloaded' % record_id
+                    return
+                try:
+                    handle = Entrez.efetch(db="nucleotide", id=seq_link, rettype="gb", retmode="text")
+                except (urllib2.URLError, urllib2.HTTPError) as e:
+                    print 'url error, trying again...'
+                    time.sleep(1)
+                    i+=1                
+            
             seq_records = list(SeqIO.parse(handle, "genbank"))
             # in case multiple record for a single link (shouldn't append???)
             for record in seq_records:
@@ -109,9 +121,9 @@ def multiple_wgs_links(ncbi_taxon):
         
         
 def get_complete_genomes_data(ncbi_taxon):
-
+    import time
     import eutils
-
+    import urllib2
     #handle = Entrez.esearch(db="genome", term="klebsiella+pneumoniae[orgn]")
     #txid570[Organism:exp]
     handle = Entrez.esearch(db="genome", term="txid%s[Organism:exp]" % ncbi_taxon)
@@ -144,12 +156,25 @@ def get_complete_genomes_data(ncbi_taxon):
             print "Complete genome(s):", linked
             genome_record_id_list += linked
 
-
+    n = 1
     for record_id in genome_record_id_list:
-        print "ID:", record_id
-
+        print "ID:", record_id, "(%s out of %s)" % (n, len(genome_record_id_list))
+        n+=1
         # get assembly
-        handle_assembly = Entrez.elink(dbfrom="nuccore", db="assembly", id=record_id)
+        i = 0
+        handle_assembly = None
+        while not handle_assembly:
+            print i
+            if i == 10:
+                print 'reached max iteration number, %s could not be downloaded' % record_id
+                return
+            try:
+                handle_assembly = Entrez.elink(dbfrom="nuccore", db="assembly", id=record_id)
+            except (urllib2.URLError, urllib2.HTTPError) as e:
+                print 'url error, trying again...'
+                time.sleep(1)
+                i+=1                
+                
         record_assembly = Entrez.read(handle_assembly)
         try:
             assembly_link = record_assembly[0]["LinkSetDb"][0]["Link"][0]["Id"]
