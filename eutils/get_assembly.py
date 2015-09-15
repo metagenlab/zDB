@@ -60,7 +60,7 @@ def download_one_wgs(wgs_link):
                 
                 break
 
-            while not handle_assembly:
+            while not handle:
                 print i
                 if i == 10:
                     print 'reached max iteration number, %s could not be downloaded' % record_id
