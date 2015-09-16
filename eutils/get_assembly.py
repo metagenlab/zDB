@@ -80,8 +80,15 @@ def download_one_wgs(wgs_link):
                 print record.name
                 print record.description
                 if record.seq.count("N") == len(record.seq):
-                    no_sequences = True
-                    break
+                    # try to fetch the sequence separately and add it to the genbank file
+                    #try:
+                    one_handle = Entrez.efetch(db="nucleotide", id=seq_link, rettype="fasta", retmode="text")
+                    fasta_record = list(SeqIO.parse(one_handle, "fasta"))[0]
+                    print fasta_record
+                    record.seq = fasta_record.seq
+                    #except:
+                    #    no_sequences = True
+                    #    break
                 else:
                     SeqIO.write(record, output_handle, "genbank")
         output_handle.close()    
