@@ -97,14 +97,14 @@ def get_wgs_links(one_species_link):
             return False
         else:
             linked = [link["Id"] for link in record[0]["LinkSetDb"][0]["Link"]]
-            #print "WGS genome(s):", linked
+            print "WGS genome(s):", linked
             return linked
 
 
 def multiple_wgs_links(ncbi_taxon):
     #handle = Entrez.esearch(db="genome", term="klebsiella+pneumoniae[orgn]")
     #txid570[Organism:exp]
-    handle = Entrez.esearch(db="genome", term="txid%s[Organism:exp]" % ncbi_taxon)
+    handle = Entrez.esearch(db="genome", term="txid%s[Organism:exp]" % ncbi_taxon, retmax=100000)
     record = Entrez.read(handle)
 
     # get genome overview id
@@ -126,9 +126,11 @@ def get_complete_genomes_data(ncbi_taxon):
     import time
     import eutils
     import urllib2
+
+    print 'Fetching complete genome sequences for taxon ID %s' % ncbi_taxon
     #handle = Entrez.esearch(db="genome", term="klebsiella+pneumoniae[orgn]")
     #txid570[Organism:exp]
-    handle = Entrez.esearch(db="genome", term="txid%s[Organism:exp]" % ncbi_taxon)
+    handle = Entrez.esearch(db="genome", term="txid%s[Organism:exp]" % ncbi_taxon, retmax=100000)
     record = Entrez.read(handle)
     print record
     # get genome overview id
@@ -139,7 +141,7 @@ def get_complete_genomes_data(ncbi_taxon):
     # get whole genomes only
     genome_record_id_list = []
     for one_genome_id in genome_id_list:
-        print "considering genome ID", one_genome_id
+        print "Complete genomes: considering genome ID", one_genome_id
         # srcdb+ddbj/embl/genbank[prop] AND 
         handle = Entrez.elink(dbfrom="genome", db="nuccore", id=one_genome_id, term="gene+in+genomic[prop] OR gene+in+chromosome[prop]")
 
