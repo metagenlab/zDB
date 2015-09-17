@@ -31,7 +31,7 @@ def download_wgs(ncbi_taxon_id):
         download_one_wgs(link)
 
 def download_one_wgs(wgs_link):
-        handle = Entrez.elink(dbfrom="nuccore", db="nuccore", id=wgs_link)
+        handle = Entrez.elink(dbfrom="nucleotide", db="nuccore", id=wgs_link)
         record = Entrez.read(handle)
         # get the list of link
         try:
@@ -68,13 +68,17 @@ def download_one_wgs(wgs_link):
                     print 'reached max iteration number, %s could not be downloaded' % record_id
                     return
                 try:
+                    one_handle = Entrez.efetch(db="nucleotide", id=seq_link, retmode="xml")
+                    #one_handle_features = Entrez.efetch(db="nuccore", id=seq_link, rettype="ft", retmode="text")
                     one_handle = Entrez.efetch(db="nucleotide", id=seq_link, rettype="gb", retmode="text")
+                    #print "################################  features ##########################################"
+                    #print one_handle_features
                 except (urllib2.URLError, urllib2.HTTPError) as e:
                     print 'url error, trying again...'
                     time.sleep(1)
                     i+=1                
             
-            seq_records = list(SeqIO.parse(one_handle, "genbank"))
+            seq_records = list(SeqIO.parse(one_handle, "xml"))
             # in case multiple record for a single link (shouldn't append???)
             for record in seq_records:
                 print record.name
@@ -207,8 +211,13 @@ def get_complete_genomes_data(ncbi_taxon):
 
             # first: check if not WGS:
             handle = Entrez.efetch(db="nucleotide", id=record_id, rettype="gb", retmode="text")
-            seq_records = list(SeqIO.parse(handle, "genbank"))
 
+            #handle = Entrez.efetch(db="nuccore", id=record_id, rettype="gb", retmode="xml")
+            #handle_features = Entrez.efetch(db="nuccore", id=record_id, rettype="ft", retmode="text")
+            #print "################################  features ##########################################"
+            #print handle_features
+            seq_records = list(SeqIO.parse(handle, "xml"))
+            #seq_records = list(Entrez.parse(handle))#, validate=False))
 
             print "annot", seq_records[0].annotations
             if "wgs" in seq_records[0].annotations or "WGS" in seq_records[0].annotations:

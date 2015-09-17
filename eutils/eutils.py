@@ -7,6 +7,8 @@ import gbk2ffn
 import gbk2faa
 import urllib2
 import genbank2refseq
+from Bio.Alphabet import generic_nucleotide
+from Bio.Alphabet import generic_dna
 
 def get_genomic_data(ncbi_accession, genbank2refseq_id=False):
     import time
@@ -33,14 +35,23 @@ def get_genomic_data(ncbi_accession, genbank2refseq_id=False):
     for record in seq_records:
         print "writing record %s..." % record.name
 
-        if "wgs" in record.annotations:
-            print "WGS, not writing record %s" % record.name, record.description
-            handle.close()
-            break
-        try:
-            SeqIO.write(record, "%s.gbk" % record.name, "genbank")
-        except:
-            print "problem writing genbank"
+        if record.seq.count("N") == len(record.seq):
+            print 'no_sequences in gbk, getting fasta record %s' % record.name
+            one_handle = Entrez.efetch(db="nucleotide", id=record.name, rettype="fasta", retmode="text")
+            fasta_record = list(SeqIO.parse(one_handle, "fasta"))[0]
+            #fasta_record.seq.alphabet = generic_nucleotide
+            record.seq = fasta_record.seq
+            record.seq.alphabet = generic_dna
+        print record
+
+        #if "wgs" in record.annotations:
+        #    print "WGS, not writing record %s" % record.name, record.description
+        #    handle.close()
+        #    break
+        #try:
+        SeqIO.write(record, "%s.gbk" % record.name, "genbank")
+        #except:
+        #    print "problem writing genbank"
         try:
             SeqIO.write(record, "%s.fna" % record.name, "fasta")
         except:
