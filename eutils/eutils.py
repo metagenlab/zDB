@@ -25,7 +25,7 @@ def get_genomic_data(ncbi_accession, genbank2refseq_id=False):
             print 'reached max iteration number, %s could not be downloaded' % ncbi_accession
             return
         try:
-            handle = Entrez.efetch(db="nucleotide", id=ncbi_accession, rettype="gb", retmode="text")
+            handle = Entrez.efetch(db="nucleotide", id=ncbi_accession, rettype="gbwithparts", retmode="text")
         except (urllib2.URLError, urllib2.HTTPError) as e:
             print 'url error, trying again...'
             time.sleep(1)

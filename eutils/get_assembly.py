@@ -7,7 +7,8 @@
 # ---------------------------------------------------------------------------
 
 from Bio import Entrez, SeqIO
-
+import urllib2
+import time
 
 Entrez.email = "trestan.pillonel@unil.ch"
 
@@ -68,9 +69,9 @@ def download_one_wgs(wgs_link):
                     print 'reached max iteration number, %s could not be downloaded' % record_id
                     return
                 try:
-                    one_handle = Entrez.efetch(db="nucleotide", id=seq_link, retmode="xml")
+                    #one_handle = Entrez.efetch(db="nucleotide", id=seq_link, retmode="xml")
                     #one_handle_features = Entrez.efetch(db="nuccore", id=seq_link, rettype="ft", retmode="text")
-                    one_handle = Entrez.efetch(db="nucleotide", id=seq_link, rettype="gb", retmode="text")
+                    one_handle = Entrez.efetch(db="nucleotide", id=seq_link, rettype="gbwithparts", retmode="text")
                     #print "################################  features ##########################################"
                     #print one_handle_features
                 except (urllib2.URLError, urllib2.HTTPError) as e:
@@ -78,7 +79,7 @@ def download_one_wgs(wgs_link):
                     time.sleep(1)
                     i+=1                
             
-            seq_records = list(SeqIO.parse(one_handle, "xml"))
+            seq_records = list(SeqIO.parse(one_handle, "genbank"))
             # in case multiple record for a single link (shouldn't append???)
             for record in seq_records:
                 print record.name
@@ -210,7 +211,7 @@ def get_complete_genomes_data(ncbi_taxon):
             print "No assembly link, searching bioproject for %s..." % record_id
 
             # first: check if not WGS:
-            handle = Entrez.efetch(db="nucleotide", id=record_id, rettype="gb", retmode="text")
+            handle = Entrez.efetch(db="nucleotide", id=record_id, rettype="gbwithparts", retmode="text")
 
             #handle = Entrez.efetch(db="nuccore", id=record_id, rettype="gb", retmode="xml")
             #handle_features = Entrez.efetch(db="nuccore", id=record_id, rettype="ft", retmode="text")
