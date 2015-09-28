@@ -59,7 +59,7 @@ def get_complete_genomes_data(ncbi_taxon, complete = False):
         Organism = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Organism']
         AssemblyStatus = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['AssemblyStatus']
         if complete:
-            if AssemblyStatus not in ['Complete Genome', 'Chromosome']:
+            if AssemblyStatus not in ['Complete Genome']:
                 continue
 
         NCBIReleaseDate = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['NCBIReleaseDate']
