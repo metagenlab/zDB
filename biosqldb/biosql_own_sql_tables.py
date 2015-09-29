@@ -1092,12 +1092,8 @@ def update_interpro_table(biodb, locus_list, locus2ortho, i):
 def add_orthogroup_to_interpro_table(biodb_name):
     import numpy
     from multiprocessing import Process
-    #sql = 'alter table interpro_%s ADD orthogroup VARCHAR(100);' % biodb_name
-    server, db = manipulate_biosqldb.load_db(biodb_name)
-    #server.adaptor.execute(sql,)
     import time
     locus2ortho = locus_tag2orthogroup(biodb_name)
-
     n_cpu = 8
     n_poc_per_list = int(numpy.ceil(len(locus2ortho)/float(n_cpu)))
     query_lists = _chunks(locus2ortho.keys(), n_poc_per_list)
@@ -1111,8 +1107,6 @@ def add_orthogroup_to_interpro_table(biodb_name):
         procs.append(proc)
         proc.start()
 
-
-    print "join proc"
     time.sleep(5)
     for proc in procs:
         proc.join()

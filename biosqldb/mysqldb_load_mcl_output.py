@@ -798,12 +798,10 @@ def get_accession_list_from_taxon_id(server, biodatabase_name, taxon_id):
     result = server.adaptor.execute_and_fetchall(sql, (biodatabase_name, taxon_id))
     return [i[0] for i in result]
 
-
-
-    
 if __name__ == '__main__':
     import argparse
-    import parse_phobius
+    import biosql_own_sql_tables
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", '--mcl',type=str,help="mcl file")
     parser.add_argument("-d", '--db_name', type=str,help="db name")
@@ -811,7 +809,6 @@ if __name__ == '__main__':
     parser.add_argument("-p", '--asset_path', type=str,help="asset path")
     parser.add_argument("-t", '--phobius_files', type=str,help="phobis TM ST  short files", nargs='+')
     parser.add_argument("-s", '--get_sequences', action="store_true", help="Create aa and nucleotide alignment directories in asset path")
-
 
     args = parser.parse_args()
     
@@ -861,7 +858,7 @@ if __name__ == '__main__':
 
         seqfeature_id2organism = manipulate_biosqldb.seqfeature_id2organism_dico(server, args.db_name)
 
-        print "getting protein_id2phobius"
+        print "getting protein_id2TM and protein_id2signal_peptide"
 
         #protein_id2phobius = parse_phobius.parse_short_phobius(*args.phobius_files)
 
@@ -906,16 +903,15 @@ if __name__ == '__main__':
                                 protein_id2TM,
                                 protein_id2signal_peptide)
 
-
+        print 'adding orthogroup to interpro table'
+        biosql_own_sql_tables.add_orthogroup_to_interpro_table(args.db_name)
 
         print "plotting orthogroup_size"
         plot_orthogroup_size_distrib(server, args.db_name)
 
-
         print "writing fasta files"
         ortho_table = "orthology_%s" % args.db_name
         all_taxon_ids = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
-
 
     if args.get_sequences:
 
@@ -923,8 +919,6 @@ if __name__ == '__main__':
             os.makedirs(os.path.join(asset_path, "%s_fasta/" % args.db_name))
 
         get_all_orthogroup_protein_fasta(server, args.db_name, os.path.join(asset_path, "%s_fasta/" % args.db_name))
-
-
 
         if not os.path.exists(os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name)):
             os.makedirs(os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name))
@@ -939,9 +933,5 @@ if __name__ == '__main__':
         for group in core_ortho:
             shutil.copy(os.path.join(asset_path, "%s_fasta_by_taxons/%s.txt" % (args.db_name, group)),
                     os.path.join(asset_path, "%s_fasta_core/%s.txt" % (args.db_name, group)))
-        
-    
-        #config_file, accessions_name = circos_draft(server, args.db_name, "5", args.fasta_draft)
 
         get_nucleotide_core_fasta(server, db, args.db_name, ".")
-    
