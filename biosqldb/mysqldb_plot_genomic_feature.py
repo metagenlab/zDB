@@ -203,6 +203,8 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
 
     #biodb_name = "chlamydia_03_15"
     print 'DB name!!!!', biodb_name
+
+
     import MySQLdb
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
