@@ -72,7 +72,8 @@ def create_orthogroup_table(server, biodatabase_name,
                             seqfeature2location_dico,
                             group2orthogroup_size,
                             group2family_size,
-                            protein_id2phobius):
+                            protein_id2TM,
+                            protein_id2signal_peptide):
     import re
 
     sql = 'CREATE TABLE orthology_detail_%s(orthogroup VARCHAR(100) NOT NULL, ' \
@@ -100,7 +101,11 @@ def create_orthogroup_table(server, biodatabase_name,
         orthogroup_size = group2orthogroup_size[group]
         n_genomes = group2family_size[group]
         proteins = orthomcl_groups2proteins[group]
+
+        # iterate all proteins from orthomcl file
+        # add data to the summary table othology_detail...
         for protein in proteins:
+            # if the protein has no protein id (and a locus tag only => prokka annotation)
             try:
                 seqfeature_id = locus_tag2seqfeature_id_dico[protein]
                 taxon_id = locus_tag2taxon_dico[protein]
@@ -109,30 +114,33 @@ def create_orthogroup_table(server, biodatabase_name,
                 end = seqfeature2location_dico[seqfeature_id][1]
                 strand = seqfeature2location_dico[seqfeature_id][2]
                 organism = seqfeature_id2organism_dico[str(seqfeature_id)]
+                translation = seqfeature_id2translation_dico[str(seqfeature_id)]
+
                 try:
                     gene = seqfeature_id2gene_dico[str(seqfeature_id)]
                 except KeyError:
                     gene = "-"
+
                 try:
                     product = seqfeature_id2product_dico[str(seqfeature_id)]
                 except KeyError:
                     product = "-"
-                translation = seqfeature_id2translation_dico[str(seqfeature_id)]
 
                 try:
-                    protein_id = seqfeature_id2protein_id_dico[str(seqfeature_id)]
-                    SP = protein_id2phobius[protein_id]["SP"]
-                    TM = protein_id2phobius[protein_id]["TM"]
+                    SP = protein_id2signal_peptide[protein]
                 except KeyError:
-                    SP = protein_id2phobius[protein]["SP"]
-                    TM = protein_id2phobius[protein]["TM"]
-                    protein_id = "-"
+                    SP = '-'
 
+                try:
+                    TM = protein_id2TM[protein]
+                except KeyError:
+                    TM = 0
+                protein_id = '-'
                 locus_tag = protein
 
+            # if the protein has both locus_tag and protein id
             except KeyError:
 
-                #protein = manipulate_biosqldb.protein_id2locus_tag(server, protein, biodatabase_name)
                 seqfeature_id = protein_id2seqfeature_id_dico[protein]
                 taxon_id = protein_id2taxon_dico[protein]
                 accession = protein_id2accession_dico[protein]
@@ -140,12 +148,17 @@ def create_orthogroup_table(server, biodatabase_name,
                 end = seqfeature2location_dico[seqfeature_id][1]
                 strand = seqfeature2location_dico[seqfeature_id][2]
                 organism = seqfeature_id2organism_dico[str(seqfeature_id)]
+                translation = seqfeature_id2translation_dico[str(seqfeature_id)]
 
-                #print "location ok"
-                #print seqfeature_id2locus_tag_dico.keys()[0:10]
                 locus_tag = seqfeature_id2locus_tag_dico[str(seqfeature_id)]
-                SP = protein_id2phobius[protein]["SP"]
-                TM = protein_id2phobius[protein]["TM"]
+                try:
+                    SP = protein_id2signal_peptide[protein]
+                except KeyError:
+                    SP = '-'
+                try:
+                    TM = protein_id2TM[protein]
+                except:
+                    TM = 0
                 try:
                     gene = seqfeature_id2gene_dico[str(seqfeature_id)]
                 except KeyError:
@@ -154,15 +167,8 @@ def create_orthogroup_table(server, biodatabase_name,
                     product = re.sub('\%', '', seqfeature_id2product_dico[str(seqfeature_id)])
                 except KeyError:
                     product = "-"
-                translation = seqfeature_id2translation_dico[str(seqfeature_id)]
-
-
-
 
                 protein_id = protein
-
-                #except:
-                #    print "poblem with protein", protein
 
             sql = 'INSERT INTO orthology_detail_%s(orthogroup, taxon_id, accession, locus_tag, protein_id, start, ' \
                   'stop, strand, gene, product, translation, organism, orthogroup_size, n_genomes, TM, SP, seqfeature_id) ' \
@@ -857,8 +863,15 @@ if __name__ == '__main__':
 
         print "getting protein_id2phobius"
 
-        protein_id2phobius = parse_phobius.parse_short_phobius(*args.phobius_files)
+        #protein_id2phobius = parse_phobius.parse_short_phobius(*args.phobius_files)
 
+        sql = 'select accession,count(*) from interpro_%s ' \
+              ' where analysis="Phobius" and signature_accession="TRANSMEMBRANE" group by locus_tag;' % args.db_name
+        sql2 = 'select accession,count(*) from interpro_%s ' \
+               ' where analysis="Phobius" and signature_accession="SIGNAL_PEPTIDE" group by locus_tag' % args.db_name
+        server, db = manipulate_biosqldb.load_db(args.db_name)
+        protein_id2TM = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        protein_id2signal_peptide = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
         print "adding orthogroup to seqfeature_qualifier_values"
 
@@ -890,7 +903,8 @@ if __name__ == '__main__':
                                 seqfeature_id2seqfeature_location,
                                 group2group_size,
                                 group2family_size,
-                                protein_id2phobius)
+                                protein_id2TM,
+                                protein_id2signal_peptide)
 
 
 

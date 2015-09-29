@@ -166,7 +166,13 @@ if __name__ == '__main__':
     print "getting seqfeature_id2locus_tag"
     seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, biodb)
 
-
-    interpro2biosql(server,seqfeature_id2locus_tag, locus_tag2genome_taxon_id, protein_id2genome_taxon_id, locus_tag2seqfeature_id, protein_id2seqfeature_id, seqfeature_id2organism, biodb, *args.input_interpro)
+    interpro2biosql(server,
+                    seqfeature_id2locus_tag,
+                    locus_tag2genome_taxon_id,
+                    protein_id2genome_taxon_id,
+                    locus_tag2seqfeature_id,
+                    protein_id2seqfeature_id,
+                    seqfeature_id2organism,
+                    biodb, *args.input_interpro)
 
 
