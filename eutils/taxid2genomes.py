@@ -7,22 +7,17 @@
 # ---------------------------------------------------------------------------
 
 from Bio import Entrez, SeqIO
-import urllib2
-import time
 import os
-Entrez.email = "trestan.pillonel@unil.ch"
-
-import ftplib
 import re
 from ftplib import FTP
 import download_from_ftp
 
+Entrez.email = "trestan.pillonel@unil.ch"
 
 def get_ncbi_genome(path, destination):
     ftp=FTP('ftp.ncbi.nih.gov')
     ftp.login("anonymous","trestan.pillonel@unil.ch")
     download_from_ftp.download_whole_directory(ftp, path, destination, recursive=False)
-
 
 def get_complete_genomes_data(ncbi_taxon, complete = False):
 
@@ -72,8 +67,6 @@ def get_complete_genomes_data(ncbi_taxon, complete = False):
         PartialGenomeRepresentation = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PartialGenomeRepresentation']
         Coverage = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Coverage']
 
-
-
         out_dir = local_dir+'/%s' % LastMajorReleaseAccession
         os.mkdir(out_dir)
 
@@ -83,15 +76,12 @@ def get_complete_genomes_data(ncbi_taxon, complete = False):
 
             get_ncbi_genome(ftp_path, out_dir)
 
-
+        # check if the assembly was replaced
         elif 'replaced' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
-            #print 'Assembly %s was replaced: not downloading' % LastMajorReleaseAccession
-            #ftp_path = '/genomes/all/%s_%s' % (AssemblyName)
-            #print assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Synonym'], '######################'
-
 
             i = int(LastMajorReleaseAccession.split('.')[1]) + 1
             success = False
+            # identifiy new version of the assembly by increasing version number
             while not success:
                 if i < 5:
                     try:
@@ -122,7 +112,7 @@ def get_complete_genomes_data(ncbi_taxon, complete = False):
                                                                              RefSeq,
                                                                              Genbank,
                                                                              Similarity)
-        #print line
+
         f.write(line.encode("utf-8"))
     f.close()
 
@@ -133,7 +123,6 @@ def accession2assembly(accession):
 
     ncbi_id = record1['IdList'][0]
 
-
     handle = Entrez.elink(dbfrom="nuccore", db="assembly", id=ncbi_id)
     record = Entrez.read(handle)
     f = open('ncbi_genome_download.log', 'w')
@@ -142,28 +131,10 @@ def accession2assembly(accession):
     f.write(header)
     local_dir = os.getcwd()
 
-
-
-
     handle_assembly = Entrez.esummary(db="assembly",id=record[0]['LinkSetDb'][0]['Link'][0]['Id'])
     assembly_record = Entrez.read(handle_assembly)
 
-
-    '''
-    # check if it is the latest available version of the genome, if not, download the latest
-    if 'latest' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
-        pass
-    else:
-        handle = Entrez.esearch(db="assembly",
-                                term=assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Synonym']['Genbank'],
-                                retmax=100000)
-        record = Entrez.read(handle)
-        print record['IdList'][0]
-        handle_assembly = Entrez.esummary(db="assembly",id=record['IdList'][0])
-        assembly_record = Entrez.read(handle_assembly)
-    '''
     LastMajorReleaseAccession = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['LastMajorReleaseAccession']
-
     Taxid = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Taxid']
     Organism = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Organism']
     AssemblyStatus = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['AssemblyStatus']
@@ -177,8 +148,6 @@ def accession2assembly(accession):
     PartialGenomeRepresentation = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PartialGenomeRepresentation']
     Coverage = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Coverage']
 
-
-
     out_dir = local_dir+'/%s' % LastMajorReleaseAccession
     os.mkdir(out_dir)
 
@@ -188,12 +157,7 @@ def accession2assembly(accession):
 
         get_ncbi_genome(ftp_path, out_dir)
 
-
     elif 'replaced' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
-        #print 'Assembly %s was replaced: not downloading' % LastMajorReleaseAccession
-        #ftp_path = '/genomes/all/%s_%s' % (AssemblyName)
-        #print assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Synonym'], '######################'
-
 
         i = int(LastMajorReleaseAccession.split('.')[1]) + 1
         success = False
@@ -227,16 +191,8 @@ def accession2assembly(accession):
                                                                          RefSeq,
                                                                          Genbank,
                                                                          Similarity)
-    #print line
+
     f.write(line.encode("utf-8"))
-
-
-        #ftp_folder = LastMajorReleaseAccession + '_' + AssemblyName
-        #print ftp_folder
-
-
-
-
 
 
 if __name__ == '__main__':
