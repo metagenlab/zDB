@@ -126,95 +126,41 @@ def home(request, biodb):
     sql = 'select accession, seq as length from bioentry as t1 ' \
           ' inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id ' \
           ' inner join biosequence as t3 on t1.bioentry_id=t3.bioentry_id where t2.name="%s";' % biodb
+    print 'getting accession2genome_sequence...'
 
     accession2genome_sequence = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     sql = 'select accession, organism, count(*) from orthology_detail_%s group by accession;' % biodb
 
+    print 'getting accession2genome_data...'
     # organism name, protein encoding ORF number
     accession2genome_data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
 
-    table = '<table class="sortable" cellspacing="0" border="0" id="genomes_table">' \
-            '<col style="width: 37px;"/>' \
-            '<col style="width: 27px;"/>' \
-            '<col style="width: 20px;"/>' \
-            '<col style="width: 20px;"/>' \
-            '<col style="width: 20px;"/>' \
-            '<col style="width: 80px;"/>' \
-            '<col style="width: 10px;"/>' \
-            '<col style="width: 10px;"/>' \
-            '<col style="width: 10px;"/>' \
-            '<col style="width: 10px;"/>' \
-            '<col style="width: 10px;"/>'
-
-    table += '<tr>'
-    table += '    <th>Accession</th>'
-    table += '    <th>GC</th>'
-    table += '    <th>N proteins</th>'
-    table += '    <th>N contigs</th>'
-    table += '    <th>Size</th>'
-    table += '    <th>Organism</th>'
-    table += '    <th colspan="5">Download</th>'
-    table += '    </tr>'
-
-
     #print '<td colspan="6"><table width="800" border=0  class=table_genomes>'
 
-
+    print 'preparing data...'
+    genomes_data = []
 
     for accession in accession2genome_data:
-
-        table += '<tr>'
-        table += '    <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/%s">%s<a></td>' % (accession, accession)
+        print 'accession'
+        one_genome_data = []
+        one_genome_data.append(accession)
         try:
-            table += '    <td>%s</td>' % round(GC(accession2genome_sequence[accession]),2)
+            one_genome_data.append(round(GC(accession2genome_sequence[accession]),2))
         except:
-            table += '    <td>-</td>'
-        table += '    <td>%s</td>' % accession2genome_data[accession][1]
+            one_genome_data.append('-')
+        one_genome_data.append(accession2genome_data[accession][1])
         try:
-            table += '    <td>%s</td>' % (accession2genome_sequence[accession].count(200*'N') + 1)
+            one_genome_data.append(accession2genome_sequence[accession].count(200*'N') + 1)
         except:
-            table += '    <td>-</td>'
+            one_genome_data.append('-')
         try:
-            table += '    <td>%s</td>' % str(len(accession2genome_sequence[accession]))
+            one_genome_data.append(str(len(accession2genome_sequence[accession])))
         except:
-            table += '    <td>-</td>'
-        table += '    <td>%s</td>' %  accession2genome_data[accession][0]
-
-
-
-
-
-        table += '<td style="vertical-align:top" nowrap>' \
-        '<a  style="text-decoration:none;" href="/assets/%s/gbk/%s.gbk">' \
-        '<span style="background-color:#DCFFF0;color:black;padding:1px;">GBK</span></a>' \
-        '</td>' % (biodb, accession)
-
-        table += '<td snowrap>' \
-        '<a  style="text-decoration:none;" href="/assets/%s/faa/%s.faa">' \
-        '<span style="background-color:#DCFFF0;color:black;padding:1px;">FAA</span></a>' \
-        '</td>' % (biodb, accession)
-
-        table += '<td nowrap>' \
-        '<a  style="text-decoration:none;" href="/assets/%s/fna/%s.fna">' \
-        '<span style="background-color:#DCFFF0;color:black;padding:1px;">FNA</span></a>' \
-        '</td>' % (biodb, accession)
-
-        table += '<td nowrap>' \
-        '<a  style="text-decoration:none;" href="/assets/%s/ffn/%s.ffn">' \
-        '<span style="background-color:#DCFFF0;color:black;padding:1px;">FFN</span></a>' \
-        '</td>' % (biodb, accession)
-
-        table += '<td nowrap>' \
-        '<a  style="text-decoration:none;" href="/assets/%s/tab/%s.tab">' \
-        '<span style="background-color:#DCFFF0;color:black;padding:1px;">TAB</span></a>' \
-        '</td>' % (biodb, accession)
-
-    table += '</table>'
-
-
-
+            one_genome_data.append('-')
+        one_genome_data.append(accession2genome_data[accession][0])
+        genomes_data.append(one_genome_data)
     return render(request, 'chlamdb/home.html', locals())
 
 
