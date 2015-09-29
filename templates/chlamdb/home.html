@@ -46,11 +46,12 @@
             <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'genomes_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
             <br/>
         </div>
-        {% include "chlamdb/chlam_genomes_detail.html" %}
+
+        {{table|safe}}
 
 
 
-        <img src="{% static 'chlam_tree.png' %}" width="80%"
+        <!--<img src="{% static 'chlam_tree.png' %}" width="80%"-->
 
 
 
