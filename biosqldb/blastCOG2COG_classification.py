@@ -26,7 +26,7 @@ def gi2COG(*protein_gi):
 
     mysql_host = 'localhost'
     mysql_user = 'root'
-    mysql_pwd = 'agnathe3'
+    mysql_pwd = 'estrella3'
     mysql_db = 'COG'
 
 
@@ -58,7 +58,7 @@ def load_locus2cog_into_sqldb(input_blast_files, biodb):
     import manipulate_biosqldb
     mysql_host = 'localhost'
     mysql_user = 'root'
-    mysql_pwd = 'agnathe3'
+    mysql_pwd = 'estrella3'
     mysql_db = 'COG'
     conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
                                 user=mysql_user, # your username
@@ -98,7 +98,7 @@ def locus2function(input_blast_files, display_print=False,):
     import MySQLdb
     mysql_host = 'localhost'
     mysql_user = 'root'
-    mysql_pwd = 'agnathe3'
+    mysql_pwd = 'estrella3'
     mysql_db = 'COG'
     conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
                                 user=mysql_user, # your username

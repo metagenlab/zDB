@@ -206,7 +206,7 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
     import MySQLdb
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="agnathe3", # your password
+                                passwd="estrella3", # your password
                                 db="orth_%s" % biodb_name) # name of the data base
     cursor = conn.cursor()
 

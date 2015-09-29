@@ -18,17 +18,17 @@ class Orthogroup_Identity_DB:
         try:
             self.conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="agnathe3", # your password
+                                passwd="estrella3", # your password
                                 db="orth_%s" % database_name) # name of the data base
             self.cursor = self.conn.cursor()
         except:
-            conn = MySQLdb.connect(host="localhost", user="root", passwd="agnathe3")
+            conn = MySQLdb.connect(host="localhost", user="root", passwd="estrella3")
             sql = 'CREATE DATABASE orth_%s' % database_name
             cursor = conn.cursor()
             cursor.execute(sql)
             self.conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="agnathe3", # your password
+                                passwd="estrella3", # your password
                                 db="orth_%s" % database_name) # name of the data base
             self.cursor = self.conn.cursor()
         self.conn.commit()
@@ -226,7 +226,7 @@ class Orthogroup_Identity_DB:
 def check_identity(cursor, orthogroup, locus1, locus2):
     #conn = MySQLdb.connect(host="localhost", # your host, usually localhost
     #                            user="root", # your username
-    #                            passwd="agnathe3", # your password
+    #                            passwd="estrella3", # your password
     #                            db="orth_%s" % biodb_name) # name of the data base
     #cursor = conn.cursor()
 
@@ -240,7 +240,7 @@ def check_identity(cursor, orthogroup, locus1, locus2):
 def get_orthogroup_identity_table(biodb_name, orthogroup):
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="agnathe3", # your password
+                                passwd="estrella3", # your password
                                 db="orth_%s" % biodb_name) # name of the data base
     cursor = conn.cursor()
 
