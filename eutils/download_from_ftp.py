@@ -44,9 +44,9 @@ def download_whole_directory(ftp, path, destination, recursive=False):
     print "files:"
     print filelist
     for file in filelist:
-        #print "downloading...", path+file
+        print "downloading...", os.path.join(path,file)
         try:
-            ftp.cwd(path+file+"/")
+            ftp.cwd(os.path.join(path,file)+"/")
 
             if recursive == True:
                 os.mkdir(os.path.join(destination,file))              

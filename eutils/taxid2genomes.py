@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
-# get complete genome sequences from ncbi using eutils
-# TODO replace prints by sys.stdout/err.write
+# get complete genome sequences from any ncbi taxon
+# 1. identify assemblies related to the taxon ID
+# 2. get the assembly ftp link from the assemblies metedata
+# 3. download the assemblies from the ftp
+# NOTE: download RefSeq assembly first, if no RefSeq assembly, download GenBank assembly
 # Author: Trestan Pillonel (trestan.pillonel[]gmail.com)
 # Date: 01.2015
 # ---------------------------------------------------------------------------
@@ -25,7 +28,7 @@ def get_complete_genomes_data(ncbi_taxon, complete = False):
     record = Entrez.read(handle)
     f = open('ncbi_genome_download.log', 'w')
     header = 'AssemblyName\tLastMajorReleaseAccession\tTaxid\tSpeciesName\tOrganism\t' \
-             'AssemblyStatus\tNCBIReleaseDate\tSubmitterOrganization\tftpPath\tPartialGenomeRepresentation\tCoverage\tRefSeq\tGenbank\tSimilarity\n'
+             'AssemblyStatus\tNCBIReleaseDate\tSubmitterOrganization\tftpPath\tPartialGenomeRepresentation\tCoverage\tRefSeq\tGenbank\tSimilarity\tAnomalousAssembly\n'
     f.write(header)
     local_dir = os.getcwd()
 
@@ -71,10 +74,29 @@ def get_complete_genomes_data(ncbi_taxon, complete = False):
         os.mkdir(out_dir)
 
         # get ftp link in meta data string
-        if 'latest' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
-            ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+        print assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta']
+        print assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']
 
+        if 'anomalous' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
+            anomalous = True
+        else:
+            anomalous = False
+
+        # check if RefSeq assembly was supressed
+        if 'suppressed_refseq' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
+            print 'Supressed RefSeq record, downloading GenBank record'
+            ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
             get_ncbi_genome(ftp_path, out_dir)
+        elif 'latest' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
+            print 'Downloading RefSeq record'
+            try:
+                ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                ftp_path = '/' + ftp_path
+                get_ncbi_genome(ftp_path, out_dir)
+            except IndexError:
+                print 'RefSeq link could not be identified, downloading GenBank record'
+                ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                get_ncbi_genome(ftp_path, out_dir)
 
         # check if the assembly was replaced
         elif 'replaced' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
@@ -98,7 +120,7 @@ def get_complete_genomes_data(ncbi_taxon, complete = False):
                     break
         else:
             'Unkown status for %s, not downloading' % LastMajorReleaseAccession
-        line = '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (AssemblyName,
+        line = '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (AssemblyName,
                                                                              LastMajorReleaseAccession,
                                                                              Taxid,
                                                                              SpeciesName,
@@ -111,7 +133,8 @@ def get_complete_genomes_data(ncbi_taxon, complete = False):
                                                                              Coverage,
                                                                              RefSeq,
                                                                              Genbank,
-                                                                             Similarity)
+                                                                             Similarity,
+                                                                             anomalous)
 
         f.write(line.encode("utf-8"))
     f.close()
