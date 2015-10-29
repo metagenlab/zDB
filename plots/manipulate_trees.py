@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import heatmap
+#import heatmap
 import numpy as np
 import manipulate_biosqldb
 import parse_newick_tree

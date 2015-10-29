@@ -31,9 +31,11 @@ def convert_terminal_node_names(tree_newick_name, dictionnary):
             #print dictionnary[str(species.name)]
 
             #accession = manipulate_biosqldb.taxon_id2accessions(server, str(species.name), "saureus_01_15")[0]
-            print dictionnary[str(species.name)]
-            species.name = dictionnary[str(species.name)] #+ ' (%s)' % my_accession2st[accession]
-
+            try:
+                print dictionnary[str(species.name)]
+                species.name = dictionnary[str(species.name)] #+ ' (%s)' % my_accession2st[accession]
+            except:
+                pass
             #species.name = dictionnary[str(species.name)] + ' (%s)' % 8
     return trees
 
