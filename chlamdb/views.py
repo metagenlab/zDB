@@ -143,7 +143,7 @@ def home(request, biodb):
     genomes_data = []
 
     for accession in accession2genome_data:
-        print 'accession'
+        print accession
         one_genome_data = []
         one_genome_data.append(accession)
         try:
@@ -1435,6 +1435,21 @@ def homology(request, biodb):
             if valid_id:
                 orthogroup = data[0]
 
+                import ete_heatmap_conservation
+                sql_grp = 'select taxon_id,count(*) from  orthology_detail_%s where orthogroup="%s" group by organism;' % (biodb, orthogroup)
+                taxid2n = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_grp,))
+                tree_sql = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where t2.name="%s"' % biodb
+                tree = server.adaptor.execute_and_fetchall(tree_sql,)[0][0]
+                print "tree", tree
+                print 'count', taxid2n
+                import os
+                path = settings.BASE_DIR + '/assets/temp/phylo.svg'
+                print settings.BASE_DIR
+                print path
+                phylogenetic_distrib = ete_heatmap_conservation.plot_heat_tree('chlamydia_03_15', taxid2n, tree, path)
+                #print phylogenetic_distrib
+
+
                 fasta = "%s_fasta/%s.txt" % (biodb, orthogroup)
                 alignment = "%s_fasta/%s.html" % (biodb, orthogroup)
                 alignment_fasta = "%s_fasta/%s.fa" % (biodb, orthogroup)
@@ -1514,6 +1529,53 @@ def homology(request, biodb):
     return render(request, 'chlamdb/homology.html', locals())
 
 
+@login_required
+def orthogroup_identity(request, biodb, orthogroup, group=False):
+
+
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+    #if request.method == 'POST':
+    import numpy
+    import pandas as pd
+    sql = 'SELECT * FROM orth_%s.%s;' % (biodb, orthogroup)
+
+    data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
+
+    locus_list = '"' + '","'.join(data[0:,1]) + '"'
+
+    sql2 = 'select locus_tag, organism from orthology_detail_%s where locus_tag in (%s)' % (biodb, locus_list)
+    print sql2
+    locus2organism = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+
+    print locus2organism
+
+    #print data
+
+    print data[0:,2:]
+
+    columns = data[0:,1]
+    rows = [i + " (%s)" % locus2organism[i] for i in columns]
+    frame = pd.DataFrame(data[0:,2:], index=rows, columns=columns)
+    frame = frame.astype(float)
+    frame = frame/100
+
+    for i in range(0, len(frame)):
+
+        frame.ix[i, i] = None
+
+    path = settings.BASE_DIR + '/assets/temp/%s.json' % orthogroup
+    print 'writing to', path
+    print frame
+    with open(path, 'w') as f:
+        f.write(frame.to_json(orient="split"))
+
+    return render(request, 'chlamdb/orthogroup_identity.html', locals())
+
+
+def ortho_id_plot(request, group):
+    return render(request, 'chlamdb/orthogroup_identity_plot.html', locals())
 
 
 @login_required

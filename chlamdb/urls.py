@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, url
 from django.conf.urls import include
-
+from django.views.generic import TemplateView
 
 urlpatterns = patterns('chlamdb.views',
                        url(r'^home/([a-zA-Z0-9_]+)$', 'home', name="home"),
@@ -36,7 +36,9 @@ urlpatterns = patterns('chlamdb.views',
                        url(r'^login/$', 'chlamdb_login', name='chlamdb_login'),
                        #url(r'^chaining/', include('smart_selects.urls')),
                        url(r'^autocomplete/', include('autocomplete_light.urls')),
-                        url(r'^logout/$', 'logout_view', name="logout_view"),
+                       url(r'^logout/$', 'logout_view', name="logout_view"),
+                       url(r'^orthogroup_identity/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)$', 'orthogroup_identity', name="orthogroup_identity"),
+                       url(r'^ortho_id_plot/([a-zA-Z0-9_\.]+)/', 'ortho_id_plot', name='ortho_id_plot'),
 )
 
 urlpatterns += patterns('',

@@ -757,7 +757,17 @@ html,body{
     padding:0 0 0 135px;
     background-color: #FAFAF5;
 }
-
+#container_no_margin {
+    height: 100%;
+    min-height: 100vh;
+    margin-bottom:0;
+    position:relative;
+    padding:0 0 0 0px;
+    background-color: #FAFAF5;
+}
+iframe {
+    border:none;
+}
 #sidebar {
     position:absolute;
     top:22px; bottom:0; left:0;
