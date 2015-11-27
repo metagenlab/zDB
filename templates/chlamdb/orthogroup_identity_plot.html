@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<!--
+ ##########################################################################
+ Patrick.Brockmann@lsce.ipsl.fr
+ ##########################################################################
+-->
+{% load static %}
+<script src="http://d3js.org/d3.v3.js"></script>
+<script src="http://d3js.org/colorbrewer.v1.min.js"></script>
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+
+<script src="{% static 'js/heatmap.js' %}"></script>
+
+<link rel="stylesheet" href="{% static 'css/heatmap.css' %}" />
+
+<head>
+{% load staticfiles %}
+<script>
+$(document).ready(function() {
+
+	heatmap_display("{% static '' %}temp/{{group}}.json", "#heatmap", "PuOr");
+});
+</script>
+
+</head>
+
+<body>
+
+Order:
+<select id="order">
+  <option value="null" selected> ----- </option>
+  <option value="sortinit_col_row">Initial order on columns and rows</option>
+  <option value="sortinit_row">Initial order on rows</option>
+  <option value="sortinit_col">Initial order on columns</option>
+</select>
+
+
+<div id="heatmap" style="margin-left: 146px;"></div>
+
+</body>
+</html>
