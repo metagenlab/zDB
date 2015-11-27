@@ -151,7 +151,8 @@ class CircosAccession2multiplot():
                  queries_accession,
                  locus_highlight,
                  out_directory,
-                 draft_fasta):
+                 draft_fasta,
+                 href):
 
         import manipulate_biosqldb
         import gbk2circos
@@ -245,8 +246,8 @@ class CircosAccession2multiplot():
         circos_reference = gbk2circos.Circos_config(circos_files_reference["contigs"], chr_spacing_list)
 
         # add plus minus genes
-        circos_reference.add_highlight(circos_files_reference["plus"], fill_color="grey_a1", r1="0.98r", r0="0.95r")
-        circos_reference.add_highlight(circos_files_reference["minus"], fill_color="grey_a1", r1="0.95r", r0="0.92r")
+        circos_reference.add_highlight(circos_files_reference["plus"], fill_color="grey_a1", r1="0.98r", r0="0.95r", href=href)
+        circos_reference.add_highlight(circos_files_reference["minus"], fill_color="grey_a1", r1="0.95r", r0="0.92r", href=href)
 
         #print "writing GC files!!!!!!!!!!!"
         #gbk2circos.print_circos_GC_file(reference_records, feature_type="CDS", out_directory=out_directory, draft_data = draft_fasta)

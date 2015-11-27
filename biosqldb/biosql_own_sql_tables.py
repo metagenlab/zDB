@@ -1090,9 +1090,79 @@ def update_interpro_table(biodb, locus_list, locus2ortho, i):
         server.commit()
 
 def add_orthogroup_to_interpro_table(biodb_name):
+
+    '''
+    Drop table interpro, puis on la reconstruit
+    '''
+
+    locus2ortho = locus_tag2orthogroup(biodb_name)
+
     import numpy
     from multiprocessing import Process
     import time
+
+    server, db = manipulate_biosqldb.load_db(biodb_name)
+    #sql = 'ALTER TABLE interpro_%s ADD orthogroup VARCHAR(100);' % biodb_name
+    sql = 'select * from interpro_%s;' % biodb_name
+
+    interpro_data = server.adaptor.execute_and_fetchall(sql,)
+
+    try:
+        sql = 'drop table interpro_%s' % biodb_name
+        server.adaptor.execute(sql,)
+        server.adaptor.commit()
+    except:
+        pass
+
+    sql = 'CREATE TABLE interpro_%s (accession VARCHAR(100),' \
+          ' locus_tag VARCHAR(200), ' \
+          ' organism VARCHAR(200),  ' \
+          ' taxon_id INT,' \
+          ' sequence_length INT, ' \
+          ' analysis VARCHAR(100) NOT NULL, ' \
+          ' signature_accession VARCHAR(100), ' \
+          ' signature_description VARCHAR(1000), ' \
+          ' start INT, ' \
+          ' stop INT, ' \
+          ' score VARCHAR(10) NOT NULL, ' \
+          ' interpro_accession VARCHAR(1000) NOT NULL, ' \
+          ' interpro_description VARCHAR(10000),' \
+          ' GO_terms varchar(10000),' \
+          ' pathways varchar(10000),' \
+          ' orthogroup varchar(100))' % biodb_name
+    server.adaptor.execute(sql)
+    i=0
+    for one_row in interpro_data:
+        print i
+        i+=1
+        sql = 'INSERT INTO interpro_%s(accession, locus_tag, organism, taxon_id,' \
+              ' sequence_length, analysis, signature_accession, signature_description, start, ' \
+              ' stop, score, interpro_accession, interpro_description, GO_terms, pathways, orthogroup) ' \
+              ' values ("%s", "%s", "%s", %s, %s, "%s", "%s", "%s", %s, %s, "%s", "%s", "%s", "%s", "%s", "%s");' % (biodb_name,
+                                                                                             one_row[0],
+                                                                                             one_row[1],
+                                                                                             one_row[2],
+                                                                                             one_row[3],
+                                                                                       one_row[4],
+                                                                                       one_row[5],
+                                                                                       one_row[6],
+                                                                                       one_row[7],
+                                                                                       one_row[8],
+                                                                                       one_row[9],
+                                                                                       one_row[10],
+                                                                                       one_row[11],
+                                                                                       one_row[12],
+                                                                                       one_row[13],
+                                                                                       one_row[14],
+                                                                                       locus2ortho[one_row[1]])
+        #try:
+
+        server.adaptor.execute(sql)
+        server.adaptor.commit()
+        #except:
+        #    pass
+
+    '''
     locus2ortho = locus_tag2orthogroup(biodb_name)
     n_cpu = 8
     n_poc_per_list = int(numpy.ceil(len(locus2ortho)/float(n_cpu)))
@@ -1110,7 +1180,7 @@ def add_orthogroup_to_interpro_table(biodb_name):
     time.sleep(5)
     for proc in procs:
         proc.join()
-
+    '''
 
 
 

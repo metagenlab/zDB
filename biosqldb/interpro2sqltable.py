@@ -110,6 +110,7 @@ def interpro2biosql(server,
                     taxon_id = locus_tag2genome_taxon_id[accession]
                     seqfeature_id = locus_tag2seqfeature_id[accession]
                 organism = seqfeature_id2organism[str(seqfeature_id)]
+                #print organism
                 locus_tag = seqfeature_id2locus_tag[str(seqfeature_id)]
                 sql = 'INSERT INTO interpro_%s(accession, locus_tag, organism, taxon_id,' \
                       ' sequence_length, analysis, signature_accession, signature_description, start, ' \
@@ -165,6 +166,8 @@ if __name__ == '__main__':
     protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, biodb)
     print "getting seqfeature_id2locus_tag"
     seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, biodb)
+
+    print seqfeature_id2locus_tag.keys()[1:10]
 
     interpro2biosql(server,
                     seqfeature_id2locus_tag,

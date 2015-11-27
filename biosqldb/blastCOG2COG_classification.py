@@ -66,17 +66,21 @@ def load_locus2cog_into_sqldb(input_blast_files, biodb):
                                 db=mysql_db) # name of the data base
     cursor = conn.cursor()
 
+    sql = 'create table COG.locus_tag2gi_hit_%s (accession varchar(100), locus_tag varchar(100), gi INT, COG_id varchar(100))' % biodb
+
+    cursor.execute(sql)
+    conn.commit()
+    sql = 'select locus_tag, accession from orthology_detail_%s' % biodb
+    sql3 = 'select protein_id, COG_id from COG.cog_2014;'
+    sql2 = 'select protein_id, locus_tag from orthology_detail_%s' % biodb
+    server, db = manipulate_biosqldb.load_db(biodb)
+    locus2genome_accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
+    protein_id2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
+    protein_id2COG = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3))
+
     for input_blast in input_blast_files:
         print 'file', input_blast
         locus2hit_accession = blast2COG(input_blast)
-
-        sql = 'select locus_tag, accession from orthology_detail_%s' % biodb
-        sql3 = 'select protein_id, COG_id from COG.cog_2014;'
-        sql2 = 'select protein_id, locus_tag from orthology_detail_%s' % biodb
-        server, db = manipulate_biosqldb.load_db(biodb)
-        locus2genome_accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
-        protein_id2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
-        protein_id2COG = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3))
 
         print protein_id2COG.keys()[0], protein_id2COG[protein_id2COG.keys()[0]]
 
@@ -84,12 +88,15 @@ def load_locus2cog_into_sqldb(input_blast_files, biodb):
             try:
                 sql = 'INSERT into locus_tag2gi_hit_%s (accession, locus_tag, gi, COG_id) VALUES ("%s", "%s", %s, "%s")' % (biodb, locus2genome_accession[locus], locus, locus2hit_accession[locus], protein_id2COG[locus2hit_accession[locus]])
                 cursor.execute(sql)
-                conn.commit()
+                #conn.commit()
             except:
-                locus_t = protein_id2locus_tag[locus]
-                sql = 'INSERT into locus_tag2gi_hit_%s (accession, locus_tag, gi, COG_id) VALUES ("%s", "%s", %s, "%s")' % (biodb, locus2genome_accession[locus_t], locus_t, locus2hit_accession[locus], protein_id2COG[locus2hit_accession[locus]])
-                cursor.execute(sql)
-                conn.commit()
+                try:
+                    locus_t = protein_id2locus_tag[locus]
+                    sql = 'INSERT into locus_tag2gi_hit_%s (accession, locus_tag, gi, COG_id) VALUES ("%s", "%s", %s, "%s")' % (biodb, locus2genome_accession[locus_t], locus_t, locus2hit_accession[locus], protein_id2COG[locus2hit_accession[locus]])
+                    cursor.execute(sql)
+                except:
+                    pass
+    conn.commit()
 
 
 

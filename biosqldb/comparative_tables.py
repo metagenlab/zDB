@@ -145,7 +145,7 @@ def collect_interpro(db_name):
         print i,'/', len(all_interpro_ids), accession
         i+=1
         sql= 'select taxon_id, count(*) from biosqldb.interpro_%s ' \
-             ' where interpro_accession = "%s" group by taxon_id;;' % (db_name, accession)
+             ' where interpro_accession = "%s" group by taxon_id;' % (db_name, accession)
 
         data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -206,10 +206,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    #create_comparative_tables(args.database_name, "Pfam")
-    #create_comparative_tables(args.database_name, "COG")
-    #create_comparative_tables(args.database_name, "EC")
-    #create_comparative_tables(args.database_name, "interpro")
+    create_comparative_tables(args.database_name, "Pfam")
+    create_comparative_tables(args.database_name, "COG")
+    create_comparative_tables(args.database_name, "EC")
+    create_comparative_tables(args.database_name, "interpro")
     collect_interpro(args.database_name)
     collect_pfam(args.database_name)
     collect_interpro(args.database_name)
