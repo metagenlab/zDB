@@ -88,7 +88,7 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-i",'--seq_id', type=str, help="sequence ncbi id")
-    parser.add_argument("-p", '--protein_seq', action="store_true", help="Protein sequence (default=False)")
+    parser.add_argument("-p", '--protein_seq', action="store_true", help="Protein sequence (default=False, search in nucleotide databases)")
 
     args = parser.parse_args()
 
