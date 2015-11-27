@@ -147,7 +147,7 @@ def home(request, biodb):
         one_genome_data = []
         one_genome_data.append(accession)
         try:
-            one_genome_data.append(round(GC(accession2genome_sequence[accession]),2))
+            one_genome_data.append(round(GC(accession2genome_sequence[accession].replace("N", "")),2))
         except:
             one_genome_data.append('-')
         one_genome_data.append(accession2genome_data[accession][1])
@@ -156,7 +156,8 @@ def home(request, biodb):
         except:
             one_genome_data.append('-')
         try:
-            one_genome_data.append(str(len(accession2genome_sequence[accession])))
+            size = len(accession2genome_sequence[accession]) - (200*accession2genome_sequence[accession].count(200*'N'))
+            one_genome_data.append(str(size))
         except:
             one_genome_data.append('-')
         one_genome_data.append(accession2genome_data[accession][0])
@@ -308,7 +309,7 @@ def extract_orthogroup(request, biodb):
             server, db = manipulate_biosqldb.load_db(biodb)
 
             sql ='select orthogroup from orthology_%s where %s %s' % (biodb, sql_include, sql_exclude)
-
+            print sql
 
 
             match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -1102,8 +1103,6 @@ def locusx(request, biodb, locus, menu=False):
                     interpro_data = server.adaptor.execute_and_fetchall(sql4, )
                 except IndexError:
                     interpro_data= False
-                print cog_data
-                print interpro_data
 
             data = server.adaptor.execute_and_fetchall(sql2, )[0]
 
@@ -1141,9 +1140,9 @@ def locusx(request, biodb, locus, menu=False):
                         interpro_id = value[2]
                     else:
                         value[2] = value[1]
-                    print value + [orthogroup2identity_dico[data[1]][locus_2]]
+                    #print value + [orthogroup2identity_dico[data[1]][locus_2]]
                     homologues[count] = [count+1] + value + [orthogroup2identity_dico[data[1]][locus_2]]
-                    print homologues[count]
+                    #print homologues[count]
 
             else:
                 homologues[0] = (1,) + homologues[0] + (100,)
@@ -1367,7 +1366,7 @@ def blastnr(request, biodb, locus_tag):
 
 @login_required
 def homology(request, biodb):
-
+    import shell_command
     cache = get_cache('default')
     print "cache", cache
     #cache.clear()
@@ -1434,19 +1433,20 @@ def homology(request, biodb):
                     valid_id = False
             if valid_id:
                 orthogroup = data[0]
-
+                path = settings.BASE_DIR + '/assets/temp/phylo.svg'
+                a,b,c = shell_command.shell_command("rm %s" % path)
+                print a, b, c
                 import ete_heatmap_conservation
                 sql_grp = 'select taxon_id,count(*) from  orthology_detail_%s where orthogroup="%s" group by organism;' % (biodb, orthogroup)
                 taxid2n = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_grp,))
                 tree_sql = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where t2.name="%s"' % biodb
                 tree = server.adaptor.execute_and_fetchall(tree_sql,)[0][0]
-                print "tree", tree
-                print 'count', taxid2n
+
                 import os
-                path = settings.BASE_DIR + '/assets/temp/phylo.svg'
+
                 print settings.BASE_DIR
                 print path
-                phylogenetic_distrib = ete_heatmap_conservation.plot_heat_tree('chlamydia_03_15', taxid2n, tree, path)
+                phylogenetic_distrib = ete_heatmap_conservation.plot_heat_tree(biodb, taxid2n, tree, path)
                 #print phylogenetic_distrib
 
 
@@ -1480,48 +1480,12 @@ def homology(request, biodb):
                             interpro_id = value[2]
                         else:
                             interpro_id = value[1]
-                        print value + (orthogroup2identity_dico[data[1]][locus_2],)
+                        #print value + (orthogroup2identity_dico[data[1]][locus_2],)
                         homologues[count] = (count+1,) + value + (orthogroup2identity_dico[data[1]][locus_2],) + (interpro_id,)
-                        print homologues[count]
+
 
                 else:
                     homologues[0] = homologues[0] + (100,)
-
-                if plot_region == "boinjour":
-                    print "plotting!!!!!!!!!!!!!!"
-                    print "locus_tag_list", locus_tag_target_genomes
-                    home_dir = os.path.dirname(__file__)
-                    print "home_dir", home_dir
-                    temp_location = os.path.join(home_dir, "../assets")
-                    print "temp loc", temp_location
-                    temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-                    print "temp file", temp_file.name
-                    name = os.path.basename(temp_file.name)
-                    mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, locus_tag_target_genomes,
-                                                                                      temp_file.name, int(region_size),
-                                                                                      cache)
-                    """
-                    print "updating dico"
-                    bioentry_in_memory[biodb].update(bioentry_dict)
-
-                    print "bioentry_in_memory", bioentry_in_memory
-                    print "updating cache"
-                    import sys
-                    print "cache size",sys.getsizeof(bioentry_in_memory)
-
-
-                    #import pickle
-                    #dat = pickle.dumps(bioentry_in_memory)
-                    #print "pickle", len(dat)
-                    cache.set("biodb", bioentry_in_memory)
-                    #print "updated cache:", cache.get("biodb")
-                    #except:
-                    #  invalid_id = True
-                    # Nous pourrions ici envoyer l'e-mail grâce aux données que nous venons de récupérer
-
-                    """
-
-                    #try:
 
             envoi = True
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
@@ -1806,7 +1770,8 @@ def circos(request, biodb):
                                           target_accessions,
                                           locus_highlight=[],
                                           out_directory=temp_location,
-                                          draft_fasta=draft_data)
+                                          draft_fasta=draft_data,
+                                          href="/chlamdb/locusx/%s/" % biodb)
 
 
 
