@@ -696,7 +696,10 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
     #print "locus highlight", locus_highlight
     all_file_names = {}
     ortho_size = mysqldb_load_mcl_output.get_all_orthogroup_size(server, biodatabase_name)
-    ortho_identity = orthogroup_identity_db.orthogroup2average_identity(biodatabase_name)
+    try:
+        ortho_identity = orthogroup_identity_db.orthogroup2average_identity(biodatabase_name)
+    except:
+        pass
     # get dictionnary orthogroup_id2family_size
     ortho_family_size = mysqldb_load_mcl_output.get_family_size(server, biodatabase_name)
 
@@ -807,10 +810,16 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                         print contig, start, end
                         print feature
                         continue
-                    line2 = "%s %s %s %s\n" % (contig, start, end, ortho_identity[feature.qualifiers['orthogroup'][0]])
+                    try:
+                        line2 = "%s %s %s %s\n" % (contig, start, end, ortho_identity[feature.qualifiers['orthogroup'][0]])
+                    except:
+                        pass
                     line3 = "%s %s %s %s\n" % (contig, start, end, ortho_family_size[feature.qualifiers['orthogroup'][0]])
                     f.write(line)
-                    g.write(line2)
+                    try:
+                        g.write(line2)
+                    except UnboundLocalError:
+                        pass
                     h.write(line3)
                     for taxon_id, taxon_file in zip(taxon_list, taxon_files):
                         #print group_id2orthologs_presence[feature.qualifiers['orthogroup'][0]]
@@ -1027,8 +1036,8 @@ class Circos_config:
       self.links = "<links>\n" + link + "</links>\n"
 
 
-  def add_highlight(self, file, fill_color="grey_a1", r1="1.55r", r0="1.50r"):
-    highlight = self._template_highlight(file, fill_color, r1, r0)
+  def add_highlight(self, file, fill_color="grey_a1", r1="1.55r", r0="1.50r", href=""):
+    highlight = self._template_highlight(file, fill_color, r1, r0, href)
     if len(re.findall("</highlights>", self.highlights))>0:
       # remove end balise
       self.highlights = re.sub("</highlights>", "", self.highlights)
