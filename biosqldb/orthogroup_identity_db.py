@@ -181,16 +181,20 @@ class Orthogroup_Identity_DB:
 
     def _create_orthogroup_average_identity_column(self, server, biodatabase_name):
 
-        sql = 'ALTER TABLE orthology_%s ADD average_identity float(5)' % biodatabase_name
+
+        sql = 'CREATE TABLE orth_%s.average_identity (orthogroup varchar(100), identity float(5))' % biodatabase_name
         server.adaptor.execute(sql)
         server.commit()
 
     def add_average_orthogroup_identity(self, biodatabase_name):
 
+        print 'adding average id to orthology table'
         server, db = manipulate_biosqldb.load_db(biodatabase_name)
 
+        print 'get orthogroups'
         sql = 'select orthogroup from orthology_%s' % biodatabase_name
         try:
+            print 'adding column'
             self._create_orthogroup_average_identity_column(server, biodatabase_name)
         except:
             print "column already created?"
@@ -209,7 +213,7 @@ class Orthogroup_Identity_DB:
             except:
                 av_id = 0
 
-            sql = 'UPDATE orthology_%s SET average_identity=%s where orthogroup = "%s"' % (biodatabase_name, av_id, group)
+            sql = 'insert into orth_%s.average_identity values ("%s", %s)' % (biodatabase_name, group, av_id)
             #print sql
             server.adaptor.execute(sql)
             server.commit()
@@ -450,7 +454,7 @@ def locus_list2presence_absence_all_genomes(locus_list, biodb_name):
 
 def orthogroup2average_identity(biodatabase_name):
     server, db = manipulate_biosqldb.load_db(biodatabase_name)
-    sql = 'select orthogroup,average_identity from orthology_%s' % biodatabase_name
+    sql = 'select orthogroup,average_identity from orth_%s.average_identity' % biodatabase_name
     result = server.adaptor.execute_and_fetchall(sql)
     return manipulate_biosqldb.to_dict(result)
 
@@ -468,6 +472,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     tata = Orthogroup_Identity_DB(args.db_name)
-    tata.import_alignments(tata.cursor, args.align_files)
+    #tata.import_alignments(tata.cursor, args.align_files)
     tata.add_average_orthogroup_identity(args.db_name)
     #check_identity("Chlamydia_12_14", "group_825", "Cav1_00733", "CT565")

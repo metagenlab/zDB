@@ -265,7 +265,7 @@ class CircosAccession2multiplot():
         self.add_gene_tracks(circos_files_reference,
                              circos_reference,
                              queries_accession,
-                             config_file_reference)
+                             config_file_reference, href=href)
 
 
         cmd = "circos -outputfile %s -outputdir %s -conf %s" % (out_file, out_directory, config_file_reference)
@@ -280,13 +280,13 @@ class CircosAccession2multiplot():
         #print stdout, stderr, return_code
 
     # add presence/absence of orthologs
-    def add_gene_tracks(self, circos_files, circos, accessions, out_file):
+    def add_gene_tracks(self, circos_files, circos, accessions, out_file, href):
         import os
         r1 = 0.90
         r0 = 0.89
         for orthofile in circos_files["genomes"]:
             print orthofile
-            circos.add_highlight(orthofile, fill_color="ortho3", r1="%sr" % r1, r0= "%sr" % r0)
+            circos.add_highlight(orthofile, fill_color="ortho3", r1="%sr" % r1, r0= "%sr" % r0, href=href)
             r1 = r1-0.02
             r0 = r0-0.02
 

@@ -186,7 +186,7 @@ def get_mysql_table(db_name, table_name):
     #np.chararray
     f = open("%s_matrix.tab" % table_name, "w")
 
-    taxonid2genome = manipulate_biosqldb.taxon_id2genome_description(server, "chlamydia_03_15", True)
+    taxonid2genome = manipulate_biosqldb.taxon_id2genome_description(server, db_name, True)
 
     taxons_ids = [taxonid2genome[int(i)] for i in all_taxons_id]
 
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     parser.add_argument("-d", '--database_name', type=str, help="Database name")
 
     args = parser.parse_args()
-
+    '''
     create_comparative_tables(args.database_name, "Pfam")
     create_comparative_tables(args.database_name, "COG")
     create_comparative_tables(args.database_name, "EC")
@@ -213,5 +213,7 @@ if __name__ == '__main__':
     collect_interpro(args.database_name)
     collect_pfam(args.database_name)
     collect_interpro(args.database_name)
+    '''
+    collect_COGs(args.database_name)
 
     #get_mysql_table("chlamydia_03_15", "Pfam")

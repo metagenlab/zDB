@@ -14,7 +14,11 @@ def blast2COG(blast_file):
         locus2hit_accession = {}
         for line in f:
             data = line.rstrip().split('\t')
-            locus_tag = data[1].split('|')[3]
+            try:
+                locus_tag = data[1].split('|')[3]
+            except IndexError:
+                locus_tag = data[1]
+                print locus_tag
             hit_accession = data[3].split('|')[1]
             locus2hit_accession[locus_tag] = hit_accession
         return locus2hit_accession
