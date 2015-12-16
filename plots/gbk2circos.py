@@ -691,19 +691,24 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
     print "highlight", locus_highlight
 
     import os
+
     #print "orthology_circos_files"
     #print "draft_data", draft_data
     #print "locus highlight", locus_highlight
     all_file_names = {}
-    ortho_size = mysqldb_load_mcl_output.get_all_orthogroup_size(server, biodatabase_name)
+    #ortho_size = mysqldb_load_mcl_output.get_all_orthogroup_size(server, biodatabase_name)
+
+    sql = 'select orthogroup, count(*) from orthology_detail_%s group by orthogroup' % biodatabase_name
+    ortho_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
     try:
         ortho_identity = orthogroup_identity_db.orthogroup2average_identity(biodatabase_name)
     except:
         pass
-    # get dictionnary orthogroup_id2family_size
     ortho_family_size = mysqldb_load_mcl_output.get_family_size(server, biodatabase_name)
 
 
+    print "ortho family okk"
     #print ortho_family_size
 
     ortho_table = "orthology_%s" % biodatabase_name
@@ -786,21 +791,35 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                 if not 'pseudo' in feature.qualifiers:
                     try:
                         for i in draft_data[y]:
-                            #print "TZDHGFHFDHD,", i, int(feature.location.start), int(feature.location.end), record.id
-                            if int(feature.location.start) >= i[1] and int(feature.location.end) <= i[2]:
-                                #print "OKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
-                                contig = i[0]
+                            # cas des locations splittes en 2
+                            if feature.location.__class__.__name__ != "CompoundLocation":
+                                if int(feature.location.start) >= i[1] and int(feature.location.end) <= i[2]:
+                                    #print "OKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
+                                    contig = i[0]
+                                    if draft_coordinates:
+                                        start = feature.location.start - i[1]
+                                        end = feature.location.end - i[1]
+                                    else:
+                                        start = feature.location.start
+                                        end = feature.location.end
+                            else:
                                 if draft_coordinates:
                                     start = feature.location.start - i[1]
-                                    end = feature.location.end - i[1]
+                                    end = feature.location.parts[0].end - i[1]
                                 else:
                                     start = feature.location.start
-                                    end = feature.location.end
+                                    end = feature.location.parts[0].end
 
                     except:
-                        contig = record.id
-                        start = feature.location.start
-                        end = feature.location.end
+                        # cas des locations splittes en 2
+                        if feature.location.__class__.__name__ != "CompoundLocation":
+                            contig = record.id
+                            start = feature.location.start
+                            end = feature.location.end
+                        else:
+                            contig = record.id
+                            start = feature.location.start
+                            end = feature.location.parts[0].end
                     #print "contig", contig
 
                     try:
