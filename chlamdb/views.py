@@ -34,7 +34,7 @@ from forms import make_circos_orthology_form
 from forms import make_interpro_from
 from forms import make_extract_region_form
 from forms import make_venn_from
-
+from forms import make_priam_form
 
 from django.contrib.auth import logout
 from django.conf import settings
@@ -1049,7 +1049,11 @@ def extract_region(request, biodb):
 
 
 @login_required
-def locusx(request, biodb, locus, menu=False):
+def locusx(request, biodb, locus=None, menu=False):
+
+    print 'biodb', biodb
+    print 'locus', locus
+    print 'menu', menu
 
     cache = get_cache('default')
 
@@ -1066,7 +1070,7 @@ def locusx(request, biodb, locus, menu=False):
         sql1 =   'SELECT' \
                  ' CASE' \
                  '   WHEN locus_tag = "%s" THEN "locus_tag"' \
-                 '   WHEN protein_id = "%s" THEN "protein_i"' \
+                 '   WHEN protein_id = "%s" THEN "protein_id"' \
                  '   WHEN orthogroup = "%s" THEN "orthogroup"'\
                  ' END AS "which_column"'\
                  ' FROM' \
@@ -1081,8 +1085,10 @@ def locusx(request, biodb, locus, menu=False):
 
 
         try:
+            print sql1
             input_type = server.adaptor.execute_and_fetchall(sql1, )[0][0]
         except IndexError:
+            print 'not a valid id'
             valid_id = False
             return render(request, 'chlamdb/locus.html', locals())
 
@@ -1104,8 +1110,9 @@ def locusx(request, biodb, locus, menu=False):
                 except IndexError:
                     interpro_data= False
 
-            data = server.adaptor.execute_and_fetchall(sql2, )[0]
-
+            data = list(server.adaptor.execute_and_fetchall(sql2, )[0])
+            if data[2] == '-':
+                data[2] = data[1]
 
             orthogroup = data[0]
 
@@ -1378,114 +1385,11 @@ def homology(request, biodb):
     contact_form_class = make_contact_form(server, biodb)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
-        """
-        bioentry_in_memory = cache.get('biodb')
-        print "bioentry_in_memory", bioentry_in_memory
-        if not bioentry_in_memory:
-            print "creating cache entry"
-            cache.set("biodb", {})
-        """
 
         form = contact_form_class(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
-            valid_id = True
-
-            accession = extract_alphanumeric(form.cleaned_data['accession'])
-
-            import re
-            pattern_group = re.compile(".*group.*")
-
-            if re.match(pattern_group, accession):
-                group = True
-            else:
-                group = False
-
-            server, db = manipulate_biosqldb.load_db(biodb)
-
-            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-            sql2 = 'select %s from orthology_detail_%s where locus_tag like "%%%%%s%%%%" or protein_id like "%%%%%s%%%%" or orthogroup= "%s"' % (columns, biodb, accession, accession, accession)
-
-            if not group:
-                sql3 = 'select t2.COG_id,t2.functon,t2.name from COG.locus_tag2gi_hit_%s ' \
-                       ' as t1 inner join COG.cog_names_2014 as t2 on t1.COG_id=t2.COG_id where locus_tag="%s"' % (biodb, accession)
-                sql4 = 'select analysis, signature_accession, start, stop, signature_description, interpro_accession, interpro_description ' \
-                       ' from interpro_%s where locus_tag="%s";' % (biodb, accession)
-                try:
-                    cog_data = server.adaptor.execute_and_fetchall(sql3, )[0]
-                except IndexError:
-                    cog_data = False
-                try:
-                    interpro_data = server.adaptor.execute_and_fetchall(sql4, )
-                except IndexError:
-                    interpro_data = False
-                print cog_data
-                print interpro_data
-
-            try:
-                data = server.adaptor.execute_and_fetchall(sql2, )[0]
-            except IndexError:
-                valid_id = False
-                return render(request, 'chlamdb/locus.html', locals())
-
-            if not data:
-                    valid_id = False
-            if valid_id:
-                orthogroup = data[0]
-                path = settings.BASE_DIR + '/assets/temp/phylo.svg'
-                a,b,c = shell_command.shell_command("rm %s" % path)
-                print a, b, c
-                import ete_heatmap_conservation
-                sql_grp = 'select taxon_id,count(*) from  orthology_detail_%s where orthogroup="%s" group by organism;' % (biodb, orthogroup)
-                taxid2n = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_grp,))
-                tree_sql = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where t2.name="%s"' % biodb
-                tree = server.adaptor.execute_and_fetchall(tree_sql,)[0][0]
-
-                import os
-
-                print settings.BASE_DIR
-                print path
-                phylogenetic_distrib = ete_heatmap_conservation.plot_heat_tree(biodb, taxid2n, tree, path)
-                #print phylogenetic_distrib
-
-
-                fasta = "%s_fasta/%s.txt" % (biodb, orthogroup)
-                alignment = "%s_fasta/%s.html" % (biodb, orthogroup)
-                alignment_fasta = "%s_fasta/%s.fa" % (biodb, orthogroup)
-                alignment_fasta_nucl = "%s_fasta_nucl/%s_nucl.txt" % (biodb, orthogroup)
-                tree_unrooted = "%s_fasta/%s_tree.svg" % (biodb, orthogroup)
-                tree_rooted = "%s_fasta/%s_tree_reroot.svg" % (biodb, orthogroup)
-                tree_file = "%s_fasta/%s.phy_phyml_tree.txt" % (biodb, orthogroup)
-
-                columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-                sql3 = 'select %s from orthology_detail_%s where orthogroup = "%s" ' % (columns, biodb, orthogroup)
-
-                homologues = list(server.adaptor.execute_and_fetchall(sql3, ))
-                print homologues
-
-                if len(homologues) >1:
-                    orthologs = True
-                else:
-                    orthologs = False
-                import orthogroup_identity_db
-                if len(homologues) > 1:
-                    orthogroup2identity_dico = orthogroup_identity_db.orthogroup2identity_dico(biodb, orthogroup)
-
-                    print "orthologs", orthologs, len(homologues)
-                    for count, value in enumerate(homologues):
-                        locus_2 = value[1]
-                        if value[2] != '-':
-                            interpro_id = value[2]
-                        else:
-                            interpro_id = value[1]
-                        #print value + (orthogroup2identity_dico[data[1]][locus_2],)
-                        homologues[count] = (count+1,) + value + (orthogroup2identity_dico[data[1]][locus_2],) + (interpro_id,)
-
-
-                else:
-                    homologues[0] = homologues[0] + (100,)
+            accession = request.POST['accession']
 
             envoi = True
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
@@ -1505,8 +1409,12 @@ def orthogroup_identity(request, biodb, orthogroup, group=False):
     import pandas as pd
     sql = 'SELECT * FROM orth_%s.%s;' % (biodb, orthogroup)
 
-    data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
-
+    try:
+        data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
+        homologs = True
+    except:
+        homologs = False
+        return render(request, 'chlamdb/orthogroup_identity.html', locals())
     locus_list = '"' + '","'.join(data[0:,1]) + '"'
 
     sql2 = 'select locus_tag, organism from orthology_detail_%s where locus_tag in (%s)' % (biodb, locus_list)
@@ -1584,6 +1492,8 @@ def plot_region(request, biodb):
                     for i in range(0, len(genomes)-1):
                         select+= ' or taxon_id = %s' % genomes[i]
                     select+= ' or taxon_id = %s)' % genomes[-1]
+                else:
+                    select+= ')'
                 sql3 = 'select locus_tag from orthology_detail_%s where orthogroup = "%s" %s' % (biodb, orthogroup, select)
                 print sql3
                 locus_tag_target_genomes = [i[0] for i in server.adaptor.execute_and_fetchall(sql3, )]
@@ -2695,7 +2605,9 @@ def circos2genomes(request, biodb):
             print "genomes", reference_records, query_records
 
             orthogroup_list = []
-            if len(protein_locus_list) > 0:
+            print "protein_locus_list", protein_locus_list[0], len(protein_locus_list[0])
+            if len(protein_locus_list[0]) > 0:
+                print 'okkkkkkkk'
                 for protein in protein_locus_list:
                     print "protein", protein
                     sql = 'select orthogroup from orthology_detail_%s where protein_id="%s" or locus_tag="%s"' % (biodb, protein, protein)
@@ -2883,3 +2795,132 @@ def crossplot(request):
         form2 = DBForm()
     return render(request, 'chlamdb/crossplot.html', locals())
 
+
+
+
+
+def pfam_tree(request, biodb, orthogroup):
+    import ete_motifs
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql_locus2protein_id = 'select locus_tag, protein_id from orthology_detail_%s where orthogroup="%s"' % (biodb, orthogroup)
+
+    locus2protein_id= manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_locus2protein_id,))
+
+    locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb)
+
+    motif_count = {}
+    for data in locus2pfam_data.values():
+        for motif in data:
+            print data
+            try:
+                if motif[4] not in motif_count:
+                    motif_count[motif[4]] = [1, motif[5]]
+                else:
+                    motif_count[motif[4]][0]+=1
+            except:
+                print "motif", motif
+
+    print "motif_count", motif_count
+
+    sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
+    try:
+        tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
+    except IndexError:
+        no_tree = True
+        return render(request, 'chlamdb/pfam_tree.html', locals())
+    import manipulate_biosqldb
+
+    sql = 'select taxon_id, family from genomes_classification;'
+
+    taxon_id2family = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    print 'tree', tree
+    t, ts, leaf_number = ete_motifs.draw_pfam_tree(tree, locus2pfam_data, locus2protein_id, taxon_id2family)
+    path = settings.BASE_DIR + '/assets/temp/pfam_tree.svg'
+    asset_path = '/assets/temp/pfam_tree.svg'
+    #print "path", path
+    t.render(path, h=leaf_number*12, dpi=800, tree_style=ts)
+
+    return render(request, 'chlamdb/pfam_tree.html', locals())
+
+def TM_tree(request, biodb, orthogroup):
+    print 'bonjour', request.method
+    import manipulate_biosqldb
+    import ete_motifs
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    locus2TM_data = ete_motifs.get_TM_data(orthogroup, biodb)
+
+    sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
+    tree = server.adaptor.execute_and_fetchall(sql_tree,)[0]
+    print 'tree', tree
+    t, ts, leaf_number = ete_motifs.draw_TM_tree(tree, locus2TM_data)
+    path = settings.BASE_DIR + '/assets/temp/tm_tree.svg'
+    #print "path", path
+    t.render(path, h=leaf_number*12, dpi=800, tree_style=ts)
+
+    return render(request, 'chlamdb/pfam_tree.html', locals())
+
+
+
+
+
+def orthogroup_conservation_tree(request, biodb, orthogroup):
+
+    import manipulate_biosqldb
+    import shell_command
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    asset_path = '/assets/temp/phylo.svg'
+    path = settings.BASE_DIR + asset_path
+    a,b,c = shell_command.shell_command("rm %s" % path)
+    print a, b, c
+    import ete_heatmap_conservation
+    sql_grp = 'select taxon_id,count(*) from  orthology_detail_%s where orthogroup="%s" group by organism;' % (biodb, orthogroup)
+    print sql_grp
+    taxid2n = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_grp,))
+    tree_sql = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where t2.name="%s"' % biodb
+    tree = server.adaptor.execute_and_fetchall(tree_sql,)[0][0]
+
+    print settings.BASE_DIR
+    print path
+    print taxid2n
+    t1, leaf_number = ete_heatmap_conservation.plot_heat_tree(biodb, taxid2n, tree)
+
+    shell_command.shell_command('rm %s' % path)
+    print path
+    t1.render(path, dpi=800, h=leaf_number*12)
+
+
+    return render(request, 'chlamdb/orthogroup_conservation.html', locals())
+
+
+
+@login_required
+def priam_kegg(request, biodb):
+
+    priam_form_class = make_priam_form(biodb)
+
+    print 'request', request.method
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+        print 'request', request.method
+        form = priam_form_class(request.POST)  # Nous reprenons les données
+        #form2 = ContactForm(request.POST)
+        print 'aaa'
+        if form.is_valid():
+            genome = form.cleaned_data['genome']
+
+
+
+            envoi = True
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = priam_form_class()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/priam_kegg.html', locals())

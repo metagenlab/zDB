@@ -9,79 +9,85 @@
 </head>
 <body>
 
-{% include "chlamdb/user.html" %}
-{% include "chlamdb/menu.html" %}
-
-  
-<section  id="head_section">
-
-<section id="section_head">
-Dot plot constructed using <a href="http://mummer.sourceforge.net/">Promer</a>
-</section>
-
-
-<form action="{% url "chlamdb.views.mummer" biodb %}" method="post">{% csrf_token %}
-
-<table>
-<tr>
-  <td>{{ form.as_p }}</td>
-</tr>
-
-<tr>
-  <td><input type="submit" value="Submit" /></td>
-</tr>
-</table>
-
-
-
-</form>
-
-
-
-{% if envoi %}
-
-
-    {% if not plot %}
-
-    Sequences are too distant to compute promer plots
-
-    {% else %}
-
-
-    {% load static %}
-    <h2>Promer plot</h2>
-
-    <img src="{% static plot_path %}" style="float: left; width: 50%; margin-right: 1%; margin-bottom: 0.5em;">
-
-    <div id="promer_plot">
-
-
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
     </div>
-<!--
-<table>
-<tr>
-  <td>
-   <pre id=blast_result>
-    {{blast_result}}
-   </pre>
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
 
-  </td>
-</tr>
--->
+    <div id="content">
 
-</table>
-
-</section>
 
   
-{% endif %}
-{% endif %}
+
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">Dot plot constructed using <a href="http://mummer.sourceforge.net/">Promer</a>
+            </p>
+        </div>
+
+        <form action="{% url "chlamdb.views.mummer" biodb %}" method="post">{% csrf_token %}
+
+        <table>
+        <tr>
+          <td>{{ form.as_p }}</td>
+        </tr>
+
+        <tr>
+          <td><input type="submit" value="Submit" /></td>
+        </tr>
+        </table>
 
 
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        </form>
 
 
+
+        {% if envoi %}
+
+
+            {% if not plot %}
+
+            Sequences are too distant to compute promer plots
+
+            {% else %}
+
+
+            {% load static %}
+            <h2>Promer plot</h2>
+
+            <img src="{% static plot_path %}" style="float: left; width: 50%; margin-right: 1%; margin-bottom: 0.5em;">
+
+            <div id="promer_plot">
+
+
+            </div>
+        <!--
+        <table>
+        <tr>
+          <td>
+           <pre id=blast_result>
+            {{blast_result}}
+           </pre>
+
+          </td>
+        </tr>
+        -->
+
+        </table>
+
+        </section>
+
+
+        {% endif %}
+        {% endif %}
+
+</div>
 
 
 </body>

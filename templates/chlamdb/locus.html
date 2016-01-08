@@ -31,15 +31,27 @@
 </head>
 
 <body id="locus_body">
-<div id="container_no_margin">
+
+{% if not menu %}
+    <div id="container_no_margin" height="100%">
 
 
 
+{% else %}
+    <div id="container" height="100%">
+        <div id="content">
+        <div id="sidebar">
+            {% include "chlamdb/menu.html" %}
+        </div>
+        <div id="header">
+            {% include "chlamdb/user.html" %}
+        </div>
 
+{% endif %}
 
 
         {% if not valid_id %}
-
+            {% if menu %}
             <div id="content">
             <div id="sidebar">
                 {% include "chlamdb/menu.html" %}
@@ -47,12 +59,15 @@
             <div id="header">
                 {% include "chlamdb/user.html" %}
             </div>
+            {% endif %}
             <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
-
+            <p>  <img height="32" width="32" src="{% static "warrning.svg" %}" alt="warrning"/>
+        Some genomes where recently reannotated ba the NCBI, including the Waddlia genome.
+<a href="{% static "NC_014225_locus2old_locus.txt" %}">Locus tag orrespondance table</a></p>
        {% else %}
 
             <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                {%if not group %}
+                {%if input_type != 'orthogroup' %}
                 <li class="active"><a href="#tab1" data-toggle="tab">Overview</a></li>
                 <li><a href="#tab2" data-toggle="tab">InterproScan</a></li>
                 <li><a href="#tab33" data-toggle="tab">Homologs</a></li>
@@ -60,9 +75,10 @@
                  <li class="active"><a href="#tab33" data-toggle="tab">Homologs</a></li>
                 {% endif %}
 
-                <li><a href="#tab44" data-toggle="tab">Phylogenetic distribution</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' biodb data.0 %}', 'orthoIDframe'); return false">Phylogenetic distribution</a></li>
                 <li><a href="#tab55" data-toggle="tab">Download</a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' biodb data.0 True %}', 'orthoIDframe'); return false">Orthogroup conservation</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' biodb data.0 %}', 'orthoIDframe'); return false">Pfam tree</a></li>
             </ul>
             <div id="my-tab-content" class="tab-content">
             {% if input_type != 'orthogroup' %}
@@ -129,7 +145,7 @@
                         {%if cog_data %}
                             <tr>
                             <td>COG</td>
-                            <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
+                            <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}"  target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
                             </tr>
                         {% endif %}
 
@@ -137,7 +153,7 @@
                 </div>
 
 
-                <div class="tab-pane" id="tab2">
+                <div class="tab-pane" id="tab2" width="100%" height="100%">
 
                    <h3>Interpro</h3>
 
@@ -156,28 +172,28 @@
                             <td>{{values.0}}</td>
 
                             {% if values.0 == 'SUPERFAMILY' %}
-                               <td><a href="http://supfam.cs.bris.ac.uk/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{values.1}}">{{values.1}}</a></td>
+                               <td><a href="http://supfam.cs.bris.ac.uk/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{values.1}}" target="_parent">{{values.1}}</a></td>
 
                              {% elif values.0 = 'Pfam' %}
-                               <td><a href="http://pfam.xfam.org/family/{{values.1}}">{{values.1}}</a></td>
+                               <td><a href="http://pfam.xfam.org/family/{{values.1}}" target="_parent">{{values.1}}</a></td>
 
                              {% elif values.0 = 'SMART' %}
-                               <td><a href="http://smart.embl-heidelberg.de/smart/do_annotation.pl?ACC={{values.1}}&BLAST=DUMMY">{{values.1}}</a></td>
+                               <td><a href="http://smart.embl-heidelberg.de/smart/do_annotation.pl?ACC={{values.1}}&BLAST=DUMMY" target="_parent">{{values.1}}</a></td>
 
                              {% elif values.0 = 'Gene3D' %}
-                               <td><a href="http://www.cathdb.info/version/latest/superfamily/{{values.1|slice:"6:"}}">{{values.1}}</a></td>
+                               <td><a href="http://www.cathdb.info/version/latest/superfamily/{{values.1|slice:"6:"}}" target="_parent">{{values.1}}</a></td>
 
                              {% elif values.0 = 'ProSiteProfiles' %}
-                               <td><a href="http://prosite.expasy.org/{{values.1}}">{{values.1}}</a></td>
+                               <td><a href="http://prosite.expasy.org/{{values.1}}" target="_parent">{{values.1}}</a></td>
 
                              {% elif values.0 = 'ProSitePatterns' %}
-                               <td><a href="http://prosite.expasy.org/{{values.1}}">{{values.1}}</a></td>
+                               <td><a href="http://prosite.expasy.org/{{values.1}}" target="_parent">{{values.1}}</a></td>
 
                              {% elif values.0 = 'PRINTS' %}
-                               <td><a href="http://www.bioinf.manchester.ac.uk/cgi-bin/dbbrowser/sprint/searchprintss.cgi?display_opts=Prints&category=None&queryform=false&prints_accn={{values.1}}">{{values.1}}</a></td>
+                               <td><a href="http://www.bioinf.manchester.ac.uk/cgi-bin/dbbrowser/sprint/searchprintss.cgi?display_opts=Prints&category=None&queryform=false&prints_accn={{values.1}} " target="_parent">{{values.1}}</a></td>
 
                              {% elif values.0 = 'TIGRFAM' %}
-                               <td><a href="http://www.jcvi.org/cgi-bin/tigrfams/HmmReportPage.cgi?acc={{values.1}}">{{values.1}}</a></td>
+                               <td><a href="http://www.jcvi.org/cgi-bin/tigrfams/HmmReportPage.cgi?acc={{values.1}}" target="_parent">{{values.1}}</a></td>
 
                             {% else %}
                                  <td>{{values.1}}</td>
@@ -195,7 +211,7 @@
                         {% endfor %}
                     </table>
                     {% static "" as baseUrl %}
-                    <iframe src="{{ baseUrl }}/{{biodb}}/interpro/{{data.2}}.html" width="100%" height="2000px" frameborder="0px" marginwidth="0" marginheight="0" scrolling="no"></iframe>
+                    <iframe src="{{ baseUrl }}/{{biodb}}/interpro/{{data.2}}.html" width="100%" height="2000px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
 
 
                 </div>
@@ -256,8 +272,8 @@
                                         <td>{{values.0}}</td>
                                         <td>{{values.1}}</td>
                                         <td>{{values.15}}</td>
-                                        <td>{{values.2}}</td>
-                                        <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
+                                        <td><a href="{% url 'locusx' biodb values.2 True %}" target="_top">{{values.2}}</a></td>
+                                        <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{values.3}}</a></td>
                                         <td>{{values.4}}</td>
                                         <td>{{values.5}}</td>
                                         <td>{{values.6}}</td>
@@ -275,11 +291,7 @@
                             </tbody>
                         </table>
         </div>
-        <div class="tab-pane" id="tab44">
-            <h1>Distrib</h1>
 
-        <img src="{% static 'temp/phylo.svg' %}" />
-            </div>
             <div class="tab-pane" id="tab55">
                             <h2>Sequences</h2>
                             <table>
@@ -300,8 +312,8 @@
 
                             </table>
             </div>
-            <div class="tab-pane" id="tab66">
-            <iframe width="100%" height="2000px" name="orthoIDframe" id="theFrame"  marginwidth="0" marginheight="0" scrolling="no"></iframe>
+            <div class="tab-pane" id="tab66" style="height:2px">
+            <iframe name="orthoIDframe" id="theFrame"  style="height:3000px" width="500px" height="2000px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
             </div>
 
         </div>

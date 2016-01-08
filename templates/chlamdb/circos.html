@@ -20,12 +20,14 @@
     <div id="content">
 
 
-
-
-
-        <section id="section_head">
-        <p>Create circos plots indicating the presence(green)/absence(black) of homologous proteins in one or multiple other genomes</p>
-        </section>
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">Create circos plots indicating the presence(green)/absence(black) of homologous proteins in one or multiple other genomes. Click on the circos plot to open a new windows with clickable version of the plot.<br>
+            rRNA are colored in blue, tRNA in red.
+            </p>
+        </div>
 
         <form action="{% url "chlamdb.views.circos" biodb %}" method="post">{% csrf_token %}
 
@@ -75,8 +77,10 @@
         {% if envoi_circos %}
 
             {% load static %}
-            <a href={{ circos_new_file }}>With links</a>
-            <img src="{% static ""%}{{circos_file}}" id="circos_plot">
+
+            <!--<object type="image/svg+xml" data="{{circos_new_file}}" id="pfam_tree" width="100%" height="1000px"></object>-->
+
+            <a href="{{ circos_new_file }}"><img src="{% static ""%}{{circos_file}}" id="circos_plot"></a>
 
         {% endif %}
 

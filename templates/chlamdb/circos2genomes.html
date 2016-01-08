@@ -22,6 +22,16 @@
 
     <div id="content">
 
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">Comparions of pairs of genomes (first genome as reference, them second genome as reference)<br>
+            Missing Protein encoding ORF indicated in orange in the reference tracks.
+            Optional: possibility to highlight locus in pink. Provide a comma separeted list of locus to highlight.
+            </p>
+        </div>
+
 
     <form action="{% url "chlamdb.views.circos2genomes" biodb %}" method="post">{% csrf_token %}
     {{ form.as_p }}

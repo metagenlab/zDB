@@ -50,22 +50,27 @@
         <li class="rollmenu"><a href="">Plots</a>
 
              <ul>
-            <li class="item5"><a href="{% url 'plot_region' biodb %}">Plot region</a>
-            </li>
-            <li class="item6"><a href="{% url 'circos' biodb %}">Circos</a>
-            </li>
-            <li class="item6"><a href="{% url 'circos2genomes' biodb %}">Circos 2 genomes</a>
-            </li>
-            <li class="item5"><a href="{% url 'circos_homology' biodb %}">Homologues location</a>
-            </li>
-            <li class="item5"><a href="{% url 'mummer' biodb %}">Dot plots</a>
-            </li>
-
-
-
-
-
+                <li class="item5"><a href="{% url 'plot_region' biodb %}">Plot region</a>
+                </li>
+                <li class="item6"><a href="{% url 'circos' biodb %}">Circos</a>
+                </li>
+                <li class="item6"><a href="{% url 'circos2genomes' biodb %}">Circos 2 genomes</a>
+                </li>
+                <li class="item5"><a href="{% url 'circos_homology' biodb %}">Homologues location</a>
+                </li>
+                <li class="item5"><a href="{% url 'mummer' biodb %}">Dot plots</a>
+                </li>
             </ul>
+
+        <li class="rollmenu"><a href="">Metabolism</a>
+            <ul>
+                <li class="item5"><a href="{% url 'priam_kegg' biodb %}">Kegg maps</a>
+                </li>
+            </ul>
+
+
+
+
 
         </li>
 

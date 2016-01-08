@@ -143,7 +143,21 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
         {% include "chlamdb/user.html" %}
     </div>
     <div id="content">
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px"><p>
+                ffn: CDS nucleotide sequences <br>
+                fna: genome sequence(s) <br>
+                faa: protein sequences <br>
+                blastx: translated dna sequence vs protein sequences <br>
+                blastx: protein sequence vs translated genome sequences<br>
 
+
+            </p>
+            </p>
+        </div>
         <form action="{% url "chlamdb.views.blast" biodb %}" method="post">{% csrf_token %}
           {{ form.as_p }}
           <input type="submit" value="Submit" />

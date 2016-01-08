@@ -175,7 +175,7 @@ def make_extract_region_form(database_name):
 
     accession_choices = get_accessions(database_name, plasmid=True)
 
-    extraction_choices = [['annotation', 'Get annotation'],['sequence', 'Get sequence'],['sequence_trans', 'Get sequence + translation']]
+    extraction_choices = [['annotation', ''],['sequence', ''],['sequence_trans', '']]
 
     class ExtractRegionForm(forms.Form):
         genome = forms.ChoiceField(choices=accession_choices)
@@ -186,6 +186,15 @@ def make_extract_region_form(database_name):
 
     return ExtractRegionForm
 
+
+def make_priam_form(database_name):
+
+    accession_choices = get_accessions(database_name, plasmid=True)
+
+    class PriamForm(forms.Form):
+        genome = forms.ChoiceField(choices=accession_choices)
+
+    return PriamForm
 
 
 def make_circos_form(database_name):

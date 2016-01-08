@@ -10,10 +10,10 @@
 
 </head>
 
-<body>
+<body height="100%">
 
 
-<div id="container">
+<div id="container" height="100%">
     <div id="sidebar">
         {% include "chlamdb/menu.html" %}
     </div>
@@ -23,7 +23,24 @@
     </div>
 
 
-    <div id="content">
+    <div id="content" height="100%">
+
+
+    <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+        <div class="panel-heading" style="width:100%">
+            <h3 class="panel-title">Help</h3>
+        </div>
+        <p>Get informations about a locus (homologs, annotation, domains,...)<br>
+           Input: locus tag, protein id (not necessarily unique, may be better to use locus tags) or orthogroup id (group_xxx).
+        </p>
+            <p>  <img height="32" width="32" src="{% static "warrning.svg" %}" alt="warrning"/>
+        Some genomes where recently reannotated ba the NCBI, including the Waddlia genome.
+<a href="{% static "NC_014225_locus2old_locus.txt" %}">Locus tag orrespondance table</a></p>
+
+
+    </div>
+
+
     <form action='{% url "chlamdb.views.homology" biodb %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
@@ -32,8 +49,7 @@
     </form>
 
     {% if envoi %}
-
-        <iframe src="{% url 'locusx' biodb data.1 %}" width="100%" height="2000px" frameborder="0px" marginwidth="0" marginheight="0" scrolling="no"></iframe>
+        <iframe src="{% url 'locusx' biodb accession %}" width="100%" height="5000px" frameborder="0px" marginwidth="0" marginheight="0" scrolling="no"></iframe>
     {% endif %}
 </div>
 
@@ -42,4 +58,5 @@
 
 
 </body>
+
 </html>

@@ -382,6 +382,48 @@ background: #81F7F3;
    padding-right: 20px;
 
 }
+
+
+#region_extraction_form {
+    height: 500px;
+    width: 500px;
+
+}
+
+#extract_region_radio1 {
+   position:absolute;
+   top:220px;
+   left: 380px;
+
+}
+#extract_region_radio2 {
+   position:absolute;
+   top:250px;
+   left: 380px;
+
+}
+#extract_region_radio3 {
+   position:absolute;
+   top:275px;
+   left: 380px;
+
+}
+
+    input[type=radio] {
+    border: 0px;
+    width: 10px;
+    height: 1em;
+}
+
+#id_extract_0 {
+    margin-left: 174px;
+}
+#id_extract_1 {
+    margin-left: 174px;
+}
+#id_extract_2 {
+    margin-left: 174px;
+}
 #id_single_copy{
    position:absolute;
    top:150px;
@@ -437,10 +479,10 @@ label {
 
 body {
 	/*background:#3B3B3B;*/
-    background-image: url('../../assets/background.jpg');
 	color: #444;
 	font: 100%/30px 'Helvetica Neue', helvetica, arial, sans-serif;
     top: 25px;
+    height: 100%;
 }
 
 #locus_body {
@@ -452,14 +494,21 @@ body {
     padding-top: 0px;
 }
 
-}
-
 strong {
 	font-weight: bold;
 }
 
 em {
 	font-style: italic;
+}
+
+a.button {
+    -webkit-appearance: button;
+    -moz-appearance: button;
+    appearance: button;
+
+    text-decoration: none;
+    color: initial;
 }
 
 table.table_genomes {
@@ -784,7 +833,7 @@ iframe {
 }
 
 #content {
-    border:1px solid #000;
+    border:0px solid #000;
     width:100%;
     height: 100%;
     margin:0 0 0 0;

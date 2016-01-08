@@ -16,19 +16,14 @@
 
     <div id="content">
 
-        <section  id="head_section">
 
         <form action="{% url "chlamdb.views.motif_search" biodb %}" method="post">{% csrf_token %}
 
-        <table>
-        <tr>
-          <td>{{ form.as_p }}</td>
-        </tr>
 
-        <tr>
-          <td><input type="submit" value="Submit" /></td>
-        </tr>
-        </table>
+
+        {{ form.as_p }}
+        <input type="submit" value="Submit" />
+
 
 
 

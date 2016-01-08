@@ -22,15 +22,28 @@
 
     <div id="content">
 
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px"><p>Extract specific genomic range annotation or sequence</p>
+            </p>
+        </div>
 
 
-        <h3>Extract specific genomic range annotation or sequence</h3>
+        <div id="region_extraction_form">
+            <form action="{% url "chlamdb.views.extract_region" biodb %}" method="post">{% csrf_token %}
+              {{ form.as_p }}
 
+             <br>
+            <br>
+              Extract genomic range: <input type="submit" name="extract_range" value="Submit"/>
+            </form>
+            <p for="id_extract_0" id="extract_region_radio1">annotation</p>
+            <p for="id_extract_1" id="extract_region_radio2">sequence</p>
+            <p for="id_extract_2" id="extract_region_radio3">sequence + translation</p>
 
-        <form action="{% url "chlamdb.views.extract_region" biodb %}" method="post">{% csrf_token %}
-          {{ form.as_p }}
-          Extract genomic range: <input type="submit" name="extract_range" value="Submit"/>
-        </form>
+        </div>
 
 
 
@@ -75,7 +88,7 @@
                         <tr>
                             <td>{{values.0}}</td>
                             <td><a href="{% url 'locusx' biodb values.2 True%}">{{values.1}}</a></td>
-                            <td><a href="{{ STATIC_PREFIX }}chlamdb/interpro/{{ values.15 }}.html" target="_blank">{{values.2}}</a></td>
+                            <td><a href="{% static biodb %}/interpro/{{values.15}}.html" target="_blank">{{values.2}}</a></td>
                             <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
                             <td>{{values.4}}</td>
                             <td>{{values.5}}</td>
