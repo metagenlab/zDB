@@ -35,7 +35,7 @@ def get_complete_genomes_data(ncbi_taxon, complete = False):
     for i, one_assembly in enumerate(record['IdList']):
         print 'assembly %s (%s/%s)' % (one_assembly, i, len(record['IdList']))
         handle_assembly = Entrez.esummary(db="assembly",id=one_assembly)
-        assembly_record = Entrez.read(handle_assembly)
+        assembly_record = Entrez.read(handle_assembly, validate=False)
 
 
         '''
