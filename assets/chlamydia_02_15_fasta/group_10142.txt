@@ -1,2 +1,0 @@
-> SNE_A19970 | sctG-A, type III secretion needle formation regulating protein | YP_004672365.1
-MIFHSFLLNLSFLPYAKRRHKAKAKIQAY

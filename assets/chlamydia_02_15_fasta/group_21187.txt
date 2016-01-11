@@ -1,2 +1,0 @@
-> Knic_01990 | putative bifunctional UDP-N-acetylmuramoylalanyl-D-glutamate--2, 6-diaminopimelate ligase/UDP-N-acetylmuramoyl-tripeptide:D-alanyl-D-alanine ligase
-MRSMTWKQIAQFLNCPEPHQREIVQGFCVDTRLLKPGEVFVALVGTRVDGHAYLEEAQKKGDFSCYCGKLLSRAKLWVALISCRRPT

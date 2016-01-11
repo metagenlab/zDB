@@ -1,2 +1,0 @@
-> Knic_00464 | glgX_2, Glycogen debranching enzyme | Prokka:Knic_00464
-MLWMGDEYAHSRKGNNNPWCQDNEINWFLWDRLSEQKDFFLFF

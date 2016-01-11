@@ -1,2 +1,0 @@
-> wcw_1160 | omcA, cysteine-rich outer membrane protein | YP_003709523.1
-MKFLGSILALAVTAFALSSCGCCDPCGDPCCDPCPKPCDPCERGCY
