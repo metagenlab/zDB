@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+{% load staticfiles %}
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
+
+
+
+</head>
+
+<body height="2000px">
+<h3>Distribution of {{orthogroup}} homologs</h3>
+   <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree"></object>
+
+</body>
+</html>
