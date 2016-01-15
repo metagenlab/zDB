@@ -427,7 +427,7 @@ def venn_orthogroup(request, biodb):
             #h['Marilyn Monroe'] = 1;
 
             orthogroup2description = ''
-            sql = 'select orthogroup, gene from orthology_detail_chlamydia_03_15'
+            sql = 'select orthogroup, gene from orthology_detail_%s' % biodb
             data = server.adaptor.execute_and_fetchall(sql,)
             orthogroup2genes = {}
             for i in data:
@@ -438,7 +438,7 @@ def venn_orthogroup(request, biodb):
                         pass
                     else:
                         orthogroup2genes[i[0]].append(i[1])
-            sql = 'select orthogroup, product from orthology_detail_chlamydia_03_15'
+            sql = 'select orthogroup, product from orthology_detail_%s' % biodb
             data = server.adaptor.execute_and_fetchall(sql,)
             orthogroup2product = {}
             for i in data:
