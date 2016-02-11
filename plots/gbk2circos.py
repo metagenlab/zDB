@@ -319,6 +319,12 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                                                   end, feature.qualifiers['locus_tag'][0]))
 
                     if group_id2orthologs_presence and query_taxon_id and color_missing:
+                        try:
+                            pseudo = feature.qualifiers['pseudogene']
+                            print 'pseudogene, continue'
+                            continue
+                        except:
+                            pass
                         if group_id2orthologs_presence[feature.qualifiers['orthogroup'][0]][int(query_taxon_id)] == 0:
                             f.write('%s %s %s fill_color=orange\n' % (contig,
                                                                     start,
@@ -689,7 +695,7 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                            draft_coordinates=False, color_missing=True):
 
     print "highlight", locus_highlight
-
+    import biosql_own_sql_tables
     import os
 
     #print "orthology_circos_files"
@@ -700,6 +706,7 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
 
     sql = 'select orthogroup, count(*) from orthology_detail_%s group by orthogroup' % biodatabase_name
     ortho_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
 
     try:
         ortho_identity = orthogroup_identity_db.orthogroup2average_identity(biodatabase_name)
@@ -781,6 +788,8 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
             all_file_names["genomes"].append(file_name)
             taxon_files.append(open(file_name, "w"))
 
+    locus2locus_identity = biosql_own_sql_tables.circos_locus2taxon_highest_identity(biodatabase_name, reference_taxon_id)
+
     taxon_list = temp_taxon_list
     y = 0
     for record in record_list:
@@ -830,7 +839,7 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                         print feature
                         continue
                     try:
-                        line2 = "%s %s %s %s\n" % (contig, start, end, ortho_identity[feature.qualifiers['orthogroup'][0]])
+                        line2 = "%s %s %s %s\n" % (contig, start, end, ortho_identity[feature.qualifiers['orthogroup'][0]][0])
                     except:
                         pass
                     line3 = "%s %s %s %s\n" % (contig, start, end, ortho_family_size[feature.qualifiers['orthogroup'][0]])
@@ -844,12 +853,21 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                         #print group_id2orthologs_presence[feature.qualifiers['orthogroup'][0]]
                         if group_id2orthologs_presence[feature.qualifiers['orthogroup'][0]][int(taxon_id)] > 0:
                             if feature.qualifiers['orthogroup'][0] not in locus_highlight:
-                                taxon_file.write("%s %s %s id=%s\n" % (contig, start, end, feature.qualifiers['locus_tag'][0]))
+                                taxon_file.write("%s %s %s %s id=%s\n" % (contig,
+                                                                          start,
+                                                                          end,
+                                                                          locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][0],
+                                                                          locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]))
+
                             else:
                                 print "COLORS!!!!!!!!!!!!!!!!!!!"
-                                taxon_file.write("%s %s %s fill_color=violet, id=%s\n" % (contig, start, end, feature.qualifiers['locus_tag'][0]))
+                                taxon_file.write("%s %s %s %s fill_color=violet, id=%s\n" % (contig,
+                                                                                             start,
+                                                                                             end,
+                                                                                             locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id],
+                                                                                             feature.qualifiers['locus_tag'][0]))
                         elif color_missing:
-                            taxon_file.write("%s %s %s fill_color=black\n" % (contig, start, end))
+                            taxon_file.write("%s %s %s %s\n" % (contig, start, end, 0))
                         else:
                             pass #taxon_file.write("%s %s %s\n" % (contig, feature.start, feature.stop))
         y += 1
@@ -977,11 +995,12 @@ class Circos_config:
                '</pairwise>\n' % (chr1, chr2)
     return template
     
-  def _template_plot(self, file, type="line", r0=1, r1=1.05, color="black", fill_color="red", thickness = "2p", z = 1, rules ="", backgrounds=""):
+  def _template_plot(self, file, type="line", r0=1, r1=1.05, color="black", fill_color="red", thickness = "2p", z = 1, rules ="", backgrounds="", url=""):
     template = "<plot>\n" \
                "type		    = %s\n" \
                " #min               = -0.4\n" \
                " #max               = 0.4\n" \
+               " url                = %s[id]\n" \
                " r0                 = %s\n" \
                " r1                 = %s\n" \
                " color              = %s\n" \
@@ -991,7 +1010,7 @@ class Circos_config:
                " z                  = %s\n" \
                " %s\n" \
                " %s\n" \
-               " </plot>\n" % (type, r0, r1, color, fill_color, thickness, file, z, rules, backgrounds)
+               " </plot>\n" % (type, url, r0, r1, color, fill_color, thickness, file, z, rules, backgrounds)
     return template
 
   def template_rule(self, condition, fill_color):
@@ -1032,8 +1051,8 @@ class Circos_config:
     return template
 
 
-  def add_plot(self, file, type="line", r0=1, r1=1.05, color="black", fill_color="grey_a1", thickness = "2p", z = 1, rules ="", backgrounds=""):
-    plot = self._template_plot(file, type, r0, r1, color, fill_color, thickness, z, rules, backgrounds)
+  def add_plot(self, file, type="line", r0=1, r1=1.05, color="black", fill_color="grey_a1", thickness = "2p", z = 1, rules ="", backgrounds="", url=""):
+    plot = self._template_plot(file, type, r0, r1, color, fill_color, thickness, z, rules, backgrounds, url)
     if len(re.findall("</plots>", self.plots))>0:
       # remove end balise
       self.plots = re.sub("</plots>", "", self.plots)

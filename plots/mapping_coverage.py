@@ -47,16 +47,17 @@ def samtools_depth2coverage_plot(samtool_depth_file, main=False):
     cov_data[newlength] <- NA
     cov_matrix <- matrix(cov_data,nrow=100)
     cov_100bp <- colMeans(cov_matrix, na.rm=TRUE)
-
+    print(cov_100bp)
     CairoPDF('%s_coverage.pdf')
         #par(mfrow=c(1,2))
         x<-seq(100,newlength,100)
-        plot(x, cov_100bp,type='l',col='light grey', las=2, main='%s')
+        plot(x, cov_100bp,type='l',col='light grey', las=2, main='%s', ylim=c(0,max_depth))
         f1001 <- rep(1/1001,1001)
         y_sym <- filter(cov_100bp, f1001,sides=2)
         lines(x,y_sym,col="blue")
         text(length(cov_data)*0.2,max_depth*0.2, paste("Median depth:", median_depth), col="blue")
         abline(v=contig_limits, col=rgb(1, 0, 0, 0.5), lty=3, lwd=0.5)
+        abline(h=10, col="red")
     dev.off()
                """ % (samtool_depth_file,
                       samtool_depth_file,

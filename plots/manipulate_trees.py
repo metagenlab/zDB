@@ -120,13 +120,17 @@ Phylo.write(new_tree, 'renamed_tree.ML.tre', 'newick')
 
 def convert_tree_taxon2genome(biodb_name, input_tree, output_tree ):
     server, db = manipulate_biosqldb.load_db(biodb_name)
+    print biodb_name
     taxon_id2genome_description = manipulate_biosqldb.taxon_id2genome_description(server, biodb_name)
 
-    locus2genome = manipulate_biosqldb.locus_tag2genome_name(server, biodb_name)
+    print taxon_id2genome_description
+    
+    #locus2genome = manipulate_biosqldb.locus_tag2genome_name(server, biodb_name)
 
 
     import re
     for i in taxon_id2genome_description.keys():
+        print i
         taxon_id2genome_description[i] = re.sub(" subsp\. aureus", "", taxon_id2genome_description[i])
         taxon_id2genome_description[i] = re.sub(", complete genome\.", "", taxon_id2genome_description[i])
         taxon_id2genome_description[i] = re.sub(", complete sequence\.", "", taxon_id2genome_description[i])
@@ -141,9 +145,9 @@ def convert_tree_taxon2genome(biodb_name, input_tree, output_tree ):
 
 
 
-    #print taxon_id2genome_description
+    print taxon_id2genome_description
     new_tree = parse_newick_tree.convert_terminal_node_names(input_tree, taxon_id2genome_description)
-    #print new_tree[0]
+    print new_tree[0]
     print "writing converted tree..."
     print output_tree
     Phylo.write(new_tree, output_tree, 'newick')

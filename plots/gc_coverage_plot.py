@@ -42,6 +42,8 @@ def gc_coverage_plot(samtool_depth_file, contigs_file, main=False):
 
     print(head(gc_coverage_table))
 
+    write.table(gc_coverage_table, 'gc_coverage_table.tab', sep="\t", row.names=F)
+
  CairoSVG("gc_cov_buble.svg", width = 12, height = 12,)
 symbols(x=gc_coverage_table[,3], y= gc_coverage_table[,4], circles=gc_coverage_table[,2], inches=1/3, ann=F, bg="steelblue2", fg="red", main=%s)
  dev.off()
