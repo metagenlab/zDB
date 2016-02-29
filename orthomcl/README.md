@@ -8,15 +8,20 @@ This README would normally document whatever steps are necessary to get your app
 ### What is this repository for? ###
 
 * Quick summary
+
+Scripts to perform a clustering of amino acid sequences into groups of orthologous proteins.
+
 * Version
+
+V1.0
+
 * [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
 
 ### How do I get set up? ###
 
 * Summary of set up
 
-- add orthomcl module 
-
+add orthomcl module 
 
 ```
 #!bash
@@ -25,23 +30,28 @@ module add SequenceAnalysis/OrthologyAnalysis/orthomclSoftware/2.0.9;
 ```
 
 
-- add orthomcl path
+add orthomcl path
 
 ```
 #!bash
 
-
-echo 'export PATH=~/orthomcl/:$PATH' >> ~./bashrc
+echo 'export PATH=~/bin/orthomcl/:$PATH' >> ~/.bashrc
 ```
 
 
 * Configuration
 * Dependencies
 
-Requires repository Utilitaires cloned and within PATH.
+Requires repository utilitaires cloned and within PATH.
+Add utilitaires to path
+
+```
+#!bash
+
+echo 'export PATH=~/bin/utilitaires/:$PATH' >> ~/.bashrc
+```
 
 Requires blast module 
-
 
 ```
 #!bash
@@ -101,4 +111,8 @@ orthomcl.py -i file_1.faa file_2.faa ...
 ### Who do I talk to? ###
 
 * Repo owner or admin
+
+claire.bertelli@chuv.ch
+trestan.pillonel@chuv.ch
+
 * Other community or team contact
