@@ -51,7 +51,7 @@
 
 
         {% if not valid_id %}
-            {% if menu %}
+
             <div id="content">
             <div id="sidebar">
                 {% include "chlamdb/menu.html" %}
@@ -59,11 +59,8 @@
             <div id="header">
                 {% include "chlamdb/user.html" %}
             </div>
-            {% endif %}
             <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
-            <p>  <img height="32" width="32" src="{% static "warrning.svg" %}" alt="warrning"/>
-        Some genomes where recently reannotated ba the NCBI, including the Waddlia genome.
-<a href="{% static "NC_014225_locus2old_locus.txt" %}">Locus tag orrespondance table</a></p>
+
        {% else %}
 
             <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
@@ -79,12 +76,6 @@
                 <li><a href="#tab55" data-toggle="tab">Download</a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' biodb data.0 True %}', 'orthoIDframe'); return false">Orthogroup conservation</a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' biodb data.0 %}', 'orthoIDframe'); return false">Pfam tree</a></li>
-                {% if cog_data %}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'string_page' biodb cog_data.0 genome_accession %}', 'orthoIDframe'); return false">string interactions</a></li>
-                {% endif %}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' biodb data.1 %}', 'orthoIDframe'); return false">Region</a></li>
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastnr' biodb data.1 %}', 'orthoIDframe'); return false">Blast NR</a></li>
-
             </ul>
             <div id="my-tab-content" class="tab-content">
             {% if input_type != 'orthogroup' %}
@@ -150,70 +141,16 @@
                         </tr>
                         {%if cog_data %}
                             <tr>
-                            <td><a href="{% url 'fam' biodb cog_data.0 'cog' %}" target="_top">COG</a></td>
-                            <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}"  target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
+                            <td>COG</td>
+                            <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
                             </tr>
-                        {% endif %}
-
-                        {%if pfam_data %}
-                        {% for values in pfam_data %}
-                            <tr>
-                            <td><a href="{% url 'fam' biodb values.0 'pfam' %}" target="_top">Pfam: {{values.0}}</a></td>
-                            <td id="entete_features">{{values.1}}</td>
-                            </tr>
-
-                        {% endfor %}
-                        {% endif %}
-
-                        {%if interpro_data %}
-                        {% for values in interpro_data %}
-                            <tr>
-                            <td><a href="{% url 'fam' biodb values.0 'interpro' %}" target="_top">Interpro: {{values.0}}</a></td>
-                            <td id="entete_features">{{values.1}}</td>
-                            </tr>
-
-                        {% endfor %}
-                        {% endif %}
-
-                        {%if pathway_data %}
-                        {% for key, values in all_path.items %}
-                            {% for v in values %}
-                                {% if key == 'KEGG' %}
-                                    <tr>
-                                    <td>{{key}}</td>
-                                    <td id="entete_features"><a href="http://www.genome.jp/kegg-bin/show_pathway?ec{{v}}">{{v}}</a></td>
-                                    </tr>
-                                {% elif key == 'UniPathway' %}
-                                    <tr>
-                                    <td>{{key}}</td>
-                                    <td id="entete_features"><a href="http://www.unipathway.org//upa?upid={{v}}">{{v}}</a></td>
-                                    </tr>
-                                {% elif key == 'Reactome' %}
-                                    <tr>
-                                    <td>{{key}}</td>
-                                    <td id="entete_features"><a href="http://www.reactome.org/content/detail/{{v}}">{{v}}</a></td>
-                                    </tr>
-                                {% elif key == 'MetaCyc' %}
-                                    <tr>
-                                    <td>{{key}}</td>
-                                    <td id="entete_features"><a href="http://metacyc.org/META/NEW-IMAGE?type=NIL&object={{v}}">{{v}}</a></td>
-                                    </tr>
-                                {% else %}
-                                    <tr>
-                                    <td>{{key}}</td>
-                                    <td id="entete_features">{{v}}</td>
-                                    </tr>
-                                {% endif %}
-
-                            {% endfor %}
-                        {% endfor %}
                         {% endif %}
 
                     </table>
                 </div>
 
 
-                <div class="tab-pane" id="tab2" width="100%" height="100%">
+                <div class="tab-pane" id="tab2">
 
                    <h3>Interpro</h3>
 
@@ -232,28 +169,28 @@
                             <td>{{values.0}}</td>
 
                             {% if values.0 == 'SUPERFAMILY' %}
-                               <td><a href="http://supfam.cs.bris.ac.uk/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{values.1}}" target="_parent">{{values.1}}</a></td>
+                               <td><a href="http://supfam.cs.bris.ac.uk/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{values.1}}">{{values.1}}</a></td>
 
                              {% elif values.0 = 'Pfam' %}
-                               <td><a href="http://pfam.xfam.org/family/{{values.1}}" target="_parent">{{values.1}}</a></td>
+                               <td><a href="http://pfam.xfam.org/family/{{values.1}}">{{values.1}}</a></td>
 
                              {% elif values.0 = 'SMART' %}
-                               <td><a href="http://smart.embl-heidelberg.de/smart/do_annotation.pl?ACC={{values.1}}&BLAST=DUMMY" target="_parent">{{values.1}}</a></td>
+                               <td><a href="http://smart.embl-heidelberg.de/smart/do_annotation.pl?ACC={{values.1}}&BLAST=DUMMY">{{values.1}}</a></td>
 
                              {% elif values.0 = 'Gene3D' %}
-                               <td><a href="http://www.cathdb.info/version/latest/superfamily/{{values.1|slice:"6:"}}" target="_parent">{{values.1}}</a></td>
+                               <td><a href="http://www.cathdb.info/version/latest/superfamily/{{values.1|slice:"6:"}}">{{values.1}}</a></td>
 
                              {% elif values.0 = 'ProSiteProfiles' %}
-                               <td><a href="http://prosite.expasy.org/{{values.1}}" target="_parent">{{values.1}}</a></td>
+                               <td><a href="http://prosite.expasy.org/{{values.1}}">{{values.1}}</a></td>
 
                              {% elif values.0 = 'ProSitePatterns' %}
-                               <td><a href="http://prosite.expasy.org/{{values.1}}" target="_parent">{{values.1}}</a></td>
+                               <td><a href="http://prosite.expasy.org/{{values.1}}">{{values.1}}</a></td>
 
                              {% elif values.0 = 'PRINTS' %}
-                               <td><a href="http://www.bioinf.manchester.ac.uk/cgi-bin/dbbrowser/sprint/searchprintss.cgi?display_opts=Prints&category=None&queryform=false&prints_accn={{values.1}} " target="_parent">{{values.1}}</a></td>
+                               <td><a href="http://www.bioinf.manchester.ac.uk/cgi-bin/dbbrowser/sprint/searchprintss.cgi?display_opts=Prints&category=None&queryform=false&prints_accn={{values.1}}">{{values.1}}</a></td>
 
                              {% elif values.0 = 'TIGRFAM' %}
-                               <td><a href="http://www.jcvi.org/cgi-bin/tigrfams/HmmReportPage.cgi?acc={{values.1}}" target="_parent">{{values.1}}</a></td>
+                               <td><a href="http://www.jcvi.org/cgi-bin/tigrfams/HmmReportPage.cgi?acc={{values.1}}">{{values.1}}</a></td>
 
                             {% else %}
                                  <td>{{values.1}}</td>
@@ -263,7 +200,6 @@
                             <td>{{values.3}}</td>
                             <td>{{values.4}}</td>
                             {% if values.5 != '0' %}
-
                                <td><a href="http://www.ebi.ac.uk/interpro/entry/{{values.5}}">{{values.5}}: {{values.6}}</a></td>
                             {% else %}
                                <td>-</td>
@@ -272,11 +208,8 @@
                         {% endfor %}
                     </table>
                     {% static "" as baseUrl %}
-                    {% if interpro_protein %}
-                        <iframe src="{{ baseUrl }}/{{biodb}}/interpro/{{data.2}}.html" width="100%" height="2000px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                    {% else %}
-                        <iframe src="{{ baseUrl }}/{{biodb}}/interpro/{{data.1}}.html" width="100%" height="2000px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                    {% endif %}
+                    <iframe src="{{ baseUrl }}/{{biodb}}/interpro/{{data.2}}.html" width="100%" height="2000px" frameborder="0px" marginwidth="0" marginheight="0" scrolling="no"></iframe>
+
 
                 </div>
 
@@ -336,8 +269,8 @@
                                         <td>{{values.0}}</td>
                                         <td>{{values.1}}</td>
                                         <td>{{values.15}}</td>
-                                        <td><a href="{% url 'locusx' biodb values.2 True %}" target="_top">{{values.2}}</a></td>
-                                        <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{values.3}}</a></td>
+                                        <td><a href="{% url 'locusx' biodb values.2 True %}">{{values.2}}</a></td>
+                                        <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</a></td>
                                         <td>{{values.4}}</td>
                                         <td>{{values.5}}</td>
                                         <td>{{values.6}}</td>
@@ -376,8 +309,8 @@
 
                             </table>
             </div>
-            <div class="tab-pane" id="tab66" style="height:2px">
-            <iframe name="orthoIDframe" id="theFrame"  style="height:8000px" width="500px" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+            <div class="tab-pane" id="tab66">
+            <iframe width="100%" height="2000px" name="orthoIDframe" id="theFrame"  marginwidth="0" marginheight="0" scrolling="no"></iframe>
             </div>
 
         </div>

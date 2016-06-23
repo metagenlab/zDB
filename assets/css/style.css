@@ -140,13 +140,32 @@ th, tr, td {
 
     }
 #entete_classification {
-width: 200px;
+width: 230px;
 }
 
 #entete_n{
  border:1px solid black;
  width: 15px;
     }
+
+#entete_meta{
+ border:1px solid black;
+ width: 210px;
+    }
+#entete_meta2{
+ border:1px solid black;
+ width: 80px;
+    }
+#entete_meta3{
+ border:1px solid black;
+ width: 240px;
+    }
+#entete_meta4{
+ white-space: nowrap;
+ border:1px solid black;
+ width: 40px;
+    }
+
 
 #entete_translation{
  border:1px solid black;
@@ -189,6 +208,20 @@ width: 200px;
   height: 800px;
 }
 
+#string_complete{
+  width: 100%;
+  height: 1800px;
+
+}
+
+#theFrame2{
+  background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
+  padding-top: 2px;
+  padding-left: 0;
+  border: 0px solid blue;
+  width: 100%;
+  height: 5800px;
+}
 
 #file_names_col{
    width: 45%;
@@ -871,4 +904,15 @@ ul {
   list-style-position: inside;
   padding-left: 40px;
   list-style-type: decimal
+}
+
+.rotate {
+             filter:  progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083);  /* IE6,IE7 */
+         -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)"; /* IE8 */
+     -moz-transform: rotate(-90.0deg);  /* FF3.5+ */
+      -ms-transform: rotate(-90.0deg);  /* IE9+ */
+       -o-transform: rotate(-90.0deg);  /* Opera 10.5 */
+  -webkit-transform: rotate(-90.0deg);  /* Safari 3.1+, Chrome */
+          transform: rotate(-90.0deg);  /* Standard */
+    padding-left: 15px;
 }

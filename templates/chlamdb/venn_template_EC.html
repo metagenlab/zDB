@@ -1,0 +1,71 @@
+
+
+
+
+
+
+	<script language="Javascript">
+
+		var h = new Object(); // or just {}
+
+
+		{{ description_dico|safe }}
+		<!-- h['Marilyn Monroe'] = 1; -->
+
+
+
+		$(document).ready(function(){
+		  $('#example').jvenn({
+			series: {{ series|safe }}
+
+			  ,
+			displayStat: true,
+			fnClickCallback: function() {
+				var value = "";
+				if (this.listnames.length == 1) {
+					value += "<h3>Elements only in:<br> </h3><ul compact>";
+				} else {
+					value += "<h3>Common elements in: </h3><ul compact>";
+				}
+				for (name in this.listnames) {
+					value += '<li id="list_strains">' +this.listnames[name] + "</li>";
+				}
+				value += '</ul>\n<table id="ec_table" class="sortable"><tr><th>EC</th><th>EC description</th><th>map</th><th>category</th><th>description</th></tr>';
+				for (val in this.list) {
+					<!-- h[this.list[val]] -->
+					value += '<tr>' + h[this.list[val]]
+							+ '</td></tr>';
+				}
+				value += '</table>';
+				$("#names").html(value);
+				var newTableObject = document.getElementById("ec_table");
+				sorttable.makeSortable(newTableObject);
+			}
+
+		  });
+		});
+
+	</script>
+
+
+
+		<div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+			<div class="panel-heading" style="width:100%">
+				<h5 class="panel-title">Help</h5>
+			</div>
+			<p style="margin: 10px 10px 10px 10px"> Click on a venn diagram figure to display the linked elements:</p>
+		</div>
+
+		<div id="example" style="display: table;margin: 0;">
+
+		</div>
+
+		<div>
+
+			<div id="names" style="width: 87%;" wrap="off" rows="10">
+
+			</div>
+		</div>
+
+
+

@@ -12,16 +12,7 @@
             });
             });
         </script>
-        <script type="text/javascript">
-            jQuery(document).ready(function ($) {
-                $('#tabs_main').tab();
-            });
-        </script>
-        <script type="text/javascript">
-            jQuery(document).ready(function ($) {
-                $('#tabs1').tab();
-            });
-        </script>
+
     </head>
 
 
@@ -40,50 +31,27 @@
 
 
 
-            <nav>
-                <ul id="tabs_main" class="nav nav-tabs">
-                    <li class="active"><a href="{% url 'extract_pfam' biodb %}">Detailed comparison 2</a></li>
-                    <li><a href="{% url 'venn_pfam' biodb %}">Venn diagram 2</a></li>
-                </ul>
-            </nav>
 
                      <div id="extract_form">
-                        <form action="{% url "chlamdb.views.extract_pfam" biodb %}" method="post">
 
+                        <form action="{% url "chlamdb.views.orthogroup_annotation" biodb %}" method="post">
 
-                        <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                             <div class="panel-heading" style="width:100%">
                                 <h3 class="panel-title">Help</h3>
                             </div>
-                            <p style="margin: 10px 10px 10px 10px">Get list of Pfam domains shared between genomes selected in panel A and absent in genomes of panel B</p>
+                            <p style="margin: 10px 10px 10px 10px">Get annotations from a list of orthogroups (comma sep?)</p>
                         </div>
-
-
-
-                        <p id="extract_panel_A">
-                            A
-                        </p>
-                        <p id="extract_panel_B">
-                            B
-                        </p>
 
                         {% csrf_token %}
                         {{ form.as_p }}
-                         <input type="submit" name="comparison" value="Compare PFAM motifs" id="extract_button" />
+                         <input type="submit" name="annot" value="Get annotation"/>
                          </form>
                     </div>
 
+            {% if envoi_annot %}
 
-
-            {% if envoi_extract %}
-
-                <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                    <li class="active"><a href="#red" data-toggle="tab">Orthogroups</a></li>
-                </ul>
-
-                <div id="my-tab-content" class="tab-content">
-
-                    <div class="tab-pane active" id="red">
+                    <div>
 
 
                         <div id="export_bouttons_groups">
@@ -97,30 +65,30 @@
 
                         <table class="sortable" id="table_groups">
 
-
                             <thead>
                                 <tr>
                                 <th></th>
-                                <th id="entete_locus">Pfam entry</th>
-                                <th>Description</th>
+                                <th id="entete_locus">Orthogroup</th>
+                                <th>Genes</th>
+                                <th>Products</th>
+                                <th>Cogs</th>
+                                <th>Pfam</th>
                                 </tr>
                             </thead>
 
                             {% for value in match_groups_data %}
                                 <tr>
                                     <td>{{value.0}}</td>
-                                    <td><a href="{% url 'fam' biodb value.1 'pfam' %}">{{value.1}}</a></td>
-                                    <td>{{value.2}}</td>
+                                    <td><a href="{% url 'locusx' biodb value.1 True%}">{{value.1}}</a></td>
+                                    <td>{{value.2|safe}}</td>
+                                    <td>{{value.3|safe}}</td>
+                                    <td>{{value.4|safe}}</td>
+                                    <td>{{value.5|safe}}</td>
 
                                 </tr>
                             {% endfor %}
-
                         </table>
-
-
                     </div>
-
-                </div>
             {% endif %}
         </div>
     </div>

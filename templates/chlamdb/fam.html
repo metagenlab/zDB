@@ -41,79 +41,146 @@
                 </div>
            {% endif %}
 
-           {%  if type == 'cog' %}
+               <h3>{{ fam }} </h3>
 
-                <h3>{{ info.0 }} </h3>
-                <ol>
-                     <li>{{ info.3 }} ({{ info.2 }})</li>
-                    <li>This cog is present in <strong>{{ all_locus_data|length }} copies</strong></li>
-                    <li>This cog is present in <strong>{{ group_count|length }} different orthogroups</strong></li>
-                    <ul>
-                        {% for group in group_count %}
-                        <li><a href="{% url 'locusx' biodb group True%}">{{group}}</a></li>
+                <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                    <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
+                    <li><a href="#tab2" data-toggle="tab">Details</a></li>
+                    <li><a href="#tab3" data-toggle="tab">Profile</a></li>
+                    {% if type == 'cog' %}
+                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{ fam }}', 'orthoIDframe2'); return false">Informations</a></li>
+                    {% elif type == 'pfam' %}
+                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://pfam.xfam.org/family/{{ fam }}', 'orthoIDframe2'); return false">Informations</a></li>
+                    {% elif type == 'interpro' %}
+                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.ebi.ac.uk/interpro/entry/{{ fam }}', 'orthoIDframe2'); return false">Informations</a></li>
+
+                    {% else %}
+                    {% endif %}
+
+
+
+
+                </ul>
+
+                <div id="my-tab-content" class="tab-content">
+                    <div class="tab-pane active" id="tab1">
+
+
+
+                        <ol>
+                            {% if type == 'EC' %}
+                                <table>
+
+                                    {% for key, value in info%}
+                                        <tr>
+                                        <td><strong>{{key}}</strong></td><td>{{value}}</td>
+                                        </tr>
+                                    {% endfor %}
+
+
+                                </table>
+                                <li><a href="{{ external_link }}">External link</a></li>
+                            {% else %}
+                                <li>{{ info.1 }} {{ info.0 }}</li>
+                            {% endif %}
+                            <li>{{ fam }} is present in <strong>{{ all_locus_data|length }} copies</strong></li>
+                            <li>{{ fam }} is present in <strong>{{ group_count|length }} different orthogroup(s)</strong></li>
+
+
+                            {% if type == 'cog' %}
+                                <li>Extrenal link: <a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{ fam }}">{{ fam }}</a></li>
+                            {% elif type == 'pfam' %}
+                                <li>Extrenal link: <a href="http://pfam.xfam.org/family/{{ fam }}">{{ fam }}</a></li>
+                            {% elif type == 'interpro' %}
+                                <li>Extrenal link: <a href="http://www.ebi.ac.uk/interpro/entry/{{ fam }}">{{ fam }}</a></li>
+
+                            {% else %}
+                            {% endif %}
+
+                            <ul>
+                                {% for group in group_count %}
+                                <li><a href="{% url 'locusx' biodb group True%}">{{group}}</a></li>
+                                {% endfor %}
+                            </ul>
+                        {% if type == 'EC' %}
+                            <li>EC present in <strong>{{pathway_data|length }} pathways</strong></li>
+                            <ul>
+                                {% for path in pathway_data %}
+                                <li><a href="{% url 'KEGG_mapp' biodb path.0 %}">{{path.2}} :: {{path.1}}</a></li>
+                                {% endfor %}
+
+
+                            </ul>
+
+                        {% endif %}
+                        </ol>
+                    </div>
+                    <div class="tab-pane" id="tab2">
+
+                    <div id="export_bouttons">
+                    <a download="locus_{{ data.1 }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+                    <a download="locus{{ data.1 }}.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to CSV</a>
+                    <br/>
+                    </div>
+
+                        <table id="search_table" class="sortable">
+                        <h3>Detail</h3>
+                        <thead>
+                        <tr>
+                        <th></th>
+                        <th id="entete_locus">Orthogroup</th>
+                        <th id="entete_locus">Locus</th>
+                        <th id="entete_locus">Protein id</th>
+                        <th id="entete_gene">Start</th>
+                        <th id="entete_gene">Stop</th>
+                        <th id="entete_strand">S.</th>
+                        <th id="entete_gene">Gene</th>
+                        <th id="entete_n">nH</th>
+                        <th id="entete_n">nG</th>
+                        <th id="entete_n">TM</th>
+                        <th id="entete_n">SP</th>
+                        <th id="entete_product">Product</th>
+                        <th id="entete_organism">Organism</th>
+                        <th id="entete_translation">Translation</th>
+
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        {% load static %}
+                        {% get_static_prefix as STATIC_PREFIX %}
+
+                        {% for values in all_locus_data %}
+                            <tr>
+                            <td>{{values.0}}</td>
+
+                            <td>{{values.1}}</td>
+                            <td><a href='{% url "chlamdb.views.locusx" biodb values.2 True %}' target="_top">{{values.2}}</a></td>
+                            <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
+                            <td>{{values.4}}</td>
+                            <td>{{values.5}}</td>
+                            <td>{{values.6}}</td>
+                            <td>{{values.7}}</td>
+                            <td>{{values.8}}</td>
+                            <td>{{values.9}}</td>
+                            <td>{{values.10}}</td>
+                            <td>{{values.11}}</td>
+                            <td>{{values.12}}</td>
+                            <td>{{values.13}}</td>
+                            <td><a href="{% url "chlamdb.views.blastnr" biodb values.2  %}">{{values.14}}</a></td>
+                            </tr>
                         {% endfor %}
-                    </ul>
-                </ol>
-           {% endif %}
+                        </tbody>
+                        </table>
+                    </div>
 
-
-                <div id="export_bouttons">
-                <a download="locus_{{ data.1 }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-                <a download="locus{{ data.1 }}.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to CSV</a>
-                <br/>
+                    <div class="tab-pane" id="tab66" style="height:100%">
+                        <iframe name="orthoIDframe2" id="theFrame2" scrolling="no" width="100%" height="1800px"></iframe>
+                    </div>
+                    <div class="tab-pane" id="tab3">
+                        <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
+                    </div>
                 </div>
-
-                <table id="search_table" class="sortable">
-                <h3>Detail</h3>
-                <thead>
-                <tr>
-                <th></th>
-                <th id="entete_locus" class="rotate">Orthogroup</th>
-                <th id="entete_locus" class="rotate">Locus</th>
-                <th id="entete_locus" class="rotate">Protein id</th>
-                <th id="entete_gene" class="rotate">Start</th>
-                <th id="entete_gene" class="rotate">Stop</th>
-                <th id="entete_strand" class="rotate">S.</th>
-                <th id="entete_gene" class="rotate">Gene</th>
-                <th id="entete_n" class="rotate">nH</th>
-                <th id="entete_n" class="rotate">nG</th>
-                <th id="entete_n" class="rotate">TM</th>
-                <th id="entete_n" class="rotate">SP</th>
-                <th id="entete_product" class="rotate">Product</th>
-                <th id="entete_organism" class="rotate">Organism</th>
-                <th id="entete_translation" class="rotate">Translation</th>
-
-                </tr>
-                </thead>
-                <tbody>
-
-                {% load static %}
-                {% get_static_prefix as STATIC_PREFIX %}
-
-                {% for values in all_locus_data %}
-                    <tr>
-                    <td>{{values.0}}</td>
-
-                    <td>{{values.1}}</td>
-                    <td><a href="{% static '' %}{{biodb}}/interpro/{{values.3}}.html" target="_blank">{{values.2}}</a></td>
-                    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
-                    <td>{{values.4}}</td>
-                    <td>{{values.5}}</td>
-                    <td>{{values.6}}</td>
-                    <td>{{values.7}}</td>
-                    <td>{{values.8}}</td>
-                    <td>{{values.9}}</td>
-                    <td>{{values.10}}</td>
-                    <td>{{values.11}}</td>
-                    <td>{{values.12}}</td>
-                    <td>{{values.13}}</td>
-                    <td><a href="{% url "chlamdb.views.blastnr" biodb values.2  %}">{{values.14}}</a></td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-                </table>
-
-
 
        {% endif %}
 

@@ -58,24 +58,6 @@
                             <p style="margin: 10px 10px 10px 10px">Get list of Interpro entries shared between genomes selected in panel A and absent in genomes of panel B</p>
                         </div>
 
-                        <div style="position: absolute;margin-top:310px">
-                            <div style="height:40px;margin-left: 180px;width:280px;border: 2px solid #8AC007; border-radius: 15px;">
-                                <div style="width: 100%; float: left; margin-left: 10px;margin-top:3px">
-                                    <p>Consider single copy groups only</p>
-                                </div >
-
-                                <div style="height: 40px; margin-left: 180px;margin-top:3px;">
-                                    <label class="switch-light well" onclick="" style="margin: 5px 0px 0px 0px; padding: 0 0 0 0; position: absolute">
-                                        <input type="checkbox" style="padding: 0 0px 0 0" id="button_single_copy" name="button_single_copy">
-                                        <span>
-                                        <span>Off</span>
-                                        <span>On</span>
-                                        </span>
-                                        <a class="btn btn-success btn-xs"></a>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
 
                         <p id="extract_panel_A">
                             A
@@ -86,7 +68,7 @@
 
                         {% csrf_token %}
                         {{ form.as_p }}
-                         <input type="submit" name="comparison" value="extract homologues 2" id="extract_button" />
+                         <input type="submit" name="comparison" value="Compare Interpro Accessions" id="extract_button" />
                          </form>
                     </div>
 

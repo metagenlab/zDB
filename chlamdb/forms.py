@@ -142,6 +142,17 @@ def make_interpro_from(database_name):
     return InterproForm
 
 
+def make_metabo_from(database_name):
+
+    accession_choices = get_accessions(database_name)
+
+
+    class MetaboForm(forms.Form):
+        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (len(accession_choices)/4) }), required = False)
+
+    return MetaboForm
+
+
 def make_venn_from(database_name):
 
     accession_choices = get_accessions(database_name)
@@ -220,8 +231,8 @@ def make_extract_form(database_name, plasmid=False):
     else:
         accession_choices = get_accessions(database_name, plasmid=True)
     class ExtractForm(forms.Form):
-        orthologs_in = forms.MultipleChoiceField(label='', choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "20" }), required = False)
-        no_orthologs_in = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "20" }), required = False, label="")
+        orthologs_in = forms.MultipleChoiceField(label='', choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17" }), required = False)
+        no_orthologs_in = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17" }), required = False, label="")
 
 
     return ExtractForm
@@ -259,6 +270,13 @@ def make_blast_form(biodb):
         #biodatabase = forms.ChoiceField(choices=choices)
 
     return BlastForm
+
+
+class AnnotForm(forms.Form):
+    orthogroups = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
+    #biodatabase = forms.ChoiceField(choices=choices)
+
+
 
 def make_motif_form(database_name):
 

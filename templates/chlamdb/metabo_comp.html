@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+    {% load staticfiles %}
+    {% load static %}
+    {% get_static_prefix as STATIC_PREFIX %}
+    {% load custom_tags %}
+
+    <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
+    <!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
+    <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
+
+</head>
+
+
+<body height="5000px">
+<div>
+    <form action='{% url "chlamdb.views.metabo_comparison" biodb %}' method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit" />
+
+    </form>
+
+    {% if envoi_comp %}
+
+            <table class="sortable">
+                    <style>
+        table {
+            width:100%;
+            table-layout:fixed;
+        }
+        td {
+            overflow: hidden;
+            white-space: nowrap;
+        }
+    </style>
+            <tr>
+                <th height="170px" id="entete_meta">Category</th>
+                <th id="entete_meta2" >Map</th>
+                <th id="entete_meta3">Description</th>
+                <th id="entete_meta4">nEC</th>
+                <th id="entete_meta4">nEC+</th>
+                <th id="entete_meta4">%</th>
+                {% for taxon in taxon_list %}
+                    <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
+                {% endfor %}
+            <tr>
+            {% for category, values in category2maps.items %}
+                {% for value0, value1 in values %}
+                <tr>
+
+                    <td>{{category}}</td> <td><a href="{% url 'KEGG_mapp' biodb value0 %}" target="_top">{{value0}}</a></td><td>{{value1}}</td>
+                    {% for value in map2count|keyvalue:value0 %}
+                        <td>{{value}}</td>
+                    {% endfor %}
+                    {%for map_dico in taxon_maps %}
+                        <td>{{map_dico|keyvalue:value0}}</td>
+                    {% endfor %}
+
+                </tr>
+                {% endfor %}
+            {% endfor %}
+            </table>
+    {% endif %}
+</div>
+</body>
+</html>

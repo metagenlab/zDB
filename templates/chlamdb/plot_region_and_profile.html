@@ -6,10 +6,11 @@
 
 
 <head>
-    {% load staticfiles %}
-    {% load static %}
-    {% get_static_prefix as STATIC_PREFIX %}
+{% load staticfiles %}
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
 
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
     <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
@@ -28,30 +29,43 @@
     <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
 
+
 </head>
 
-<body height="2000px">
-<h3>Distribution of {{orthogroup}} homologs</h3>
 
+       <h3>{{ fam }} </h3>
 
         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-            <li class="active"><a href="#tab1" data-toggle="tab">Orthogroup profile</a></li>
-
-            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'multiple_orthogroup_heatmap' biodb orthogroup %}', 'orthoIDframe3'); return false">Similar profiles</a></li>
+            <li class="active"><a href="#tab111" data-toggle="tab1">Region</a></li>
         </ul>
 
-
         <div id="my-tab-content" class="tab-content">
-            <div class="tab-pane active" id="tab1">
-
-
-               <div>
-               <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree"></object>
-               </div>
-            </div>
-                <div class="tab-pane" id="tab66" style="height:8800px">
-                    <iframe name="orthoIDframe3" id="theFrame3" scrolling="no" width="100%" height="8800px"></iframe>
+            <div class="tab-pane active" id="tab111">
+                <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                    <div class="panel-heading" style="width:100%">
+                        <h3 class="panel-title">Help</h3>
+                    </div>
+                    <p style="margin: 0px 0px 0px 10px">Plot region</p>
                 </div>
+
+                <div id="export_bouttons">
+                    <a download="region.svg" href="{% static name %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to SVG</a>
+                    <a download="region.png" href="{% static name_png %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to PNG</a>
+
+                    <br/>
+                </div>
+
+                <object type="image/svg+xml" data="{% static name %}" id="genomic_region"></object>
+
+
+
+
+                <object align="left" style="padding-left: 200px" type="image/svg+xml" data="{% static asset_path %}" id="orthogroup_tree"></object>
+
+            </div>
         </div>
+
+
+
 </body>
 </html>

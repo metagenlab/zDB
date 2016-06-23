@@ -11,20 +11,28 @@
 {% get_static_prefix as STATIC_PREFIX %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+<script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
+<!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
+<script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+
+<script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
 
 </head>
 
 <body>
-<div id="container">
-    <div id="sidebar">
-
-            {% include "chlamdb/menu.html" %}
-    </div>
-
-    <div id="header">
-        {% include "chlamdb/user.html" %}
-    </div>
-
+<div id="container2">
 
     <div id="content">
 
@@ -71,12 +79,10 @@
                 <th>Kingdom</th>
                 <th>eval.</th>
                 <th>ID(%)</th>
-                <th>N pos.</th>
                 <th>N gaps</th>
                 <th>Len.</th>
                 <th>Q. start</th>
                 <th>Q. end</th>
-                <th>Q. cov.</th>
                 <th>S. start</th>
                 <th>S. end</th>
                 <th id=blast_subject_title>S. title</th>
@@ -97,11 +103,9 @@
                     <td>{{ values.11 }}</td>
                     <td>{{ values.12 }}</td>
                     <td>{{ values.13 }}</td>
-                    <td>{{ values.14 }}</td>
+                    <td>{{ values.14}}</td>
                     <td>{{ values.15 }}</td>
-                    <td>{{ values.16}}</td>
-                    <td>{{ values.17 }}</td>
-                    <td>{{ values.18 }}</td>
+                    <td>{{ values.16 }}</td>
                     <td>{{ values.5 | safe }}</td>
 
                 </tr>

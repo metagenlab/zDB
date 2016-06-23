@@ -3,6 +3,7 @@
 
 <html>
     <head>
+        {% load static %}
         <script type="text/javascript" id="js">
             $(document).ready(function() {
             // call the tablesorter plugin
@@ -42,22 +43,21 @@
 
             <nav>
                 <ul id="tabs_main" class="nav nav-tabs">
-                    <li class="active"><a href="{% url 'extract_cog' biodb %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_cog' biodb %}">Venn diagram</a></li>
+                    <li class="active"><a href="{% url 'extract_EC' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_EC' biodb %}">Venn diagram</a></li>
                 </ul>
             </nav>
 
                      <div id="extract_form">
-                        <form action="{% url "chlamdb.views.extract_cog" biodb %}" method="post">
+                        <form action="{% url "chlamdb.views.extract_EC" biodb %}" method="post">
 
 
-                        <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                        <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
                             <div class="panel-heading" style="width:100%">
                                 <h3 class="panel-title">Help</h3>
                             </div>
-                            <p style="margin: 10px 10px 10px 10px">Get COG list of COGs shared between genomes selected in panel A and absent in genomes of panel B</p>
+                            <p style="margin: 10px 10px 10px 10px">Get list of EC numbers shared between genomes selected in panel A and absent in genomes of panel B</p>
                         </div>
-
 
                         <p id="extract_panel_A">
                             A
@@ -68,7 +68,7 @@
 
                         {% csrf_token %}
                         {{ form.as_p }}
-                         <input type="submit" name="comparison" value="Compare COGs" id="extract_button" />
+                         <input type="submit" name="comparison" value="Compare EC numbers" id="extract_button" />
                          </form>
                     </div>
 
@@ -77,7 +77,8 @@
             {% if envoi_extract %}
 
                 <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                    <li class="active"><a href="#red" data-toggle="tab">COGs</a></li>
+                    <li class="active"><a href="#red" data-toggle="tab">EC list</a></li>
+                    <li><a href="#orange" data-toggle="tab">Phylogenetic profile</a></li>
                 </ul>
 
                 <div id="my-tab-content" class="tab-content">
@@ -92,30 +93,38 @@
                             <br/>
                         </div>
 
-                        <p>Number of COGs: {{ sum_group }} </p>
+                        <p>Number of EC: {{ sum_group }} </p>
 
                         <table class="sortable" id="table_groups">
 
                             <thead>
                                 <tr>
-                                    <th>COG</th>
-                                    <th>Category</th>
-                                    <th>Name</th>
+                                <th></th>
+                                <th id="entete_locus">EC number</th>
+                                <th>Description</th>
+                                    <th>KEGG Map</th>
+                                    <th>Pathway Category</th>
+                                    <th>Pathway description</th>
                                 </tr>
                             </thead>
 
-                            {% for value in cog_data %}
+                            {% for value in match_groups_data %}
                                 <tr>
-                                    <td><a href="{% url 'fam' biodb value.0 'cog' %}">{{value.0}}</a></td>
-                                    <td>{{value.1}}</td>
-                                    <td>{{value.2}}</td>
+                                    <td>{{value.0}}</td>
+                                    <td><a href="{% url 'fam' biodb value.1 'EC' %}">{{value.1}}</a></td>
+                                    {% for value_2 in value.2 %}
+                                    <td>{{value_2}}</td>
+                                    {% endfor %}
                                 </tr>
                             {% endfor %}
+
                         </table>
 
 
                     </div>
-
+                    <div class="tab-pane" id="orange">
+                        <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
+                    </div>
 
                 </div>
             {% endif %}
