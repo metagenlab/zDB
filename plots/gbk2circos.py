@@ -284,7 +284,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                             print "COLORS!!!!!!!!!!!!!!!!!!!"
                             try:
                                 '''
-                                f.write('%s %s %s fill_color=violet, id=locus:_%s_gene:_%s_product:_%s\n' % (contig,
+                                f.write('%s %s %s fill_color=spectral-5-div-4,id=locus:_%s_gene:_%s_product:_%s\n' % (contig,
                                                                                                          start,
                                                                                                          end,
                                                                                                          feature.qualifiers['locus_tag'][0],
@@ -292,14 +292,14 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                                                                                                          re.sub("[ |\-|(|)|\[|\]|\.|,]", "_",
                                                                                                          feature.qualifiers['product'][0])))
                                 '''
-                                f.write('%s %s %s fill_color=violet, id=%s\n' % (contig,
+                                f.write('%s %s %s fill_color=piyg-5-div-1,id=%s,z=1\n' % (contig,
                                                                         start,
                                                                         end, feature.qualifiers['locus_tag'][0]))
 
 
                             except:
                                 '''
-                                f.write('%s %s %s fill_color=violet, id=locus:_%s_gene:_%s_product:_%s\n' % (contig,
+                                f.write('%s %s %s fill_color=spectral-5-div-4,id=locus:_%s_gene:_%s_product:_%s\n' % (contig,
                                                                                                          start,
                                                                                                          end,
                                                                                                          feature.qualifiers['locus_tag'][0],
@@ -307,7 +307,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                                                                                                          re.sub("[ |\-|(|)|\[|\]|\.|,]", "_",
                                                                                                          feature.qualifiers['product'][0])))
                                 '''
-                                f.write('%s %s %s fill_color=violet, id=%s\n' % (contig,
+                                f.write('%s %s %s fill_color=spectral-5-div-4,id=%s,z=1\n' % (contig,
                                                                         start,
                                                                         end,
                                                                         feature.qualifiers['locus_tag'][0]))
@@ -531,15 +531,23 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
 
     print 'getting dictionnaries'
     for accession in accessions:
+
+        print "locus_tag2n_nr_hits"
         locus_tag2n_blastnr_dico.update(bsql.locus_tag2n_nr_hits(db_name, accession, exclude_family=exclude_family))
+        print "locus_tag2n_blast_superkingdom bacteria"
         locus_tag2n_blast_bacteria.update(bsql.locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", exclude_family=exclude_family))
+        print "locus_tag2n_blast_superkingdom euk"
         locus_tag2n_blast_eukariota.update(bsql.locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Eukaryota"))
+        print "locus_tag2n_blast_superkingdom archae"
         locus_tag2n_archae.update(bsql.locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Archaea"))
+        print "locus_tag2n_blast_bacterial_phylum chlamydiae reverse = F"
         locus_tag2n_chlamydiae.update(bsql.locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", reverse=False, exclude_family=exclude_family))
+        print "locus_tag2n_blast_bacterial_phylum chlamydiae reverse = T"
         locus_tag2n_non_chlamydiae.update(bsql.locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", reverse=True, exclude_family=exclude_family))
+        print "locus_tag2n_paralogs"
         locus_tag2n_paralogs.update(bsql.locus_tag2n_paralogs(db_name, accession))
 
-
+    print 'dico OK'
 
 
     circos_string_n_genome_presence = ''
@@ -698,6 +706,7 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
     import biosql_own_sql_tables
     import os
 
+
     #print "orthology_circos_files"
     #print "draft_data", draft_data
     #print "locus highlight", locus_highlight
@@ -720,7 +729,7 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
 
     ortho_table = "orthology_%s" % biodatabase_name
     print "ortho_table", ortho_table
-    group_id2orthologs_presence = mysqldb_load_mcl_output.get_orthology_matrix_merging_plasmids(server, biodatabase_name)
+    group_id2orthologs_presence = biosql_own_sql_tables.get_orthology_matrix_merging_plasmids(server, biodatabase_name)
     # get taxons ids used as column names in orthology table
     if taxon_list is False:
         taxon_list = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
@@ -762,7 +771,7 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
 
     all_file_names["GC_var"], all_file_names["GC_skew"] = print_circos_GC_file(record_list, out_directory = out_dir)
 
-
+    locus_highlight = []
 
 
     f = open(all_file_names["orthogroups"], "w")
@@ -789,7 +798,14 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
             taxon_files.append(open(file_name, "w"))
 
     locus2locus_identity = biosql_own_sql_tables.circos_locus2taxon_highest_identity(biodatabase_name, reference_taxon_id)
+    print "locus2id subset"
+    print locus2locus_identity.keys()[1:10]
+    print "get plasmid locus"
+    plasmid_locus = biosql_own_sql_tables.get_locus2plasmid_or_not(biodatabase_name)
+    #print plasmid_locus
+    print "ok"
 
+    #print locus2locus_identity
     taxon_list = temp_taxon_list
     y = 0
     for record in record_list:
@@ -849,25 +865,59 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                     except UnboundLocalError:
                         pass
                     h.write(line3)
+                    #print "################## highlight ###################"
+                    #print locus_highlight
+
+
                     for taxon_id, taxon_file in zip(taxon_list, taxon_files):
                         #print group_id2orthologs_presence[feature.qualifiers['orthogroup'][0]]
                         if group_id2orthologs_presence[feature.qualifiers['orthogroup'][0]][int(taxon_id)] > 0:
-                            if feature.qualifiers['orthogroup'][0] not in locus_highlight:
-                                taxon_file.write("%s %s %s %s id=%s\n" % (contig,
-                                                                          start,
-                                                                          end,
-                                                                          locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][0],
-                                                                          locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]))
+                            #if locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1] == 'PMK1_b00074':
+                            #    print plasmid_locus[locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]]
+                            #    print plasmid_locus[locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]] == 'True'
+                            if plasmid_locus[locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]] != 'True':
+                                if feature.qualifiers['orthogroup'][0] not in locus_highlight:
 
+                                    taxon_file.write("%s %s %s %s id=%s\n" % (contig,
+                                                                              start,
+                                                                              end,
+                                                                              locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][0],
+                                                                              locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]))
+
+                                else:
+                                    print "COLORS!!!!!!!!!!!!!!!!!!! ----- taxon" # pink piyg-5-div-1 spectral-5-div-4 green
+                                    taxon_file.write("%s %s %s %s color=piyg-5-div-1,id=%s,z=2\n" % (contig,
+                                                                                                 start,
+                                                                                                 end,
+                                                                                                 locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][0],
+                                                                                                 locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]))
                             else:
-                                print "COLORS!!!!!!!!!!!!!!!!!!!"
-                                taxon_file.write("%s %s %s %s fill_color=violet, id=%s\n" % (contig,
-                                                                                             start,
-                                                                                             end,
-                                                                                             locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id],
-                                                                                             feature.qualifiers['locus_tag'][0]))
+                                if feature.qualifiers['orthogroup'][0] not in locus_highlight:
+
+                                    taxon_file.write("%s %s %s %s id=%s,color=accent-4-qual-4\n" % (contig,
+                                                                              start,
+                                                                              end,
+                                                                              locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][0],
+                                                                              locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]))
+
+                                else:
+                                    print "COLORS!!!!!!!!!!!!!!!!!!! ----- taxon"
+                                    taxon_file.write("%s %s %s %s color=piyg-5-div-1,id=%s,color=accent-4-qual-4,z=2\n" % (contig,
+                                                                                                 start,
+                                                                                                 end,
+                                                                                                 locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][0],
+                                                                                                 locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]))
+
+
+
+
                         elif color_missing:
+                            #if feature.qualifiers['orthogroup'][0] not in locus_highlight:
+                            #    print 'no colors'
                             taxon_file.write("%s %s %s %s\n" % (contig, start, end, 0))
+                            #else:
+                            #    print "COLORS!!!!!!!!!!!!!!!!!!! ----- taxon"
+                            #    taxon_file.write("%s %s %s %s fill_color=spectral-5-div-4,z=2\n" % (contig, start, end, 0))
                         else:
                             pass #taxon_file.write("%s %s %s\n" % (contig, feature.start, feature.stop))
         y += 1
@@ -877,7 +927,14 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
 
 
 class Circos_config:
-  def __init__(self, caryotype_file, chr_spacing_list=[], show_ticks="yes", show_tick_labels="yes", ideogram_spacing=0, radius=0.75, label_radius=0.175):
+  def __init__(self, caryotype_file,
+               chr_spacing_list=[],
+               show_ticks="yes",
+               show_tick_labels="yes",
+               ideogram_spacing=0,
+               radius=0.75,
+               label_radius=0.05,
+               show_ideogram_labels="no"):
     import re
 
     self.plots = ""
@@ -885,7 +942,7 @@ class Circos_config:
     self.highlights = ""
     
     self.template_caryotype= "karyotype = %s\n" \
-                             " chromosomes_units           = 1000\n" \
+                             " chromosomes_units           = 10000\n" \
                              " chromosomes_display_default = yes\n" % caryotype_file
 
 
@@ -896,7 +953,7 @@ class Circos_config:
                               " </spacing>\n" \
                               " \n" \
                               " # thickness and color of ideograms\n" \
-                              " thickness          = 15p\n" \
+                              " thickness          = 6p\n" \
                               " stroke_thickness   = 1\n" \
                               " stroke_color       = black\n" \
                               " \n" \
@@ -907,7 +964,7 @@ class Circos_config:
                               " \n" \
                               " # fractional radius position of chromosome ideogram within image\n" \
                               " radius             = %sr\n" \
-                              " show_label         = yes\n" \
+                              " show_label         = %s\n" \
                               " label_font         = default\n" \
                               " label_radius       = dims(ideogram,radius) + %sr\n" \
                               " label_size         = 30\n" \
@@ -923,7 +980,30 @@ class Circos_config:
                               " fill_bands         = yes\n" \
                               " band_transparency  = 1\n" \
                               " \n" \
-                              " </ideogram>\n" % (ideogram_spacing, self.add_spacing(chr_spacing_list), radius, label_radius)
+                              " </ideogram>\n" % (ideogram_spacing, self.add_spacing(chr_spacing_list), radius, show_ideogram_labels, label_radius)
+
+    self.end_ticks = "  <tick>\n" \
+                      "  multiplier   = 1\n" \
+                      "  position = end\n" \
+                      " show_ticks         = yes\n" \
+                      "  size              = 4p\n" \
+                      "  show_label        = no\n" \
+                      "  label_size        = 0p\n" \
+                      "  format    = %s bp\n" \
+                      "  </tick>\n" \
+
+    self.big_ticks = " <tick>\n" \
+                          " show_ticks         = yes\n" \
+                          " skip_first_label = no\n" \
+                          " multiplier   = 10/1u\n" \
+                          " spacing           = 10u\n" \
+                          " size              = 15p\n" \
+                          " show_label        = yes\n" \
+                          " label_size        = 15p\n" \
+                          " format            = %s kb\n" \
+                          " thickness         = 2p\n" \
+                          " </tick>\n" \
+
 
     self.template_ticks = "show_ticks         = %s\n" \
                           " show_tick_labels   = %s\n" \
@@ -932,29 +1012,25 @@ class Circos_config:
                           " tick_label_font    = condensed\n" \
                           " radius             = dims(ideogram,radius_outer)\n" \
                           " label_offset       = 8p\n" \
-                          " label_size         = 8p\n" \
+                          " label_size         = 4p\n" \
                           " color              = black\n" \
-                          " thickness          = 4p\n" \
+                          " thickness          = 2p\n" \
+                          " \n" \
                           " \n" \
                           " <tick>\n" \
-                          " spacing           = 100u\n" \
-                          " size              = 16p\n" \
-                          " label_multiplier  = 1e-3\n" \
-                          " show_label        = yes\n" \
-                          " label_size        = 35p\n" \
-                          " format            = %s kb\n" \
-                          " thickness         = 5p\n" \
-                          " </tick>\n" \
-                          " \n" \
-                          " <tick>\n" \
-                          " spacing           = 10u\n" \
-                          " size              = 8p\n" \
+                          " show_ticks         = yes\n" \
+                          " skip_first_label = no\n" \
+                          " multiplier   = 10/1u\n" \
+                          " spacing           = 1u\n" \
+                          " size              = 5p\n" \
                           " show_label        = no\n" \
                           " label_size        = 5p\n" \
                           " format            = %s\n" \
                           " </tick>\n" \
+                          " %s\n" \
                           " \n" \
-                          " </ticks>\n" % (show_ticks, show_tick_labels, "%%d", "%%d")
+                          " \n" \
+                          " </ticks>\n" % (show_ticks, show_tick_labels, "%%.1d", self.big_ticks % "%%.1d")
     print self.template_ticks
 
 
@@ -968,14 +1044,13 @@ class Circos_config:
                           " %s\n" \
                           "</backgrounds>\n"
 
-
+    # #" <<include colors.rn.conf>>\n" \
     self.settings ="<colors>\n" \
-                   " <<include colors.rn.conf>>\n" \
                    " <<include brewer.all.conf>>\n" \
                    " </colors>\n" \
                    " <image>\n"\
                    " image_map_use      = yes\n" \
-                   " image_map_overlay  = yes\n" \
+                   " image_map_overlay  = no\n" \
                    " image_map_overlay_stroke_color     = red\n" \
                    " <<include image.conf>>\n" \
                    " </image>\n" \
@@ -991,11 +1066,11 @@ class Circos_config:
 
   def _template_spacing(self, chr1, chr2):
     template = '<pairwise %s %s>\n' \
-               ' spacing = 8u\n' \
+               ' spacing = 2u\n' \
                '</pairwise>\n' % (chr1, chr2)
     return template
     
-  def _template_plot(self, file, type="line", r0=1, r1=1.05, color="black", fill_color="red", thickness = "2p", z = 1, rules ="", backgrounds="", url=""):
+  def _template_plot(self, file, type="line", r0=1, r1=1.05, color="black", fill_color="red", thickness = "0.8p", z = 1, rules ="", backgrounds="", url=""):
     template = "<plot>\n" \
                "type		    = %s\n" \
                " #min               = -0.4\n" \

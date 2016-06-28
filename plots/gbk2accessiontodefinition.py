@@ -7,7 +7,7 @@ import parse_newick_tree
 from Bio import Phylo
 
 
-def get_coressp(gbk_file_list, molis_table):
+def get_coressp(gbk_file_list, molis_table=None):
     name2description = {}
     for file in gbk_file_list:
         records = [i for i in SeqIO.parse(file, "genbank")]
@@ -33,17 +33,22 @@ def get_coressp(gbk_file_list, molis_table):
         description = re.sub(" plasmid", "", description)
         description = re.sub("plasmid", "", description)
         description = re.sub(" subsp. aureus", "", description)
-
-        #description = re.sub("aureus aureus", "aureus", description)
+        description = re.sub("Klebsiella", "K.", description)
+        description = re.sub("subsp. pneumoniae", "", description)
+        description = re.sub("contig.*", "", description)
+        description = re.sub(", complete sequence.*", "", description)
+        description = re.sub(", scaffold.*", "", description)
+        description = re.sub(", whole genome.*", "", description)
+        description = re.sub("scf.*", "", description)
 
 
         name2description[name] = description
 
-
-    with open(molis_table) as f:
-        for line in f:
-            line = line.rstrip().split('\t')
-            name2description[line[3]] = line[1]
+    if molis_table:
+        with open(molis_table) as f:
+            for line in f:
+                line = line.rstrip().split('\t')
+                name2description[line[3]] = line[1]
 
 
 

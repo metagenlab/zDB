@@ -12,9 +12,9 @@ def get_accssion2ST(infile):
 
     return accession2st
 
-def convert_terminal_node_names(tree_newick_name, dictionnary):
+def convert_terminal_node_names(tree_newick_name, dictionnary, tree_format = 'phyloxml'):
     from Bio import Phylo
-    trees = Phylo.parse(tree_newick_name, 'phyloxml')
+    trees = Phylo.parse(tree_newick_name, tree_format)
     trees = [tree for tree in trees]
 
 
