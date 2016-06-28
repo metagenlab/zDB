@@ -24,21 +24,683 @@ def _get_colors(num_colors):
 
 
 
+def get_taxon2name2count(biodb, id_list, type="COG"):
+
+    '''
+    get presence/absence of pfam domain(s) in all organisms of database "biodb"
+    return it as a dictionnary taxon[pfam_id] --> count
+    :param biodb:
+    :param id_list: lit of COgs/interpro/pfam identifiers
+    :param type: COG/Pfam/interpro or any comparative table stored in "comparative_tables" mysql database
+    :return:
+    '''
+
+    import manipulate_biosqldb
+
+    server, db =manipulate_biosqldb.load_db(biodb)
+
+    ortho_sql = '"' + '","'.join(id_list) + '"'
+    if type !='orthogroup':
+        sql = 'show columns from comparative_tables.%s_%s' % (type, biodb)
+        ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
+        sql = 'select * from comparative_tables.%s_%s where id in (%s)' % (type, biodb, ortho_sql)
+    else:
+        sql = 'show columns from orthology_%s' % (biodb)
+        ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
+        sql = 'select * from orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
+    print sql
+    profile_tuples = list(server.adaptor.execute_and_fetchall(sql,))
+
+    taxon2group2n_homologs = {}
+    for i, tuple in enumerate(profile_tuples):
+        taxon2group2n_homologs[tuple[0]] = {}
+        for i, taxon in enumerate(ordered_taxons):
+            taxon2group2n_homologs[tuple[0]][taxon] = tuple[i+1]
+
+    return taxon2group2n_homologs
+
+
+def get_taxon2orthogroup2count(biodb, orthogroup_id_list):
+
+    '''
+    get presence/absence of pfam domain(s) in all organisms of database "biodb"
+    return it as a dictionnary taxon[pfam_id] --> count
+    :param biodb:
+    :param id_list: lit of COgs/interpro/pfam identifiers
+    :param type: COG/Pfam/interpro or any comparative table stored in "comparative_tables" mysql database
+    :return:
+    '''
+
+    import manipulate_biosqldb
+
+    server, db =manipulate_biosqldb.load_db(biodb)
+
+    #print "orthogroup_id_list", orthogroup_id_list
+
+    sql = 'show columns from orthology_%s' % (biodb)
+
+    ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
+
+    ortho_sql = '"' + '","'.join(orthogroup_id_list) + '"'
+
+    sql = 'select * from orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
+
+    profile_tuples = list(server.adaptor.execute_and_fetchall(sql,))
+
+    taxon2group2n_homologs = {}
+    for i, tuple in enumerate(profile_tuples):
+        taxon2group2n_homologs[tuple[0]] = {}
+        for i, taxon in enumerate(ordered_taxons):
+            taxon2group2n_homologs[tuple[0]][taxon] = tuple[i+1]
+
+    return taxon2group2n_homologs
+
+def combined_profiles_heatmap(biodb,
+                              column_labels,
+                              taxon2group2count,
+                              taxon2motif2count,
+                              ec2orthogroups):
+
+    '''
+    motives (or EC or cogs) are sometimes missed by the annotation. One possibility is to
+    propagate the prediction of one orthogroup member to the whole orthogroup. This is what this vizualization do:
+    create a profile with hilights:
+    blue: any of the group with target profile is present
+    red: target profile itself is present
+    :param biodb:
+    :param column_labels:
+    :param taxon2group2count:
+    :param taxon2motif2count:
+    :return:
+    '''
+
+    print ec2orthogroups
+
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
+
+    tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+    print tree
+    t1 = Tree(tree)
+
+    R = t1.get_midpoint_outgroup()
+    t1.set_outgroup(R)
+    t1.ladderize()
+
+    taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+
+    head = True
+    for lf in t1.iter_leaves():
+        lf.branch_vertical_margin = 0
+        first_column = True
+        for col, value in enumerate(column_labels):
+            if head:
+                'first row, print gene names'
+                #print 'ok!'
+                n = TextFace(' %s ' % str(value))
+                n.rotation= 270
+                n.margin_top = 2
+                n.margin_right = 2
+                n.margin_left = 2
+                n.margin_bottom = 2
+
+                n.inner_background.color = "white"
+                n.opacity = 1.
+                lf.add_face(n, col, position="aligned")
+
+            n = TextFace(' %s ' % str(taxon2motif2count[value][lf.name]))
+            n.margin_top = 2
+            n.margin_right = 2
+            n.margin_left = 2
+            n.margin_bottom = 2
+            # if motif + ==> red
+            if taxon2motif2count[value][lf.name] >0:
+                #n.inner_background.color = "#FA5858"
+                n.inner_background.color = "#58ACFA"
+
+            else:
+                orthologue = False
+                grp_lst = ec2orthogroups[value]
+                for orthogroup in grp_lst:
+                    if taxon2group2count[orthogroup][lf.name] > 0:
+                        orthologue = True
+                # if orthogroup + ==> blue
+                if orthologue:
+                    n.inner_background.color = "#9FF781"
+                # if no orthologue ==> white
+                else:
+                    n.inner_background.color = 'white'
+
+            lf.add_face(n, col, position="aligned")
+        lf.name = taxon_id2organism_name[lf.name]
+        head=False
+
+    return t1
+
+
+
+def reverse_colourmap(cmap, name = 'my_cmap_r'):
+    import matplotlib as mpl
+    """
+    In:
+    cmap, name
+    Out:
+    my_cmap_r
+
+    Explanation:
+    t[0] goes from 0 to 1
+    row i:   x  y0  y1 -> t[0] t[1] t[2]
+                   /
+                  /
+    row i+1: x  y0  y1 -> t[n] t[1] t[2]
+
+    so the inverse should do the same:
+    row i+1: x  y1  y0 -> 1-t[0] t[2] t[1]
+                   /
+                  /
+    row i:   x  y1  y0 -> 1-t[n] t[2] t[1]
+    """
+    reverse = []
+    k = []
+
+    for key in cmap._segmentdata:
+        k.append(key)
+        channel = cmap._segmentdata[key]
+        data = []
+
+        for t in channel:
+            data.append((1-t[0],t[2],t[1]))
+        reverse.append(sorted(data))
+
+    LinearL = dict(zip(k,reverse))
+    my_cmap_r = mpl.colors.LinearSegmentedColormap(name, LinearL)
+    return my_cmap_r
+
+def pathways_heatmap(biodb,
+                      category2maps,
+                      category2taxon2map2count, map2count):
+
+    '''
+    motives (or EC or cogs) are sometimes missed by the annotation. One possibility is to
+    propagate the prediction of one orthogroup member to the whole orthogroup. This is what this vizualization do:
+    create a profile with hilights:
+    blue: any of the group with target profile is present
+    red: target profile itself is present
+    :param biodb:
+    :param column_labels:
+    :param taxon2group2count:
+    :param taxon2motif2count:
+    :return:
+    '''
+
+    import manipulate_biosqldb
+    import matplotlib.cm as cm
+    from matplotlib.colors import rgb2hex
+    import matplotlib as mpl
+
+
+
+
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
+
+    tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+    print tree
+    t1 = Tree(tree)
+
+    R = t1.get_midpoint_outgroup()
+    t1.set_outgroup(R)
+    t1.ladderize()
+
+
+
+
+
+
+
+
+    taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+
+    taxon2map2color = {}
+    for category in category2maps:
+        for map in category2maps[category]:
+            count_list = []
+            taxon2count = {}
+            for taxon in taxon_id2organism_name.keys():
+                taxon=int(taxon)
+                try:
+                    count_list.append(float(category2taxon2map2count[category][taxon][map[0]][0]))
+                    taxon2count[taxon] = category2taxon2map2count[category][taxon][map[0]][0]
+                except:
+                    continue
+            if len(count_list)>0:
+                #print 'count list',map, count_list, category2taxon2map2count[category][taxon]
+                #if min(count_list) == max(count_list):
+                count_list.append(0)
+                norm = mpl.colors.Normalize(vmin=min(count_list), vmax=max(count_list)) # map2count[map[0]][0]
+                cmap_blue = cm.Blues
+                m2 = cm.ScalarMappable(norm=norm, cmap=cmap_blue)
+                taxon2map2color[map[0]] = {}
+                norm = mpl.colors.Normalize(vmin=min(count_list), vmax=max(count_list)) # map2count[map[0]][0]
+                norm2 = mpl.colors.Normalize(vmin=min(count_list), vmax=max(count_list))
+                cmap_bw = cm.afmhot#YlOrBr
+                #cmap_bw_r = reverse_colourmap(cmap_bw)
+                m1 = cm.ScalarMappable(norm=norm2, cmap=cmap_bw)
+                m2 = cm.ScalarMappable(norm=norm, cmap=cmap_blue)
+                taxon2map2color[map[0]] = {}
+
+
+
+                for taxon in taxon2count:
+                    taxon2map2color[map[0]][taxon] = [rgb2hex(m2.to_rgba(float(taxon2count[taxon]))),
+                                                      rgb2hex(m1.to_rgba(float(taxon2count[taxon])))]
+
+
+    head = True
+    for lf in t1.iter_leaves():
+        lf.branch_vertical_margin = 0
+        first_column = True
+        col = 0
+
+        colors = []
+
+        for x, category in enumerate(category2taxon2map2count):
+
+            for y, map in enumerate(category2maps[category]):
+                col +=1
+                #print "column", col
+                taxon = lf.name
+                #print category2taxon2map2count[category][int(taxon)]
+                try:
+                    map_data = category2taxon2map2count[category][int(taxon)][map[0]]
+                except:
+                    #print 'map', map[0]
+                    if head:
+
+                        #print 'ok!'
+                        n = TextFace('%s (%s)' % (map[1], category))
+                        n.vt_align = 1
+                        n.hz_align = 1
+                        n.rotation= 270
+                        n.margin_top = 0
+                        n.margin_right = 0
+                        n.margin_left = 0
+                        n.margin_bottom = 0
+                        if x%2==0:
+                            n.inner_background.color = "#F79F81"
+                        else:
+                            n.inner_background.color = "white"
+                        n.opacity = 1.
+                        lf.add_face(n, col, position="aligned")
+
+                    n = TextFace('  ')
+                    n.margin_top = 1
+                    n.margin_right = 1
+                    n.margin_left = 1
+                    n.margin_bottom = 1
+                    # if motif + ==> red
+                    n.inner_background.color = "#E0F8E0"
+
+                else:
+                    #print "map_data", map_data
+                    #print 'map', map
+                    if head:
+
+                        #print 'ok!'
+                        n = TextFace('%s (%s)' % (map[1], category))
+                        n.vt_align = 1
+                        n.hz_align = 1
+                        n.rotation= 270
+                        n.margin_top = 0
+                        n.margin_right = 0
+                        n.margin_left = 0
+                        n.margin_bottom = 0
+
+                        if x%2==0:
+                            n.inner_background.color = "#F79F81"
+                        else:
+                            n.inner_background.color = "white"
+                        n.opacity = 1.
+                        lf.add_face(n, col, position="aligned")
+
+                    n = TextFace(' %s ' % str(map_data[0]))
+                    n.margin_top = 0
+                    n.margin_right = 0
+                    n.margin_left = 0
+                    n.margin_bottom = 0
+                    # if motif + ==> red
+                    if map_data[0] > 0:
+                        #n.inner_background.color = "#FA5858"
+                        try:
+                            n.inner_background.color = taxon2map2color[map[0]][int(taxon)][0] #"#58ACFA"
+                            n.fgcolor = taxon2map2color[map[0]][int(taxon)][1]
+                        except:
+                            n.inner_background.color = "#58ACFA"
+
+                    else:
+                        n.inner_background.color = "#9FF781"
+                    #if taxon_id2organism_name[lf.name]=="Rhabdochlamydia helveticae T3358":
+                    #    n.inner_background.color = "red"
+
+
+                lf.add_face(n, col, position="aligned")
+        lf.name = taxon_id2organism_name[lf.name]
+        head=False
+
+    return t1
+
+
+def multiple_profiles_heatmap(biodb,
+                              column_labels,
+                              taxon2group2count,
+                              reference_taxon=False,
+                              reference_column = False,
+                              taxon2group2value=False,
+                              highlight_first_column=False):
+
+    print "###################taxon2group2value###################", taxon2group2value
+    print "taxon2group2count", taxon2group2count
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
+
+    tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+
+    t1 = Tree(tree)
+
+    R = t1.get_midpoint_outgroup()
+    t1.set_outgroup(R)
+    t1.ladderize()
+
+    taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+
+    head = True
+    for lf in t1.iter_leaves():
+        lf.branch_vertical_margin = 0
+        first_column = True
+        for col, value in enumerate(column_labels):
+            if head:
+
+                    'first row, print gene names'
+                    #print 'ok!'
+                    n = TextFace(' %s ' % str(value))
+                    n.rotation= 270
+                    n.margin_top = 2
+                    n.margin_right = 2
+                    n.margin_left = 2
+                    n.margin_bottom = 2
+
+                    n.inner_background.color = "white"
+                    n.opacity = 1.
+                    lf.add_face(n, col, position="aligned")
+
+            if first_column and not reference_column and highlight_first_column:
+                n = TextFace(' %s ' % str(taxon2group2count[value][lf.name]))
+                ref_data = str(value)
+                n.margin_top = 2
+                n.margin_right = 2
+                n.margin_left = 2
+                n.margin_bottom = 2
+                if taxon2group2count[value][lf.name] >0:
+                    n.inner_background.color = "#FA5858"
+                else:
+                    n.inner_background.color = 'white'
+                first_column = False
+            else:
+                if not taxon2group2value:
+                    n = TextFace(' %s ' % str(taxon2group2count[value][lf.name]))
+                    n.margin_top = 2
+                    n.margin_right = 2
+                    n.margin_left = 2
+                    n.margin_bottom = 2
+                    if taxon2group2count[value][lf.name] >0:
+                        if not reference_column:
+                            if not reference_taxon:
+                                if lf.name != str(reference_taxon):
+                                    n.inner_background.color = "#58ACFA"
+                                else:
+                                    n.inner_background.color = "#FA5858"
+                            else:
+                                n.inner_background.color = "#FA5858"
+                        else:
+                            if lf.name == str(reference_taxon) or col == reference_column:
+                                n.inner_background.color = "#FA5858"
+                                n.fgcolor = "white"
+                            else:
+                                n.inner_background.color = "#58ACFA"
+                    else:
+                        n.inner_background.color = 'white'
+                else:
+                    n = TextFace(' %s ' % str(taxon2group2count[value][lf.name]))
+                    n.margin_top = 2
+                    n.margin_right = 2
+                    n.margin_left = 2
+                    n.margin_bottom = 2
+                    if taxon2group2count[value][lf.name] >0:
+                        if not reference_column:
+                            print 'no ref column'
+                            if not reference_taxon:
+                                if lf.name != str(reference_taxon):
+                                    print 'group', value
+                                    try:
+                                        if ref_data not in taxon2group2value[int(lf.name)][value]:
+                                            n.inner_background.color = "#9FF781" #58ACFA
+                                        else:
+                                            n.inner_background.color = "#F78181" ##F6D8CE
+                                    except:
+                                        n.inner_background.color = "#9FF781"
+                                else:
+                                    n.inner_background.color = "#FA5858"
+                            else:
+                                print 'group', lf.name
+                                if ref_data not in taxon2group2value[lf.name][value]:
+                                    n.inner_background.color = "#FA5858"
+                                else:
+                                    n.inner_background.color = "#FA5858"
+                        else:
+                            print 'ref column'
+                            if lf.name == str(reference_taxon) or col == reference_column:
+                                n.inner_background.color = "#FA5858"
+                                n.fgcolor = "white"
+
+                            else:
+                                n.inner_background.color = "#58ACFA"
+
+                    else:
+                        n.inner_background.color = 'white'
+
+
+
+
+
+            lf.add_face(n, col, position="aligned")
+        lf.name = taxon_id2organism_name[lf.name]
+        head=False
+
+    return t1
+
+
+def multiple_orthogroup_heatmap(biodb, reference_orthogroup, max_distance=2.2):
+
+    import manipulate_biosqldb
+    import pandas
+    import matplotlib.cm as cm
+    from matplotlib.colors import rgb2hex
+    import matplotlib as mpl
+
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    #queries = ['selv']
+
+    sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
+
+    tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+    print tree
+    t1 = Tree(tree)
+    #t.populate(8)
+    # Calculate the midpoint node
+    R = t1.get_midpoint_outgroup()
+    t1.set_outgroup(R)
+    t1.ladderize()
+
+    taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+
+
+    sql = 'select * from phylogenetic_profiles_euclidian_distance_%s' \
+          ' where group_1="%s" or group_2="%s" and euclidian_dist <=%s;' % (biodb,
+                                                                          reference_orthogroup,
+                                                                          reference_orthogroup,
+                                                                            max_distance)
+
+    data = list(server.adaptor.execute_and_fetchall(sql,))
+
+    data_frame = pandas.DataFrame(data)
+    sorted_data_frame = data_frame.sort(2)
+
+
+    ordered_orthogroups = [reference_orthogroup] + list(sorted_data_frame[sorted_data_frame.columns[0]])
+
+    l = sorted(set(sorted_data_frame[sorted_data_frame.columns[2]]))
+
+    colmap = dict(zip(l,range(len(l))[::-1]))
+    #print dict(colmap)
+    norm = mpl.colors.Normalize(vmin=-2, vmax=len(l))
+
+    cmap = cm.OrRd
+    cmap_blue = cm.Blues
+    #m2 = cm.ScalarMappable(norm=norm, cmap=cmap)
+    m2 = cm.ScalarMappable(norm=norm, cmap=cmap_blue)
+
+    orthogroup2distance = {}
+    distances = []
+
+    for one_pair in sorted_data_frame.itertuples(index=False):
+        distances.append(one_pair[2])
+        if one_pair[0] == one_pair[1]:
+            orthogroup2distance[one_pair[0]] = one_pair[2]
+        elif one_pair[0] == reference_orthogroup:
+            orthogroup2distance[one_pair[1]] = one_pair[2]
+        elif one_pair[1] == reference_orthogroup:
+            orthogroup2distance[one_pair[0]] = one_pair[2]
+        else:
+            raise 'Error: unexpected combination of groups'
+    ordered_distances = sorted(distances)
+
+    sql = 'show columns from orthology_%s' % biodb
+    ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
+
+    #print 'taxons!', ordered_taxons
+
+    ortho_sql = '"' + '","'.join(orthogroup2distance.keys()) + '"' + ',"%s"' % reference_orthogroup
+
+    sql = 'select * from orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
+
+    profile_tuples = list(server.adaptor.execute_and_fetchall(sql,))
+    #print "profile_tuples", profile_tuples
+    #profile_data = pandas.DataFrame(profile_tuples)
+    #print "profile_data", profile_data
+
+    taxon2group2n_homologs = {}
+    #all_orthogroups = list(profile_data[profile_data.columns[0]])
+    #import sys
+    #sys.exit()
+    #print "ordered_taxons", len(ordered_taxons), ordered_taxons
+    for i, tuple in enumerate(profile_tuples):
+        # get position of the group based on score
+        # get colum of taxon i
+        taxon2group2n_homologs[tuple[0]] = {}
+        for i, taxon in enumerate(ordered_taxons):
+            taxon2group2n_homologs[tuple[0]][taxon] = tuple[i+1]
+    #print taxon2group2n_homologs
+    # and set it as tree outgroup
+    head = True
+    for lf in t1.iter_leaves():
+        #lf.add_face(AttrFace("name", fsize=20), 0, position="branch-right")
+        lf.branch_vertical_margin = 0
+        #data = [random.randint(0,2) for x in xrange(3)]
+
+        for col, value in enumerate(ordered_orthogroups):
+            #print 'value', value
+            if head:
+
+                    'first row, print gene names'
+                    #print 'ok!'
+                    n = TextFace(' %s ' % str(value))
+                    n.rotation= 270
+                    n.margin_top = 4
+                    n.margin_right = 4
+                    n.margin_left = 4
+                    n.margin_bottom = 4
+                    if value == reference_orthogroup:
+                        n.inner_background.color = "red"
+                    else:
+                        n.inner_background.color = "white"
+                    n.opacity = 1.
+                    lf.add_face(n, col, position="aligned")
+
+
+
+            #if float(identity_value) >70:
+            #    if str(identity_value) == '100.00' or str(identity_value) == '100.0':
+            #        identity_value = '100'
+            #    else:
+            #        identity_value = str(round(float(identity_value), 1))
+            n = TextFace(' %s ' % str(taxon2group2n_homologs[value][lf.name]))
+            n.margin_top = 4
+            n.margin_right = 4
+            n.margin_left = 4
+            n.margin_bottom = 4
+            if taxon2group2n_homologs[value][lf.name] >0:
+                if value == reference_orthogroup:
+                    n.inner_background.color = "red"
+                else:
+
+                    n.inner_background.color = rgb2hex(m2.to_rgba(float(colmap[orthogroup2distance[value]])))
+
+            else:
+                n.inner_background.color = 'white'
+
+
+            #n.inner_background.color = rgb2hex(m.to_rgba(float(identity_value)))
+            lf.add_face(n, col, position="aligned")
+        lf.name = taxon_id2organism_name[lf.name]
+        head=False
+
+
+    # , tree_style=ts
+    t1.render("test.png", dpi=800, h=400)
+    #t1.write(format=0, outfile="new_tree.nw")
+
+
+
+
+
+
 def get_pfam_data(orthogroup, biodb):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'select A.protein_id, B.start, B.stop, A.organism, A.sequence_length, B.signature_accession, B.signature_description, A.taxon_id ' \
-          ' from (select taxon_id, orthogroup, protein_id, organism, length(translation) as sequence_length from orthology_detail_%s ' \
+          ' from (select taxon_id, orthogroup,locus_tag, protein_id, organism, length(translation) as sequence_length from orthology_detail_%s ' \
           ' where orthogroup="%s" ) A ' \
           ' left join (select * from interpro_%s where orthogroup="%s" and analysis="Pfam") B ' \
-          ' on A.protein_id=B.accession;' % (biodb, orthogroup, biodb, orthogroup)
+          ' on A.locus_tag=B.locus_tag;' % (biodb, orthogroup, biodb, orthogroup)
     '''
     sql = 'select accession, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where orthogroup="%s" and analysis="Pfam"' % (biodb, orthogroup)
     '''
     data = server.adaptor.execute_and_fetchall(sql,)
-
+    print sql
+    print 'data', data
+    
     protein2data = {}
     for one_locus in data:
         if one_locus[0] not in protein2data:
@@ -220,8 +882,6 @@ def draw_TM_tree(tree_name, locus2data):
     #ts.layout_fn = layout
     return t, ts
 
-
-
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
@@ -235,10 +895,10 @@ if __name__ == '__main__':
     #locus2pfam_data = get_pfam_data("group_20", 'chlamydia_03_15')
 
     #t, ts = draw_pfam_tree(args.tree, locus2pfam_data)
-
+    '''
     locus2TM_data = get_TM_data('chlamydia_03_15')
     t, ts = draw_TM_tree(args.tree, locus2TM_data)
     t.render("motifs.svg", w=1200, dpi=800, tree_style=ts)
     #t.show(tree_style=ts)
-
-
+    '''
+    multiple_COGs_heatmap("chlamydia_12_15", ['COG0835','COG2201','COG0840','COG2201','COG2208'])
