@@ -9,6 +9,8 @@ def protein_id2locus_tag(gbk_list, corresp_table, mcl_file):
     - correspondance table genome accession - mcl genome id (tab separeted file): AE015925	genome_1
     It allow to distinguish proteins from different genomes with the same protein ID
     - mcl file
+
+    - LIMITATION! protein from the same genome with the same protein ID
     '''
     
     mcl_genome2record_accession = {}
@@ -51,14 +53,21 @@ def protein_id2locus_tag(gbk_list, corresp_table, mcl_file):
                 try:
                     locus_tag = protein_id2locus_tag[accession][protein_data[1]]
                 except:
-                    print protein_id2locus_tag[accession].keys()
-                    import sys
-                    sys.exit()
+                    if accession =="LJUH01000000":
+                        print "accession", accession
+                        print "protein_data",protein_data
+                        print protein_id2locus_tag[accession].keys()
+                    locus_tag = protein_data[1]
+                    #print "accession", accession
+                    #print "protein_data",protein_data
+                    #print protein_id2locus_tag[accession].keys()
+                    #import sys
+                    #sys.exit()
                 data_renamed.append("%s|%s" % (protein_data[0], locus_tag))
             out_file.write('\t'.join(data_renamed)+'\n')
     out_file.close()
     #print protein_id2locus_tag
-
+    print 'done'
 
 
 if __name__ == '__main__':

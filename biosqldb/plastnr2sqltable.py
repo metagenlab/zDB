@@ -78,6 +78,11 @@
 def _chunks(l, n):
     return [l[i:i+n] for i in range(0, len(l), n)]
 
+def create_protein_accession2taxon_id_table():
+    sql = 'CREATE TABLE ncbi_nr.protein_id2taxon_id (' \
+    ' protein_id VARCHAR(60) UNIQUE,' \
+    ' taxon_id INT);'
+    print sql
 
 def insert_hit(conn,
                cursor,
@@ -85,40 +90,28 @@ def insert_hit(conn,
                locus_tag2accession,
                hit_n,
                query_accession,
-               line,
-               locus_tag):
-
-        import re
-        subject_accession = line[3]
-        query_gi = int(line[0])
-        subject_gi = int(line[2])
-
-        subject_kingdom = line[5]
-        subject_scientific_names = line[4]
-        subject_taxids = line[6]
-        subject_title = re.sub('\"', '', line[19]).split('[')[0]
-
-
-
-
-
+               locus_tag,
+               subject_accession,
+               subject_gi,
+               subject_kingdom,
+               subject_scientific_names,
+               subject_taxids,
+               subject_title):
 
         sql_blast_hit = 'INSERT INTO blastnr_hits_%s_%s(hit_number, ' \
                     'query_accession, ' \
                     'locus_tag, ' \
-                    'query_gi, ' \
                     'subject_gi, ' \
                     'subject_accession, ' \
                     'subject_kingdom, ' \
                     'subject_scientific_name, ' \
                     'subject_taxid, ' \
                     'subject_title)' \
-                    ' values (%s,"%s","%s",%s,%s,"%s","%s","%s","%s","%s");' % (db_name,
+                    ' values (%s,"%s","%s",%s,"%s","%s","%s","%s","%s");' % (db_name,
                                                     locus_tag2accession[locus_tag],
                                                     hit_n,
                                                     query_accession,
                                                     locus_tag,
-                                                    query_gi,
                                                     subject_gi,
                                                     subject_accession,
                                                     subject_kingdom,
@@ -156,6 +149,8 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
                                 mysql_db,
                                 input_blast_files):
 
+    import accession2taxon_id
+
     '''
     Load tabulated blast results into sql table blastnr_`db_name`
     Ab unique identifier (primary sql key) is attributed to each blast hsp
@@ -175,18 +170,15 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
 
 
     sql_blast_hsp_head = 'INSERT INTO blastnr_hsps_%s_%s(nr_hit_id, ' \
-            'evalue, ' \
-            'n_identical, ' \
+            'evalue,' \
+            'bit_score,' \
             'percent_identity, ' \
-            'positive, ' \
             'gaps, ' \
             'length, ' \
             'query_start, ' \
             'query_end, ' \
-            'query_cov, ' \
             'subject_start, ' \
-            'subject_end, ' \
-            'subject_strand)' \
+            'subject_end)' \
             ' values %s'
 
 
@@ -205,13 +197,31 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
             print 'Loading', n_file, one_blast_file, '...'
             input_file = [i.rstrip().split('\t') for i in f]
 
+            input_file_hit_gi = [i[1].split('|')[1] for i in input_file]
+
+            print 'getting protein 2 taxon id for %s proteins' % len(input_file_hit_gi)
+            gi2taxon_id = {}
+            gi2descriptions = {}
+
+            id_lists = _chunks(input_file_hit_gi, 300)
+            for i, one_list in enumerate(id_lists):
+                print i, "/", len(id_lists)
+                if i % 100 == 0:
+                    time.sleep(60)
+                gi2taxon_id.update(accession2taxon_id.gi2taxon_id(one_list, "protein"))
+                gi2descriptions.update(accession2taxon_id.gi2description(one_list, "protein"))
+            #print gi2descriptions.keys()
+            #print 'getting protein 2 description dir %s proteins' % len(input_file_hit_accessions)
+
             print 'loading blast results into database...'
             for n, line in enumerate(input_file):
+                print n, line[0]
                 # qgi qacc sgi sacc sscinames sskingdoms staxids evalue nident pident positive gaps length qstart qend qcovs sstart send sstrand stitle
                 if n%1000 == 0:
                     print time.ctime() + ': ' + str(round((float(n)/len(input_file))*100,2)) + '%...'
 
-                query_accession = line[1].split("|")[3]
+                query_accession = line[0]
+
                 try:
                     seqfeature_id = protein_id2seqfeature_id[query_accession]
                 except KeyError:
@@ -219,7 +229,7 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
                 locus_tag = seqfeature_id2locus_tag[str(seqfeature_id)]
 
                 if n != 0:
-                    query_accession_previous_line = input_file[n-1][1].split("|")[3]
+                    query_accession_previous_line = input_file[n-1][0]
                     try:
                         seqfeature_id_previous_line = protein_id2seqfeature_id[query_accession_previous_line]
                     except KeyError:
@@ -238,19 +248,30 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
                             except:
                                 print sql_hsps
 
-                evalue = line[7]
-                n_identical = int(line[8])
-                percent_identity = float(line[9])
-                positive = int(line[10])
-                gaps = int(line[11])
-                length = int(line[12])
-                query_start = int(line[13])
-                query_end = int(line[14])
-                query_cov = int(line[15])
-                subject_start = int(line[16])
-                subject_end = int(line[17])
-                subject_strand = line[18]
+                evalue = line[10]
+                #n_identical = int(line[8]) # remove
+                percent_identity = float(line[2])
+                #positive = int(line[10]) # remove
+                gaps = int(line[5])
+                length = int(line[3])
+                query_start = int(line[6])
+                query_end = int(line[7])
+                #query_cov = int(line[]) # calculate
+                subject_start = int(line[8])
+                subject_end = int(line[9])
+                bit_score = float(line[11])
+                #subject_strand = line[18] # remove
 
+                subject_accession = line[1].split("|")[3]
+                #query_gi = int(line[1].split("|")[1]) # remove
+                subject_gi = int(line[1].split("|")[1]) # parse it from plastp result
+                try:
+                    subject_kingdom = gi2descriptions[str(subject_gi)]['taxonomy'][0]  # get from accession2annotations
+                except:
+                    subject_kingdom = '-'
+                subject_scientific_names = gi2descriptions[str(subject_gi)]['source'] # get from accession2annotations
+                subject_taxids = gi2taxon_id[subject_gi] # get from accession2taxon_id
+                subject_title = gi2descriptions[str(subject_gi)]['description'] # get from accession2annotations
 
                 # first hit of the file
                 if n == 0:
@@ -266,26 +287,28 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
                                        locus_tag2accession,
                                        hit_n,
                                        query_accession,
-                                       line,
-                                       locus_tag)
+                                       locus_tag,
+                                       subject_accession,
+                                       subject_gi,
+                                       subject_kingdom,
+                                       subject_scientific_names,
+                                       subject_taxids,
+                                       subject_title)
 
-                    values += '(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,"%s"),' % (hit_id,
+                    values += '(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),' % (hit_id,
                                                                     evalue,
-                                                                    n_identical,
+                                                                    bit_score,
                                                                     percent_identity,
-                                                                    positive,
                                                                     gaps,
                                                                     length,
                                                                     query_start,
                                                                     query_end,
-                                                                    query_cov,
                                                                     subject_start,
-                                                                    subject_end,
-                                                                    subject_strand,
+                                                                    subject_end
                                                                     )
 
                 # check if new query accession)
-                elif line[1] != input_file[n-1][1]:
+                elif line[0] != input_file[n-1][0]:
                     # new query => insert its first hit into blastnrdb
                     blast_n += 1
                     hit_n = 1
@@ -297,43 +320,42 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
                                        locus_tag2accession,
                                        hit_n,
                                        query_accession,
-                                       line,
-                                       locus_tag)
+                                       locus_tag,
+                                       subject_accession,
+                                       subject_gi,
+                                       subject_kingdom,
+                                       subject_scientific_names,
+                                       subject_taxids,
+                                       subject_title)
 
-                    values += '(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,"%s"),' % (hit_id,
+                    values += '(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),' % (hit_id,
                                                                     evalue,
-                                                                    n_identical,
+                                                                    bit_score,
                                                                     percent_identity,
-                                                                    positive,
                                                                     gaps,
                                                                     length,
                                                                     query_start,
                                                                     query_end,
-                                                                    query_cov,
                                                                     subject_start,
-                                                                    subject_end,
-                                                                    subject_strand,
+                                                                    subject_end
                                                                     )
 
                 # same query
                 else:
                     # same hit ==> multiple hsps ==> hit id remain the same
-                    if line[3] == input_file[n-1][3]:
+                    if line[1] == input_file[n-1][1]:
                         # same hit
                         hsp_n+=1
-                        values += '(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,"%s"),' % (hit_id,
+                        values += '(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),' % (hit_id,
                                                                         evalue,
-                                                                        n_identical,
+                                                                        bit_score,
                                                                         percent_identity,
-                                                                        positive,
                                                                         gaps,
                                                                         length,
                                                                         query_start,
                                                                         query_end,
-                                                                        query_cov,
                                                                         subject_start,
-                                                                        subject_end,
-                                                                        subject_strand,
+                                                                        subject_end
                                                                         )
                     # different hit of the same query
                     else:
@@ -341,29 +363,31 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
                         # new hit, insert new entry into blast_hit table
 
                         hit_id = insert_hit(conn,
-                                           cursor,
-                                           db_name,
-                                           locus_tag2accession,
-                                           hit_n,
-                                           query_accession,
-                                           line,
-                                           locus_tag)
+                                       cursor,
+                                       db_name,
+                                       locus_tag2accession,
+                                       hit_n,
+                                       query_accession,
+                                       locus_tag,
+                                       subject_accession,
+                                       subject_gi,
+                                       subject_kingdom,
+                                       subject_scientific_names,
+                                       subject_taxids,
+                                       subject_title)
 
 
                         # initiate new value string
-                        values += '(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,"%s"),' % (hit_id,
+                        values += '(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s),' % (hit_id,
                                                                         evalue,
-                                                                        n_identical,
+                                                                        bit_score,
                                                                         percent_identity,
-                                                                        positive,
                                                                         gaps,
                                                                         length,
                                                                         query_start,
                                                                         query_end,
-                                                                        query_cov,
                                                                         subject_start,
-                                                                        subject_end,
-                                                                        subject_strand,
+                                                                        subject_end
                                                                         )
             # end fo the file, inserting hsps
             sql_hsps = sql_blast_hsp_head % (db_name, locus_tag2accession[locus_tag], values[0:-1])
@@ -515,17 +539,15 @@ def create_sql_blastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
             sql_blast_hsps = 'CREATE TABLE IF NOT EXISTS blastnr_hsps_%s_%s (hsp_id INT AUTO_INCREMENT PRIMARY KEY, ' \
                         ' nr_hit_id INT,' \
                         ' evalue varchar(200),' \
-                        ' n_identical int,' \
+                        ' bit_score float,' \
                         ' percent_identity float,' \
-                        ' positive int,' \
                         ' gaps int,' \
                         ' length int,' \
                         ' query_start int,' \
                         ' query_end int,' \
-                        ' query_cov float,' \
                         ' subject_start int,' \
                         ' subject_end int,' \
-                        ' subject_strand VARCHAR(5))' % (db_name, accession)
+                        ' INDEX nr_hit_id (nr_hit_id))' % (db_name, accession)
 
             sql_blast_hsps2 = 'ALTER TABLE blastnr.blastnr_hsps_%s_%s ADD CONSTRAINT fk_blast_hsp_hit_id_%s ' \
                               'FOREIGN KEY (nr_hit_id) REFERENCES blastnr_hits_%s_%s(nr_hit_id);' % (db_name, accession, accession, db_name, accession)
@@ -535,17 +557,20 @@ def create_sql_blastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
                             ' query_accession varchar(200),' \
                             ' hit_number int,' \
                             ' locus_tag VARCHAR(100), ' \
-                            ' query_gi int,' \
                             ' subject_gi int,' \
                             ' subject_accession varchar(200),' \
                             ' subject_kingdom varchar(200),' \
                             ' subject_scientific_name TEXT(2000000), ' \
                             ' subject_taxid TEXT(2000000),' \
-                            ' subject_title VARCHAR(2000))' % (db_name, accession)
+                            ' subject_title VARCHAR(2000),' \
+                            ' FOREIGN KEY (locus_tag) REFERENCES biosqldb.orthology_detail_%s(locus_tag),' \
+                            ' INDEX locus_tag (locus_tag))' % (db_name, accession, db_name)
 
 
             sql_blast_taxonomy = 'CREATE TABLE blastnr.blastnr_hits_taxonomy_%s_%s (nr_hit_id INT, ' \
-                                 'subject_taxon_id int)' % (db_name, accession)
+                                 ' subject_taxon_id int,' \
+                                 ' INDEX nr_hit_id (nr_hit_id),' \
+                                 ' INDEX subject_taxon_id (subject_taxon_id))' % (db_name, accession)
 
             sql_blast_taxonomy2 = 'ALTER TABLE blastnr.blastnr_hits_taxonomy_%s_%s ADD CONSTRAINT fk_blast_hit_id_%s ' \
                                   'FOREIGN KEY (nr_hit_id) REFERENCES blastnr_hits_%s_%s(nr_hit_id);' % (db_name, accession, accession, db_name, accession)
@@ -582,7 +607,7 @@ def create_sql_blastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
                 print sql_blast_taxonomy
                 print 'not created'
 
-    sql_taxonomy1 = 'CREATE TABLE IF NOT EXISTS blastnr_taxonomy (taxon_id int unique, ' \
+    sql_taxonomy1 = 'CREATE TABLE IF NOT EXISTS blastnr_taxonomy (taxon_id int unique PRIMARY KEY, ' \
                     ' no_rank VARCHAR(200) default "-", ' \
                     ' superkingdom VARCHAR(200) default "-", ' \
                     ' kingdom VARCHAR(200) default "-", ' \
@@ -645,6 +670,8 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
 
 
     import MySQLdb
+    import time
+    import accession2taxon_id
 
     print 'host', mysql_host
 
@@ -664,22 +691,40 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
     taxid2classification = {}
     print "Number of taxons into database: ", len(database_taxon_ids)
     for one_blast_file in input_blast_files:
+
                 print 'blast file %s' % one_blast_file
                 with open(one_blast_file, 'r') as f:
-                    input_file = [i.rstrip().split('\t') for i in f]
-                    for n, line in enumerate(input_file):
-                        temp_subject_taxids = line[6].split(';')
-                        # store taxon_ids
-                        for i in temp_subject_taxids:
-                            if i not in database_taxon_ids and i not in all_taxon_ids:
-                                all_taxon_ids.append(i)
-                print 'Number of noew taxons:', len(all_taxon_ids)
+
+                    #hit_column =
+                    all_taxons_ids = [i.rstrip().split("\t")[1].split('|')[1] for i in f]
+
+                    print 'getting gi 2 taxon id for %s proteins' % len(all_taxons_ids)
+                    gi2taxon_id = {}
+
+                    id_lists = _chunks(all_taxons_ids, 300)
+                    for i, one_list in enumerate(id_lists):
+                        print i, "/", len(id_lists)
+                        if i % 100 == 0:
+                            time.sleep(60)
+                        gi2taxon_id.update(accession2taxon_id.gi2taxon_id(one_list, "protein"))
+                        #print "protein_accession2taxon_id", protein_accession2taxon_id
+                    temp_subject_taxids = [str(i) for i in gi2taxon_id.values()]
+
+                    for i in temp_subject_taxids:
+                        if i not in database_taxon_ids and i not in all_taxon_ids:
+                            all_taxon_ids.append(i)
+                print 'Number of new taxons:', len(all_taxon_ids)
+                print 'i.e: ', all_taxon_ids[1:10]
+                time.sleep(60)
 
     print 'Fetching ncbi taxonomy... for %s taxons' % str(len(all_taxon_ids))
 
     # subdivide the taxon list in smaller lists, otherwise NCBI will limit the results to? 10000 (observed once only)
-    id_lists = _chunks(all_taxon_ids, 5000)
-    for one_list in id_lists:
+    id_lists = _chunks(all_taxon_ids, 300)
+    for i, one_list in enumerate(id_lists):
+        print i, "/", len(id_lists)
+        if i % 100 == 0:
+            time.sleep(60)
         taxid2classification.update(sequence_id2scientific_classification.taxon_id2scientific_classification(one_list))
 
 
@@ -699,17 +744,36 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
             except MySQLdb.IntegrityError:
                 print 'Taxon %s already in database' % str(taxon_id)
                 continue
-            for rank in taxid2classification[taxon_id].keys():
+            try:
+                for rank in taxid2classification[taxon_id].keys():
 
-                sql_id = re.sub(' ', '_', rank)
+                    sql_id = re.sub(' ', '_', rank)
 
-                value = taxid2classification[taxon_id][rank]
-                sql = 'UPDATE blastnr_taxonomy SET `%s`="%s" where taxon_id=%s' % (sql_id, value, taxon_id)
-                #print sql
+                    value = taxid2classification[taxon_id][rank]
+                    sql = 'UPDATE blastnr_taxonomy SET `%s`="%s" where taxon_id=%s' % (sql_id, value, taxon_id)
+                    #print sql
 
-                cursor.execute(sql)
-                conn.commit()
+                    cursor.execute(sql)
+                    conn.commit()
+            except KeyError:
+                print 'Could not add the following taxon: %s, trying again to get the data...' % taxon_id
+                temp_dico = sequence_id2scientific_classification.taxon_id2scientific_classification([taxon_id])
 
+                try:
+                    for rank in temp_dico[taxon_id].keys():
+
+                        sql_id = re.sub(' ', '_', rank)
+
+                        value = temp_dico[taxon_id][rank]
+                        sql = 'UPDATE blastnr_taxonomy SET `%s`="%s" where taxon_id=%s' % (sql_id, value, taxon_id)
+                        #print sql
+
+                        cursor.execute(sql)
+                        conn.commit()
+                    print 'sucess!'
+                except KeyError:
+                    print 'Could not add %s' % taxon_id
+                    print "temp_dico", temp_dico
 
 def blastnr2biosql(seqfeature_id2locus_tag,
                     locus_tag2seqfeature_id,
@@ -728,8 +792,8 @@ def blastnr2biosql(seqfeature_id2locus_tag,
     import biosql_own_sql_tables
     print 'host1', mysql_host
     print 'user1', mysql_user
-    '''
-    # add eventual new taxons to the main blastnr taxonomy table
+
+    print "add eventual new taxons to the main blastnr taxonomy table"
     #update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *input_blast_files)
 
     # load blast data into blastnr_ db_name table
@@ -737,28 +801,41 @@ def blastnr2biosql(seqfeature_id2locus_tag,
     n_poc_per_list = int(numpy.ceil(len(input_blast_files)/float(n_cpu)))
     query_lists = _chunks(input_blast_files, n_poc_per_list)
 
-    procs = []
-    for one_list in query_lists:
-        proc = Process(target=_load_blastnr_file_into_db, args=(seqfeature_id2locus_tag,
-                                                                locus_tag2seqfeature_id,
-                                                                protein_id2seqfeature_id,
-                                                                locus_tag2accession,
-                                                                db_name,
-                                                                mysql_host,
-                                                                mysql_user,
-                                                                mysql_pwd,
-                                                                mysql_db,
-                                                                one_list))
-        procs.append(proc)
-        proc.start()
+    if len(input_blast_files)>n_poc_per_list:
 
-    # Wait for all worker processes to finish
-    for proc in procs:
-        proc.join()
-    '''
+        procs = []
+        for one_list in query_lists:
+            proc = Process(target=_load_blastnr_file_into_db, args=(seqfeature_id2locus_tag,
+                                                                    locus_tag2seqfeature_id,
+                                                                    protein_id2seqfeature_id,
+                                                                    locus_tag2accession,
+                                                                    db_name,
+                                                                    mysql_host,
+                                                                    mysql_user,
+                                                                    mysql_pwd,
+                                                                    mysql_db,
+                                                                    one_list))
+            procs.append(proc)
+            proc.start()
+
+        # Wait for all worker processes to finish
+        for proc in procs:
+            proc.join()
+    else:
+        print 'Only %s input blast file(s), not working in paralell mode' % (len(input_blast_files))
+        _load_blastnr_file_into_db(seqfeature_id2locus_tag,
+                                locus_tag2seqfeature_id,
+                                protein_id2seqfeature_id,
+                                locus_tag2accession,
+                                db_name,
+                                mysql_host,
+                                mysql_user,
+                                mysql_pwd,
+                                mysql_db,
+                                input_blast_files)
 
     blastnr2biodb_taxonomic_table(db_name, locus_tag2accession, mysql_host, mysql_user, mysql_pwd, mysql_db, n_procs)
-
+    sys.stdout.write("cleaning multispecies blastnr record...")
     biosql_own_sql_tables.clean_multispecies_blastnr_record(db_name, create_new_sql_tables=True)
 
 def del_blastnr_table_content(db_name):
@@ -769,16 +846,22 @@ def del_blastnr_table_content(db_name):
     all_accessions = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
     for accession in all_accessions:
-        sql1 = 'DROP TABLE blastnr.blastnr_hsps_%s_%s' % (db_name, accession)
-        sql2 = 'DROP TABLE blastnr.blastnr_hits_%s_%s' % (db_name, accession)
-        sql3 = 'DROP TABLE blastnr.blastnr_hits_taxonomy_%s_%s' % (db_name, accession)
+        sql1 = 'DROP TABLE IF EXISTS blastnr.blastnr_hsps_%s_%s' % (db_name, accession)
+        sql2 = 'DROP TABLE IF EXISTS blastnr.blastnr_hits_%s_%s' % (db_name, accession)
+        sql3 = 'DROP TABLE IF EXISTS blastnr.blastnr_hits_taxonomy_%s_%s' % (db_name, accession)
+        sql4 = 'DROP TABLE IF EXISTS blastnr.blastnr_hits_taxonomy_filtered_%s_%s' % (db_name, accession)
 
 
-
+        print sql1
         server.adaptor.execute(sql1)
         server.adaptor.commit()
+        print sql3
         server.adaptor.execute(sql3)
         server.adaptor.commit()
+        print sql4
+        server.adaptor.execute(sql4)
+        server.adaptor.commit()
+        print sql2
         server.adaptor.execute(sql2)
         server.adaptor.commit()
 
@@ -788,6 +871,7 @@ def del_blastnr_table_content(db_name):
 if __name__ == '__main__':
     import argparse
     import manipulate_biosqldb
+    import sys
     import json
 
     parser = argparse.ArgumentParser()
@@ -797,6 +881,9 @@ if __name__ == '__main__':
     parser.add_argument("-p", '--n_procs', type=int, help="Number of threads to use (default=8)", default=8)
     parser.add_argument("-c", '--clean_tables', action='store_true', help="delete all sql tables")
 
+    #create_protein_accession2taxon_id_table()
+    #import sys
+    #sys.exit()
 
 
     args = parser.parse_args()
@@ -829,20 +916,20 @@ if __name__ == '__main__':
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    print "creating locus_tag2seqfeature_id"
+    sys.stdout.write("creating locus_tag2seqfeature_id")
     locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, biodb)
 
-    print "creating protein_id2seqfeature_id"
+    sys.stdout.write("creating protein_id2seqfeature_id")
     protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, biodb)
 
-    print "getting seqfeature_id2locus_tag"
+    sys.stdout.write("getting seqfeature_id2locus_tag")
     seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, biodb)
 
-    print "getting locus_tag2accession"
+    sys.stdout.write("getting locus_tag2accession")
     locus_tag2accession = manipulate_biosqldb.locus_tag2accession(server, args.mysql_database)
 
     if args.create_tables:
-        create_sql_blastnr_tables(args.mysql_database, mysql_host, mysql_user, mysql_pwd, mysql_db, main_blastnr_table=False, alternate_tables=True)
+        create_sql_blastnr_tables(args.mysql_database, mysql_host, mysql_user, mysql_pwd, mysql_db, main_blastnr_table=True, alternate_tables=True)
 
     blastnr2biosql(seqfeature_id2locus_tag,
                     locus_tag2seqfeature_id,

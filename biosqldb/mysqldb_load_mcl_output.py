@@ -273,6 +273,11 @@ def plot_orthogroup_size_distrib(server, biodatabase_name, out_name = "orthogrou
     if not taxon_id:
 
         all_taxons = manipulate_biosqldb.get_taxon_id_list(server, biodatabase_name)
+        for key in all_taxons:
+            sql = 'select description from bioentry where taxon_id=%s and description not like "%%%%plasmid%%%%" limit 1;'
+            print sql, key
+            description = server.adaptor.execute_and_fetchall(sql, key)[0][0]
+        
         print all_taxons
         all_data = {}
         for taxon in all_taxons:
@@ -315,6 +320,7 @@ def plot_orthogroup_size_distrib(server, biodatabase_name, out_name = "orthogrou
         for key, location in zip(complete_data.keys(), list(itertools.product(range(n),repeat=2))):
             serie = complete_data[key]
             sql = 'select description from bioentry where taxon_id=%s and description not like "%%%%plasmid%%%%" limit 1;'
+            print sql, key
             description = server.adaptor.execute_and_fetchall(sql, key)[0][0]
             print description
 
@@ -340,7 +346,13 @@ def plot_orthogroup_size_distrib(server, biodatabase_name, out_name = "orthogrou
                 p.text(rect.get_x()+rect.get_width()/2., height + 0.02*max_n_groups, int(height), ha='center', va='bottom')
 
         # plot all genomes group size distribution
-        all_grp_size = get_all_orthogroup_size(server, biodatabase_name)
+        #server, db = manipulate_biosqldb.load_db(db_name)
+        sql='select orthogroup, count(*) from biosqldb.orthology_detail_%s group by orthogroup' % biodatabase_name
+
+        # based on the new orthology detail table
+        all_grp_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        # based on biosqldb tables
+        #all_grp_size = get_all_orthogroup_size(server, biodatabase_name)
         
         df = pandas.Series(Counter(all_grp_size.values()))
         p = df.plot(kind="bar", alpha=0.5, color = 'b')
@@ -380,16 +392,64 @@ def get_orthology_matrix_separate_plasmids(server, biodatabase_name):
         dico = manipulate_biosqldb.bioentry_name2orthoup_size(server, biodatabase_name, genome)
         print dico
 
-def get_orthology_matrix_merging_plasmids(server, biodatabase_name):
+
+
+def get_orthology_matrix_merging_plasmids_biosqldb(server, biodatabase_name):
 
     all_orthogroups = get_all_orthogroup_size(server, biodatabase_name)
+    #server, db = manipulate_biosqldb.load_db(biodatabase_name)
+    #sql='select orthogroup, count(*) from biosqldb.orthology_detail_%s group by orthogroup' % biodatabase_name
+
+    # based on the new orthology detail table
+    #all_orthogroups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+
+    n_groups = len(all_orthogroups.keys())
+    #print "ngroups", n_groups
+
+
+    all_taxons = manipulate_biosqldb.get_taxon_id_list(server, biodatabase_name)
+    #print all_taxons
+    print 'get dico ortho count'
+    detailed_orthology_count = {}
+    for group in all_orthogroups.keys():
+        detailed_orthology_count[group] = {}
+        for taxon_id in all_taxons:
+            detailed_orthology_count[group][int(taxon_id)]= 0
+
+
+    for taxon_id in all_taxons:
+        #print taxon_id
+        dico = manipulate_biosqldb.taxon_id2orthogroup_size(server, biodatabase_name, taxon_id)
+        #print dico
+        #import time
+        #time.sleep(3)
+        #print "taxon", taxon_id
+        for group in dico.keys():
+            detailed_orthology_count[group][int(taxon_id)] += dico[group]
+    print 'count ok'
+    #print detailed_orthology_count
+    return detailed_orthology_count
+
+
+
+def get_orthology_matrix_merging_plasmids_own_tables(server, biodatabase_name):
+
+    #all_orthogroups = get_all_orthogroup_size(server, biodatabase_name)
+    server, db = manipulate_biosqldb.load_db(biodatabase_name)
+    sql='select orthogroup, count(*) from biosqldb.orthology_detail_%s group by orthogroup' % biodatabase_name
+
+    # based on the new orthology detail table
+    all_orthogroups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+
     n_groups = len(all_orthogroups.keys())
     #print "ngroups", n_groups
 
     
     all_taxons = manipulate_biosqldb.get_taxon_id_list(server, biodatabase_name)
     #print all_taxons
-
+    print 'get dico ortho count'
     detailed_orthology_count = {}
     for group in all_orthogroups.keys():
         detailed_orthology_count[group] = {}
@@ -406,6 +466,7 @@ def get_orthology_matrix_merging_plasmids(server, biodatabase_name):
         #print "taxon", taxon_id
         for group in dico.keys():
             detailed_orthology_count[group][int(taxon_id)] += dico[group]
+    print 'count ok'
     #print detailed_orthology_count
     return detailed_orthology_count
 
@@ -862,6 +923,7 @@ if __name__ == '__main__':
     parser.add_argument("-t", '--locus_tag2protein_id_files', type=str,help="locus_tag2protein_id files", nargs='+')
     parser.add_argument("-s", '--get_sequences', action="store_true", help="Create aa and nucleotide alignment directories in asset path")
     parser.add_argument("-c", '--core_groups_path', type=str, help="Path to save core orthogroup fasta. Taxon id as header for concatenation.", default=None)
+    parser.add_argument("-o", '--orthofinder', action="store_true",help="orthofinder input file (and not orthomcl)")
     args = parser.parse_args()
     
     server, db = manipulate_biosqldb.load_db(args.db_name)
@@ -870,10 +932,8 @@ if __name__ == '__main__':
 
     if not args.get_sequences and not args.core_groups_path:
 
-
-
         #print len(get_conserved_core_groups(server, "Chlamydiales_1"))
-
+        
         print "creating locus_tag2seqfeature_id"
         locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, args.db_name)
 
@@ -901,7 +961,11 @@ if __name__ == '__main__':
         seqfeature_id2protein_id = manipulate_biosqldb.seqfeature_id2protein_id_dico(server, args.db_name)
 
         print "parsing mcl file"
-        protein_id2orthogroup_id, orthomcl_groups2locus_tag_list, genome_orthomcl_code2proteins, protein_id2genome_ortho_mcl_code = parse_orthomcl_output(args.mcl)
+        protein_id2orthogroup_id, \
+        orthomcl_groups2locus_tag_list, \
+        genome_orthomcl_code2proteins, \
+        protein_id2genome_ortho_mcl_code = parse_orthomcl_output(args.mcl,
+                                                                 args.orthofinder)
 
         print "getting seqfeature_id2gene"
         seqfeature_id2gene = manipulate_biosqldb.seqfeature_id2gene_dico(server, args.db_name)
@@ -927,18 +991,18 @@ if __name__ == '__main__':
         server, db = manipulate_biosqldb.load_db(args.db_name)
         protein_id2TM = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
         protein_id2signal_peptide = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
+        
         print "adding orthogroup to seqfeature_qualifier_values"
-
-        #add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
+        add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
 
 
         print "creating orthology table merging plasmid"
-        orthogroup2detailed_count = get_orthology_matrix_merging_plasmids(server, args.db_name)
-        #print orthogroup2detailed_count
+        orthogroup2detailed_count = get_orthology_matrix_merging_plasmids_biosqldb(server, args.db_name)
+        print "orthogroup2detailed_count", orthogroup2detailed_count
 
+        print "creating orthology table"
         create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
-        '''
+        
         group2group_size = get_all_orthogroup_size(server, args.db_name)
 
         group2family_size = get_family_size(server, args.db_name)
@@ -967,21 +1031,20 @@ if __name__ == '__main__':
 
         print 'adding orthogroup to interpro table'
         biosql_own_sql_tables.add_orthogroup_to_interpro_table(args.db_name)
-
+        
         print "plotting orthogroup_size"
         plot_orthogroup_size_distrib(server, args.db_name)
 
         print "writing fasta files"
         #ortho_table = "orthology_%s" % args.db_name
         #all_taxon_ids = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
-        '''
-    if args.get_sequences:
+        
+    if args.get_sequences and not args.core_groups_path:
 
         if not os.path.exists(os.path.join(asset_path, "%s_fasta/" % args.db_name)):
             os.makedirs(os.path.join(asset_path, "%s_fasta/" % args.db_name))
 
         get_all_orthogroup_protein_fasta(server, args.db_name, os.path.join(asset_path, "%s_fasta/" % args.db_name))
-
 
         if not os.path.exists(os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name)):
             os.makedirs(os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name))
@@ -991,13 +1054,14 @@ if __name__ == '__main__':
         if not os.path.exists(os.path.join(asset_path, "%s_fasta_core/" % args.db_name)):
             os.makedirs(os.path.join(asset_path, "%s_fasta_core/" % args.db_name))
         
+        print 'getting single copy core groups'    
         core_ortho = get_conserved_core_groups(server, args.db_name)
         import shutil
         for group in core_ortho:
             shutil.copy(os.path.join(asset_path, "%s_fasta_by_taxons/%s.txt" % (args.db_name, group)),
                     os.path.join(asset_path, "%s_fasta_core/%s.txt" % (args.db_name, group)))
 
-        get_nucleotide_core_fasta(server, db, args.db_name, ".")
+        get_nucleotide_core_fasta(server, db, args.db_name, "./nucl")
 
 
 

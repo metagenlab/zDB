@@ -13,6 +13,39 @@ def locus_tag2orthogroup_size(db_name):
 def superkingdom_table():
     pass
 
+def get_orthology_matrix_merging_plasmids(server, biodatabase_name):
+
+
+    server, db = manipulate_biosqldb.load_db(biodatabase_name)
+    sql='select orthogroup, count(*) from biosqldb.orthology_detail_%s group by orthogroup' % biodatabase_name
+
+    all_orthogroups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    all_taxons = manipulate_biosqldb.get_taxon_id_list(server, biodatabase_name)
+    print "taxons"
+    print all_taxons
+    print 'get dico ortho count'
+    detailed_orthology_count = {}
+    for group in all_orthogroups.keys():
+        detailed_orthology_count[group] = {}
+        for taxon_id in all_taxons:
+            detailed_orthology_count[group][int(taxon_id)]= 0
+
+
+    for taxon_id in all_taxons:
+        print taxon_id
+        sql = "select orthogroup, `%s` from orthology_%s;" % (taxon_id, biodatabase_name)
+        print sql
+        dico = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        #print dico
+        #import time
+        #time.sleep(3)
+        #print "taxon", taxon_id
+        for group in dico.keys():
+            detailed_orthology_count[group][int(taxon_id)] += dico[group]
+    print 'count ok'
+    #print detailed_orthology_count
+    return detailed_orthology_count
 
 
 def COG_tables():
@@ -198,6 +231,167 @@ def locus_tag2best_hit_n_taxon_ids(db_name, accession):
     all_blastnr_taxons = server.adaptor.execute_and_fetchall(sql,)
 
 
+def get_locus2plasmid_or_not(biodb):
+
+    sql = 'SELECT locus_tag, IF(organism like "%%%%plasmid%%%%", "True", "False") AS NewResult from orthology_detail_%s;' % biodb
+    print sql
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    return manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+
+
+def circos_locus2taxon_highest_identity(biodb, reference_taxon_id):
+    '''
+    Given one reference taxon, get a dictionnary of the highest identity of homolog(s) in other taxons
+
+    :param reference_accession: reference taxon_id
+    :return:
+    '''
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'select locus_tag, orthogroup from orthology_detail_%s where taxon_id = %s' % (biodb,reference_taxon_id)
+    sql2 = 'select locus_tag, taxon_id from orthology_detail_%s' % (biodb)
+
+    # get all locus tags and orthogroups from reference genome
+    reference_orthogroup2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+
+    locus2locus_identity = {}
+    i = 0
+    # for each locus tag, get highest identity in each other taxons
+    for locus_A in reference_orthogroup2locus_tag:
+        #print '%s / %s' % (i, len(reference_orthogroup2locus_tag))
+        i+=1
+        #sql = 'select locus_tag, %s from orth_%s.%s;' % (locus_A, biodb,reference_orthogroup2locus_tag[locus_A])
+        sql = 'select locus_b,identity from orth_%s.%s where locus_a ="%s" UNION select locus_a,identity from orth_%s.%s where locus_b ="%s";' % (biodb,
+                                                                                                                                                  reference_orthogroup2locus_tag[locus_A],
+                                                                                                                                                  locus_A,
+                                                                                                                                                  biodb,
+                                                                                                                                                  reference_orthogroup2locus_tag[locus_A],
+                                                                                                                                                  locus_A)
+
+
+        try:
+            locus2identity = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+            locus2locus_identity[locus_A] = {}
+            for locus_B in locus2identity:
+                if locus_tag2taxon_id[locus_B] not in locus2locus_identity[locus_A]:
+                    locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]] = [locus2identity[locus_B], locus_B]
+                else:
+                    # if identity of a second homolog is higher, use this value
+                    if locus2identity[locus_B] > locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]]:
+                        locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]] = [locus2identity[locus_B], locus_B]
+        except:
+            pass
+    return locus2locus_identity
+
+
+def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="./"):
+
+    import mysqldb_load_mcl_output
+    import sys
+    from Bio import SeqIO
+    import os
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql_include = ''
+    if len(taxon_list) > 0:
+        for i in range(0, len(taxon_list)-1):
+            sql_include += ' `%s` = 1 and ' % taxon_list[i]
+        sql_include+='`%s` = 1' % taxon_list[-1]
+
+    sql ='select orthogroup from orthology_%s where %s' % (biodb, sql_include)
+    print sql
+    sys.stdout.write("getting core orthogroup list\n")
+    match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+    sys.stdout.write("N single copy core orthogroups: %s\n" % len(match_groups))
+
+    if type == "nucleotide":
+
+        sys.stdout.write("getting locus tag 2 sequence\n")
+        locus_tag2nucl_sequence = mysqldb_load_mcl_output.locus_tag2nucl_sequence_dict(server, db, biodb)
+        sys.stdout.write("writing one fasta/group\n")
+        for group in match_groups:
+            sql = 'select locus_tag from orthology_detail_%s where orthogroup="%s" and taxon_id in (%s)' % (biodb,
+                                                                                                                        group,
+                                                                                                                        ','.join([str(i) for i in taxon_list]))
+            locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+            print group, locus_list
+            seqs = []
+            for locus in locus_list:
+                seq = locus_tag2nucl_sequence[locus]
+                seqs.append(seq)
+            path = os.path.join(mypath, group + "_nucl.txt")
+            print path
+            with open(path, "w") as f:
+                SeqIO.write(seqs, f, "fasta")
+    else:
+        import mysqldb_load_mcl_output
+        locus_or_protein_id2taxon_id = manipulate_biosqldb.locus_or_protein_id2taxon_id(server, biodb)
+        print 'Number of core groups: %s' % len(match_groups)
+        mysqldb_load_mcl_output.get_one_group_data_taxon(match_groups, locus_or_protein_id2taxon_id, biodb, ".")
+
+
+def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb):
+
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    group_filter = '"' + '","'.join(ordered_orthogroups) + '"'
+
+
+    columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+              'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+    sql_2 = 'select %s from orthology_detail_%s where orthogroup in (%s)' % (columns, biodb, group_filter)
+
+    raw_data = server.adaptor.execute_and_fetchall(sql_2,)
+    import biosql_own_sql_tables
+    orthogroup2genes = biosql_own_sql_tables.orthogroup2gene(biodb)
+    orthogroup2products = biosql_own_sql_tables.orthogroup2product(biodb)
+    orthogroup2cogs = biosql_own_sql_tables.orthogroup2cog(biodb)
+    orthogroup2pfam = biosql_own_sql_tables.orthogroup2pfam(biodb)
+
+    match_groups_data = []
+    group_data = ''
+
+    for i, group in enumerate(ordered_orthogroups):
+        genes_data = ''
+        for gene in orthogroup2genes[group]:
+            genes_data += '%s (%s)<br/>' % (gene, orthogroup2genes[group][gene])
+        genes_data = genes_data[0:-5]
+        product_data = ''
+        for product in orthogroup2products[group]:
+            product_data += '%s (%s)<br/>' % (product, orthogroup2products[group][product])
+        cog_data = ''
+        for cog in orthogroup2cogs[group]:
+            if cog == None:
+                cog_data += '<p>- (%s)</p><br/>' % (orthogroup2cogs[group][cog])
+            else:
+                cog_data += '<a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid=%s">' \
+                            '%s (%s)</a><br/>' % (cog,cog, orthogroup2cogs[group][cog])
+        cog_data = cog_data[0:-5]
+        pfam_data = ''
+        try:
+            for pfam in orthogroup2pfam[group]:
+                pfam_data += '<a href="http://pfam.xfam.org/family/%s">%s (%s)</a><br/>' % (pfam,pfam, orthogroup2pfam[group][pfam])
+            pfam_data = pfam_data[0:-5]
+        except:
+            pfam_data += ' <p>-</p> '
+            pfam_data = pfam_data[0:-5]
+
+        match_groups_data.append([i, group, genes_data, product_data, cog_data, pfam_data])
+        n = 1
+        extract_result = []
+        for one_hit in raw_data:
+            extract_result.append((n,) + one_hit)
+            n+=1
+    return match_groups_data, extract_result
+
+
 
 def taxonomical_form(db_name, hit_number=1):
 
@@ -299,14 +493,21 @@ def clean_multispecies_blastnr_record(db_name, create_new_sql_tables = False):
     #all_accessions = ['Rhab']
     if create_new_sql_tables:
         for accession in all_accessions:
-            sql_blast_taxonomy = 'CREATE TABLE blastnr.blastnr_hits_taxonomy_filtered_%s_%s (nr_hit_id INT, ' \
-                         'subject_taxon_id int)' % (db_name, accession)
+            sql_drop = 'DROP TABLE IF EXISTS blastnr.blastnr_hits_taxonomy_filtered_%s_%s;' % (db_name, accession)
+            sql_blast_taxonomy = ' CREATE TABLE blastnr.blastnr_hits_taxonomy_filtered_%s_%s (nr_hit_id INT, ' \
+                         ' subject_taxon_id int,' \
+                         ' INDEX subject_taxon_id (subject_taxon_id))' % (db_name, accession)
 
             sql_blast_taxonomy2 = 'ALTER TABLE blastnr.blastnr_hits_taxonomy_filtered_%s_%s ADD CONSTRAINT fk_blast_hit_id_filter_%s ' \
                                   'FOREIGN KEY (nr_hit_id) REFERENCES blastnr.blastnr_hits_%s_%s(nr_hit_id);' % (db_name, accession, accession, db_name, accession)
-            print sql_blast_taxonomy
-            print sql_blast_taxonomy2
+
+            #print sql_drop
+            server.adaptor.execute(sql_drop,)
+            server.adaptor.commit()
+            #print sql_blast_taxonomy
             server.adaptor.execute(sql_blast_taxonomy,)
+            server.adaptor.commit()
+            #print sql_blast_taxonomy2
             server.adaptor.execute(sql_blast_taxonomy2,)
             server.adaptor.commit()
 
@@ -600,6 +801,7 @@ def best_hit_classification(db_name, accession):
                                                                                                                         accession)
 
     import pandas
+    print sql
     server, db = manipulate_biosqldb.load_db(db_name)
 
     data = [i for i in server.adaptor.execute_and_fetchall(sql)]
@@ -616,7 +818,7 @@ def best_hit_phylum_and_protein_length(db_name, accession):
                                                                                                                         db_name,
                                                                                                                         accession,                                                                                                              db_name,
                                                                                                                         accession)
-
+    print sql
     import pandas
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -654,7 +856,7 @@ def locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", 
                                                                         exclude_family)
 
 
-
+    print sql
     server, db = manipulate_biosqldb.load_db(db_name)
     data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
     return data
@@ -711,7 +913,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                                                                             accession,                                                                                                              db_name,
                                                                             accession,
                                                                             phylum, exclude_family)
-
+    print sql
     server, db = manipulate_biosqldb.load_db(db_name)
     data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
     return data
@@ -786,12 +988,12 @@ def orthogroup2gene(db_name, accession=False):
 
 
 
-def orthogroup2cog(db_name, group_list, accession=False):
+def orthogroup2cog(db_name, accession=False): # group_list,
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    group_list_form = '"' + '","'.join(group_list) + '"'
-
+    #group_list_form = '"' + '","'.join(group_list) + '"'
+    '''
     if not accession:
         sql =  'select t1.orthogroup, t2.cog_id from (select * from biosqldb.orthology_detail_%s ' \
                ' where orthogroup in (%s)) t1 left join COG.locus_tag2gi_hit_%s ' \
@@ -799,6 +1001,17 @@ def orthogroup2cog(db_name, group_list, accession=False):
     else:
         sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join COG.locus_tag2gi_hit_%s ' \
               'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
+    '''
+    if not accession:
+        sql =  'select t1.orthogroup, t2.cog_id from (select * from biosqldb.orthology_detail_%s ' \
+               ') t1 left join COG.locus_tag2gi_hit_%s ' \
+               'as t2 on t1.locus_tag=t2.locus_tag;' % (db_name, db_name)
+    else:
+        sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join COG.locus_tag2gi_hit_%s ' \
+              'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
+
+
+
 
     print 'df', sql
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -977,9 +1190,53 @@ def calculate_average_protein_identity(db_name):
                 average_id[all_taxons[i_taxon]] = {}
             average_id[all_taxons[i_taxon]][all_taxons[y_taxon]] = [one_average_id, len(identity_values)]
             print "one_average_id",all_taxons[i_taxon],all_taxons[y_taxon], one_average_id, len(identity_values)
-    import json
-    with open('genome_identity_dico.json', 'wb') as fp:
-        json.dump(average_id, fp)
+    #import json
+    #with open('genome_identity_dico.json', 'wb') as fp:
+    #    json.dump(average_id, fp)
+    return average_id
+
+def calculate_average_protein_identity_new_tables(db_name):
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    sql = 'select taxon_id from bioentry' \
+          ' inner join biodatabase on bioentry.biodatabase_id=biodatabase.biodatabase_id where biodatabase.name="%s" group by taxon_id' % db_name
+
+    all_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+
+    average_id = {}
+    for i_taxon in range(0,len(all_taxons)):
+        print 'i taxon', i_taxon
+        for y_taxon in range(i_taxon+1, len(all_taxons)):
+            shared_groups_sql = 'select orthogroup from orthology_%s where `%s` =1 and `%s`=1' % (db_name, all_taxons[i_taxon], all_taxons[y_taxon])
+            all_groups = [i[0] for i in server.adaptor.execute_and_fetchall(shared_groups_sql,)]
+            identity_values = []
+            print 'y taxon', y_taxon
+            for i, group in enumerate(all_groups):
+                if i%500 == 0:
+                    print "%s/%s" % (i, len(all_groups))
+                sql_ref = 'select locus_tag from orthology_detail_%s where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[i_taxon], group)
+                sql_query = 'select locus_tag from orthology_detail_%s where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[y_taxon], group)
+                locus_ref = server.adaptor.execute_and_fetchall(sql_ref,)[0][0]
+                locus_query = server.adaptor.execute_and_fetchall(sql_query,)[0][0]
+
+                sql_id = 'select identity from orth_%s.%s where (locus_a="%s" and locus_b="%s") or (locus_a="%s" and locus_b="%s")' % (db_name,
+                                                                                                                                       group,
+                                                                                                                                       locus_ref,
+                                                                                                                                       locus_query,
+                                                                                                                                       locus_query,
+                                                                                                                                       locus_ref)
+                id_value = server.adaptor.execute_and_fetchall(sql_id,)[0][0]
+
+                identity_values.append(id_value)
+            one_average_id = sum(identity_values) / float(len(identity_values))
+            if not all_taxons[i_taxon] in average_id:
+                average_id[all_taxons[i_taxon]] = {}
+            average_id[all_taxons[i_taxon]][all_taxons[y_taxon]] = [one_average_id, len(identity_values)]
+            print "one_average_id",all_taxons[i_taxon],all_taxons[y_taxon], one_average_id, len(identity_values)
+
+    return average_id
 
 
 def get_cooccurring_groups(db_name, accession1, accession2, windows_size=10, min_number_cooccurring=4, exclude=[]):
@@ -1046,33 +1303,7 @@ def orthogroup2protein_id_list(db_name):
 
 
 
-if __name__ == '__main__':
-    #print taxonomical_form('chlamydia_03_15')
-    #locus_tag2best_hit_n_taxon_ids('chlamydia_03_15', 'Rhab')
-    #clean_multispecies_blastnr_record('chlamydia_03_15', create_new_sql_tables=False)
 
-    #locus_tag2n_nr_hits('chlamydia_03_15', 'Rhab')
-    #locus_tag2n_blast_bacteria('chlamydia_03_15', 'Rhab')
-    #calculate_average_protein_identity('chlamydia_03_15')
-    #
-    '''
-    ribosomal_proteins = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'CP001928', 10, 9)
-    merged_ribosomal_proteins = []
-    for i in ribosomal_proteins:
-        merged_ribosomal_proteins += i
-
-    test = ribosomal_proteins = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'CP001928', 10, 7, merged_ribosomal_proteins)
-    print len(test)
-    for i in test:
-        print i
-    '''
-    wcw_syntheny = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'CP001928',3,3)
-    simkania_syntheny = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'NC_015713',3,3)
-    trachomatis_syntheny = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'AE001273',3,3)
-    para_proto_syntheny = get_cooccurring_groups('chlamydia_03_15', 'NC_005861', 'KNic',3,3)
-    tracho_muridarum = get_cooccurring_groups('chlamydia_03_15', 'NC_002620', 'AE001273',3,3)
-    print len(wcw_syntheny), len(simkania_syntheny), len(trachomatis_syntheny)
-    print len(para_proto_syntheny), len(tracho_muridarum)
 
 
 def _chunks(l, n):
@@ -1135,6 +1366,10 @@ def add_orthogroup_to_interpro_table(biodb_name):
     for one_row in interpro_data:
         print i
         i+=1
+        
+        orthogroup = locus2ortho[one_row[1]]
+        
+            
         sql = 'INSERT INTO interpro_%s(accession, locus_tag, organism, taxon_id,' \
               ' sequence_length, analysis, signature_accession, signature_description, start, ' \
               ' stop, score, interpro_accession, interpro_description, GO_terms, pathways, orthogroup) ' \
@@ -1154,7 +1389,7 @@ def add_orthogroup_to_interpro_table(biodb_name):
                                                                                                one_row[12],
                                                                                                one_row[13],
                                                                                                one_row[14],
-                                                                                       locus2ortho[one_row[1]])
+                                                                                               orthogroup)
         #try:
 
         server.adaptor.execute(sql)
@@ -1247,3 +1482,95 @@ def add_orthogroup_to_interpro_table(biodb_name):
                     row_string += '-\t'
         print row_string
 '''
+    
+if __name__ == '__main__':
+    #print taxonomical_form('chlamydia_03_15')
+    #locus_tag2best_hit_n_taxon_ids('chlamydia_03_15', 'Rhab')
+    #clean_multispecies_blastnr_record('chlamydia_03_15', create_new_sql_tables=False)
+
+    #locus_tag2n_nr_hits('chlamydia_03_15', 'Rhab')
+    #locus_tag2n_blast_bacteria('chlamydia_03_15', 'Rhab')
+    calculate_average_protein_identity('kpneumo_12_15')
+    #
+    '''
+    ribosomal_proteins = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'CP001928', 10, 9)
+    merged_ribosomal_proteins = []
+    for i in ribosomal_proteins:
+        merged_ribosomal_proteins += i
+
+    test = ribosomal_proteins = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'CP001928', 10, 7, merged_ribosomal_proteins)
+    print len(test)
+    for i in test:
+        print i
+    
+    wcw_syntheny = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'CP001928',3,3)
+    simkania_syntheny = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'NC_015713',3,3)
+    trachomatis_syntheny = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'AE001273',3,3)
+    para_proto_syntheny = get_cooccurring_groups('chlamydia_03_15', 'NC_005861', 'KNic',3,3)
+    tracho_muridarum = get_cooccurring_groups('chlamydia_03_15', 'NC_002620', 'AE001273',3,3)
+    print len(wcw_syntheny), len(simkania_syntheny), len(trachomatis_syntheny)
+    print len(para_proto_syntheny), len(tracho_muridarum)
+    '''
+
+
+    import json
+    import re
+    server, db = manipulate_biosqldb.load_db('kpneumo_12_15')
+    taxon_id2genome_description = manipulate_biosqldb.taxon_id2genome_description(server, 'kpneumo_12_15')
+
+    for i, accession in enumerate(taxon_id2genome_description):
+        #print i, accession
+        description = taxon_id2genome_description[accession]
+        description = re.sub(", complete genome\.", "", description)
+        description = re.sub(", complete genome", "", description)
+        description = re.sub(", complete sequence\.", "", description)
+        description = re.sub("strain ", "", description)
+        description = re.sub("str\. ", "", description)
+        description = re.sub(" complete genome sequence\.", "", description)
+        description = re.sub(" complete genome\.", "", description)
+        description = re.sub(" chromosome", "", description)
+        description = re.sub(" DNA", "S.", description)
+        description = re.sub("Merged record from ", "", description)
+        description = re.sub(", wgs", "", description)
+        description = re.sub("Candidatus ", "", description)
+        description = re.sub(".contig.0_1, whole genome shotgun sequence.", "", description)
+        description = re.sub("Protochlamydia", "P.", description)
+        description = re.sub("Chlamydia", "C.", description)
+        description = re.sub("Chlamydophila", "E.", description)
+        description = re.sub("Estrella", "E.", description)
+        description = re.sub("Rhodopirellula", "R.", description)
+        description = re.sub("Methylacidiphilum", "M.", description)
+        description = re.sub(" phage", "", description)
+        description = re.sub("Parachlamydia", "P.", description)
+        description = re.sub("Neochlamydia", "Neo.", description)
+        description = re.sub("Simkania", "S.", description)
+        description = re.sub("Waddlia", "W.", description)
+        description = re.sub("Pirellula", "P.", description)
+        description = re.sub("Rhabdochlamydiaceae sp.", "Rhabdo", description)
+
+        taxon_id2genome_description[accession] = description
+        #taxon_id2genome_description[description] = accession[0]
+
+
+    with open('genome_identity_dico.json', 'r') as f:
+        genome_identity = json.load(f)
+    header = '\t'
+    genome_identity['316'] = {}
+    for i in genome_identity:
+        header += '%s\t' % taxon_id2genome_description[str(i)]
+
+    print header
+    for i in genome_identity:
+        row_string = '%s\t' % taxon_id2genome_description[str(i)]
+        for y in genome_identity:
+            #print y,i
+            try:
+                row_string += '%s\t' % round(genome_identity[i][y][0],2)
+
+            except KeyError:
+                try:
+                    row_string += '%s\t' % round(genome_identity[y][i][0],2)
+                except KeyError:
+                    row_string += '-\t'
+        print row_string
+    

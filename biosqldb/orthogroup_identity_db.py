@@ -35,15 +35,24 @@ class Orthogroup_Identity_DB:
 
     def import_alignments(self, cursor, alignment_files):
 
+        import sys
+        sys.stdout.write("getting orthogroup identity matrix from %s fasta alignments...\n" % (len(alignment_files)))
         all_matrix = self._get_group_id2identity_matrix(alignment_files)
-
+        sys.stdout.write("Creating mysql table to store identity %s matrix...\n" % len(all_matrix))
         for one_matrix in all_matrix.keys():
             print one_matrix
-            self._create_identity_table(cursor, all_matrix[one_matrix], one_matrix)
+            #self._create_identity_table(cursor, all_matrix[one_matrix], one_matrix)
             self._add_identity_data(cursor, all_matrix[one_matrix], one_matrix)
             self.conn.commit()
 
+    '''
     def _create_identity_table(self, server, group_matrix, group_name):
+
+
+
+        # old table scheme with matrix style storage
+        # unpossible for big matrices
+        # ==> data now stored in the form: locus_a, locus_b, percentage_identity
 
         template_cols = ''
 
@@ -62,8 +71,15 @@ class Orthogroup_Identity_DB:
             print group_matrix
             print sql
             exit()
+    '''
+
+
 
     def _add_identity_data(self, server, group_matrix, group_name):
+        '''
+        # old approach creating tables of the size n locus vs n locus
+        # not adequate for big matrices: sql tables have a max number of columns
+        # ==> use two columns tables: locus 1, locus 1, identity
 
         if len(group_matrix) == 2:
             sql = 'INSERT INTO %s (locus_tag, `%s`) VALUES ("%s", "%s")' % (group_name, group_matrix[0, 1], group_matrix[0, 1], group_matrix[1, 1])
@@ -85,7 +101,23 @@ class Orthogroup_Identity_DB:
             template += str(group_matrix[-1, row])
             sql = 'INSERT INTO %s (%s) VALUES (%s)' % (group_name, template_cols, template)
             server.execute(sql)
+        '''
+        sql = 'CREATE TABLE %s (' \
+                   ' id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,' \
+                   ' locus_a VARCHAR(30) NOT NULL,' \
+                   ' locus_b VARCHAR(30) NOT NULL,' \
+                   ' identity FLOAT(5) )' % (group_name)
+        server.execute(sql)
 
+        locus_list = group_matrix[1:,0]
+        print locus_list
+        for x in range(1, len(group_matrix[:,0])):
+            for y in range(x, len(group_matrix[:,0])):
+                sql = 'INSERT INTO %s (locus_a, locus_b, identity) VALUES ("%s", "%s", %s)'  % (group_name,
+                                                                                                  locus_list[x-1],
+                                                                                                  locus_list[y-1],
+                                                                                                  group_matrix[x,y])
+                server.execute(sql)
 
 
 
@@ -394,9 +426,25 @@ def heatmap_presence_absence(biodb_name, group_name):
 def orthogroup2identity_dico(biodb_name, orthogroup):
     #server, db = manipulate_biosqldb.load_db(biodb_name)
     identity_table = np.array(get_orthogroup_identity_table(biodb_name, orthogroup))
-
+    locus2locus_id = {}
+    for row in identity_table:
+        if row[0] not in locus2locus_id:
+            locus2locus_id[row[0]] = {}
+            locus2locus_id[row[0]][row[1]] = row[2]
+        else:
+            locus2locus_id[row[0]][row[1]] = row[2]
+        if row[1] not in locus2locus_id:
+            locus2locus_id[row[1]] = {}
+            locus2locus_id[row[1]][row[0]] = row[2]
+        else:
+            locus2locus_id[row[1]][row[0]] = row[2]
+    return locus2locus_id
+    '''
+    # was made for square identity matrix. Changed to columns data (mai 2016).
+    identity_table = np.array(get_orthogroup_identity_table(biodb_name, orthogroup))
+    print identity_table
     all_locus = identity_table[:,0]
-
+    print "all locus", all_locus
     locus2locus_id = {}
     for counter_1, locus_1 in enumerate(all_locus):
         for counter_2, locus_2 in enumerate(all_locus):
@@ -406,6 +454,7 @@ def orthogroup2identity_dico(biodb_name, orthogroup):
             else:
                 locus2locus_id[locus_1][locus_2] = identity_table[counter_1, counter_2+1]
     return locus2locus_id
+    '''
 
 def locus_list2presence_absence_all_genomes(locus_list, biodb_name):
     server, db = manipulate_biosqldb.load_db(biodb_name)
@@ -472,6 +521,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     tata = Orthogroup_Identity_DB(args.db_name)
-    #tata.import_alignments(tata.cursor, args.align_files)
+    print "importing alignments..."
+    tata.import_alignments(tata.cursor, args.align_files)
     tata.add_average_orthogroup_identity(args.db_name)
     #check_identity("Chlamydia_12_14", "group_825", "Cav1_00733", "CT565")

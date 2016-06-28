@@ -342,6 +342,7 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
     #for x in range(0,len(region_record_list)-1):
     x = 0
     all_locus = []
+
     for n, record in enumerate(region_record_list):
         gd_feature_set = feature_sets[n]
         i = 0
@@ -611,7 +612,8 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
     #seqfeature_id2seqfeature = manipulate_biosqldb.seqfeature_id2seqfeature_object_dict(*all_records)
     #print "done"
     #print "region size", region_size_bp
-   
+
+    orthogroup_list = []
     for seqfeature_id, record_id in zip(seqfeature_id_list, bioentry_id_list):
         key = biodb_name + "_" + record_id
         record = cache.get(key)
@@ -638,10 +640,14 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
             sub_record = get_feature_neighborhood(target_feature_start,  target_feature_end, record, region_size_bp, "rec")
             sub_record_list.append(sub_record)
             print
-            print "sub_record", sub_record
-            print
+            for feature in sub_record.features:
+             if feature.type == 'CDS':
+                 try:
+                     orthogroup_list.append(feature.qualifiers['orthogroup'][0])
+                 except:
+                     pass
     region_locus_list = plot_multiple_regions_crosslink(locus_tag_list, sub_record_list, plasmid_list, out_name, biodb_name)
-    return region_locus_list
+    return region_locus_list, orthogroup_list
     
     #for record in reformat_records:
     #    print "record id", record.id

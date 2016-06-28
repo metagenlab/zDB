@@ -15,8 +15,8 @@ def import_gbk(gbk_name, server_name, db_name):
     records = [i for i in iterator]
     iterator = GenBank.Iterator(open(gbk_name), parser)
     if len(records)>1:
-        print "genbank file contains more than one record (if the assembly contain more than one contig, contactenate contigs into a single record before importing it the the sql database"
-        sys.exit()
+        print "genbank file contains more than one record, is it plasmid(s) and chromosome(s)? (if the assembly contain more than one contig, contactenate contigs into a single record before importing it the the sql database)"
+        #sys.exit()
     #With this iterator, the loading of the database is another one-liner:
     db_name.load(iterator)
     try:
