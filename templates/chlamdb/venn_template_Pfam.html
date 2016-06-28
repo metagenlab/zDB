@@ -32,15 +32,17 @@
 			for (name in this.listnames) {
 				value += '<li id="list_strains">' +this.listnames[name] + "</li>";
 			}
-			value += "</ul>\n<table>";
+			value += '</ul>\n<table id="pfam_table" class="sortable"><tr><th>ID</th><th>Description</th><th>Count in DB</th></tr>';
 			for (val in this.list) {
                 <!-- h[this.list[val]] -->
-				value += '<tr><td><a href="' + 'http://pfam.xfam.org/family/'+
-						this.list[val] + '">'+  this.list[val] + '</a></td><td>' + h[this.list[val]]
+				value += '<tr><td><a href="/chlamdb/fam/{{biodb}}/'+
+						this.list[val] + '/pfam">'+  this.list[val] + '</a></td><td>' + h[this.list[val]]
 						+ '</td></tr>';
 			}
 		    value += '</table>';
 			$("#names").html(value);
+			var newTableObject = document.getElementById("pfam_table");
+			sorttable.makeSortable(newTableObject);
 		}
 
       });

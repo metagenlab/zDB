@@ -53,7 +53,7 @@
                           <div class="panel-heading" style="width:100%">
                             <h3 class="panel-title">Help</h3>
                             </div>
-                    <p style="margin: 10px 10px 10px 10px">Venn diagramm of Pfam domains, max 6 genomes</p>
+                    <p style="margin: 10px 10px 10px 10px">Venn diagramm of EC numbers, max 6 genomes</p>
                     </div>
 
 
@@ -61,7 +61,7 @@
                     <form action="{% url "chlamdb.views.venn_EC" biodb %}" method="post">
                         {% csrf_token %}
                         {{ form_venn.as_p }}
-                        <input type="submit" name="venn" value="extract homologues" id="venn_button" />
+                        <input type="submit" name="venn" value="Compare EC numbers" id="venn_button" />
 
                     </form>
 

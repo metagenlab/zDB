@@ -521,6 +521,7 @@ def extract_pfam(request, biodb):
                 n+=1
 
             envoi_extract = True
+            asset_path = '/assets/temp/profil_tree.svg'
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
         form = extract_form_class()  # Nous créons un formulaire vide
@@ -594,11 +595,11 @@ def extract_EC(request, biodb):
             ec2description_dico = {}
 
             for i in ec2description_raw:
-                if i[3] != "1.0 Global and overview maps":
-                    if i[0] not in ec2description_dico:
-                        ec2description_dico[i[0]] = [list(i[1:len(i)])]
-                    else:
-                        ec2description_dico[i[0]].append(list(i[1:len(i)]))
+                #if i[3] != "1.0 Global and overview maps":
+                if i[0] not in ec2description_dico:
+                    ec2description_dico[i[0]] = [list(i[1:len(i)])]
+                else:
+                    ec2description_dico[i[0]].append(list(i[1:len(i)]))
 
             #enzyme2data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -608,51 +609,52 @@ def extract_EC(request, biodb):
                 for one_pathway in ec2description_dico[ec]:
                     match_groups_data.append([i, ec, one_pathway])
 
+            # get phylogenetic profile of match if not too big
+            if len(match_groups) < 50:
+                import ete_motifs
+                sql = 'select distinct ec,orthogroup from enzyme.locus2ec_%s as t1 ' \
+                      ' inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id where ec in (%s);' % (biodb,
+                                                                  '"' + '","'.join(match_groups) + '"')
+                orthogroup_data = server.adaptor.execute_and_fetchall(sql,)
+                ec2orthogroups = {}
+                orthogroup_list = []
+                for i in orthogroup_data:
+                    if i[0] not in ec2orthogroups:
+                        ec2orthogroups[i[0]] = [i[1]]
+                    else:
+                        ec2orthogroups[i[0]].append(i[1])
+                    orthogroup_list.append(i[1])
 
-            import ete_motifs
-            sql = 'select distinct ec,orthogroup from enzyme.locus2ec_%s as t1 ' \
-                  ' inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id where ec in (%s);' % (biodb,
-                                                              '"' + '","'.join(match_groups) + '"')
-            orthogroup_data = server.adaptor.execute_and_fetchall(sql,)
-            ec2orthogroups = {}
-            orthogroup_list = []
-            for i in orthogroup_data:
-                if i[0] not in ec2orthogroups:
-                    ec2orthogroups[i[0]] = [i[1]]
+                taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, orthogroup_list, type="orthogroup")
+                taxon2enzyme2count = ete_motifs.get_taxon2name2count(biodb, match_groups, type="EC")
+
+
+                labels = match_groups
+                tree2 = ete_motifs.combined_profiles_heatmap(biodb,
+                                                             labels,
+                                                             taxon2orthogroup2count,
+                                                             taxon2enzyme2count,
+                                                             ec2orthogroups)
+
+
+
+                if len(labels) > 40:
+                    print 'BIGGGGGGGGGGG', len(labels)
+                    big = True
+                    path = settings.BASE_DIR + '/assets/temp/profil_tree.png'
+                    asset_path = '/assets/temp/profil_tree.png'
+                    tree2.render(path, dpi=1200, h=600)
+
+
+
                 else:
-                    ec2orthogroups[i[0]].append(i[1])
-                orthogroup_list.append(i[1])
+                    print 'not BIGGGGGGGGGG', len(labels)
+                    big = False
 
-            taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, orthogroup_list, type="orthogroup")
-            taxon2enzyme2count = ete_motifs.get_taxon2name2count(biodb, match_groups, type="EC")
+                    path2 = settings.BASE_DIR + '/assets/temp/profil_tree.svg'
+                    asset_path = '/assets/temp/profil_tree.svg'
 
-
-            labels = match_groups
-            tree2 = ete_motifs.combined_profiles_heatmap(biodb,
-                                                         labels,
-                                                         taxon2orthogroup2count,
-                                                         taxon2enzyme2count,
-                                                         ec2orthogroups)
-
-
-
-            if len(labels) > 40:
-                print 'BIGGGGGGGGGGG', len(labels)
-                big = True
-                path = settings.BASE_DIR + '/assets/temp/profil_tree.png'
-                asset_path = '/assets/temp/profil_tree.png'
-                tree2.render(path, dpi=1200, h=600)
-
-
-
-            else:
-                print 'not BIGGGGGGGGGG', len(labels)
-                big = False
-
-                path2 = settings.BASE_DIR + '/assets/temp/profil_tree.svg'
-                asset_path = '/assets/temp/profil_tree.svg'
-
-                tree2.render(path2, dpi=800, h=600)
+                    tree2.render(path2, dpi=800, h=600)
 
 
 
@@ -762,11 +764,11 @@ def venn_EC(request, biodb):
             ec2description_dico = {}
 
             for i in ec2description_raw:
-                if i[3] != "1.0 Global and overview maps":
-                    if i[0] not in ec2description_dico:
-                        ec2description_dico[i[0]] = [list(i[1:len(i)])]
-                    else:
-                        ec2description_dico[i[0]].append(list(i[1:len(i)]))
+                #if i[3] != "1.0 Global and overview maps":
+                if i[0] not in ec2description_dico:
+                    ec2description_dico[i[0]] = [list(i[1:len(i)])]
+                else:
+                    ec2description_dico[i[0]].append(list(i[1:len(i)]))
 
             for one_ec in all_ec_list:
                 data = ec2description_dico[one_ec]
@@ -3557,7 +3559,7 @@ def multiple_orthogroup_heatmap(request, biodb, reference_orthogroup, max_distan
     taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
 
-    sql = 'select * from phylogenetic_profiles_euclidian_distance_%s' \
+    sql = 'select * from comparative_tables.phylogenetic_profiles_euclidian_distance_%s' \
           ' where (group_1="%s" or group_2="%s") and euclidian_dist <=%s limit 40;' % (biodb,
                                                                           reference_orthogroup,
                                                                           reference_orthogroup,
@@ -3768,19 +3770,20 @@ def metabo_overview(request, biodb):
                         ' PATH1 right join ' \
                         ' (select pathway_name,count(*) as n from enzyme.kegg2ec as t1 ' \
                         ' inner join enzyme.kegg_pathway as t2 on t1.pathway_id=t2.pathway_id ' \
-                        ' where pathway_category!="1.0 Global and overview maps" group by pathway_name) ' \
-                        ' PATH2 on PATH2.pathway_name=PATH1.pathway_name;' % biodb
+                        '  group by pathway_name) ' \
+                        ' PATH2 on PATH2.pathway_name=PATH1.pathway_name;' % biodb # where pathway_category!="1.0 Global and overview maps"
 
     map2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_pathway_count,))
     print 'map2count', map2count
 
-    sql = 'select C.pathway_category,B.taxon_id, A.pathway_name,A.n_enzymes, C.description from ' \
-          ' (select distinct accession,pathway_name, count(*) as n_enzymes from ' \
-          ' enzyme.locus2ec_%s as t1 inner join enzyme.kegg2ec as t2 ' \
-          ' on t1.ec_id=t2.ec_id inner join enzyme.kegg_pathway as t3 on t2.pathway_id=t3.pathway_id' \
-          ' where pathway_category !="1.0 Global and overview maps" group by accession,pathway_name) A ' \
-          ' inner join biosqldb.bioentry as B on A.accession=B.accession inner join enzyme.kegg_pathway as C ' \
-          ' on A.pathway_name=C.pathway_name where biodatabase_id=%s;' % (biodb, database_id)
+    sql = 'select C.pathway_category,taxon_id, A.pathway_name,A.n_enzymes, C.description from ' \
+          '( select distinct taxon_id,pathway_name, count(*) as n_enzymes from (' \
+          'select distinct taxon_id, ec_id  from enzyme.locus2ec_%s as b1 ' \
+          'inner join biosqldb.bioentry as b2 on b1.accession=b2.accession where biodatabase_id=%s) ' \
+          't1 inner join enzyme.kegg2ec as t2  on t1.ec_id=t2.ec_id ' \
+          'inner join enzyme.kegg_pathway as t3 on t2.pathway_id=t3.pathway_id ' \
+          'group by taxon_id,pathway_name) A ' \
+          'inner join enzyme.kegg_pathway as C  on A.pathway_name=C.pathway_name;' % (biodb, database_id)
 
     print sql
     pathway_data = server.adaptor.execute_and_fetchall(sql,)
@@ -3811,9 +3814,9 @@ def metabo_overview(request, biodb):
 
                 pathway_category2taxon2map[one_row[0]][one_row[1]][one_row[2]] = one_row[3:]
 
-    #tree = ete_motifs.pathways_heatmap(biodb,
-    #                                  category2maps,
-    #                                  pathway_category2taxon2map)
+    tree = ete_motifs.pathways_heatmap(biodb,
+                                      category2maps,
+                                      pathway_category2taxon2map,map2count)
 
 
     #except:
@@ -3823,13 +3826,13 @@ def metabo_overview(request, biodb):
         big = True
         path = settings.BASE_DIR + '/assets/temp/metabo_tree.png'
         asset_path = '/assets/temp/metabo_tree.png'
-        #tree.render(path, dpi=1200, h=600)
+        tree.render(path, dpi=1200, h=600)
     else:
         big = False
         path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
         asset_path = '/assets/temp/metabo_tree.svg'
 
-        #tree.render(path, dpi=800, h=600)
+        tree.render(path, dpi=800, h=600)
 
     envoi = True
 
@@ -3919,3 +3922,59 @@ def metabo_comparison(request, biodb):
 
     return render(request, 'chlamdb/metabo_comp.html', locals())
 
+@login_required
+def pfam_comparison(request, biodb):
+
+    print 'request', request.method
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    comp_metabo_form = make_metabo_from(biodb)
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+        form = comp_metabo_form(request.POST)  # Nous reprenons les données
+        #form2 = ContactForm(request.POST)
+        if form.is_valid():
+            import biosql_own_sql_tables
+            taxon_list = form.cleaned_data['targets']
+
+            sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
+
+            database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
+
+            print 'db id', database_id
+
+            taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+
+
+            sql_pathway_count = 'select distinct signature_accession,signature_description,count(*) as n ' \
+                                ' from interpro_%s where analysis="Pfam" group by signature_accession;' % biodb
+
+            pfam_data_raw = server.adaptor.execute_and_fetchall(sql_pathway_count,)
+            pfam2data = {}
+            for one_pfam_entry in pfam_data_raw:
+                pfam2data[one_pfam_entry[0]] = one_pfam_entry
+
+
+
+
+            taxon_dicos = []
+            for taxon in taxon_list:
+
+                sql = 'select distinct signature_accession,count(*) as n ' \
+                      ' from interpro_%s where analysis="Pfam" and taxon_id=%s ' \
+                      ' group by signature_accession;' % (biodb,taxon)
+
+                accession2count_taxon = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+
+                for accession in pfam2data:
+                    if accession not in accession2count_taxon:
+                        accession2count_taxon[accession] = 0
+                taxon_dicos.append(accession2count_taxon)
+
+            envoi_comp = True
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = comp_metabo_form()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/pfam_comp.html', locals())

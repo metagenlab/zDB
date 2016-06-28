@@ -61,7 +61,7 @@
                     <form action="{% url "chlamdb.views.venn_pfam" biodb %}" method="post">
                         {% csrf_token %}
                         {{ form_venn.as_p }}
-                        <input type="submit" name="venn" value="extract homologues" id="venn_button" />
+                        <input type="submit" name="venn" value="Compare Pfam" id="venn_button" />
 
                     </form>
 

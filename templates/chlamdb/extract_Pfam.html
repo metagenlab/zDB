@@ -3,6 +3,7 @@
 
 <html>
     <head>
+        {% load static %}
         <script type="text/javascript" id="js">
             $(document).ready(function() {
             // call the tablesorter plugin
@@ -42,8 +43,10 @@
 
             <nav>
                 <ul id="tabs_main" class="nav nav-tabs">
-                    <li class="active"><a href="{% url 'extract_pfam' biodb %}">Detailed comparison 2</a></li>
-                    <li><a href="{% url 'venn_pfam' biodb %}">Venn diagram 2</a></li>
+                    <li class="active"><a href="{% url 'extract_pfam' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_pfam' biodb %}">Venn diagram</a></li>
+                    <li><a href="{% url 'pfam_comparison' biodb %}">Compare Pfam Domains</a></li>
+
                 </ul>
             </nav>
 
@@ -78,7 +81,8 @@
             {% if envoi_extract %}
 
                 <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                    <li class="active"><a href="#red" data-toggle="tab">Orthogroups</a></li>
+                    <li class="active"><a href="#red" data-toggle="tab">Pfam</a></li>
+                    <li><a href="#orange" data-toggle="tab">Phylogenetic profile</a></li>
                 </ul>
 
                 <div id="my-tab-content" class="tab-content">
@@ -119,8 +123,11 @@
 
 
                     </div>
-
+                    <div class="tab-pane" id="orange">
+                        <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree"></object>
+                    </div>
                 </div>
+
             {% endif %}
         </div>
     </div>

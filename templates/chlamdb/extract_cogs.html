@@ -3,6 +3,7 @@
 
 <html>
     <head>
+        {% load static %}
         <script type="text/javascript" id="js">
             $(document).ready(function() {
             // call the tablesorter plugin
@@ -78,6 +79,7 @@
 
                 <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                     <li class="active"><a href="#red" data-toggle="tab">COGs</a></li>
+                    <li><a href="#orange" data-toggle="tab">Phylogenetic profile</a></li>
                 </ul>
 
                 <div id="my-tab-content" class="tab-content">
@@ -114,6 +116,10 @@
                         </table>
 
 
+                    </div>
+
+                    <div class="tab-pane" id="orange">
+                        <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
                     </div>
 
 

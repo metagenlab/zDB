@@ -46,20 +46,20 @@
                 <thead>
                     <tr>
                         <th></th>
-                        <th id="entete_locus" class="rotate">Orthogroup</th>
-                        <th id="entete_locus" class="rotate">Locus</th>
-                        <th id="entete_locus" class="rotate">Protein id</th>
-                        <th id="entete_gene" class="rotate">Start</th>
-                        <th id="entete_gene" class="rotate">Stop</th>
-                        <th id="entete_strand" class="rotate">S.</th>
-                        <th id="entete_gene" class="rotate">Gene</th>
-                        <th id="entete_n" class="rotate">nH</th>
-                        <th id="entete_n" class="rotate">nG</th>
-                        <th id="entete_n" class="rotate">TM</th>
-                        <th id="entete_n" class="rotate">SP</th>
-                        <th id="entete_product" class="rotate">Product</th>
-                        <th id="entete_organism" class="rotate">Organism</th>
-                        <th id="entete_translation" class="rotate">Translation</th>
+                        <th id="entete_locus">Orthogroup</th>
+                        <th id="entete_locus">Locus</th>
+                        <th id="entete_locus">Protein id</th>
+                        <th id="entete_gene">Start</th>
+                        <th id="entete_gene">Stop</th>
+                        <th id="entete_strand">S.</th>
+                        <th id="entete_gene">Gene</th>
+                        <th id="entete_n">nH</th>
+                        <th id="entete_n">nG</th>
+                        <th id="entete_n">TM</th>
+                        <th id="entete_n">SP</th>
+                        <th id="entete_product">Product</th>
+                        <th id="entete_organism">Organism</th>
+                        <th id="entete_translation">Translation</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -67,8 +67,8 @@
                     {% for values in search_result %}
                     <tr>
                         <td>{{values.0}}</td>
-                        <td><a href="{% url 'locusx' biodb values.1 True %}"  target="_blank">{{values.1}}</a></td>
-                        <td><a href="{% static biodb %}/interpro/{{values.15}}.html"  target="_blank">{{values.2}}</a></td>
+                        <td><a href="{% url 'locusx' biodb values.1 True %}"  target="_top">{{values.1}}</a></td>
+                        <td><a href="{% url 'locusx' biodb values.2 True%}"  target="_top">{{values.2}}</a></td>
                         <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
                         <td>{{values.4}}</td>
                         <td>{{values.5}}</td>

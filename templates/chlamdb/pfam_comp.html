@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+    {% load staticfiles %}
+    {% load static %}
+    {% get_static_prefix as STATIC_PREFIX %}
+    {% load custom_tags %}
+
+    <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
+    <!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
+    <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
+
+</head>
+
+
+<body height="5000px">
+
+    <div id="container">
+
+
+        <div id="sidebar">
+            {% include "chlamdb/menu.html" %}
+        </div>
+
+        <div id="header">
+            {% include "chlamdb/user.html" %}
+        </div>
+
+        <div id="content">
+            <nav>
+                <ul id="tabs_main" class="nav nav-tabs">
+                    <li><a href="{% url 'extract_pfam' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_pfam' biodb %}">Venn diagram</a></li>
+                    <li class="active"><a href="{% url 'pfam_comparison' biodb %}">Compare Pfam Domains</a></li>
+
+                </ul>
+            </nav>
+                <form action='{% url "chlamdb.views.pfam_comparison" biodb %}' method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="submit" value="Submit" />
+
+                </form>
+
+                {% if envoi_comp %}
+
+                        <table class="sortable">
+                                <style>
+                    table {
+                        width:100%;
+                        table-layout:fixed;
+                    }
+                    td {
+                        overflow: hidden;
+                        white-space: nowrap;
+                    }
+                </style>
+                        <tr>
+                            <th id="entete_meta" >Domain ID</th>
+                            <th id="entete_meta3">Description</th>
+                            <th id="entete_meta4">nDomain</th>
+                            {% for taxon in taxon_list %}
+                                <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
+                            {% endfor %}
+                        <tr>
+                        {% for key, values in pfam2data.items %}
+                            <tr>
+                                <td><a href="{% url 'fam' biodb values.0 'pfam' %}" target="_top">{{values.0}}</a></td><td>{{values.1}}</td><td>{{values.2}}</td>
+                                {%for taxon_dico in taxon_dicos %}
+                                    <td>{{taxon_dico|keyvalue:values.0}}</td>
+                                {% endfor %}
+
+                            </tr>
+                        {% endfor %}
+                        </table>
+                {% endif %}
+            </div>
+        </div>
+</body>
+</html>
