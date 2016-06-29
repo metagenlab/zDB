@@ -789,6 +789,71 @@ def locus_tag2n_nr_hits(db_name, genome_accession, exclude_family = False):
     print sql
     return manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
+def collect_genome_statistics(biodb):
+    from Bio.SeqUtils import GC
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'select accession, seq as length from bioentry as t1 ' \
+          ' inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id ' \
+          ' inner join biosequence as t3 on t1.bioentry_id=t3.bioentry_id where t2.name="%s";' % biodb
+    print 'getting accession2genome_sequence...'
+
+    accession2genome_sequence = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    sql = 'select accession, organism, count(*) from orthology_detail_%s group by accession;' % biodb
+
+    print 'getting accession2genome_data...'
+    # organism name, protein encoding ORF number
+    accession2genome_data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+
+    #print '<td colspan="6"><table width="800" border=0  class=table_genomes>'
+
+    print 'preparing data...'
+    genomes_data = []
+
+    for accession in accession2genome_data:
+        print accession
+        one_genome_data = []
+        one_genome_data.append(accession)
+        try:
+            one_genome_data.append(round(GC(accession2genome_sequence[accession].replace("N", "")),2))
+        except:
+            one_genome_data.append('-')
+        one_genome_data.append(accession2genome_data[accession][1])
+        try:
+            one_genome_data.append(accession2genome_sequence[accession].count(200*'N') + 1)
+        except:
+            one_genome_data.append('-')
+        try:
+            size = len(accession2genome_sequence[accession]) - (200*accession2genome_sequence[accession].count(200*'N'))
+            one_genome_data.append(str(size))
+        except:
+            one_genome_data.append('-')
+        one_genome_data.append(accession2genome_data[accession][0])
+        genomes_data.append(one_genome_data)
+
+    #['NC_017080', 73.29, 2955L, 1, '3803225', 'Phycisphaera mikurensis NBRC 102666'], ['LVAZ01000000', 67.26, 3793L, 662, '4951698', 'Victivallales bacterium Lenti_02']
+    # accession, GC, n_CDS, n_contigs, genome_size, description
+    sql = 'create table if not EXISTS genomes_info_%s (ACCESSION VARCHAR(200), GC FLOAT, n_CDS INT ,n_contigs INT, genome_size INT, description VARCHAR (20000))' % biodb
+
+    server.adaptor.execute_and_fetchall(sql,)
+
+    for one_genome in genomes_data:
+        sql = 'insert into genomes_info_%s values ("%s", %s, %s, %s, %s, "%s")' % (biodb,
+                                                                           one_genome[0],
+                                                                           one_genome[1],
+                                                                           one_genome[2],
+                                                                           one_genome[3],
+                                                                               one_genome[4],
+                                                                               one_genome[5]    )
+        print sql
+        server.adaptor.execute(sql,)
+        server.commit()
+
+
+
+
 def best_hit_classification(db_name, accession):
     sql = 'select A.*, t4.superkingdom, t4.kingdom, t4.phylum, t4.order, t4.family, t4.genus, t4.species' \
           ' from (select locus_tag, TM, SP, gene, product from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \

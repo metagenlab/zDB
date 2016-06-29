@@ -62,7 +62,6 @@ accession_list = ["NZ_CP012300",
 print len(accession_list)
 
 taxon_list_chlamydiae = [
-
 "131",
 "67",
 "1279767",
