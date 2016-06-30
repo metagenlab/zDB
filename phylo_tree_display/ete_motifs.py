@@ -260,10 +260,6 @@ def pathways_heatmap(biodb,
 
 
 
-
-
-
-
     taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
     taxon2map2color = {}

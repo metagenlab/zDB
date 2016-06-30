@@ -70,8 +70,8 @@ def remove_blast_redundancy(blast_file_list, check_overlap=True):
                      blast2data[line[1]][line[0]] = [float(line[2]), int(line[8]), int(line[9])]
                 if line[0] not in queries:
                     queries.append(line[0])
-    print 'raw dico'
-    print blast2data
+    #print 'raw dico'
+    #print blast2data
 
     print 'preparing blast dico'
     if check_overlap:
@@ -134,8 +134,8 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
         queries_count[query] = 0
         for one_blast in blast2data:
             if query in blast2data[one_blast]:
-                print blast2data[one_blast][query]
-                if float(blast2data[one_blast][query][0]) > 95:
+                #print blast2data[one_blast][query]
+                if float(blast2data[one_blast][query][0]) > 80:
                     queries_count[query]+=1
                 else:
                     del blast2data[one_blast][query]
@@ -167,6 +167,8 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
     t1.set_outgroup(R)
     t1.ladderize()
 
+    print t1
+    
     head = True
     print 'drawing tree'
     for lf in t1.iter_leaves():
@@ -174,7 +176,8 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
         lf.branch_vertical_margin = 0
         #data = [random.randint(0,2) for x in xrange(3)]
 
-        for col, value in enumerate(sorted(queries)):
+        for col, value in enumerate(queries):
+            print 'leaf:', lf.name, 'gene:', value 
             if head:
                     #'first row, print gene names'
                     #print 'ok!'
@@ -189,12 +192,13 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
             try:
 
                 identity_value = blast2data[lf.name][value][0]
+                print 'identity', lf.name, value, identity_value
                 color = rgb2hex(m2.to_rgba(float(identity_value)))
             except:
                 identity_value = 0
                 color = "white"
 
-            if float(identity_value) >95:
+            if float(identity_value) >80:
                 if str(identity_value) == '100.00' or str(identity_value) == '100.0':
                     identity_value = '100'
                 else:
@@ -205,7 +209,7 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
 
                 n.opacity = 1.
             else:
-                print 'identity not ok', lf.name, identity_value
+                print 'identity not ok', lf.name, identity_value, value
                 print blast2data[lf.name]
                 identity_value = '-'
                 n = TextFace(' %s ' % str(identity_value))
@@ -224,7 +228,7 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
         except KeyError:
             lf.name = ' %s (%s)' % (lf.name, id2mlst[lf.name])
         head = False
-
+    print 'rendering tree'
     t1.render("test.svg", dpi=800, h=400)
 
     print blast2data
