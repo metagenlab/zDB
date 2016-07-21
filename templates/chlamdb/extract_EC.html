@@ -3,7 +3,11 @@
 
 <html>
     <head>
+
+
+
         {% load static %}
+
         <script type="text/javascript" id="js">
             $(document).ready(function() {
             // call the tablesorter plugin
@@ -23,6 +27,10 @@
                 $('#tabs1').tab();
             });
         </script>
+
+
+
+
     </head>
 
 
@@ -38,6 +46,8 @@
         </div>
 
         <div id="content">
+
+
 
 
 
@@ -74,6 +84,26 @@
 
 
 
+            {% if wrong_n_missing%}
+
+            <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                <div class="panel-heading" style="width:100%">
+                    <h3 class="panel-title">Help</h3>
+                </div>
+                <p style="margin: 10px 10px 10px 10px">You cannot set a number of missing data bigger than the number of included genomes</p>
+            </div>
+
+            {% elif no_match%}
+
+            <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                <div class="panel-heading" style="width:100%">
+                    <h3 class="panel-title"></h3>
+                </div>
+                <p style="margin: 10px 10px 10px 10px">No match</p>
+            </div>
+
+            {% endif %}
+
             {% if envoi_extract %}
 
                 <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
@@ -90,6 +120,8 @@
                             <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
                             <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                            <a href="{% url 'circos_main' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
+
                             <br/>
                         </div>
 
@@ -105,6 +137,8 @@
                                     <th>KEGG Map</th>
                                     <th>Pathway Category</th>
                                     <th>Pathway description</th>
+                                    <th>present in (/{{include|length}})</th>
+                                    <th>freq complete database {{max_n}}</th>
                                 </tr>
                             </thead>
 
@@ -115,6 +149,8 @@
                                     {% for value_2 in value.2 %}
                                     <td>{{value_2}}</td>
                                     {% endfor %}
+                                    <td>{{value.3}}</td>
+                                    <td>{{value.4}}</td>
                                 </tr>
                             {% endfor %}
 
@@ -136,6 +172,33 @@
     <div id="footer">
 
     </div>
+
+              <script type="text/javascript" id="js2">
+                $(document).ready(function() {
+
+                    var x=document.getElementById("id_reference");
+                    for (var i = 0; i < x.options.length; i++) {
+                        $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
+                    }
+
+                    $("#id_orthologs_in").change(function() {
+                        document.getElementById("id_reference").selectedIndex=0;
+                        var x=document.getElementById("id_orthologs_in");
+                        for (var i = 0; i < x.options.length; i++) {
+                            if(x.options[i].selected ==true){
+
+                            $("#id_reference").children("option[value^=" + x.options[i].value + "]").show()
+                            }else{
+                            $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
+
+                            }
+                            }
+                    })
+
+                })
+          </script>
+
+
 
     </body>
 </html>

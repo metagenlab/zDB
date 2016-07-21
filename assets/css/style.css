@@ -320,6 +320,24 @@ text-align: left;
    margin-left: 230px;
    padding-right: 20px;
 }
+
+#id_frequency{
+   position:absolute;
+   top:430px;
+   left:65px;
+    font-size: 20px;
+   margin-left: 130px;
+   padding-right: 20px;
+}
+#extract_number_missing_tol{
+   position:absolute;
+   top:430px;
+   left:135px;
+    font-size: 20px;
+   margin-left: 130px;
+   padding-right: 20px;
+}
+
 #extract_panel_B{
    position:absolute;
    top:180px;

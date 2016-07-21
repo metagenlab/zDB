@@ -189,6 +189,9 @@ def make_extract_region_form(database_name):
     extraction_choices = [['annotation', ''],['sequence', ''],['sequence_trans', '']]
 
     class ExtractRegionForm(forms.Form):
+
+
+
         genome = forms.ChoiceField(choices=accession_choices)
         region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = False)
         extract = forms.ChoiceField(choices=extraction_choices, widget=forms.RadioSelect, label='')
@@ -230,10 +233,16 @@ def make_extract_form(database_name, plasmid=False):
         accession_choices = get_accessions(database_name)
     else:
         accession_choices = get_accessions(database_name, plasmid=True)
+
     class ExtractForm(forms.Form):
+        FREQ_CHOICES = ((0, 0),(1, 1), (2,2), (3,3), (4,4), (5,5), (6,6), (7,7), (8,8), (9,9), (10,10))
+
+        frequency = forms.ChoiceField(choices=FREQ_CHOICES, label='')
         orthologs_in = forms.MultipleChoiceField(label='', choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17" }), required = False)
         no_orthologs_in = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17" }), required = False, label="")
 
+        new_choices = [['None', 'None']] + accession_choices
+        reference = forms.ChoiceField(choices=new_choices)
 
     return ExtractForm
 

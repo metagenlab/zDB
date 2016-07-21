@@ -3,6 +3,7 @@
 
 <html>
     <head>
+        {% load custom_tags %}
         <script type="text/javascript" id="js">
             $(document).ready(function() {
             // call the tablesorter plugin
@@ -81,7 +82,25 @@
                          </form>
                     </div>
 
+            {% if wrong_n_missing%}
 
+            <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                <div class="panel-heading" style="width:100%">
+                    <h3 class="panel-title">Help</h3>
+                </div>
+                <p style="margin: 10px 10px 10px 10px">You cannot set a number of missing data bigger than the number of included genomes</p>
+            </div>
+
+            {% elif no_match%}
+
+            <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                <div class="panel-heading" style="width:100%">
+                    <h3 class="panel-title"></h3>
+                </div>
+                <p style="margin: 10px 10px 10px 10px">No match</p>
+            </div>
+
+            {% endif %}
 
             {% if envoi_extract %}
 
@@ -99,6 +118,8 @@
                             <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
                             <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                            <a href="{% url 'circos_main' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
+
                             <br/>
                         </div>
 
@@ -114,6 +135,8 @@
                                 <th>Products</th>
                                 <th>Cogs</th>
                                 <th>Pfam</th>
+                                <th>present in (/{{include|length}})</th>
+                                <th>freq complete database {{max_n}}</th>
                                 </tr>
                             </thead>
 
@@ -125,9 +148,12 @@
                                     <td>{{value.3|safe}}</td>
                                     <td>{{value.4|safe}}</td>
                                     <td>{{value.5|safe}}</td>
-
+<td>{{orthogroup2count|keyvalue:value.1}}</td>
+<td>{{orthogroup2count_all|keyvalue:value.1}}</td>
                                 </tr>
                             {% endfor %}
+
+
                         </table>
 
 
@@ -137,7 +163,7 @@
                                 <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'datatable', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
                                 <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'datatable');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                                <br/>
+                                  <br/>
                             </div>
 
 
@@ -199,6 +225,29 @@
     <div id="footer">
 
     </div>
+              <script type="text/javascript" id="js2">
+                $(document).ready(function() {
 
+                    var x=document.getElementById("id_reference");
+                    for (var i = 0; i < x.options.length; i++) {
+                        $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
+                    }
+
+                    $("#id_orthologs_in").change(function() {
+                        document.getElementById("id_reference").selectedIndex=0;
+                        var x=document.getElementById("id_orthologs_in");
+                        for (var i = 0; i < x.options.length; i++) {
+                            if(x.options[i].selected ==true){
+
+                            $("#id_reference").children("option[value^=" + x.options[i].value + "]").show()
+                            }else{
+                            $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
+
+                            }
+                            }
+                    })
+
+                })
+          </script>
     </body>
 </html>

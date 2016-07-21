@@ -148,6 +148,9 @@
                         <td>Translation</td>
                         <td id="entete_features">{{ data.13 }}</td>
                         </tr>
+                        <td>Sequence</td>
+                        <td id="entete_features">{{ seq|safe }}</td>
+                        </tr>
                         {%if cog_data %}
                             <tr>
                             <td><a href="{% url 'fam' biodb cog_data.0 'cog' %}" target="_top">COG</a></td>
