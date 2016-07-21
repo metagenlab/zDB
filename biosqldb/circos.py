@@ -160,12 +160,6 @@ class CircosAccession2multiplot():
         import gbk2circos
         import os
         import shell_command
-        import ete2
-
-        #if draft_fasta:
-        #    draft_contigs = gbk2circos.circos_fasta_draft(draft_fasta)
-        #else:
-        #    draft_contigs = False
 
         reference_accessions = []
         for reference_record in reference_records:
@@ -182,25 +176,12 @@ class CircosAccession2multiplot():
         for accession in queries_accession:
             queries_taxon_id.append(bioentry_id2taxon_id_dict[accession])
 
-
-
-
-
-        #print ordered_taxons[0], type(ordered_taxons[0]) # str
-        #print queries_taxon_id[0], type(queries_taxon_id[0]) # long
-
         ordered_queries_taxon_id = []
         for taxon in ordered_taxons:
             if long(taxon) in queries_taxon_id:
                 ordered_queries_taxon_id.append(long(taxon))
-        print ordered_taxons
+
         print 'ordered_queries_taxon_id', ordered_queries_taxon_id
-
-
-
-
-
-
 
         #reference_record = gbk2circos.Record(reference_record)#db.lookup(accession=reference_accession))
 
@@ -1191,7 +1172,7 @@ class CircosAccession2multiplot():
 ,"group_3106"]
 
 
-        locus_highlight = [] # klebsiella_real_missing #klebisella_core
+        #locus_highlight = [] # klebsiella_real_missing #klebisella_core
 
         chlamydia_core_29_33 = ["group_619"
         ,"group_615"
@@ -1754,7 +1735,7 @@ class CircosAccession2multiplot():
         ,"group_249"
         ,"group_248"]
 
-        locus_highlight = chlamydia_core_29_33
+        #locus_highlight = []#chlamydia_core_29_33
         #for i in locus_superantigens:
         #    locus_superantigens2.append(manipulate_biosqldb.locus_tag2orthogroup_id(server, i, biodatabase_name))
             
@@ -1793,17 +1774,11 @@ class CircosAccession2multiplot():
         else:
             chr_spacing_list.append([reference_records[-1].id, reference_records[0].id])
 
-        print chr_spacing_list
-
         circos_reference = gbk2circos.Circos_config(circos_files_reference["contigs"], chr_spacing_list)
 
         # add plus minus genes
         circos_reference.add_highlight(circos_files_reference["plus"], fill_color="grey_a1", r1="0.98r", r0="0.95r", href=href)
         circos_reference.add_highlight(circos_files_reference["minus"], fill_color="grey_a1", r1="0.95r", r0="0.92r", href=href)
-
-        #print "writing GC files!!!!!!!!!!!"
-        #gbk2circos.print_circos_GC_file(reference_records, feature_type="CDS", out_directory=out_directory, draft_data = draft_fasta)
-
 
         out_name = ''
         for accession in reference_accessions:
@@ -1814,22 +1789,49 @@ class CircosAccession2multiplot():
         config_file_reference = os.path.join(out_directory, config_file)
         #out_file = os.path.join(out_directory, out_file)
 
-        self.add_gene_tracks(circos_files_reference,
+        last_track = self.add_gene_tracks(circos_files_reference,
                              circos_reference,
                              queries_accession,
                              config_file_reference, href=href)
 
 
+        rule = """<rule>
+                condition          = var(value) < 0
+                fill_color         = lred
+                color = red
+                </rule>
+
+                <rule>
+                condition          = var(value) > 0
+                fill_color         = lblue
+                color = blue
+                </rule>
+        """
+
+        rule2 = """<rule>
+                condition          = var(value) < 0
+                fill_color         = lgreen
+                color = green
+                </rule>
+
+                <rule>
+                condition          = var(value) > 0
+                fill_color         = lblue
+                color = blue
+                </rule>
+        """
+
+        conditions = circos_reference.template_rules % (rule)
+        circos_reference.add_plot(circos_files_reference["GC_var"], fill_color="green", r1="%sr" % (last_track -0.02), r0= "%sr" % (last_track -0.1), type="line", rules=conditions)
+        conditions = circos_reference.template_rules % (rule2)
+        circos_reference.add_plot(circos_files_reference["GC_skew"], fill_color="green", r1="%sr" % (last_track -0.12), r0= "%sr" % (last_track -0.2), type="line", rules=conditions)
+
+        t = open(config_file_reference, "w")
+        t.write(circos_reference.get_file())
+        t.close()
         cmd = "circos -outputfile %s -outputdir %s -conf %s" % (out_file, out_directory, config_file_reference)
         print cmd
         (stdout, stderr, return_code) = shell_command.shell_command(cmd)
-
-        #cmd1 = "inkscape -g --verb=FitCanvasToDrawing --verb=FileSave --verb=FileClose --file=%s" % out_file
-        #print cmd1
-
-        #(stdout, stderr, return_code) = shell_command.shell_command(cmd1)
-
-        #print stdout, stderr, return_code
 
     # add presence/absence of orthologs
     def add_gene_tracks(self, circos_files, circos, accessions, out_file, href):
@@ -1843,9 +1845,7 @@ class CircosAccession2multiplot():
             r1 = r1-0.012
             r0 = r0-0.012
 
-        t = open(out_file, "w")
-        t.write(circos.get_file())
-
+        return r0
 
 class CircosAccession2nested_plots1():
 
@@ -1898,12 +1898,11 @@ class CircosAccession2nested_plots1():
         config_file_reference = os.path.join(out_directory, config_file)
         out_file = os.path.join(out_directory, out_file)
 
-        self.add_gene_tracks(circos_files_reference,
+        r1_minus, r0_minus = self.add_gene_tracks(circos_files_reference,
                              circos_reference,
                              queries_accession,
                              config_file_reference,
                              circos_reference)
-
 
 
         #(stdout, stderr, return_code) = shell_command.shell_command("circos -outputfile %s -outputdir %s -conf %s" % (out_file, out_directory, config_file_reference))
@@ -1942,6 +1941,7 @@ class CircosAccession2nested_plots1():
 
         t = open(out_file, "w")
         t.write(circos.get_file())
+        return r1_minus, r0_minus
 
 class CircosAccession2nested_plot2():
 

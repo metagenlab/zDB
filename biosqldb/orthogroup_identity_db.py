@@ -266,7 +266,7 @@ def check_identity(cursor, orthogroup, locus1, locus2):
     #                            db="orth_%s" % biodb_name) # name of the data base
     #cursor = conn.cursor()
 
-    sql = 'select `%s` from %s where `locus_tag` = "%s"' % (locus1, orthogroup, locus2)
+    sql = 'select identity from %s where (locus_a = "%s" and locus_b = "%s") or locus_a ="%s" and locus_b="%s"'  % (orthogroup,locus1, locus2, locus1, locus2)
     #print sql
     cursor.execute(sql)
     identity = int(cursor.fetchone()[0])

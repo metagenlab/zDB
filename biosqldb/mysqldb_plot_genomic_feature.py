@@ -203,7 +203,12 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
 
     #biodb_name = "chlamydia_03_15"
     print 'DB name!!!!', biodb_name
-
+    import matplotlib.cm as cm
+    from matplotlib.colors import rgb2hex
+    import matplotlib as mpl
+    norm = mpl.colors.Normalize(vmin=20, vmax=100)
+    cmap = cm.RdBu#Blues
+    m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
     import MySQLdb
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
@@ -278,6 +283,12 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
                                                                                   feature_1.qualifiers["locus_tag"][0])
                     print "Identity:", identity
 
+
+
+                    color2 = colors.HexColor(rgb2hex(m.to_rgba(float(identity))))
+                    border2 = colors.HexColor(rgb2hex(m.to_rgba(float(identity))))
+                    print 'identity', identity
+                    '''
                     if identity == 100:
                         color2 = colors.HexColor('#1AFF00')
                         border2 = colors.HexColor('#1AFF00')
@@ -321,7 +332,7 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
                     else:
                         color2 = colors.lightgrey
                         border2 = colors.lightgrey
-
+                    '''
                     #else:
 
                     """

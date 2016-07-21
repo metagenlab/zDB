@@ -149,6 +149,15 @@ def taxon_id2accessions(server, taxon_id, biodatabase_name):
     result = server.adaptor.execute_and_fetchall(sql,)
     return [i[0] for i in result]
 
+def taxon_id2accession_chromosome(server, biodatabase_name):
+    import manipulate_biosqldb
+
+    sql = 'select t1.taxon_id,t1.accession from bioentry as t1 ' \
+          'inner join biodatabase as t2 on t1.biodatabase_id = t2.biodatabase_id ' \
+          'where t1.description not like "%%%%plasmid%%%%" and t2.name = "%s"' % (biodatabase_name)
+    print sql
+    result = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    return result
 
 
 
@@ -1011,7 +1020,7 @@ def location2sequence(server, accession, biodb, start, end):
           'inner join bioentry on bioentry.bioentry_id=biosequence.bioentry_id ' \
           'inner join biodatabase on bioentry.biodatabase_id=biodatabase.biodatabase_id ' \
           'where accession="%s" and biodatabase.name="%s"' % (start, end, accession, biodb)
-    #print sql
+    print sql
     sequence = server.adaptor.execute_and_fetchall(sql,)
     return sequence[0][0]
 

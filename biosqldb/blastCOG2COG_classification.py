@@ -9,7 +9,8 @@
 # Date: 2014
 # ---------------------------------------------------------------------------
 
-def blast2COG(blast_file):
+# '6 qacc sacc evalue nident pident positive gaps length qstart qend qcovs sstart send qseqid qgi qaccver '
+def blast2COG(blast_file, coverage_cutoff=50, identity_cutoff=30):
     with open(blast_file, "r") as f:
         locus2hit_accession = {}
         for line in f:
@@ -19,8 +20,11 @@ def blast2COG(blast_file):
             except IndexError:
                 locus_tag = data[1]
                 print locus_tag
+            identity = float(data[9])
+            query_coverage = float(data[15])
             hit_accession = data[3].split('|')[1]
-            locus2hit_accession[locus_tag] = hit_accession
+            if identity >= identity_cutoff and query_coverage >= coverage_cutoff:
+                locus2hit_accession[locus_tag] = hit_accession
         return locus2hit_accession
 
 
@@ -70,7 +74,8 @@ def load_locus2cog_into_sqldb(input_blast_files, biodb):
                                 db=mysql_db) # name of the data base
     cursor = conn.cursor()
 
-    sql = 'create table COG.locus_tag2gi_hit_%s (accession varchar(100), locus_tag varchar(100), gi INT, COG_id varchar(100))' % biodb
+    sql = 'create table COG.locus_tag2gi_hit_%s (accession varchar(100), locus_tag varchar(100), gi INT, COG_id varchar(100),' \
+          'index locus_tag (locus_tag), index accession (accession))' % biodb
 
     cursor.execute(sql)
     conn.commit()

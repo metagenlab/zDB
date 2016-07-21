@@ -13,7 +13,7 @@ def locus_tag2orthogroup_size(db_name):
 def superkingdom_table():
     pass
 
-def get_orthology_matrix_merging_plasmids(server, biodatabase_name):
+def get_orthology_matrix_merging_plasmids(server, biodatabase_name, taxon_list=False):
 
 
     server, db = manipulate_biosqldb.load_db(biodatabase_name)
@@ -21,7 +21,11 @@ def get_orthology_matrix_merging_plasmids(server, biodatabase_name):
 
     all_orthogroups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    all_taxons = manipulate_biosqldb.get_taxon_id_list(server, biodatabase_name)
+    if not taxon_list:
+        all_taxons = manipulate_biosqldb.get_taxon_id_list(server, biodatabase_name)
+    else:
+        all_taxons = taxon_list
+
     print "taxons"
     print all_taxons
     print 'get dico ortho count'
@@ -263,17 +267,14 @@ def circos_locus2taxon_highest_identity(biodb, reference_taxon_id):
     i = 0
     # for each locus tag, get highest identity in each other taxons
     for locus_A in reference_orthogroup2locus_tag:
-        #print '%s / %s' % (i, len(reference_orthogroup2locus_tag))
         i+=1
-        #sql = 'select locus_tag, %s from orth_%s.%s;' % (locus_A, biodb,reference_orthogroup2locus_tag[locus_A])
-        sql = 'select locus_b,identity from orth_%s.%s where locus_a ="%s" UNION select locus_a,identity from orth_%s.%s where locus_b ="%s";' % (biodb,
-                                                                                                                                                  reference_orthogroup2locus_tag[locus_A],
-                                                                                                                                                  locus_A,
-                                                                                                                                                  biodb,
-                                                                                                                                                  reference_orthogroup2locus_tag[locus_A],
-                                                                                                                                                  locus_A)
-
-
+        sql = 'select locus_b,identity from orth_%s.%s where locus_a ="%s" ' \
+              ' UNION select locus_a,identity from orth_%s.%s where locus_b ="%s";' % (biodb,
+                                                                                      reference_orthogroup2locus_tag[locus_A],
+                                                                                      locus_A,
+                                                                                      biodb,
+                                                                                      reference_orthogroup2locus_tag[locus_A],
+                                                                                      locus_A)
         try:
             locus2identity = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
             locus2locus_identity[locus_A] = {}
@@ -355,6 +356,15 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb):
     orthogroup2cogs = biosql_own_sql_tables.orthogroup2cog(biodb)
     orthogroup2pfam = biosql_own_sql_tables.orthogroup2pfam(biodb)
 
+    sql = 'select COG_id,functon,name from COG.cog_names_2014;'
+    sql2 = 'select signature_accession,signature_description from interpro_k_cosson_05_16 where analysis="Pfam" group by signature_accession;'
+    print sql
+    cog2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    print sql2
+    pfam2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+    print 'ok'
+
+
     match_groups_data = []
     group_data = ''
 
@@ -371,13 +381,19 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb):
             if cog == None:
                 cog_data += '<p>- (%s)</p><br/>' % (orthogroup2cogs[group][cog])
             else:
+                try:
+                    cog_info = cog2description[cog][0]
+                    cog_info2 = cog2description[cog][1]
+                except:
+                    cog_info = '-'
+                    cog_info2 = '-'
                 cog_data += '<a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid=%s">' \
-                            '%s (%s)</a><br/>' % (cog,cog, orthogroup2cogs[group][cog])
+                            '%s: %s: %s (%s)</a><br/>' % (cog,cog, cog_info, cog_info2, orthogroup2cogs[group][cog])
         cog_data = cog_data[0:-5]
         pfam_data = ''
         try:
             for pfam in orthogroup2pfam[group]:
-                pfam_data += '<a href="http://pfam.xfam.org/family/%s">%s (%s)</a><br/>' % (pfam,pfam, orthogroup2pfam[group][pfam])
+                pfam_data += '<a href="http://pfam.xfam.org/family/%s">%s: %s (%s)</a><br/>' % (pfam,pfam,pfam2description[pfam], orthogroup2pfam[group][pfam])
             pfam_data = pfam_data[0:-5]
         except:
             pfam_data += ' <p>-</p> '
@@ -851,8 +867,49 @@ def collect_genome_statistics(biodb):
         server.adaptor.execute(sql,)
         server.commit()
 
+def get_comparative_subtable(biodb, table_name, first_col_name, taxon_list, exclude_taxon_list, ratio=1, single_copy=False):
+    import pandas
+    import numpy
+
+    print pandas.__version__
+
+    columns = '`'+'`,`'.join(taxon_list)+'`'
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    if len(exclude_taxon_list)>0:
+        exclude_sql = "`" + "`=0 and `".join(exclude_taxon_list) + "`=0"
+        sql = 'select %s, %s from comparative_tables.%s_%s where(%s)' % (first_col_name, columns, table_name,biodb, exclude_sql)
+    else:
+        sql = 'select %s, %s from comparative_tables.%s_%s' % (first_col_name, columns, table_name,biodb)
+    sql2 = 'select * from comparative_tables.%s_%s' % (table_name, biodb)
+    sql3 = 'show columns from comparative_tables.%s_%s' % (table_name, biodb)
+
+    data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
+    data2 = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql2,)])
+
+    all_cols = [i[0] for i in server.adaptor.execute_and_fetchall(sql3,)]
+    print "all_cols", all_cols
+
+    cols = [first_col_name]+taxon_list
+
+    # set the persentage of taxon that must have homologs/domain/... => default is 1 (100%)
+    limit = len(taxon_list)*ratio
+    print 'limit', limit
 
 
+    count_df = pandas.DataFrame(data, columns=cols)
+    count_df2 = pandas.DataFrame(data2, columns=all_cols)
+
+    count_df = count_df.set_index([first_col_name])
+    count_df = count_df.apply(pandas.to_numeric, args=('coerce',))
+
+    count_df2 = count_df2.set_index([first_col_name])
+    count_df2 = count_df2.apply(pandas.to_numeric, args=('coerce',))
+
+    if not single_copy:
+        return count_df[(count_df > 0).sum(axis=1) >= limit], count_df2
+    else:
+        return count_df[(count_df == 1).sum(axis=1) >= limit], count_df2
 
 def best_hit_classification(db_name, accession):
     sql = 'select A.*, t4.superkingdom, t4.kingdom, t4.phylum, t4.order, t4.family, t4.genus, t4.species' \
@@ -1053,7 +1110,7 @@ def orthogroup2gene(db_name, accession=False):
 
 
 
-def orthogroup2cog(db_name, accession=False): # group_list,
+def orthogroup2cog(db_name, accession=False, group_list=False): # group_list,
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
