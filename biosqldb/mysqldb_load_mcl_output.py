@@ -857,6 +857,11 @@ def locus_tag2nucl_sequence_dict(server, db, biodb_name):
         locus_tag2nucl_sequence.update(sequences)
     return locus_tag2nucl_sequence
 
+def locus_tag2aa_sequence_dict(server, db, biodb_name):
+
+    sql = 'select locus_tag, translation from orthology_detail_%s' % biodb_name
+
+    return manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
 def orthogroup2nucleotide_seq_list(locus_tag2nucl_sequence, group, biodb_name):
         server = manipulate_biosqldb.load_db()

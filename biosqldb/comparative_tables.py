@@ -156,6 +156,54 @@ def collect_interpro(db_name):
         #sys.exit()
 
 
+
+def collect_ko(db_name):
+
+    import manipulate_biosqldb
+
+
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    sql_db_id = 'select biodatabase_id from biodatabase where name="%s"' % db_name
+
+    biodb_id = server.adaptor.execute_and_fetchall(sql_db_id,)[0][0]
+
+    taxon_id_list = manipulate_biosqldb.get_taxon_id_list(server, db_name)
+
+    sql_head = 'INSERT INTO comparative_tables.ko_%s (id,' % db_name
+
+    for taxon in taxon_id_list:
+        sql_head += '`%s`,' % taxon
+    sql_head = sql_head[0:-1] + ') values ('
+
+    all_ko_ids_sql = 'select distinct ko_id from enzyme.locus2ko_%s;' % (db_name)
+
+    all_ko_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_ko_ids_sql,)]
+
+    i = 0
+    for accession in all_ko_ids:
+        print i,'/', len(all_ko_ids), accession
+        i+=1
+
+        sql = 'select taxon_id, count(*) from enzyme.locus2ko_%s where ko_id="%s" group by taxon_id;' % (db_name, accession)
+
+        print sql
+
+        data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        sql_temp = sql_head + '"%s",' % accession
+
+        for taxon in taxon_id_list:
+            try:
+                sql_temp += '%s,' % data[str(taxon)]
+            except:
+                sql_temp += '0,'
+        sql_temp = sql_temp[0:-1] + ');'
+
+        print sql_temp
+        server.adaptor.execute(sql_temp,)
+        server.adaptor.commit()
+
 def collect_EC(db_name):
 
     import manipulate_biosqldb
@@ -370,9 +418,12 @@ if __name__ == '__main__':
     collect_EC(args.database_name)
     '''
 
+    create_comparative_tables(args.database_name, "ko")
+    collect_ko(args.database_name)
+
     #n_shared_orthogroup_table(args.database_name)
-    identity_closest_homolog(args.database_name)
-    shared_orthogroups_average_identity(args.database_name)
+    #identity_closest_homolog(args.database_name)
+    #shared_orthogroups_average_identity(args.database_name)
 
 
     #get_mysql_table("chlamydia_03_15", "Pfam")

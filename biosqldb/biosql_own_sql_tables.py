@@ -286,6 +286,7 @@ def circos_locus2taxon_highest_identity(biodb, reference_taxon_id):
                     if locus2identity[locus_B] > locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]]:
                         locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]] = [locus2identity[locus_B], locus_B]
         except:
+            print 'no homologs for %s' % locus_A
             pass
     return locus2locus_identity
 
@@ -296,8 +297,13 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
     import sys
     from Bio import SeqIO
     import os
-
+    from Bio.Seq import Seq
+    from Bio.SeqRecord import SeqRecord
+    from Bio.Alphabet import IUPAC
     server, db = manipulate_biosqldb.load_db(biodb)
+
+
+
 
     sql_include = ''
     if len(taxon_list) > 0:
@@ -310,31 +316,58 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
     sys.stdout.write("getting core orthogroup list\n")
     match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
     sys.stdout.write("N single copy core orthogroups: %s\n" % len(match_groups))
+    sys.stdout.write("getting locus tag 2 taxon_id\n")
+    sql2 = 'select locus_tag, taxon_id from orthology_detail_%s' % (biodb)
+    locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
     if type == "nucleotide":
 
         sys.stdout.write("getting locus tag 2 sequence\n")
         locus_tag2nucl_sequence = mysqldb_load_mcl_output.locus_tag2nucl_sequence_dict(server, db, biodb)
+
+
         sys.stdout.write("writing one fasta/group\n")
         for group in match_groups:
             sql = 'select locus_tag from orthology_detail_%s where orthogroup="%s" and taxon_id in (%s)' % (biodb,
                                                                                                                         group,
                                                                                                                         ','.join([str(i) for i in taxon_list]))
             locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
             print group, locus_list
             seqs = []
             for locus in locus_list:
-                seq = locus_tag2nucl_sequence[locus]
-                seqs.append(seq)
+                if locus_tag2taxon_id[locus] in taxon_list:
+                    seq = locus_tag2nucl_sequence[locus]
+                    seqs.append(seq)
             path = os.path.join(mypath, group + "_nucl.txt")
             print path
             with open(path, "w") as f:
                 SeqIO.write(seqs, f, "fasta")
     else:
-        import mysqldb_load_mcl_output
-        locus_or_protein_id2taxon_id = manipulate_biosqldb.locus_or_protein_id2taxon_id(server, biodb)
+
+        locus_tag2aa_sequence = mysqldb_load_mcl_output.locus_tag2aa_sequence_dict(server, db, biodb)
+
         print 'Number of core groups: %s' % len(match_groups)
-        mysqldb_load_mcl_output.get_one_group_data_taxon(match_groups, locus_or_protein_id2taxon_id, biodb, ".")
+        for group in match_groups:
+            sql = 'select locus_tag from orthology_detail_%s where orthogroup="%s" and taxon_id in (%s)' % (biodb,
+                                                                                                           group,
+                                                                                                           ','.join([str(i) for i in taxon_list]))
+            locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+            print group, locus_list
+            seqs = []
+            for locus in locus_list:
+                if str(locus_tag2taxon_id[locus]) in taxon_list:
+                    print 'OKKKKKKKKKKKKKKKKKKKKKKK'
+                    seq = SeqRecord(Seq(locus_tag2aa_sequence[locus],
+                                       IUPAC.protein),
+                                       id=str(locus_tag2taxon_id[locus]), name="",
+                                       description="")
+                    seqs.append(seq)
+            path = os.path.join(mypath, group + "_aa.txt")
+            print path
+            with open(path, "w") as f:
+                SeqIO.write(seqs, f, "fasta")
 
 
 def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb):
@@ -357,7 +390,7 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb):
     orthogroup2pfam = biosql_own_sql_tables.orthogroup2pfam(biodb)
 
     sql = 'select COG_id,functon,name from COG.cog_names_2014;'
-    sql2 = 'select signature_accession,signature_description from interpro_k_cosson_05_16 where analysis="Pfam" group by signature_accession;'
+    sql2 = 'select signature_accession,signature_description from interpro_%s where analysis="Pfam" group by signature_accession;' % biodb
     print sql
     cog2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     print sql2
@@ -369,6 +402,7 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb):
     group_data = ''
 
     for i, group in enumerate(ordered_orthogroups):
+        print i
         genes_data = ''
         for gene in orthogroup2genes[group]:
             genes_data += '%s (%s)<br/>' % (gene, orthogroup2genes[group][gene])
