@@ -279,7 +279,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                         orthology_tag = False
 
                     if orthology_tag:
-                        if feature.qualifiers['orthogroup'][0] in locus_highlight:
+                        if feature.qualifiers['orthogroup'][0] in locus_highlight or feature.qualifiers['locus_tag'][0] in locus_highlight:
 
                             print "COLORS!!!!!!!!!!!!!!!!!!!"
                             try:
@@ -318,26 +318,47 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                                                   start,
                                                   end, feature.qualifiers['locus_tag'][0]))
 
-                    if group_id2orthologs_presence and query_taxon_id and color_missing:
+                    elif feature.qualifiers['locus_tag'][0] in locus_highlight:
                         try:
-                            pseudo = feature.qualifiers['pseudogene']
-                            print 'pseudogene, continue'
-                            continue
-                        except:
-                            pass
-                        if group_id2orthologs_presence[feature.qualifiers['orthogroup'][0]][int(query_taxon_id)] == 0:
-                            f.write('%s %s %s fill_color=orange\n' % (contig,
+
+                            f.write('%s %s %s fill_color=piyg-5-div-1,id=%s,z=1\n' % (contig,
                                                                     start,
-                                                                    end))
+                                                                    end, feature.qualifiers['locus_tag'][0]))
+
+
+                        except:
+                            f.write('%s %s %s fill_color=spectral-5-div-4,id=%s,z=1\n' % (contig,
+                                                                    start,
+                                                                    end,
+                                                                    feature.qualifiers['locus_tag'][0]))
+
                         else:
+
                             f.write('%s %s %s id=%s\n' % (contig,
                                                   start,
                                                   end, feature.qualifiers['locus_tag'][0]))
+                    # not in locus_highlight
                     else:
+                        if group_id2orthologs_presence and query_taxon_id and color_missing:
+                            try:
+                                pseudo = feature.qualifiers['pseudogene']
+                                print 'pseudogene, continue'
+                                continue
+                            except:
+                                pass
+                            if group_id2orthologs_presence[feature.qualifiers['orthogroup'][0]][int(query_taxon_id)] == 0:
+                                f.write('%s %s %s fill_color=orange\n' % (contig,
+                                                                        start,
+                                                                        end))
+                            else:
+                                f.write('%s %s %s id=%s\n' % (contig,
+                                                      start,
+                                                      end, feature.qualifiers['locus_tag'][0]))
+                        else:
 
-                        f.write('%s %s %s id=%s\n' % (contig,
-                                              start,
-                                              end, feature.qualifiers['locus_tag'][0]))
+                            f.write('%s %s %s id=%s\n' % (contig,
+                                                  start,
+                                                  end, feature.qualifiers['locus_tag'][0]))
 
                         '''
                             try:
@@ -637,15 +658,15 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
                     except KeyError:
                         n_paralogs = 0
 
-                    circos_string_n_genome_presence += "%s %s %s %s\n" % (contig, start, end, n_genomes)
-                    circos_string_n_blastnr += "%s %s %s %s\n" % (contig, start, end, n_blastnr)
-                    circos_string_n_blast_bacteria += "%s %s %s %s\n" % (contig, start, end, n_blast_bacteria)
-                    circos_string_n_blast_eukariota += "%s %s %s %s\n" % (contig, start, end, n_blast_eukariota)
-                    circos_string_n_archae += "%s %s %s %s\n" % (contig, start, end, n_archae)
-                    circos_string_n_chlamydiae += "%s %s %s %s\n" % (contig, start, end, n_chlamydiae)
-                    circos_string_n_non_chlamydiae += "%s %s %s %s\n" % (contig, start, end, n_non_chlamydiae)
-                    circos_string_n_paralogs += "%s %s %s %s\n" % (contig, start, end, n_paralogs)
-                    circos_string_stacked_chlamydiales += "%s %s %s %s,%s\n" % (contig, start, end, n_chlamydiae, n_non_chlamydiae)
+                    circos_string_n_genome_presence += "%s %s %s %s id=%s\n" % (contig, start, end, n_genomes,feature.qualifiers['locus_tag'][0])
+                    circos_string_n_blastnr += "%s %s %s %s id=%s\n" % (contig, start, end, n_blastnr,feature.qualifiers['locus_tag'][0])
+                    circos_string_n_blast_bacteria += "%s %s %s %s id=%s\n" % (contig, start, end, n_blast_bacteria,feature.qualifiers['locus_tag'][0])
+                    circos_string_n_blast_eukariota += "%s %s %s %s id=%s\n" % (contig, start, end, n_blast_eukariota,feature.qualifiers['locus_tag'][0])
+                    circos_string_n_archae += "%s %s %s %s id=%s\n" % (contig, start, end, n_archae,feature.qualifiers['locus_tag'][0])
+                    circos_string_n_chlamydiae += "%s %s %s %s id=%s\n" % (contig, start, end, n_chlamydiae,feature.qualifiers['locus_tag'][0])
+                    circos_string_n_non_chlamydiae += "%s %s %s %s id=%s\n" % (contig, start, end, n_non_chlamydiae,feature.qualifiers['locus_tag'][0])
+                    circos_string_n_paralogs += "%s %s %s %s id=%s\n" % (contig, start, end, n_paralogs,feature.qualifiers['locus_tag'][0])
+                    circos_string_stacked_chlamydiales += "%s %s %s %s,%s id=%s\n" % (contig, start, end, n_chlamydiae, n_non_chlamydiae,feature.qualifiers['locus_tag'][0])
 
         y += 1
     import os
@@ -716,28 +737,18 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
     sql = 'select orthogroup, count(*) from orthology_detail_%s group by orthogroup' % biodatabase_name
     ortho_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-
+    print 'getting each orthogroup size'
     try:
         ortho_identity = orthogroup_identity_db.orthogroup2average_identity(biodatabase_name)
     except:
         pass
     ortho_family_size = mysqldb_load_mcl_output.get_family_size(server, biodatabase_name)
 
-
-    print "ortho family okk"
-    #print ortho_family_size
-
     ortho_table = "orthology_%s" % biodatabase_name
-    print "ortho_table", ortho_table
-    group_id2orthologs_presence = biosql_own_sql_tables.get_orthology_matrix_merging_plasmids(server, biodatabase_name)
+    group_id2orthologs_presence = biosql_own_sql_tables.get_orthology_matrix_merging_plasmids(server, biodatabase_name, taxon_list)
     # get taxons ids used as column names in orthology table
     if taxon_list is False:
         taxon_list = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
-
-    #print "all_taxon_ids", taxon_list
-
-
-    #print "taxon_id2destription", taxon_id2destription
 
     reference_taxon_id = str(reference_taxon_id)
 
@@ -773,45 +784,33 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
 
     locus_highlight = []
 
-
     f = open(all_file_names["orthogroups"], "w")
-
     g = open(all_file_names["orthogroups_identity"], "w")
     h = open(all_file_names["orthogroups_family"], "w")
+
     taxon_files = []
     all_file_names["genomes"] = []
-
-    print "all_taxon_ids2", taxon_list
-
-    from copy import copy
 
     temp_taxon_list = [int(i) for i in taxon_list]
     for i in range(0, len(taxon_list)):
         print i
-        #print "taxon", taxon_list[i]
         if int(taxon_list[i]) == int(reference_taxon_id):
-            rem = i
             temp_taxon_list.pop(temp_taxon_list.index(int(reference_taxon_id)))
         else:
             file_name = os.path.join(out_dir, "circos_taxon_%s_vs_%s.txt" % (reference_taxon_id, taxon_list[i]))
             all_file_names["genomes"].append(file_name)
             taxon_files.append(open(file_name, "w"))
-
+    print 'get closest homolog identity dictionnary'
     locus2locus_identity = biosql_own_sql_tables.circos_locus2taxon_highest_identity(biodatabase_name, reference_taxon_id)
-    print "locus2id subset"
+
     print locus2locus_identity.keys()[1:10]
     print "get plasmid locus"
     plasmid_locus = biosql_own_sql_tables.get_locus2plasmid_or_not(biodatabase_name)
-    #print plasmid_locus
-    print "ok"
 
-    #print locus2locus_identity
     taxon_list = temp_taxon_list
     y = 0
     for record in record_list:
         for feature in record.features:
-            import time
-            #time.sleep(2)
             if feature.type == feature_type:
                 if not 'pseudo' in feature.qualifiers:
                     try:
@@ -876,7 +875,7 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                             #    print plasmid_locus[locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]]
                             #    print plasmid_locus[locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]] == 'True'
                             if plasmid_locus[locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]] != 'True':
-                                if feature.qualifiers['orthogroup'][0] not in locus_highlight:
+                                if feature.qualifiers['orthogroup'][0] not in locus_highlight and feature.qualifiers['locus_tag'][0] not in locus_highlight:
 
                                     taxon_file.write("%s %s %s %s id=%s\n" % (contig,
                                                                               start,
@@ -892,7 +891,7 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                                                                                                  locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][0],
                                                                                                  locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]))
                             else:
-                                if feature.qualifiers['orthogroup'][0] not in locus_highlight:
+                                if feature.qualifiers['orthogroup'][0] not in locus_highlight and feature.qualifiers['locus_tag'][0] not in locus_highlight:
 
                                     taxon_file.write("%s %s %s %s id=%s,color=accent-4-qual-4\n" % (contig,
                                                                               start,
@@ -1169,7 +1168,6 @@ class Circos_config:
           return all_spacing
     
   def get_file(self):
-    print self.complete_file
     return self.complete_file % (self.plots, self.highlights, self.links)
 
 

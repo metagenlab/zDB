@@ -47,7 +47,7 @@ def samtools_depth2coverage_plot(samtool_depth_file, main=False):
     cov_data[newlength] <- NA
     cov_matrix <- matrix(cov_data,nrow=100)
     cov_100bp <- colMeans(cov_matrix, na.rm=TRUE)
-    print(cov_100bp)
+    write.table(as.data.frame(cov_100bp), "coverage_100bp.tab", sep="\t")
     CairoPDF('%s_coverage.pdf')
         #par(mfrow=c(1,2))
         x<-seq(100,newlength,100)

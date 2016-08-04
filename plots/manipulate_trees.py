@@ -162,6 +162,15 @@ def convert_tree_accession2taxon_id(biodb_name, input_tree, output_tree ):
 
     Phylo.write(new_tree, output_tree, 'newick')
 
+def convert_tree_taxon_id2accession(biodb_name, input_tree, output_tree ):
+    server, db = manipulate_biosqldb.load_db(biodb_name)
+    taxon_id2accession = manipulate_biosqldb.taxon_id2accession_chromosome(server, biodb_name)
+    for i in taxon_id2accession:
+        taxon_id2accession[str(i)] = taxon_id2accession[i]
+    print "taxon_id2accession", taxon_id2accession
+    new_tree = parse_newick_tree.convert_terminal_node_names(input_tree, taxon_id2accession)
+
+    Phylo.write(new_tree, output_tree, 'newick')
 
 def convert_tree_accession2genome(biodb_name, input_tree, output_tree ):
     server, db = manipulate_biosqldb.load_db(biodb_name)

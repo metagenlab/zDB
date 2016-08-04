@@ -41,6 +41,7 @@ def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i+n]
 
+
 def get_gaps_from_start_stop_lists(contig2start_stop_lists, contig2length=False, out_highlight="circos_gaps_highlight.txt", out_labels='circos_gaps_labels.txt'):
     import pandas as pd
     import numpy as np
@@ -84,7 +85,7 @@ def get_gaps_from_start_stop_lists(contig2start_stop_lists, contig2length=False,
                 index_start+=comparison_index
                 comparison_index=1
                 continue
-            elif int(data_sort['start'][index_start+comparison_index])-int(data_sort['stop'][index_start]) > 5000:
+            elif int(data_sort['start'][index_start+comparison_index])-int(data_sort['stop'][index_start]) > 1000:
                 print '############# Potential gap!!! ', contig, data_sort['stop'][index_start], "-" , data_sort['start'][index_start+comparison_index]
                 if contig not in gap_data:
                     gap_data[contig] = [[data_sort['stop'][index_start], data_sort['start'][index_start+comparison_index]]]
@@ -189,10 +190,10 @@ def get_gaps_from_start_stop_lists(contig2start_stop_lists, contig2length=False,
 	 color              = black
 	 file               = circos_gaps_labels.txt
 	r0 = 1r
-	r1 = 1.3r
+	r1 = 1.5r
 	z = -100
 	show_links     = yes
-	link_dims      = 4p,4p,248p,4p,4p
+	link_dims      = 200p,4p,248p,4p,4p
 	link_thickness = 2p
 	link_color     = red
 
@@ -219,7 +220,7 @@ class Fasta2circos():
                  gc=True,
                  highlight_list=[],
                  algo="nucmer"):
-
+        self.contigs_add = {}
         print "fasta1", fasta1
         print "fasta2", len(fasta2), fasta2
         print "highlight list", highlight_list
@@ -233,6 +234,9 @@ class Fasta2circos():
         if not heatmap:
             hit_list, query_list = self.get_link("%s.coords" % fasta2[0].split('.')[0])
         else:
+
+            self.get_contigs_coords(fasta1)
+
             print 'wrinting link file'
 
             import gbk2circos
@@ -248,16 +252,16 @@ class Fasta2circos():
                     col=200
                 else:
                     col=250
-                try:
-                    if algo == "nucmer" or algo == 'promer':
-                        hit_list, query_list, contig2start_stop_list = self.nucmer_coords2heatmap("%s.coords" % one_fasta.split('.')[0], col = col, algo=algo)
-                    elif algo == "megablast":
-                        hit_list, query_list, contig2start_stop_list = self.megablast2heatmap("blast_result_%s.tab" % one_fasta.split('.')[0], col = col)
+                #try:
+                if algo == "nucmer" or algo == 'promer':
+                    hit_list, query_list, contig2start_stop_list = self.nucmer_coords2heatmap("%s.coords" % one_fasta.split('.')[0], col = col, algo=algo)
+                elif algo == "megablast":
+                    hit_list, query_list, contig2start_stop_list = self.megablast2heatmap("blast_result_%s.tab" % one_fasta.split('.')[0], col = col)
 
-                        raise IOError('unknown algo!')
-                    updated_list.append(one_fasta)
-                except:
-                    continue
+                    raise IOError('unknown algo!')
+                updated_list.append(one_fasta)
+                #except:
+                #    continue
                 if gaps:
                     print contig2start_stop_list
                     get_gaps_from_start_stop_lists(contig2start_stop_list, out_highlight="circos_gaps_highlight_%s.txt" % i, out_labels="circos_gaps_labels_%s.txt" % i)
@@ -301,17 +305,17 @@ class Fasta2circos():
                 #                               r1="%sr" % (self.last_track - 0.01),
                 #                               r0="%sr" % (self.last_track - 0.03))
                 #self.last_track -= 0.03
-
+                # snuggle_refine                 = yes
                 supp = '''
                         label_snuggle             = yes
-                        snuggle_refine                 = yes
-                        max_snuggle_distance            = 4r
+                        
+                        max_snuggle_distance            = 10r
                         show_links     = yes
-                        link_dims      = 10p,8p,20p,4p,4p
+                        link_dims      = 10p,78p,20p,4p,4p
                         link_thickness = 2p
                         link_color     = red
 
-                        label_size   = 24p
+                        label_size   = 14p
                         label_font   = condensed
 
                         padding  = 0p
@@ -332,10 +336,12 @@ class Fasta2circos():
                 out_var = ''
                 out_skew = ''
                 for record in fasta_records:
+                    contig = re.sub("\|", "", record.name)
+                    shift = self.contigs_add[contig]
                     # this function handle scaffolds (split sequence when encountering NNNNN regions)
-                    out_var += GC.circos_gc_var(record, 1000)
+                    out_var += GC.circos_gc_var(record, 1000, shift=shift)
 
-                    out_skew += GC.circos_gc_skew(record, 1000)
+                    out_skew += GC.circos_gc_skew(record, 1000, shift=shift)
                 #print out_skew
                 f.write(out_var)
                 g.write(out_skew)
@@ -445,7 +451,7 @@ class Fasta2circos():
         #print b
         #print c
 
-        blast2data, queries = best_blast_tree_display.remove_blast_redundancy(["blast.tmp"])
+        blast2data, queries = best_blast_tree_display.remove_blast_redundancy(["blast.tmp"], check_overlap=False)
         print blast2data
 
 
@@ -468,7 +474,7 @@ class Fasta2circos():
         '''
         for contig in blast2data:
             for gene in blast2data[contig]:
-                if float(blast2data[contig][gene][0])>40:
+                if float(blast2data[contig][gene][0])>80:
                     location = sorted(blast2data[contig][gene][1:3])
                     o.write("%s\t%s\t%s\n" % (contig, location[0], location[1]))
                     l.write("%s\t%s\t%s\t%s\n" % (contig,  location[0], location[1], gene))
@@ -479,7 +485,7 @@ class Fasta2circos():
         print 'track file list', track_file_list
         import os
         r1 = 0.95
-        r0 = 0.93
+        r0 = 0.935
         n = 0
         for i, orthofile in enumerate(track_file_list):
             n+=1
@@ -790,16 +796,6 @@ class Fasta2circos():
             return circos_config % (0, "", plot_template % heatmap)
 
 
-
-
-
-
-
-
-
-
-
-
     def get_karyotype_from_fasta(self, fasta1, fasta2, hit_list, query_list, filter_ref=True, filter_query=True, out="circos_contigs.txt", both_fasta = True):
         print 'both fasta', both_fasta
         from Bio import SeqIO
@@ -814,23 +810,33 @@ class Fasta2circos():
             contig_start = 0
             contig_end = 0
             for record in fasta_data1:
+
+
+
+                name = re.sub("\|", "", record.name)
+                print '#### contig ####', name
+                contig_start = contig_end+1
+                contig_end = contig_start+len(record)
+
                 if i == 4:
                     i =0
                 i+=1
-                name = re.sub("\|", "", record.name)
+
                 if filter_ref:
                     if name in hit_list:
                         n4 = name
                         if not 'n2' in locals():
                             n2 = name
                         # spectral-5-div-%s
-                        f.write("chr - %s %s %s %s greys-3-seq-%s\n" % (name, name, 0, len(record), i)) # i,
+
+                        f.write("chr - %s %s %s %s greys-3-seq-%s\n" % (name, name, contig_start, contig_end, i)) # i,
                 else:
                     n4 = name
                     if not 'n2' in locals():
                         n2 = name
                     # spectral-5-div-%s
-                    f.write("chr - %s %s %s %s greys-3-seq-%s\n" % (name, name, 0, len(record), i)) # , i
+
+                    f.write("chr - %s %s %s %s greys-3-seq-%s\n" % (name, name, contig_start, contig_end, i)) # , i
 
             if both_fasta:
                 for record in fasta_data2:
@@ -845,6 +851,18 @@ class Fasta2circos():
         if not 'n2' in locals():
             n2 = n1
         return (n1, n2, n3, n4)
+
+    def get_contigs_coords(self, ref_fasta):
+        from Bio import SeqIO
+        fasta_data1 = [i for i in SeqIO.parse(open(ref_fasta), "fasta")]
+        contig_start = 0
+        contig_end = 0
+        for record in fasta_data1:
+            name = re.sub("\|", "", record.name)
+            contig_start = contig_end+1
+            contig_end = contig_start+len(record)
+            self.contigs_add[name] = contig_start
+
 
     def execute_promer(self,fasta1, fasta2, out_file = "out.coords", algo="nucmer"):
         import shell_command
@@ -996,15 +1014,18 @@ class Fasta2circos():
                 color = ''
                 l = re.split(r'\t+', row.rstrip('\n'))
                 if n == 0:
-                    f.write("%s\t%s\t%s\t0\tz=0\n" % (re.sub("\|", "", l[9+shift]), l[0], int(l[0])+1))
-                    f.write("%s\t%s\t%s\t100\tz=0\n" % (re.sub("\|", "", l[9+shift]), l[0], int(l[0])+1))
+                    contig = re.sub("\|", "", l[9+shift])
+                    start = int(l[0]) + self.contigs_add[contig]
+                    end = int(l[0])+1 + self.contigs_add[contig]
+                    f.write("%s\t%s\t%s\t0\tz=0\n" % (contig, start, end))
+                    f.write("%s\t%s\t%s\t100\tz=0\n" % (contig, start, end))
                 if l[9] not in contig2start_stop_list:
                     contig2start_stop_list[l[9+shift]] = {}
-                    contig2start_stop_list[l[9+shift]]["start"] = [l[0]]
-                    contig2start_stop_list[l[9+shift]]["stop"] = [l[1]]
+                    contig2start_stop_list[l[9+shift]]["start"] = [int(l[0]) + self.contigs_add[l[9+shift]]]
+                    contig2start_stop_list[l[9+shift]]["stop"] = [int(l[1]) + self.contigs_add[l[9+shift]]]
                 else:
-                    contig2start_stop_list[l[9+shift]]["start"].append(l[0])
-                    contig2start_stop_list[l[9+shift]]["stop"].append(l[1])
+                    contig2start_stop_list[l[9+shift]]["start"].append(int(l[0])+self.contigs_add[l[9+shift]])
+                    contig2start_stop_list[l[9+shift]]["stop"].append(int(l[1])+self.contigs_add[l[9+shift]])
                 # print l[14]
                 #f.write(l[13] + '\t' + l[0] + '\t' + l[1] + '\t' + re.sub("\|", "", l[14]) + '\t' + l[2] + '\t' + l[3] + '\n')
                 if int(l[0]) < int(l[1]) and int(l[2]) > int(l[3]):
@@ -1026,8 +1047,11 @@ class Fasta2circos():
                                                 0.5))
 
                 # RhT_1 178 895 0
-
-                f.write(re.sub("\|", "", l[9+shift]) + '\t' + l[0] + '\t' + l[1] + '\t' + l[6] + "\tz=%s\t" % l[6] +'\n')
+                contig = re.sub("\|", "", l[9+shift])
+                start = int(l[0]) + self.contigs_add[contig]
+                end = int(l[1]) + self.contigs_add[contig]
+                identity = l[6]
+                f.write('%s\t%s\t%s\t%s\tz=%s\n' % (contig, start, end, identity, identity))
                 # sys.stdout.write
                 i += 1
                 hit_list.append(re.sub("\|", "", l[9+shift]))
@@ -1121,7 +1145,9 @@ class Fasta2circos():
                 for i, cov_list in enumerate(mychunks):
                     #print cov_list
                     median_depth = numpy.median(cov_list)
-                    g.write("%s\t%s\t%s\t%s\n" % (contig, i*1000, (i*1000)+999, median_depth))
+                    g.write("%s\t%s\t%s\t%s\n" % (contig, (i*1000)+self.contigs_add[contig],
+                                                  ((i*1000)+999)+self.contigs_add[contig],
+                                                  median_depth))
 
 
 

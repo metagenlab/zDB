@@ -29,6 +29,42 @@ def purge(dir, pattern):
 class CircosException(Exception):
     pass
 
+
+class PHAST():
+    def __init__(self, phast_database):
+
+        self.phast_database = phast_database
+        self.accession2classification = self.parse_phast_db()
+
+    def parse_phast_db(self):
+        import re
+        search_patterns = {'transposase': re.compile(".*[tT]ransposase.*"),
+                        'tail': re.compile(".*[tT]ail.*"),
+                        'lysis': re.compile(".*[lL]ysis.*"),
+                        'integrase': re.compile(".*[iI]ntegrase.*"),
+                        'terminase': re.compile(".*[tT]erminase.*"),
+                        'protease': re.compile(".*[pP]rotease.*"),
+                        'fiber': re.compile(".*[fF]iber.*"),
+                        'coat': re.compile(".*[cC]oat.*"),
+                        'portal': re.compile(".*[pP]ortal.*")}
+
+        accession2lassification = {}
+
+        from Bio import SeqIO
+        with open(self.phast_database) as f:
+            records = SeqIO.parse(f, "fasta")
+            for record in records:
+                match = False
+                for pattern in search_patterns:
+                    if re.match(search_patterns[pattern], record.description) is not None:
+                        #print pattern, record.description
+                        accession2lassification[record.id] = pattern
+                        match = True
+                        break
+                if match==False:
+                    accession2lassification[record.id] = 'other'
+        return accession2lassification
+
 def chunks(l, n):
     """Yield successive n-sized chunks from l."""
     for i in range(0, len(l), n):
@@ -36,9 +72,11 @@ def chunks(l, n):
 
 
 class Genbank2circos():
-    def __init__(self, genbank, database,
+    def __init__(self, genbank,
+                 database,
                  samtools_depth=None,
-                 gc=True):
+                 gc=True,
+                 accession2classification=False):
 
 
         import gbk2circos
@@ -58,10 +96,21 @@ class Genbank2circos():
         self.get_karyotype_from_genbank(genbank)
         self.execute_blast(self.fasta_aa, database)
 
-        self.blast2barplot("blast_result.tab", bar_file="circos.bar")
+        class_colors = self.blast2barplot("blast_result.tab", bar_file="circos.bar", accession2classification=accession2classification)
+        if not class_colors:
+            histo_colors = 'blue'
+            self.last_track = 0.7
+        else:
+            histo_colors = ''
+            for class_col in class_colors:
+                print class_col, class_colors[class_col]
+                histo_colors+='%s,' % class_colors[class_col]
+            histo_colors = histo_colors[0:-1]
+            self.circos_reference.add_plot("best_hit.bar",type="histogram",r0="0.65r", r1="0.67r",color=histo_colors, fill_color=histo_colors, thickness=0)
+            self.last_track = 0.65
+        self.circos_reference.add_plot("circos.bar",type="histogram",r0="0.7r", r1="0.9r",color=histo_colors, fill_color=histo_colors, thickness=0)
 
-        self.circos_reference.add_plot("circos.bar",type="histogram",r0=0.7, r1=0.9,color="blue", fill_color="blue")
-        self.last_track = 0.7
+
 
 
         if samtools_depth is not None:
@@ -272,35 +321,76 @@ class Genbank2circos():
 
 
 
-    def blast2barplot(self, blast_output, bar_file="circos.bar", col=250):
+    def blast2barplot(self, blast_output, bar_file="circos.bar", accession2classification=False):
         import re
         import matplotlib.cm as cm
         from matplotlib.colors import rgb2hex
         import matplotlib as mpl
 
+        if accession2classification:
+            class2color = {}
+            all_class = set(accession2classification.values())
+            n_class = len(all_class)
+            if n_class > 10:
+                print all_class
+                print n_class
+                raise('Too mainy classes of match')
+            else:
+                for i, one_class in enumerate(all_class):
+                    class2color[one_class] = 'paired-10-qual-%s' % (i+1)
 
         with open(blast_output, 'rU') as infile:
+            infile = [i for i in infile]
             locus_list = [i.rstrip().split('\t')[0] for i in infile]
+            hit_list = [i.rstrip().split('\t')[1] for i in infile]
 
         locus_tag2count = {}
-        for locus in locus_list:
-            if locus not in locus_tag2count:
-                locus_tag2count[locus] = 1
+        locus_tag2best_hit = {}
+        for n, locus in enumerate(locus_list):
+            if not accession2classification:
+                if locus not in locus_tag2count:
+                    locus_tag2count[locus] = 1
+                else:
+
+                    locus_tag2count[locus] += 1
             else:
-                locus_tag2count[locus] += 1
+                if locus not in locus_tag2count:
+                    locus_tag2count[locus] = {}
+                    locus_tag2best_hit[locus] = {}
+                    for one_class in all_class:
+                        locus_tag2count[locus][one_class] = 0
+                        locus_tag2best_hit[locus][one_class] = 0
+                    locus_tag2count[locus][accession2classification[hit_list[n]]] +=1
+                    locus_tag2best_hit[locus][accession2classification[hit_list[n]]] +=1
+                else:
+
+                    locus_tag2count[locus][accession2classification[hit_list[n]]] +=1
+
 
         bar_file = bar_file
+        best_hit_classif = open('best_hit.bar', 'w')
         with open(bar_file, 'w') as f:
             for locus in locus_tag2count:
 
                 # RhT_1 178 895 0
+                if not accession2classification:
 
-                f.write("%s\t%s\t%s\t%s\n" % (self.locus_tag2start_stop[locus][0],
-                                              self.locus_tag2start_stop[locus][1],
-                                              self.locus_tag2start_stop[locus][2],
-                                              locus_tag2count[locus]))
-
-
+                    f.write("%s\t%s\t%s\t%s\n" % (self.locus_tag2start_stop[locus][0],
+                                                  self.locus_tag2start_stop[locus][1],
+                                                  self.locus_tag2start_stop[locus][2],
+                                                  locus_tag2count[locus]))
+                else:
+                    counts = [str(i) for i in locus_tag2count[locus].values()]
+                    f.write("%s\t%s\t%s\t%s\n" % (self.locus_tag2start_stop[locus][0],
+                                                  self.locus_tag2start_stop[locus][1],
+                                                  self.locus_tag2start_stop[locus][2],
+                                                  ','.join(counts)))
+                    counts = [str(i) for i in locus_tag2best_hit[locus].values()]
+                    best_hit_classif.write("%s\t%s\t%s\t%s\n" % (self.locus_tag2start_stop[locus][0],
+                                                  self.locus_tag2start_stop[locus][1],
+                                                  self.locus_tag2start_stop[locus][2],
+                                                  ','.join(counts)))
+        return class2color
 
 
     def samtools_depth2circos_data(self, samtools_depth_file, i):
@@ -332,11 +422,20 @@ if __name__ == '__main__':
     arg_parser.add_argument("-g", "--genbank", help="genbank")
     arg_parser.add_argument("-d", "--database", help="database")
     arg_parser.add_argument("-o", "--out_name", help="output name", default="circos_out")
-
+    arg_parser.add_argument("-p", "--phast_database", action="store_true",help="PHAST database")
     args = arg_parser.parse_args()
 
     ##Run main
-    circosf = Genbank2circos(args.genbank, args.database)
+    if args.phast_database:
+        p = PHAST(args.database)
+        accession2classif = p.accession2classification
+
+    else:
+        accession2classif = False
+
+    circosf = Genbank2circos(args.genbank, args.database, accession2classification=accession2classif)
     circosf.write_circos_files(circosf.config, circosf.brewer_conf)
     circosf.run_circos(out_prefix=args.out_name)
+
+
 
