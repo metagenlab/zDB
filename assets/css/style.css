@@ -154,7 +154,7 @@ width: 230px;
     }
 #entete_meta2{
  border:1px solid black;
- width: 80px;
+ width: 60px;
     }
 #entete_meta3{
  border:1px solid black;
@@ -165,8 +165,16 @@ width: 230px;
  border:1px solid black;
  width: 40px;
     }
-
-
+#entete_meta5{
+ white-space: nowrap;
+ border:1px solid black;
+ width: 110px;
+    }
+#entete_meta6{
+ white-space: nowrap;
+ border:1px solid black;
+ width: 80px;
+    }
 #entete_translation{
  border:1px solid black;
  width: 600px;

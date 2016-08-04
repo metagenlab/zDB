@@ -46,6 +46,8 @@
             </li>
             <li class="item6"><a href="{% url 'extract_EC' biodb %}">EC</a>
             </li>
+            <li class="item6"><a href="{% url 'extract_ko' biodb %}">KO</a>
+            </li>
 
             </ul>
         </li>
@@ -71,7 +73,8 @@
                 </li>
                 <li class="item5"><a href="{% url 'metabo_overview' biodb %}">Metabo comparisons</a>
                 </li>
-
+                <li class="item5"><a href="{% url 'kegg_module' biodb %}">Kegg modules</a>
+                </li>
 
             </ul>
 
@@ -91,15 +94,15 @@
 
 
 <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>-->
-
+<script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
 <!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
 <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+
 <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
 
 <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
@@ -109,8 +112,6 @@
 
 <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
-
-
 
 
 

@@ -246,6 +246,18 @@ def make_extract_form(database_name, plasmid=False):
 
     return ExtractForm
 
+def make_module_overview_form(database_name):
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(database_name)
+
+    sql = 'select distinct module_sub_cat from enzyme.kegg_module;'
+    categories = server.adaptor.execute_and_fetchall(sql,)
+    CHOICES = [(i[0],i[0]) for i in categories]
+
+    class ModuleCatChoice(forms.Form):
+        category = forms.ChoiceField(choices=CHOICES)
+    return ModuleCatChoice
+
 
 class SearchForm(forms.Form):
 

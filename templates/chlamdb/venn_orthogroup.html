@@ -42,8 +42,10 @@
 
         <nav>
         <ul id="tabs" class="nav nav-tabs">
-            <li ><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
-            <li class="active"><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
+                    <li><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
+                    <li class="active"><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
+                    <li><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups with paralogs</a></li>
+
         </ul>
         </nav>
 
