@@ -141,7 +141,7 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
                     del blast2data[one_blast][query]
     print 'query counts', len(queries_count)
     print queries_count
-    for query in queries_count:
+    for query in queries:
         print "%s\t%s" % (query, queries_count[query])
         if queries_count[query] == 0:
             queries.pop(queries.index(query))

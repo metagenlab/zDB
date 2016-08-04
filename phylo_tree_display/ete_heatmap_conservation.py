@@ -37,7 +37,7 @@ def organism2color(locus2data):
     return dict(zip(organism_list, colors))
 
 
-def plot_heat_tree_V1(taxid2n, tree_file, taxid2st, orgnames=False):
+def plot_heat_tree_V1(taxid2n, tree_file, taxid2st, genes, accession2description=False, orgnames=False):
     '''
     Plot heatmap next to a tree. The order of the heatmap **MUST** be the same,
     as order of the leafs on the tree. The tree must be in the Newick format. If
@@ -78,67 +78,17 @@ def plot_heat_tree_V1(taxid2n, tree_file, taxid2st, orgnames=False):
     # and set it as tree outgroup
     t1.set_outgroup(R)    # To operate with numbers efficiently
 
-    # Loads tree and array
+    import matplotlib.cm as cm
+    from matplotlib.colors import rgb2hex
+    import matplotlib as mpl
+    norm = mpl.colors.Normalize(vmin=0.8, vmax=1) # map2count[map[0]][0]
+    cmap_blue = cm.Blues
+    m2 = cm.ScalarMappable(norm=norm, cmap=cmap_blue)
 
-
-    '''
-    # Calculates some stats on the matrix. Needed to establish the color
-    # gradients.
-    matrix_dist = [i for r in xrange(len(array.matrix))\
-                   for i in array.matrix[r] if numpy.isfinite(i)]
-    matrix_max = numpy.max(matrix_dist)
-    matrix_min = numpy.min(matrix_dist)
-    matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
-
-    # Creates a profile face that will represent node's profile as a
-    # heatmap
-    profileFace  = ProfileFace(1., 0., 0.5, 100, 14, "heatmap",colorscheme=2)
-
-    nameFace = AttrFace("name", fsize=8)
-    # Creates my own layout function that uses previous faces
-    def mylayout(node):
-        # If node is a leaf
-        if node.is_leaf():
-            # And a line profile
-            add_face_to_node(profileFace, node, 0, aligned=True)
-            node.img_style["size"]=0
-            add_face_to_node(nameFace, node, 1, aligned=True)
-
-    # Use my layout to visualize the tree
-    ts = TreeStyle()
-    ts.layout_fn = mylayout
-    t.show(tree_style=ts)
-    '''
-    import random
-
-    '''
-    for lf in t1.iter_leaves():
-        # Each leaf node must have a profile and a deviation vector, which will be based on your source matrix of values
-        data = [random.randint(0,2) for x in xrange(2)]
-        print data
-        lf.add_features(profile = data)
-        lf.img_style["size"]=0
-        # if no std deviation for the vector values, just use 0
-        lf.add_features(deviation = [0 for x in xrange(10)])
-
-        # Add a ProfileFace to each leaf node (you probably want aligned position). Choose among the following types.
-
-        ProFace =  ProfileFace(max_v=1, min_v=0.0, center_v=0.5, width=40, height=20, style='heatmap', colorscheme=0)
-        ProFace.margin_bottom = 2
-        ProFace.margin_top = 2
-        ProFace.opacity = 0.5
-        lf.add_face(ProFace, column=0, position="aligned")
-        lf.add_face(TextFace("hola "), column=1)
-        #lf.add_face(ProfileFace(max_v=1, min_v=0.0, center_v=0.5, width=200, height=40, style='heatmap', colorscheme=1), column=1, position="aligned")
-        #lf.add_face(ProfileFace(max_v=1, min_v=0.0, center_v=0.5, width=200, height=40, style='heatmap', colorscheme=2), column=2, position="aligned")
-        #lf.add_face(ProfileFace(max_v=1, min_v=0.0, center_v=0.5, width=200, height=40, style='lines', colorscheme=2), column=1, position="aligned")
-        #lf.add_face(ProfileFace(max_v=1, min_v=0.0, center_v=0.5, width=200, height=40, style='bars', colorscheme=2), column=2, position="aligned")
-        #lf.add_face(ProfileFace(max_v=1, min_v=0.0, center_v=0.5, width=200, height=40, style='cbars', colorscheme=2), column=3, position="aligned")
-    '''
     leaf_number = 0
     for lf in t1.iter_leaves():
         leaf_number+=1
-        print lf
+
         #lf.add_face(AttrFace("name", fsize=20), 0, position="branch-right")
         lf.branch_vertical_margin = 0
         #data = [random.randint(0,2) for x in xrange(3)]
@@ -149,15 +99,61 @@ def plot_heat_tree_V1(taxid2n, tree_file, taxid2st, orgnames=False):
         print 'taxon', lf.name
         if orgnames:
             pass
-        lf.name = lf.name + ' (' + taxid2st[lf.name] + ')'
+        try:
+            st = taxid2st[lf.name]
+        except:
+            if "taxon2accession_list" not in locals():
+                import manipulate_biosqldb
+                server, db = manipulate_biosqldb.load_db("k_cosson_05_16")
+                sql = 'select taxon_id, accession from bioentry where biodatabase_id=104'
+                data_tax = server.adaptor.execute_and_fetchall(sql,)
+                taxon2accession_list = {}
+                for i in data_tax:
+                    if i[0] not in taxon2accession_list:
+                        taxon2accession_list[i[0]] = [i[1]]
+                    else:
+                       taxon2accession_list[i[0]].append(i[1])
+            else:
+                for taxon in taxon2accession_list:
+                    if lf.name in taxon2accession_list[taxon]:
+                        for accession in taxon2accession_list[taxon]:
+                            print lf.name, accession
+                            try:
+                                st = taxid2st[accession]
+                                data = taxid2n[accession]
+                                print 'st ok!!', st
+                                break
+                            except:
+                                continue
+
+        if accession2description:
+            lf.name = accession2description[lf.name]
+        lf.name = lf.name + ' (' + st + ')'
+
         for col, value in enumerate(data):
+
+            print 'col', col, 'value', value
+
+            if leaf_number==1:
+                n = TextFace('%s' % (genes[col]), fsize=5)
+                n.vt_align = 0
+                n.hz_align = 1
+                n.rotation= 270
+                n.margin_top = 0
+                n.margin_right = 0
+                n.margin_left = 0
+                n.margin_bottom = 0
+                n.inner_background.color = "white"
+                n.opacity = 1.
+                lf.add_face(n, col, position="aligned")
+
             if value > 0:
                 n = TextFace('  ')
                 n.margin_top = 0
                 n.margin_right = 0
                 n.margin_left = 0
                 n.margin_bottom = 0
-                n.inner_background.color = '#140718' #"#81BEF7"
+                n.inner_background.color = rgb2hex(m2.to_rgba(float(value))) #'#140718' #"#81BEF7"
                 n.opacity = 1.
                 lf.add_face(n, col, position="aligned")
 
@@ -426,7 +422,7 @@ if __name__ == '__main__':
     parser.add_argument("-t",'--tree',type=str,help="newick tree")
     parser.add_argument("-m",'--matrix',type=str,help="matrix (tab file)")
     parser.add_argument("-s",'--mlst',type=str,help="mlst file")
-
+    parser.add_argument("-a",'--accession2description',default=False, type=str,help="tab file with accessions and corresponding descriptions for leaf labels")
 
     args = parser.parse_args()
 
@@ -444,7 +440,19 @@ if __name__ == '__main__':
     taxid2n = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_cog,))
 
     plot_heat_tree('chlamydia_03_15', taxid2n, args.matrix, args.tree)
+
+
     '''
+
+    if args.accession2description:
+        accession2description = {}
+        with open(args.accession2description, 'r') as f:
+            for row in f:
+                data = row.rstrip().split('\t')
+                accession2description[data[0]] = data[1]
+    else:
+        accession2description = False
+
 
     taxid2st = {}
     with open(args.mlst) as f:
@@ -462,10 +470,10 @@ if __name__ == '__main__':
     with open(args.matrix) as f:
         for n, row in enumerate(f):
             if n==0:
-                continue
+                genes = row.rstrip().split('\t')[1:]
             else:
                 data = row.rstrip().split('\t')
-                taxid2n[data[0]] = [int(i) for i in data[1:]]
+                taxid2n[data[0]] = [float(i) for i in data[1:]]
     print taxid2n
-    t, n = plot_heat_tree_V1(taxid2n, args.tree, taxid2st)
+    t, n = plot_heat_tree_V1(taxid2n, args.tree, taxid2st, genes, accession2description)
     t.render("test.svg")

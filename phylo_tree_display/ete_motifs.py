@@ -150,23 +150,33 @@ def combined_profiles_heatmap(biodb,
                 n.inner_background.color = "white"
                 n.opacity = 1.
                 lf.add_face(n, col, position="aligned")
-
-            n = TextFace(' %s ' % str(taxon2motif2count[value][lf.name]))
+            try:
+                n = TextFace(' %s ' % str(taxon2motif2count[value][lf.name]))
+            except:
+                 n = TextFace(' - ')
             n.margin_top = 2
             n.margin_right = 2
             n.margin_left = 2
             n.margin_bottom = 2
             # if motif + ==> red
-            if taxon2motif2count[value][lf.name] >0:
+            try:
+                count = taxon2motif2count[value][lf.name]
+            except:
+                count = 0
+            if count >0:
                 #n.inner_background.color = "#FA5858"
                 n.inner_background.color = "#58ACFA"
 
             else:
                 orthologue = False
-                grp_lst = ec2orthogroups[value]
-                for orthogroup in grp_lst:
-                    if taxon2group2count[orthogroup][lf.name] > 0:
-                        orthologue = True
+                try:
+                    grp_lst = ec2orthogroups[value]
+                    for orthogroup in grp_lst:
+                        if taxon2group2count[orthogroup][lf.name] > 0:
+                            orthologue = True
+                except:
+                    orthologue = False
+
                 # if orthogroup + ==> blue
                 if orthologue:
                     n.inner_background.color = "#9FF781"
@@ -380,8 +390,9 @@ def pathways_heatmap(biodb,
 
                     else:
                         n.inner_background.color = "#9FF781"
-                    #if taxon_id2organism_name[lf.name]=="Rhabdochlamydia helveticae T3358":
-                    #    n.inner_background.color = "red"
+                    if taxon_id2organism_name[lf.name]=="Rhabdochlamydia helveticae T3358":
+                        n.inner_background.color = "red"
+                        n.fgcolor='white'
 
 
                 lf.add_face(n, col, position="aligned")
@@ -451,12 +462,20 @@ def multiple_profiles_heatmap(biodb,
                 first_column = False
             else:
                 if not taxon2group2value:
-                    n = TextFace(' %s ' % str(taxon2group2count[value][lf.name]))
+                    try:
+                        n = TextFace(' %s ' % str(taxon2group2count[value][lf.name]))
+                    except:
+                        n = TextFace(' - ')
+
                     n.margin_top = 2
                     n.margin_right = 2
                     n.margin_left = 2
                     n.margin_bottom = 2
-                    if taxon2group2count[value][lf.name] >0:
+                    try:
+                        count = taxon2group2count[value][lf.name]
+                    except:
+                        count=0
+                    if count>0:
                         if not reference_column:
                             if not reference_taxon:
                                 if lf.name != str(reference_taxon):
