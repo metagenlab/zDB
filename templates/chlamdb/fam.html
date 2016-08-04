@@ -178,6 +178,19 @@
                         <iframe name="orthoIDframe2" id="theFrame2" scrolling="no" width="100%" height="1800px"></iframe>
                     </div>
                     <div class="tab-pane" id="tab3">
+                     <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                        <div class="panel-heading" style="width:100%">
+                            <h3 class="panel-title">Help</h3>
+                        </div>
+                        <p style="margin: 10px 10px 10px 10px; line-height: 180%">
+                            Table of Kegg maps. <br>
+                            <strong>Red:</strong> <font size="2" color="red">{{type}}</font> <font size="2" color="red">with</font> positive hit(s) in the corresponding genome. <br>
+                            <strong>Green:</strong>Highlight discrepencies between orthogroup clustering and <font size="2" color="red">{{type}}</font> prediction. Green homologs (same orthogroup) <font size="2" color="green">are not</font> positive hit(s) for the considered <font size="2" color="red">{{type}}</font>. Variations within orthogroups may be due to the clustering of multi domain proteins or because of erroneous homolog clustering or <font size="2" color="red">{{type}}</font> prediction.
+                        </p>
+                    </div>
+
+
+
                         <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
                     </div>
                 </div>

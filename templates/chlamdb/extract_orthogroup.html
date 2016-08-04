@@ -36,7 +36,7 @@
                 <ul id="tabs_main" class="nav nav-tabs">
                     <li class="active"><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
                     <li><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
-                    <li><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups with paralogs</a></li>
+                    <li><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups size between genomes</a></li>
 
                 </ul>
             </nav>
@@ -49,10 +49,13 @@
                             <div class="panel-heading" style="width:100%">
                                 <h3 class="panel-title">Help</h3>
                             </div>
-                            <p style="margin: 10px 10px 10px 10px">Get list of proteins shared between genomes selected in panel A and absent in genomes of panel B. Clustering based on BLAST usting orthoMCL</p>
+                            <p style="margin: 10px 10px 10px 10px; line-height: 180%">Get list of proteins shared between genomes selected in panel A and absent in genomes of panel B. Clustering based on BLAST usting orthoFinder.
+                            Reference: one of the genome in panel A can be chosen as reference for display the result orthogroup list on a circular map of the genome. Click on "show on circular map" to generate the circos map. Corresponding locus are highlighted in pink. <br>
+                            Missing data: if more than one panel A genome (include) is selected, possibility to tolerate missing data in 1 up to 10 genomes (in order to get orthogroup present in at least x out of the y genomes selected in panel A).</p>
+</p>
                         </div>
 
-                        <div style="position: absolute;margin-top:310px">
+                        <div style="position: absolute;margin-top:10%; margin-left: 33%;">
                             <div style="height:40px;margin-left: 180px;width:280px;border: 2px solid #8AC007; border-radius: 15px;">
                                 <div style="width: 100%; float: left; margin-left: 10px;margin-top:3px">
                                     <p>Consider single copy groups only</p>
@@ -70,16 +73,15 @@
                                 </div>
                             </div>
                         </div>
-
-                        <p id="extract_panel_A">
-                            A
-                        </p>
-                        <p id="extract_panel_B">
-                            B
-                        </p>
-
+                        <div style="width: 100%; overflow: hidden;">
+                            <div style="width: 20%; float: left;margin-left: 5%;"> A </div>
+                            <div style="margin-left: 5%;float:left;"> B </div>
+                        </div>
                         {% csrf_token %}
                         {{ form.as_p }}
+
+                         <label style="position:absolute;margin-left:1%;width:20%;margin-top: 8px;">Missing data (optional)</label>
+                         <label style="position:absolute;margin-left:1%;width:20%;margin-top: 50px">Reference genome (optional)</label>
                          <input type="submit" name="comparison" value="Compare orthogroups" id="extract_button" />
                          </form>
                     </div>
@@ -175,20 +177,20 @@
                                 <thead>
                                     <tr>
                                         <th></th>
-                                        <th id="entete_locus" class="rotate">Orthogroup</th>
-                                        <th id="entete_locus" class="rotate">Locus</th>
-                                        <th id="entete_locus" class="rotate">Protein id</th>
-                                        <th id="entete_gene" class="rotate">Start</th>
-                                        <th id="entete_gene" class="rotate">Stop</th>
-                                        <th id="entete_strand" class="rotate">S.</th>
-                                        <th id="entete_gene" class="rotate">Gene</th>
-                                        <th id="entete_n" class="rotate">nH</th>
-                                        <th id="entete_n" class="rotate">nG</th>
-                                        <th id="entete_n" class="rotate">TM</th>
-                                        <th id="entete_n" class="rotate">SP</th>
-                                        <th id="entete_product" class="rotate">Product</th>
-                                        <th id="entete_organism" class="rotate">Organism</th>
-                                        <th id="entete_translation" class="rotate">Translation</th>
+                                        <th id="entete_locus">Orthogroup</th>
+                                        <th id="entete_locus" >Locus</th>
+                                        <th id="entete_locus" >Protein id</th>
+                                        <th id="entete_gene" >Start</th>
+                                        <th id="entete_gene" >Stop</th>
+                                        <th id="entete_strand" >S.</th>
+                                        <th id="entete_gene" >Gene</th>
+                                        <th id="entete_n" >nH</th>
+                                        <th id="entete_n" >nG</th>
+                                        <th id="entete_n" >TM</th>
+                                        <th id="entete_n" >SP</th>
+                                        <th id="entete_product" >Product</th>
+                                        <th id="entete_organism" >Organism</th>
+                                        <th id="entete_translation" >Translation</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -197,7 +199,7 @@
                                     {% for values in extract_result %}
                                         <tr>
                                             <td>{{values.0}}</td>
-                                            <td>{{values.1}}</td>
+                                            <td><a href="{% url 'locusx' biodb values.1 True %}"  target="_top">{{values.1}}</a></td>
                                             <td>{{values.2}}</td>
                                             <td>{{values.3}}</td>
                                             <td>{{values.4}}</td>
@@ -217,6 +219,8 @@
                             </table>
                     </div>
 
+                </div>
+            {% else %}
                 </div>
             {% endif %}
         </div>

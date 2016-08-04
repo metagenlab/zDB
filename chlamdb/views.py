@@ -1816,7 +1816,7 @@ def KEGG_module_map(request, biodb, module_name):
         valid_id = True
 
 
-    return render(request, 'chlamdb/KEGG_map.html', locals())
+    return render(request, 'chlamdb/KEGG_module_map.html', locals())
 
 
 
@@ -2136,7 +2136,7 @@ def ortho_id_plot(request, group):
 
 
 @login_required
-def plot_neighborhood(request, biodb, target_locus, region_size=46000):
+def plot_neighborhood(request, biodb, target_locus, region_size=23000):
 
     cache = get_cache('default')
     print "cache", cache
@@ -2188,6 +2188,7 @@ def plot_neighborhood(request, biodb, target_locus, region_size=46000):
     print "####################### reference_taxon_id", reference_taxon_id
     tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all, reference_taxon_id, n_orthogroup)
 
+    '''
     #print tree
     if len(labels) > 30:
         big = True
@@ -2196,11 +2197,12 @@ def plot_neighborhood(request, biodb, target_locus, region_size=46000):
         print path
         tree.render(path, dpi=1200, h=1200)
     else:
-        big = False
-        path = settings.BASE_DIR + '/assets/temp/cog_tree.svg'
-        asset_path = '/assets/temp/cog_tree.svg'
+    '''
+    big = False
+    path = settings.BASE_DIR + '/assets/temp/cog_tree.svg'
+    asset_path = '/assets/temp/cog_tree.svg'
 
-        tree.render(path, dpi=800, h=600)
+    tree.render(path, dpi=800, h=600)
     print asset_path
     return render(request, 'chlamdb/plot_region_and_profile.html', locals())
 
@@ -2736,7 +2738,7 @@ def circos(request, biodb):
         form = circos_form_class(request.POST)
 
         if form.is_valid():
-            reference_taxon = form.cleaned_data['reference']
+            reference_taxon = form.cleaned_data['circos_reference']
 
             description2accession_dict = manipulate_biosqldb.description2accession_dict(server, biodb)
 
@@ -4726,14 +4728,21 @@ def pfam_comparison(request, biodb):
 
             taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
+            columns = '`' + '`,`'.join(taxon_list) + '`'
+            filter = '(`' + '`>0 or`'.join(taxon_list) + '`>0)'
+
+
+            sql = 'select * from (select id from comparative_tables.Pfam_%s where %s group by id) A' \
+                  ' inner join (select distinct signature_accession,signature_description,count(*) as n ' \
+                  ' from interpro_%s where analysis="Pfam" group by signature_accession) B on A.id = B.signature_accession' % (biodb,filter, biodb)
 
             sql_pathway_count = 'select distinct signature_accession,signature_description,count(*) as n ' \
                                 ' from interpro_%s where analysis="Pfam" group by signature_accession;' % biodb
 
-            pfam_data_raw = server.adaptor.execute_and_fetchall(sql_pathway_count,)
+            pfam_data_raw = server.adaptor.execute_and_fetchall(sql,)
             pfam2data = {}
             for one_pfam_entry in pfam_data_raw:
-                pfam2data[one_pfam_entry[0]] = one_pfam_entry
+                pfam2data[one_pfam_entry[0]] = one_pfam_entry[1:]
 
 
 
@@ -4844,7 +4853,7 @@ def ko_comparison(request, biodb):
             taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
             columns = '`' + '`,`'.join(taxon_list) + '`'
-            filter = '(`' + '`>1 or`'.join(taxon_list) + '`>1)'
+            filter = '(`' + '`>0 or`'.join(taxon_list) + '`>0)'
 
 
             sql = 'select ko_id, count(*) from enzyme.locus2ko_%s group by ko_id;' % (biodb)

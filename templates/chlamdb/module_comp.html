@@ -25,82 +25,100 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-    <script src="{% static 'js/jquery.hottie.js' %}"></script>
+
     <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
 
 </head>
+<body>
+
+    <div id="container">
 
 
-<body height="5000px">
-<div>
-    <form action='{% url "chlamdb.views.module_comparison" biodb %}' method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Submit" />
+        <div id="sidebar">
+            {% include "chlamdb/menu.html" %}
+        </div>
 
-    </form>
+        <div id="header">
+            {% include "chlamdb/user.html" %}
+        </div>
 
-    {% if envoi_comp %}
+        <div id="content">
 
-            <table class="sortable" id="table_modules">
-                    <style>
-        table {
-            width:100%;
-            table-layout:fixed;
-        }
-        td {
-            overflow: hidden;
-            white-space: nowrap;
-        }
-    </style>
-            <tr>
-                <th id="entete_meta6">Category</th>
-                <th id="entete_meta5">SubCategory</th>
-                <th id="entete_meta2" >Map</th>
-                <th id="entete_meta3">Description</th>
-                <th id="entete_meta4">nKO</th>
-                <th id="entete_meta4">nKO+</th>
-                <th id="entete_meta4">%</th>
-                {% for taxon in taxon_list %}
-                    <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
-                {% endfor %}
-            <tr>
-            {% for category, values in category2maps.items %}
-                {% for value0, value1 in values %}
-                <tr>
 
-                    <td>{{category}}</td><td>{{module2sub_category|keyvalue:value0}}</td> <td><a href="http://www.genome.jp/dbget-bin/www_bget?md:{{value0}}" target="_top">{{value0}}</a>  <a href="{% url 'KEGG_module_map' biodb value0 %}">link</a></td><td>{{value1}}</td>
-                    {% for value in map2count|keyvalue:value0 %}
-                        <td>{{value}}</td>
+
+            <form action='{% url "chlamdb.views.module_comparison" biodb %}' method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="Submit" />
+
+            </form>
+
+            {% if envoi_comp %}
+
+                    <table class="sortable" id="table_modules">
+                            <style>
+                table {
+                    width:100%;
+                    table-layout:fixed;
+                }
+                td {
+                    overflow: hidden;
+                    white-space: nowrap;
+                }
+            </style>
+                    <tr>
+                        <th id="entete_meta6">Category</th>
+                        <th id="entete_meta5">SubCategory</th>
+                        <th id="entete_meta2" >Map</th>
+                        <th id="entete_meta3">Description</th>
+                        <th id="entete_meta4">nKO</th>
+                        <th id="entete_meta4">nKO+</th>
+                        <th id="entete_meta4">%</th>
+                        {% for taxon in taxon_list %}
+                            <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
+                        {% endfor %}
+                    <tr>
+                    {% for category, values in category2maps.items %}
+                        {% for value0, value1 in values %}
+                        <tr>
+
+                            <td>{{category}}</td><td>{{module2sub_category|keyvalue:value0}}</td> <td><a href="http://www.genome.jp/dbget-bin/www_bget?md:{{value0}}" target="_top">{{value0}}</a>  <a href="{% url 'KEGG_module_map' biodb value0 %}">link</a></td><td>{{value1}}</td>
+                            {% for value in map2count|keyvalue:value0 %}
+                                <td>{{value}}</td>
+                            {% endfor %}
+                            {%for map_dico in taxon_maps %}
+                                <td data-hist="{{map_dico|keyvalue:value0}}">{{map_dico|keyvalue:value0}}</td>
+                            {% endfor %}
+
+                        </tr>
+                        {% endfor %}
                     {% endfor %}
-                    {%for map_dico in taxon_maps %}
-                        <td data-hist="{{map_dico|keyvalue:value0}}">{{map_dico|keyvalue:value0}}</td>
-                    {% endfor %}
+                    </table>
+            {% endif %}
+        </div>
+    </div>
 
-                </tr>
-                {% endfor %}
-            {% endfor %}
-            </table>
-    {% endif %}
-</div>
+    <script src="{% static 'js/jquery.hottie.js' %}"></script>
+    <script>
+      $(function(){
+
+
+        $("#table_modules td").hottie({
+          readValue : function(e) {
+            return $(e).attr("data-hist");
+          },
+        colorArray : [
+        "#5858FA",
+            "#FBEFEF",
+            "#FA5858"
+        ]
+
+        });
+
+      });
+    </script>
+
 </body>
-<script>
-  $(function(){
 
-
-    $("#table_modules td").hottie({
-      readValue : function(e) {
-        return $(e).attr("data-hist");
-      },
-    colorArray : [
-	"#5858FA",
-        "#FBEFEF",
-        "#FA5858"
-    ]
-
-    });
-
-  });
-</script>
 </html>

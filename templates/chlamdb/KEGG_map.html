@@ -31,6 +31,18 @@
 
        {% else %}
            <div id="content">
+
+
+
+
+
+
+
+
+
+
+
+
            {%  if menu %}
 
                 <div id="sidebar">
@@ -41,21 +53,23 @@
                 </div>
            {% endif %}
 
-               <h3>{{ fam }} </h3>
-
+               <h3> {% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %} </h3>
+                 <div class="panel panel-success" style="width:80%; top: 400px; margin: 10px 10px 10px 10px">
+                    <div class="panel-heading" style="width:100%">
+                        <h3 class="panel-title">Help</h3>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px; line-height: 180%">
+                        Informations about pathway: {% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %} <br>
+                        EC list, phylogenetic profile of each EC, and external informations.
+                    </p>
+                </div>
                 <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                     <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
                     <li><a href="#tab2" data-toggle="tab">Profile</a></li>
                     <li><a href="#tab3" data-toggle="tab">Profile + homologs</a></li>
-                    {% if type == 'cog' %}
-                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{ fam }}', 'orthoIDframe2'); return false">Informations</a></li>
-                    {% elif type == 'pfam' %}
-                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://pfam.xfam.org/family/{{ fam }}', 'orthoIDframe2'); return false">Informations</a></li>
-                    {% elif type == 'interpro' %}
-                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.ebi.ac.uk/interpro/entry/{{ fam }}', 'orthoIDframe2'); return false">Informations</a></li>
 
-                    {% else %}
-                    {% endif %}
+                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.genome.jp/kegg-bin/show_module?{% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %}', 'orthoIDframe2'); return false">Informations</a></li>
+
 
 
 
@@ -84,7 +98,8 @@
                         <iframe name="orthoIDframe2" id="theFrame2" scrolling="no" width="100%" height="1800px"></iframe>
                     </div>
                     <div class="tab-pane" id="tab2">
-                        <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
+                        baba
+                        <object style="height:130vh;" type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
                     </div>
                     <div class="tab-pane" id="tab3">
                         <object type="image/svg+xml" data="{% static asset_path2 %}" id="cog_tree2"></object>

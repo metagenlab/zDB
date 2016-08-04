@@ -37,10 +37,21 @@
                 <ul id="tabs_main" class="nav nav-tabs">
                     <li><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
                     <li><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
-                    <li class="active"><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups with paralogs</a></li>
+                    <li class="active"><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups size between genomes</a></li>
 
                 </ul>
             </nav>
+
+                <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                    <div class="panel-heading" style="width:100%">
+                        <h3 class="panel-title">Help</h3>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px; line-height: 160%">Compare orthogroup presenting more than one homolog in one of the selected genomes</p>
+                </p>
+                </div>
+
+
+
                 <form action='{% url "chlamdb.views.orthogroup_comparison" biodb %}' method="post">
                     {% csrf_token %}
                     {{ form.as_p }}
@@ -49,6 +60,17 @@
                 </form>
 
                 {% if envoi_comp %}
+
+                <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                    <div class="panel-heading" style="width:100%">
+                        <h3 class="panel-title">Help</h3>
+                    </div>
+                    <p style="margin: 10px 10px 10px 10px; line-height: 160%">Homolog counts can be reordrered by clicking on column headers.<br>
+                    <strong>Total count:</strong> number of homologs in the whole database </p>
+                </p>
+                </div>
+
+                        Number of orthogroups exhiniting > 1 copy in at least 1/{{taxon_list|length}} genome: {{orthogroups2counts|length}}
 
                         <table class="sortable" id="mytable">
                             <style>

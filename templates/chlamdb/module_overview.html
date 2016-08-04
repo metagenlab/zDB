@@ -29,61 +29,69 @@
                     {% include "chlamdb/user.html" %}
                 </div>
 
+                   <nav>
+                        <ul id="tabs_main" class="nav nav-tabs">
+                            <li class="active"><a href="{% url 'extract_cog' biodb %}">Detailed comparison</a></li>
+                            <li><a href="{% url 'module_comparison' biodb %}">Compare strains</a></li>
+                        </ul>
+                    </nav>
+
+
+
                    <form action='{% url "chlamdb.views.kegg_module" biodb %}' method="post">
                     {% csrf_token %}
                     {{ form.as_p }}
                     <input type="submit" value="Submit" />
 
                     </form>
-                {%if envoi %}
-                   <h3>{{ fam }} </h3>
 
-                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                        <li class="active"><a href="#tab1" data-toggle="tab">Maps</a></li>
-                        <li><a href="#tab2" data-toggle="tab">Profile</a></li>
-                        <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'module_comparison' biodb %}', 'orthoIDframe'); return false">Compare strains</a></li>
+                    {%if envoi %}
+                       <h3>{{ fam }} </h3>
 
-                    </ul>
+                        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                            <li class="active"><a href="#tab1" data-toggle="tab">Maps</a></li>
+                            <li><a href="#tab2" data-toggle="tab">Profile</a></li>
+                        </ul>
 
-                    <div id="my-tab-content" class="tab-content">
-                        <div class="tab-pane active" id="tab1">
-
+                        <div id="my-tab-content" class="tab-content">
+                            <div class="tab-pane active" id="tab1">
 
 
 
 
 
 
-                            <table class="sortable">
-                            <tr>
-                                <th>Category</th><th>Map</th><th>Description</th><th>nEC</th><th>nEC+</th><th>%</th>
-                            <tr>
-                            {% for category, values in category2maps.items %}
-                                {% for value0, value1 in values %}
+
+                                <table class="sortable">
                                 <tr>
+                                    <th>Category</th><th>Map</th><th>Description</th><th>nEC</th><th>nEC+</th><th>%</th>
+                                <tr>
+                                {% for category, values in category2maps.items %}
+                                    {% for value0, value1 in values %}
+                                    <tr>
 
-                                    <td>{{category}}</td> <td><a href="{% url 'KEGG_mapp' biodb value0 %}">{{value0}}</a></td><td>{{value1}}</td>
-                                    {% for value in map2count|keyvalue:value0 %}
-                                        <td>{{value}}</td>
+                                        <td>{{category}}</td> <td><a href="{% url 'KEGG_module_map' biodb value0 %}">{{value0}}</a></td><td>{{value1}}</td>
+                                        {% for value in map2count|keyvalue:value0 %}
+                                            <td>{{value}}</td>
+                                        {% endfor %}
+
+                                    </tr>
                                     {% endfor %}
-
-                                </tr>
                                 {% endfor %}
-                            {% endfor %}
-                            </table>
+                                </table>
+                            </div>
+
+                            <div class="tab-pane" id="tab2">
+                                <object type="image/svg+xml" data="{% static asset_path %}" id="metabo_tree"></object>
+                            </div>
+
+                            <div class="tab-pane" id="tab66" style="height:5000px">
+                                <iframe name="orthoIDframe" id="theFrame2" scrolling="no" style="overflow:hidden;height:100%;width:100%" height="100%" width="100%"></iframe>
+                            </div>
+
+
                         </div>
-
-                        <div class="tab-pane" id="tab2">
-                            <object type="image/svg+xml" data="{% static asset_path %}" id="metabo_tree"></object>
-                        </div>
-
-                        <div class="tab-pane" id="tab66" style="height:5000px">
-                            <iframe name="orthoIDframe" id="theFrame2" scrolling="no" style="overflow:hidden;height:100%;width:100%" height="100%" width="100%"></iframe>
-                        </div>
-
-
-                    </div>
-            {%endif%}
+                    {%endif%}
 
         </div>
     </div>

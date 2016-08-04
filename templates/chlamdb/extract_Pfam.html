@@ -58,20 +58,23 @@
                             <div class="panel-heading" style="width:100%">
                                 <h3 class="panel-title">Help</h3>
                             </div>
-                            <p style="margin: 10px 10px 10px 10px">Get list of Pfam domains shared between genomes selected in panel A and absent in genomes of panel B</p>
+                            <p style="margin: 10px 10px 10px 10px; line-height: 160%">Get list of Pfam domains shared between genomes selected in panel A and absent in genomes of panel B. Based on Interproscan results.<br>
+                            Reference: one of the genome in panel A can be chosen as reference for display the result Pfam entries list on a circular map of the genome. Click on "show on circular map" to generate the circos map. Corresponding locus are highlighted in pink. <br>
+                            Missing data: if more than one panel A genome (include) is selected, possibility to tolerate missing data in 1 up to 10 genomes (in order to get Pfam entries present in at least x out of the y genomes selected in panel A).</p>
+</p>
                         </div>
 
 
 
-                        <p id="extract_panel_A">
-                            A
-                        </p>
-                        <p id="extract_panel_B">
-                            B
-                        </p>
+                        <div style="width: 100%; overflow: hidden;">
+                            <div style="width: 20%; float: left;margin-left: 5%;"> A </div>
+                            <div style="margin-left: 5%;float:left;"> B </div>
+                        </div>
 
                         {% csrf_token %}
                         {{ form.as_p }}
+                         <label style="position:absolute;margin-left:1%;width:20%;margin-top: 8px;">Missing data (optional)</label>
+                         <label style="position:absolute;margin-left:1%;width:20%;margin-top: 50px">Reference genome (optional)</label>
                          <input type="submit" name="comparison" value="Compare PFAM motifs" id="extract_button" />
                          </form>
                     </div>

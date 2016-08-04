@@ -23,7 +23,7 @@
     </div>
 
 
-    <div id="content" height="100%">
+    <div id="content" style="min-height: 100vh;">
 
 
     <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
@@ -49,7 +49,7 @@
     </form>
 
     {% if envoi %}
-        <iframe src="{% url 'locusx' biodb accession %}" width="100%" height="5000px" frameborder="0px" marginwidth="0" marginheight="0" scrolling="no"></iframe>
+        <div w3-include-html="{% url 'locusx' biodb accession %}"></div>
     {% endif %}
 </div>
 
@@ -58,5 +58,8 @@
 
 
 </body>
-
+<script src="http://www.w3schools.com/lib/w3data.js"></script>
+<script>
+w3IncludeHTML();
+</script>
 </html>

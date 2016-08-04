@@ -216,7 +216,7 @@ def make_circos_form(database_name):
     accession_choices = get_accessions(database_name)
     
     class CircosForm(forms.Form):
-        reference = forms.ChoiceField(choices=accession_choices)
+        circos_reference = forms.ChoiceField(choices=accession_choices)
         targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'20'}), required = False)
         #get_region = forms.NullBooleanField(widget=forms.CheckboxInput())
         #region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = False)
@@ -237,12 +237,13 @@ def make_extract_form(database_name, plasmid=False):
     class ExtractForm(forms.Form):
         FREQ_CHOICES = ((0, 0),(1, 1), (2,2), (3,3), (4,4), (5,5), (6,6), (7,7), (8,8), (9,9), (10,10))
 
-        frequency = forms.ChoiceField(choices=FREQ_CHOICES, label='')
+
         orthologs_in = forms.MultipleChoiceField(label='', choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17" }), required = False)
         no_orthologs_in = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17" }), required = False, label="")
 
         new_choices = [['None', 'None']] + accession_choices
-        reference = forms.ChoiceField(choices=new_choices)
+        frequency = forms.ChoiceField(choices=FREQ_CHOICES, label='')
+        reference = forms.ChoiceField(choices=new_choices,label="")
 
     return ExtractForm
 

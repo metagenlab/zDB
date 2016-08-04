@@ -34,6 +34,16 @@
 
 <body height="5000px">
 <div>
+     <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+        <div class="panel-heading" style="width:100%">
+            <h3 class="panel-title">Help</h3>
+        </div>
+        <p style="margin: 10px 10px 10px 10px; line-height: 180%">
+            Compare counts of EC associated with each pathway in all selected genomes. Based on PRIAM data. <br>
+        </p>
+    </div>
+
+
     <form action='{% url "chlamdb.views.metabo_comparison" biodb %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
@@ -42,6 +52,18 @@
     </form>
 
     {% if envoi_comp %}
+     <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+        <div class="panel-heading" style="width:100%">
+            <h3 class="panel-title">Help</h3>
+        </div>
+        <p style="margin: 10px 10px 10px 10px; line-height: 180%">
+            Table of Kegg maps. <br>
+            <strong>nEC:</strong> number of Enzymatic reaction in the considered map.<br>
+            <strong>nEC+:</strong> number of Enzymatic found in the whole database.<br>
+            <strong>%:</strong> percentage of the complete EC list associated to the kegg pathway present in the database.<br>
+            Clinking on a map ID allow to get detailed informations about the given pathway.
+        </p>
+    </div>
 
             <table class="sortable">
                     <style>

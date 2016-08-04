@@ -45,7 +45,9 @@
                     <div class="panel-heading" style="width:100%">
                         <h3 class="panel-title">Help</h3>
                     </div>
-                    <p style="margin: 0px 0px 0px 10px">Plot region</p>
+                    <p style="margin: 0px 0px 0px 10px">Plot neighboring of the considered gene. Click to get more information about any of the ORFs. <br>
+                    The plot below report conservation of each neighbor protein in all other genomes. Numbers indicate the counts of homologous proteins in the corresponding genome.
+                    </p>
                 </div>
 
                 <div id="export_bouttons">
@@ -54,18 +56,23 @@
 
                     <br/>
                 </div>
-
-                <object type="image/svg+xml" data="{% static name %}" id="genomic_region"></object>
-
-
+                <div style="height: 700px">
+                <object width="95%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
 
 
-                <object align="left" style="padding-left: 200px" type="image/svg+xml" data="{% static asset_path %}" id="orthogroup_tree"></object>
-
+                <object width="90%" align="left" style="margin-left: 0px" type="image/svg+xml" data="{% static asset_path %}" id="orthogroup_tree"></object>
+                </div>
             </div>
         </div>
 
 
 
 </body>
+<script>
+
+var svg = document.getElementsByTagName('object')[1].contentDocument.getElementsByTagName('svg')[0];
+svg.removeAttribute('width');
+svg.removeAttribute('height');
+
+</script>
 </html>

@@ -49,7 +49,9 @@
                 </form>
 
                 {% if envoi_comp %}
-
+                    <ul>
+                        <li>Number of KO: {{ko2counts|length}} (at least present 1 time in one of the selected genomes).</li>
+                    </ul>
                         <table class="sortable" id="mytable">
                             <style>
                             table {
