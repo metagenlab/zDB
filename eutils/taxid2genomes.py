@@ -22,18 +22,19 @@ def get_ncbi_genome(path, destination):
     ftp.login("anonymous","trestan.pillonel@unil.ch")
     download_from_ftp.download_whole_directory(ftp, path, destination, recursive=False)
 
-def get_complete_genomes_data(ncbi_taxon, complete = False):
+def get_complete_genomes_data(ncbi_taxon, complete = False, representative =False):
 
     handle = Entrez.esearch(db="assembly", term="txid%s[Organism:exp]" % ncbi_taxon, retmax=100000)
     record = Entrez.read(handle)
     f = open('ncbi_genome_download.log', 'w')
+    nn = open("assembly_log.tx", "w")
     header = 'AssemblyName\tLastMajorReleaseAccession\tTaxid\tSpeciesName\tOrganism\t' \
              'AssemblyStatus\tNCBIReleaseDate\tSubmitterOrganization\tftpPath\tPartialGenomeRepresentation\tCoverage\tRefSeq\tGenbank\tSimilarity\tAnomalousAssembly\n'
     f.write(header)
     local_dir = os.getcwd()
 
     for i, one_assembly in enumerate(record['IdList']):
-        print 'assembly %s (%s/%s)' % (one_assembly, i, len(record['IdList']))
+
         handle_assembly = Entrez.esummary(db="assembly",id=one_assembly)
         assembly_record = Entrez.read(handle_assembly, validate=False)
 
@@ -52,14 +53,10 @@ def get_complete_genomes_data(ncbi_taxon, complete = False):
             assembly_record = Entrez.read(handle_assembly)
         '''
         LastMajorReleaseAccession = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['LastMajorReleaseAccession']
-
+        SubDate = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['SubmissionDate']
         Taxid = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Taxid']
         Organism = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Organism']
         AssemblyStatus = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['AssemblyStatus']
-        if complete:
-            if AssemblyStatus not in ['Complete Genome']: # , 'Chromosome'
-                print 'status:', AssemblyStatus
-                continue
 
         NCBIReleaseDate = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['NCBIReleaseDate']
         SpeciesName = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['SpeciesName']
@@ -70,6 +67,35 @@ def get_complete_genomes_data(ncbi_taxon, complete = False):
         Similarity = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Synonym']['Similarity']
         PartialGenomeRepresentation = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PartialGenomeRepresentation']
         Coverage = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Coverage']
+        try:
+            Biosource = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Biosource']['InfraspeciesList'][0]['Sub_value']
+        except:
+            try:
+                Biosource = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Biosource']['Isolate']
+            except:
+                print assembly_record['DocumentSummarySet']['DocumentSummary']
+                import sys
+                sys.exit()
+
+        nn.write('assembly %s (%s/%s), %s, %s, %s, %s, %s, %s, %s\n' % (one_assembly, i, len(record['IdList']),
+                                                                        LastMajorReleaseAccession,
+                                                                        AssemblyStatus,
+                                                                        Organism,
+                                                                        SpeciesName,
+                                                                        Biosource,
+                                                                        SubDate,
+                                                                        assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']))
+
+
+
+        if complete:
+            if AssemblyStatus not in ['Complete Genome']: # , 'Chromosome'
+                continue
+        if representative:
+            if not 'representative' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
+                continue
+
+            #print assembly_record['DocumentSummarySet']['DocumentSummary'][0]
 
         out_dir = local_dir+'/%s' % LastMajorReleaseAccession
         try:
@@ -140,7 +166,9 @@ def get_complete_genomes_data(ncbi_taxon, complete = False):
                                                                              anomalous)
 
         f.write(line.encode("utf-8"))
+
     f.close()
+    nn.close()
 
 
 def get_sample_data(accession):
@@ -166,7 +194,7 @@ def accession2assembly(accession):
     handle1 = Entrez.esearch(db="nuccore", term=accession)
     record1 = Entrez.read(handle1)
 
-    print record1
+    print 'noccore hit:', record1
 
     ncbi_id = record1['IdList'][-1]
 
@@ -175,16 +203,30 @@ def accession2assembly(accession):
     handle = Entrez.elink(dbfrom="nuccore", db="assembly", id=ncbi_id)
     record = Entrez.read(handle)
 
-    print record
+    print 'links:', record
 
     f = open('ncbi_genome_download.log', 'w')
     header = 'AssemblyName\tLastMajorReleaseAccession\tTaxid\tSpeciesName\tOrganism\t' \
              'AssemblyStatus\tNCBIReleaseDate\tSubmitterOrganization\tftpPath\tPartialGenomeRepresentation\tCoverage\tRefSeq\tGenbank\tSimilarity\n'
     f.write(header)
     local_dir = os.getcwd()
+    try:
+        handle_assembly = Entrez.esummary(db="assembly",id=record[0]['LinkSetDb'][0]['Link'][0]['Id'])
+    except:
 
-    handle_assembly = Entrez.esummary(db="assembly",id=record[0]['LinkSetDb'][0]['Link'][0]['Id'])
-    assembly_record = Entrez.read(handle_assembly)
+        print 'link to assembly could not be found, trying to get it strating from taxon_id...'
+
+        handle_assembly = Entrez.esummary(db="nucleotide",id=ncbi_id)
+        record1 = Entrez.read(handle_assembly)
+        taxon_id = record1[0]['TaxId']
+        term = "txid%s[Organism:noexp]" % taxon_id
+        handle1 = Entrez.esearch(db="assembly", term=term)
+        record1 = Entrez.read(handle1)
+        assembly_id = record1['IdList'][0]
+        handle_assembly = Entrez.esummary(db="assembly",id=assembly_id)
+
+
+    assembly_record = Entrez.read(handle_assembly, validate=False)
 
     LastMajorReleaseAccession = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['LastMajorReleaseAccession']
     Taxid = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Taxid']
@@ -205,7 +247,8 @@ def accession2assembly(accession):
 
     # get ftp link in meta data string
     if 'latest' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
-        ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+        print assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta']
+        ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
 
         get_ncbi_genome(ftp_path, out_dir)
 
@@ -370,10 +413,11 @@ if __name__ == '__main__':
     parser.add_argument("-c", '--complete', action="store_true", help="complete genome only (default = False)")
     parser.add_argument("-s",'--sample',type=str,help="get sample data from accession id")
     parser.add_argument("-b",'--bioproject',type=str,help="get all assemblies from bioproject")
+    parser.add_argument("-r",'--representative',action="store_true", help="download only representative genomes")
 
     args = parser.parse_args()
     if args.taxon_id:
-        get_complete_genomes_data(ncbi_taxon= args.taxon_id, complete = args.complete)
+        get_complete_genomes_data(ncbi_taxon= args.taxon_id, complete = args.complete, representative = args.representative)
     if args.accession:
         accession2assembly(accession = args.accession)
     if args.sample:

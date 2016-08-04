@@ -44,6 +44,7 @@ def download_whole_directory(ftp, path, destination, recursive=False):
     print "files:"
     print filelist
     for file in filelist:
+        print 'dir:', ftp.pwd()
         print "downloading...", os.path.join(path,file)
         try:
             ftp.cwd(os.path.join(path,file)+"/")
@@ -52,12 +53,15 @@ def download_whole_directory(ftp, path, destination, recursive=False):
                 os.mkdir(os.path.join(destination,file))              
                 download_whole_directory(ftp, path+file+"/", os.path.join(destination,file))
         except ftplib.error_perm:
-            ftp.cwd(path)
+            #print ftp.pwd()
+            #ftp.cwd(path)
             print "downloading", file
             #print ftp.nlst()
-            os.chdir(destination)
+            os.chdir( destination)
             try:
                 ftp.retrbinary("RETR "+file, open(file, "wb").write)
                 print file + " downloaded"
             except ftplib.error_perm:
+                print ftp.nlst()
+                print ftp.pwd()
                 print 'could not download file/dir: %s' % file

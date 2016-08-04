@@ -68,7 +68,10 @@ def taxon_id2scientific_classification(taxon_id_list):
     merged_taxons = ','.join(new_taxon)
     handle = Entrez.efetch(db="taxonomy", id=merged_taxons, rettype="xml")
     records = Entrez.parse(handle)
-    records = [i for i in records]
+    try:
+        records = [i for i in records]
+    except RuntimeError:
+        return None
     all_classifications = {}
 
     for taxon, record in zip(new_taxon, records):

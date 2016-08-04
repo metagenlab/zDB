@@ -46,8 +46,9 @@ def get_protein_sequences(crispdata):
 
         seq_records = list(SeqIO.parse(handle, "fasta"))
 
-        for record in seq_records:
-            ncbi_accession = record.accession.split('.')[0]
+        for seq_record in seq_records:
+            #print seq_record
+            ncbi_accession = seq_record.id.split('|')[-2].split('.')[0]
             print 'accession', ncbi_accession
             for gene_data in crispdata[ncbi_accession]:
 

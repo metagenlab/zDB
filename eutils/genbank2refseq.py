@@ -39,8 +39,14 @@ def refseq2genbank(ncbi_id, database="nuccore"):
     :return: genbank id
     '''
 
-    handle = Entrez.elink(dbfrom=database, db=database, id=gi(ncbi_id), term="srcdb+ddbj/embl/genbank[prop]")
+    try:
+        int(ncbi_id)
+        print 'ncbi gi!'
+        handle = Entrez.elink(dbfrom=database, db=database, id=ncbi_id, term="srcdb+ddbj/embl/genbank[prop]")
+    except:
+        handle = Entrez.elink(dbfrom=database, db=database, id=gi(ncbi_id), term="srcdb+ddbj/embl/genbank[prop]")
     record = Entrez.read(handle)
+    print record
     try:
         genbank_id = record[0]['LinkSetDb'][0]['Link'][0]['Id'] #['IdList']
     except IndexError:
