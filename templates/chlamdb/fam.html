@@ -87,14 +87,7 @@
                             <li>{{ fam }} is present in <strong>{{ group_count|length }} different orthogroup(s)</strong></li>
 
 
-                            {% if type == 'cog' %}
-                                <li>Extrenal link: <a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{ fam }}">{{ fam }}</a></li>
-                            {% elif type == 'pfam' %}
-                                <li>Extrenal link: <a href="http://pfam.xfam.org/family/{{ fam }}">{{ fam }}</a></li>
-                            {% elif type == 'interpro' %}
-                                <li>Extrenal link: <a href="http://www.ebi.ac.uk/interpro/entry/{{ fam }}">{{ fam }}</a></li>
 
-                            {% else %}
                             {% endif %}
 
                             <ul>
@@ -111,8 +104,32 @@
 
 
                             </ul>
+                        {% elif type == 'ko' %}
+                            <li>KO part of <strong>{{pathway_data|length }} pathways</strong></li>
+                            <ul>
+                                {% for path in pathway_data %}
+                                <li><a href="{% url 'KEGG_mapp' biodb path.0 %}">{{path.0}} :: {{path.1}}</a></li>
+                                {% endfor %}
+                            </ul>
+                            <li>KO part of <strong>{{module_data|length }} modules</strong></li>
+                            <ul>
+                                {% for path in module_data %}
+                                <li><a href="{% url 'KEGG_module_map' biodb path.0 %}">{{path.2}} :: {{path.1}}</a></li>
+                                {% endfor %}
+                            </ul>
 
                         {% endif %}
+
+                        {% if type == 'cog' %}
+                            <li>Extrenal link: <a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{ fam }}">{{ fam }}</a></li>
+                        {% elif type == 'pfam' %}
+                            <li>Extrenal link: <a href="http://pfam.xfam.org/family/{{ fam }}">{{ fam }}</a></li>
+                        {% elif type == 'interpro' %}
+                            <li>Extrenal link: <a href="http://www.ebi.ac.uk/interpro/entry/{{ fam }}">{{ fam }}</a></li>
+                        {% elif type == 'ko' %}
+                            <li>Extrenal link: <a href="http://www.genome.jp/dbget-bin/www_bget?{{ fam }}">{{ fam }}</a></li>
+                        {% endif %}
+
                         </ol>
                     </div>
                     <div class="tab-pane" id="tab2">
@@ -177,6 +194,9 @@
                     <div class="tab-pane" id="tab66" style="height:100%">
                         <iframe name="orthoIDframe2" id="theFrame2" scrolling="no" width="100%" height="1800px"></iframe>
                     </div>
+
+
+
                     <div class="tab-pane" id="tab3">
                      <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                         <div class="panel-heading" style="width:100%">
@@ -195,7 +215,6 @@
                     </div>
                 </div>
 
-       {% endif %}
 
         </div>
     </div>

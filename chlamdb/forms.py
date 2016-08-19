@@ -277,6 +277,28 @@ def make_circos_orthology_form(biodb):
         targets = forms.ChoiceField(choices=accession_choices)
     return Circos_orthology
 
+
+def make_blastnr_form(biodb):
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodb)
+    sql = 'show columns from blastnr_taxonomy;'
+    accession_choices = get_accessions(biodb, plasmid=True, all=False)
+    ranks = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+    rank_choices = []
+    for rank in ranks:
+        rank_choices.append((rank, rank))
+
+    class Blastnr_top(forms.Form):
+        accession = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" }), required = False)
+        rank = forms.ChoiceField(choices=rank_choices)
+        CHOICES=[('BBH','BBH'),
+         ('Majority','Majority Rule')]
+        type = forms.ChoiceField(choices=CHOICES)
+        top_number = forms.CharField(max_length=3, label="Majority over top n hits", initial = 200, required = False)
+
+    return Blastnr_top
+
+
 def make_blast_form(biodb):
 
     accession_choices =  get_accessions(biodb, plasmid=True, all=True)
@@ -289,6 +311,8 @@ def make_blast_form(biodb):
                                            ("tblastn", "tblastn")])
         target = forms.ChoiceField(choices=accession_choices)
         blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 20}))
+
+
         #biodatabase = forms.ChoiceField(choices=choices)
 
     return BlastForm

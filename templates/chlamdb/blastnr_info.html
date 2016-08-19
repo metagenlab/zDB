@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load staticfiles %}
+    {% load custom_tags %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+
+    <div id="content">
+
+
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">Create circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. Click on the circos plot to open a new windows with clickable version of the plot.<br>
+            rRNA are colored in blue, tRNA in red.
+            </p>
+        </div>
+
+        <h3>   COG category: {% with data|first as first_doc %}{{ first_doc.4 }}{% endwith %}</h3>
+        <div id="export_bouttons_groups">
+            <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+
+            <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+            <a href="{% url 'circos_main' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
+
+            <br/>
+        </div>
+        <table id="cog_table" class="sortable">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th id="entete_locus">Orthogroup</th>
+                    <th id="entete_locus">Locus</th>
+                    <th id="entete_locus">Protein id</th>
+                    <th id="entete_gene">Start</th>
+                    <th id="entete_gene">Stop</th>
+                    <th id="entete_strand">S.</th>
+                    <th id="entete_gene">Gene</th>
+                    <th id="entete_n">nH</th>
+                    <th id="entete_n">nG</th>
+                    <th id="entete_n">TM</th>
+                    <th id="entete_n">SP</th>
+                    <th id="entete_product">Product</th>
+                    <th id="entete_translation">Translation</th>
+
+                </tr>
+            </thead>
+            <tbody>
+
+                {%for key, values in orthogroup2annot.items%}
+                <tr>
+                    <td>{{values.0}}</td>
+                    <td>{{key}}</td>
+                    <td><a href="{% url 'locusx' biodb values.1 True %}" target="_top">{{values.1}}</a></td>
+                    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.2}}" target="_top">{{values.2}}</a></td>
+                    <td>{{values.3}}</td>
+                    <td>{{values.4}}</td>
+                    <td>{{values.5}}</td>
+                    <td>{{values.6}}</td>
+                    <td>{{values.7}}</td>
+                    <td>{{values.8}}</td>
+                    <td>{{values.9}}</td>
+                    <td>{{values.10}}</td>
+                    <td>{{values.11}}</td>
+                    <td>{{values.13}}</td>
+                </tr>
+
+                {%endfor%}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

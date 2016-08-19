@@ -39,38 +39,38 @@
     </div>
 
     <div id="content">
-
+        {% if display_form %}
         <nav>
         <ul id="tabs" class="nav nav-tabs">
-            <li ><a href="{% url 'extract_pfam' biodb %}">Detailed comparison</a></li>
-            <li class="active"><a href="{% url 'venn_pfam' biodb %}">Venn diagram</a></li>
-            <li><a href="{% url 'pfam_comparison' biodb %}">Compare Pfam Domains</a></li>
+            <li ><a href="{% url 'extract_ko' biodb %}">Detailed comparison</a></li>
+            <li class="active"><a href="{% url 'venn_ko' biodb %}">Venn diagram</a></li>
+            <li><a href="{% url 'module_barchart' biodb %}">KO categories barchart</a></li>
         </ul>
         </nav>
 
 
                 <div id="extract_form">
-                    <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                    <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
                           <div class="panel-heading" style="width:100%">
                             <h3 class="panel-title">Help</h3>
                             </div>
-                    <p style="margin: 10px 10px 10px 10px">Venn diagramm of Pfam domains, max 6 genomes</p>
+                    <p style="margin: 10px 10px 10px 10px">Venn diagramm: draw a diagramm based on the presence/absence of KOs in selected genomes. Max 6 genomes.</p>
                     </div>
 
 
 
-                    <form action="{% url "chlamdb.views.venn_pfam" biodb %}" method="post">
+                    <form action="{% url "chlamdb.views.venn_ko" biodb %}" method="post">
                         {% csrf_token %}
                         {{ form_venn.as_p }}
-                        <input type="submit" name="venn" value="Compare Pfam" id="venn_button" />
+                        <input type="submit" name="venn" value="Compare COGs" id="venn_button" />
 
                     </form>
 
                 </div>
-
+    {% endif %}
      {% if envoi_venn %}
-
-        {% include "chlamdb/venn_template_Pfam.html" with series=series description_dico=pfam2description %}
+        Bababa!!!
+        {% include "chlamdb/venn_template_COGs.html" with series=series description_dico=cog2description %}
 
     {% endif %}
 

@@ -39,11 +39,12 @@
     </div>
 
     <div id="content">
-
+        {% if display_form %}
         <nav>
         <ul id="tabs" class="nav nav-tabs">
             <li ><a href="{% url 'extract_cog' biodb %}">Detailed comparison</a></li>
             <li class="active"><a href="{% url 'venn_cog' biodb %}">Venn diagram</a></li>
+            <li><a href="{% url 'cog_barchart' biodb %}">COG categories barchart</a></li>
         </ul>
         </nav>
 
@@ -66,9 +67,9 @@
                     </form>
 
                 </div>
-
+    {% endif %}
      {% if envoi_venn %}
-
+        Bababa!!!
         {% include "chlamdb/venn_template_COGs.html" with series=series description_dico=cog2description %}
 
     {% endif %}

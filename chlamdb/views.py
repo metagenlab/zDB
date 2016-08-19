@@ -38,7 +38,7 @@ from forms import make_extract_region_form
 from forms import make_venn_from
 from forms import make_priam_form
 from forms import AnnotForm
-
+from forms import make_blastnr_form
 from django.contrib.auth import logout
 from django.conf import settings
 from django.contrib.auth import authenticate, login
@@ -1205,6 +1205,62 @@ def extract_cog(request, biodb):
 
 
 @login_required
+def venn_ko(request, biodb):
+
+    cache = get_cache('default')
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+    venn_form_class = make_venn_from(biodb)
+    display_form = True
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+        form_venn = venn_form_class(request.POST)  # Nous reprenons les données
+        #form2 = ContactForm(request.POST)
+        if form_venn.is_valid():  # Nous vérifions que les données envoyées sont valides
+
+
+
+            targets = form_venn.cleaned_data['targets']
+
+            server, db = manipulate_biosqldb.load_db(biodb)
+
+            all_cog_list = []
+            series = '['
+            taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+            for target in targets:
+                template_serie = '{name: "%s", data: %s}'
+                sql ='select id from comparative_tables.ko_%s where `%s` > 0' % (biodb, target)
+                print sql
+                cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+                all_cog_list += cogs
+                data = '"' + '","'.join(cogs) + '"'
+                series+=template_serie % (taxon_id2genome[target], cogs) + ','
+            series = series[0:-1] + ']'
+
+
+            #h['Marilyn Monroe'] = 1;
+
+            cog2description = []
+            sql = 'select * from enzyme.ko_annotation'
+            data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+            for i in data:
+                if i in all_cog_list:
+
+                    #print 'ok'
+                    cog2description.append('h["%s"] = "%s </td><td>%s";' % (i, data[i][0], data[i][1]))
+                else:
+                    pass
+
+            envoi_venn = True
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form_venn = venn_form_class()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/venn_ko.html', locals())
+
+
+@login_required
 def venn_cog(request, biodb):
 
     cache = get_cache('default')
@@ -1625,10 +1681,20 @@ def fam(request, biodb, fam, type):
 
             sql_modules = 'select pathways, modules from enzyme.ko_annotation where ko_id="%s";' % (fam)
             data = server.adaptor.execute_and_fetchall(sql_modules,)[0]
-            if len(data)>0:
+            print data
+            if data[0] != '-':
                 print data
-                pathway_list = ','.split(data[0])
-                module_list = ','.split(data[0])
+                import re
+                pathway_list = [re.sub('ko', 'map',i) for i in data[0].split(',')]
+                pathway_list = '("' + '","'.join(pathway_list) + '")'
+                print 'pathways', pathway_list
+                sql = 'select pathway_name,pathway_category,description from enzyme.kegg_pathway where pathway_name in %s' % pathway_list
+                pathway_data = server.adaptor.execute_and_fetchall(sql,)
+            if data[1] != '-':
+                module_list = '("' + '","'.join(data[1].split(',')) + '")'
+                print 'modules', module_list
+                sql = 'select module_name,module_sub_sub_cat,description from enzyme.kegg_module where module_name in %s' % module_list
+                module_data = server.adaptor.execute_and_fetchall(sql,)
 
         else:
             valid_id = False
@@ -1991,6 +2057,613 @@ def sunburst(request, biodb, locus):
 
     return render(request, 'chlamdb/sunburst.html', locals())
 
+def get_cog(request, biodb, taxon, category):
+    import biosql_own_sql_tables
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    target_taxons = [i for i in request.GET.getlist('h')]
+
+
+    biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
+    print biodb_id_sql
+    biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
+
+    sql = 'select C.description,locus_tag,COG_id,name, D.description from (' \
+          ' select description,locus_tag,A.COG_id,functon,name from (' \
+          ' select description,locus_tag,COG_id from COG.locus_tag2gi_hit_%s as t1 inner join biosqldb.bioentry as t2 ' \
+          ' on t1.accession=t2.accession where biodatabase_id=%s and taxon_id=%s) A inner join ' \
+          ' COG.cog_names_2014 as B on A.COG_id=B.COG_id where B.functon="%s") C ' \
+          ' inner join COG.code2category as D on C.functon=D.code;' % (biodb, biodb_id, taxon, category)
+
+    print sql
+    data = server.adaptor.execute_and_fetchall(sql,)
+
+    locus_list = [line[1] for line in data]
+
+
+    sql = 'select locus_tag,product from orthology_detail_%s where locus_tag in (%s)' % (biodb, '"' + '","'.join(locus_list) + '"')
+
+
+    locus2annot = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    circos_url = '?ref=%s&' % taxon
+    print 'all taxons', target_taxons
+    target_taxons.pop(target_taxons.index(taxon))
+    circos_url += "t="+('&t=').join((target_taxons)) + '&h=' + ('&h=').join(locus_list)
+
+    data_type = 'cog'
+
+    return render(request, 'chlamdb/cog_info.html', locals())
+
+
+
+def cog_venn_subset(request, biodb, category):
+    cache = get_cache('default')
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+
+    targets = [i for i in request.GET.getlist('h')]
+    if len(targets)> 5:
+        targets = targets[0:6]
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    all_cog_list = []
+    series = '['
+    taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+    for target in targets:
+        template_serie = '{name: "%s", data: %s}'
+        sql = 'select A.id from (select id from comparative_tables.COG_%s where `%s` > 0) A' \
+              ' inner join COG.cog_names_2014 as t2 on A.id=t2.COG_id where functon="%s";' % (biodb, target, category)
+        #sql ='select id from comparative_tables.COG_%s where `%s` > 0' % (biodb, target)
+        print sql
+        cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+        all_cog_list += cogs
+        data = '"' + '","'.join(cogs) + '"'
+        series+=template_serie % (taxon_id2genome[target], cogs) + ','
+    series = series[0:-1] + ']'
+
+
+    #h['Marilyn Monroe'] = 1;
+
+    cog2description = []
+    sql = 'select * from COG.cog_names_2014 where functon="%s"' % category
+    data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    for i in data:
+        if i in all_cog_list:
+
+            #print 'ok'
+            cog2description.append('h["%s"] = "%s </td><td>%s";' % (i, data[i][0], data[i][1]))
+        else:
+            pass
+    display_form = False
+    envoi_venn = True
+
+
+
+    return render(request, 'chlamdb/venn_cogs.html', locals())
+
+
+def ko_venn_subset(request, biodb, category):
+    cache = get_cache('default')
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+    import re
+
+    category = re.sub('\+', ' ', category)
+
+    targets = [i for i in request.GET.getlist('h')]
+    if len(targets)> 5:
+        targets = targets[0:6]
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    all_cog_list = []
+    series = '['
+    taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+    for target in targets:
+        template_serie = '{name: "%s", data: %s}'
+        sql = 'select A.id from (select id from comparative_tables.ko_%s where `%s` > 0) A' \
+              ' inner join enzyme.module2ko as t2 on A.id=t2.ko_id inner JOIN ' \
+              ' enzyme.kegg_module as t3 on t2.module_id=t3.module_id where module_sub_sub_cat="%s";' % (biodb, target, category)
+        #sql ='select id from comparative_tables.COG_%s where `%s` > 0' % (biodb, target)
+        print sql
+        cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+        all_cog_list += cogs
+        data = '"' + '","'.join(cogs) + '"'
+        series+=template_serie % (taxon_id2genome[target], cogs) + ','
+    series = series[0:-1] + ']'
+
+
+    #h['Marilyn Monroe'] = 1;
+
+    cog2description = []
+    sql = 'select * from enzyme.ko_annotation as t1 inner join enzyme.module2ko as t2 on t1.ko_id=t2.ko_id inner JOIN ' \
+              ' enzyme.kegg_module as t3 on t2.module_id=t3.module_id where module_sub_sub_cat="%s"' % category
+    data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    for i in data:
+        if i in all_cog_list:
+
+            #print 'ok'
+            cog2description.append('h["%s"] = "%s </td><td>%s";' % (i, data[i][0], data[i][1]))
+        else:
+            pass
+    display_form = False
+    envoi_venn = True
+
+
+
+    return render(request, 'chlamdb/venn_cogs.html', locals())
+
+
+
+
+def module_cat_info(request, biodb, taxon, category):
+    import biosql_own_sql_tables
+    import re
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    target_taxons = [i for i in request.GET.getlist('h')]
+
+    print 'category', category
+    category = re.sub('\+', ' ', category)
+    biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
+    print biodb_id_sql
+    biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
+
+    # description, locus, KO, KO name, KO description
+    sql = 'select B.description, A.locus_tag,A.ko_id, A.ko_description from ' \
+          ' (select t1.locus_tag,t1.ko_id,t3.module_sub_sub_cat, t3.description,t1.taxon_id,t2.ko_description ' \
+          ' from enzyme.locus2ko_%s t1 inner join enzyme.module2ko as t2 on t1.ko_id=t2.ko_id ' \
+          ' inner join enzyme.kegg_module as t3 on t2.module_id=t3.module_id ' \
+          ' where module_sub_sub_cat="%s" and taxon_id=%s) A inner join ' \
+          ' (select taxon_id, description from biosqldb.bioentry where biodatabase_id=%s and ' \
+          ' description not like "%%%%plasmid%%%%") B on A.taxon_id=B.taxon_id;' % (biodb, category, taxon, biodb_id)
+
+    print sql
+    data = server.adaptor.execute_and_fetchall(sql,)
+
+    locus_list = [line[1] for line in data]
+
+
+    sql = 'select locus_tag,product from orthology_detail_%s where locus_tag in (%s)' % (biodb, '"' + '","'.join(locus_list) + '"')
+
+
+    locus2annot = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    circos_url = '?ref=%s&' % taxon
+    print 'all taxons', target_taxons
+    target_taxons.pop(target_taxons.index(taxon))
+    circos_url += "t="+('&t=').join((target_taxons)) + '&h=' + ('&h=').join(locus_list)
+
+    data_type = 'ko'
+
+    return render(request, 'chlamdb/cog_info.html', locals())
+
+
+
+
+
+
+def module_barchart(request, biodb):
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    venn_form_class = make_venn_from(biodb)
+
+    if request.method == 'POST':
+        form = venn_form_class(request.POST)
+
+        if form.is_valid():
+
+            target_taxons = form.cleaned_data['targets']
+
+            biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
+            biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
+
+            sql_taxon = 'select taxon_id,description from bioentry where biodatabase_id=%s and taxon_id in (%s) and description not like "%%%%plasmid%%%%"' % (biodb_id,','.join(target_taxons))
+
+            taxon2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_taxon,))
+
+            # taxon id, kegg category, category description, count
+            sql = 'select D.taxon_id,module_sub_sub_cat, count(*) as n from enzyme.locus2ko_%s A inner join' \
+                  ' enzyme.module2ko as B on A.ko_id=B.ko_id inner join enzyme.kegg_module as C ' \
+                  ' on B.module_id=C.module_id inner join biosqldb.orthology_detail_%s as D on A.locus_tag=D.locus_tag ' \
+                  ' where D.taxon_id in (%s) group by taxon_id,module_sub_sub_cat;' % (biodb, biodb,','.join(target_taxons))
+            print sql
+            data = server.adaptor.execute_and_fetchall(sql,)
+
+            taxon_map = 'var taxon2description = {'
+            for i in taxon2description:
+                taxon_map+='"%s":"%s",' % (i, taxon2description[i])
+            taxon_map = taxon_map[0:-1] + '};'
+
+            category_dico = {}
+
+
+            for line in data:
+                if line[1] not in category_dico:
+                    category_dico[line[1]] = line[2]
+
+
+            taxon2category2count = {}
+            all_categories = []
+            for line in data:
+                if line[0] not in taxon2category2count:
+                    taxon2category2count[line[0]] = {}
+                    taxon2category2count[line[0]][line[1]] = line[2]
+                else:
+                    taxon2category2count[line[0]][line[1]] = line[2]
+                if line[1] not in all_categories:
+                    all_categories.append(line[1])
+            labels_template = '[\n' \
+                              '%s\n' \
+                              ']\n'
+
+            serie_template = '[%s\n' \
+                             ']\n'
+
+            one_serie_template = '{\n' \
+                                 'label: "%s",\n' \
+                                 'values: [%s]\n' \
+                                 '},\n'
+
+
+            all_series_templates = []
+            for taxon in taxon2category2count:
+                print 'taxon', taxon
+                one_category_list = []
+                for category in all_categories:
+                    print 'category', category
+                    try:
+                        one_category_list.append(taxon2category2count[taxon][category])
+                    except:
+                        one_category_list.append(0)
+                one_category_list = [str(i) for i in one_category_list]
+                print one_category_list
+                all_series_templates.append(one_serie_template % (taxon, ','.join(one_category_list)))
+
+            print 'all series!', all_series_templates
+            series = serie_template % ''.join(all_series_templates)
+            labels = labels_template % ('"'+'","'.join(all_categories) + '"')
+
+            '''
+              labels: [
+                'resilience', 'maintainability', 'accessibility',
+                'uptime', 'functionality', 'impact'
+              ]
+              series: [
+                {
+                  label: '2012',
+                  values: [4, 8, 15, 16, 23, 42]
+                },
+                {
+                  label: '2013',
+                  values: [12, 43, 22, 11, 73, 25]
+                },
+                {
+                  label: '2014',
+                  values: [31, 28, 14, 8, 15, 21]
+                },]
+            '''
+            print 'labels', labels
+            print series
+
+            circos_url = '?h=' + ('&h=').join(target_taxons)
+            envoi = True
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = venn_form_class()
+    return render(request, 'chlamdb/module_barplot.html', locals())
+
+
+def cog_barchart(request, biodb):
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    venn_form_class = make_venn_from(biodb)
+
+    if request.method == 'POST':
+        form = venn_form_class(request.POST)
+
+        if form.is_valid():
+
+            target_taxons = form.cleaned_data['targets']
+
+            biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
+            biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
+
+            sql_taxon = 'select taxon_id,description from bioentry where biodatabase_id=%s and taxon_id in (%s) and description not like "%%%%plasmid%%%%"' % (biodb_id,','.join(target_taxons))
+
+            taxon2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_taxon,))
+
+            sql = 'select C.taxon_id,D.code,D.description, C.n from (select taxon_id,functon, count(*) as n ' \
+                  ' from (select taxon_id,COG_id from COG.locus_tag2gi_hit_%s as t1 ' \
+                  ' inner join biosqldb.bioentry as t2 on t1.accession=t2.accession where biodatabase_id=%s and ' \
+                  ' taxon_id in (%s)) A inner join COG.cog_names_2014 as B on A.COG_id=B.COG_id group by taxon_id,functon) C ' \
+                  ' left join COG.code2category as D on C.functon=D.code;' % (biodb, biodb_id,','.join(target_taxons))
+
+            data = server.adaptor.execute_and_fetchall(sql,)
+
+
+
+            category_dico = {}
+
+
+            for line in data:
+                if line[1] not in category_dico:
+                    category_dico[line[1]] = line[2]
+
+            # create a dictionnary to convert cog category description and one letter code
+            category_map = 'var description2category = {'
+            for i in category_dico:
+                category_map+='"%s":"%s",' % (category_dico[i], i)
+            category_map = category_map[0:-1] + '};'
+
+            taxon_map = 'var taxon2description = {'
+            for i in taxon2description:
+                taxon_map+='"%s":"%s",' % (i, taxon2description[i])
+            taxon_map = taxon_map[0:-1] + '};'
+
+
+            taxon2category2count = {}
+            all_categories = []
+            for line in data:
+                if line[0] not in taxon2category2count:
+                    taxon2category2count[line[0]] = {}
+                    taxon2category2count[line[0]][line[2]] = line[3]
+                else:
+                    taxon2category2count[line[0]][line[2]] = line[3]
+                if line[2] not in all_categories:
+                    all_categories.append(line[2])
+            labels_template = '[\n' \
+                              '%s\n' \
+                              ']\n'
+
+            serie_template = '[%s\n' \
+                             ']\n'
+
+            one_serie_template = '{\n' \
+                                 'label: "%s",\n' \
+                                 'values: [%s]\n' \
+                                 '},\n'
+
+
+            all_series_templates = []
+            for taxon in taxon2category2count:
+                print 'taxon', taxon
+                one_category_list = []
+                for category in all_categories:
+                    print 'category', category
+                    try:
+                        one_category_list.append(taxon2category2count[taxon][category])
+                    except:
+                        one_category_list.append(0)
+                one_category_list = [str(i) for i in one_category_list]
+                print one_category_list
+                all_series_templates.append(one_serie_template % (taxon, ','.join(one_category_list)))
+
+            print 'all series!', all_series_templates
+            series = serie_template % ''.join(all_series_templates)
+            labels = labels_template % ('"'+'","'.join(all_categories) + '"')
+
+            '''
+              labels: [
+                'resilience', 'maintainability', 'accessibility',
+                'uptime', 'functionality', 'impact'
+              ]
+              series: [
+                {
+                  label: '2012',
+                  values: [4, 8, 15, 16, 23, 42]
+                },
+                {
+                  label: '2013',
+                  values: [12, 43, 22, 11, 73, 25]
+                },
+                {
+                  label: '2014',
+                  values: [31, 28, 14, 8, 15, 21]
+                },]
+            '''
+            print 'labels', labels
+            print series
+
+            circos_url = '?h=' + ('&h=').join(target_taxons)
+            envoi = True
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = venn_form_class()
+    return render(request, 'chlamdb/cog_barplot.html', locals())
+
+def blastnr_cat_info(request, biodb, accession, rank, taxon):
+    import biosql_own_sql_tables
+    import re
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    target_accessions = [i for i in request.GET.getlist('h')]
+    counttype = request.GET.getlist('t')[0]
+    top_n = request.GET.getlist('n')[0]
+
+
+    print 'type', counttype
+
+    biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
+    biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
+
+    if counttype == 'Majority':
+        sql = 'select query_accession,%s, count(*) as n from blastnr.blastnr_hits_%s_%s A ' \
+              ' inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id where hit_number<=%s' \
+              ' group by query_accession,%s order by query_accession,n DESC' % (rank, biodb, accession, top_n, rank)
+
+        data = server.adaptor.execute_and_fetchall(sql,)
+        category2count = {}
+        all_query_locus_list = []
+        majority_locus_list = []
+
+        for i in data:
+            # keep only the majoritary taxon
+            if i[0] not in all_query_locus_list:
+                # keep only data for taxon of interest
+                if i[1] == taxon:
+                    majority_locus_list.append(i[0])
+                all_query_locus_list.append(i[0])
+        locus_list = majority_locus_list
+    elif counttype == 'BBH':
+        sql = ' select query_accession from (select * from blastnr.blastnr_hits_%s_%s' \
+              ' where hit_number=1) A inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id ' \
+              ' where %s="%s";' % (biodb, accession, rank, taxon)
+        print sql
+        locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+    else:
+        raise 'invalide type'
+
+    columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+              'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation,taxon_id'
+    sql = 'select %s from orthology_detail_%s where locus_tag in (%s)' % (columns, biodb, '"' + '","'.join(locus_list) + '"')
+
+    orthogroup2annot = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    for i, key in enumerate(orthogroup2annot.keys()):
+        orthogroup2annot[key] = (i,) + orthogroup2annot[key]
+
+    accession2taxon = manipulate_biosqldb.accession2taxon_id(server, biodb)
+    print 'accession2taxon', accession2taxon
+
+    circos_url = '?ref=%s&' % orthogroup2annot[orthogroup2annot.keys()[0]][-1]
+    target_taxons = [str(accession2taxon[i]) for i in target_accessions]
+    reference_taxon = str(accession2taxon[accession])
+    target_taxons.pop(target_taxons.index(reference_taxon))
+    circos_url += "t="+('&t=').join((target_taxons)) + '&h=' + ('&h=').join(locus_list)
+
+    return render(request, 'chlamdb/blastnr_info.html', locals())
+
+def blastnr_barchart(request, biodb):
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    blastnr_form_class = make_blastnr_form(biodb)
+
+    if request.method == 'POST':
+        form = blastnr_form_class(request.POST)
+
+        if form.is_valid():
+            import pandas as pd
+
+            target_accessions = form.cleaned_data['accession']
+            rank = form.cleaned_data['rank']
+            counttype = form.cleaned_data['type']
+            top_n = form.cleaned_data['top_number']
+
+            biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
+            biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
+            sql_accession = 'select accession,description from bioentry where biodatabase_id=%s and accession in (%s)' % (biodb_id,'"'+'","'.join(target_accessions)+'"')
+            taxon2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_accession,))
+
+            data_all_accessions = []
+            for accession in target_accessions:
+
+                if counttype == 'Majority':
+                    sql = 'select query_accession,%s, count(*) as n from blastnr.blastnr_hits_%s_%s A ' \
+                          ' inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id where hit_number<=%s' \
+                          ' group by query_accession,%s order by query_accession,n DESC' % (rank, biodb, accession, top_n,rank)
+
+                    data = server.adaptor.execute_and_fetchall(sql,)
+                    category2count = {}
+                    query_locus_list = []
+                    for i in data:
+                        # KEEP ONY the first match (highest count ordered with mysql)
+                        if i[0] not in query_locus_list:
+                            if i[1] not in category2count:
+                                category2count[i[1]] = 1
+                            else:
+                                category2count[i[1]] += 1
+                            query_locus_list.append(i[0])
+                    data = zip(category2count.keys(), category2count.values())
+                elif counttype == 'BBH':
+                    sql = ' select %s, count(*) as n from (select * from blastnr.blastnr_hits_%s_%s' \
+                          ' where hit_number=1) A inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id ' \
+                          ' group by %s;' % (rank, biodb, accession, rank)
+
+                    data = server.adaptor.execute_and_fetchall(sql,)
+                else:
+                    raise 'invalide type'
+
+                for i in data:
+                    data_all_accessions.append((accession,) + i)
+
+
+
+            taxon_map = 'var taxon2description = {'
+            for i in taxon2description:
+                taxon_map+='"%s":"%s",' % (i, taxon2description[i])
+            taxon_map = taxon_map[0:-1] + '};'
+
+
+            taxon2category2count = {}
+            all_categories = []
+            for line in data_all_accessions:
+                if line[0] not in taxon2category2count:
+                    taxon2category2count[line[0]] = {}
+                    taxon2category2count[line[0]][line[1]] = line[2]
+                else:
+                    taxon2category2count[line[0]][line[1]] = line[2]
+                if line[1] not in all_categories:
+                    all_categories.append(line[1])
+            labels_template = '[\n' \
+                              '%s\n' \
+                              ']\n'
+
+            serie_template = '[%s\n' \
+                             ']\n'
+
+            one_serie_template = '{\n' \
+                                 'label: "%s",\n' \
+                                 'values: [%s]\n' \
+                                 '},\n'
+
+            # count number of hits for each category and order based on the number of hits
+            category2count = {}
+            for taxon in taxon2category2count:
+                for category in all_categories:
+                    try:
+                        if category not in category2count:
+                            category2count[category] = int(taxon2category2count[taxon][category])
+                        else:
+                            category2count[category] += int(taxon2category2count[taxon][category])
+                    except:
+                        pass
+
+            data = pd.DataFrame({'category': category2count.keys(),
+                    'count': category2count.values() })
+            data_sort = data.sort(columns=["count"],ascending=0)
+
+            all_series_templates = []
+            for taxon in taxon2category2count:
+                print 'taxon', taxon
+                one_category_list = []
+                for category in data_sort['category']:
+                    print 'category', category
+                    try:
+                        one_category_list.append(taxon2category2count[taxon][category])
+                    except:
+                        one_category_list.append(0)
+                one_category_list = [str(i) for i in one_category_list]
+                print one_category_list
+                all_series_templates.append(one_serie_template % (taxon, ','.join(one_category_list)))
+
+            print 'all series!', all_series_templates
+            series = serie_template % ''.join(all_series_templates)
+            labels = labels_template % ('"'+'","'.join(data_sort['category']) + '"')
+
+
+            circos_url = '?h=' + ('&h=').join(target_accessions) + '&t=%s&n=%s' % (counttype, top_n)
+
+            envoi = True
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = blastnr_form_class()
+    return render(request, 'chlamdb/blastnr_best_barplot.html', locals())
 
 
 @login_required
@@ -3542,7 +4215,7 @@ def blast(request, biodb):
                             leng = end-start
 
                             print 'end', 'start', end, start, end-start
-
+                            accession = 'Rht'
                             seq = manipulate_biosqldb.location2sequence(server, accession, biodb, start, leng)
                             print seq
                             from Bio.Seq import reverse_complement, translate
@@ -4461,14 +5134,12 @@ def kegg_module(request, biodb):
 @login_required
 def module_comparison(request, biodb):
 
-    print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
 
     comp_metabo_form = make_metabo_from(biodb)
 
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
-        #form2 = ContactForm(request.POST)
         if form.is_valid():
             import biosql_own_sql_tables
             taxon_list = form.cleaned_data['targets']

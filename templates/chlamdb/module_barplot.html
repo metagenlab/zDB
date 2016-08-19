@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load staticfiles %}
+{% load custom_tags %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+
+    <div id="content">
+
+        <nav>
+        <ul id="tabs" class="nav nav-tabs">
+            <li><a href="{% url 'extract_ko' biodb %}">Detailed comparison</a></li>
+            <li><a href="{% url 'ko_comparison' biodb %}">Compare KO counts</a></li>
+            <li class="active"><a href="{% url 'module_barchart' biodb %}">KO categories barchart</a></li>
+        </ul>
+        </nav>
+
+
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">Compare KO categories between genomes. <br>
+                Click on bars to get the corresponding locus.<br>
+                Click on labels to get venn diagram of the category (max 6 species will be diplayed).<br>
+            </p>
+        </div>
+
+    <form action='{% url "chlamdb.views.module_barchart" biodb %}' method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit" />
+
+    </form>
+
+    {% if envoi %}
+
+
+        <style>
+
+        /*
+        .chart rect {
+          fill: steelblue;
+        }
+        */
+        .chart .legend {
+          fill: black;
+          font: 14px sans-serif;
+          text-anchor: start;
+          font-size: 12px;
+        }
+
+        .chart text {
+          fill: black;
+          font: 10px sans-serif;
+          text-anchor: end;
+        }
+
+        .chart .label:hover {
+          fill: red;
+        }
+
+        .chart .label {
+          fill: black;
+          font: 14px sans-serif;
+          text-anchor: end;
+        }
+
+        .bar:hover {
+          fill: brown;
+        }
+
+        .axis path,
+        .axis line {
+          fill: none;
+          stroke: #000;
+          shape-rendering: crispEdges;
+        }
+
+
+        </style>
+
+
+        <div id="mydiv" style="float: left"></div>
+        <svg class="chart"></svg>
+
+
+
+        <script src="http://d3js.org/d3.v3.min.js"></script>
+        <script>
+
+        var data = {
+          labels: {{labels|safe}},
+          series: {{series|safe}}
+        };
+
+        {{category_map|safe}}
+        {{taxon_map|safe}}
+
+        var chartWidth       = 300,
+            barHeight        = 10,
+            groupHeight      = barHeight * data.series.length,
+            gapBetweenGroups = 10,
+            spaceForLabels   = 450,
+            spaceForLegend   = 250;
+
+        // Zip the series data together (first values, second values, etc.)
+        var zippedData = [];
+        for (var i=0; i<data.labels.length; i++) {
+          for (var j=0; j<data.series.length; j++) {
+            zippedData.push(data.series[j].values[i]);
+          }
+        }
+
+        // Color scale
+        var color = d3.scale.category20();
+        var chartHeight = barHeight * zippedData.length + gapBetweenGroups * data.labels.length;
+
+        var x = d3.scale.linear()
+            .domain([0, d3.max(zippedData)])
+            .range([0, chartWidth]);
+
+        var y = d3.scale.linear()
+            .range([chartHeight + gapBetweenGroups, 0]);
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .tickFormat('')
+            .tickSize(0)
+            .orient("left");
+
+        // Specify the chart area and dimensions
+        var chart = d3.select(".chart")
+            .attr("width", spaceForLabels + chartWidth + spaceForLegend)
+            .attr("height", chartHeight);
+
+        // Create bars
+        var bar = chart.selectAll("g")
+            .data(zippedData)
+            .enter().append("g")
+            .attr("transform", function(d, i) {
+              return "translate(" + spaceForLabels + "," + (i * barHeight + gapBetweenGroups * (0.5 + Math.floor(i/data.series.length))) + ")";
+            }
+            )
+             //   Math.floor(i/data.series.length)
+            .attr("taxon_id", function(d,i) { return (i % data.series.length) ; })
+            .attr("category_id", function(d,i) { return (Math.floor(i/data.series.length)) ; });
+
+
+        // Create rectangles of the correct width
+        bar.append("rect")
+            .attr("fill", function(d,i) { return color(i % data.series.length); })
+            .attr("class", "bar")
+            .attr("width", x)
+            .attr("height", barHeight - 1)
+            .on("click",drill);
+
+
+        // Add text label in bar
+        bar.append("text")
+            .attr("x", function(d) { return x(d) + -3; })
+            .attr("y", barHeight / 2)
+            .attr("fill", "red")
+            .attr("dy", ".35em")
+            .text(function(d) { return d; });
+
+        // Draw labels
+        bar.append("text")
+            .attr("class", "label")
+            .attr("x", function(d) { return - 10; })
+            .attr("y", groupHeight / 2)
+            .attr("dy", ".35em")
+            .text(function(d,i) {
+              if (i % data.series.length === 0)
+                return data.labels[Math.floor(i/data.series.length)];
+              else
+                return ""})
+                // "/chlamdb/venn_cog/{{biodb}}/" + "/" + category + "{{circos_url|safe}}"
+            .on("click",drill2);
+
+        function drill(d, i) {
+            var taxon = data.series[d3.select(this.parentNode).attr("taxon_id")].label; //data object
+            var category = data.labels[d3.select(this.parentNode).attr("category_id")]; //data object
+            var category = category.split(' ').join('+')
+            window.open("/chlamdb/module_cat_info/{{biodb}}/" + taxon + "/" + category + "{{circos_url|safe}}");
+        }
+        function drill2(d,j) {
+                var category = data.labels[d3.select(this.parentNode).attr("category_id")]; //data object
+                var category = category.split(' ').join('+')
+                window.open("/chlamdb/ko_venn_subset/{{biodb}}/" + category + "{{circos_url|safe}}") };
+
+        //bar.on("click", drill);
+
+
+        chart.append("g")
+              .attr("class", "y axis")
+              .attr("transform", "translate(" + spaceForLabels + ", " + -gapBetweenGroups/2 + ")")
+              .call(yAxis);
+
+        // Draw legend
+        var legendRectSize = 18,
+            legendSpacing  = 4;
+
+        var legend = chart.selectAll('.legend')
+            .data(data.series)
+            .enter()
+            .append('g')
+            .attr('transform', function (d, i) {
+                var height = legendRectSize + legendSpacing;
+                var offset = -gapBetweenGroups/2;
+                var horz = spaceForLabels + chartWidth + 40 - legendRectSize;
+                var vert = i * height - offset;
+                return 'translate(' + horz + ',' + vert + ')';
+            });
+
+        legend.append('rect')
+            .attr('width', legendRectSize)
+            .attr('height', legendRectSize)
+            .style('fill', function (d, i) { return color(i); })
+            .style('stroke', function (d, i) { return color(i); });
+
+        legend.append('text')
+            .attr('class', 'legend')
+            .attr('x', legendRectSize + legendSpacing)
+            .attr('y', legendRectSize - legendSpacing)
+            .text(function (d) { return taxon2description[d.label]; });
+
+        d3.select("#mydiv").append("button")
+                .attr("type","button")
+                .attr("class", "btn btn-primary btn-sm")
+                .text("Download SVG")
+                .on("click", function() {
+                    // download the svg
+                    downloadSVG();
+                });
+
+        </script>
+
+    {% endif %}
+
+    </div>
+</div>
+</body>
+</html>
