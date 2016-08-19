@@ -191,7 +191,7 @@ if __name__ == '__main__':
                 import_gbk(gbk, server, db)
             except:
                 pass
-            create_cds_tables(gbk, args.db_name)
+            #create_cds_tables(gbk, args.db_name)
     
     if args.remove_db:
         if query_yes_no("Remove databse %s?" % args.remove_db):

@@ -2393,7 +2393,8 @@ class CircosAccession2multiplot():
                                                                    locus_highlight,
                                                                    taxon_list = ordered_queries_taxon_id,
                                                                    query_taxon_id=False,
-                                                                   draft_data=draft_fasta)
+                                                                   draft_data=draft_fasta,
+                                                                   draft_coordinates=False)
 
 
 

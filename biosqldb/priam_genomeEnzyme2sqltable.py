@@ -764,6 +764,8 @@ if __name__ == '__main__':
     if args.update_database:
         load_enzyme_nomenclature_table()
         get_ec2get_pathway_table(get_kegg_pathway_classification())
+        get_complete_ko_table()
+        get_module_table(get_kegg_module_hierarchy())
         #get_ec_data_from_IUBMB("1.14.13.217")
         #get_ec_data_from_IUBMB("1.1.1.1")
 
@@ -775,17 +777,10 @@ if __name__ == '__main__':
 
         locus2ec_table(locus2ec, args.database_name)
 
-    # get_ec2get_pathway_table(get_kegg_pathway_classification())
 
-    #print get_kegg_module_hierarchy()
-    #get_module_table(get_kegg_module_hierarchy())
-    #print ko2definition('K00838')
-    #locus2ko = parse_blast_koala_output(args.ko_table)
-    #print locus2ko
-    #locus2ko_table(locus2ko, args.database_name)
-    import urllib2
-    ko_url = "http://rest.kegg.jp/get/%s" % 'K00005'
-    ko_data = [line for line in urllib2.urlopen(ko_url)]
+    if args.ko_table:
 
-    get_complete_ko_table()
-    #get_complete_ko_table()
+        locus2ko = parse_blast_koala_output(args.ko_table)
+        locus2ko_table(locus2ko, args.database_name)
+
+
