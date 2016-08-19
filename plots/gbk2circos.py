@@ -429,16 +429,31 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                 if str(feature.strand) == strand:
                     try:
                         for i in draft_data[y]:
+                            print 'ok'
                             if draft_coordinates:
+                                print 'draft coord'
                                 if feature.location.start >= i[1] and feature.location.end <= i[2]:
                                     contig = i[0]
                                     start = feature.location.start - i[1]
                                     end = feature.location.end - i[1]
+                            else:
+                                contig = i[0]
+                                start = feature.location.start
+                                end = feature.location.end
+                            '''
+                            else:
+                                print 'draft coord'
+                                if feature.location.start >= i[1] and feature.location.end <= i[2]:
+                                    contig = i[0]
+                                    start = feature.location.start
+                                    end = feature.location.end
                                 else:
                                     contig = i[0]
                                     start = feature.location.start
                                     end = feature.location.end
+                            '''
                     except:
+                        print 'except'
                         contig = record.id # fill_color=violet
                         start = feature.location.start
                         end = feature.location.end
@@ -772,12 +787,12 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
     print "writing minus strand file"
     print_circos_gene_file(record_list, strand="-1", out_name = all_file_names["minus"], draft_data=draft_data,
                          locus_highlight=locus_highlight, group_id2orthologs_presence=group_id2orthologs_presence,
-                         query_taxon_id=query_taxon_id)
+                         query_taxon_id=query_taxon_id, draft_coordinates=draft_coordinates)
 
     print "writing plus strand file"
     print_circos_gene_file(record_list, strand="1", out_name = all_file_names["plus"], draft_data=draft_data,
                          locus_highlight=locus_highlight, group_id2orthologs_presence=group_id2orthologs_presence,
-                         query_taxon_id=query_taxon_id)
+                         query_taxon_id=query_taxon_id, draft_coordinates=draft_coordinates)
     print "writing GC file"
 
     all_file_names["GC_var"], all_file_names["GC_skew"] = print_circos_GC_file(record_list, out_directory = out_dir)
