@@ -123,6 +123,7 @@
 
                             <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
                             <a href="{% url 'circos_main' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
+                            <a href="{% url 'orthogroup_list_cog_barchart' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show cog categories of orthogroup subset vs all orthogroups</a>
 
                             <br/>
                         </div>

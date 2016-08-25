@@ -39,6 +39,8 @@ from forms import make_venn_from
 from forms import make_priam_form
 from forms import AnnotForm
 from forms import make_blastnr_form
+from forms import make_comment_from
+
 from django.contrib.auth import logout
 from django.conf import settings
 from django.contrib.auth import authenticate, login
@@ -264,7 +266,6 @@ def extract_orthogroup(request, biodb):
             else:
                 server, db = manipulate_biosqldb.load_db(biodb)
 
-
                 freq_missing = (len(include)-float(n_missing))/len(include)
 
                 # get sub matrix and complete matrix
@@ -299,7 +300,9 @@ def extract_orthogroup(request, biodb):
 
                     circos_url = '?ref=%s&' % reference_taxon
                     circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(match_groups)
-                    print "circos_url", circos_url
+
+
+
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
         form = extract_form_class()  # Nous créons un formulaire vide
@@ -309,11 +312,14 @@ def extract_orthogroup(request, biodb):
 
 
 @login_required
-def orthogroup_annotation(request, biodb):
+def orthogroup_annotation(request, biodb, display_form):
     cache = get_cache('default')
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
+
+    print request.method
+
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form = AnnotForm(request.POST)  # Nous reprenons les données
@@ -329,13 +335,24 @@ def orthogroup_annotation(request, biodb):
 
             match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(match_groups, biodb)
 
-
-
-
-
             envoi_annot = True
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
-        form = AnnotForm()
+        if display_form == "True":
+            form = AnnotForm()
+        else:
+
+
+            import biosql_own_sql_tables
+
+            server, db = manipulate_biosqldb.load_db(biodb)
+
+            match_groups = target_taxons = [i for i in request.GET.getlist('g')]
+            print 'match groups', match_groups
+
+            match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(match_groups, biodb)
+
+            envoi_annot = True
+
     return render(request, 'chlamdb/orthogroup_annotation.html', locals())
 
 
@@ -361,7 +378,7 @@ def venn_orthogroup(request, biodb):
             taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
             for target in targets:
                 template_serie = '{name: "%s", data: %s}'
-                sql ='select orthogroup from orthology_%s where `%s` > 0' % (biodb, target)
+                sql ='select orthogroup from comparative_tables.orthology_%s where `%s` > 0' % (biodb, target)
                 print sql
                 orthogroups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
                 all_orthogroups_list += orthogroups
@@ -647,10 +664,13 @@ def extract_ko(request, biodb):
             print locus_list
             circos_url = '?ref=%s&' % reference_taxon
             circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
-            print "circos_url", circos_url
 
+            # url to get the barchart of selected KO
+            taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
+            taxon_out_url = "&o="+("&o=").join(exclude)
             envoi_extract = True
-
+            mm = 'module'
+            pp = 'pathway'
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
         form = extract_form_class()  # Nous créons un formulaire vide
 
@@ -1134,7 +1154,6 @@ def extract_cog(request, biodb):
             reference_taxon = form.cleaned_data['reference']
             if reference_taxon == "None":
                 reference_taxon = include[0]
-
             try:
                 single_copy = request.POST['button_single_copy']
                 single_copy = True
@@ -1161,6 +1180,7 @@ def extract_cog(request, biodb):
 
                 # get count in subgroup
                 cog2count = dict((mat > 0).sum(axis=1))
+                print "cog2count", cog2count
                 # get count in complete database
                 cog2count_all = dict((mat_all > 0).sum(axis=1))
 
@@ -1174,7 +1194,10 @@ def extract_cog(request, biodb):
                 cog_data = []
                 for i in match_groups:
                     sql = 'select * from COG.cog_names_2014 where COG_id ="%s"' % i
-                    tmp = list(server.adaptor.execute_and_fetchall(sql,)[0])
+                    try:
+                        tmp = list(server.adaptor.execute_and_fetchall(sql,)[0])
+                    except:
+                        tmp = [i, "-", "-"]
                     cog_data.append(tmp+[cog2count[tmp[0]], cog2count_all[tmp[0]]])
                 print cog_data
                 interpro_list = '"' + '","'.join(match_groups) + '"'
@@ -1188,12 +1211,13 @@ def extract_cog(request, biodb):
                                                                                                             biodb_id,
                                                                                                             reference_taxon,
                                                                                                             interpro_list)
-                print locus_list_sql
+
                 locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-                print locus_list
+
+                taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
+                taxon_out_url = "&o="+("&o=").join(exclude)
                 circos_url = '?ref=%s&' % reference_taxon
                 circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
-                print "circos_url", circos_url
 
                 envoi_extract = True
 
@@ -1527,10 +1551,11 @@ def locusx(request, biodb, locus=None, menu=False):
                             else:
                                 if one_db_info[1][1:] not in all_path[db]:
                                     all_path[db].append(one_db_info[1][1:])
+
+
+
                 except:
                     pathways_data = False
-
-
 
             data = list(server.adaptor.execute_and_fetchall(sql2, )[0])
 
@@ -1598,6 +1623,20 @@ def locusx(request, biodb, locus=None, menu=False):
 
             else:
                 homologues[0] = (1,) + homologues[0] + (100,)
+
+
+        import re
+        sql = 'select t1.locus_tag, t1.annotation from manual_annotation as t1 ' \
+              ' inner join orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag where orthogroup="%s";' % (biodb, data[0])
+        cmt = server.adaptor.execute_and_fetchall(sql,)
+        print cmt
+        cmt_format = []
+        for i in cmt:
+            cmt_format.append([i[0], i[1].replace('\n', '<br />')])
+        print cmt_format
+
+        #cmt = '-'
+
 
         home_dir = os.path.dirname(os.path.realpath(__file__))
         print 'home', home_dir
@@ -2058,12 +2097,22 @@ def sunburst(request, biodb, locus):
     return render(request, 'chlamdb/sunburst.html', locals())
 
 def get_cog(request, biodb, taxon, category):
-    import biosql_own_sql_tables
+
+
+    '''
+
+    get list of COG for a given taxon and category
+
+    :param biodb: biosqldb name
+    :param taxon: taxon id
+    :param category: ane letter COG category
+    :return:
+    '''
+
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
     target_taxons = [i for i in request.GET.getlist('h')]
-
 
     biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
     print biodb_id_sql
@@ -2081,7 +2130,6 @@ def get_cog(request, biodb, taxon, category):
 
     locus_list = [line[1] for line in data]
 
-
     sql = 'select locus_tag,product from orthology_detail_%s where locus_tag in (%s)' % (biodb, '"' + '","'.join(locus_list) + '"')
 
 
@@ -2096,7 +2144,107 @@ def get_cog(request, biodb, taxon, category):
 
     return render(request, 'chlamdb/cog_info.html', locals())
 
+def get_cog_multiple(request, biodb, category):
+    '''
+    idem as get_cog but possibility to get more complex requests:
+    - one or multiple include taxons
+    - one or multiple explude taxons
+    return the list of match COGs with their annotations
+    '''
+    import biosql_own_sql_tables
 
+    server, db = manipulate_biosqldb.load_db(biodb)
+    include = [i for i in request.GET.getlist('i')]
+    exclude = [i for i in request.GET.getlist('o')]
+    n_missing = request.GET.getlist('m')[0]
+    if exclude[0] == '':
+        exclude = []
+        target_taxons = include
+    else:
+        target_taxons = include + exclude
+    freq_missing = (len(include)-float(n_missing))/len(include)
+
+    biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
+
+    biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
+
+    # get sub matrix and complete matrix
+    mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
+                                                                  "COG",
+                                                                  "id",
+                                                                  include,
+                                                                  exclude,
+                                                                  freq_missing)
+
+    match_groups_subset = mat.index.tolist()
+    filter = '"' + '","'.join(match_groups_subset) + '"'
+    sql = 'select COG_id,functon,description,name from (select * from COG.cog_names_2014 where COG_id in (%s) and functon="%s") A ' \
+          'inner join COG.code2category as B on A.functon=B.code;' % (filter, category)
+
+    data = server.adaptor.execute_and_fetchall(sql,)
+
+    data_type = 'cog'
+
+    return render(request, 'chlamdb/cog_info_multiple.html', locals())
+
+def get_ko_multiple(request, biodb, type, category):
+    '''
+    idem as module_cat_info but possibility to get more complex requests:
+    - one or multiple include taxons
+    - one or multiple explude taxons
+    return the list of match ko with their annotations
+    '''
+    import biosql_own_sql_tables
+    import re
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    print category
+    category = re.sub('\+', ' ', category)
+    print 'catego', category
+
+    include = [i for i in request.GET.getlist('i')]
+    exclude = [i for i in request.GET.getlist('o')]
+    n_missing = request.GET.getlist('m')[0]
+    if exclude[0] == '':
+        exclude = []
+        target_taxons = include
+    else:
+        target_taxons = include + exclude
+    freq_missing = (len(include)-float(n_missing))/len(include)
+
+
+    # get sub matrix and complete matrix
+    mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
+                                                                  "ko",
+                                                                  "id",
+                                                                  include,
+                                                                  exclude,
+                                                                  freq_missing)
+
+    match_groups_subset = mat.index.tolist()
+    filter = '"' + '","'.join(match_groups_subset) + '"'
+    if type == 'module':
+        sql = 'select A.ko_id,name,definition,pathways,modules,module_name, module_sub_cat,description ' \
+              ' from (select * from enzyme.ko_annotation where ko_id in (%s)) A inner join enzyme.module2ko as B ' \
+              ' on A.ko_id=B.ko_id inner join enzyme.kegg_module as C on B.module_id=C.module_id where module_sub_sub_cat="%s";' % (filter, category)
+    if type == 'pathway':
+        sql = 'select A.ko_id,name,definition,pathway_name,pathway_category,description from (select * from enzyme.ko_annotation ' \
+              'where ko_id in  (%s)) A inner join enzyme.pathway2ko as B on A.ko_id=B.ko_id  ' \
+              ' inner join enzyme.kegg_pathway as C on B.pathway_id=C.pathway_id' \
+              ' where description="%s";' % (filter, category)
+    print sql
+    data = list(server.adaptor.execute_and_fetchall(sql,))
+    if type == 'module':
+        for i, info in enumerate(data):
+            data[i] = list(data[i])
+            data[i][7] = info[7].split('[')[0]
+
+
+
+
+    data_type = 'ko'
+
+    return render(request, 'chlamdb/ko_info_multiple.html', locals())
 
 def cog_venn_subset(request, biodb, category):
     cache = get_cache('default')
@@ -2186,9 +2334,22 @@ def ko_venn_subset(request, biodb, category):
     data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     for i in data:
         if i in all_cog_list:
+            print data[i]
+            pathways_string = ''
+            module_string = ''
+            if data[i][3] != '-':
+                pathdata = data[i][3].split(',')
+                for y in pathdata:
+                    pathways_string+='<a href=/chlamdb/KEGG_mapp/%s/%s>%s</a>, ' % (biodb, re.sub('ko', 'map',y), re.sub('ko', 'map',y))
+            if data[i][4] != '-':
+                moduledata = data[i][4].split(',')
+                for y in moduledata:
+                    module_string+='<a href=/chlamdb/KEGG_module_map/%s/%s>%s</a>, ' % (biodb, y, y)
 
-            #print 'ok'
-            cog2description.append('h["%s"] = "%s </td><td>%s";' % (i, data[i][0], data[i][1]))
+            cog2description.append('h["%s"] = "%s </td><td>%s</td><td>%s</td><td>%s";' % (i, data[i][0],
+                                                                                          data[i][1],
+                                                                                          module_string[0:-2],
+                                                                                          pathways_string[0:-2]))
         else:
             pass
     display_form = False
@@ -2196,13 +2357,13 @@ def ko_venn_subset(request, biodb, category):
 
 
 
-    return render(request, 'chlamdb/venn_cogs.html', locals())
+    return render(request, 'chlamdb/venn_ko.html', locals())
 
 
 
 
 def module_cat_info(request, biodb, taxon, category):
-    import biosql_own_sql_tables
+
     import re
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -2221,16 +2382,14 @@ def module_cat_info(request, biodb, taxon, category):
           ' inner join enzyme.kegg_module as t3 on t2.module_id=t3.module_id ' \
           ' where module_sub_sub_cat="%s" and taxon_id=%s) A inner join ' \
           ' (select taxon_id, description from biosqldb.bioentry where biodatabase_id=%s and ' \
-          ' description not like "%%%%plasmid%%%%") B on A.taxon_id=B.taxon_id;' % (biodb, category, taxon, biodb_id)
+          ' description not like "%%%%plasmid%%%%") B on A.taxon_id=B.taxon_id group by locus_tag,ko_id;' % (biodb, category, taxon, biodb_id)
 
     print sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
     locus_list = [line[1] for line in data]
 
-
     sql = 'select locus_tag,product from orthology_detail_%s where locus_tag in (%s)' % (biodb, '"' + '","'.join(locus_list) + '"')
-
 
     locus2annot = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -2264,16 +2423,25 @@ def module_barchart(request, biodb):
             biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
             biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
 
-            sql_taxon = 'select taxon_id,description from bioentry where biodatabase_id=%s and taxon_id in (%s) and description not like "%%%%plasmid%%%%"' % (biodb_id,','.join(target_taxons))
+            sql_taxon = 'select taxon_id,description from bioentry where biodatabase_id=%s ' \
+                        ' and taxon_id in (%s) and description not like "%%%%plasmid%%%%"' % (biodb_id,','.join(target_taxons))
 
             taxon2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_taxon,))
 
             # taxon id, kegg category, category description, count
-            sql = 'select D.taxon_id,module_sub_sub_cat, count(*) as n from enzyme.locus2ko_%s A inner join' \
+            # il faut encore regrouper par taxon, ko id car si on a plein de paralogues, ça va biaiser le résutat
+            # on regroupe les locus tags car un KO peut être dans plusieurs modules d'une meme categorie
+            sql = 'select D.taxon_id,bb.module_sub_sub_cat, count(*) as n from (select A.*,B.module_id, C.module_sub_sub_cat from enzyme.locus2ko_%s A inner join' \
                   ' enzyme.module2ko as B on A.ko_id=B.ko_id inner join enzyme.kegg_module as C ' \
-                  ' on B.module_id=C.module_id inner join biosqldb.orthology_detail_%s as D on A.locus_tag=D.locus_tag ' \
-                  ' where D.taxon_id in (%s) group by taxon_id,module_sub_sub_cat;' % (biodb, biodb,','.join(target_taxons))
+                  ' on B.module_id=C.module_id group by A.locus_tag, C.module_sub_sub_cat) bb inner join biosqldb.orthology_detail_%s as D on bb.locus_tag=D.locus_tag ' \
+                  ' where D.taxon_id in (%s) group by taxon_id,bb.module_sub_sub_cat;' % (biodb, biodb,','.join(target_taxons))
+            # merge des ko par taxon (on ne compte qu'une fois un taxon)
+            sql = 'select bb.taxon_id,bb.module_sub_sub_cat, count(*) as n from (select A.*,B.module_id, C.module_sub_sub_cat from enzyme.locus2ko_%s A inner join' \
+                  ' enzyme.module2ko as B on A.ko_id=B.ko_id inner join enzyme.kegg_module as C ' \
+                  ' on B.module_id=C.module_id where A.taxon_id in (%s) group by taxon_id,ko_id,module_sub_sub_cat) bb group by bb.taxon_id,bb.module_sub_sub_cat;' % (biodb, ','.join(target_taxons))
             print sql
+
+
             data = server.adaptor.execute_and_fetchall(sql,)
 
             taxon_map = 'var taxon2description = {'
@@ -2358,6 +2526,482 @@ def module_barchart(request, biodb):
         form = venn_form_class()
     return render(request, 'chlamdb/module_barplot.html', locals())
 
+def add_comment(request, biodb, locus_tag):
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    comment_form_class = make_comment_from(biodb, locus_tag)
+
+
+    if request.method == 'POST':
+        form = comment_form_class(request.POST)
+        if form.is_valid():
+            envoi = True
+            print 'form valid'
+            locus_tag = form.cleaned_data['locus']
+            comment =  form.cleaned_data['comment']
+            sql = 'select * from manual_annotation where locus_tag="%s"' % locus_tag
+            data = server.adaptor.execute_and_fetchall(sql,)
+            if len(data) == 0:
+                sql = 'insert into manual_annotation (locus_tag, annotation) values("%s", "%s")' % (locus_tag, comment)
+            else:
+                sql = 'update manual_annotation set annotation="%s" where locus_tag="%s"' % (comment, locus_tag)
+            server.adaptor.execute(sql,)
+            server.commit()
+    else:
+        form = comment_form_class()
+    return render(request, 'chlamdb/comment_form.html', locals())
+
+
+def ko_subset_barchart(request, biodb, type):
+
+    '''
+
+    create KO sub sub category barchart of selected KO
+    url parameters:
+                    i: taxons to include
+                    o: taxons to exclude
+                    m: frequ missing (allow COG to miss in m incided genomes)
+
+    GET THE LIST OF cogS PRESENT IN MINIMUM LEN(i)-freq-missing AND NOT PRESENT IN ALL(o)
+
+    create dictionnary of counts for each category
+    construct the barchart with javascript
+
+    :param request:
+    :param biodb:
+    :return:
+    '''
+
+    import biosql_own_sql_tables
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    include = [i for i in request.GET.getlist('i')]
+    exclude = [i for i in request.GET.getlist('o')]
+    # if not exclude taxon
+    if exclude[0] == '':
+        exclude = []
+    n_missing = request.GET.getlist('m')[0]
+
+    freq_missing = (len(include)-float(n_missing))/len(include)
+
+    # get sub matrix and complete matrix
+    mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
+                                                                  "ko",
+                                                                  "id",
+                                                                  include,
+                                                                  exclude,
+                                                                  freq_missing)
+
+    match_groups_subset = mat.index.tolist()
+
+    if type == 'module':
+        sql = 'select module_sub_sub_cat,count(*) as n from (select * from enzyme.ko_annotation where ko_id in ' \
+              ' (%s)) A inner join enzyme.module2ko as B on A.ko_id=B.ko_id ' \
+              ' inner join enzyme.kegg_module as C on B.module_id=C.module_id group by module_sub_sub_cat;' % ('"'+'","'.join(match_groups_subset)+'"')
+    if type == 'pathway':
+        sql = 'select description,count(*) as n from (select * from enzyme.ko_annotation where ko_id in  ' \
+              ' (%s)) A inner join enzyme.pathway2ko as B on A.ko_id=B.ko_id  inner join enzyme.kegg_pathway as C' \
+              ' on B.pathway_id=C.pathway_id where pathway_category != "1.0 Global and overview maps"' \
+              ' group by description;' % ('"'+'","'.join(match_groups_subset)+'"')
+        print sql
+
+    data_subset = server.adaptor.execute_and_fetchall(sql,)
+
+
+    # on récupère tous les KO de tous les génomes inclus pour faire une comparaison
+    filter = '`' + '`>0 or `'.join(include) + '`>0'
+    sql = 'select id from comparative_tables.ko_%s where (%s)' % (biodb, filter)
+
+    match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+    if type == 'module':
+        sql = 'select module_sub_sub_cat,count(*) as n from (select * from enzyme.ko_annotation where ko_id in ' \
+              ' (%s)) A inner join enzyme.module2ko as B on A.ko_id=B.ko_id ' \
+              ' inner join enzyme.kegg_module as C on B.module_id=C.module_id group by module_sub_sub_cat;' % ('"'+'","'.join(match_groups)+'"')
+    if type == 'pathway':
+        sql = 'select description,count(*) as n from (select * from enzyme.ko_annotation where ko_id in ' \
+              ' (%s)) A inner join enzyme.pathway2ko as B on A.ko_id=B.ko_id ' \
+              ' inner join enzyme.kegg_pathway as C on B.pathway_id=C.pathway_id where pathway_category != "1.0 Global and overview maps"' \
+              ' group by description;' % ('"'+'","'.join(match_groups)+'"')
+        print sql
+        print '################################'
+    data_all_include = server.adaptor.execute_and_fetchall(sql,)
+
+    # count total
+    total_subset = sum([i[1] for i in data_subset])
+    total_all_include = sum([i[1] for i in data_all_include])
+
+    # calculate freq of each category, add missing categories in the 2 dictionnaries
+    category2freq_subset = {}
+    category2count_subset = {}
+    for i in data_subset:
+        category2freq_subset[i[0]] = float(i[1])/total_subset
+        category2count_subset[i[0]] = i[1]
+    category2freq_all = {}
+    category2count_all = {}
+    for i in data_all_include:
+        category2freq_all[i[0]] = float(i[1])/total_all_include
+        category2count_all[i[0]] = i[1]
+        if i[0] not in category2freq_subset:
+            category2freq_subset[i[0]] = 0
+            category2count_subset[i[0]] = 0
+    for cat in category2freq_subset:
+       if cat not in category2freq_all:
+           category2freq_all[cat] = 0
+           category2count_all[cat] = 0
+
+    labels_template = '[\n' \
+                      '%s\n' \
+                      ']\n'
+
+    serie_template = '[%s\n' \
+                     ']\n'
+
+    one_serie_template = '{\n' \
+                         'label: "%s",\n' \
+                         'values: [%s]\n' \
+                         '},\n'
+    ref_serie = []
+    all_serie = []
+    for cat in category2freq_all.keys():
+
+        ref_serie.append(str(round(category2freq_subset[cat],4)*100))
+        all_serie.append(str(round(category2freq_all[cat],4)*100))
+
+    serie_all = one_serie_template % ("complete genomes", ','.join(all_serie))
+    serie_target = one_serie_template % ("selection", ','.join(ref_serie))
+
+    series = serie_template % ''.join([serie_all, serie_target])
+    labels = labels_template % ('"'+'","'.join([str(i) for i in category2freq_all.keys()]) + '"')
+
+    category_count_complete = 'var category_count_complete = {'
+    for i in category2count_all:
+        category_count_complete+='"%s":["%s", "%s"],' % (i, category2count_all[i], category2count_subset[i])
+    category_count_complete = category_count_complete[0:-1] + '};'
+
+    taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
+    taxon_out_url = "&o="+("&o=").join(exclude)
+
+
+
+    return render(request, 'chlamdb/ko_subset_barchart.html', locals())
+
+def cog_subset_barchart(request, biodb):
+
+    '''
+
+    create COG category barchart of selected COGs
+    url parameters:
+                    i: taxons to include
+                    o: taxons to exclude
+                    m: frequ missing (allow COG to miss in m incided genomes)
+
+    create dictionnary of counts for each category
+    :param request:
+    :param biodb:
+    :return:
+    '''
+
+    import biosql_own_sql_tables
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    include = [i for i in request.GET.getlist('i')]
+    exclude = [i for i in request.GET.getlist('o')]
+    # if not exclude taxon
+    if exclude[0] == '':
+        exclude = []
+    n_missing = request.GET.getlist('m')[0]
+
+    freq_missing = (len(include)-float(n_missing))/len(include)
+
+    # get sub matrix and complete matrix
+    mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
+                                                                  "COG",
+                                                                  "id",
+                                                                  include,
+                                                                  exclude,
+                                                                  freq_missing)
+
+    match_groups_subset = mat.index.tolist()
+
+
+    sql = 'select functon, count(*) from COG.cog_names_2014 where COG_id in (%s) group by functon;' % ('"'+'","'.join(match_groups_subset)+'"')
+    print sql
+    data_subset = server.adaptor.execute_and_fetchall(sql,)
+
+
+    # on récupère tous les cogs des génomes inclus pour faire une comparaison
+    filter = '`' + '`>0 or `'.join(include) + '`>0'
+    sql = 'select id from comparative_tables.COG_%s where (%s)' % (biodb, filter)
+
+    match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+    sql = 'select functon, count(*) from COG.cog_names_2014 where COG_id in (%s) group by functon;' % ('"'+'","'.join(match_groups)+'"')
+    data_all_include = server.adaptor.execute_and_fetchall(sql,)
+
+    # count total
+    total_subset = sum([i[1] for i in data_subset])
+    total_all_include = sum([i[1] for i in data_all_include])
+
+    # calculate freq of each category, add missing categories in the 2 dictionnaries
+    category2freq_subset = {}
+    category2count_subset = {}
+    for i in data_subset:
+        category2freq_subset[i[0]] = float(i[1])/total_subset
+        category2count_subset[i[0]] = i[1]
+    category2freq_all = {}
+    category2count_all = {}
+    for i in data_all_include:
+        category2freq_all[i[0]] = float(i[1])/total_all_include
+        category2count_all[i[0]] = i[1]
+        if i[0] not in category2freq_subset:
+            category2freq_subset[i[0]] = 0
+            category2count_subset[i[0]] = 0
+    for cat in category2freq_subset:
+       if cat not in category2freq_all:
+           category2freq_all[cat] = 0
+           category2count_all[cat] = 0
+
+    labels_template = '[\n' \
+                      '%s\n' \
+                      ']\n'
+
+    serie_template = '[%s\n' \
+                     ']\n'
+
+    one_serie_template = '{\n' \
+                         'label: "%s",\n' \
+                         'values: [%s]\n' \
+                         '},\n'
+    ref_serie = []
+    all_serie = []
+    for cat in category2freq_all.keys():
+
+        ref_serie.append(str(round(category2freq_subset[cat],4)*100))
+        all_serie.append(str(round(category2freq_all[cat],4)*100))
+
+    serie_all = one_serie_template % ("complete genomes", ','.join(all_serie))
+    serie_target = one_serie_template % ("selection", ','.join(ref_serie))
+
+    series = serie_template % ''.join([serie_all, serie_target])
+    labels = labels_template % ('"'+'","'.join([str(i) for i in category2freq_all.keys()]) + '"')
+
+    sql = 'select * from COG.code2category'
+    category_description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    category_map = 'var category_description = {'
+    for i in category_description:
+        category_map+='"%s":"%s",' % (i, category_description[i])
+    category_map = category_map[0:-1] + '};'
+
+    category_count_complete = 'var category_count_complete = {'
+    for i in category2count_all:
+        category_count_complete+='"%s":["%s", "%s"],' % (i, category2count_all[i], category2count_subset[i])
+    category_count_complete = category_count_complete[0:-1] + '};'
+
+    taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
+    taxon_out_url = "&o="+("&o=").join(exclude)
+
+    return render(request, 'chlamdb/cog_subset_barchart.html', locals())
+
+
+def compare_homologs(request, biodb):
+
+
+    '''
+    plot protein length of closest homologs between 2 genomes
+    :param request:
+    :param biodb:
+    :return:
+    '''
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    venn_form_class = make_venn_from(biodb)
+
+    if request.method == 'POST':
+        form = venn_form_class(request.POST)
+
+        if form.is_valid():
+            target_taxons = form.cleaned_data['targets']
+            target_taxons = target_taxons[0:2]
+            sql = 'select locus_1,locus_2 from comparative_tables.identity_closest_homolog_%s ' \
+                  ' where (taxon_1=%s and taxon_2=%s) ' \
+                  ' UNION select locus_2,locus_1 from comparative_tables.identity_closest_homolog_%s ' \
+                  ' where (taxon_1=%s and taxon_2=%s)' % (biodb,
+                                                           target_taxons[0],
+                                                           target_taxons[1],
+                                                           biodb,
+                                                           target_taxons[1],
+                                                           target_taxons[0])
+            print sql
+            locus_list = list(server.adaptor.execute_and_fetchall(sql,))
+            print 'n locus', len(locus_list)
+            locus2length = {}
+            locus2orthogroup = {}
+            for taxon in target_taxons:
+                sql1 = 'select locus_tag, orthogroup from orthology_detail_%s where taxon_id=%s' % (biodb, taxon)
+                sql2 = 'select locus_tag, char_length(translation) as len from orthology_detail_%s where taxon_id=%s' % (biodb, taxon)
+                tmp1 = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql1,))
+                tmp2 = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+                locus2length.update(tmp2)
+                locus2orthogroup.update(tmp1)
+            '''
+            var dataset = [
+            [5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+            [410, 12], [475, 44], [25, 67], [85, 21], [220, 88],
+            [600, 150]
+            ];
+            '''
+            dataset_template = '''
+            var dataset = [
+            %s
+            ];
+            '''
+            datastring = ''
+            for locus_1, locus_2 in locus_list:
+
+                datastring+='[%s,%s,"%s"], ' % (locus2length[locus_1],
+                                            locus2length[locus_2],
+                                            locus2orthogroup[locus_1])
+            data_string = datastring[0:-2]
+
+            dataset = dataset_template % data_string
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = venn_form_class()
+
+    return render(request, 'chlamdb/prot_length_scatter.html', locals())
+
+
+def orthogroup_list_cog_barchart(request, biodb):
+
+    orthogroup_list = [i for i in request.GET.getlist('h')]
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'select A.orthogroup,C.functon, count(*) from (select * from biosqldb.orthology_detail_%s as t1 ' \
+          ' where orthogroup in (%s)) A left join COG.locus_tag2gi_hit_%s as B on A.locus_tag=B.locus_tag ' \
+          ' inner join COG.cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,functon;' % (biodb, '"' + '","'.join(orthogroup_list) + '"', biodb)
+
+    data = server.adaptor.execute_and_fetchall(sql,)
+    orthogroup2counts = {}
+    orthogroup2total_count = {}
+    for row in data:
+        if row[0] not in orthogroup2counts:
+            orthogroup2counts[row[0]] = {}
+            orthogroup2total_count[row[0]] = float(row[2])
+            orthogroup2counts[row[0]][row[1]] = float(row[2])
+        else:
+            orthogroup2counts[row[0]][row[1]] = float(row[2])
+            orthogroup2total_count[row[0]] += float(row[2])
+
+    # count fraction of each category for each group
+    # sum of all cetegory = 1 for each group
+    cog_category2count = {}
+    for group in orthogroup2counts:
+        for category in orthogroup2counts[group]:
+            if category not in cog_category2count:
+                cog_category2count[category] = orthogroup2counts[group][category]/orthogroup2total_count[group]
+            else:
+                cog_category2count[category] += orthogroup2counts[group][category]/orthogroup2total_count[group]
+    # count total count, then fraction of the total for each category
+    category2fraction = {}
+    total = sum([cog_category2count[i] for i in cog_category2count])
+
+    for category in cog_category2count:
+        category2fraction[category] = (cog_category2count[category]/total)*100
+
+    sql = 'select A.orthogroup,C.functon, count(*) as n from (select * from biosqldb.orthology_detail_%s as t1) A ' \
+          ' left join COG.locus_tag2gi_hit_%s as B on A.locus_tag=B.locus_tag ' \
+          ' inner join COG.cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,functon;' % (biodb, biodb)
+    print sql
+    data_all = server.adaptor.execute_and_fetchall(sql,)
+    orthogroup2counts_all = {}
+    orthogroup2total_count_all = {}
+    for row in data_all:
+        if row[0] not in orthogroup2counts_all:
+            orthogroup2counts_all[row[0]] = {}
+            orthogroup2total_count_all[row[0]] = float(row[2])
+            orthogroup2counts_all[row[0]][row[1]] = float(row[2])
+        else:
+            orthogroup2counts_all[row[0]][row[1]] = float(row[2])
+            orthogroup2total_count_all[row[0]] += float(row[2])
+
+    # count fraction of each category for each group
+    # sum of all category/ies = 1 for each group
+    cog_category2count_all = {}
+    for group in orthogroup2counts_all:
+        for category in orthogroup2counts_all[group]:
+            if category not in cog_category2count_all:
+                cog_category2count_all[category] = orthogroup2counts_all[group][category]/orthogroup2total_count_all[group]
+            else:
+                cog_category2count_all[category] += orthogroup2counts_all[group][category]/orthogroup2total_count_all[group]
+    # count total count, then fraction of the total for each category
+    category2fraction_all = {}
+    total = sum([cog_category2count_all[i] for i in cog_category2count_all])
+    print cog_category2count_all.keys()
+
+    '''
+    count_null_all = cog_category2count_all[None]
+    try:
+        count_null_selection = cog_category2count[None]
+        del cog_category2count[None]
+    except:
+        count_null_selection = 0
+    del cog_category2count_all[None]
+    '''
+
+    n_missing_cog = len(orthogroup_list) - len(orthogroup2counts)
+    missing_cog_list = []
+    for group in orthogroup_list:
+        if group not in orthogroup2counts:
+            missing_cog_list.append(group)
+
+    for category in cog_category2count_all:
+        category2fraction_all[category] = (cog_category2count_all[category]/total)*100
+
+    print category2fraction, sum(category2fraction.values())
+    print category2fraction_all, sum(category2fraction_all.values())
+    for category in category2fraction_all:
+        if category not in category2fraction:
+            category2fraction[category] = 0
+
+    labels_template = '[\n' \
+                      '%s\n' \
+                      ']\n'
+
+    serie_template = '[%s\n' \
+                     ']\n'
+
+    one_serie_template = '{\n' \
+                         'label: "%s",\n' \
+                         'values: [%s]\n' \
+                         '},\n'
+    ref_serie = []
+    all_serie = []
+    for cat in category2fraction_all.keys():
+        ref_serie.append(str(round(category2fraction[cat],2)))
+        all_serie.append(str(round(category2fraction_all[cat],2)))
+
+    serie_all = one_serie_template % ("all database", ','.join(all_serie))
+    serie_target = one_serie_template % ("selection", ','.join(ref_serie))
+
+    series = serie_template % ''.join([serie_all, serie_target])
+    labels = labels_template % ('"'+'","'.join([str(i) for i in category2fraction_all.keys()]) + '"')
+
+    sql = 'select * from COG.code2category'
+    category_description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    category_map = 'var category_description = {'
+    for i in category_description:
+        category_map+='"%s":"%s",' % (i, category_description[i])
+    category_map = category_map[0:-1] + '};'
+
+    no_cogs_url = "?g=" + ('&g=').join(missing_cog_list)
+
+
+    return render(request, 'chlamdb/orthogroup_list_cog_barchart.html', locals())
 
 def cog_barchart(request, biodb):
 
@@ -2496,7 +3140,7 @@ def blastnr_cat_info(request, biodb, accession, rank, taxon):
         sql = 'select query_accession,%s, count(*) as n from blastnr.blastnr_hits_%s_%s A ' \
               ' inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id where hit_number<=%s' \
               ' group by query_accession,%s order by query_accession,n DESC' % (rank, biodb, accession, top_n, rank)
-
+        print sql
         data = server.adaptor.execute_and_fetchall(sql,)
         category2count = {}
         all_query_locus_list = []
@@ -2510,6 +3154,7 @@ def blastnr_cat_info(request, biodb, accession, rank, taxon):
                     majority_locus_list.append(i[0])
                 all_query_locus_list.append(i[0])
         locus_list = majority_locus_list
+        print "majority_locus_list", majority_locus_list
     elif counttype == 'BBH':
         sql = ' select query_accession from (select * from blastnr.blastnr_hits_%s_%s' \
               ' where hit_number=1) A inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id ' \
@@ -2522,16 +3167,17 @@ def blastnr_cat_info(request, biodb, accession, rank, taxon):
     columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
               'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation,taxon_id'
     sql = 'select %s from orthology_detail_%s where locus_tag in (%s)' % (columns, biodb, '"' + '","'.join(locus_list) + '"')
-
-    orthogroup2annot = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-    for i, key in enumerate(orthogroup2annot.keys()):
-        orthogroup2annot[key] = (i,) + orthogroup2annot[key]
-
+    print sql
+    all_data = server.adaptor.execute_and_fetchall(sql,)
+    print "orthogroup2annot", all_data
+    orthogroup2annot = []
+    for i, data in enumerate(all_data):
+        orthogroup2annot.append((i,) + data)
+    print "orthogroup2annot", orthogroup2annot
     accession2taxon = manipulate_biosqldb.accession2taxon_id(server, biodb)
     print 'accession2taxon', accession2taxon
 
-    circos_url = '?ref=%s&' % orthogroup2annot[orthogroup2annot.keys()[0]][-1]
+    circos_url = '?ref=%s&' % orthogroup2annot[0][-1]
     target_taxons = [str(accession2taxon[i]) for i in target_accessions]
     reference_taxon = str(accession2taxon[accession])
     target_taxons.pop(target_taxons.index(reference_taxon))
@@ -4890,12 +5536,12 @@ def multiple_orthogroup_heatmap(request, biodb, reference_orthogroup, max_distan
             raise 'Error: unexpected combination of groups'
     ordered_distances = sorted(distances)
 
-    sql = 'show columns from orthology_%s' % biodb
+    sql = 'show columns from comparative_tables.orthology_%s' % biodb
     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
 
     ortho_sql = '"' + '","'.join(orthogroup2distance.keys()) + '"' + ',"%s"' % reference_orthogroup
 
-    sql = 'select * from orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
+    sql = 'select * from comparative_tables.orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
 
     profile_tuples = list(server.adaptor.execute_and_fetchall(sql,))
 

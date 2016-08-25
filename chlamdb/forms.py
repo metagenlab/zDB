@@ -281,7 +281,7 @@ def make_circos_orthology_form(biodb):
 def make_blastnr_form(biodb):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
-    sql = 'show columns from blastnr_taxonomy;'
+    sql = 'show columns from blastnr.blastnr_taxonomy;'
     accession_choices = get_accessions(biodb, plasmid=True, all=False)
     ranks = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
     rank_choices = []
@@ -316,6 +316,25 @@ def make_blast_form(biodb):
         #biodatabase = forms.ChoiceField(choices=choices)
 
     return BlastForm
+
+def make_comment_from(biodb, locus_tag):
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'select * from manual_annotation where locus_tag="%s"' % locus_tag
+    data = server.adaptor.execute_and_fetchall(sql,)
+    if len(data) == 0:
+        description = '-'
+    else:
+        description = data[0][1]
+
+    class CommentForm(forms.Form):
+
+        locus = forms.CharField(max_length=200, initial="%s" % locus_tag, required = True)
+        comment = forms.CharField(widget=forms.Textarea(attrs={'cols': 80, 'rows': 3}), initial="%s" % description, required = True)
+
+
+    return CommentForm
 
 
 class AnnotForm(forms.Form):

@@ -1,0 +1,73 @@
+
+
+
+
+
+
+	<script language="Javascript">
+
+
+
+	var h = new Object(); // or just {}
+	{% autoescape off %}
+	{% for i in description_dico %}
+	{{i}}
+	{% endfor %}
+	{% endautoescape %}
+	<!-- h['Marilyn Monroe'] = 1; -->
+
+    $(document).ready(function(){
+      $('#example').jvenn({
+        series: {{ series|safe }}
+
+		  ,
+		displayStat: true,
+		fnClickCallback: function() {
+			var value = "";
+			if (this.listnames.length == 1) {
+				value += "<h3>Elements only in:<br> </h3><ul compact>";
+			} else {
+				value += "<h3>Common elements in: </h3><ul compact>";
+			}
+			for (name in this.listnames) {
+				value += '<li id="list_strains">' +this.listnames[name] + "</li>";
+			}
+			value += '</ul>\n<table id="cog_table" class="sortable"><tr><th>ID</th><th>Category</th><th>Description</th><th>modules</th><th>pathways</th></tr>';
+			for (val in this.list) {
+                <!-- h[this.list[val]] -->
+				value += '<tr><td><a href="/chlamdb/fam/{{biodb}}/' + this.list[val] + '/cog"'+
+						 '">'+  this.list[val] + '</a></td><td>' + h[this.list[val]]
+						+ '</td></tr>';
+			}
+		    value += '</table>';
+			$("#names").html(value);
+			var newTableObject = document.getElementById("cog_table");
+			sorttable.makeSortable(newTableObject);
+		}
+
+      });
+    });
+
+
+
+	</script>
+		<div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+			<div class="panel-heading" style="width:100%">
+				<h5 class="panel-title">Help</h5>
+			</div>
+			<p style="margin: 10px 10px 10px 10px"> Click on a venn diagram figure to display the linked elements:</p>
+		</div>
+
+		<div id="example" style="display: table;margin: 0;">
+
+		</div>
+
+		<div>
+
+			<div id="names" style="width: 87%;" wrap="off" rows="10">
+
+			</div>
+		</div>
+
+
+

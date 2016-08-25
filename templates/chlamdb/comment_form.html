@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+
+</head>
+<body>
+<div id="container">
+
+
+
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+    <div id="content">
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px"><p>
+                ffn: CDS nucleotide sequences <br>
+                fna: genome sequence(s) <br>
+                faa: protein sequences <br>
+                blastx: translated dna sequence vs protein sequences <br>
+                blastx: protein sequence vs translated genome sequences<br>
+
+
+            </p>
+            </p>
+        </div>
+        <form action="{% url "chlamdb.views.add_comment" biodb locus_tag %}" method="post">{% csrf_token %}
+          {{ form.as_p }}
+          <input type="submit" value="Submit" />
+        </form>
+
+
+
+        {% if envoi %}
+            &nbsp
+            <h2>Comment added!</h2>
+            <meta http-equiv="REFRESH" content="0;url={% url 'locusx' biodb locus_tag True %}">
+
+        {% endif %}
+    </div>
+</div>
+
+<div id="footer"></div>
+
+
+
+</body>
+
+
+<script>
+function addColor(domNode, color, letter){
+    if(domNode.nodeType!=1||!domNode.hasAttribute('edited')){
+        if(domNode.nodeType==3){
+            var newText=document.createElement('span');
+            newText.innerHTML=domNode.textContent;
+            newText.setAttribute('edited', true);
+            var text = newText.innerHTML.split('').map(function(el){
+              if(el==letter){
+                return '<i style=\"color:'+color+'\">'+el+'</i>';
+              }
+              else{
+                return el;
+              }
+          }).join('');
+          newText.innerHTML=text;
+          domNode.parentNode.replaceChild(newText,domNode);
+        }
+        for(var i=0; i<domNode.childNodes.length;i++){
+            addColor(domNode.childNodes[i], color, letter);
+        }
+    }
+}
+addColor(document.getElementById('tblastn'), 'red', '*');
+
+</script>
+
+
+</html>

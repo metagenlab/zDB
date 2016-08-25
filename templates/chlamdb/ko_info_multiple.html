@@ -30,55 +30,63 @@
             </p>
         </div>
 
-        <h3>   COG category: {% with data|first as first_doc %}{{ first_doc.4 }}{% endwith %}</h3>
+        <h3>   Kegg modules sub sub category: {{category}}</h3>
         <div id="export_bouttons_groups">
             <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
             <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-            <a href="{% url 'circos_main' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
-
             <br/>
         </div>
         <table id="cog_table" class="sortable">
             <thead>
-                <tr>
-                    <th></th>
-                    <th id="entete_locus">Orthogroup</th>
-                    <th id="entete_locus">Locus</th>
-                    <th id="entete_locus">Protein id</th>
-                    <th id="entete_gene">Start</th>
-                    <th id="entete_gene">Stop</th>
-                    <th id="entete_strand">S.</th>
-                    <th id="entete_gene">Gene</th>
-                    <th id="entete_n">nH</th>
-                    <th id="entete_n">nG</th>
-                    <th id="entete_n">TM</th>
-                    <th id="entete_n">SP</th>
-                    <th id="entete_product">Product</th>
-                    <th id="entete_translation">Translation</th>
+            <tr>
+                {% if type == 'module'%}
+                <th>KO id</th>
+                <th>Ko name</th>
+                <th>Ko description</th>
+                <th>kegg Map(s)</th>
+                <th>kegg module(s)</th>
+                <th>module</th>
+                <th>Description</th>
+                <th>Name</th>
+                {%else%}
+                <th>KO id</th>
+                <th>Ko name</th>
+                <th>Ko description</th>
+                <th>Pathway ID</th>
+                <th>kegg Pathway</th>
+                <th>Pathway description</th>
 
-                </tr>
+                {%endif%}
+            </tr>
             </thead>
             <tbody>
 
-                {%for values in orthogroup2annot%}
+                {%for values in data%}
+
                 <tr>
-                    <td>{{values.0}}</td>
+                    {% if type == 'module'%}
+                    <td><a href="{% url 'fam' biodb values.0 "ko" %}">{{values.0}}</a></td>
                     <td>{{values.1}}</td>
-                    <td><a href="{% url 'locusx' biodb values.2 True %}" target="_top">{{values.2}}</a></td>
-                    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{values.3}}</a></td>
+                    <td>{{values.2}}</td>
+                    <td>{{values.3}}</td>
                     <td>{{values.4}}</td>
                     <td>{{values.5}}</td>
                     <td>{{values.6}}</td>
                     <td>{{values.7}}</td>
-                    <td>{{values.8}}</td>
-                    <td>{{values.9}}</td>
-                    <td>{{values.10}}</td>
-                    <td>{{values.11}}</td>
-                    <td>{{values.12}}</td>
-                    <td>{{values.14}}</td>
-                </tr>
+                    {%else%}
+                    <td><a href="{% url 'fam' biodb values.0 "ko" %}">{{values.0}}</a></td>
+                    <td>{{values.1}}</td>
+                    <td>{{values.2}}</td>
+                    <td><a href="{% url 'KEGG_mapp' biodb values.3 %}">{{values.3}}</a></td>
+                    <td>{{values.4}}</td>
+                    <td>{{values.5}}</td>
+                    <td>{{values.6}}</td>
+                    <td>{{values.7}}</td>
 
+
+                    {%endif%}
+                </tr>
                 {%endfor%}
             </tbody>
         </table>

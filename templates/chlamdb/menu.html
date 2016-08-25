@@ -12,6 +12,8 @@
 
         <li class="rollmenu"><a href="">Search</a>
              <ul>
+            <li class="item5"><a href="{% url 'homology' biodb %}">Get homologues</a>
+            </li>
             <li class="item5"><a href="{% url 'blast' biodb %}">Blast</a>
             </li>
             <li class="item6"><a href="{% url 'search' biodb %}">Text search</a>
@@ -31,22 +33,21 @@
             </ul>
         </li>
 
-        <li class="rollmenu"><a href="">Homology</a>
+        <li class="rollmenu"><a href="">Comparisons</a>
 
              <ul>
-            <li class="item5"><a href="{% url 'homology' biodb %}">Get homologues</a>
-            </li>
+
             <li class="item6"><a href="{% url 'extract_orthogroup' biodb %}">Orthogroups</a>
             </li>
             <li class="item6"><a href="{% url 'extract_cog' biodb %}">COGs</a>
             </li>
-            <li class="item6"><a href="{% url 'extract_pfam' biodb %}">Pfam</a>
+            <li class="item6"><a href="{% url 'extract_pfam' biodb %}">Pfam domains</a>
             </li>
-            <li class="item6"><a href="{% url 'extract_interpro' biodb %}">Interpro</a>
+            <li class="item6"><a href="{% url 'extract_interpro' biodb %}">Interpro entries</a>
             </li>
-            <li class="item6"><a href="{% url 'extract_EC' biodb %}">EC</a>
+            <li class="item6"><a href="{% url 'extract_EC' biodb %}">EC numbers</a>
             </li>
-            <li class="item6"><a href="{% url 'extract_ko' biodb %}">KO</a>
+            <li class="item6"><a href="{% url 'extract_ko' biodb %}">Kegg Orthologs</a>
             </li>
 
             </ul>
@@ -77,8 +78,11 @@
                 </li>
 
             </ul>
-
-
+        <li class="rollmenu"><a href="">BlastNR</a>
+            <ul>
+                <li class="item5"><a href="{% url 'blastnr_barchart' biodb %}">BlastNR hits</a>
+                </li>
+            </ul>
 
 
 

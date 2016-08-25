@@ -31,11 +31,11 @@
         <div id="content">
 
 
-
+                    {% if display_form == "True" %}
 
                      <div id="extract_form">
 
-                        <form action="{% url "chlamdb.views.orthogroup_annotation" biodb %}" method="post">
+                        <form action="{% url "chlamdb.views.orthogroup_annotation" biodb True %}" method="post">
 
                         <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                             <div class="panel-heading" style="width:100%">
@@ -49,6 +49,7 @@
                          <input type="submit" name="annot" value="Get annotation"/>
                          </form>
                     </div>
+                    {% endif %}
 
             {% if envoi_annot %}
 
