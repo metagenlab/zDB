@@ -365,7 +365,79 @@ def get_module_table(module2category):
 
 
 
+def get_pathway2ko():
+    '''
+    1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme.kegg_module table
+    2. get all KO associated for each pathway => create enzyme.pathway2ko table
+    todo: remove existing tables for uptade if rerun
 
+    :return: nothing
+    '''
+
+
+    import MySQLdb
+    import urllib2
+    import re
+    import sys
+
+    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
+                                user="root", # your username
+                                passwd="estrella3", # your password
+                                db="enzyme") # name of the data base
+    cursor = conn.cursor()
+
+
+
+    sql2 = 'CREATE TABLE IF NOT EXISTS pathway2ko (pathway_id INT,' \
+           ' ko_id VARCHAR(200),' \
+           ' index pathway_id(pathway_id),' \
+           ' index ko_id(ko_id));'
+
+
+
+    print sql2
+    cursor.execute(sql2,)
+
+
+
+    pathway_file = 'http://rest.kegg.jp/list/pathway'
+    data = urllib2.urlopen(pathway_file)
+    for line in data:
+        raw = line.rstrip().split("\t")
+        pathway = raw[0][5:]
+        description = raw[1]
+        print 'pathway', pathway
+        sql = 'select pathway_id from kegg_pathway where pathway_name="%s";' % pathway
+        print sql
+
+        cursor.execute(sql)
+
+        try:
+            pathway_id = cursor.fetchall()[0][0]
+            print 'path id', pathway_id
+        except:
+            print 'no pathway id for: %s, incomplete pathway table?' %  pathway
+
+
+        ko_numbers_link = "http://rest.kegg.jp/link/ko/%s" % pathway
+        ko_data = urllib2.urlopen(ko_numbers_link)
+
+
+        for line in ko_data:
+            try:
+                ko = line.rstrip().split("\t")[1][3:]
+            except IndexError:
+                print 'No Ko for pathway %s?' % pathway
+                continue
+            try:
+                sql = 'INSERT into pathway2ko (pathway_id, ko_id) values (%s,"%s");' % (pathway_id,
+                                                                                       ko)
+                cursor.execute(sql,)
+            except:
+                print line
+                import sys
+                sys.exit()
+        conn.commit()
 
 
 
@@ -760,7 +832,7 @@ if __name__ == '__main__':
 
 
     args = parser.parse_args()
-
+    '''
     if args.update_database:
         load_enzyme_nomenclature_table()
         get_ec2get_pathway_table(get_kegg_pathway_classification())
@@ -782,5 +854,6 @@ if __name__ == '__main__':
 
         locus2ko = parse_blast_koala_output(args.ko_table)
         locus2ko_table(locus2ko, args.database_name)
+    '''
 
-
+    get_pathway2ko()

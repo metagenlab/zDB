@@ -38,7 +38,7 @@ def get_orthology_matrix_merging_plasmids(server, biodatabase_name, taxon_list=F
 
     for taxon_id in all_taxons:
         print taxon_id
-        sql = "select orthogroup, `%s` from orthology_%s;" % (taxon_id, biodatabase_name)
+        sql = "select orthogroup, `%s` from comparative_tables.orthology_%s;" % (taxon_id, biodatabase_name)
         print sql
         dico = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
         #print dico
@@ -311,7 +311,7 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
             sql_include += ' `%s` = 1 and ' % taxon_list[i]
         sql_include+='`%s` = 1' % taxon_list[-1]
 
-    sql ='select orthogroup from orthology_%s where %s' % (biodb, sql_include)
+    sql ='select orthogroup from comparative_tables.orthology_%s where %s' % (biodb, sql_include)
     print sql
     sys.stdout.write("getting core orthogroup list\n")
     match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -1326,7 +1326,7 @@ def calculate_average_protein_identity(db_name):
     for i_taxon in range(0,len(all_taxons)):
         print 'i taxon', i_taxon
         for y_taxon in range(i_taxon+1, len(all_taxons)):
-            shared_groups_sql = 'select orthogroup from orthology_%s where `%s` =1 and `%s`=1' % (db_name, all_taxons[i_taxon], all_taxons[y_taxon])
+            shared_groups_sql = 'select orthogroup from comparative_tables.orthology_%s where `%s` =1 and `%s`=1' % (db_name, all_taxons[i_taxon], all_taxons[y_taxon])
             all_groups = [i[0] for i in server.adaptor.execute_and_fetchall(shared_groups_sql,)]
             identity_values = []
             print 'y taxon', y_taxon
@@ -1365,7 +1365,7 @@ def calculate_average_protein_identity_new_tables(db_name):
     for i_taxon in range(0,len(all_taxons)):
         print 'i taxon', i_taxon
         for y_taxon in range(i_taxon+1, len(all_taxons)):
-            shared_groups_sql = 'select orthogroup from orthology_%s where `%s` =1 and `%s`=1' % (db_name, all_taxons[i_taxon], all_taxons[y_taxon])
+            shared_groups_sql = 'select orthogroup from comparative_tables.orthology_%s where `%s` =1 and `%s`=1' % (db_name, all_taxons[i_taxon], all_taxons[y_taxon])
             all_groups = [i[0] for i in server.adaptor.execute_and_fetchall(shared_groups_sql,)]
             identity_values = []
             print 'y taxon', y_taxon
