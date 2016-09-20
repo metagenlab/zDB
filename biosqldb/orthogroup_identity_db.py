@@ -40,7 +40,7 @@ class Orthogroup_Identity_DB:
         all_matrix = self._get_group_id2identity_matrix(alignment_files)
         sys.stdout.write("Creating mysql table to store identity %s matrix...\n" % len(all_matrix))
         for one_matrix in all_matrix.keys():
-            print one_matrix
+            #print one_matrix
             #self._create_identity_table(cursor, all_matrix[one_matrix], one_matrix)
             self._add_identity_data(cursor, all_matrix[one_matrix], one_matrix)
             self.conn.commit()
@@ -113,10 +113,16 @@ class Orthogroup_Identity_DB:
         print locus_list
         for x in range(1, len(group_matrix[:,0])):
             for y in range(x, len(group_matrix[:,0])):
-                sql = 'INSERT INTO %s (locus_a, locus_b, identity) VALUES ("%s", "%s", %s)'  % (group_name,
-                                                                                                  locus_list[x-1],
-                                                                                                  locus_list[y-1],
-                                                                                                  group_matrix[x,y])
+                if group_matrix[x,y] != 0:
+                    sql = 'INSERT INTO %s (locus_a, locus_b, identity) VALUES ("%s", "%s", %s)'  % (group_name,
+                                                                                                      locus_list[x-1],
+                                                                                                      locus_list[y-1],
+                                                                                                      group_matrix[x,y])
+                else:
+                    sql = 'INSERT INTO %s (locus_a, locus_b, identity) VALUES ("%s", "%s", NULL)'  % (group_name,
+                                                                                                      locus_list[x-1],
+                                                                                                      locus_list[y-1]
+                                                                                                      )
                 server.execute(sql)
 
 
@@ -125,6 +131,7 @@ class Orthogroup_Identity_DB:
         return [l[i:i+n] for i in range(0, len(l), n)]
 
     def _pairewise_identity(self, seq1, seq2):
+        import re
         A=list(seq1)
         B=list(seq2)
         identical_sites = 0
@@ -137,9 +144,19 @@ class Orthogroup_Identity_DB:
                 continue
             if A[n]==B[n]:
                 identical_sites+=1
-        if aligned_sites == 0:
-            # return false if align length = 0
-            return False
+        # update 08.16
+        # calculate coverage
+        # chose to cut coverage at 30%
+        #if aligned_sites == 0:
+        #    # return false if align length = 0
+        #    return False
+        seq1_no_gap = re.sub('-','', str(seq1.seq))
+        seq2_no_gap = re.sub('-','', str(seq2.seq))
+
+        if float(aligned_sites)/len(seq1_no_gap) < 0.3:
+            return 0
+        elif float(aligned_sites)/len(seq2_no_gap) < 0.3:
+            return 0
         else:
             return 100*(identical_sites/float(aligned_sites))
 
@@ -224,7 +241,7 @@ class Orthogroup_Identity_DB:
         server, db = manipulate_biosqldb.load_db(biodatabase_name)
 
         print 'get orthogroups'
-        sql = 'select orthogroup from orthology_%s' % biodatabase_name
+        sql = 'select orthogroup from comparative_tables.orthology_%s' % biodatabase_name
         try:
             print 'adding column'
             self._create_orthogroup_average_identity_column(server, biodatabase_name)

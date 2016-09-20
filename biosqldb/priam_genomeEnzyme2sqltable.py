@@ -832,7 +832,7 @@ if __name__ == '__main__':
 
 
     args = parser.parse_args()
-    '''
+
     if args.update_database:
         load_enzyme_nomenclature_table()
         get_ec2get_pathway_table(get_kegg_pathway_classification())
@@ -840,6 +840,7 @@ if __name__ == '__main__':
         get_module_table(get_kegg_module_hierarchy())
         #get_ec_data_from_IUBMB("1.14.13.217")
         #get_ec_data_from_IUBMB("1.1.1.1")
+        get_pathway2ko()
 
     if args.input_priam_files:
         locus2ec={}
@@ -854,6 +855,3 @@ if __name__ == '__main__':
 
         locus2ko = parse_blast_koala_output(args.ko_table)
         locus2ko_table(locus2ko, args.database_name)
-    '''
-
-    get_pathway2ko()

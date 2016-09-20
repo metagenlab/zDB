@@ -182,6 +182,10 @@ class CircosAccession2multiplot():
                 ordered_queries_taxon_id.append(long(taxon))
 
         print 'ordered_queries_taxon_id', ordered_queries_taxon_id
+        taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodatabase_name)
+        for i in ordered_queries_taxon_id:
+            print taxon2description[str(i)]
+
 
         #reference_record = gbk2circos.Record(reference_record)#db.lookup(accession=reference_accession))
 

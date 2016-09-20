@@ -19,21 +19,20 @@ import orthogroup_identity_db
 
 def get_feature_neighborhood(feature_start, feature_end, contig_or_genome_record, neighborhood_size_bp, record_name):
 
-    print "INITIAL start, stop", feature_start, feature_end
-
     start = feature_start - neighborhood_size_bp
     end = feature_end + neighborhood_size_bp
-    print "feature_end + neighborhood_size_bp", feature_end, neighborhood_size_bp, "donne", feature_end + neighborhood_size_bp
-    print "hasjhs", feature_end, end
+
     if start < 0:
         start = 0
+
     #if contig_or_genome_record.features[0].location.start > start:
     #        start = 0
     #if contig_or_genome_record.features[0].location.end < end:
     #        end = contig_or_genome_record.features[0].location.end
-    print "TARGET start, stop", start, end
-
-    record = contig_or_genome_record[int(start):int(end)]
+    if end > len(contig_or_genome_record.seq):
+        record = contig_or_genome_record[int(start):]
+    else:
+        record = contig_or_genome_record[int(start):int(end)]
     return record
 
 def plot_multiple_regions_crosslink2(target_protein_list, region_record_list, plasmid_list, out_name):
@@ -382,7 +381,12 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
             if feature.type == "tRNA":
 
                 gd_feature_set.add_feature(feature, sigil="ARROW", color="orange", label=True, label_position="middle", label_strand=1, label_size=10, label_angle=40)
-                one_row_locus.append(feature.qualifiers["locus_tag"][0])
+                try:
+                    one_row_locus.append(feature.qualifiers["locus_tag"][0])
+                except:
+                    print 'no locus tag for:'
+                    print feature
+
 
             if feature.type == "repeat_region":
 
@@ -421,7 +425,11 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
 
                 gd_feature_set.add_feature(feature, sigil="ARROW", color=color, label=True, label_position="middle",label_strand=1, label_size=10, label_angle=40)
                 i += 1
-                one_row_locus.append(feature.qualifiers["locus_tag"][0])
+                try:
+                    one_row_locus.append(feature.qualifiers["locus_tag"][0])
+                except:
+                    print 'no locus tag for:'
+                    print feature
         all_locus = one_row_locus + all_locus
 
 
@@ -587,7 +595,7 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
     #print "loaded bioentry:"
     #for i in loaded_records.keys():
     #    print i
-    print
+
     for bioentry in bioentry_id_list:
         key = biodb_name + "_" + bioentry
         biorecord = cache.get(key)
@@ -632,7 +640,7 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
             print key, "still not in memory"
 
         #print "seqfeature_id", seqfeature_id
-        print "record OKKKKK", record
+        print "record OKKKKK"
         target_feature_start,  target_feature_end, strand = manipulate_biosqldb.seqfeature_id2feature_location(server, seqfeature_id)
         print "target_feature_start,  target_feature_end strand", target_feature_start,  target_feature_end, strand
         #target = seqfeature_id2seqfeature[seqfeature_id]
@@ -644,7 +652,14 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
             plas = False
             plasmid_list.append(False)
         if plas:
-            sub_record_list.append(record)
+            sub_record = get_feature_neighborhood(target_feature_start,  target_feature_end, record, region_size_bp, "rec")
+            sub_record_list.append(sub_record) # record
+            for feature in sub_record.features:
+             if feature.type == 'CDS':
+                 try:
+                     orthogroup_list.append(feature.qualifiers['orthogroup'][0])
+                 except:
+                     pass
         else:
             print "Getting region from %s" % record_id
             print record

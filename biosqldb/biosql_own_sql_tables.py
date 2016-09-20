@@ -283,10 +283,10 @@ def circos_locus2taxon_highest_identity(biodb, reference_taxon_id):
                     locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]] = [locus2identity[locus_B], locus_B]
                 else:
                     # if identity of a second homolog is higher, use this value
-                    if locus2identity[locus_B] > locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]]:
+                    if locus2identity[locus_B] > locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]][0]:
                         locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]] = [locus2identity[locus_B], locus_B]
         except:
-            print 'no homologs for %s' % locus_A
+            #print 'no homologs for %s' % locus_A
             pass
     return locus2locus_identity
 

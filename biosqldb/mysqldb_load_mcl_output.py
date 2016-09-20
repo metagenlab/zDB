@@ -1037,6 +1037,9 @@ if __name__ == '__main__':
         print 'adding orthogroup to interpro table'
         biosql_own_sql_tables.add_orthogroup_to_interpro_table(args.db_name)
 
+        #import biosql_own_sql_tables
+        biosql_own_sql_tables.collect_genome_statistics(args.db_name)
+
         print "plotting orthogroup_size"
         plot_orthogroup_size_distrib(server, args.db_name)
 

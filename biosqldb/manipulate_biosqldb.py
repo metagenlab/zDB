@@ -771,7 +771,7 @@ def taxon_id2unique_orthogroups(server, biodatabase_name, taxon_id):
     else:
         sql_taxons += ' `%s` > 0' % all_taxons_id[-1]
 
-    sql = "select orthogroup from orthology_%s %s" % (biodatabase_name, sql_taxons)
+    sql = "select orthogroup from comparative_tables.orthology_%s %s" % (biodatabase_name, sql_taxons)
     #print sql
 
     result = server.adaptor.execute_and_fetchall(sql,)
@@ -828,7 +828,7 @@ def get_orthology_table(server, biodb_name):
         sql_taxons += ' `%s`,' % all_taxons_id[i]
     sql_taxons += ' `%s`' % all_taxons_id[-1]
 
-    sql = "select %s from orthology_%s" % (sql_taxons, biodb_name)
+    sql = "select %s from comparative_tables.orthology_%s" % (sql_taxons, biodb_name)
     #print sql
     result = server.adaptor.execute_and_fetchall(sql,)
     return result
@@ -840,32 +840,32 @@ def get_orthology_table2(server, biodb_name):
         sql_taxons += ' `%s`,' % all_taxons_id[i]
     sql_taxons += ' `%s`' % all_taxons_id[-1]
 
-    sql = "select orthogroup, %s from orthology_%s" % (sql_taxons, biodb_name)
+    sql = "select orthogroup, %s from comparative_tables.orthology_%s" % (sql_taxons, biodb_name)
     #print sql
     result = server.adaptor.execute_and_fetchall(sql,)
     return result
 
 
 def get_orthology_table_subset(server, biodb_name, reference_taxon_id):
-    sql = 'select * from orthology_%s where `%s` > 0' % reference_taxon_id
+    sql = 'select * from comparative_tables.orthology_%s where `%s` > 0' % reference_taxon_id
     result = server.adaptor.execute_and_fetchall(sql,)
     return result
 
 
 def get_number_of_shared_orthogroups(server, biodb_name, taxid_1, taxid_2):
-    sql = 'select count(*) from orthology_%s where `%s` > 0 and `%s` > 0' % (biodb_name, taxid_1, taxid_2)
+    sql = 'select count(*) from comparative_tables.orthology_%s where `%s` > 0 and `%s` > 0' % (biodb_name, taxid_1, taxid_2)
     result = server.adaptor.execute_and_fetchall(sql,)
     return result[0][0]
 
 
 def get_genome_number_of_orthogroups(server, biodb, taxon_id):
-    sql = 'select count(*) from orthology_%s where `%s` >0' % (biodb, taxon_id)
+    sql = 'select count(*) from comparative_tables.orthology_%s where `%s` >0' % (biodb, taxon_id)
     result = server.adaptor.execute_and_fetchall(sql,)
     return result[0][0]
 
 
 def get_genome_number_of_proteins(server, biodb, taxon_id):
-    sql = 'select sum(`%s`) from orthology_%s' % (taxon_id, biodb)
+    sql = 'select sum(`%s`) from comparative_tables.orthology_%s' % (taxon_id, biodb)
     result = server.adaptor.execute_and_fetchall(sql,)
     return result[0][0]
 
