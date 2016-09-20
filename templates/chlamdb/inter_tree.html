@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+<head>
+{% load staticfiles %}
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+</head>
+
+<body id="locus_body">
+    <div id="container">
+        <div id="content">
+            <div id="sidebar">
+                {% include "chlamdb/menu.html" %}
+            </div>
+            <div id="header">
+                {% include "chlamdb/user.html" %}
+            </div>
+            <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
+            <form action='{% url "chlamdb.views.locus_int" biodb %}' method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="Submit" />
+
+            </form>
+            {% if envoi %}
+                <object type="image/svg+xml" data="{% static asset_path %}" id="inter_tree"></object>
+                <table class="sortable" id="mytable">
+                   <tr>
+                        <th id="entete_meta" >Orthogroup</th>
+                        <th id="entete_meta3">Category</th>
+                        <th id="entete_meta3">Gene</th>
+                    <th id="entete_meta3">Locus</th>
+                    <th id="entete_meta3">Description</th>
+
+                    <tr>
+                    {% for values in data%}
+                        <tr>
+                            <td>{{values.4}}</td>
+                            <td>{{values.0}}</td>
+                            <td>{{values.1}}</td>
+                            <td>{{values.2}}</td>
+                            <td>{{values.3}}</td>
+                        </tr>
+
+                    {% endfor %}
+                </table>
+            {% endif %}
+        </div>
+    </div>
+
+</body>
+</html>

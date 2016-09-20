@@ -40,6 +40,7 @@ from forms import make_priam_form
 from forms import AnnotForm
 from forms import make_blastnr_form
 from forms import make_comment_from
+from forms import locus_int_form
 
 from django.contrib.auth import logout
 from django.conf import settings
@@ -252,7 +253,7 @@ def extract_orthogroup(request, biodb):
             if reference_taxon == "None":
                 reference_taxon = include[0]
 
-
+            print include
 
             try:
                 single_copy = request.POST['button_single_copy']
@@ -327,14 +328,26 @@ def orthogroup_annotation(request, biodb, display_form):
         #form2 = ContactForm(request.POST)
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             import biosql_own_sql_tables
-
+            import ete_motifs
             server, db = manipulate_biosqldb.load_db(biodb)
 
             match_groups = [i.rstrip() for i in form.cleaned_data['orthogroups'].rstrip().split('\n')]
             print 'match groups', match_groups
 
             match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(match_groups, biodb)
+            taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, match_groups, type="orthogroup")
 
+            labels = match_groups
+            tree = ete_motifs.multiple_profiles_heatmap(biodb, match_groups,taxon2orthogroup2count)
+
+
+            big = False
+            path = settings.BASE_DIR + '/assets/temp/tree.svg'
+            asset_path = '/assets/temp/tree.svg'
+
+            tree.render(path, dpi=800, h=600)
+
+            envoi_annot = True
             envoi_annot = True
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
         if display_form == "True":
@@ -344,14 +357,17 @@ def orthogroup_annotation(request, biodb, display_form):
 
             import biosql_own_sql_tables
 
+
             server, db = manipulate_biosqldb.load_db(biodb)
 
             match_groups = target_taxons = [i for i in request.GET.getlist('g')]
             print 'match groups', match_groups
 
-            match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(match_groups, biodb)
 
-            envoi_annot = True
+
+
+
+
 
     return render(request, 'chlamdb/orthogroup_annotation.html', locals())
 
@@ -1012,6 +1028,7 @@ def extract_interpro(request, biodb):
                 #print interpro2count_all.values()
 
                 #print cog2count_all
+                print interpro2count_all[interpro2count_all.keys()[0]]
                 max_n = max(list(interpro2count_all.values()))
 
                 # GET max frequency for template
@@ -1286,7 +1303,7 @@ def venn_ko(request, biodb):
 
 @login_required
 def venn_cog(request, biodb):
-
+    display_form = True
     cache = get_cache('default')
     print "loading db..."
     server = manipulate_biosqldb.load_db()
@@ -1337,6 +1354,7 @@ def venn_cog(request, biodb):
             #print 'all_cog_list', all_cog_list
             #print series
             envoi_venn = True
+
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
         form_venn = venn_form_class()  # Nous créons un formulaire vide
@@ -1456,13 +1474,18 @@ def locusx(request, biodb, locus=None, menu=False):
     print 'biodb', biodb
     print 'locus', locus
     print 'menu', menu
-
+    print 'request.method', request.method
     cache = get_cache('default')
 
     #cache.clear()
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
 
+
+        if locus == None:
+            menu = True
+            locus = request.GET.get('accession').strip()
+            print 'locus', locus
         valid_id = True
 
         server, db = manipulate_biosqldb.load_db(biodb)
@@ -1489,10 +1512,13 @@ def locusx(request, biodb, locus=None, menu=False):
         try:
             print sql1
             input_type = server.adaptor.execute_and_fetchall(sql1, )[0][0]
+            print 'input type', input_type
+            if input_type is None:
+                return search(request,biodb)
         except IndexError:
-            print 'not a valid id'
-            valid_id = False
-            return render(request, 'chlamdb/locus.html', locals())
+            print 'not a valid id, trying search'
+            return search(request,biodb)
+
 
         else:
             columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
@@ -1941,6 +1967,7 @@ def KEGG_mapp(request, biodb, map_name):
               'inner join enzyme.kegg2ec as t2 on t1.pathway_id=t2.pathway_id where pathway_name="%s") A ' \
               'inner join enzyme.enzymes as B on A.ec_id=B.enzyme_id inner join enzyme.enzymes_dat on enzymes_dat.enzyme_dat_id=enzyme_id ' \
               'where line="description";' % (map_name)
+        print sql
         map_data = server.adaptor.execute_and_fetchall(sql,)
 
         print map_data
@@ -3385,6 +3412,7 @@ def homology(request, biodb):
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
     contact_form_class = make_contact_form(server, biodb)
+    print 'request.method', request.method
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
 
@@ -3395,6 +3423,8 @@ def homology(request, biodb):
 
             envoi = True
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        print 'baba'
+
         form = make_contact_form(server, biodb)  # Nous créons un formulaire vide
     return render(request, 'chlamdb/homology.html', locals())
 
@@ -3409,17 +3439,43 @@ def orthogroup_identity(request, biodb, orthogroup, group=False):
     #if request.method == 'POST':
     import numpy
     import pandas as pd
-    sql = 'SELECT * FROM orth_%s.%s;' % (biodb, orthogroup)
+    sql = 'SELECT locus_a, locus_b, identity FROM orth_%s.%s;' % (biodb, orthogroup)
+    sql2 = 'select locus_a from orth_%s.%s UNION select locus_b from orth_%s.%s;' % (biodb,
+                                                                                     orthogroup,
+                                                                                     biodb,
+                                                                                     orthogroup)
 
-    try:
-        data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
-        homologs = True
-    except:
-        homologs = False
-        return render(request, 'chlamdb/orthogroup_identity.html', locals())
-    locus_list = '"' + '","'.join(data[0:,1]) + '"'
+    #try:
+        # numpy.array()
+    data = [list(i) for i in server.adaptor.execute_and_fetchall(sql,)]
+    locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql2,)]
+    # create dictionnary
+    locus2locus2identity = {}
+    for row in data:
+        if row[0] not in locus2locus2identity:
+            locus2locus2identity[row[0]] = {}
+            locus2locus2identity[row[0]][row[1]] = row[2]
+        else:
+            locus2locus2identity[row[0]][row[1]] = row[2]
+        if row[1] not in locus2locus2identity:
+            locus2locus2identity[row[1]] = {}
+            locus2locus2identity[row[1]][row[0]] = row[2]
+        else:
+            locus2locus2identity[row[1]][row[0]] = row[2]
+    data_matrix = []
+    for locus_a in locus_list:
+        tmp_lst = [locus_a]
+        for locus_b in locus_list:
+            tmp_lst.append(locus2locus2identity[locus_a][locus_b])
+        data_matrix.append(tmp_lst)
+    data = numpy.array(data_matrix)
+    homologs = True
+    #except:
+    #    homologs = False
+    #    return render(request, 'chlamdb/orthogroup_identity.html', locals())
+    locus_list_filter = '"' + '","'.join(locus_list) + '"'
 
-    sql2 = 'select locus_tag, organism from orthology_detail_%s where locus_tag in (%s)' % (biodb, locus_list)
+    sql2 = 'select locus_tag, organism from orthology_detail_%s where locus_tag in (%s)' % (biodb, locus_list_filter)
     print sql2
     locus2organism = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
@@ -3427,11 +3483,11 @@ def orthogroup_identity(request, biodb, orthogroup, group=False):
 
     #print data
 
-    print data[0:,2:]
+    print data[0:, 2:]
 
-    columns = data[0:,1]
+    columns = locus_list
     rows = [i + " (%s)" % locus2organism[i] for i in columns]
-    frame = pd.DataFrame(data[0:,2:], index=rows, columns=columns)
+    frame = pd.DataFrame(data[0:,1:], index=rows, columns=columns)
     frame = frame.astype(float)
     frame = frame/100
 
@@ -3496,7 +3552,7 @@ def plot_neighborhood(request, biodb, target_locus, region_size=23000):
             locus_tags, orthogroup_list = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, [target_locus],
                                                                               temp_file.name, int(region_size),
                                                                               cache)
-
+    print "orthogroup_list", orthogroup_list
     envoi = True
     import ete_motifs
     taxon2orthogroup2count_all =  ete_motifs.get_taxon2orthogroup2count(biodb, orthogroup_list)
@@ -3524,6 +3580,45 @@ def plot_neighborhood(request, biodb, target_locus, region_size=23000):
     tree.render(path, dpi=800, h=600)
     print asset_path
     return render(request, 'chlamdb/plot_region_and_profile.html', locals())
+
+
+
+def plot_region_generic(biodb, orthogroup, taxon_list, region_size):
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    cache = get_cache('default')
+
+    filter = '"' + '","'.join(taxon_list) + '"'
+    sql3 = 'select locus_tag from orthology_detail_%s where orthogroup = "%s" and taxon_id in (%s)' % (biodb, orthogroup, filter)
+
+    locus_tag_target_genomes = [i[0] for i in server.adaptor.execute_and_fetchall(sql3, )]
+
+    print "locus_tag_list", locus_tag_target_genomes
+    home_dir = os.path.dirname(__file__)
+    print "home_dir", home_dir
+    temp_location = os.path.join(home_dir, "../assets")
+    print "temp loc", temp_location
+    temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
+    print "temp file", temp_file.name
+    name = os.path.basename(temp_file.name)
+    print name.split('.')
+    name_png = name.split('.')[0] + '.png'
+
+    locus_tags, orthogroup_list = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, locus_tag_target_genomes,
+                                                                      temp_file.name, int(region_size),
+                                                                      cache)
+
+
+    return name, name_png, locus_tags, orthogroup_list
+
+def plot_region_direct(request, biodb, orthogroup):
+
+    target_taxons = [str(i) for i in request.GET.getlist('t')]
+    print 'target', target_taxons
+    name, name_png, locus_tags, orthogroup_list = plot_region_generic(biodb, orthogroup, target_taxons, 18000)
+
+    return render(request, 'chlamdb/plot_region_simple.html', locals())
 
 @login_required
 def plot_region(request, biodb):
@@ -3554,7 +3649,7 @@ def plot_region(request, biodb):
 
 
             sql2 = 'select orthogroup, locus_tag, protein_id, start, stop, strand, organism from orthology_detail_%s where locus_tag like "%%%%%s%%%%" or protein_id like "%%%%%s%%%%"' % (biodb, accession, accession)
-            print sql2
+
             data = server.adaptor.execute_and_fetchall(sql2, )[0]
             print "seqfeature_id", data
             if not data:
@@ -3570,11 +3665,10 @@ def plot_region(request, biodb):
                 else:
                     select+= ')'
                 sql3 = 'select locus_tag from orthology_detail_%s where orthogroup = "%s" %s' % (biodb, orthogroup, select)
-                print sql3
+
                 locus_tag_target_genomes = [i[0] for i in server.adaptor.execute_and_fetchall(sql3, )]
 
                 if plot_region:
-                    print "plotting!!!!!!!!!!!!!!"
                     print "locus_tag_list", locus_tag_target_genomes
                     home_dir = os.path.dirname(__file__)
                     print "home_dir", home_dir
@@ -3599,7 +3693,6 @@ def plot_region(request, biodb):
                         sql_locus += ' or locus_tag="%s"' % locus_tags[locus]
 
                     sql = 'select %s from orthology_detail_%s where %s' % (columns, biodb, sql_locus)
-                    print sql
 
                     raw_data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -3692,215 +3785,9 @@ def circos_main(request, biodb):
     target_taxons = [int(i) for i in request.GET.getlist('t')]
     highlight = request.GET.getlist('h')
 
-    remove = [
-    "group_2998"
-,"group_4199"
-,"group_4358"
-,"group_4361"
-,"group_4405"
-,"group_4411"
-,"group_4426"
-,"group_4429"
-,"group_4432"
-,"group_4434"
-,"group_4453"
-,"group_4455"
-,"group_4457"
-,"group_4459"
-,"group_4469"
-,"group_4471"
-,"group_4475"
-,"group_4476"
-,"group_4483"
-,"group_4485"
-,"group_4489"
-,"group_4490"
-,"group_4493"
-,"group_4494"
-,"group_4495"
-,"group_4496"
-,"group_4500"
-,"group_4503"
-,"group_4511"
-,"group_4512"
-,"group_4518"
-,"group_4519"
-,"group_4520"
-,"group_4522"
-,"group_4523"
-,"group_4524"
-,"group_4525"
-,"group_4527"
-,"group_4537"
-,"group_4540"
-,"group_4544"
-,"group_4545"
-,"group_4547"
-,"group_4575"
-,"group_4576"
-,"group_4584"
-,"group_4595"
-,"group_4598"
-,"group_4601"
-,"group_4624"
-,"group_4632"
-,"group_4633"
-,"group_4635"
-,"group_4641"
-,"group_4642"
-,"group_4646"
-,"group_4655"
-,"group_4657"
-,"group_4667"
-,"group_4671"
-,"group_4678"
-,"group_4684"
-,"group_4704"
-,"group_4713"
-,"group_4740"
-,"group_4750"
-,"group_4758"
-,"group_4760"
-,"group_4775"
-,"group_4782"
-,"group_4797"
-,"group_3579"
-,"group_2518"
-,"group_2460"
-,"group_3289"
-,"group_4663"
-,"group_4697"
-,"group_4507"
-,"group_4515"
-,"group_4347"
-,"group_4546"
-,"group_3735"
-,"group_4458"
-,"group_4468"
-,"group_4543"
-,"group_4499"
-,"group_4600"
-,"group_4466"
-,"group_4654"
-,"group_4536"
-,"group_4366"
-,"group_4706"
-,"group_4449"
-,"group_4541"
-,"group_4637"
-,"group_4682"
-,"group_4699"
-,"group_4670"
-,"group_4651"
-,"group_4718"
-,"group_4787"
-,"group_4474"
-,"group_4532"
-,"group_4542"
-,"group_4588"
-,"group_4650"
-,"group_4660"
-,"group_4666"
-,"group_4738"
-,"group_4755"
-,"group_4526"
-,"group_4534"
-,"group_4581"
-,"group_83"
-,"group_4533"
-,"group_4668"
-,"group_4516"
-,"group_4574"
-,"group_4653"
-,"group_4470"
-,"group_4510"
-,"group_4492"
-,"group_4529"
-,"group_4652"
-,"group_4473"
-,"group_4482"
-,"group_4488"
-,"group_4538"
-,"group_4548"
-,"group_4730"
-,"group_4253"
-,"group_4481"
-,"group_4631"
-,"group_4674"
-,"group_4702"
-,"group_4774"
-,"group_4487"
-,"group_4514"
-,"group_4528"
-,"group_4530"
-,"group_4531"
-,"group_4580"
-,"group_4604"
-,"group_4639"
-,"group_4644"
-,"group_4680"
-,"group_4707"
-,"group_4648"
-,"group_4701"
-,"group_4737"
-,"group_4416"
-,"group_4480"
-,"group_4696"
-,"group_4521"
-,"group_4672"
-,"group_4638"
-,"group_4716"
-,"group_4636"
-,"group_4593"
-,"group_4677"
-,"group_4664"
-,"group_4669"
-,"group_2714"
-,"group_4732"
-,"group_4517"
-,"group_4766"
-,"group_4695"
-,"group_4739"
-,"group_4478"
-,"group_4502"
-,"group_4513"
-,"group_4662"
-,"group_4472"
-,"group_4498"
-,"group_4535"
-,"group_4417"
-,"group_4717"
-,"group_4332"
-,"group_4460"
-,"group_4578"
-,"group_4757"
-,"group_4506"
-,"group_4754"
-,"group_4594"
-,"group_4708"
-,"group_4656"
-,"group_4683"
-,"group_4659"
-,"group_4756"
-,"group_4477"
-,"group_4640"
-,"group_4721"
-,"group_4508"
-,"group_4681"
-,"group_4589"
-,"group_4705"
-,"group_4221"
-,"group_4675"
-,"group_4679"
-,"group_4735"
-,"group_4665"
-,"group_4431"
-,"group_4794"
-,"group_4645"
-,"group_4596"]
+    print 'targets', target_taxons
 
-
-
+    '''
     highlight_def = []
     for i in highlight:
         if i in remove:
@@ -3911,6 +3798,7 @@ def circos_main(request, biodb):
     print '"' + '","'.join(highlight_def) + '"'
     import time
     time.sleep(10)
+    '''
 
     #sql = 'select locus_tag,traduction from orthology_detail_k_cosson_05_16 where orthogroup in (%s) and accession="NC_016845"' % ('"'+'","'.join(highlight)+'"')
     #print sql
@@ -3964,15 +3852,17 @@ def circos_main(request, biodb):
 
     #sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
-    sql_order = 'select A.taxon_1 from (select taxon_1,median_identity from comparative_tables.shared_orthogroups_average_identity_%s where taxon_2=%s ' \
+    sql_order1 = 'select A.taxon_1 from (select taxon_1,median_identity from comparative_tables.shared_orthogroups_average_identity_%s where taxon_2=%s ' \
                 ' union select taxon_2,median_identity from comparative_tables.shared_orthogroups_average_identity_%s ' \
                 ' where taxon_1=%s order by median_identity DESC) A;' % (biodb, reference_taxon, biodb, reference_taxon)
+    try:
+        sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
 
-    sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
+        ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
+    except:
+        sql_order2 = 'select taxon_2 from comparative_tables.shared_orthogroups_average_identity_%s where taxon_1=%s order by median_identity desc;' % (biodb, reference_taxon)
 
-    print sql_order
-    ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
-
+        ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order1)]
     '''
     print tree
     t1 = ete2.Tree(tree)
@@ -3997,7 +3887,7 @@ def circos_main(request, biodb):
                               biodb,
                               record_list,
                               target_accessions,
-                              locus_highlight=highlight_def,
+                              locus_highlight=highlight,
                               out_directory=temp_location,
                               draft_fasta=draft_data,
                               href="/chlamdb/locusx/%s/" % biodb,
@@ -4123,10 +4013,25 @@ def circos(request, biodb):
                 sql_order = 'select A.taxon_1 from (select taxon_1,median_identity from comparative_tables.shared_orthogroups_average_identity_%s where taxon_2=%s ' \
                             ' union select taxon_2,median_identity from comparative_tables.shared_orthogroups_average_identity_%s ' \
                             ' where taxon_1=%s order by median_identity DESC) A;' % (biodb, reference_taxon, biodb, reference_taxon)
-
-                sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
-                print sql_order
-                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
+                try:
+                    sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
+                    print sql_order
+                    ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
+                except:
+                    '''
+                    # median identity
+                    sql_order = 'select taxon from (select taxon_2 as taxon, median_identity ' \
+                                ' from comparative_tables.shared_orthogroups_average_identity_%s where taxon_1=%s union ' \
+                                ' select taxon_1, median_identity as taxon from comparative_tables.shared_orthogroups_average_identity_%s' \
+                                '  where taxon_2=%s) A order by median_identity desc;' % (biodb,
+                                                                                          reference_taxon,
+                                                                                          biodb,
+                                                                                          reference_taxon)
+                    '''
+                    sql_order = 'select taxon_2 from comparative_tables.shared_orthogroups_%s where taxon_1=%s order by n_shared_orthogroups DESC;' % (biodb,
+                                                                                                                              reference_taxon)
+                    print sql_order
+                    ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
                 '''
                 print tree
                 t1 = ete2.Tree(tree)
@@ -4579,7 +4484,93 @@ def interpro(request, biodb):
 
 @login_required
 def search(request, biodb):
+
+
+    def perform_search(search_term, search_type=False, redo=True):
+        server, db = manipulate_biosqldb.load_db(biodb)
+        search_term = search_term.strip()
+
+        if not search_type:
+            import re
+            if len(search_term) == len("PF04093") and search_term[0:2] == 'PF':
+                return fam(request,biodb,search_term, 'pfam')
+            elif len(search_term) == len('K03652') and search_term[0:1] == 'K':
+                return fam(request, biodb, search_term, 'ko')
+            elif len(search_term) == len('COG0001') and search_term[0:3] == 'COG':
+                return fam(request, biodb, search_term, 'cog')
+            elif len(search_term) == len('IPR000014') and search_term[0:3] == 'IPR':
+                #request.method = 'GET'
+                return fam(request, biodb, search_term, 'interpro')
+            elif len(search_term) == len('M00406') and search_term[0:3] == 'M00':
+                return KEGG_module_map(request,biodb, search_term)
+            elif len(search_term) == len('map00550') and search_term[0:3] == 'map':
+                return KEGG_mapp(request,biodb, search_term)
+            elif re.match("^[0-9\.]+$", search_term):
+                print 'ec number!'
+                return fam(request, biodb, search_term, 'EC')
+            else:
+                search_type = 'no_exact_accession'
+
+        columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                  'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+
+        if search_type == "gene":
+            sql = 'select %s from orthology_detail_%s where gene REGEXP "%s"' % (columns, biodb, search_term)
+            raw_data = server.adaptor.execute_and_fetchall(sql,)
+
+        if search_type == "product":
+            sql = 'select %s from orthology_detail_%s where product REGEXP "%s"' % (columns, biodb, search_term)
+            raw_data = server.adaptor.execute_and_fetchall(sql,)
+
+        if search_type == "locus_tag":
+            sql = 'select %s from orthology_detail_%s where locus_tag REGEXP "%s"' % (columns, biodb, search_term)
+            raw_data = server.adaptor.execute_and_fetchall(sql,)
+
+        if search_type == "no_exact_accession":
+
+                sql = 'select %s from orthology_detail_%s where gene REGEXP "%s"' % (columns, biodb, search_term)
+                raw_data_gene = server.adaptor.execute_and_fetchall(sql,)
+
+                sql = 'select %s from orthology_detail_%s where product REGEXP "%s"' % (columns, biodb, search_term)
+                raw_data_product = server.adaptor.execute_and_fetchall(sql,)
+
+                sql = 'select ec,line,value from enzyme.enzymes_dat as t1 inner join enzymes as t2 ' \
+                      ' on t1.enzyme_dat_id=enzyme_id WHERE value REGEXP "%s"' % (search_term)
+                raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
+
+                sql = 'select * from ko_annotation where definition REGEXP "%s"' % (search_term)
+                raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
+
+                sql = 'select COG_id,code,description,name from COG.cog_names_2014 as t1 inner join ' \
+                      ' COG.code2category as t2 on t1.functon=t2.code where description REGEXP "%s"' % (search_term)
+                raw_data_cog = server.adaptor.execute_and_fetchall(sql,)
+
+                sql = 'select * from interpro_%s where (signature_description REGEXP "%s"' \
+                      ' or interpro_description REGEXP "%s")' % (biodb, search_term, search_term)
+                raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
+
+                sql = 'select * from enzyme.kegg_module where description REGEXP "%s"' % (search_term)
+                raw_data_module = server.adaptor.execute_and_fetchall(sql,)
+
+                sql = 'select * from enzyme.kegg_pathway where description REGEXP "%s"' % (search_term)
+                raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
+
+        else:
+            n = 1
+            search_result = []
+            for one_hit in raw_data:
+                if one_hit[2] != '-':
+                    interpro_id = one_hit[2]
+                else:
+                    interpro_id = one_hit[1]
+                search_result.append((n,) + one_hit + (interpro_id,))
+                n+=1
+
+            return search_result
+
+
     server = manipulate_biosqldb.load_db()
+    print request.method, "request.method"
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form = SearchForm(request.POST)  # Nous reprenons les données
@@ -4590,62 +4581,116 @@ def search(request, biodb):
             search_type = form.cleaned_data['search_type']
             search_term = form.cleaned_data['search_term']
             #biodb = form.cleaned_data['biodatabase']
-            server, db = manipulate_biosqldb.load_db(biodb)
-            print "biodb", biodb
+
+            search_result = perform_search(search_term,search_type)
+            envoi = True
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        search_term = request.GET.get('accession')
+        if search_term:
+
+            import re
+            if len(search_term) == len("PF04093") and search_term[0:2] == 'PF':
+                return fam(request,biodb,search_term, 'pfam')
+            elif len(search_term) == len('K03652') and search_term[0:1] == 'K':
+                return fam(request, biodb, search_term, 'ko')
+            elif len(search_term) == len('COG0001') and search_term[0:3] == 'COG':
+                return fam(request, biodb, search_term, 'cog')
+            elif len(search_term) == len('IPR000014') and search_term[0:3] == 'IPR':
+                #request.method = 'GET'
+                return fam(request, biodb, search_term, 'interpro')
+            elif len(search_term) == len('M00406') and search_term[0:3] == 'M00':
+                return KEGG_module_map(request,biodb, search_term)
+            elif len(search_term) == len('map00550') and search_term[0:3] == 'map':
+                return KEGG_mapp(request,biodb, search_term)
+            elif re.match("^[0-9\.]+$", search_term):
+                print 'ec number!'
+                return fam(request, biodb, search_term, 'EC')
+            else:
+                search_type = 'no_exact_accession'
 
             columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                       'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
 
             if search_type == "gene":
-
                 sql = 'select %s from orthology_detail_%s where gene REGEXP "%s"' % (columns, biodb, search_term)
                 raw_data = server.adaptor.execute_and_fetchall(sql,)
 
             if search_type == "product":
-                sql = 'select %s from orthology_detail_%s where product REGEXP "%s"' % (columns, biodb, search_term)
+                sql = 'select %s from orthology_detail_%s where product REGEXP "%s" limit 100' % (columns, biodb, search_term)
                 raw_data = server.adaptor.execute_and_fetchall(sql,)
 
             if search_type == "locus_tag":
                 sql = 'select %s from orthology_detail_%s where locus_tag REGEXP "%s"' % (columns, biodb, search_term)
                 raw_data = server.adaptor.execute_and_fetchall(sql,)
 
+            if search_type == "no_exact_accession":
 
-            n = 1
-            search_result = []
-            for one_hit in raw_data:
-                if one_hit[2] != '-':
-                    interpro_id = one_hit[2]
-                else:
-                    interpro_id = one_hit[1]
-                search_result.append((n,) + one_hit + (interpro_id,))
-                n+=1
-                print n
-            print search_result
-
-
-            '''
-            seqfeature_data = []
-            for one_id in seqfeature_ids:
-                print one_id
-                seqfeature_values = manipulate_biosqldb.seqfeature_id2seqfeature_qualifier_values(server, one_id, biodb)
-                seqfeature_data.append(seqfeature_values)
-            search_result = []
-            y = 1
-            for i in seqfeature_data:
-                if not 'translation' in i.keys():
-                    continue
-                print i.keys()
-                print i
-                #  ['locus_tag', 'orthogroup', 'transl_table', 'product', 'translation', 'gene']
-                search_result.append(format_search(y, i))
-
-
-                y+=1
-            '''
+                    sql = 'select %s from orthology_detail_%s where gene REGEXP "%s" limit 100' % (columns, biodb, search_term)
+                    raw_data_gene = server.adaptor.execute_and_fetchall(sql,)
+                    n = 1
+                    search_result = []
+                    locus_list = []
+                    for one_hit in raw_data_gene:
+                        if one_hit[2] != '-':
+                            interpro_id = one_hit[2]
+                        else:
+                            interpro_id = one_hit[1]
+                        search_result.append((n,) + one_hit + (interpro_id,))
+                        locus_list.append(one_hit[1])
+                        n+=1
+                    sql = 'select %s from orthology_detail_%s where product REGEXP "%s" limit 100' % (columns, biodb, search_term)
+                    raw_data_product = server.adaptor.execute_and_fetchall(sql,)
+                    for one_hit in raw_data_product:
+                        if one_hit[2] != '-':
+                            interpro_id = one_hit[2]
+                        else:
+                            interpro_id = one_hit[1]
+                        if one_hit[1] not in locus_list:
+                            search_result.append((n,) + one_hit + (interpro_id,))
+                        n+=1
+                    sql = 'select A.ec, A.value from (select ec,value from enzyme.enzymes_dat as t1 inner join enzyme.enzymes as t2 ' \
+                          ' on t1.enzyme_dat_id=enzyme_id WHERE value REGEXP "%s" group by ec) A inner join comparative_tables.EC_%s' \
+                          ' as B on A.ec=B.id' % (search_term, biodb)
+                    raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
+                    if len(raw_data_EC) == 0:
+                        raw_data_EC = False
+                    sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme.ko_annotation ' \
+                          'where definition REGEXP "%s") A inner join comparative_tables.ko_%s as B on A.ko_id=B.id' % (search_term, biodb)
+                    raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
+                    if len(raw_data_ko) == 0:
+                        raw_data_ko = False
+                    sql = 'select A.COG_id,A.code,A.description, A.name from (select COG_id,code,description,name from COG.cog_names_2014 as t1 inner join ' \
+                          ' COG.code2category as t2 on t1.functon=t2.code where name REGEXP "%s") A inner join ' \
+                          ' comparative_tables.COG_%s as B on A.COG_id=B.id' % (search_term, biodb)
+                    raw_data_cog = server.adaptor.execute_and_fetchall(sql,)
+                    if len(raw_data_cog) == 0:
+                        raw_data_cog = False
+                    sql = 'select analysis,signature_accession,signature_description,' \
+                          ' interpro_accession,interpro_description,orthogroup from ' \
+                          ' interpro_%s where signature_description REGEXP "%s" group by signature_description limit 100' % (biodb, search_term)
+                    raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
+                    if len(raw_data_interpro) == 0:
+                        raw_data_interpro = False
+                    sql = 'select module_name,module_sub_cat,module_sub_sub_cat,description from enzyme.kegg_module ' \
+                          ' where (description REGEXP "%s" or module_sub_cat REGEXP "%s")' % (search_term, search_term)
+                    raw_data_module = server.adaptor.execute_and_fetchall(sql,)
+                    if len(raw_data_module) == 0:
+                        raw_data_module = False
+                    sql = 'select pathway_name,pathway_category,description from enzyme.kegg_pathway ' \
+                          ' where (description REGEXP "%s" or pathway_category REGEXP "%s")' % (search_term, search_term)
+                    raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
+                    if len(raw_data_pathway) == 0:
+                        raw_data_pathway = False
             envoi = True
+            #search_result = perform_search(locus, False)
+            #if isinstance(search_result, HttpResponse):
+            #    return search_result
+            #else:
+            #    envoi = True
+        else:
+            form = SearchForm()  # Nous créons un formulaire vide
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = SearchForm()  # Nous créons un formulaire vide
 
     return render(request, 'chlamdb/search.html', locals())
 
@@ -4851,7 +4896,9 @@ def blast(request, biodb):
                 for record in blast_records:
                     for alignment in record.alignments:
                         accession = alignment.title.split(' ')[1]
+                        accession = 'Rht'
                         sql = 'select description from bioentry where accession="%s" ' % accession
+
                         description = server.adaptor.execute_and_fetchall(sql,)[0][0]
                         for hsp in alignment.hsps:
                             start = hsp.sbjct_start
@@ -5616,6 +5663,97 @@ def multiple_orthogroup_heatmap(request, biodb, reference_orthogroup, max_distan
 
 
 
+def interactions(request, biodb, orthogroup):
+
+    import manipulate_biosqldb
+    import string_networks
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
+
+    too_much_hits = False
+    if all_groups_profile == False:
+        print 'too much'
+        too_much_hits = True
+    elif len(all_groups_profile) <=1:
+        profile_match = False
+    else:
+        profile_match = True
+
+    all_groups_neig = string_networks.find_links_recusrsive(biodb, [orthogroup], 0.8)
+    print 'all groups', all_groups_neig
+    if len(all_groups_neig) == 0:
+        neig_match = False
+    else:
+        neig_match = True
+
+
+    return render(request, 'chlamdb/interactions.html', locals())
+
+def profile_interactions(request, biodb, orthogroup):
+
+    import manipulate_biosqldb
+    import string_networks
+    import biosql_own_sql_tables
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    print 'get grp list'
+    all_groups = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
+
+    too_much_hits = False
+    if all_groups == False:
+        print 'too much'
+        too_much_hits = True
+    elif len(all_groups) <=1:
+        match = False
+
+    else:
+        print 'get grp data'
+        match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(all_groups, biodb)
+        match = True
+        print 'get script'
+        script = string_networks.generate_network_profile(biodb, all_groups, orthogroup, 1)
+
+    return render(request, 'chlamdb/profile_interactions.html', locals())
+
+def neig_interactions(request, biodb, orthogroup):
+
+    import manipulate_biosqldb
+    import string_networks
+    import biosql_own_sql_tables
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    all_groups = string_networks.find_links_recusrsive(biodb, [orthogroup], 0.8)
+    print 'all groups', all_groups
+    if len(all_groups) == 0:
+        match = False
+    else:
+        import ete_motifs
+
+        match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(all_groups, biodb)
+        taxon2orthogroup2count_all = ete_motifs.get_taxon2orthogroup2count(biodb, all_groups)
+        labels = all_groups
+        tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all)
+        path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
+        asset_path = '/assets/temp/ortho_tree.svg'
+        tree.render(path, dpi=800, h=600)
+
+        sql = 'select taxon_id from biosqldb.orthology_detail_%s where orthogroup ="%s" group by taxon_id' % (biodb, orthogroup)
+
+        taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
+
+        plot_url = "?t=%s" % taxon_list[0] +('&t=').join((taxon_list[1:]))
+        print 'url', plot_url
+
+
+        match = True
+    script = string_networks.generate_network(biodb, all_groups, orthogroup, 0.8)
+
+    return render(request, 'chlamdb/neig_interactions.html', locals())
+
+
 
 def orthogroup_conservation_tree(request, biodb, orthogroup):
 
@@ -5629,7 +5767,7 @@ def orthogroup_conservation_tree(request, biodb, orthogroup):
     a,b,c = shell_command.shell_command("rm %s" % path)
     print a, b, c
     import ete_heatmap_conservation
-    sql_grp = 'select taxon_id,count(*) from  orthology_detail_%s where orthogroup="%s" group by organism;' % (biodb, orthogroup)
+    sql_grp = 'select taxon_id,count(*) from  orthology_detail_%s where orthogroup="%s" group by taxon_id;' % (biodb, orthogroup)
     print sql_grp
     taxid2n = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_grp,))
     tree_sql = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where t2.name="%s"' % biodb
@@ -5683,6 +5821,79 @@ def priam_kegg(request, biodb):
 
     return render(request, 'chlamdb/priam_kegg.html', locals())
 
+
+
+@login_required
+def locus_int(request, biodb):
+    import ete_motifs
+    print 'request', request.method
+    server, db = manipulate_biosqldb.load_db(biodb)
+    module_int_form = locus_int_form(biodb)
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+        form = module_int_form(request.POST)
+        if form.is_valid():
+            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+            sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
+
+            database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
+
+            category = form.cleaned_data['category']
+
+            if category == 'all':
+                 sql = 'select t1.*,t2.orthogroup from custom_tables.annot_table_chlamydia_04_16 as t1 inner ' \
+                         ' join biosqldb.orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag;' % (biodb)
+            else:
+
+                 sql = 'select t1.*,t2.orthogroup from custom_tables.annot_table_chlamydia_04_16 as t1 inner ' \
+                         ' join biosqldb.orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag ' \
+                         ' where category="%s";' % (biodb, category) # where pathway_category!="1.0 Global and overview maps"
+
+
+            data = server.adaptor.execute_and_fetchall(sql,)
+            orthogroups = set([i[-1] for i in data])
+
+
+
+            taxon2orthogroup2count_all =  ete_motifs.get_taxon2orthogroup2count(biodb, orthogroups)
+
+            labels = orthogroups
+            '''
+            for grp in orthogroups:
+                tmp = []
+                for i in data:
+                    if i[-1] == grp:
+                        tmp.append(i[-2])
+                tmp = set(tmp)
+                labels.append(','.join(tmp))
+            '''
+
+            tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all)
+
+
+
+            #except:
+            #    tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, merged_dico)
+
+            if len(orthogroups) > 1000:
+                big = True
+                path = settings.BASE_DIR + '/assets/temp/ortho_tree.png'
+                asset_path = '/assets/temp/ortho_tree.png'
+                tree.render(path, dpi=1200, h=600)
+            else:
+                big = False
+                path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
+                asset_path = '/assets/temp/ortho_tree.svg'
+
+                tree.render(path, dpi=800, h=600)
+
+            envoi = True
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = module_int_form()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/inter_tree.html', locals())
 
 
 @login_required

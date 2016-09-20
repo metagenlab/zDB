@@ -247,6 +247,20 @@ def make_extract_form(database_name, plasmid=False):
 
     return ExtractForm
 
+def locus_int_form(database_name):
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(database_name)
+
+    sql = 'select distinct category from custom_tables.annot_table_%s;' % database_name
+    categories = server.adaptor.execute_and_fetchall(sql,)
+    CHOICES = [(i[0],i[0]) for i in categories]
+    CHOICES.append(("all","all"))
+    class IntCatChoice(forms.Form):
+        category = forms.ChoiceField(choices=CHOICES)
+    return IntCatChoice
+
+
+
 def make_module_overview_form(database_name):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
@@ -258,7 +272,6 @@ def make_module_overview_form(database_name):
     class ModuleCatChoice(forms.Form):
         category = forms.ChoiceField(choices=CHOICES)
     return ModuleCatChoice
-
 
 class SearchForm(forms.Form):
 

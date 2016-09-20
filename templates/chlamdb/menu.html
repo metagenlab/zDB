@@ -6,14 +6,8 @@
 <div id="wrapper">
     <ul class="menu">
 
-        <li class="item4"><a href="{% url 'home' biodb %}">Home</a>
-
-        </li>
-
         <li class="rollmenu"><a href="">Search</a>
              <ul>
-            <li class="item5"><a href="{% url 'homology' biodb %}">Get homologues</a>
-            </li>
             <li class="item5"><a href="{% url 'blast' biodb %}">Blast</a>
             </li>
             <li class="item6"><a href="{% url 'search' biodb %}">Text search</a>
@@ -123,28 +117,35 @@
 
 
 
-<!--
+
 <script type="text/javascript">
 $(function() {
-
-    var menu_ul = $('.rollmenu > ul'),
-        menu_a  = $('.rollmenu > a');
-
-    menu_ul.hide();
-
-    menu_a.click(function(e) {
-        e.preventDefault();
-        if(!$(this).hasClass('active')) {
-            menu_a.removeClass('active');
-            menu_ul.filter(':visible').slideUp('normal');
-            $(this).addClass('active').next().stop(true,true).slideDown('normal');
-        } else {
-            $(this).removeClass('active');
-            $(this).next().stop(true,true).slideUp('normal');
+    // Stick the #nav to the top of the window
+    var nav = $('#wrapper');
+    var navHomeY = nav.offset().top;
+    var isFixed = false;
+    var $w = $(window);
+    $w.scroll(function() {
+        var scrollTop = $w.scrollTop() + 95;
+        var shouldBeFixed = scrollTop > navHomeY;
+        if (shouldBeFixed && !isFixed) {
+            nav.css({
+                position: 'fixed',
+                top: 45,
+                left: nav.offset().left,
+                width: nav.width()
+            });
+            isFixed = true;
+        }
+        else if (!shouldBeFixed && isFixed)
+        {
+            nav.css({
+                position: 'static'
+            });
+            isFixed = false;
         }
     });
-
 });
 </script>
--->
+
 

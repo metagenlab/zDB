@@ -60,7 +60,11 @@
             </form>
 
             {% if envoi_comp %}
-
+                    <div id="export_bouttons" style="float:left">
+                        <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_modules', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+                        <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_modules');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                    <br/>
+                    </div>
                     <table class="sortable" id="table_modules">
                             <style>
                 table {

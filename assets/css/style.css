@@ -548,18 +548,19 @@ label {
 
 body {
 	/*background:#3B3B3B;*/
+    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
 	color: #444;
 	font: 100%/30px 'Helvetica Neue', helvetica, arial, sans-serif;
-    top: 25px;
+    top: 35px;
     height: 100%;
 }
 
 #locus_body {
-	background: black;
+	background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
     background-image: ;
 	color: #444;
 	font: 100%/30px 'Helvetica Neue', helvetica, arial, sans-serif;
-    top: 25px;
+    top: 45px;
     padding-top: 0px;
 }
 
@@ -871,8 +872,9 @@ html,body{
     height: 100%;
     min-height: 100vh;
     margin-bottom:0;
+
     position:relative;
-    padding:0 0 0 135px;
+    padding:10px 0 0 135px;
     background-color: #FAFAF5;
 }
 #container_no_margin {
@@ -888,9 +890,9 @@ iframe {
 }
 #sidebar {
     position:absolute;
-    top:22px; bottom:0; left:0;
+    top:45px; bottom:0; left:0;
     width:130px;
-    background:lightgrey;
+    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
     height:100%;
 }
 

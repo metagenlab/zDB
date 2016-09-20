@@ -63,24 +63,10 @@
             <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
             <p>  <img height="32" width="32" src="{% static "warrning.svg" %}" alt="warrning"/>
         Some genomes where recently reannotated ba the NCBI, including the Waddlia genome.
-<a href="{% static "NC_014225_locus2old_locus.txt" %}">Locus tag orrespondance table</a></p>
+        <a href="{% static "NC_014225_locus2old_locus.txt" %}">Locus tag orrespondance table</a></p>
        {% else %}
 
-
-
-
             <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-
-
-
-
-
-
-
-
-
-
-
 
                 {%if input_type != 'orthogroup' %}
                 <li class="active"><a href="#tab1" data-toggle="tab">Overview</a></li>
@@ -99,6 +85,7 @@
                 {% endif %}
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' biodb data.1 %}', 'orthoIDframe'); return false">Region</a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastnr' biodb data.1 %}', 'orthoIDframe'); return false">Blast NR</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'interactions' biodb data.0 %}', 'orthoIDframe'); return false">Interactions</a></li>
 
             </ul>
             <div id="my-tab-content" class="tab-content">
@@ -177,7 +164,7 @@
                         <td>Sequence</td>
                         <td id="entete_features">{{ seq|safe }}</td>
                         </tr>
-                        <td>Comment   <a href="{% url 'add_comment' biodb data.1 %}">  edit</a></td>
+                        <td>Comment orthogroup   <a href="{% url 'add_comment' biodb data.1 %}">  edit</a></td>
                         <td id="entete_features">
                             {% for values in cmt_format%}
                             {{values.0}}: {{values.1|safe}} </br>
@@ -322,7 +309,6 @@
 
 
 
-
             <div class="tab-pane" id="tab33">
             <!-- if only group information is asked, homologs tabs become the active tab -->
         {% else %}
@@ -417,7 +403,7 @@
                             </table>
             </div>
             <div class="tab-pane" id="tab66" style="height:2px">
-            <iframe name="orthoIDframe" id="theFrame"  style="height:8000px" width="500px" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+            <iframe name="orthoIDframe" id="theFrame" style="height:8000px;overflow:hidden;" width="500px" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
             </div>
 
         </div>
@@ -430,32 +416,6 @@
 </div>
 
 
-
-
-
-
-
-<script>
-  var update_fields = function () {
-    if ($("#id_plot_region").is(":checked")) {
-
-        $('#id_region_size').show();
-        $('#id_genomes').show();
-       $('label[for="id_genomes"]').show();
-       $('label[for="id_region_size"]').show();
-
-    }
-    else {
-
-       $('#id_region_size').hide();
-       $('#id_genomes').hide();
-       $('label[for="id_genomes"]').hide();
-       $('label[for="id_region_size"]').hide();
-    }
-  };
-  $(update_fields);
-  $("#id_plot_region").change(update_fields);
-</script>
 
 
 

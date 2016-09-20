@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
+    {% load staticfiles %}
+    <script type="text/javascript" src="{% static 'js/mark.min.js' %}"></script>
 </head>
 <body>
+
 
 
 <div id="container">
@@ -24,72 +27,275 @@
 
 
         {% if envoi %}
+            <h3>Search term: {{search_term}}. Search limited to 100 hits/Category</h3>
 
-            <div id=help_text>
-                <table>
-                   <tr><td>S</td> <td> strand</td> </tr>
-                   <tr><td>nH</td> <td> total number of homologues</td> </tr>
-                   <tr><td>nG</td> <td> number of genomes in which at least one homologous protein is present</td> </tr>
-                   <tr><td>TM</td> <td> Transmmembrane domains</td> </tr>
-                   <tr><td>SP</td> <td> Signl peptide</td> </tr>
-                </table>
-            </div>
 
-            <div id="export_bouttons">
-                <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+            {% if search_type == "no_exact_accession"%}
+                <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                    {% if search_result %}
+                    <li class="active"><a href="#tab0" data-toggle="tab">Locus</a></li>
+                    {% endif %}
+                    {% if raw_data_EC %}
+                    <li><a href="#tab1" data-toggle="tab">EC</a></li>
+                    {% endif %}
+                    {% if raw_data_ko %}
+                    <li><a href="#tab2" data-toggle="tab">KO</a></li>
+                    {% endif %}
+                    {% if raw_data_cog %}
+                    <li><a href="#tab3" data-toggle="tab">COG</a></li>
+                    {% endif %}
+                    {% if raw_data_interpro %}
+                    <li><a href="#tab4" data-toggle="tab">Interpro</a></li>
+                    {% endif %}
+                    {% if raw_data_module %}
+                    <li><a href="#tab5" data-toggle="tab">Modules</a></li>
+                    {% endif %}
+                    {% if raw_data_pathway %}
+                    <li><a href="#tab6" data-toggle="tab">Pathways</a></li>
+                    {% endif %}
+                </ul>
 
-                <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                <br>
-            </div>
 
-            <table id="search_table" class="sortable">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th id="entete_locus">Orthogroup</th>
-                        <th id="entete_locus">Locus</th>
-                        <th id="entete_locus">Protein id</th>
-                        <th id="entete_gene">Start</th>
-                        <th id="entete_gene">Stop</th>
-                        <th id="entete_strand">S.</th>
-                        <th id="entete_gene">Gene</th>
-                        <th id="entete_n">nH</th>
-                        <th id="entete_n">nG</th>
-                        <th id="entete_n">TM</th>
-                        <th id="entete_n">SP</th>
-                        <th id="entete_product">Product</th>
-                        <th id="entete_organism">Organism</th>
-                        <th id="entete_translation">Translation</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% load staticfiles %}
-                    {% for values in search_result %}
-                    <tr>
-                        <td>{{values.0}}</td>
-                        <td><a href="{% url 'locusx' biodb values.1 True %}"  target="_top">{{values.1}}</a></td>
-                        <td><a href="{% url 'locusx' biodb values.2 True%}"  target="_top">{{values.2}}</a></td>
-                        <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
-                        <td>{{values.4}}</td>
-                        <td>{{values.5}}</td>
-                        <td>{{values.6}}</td>
-                        <td>{{values.7}}</td>
-                        <td>{{values.8}}</td>
-                        <td>{{values.9}}</td>
-                        <td>{{values.10}}</td>
-                        <td>{{values.11}}</td>
-                        <td>{{values.12}}</td>
-                        <td>{{values.13}}</td>
-                        <td>{{values.14}}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+            <div id="my-tab-content" class="tab-content">
+
+                {% endif %}
+
+                {% if search_result %}
+                    <!-- tab -->
+                {% if search_type == "no_exact_accession" %}
+                    <div class="tab-pane active" id="tab0">
+                {% endif %}
+                    <h2>CDS</h2>
+                    <div id=help_text>
+                        <table>
+                           <tr><td>S</td> <td> strand</td> </tr>
+                           <tr><td>nH</td> <td> total number of homologues</td> </tr>
+                           <tr><td>nG</td> <td> number of genomes in which at least one homologous protein is present</td> </tr>
+                           <tr><td>TM</td> <td> Transmmembrane domains</td> </tr>
+                           <tr><td>SP</td> <td> Signl peptide</td> </tr>
+                        </table>
+                    </div>
+
+                    <div id="export_bouttons">
+                        <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+
+                        <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                        <br>
+                    </div>
+
+                    <table id="search_table" class="sortable">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th id="entete_locus">Orthogroup</th>
+                                <th id="entete_locus">Locus</th>
+                                <th id="entete_locus">Protein id</th>
+                                <th id="entete_gene">Start</th>
+                                <th id="entete_gene">Stop</th>
+                                <th id="entete_strand">S.</th>
+                                <th id="entete_gene">Gene</th>
+                                <th id="entete_n">nH</th>
+                                <th id="entete_n">nG</th>
+                                <th id="entete_n">TM</th>
+                                <th id="entete_n">SP</th>
+                                <th id="entete_product">Product</th>
+                                <th id="entete_organism">Organism</th>
+                                <th id="entete_translation">Translation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% load staticfiles %}
+                            {% for values in search_result %}
+                            <tr>
+                                <td>{{values.0}}</td>
+                                <td><a href="{% url 'locusx' biodb values.1 True %}"  target="_top">{{values.1}}</a></td>
+                                <td><a href="{% url 'locusx' biodb values.2 True%}"  target="_top">{{values.2}}</a></td>
+                                <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
+                                <td>{{values.4}}</td>
+                                <td>{{values.5}}</td>
+                                <td>{{values.6}}</td>
+                                <td>{{values.7}}</td>
+                                <td>{{values.8}}</td>
+                                <td>{{values.9}}</td>
+                                <td>{{values.10}}</td>
+                                <td>{{values.11}}</td>
+                                <td>{{values.12}}</td>
+                                <td>{{values.13}}</td>
+                                <td>{{values.14}}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+
+                {% if search_type == "no_exact_accession" %}
+                    <!-- closing the tab-->
+                    </div>
+                {% endif %}
+
+                {% endif %}
+                {% if search_type == "no_exact_accession"%}
+
+                    {% if raw_data_EC %}
+                        <div class="tab-pane" id="tab1">
+                            <h2>Enzymes</h2>
+                            <table id="search_table" class="sortable">
+                            <thead>
+                                <tr>
+                                    <th id="entete_locus">EC</th>
+                                    <th id="entete_locus">Description</th>
+                                </tr>
+                            </thead>
+                            {% for values in raw_data_EC %}
+                                <tr>
+                                    <td><a href="{% url 'fam' biodb values.0 'EC' %}"  target="_top">{{values.0}}</a></td>
+                                    <td>{{values.1}}</td>
+                                </tr>
+                            {% endfor %}
+                            </table>
+                        </div>
+                    {% endif %}
+                    {% if raw_data_ko %}
+                        <div class="tab-pane" id="tab2">
+                            <h2>Kegg Orthologs</h2>
+                            <table id="search_table" class="sortable">
+                            <thead>
+                                <tr>
+                                    <th id="entete_locus">KO id</th>
+                                    <th id="entete_locus">name</th>
+                                    <th id="entete_locus">description</th>
+                                </tr>
+                            </thead>
+                            {% for values in raw_data_ko %}
+                                <tr>
+                                    <td><a href="{% url 'fam' biodb values.0 'ko' %}"  target="_top">{{values.0}}</a></td>
+                                    <td>{{values.1}}</td>
+                                    <td>{{values.2}}</td>
+                                </tr>
+                            {% endfor %}
+                            </table>
+                        </div>
+                    {% endif %}
+                    {% if raw_data_cog %}
+                        <div class="tab-pane" id="tab3">
+                            <h2>COGs</h2>
+                            <table id="search_table" class="sortable">
+                            <thead>
+                                <tr>
+                                    <th id="entete_locus">COG id</th>
+                                    <th id="entete_locus">Category</th>
+                                    <th id="entete_locus">Description</th>
+                                </tr>
+                            </thead>
+                            {% for values in raw_data_cog %}
+                                <tr>
+                                    <td><a href="{% url 'fam' biodb values.0 'cog' %}"  target="_top">{{values.0}}</a></td>
+                                    <td>{{values.1}} / {{values.2}}</td>
+                                    <td>{{values.3}}</td>
+                                </tr>
+                            {% endfor %}
+                            </table>
+                        </div>
+                    {% endif %}
+                    {% if raw_data_interpro %}
+                        <div class="tab-pane" id="tab4">
+                            <h2>Interpro entries</h2>
+                            <table id="search_table" class="sortable">
+                            <thead>
+                                <tr>
+                                    <th id="entete_locus">Analysis</th>
+                                    <th id="entete_locus">Accession</th>
+                                    <th id="entete_locus">Description</th>
+                                    <th id="entete_locus">Description</th>
+                                    <th id="entete_locus">Interpro</th>
+
+                                </tr>
+                            </thead>
+                            {% for values in raw_data_interpro %}
+                                <tr>
+                                    <td>{{values.0}}</td>
+                                    <td>{{values.1}}</td>
+                                    <td>{{values.2}}</td>
+                                    <td>{{values.4}}</td>
+                                    <td><a href="{% url 'fam' biodb values.3 'interpro' %}"  target="_top">{{values.3}}</a></td>
+
+                                </tr>
+                            {% endfor %}
+                            </table>
+                        </div>
+                    {% endif %}
+                    {% if raw_data_module %}
+                        <div class="tab-pane" id="tab5">
+                            <h2>Kegg Modules</h2>
+                            <table id="search_table" class="sortable">
+                            <thead>
+                                <tr>
+                                    <th id="entete_locus">Name</th>
+                                    <th id="entete_locus">Category</th>
+                                    <th id="entete_locus">Sub category</th>
+                                    <th id="entete_locus">Description</th>
+
+                                </tr>
+                            </thead>
+                            {% for values in raw_data_module %}
+                                <tr>
+                                    <td><a href="{% url 'KEGG_module_map' biodb values.0 %}"  target="_top">{{values.0}}</a></td>
+                                    <td>{{values.1}}</td>
+                                    <td>{{values.2}}</td>
+                                    <td>{{values.3}}</td>
+                                </tr>
+                            {% endfor %}
+                            </table>
+                        </div>
+                    {% endif %}
+                    {% if raw_data_pathway %}
+                        <div class="tab-pane" id="tab6">
+                            <h2>Kegg Modules</h2>
+                            <table id="search_table" class="sortable">
+                            <thead>
+                                <tr>
+                                    <th id="entete_locus">Name</th>
+                                    <th id="entete_locus">Category</th>
+                                    <th id="entete_locus">Description</th>
+
+                                </tr>
+                            </thead>
+                            {% for values in raw_data_pathway %}
+                                <tr>
+                                    <td><a href="{% url 'KEGG_mapp' biodb values.0 %}"  target="_top">{{values.0}}</a></td>
+                                    <td>{{values.1}}</td>
+                                    <td>{{values.2}}</td>
+                                </tr>
+
+                            {% endfor %}
+                            </table>
+                        </div>
+                    {% endif %}
+
+            {% endif %}
+        </div>
         {% endif %}
     </div>
-
-    <div id="footer"></div>
 
 </div>
 </body>
 </html>
+<style>
+mark{
+    background: orange;
+    color: black;
+}
+</style>
+<script>
+    var options = {
+        "ignoreJoiners": true,
+        "exclude": [
+            "h3",
+            ".byline *",
+            "th"
+        ]
+    };
+    var docu = document.getElementById("content");
+    var instance = new Mark(docu);
+    instance.mark("{{search_term}}", options);
+
+</script>

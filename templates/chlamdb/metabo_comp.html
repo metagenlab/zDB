@@ -65,17 +65,22 @@
         </p>
     </div>
 
-            <table class="sortable">
+            <div id="export_bouttons">
+                <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'metabo_kegg_overview', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+                <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'metabo_kegg_overview');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+            <br/>
+
+            <table class="sortable" id="metabo_kegg_overview">
                     <style>
-        table {
-            width:100%;
-            table-layout:fixed;
-        }
-        td {
-            overflow: hidden;
-            white-space: nowrap;
-        }
-    </style>
+                        table {
+                            width:100%;
+                            table-layout:fixed;
+                        }
+                        td {
+                            overflow: hidden;
+                            white-space: nowrap;
+                        }
+                    </style>
             <tr>
                 <th height="170px" id="entete_meta">Category</th>
                 <th id="entete_meta2" >Map</th>

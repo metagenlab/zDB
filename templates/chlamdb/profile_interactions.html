@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+    {% load staticfiles %}
+    {% load static %}
+    {% get_static_prefix as STATIC_PREFIX %}
+    <script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
+    <!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
+    <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style_cytoscape.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
+
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.js"></script>
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.2.5/cytoscape-qtip.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/4.10.3/css/bootstrap-slider.min.css">
+    <script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script>
+    <script type="text/javascript" src="{% static 'js/cytoscape-cola.js' %}"></script>
+
+</head>
+
+<body height="2000px">
+<h3>Conserved neighborhood for {{orthogroup}}</h3>
+    {% if match %}
+        <div id="cy" style="width:600px;height:600px"></div>
+        <div style="padding-top: 610px">
+            <div id="export_bouttons_groups">
+                <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+
+                <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                <br/>
+            </div>
+
+            <p>Number of orthogroups: {{ sum_group }} </p>
+
+            <table class="sortable" id="table_groups">
+
+                <thead>
+                    <tr>
+                    <th></th>
+                    <th id="entete_locus">Orthogroup</th>
+                    <th>Genes</th>
+                    <th>Products</th>
+                    <th>Cogs</th>
+                    <th>Pfam</th>
+                    </tr>
+                </thead>
+
+                {% for value in match_groups_data %}
+                    <tr>
+                        <td>{{value.0}}</td>
+                        <td><a href="{% url 'locusx' biodb value.1 True%}">{{value.1}}</a></td>
+                        <td>{{value.2|safe}}</td>
+                        <td>{{value.3|safe}}</td>
+                        <td>{{value.4|safe}}</td>
+                        <td>{{value.5|safe}}</td>
+
+                    </tr>
+                {% endfor %}
+            </table>
+
+
+
+        </div>
+    {% elif too_much_hits %}
+
+        Too much similar profile, not relevant
+
+    {%else%}
+        No similar profiles
+    {%endif%}
+</body>
+{{script|safe}}
+</html>
