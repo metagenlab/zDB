@@ -18,9 +18,6 @@ def convert_terminal_node_names(tree_newick_name, dictionnary, tree_format = 'ph
     trees = [tree for tree in trees]
 
 
-    import manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db("saureus_01_15")
-    #print my_accession2st
     for tree in trees:
         #print tree
         #Phylo.draw_ascii(tree)

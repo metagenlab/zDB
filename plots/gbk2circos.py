@@ -216,7 +216,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
     print "highlight:", locus_highlight
     
     import numpy
-    print "draft_data", draft_data
+
     if strand == "1":
         f = open(out_name, "w")
     if strand == "-1":
@@ -281,7 +281,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                     if orthology_tag:
                         if feature.qualifiers['orthogroup'][0] in locus_highlight or feature.qualifiers['locus_tag'][0] in locus_highlight:
 
-                            print "COLORS!!!!!!!!!!!!!!!!!!!"
+                            #print "COLORS!!!!!!!!!!!!!!!!!!!"
                             try:
                                 '''
                                 f.write('%s %s %s fill_color=spectral-5-div-4,id=locus:_%s_gene:_%s_product:_%s\n' % (contig,
@@ -595,7 +595,7 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
     circos_string_n_non_chlamydiae = ''
     circos_string_n_paralogs = ''
     circos_string_stacked_chlamydiales = ''
-
+    circos_string_stacked_chlamydiales_and_non_bacteria = ''
 
     draft_data = []
     for biorecord in record_list:
@@ -682,7 +682,7 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
                     circos_string_n_non_chlamydiae += "%s %s %s %s id=%s\n" % (contig, start, end, n_non_chlamydiae,feature.qualifiers['locus_tag'][0])
                     circos_string_n_paralogs += "%s %s %s %s id=%s\n" % (contig, start, end, n_paralogs,feature.qualifiers['locus_tag'][0])
                     circos_string_stacked_chlamydiales += "%s %s %s %s,%s id=%s\n" % (contig, start, end, n_chlamydiae, n_non_chlamydiae,feature.qualifiers['locus_tag'][0])
-
+                    circos_string_stacked_chlamydiales_and_non_bacteria += "%s %s %s %s,%s,%s id=%s\n" % (contig, start, end, n_chlamydiae, n_non_chlamydiae,str(int(n_blast_eukariota)+int(n_archae)),feature.qualifiers['locus_tag'][0])
         y += 1
     import os
     all_file_names = {}
@@ -695,6 +695,7 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
     all_file_names['file_n_blast_non_chlamydiae'] = os.path.join(out_directory,"circos_n_blast_non_chlamydiae.txt")
     all_file_names['file_n_paralogs'] = os.path.join(out_directory,"circos_n_paralogs.txt")
     all_file_names['file_stacked_chlamydiales'] = os.path.join(out_directory,"circos_stacked_chlamydiales.txt")
+    all_file_names['file_stacked_chlamydiales_non_prokaryotes'] = os.path.join(out_directory,"circos_stacked_chlamydiales_non_euk.txt")
 
     all_file_names['gc_var_file'], all_file_names['gc_skew_file'] = print_circos_GC_file(record_list, feature_type="CDS", out_directory=out_directory)
 
@@ -724,6 +725,8 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
 
     with open(all_file_names['file_stacked_chlamydiales'], "w") as f:
         f.write(circos_string_stacked_chlamydiales)
+    with open(all_file_names['file_stacked_chlamydiales_non_prokaryotes'], "w") as f:
+        f.write(circos_string_stacked_chlamydiales_and_non_bacteria)
     #all_file_names.update(gc_files)
 
     # return blastnr + GC files names
@@ -899,7 +902,7 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                                                                               locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]))
 
                                 else:
-                                    print "COLORS!!!!!!!!!!!!!!!!!!! ----- taxon" # pink piyg-5-div-1 spectral-5-div-4 green
+                                    #print "COLORS!!!!!!!!!!!!!!!!!!! ----- taxon" # pink piyg-5-div-1 spectral-5-div-4 green
                                     taxon_file.write("%s %s %s %s color=piyg-5-div-1,id=%s,z=2\n" % (contig,
                                                                                                  start,
                                                                                                  end,
@@ -915,7 +918,7 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                                                                               locus2locus_identity[feature.qualifiers['locus_tag'][0]][taxon_id][1]))
 
                                 else:
-                                    print "COLORS!!!!!!!!!!!!!!!!!!! ----- taxon"
+                                    #print "COLORS!!!!!!!!!!!!!!!!!!! ----- taxon"
                                     taxon_file.write("%s %s %s %s color=piyg-5-div-1,id=%s,color=accent-4-qual-4,z=2\n" % (contig,
                                                                                                  start,
                                                                                                  end,
@@ -1013,7 +1016,7 @@ class Circos_config:
                           " spacing           = 10u\n" \
                           " size              = 15p\n" \
                           " show_label        = yes\n" \
-                          " label_size        = 15p\n" \
+                          " label_size        = 25p\n" \
                           " format            = %s kb\n" \
                           " thickness         = 2p\n" \
                           " </tick>\n" \
