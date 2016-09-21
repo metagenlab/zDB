@@ -134,8 +134,8 @@ def collect_interpro(db_name):
     for accession in all_interpro_ids:
         print i,'/', len(all_interpro_ids), accession
         i+=1
-        sql= 'select taxon_id, count(*) from biosqldb.interpro_%s ' \
-             ' where interpro_accession = "%s" group by taxon_id;' % (db_name, accession)
+        sql= 'select A.taxon_id, count(*) as n from (select taxon_id, locus_tag, interpro_accession ' \
+             ' from biosqldb.interpro_%s where interpro_accession="%s" group by locus_tag) A group by taxon_id;' % (db_name, accession)
 
         data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
