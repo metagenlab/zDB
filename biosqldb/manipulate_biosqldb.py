@@ -488,8 +488,8 @@ def get_taxon_id_list(server, biodatabase_name):
     sql = "select taxon_id from bioentry" \
     " inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id" \
     " where biodatabase.name = %s" \
-    " group by taxon_id"
-    result = server.adaptor.execute_and_fetchall(sql, (biodatabase_name))
+    " group by taxon_id" % biodatabase_name
+    result = server.adaptor.execute_and_fetchall(sql, )
     return [str(i[0]) for i in result]
 
 def seqfeature_id2locus_tag_dico(server, biodatabase_name):
