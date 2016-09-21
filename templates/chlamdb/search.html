@@ -18,13 +18,14 @@
 
     <div id="content">
 
-        <div id="search_form">
-            <form action="{% url "chlamdb.views.search" biodb %}" method="post">{% csrf_token %}
-                {{ form.as_p }}
-                <input type="submit" value="Submit" />
-            </form>
-        </div>
-
+        {% if display_from == 'yes' %}
+            <div id="search_form">
+                <form action="{% url "chlamdb.views.search" biodb %}" method="post">{% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="submit" value="Submit" />
+                </form>
+            </div>
+        {% endif %}
 
         {% if envoi %}
             <h3>Search term: {{search_term}}. Search limited to 100 hits/Category</h3>
@@ -202,21 +203,23 @@
                             <table id="search_table" class="sortable">
                             <thead>
                                 <tr>
+                                    <th id="entete_locus">Interpro</th>
                                     <th id="entete_locus">Analysis</th>
                                     <th id="entete_locus">Accession</th>
                                     <th id="entete_locus">Description</th>
                                     <th id="entete_locus">Description</th>
-                                    <th id="entete_locus">Interpro</th>
+
 
                                 </tr>
                             </thead>
                             {% for values in raw_data_interpro %}
                                 <tr>
+                                    <td><a href="{% url 'fam' biodb values.3 'interpro' %}"  target="_top">{{values.3}}</a></td>
                                     <td>{{values.0}}</td>
                                     <td>{{values.1}}</td>
                                     <td>{{values.2}}</td>
                                     <td>{{values.4}}</td>
-                                    <td><a href="{% url 'fam' biodb values.3 'interpro' %}"  target="_top">{{values.3}}</a></td>
+
 
                                 </tr>
                             {% endfor %}

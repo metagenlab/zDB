@@ -6,33 +6,40 @@
 
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
         <a style="float: left;" class="navbar-brand" href="{% url 'home' biodb %}"><strong>ChlamDB</strong></a>
-      <div class="container">
-        <div class="navbar-header">
+        <div class="container">
 
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav" style="float: right">
+                    <li>
+                    <!--<a href="#contact" class="navbar-nav pull-right">Contact</a>-->
+                            <a href="{% url "chlamdb.views.logout_view" %}" class="btn btn-inverse btn-xs pull-right"">Logout ({{ request.user }} )</a>
+                    </li>
+                </ul>
+                <div>
+                    <div class="col-lg-8">
+                    <form action='{% url "chlamdb.views.locusx" biodb %}' method="GET" class="form-inline pull-xs-right">
+
+                            <input class="form-control" type="text" placeholder="Gene, product, orthogroup, COG, interpro ID, KEGG id, ..." name="accession">
+
+                            <button class="btn btn-outline-success" type="submit">Search</button>
+
+
+                    </form>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="collapse navbar-collapse">
-
-            <ul class="nav navbar-nav" style="float: right">
-            <li>
-                <!--<a href="#contact" class="navbar-nav pull-right">Contact</a>-->
-
-            <a href="{% url "chlamdb.views.logout_view" %}" class="btn btn-inverse btn-xs pull-right"">Logout ({{ request.user }} )</a>
-            </li>
-          </ul>
-      <form action='{% url "chlamdb.views.locusx" biodb %}' method="GET" class="form-inline pull-xs-right">
-    <input class="form-control" type="text" placeholder="Gene, product, orthogroup..." name="accession">
-    <button class="btn btn-outline-success" type="submit">Search</button>
-            <form >
-
-
-
-
-  </form>
-        </div>
-      </div>
 
     </div>
 
 </div>
 
 
+<style>
+@media (min-width: 768px) {
+    .form-inline .form-control {
+        width: 500px;
+    }
+}
+
+</style>

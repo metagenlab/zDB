@@ -1703,14 +1703,11 @@ def fam(request, biodb, fam, type):
         elif type == 'cog':
             sql1 = 'select locus_tag from COG.locus_tag2gi_hit_%s where COG_id="%s"' % (biodb, fam)
             sql2 = 'select functon, name from COG.cog_names_2014 where COG_id = "%s"' % (fam)
-            print 'cog type', sql2
             info = server.adaptor.execute_and_fetchall(sql2, )[0]
 
         elif type == 'interpro':
             sql1 = 'select locus_tag from interpro_%s where interpro_accession="%s" group by locus_tag' % (biodb, fam)
             sql2 = 'select signature_description from interpro_%s where interpro_accession="%s" limit 1' % (biodb, fam)
-            print sql1
-            print sql2
             info = server.adaptor.execute_and_fetchall(sql2, )[0]
 
         elif type == 'EC':
@@ -1720,10 +1717,7 @@ def fam(request, biodb, fam, type):
             sql2 = 'select line,value from (select * from enzyme.enzymes where ec="%s") t1 ' \
                    ' inner join enzyme.enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id;' % (fam)
             path = fam.split('.')
-            print path
             external_link = 'http://www.chem.qmul.ac.uk/iubmb/enzyme/EC%s/%s/%s/%s.html' % (path[0], path[1], path[2], path[3])
-            print sql1
-            print sql2
 
             sql_pathways = 'select pathway_name,pathway_category,description ' \
                            ' from (select * from enzyme.enzymes where ec = "%s") t1 ' \
@@ -1807,9 +1801,11 @@ def fam(request, biodb, fam, type):
             print "taxon2orthogroup2count_reference", taxon2orthogroup2count_reference
         elif type == 'interpro':
             taxon2orthogroup2count_reference = get_taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb, [fam], 'interpro')
+            print taxon2orthogroup2count_reference
 
             sql3 = 'select distinct taxon_id,orthogroup,interpro_accession from ' \
                    ' interpro_%s where orthogroup in (%s);' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"')
+            print sql3
 
         elif type == 'EC':
             taxon2orthogroup2count_reference = get_taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb, [fam], 'EC')
@@ -1826,7 +1822,6 @@ def fam(request, biodb, fam, type):
                    ' where orthogroup in (%s)) A inner join enzyme.locus2ko_%s as B ' \
                    ' on A.locus_tag=B.locus_tag;' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"', biodb)
 
-        print "sql3", sql3
         data = server.adaptor.execute_and_fetchall(sql3,)
         taxon2orthogroup2ec = {}
         for one_row in data:
@@ -4572,7 +4567,7 @@ def search(request, biodb):
     server = manipulate_biosqldb.load_db()
     print request.method, "request.method"
     if request.method == 'POST':  # S'il s'agit d'une requête POST
-
+        display_from = 'yes'
         form = SearchForm(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
@@ -4683,12 +4678,15 @@ def search(request, biodb):
                     if len(raw_data_pathway) == 0:
                         raw_data_pathway = False
             envoi = True
+            display_form = "no"
+            print "display_form",  display_form
             #search_result = perform_search(locus, False)
             #if isinstance(search_result, HttpResponse):
             #    return search_result
             #else:
             #    envoi = True
         else:
+            display_from = 'yes'
             form = SearchForm()  # Nous créons un formulaire vide
 
 
@@ -4896,7 +4894,7 @@ def blast(request, biodb):
                 for record in blast_records:
                     for alignment in record.alignments:
                         accession = alignment.title.split(' ')[1]
-                        accession = 'Rht'
+                        #accession = 'Rht'
                         sql = 'select description from bioentry where accession="%s" ' % accession
 
                         description = server.adaptor.execute_and_fetchall(sql,)[0][0]
@@ -4908,7 +4906,7 @@ def blast(request, biodb):
                             leng = end-start
 
                             print 'end', 'start', end, start, end-start
-                            accession = 'Rht'
+                            #accession = 'Rht'
                             seq = manipulate_biosqldb.location2sequence(server, accession, biodb, start, leng)
                             print seq
                             from Bio.Seq import reverse_complement, translate
@@ -5477,7 +5475,9 @@ def pfam_tree(request, biodb, orthogroup):
     print "motif_count", motif_count
 
     sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
+    print sql_tree
     try:
+
         tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
     except IndexError:
         no_tree = True
