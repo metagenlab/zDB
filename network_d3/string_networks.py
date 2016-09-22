@@ -223,7 +223,7 @@ class orthogroup2network:
 
 
     
-def generate_network(biodb, group_list, reference_group, ratio_limit):
+def generate_network(biodb, group_list, reference_group, ratio_limit, scale_link=True):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     filter = '"' + '","'.join(group_list) + '"'
@@ -428,14 +428,20 @@ cy.$('node').on('click', function(e){
     # group_1    | group_2    | n_links | n_comparisons | ratio
     for edge in data:
         if float(edge[2])< 20:
-            edge_list.append(edge_template % (edge[0], edge[1], "47de47", 10, edge[2], edge[3]))
+            if scale_link:
+                edge_list.append(edge_template % (edge[0], edge[1], "47de47", 10, edge[2], edge[3]))
+            else:
+                edge_list.append(edge_template % (edge[0], edge[1], "47de47", 10, edge[2], edge[3]))
         else:
-            edge_list.append(edge_template % (edge[0], edge[1], "ff0404", float(edge[2])/10, edge[2], edge[3]))
+            if scale_link:
+                edge_list.append(edge_template % (edge[0], edge[1], "ff0404", float(edge[2])/10, edge[2], edge[3]))
+            else:
+                edge_list.append(edge_template % (edge[0], edge[1], "47de47", 10, edge[2], edge[3]))
 
     return template % (',\n'.join(node_list), ',\n'.join(edge_list))
 
 
-def generate_network_profile(biodb, group_list, reference_group, euclidian_distance_limit=1.5):
+def generate_network_profile(biodb, group_list, reference_group, euclidian_distance_limit=1.5, scale_link=True):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     filter = '"' + '","'.join(group_list) + '"'
@@ -640,8 +646,13 @@ cy.$('node').on('click', function(e){
     edge_list = []
     # group_1    | group_2    | n_links | n_comparisons | ratio
     for edge in data:
-        edge_list.append(edge_template % (edge[0], edge[1], "ff0404", float(edge[2]), edge[2], euclidian_distance_limit))
-
+        if edge[0] == edge[1]:
+            # self link
+            continue
+        if scale_link:
+            edge_list.append(edge_template % (edge[0], edge[1], "ff0404", float(edge[2]), edge[2], euclidian_distance_limit))
+        else:
+            edge_list.append(edge_template % (edge[0], edge[1], "ff0404", 10, edge[2], euclidian_distance_limit))
     return template % (',\n'.join(node_list), ',\n'.join(edge_list))
 
 
