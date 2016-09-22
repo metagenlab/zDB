@@ -39,24 +39,16 @@
             <li><a href="#tab55" data-toggle="tab" onclick="window.open('{% url 'profile_interactions' biodb orthogroup %}', 'orthoIDframe2'); return false">Similar profiles</a></li>
             {% endif %}
             {% if neig_match %}
-            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'neig_interactions' biodb orthogroup %}', 'orthoIDframe3'); return false">Conserved neighbors</a></li>
+            <li><a href="#tab55" data-toggle="tab" onclick="window.open('{% url 'neig_interactions' biodb orthogroup %}', 'orthoIDframe2'); return false">Conserved neighbors</a></li>
             {% endif %}
         </ul>
 
 
         <div id="my-tab-content" class="tab-content">
-            {% if profile_match %}
-            <div class="tab-pane active" id="tab1">
                 <div class="tab-pane" id="tab55" style="height:8800px">
-                    <iframe name="orthoIDframe2" id="theFrame3" scrolling="no" width="100%" height="8800px"></iframe>
+                    <iframe name="orthoIDframe2" id="theFrame2" scrolling="no" width="100%" height="8800px"></iframe>
                 </div>
-            {% endif %}
-            </div>
-            {% if neig_match %}
-            <div class="tab-pane" id="tab66" style="height:8800px">
-                    <iframe name="orthoIDframe3" id="theFrame3" scrolling="no" width="100%" height="8800px"></iframe>
-            </div>
-            {% endif %}
+
             {% if not neig_match and not profile_match %}
             No predicted interactors
             {% endif %}

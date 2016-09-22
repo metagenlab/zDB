@@ -296,6 +296,10 @@ def extract_orthogroup(request, biodb):
                     sum_group = len(match_groups)
 
                     match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(match_groups, biodb)
+                    columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                              'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+                    sql = ''
+
 
                     envoi_extract = True
 
@@ -5669,16 +5673,27 @@ def interactions(request, biodb, orthogroup):
     import string_networks
 
     server, db = manipulate_biosqldb.load_db(biodb)
-    all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
-
+    print 'cotoff 2 #######################'
+    all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2)
     too_much_hits = False
     if all_groups_profile == False:
-        print 'too much'
-        too_much_hits = True
-    elif len(all_groups_profile) <=1:
-        profile_match = False
-    else:
-        profile_match = True
+        # try with of more stringeant cutoff
+        print 'cotoff 1 #######################'
+        all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
+        if all_groups_profile == False:
+            print 'cotoff 0 #######################'
+            all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 0)
+            print all_groups_profile
+            if all_groups_profile == False:
+                too_much_hits = True
+
+    if all_groups_profile:
+        if len(all_groups_profile) <= 1:
+            profile_match = False
+        else:
+            profile_match = True
+
+    print 'n profile hits', all_groups_profile
 
     all_groups_neig = string_networks.find_links_recusrsive(biodb, [orthogroup], 0.8)
     print 'all groups', all_groups_neig
@@ -5698,22 +5713,46 @@ def profile_interactions(request, biodb, orthogroup):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    print 'get grp list'
-    all_groups = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
+    all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2)
 
     too_much_hits = False
-    if all_groups == False:
+    if all_groups_profile == False:
+        # try with of more stringeant cutoff
+        print 'cotoff 1 #######################'
+        all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
+        if all_groups_profile == False:
+            print 'cotoff 0 #######################'
+            all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 0)
+            print all_groups_profile
+            if all_groups_profile == False:
+                too_much_hits = True
+
+    if len(all_groups_profile) <=1:
+        profile_match = False
+    else:
+        profile_match = True
+
+    too_much_hits = False
+    if all_groups_profile == False:
         print 'too much'
         too_much_hits = True
-    elif len(all_groups) <=1:
+    if len(all_groups_profile) <=1:
         match = False
 
     else:
         print 'get grp data'
-        match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(all_groups, biodb)
+        import ete_motifs
+        match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(all_groups_profile, biodb)
         match = True
         print 'get script'
-        script = string_networks.generate_network_profile(biodb, all_groups, orthogroup, 1)
+        script = string_networks.generate_network_profile(biodb, all_groups_profile, orthogroup, 1, False)
+        taxon2orthogroup2count_all = ete_motifs.get_taxon2orthogroup2count(biodb, all_groups_profile)
+        labels = all_groups_profile
+        tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all)
+        path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
+        asset_path = '/assets/temp/ortho_tree.svg'
+        tree.render(path, dpi=800, h=600)
+
 
     return render(request, 'chlamdb/profile_interactions.html', locals())
 
@@ -5725,7 +5764,7 @@ def neig_interactions(request, biodb, orthogroup):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    all_groups = string_networks.find_links_recusrsive(biodb, [orthogroup], 0.8)
+    all_groups = string_networks.find_links_recusrsive(biodb, [orthogroup], 0.8, n_comp_cutoff=10)
     print 'all groups', all_groups
     if len(all_groups) == 0:
         match = False
@@ -5733,6 +5772,8 @@ def neig_interactions(request, biodb, orthogroup):
         import ete_motifs
 
         match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(all_groups, biodb)
+
+
         taxon2orthogroup2count_all = ete_motifs.get_taxon2orthogroup2count(biodb, all_groups)
         labels = all_groups
         tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all)
