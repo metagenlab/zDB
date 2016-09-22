@@ -182,7 +182,7 @@
                         {%if ko_data %}
                             <tr>
                             <td><a href="{% url 'fam' biodb ko_data.0 'ko' %}" target="_top">KO</a></td>
-                            <td><a href="http://www.genome.jp/dbget-bin/www_bget?ko:{{cog_data.0}}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
+                            <td><a href="http://www.genome.jp/dbget-bin/www_bget?ko:{{ko_data.0}}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
                             </tr>
                         {% endif %}
                         {%if pathways %}
