@@ -5695,7 +5695,7 @@ def interactions(request, biodb, orthogroup):
 
     print 'n profile hits', all_groups_profile
 
-    all_groups_neig = string_networks.find_links_recusrsive(biodb, [orthogroup], 0.8)
+    all_groups_neig = string_networks.find_links_recusrsive(biodb, [orthogroup], 0.8, n_comp_cutoff=10)
     print 'all groups', all_groups_neig
     if len(all_groups_neig) == 0:
         neig_match = False
