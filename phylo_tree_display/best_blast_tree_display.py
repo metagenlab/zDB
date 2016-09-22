@@ -289,7 +289,7 @@ def main(input_reference, input_queries_folder, blast_file, mlst_scheme, input_g
 		os.mkdir(os.path.join(wd, 'mlst_results'))
 	    all_fasta = ' '.join(fasta_files)
 
-	    cmd = 'mlst --nopath --scheme %s %s > %s' % (mlst_scheme, all_fasta, out_mlst)
+	    cmd = 'mlst --quiet --nopath --scheme %s %s > %s' % (mlst_scheme, all_fasta, out_mlst)
 	    out, err, code = shell_command.shell_command(cmd)
 	    cmd = 'sed -i "s/.fna//g" %s' % out_mlst
 	    out, err, code = shell_command.shell_command(cmd)

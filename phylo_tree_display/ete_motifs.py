@@ -45,9 +45,9 @@ def get_taxon2name2count(biodb, id_list, type="COG"):
         ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
         sql = 'select * from comparative_tables.%s_%s where id in (%s)' % (type, biodb, ortho_sql)
     else:
-        sql = 'show columns from orthology_%s' % (biodb)
+        sql = 'show columns from comparative_tables.orthology_%s' % (biodb)
         ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
-        sql = 'select * from orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
+        sql = 'select * from comparative_tables.orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
     print sql
     profile_tuples = list(server.adaptor.execute_and_fetchall(sql,))
 
@@ -77,13 +77,13 @@ def get_taxon2orthogroup2count(biodb, orthogroup_id_list):
 
     #print "orthogroup_id_list", orthogroup_id_list
 
-    sql = 'show columns from orthology_%s' % (biodb)
+    sql = 'show columns from comparative_tables.orthology_%s' % (biodb)
 
     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
 
     ortho_sql = '"' + '","'.join(orthogroup_id_list) + '"'
 
-    sql = 'select * from orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
+    sql = 'select * from comparative_tables.orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
 
     profile_tuples = list(server.adaptor.execute_and_fetchall(sql,))
 
@@ -609,14 +609,14 @@ def multiple_orthogroup_heatmap(biodb, reference_orthogroup, max_distance=2.2):
             raise 'Error: unexpected combination of groups'
     ordered_distances = sorted(distances)
 
-    sql = 'show columns from orthology_%s' % biodb
+    sql = 'show columns from comparative_tables.orthology_%s' % biodb
     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
 
     #print 'taxons!', ordered_taxons
 
     ortho_sql = '"' + '","'.join(orthogroup2distance.keys()) + '"' + ',"%s"' % reference_orthogroup
 
-    sql = 'select * from orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
+    sql = 'select * from comparative_tables.orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
 
     profile_tuples = list(server.adaptor.execute_and_fetchall(sql,))
     #print "profile_tuples", profile_tuples
