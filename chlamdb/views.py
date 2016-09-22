@@ -5714,15 +5714,18 @@ def profile_interactions(request, biodb, orthogroup):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2)
+    cutoff = 2
 
     too_much_hits = False
     if all_groups_profile == False:
         # try with of more stringeant cutoff
         print 'cotoff 1 #######################'
         all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
+        cutoff = 1
         if all_groups_profile == False:
             print 'cotoff 0 #######################'
             all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 0)
+            cutoff = 0
             print all_groups_profile
             if all_groups_profile == False:
                 too_much_hits = True
@@ -5745,7 +5748,7 @@ def profile_interactions(request, biodb, orthogroup):
         match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(all_groups_profile, biodb)
         match = True
         print 'get script'
-        script = string_networks.generate_network_profile(biodb, all_groups_profile, orthogroup, 1, False)
+        script = string_networks.generate_network_profile(biodb, all_groups_profile, orthogroup, cutoff, False)
         taxon2orthogroup2count_all = ete_motifs.get_taxon2orthogroup2count(biodb, all_groups_profile)
         labels = all_groups_profile
         tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all)
