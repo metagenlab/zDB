@@ -1534,18 +1534,47 @@ def locusx(request, biodb, locus=None, menu=False):
 
                 sql3 = 'select t2.COG_id,t2.functon,t2.name from COG.locus_tag2gi_hit_%s ' \
                        ' as t1 inner join COG.cog_names_2014 as t2 on t1.COG_id=t2.COG_id where locus_tag="%s"' % (biodb, locus)
+
                 sql4 = 'select analysis, signature_accession, signature_description, interpro_accession, interpro_description ' \
                        ' from interpro_%s where locus_tag="%s";' % (biodb, locus)
+
+                sql5 = 'select A.ko_id,name,definition, pathways, modules from (select * from enzyme.locus2ko_%s ' \
+                       ' where locus_tag="%s") A inner join enzyme.ko_annotation as B on A.ko_id=B.ko_id ;' % (biodb, locus)
+
                 try:
                     cog_data = server.adaptor.execute_and_fetchall(sql3, )[0]
 
                 except IndexError:
+
                     cog_data = False
+
                 try:
                     interpro_data = server.adaptor.execute_and_fetchall(sql4, )
                 except IndexError:
                     interpro_data= False
 
+                ko_data = server.adaptor.execute_and_fetchall(sql5, )[0]
+                print ko_data
+                if ko_data[3] != '-':
+                    pathways = ko_data[3].split(',')
+
+                if ko_data[4] != '-':
+                    modules = ko_data[4].split(',')
+                try:
+                    ko_data = server.adaptor.execute_and_fetchall(sql5, )[0]
+                    if ko_data[3] != '-':
+                        import re
+                        pathways = ko_data[3]
+
+                        pathways = ko_data[3].split(',')
+                        pathways = [i.replace('ko', 'map') for i in pathways]
+                    if ko_data[4] != '-':
+                        modules = ko_data[4].split(',')
+
+
+                except IndexError:
+                    ko_data= False
+                print "ko_data", ko_data
                 try:
                     sql_interpro = 'select interpro_accession, interpro_description from interpro_%s' \
                                    ' where locus_tag="%s" and interpro_accession !="0"' \
@@ -1627,9 +1656,6 @@ def locusx(request, biodb, locus=None, menu=False):
             sql3 = 'select %s from orthology_detail_%s where orthogroup = "%s" ' % (columns, biodb, orthogroup)
 
             homologues = list(server.adaptor.execute_and_fetchall(sql3, ))
-            print homologues
-
-
 
             if len(homologues) >1:
                 orthologs = True

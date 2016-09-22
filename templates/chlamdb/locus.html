@@ -179,6 +179,33 @@
                             <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}"  target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
                             </tr>
                         {% endif %}
+                        {%if ko_data %}
+                            <tr>
+                            <td><a href="{% url 'fam' biodb ko_data.0 'ko' %}" target="_top">KO</a></td>
+                            <td><a href="http://www.genome.jp/dbget-bin/www_bget?ko:{{cog_data.0}}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
+                            </tr>
+                        {% endif %}
+                        {%if pathways %}
+                            <tr>
+                            <td>Pathways (ko based)</td>
+                            <td>
+                                {% for pathway in pathways %}
+                                <a href="{% url 'KEGG_mapp' biodb pathway %}" target="_top">{{pathway}}</a>
+                                {% endfor %}
+                            </td>
+                            </tr>
+                        {% endif %}
+                        {%if modules %}
+                            <tr>
+                            <td>Modules (ko based)</td>
+                            <td>
+                                {% for module in modules %}
+                                <a href="{% url 'KEGG_module_map' biodb module %}" target="_top">{{module}}</a>
+                                {% endfor %}
+                            </td>
+                            </tr>
+                        {% endif %}
+
 
                         {%if pfam_data %}
                         {% for values in pfam_data %}
@@ -205,27 +232,27 @@
                             {% for v in values %}
                                 {% if key == 'KEGG' %}
                                     <tr>
-                                    <td>{{key}}</td>
+                                    <td>{{key}} (IP based)</td>
                                     <td id="entete_features"><a href="http://www.genome.jp/kegg-bin/show_pathway?ec{{v}}">{{v}}</a></td>
                                     </tr>
                                 {% elif key == 'UniPathway' %}
                                     <tr>
-                                    <td>{{key}}</td>
+                                    <td>{{key}} (IP based)</td>
                                     <td id="entete_features"><a href="http://www.unipathway.org//upa?upid={{v}}">{{v}}</a></td>
                                     </tr>
                                 {% elif key == 'Reactome' %}
                                     <tr>
-                                    <td>{{key}}</td>
+                                    <td>{{key}} (IP based)</td>
                                     <td id="entete_features"><a href="http://www.reactome.org/content/detail/{{v}}">{{v}}</a></td>
                                     </tr>
                                 {% elif key == 'MetaCyc' %}
                                     <tr>
-                                    <td>{{key}}</td>
+                                    <td>{{key}} (IP based)</td>
                                     <td id="entete_features"><a href="http://metacyc.org/META/NEW-IMAGE?type=NIL&object={{v}}">{{v}}</a></td>
                                     </tr>
                                 {% else %}
                                     <tr>
-                                    <td>{{key}}</td>
+                                    <td>{{key}} (IP based)</td>
                                     <td id="entete_features">{{v}}</td>
                                     </tr>
                                 {% endif %}
