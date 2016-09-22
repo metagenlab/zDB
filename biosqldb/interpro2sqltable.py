@@ -54,7 +54,9 @@ def interpro2biosql(server,
           ' interpro_accession VARCHAR(1000) NOT NULL, ' \
           ' interpro_description VARCHAR(10000),' \
           ' GO_terms varchar(10000),' \
-          ' pathways varchar(10000))' % db_name
+          ' pathways varchar(10000),' \
+          ' INDEX locus (locus_tag),' \
+          ' INDEX ia (interpro_accession))' % db_name
     try:
         server.adaptor.execute(sql)
     except:
