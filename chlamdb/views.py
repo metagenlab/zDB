@@ -1553,13 +1553,6 @@ def locusx(request, biodb, locus=None, menu=False):
                 except IndexError:
                     interpro_data= False
 
-                ko_data = server.adaptor.execute_and_fetchall(sql5, )[0]
-                print ko_data
-                if ko_data[3] != '-':
-                    pathways = ko_data[3].split(',')
-
-                if ko_data[4] != '-':
-                    modules = ko_data[4].split(',')
                 try:
                     ko_data = server.adaptor.execute_and_fetchall(sql5, )[0]
                     if ko_data[3] != '-':
