@@ -1629,8 +1629,8 @@ def locusx(request, biodb, locus=None, menu=False):
                 pathway_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_pathway, )]
                 all_path = {}
                 for one_path in pathway_data:
-                    data = one_path[1].split('|')
-                    for one_db in data:
+                    data_path = one_path[1].split('|')
+                    for one_db in data_path:
                         one_db_info = one_db.split(':')
                         db = one_db_info[0]
                         if db not in all_path:
