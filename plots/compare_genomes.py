@@ -65,7 +65,7 @@ class GapOverlapIdentification():
                     'stop': contig2start_stop_lists[contig]["stop"] })
             data.start = data.start.astype(np.int64)
             data.stop = data.stop.astype(np.int64)
-            data_sort = data.sort(columns=["start"])
+            data_sort = data.sort_values(by=["start"])#sort(columns=["start"])
 
             # the 2 index of alignments to compare
             index_start = 0
@@ -347,7 +347,8 @@ class CompareWholeGenomes():
                     for one_gap in one_gap_list[1][contig]:
                         f.write('%s\t%s\t%s\n' % (contig, one_gap[0], one_gap[1]))
 
-    '''
+    def plot(self):
+        '''
 files <- dir('.', pattern=".gaps$")
 
 y<-0
@@ -375,21 +376,21 @@ apply(rr, 1,function(x) rect(x[2],10+y,x[3],12+y, col="black"))
 
 
 plotRanges <- function(x, xlim = x, main = deparse(substitute(x)),
-                        col = "black", sep = 0.5, ...)
- {
-   height <- 1
-   if (is(xlim, "Ranges"))
-     xlim <- c(min(start(xlim)), max(end(xlim)))
-   bins <- disjointBins(IRanges(start(x), end(x) + 1))
-   plot.new()
-   plot.window(xlim, c(0, max(bins)*(height + sep)))
-   ybottom <- bins * (sep + height) - height
-   rect(start(x)-0.5, ybottom, end(x)+0.5, ybottom + height, col = col, ...)
-   title(main)
-   axis(1)
- }
+                    col = "black", sep = 0.5, ...)
+{
+height <- 1
+if (is(xlim, "Ranges"))
+ xlim <- c(min(start(xlim)), max(end(xlim)))
+bins <- disjointBins(IRanges(start(x), end(x) + 1))
+plot.new()
+plot.window(xlim, c(0, max(bins)*(height + sep)))
+ybottom <- bins * (sep + height) - height
+rect(start(x)-0.5, ybottom, end(x)+0.5, ybottom + height, col = col, ...)
+title(main)
+axis(1)
+}
+        '''
 
-    '''
 
 
 if __name__ == '__main__':
@@ -403,3 +404,4 @@ if __name__ == '__main__':
 
     comp = CompareWholeGenomes()
     comp.write_gap_files(comp.get_gaps_from_nucmer_serie(args.fasta1, list(args.fasta2)))
+
