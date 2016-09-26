@@ -97,12 +97,12 @@
         {{category_map|safe}}
         {{taxon_map|safe}}
 
-        var chartWidth       = 350,
+        var chartWidth       = 390,
             barHeight        = 10,
             groupHeight      = barHeight * data.series.length,
             gapBetweenGroups = 10,
-            spaceForLabels   = 350,
-            spaceForLegend   = 150;
+            spaceForLabels   = 590,
+            spaceForLegend   = 290;
 
         // Zip the series data together (first values, second values, etc.)
         var zippedData = [];
@@ -153,7 +153,7 @@
             .attr("class", "bar")
             .attr("width", x)
             .attr("height", barHeight - 1)
-            //.on("click",drill);
+            .on("click",drill);
 
 
         // Add text label in bar
@@ -182,8 +182,8 @@
             //.on("click",drill2);
 
         function drill(d, i) {
-            var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
-            window.open("/chlamdb/get_cog_multiple/{{biodb}}/"  + category + "{{taxons_in_url|safe}}" + "{{taxon_out_url}}");
+            var category = data.labels[d3.select(this.parentNode).attr("category_id")]; //data object
+            window.open("/chlamdb/get_orthogroup_multiple_cog/{{biodb}}/"  + category + "/{{orthogroups_url|safe}}");
         }
         function drill2(d,j) {
                 var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object

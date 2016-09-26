@@ -358,7 +358,7 @@ def orthogroup_annotation(request, biodb, display_form):
             form = AnnotForm()
         else:
 
-
+            import ete_motifs
             import biosql_own_sql_tables
 
 
@@ -366,6 +366,20 @@ def orthogroup_annotation(request, biodb, display_form):
 
             match_groups = target_taxons = [i for i in request.GET.getlist('g')]
             print 'match groups', match_groups
+            match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(match_groups, biodb)
+            taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, match_groups, type="orthogroup")
+
+            labels = match_groups
+            tree = ete_motifs.multiple_profiles_heatmap(biodb, match_groups,taxon2orthogroup2count)
+
+
+            big = False
+            path = settings.BASE_DIR + '/assets/temp/tree.svg'
+            asset_path = '/assets/temp/tree.svg'
+
+            tree.render(path, dpi=800, h=600)
+
+            envoi_annot = True
 
 
 
@@ -1496,182 +1510,203 @@ def locusx(request, biodb, locus=None, menu=False):
 
         #sql1 = 'SELECT column_name FROM information_schema.columns WHERE table_name="orthology_detail_chlamydia_03_15"'
 
-        sql1 =   'SELECT' \
-                 ' CASE' \
-                 '   WHEN locus_tag = "%s" THEN "locus_tag"' \
-                 '   WHEN protein_id = "%s" THEN "protein_id"' \
-                 '   WHEN orthogroup = "%s" THEN "orthogroup"'\
-                 ' END AS "which_column"'\
-                 ' FROM' \
-                 ' orthology_detail_%s where locus_tag="%s" or protein_id like "%%%%%s%%%%" or orthogroup="%s"' % (locus,
-                                                                                                                   locus,
-                                                                                                                   locus,
-                                                                                                                   biodb,
-                                                                                                                   locus,
-                                                                                                                   locus,
-                                                                                                                   locus)
-
-
-
+        sql0 = 'select locus_tag from locus_tag2old_locus_tag where old_locus_tag="%s" ' % locus
         try:
-            print sql1
-            input_type = server.adaptor.execute_and_fetchall(sql1, )[0][0]
-            print 'input type', input_type
-            if input_type is None:
-                return search(request,biodb)
-        except IndexError:
-            print 'not a valid id, trying search'
-            return search(request,biodb)
 
+            data = server.adaptor.execute_and_fetchall(sql0, )[0][0]
+            old_locus_tag = locus
+            locus = data
+            input_type = 'locus_tag'
+
+        except IndexError:
+
+
+
+            sql1 =   'SELECT' \
+                     ' CASE' \
+                     '   WHEN locus_tag = "%s" THEN "locus_tag"' \
+                     '   WHEN protein_id = "%s" THEN "protein_id"' \
+                     '   WHEN orthogroup = "%s" THEN "orthogroup"'\
+                     ' END AS "which_column"'\
+                     ' FROM' \
+                     ' orthology_detail_%s where locus_tag="%s" or protein_id like "%%%%%s%%%%" or orthogroup="%s"' % (locus,
+                                                                                                                       locus,
+                                                                                                                       locus,
+                                                                                                                       biodb,
+                                                                                                                       locus,
+                                                                                                                       locus,
+                                                                                                                       locus)
+
+
+
+            try:
+                print sql1
+                input_type = server.adaptor.execute_and_fetchall(sql1, )[0][0]
+                print 'input type', input_type
+                if input_type is None:
+                    return search(request,biodb)
+            except IndexError:
+                print 'not a valid id, trying search'
+                return search(request,biodb)
+
+
+
+        columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                  'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+        sql2 = 'select %s from orthology_detail_%s where %s="%s"' % (columns, biodb, input_type, locus)
+        data = list(server.adaptor.execute_and_fetchall(sql2, )[0])
+        sql_old = 'select old_locus_tag from locus_tag2old_locus_tag where locus_tag="%s" ' % data[1]
+        try:
+            data_old = server.adaptor.execute_and_fetchall(sql_old, )[0][0]
+            old_locus_tag = data_old
+        except:
+            pass
+
+
+        if input_type == 'locus_tag':
+            sql4 = 'select accession from orthology_detail_%s where locus_tag="%s" limit 1' % (biodb, locus)
+            genome_accession = server.adaptor.execute_and_fetchall(sql4,)[0][0]
+
+            sql3 = 'select t2.COG_id,t2.functon,t2.name from COG.locus_tag2gi_hit_%s ' \
+                   ' as t1 inner join COG.cog_names_2014 as t2 on t1.COG_id=t2.COG_id where locus_tag="%s"' % (biodb, locus)
+
+            sql4 = 'select analysis, signature_accession, signature_description, interpro_accession, interpro_description ' \
+                   ' from interpro_%s where locus_tag="%s";' % (biodb, locus)
+
+            sql5 = 'select A.ko_id,name,definition, pathways, modules from (select * from enzyme.locus2ko_%s ' \
+                   ' where locus_tag="%s") A inner join enzyme.ko_annotation as B on A.ko_id=B.ko_id ;' % (biodb, locus)
+
+            try:
+                cog_data = server.adaptor.execute_and_fetchall(sql3, )[0]
+
+            except IndexError:
+
+                cog_data = False
+
+            try:
+                interpro_data = server.adaptor.execute_and_fetchall(sql4, )
+            except IndexError:
+                interpro_data= False
+
+            try:
+                ko_data = server.adaptor.execute_and_fetchall(sql5, )[0]
+                if ko_data[3] != '-':
+                    import re
+                    pathways = ko_data[3]
+
+                    pathways = ko_data[3].split(',')
+                    pathways = [i.replace('ko', 'map') for i in pathways]
+                if ko_data[4] != '-':
+                    modules = ko_data[4].split(',')
+
+
+            except IndexError:
+                ko_data= False
+            print "ko_data", ko_data
+            try:
+                sql_interpro = 'select interpro_accession, interpro_description from interpro_%s' \
+                               ' where locus_tag="%s" and interpro_accession !="0"' \
+                               ' group by interpro_accession;' % (biodb, locus)
+                interpro_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_interpro, )]
+
+            except:
+                interpro_data = False
+
+            try:
+                sql_pfam = 'select signature_accession, signature_description' \
+                           ' from interpro_%s where locus_tag="%s" ' \
+                           ' and analysis="Pfam";' % (biodb, locus)
+                pfam_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_pfam, )]
+                print pfam_data
+
+            except:
+                pfam_data = False
+
+            try:
+                sql_pathway = 'select locus_tag, pathways, interpro_description from interpro_%s where ' \
+                              ' locus_tag="%s" and pathways!="0" group by pathways;'  % (biodb, locus)
+
+                pathway_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_pathway, )]
+                all_path = {}
+                for one_path in pathway_data:
+                    data = one_path[1].split('|')
+                    for one_db in data:
+                        one_db_info = one_db.split(':')
+                        db = one_db_info[0]
+                        if db not in all_path:
+                            all_path[db] = [one_db_info[1][1:]]
+                        else:
+                            if one_db_info[1][1:] not in all_path[db]:
+                                all_path[db].append(one_db_info[1][1:])
+
+
+
+            except:
+                pathways_data = False
+
+
+
+        if input_type == 'locus_tag':
+            seq_start = int(data[3])
+            seq_end = int(data[4])
+            strand = int(data[5])
+            leng = (seq_end-seq_start)+100
+
+            seq = manipulate_biosqldb.location2sequence(server, genome_accession, biodb, seq_start-50, leng)
+            if strand == -1:
+
+                from Bio.Seq import Seq
+                seq_obj = Seq(seq)
+                print seq
+                seq = str(seq_obj.reverse_complement())
+                print seq
+
+                seq = seq[0:49] + '<font color="red">' + seq[49:-50] + '</font>' + seq[-50:len(seq)]
+
+            else:
+                seq = seq[0:50] + '<font color="red">' + seq[50:-50] + '</font>' + seq[-50:len(seq)]
+
+        if data[2] == '-':
+            data[2] = data[1]
+
+        orthogroup = data[0]
+
+        fasta = "%s_fasta/%s.txt" % (biodb, orthogroup)
+        alignment = "%s_fasta/%s.html" % (biodb, orthogroup)
+        alignment_fasta = "%s_fasta/%s.fa" % (biodb, orthogroup)
+        alignment_fasta_nucl = "%s_fasta_nucl/%s_nucl.txt" % (biodb, orthogroup)
+        tree_unrooted = "%s_fasta/%s_tree.svg" % (biodb, orthogroup)
+        tree_rooted = "%s_fasta/%s_tree_reroot.svg" % (biodb, orthogroup)
+        tree_file = "%s_fasta/%s.phy_phyml_tree.txt" % (biodb, orthogroup)
+
+        columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+              'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+        sql3 = 'select %s from orthology_detail_%s where orthogroup = "%s" ' % (columns, biodb, orthogroup)
+
+        homologues = list(server.adaptor.execute_and_fetchall(sql3, ))
+
+        if len(homologues) >1:
+            orthologs = True
+        else:
+            orthologs = False
+        import orthogroup_identity_db
+        if len(homologues) > 1:
+            orthogroup2identity_dico = orthogroup_identity_db.orthogroup2identity_dico(biodb, orthogroup)
+
+            print "orthologs", orthologs, len(homologues)
+            for count, value in enumerate(homologues):
+                value = list(value)
+                locus_2 = value[1]
+                if value[2] != '-':
+                    interpro_id = value[2]
+                else:
+                    value[2] = value[1]
+                #print value + [orthogroup2identity_dico[data[1]][locus_2]]
+                homologues[count] = [count+1] + value + [orthogroup2identity_dico[data[1]][locus_2]]
+                #print homologues[count]
 
         else:
-            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-            sql2 = 'select %s from orthology_detail_%s where %s="%s"' % (columns, biodb, input_type, locus)
-            if input_type == 'locus_tag':
-                sql4 = 'select accession from orthology_detail_%s where locus_tag="%s" limit 1' % (biodb, locus)
-                genome_accession = server.adaptor.execute_and_fetchall(sql4,)[0][0]
-
-                sql3 = 'select t2.COG_id,t2.functon,t2.name from COG.locus_tag2gi_hit_%s ' \
-                       ' as t1 inner join COG.cog_names_2014 as t2 on t1.COG_id=t2.COG_id where locus_tag="%s"' % (biodb, locus)
-
-                sql4 = 'select analysis, signature_accession, signature_description, interpro_accession, interpro_description ' \
-                       ' from interpro_%s where locus_tag="%s";' % (biodb, locus)
-
-                sql5 = 'select A.ko_id,name,definition, pathways, modules from (select * from enzyme.locus2ko_%s ' \
-                       ' where locus_tag="%s") A inner join enzyme.ko_annotation as B on A.ko_id=B.ko_id ;' % (biodb, locus)
-
-                try:
-                    cog_data = server.adaptor.execute_and_fetchall(sql3, )[0]
-
-                except IndexError:
-
-                    cog_data = False
-
-                try:
-                    interpro_data = server.adaptor.execute_and_fetchall(sql4, )
-                except IndexError:
-                    interpro_data= False
-
-                try:
-                    ko_data = server.adaptor.execute_and_fetchall(sql5, )[0]
-                    if ko_data[3] != '-':
-                        import re
-                        pathways = ko_data[3]
-
-                        pathways = ko_data[3].split(',')
-                        pathways = [i.replace('ko', 'map') for i in pathways]
-                    if ko_data[4] != '-':
-                        modules = ko_data[4].split(',')
-
-
-                except IndexError:
-                    ko_data= False
-                print "ko_data", ko_data
-                try:
-                    sql_interpro = 'select interpro_accession, interpro_description from interpro_%s' \
-                                   ' where locus_tag="%s" and interpro_accession !="0"' \
-                                   ' group by interpro_accession;' % (biodb, locus)
-                    interpro_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_interpro, )]
-
-                except:
-                    interpro_data = False
-
-                try:
-                    sql_pfam = 'select signature_accession, signature_description' \
-                               ' from interpro_%s where locus_tag="%s" ' \
-                               ' and analysis="Pfam";' % (biodb, locus)
-                    pfam_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_pfam, )]
-                    print pfam_data
-
-                except:
-                    pfam_data = False
-
-                try:
-                    sql_pathway = 'select locus_tag, pathways, interpro_description from interpro_%s where ' \
-                                  ' locus_tag="%s" and pathways!="0" group by pathways;'  % (biodb, locus)
-
-                    pathway_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_pathway, )]
-                    all_path = {}
-                    for one_path in pathway_data:
-                        data = one_path[1].split('|')
-                        for one_db in data:
-                            one_db_info = one_db.split(':')
-                            db = one_db_info[0]
-                            if db not in all_path:
-                                all_path[db] = [one_db_info[1][1:]]
-                            else:
-                                if one_db_info[1][1:] not in all_path[db]:
-                                    all_path[db].append(one_db_info[1][1:])
-
-
-
-                except:
-                    pathways_data = False
-
-            data = list(server.adaptor.execute_and_fetchall(sql2, )[0])
-
-            if input_type == 'locus_tag':
-                seq_start = int(data[3])
-                seq_end = int(data[4])
-                strand = int(data[5])
-                leng = (seq_end-seq_start)+100
-
-                seq = manipulate_biosqldb.location2sequence(server, genome_accession, biodb, seq_start-50, leng)
-                if strand == -1:
-
-                    from Bio.Seq import Seq
-                    seq_obj = Seq(seq)
-                    print seq
-                    seq = str(seq_obj.reverse_complement())
-                    print seq
-
-                    seq = seq[0:49] + '<font color="red">' + seq[49:-50] + '</font>' + seq[-50:len(seq)]
-
-                else:
-                    seq = seq[0:50] + '<font color="red">' + seq[50:-50] + '</font>' + seq[-50:len(seq)]
-
-            if data[2] == '-':
-                data[2] = data[1]
-
-            orthogroup = data[0]
-
-            fasta = "%s_fasta/%s.txt" % (biodb, orthogroup)
-            alignment = "%s_fasta/%s.html" % (biodb, orthogroup)
-            alignment_fasta = "%s_fasta/%s.fa" % (biodb, orthogroup)
-            alignment_fasta_nucl = "%s_fasta_nucl/%s_nucl.txt" % (biodb, orthogroup)
-            tree_unrooted = "%s_fasta/%s_tree.svg" % (biodb, orthogroup)
-            tree_rooted = "%s_fasta/%s_tree_reroot.svg" % (biodb, orthogroup)
-            tree_file = "%s_fasta/%s.phy_phyml_tree.txt" % (biodb, orthogroup)
-
-            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                  'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-            sql3 = 'select %s from orthology_detail_%s where orthogroup = "%s" ' % (columns, biodb, orthogroup)
-
-            homologues = list(server.adaptor.execute_and_fetchall(sql3, ))
-
-            if len(homologues) >1:
-                orthologs = True
-            else:
-                orthologs = False
-            import orthogroup_identity_db
-            if len(homologues) > 1:
-                orthogroup2identity_dico = orthogroup_identity_db.orthogroup2identity_dico(biodb, orthogroup)
-
-                print "orthologs", orthologs, len(homologues)
-                for count, value in enumerate(homologues):
-                    value = list(value)
-                    locus_2 = value[1]
-                    if value[2] != '-':
-                        interpro_id = value[2]
-                    else:
-                        value[2] = value[1]
-                    #print value + [orthogroup2identity_dico[data[1]][locus_2]]
-                    homologues[count] = [count+1] + value + [orthogroup2identity_dico[data[1]][locus_2]]
-                    #print homologues[count]
-
-            else:
-                homologues[0] = (1,) + homologues[0] + (100,)
+            homologues[0] = (1,) + homologues[0] + (100,)
 
 
         import re
@@ -2232,6 +2267,78 @@ def get_cog_multiple(request, biodb, category):
 
     return render(request, 'chlamdb/cog_info_multiple.html', locals())
 
+
+def get_orthogroup_multiple_cog(request, biodb, category):
+    '''
+    idem as get_cog but possibility to get more complex requests:
+    - one or multiple include taxons
+    - one or multiple explude taxons
+    return the list of match COGs with their annotations
+    '''
+    import biosql_own_sql_tables
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    match_groups_subset = [i for i in request.GET.getlist('h')]
+    print "match_groups_subset" , match_groups_subset
+    # get list of all orthogroup with at least one hit in the specified category
+    filter = '"' + '","'.join(match_groups_subset) + '"'
+    sql = 'select orthogroup from (select orthogroup,locus_tag from biosqldb.orthology_detail_%s ' \
+          ' where orthogroup in (%s)) A left join COG.locus_tag2gi_hit_%s as B ' \
+          ' on A.locus_tag=B.locus_tag left join COG.cog_names_2014 as C on B.COG_id=C.COG_id ' \
+          'where functon="%s" group by orthogroup;' % (biodb,
+                                                       filter,
+                                                       biodb,
+                                                       category)
+
+    orthogroup_subset = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+    filter2 = '"' + '","'.join(orthogroup_subset) + '"'
+    # get detailed COG annotation of all match groups
+    annot_grp = ' select A.*,B.COG_id,C.* from (select orthogroup,locus_tag ' \
+                ' from biosqldb.orthology_detail_%s where orthogroup in (%s)) A left join COG.locus_tag2gi_hit_%s ' \
+                ' as B on A.locus_tag=B.locus_tag left join COG.cog_names_2014 as C on B.COG_id=C.COG_id;' % (biodb,
+                                                                                                              filter2,
+                                                                                                              biodb)
+
+    sql2 = 'select * from COG.code2category;'
+    code2category = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+    code2category[None] = '-'
+
+    sql3 = 'select orthogroup, count(*) from orthology_detail_%s where orthogroup in (%s) group by orthogroup' % (biodb,
+                                                                                                                  filter2)
+    print sql3
+    orthogroup2size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
+
+
+    # orthogroup | locus_tag   | COG_id  | COG_id  | functon | name
+    # for each group, count the number of matches in each category
+    data = server.adaptor.execute_and_fetchall(annot_grp,)
+
+    orthogroup2category2count = {}
+    locus2count = {}
+
+    for i in data:
+        if i[1] not in locus2count:
+            locus2count[i[1]] = 1
+        else:
+            locus2count[i[1]] += 1
+    print "locus2count", locus2count
+    for row in data:
+        # new group
+        if row[0] not in orthogroup2category2count:
+            orthogroup2category2count[row[0]] = {}
+            orthogroup2category2count[row[0]][row[4]] = (1/float(locus2count[row[1]]))
+        else:
+            # existing category
+            if row[4] in orthogroup2category2count[row[0]]:
+                orthogroup2category2count[row[0]][row[4]] += (1/float(locus2count[row[1]]))
+            else:
+                # new category
+                orthogroup2category2count[row[0]][row[4]] = (1/float(locus2count[row[1]]))
+    print orthogroup2category2count
+    data_type = 'cog'
+
+    return render(request, 'chlamdb/get_orthogroup_multiple_cog.html', locals())
+
 def get_ko_multiple(request, biodb, type, category):
     '''
     idem as module_cat_info but possibility to get more complex requests:
@@ -2584,6 +2691,10 @@ def add_comment(request, biodb, locus_tag):
             print 'form valid'
             locus_tag = form.cleaned_data['locus']
             comment =  form.cleaned_data['comment']
+
+            if '%' in comment:
+                comment = comment.replace('%', '%%')
+
             sql = 'select * from manual_annotation where locus_tag="%s"' % locus_tag
             data = server.adaptor.execute_and_fetchall(sql,)
             if len(data) == 0:
@@ -2921,13 +3032,22 @@ def compare_homologs(request, biodb):
 
 def orthogroup_list_cog_barchart(request, biodb):
 
-    orthogroup_list = [i for i in request.GET.getlist('h')]
-
     server, db = manipulate_biosqldb.load_db(biodb)
 
+    orthogroup_list = [i for i in request.GET.getlist('h')]
+    reference = request.GET.getlist('ref')[0]
+
+    sql = 'select t2.description from biodatabase as t1 inner join bioentry as t2 ' \
+          ' on t1.biodatabase_id=t2.biodatabase_id where t1.name="%s" ' \
+          ' and taxon_id=%s and t2.description not like "%%%%plasmid%%%%";' % (biodb,
+                                                                         reference)
+    genome_reference = server.adaptor.execute_and_fetchall(sql,)[0]
+
+
+
     sql = 'select A.orthogroup,C.functon, count(*) from (select * from biosqldb.orthology_detail_%s as t1 ' \
-          ' where orthogroup in (%s)) A left join COG.locus_tag2gi_hit_%s as B on A.locus_tag=B.locus_tag ' \
-          ' inner join COG.cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,functon;' % (biodb, '"' + '","'.join(orthogroup_list) + '"', biodb)
+          ' where orthogroup in (%s) and taxon_id=%s) A left join COG.locus_tag2gi_hit_%s as B on A.locus_tag=B.locus_tag ' \
+          ' inner join COG.cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,functon;' % (biodb, '"' + '","'.join(orthogroup_list) + '"', reference,biodb)
 
     data = server.adaptor.execute_and_fetchall(sql,)
     orthogroup2counts = {}
@@ -2942,7 +3062,7 @@ def orthogroup_list_cog_barchart(request, biodb):
             orthogroup2total_count[row[0]] += float(row[2])
 
     # count fraction of each category for each group
-    # sum of all cetegory = 1 for each group
+    # sum of all category = 1 for each group
     cog_category2count = {}
     for group in orthogroup2counts:
         for category in orthogroup2counts[group]:
@@ -2957,10 +3077,15 @@ def orthogroup_list_cog_barchart(request, biodb):
     for category in cog_category2count:
         category2fraction[category] = (cog_category2count[category]/total)*100
 
-    sql = 'select A.orthogroup,C.functon, count(*) as n from (select * from biosqldb.orthology_detail_%s as t1) A ' \
-          ' left join COG.locus_tag2gi_hit_%s as B on A.locus_tag=B.locus_tag ' \
-          ' inner join COG.cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,functon;' % (biodb, biodb)
-    print sql
+    if not reference:
+        sql = 'select A.orthogroup,C.functon, count(*) as n from (select * from biosqldb.orthology_detail_%s as t1) A ' \
+              ' left join COG.locus_tag2gi_hit_%s as B on A.locus_tag=B.locus_tag ' \
+              ' inner join COG.cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,functon;' % (biodb, biodb)
+    else:
+        sql = 'select A.orthogroup,C.functon, count(*) as n from (select * from biosqldb.orthology_detail_%s as t1 where taxon_id=%s) A ' \
+              ' left join COG.locus_tag2gi_hit_%s as B on A.locus_tag=B.locus_tag ' \
+              ' inner join COG.cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,functon;' % (biodb, reference, biodb)
+
     data_all = server.adaptor.execute_and_fetchall(sql,)
     orthogroup2counts_all = {}
     orthogroup2total_count_all = {}
@@ -2979,9 +3104,9 @@ def orthogroup_list_cog_barchart(request, biodb):
     for group in orthogroup2counts_all:
         for category in orthogroup2counts_all[group]:
             if category not in cog_category2count_all:
-                cog_category2count_all[category] = orthogroup2counts_all[group][category]/orthogroup2total_count_all[group]
+                cog_category2count_all[category] = orthogroup2counts_all[group][category]#/orthogroup2total_count_all[group]
             else:
-                cog_category2count_all[category] += orthogroup2counts_all[group][category]/orthogroup2total_count_all[group]
+                cog_category2count_all[category] += orthogroup2counts_all[group][category]#/orthogroup2total_count_all[group]
     # count total count, then fraction of the total for each category
     category2fraction_all = {}
     total = sum([cog_category2count_all[i] for i in cog_category2count_all])
@@ -3029,7 +3154,7 @@ def orthogroup_list_cog_barchart(request, biodb):
         ref_serie.append(str(round(category2fraction[cat],2)))
         all_serie.append(str(round(category2fraction_all[cat],2)))
 
-    serie_all = one_serie_template % ("all database", ','.join(all_serie))
+    serie_all = one_serie_template % ("%s" % genome_reference, ','.join(all_serie))
     serie_target = one_serie_template % ("selection", ','.join(ref_serie))
 
     series = serie_template % ''.join([serie_all, serie_target])
@@ -3044,6 +3169,7 @@ def orthogroup_list_cog_barchart(request, biodb):
     category_map = category_map[0:-1] + '};'
 
     no_cogs_url = "?g=" + ('&g=').join(missing_cog_list)
+    orthogroups_url = '?h=' + ('&h=').join(orthogroup_list)
 
 
     return render(request, 'chlamdb/orthogroup_list_cog_barchart.html', locals())
@@ -3069,11 +3195,11 @@ def cog_barchart(request, biodb):
             taxon2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_taxon,))
 
             sql = 'select C.taxon_id,D.code,D.description, C.n from (select taxon_id,functon, count(*) as n ' \
-                  ' from (select taxon_id,COG_id from COG.locus_tag2gi_hit_%s as t1 ' \
+                  ' from (select distinct taxon_id,COG_id from COG.locus_tag2gi_hit_%s as t1 ' \
                   ' inner join biosqldb.bioentry as t2 on t1.accession=t2.accession where biodatabase_id=%s and ' \
                   ' taxon_id in (%s)) A inner join COG.cog_names_2014 as B on A.COG_id=B.COG_id group by taxon_id,functon) C ' \
                   ' left join COG.code2category as D on C.functon=D.code;' % (biodb, biodb_id,','.join(target_taxons))
-
+            print sql
             data = server.adaptor.execute_and_fetchall(sql,)
 
 

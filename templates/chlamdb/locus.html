@@ -117,6 +117,12 @@
                         <td>locus_tag</td>
                         <td id="entete_features">{{ data.1 }}</td>
                         </tr>
+                        {% if old_locus_tag %}
+                            <tr>
+                            <td>old locus_tag</td>
+                            <td id="entete_features">{{ old_locus_tag }}</td>
+                            </tr>
+                        {% endif %}
                         <tr>
                         <td>protein_id</td>
                         <td id="entete_features">{{ data.2 }}</td>
