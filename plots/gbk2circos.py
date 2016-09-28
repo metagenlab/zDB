@@ -6,7 +6,6 @@ from Bio import SeqIO
 from optparse import OptionParser
 import re
 from Bio import SeqUtils
-import orthogroup_identity_db
 import manipulate_biosqldb
 import mysqldb_load_mcl_output
 
@@ -741,9 +740,9 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                            feature_type="CDS", taxon_list=False, draft_data=[None], query_taxon_id=False,
                            draft_coordinates=False, color_missing=True):
 
-    print "highlight", locus_highlight
     import biosql_own_sql_tables
     import os
+    import orthogroup_identity_db
 
 
     #print "orthology_circos_files"
