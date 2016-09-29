@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load staticfiles %}
+    {% load custom_tags %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+
+    <div id="content">
+
+
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">Create circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. Click on the circos plot to open a new windows with clickable version of the plot.<br>
+            rRNA are colored in blue, tRNA in red.
+            </p>
+        </div>
+
+        <h3>   COG category: {% with data|first as first_doc %}{{ first_doc.4 }}{% endwith %}</h3>
+        <div id="export_bouttons_groups">
+            <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+
+            <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+            <br/>
+        </div>
+        <table id="cog_table" class="sortable">
+            <thead>
+            <tr>
+                <th>Orehogroup id</th>
+                <th>Orehogroup size</th>
+                <th>Categories</th>
+            </tr>
+            </thead>
+            <tbody>
+
+                <!-- iter groups  -->
+                {%for key, values in orthogroup2category2count.items %}
+                <tr>
+                    <td>
+                        <a href="{% url 'locusx' biodb key %}">{{key}}</a>
+                    </td>
+                    <td>
+                        {{orthogroup2size|keyvalue:key}}
+                    </td>
+                    <td>
+                    {%for category, count in values.items %}
+
+                        {{category}} {{code2category|keyvalue:category}}   ({{count}}) <br>
+
+                    {% endfor %}
+
+
+                    </td>
+                </tr>
+
+
+                {%endfor%}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+
+<style>
+.tabulation {
+text-indent: 20px;
+}
+
+</style>
+</html>

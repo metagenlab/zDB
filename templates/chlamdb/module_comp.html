@@ -92,7 +92,10 @@
                         {% for value0, value1 in values %}
                         <tr>
 
-                            <td>{{category}}</td><td>{{module2sub_category|keyvalue:value0}}</td> <td><a href="http://www.genome.jp/dbget-bin/www_bget?md:{{value0}}" target="_top">{{value0}}</a>  <a href="{% url 'KEGG_module_map' biodb value0 %}">link</a></td><td>{{value1}}</td>
+                            <td>{{category}}</td><td>{{module2sub_category|keyvalue:value0}}</td>
+                            <td><a href="http://www.genome.jp/dbget-bin/www_bget?md:{{value0}}" target="_top">{{value0}}</a>
+                                <a href="{% url 'KEGG_module_map' biodb value0 %}">link</a></td>
+                            <td>{{value1}}</td>
                             {% for value in map2count|keyvalue:value0 %}
                                 <td>{{value}}</td>
                             {% endfor %}
