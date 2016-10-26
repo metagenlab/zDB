@@ -9,40 +9,48 @@ from Bio import Phylo
 
 def get_coressp(gbk_file_list, molis_table=None):
     name2description = {}
+
+    print gbk_file_list
+
     for file in gbk_file_list:
+
         records = [i for i in SeqIO.parse(file, "genbank")]
-
-        name = records[0].name
-        description = records[0].description
-        description = re.sub(" DNA, complete genome\.", "", description)
-        description = re.sub(", complete genome\.", "", description)
-        description = re.sub(", complete genome", "", description)
-        description = re.sub(", complete sequence\.", "", description)
-        description = re.sub("strain ", "", description)
-        description = re.sub("str\. ", "", description)
-        description = re.sub(" complete genome sequence\.", "", description)
-        description = re.sub(" complete genome\.", "", description)
-        description = re.sub(" chromosome", "", description)
-        description = re.sub(" DNA", "S.", description)
-        description = re.sub("Merged record from ", "", description)
-        description = re.sub(", wgs", "", description)
-        description = re.sub("Candidatus ", "", description)
-        description = re.sub(".contig.0_1, whole genome shotgun sequence.", "", description)
-        description = re.sub("Staphylococcus", "S.", description)
-        description = re.sub(" complete genome", "S.", description)
-        description = re.sub(" plasmid", "", description)
-        description = re.sub("plasmid", "", description)
-        description = re.sub(" subsp. aureus", "", description)
-        description = re.sub("Klebsiella", "K.", description)
-        description = re.sub("subsp. pneumoniae", "", description)
-        description = re.sub("contig.*", "", description)
-        description = re.sub(", complete sequence.*", "", description)
-        description = re.sub(", scaffold.*", "", description)
-        description = re.sub(", whole genome.*", "", description)
-        description = re.sub("scf.*", "", description)
-
-
-        name2description[name] = description
+        for i, record in enumerate(records):
+            print i, record.name, record.description
+            name = record.name
+            description = record.description
+            description = re.sub(" DNA, complete genome\.", "", description)
+            description = re.sub(", complete genome\.", "", description)
+            description = re.sub(", complete genome", "", description)
+            description = re.sub(", complete sequence\.", "", description)
+            description = re.sub("strain ", "", description)
+            description = re.sub("str\. ", "", description)
+            description = re.sub(" complete genome sequence\.", "", description)
+            description = re.sub(" complete genome\.", "", description)
+            description = re.sub(" chromosome", "", description)
+            description = re.sub(" DNA", "S.", description)
+            description = re.sub("Merged record from ", "", description)
+            description = re.sub(", wgs", "", description)
+            description = re.sub("Candidatus ", "", description)
+            description = re.sub(".contig.0_1, whole genome shotgun sequence.", "", description)
+            description = re.sub("Staphylococcus", "S.", description)
+            description = re.sub(" complete genome", "S.", description)
+            description = re.sub(" plasmid", "", description)
+            description = re.sub("plasmid", "", description)
+            description = re.sub(" subsp. aureus", "", description)
+            description = re.sub("Klebsiella", "K.", description)
+            description = re.sub("subsp. pneumoniae", "", description)
+            description = re.sub("contig.*", "", description)
+            description = re.sub(", complete sequence.*", "", description)
+            description = re.sub(", scaffold.*", "", description)
+            description = re.sub(", whole genome.*", "", description)
+            description = re.sub("scf.*", "", description)
+            description = re.sub("\(.*", "", description)
+            description = re.sub("\.", "", description)
+            description = re.sub("-", "_", description)
+            description = re.sub("/", "_", description)
+            print name, description
+            name2description[name] = description
 
     if molis_table:
         with open(molis_table) as f:
@@ -51,7 +59,7 @@ def get_coressp(gbk_file_list, molis_table=None):
                 name2description[line[3]] = line[1]
 
 
-
+    print name2description
     return name2description
 
 

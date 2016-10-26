@@ -51,6 +51,7 @@ def samtools_depth2coverage_plot(samtool_depth_file, main=False):
     CairoPDF('%s_coverage.pdf')
         #par(mfrow=c(1,2))
         x<-seq(100,newlength,100)
+        print(max_depth)
         plot(x, cov_100bp,type='l',col='light grey', las=2, main='%s', ylim=c(0,max_depth))
         f1001 <- rep(1/1001,1001)
         y_sym <- filter(cov_100bp, f1001,sides=2)

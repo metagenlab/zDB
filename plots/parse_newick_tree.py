@@ -13,28 +13,31 @@ def get_accssion2ST(infile):
     return accession2st
 
 def convert_terminal_node_names(tree_newick_name, dictionnary, tree_format = 'phyloxml'):
-    from Bio import Phylo
-    trees = Phylo.parse(tree_newick_name, tree_format)
-    trees = [tree for tree in trees]
+    #from Bio import Phylo
+    from ete2 import Tree
+    tree = Tree(tree_newick_name, tree_format)
+    #trees = [tree for tree in trees]
 
 
-    for tree in trees:
-        #print tree
-        #Phylo.draw_ascii(tree)
-        tree.ladderize()   # Flip branches so deeper clades are displayed at top
-        leaves = tree.get_terminals()
-        for species in leaves:
-            #print species.name
-            #print dictionnary[str(species.name)]
 
-            #accession = manipulate_biosqldb.taxon_id2accessions(server, str(species.name), "saureus_01_15")[0]
-            try:
-                print dictionnary[str(species.name)]
-                species.name = dictionnary[str(species.name)] #+ ' (%s)' % my_accession2st[accession]
-            except:
-                pass
+    #print tree
+    #Phylo.draw_ascii(tree)
+    #tree.ladderize()   # Flip branches so deeper clades are displayed at top
+    #leaves = tree.get_terminals()
+    #n = 0
+    for leaf in tree:
+        #n+=1
+        #print species.name
+        #print dictionnary[str(species.name)]
+
+        #accession = manipulate_biosqldb.taxon_id2accessions(server, str(species.name), "saureus_01_15")[0]
+        try:
+            print dictionnary[str(leaf.name)]
+            leaf.name = dictionnary[str(leaf.name)] #+ ' (%s)' % my_accession2st[accession]
+        except:
+            pass
             #species.name = dictionnary[str(species.name)] + ' (%s)' % 8
-    return trees
+    return tree
 
 
 color_map = {"C. abortus" : "blue",
