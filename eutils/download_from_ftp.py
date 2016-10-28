@@ -31,11 +31,12 @@ def download_one_file(ftp, path, destination, file_name):
 
 def download_whole_directory(ftp, path, destination, recursive=False):
     print path
+    print 'recursive:', recursive
     try:
         ftp.cwd(path)
         os.chdir(destination)
     except OSError:
-        pass
+        print 'could not reach directory: %s' % path
     except ftplib.error_perm:
         print "error: could not change to "+path
         sys.exit("ending session") 
@@ -43,25 +44,36 @@ def download_whole_directory(ftp, path, destination, recursive=False):
     filelist=ftp.nlst()
     print "files:"
     print filelist
+
+    if filelist[0] == 'assembly_status.txt':
+        return False
+    
     for file in filelist:
         print 'dir:', ftp.pwd()
         print "downloading...", os.path.join(path,file)
-        try:
-            ftp.cwd(os.path.join(path,file)+"/")
-
-            if recursive == True:
-                os.mkdir(os.path.join(destination,file))              
-                download_whole_directory(ftp, path+file+"/", os.path.join(destination,file))
-        except ftplib.error_perm:
-            #print ftp.pwd()
-            #ftp.cwd(path)
-            print "downloading", file
-            #print ftp.nlst()
-            os.chdir( destination)
+        if recursive == True:
             try:
-                ftp.retrbinary("RETR "+file, open(file, "wb").write)
-                print file + " downloaded"
+                ftp.cwd(os.path.join(path, file)+"/")
+                os.mkdir(os.path.join(destination,file))
+                download_whole_directory(ftp, path+file+"/", os.path.join(destination, file))
+
             except ftplib.error_perm:
-                print ftp.nlst()
-                print ftp.pwd()
-                print 'could not download file/dir: %s' % file
+                print "downloading", file
+                os.chdir( destination)
+                try:
+                    ftp.retrbinary("RETR "+file, open(file, "wb").write)
+                    print file + " downloaded"
+                except ftplib.error_perm:
+                    print ftp.nlst()
+                    print ftp.pwd()
+                    print 'could not download file/dir: %s' % file
+        else:
+                print "downloading", file
+                os.chdir(destination)
+                try:
+                    ftp.retrbinary("RETR "+file, open(file, "wb").write)
+                    print file + " downloaded"
+                except ftplib.error_perm:
+                    print ftp.nlst()
+                    print ftp.pwd()
+                    print 'could not download file/dir: %s' % file

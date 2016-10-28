@@ -20,8 +20,11 @@ Entrez.email = "trestan.pillonel@unil.ch"
 def get_ncbi_genome(path, destination):
     ftp=FTP('ftp.ncbi.nih.gov')
     ftp.login("anonymous","trestan.pillonel@unil.ch")
-    download_from_ftp.download_whole_directory(ftp, path, destination, recursive=False)
-
+    
+    return download_from_ftp.download_whole_directory(ftp, path, destination, recursive=False)
+    
+    
+    
 def get_complete_genomes_data(ncbi_taxon, complete = False, representative =False):
 
     handle = Entrez.esearch(db="assembly", term="txid%s[Organism:exp]" % ncbi_taxon, retmax=100000)
@@ -121,7 +124,11 @@ def get_complete_genomes_data(ncbi_taxon, complete = False, representative =Fals
             try:
                 ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
                 ftp_path = '/' + ftp_path
-                get_ncbi_genome(ftp_path, out_dir)
+                status = get_ncbi_genome(ftp_path, out_dir)
+                if status == False:
+                    print 'RefSeq link is empty, downloading GenBank record'
+                    ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                    get_ncbi_genome(ftp_path, out_dir)                    
             except IndexError:
                 print 'RefSeq link could not be identified, downloading GenBank record'
                 ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
