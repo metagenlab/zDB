@@ -100,7 +100,7 @@ def create_orthogroup_table(server, biodatabase_name,
           ' strand INT, ' \
           ' gene VARCHAR(100) NOT NULL, ' \
           ' product VARCHAR(10000) NOT NULL, ' \
-          ' translation VARCHAR(100000) NOT NULL, ' \
+          ' translation TEXT NOT NULL, ' \
           ' organism VARCHAR(1000) NOT NULL, ' \
           ' orthogroup_size INT,' \
           ' n_genomes INT,' \
