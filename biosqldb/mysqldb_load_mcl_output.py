@@ -995,7 +995,7 @@ if __name__ == '__main__':
                ' where analysis="Phobius" and signature_accession="SIGNAL_PEPTIDE" group by locus_tag' % args.db_name
         server, db = manipulate_biosqldb.load_db(args.db_name)
         protein_id2TM = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-        protein_id2signal_peptide = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        protein_id2signal_peptide = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
         print "adding orthogroup to seqfeature_qualifier_values"
         add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
