@@ -10,17 +10,18 @@ from manipulate_biosqldb import load_db
 from manipulate_biosqldb import query_yes_no
 
 def import_gbk(gbk_name, server_name, db_name):
-    parser = GenBank.FeatureParser()
-    iterator = GenBank.Iterator(open(gbk_name), parser)
-    records = [i for i in iterator]
-    iterator = GenBank.Iterator(open(gbk_name), parser)
+    from Bio import SeqIO
+    #parser = GenBank.FeatureParser()
+    #iterator = GenBank.Iterator(open(gbk_name), parser)
+    records = [i for i in SeqIO.parse(gbk_name, 'genbank')]
+    #iterator = GenBank.Iterator(open(gbk_name), parser)
     if len(records)>1:
         print "genbank file contains more than one record, is it plasmid(s) and chromosome(s)? (if the assembly contain more than one contig, contactenate contigs into a single record before importing it the the sql database)"
         #sys.exit()
     #With this iterator, the loading of the database is another one-liner:
-    db_name.load(iterator)
+    #db_name.load(records)
     try:
-        db_name.load(iterator)
+        db_name.load(records)
     except:
         print gbk_name, "already into db?"
         pass
@@ -190,7 +191,8 @@ if __name__ == '__main__':
             try:
                 import_gbk(gbk, server, db)
             except:
-                pass
+                print 'problem importing %s' % gbk
+                import_gbk(gbk, server, db)
             #create_cds_tables(gbk, args.db_name)
     
     if args.remove_db:

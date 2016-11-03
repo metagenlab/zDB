@@ -418,9 +418,11 @@ if __name__ == '__main__':
 
     n_shared_orthogroup_table(args.database_name)
 
+    identity_closest_homolog(args.database_name)
+
     shared_orthogroups_average_identity(args.database_name)
 
-    identity_closest_homolog(args.database_name)
+
 
 
     #get_mysql_table("chlamydia_03_15", "Pfam")
