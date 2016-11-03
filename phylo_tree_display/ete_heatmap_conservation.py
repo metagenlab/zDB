@@ -127,7 +127,10 @@ def plot_heat_tree_V1(taxid2n, tree_file, taxid2st, genes, accession2description
                                 continue
 
         if accession2description:
-            lf.name = accession2description[lf.name]
+            try:
+                lf.name = accession2description[lf.name]
+            except:
+                pass
         lf.name = lf.name + ' (' + st + ')'
 
         for col, value in enumerate(data):
@@ -423,6 +426,7 @@ if __name__ == '__main__':
     parser.add_argument("-m",'--matrix',type=str,help="matrix (tab file)")
     parser.add_argument("-s",'--mlst',type=str,help="mlst file")
     parser.add_argument("-a",'--accession2description',default=False, type=str,help="tab file with accessions and corresponding descriptions for leaf labels")
+    parser.add_argument("-g",'--gbk_files', default=False, nargs='+', help="genbank files to get accession2description conversion")
 
     args = parser.parse_args()
 
@@ -450,6 +454,9 @@ if __name__ == '__main__':
             for row in f:
                 data = row.rstrip().split('\t')
                 accession2description[data[0]] = data[1]
+    elif args.gbk_files:
+        import gbk2accessiontodefinition
+        accession2description = gbk2accessiontodefinition.get_coressp(args.gbk_files)
     else:
         accession2description = False
 

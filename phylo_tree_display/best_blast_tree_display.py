@@ -111,7 +111,7 @@ def remove_blast_redundancy(blast_file_list, check_overlap=True):
 
 
 
-def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst,check_overlap):
+def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst,check_overlap, id_cutoff=80):
     '''
     Projet Staph aureus PVL avec Laure Jaton
     Script pour afficher une phylogénie et la conservation de facteurs de virulence côte à côte
@@ -135,7 +135,7 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
         for one_blast in blast2data:
             if query in blast2data[one_blast]:
                 #print blast2data[one_blast][query]
-                if float(blast2data[one_blast][query][0]) > 80:
+                if float(blast2data[one_blast][query][0]) > id_cutoff:
                     queries_count[query]+=1
                 else:
                     del blast2data[one_blast][query]
@@ -197,8 +197,8 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
             except:
                 identity_value = 0
                 color = "white"
-
-            if float(identity_value) >80:
+            print id_cutoff, float(identity_value)
+            if float(identity_value) > id_cutoff:
                 if str(identity_value) == '100.00' or str(identity_value) == '100.0':
                     identity_value = '100'
                 else:
@@ -235,7 +235,7 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
     print blast_result_file_list
 
 def main(input_reference, input_queries_folder, blast_file, mlst_scheme, input_gbk, skip_parsnp=False, skip_blast=False,
-         input_tree=None, skip_mlst=False, check_overlap=False):
+         input_tree=None, skip_mlst=False, check_overlap=False, id_cutoff=80):
 
     import shell_command
     import os
@@ -349,7 +349,7 @@ def main(input_reference, input_queries_folder, blast_file, mlst_scheme, input_g
 
     #print reference_phylogeny
 
-    plot_blast_result(reference_phylogeny, blast_best_hit_results, id2description, accession2st_type, check_overlap)
+    plot_blast_result(reference_phylogeny, blast_best_hit_results, id2description, accession2st_type, check_overlap, id_cutoff)
 
 
 if __name__ == '__main__':
@@ -361,12 +361,13 @@ if __name__ == '__main__':
     parser.add_argument("-f",'--input_queries_folder', type=str,help="genomes folder")
     parser.add_argument("-b",'--blast_file', type=str, help="fasta file with sequences to blast and map on the phylogeny")
     parser.add_argument("-g",'--input_gbk', type=str, help="corresponding gbk files to get id correspondance", nargs="+")
-    parser.add_argument("-m",'--mlst_shemes', type=str, help="mlst sheme (t seeman script)")
+    parser.add_argument("-m",'--mlst_shemes', type=str, help="mlst sheme /t seeman script/")
     parser.add_argument("-s",'--skip_parsnp', action='store_true', help="skip parsnp part")
     parser.add_argument("-l",'--skip_blast', action='store_true', help="skip blast part")
-    parser.add_argument("-t",'--input_tree', type=str, help="user provided tree (no parsnp tree)", default=None)
+    parser.add_argument("-t",'--input_tree', type=str, help="user provided tree /no parsnp tree/", default=None)
     parser.add_argument("-n",'--skip_mlst', action='store_true', help="skip mlst part")
-
+    parser.add_argument("-c",'--id_cutoff', default=80, help="identity cutoff /defult 80 percent/")
+    
     args = parser.parse_args()
 
     if 'ref' in args.reference:
@@ -377,7 +378,7 @@ if __name__ == '__main__':
         ref = args.reference
 
     main(ref, args.input_queries_folder, args.blast_file, args.mlst_shemes, args.input_gbk, args.skip_parsnp,
-         args.skip_blast, args.input_tree, args.skip_mlst, False)
+         args.skip_blast, args.input_tree, args.skip_mlst, False, float(args.id_cutoff))
 
 
 
