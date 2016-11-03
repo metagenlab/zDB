@@ -28,6 +28,7 @@ def gc_coverage_plot(samtool_depth_file, contigs_file, blast_file=False, column1
         highlight_table <- read.table("%s", header=FALSE)
         m <- match(highlight_table[,1], gc_coverage_table$Name)
         gc_coverage_subset <- gc_coverage_table[m,]
+        print("subset")
         print(m)
         gc_coverage_table[m,]$color<-rgb(0, 0, 1,0.5)
 
@@ -36,6 +37,7 @@ def gc_coverage_plot(samtool_depth_file, contigs_file, blast_file=False, column1
         highlight_code2 = """
 
         m <- match(highlight_table[,1], gc_coverage_table_2m$Name)
+        print("subset m2")
         print(m)
         gc_coverage_subset2 <- gc_coverage_table_2m[m,]
 
@@ -69,7 +71,7 @@ def gc_coverage_plot(samtool_depth_file, contigs_file, blast_file=False, column1
         w<-which(gc_coverage_table$Length >=1000)
         gc_coverage_table <- gc_coverage_table[w,]
 
-        print(head(gc_coverage_table))
+        
 
         write.table(gc_coverage_table, 'gc_coverage_table.tab', sep="\t", row.names=F)
 
@@ -82,7 +84,7 @@ def gc_coverage_plot(samtool_depth_file, contigs_file, blast_file=False, column1
 
      symbols(x=gc_coverage_table[,3], y= gc_coverage_table[,4], circles=gc_coverage_table[,2], inches=1/3, ann=F, bg=gc_coverage_table$color, fg=gc_coverage_table$color, add = TRUE)
 l <- gsub('(^[^_]+_[^_]+)_(.*)$', '\\\\1', gc_coverage_subset$Name)
-    #text(x=gc_coverage_subset[,3], y=gc_coverage_subset[,4], labels = l)
+     text(x=gc_coverage_subset[,3], y=gc_coverage_subset[,4], labels = l)
      }else{
 
      print ('a') }
@@ -110,7 +112,7 @@ l <- gsub('(^[^_]+_[^_]+)_(.*)$', '\\\\1', gc_coverage_subset$Name)
      symbols(x=gc_coverage_table_2m[,3], y= gc_coverage_table_2m[,4], circles=gc_coverage_table_2m[,2], inches=1/3, ann=F, bg=gc_coverage_table_2m$color, fg=gc_coverage_table_2m$color, add = TRUE)
      l <- gsub('(^[^_]+_[^_]+)_(.*)$', '\\\\1', gc_coverage_subset2$Name)
      print (l)
-     #text(x=gc_coverage_subset2[,3], y=gc_coverage_subset2[,4], labels = l)
+     text(x=gc_coverage_subset2[,3], y=gc_coverage_subset2[,4], labels = l)
      }else{
 
      print ('a') }
@@ -154,10 +156,7 @@ l <- gsub('(^[^_]+_[^_]+)_(.*)$', '\\\\1', gc_coverage_subset$Name)
         gc_coverage_table$taxon <- as.character(gc_coverage_table$taxon)
         gc_coverage_table$taxon[is.na(gc_coverage_table$taxon)] <- 'undefined'
         gc_coverage_table$taxon <- as.factor(gc_coverage_table$taxon)
-        print(tail(gc_coverage_table))
-
-        print(head(gc_coverage_table))
-
+        
         write.table(gc_coverage_table, 'gc_coverage_table.tab', sep="\t", row.names=F)
 
      CairoSVG("gc_cov_buble.svg", width = 12, height = 12,)

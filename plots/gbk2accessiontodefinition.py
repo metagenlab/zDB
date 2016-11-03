@@ -49,7 +49,24 @@ def get_coressp(gbk_file_list, molis_table=None):
             description = re.sub("\.", "", description)
             description = re.sub("-", "_", description)
             description = re.sub("/", "_", description)
-            print name, description
+            description = re.sub("16S ribosomal RNA gene, partial sequence", "", description)
+            description = re.sub("; 16S_23S ribosomal RNA intergenic spacer", "", description)
+            description = re.sub("16S ribosomal RNA, partial sequence", "", description)
+            description = re.sub("16S ribosomal RNA gene", "", description)
+            description = re.sub("gene for ", "", description)
+            description = re.sub("  clone", "", description)
+            description = re.sub("partial 16S rRNA gene,", "", description)
+            description = re.sub("16S ribosomal RNA and 23S ribosomal RNA genes", "", description)
+            description = re.sub("; 23S ribosomal RNA gene", "", description)
+            description = re.sub("16S rRNA, partial sequence", "", description)
+            description = re.sub(" 16S and 23S ribosomal RNA operon", "", description)
+            description = re.sub(" 16S ribosomal RNA", "", description)
+            description = re.sub("and 16S_23S ribosomal RNA intergenic spacer", "", description)
+            description = re.sub("clone Trut23_12_2015_Venoge_Embouchure", "", description)
+            description = re.sub(" bacterium", " sp", description)
+            description = re.sub(" \(merged contigs\)", " sp", description)
+            description = re.sub("  ", " ", description)
+            description = re.sub(" main", " ", description)
             name2description[name] = description
 
     if molis_table:
@@ -58,8 +75,6 @@ def get_coressp(gbk_file_list, molis_table=None):
                 line = line.rstrip().split('\t')
                 name2description[line[3]] = line[1]
 
-
-    print name2description
     return name2description
 
 

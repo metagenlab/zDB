@@ -235,18 +235,26 @@ class Fasta2circos():
             hit_list, query_list = self.get_link("%s.coords" % fasta2[0].split('.')[0])
         else:
 
+            # coords for cumulated coorginates
             self.get_contigs_coords(fasta1)
 
             print 'wrinting link file'
 
             import gbk2circos
-            self.circos_reference = gbk2circos.Circos_config("circos_contigs.txt", show_ideogram_labels="no", radius=0.5,show_tick_labels="yes", show_ticks="yes")
+            self.circos_reference = gbk2circos.Circos_config("circos_contigs.txt",
+                                                             show_ideogram_labels="no",
+                                                             radius=0.8,
+                                                             show_tick_labels="yes",
+                                                             show_ticks="yes")
+
             #genome_list = [i.split('.')[0] + '.heat' for i in fasta2]
 
             #self.add_multiple_genome_tracks(genome_list, highlight_list)
 
             updated_list = []
             gap_hilight_list = []
+            all_hit_list = []
+            all_query_list = []
             for i, one_fasta in enumerate(fasta2):
                 if i%2 == 0:
                     col=200
@@ -254,11 +262,14 @@ class Fasta2circos():
                     col=250
                 #try:
                 if algo == "nucmer" or algo == 'promer':
+                    print  one_fasta
                     hit_list, query_list, contig2start_stop_list = self.nucmer_coords2heatmap("%s.coords" % one_fasta.split('.')[0], col = col, algo=algo)
                 elif algo == "megablast":
                     hit_list, query_list, contig2start_stop_list = self.megablast2heatmap("blast_result_%s.tab" % one_fasta.split('.')[0], col = col)
-
+                else:
                     raise IOError('unknown algo!')
+                all_hit_list += hit_list
+                all_query_list += query_list
                 updated_list.append(one_fasta)
                 #except:
                 #    continue
@@ -311,17 +322,17 @@ class Fasta2circos():
                         
                         max_snuggle_distance            = 10r
                         show_links     = yes
-                        link_dims      = 10p,78p,20p,4p,4p
+                        link_dims      = 10p,88p,20p,4p,4p
                         link_thickness = 2p
                         link_color     = red
 
-                        label_size   = 14p
+                        label_size   = 24p
                         label_font   = condensed
 
                         padding  = 0p
                         rpadding = 0p
                         '''
-                self.circos_reference.add_plot("circos_blast_labels.txt", type="text", r0="1r", r1="1.3r",color="black", rules=supp)
+                self.circos_reference.add_plot("circos_blast_labels.txt", type="text", r0="1r", r1="1.3r",color="black")
             if gc:
                 import GC
                 from Bio import SeqIO
@@ -381,7 +392,7 @@ class Fasta2circos():
                 self.last_track = self.last_track -0.12
 
         if heatmap:
-            c1, c2, c3, c4 = self.get_karyotype_from_fasta(fasta1, fasta2, hit_list, query_list, filter_ref, filter_query, both_fasta=False)
+            c1, c2, c3, c4 = self.get_karyotype_from_fasta(fasta1, fasta2, list(set(all_hit_list)), list(set(all_query_list)), filter_ref, filter_query, both_fasta=False)
             #self.config = self.get_circos_config(c1, c2, c3, c4, link=False, heat=True)
 
             self.config = self.circos_reference.get_file()
@@ -473,11 +484,12 @@ class Fasta2circos():
                 continue
         '''
         for contig in blast2data:
+            cname = re.sub("\|", "", contig)
             for gene in blast2data[contig]:
                 if float(blast2data[contig][gene][0])>80:
                     location = sorted(blast2data[contig][gene][1:3])
-                    o.write("%s\t%s\t%s\n" % (contig, location[0], location[1]))
-                    l.write("%s\t%s\t%s\t%s\n" % (contig,  location[0], location[1], gene))
+                    o.write("%s\t%s\t%s\n" % (contig, location[0]+ self.contigs_add[cname], location[1]+ self.contigs_add[cname]))
+                    l.write("%s\t%s\t%s\t%s\n" % (contig,  location[0] + self.contigs_add[cname], location[1]+ self.contigs_add[cname], gene))
 
         o.close()
 
@@ -672,7 +684,7 @@ class Fasta2circos():
 
 
          # thickness and color of ideograms
-         thickness          = 15p
+         thickness          = 20p
          stroke_thickness   = 1
          stroke_color       = black
 
@@ -682,7 +694,7 @@ class Fasta2circos():
          fill_color         = black
 
          # fractional radius position of chromosome ideogram within image
-         radius             = 0.65r
+         radius             = 0.85r
          show_label         = no
          label_font         = default
          label_radius       = dims(ideogram,radius) + 0.175r
@@ -796,14 +808,23 @@ class Fasta2circos():
             return circos_config % (0, "", plot_template % heatmap)
 
 
-    def get_karyotype_from_fasta(self, fasta1, fasta2, hit_list, query_list, filter_ref=True, filter_query=True, out="circos_contigs.txt", both_fasta = True):
-        print 'both fasta', both_fasta
+    def get_karyotype_from_fasta(self,
+                                 fasta1,
+                                 fasta2,
+                                 hit_list,
+                                 query_list,
+                                 filter_ref=True,
+                                 filter_query=True,
+                                 out="circos_contigs.txt",
+                                 both_fasta = True):
         from Bio import SeqIO
         import re
-        print 'hit list', hit_list
+
         fasta_data1 = [i for i in SeqIO.parse(open(fasta1), "fasta")]
         fasta_data2 = [i for i in SeqIO.parse(open(fasta2[0]), "fasta")]
-        #print "hit_list", hit_list
+
+        self.contig2start_psoition = {}
+
         with open(out, 'w') as f:
             # chr - Rhab Rhab 0 1879212 spectral-5-div-4
             i = 0
@@ -815,8 +836,13 @@ class Fasta2circos():
 
                 name = re.sub("\|", "", record.name)
                 print '#### contig ####', name
-                contig_start = contig_end+1
+                # cumulated length if not link plot and not filter_ref (TODO, put it as an argument?)
+                if not both_fasta or not filter_ref:
+                    contig_start = contig_end+1
                 contig_end = contig_start+len(record)
+
+                # keep in memory
+                self.contig2start_psoition[name] = contig_end+1
 
                 if i == 4:
                     i =0

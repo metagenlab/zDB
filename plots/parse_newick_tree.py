@@ -15,27 +15,50 @@ def get_accssion2ST(infile):
 def convert_terminal_node_names(tree_newick_name, dictionnary, tree_format = 'phyloxml'):
     #from Bio import Phylo
     from ete2 import Tree
-    tree = Tree(tree_newick_name, tree_format)
-    #trees = [tree for tree in trees]
 
+    print 'format', tree_format
+    print 'tree', tree_newick_name
+    try:
+        tree = Tree(tree_newick_name, tree_format)
+        leaf_names = {}
+        for leaf in tree:
+            #n+=1
+            #print species.name
+            #print dictionnary[str(species.name)]
 
+            #accession = manipulate_biosqldb.taxon_id2accessions(server, str(species.name), "saureus_01_15")[0]
+            try:
+                print "%s --> %s" % (leaf.name, dictionnary[str(leaf.name)])
+                if dictionnary[str(leaf.name)] not in leaf_names:
+                    leaf_names[dictionnary[str(leaf.name)]] = 1
+                    leaf.name = dictionnary[str(leaf.name)] #+ ' (%s)' % my_accession2st[accession]
+                else:
+                    leaf_names[dictionnary[str(leaf.name)]] += 1
+                    leaf.name = dictionnary[str(leaf.name)] + '%s' % leaf_names[dictionnary[str(leaf.name)]]#+ ' (%s)' % my_accession2st[accession]
+            except:
+                print "%s --> ?" % (leaf.name)
+                pass
+    except:
+        from Bio import Phylo
+        tree = Phylo.read(tree_newick_name, tree_format)
 
-    #print tree
-    #Phylo.draw_ascii(tree)
-    #tree.ladderize()   # Flip branches so deeper clades are displayed at top
-    #leaves = tree.get_terminals()
-    #n = 0
-    for leaf in tree:
-        #n+=1
-        #print species.name
-        #print dictionnary[str(species.name)]
+        leaves = tree.get_terminals()
 
-        #accession = manipulate_biosqldb.taxon_id2accessions(server, str(species.name), "saureus_01_15")[0]
-        try:
-            print dictionnary[str(leaf.name)]
-            leaf.name = dictionnary[str(leaf.name)] #+ ' (%s)' % my_accession2st[accession]
-        except:
-            pass
+        leaf_names = {}
+        print dictionnary
+        for leaf in leaves:
+
+            try:
+                print "%s --> %s" % (leaf.name, dictionnary[str(leaf.name)])
+                if dictionnary[str(leaf.name)] not in leaf_names:
+                    leaf_names[dictionnary[str(leaf.name)]] = 1
+                    leaf.name = dictionnary[str(leaf.name)] #+ ' (%s)' % my_accession2st[accession]
+                else:
+                    leaf_names[dictionnary[str(leaf.name)]] += 1
+                    leaf.name = dictionnary[str(leaf.name)] + '%s' % leaf_names[dictionnary[str(leaf.name)]]#+ ' (%s)' % my_accession2st[accession]
+            except:
+                print "%s --> ?" % (leaf.name)
+                pass
             #species.name = dictionnary[str(species.name)] + ' (%s)' % 8
     return tree
 

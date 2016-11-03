@@ -969,7 +969,7 @@ class Circos_config:
                               " </spacing>\n" \
                               " \n" \
                               " # thickness and color of ideograms\n" \
-                              " thickness          = 6p\n" \
+                              " thickness          = 12p\n" \
                               " stroke_thickness   = 1\n" \
                               " stroke_color       = black\n" \
                               " \n" \
