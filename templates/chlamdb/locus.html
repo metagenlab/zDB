@@ -194,10 +194,11 @@
                         {% endif %}
                         {%if pathways %}
                             <tr>
-                            <td>Pathways (ko based)</td>
+                            <td>Pathways</td>
                             <td>
                                 {% for pathway in pathways %}
-                                <a href="{% url 'KEGG_mapp' biodb pathway %}" target="_top">{{pathway}}</a>
+                                <a href="{% url 'KEGG_mapp_ko' biodb pathway %}" target="_top">{{pathway}} (ko based)</a>,
+                                <a href="{% url 'KEGG_mapp' biodb pathway %}" target="_top">{{pathway}} (priam_ec based)</a>
                                 {% endfor %}
                             </td>
                             </tr>

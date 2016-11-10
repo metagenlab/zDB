@@ -23,7 +23,11 @@
 		  ,
 		displayStat: true,
 		fnClickCallback: function() {
-			var value = "";
+			var value = `<div id="export_bouttons_groups">
+                         <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'pfam_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+                         <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'pfam_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                        <br/>
+                        </div>`;
 			if (this.listnames.length == 1) {
 				value += "<h3>Elements only in:<br> </h3><ul compact>";
 			} else {
