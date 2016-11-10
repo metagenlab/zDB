@@ -17,6 +17,40 @@ def create_comparative_tables(db_name, table_name):
     sql+=")"
     server.adaptor.execute(sql)
 
+def get_all_accessions(db_name):
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    sql = 'select accession from bioentry t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
+          ' where t2.name="%s"' % db_name
+    accession_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+    return accession_list
+
+def create_comparative_tables_accession(db_name, table_name):
+
+    '''
+    create a presence/absence matrix based on accession (and not taxon_ids)
+    '''
+
+    # create id column + one_column per taxon_id
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    accession_list = get_all_accessions(db_name)
+
+    sql = "CREATE TABLE comparative_tables.%s_accessions_%s(id VARCHAR(100) NOT NULL" % (table_name, db_name)
+
+    for i in accession_list:
+        sql+=" ,%s INT" % i
+
+    #for i in accession_list:
+    #    sql+=" ,index %s(%s)" % (i, i)
+    sql+=")"
+    server.adaptor.execute(sql)
+
+
 def collect_pfam(db_name):
 
     import manipulate_biosqldb
@@ -57,12 +91,58 @@ def collect_pfam(db_name):
         server.adaptor.execute(sql_temp,)
         server.adaptor.commit()
 
+def collect_Pfam_accession(db_name):
 
+    '''
+
+    collect presence/absence of Pfam domains for each genome/plasmid accession
+
+    :param db_name:
+    :return:
+    '''
+
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+
+    sql_head = 'INSERT INTO comparative_tables.Pfam_accessions_%s (id,' % db_name
+
+    accession_list = get_all_accessions(db_name)
+    sql_head += ','.join(accession_list) + ') values ('
+
+    all_pfam_ids_sql = 'select signature_accession from interpro_%s where analysis="Pfam" ' \
+                       'group by signature_accession;' % db_name
+
+    all_pfam_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_pfam_ids_sql,)]
+
+    sql = 'select t1.accession, t1.description from bioentry t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id' \
+          ' where t2.name="%s"' % db_name
+    accession2organism = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    i = 0
+    for accession in all_pfam_ids:
+        print i,'/', len(all_pfam_ids), accession
+        i+=1
+        sql= 'select organism, count(*) from biosqldb.interpro_%s ' \
+             ' where analysis="Pfam" and signature_accession="%s" group by organism;' % (db_name, accession)
+
+        data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+        sql_temp = sql_head + '"%s",' % accession
+
+        for accession in accession_list:
+            try:
+                sql_temp += '%s,' % data[accession2organism[str(accession)]]
+            except:
+                sql_temp += '0,'
+        sql_temp = sql_temp[0:-1] + ');'
+        print sql_temp
+        server.adaptor.execute(sql_temp,)
+        server.adaptor.commit()
 
 def collect_COGs(db_name):
 
     import manipulate_biosqldb
-    import sys
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -84,19 +164,25 @@ def collect_COGs(db_name):
     for accession in all_cogs_ids:
         print i,'/', len(all_cogs_ids), accession
         i+=1
-        sql= 'select B.taxon_id, A.count from (select accession,count(*) as count from ' \
+        sql = 'select B.taxon_id, A.count from (select accession,count(*) as count from ' \
              'COG.locus_tag2gi_hit_%s ' \
              'where COG_id = "%s" group by accession) A ' \
              'left join biosqldb.bioentry as B on A.accession=B.accession and biodatabase_id = %s;' % (db_name, accession, database_id)
 
-        print sql
-        data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        data = server.adaptor.execute_and_fetchall(sql,)
+
+        taxon2count = {}
+        for i in data:
+            if i[0] not in taxon2count:
+                taxon2count[i[0]] = int(i[1])
+            else:
+                taxon2count[i[0]] += int(i[1])
 
         sql_temp = sql_head + '"%s",' % accession
 
         for taxon in taxon_id_list:
             try:
-                sql_temp += '%s,' % data[str(taxon)]
+                sql_temp += '%s,' % taxon2count[str(taxon)]
             except:
                 sql_temp += '0,'
         sql_temp = sql_temp[0:-1] + ');'
@@ -106,6 +192,51 @@ def collect_COGs(db_name):
         server.adaptor.commit()
         #sys.exit()
 
+def collect_COGs_accession(db_name):
+
+    import manipulate_biosqldb
+    import sys
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    accession_list = get_all_accessions(db_name)
+
+    sql_head = 'INSERT INTO comparative_tables.COG_accessions_%s (id,' % db_name
+
+    for accession in accession_list:
+        sql_head += '%s,' % accession
+    sql_head = sql_head[0:-1] + ') values ('
+
+    all_cogs_ids_sql = 'select COG_id from COG.locus_tag2gi_hit_%s group by COG_id;' % db_name
+
+    all_cogs_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_cogs_ids_sql,)]
+
+    database_id = server.adaptor.execute_and_fetchall('select biodatabase_id from biosqldb.biodatabase where name="%s"' % db_name)[0][0]
+
+    i = 0
+    for accession in all_cogs_ids:
+        print i,'/', len(all_cogs_ids), accession
+        i+=1
+        sql= 'select accession,count(*) as c from ' \
+             'COG.locus_tag2gi_hit_%s ' \
+             'where COG_id="%s" group by accession' % (db_name, accession)
+
+        print sql
+        data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+        sql_temp = sql_head + '"%s",' % accession
+
+        for accession in accession_list:
+            try:
+                sql_temp += '%s,' % data[str(accession)]
+            except:
+                sql_temp += '0,'
+        sql_temp = sql_temp[0:-1] + ');'
+
+        print sql_temp
+        server.adaptor.execute(sql_temp,)
+        server.adaptor.commit()
+        #sys.exit()
 
 def collect_interpro(db_name):
 
@@ -155,7 +286,49 @@ def collect_interpro(db_name):
         server.adaptor.commit()
         #sys.exit()
 
+def collect_interpro_accession(db_name):
 
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    accession_list = get_all_accessions(db_name)
+
+    sql_head = 'INSERT INTO comparative_tables.interpro_accessions_%s (id,' % db_name
+
+    for taxon in accession_list:
+        sql_head += '%s,' % taxon
+    sql_head = sql_head[0:-1] + ') values ('
+
+
+    all_interpro_ids_sql = 'select interpro_accession from biosqldb.interpro_%s ' \
+                       ' where interpro_accession != "0" group by interpro_accession;' % db_name
+
+    all_interpro_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_interpro_ids_sql,)]
+
+    i = 0
+    for accession in all_interpro_ids:
+        print i,'/', len(all_interpro_ids), accession
+        i+=1
+        # group first by locus then by organism (mu.tiple occurances in a single locus_tag count as 1)
+        sql= 'select A.organism, count(*) as n from (select organism, locus_tag, count(*) as n ' \
+             ' from biosqldb.interpro_%s where interpro_accession="%s" group by organism, locus_tag) A group by organism;' % (db_name, accession)
+
+        data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+        sql_temp = sql_head + '"%s",' % accession
+
+        for accession in accession_list:
+            try:
+                sql_temp += '%s,' % data[str(accession)]
+            except:
+                sql_temp += '0,'
+        sql_temp = sql_temp[0:-1] + ');'
+
+        print sql_temp
+        server.adaptor.execute(sql_temp,)
+        server.adaptor.commit()
+        #sys.exit()
 
 def collect_ko(db_name):
 
@@ -203,6 +376,56 @@ def collect_ko(db_name):
         print sql_temp
         server.adaptor.execute(sql_temp,)
         server.adaptor.commit()
+
+def collect_ko_accession(db_name):
+
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    sql_db_id = 'select biodatabase_id from biodatabase where name="%s"' % db_name
+
+    biodb_id = server.adaptor.execute_and_fetchall(sql_db_id,)[0][0]
+
+    accession_list = get_all_accessions(db_name)
+
+    sql_head = 'INSERT INTO comparative_tables.ko_accessions_%s (id,' % db_name
+
+    for accession in accession_list:
+        sql_head += '%s,' % accession
+    sql_head = sql_head[0:-1] + ') values ('
+
+    all_ko_ids_sql = 'select distinct ko_id from enzyme.locus2ko_%s;' % (db_name)
+
+    all_ko_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_ko_ids_sql,)]
+
+    i = 0
+    for accession in all_ko_ids:
+        print i,'/', len(all_ko_ids), accession
+        i+=1
+
+        sql = 'select B.accession, count(*) as n from (select locus_tag, ko_id from enzyme.locus2ko_%s ' \
+              ' where ko_id="%s") A inner join biosqldb.orthology_detail_%s as B on A.locus_tag=B.locus_tag ' \
+              ' group by accession;' % (db_name,
+                                        accession,
+                                        db_name)
+
+        print sql
+
+        data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        sql_temp = sql_head + '"%s",' % accession
+
+        for accession in accession_list:
+            try:
+                sql_temp += '%s,' % data[str(accession)]
+            except:
+                sql_temp += '0,'
+        sql_temp = sql_temp[0:-1] + ');'
+
+        print sql_temp
+        server.adaptor.execute(sql_temp,)
+        server.adaptor.commit()
+
 
 def collect_EC(db_name):
 
@@ -256,6 +479,93 @@ def collect_EC(db_name):
         print sql_temp
         server.adaptor.execute(sql_temp,)
         server.adaptor.commit()
+
+def collect_EC_accession(db_name):
+
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    accession_list = get_all_accessions(db_name)
+
+    sql_head = 'INSERT INTO comparative_tables.EC_accessions_%s (id,' % db_name
+
+    for accession in accession_list:
+        sql_head += '%s,' % accession
+    sql_head = sql_head[0:-1] + ') values ('
+
+    all_EC_ids_sql = 'select distinct ec from enzyme.locus2ec_%s as t1 inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id;' % (db_name)
+
+    all_ec_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_EC_ids_sql,)]
+
+    i = 0
+    for accession in all_ec_ids:
+        print i,'/', len(all_ec_ids), accession
+        i+=1
+
+        sql = 'select t1.accession, count(*) as n from enzyme.locus2ec_%s as t1 inner join enzyme.enzymes as t2 ' \
+              ' on t1.ec_id=t2.enzyme_id where ec="%s" group by accession;' % (db_name, accession)
+
+        print sql
+
+        data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        sql_temp = sql_head + '"%s",' % accession
+
+        for accession in accession_list:
+            try:
+                sql_temp += '%s,' % data[str(accession)]
+            except:
+                sql_temp += '0,'
+        sql_temp = sql_temp[0:-1] + ');'
+
+        print sql_temp
+        server.adaptor.execute(sql_temp,)
+        server.adaptor.commit()
+
+def collect_orthogroup_accession(db_name):
+
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    accession_list = get_all_accessions(db_name)
+
+    sql_head = 'INSERT INTO comparative_tables.orthology_accessions_%s (id,' % db_name
+
+    for accession in accession_list:
+        sql_head += '%s,' % accession
+    sql_head = sql_head[0:-1] + ') values ('
+
+    all_orthogroup_ids_sql = 'select distinct orthogroup from orthology_detail_%s;' % (db_name)
+
+    all_orthogroup_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_orthogroup_ids_sql,)]
+
+    i = 0
+    for accession in all_orthogroup_ids:
+        print i,'/', len(all_orthogroup_ids), accession
+        i+=1
+
+        sql = 'select accession, count(*) as n from orthology_detail_%s ' \
+              ' where orthogroup="%s" group by accession;' % (db_name, accession)
+
+        print sql
+
+        data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        sql_temp = sql_head + '"%s",' % accession
+
+        for accession in accession_list:
+            try:
+                sql_temp += '%s,' % data[str(accession)]
+            except:
+                sql_temp += '0,'
+        sql_temp = sql_temp[0:-1] + ');'
+
+        print sql_temp
+        server.adaptor.execute(sql_temp,)
+        server.adaptor.commit()
+
+
+
 
 def get_mysql_table(db_name, table_name):
     import numpy as np
@@ -405,6 +715,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    '''
     create_comparative_tables(args.database_name, "Pfam")
     create_comparative_tables(args.database_name, "EC")
     create_comparative_tables(args.database_name, "interpro")
@@ -420,9 +731,23 @@ if __name__ == '__main__':
 
     identity_closest_homolog(args.database_name)
 
-    shared_orthogroups_average_identity(args.database_name)
+    #shared_orthogroups_average_identity(args.database_name)
+
+    create_comparative_tables_accession(args.database_name, 'Pfam')
+    create_comparative_tables_accession(args.database_name, "EC")
+    create_comparative_tables_accession(args.database_name, "interpro")
+    create_comparative_tables_accession(args.database_name, "COG")
+    create_comparative_tables_accession(args.database_name, "ko")
+
+    '''
+    create_comparative_tables_accession(args.database_name, "orthology")
 
 
-
+    #collect_Pfam_accession(args.database_name)
+    #collect_EC_accession(args.database_name)
+    #collect_interpro_accession(args.database_name)
+    #collect_COGs_accession(args.database_name)
+    #collect_ko_accession(args.database_name)
+    collect_orthogroup_accession(args.database_name)
 
     #get_mysql_table("chlamydia_03_15", "Pfam")

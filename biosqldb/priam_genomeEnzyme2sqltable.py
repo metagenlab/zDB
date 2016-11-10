@@ -53,10 +53,68 @@ def get_kegg_module_hierarchy():
     return module2category
 
 
-def get_complete_ko_table():
+def get_ko2ec(biodb):
     import urllib2
     import re
-    server, db = manipulate_biosqldb.load_db('chlamydia_04_16')
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'CREATE TABLE IF NOT EXISTS enzyme.ko2ec (ko_id VARCHAR(20),' \
+           ' enzyme_id INT,' \
+           ' index enzyme_id (enzyme_id), ' \
+           ' index ko_id (ko_id));'
+    server.adaptor.execute_and_fetchall(sql)
+
+
+    url = 'http://rest.kegg.jp/list/ko'
+    data = [line for line in urllib2.urlopen(url)]
+
+    total = len(data)
+    #data = ["ko:K00512"]
+    for n, ko_data in enumerate(data):
+        print "%s / %s" % (n, total)
+
+        ko_id = ko_data.split('\t')[0][3:]
+        print ko_id
+
+        url_ko = 'http://rest.kegg.jp/link/ec/%s' % ko_id
+
+        ko_data = [line.rstrip().split('\t') for line in urllib2.urlopen(url_ko)]
+
+        for one_ec in ko_data:
+            try:
+                ec_name = one_ec[1][3:]
+            except:
+                print 'problem with:', ko_id, 'no ec?'
+                continue
+
+            try:
+                sql_ec_id = 'select enzyme_id from enzyme.enzymes where ec="%s";' % ec_name
+                ec_id = server.adaptor.execute_and_fetchall(sql_ec_id,)[0][0]
+
+                sql = 'INSERT INTO enzyme.ko2ec(ko_id, enzyme_id) VALUES ("%s",%s);' % (one_ec[0][3:], ec_id)
+                #print sql
+                server.adaptor.execute_and_fetchall(sql)
+
+            except IndexError:
+                print 'problem getting ec ID for:', ec_name, 'not in biosqldb?'
+                print 'trying to add ec data from IUBMB'
+                try:
+                    ec_id = get_ec_data_from_IUBMB(ec_name)
+                    print "new_ec_id:", ec_id
+                    sql = 'INSERT INTO enzyme.ko2ec(ko_id, enzyme_id) VALUES ("%s",%s);' % (one_ec[0][3:], ec_id)
+                    #print sql
+                    server.adaptor.execute_and_fetchall(sql)
+                except:
+                    print 'FAIL'
+        server.commit()
+
+
+
+
+def get_complete_ko_table(biodb):
+    import urllib2
+    import re
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'CREATE TABLE IF NOT EXISTS enzyme.ko_annotation (ko_id VARCHAR(20),' \
            ' name varchar(40),' \
@@ -452,6 +510,7 @@ def get_ec_data_from_IUBMB(ec):
     import urllib2
     import re
     import MySQLdb
+    from bs4 import BeautifulSoup
 
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
@@ -464,14 +523,34 @@ def get_ec_data_from_IUBMB(ec):
     reaction = re.compile(".*Reaction:\<\/b\>.*")
     comments = re.compile(".*Comments.*")
 
+    conn.set_character_set('utf8')
+    cursor.execute('SET NAMES utf8;')
+    cursor.execute('SET CHARACTER SET utf8;')
+    cursor.execute('SET character_set_connection=utf8;')
 
     ec_sep = ec.split('.')
+    import requests
+
     adress = "http://www.chem.qmul.ac.uk/iubmb/enzyme/EC%s/%s/%s/%s.html" % (ec_sep[0], ec_sep[1], ec_sep[2], ec_sep[3])
     #print adress
+    #data = requests.get(adress).text
+    #print data
+    request = urllib2.Request('http://www.somesite.com')
     html = urllib2.urlopen(adress).read()
+
+    #html = urllib2.urlopen(adress).read()
+    html = re.sub("\&\#","-",html)
+    soup = BeautifulSoup(html, "lxml")
+    html = soup.encode('utf-8')#.encode('latin-1') #encode('utf-8') # prettify()
+
+    #print html
+    #all_data = soup.find_all("p")#[i.get_text() for i in soup.find_all("p")]
+
     for i, data in enumerate(list(html.split('<p>'))):
+
         if re.match(name, data):
             name = data.split("</b>")[-1]
+            #name = re.sub("&alpha;","", name)
         elif re.match(alname, data):
             altname = data.split("):</b>")[1].split(';')
         elif re.match(reaction, data):
@@ -483,6 +562,7 @@ def get_ec_data_from_IUBMB(ec):
                 reaction_list.append(i)
 
         elif re.match(comments, data):
+
             cc = data.split("</b>")[1].split(';')
         else:
             continue
@@ -513,7 +593,8 @@ def get_ec_data_from_IUBMB(ec):
 
     # comments
     for i in cc:
-        sql = 'INSERT into enzymes_dat (enzyme_dat_id,line, value) values(%s, "comment", "%s");' % (id, re.sub("<[a-z\/]+>", "", i))
+        #i = re.sub("\r\r<b>Reaction:</b> ","",i)
+        sql = 'INSERT into enzymes_dat (enzyme_dat_id,line, value) values(%s, "comment", "%s");' % (id, re.sub("<[ =\"A-Za-z0-9\/\.]+>", "", i))
         cursor.execute(sql,)
 
     conn.commit()
@@ -695,6 +776,10 @@ def load_enzyme_nomenclature_table():
                                 passwd="estrella3", # your password
                                 db="enzyme") # name of the data base
     cursor = conn.cursor()
+    conn.set_character_set('utf8')
+    cursor.execute('SET NAMES utf8;')
+    cursor.execute('SET CHARACTER SET utf8;')
+    cursor.execute('SET character_set_connection=utf8;')
 
     '''
     ID  Identification                         (Begins each entry; 1 per entry)
@@ -834,14 +919,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.update_database:
-        load_enzyme_nomenclature_table()
-        get_ec2get_pathway_table(get_kegg_pathway_classification())
-        get_complete_ko_table()
-        get_module_table(get_kegg_module_hierarchy())
+        #load_enzyme_nomenclature_table()
+        #get_ec2get_pathway_table(get_kegg_pathway_classification())
+        #get_complete_ko_table(args.database_name)
+        #get_module_table(get_kegg_module_hierarchy())
         #get_ec_data_from_IUBMB("1.14.13.217")
         #get_ec_data_from_IUBMB("1.1.1.1")
-        get_pathway2ko()
-
+        #get_pathway2ko()
+        get_ko2ec(args.database_name)
+        #get_ec_data_from_IUBMB("3.2.1.196")
     if args.input_priam_files:
         locus2ec={}
 

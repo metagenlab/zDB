@@ -895,41 +895,48 @@ def collect_genome_statistics(biodb):
                                                                            one_genome[1],
                                                                            one_genome[2],
                                                                            one_genome[3],
-                                                                               one_genome[4],
-                                                                               one_genome[5]    )
+                                                                           one_genome[4],
+                                                                           one_genome[5]    )
         print sql
         server.adaptor.execute(sql,)
         server.commit()
 
-def get_comparative_subtable(biodb, table_name, first_col_name, taxon_list, exclude_taxon_list, ratio=1, single_copy=False):
+def get_comparative_subtable(biodb, table_name, first_col_name, taxon_list, exclude_taxon_list, ratio=1, single_copy=False, accessions=False):
     import pandas
     import numpy
 
-    print pandas.__version__
 
-    columns = '`'+'`,`'.join(taxon_list)+'`'
 
     server, db = manipulate_biosqldb.load_db(biodb)
-    if len(exclude_taxon_list)>0:
-        exclude_sql = "`" + "`=0 and `".join(exclude_taxon_list) + "`=0"
-        sql = 'select %s, %s from comparative_tables.%s_%s where(%s)' % (first_col_name, columns, table_name,biodb, exclude_sql)
-    else:
-        sql = 'select %s, %s from comparative_tables.%s_%s' % (first_col_name, columns, table_name,biodb)
-    sql2 = 'select * from comparative_tables.%s_%s' % (table_name, biodb)
-    sql3 = 'show columns from comparative_tables.%s_%s' % (table_name, biodb)
+    if not accessions:
+        columns = '`'+'`,`'.join(taxon_list)+'`'
+        if len(exclude_taxon_list)>0:
+            exclude_sql = "`" + "`=0 and `".join(exclude_taxon_list) + "`=0"
+            sql = 'select %s, %s from comparative_tables.%s_%s where(%s)' % (first_col_name, columns, table_name,biodb, exclude_sql)
+        else:
+            sql = 'select %s, %s from comparative_tables.%s_%s' % (first_col_name, columns, table_name,biodb)
+        sql2 = 'select * from comparative_tables.%s_%s' % (table_name, biodb)
+        sql3 = 'show columns from comparative_tables.%s_%s' % (table_name, biodb)
 
+    else:
+        columns = ','.join(taxon_list)
+        if len(exclude_taxon_list)>0:
+            exclude_sql = "=0 and ".join(exclude_taxon_list) + "=0"
+            sql = 'select %s, %s from comparative_tables.%s_accessions_%s where(%s)' % (first_col_name, columns, table_name, biodb, exclude_sql)
+        else:
+            sql = 'select %s, %s from comparative_tables.%s_accessions_%s' % (first_col_name, columns, table_name,biodb)
+        sql2 = 'select * from comparative_tables.%s_accessions_%s' % (table_name, biodb)
+        sql3 = 'show columns from comparative_tables.%s_accessions_%s' % (table_name, biodb)
+    print sql
     data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
     data2 = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql2,)])
 
     all_cols = [i[0] for i in server.adaptor.execute_and_fetchall(sql3,)]
-    print "all_cols", all_cols
 
     cols = [first_col_name]+taxon_list
 
     # set the persentage of taxon that must have homologs/domain/... => default is 1 (100%)
     limit = len(taxon_list)*ratio
-    print 'limit', limit
-
 
     count_df = pandas.DataFrame(data, columns=cols)
     count_df2 = pandas.DataFrame(data2, columns=all_cols)
