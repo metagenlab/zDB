@@ -263,20 +263,14 @@ def extract_orthogroup(request, biodb):
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
 
-        #form2 = ContactForm(request.POST)
         if 'comparison' in request.POST and form.is_valid():  # Nous vérifions que les données envoyées sont valides
             import biosql_own_sql_tables
 
-            print request.POST
-            print form.cleaned_data.keys()
             include = form.cleaned_data['orthologs_in']
             exclude = form.cleaned_data['no_orthologs_in']
             reference_taxon = form.cleaned_data['reference']
             if reference_taxon == "None":
                 reference_taxon = include[0]
-
-            print include
-
 
             try:
                 single_copy = request.POST['checkbox_single_copy']
@@ -286,13 +280,16 @@ def extract_orthogroup(request, biodb):
             try:
                 accessions = request.POST['checkbox_accessions']
                 accessions = True
+                fasta_url='?a=T'
             except:
                 accessions = False
+                fasta_url='?a=F'
                 accession2taxon = manipulate_biosqldb.accession2taxon_id(server, biodb)
                 include = [str(accession2taxon[i]) for i in include]
                 exclude = [str(accession2taxon[i]) for i in exclude]
                 reference_taxon = accession2taxon[reference_taxon]
 
+            print 'exclude', exclude
             n_missing = form.cleaned_data['frequency']
 
             if int(n_missing)>=len(include):
@@ -347,6 +344,12 @@ def extract_orthogroup(request, biodb):
 
                     circos_url = '?ref=%s&' % reference_taxon
                     circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(match_groups)
+                    fasta_url+= "&i="+('&i=').join(include)
+                    fasta_url+= "&e="+('&e=').join(exclude)
+                    fasta_url+= "&f=%s" % freq_missing
+                    fasta_url+= "&s=%s" % single_copy
+                    fasta_url_ref = fasta_url +'&ref=%s' % reference_taxon
+                    fasta_url_noref =fasta_url + '&ref=F'
 
                     if not accessions:
                         sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and taxon_id=%s' % (biodb,
@@ -440,12 +443,6 @@ def orthogroup_annotation(request, biodb, display_form):
             tree.render(path, dpi=800, h=600)
 
             envoi_annot = True
-
-
-
-
-
-
 
     return render(request, 'chlamdb/orthogroup_annotation.html', locals())
 
@@ -1627,13 +1624,8 @@ def extract_region(request, biodb):
 @login_required
 def locusx(request, biodb, locus=None, menu=False):
 
-    print 'biodb', biodb
-    print 'locus', locus
-    print 'menu', menu
-    print 'request.method', request.method
     cache = get_cache('default')
 
-    #cache.clear()
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
 
@@ -1789,6 +1781,10 @@ def locusx(request, biodb, locus=None, menu=False):
             seq_end = int(data[4])
             strand = int(data[5])
             leng = (seq_end-seq_start)+100
+
+
+            nucl_length = seq_end-seq_start+1
+            aa_length = nucl_length/3
 
             seq = manipulate_biosqldb.location2sequence(server, genome_accession, biodb, seq_start-50, leng)
             if strand == -1:
@@ -4485,8 +4481,129 @@ def orthogroups(request):
 
     return render(request, 'chlamdb/orthogroups.html', locals())
 
+def get_orthogroup_fasta(request, biodb, orthogroup, seqtype):
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    if seqtype == 'aa':
+        sql = 'select locus_tag, organism, translation from orthology_detail_%s where orthogroup="%s"' % (biodb,
+                                                                                                          orthogroup)
+
+        data = server.adaptor.execute_and_fetchall(sql,)
+        fasta = ''
+        for i in data:
+            fasta+='>%s %s\n%s\n' % (i[0], i[1], i[2])
+    else:
+        sql = 'select accession, locus_tag, start, stop, strand from orthology_detail_%s where orthogroup="%s"' % (biodb,
+                                                                                                          orthogroup)
+
+        locus2start_stop = server.adaptor.execute_and_fetchall(sql,)
+        fasta = ''
+        for i in locus2start_stop:
+            leng = i[3]-i[2]+1
+            strand = int(i[4])
+            seq = manipulate_biosqldb.location2sequence(server, i[0], biodb, int(i[2]), leng)
+            if strand == -1:
+
+                from Bio.Seq import Seq
+                seq_obj = Seq(seq)
+                seq = str(seq_obj.reverse_complement())
+                fasta+='>%s %s\n%s\n' % (i[1], i[0], seq)
+
+    response = HttpResponse(content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename="fasta.fa"'
+    response.write(fasta)
+    return response
 
 
+def get_fasta(request, biodb):
+
+
+    '''
+    get fasta from a corresponding to extract_orthogroup_request
+
+    :param request:
+    :param biodb:
+    :return: fasta file
+    '''
+
+    import biosql_own_sql_tables
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    if request.GET.getlist('ref')[0] == 'False' or request.GET.getlist('ref')[0] == 'F':
+        reference = False
+    else:
+        reference = str(request.GET.getlist('ref')[0])
+    include = [str(i) for i in request.GET.getlist('i')]
+    exclude = [str(i) for i in request.GET.getlist('e')]
+    if exclude[0] == '':
+        exclude = []
+    if request.GET.getlist('a')[0] == 'F' or request.GET.getlist('a')[0] == 'False':
+        accessions = False
+    else:
+        accessions = True
+    freq_missing = float(request.GET.getlist('f')[0])
+    if request.GET.getlist('s')[0] == 'F' or request.GET.getlist('s')[0] == 'False':
+        single_copy = False
+    else:
+        single_copy = True
+
+    if not accessions:
+        # get sub matrix and complete matrix
+        mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
+                                                                  "orthology",
+                                                                  "orthogroup",
+                                                                  include,
+                                                                  exclude,
+                                                                  freq_missing,
+                                                                  single_copy=single_copy,
+                                                                  accessions=accessions)
+    else:
+        mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
+                                                                  "orthology",
+                                                                  "id",
+                                                                  include,
+                                                                  exclude,
+                                                                  freq_missing,
+                                                                  single_copy=single_copy,
+                                                                  accessions=accessions)
+    match_groups = mat.index.tolist()
+    print 'match', match_groups
+    filter = '"'+'","'.join(match_groups)+'"'
+    if not accessions:
+        if reference:
+            sql = 'select locus_tag, organism, translation from orthology_detail_%s where taxon_id=%s and orthogroup in (%s)' % (biodb,
+                                                                                                                             reference,
+                                                                                                                             filter)
+        else:
+            taxon_filter = '"'+'","'.join(include)+'"'
+            sql = 'select locus_tag, organism, translation from orthology_detail_%s where taxon_id in (%s) and orthogroup in (%s)' % (biodb,
+                                                                                                                             taxon_filter,
+                                                                                                                             filter)
+    else:
+        if reference:
+            sql = 'select locus_tag, organism, translation from orthology_detail_%s where accession="%s" and orthogroup in (%s)' % (biodb,
+                                                                                                                             reference,
+                                                                                                                             filter)
+        else:
+            taxon_filter = '"'+'","'.join(include)+'"'
+            sql = 'select locus_tag, organism, translation from orthology_detail_%s where accession in (%s) and orthogroup in (%s)' % (biodb,
+                                                                                                                             taxon_filter,
+                                                                                                                             filter)
+
+    print sql
+
+
+
+
+
+    data = server.adaptor.execute_and_fetchall(sql,)
+    fasta = ''
+    for i in data:
+        fasta+='>%s %s\n%s\n' % (i[0], i[1], i[2])
+    response = HttpResponse(content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename="fasta.fa"'
+    response.write(fasta)
+    return response #HttpResponse(request, fasta, content_type='text/plain; charset=utf8')
 
 
 
@@ -4513,11 +4630,8 @@ def circos_main(request, biodb):
             ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
             target_taxons = ordered_taxons[0:10]
     else:
-
         target_taxons = [int(i) for i in request.GET.getlist('t')]
     highlight = request.GET.getlist('h')
-
-
 
     #sql = 'select locus_tag,traduction from orthology_detail_k_cosson_05_16 where orthogroup in (%s) and accession="NC_016845"' % ('"'+'","'.join(highlight)+'"')
 

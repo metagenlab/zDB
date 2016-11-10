@@ -103,12 +103,24 @@
                             <a href="{% static "locus_tag2old_locus_tag.txt" %}">Old Locus tag orrespondance table</a></p>
                         </p>
                     </div>
+
+
+
+
+
                     <table>
                     <tr>
                     <th id="entete">Feature</th>
                     <th>Value</th>
                     </tr>
+                        <tr>
+                        <td>download</td>
+                        <td id="entete_features">
+                            <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' biodb data.0 "aa"%}'">fasta aa</button>
+                            <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' biodb data.0 "nucl"%}'">fasta nucl</button>
 
+                        </td>
+                        </tr>
                         <tr>
                         <td>orthogroup</td>
                         <td id="entete_features">{{ data.0 }}</td>
@@ -136,6 +148,10 @@
                         <tr>
                         <td>stop</td>
                         <td id="entete_features">{{ data.4 }}</td>
+                        </tr>
+                        <tr>
+                        <td>Length</td>
+                        <td id="entete_features">{{ nucl_length }} (nucleotides) / {{aa_length}} (amino acids)</td>
                         </tr>
                          <tr>
                         <td>strand</td>

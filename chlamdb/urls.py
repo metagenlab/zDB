@@ -8,6 +8,8 @@ urlpatterns = patterns('chlamdb.views',
 
                        url(r'^module_barchart/([a-zA-Z0-9_]+)', 'module_barchart', name="module_barchart"),
                        url(r'^locus_int/([a-zA-Z0-9_]+)', 'locus_int', name="locus_int"),
+                       url(r'^get_fasta/([a-zA-Z0-9_]+)', 'get_fasta', name="get_fasta"),
+                       url(r'^get_orthogroup_fasta/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', 'get_orthogroup_fasta', name="get_orthogroup_fasta"),
                        url(r'^add_comment/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)', 'add_comment', name="add_comment"),
                        url(r'^neig_interactions/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)', 'neig_interactions', name="neig_interactions"),
                        url(r'^profile_interactions/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)', 'profile_interactions', name="profile_interactions"),

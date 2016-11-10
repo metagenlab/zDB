@@ -130,6 +130,7 @@
                             <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
                             <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                            <a href="{% url 'get_fasta' biodb %}{{fasta_url_noref}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Download fasta</a>
                             <a href="{% url 'circos_main' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
                             <a href="{% url 'orthogroup_list_cog_barchart' biodb accessions%}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show cog categories of orthogroup subset vs all orthogroups</a>
 
@@ -221,6 +222,7 @@
                                             <td>{{values.11}}</td>
                                             <td>{{values.12}}</td>
                                             <td>{{values.13}}</td>
+                                            <td>{{values.13}}</td>
                                             <td>{{values.14}}</td>
                                         </tr>
                                     {% endfor %}
@@ -232,7 +234,7 @@
                         <h3> Locus annotation </h3>
                         <div id="export_bouttons_groups">
                             <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-
+                            <a href="{% url 'get_fasta' biodb %}{{fasta_url_ref}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Download fasta</a>
                             <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
                             <a href="{% url 'circos_main' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
 
