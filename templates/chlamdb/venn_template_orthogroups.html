@@ -23,7 +23,11 @@
 		  ,
 		displayStat: true,
 		fnClickCallback: function() {
-			var value = "";
+			var value = `<div id="export_bouttons_groups">
+                         <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'orthogroup_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+                         <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'orthogroup_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                        <br/>
+                        </div>`;
 			if (this.listnames.length == 1) {
 				value += "<h3>Elements only in:<br> </h3><ul compact>";
 			} else {
@@ -32,7 +36,8 @@
 			for (name in this.listnames) {
 				value += '<li id="list_strains">' +this.listnames[name] + "</li>";
 			}
-			value += "</ul>\n<table>";
+			value += '</ul>\n<table id="orthogroup_table" class="sortable"><tr><th>Orthogroup</th><th>gene(s)</th><th>description(s)</th></tr>';
+
 			for (val in this.list) {
                 <!-- h[this.list[val]] -->
 				value += '<tr><td><a href="' + '{% url "locusx" biodb %}'+
@@ -41,6 +46,9 @@
 			}
 		    value += '</table>';
 			$("#names").html(value);
+			var newTableObject = document.getElementById("orthogroup_table");
+			sorttable.makeSortable(newTableObject);
+
 		}
 
       });

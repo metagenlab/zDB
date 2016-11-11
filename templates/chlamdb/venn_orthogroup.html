@@ -2,30 +2,6 @@
 
 
 <html>
-<head>
-    <script type="text/javascript" id="js">
-        $(document).ready(function() {
-        // call the tablesorter plugin
-        $("table").tablesorter({
-        // change the default sorting order from 'asc' to 'desc'
-        sortInitialOrder: 1
-        });
-        });
-    </script>
-    <script type="text/javascript">
-        jQuery(document).ready(function ($) {
-            $('#tabs').tab();
-        });
-    </script>
-    <script type="text/javascript">
-        jQuery(document).ready(function ($) {
-            $('#tabs1').tab();
-        });
-    </script>
-
-<head>
-
-
 <div id="container">
 
 
@@ -41,33 +17,44 @@
     <div id="content">
 
         <nav>
-        <ul id="tabs" class="nav nav-tabs">
-                    <li><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
-                    <li class="active"><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
-                    <li><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups with paralogs</a></li>
+            <ul id="tabs" class="nav nav-tabs">
+                        <li><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
+                        <li class="active"><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
+                        <li><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups with paralogs</a></li>
 
-        </ul>
+            </ul>
         </nav>
 
+        <div id="extract_form">
+            <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                  <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Help</h3>
+                  </div>
+                <p style="margin: 10px 10px 10px 10px">Venn diagramm of orthologous groups constructed based on BLAST using orthoMCL, max 6 genomes</p>
+            </div>
 
-                <div id="extract_form">
-                    <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                          <div class="panel-heading" style="width:100%">
-                            <h3 class="panel-title">Help</h3>
-                            </div>
-                    <p style="margin: 10px 10px 10px 10px">Venn diagramm of orthologous groups constructed based on BLAST using orthoMCL, max 6 genomes</p>
+
+            <form action="{% url "chlamdb.views.venn_orthogroup" biodb %}" method="post">
+
+                <div class="form-inline">
+                    <div class="form-group">
+                         <div class="col-md-11" style="width: 100%;">
+                              <label style="width:380px;text-align:left;" >
+                                  <input type="checkbox" id="id_checkbox_accessions" name="checkbox_accessions">
+                                  Distinguish plasmids from chromosomes
+                              </label>
+                        </div>
                     </div>
-
-
-
-                    <form action="{% url "chlamdb.views.venn_orthogroup" biodb %}" method="post">
-                        {% csrf_token %}
-                        {{ form_venn.as_p }}
-                        <input type="submit" name="venn" value="extract homologues" id="venn_button" />
-
-                    </form>
-
                 </div>
+
+
+                {% csrf_token %}
+                {{ form_venn.as_p }}
+                <input type="submit" name="venn" value="extract homologues" id="venn_button" />
+
+            </form>
+
+        </div>
 
      {% if envoi_venn %}
 
@@ -87,30 +74,34 @@
 -->
 
 <script>
-  var update_fields = function () {
-    if ($("#id_get_groups").is(":checked")) {
+    $(document).ready(function() {
+        /* no plasmids by default */
+        var y=document.getElementById("id_targets");
+        for (var i = 0; i < y.options.length; i++) {
+            if (y.options[i].text.includes('plasmid')) {
+                $("#id_targets").children("option[value^=" + y.options[i].value + "]").hide();
+            } else {
+                $("#id_targets").children("option[value^=" + y.options[i].value + "]").show()
+            }
+        }
+    $("#id_checkbox_accessions").change(function() {
+            var x = document.getElementById("id_targets");
+            for (var i = 0; i < x.options.length; i++) {
 
-        $('#id_region').prop('disabled', false);
-        $('#search_table').show();
-        $('#export_bouttons_detail').show();
+                if (y.options[i].text.includes('plasmid')) {
+                    if (document.getElementById('id_checkbox_accessions').checked) {
+                        $("#id_targets").children("option[value^=" + y.options[i].value + "]").show()
+                    } else {
+                        $("#id_targets").children("option[value^=" + y.options[i].value + "]").hide()
+                    }
+                } else {
+                    $("#id_targets").children("option[value^=" + y.options[i].value + "]").show()
+                }
+            }
+    })
 
-        $('#table_groups').hide();
-        $('#export_bouttons_groups').hide();
-    }
+    })
 
-
-
-    else {
-
-       $('#id_get_groups').prop('disabled', false);
-       $('#search_table').hide();
-       $('#export_bouttons_detail').hide();
-       $('#table_groups').show();
-       $('#export_bouttons_groups').show();
-    }
-  };
-  $(update_fields);
-  $("#id_get_groups").change(update_fields);
 
 </script>
 

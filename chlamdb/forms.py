@@ -153,9 +153,9 @@ def make_metabo_from(database_name):
     return MetaboForm
 
 
-def make_venn_from(database_name):
+def make_venn_from(database_name, plasmid=False):
 
-    accession_choices = get_accessions(database_name)
+    accession_choices = get_accessions(database_name,plasmid=plasmid)
 
     class VennForm(forms.Form):
         targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'20' }), required = False)
