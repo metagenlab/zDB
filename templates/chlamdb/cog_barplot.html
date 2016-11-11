@@ -21,8 +21,7 @@
 
         <nav>
         <ul id="tabs" class="nav nav-tabs">
-            <li ><a href="{% url 'extract_cog' biodb %}">Detailed comparison (taxon)</a></li>
-            <li><a href="{% url 'extract_cog' biodb %}/accession">Detailed comparison (accession)</a></li>
+            <li ><a href="{% url 'extract_cog' biodb %}">Detailed comparison</a></li>
             <li><a href="{% url 'venn_cog' biodb %}">Venn diagram</a></li>
             <li class="active"><a href="{% url 'cog_barchart' biodb %}">COG categories barchart</a></li>
         </ul>

@@ -42,15 +42,8 @@
         {% if display_form %}
         <nav>
         <ul id="tabs" class="nav nav-tabs">
-            <li ><a href="{% url 'extract_cog' biodb %}">Detailed comparison (taxon)</a></li>
-            <li><a href="{% url 'extract_cog' biodb %}True">Detailed comparison (accession)</a></li>
-            {% if not accessions %}
-                <li class="active"><a href="{% url 'venn_cog' biodb %}">Venn diagram</a></li>
-                <li><a href="{% url 'venn_cog' biodb %}/True">Venn diagram (accession)</a></li>
-            {% else %}
-                <li><a href="{% url 'venn_cog' biodb %}">Venn diagram</a></li>
-                <li class="active"><a href="{% url 'venn_cog' biodb %}/True">Venn diagram (accession)</a></li>
-            {% endif %}
+            <li><a href="{% url 'extract_cog' biodb %}">Detailed comparison</a></li>
+            <li class="active"><a href="{% url 'venn_cog' biodb %}">Venn diagram</a></li>
             <li><a href="{% url 'cog_barchart' biodb %}">COG categories barchart</a></li>
         </ul>
         </nav>

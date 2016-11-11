@@ -118,7 +118,9 @@
                 <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                     <li class="active"><a href="#red" data-toggle="tab">Orthogroups</a></li>
                     <li><a href="#orange" data-toggle="tab">Table detail</a></li>
-                    <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
+                    {% if show_reference_annot %}
+                        <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
+                    {% endif %}
                 </ul>
 
                 <div id="my-tab-content" class="tab-content">
@@ -221,7 +223,6 @@
                                             <td>{{values.10}}</td>
                                             <td>{{values.11}}</td>
                                             <td>{{values.12}}</td>
-                                            <td>{{values.13}}</td>
                                             <td>{{values.13}}</td>
                                             <td>{{values.14}}</td>
                                         </tr>

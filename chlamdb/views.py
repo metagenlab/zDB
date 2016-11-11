@@ -269,6 +269,12 @@ def extract_orthogroup(request, biodb):
             include = form.cleaned_data['orthologs_in']
             exclude = form.cleaned_data['no_orthologs_in']
             reference_taxon = form.cleaned_data['reference']
+
+            if len(include) == 1:
+                show_reference_annot = False
+            else:
+                show_reference_annot = True
+
             if reference_taxon == "None":
                 reference_taxon = include[0]
 
@@ -334,11 +340,11 @@ def extract_orthogroup(request, biodb):
                     # GET max frequency for template
                     sum_group = len(match_groups)
 
-                    match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(match_groups, biodb)
+                    match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(match_groups,
+                                                                                                                  biodb,
+                                                                                                                  taxon_filter=include)
                     columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                               'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-                    sql = ''
-
 
                     envoi_extract = True
 
@@ -351,25 +357,29 @@ def extract_orthogroup(request, biodb):
                     fasta_url_ref = fasta_url +'&ref=%s' % reference_taxon
                     fasta_url_noref =fasta_url + '&ref=F'
 
-                    if not accessions:
-                        sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and taxon_id=%s' % (biodb,
-                                                                                                                  '"' + '","'.join(match_groups) + '"',
-                                                                                                                  reference_taxon)
-                    else:
-                        sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and accession="%s"' % (biodb,
-                                                                                                                  '"' + '","'.join(match_groups) + '"',
-                                                                                                                  reference_taxon)
-                    locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+                    if show_reference_annot:
+                        if not accessions:
+                            sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and taxon_id=%s' % (biodb,
+                                                                                                                      '"' + '","'.join(match_groups) + '"',
+                                                                                                                      reference_taxon)
+                        else:
+                            sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and accession="%s"' % (biodb,
+                                                                                                                      '"' + '","'.join(match_groups) + '"',
+                                                                                                                      reference_taxon)
+                        locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
-                    locus2annot, \
-                    locus_tag2cog_catego, \
-                    locus_tag2cog_name, \
-                    locus_tag2ko, \
-                    pathway2category, \
-                    module2category, \
-                    ko2ko_pathways, \
-                    ko2ko_modules,\
-                    locus2interpro = get_locus_annotations(biodb, locus_list)
+                        locus2annot, \
+                        locus_tag2cog_catego, \
+                        locus_tag2cog_name, \
+                        locus_tag2ko, \
+                        pathway2category, \
+                        module2category, \
+                        ko2ko_pathways, \
+                        ko2ko_modules,\
+                        locus2interpro = get_locus_annotations(biodb, locus_list)
+
+                    # only show reference annotation if more than one genome included
+
 
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
@@ -587,7 +597,7 @@ def extract_pfam(request, biodb, classification="taxon_id"):
                 if len(match_groups) == 0:
                     no_match = True
                 else:
-
+                    import biosql_own_sql_tables
                     # get count in subgroup
                     pfam2count = dict((mat > 0).sum(axis=1))
                     # get count in complete database
@@ -618,11 +628,9 @@ def extract_pfam(request, biodb, classification="taxon_id"):
                     columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                               'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
                     sql_2 = 'select %s from orthology_detail_%s %s' % (columns, biodb, group_filter)
-                    #print sql_2
+
                     raw_data = server.adaptor.execute_and_fetchall(sql_2,)
 
-
-                    import biosql_own_sql_tables
                     pfam2descr = biosql_own_sql_tables.pfam2description(biodb)
                     match_groups_data = []
                     for i, pfam in enumerate(match_groups):
@@ -637,18 +645,25 @@ def extract_pfam(request, biodb, classification="taxon_id"):
                     envoi_extract = True
                     asset_path = '/assets/temp/profil_tree.svg'
 
-                    print 'getting locus list'
                     motif_list = '"' + '","'.join(match_groups) + '"'
 
                     locus_list_sql = 'select locus_tag from interpro_%s where taxon_id=%s ' \
                                  ' and signature_accession in (%s)' % (biodb, reference_taxon, motif_list)
-                    print locus_list_sql
+
                     locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-                    print locus_list
+
                     circos_url = '?ref=%s&' % reference_taxon
                     circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
-                    print "circos_url", circos_url
 
+                    locus2annot, \
+                    locus_tag2cog_catego, \
+                    locus_tag2cog_name, \
+                    locus_tag2ko, \
+                    pathway2category, \
+                    module2category, \
+                    ko2ko_pathways, \
+                    ko2ko_modules,\
+                    locus2interpro = get_locus_annotations(biodb, locus_list)
 
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
@@ -658,7 +673,7 @@ def extract_pfam(request, biodb, classification="taxon_id"):
 
 
 @login_required
-def extract_ko(request, biodb, classification="taxon_id"):
+def extract_ko(request, biodb):
 
     '''
 
@@ -779,9 +794,9 @@ def extract_ko(request, biodb, classification="taxon_id"):
 
             #print extract_result
             locus_list_sql = 'select locus_tag from enzyme.locus2ko_%s where taxon_id=%s and ko_id in (%s);' % (biodb,
-                                                                                                                 reference_taxon,
-                                                                                                                 ko_list)
-            print locus_list_sql
+                                                             reference_taxon,
+                                                             ko_list)
+
             locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
             print locus_list
             circos_url = '?ref=%s&' % reference_taxon
@@ -793,6 +808,21 @@ def extract_ko(request, biodb, classification="taxon_id"):
             envoi_extract = True
             mm = 'module'
             pp = 'pathway'
+
+            locus2annot, \
+            locus_tag2cog_catego, \
+            locus_tag2cog_name, \
+            locus_tag2ko, \
+            pathway2category, \
+            module2category, \
+            ko2ko_pathways, \
+            ko2ko_modules,\
+            locus2interpro = get_locus_annotations(biodb, locus_list)
+
+
+
+
+
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
         form = extract_form_class()  # Nous créons un formulaire vide
 
@@ -800,7 +830,7 @@ def extract_ko(request, biodb, classification="taxon_id"):
 
 
 @login_required
-def extract_EC(request, biodb, classification="taxon_id"):
+def extract_EC(request, biodb):
 
     '''
 
@@ -964,7 +994,15 @@ def extract_EC(request, biodb, classification="taxon_id"):
 
             envoi_extract = True
 
-
+            locus2annot, \
+            locus_tag2cog_catego, \
+            locus_tag2cog_name, \
+            locus_tag2ko, \
+            pathway2category, \
+            module2category, \
+            ko2ko_pathways, \
+            ko2ko_modules,\
+            locus2interpro = get_locus_annotations(biodb, locus_list)
 
 
 
@@ -1147,11 +1185,7 @@ def extract_interpro(request, biodb, classification="taxon_id"):
                 interpro2count = dict((mat > 0).sum(axis=1))
                 # get count in complete database
                 interpro2count_all = dict((mat_all > 0).sum(axis=1))
-                print interpro2count_all
 
-                #print interpro2count_all.values()
-
-                #print cog2count_all
                 print interpro2count_all[interpro2count_all.keys()[0]]
                 max_n = max(list(interpro2count_all.values()))
 
@@ -1185,13 +1219,11 @@ def extract_interpro(request, biodb, classification="taxon_id"):
                     else:
                         group_filter += ' or orthogroup="%s"' % group
                 group_filter+=')'
-                #print group_filter
-
 
                 columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                           'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
                 sql_2 = 'select %s from orthology_detail_%s %s' % (columns, biodb, group_filter)
-                #print sql_2
+
                 raw_data = server.adaptor.execute_and_fetchall(sql_2,)
 
                 n = 1
@@ -1199,21 +1231,29 @@ def extract_interpro(request, biodb, classification="taxon_id"):
                 for one_hit in raw_data:
                     extract_result.append((n,) + one_hit)
                     n+=1
-                    #print n
+
 
                 interpro_list = '"' + '","'.join(match_groups) + '"'
 
                 #print extract_result
                 locus_list_sql = 'select locus_tag from interpro_%s where taxon_id=%s ' \
                              ' and interpro_accession in (%s)' % (biodb, reference_taxon, interpro_list)
-                print locus_list_sql
+
                 locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-                print locus_list
+
                 circos_url = '?ref=%s&' % reference_taxon
                 circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
-                print "circos_url", circos_url
-                envoi_extract = True
 
+                envoi_extract = True
+                locus2annot, \
+                locus_tag2cog_catego, \
+                locus_tag2cog_name, \
+                locus_tag2ko, \
+                pathway2category, \
+                module2category, \
+                ko2ko_pathways, \
+                ko2ko_modules,\
+                locus2interpro = get_locus_annotations(biodb, locus_list)
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
         form = extract_form_class()  # Nous créons un formulaire vide
@@ -1376,6 +1416,18 @@ def extract_cog(request, biodb):
                 taxon_out_url = "&o="+("&o=").join(exclude)
                 circos_url = '?ref=%s&' % reference_taxon
                 circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
+
+                locus2annot, \
+                locus_tag2cog_catego, \
+                locus_tag2cog_name, \
+                locus_tag2ko, \
+                pathway2category, \
+                module2category, \
+                ko2ko_pathways, \
+                ko2ko_modules,\
+                locus2interpro = get_locus_annotations(biodb, locus_list)
+
+
 
                 envoi_extract = True
 
@@ -2058,8 +2110,8 @@ def fam(request, biodb, fam, type):
             if len(labels) > 30:
                 big = True
                 path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
-                asset_path = '/assets/temp/cog_tree_%s.png' % fam
-                tree.render(path, dpi=1200, h=600)
+                asset_path = '/assets/temp/fam_tree_%s.png' % fam
+                tree.render(path, dpi=2200, h=1000)
             else:
                 big = False
                 path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.svg' % fam
