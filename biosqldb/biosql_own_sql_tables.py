@@ -370,9 +370,11 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
                 SeqIO.write(seqs, f, "fasta")
 
 
-def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb):
+def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter=False):
 
     import manipulate_biosqldb
+    import biosql_own_sql_tables
+
     server, db = manipulate_biosqldb.load_db(biodb)
 
     group_filter = '"' + '","'.join(ordered_orthogroups) + '"'
@@ -380,10 +382,17 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb):
 
     columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
               'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-    sql_2 = 'select %s from orthology_detail_%s where orthogroup in (%s)' % (columns, biodb, group_filter)
-
+    if not taxon_filter:
+        sql_2 = 'select %s from orthology_detail_%s where orthogroup in (%s)' % (columns, biodb, group_filter)
+    else:
+        taxon_filter = [str(i) for i in taxon_filter]
+        taxon_f = ','.join(taxon_filter)
+        sql_2 = 'select %s from orthology_detail_%s where orthogroup in (%s) and taxon_id in (%s)' % (columns,
+                                                                                                      biodb,
+                                                                                                      group_filter,
+                                                                                                      taxon_f)
     raw_data = server.adaptor.execute_and_fetchall(sql_2,)
-    import biosql_own_sql_tables
+
     orthogroup2genes = biosql_own_sql_tables.orthogroup2gene(biodb)
     orthogroup2products = biosql_own_sql_tables.orthogroup2product(biodb)
     orthogroup2cogs = biosql_own_sql_tables.orthogroup2cog(biodb)
