@@ -3774,7 +3774,6 @@ def get_locus_annotations(biodb, locus_list):
           ' COG.cog_names_2014 as B on A.COG_id=B.COG_id' % (biodb,
                                                              '"' + '","'.join(locus_list) + '"')
 
-
     sql3 = 'select locus_tag,ko_id from enzyme.locus2ko_%s where locus_tag in (%s) ' % (biodb,
                                                                             '"' + '","'.join(locus_list) + '"')
     sql4 = 'select pathway_name,pathway_category from enzyme.kegg_pathway'
@@ -4510,10 +4509,26 @@ def get_orthogroup_fasta(request, biodb, orthogroup, seqtype):
                 fasta+='>%s %s\n%s\n' % (i[1], i[0], seq)
 
     response = HttpResponse(content_type='text/plain')
-    response['Content-Disposition'] = 'attachment; filename="fasta.fa"'
+    response['Content-Disposition'] = 'attachment; filename="%s_fasta.fa"' % orthogroup
     response.write(fasta)
     return response
 
+def get_newick_tree(request, biodb, orthogroup):
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
+    print sql_tree
+    try:
+
+        tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
+    except IndexError:
+        tree = 'No tree for orthogroup: %s' % orthogroup
+
+    response = HttpResponse(content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename="%s_tree.nwk"' % orthogroup
+    response.write(tree)
+    return response
 
 def get_fasta(request, biodb):
 
@@ -4740,7 +4755,7 @@ def circos_main(request, biodb):
 
 
     circos_new_file = '/assets/circos/circos_clic.html'
-
+    print settings.BASE_DIR + circos_new_file
     with open(settings.BASE_DIR + circos_new_file, "w") as f:
         f.write(circos_html)
 

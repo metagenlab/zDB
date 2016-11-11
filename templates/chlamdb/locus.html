@@ -77,7 +77,7 @@
                 {% endif %}
 
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' biodb data.0 %}', 'orthoIDframe'); return false">Phylogenetic distribution</a></li>
-                <li><a href="#tab55" data-toggle="tab">Download</a></li>
+                <li><a href="#tab55" data-toggle="tab">MSA</a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' biodb data.0 True %}', 'orthoIDframe'); return false">Orthogroup conservation</a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' biodb data.0 %}', 'orthoIDframe'); return false">Pfam tree</a></li>
                 {% if cog_data %}
@@ -118,7 +118,8 @@
                         <td id="entete_features">
                             <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' biodb data.0 "aa"%}'">fasta aa</button>
                             <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' biodb data.0 "nucl"%}'">fasta nucl</button>
-
+                            <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_newick_tree' biodb data.0 %}'">newick tree</button>
+                            <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% static alignment_fasta %}'">MSA</button>
                         </td>
                         </tr>
                         <tr>
@@ -434,26 +435,62 @@
         </div>
 
             <div class="tab-pane" id="tab55">
-                            <h2>Sequences</h2>
+                            <h2>Multiple Sequence Alignment</h2>
                             <table>
-                                 <tr>
-                                    <td id="entete_sequences"><a href="{% static fasta %}">Protein sequences (fasta)</a> </td>
-                                </tr>
+
                                 <tr>
-                                    <td><a href="{% static alignment %}">Protein alignment (html)</a> </td>
+
+                                    <script src="https://cdn.bio.sh/msa/latest/msa.min.gz.js"></script>
+                                    <div id="msa">Loading Multiple Alignment...</div>
+
+                                    <script>
+                                    var getKeys = function(obj){
+                                       var keys = [];
+                                       for(var key in obj){
+                                          keys.push(key);
+                                       }
+                                       return keys;
+                                    };
+
+                                    var m = msa({
+                                        importURL: "{% static alignment_fasta %}",
+                                        el: document.getElementById("msa"),
+                                        bootstrapMenu: true
+                                    });
+
+                                    var w = $(window).width();
+                                    var h = $(window).height();
+                                    m.g.config.set("registerMouseHover", "True");
+                                    m.g.zoomer.set("alignmentHeight", h*0.55);
+                                    m.g.zoomer.set("alignmentWidth", w*0.83);
+                                    m.g.zoomer.set("overviewboxPaddingTop", "80");
+                                    m.g.zoomer.set("boxRectHeight", 1.1);
+                                    m.g.zoomer.set("boxRectWidth", 1.1);
+                                    m.g.zoomer.set("labelFontsize", 9);
+                                    m.g.zoomer.set("rowHeight", 11);
+                                    m.g.zoomer.set("columnWidth", 11);
+                                    m.g.vis.set("overviewbox", "True");
+
+                                    m.g.on("row:click", function(data){
+                                        window.open("{% url 'locusx' biodb %}" + m.seqs.at(data.seqId).attributes['name'] + "/True")
+                                    });
+                                    msa.g.on("row:hover", function(data){
+                                        console.log(data.seqId)
+
+                                    });
+
+                                    m.render();
+                                    </script>
+
+
+
+
                                 </tr>
-                                <tr>
-                                    <td><a href="{% static alignment_fasta %}">Protein alignment (fasta)</a> </td>
-                                </tr>
-                                <tr>
-                                    <td><a href="{% static alignment_fasta_nucl %}">Nucleotide sequences (fasta)</a> </td>
-                                </tr>
-                                    <td><a href="{% url "chlamdb.views.blastnr" biodb data.1  %}">BLAST NR</a> </td>
-                                </tr>
+
 
                             </table>
             </div>
-            <div class="tab-pane" id="tab66" style="height:2px">
+            <div class="tab-pane" id="tab66" style="height:2px;" >
             <iframe name="orthoIDframe" id="theFrame" style="height:8000px;overflow:hidden;" width="500px" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
             </div>
 
