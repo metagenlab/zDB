@@ -391,18 +391,14 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb):
 
     sql = 'select COG_id,functon,name from COG.cog_names_2014;'
     sql2 = 'select signature_accession,signature_description from interpro_%s where analysis="Pfam" group by signature_accession;' % biodb
-    print sql
     cog2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    print sql2
     pfam2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
-    print 'ok'
 
 
     match_groups_data = []
     group_data = ''
-
+    print 'getting annotation data for %s groups...' % len(ordered_orthogroups)
     for i, group in enumerate(ordered_orthogroups):
-        print i
         genes_data = ''
         for gene in orthogroup2genes[group]:
             genes_data += '%s (%s)<br/>' % (gene, orthogroup2genes[group][gene])

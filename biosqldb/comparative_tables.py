@@ -715,7 +715,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    '''
+
     create_comparative_tables(args.database_name, "Pfam")
     create_comparative_tables(args.database_name, "EC")
     create_comparative_tables(args.database_name, "interpro")
@@ -731,23 +731,21 @@ if __name__ == '__main__':
 
     identity_closest_homolog(args.database_name)
 
-    #shared_orthogroups_average_identity(args.database_name)
+    shared_orthogroups_average_identity(args.database_name)
 
     create_comparative_tables_accession(args.database_name, 'Pfam')
     create_comparative_tables_accession(args.database_name, "EC")
     create_comparative_tables_accession(args.database_name, "interpro")
     create_comparative_tables_accession(args.database_name, "COG")
     create_comparative_tables_accession(args.database_name, "ko")
-
-    '''
     create_comparative_tables_accession(args.database_name, "orthology")
 
 
-    #collect_Pfam_accession(args.database_name)
-    #collect_EC_accession(args.database_name)
-    #collect_interpro_accession(args.database_name)
-    #collect_COGs_accession(args.database_name)
-    #collect_ko_accession(args.database_name)
+    collect_Pfam_accession(args.database_name)
+    collect_EC_accession(args.database_name)
+    collect_interpro_accession(args.database_name)
+    collect_COGs_accession(args.database_name)
+    collect_ko_accession(args.database_name)
     collect_orthogroup_accession(args.database_name)
 
     #get_mysql_table("chlamydia_03_15", "Pfam")
