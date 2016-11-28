@@ -1,0 +1,66 @@
+              <script type="text/javascript" id="js2">
+
+                $(document).ready(function() {
+                    /* no reference genome by default */
+                    var x=document.getElementById("id_reference");
+                    for (var i = 0; i < x.options.length; i++) {
+                        $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
+                    }
+
+                    /* don't show plasmids by default */
+                    var y=document.getElementById("id_orthologs_in");
+                    for (var i = 0; i < y.options.length; i++) {
+                        if (y.options[i].text.includes('plasmid')) {
+                            console.log(y.options[i].value);
+                            $("#id_orthologs_in").children("option[value^=" + y.options[i].value + "]").hide();
+                            $("#id_no_orthologs_in").children("option[value^=" + y.options[i].value + "]").hide()
+                        } else {
+                            console.log(y.options[i].value);
+                            $("#id_orthologs_in").children("option[value^=" + y.options[i].value + "]").show()
+                        }
+                    }
+                    /* only show selected genomes as possible references */
+                    $("#id_orthologs_in").change(function() {
+                        document.getElementById("id_reference").selectedIndex=0;
+                        var x=document.getElementById("id_orthologs_in");
+                        for (var i = 0; i < x.options.length; i++) {
+
+                            if(x.options[i].selected == true){
+                                $("#id_reference").children("option[value^=" + x.options[i].value + "]").show();
+                                $("#id_no_orthologs_in").children("option[value^=" + x.options[i].value + "]").hide()
+                            }else{
+                                $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide();
+                                if (x.options[i].text.includes('plasmid')) {
+                                    if (document.getElementById('checkbox_accessions').checked) {
+                                        $("#id_no_orthologs_in").children("option[value^=" + x.options[i].value + "]").show()
+                                    } else {
+                                        $("#id_no_orthologs_in").children("option[value^=" + x.options[i].value + "]").hide()
+                                    }
+                                } else {
+                                    $("#id_no_orthologs_in").children("option[value^=" + x.options[i].value + "]").show()
+                                }
+
+                            }
+                        }
+                    });
+
+                    /* only show plasmids if checkbox for accessions is checked*/
+                    $("#checkbox_accessions").change(function() {
+                            var x = document.getElementById("id_orthologs_in");
+                            for (var i = 0; i < x.options.length; i++) {
+
+                                if (y.options[i].text.includes('plasmid')) {
+                                    if (document.getElementById('checkbox_accessions').checked) {
+                                        $("#id_orthologs_in").children("option[value^=" + y.options[i].value + "]").show()
+                                        $("#id_no_orthologs_in").children("option[value^=" + y.options[i].value + "]").show()
+                                    } else {
+                                        $("#id_orthologs_in").children("option[value^=" + y.options[i].value + "]").hide()
+                                        $("#id_no_orthologs_in").children("option[value^=" + y.options[i].value + "]").hide()
+                                    }
+                                } else {
+                                    $("#id_orthologs_in").children("option[value^=" + y.options[i].value + "]").show()
+                                }
+                            }
+                    })
+                })
+          </script>

@@ -4,114 +4,117 @@
 <html>
 <head>
 
-{% load staticfiles %}
-{% load static %}
-
-
-
-
+    {% load staticfiles %}
+    {% load static %}
 
 </head>
+
 <body>
 
-<div id="container">
-    <div id="sidebar">
-
-    {% include "chlamdb/menu.html" %}
-    </div>
-    <div id="header">
-
-    {% include "chlamdb/user.html" %}
-
-    </div>
-    <div id="content">
-        <h1>Overview</h1>
-
-
-
-
-
-<i class="disabled users icon"></i>
-
-        <div id="export_bouttons">
-            <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'genomes_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-
-            <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'genomes_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-            <br/>
+    <div id="container">
+        <div id="sidebar">
+            {% include "chlamdb/menu.html" %}
         </div>
-
-        <table class="sortable" cellspacing="0" border="0" id="genomes_table">
-        <col style="width: 37px;"/>
-        <col style="width: 27px;"/>
-        <col style="width: 20px;"/>
-        <col style="width: 20px;"/>
-        <col style="width: 20px;"/>
-        <col style="width: 80px;"/>
-        <col style="width: 10px;"/>
-        <col style="width: 10px;"/>
-        <col style="width: 10px;"/>
-        <col style="width: 10px;"/>
-        <col style="width: 10px;"/>
-        <tr>
-        <th>Accession</th>
-        <th>GC</th>
-        <th>N proteins</th>
-        <th>N contigs</th>
-        <th>Size</th>
-        <th>Organism</th>
-        <th colspan="5">Download</th>
-        </tr>
-        {% for values in genomes_data %}
-
-            <tr>
-            <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/{{values.0}}">{{values.0}}<a></td>
-                <td>{{values.1}}</td>
-            <td>{{values.2}}</td>
-            <td>{{values.3}}</td>
-            <td>{{values.4}}</td>
-            <td>{{values.5}}</td>
-
-            <td style="vertical-align:top" nowrap>
-                <a  style="text-decoration:none;" href="/assets/{{biodb}}/gbk/{{values.0}}.gbk">
-                <span style="background-color:#DCFFF0;color:black;padding:1px;">GBK</span></a>
-            </td>
-
-            <td snowrap>
-            <a  style="text-decoration:none;" href="/assets/{{biodb}}/faa/{{values.0}}.faa">
-            <span style="background-color:#DCFFF0;color:black;padding:1px;">FAA</span></a>
-            </td>
-
-            <td nowrap>
-            <a  style="text-decoration:none;" href="/assets/{{biodb}}/fna/{{values.0}}.fna">
-            <span style="background-color:#DCFFF0;color:black;padding:1px;">FNA</span></a>
-            </td>
-
-            <td nowrap>
-            <a  style="text-decoration:none;" href="/assets/{{biodb}}/ffn/{{values.0}}.ffn">
-            <span style="background-color:#DCFFF0;color:black;padding:1px;">FFN</span></a>
-            </td>
-
-            <td nowrap>
-            <a  style="text-decoration:none;" href="/assets/{{biodb}}/tab/{{values.0}}.tab">
-            <span style="background-color:#DCFFF0;color:black;padding:1px;">TAB</span></a>
-            </td>
-
-        {% endfor %}
-    </table>
-
-        <!--<img src="{% static 'chlam_tree.png' %}" width="80%"-->
+        <div id="header">
+            {% include "chlamdb/user.html" %}
+        </div>
+        <div id="content">
 
 
+            <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                <li class="active"><a href="#tab0" data-toggle="tab">Genomes</a></li>
+                <li><a href="#tab1" data-toggle="tab">Phylogeny</a></li>
+            </ul>
 
+
+            <div id="my-tab-content" class="tab-content">
+                <div class="tab-pane active" id="tab0">
+
+                    <i class="disabled users icon"></i>
+
+                    <div id="export_bouttons">
+                        <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'genomes_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+
+                        <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'genomes_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                        <br/>
+                    </div>
+
+                    <table class="sortable" cellspacing="0" border="0" id="genomes_table">
+                        <col style="width: 37px;"/>
+                        <col style="width: 27px;"/>
+                        <col style="width: 20px;"/>
+                        <col style="width: 20px;"/>
+                        <col style="width: 20px;"/>
+                        <col style="width: 80px;"/>
+                        <col style="width: 10px;"/>
+                        <col style="width: 10px;"/>
+                        <col style="width: 10px;"/>
+                        <col style="width: 10px;"/>
+                        <col style="width: 10px;"/>
+                        <tr>
+                        <th>Accession</th>
+                        <th>GC</th>
+                        <th>N proteins</th>
+                        <th>N contigs</th>
+                        <th>Size</th>
+                        <th>Organism</th>
+                        <th colspan="5">Download</th>
+                        </tr>
+                        {% for values in genomes_data %}
+
+                            <tr>
+                            <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/{{values.0}}">{{values.0}}<a></td>
+                                <td>{{values.1}}</td>
+                            <td>{{values.2}}</td>
+                            <td>{{values.3}}</td>
+                            <td>{{values.4}}</td>
+                            <td>{{values.5}}</td>
+
+                            <td style="vertical-align:top" nowrap>
+                                <a  style="text-decoration:none;" href="/assets/{{biodb}}/gbk/{{values.0}}.gbk">
+                                <span style="background-color:#DCFFF0;color:black;padding:1px;">GBK</span></a>
+                            </td>
+
+                            <td snowrap>
+                            <a  style="text-decoration:none;" href="/assets/{{biodb}}/faa/{{values.0}}.faa">
+                            <span style="background-color:#DCFFF0;color:black;padding:1px;">FAA</span></a>
+                            </td>
+
+                            <td nowrap>
+                            <a  style="text-decoration:none;" href="/assets/{{biodb}}/fna/{{values.0}}.fna">
+                            <span style="background-color:#DCFFF0;color:black;padding:1px;">FNA</span></a>
+                            </td>
+
+                            <td nowrap>
+                            <a  style="text-decoration:none;" href="/assets/{{biodb}}/ffn/{{values.0}}.ffn">
+                            <span style="background-color:#DCFFF0;color:black;padding:1px;">FFN</span></a>
+                            </td>
+
+                            <td nowrap>
+                            <a  style="text-decoration:none;" href="/assets/{{biodb}}/tab/{{values.0}}.tab">
+                            <span style="background-color:#DCFFF0;color:black;padding:1px;">TAB</span></a>
+                            </td>
+
+                        {% endfor %}
+                    </table>
+                </div>
+                <div class="tab-pane" id="tab1">
+                    <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
+                </div>
+            </div>
+            <!--<img src="{% static 'chlam_tree.png' %}" width="80%"-->
+
+
+
+        </div>
+        <div id="footer"></div>
     </div>
-    <div id="footer"></div>
-</div>
 
-<script>
+    <script>
 
-$('.dropdown-toggle').dropdown()
+    $('.dropdown-toggle').dropdown()
 
-</script>
+    </script>
 </body>
 </html>
 

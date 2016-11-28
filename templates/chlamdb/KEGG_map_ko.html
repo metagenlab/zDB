@@ -32,17 +32,6 @@
        {% else %}
            <div id="content">
 
-
-
-
-
-
-
-
-
-
-
-
            {%  if menu %}
 
                 <div id="sidebar">
@@ -71,9 +60,6 @@
                     <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.genome.jp/kegg-bin/show_pathway?{% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %}', 'orthoIDframe2'); return false">Informations</a></li>
 
 
-
-
-
                 </ul>
 
                 <div id="my-tab-content" class="tab-content">
@@ -87,7 +73,16 @@
 
                             {% for values in map_data%}
                                 <tr>
-                                <td><a href="{% url 'fam' biodb values.3 'ko' %}" target="_top">{{values.3}}</a></td><td>{{values.4}}</td>
+                                    <td>{{values.0}}</td>
+                                    <td>{{values.1}}</td>
+                                    <td>{{values.2}}</td>
+                                    {%if not ' ' in values.3 and not '-' in values.3 %}
+                                        <td><a href="{% url 'fam' biodb values.3 'EC' %}" target="_top">{{values.3}}</a></td>
+                                    {% else %}
+                                        <td>{{values.3}}</td>
+                                    {% endif %}
+                                    <td><a href="{% url 'fam' biodb values.4 'ko' %}" target="_top">{{values.4}}</a></td>
+                                    <td>{{values.5}}</td>
                                 </tr>
                             {% endfor %}
 
@@ -98,7 +93,8 @@
                         <iframe name="orthoIDframe2" id="theFrame2" scrolling="no" width="100%" height="1800px"></iframe>
                     </div>
                     <div class="tab-pane" id="tab2">
-                        <object style="height:100vh;" type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
+                        baba
+                        <object style="height:130vh;" type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
                     </div>
                     <div class="tab-pane" id="tab3">
                         <object type="image/svg+xml" data="{% static asset_path2 %}" id="cog_tree2"></object>
@@ -113,6 +109,7 @@
         </div>
     </div>
 </div>
+
 
 
 </body>
