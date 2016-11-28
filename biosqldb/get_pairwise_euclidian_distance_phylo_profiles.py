@@ -14,6 +14,8 @@ def chunks(l, n):
     "return sublists of l of minimum length n (work subdivision for the subprocesing module"
     return [l[i:i+n] for i in range(0, len(l), n)]
 
+def check_proximity(profile, cutofff):
+    pass
 
 
 def sql_euclidian_dist_orthogroups(biodb, one_list, orthogroup2profile):
@@ -38,6 +40,7 @@ def euclidian_dist_orthogroups(biodb):
     import manipulate_biosqldb
     from multiprocessing import Process
     import math
+    import pandas
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -50,7 +53,12 @@ def euclidian_dist_orthogroups(biodb):
         print 'problem creating the sql table'
 
     sql = 'select * from comparative_tables.orthology_%s' % biodb
-    orthogroup2profile = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+
+    # get matrix as pantas table: orthogroups as rows, genomes as columns
+    # replace values > 1 by one (profile of presence/absence)
+    # possibility: merge closely related data (merge columns)
+    orthogroup_profiles = server.adaptor.execute_and_fetchall(sql,)
 
     combinations = []
 
@@ -58,30 +66,28 @@ def euclidian_dist_orthogroups(biodb):
     # allows then to split the job into 8 process
     total = len(orthogroup2profile.keys())
     for i, orthogroup_1 in enumerate(orthogroup2profile.keys()):
-        #if i == 1000:
-        #    break
         print "%s/%s" % (i, total)
+        #if no homologs in other genomes, skip
         if sum(orthogroup2profile[orthogroup_1]) == 1:
-            print 'skip!'
             continue
-        count = 0
-        for n in orthogroup2profile[orthogroup_1]:
-            if n>0:
-                count+=1
-        if count>1:
-            print 'range', i, total
-            for y, orthogroup_2 in enumerate(orthogroup2profile.keys()[i:]):# in range(i, total):
-                #orthogroup_2 = orthogroup2profile.keys()[y]
-                if sum(orthogroup2profile[orthogroup_2]) == 1:
-                    continue
-                count = 0
-                for n in orthogroup2profile[orthogroup_2]:
-                    if n>0:
-                        count+=1
-                if count<=1:
-                    continue
-                else:
-                    combinations.append((orthogroup_1, orthogroup_2))
+        #count = 0
+        #for n in orthogroup2profile[orthogroup_1]:
+        #    if n > 0:
+        #        count+=1
+
+        #if count>1:
+        for y, orthogroup_2 in enumerate(orthogroup2profile.keys()[i:]):# in range(i, total):
+            # if no homolog in other genomes, skip
+            if sum(orthogroup2profile[orthogroup_2]) == 1:
+                continue
+            count = 0
+            for n in orthogroup2profile[orthogroup_2]:
+                if n>0:
+                    count+=1
+            if count<=1:
+                continue
+            else:
+                combinations.append((orthogroup_1, orthogroup_2))
     n_cpu = 8
     print 'n of pairs:', len(combinations)
     #import sys

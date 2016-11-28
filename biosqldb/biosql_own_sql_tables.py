@@ -370,7 +370,7 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
                 SeqIO.write(seqs, f, "fasta")
 
 
-def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter=False):
+def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter=False, accessions=False):
 
     import manipulate_biosqldb
     import biosql_own_sql_tables
@@ -385,12 +385,20 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
     if not taxon_filter:
         sql_2 = 'select %s from orthology_detail_%s where orthogroup in (%s)' % (columns, biodb, group_filter)
     else:
-        taxon_filter = [str(i) for i in taxon_filter]
-        taxon_f = ','.join(taxon_filter)
-        sql_2 = 'select %s from orthology_detail_%s where orthogroup in (%s) and taxon_id in (%s)' % (columns,
-                                                                                                      biodb,
-                                                                                                      group_filter,
-                                                                                                      taxon_f)
+        if not accessions:
+            taxon_filter = [str(i) for i in taxon_filter]
+            taxon_f = ','.join(taxon_filter)
+            sql_2 = 'select %s from orthology_detail_%s where orthogroup in (%s) and taxon_id in (%s)' % (columns,
+                                                                                                          biodb,
+                                                                                                          group_filter,
+                                                                                                          taxon_f)
+        else:
+            taxon_filter = [str(i) for i in taxon_filter]
+            taxon_f = '"'+'","'.join(taxon_filter)+'"'
+            sql_2 = 'select %s from orthology_detail_%s where orthogroup in (%s) and accession in (%s)' % (columns,
+                                                                                                          biodb,
+                                                                                                          group_filter,
+                                                                                                          taxon_f)
     raw_data = server.adaptor.execute_and_fetchall(sql_2,)
 
     orthogroup2genes = biosql_own_sql_tables.orthogroup2gene(biodb)
@@ -901,16 +909,15 @@ def collect_genome_statistics(biodb):
                                                                            one_genome[2],
                                                                            one_genome[3],
                                                                            one_genome[4],
-                                                                           one_genome[5]    )
+                                                                           one_genome[5])
         print sql
         server.adaptor.execute(sql,)
         server.commit()
 
 def get_comparative_subtable(biodb, table_name, first_col_name, taxon_list, exclude_taxon_list, ratio=1, single_copy=False, accessions=False):
+
     import pandas
     import numpy
-
-
 
     server, db = manipulate_biosqldb.load_db(biodb)
     if not accessions:
