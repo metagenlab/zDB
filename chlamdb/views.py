@@ -342,7 +342,8 @@ def extract_orthogroup(request, biodb):
 
                     match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(match_groups,
                                                                                                                   biodb,
-                                                                                                                  taxon_filter=include)
+                                                                                                                  taxon_filter=include,
+                                                                                                                  accessions=accessions)
                     columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                               'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
 
@@ -464,7 +465,7 @@ def venn_orthogroup(request, biodb):
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
-    venn_form_class = make_venn_from(biodb,plasmid=True)
+    venn_form_class = make_venn_from(biodb, plasmid=True)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form_venn = venn_form_class(request.POST)
@@ -1952,8 +1953,10 @@ def fam(request, biodb, fam, type):
         elif type == 'interpro':
             sql1 = 'select locus_tag from interpro_%s where interpro_accession="%s" group by locus_tag' % (biodb, fam)
             sql2 = 'select signature_description from interpro_%s where interpro_accession="%s" limit 1' % (biodb, fam)
-            info = server.adaptor.execute_and_fetchall(sql2, )[0]
-
+            try:
+                info = server.adaptor.execute_and_fetchall(sql2, )[0]
+            except IndexError:
+                valid_id = False
         elif type == 'EC':
             sql1 = 'select locus_tag from enzyme.locus2ec_%s as t1 ' \
                    ' inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id where ec="%s" group by locus_tag;' % (biodb,
@@ -5646,6 +5649,8 @@ def primer_search(request, biodb):
             stdout, stderr, code = shell_command.shell_command(mview_cmd)
             blast_result = stdout
 
+
+
             #blast_result = NCBIXML.parse(StringIO(stdout))
             #print blast_result
             #blast_record = next(blast_result)
@@ -5844,6 +5849,7 @@ def blast(request, biodb):
                 f.write(blast_stdout)
                 f.close()
 
+                blast_file_l = "/tmp/blast.temp"
 
 
                 #blast_file.write(blast_stdout)
@@ -6595,7 +6601,7 @@ def interactions(request, biodb, orthogroup):
 
     print 'n profile hits', all_groups_profile
 
-    all_groups_neig = string_networks.find_links_recusrsive(biodb, [orthogroup], 0.8, n_comp_cutoff=2)
+    all_groups_neig = string_networks.find_links_recusrsive(biodb, [orthogroup], 0.7, n_comp_cutoff=2)
     print 'all groups', all_groups_neig
     if len(all_groups_neig) == 0:
         neig_match = False
@@ -6604,6 +6610,80 @@ def interactions(request, biodb, orthogroup):
 
 
     return render(request, 'chlamdb/interactions.html', locals())
+
+def plot_heatmap(request, biodb, type):
+    import biosql_own_sql_tables
+    import heatmap
+    import numpy as np
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    form_class = make_venn_from(biodb, plasmid=True)
+
+    if request.method == 'POST':
+
+        form_venn = form_class(request.POST)
+
+        if 'venn' in request.POST and form_venn.is_valid():
+            targets = form_venn.cleaned_data['targets']
+
+            try:
+                accessions = request.POST['checkbox_accessions']
+                accessions = True
+            except:
+                accessions = False
+                accession2taxon = manipulate_biosqldb.accession2taxon_id(server, biodb)
+                targets = [str(accession2taxon[i]) for i in targets]
+            # oarticularity of orthology table
+            if type == 'orthology':
+                col_id = 'orthogroup'
+            else:
+                col_id = 'id'
+
+            if not accessions:
+                # get sub matrix and complete matrix
+                taxon2description = manipulate_biosqldb.taxon_id2genome_description(server,biodb)
+                mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
+                                                                          type,
+                                                                          col_id,
+                                                                          targets,
+                                                                          [],
+                                                                          ratio=1/float(len(targets)),
+                                                                          single_copy=False,
+                                                                          accessions=accessions)
+                taxon_list = list(mat.columns.values)
+                labels = [taxon2description[i] for i in taxon_list]
+
+            else:
+                accession2description = manipulate_biosqldb.accession2description(server,biodb)
+                mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
+                                                                          type,
+                                                                          'id',
+                                                                          targets,
+                                                                          [],
+                                                                          ratio=1/float(len(targets)),
+                                                                          single_copy=False,
+                                                                          accessions=accessions)
+                accession_list = list(mat.columns.values)
+                labels = [accession2description[i] for i in accession_list]
+
+            m = np.array(mat.transpose())
+            m = m.astype(float)
+            collabels = [""]*len(m[1,:])
+            for i in range(0,len(m[1,:]), 100):
+                collabels[i] = i
+            heatmap.heatmap_pangenome(m, output="/home/trestan/test_heatmap.png",
+                            breaks="-0.5, 0.5, 1.5, 2.5",
+                            rows=labels,
+                            format="png",
+                            orderCols=True)
+
+
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+        form_venn = form_class()
+    return render(request, 'chlamdb/plot_heatmap.html', locals())
+
 
 def profile_interactions(request, biodb, orthogroup):
 
@@ -6667,7 +6747,7 @@ def neig_interactions(request, biodb, orthogroup):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    all_groups = string_networks.find_links_recusrsive(biodb, [orthogroup], 0.8, n_comp_cutoff=10)
+    all_groups = string_networks.find_links_recusrsive(biodb, [orthogroup], 0.7, n_comp_cutoff=2)
     print 'all groups', all_groups
     if len(all_groups) == 0:
         match = False

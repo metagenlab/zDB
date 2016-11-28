@@ -79,50 +79,14 @@
             {% load static %}
 
             <!--<object type="image/svg+xml" data="{{circos_new_file}}" id="pfam_tree" width="100%" height="1000px"></object>-->
+            <div style="position: relative; left: 0; top: 0;">
+                    <a href="{{ circos_new_file }}"><img src="{% static ""%}{{circos_file}}" id="circos_plot" style="position: absolute; top: 00px; left: 00px;"></a>
 
-            <a href="{{ circos_new_file }}"><img src="{% static ""%}{{circos_file}}" id="circos_plot"></a>
+                    <img src="{{ STATIC_URL }}circos/legend.png" id="circos_legend"  width="160" style="position: relative; top: 0; left: 0;">
 
+            </div>
         {% endif %}
 
-
-        {% if envoi_region %}
-            <table>
-              <tr>
-
-            <!--["contig", "type", "start", "stop", "length", "GC", "strand", "gene", "function", "inference",
-                                  "gi", "locus", "translation"]-->
-
-            <th id="entete3">{{header.1}}</th>
-            <th id="entete3">{{header.4}}</th>
-            <th id="entete3">{{header.5}}</th>
-            <th id="entete3">{{header.6}}</th>
-            <th id="entete3">{{header.7}}</th>
-            <th id="entete3">{{header.8}}</th>
-
-            <th id="entete3">{{header.11}}</th>
-            <th id="entete_circos">{{header.12}}</th>
-              </tr>
-
-              {% for one_feature in result %}
-                  <tr>
-            <td id="entete3">{{one_feature.1}}</td>
-
-            <td id="entete3">{{one_feature.4}}</td>
-            <td id="entete3">{{one_feature.5}}</td>
-            <td id="entete3">{{one_feature.6}}</td>
-            <td id="entete3">{{one_feature.7}}</td>
-            <td id="entete3">{{one_feature.8}}</td>
-
-            <td id="entete3">{{one_feature.11}}</td>
-            <td id="entete_circos">{{one_feature.12}}</td>
-                  </tr>
-              {% endfor %}
-
-
-            </table>
-
-
-        {% endif %}
 
     </div>
 </div>
