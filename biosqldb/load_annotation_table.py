@@ -3,6 +3,7 @@
 
 def import_annot(annot_file, biodb):
     import manipulate_biosqldb
+    from datetime import datetime
 
     '''
     import annotation file of the form as tabulated file with 4 columns:
@@ -18,19 +19,29 @@ def import_annot(annot_file, biodb):
           ' gene varchar(400),' \
           ' locus_tag varchar(400),' \
           ' description TEXT,' \
+          ' reference TEXT,' \
+          ' date varchar(400),' \
           ' index locus_tag(locus_tag));' % biodb
     print sql
     server.adaptor.execute(sql,)
     with open(annot_file, 'r') as f:
         for n, one_row in enumerate(f):
+            now = datetime.now()
+            str_date = "%s-%s-%s" % (now.year, now.month, now.day)
+
             data = one_row.rstrip().split('\t')
-            sql = 'insert into  custom_tables.annot_table_%s values ("%s", "%s", "%s", "%s");' % (biodb,
-                                                                                              data[0],
-                                                                                              data[1],
-                                                                                              data[2],
-                                                                                              data[3])
-            print sql
-            server.adaptor.execute(sql,)
+            print len(data)
+            if len(data) == 5:
+                sql = 'insert into  custom_tables.annot_table_%s (category, gene, locus_tag, description,' \
+                      ' reference, date) values ("%s", "%s", "%s", "%s", "%s", "%s");' % (biodb,
+                                                                                                  data[0],
+                                                                                                  data[1],
+                                                                                                  data[2],
+                                                                                                  data[3],
+                                                                                                  data[4],
+                                                                                                  str_date)
+                #print sql
+                server.adaptor.execute(sql,)
         server.commit()
 
 if __name__ == '__main__':

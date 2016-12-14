@@ -198,18 +198,19 @@ def colorscale(hexstr, scalefactor):
 
 
 
-def plot_multiple_regions_crosslink(target_protein_list, region_record_list, plasmid_list, out_name, biodb_name="chlamydia_03_15"):
+def plot_multiple_regions_crosslink(target_protein_list, region_record_list, plasmid_list, out_name, biodb_name="chlamydia_03_15", color_locus_list = []):
 
-    #biodb_name = "chlamydia_03_15"
-    print 'DB name!!!!', biodb_name
+
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
     import matplotlib as mpl
-    norm = mpl.colors.Normalize(vmin=20, vmax=100)
-    cmap = cm.RdBu#Blues
+    import MySQLdb
+
+    norm = mpl.colors.Normalize(vmin=-30, vmax=100)
+    cmap = cm.Blues
     m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
-    import MySQLdb
+
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
                                 passwd="estrella3", # your password
@@ -223,8 +224,6 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
     max_len = 0
     records = dict((rec.name, rec) for rec in region_record_list)
 
-    print "records.......", records
-
     n_records = len(region_record_list)
     
     record_length = [len(record) for record in region_record_list] 
@@ -235,7 +234,7 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
         #Allocate tracks 3 (top), 1 (bottom) for region 1 and 2
         #(empty tracks 2 useful white space to emphasise the cross links
         #and also serve to make the tracks vertically more compressed)
-        gd_track_for_features = gd_diagram.new_track((1*n_records-1)-1*i, name=record.name, greytrack=True, height=0.5, start=0, end=len(record))
+        gd_track_for_features = gd_diagram.new_track((1*n_records-1)-1*i, name=record.name, greytrack=True, height=0.4, start=0, end=len(record))
         if record.name not in feature_sets:
                 feature_sets.append(gd_track_for_features.new_set())
         else:
@@ -243,7 +242,7 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
            print record
            quit
 
-
+    print 'looping....'
     for x in range(0,len(region_record_list)-1):
         print "x", x
         features_X = region_record_list[x].features
@@ -357,6 +356,7 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
         gd_feature_set = feature_sets[n]
         i = 0
 
+
         if plasmid_list[x]:
             #print "PLASMID!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             color1 = colors.HexColor('#2837B7')
@@ -398,15 +398,23 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
             else:
 
                 try:
-                    a = feature.qualifiers["locus_tag"]
+                    a = feature.qualifiers["locus_tag"][0]
                 except:
                     # cas des pseudogenes qui sont des CDS mais n'ont pas de protein ID
                     continue
 
-                if len(gd_feature_set) % 2 == 0:
-                    color = color1
+                print 'locus!!!!!!!', a
+                if a in color_locus_list:
+                    print '###########################', a, color_locus_list
+                    if len(gd_feature_set) % 2 == 0:
+                        color = colors.HexColor('#ca4700')
+                    else:
+                        color = colors.HexColor('#fd7a32')
                 else:
-                    color = color2
+                    if len(gd_feature_set) % 2 == 0:
+                        color = color1
+                    else:
+                        color = color2
 
                 #try:
                 #    try:
@@ -547,7 +555,7 @@ def chunks(l, n):
 
 out_q = Queue()
 
-def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, region_size_bp, cache):
+def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, region_size_bp, cache, color_locus_list = []):
     plasmid_list = []
     sub_record_list = []
     
@@ -672,7 +680,12 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
                      orthogroup_list.append(feature.qualifiers['orthogroup'][0])
                  except:
                      pass
-    region_locus_list = plot_multiple_regions_crosslink(locus_tag_list, sub_record_list, plasmid_list, out_name, biodb_name)
+    region_locus_list = plot_multiple_regions_crosslink(locus_tag_list,
+                                                        sub_record_list,
+                                                        plasmid_list,
+                                                        out_name,
+                                                        biodb_name,
+                                                        color_locus_list=color_locus_list)
     return region_locus_list, orthogroup_list
     
     #for record in reformat_records:

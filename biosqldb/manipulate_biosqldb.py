@@ -426,7 +426,14 @@ def seqfeature_id2seqfeature_qualifier_values(server, seqfeature_id, biodatabase
     description = server.adaptor.execute_and_fetchall(sql2, )[0][0]
 
     result = server.adaptor.execute_and_fetchall(sql, (seqfeature_id, biodatabase_name))
-    data = _to_dict(result)
+    data = {}
+    for i in result:
+        if i[0] not in data:
+            data[i[0]] = i[1]
+        else:
+            asl = [data[i[0]]]
+            data[i[0]] = asl
+            data[i[0]].append(i[1])
     data["description"] = description
     return data
 

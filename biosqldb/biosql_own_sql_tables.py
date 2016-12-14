@@ -865,6 +865,7 @@ def collect_genome_statistics(biodb):
 
     sql = 'select accession, organism, count(*) from orthology_detail_%s group by accession;' % biodb
 
+
     print 'getting accession2genome_data...'
     # organism name, protein encoding ORF number
     accession2genome_data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
