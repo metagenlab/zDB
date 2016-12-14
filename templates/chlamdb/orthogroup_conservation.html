@@ -46,7 +46,8 @@
 
 
                <div>
-               <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree"></object>
+                    <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree"></object>
+                   <img src="{{ STATIC_URL }}scales/scale_identity_red.png" id="circos_legend"  width="160" style="position: absolute; top: 100px; left: 600px;">
                </div>
             </div>
                 <div class="tab-pane" id="tab66" style="height:8800px">

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+
+</head>
+<body>
+<div id="container">
+
+
+
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+    <div id="content">
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px"><p>
+baba
+            </p>
+            </p>
+        </div>
+        <form action="{% url "chlamdb.views.add_locus_int" biodb %}" method="post">
+
+
+        <div class="row">
+            <div class="col-md-2 col-md-offset-1" style="width:80%;height:700px">
+                <div class="well well-lg"  style="width:80%;height:700px">
+                    <form class="form-horizontal" action="" autocomplete="off" method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="form-group">
+                              <label class="col-md-4 control-label" for="{{ field.label }}"> {{ field.label }}</label>
+                              <div class="col-md-6">
+                                {{ field }} <br/><br/>
+                                {% for error in field.errors %}
+                                <p>
+                                  <strong>{{ error|escape }}</strong>
+                                </p>
+                              {% endfor %}
+                              </div>
+                            </div>
+                        {% endfor %}
+                        <input type="submit" value="Submit" />
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
+
+        </form>
+
+
+
+        {% if envoi %}
+            &nbsp
+            <h2>Comment added!</h2>
+            <meta http-equiv="REFRESH" content="0;url={% url 'add_locus_int' biodb %}">
+
+        {% endif %}
+    </div>
+</div>
+
+<div id="footer"></div>
+
+
+
+</body>
+
+
+<script>
+function addColor(domNode, color, letter){
+    if(domNode.nodeType!=1||!domNode.hasAttribute('edited')){
+        if(domNode.nodeType==3){
+            var newText=document.createElement('span');
+            newText.innerHTML=domNode.textContent;
+            newText.setAttribute('edited', true);
+            var text = newText.innerHTML.split('').map(function(el){
+              if(el==letter){
+                return '<i style=\"color:'+color+'\">'+el+'</i>';
+              }
+              else{
+                return el;
+              }
+          }).join('');
+          newText.innerHTML=text;
+          domNode.parentNode.replaceChild(newText,domNode);
+        }
+        for(var i=0; i<domNode.childNodes.length;i++){
+            addColor(domNode.childNodes[i], color, letter);
+        }
+    }
+}
+addColor(document.getElementById('tblastn'), 'red', '*');
+
+</script>
+<style>
+    ​textarea { vertical-align: top; }​
+
+
+</style>
+
+</html>

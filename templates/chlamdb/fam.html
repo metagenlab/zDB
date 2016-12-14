@@ -43,8 +43,12 @@
                     </div>
                {% endif %}
 
-                   <h3>{{ fam }} </h3>
-
+                   <h3>{{ fam }}  {% if type == 'ko' %} <button type="button" class="btn btn-primary btn-xs"
+                                                                onclick="location.href='{% url 'ko2fasta' biodb fam %}'">ko fasta</button>
+                                                        <button type="button" class="btn btn-primary btn-xs"
+                                                                onclick="location.href='{% url 'ko2fasta' biodb fam "T" %}'"> ko fasta + homologs</button>
+                                       {%endif%}
+                   </h3>
                     <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                         <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
                         <li><a href="#tab2" data-toggle="tab">Details</a></li>

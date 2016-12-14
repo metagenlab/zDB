@@ -39,7 +39,7 @@
     <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.2.5/cytoscape-qtip.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/4.10.3/css/bootstrap-slider.min.css">
-    <script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script>
+
     <script type="text/javascript" src="{% static 'js/cytoscape-cola.js' %}"></script>
 
 </head>
@@ -47,10 +47,19 @@
 <body height="2000px">
 <h3>Conserved neighborhood for {{orthogroup}}</h3>
     {% if match %}
-        <div id="cy" style="width:600px;height:600px"></div>
+
+        <div class="row">
+            <div class="col-xs-6" style="padding-left: 15px">
+                <div id="cy" style="width:600px;height:600px"></div>
+            </div>
+            <div class="col-xs-6" style="padding-left: 15px">
+                <object type="image/svg+xml" data="{% static asset_path %}" id="cluster_profile"></object>
+            </div>
+        </div>
 
 
-        <ul style="padding-top: 610px" id="tabs" class="nav nav-tabs" data-tabs="tabs">
+
+        <ul style="padding-top: 5px" id="tabs" class="nav nav-tabs" data-tabs="tabs">
             <li class="active"><a href="#tab1" data-toggle="tab">Annotation</a></li>
             <li><a href="#tab2" data-toggle="tab">Profile</a></li>
             <!--<li><a href="#tab77" data-toggle="tab" onclick="window.open('{% url 'plot_region_direct' biodb orthogroup %}{{plot_url|safe}}', 'orthoIDframe4'); return false">Region</a></li>-->

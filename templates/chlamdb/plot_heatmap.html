@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+
+
+<html>
+<div id="container">
+
+
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+
+    </div>
+
+    <div id="content">
+
+        <nav>
+            <ul id="tabs" class="nav nav-tabs">
+                        <li><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
+                        <li class="active"><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
+                        <li><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups with paralogs</a></li>
+
+            </ul>
+        </nav>
+
+        <div id="extract_form">
+            <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                  <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Help</h3>
+                  </div>
+                <p style="margin: 10px 10px 10px 10px">Venn diagramm of orthologous groups constructed based on BLAST using orthoMCL, max 6 genomes</p>
+            </div>
+
+
+            <form action="{% url "chlamdb.views.plot_heatmap" biodb type %}" method="post">
+
+                <div class="form-inline">
+                    <div class="form-group">
+                         <div class="col-md-11" style="width: 100%;">
+                              <label style="width:380px;text-align:left;" >
+                                  <input type="checkbox" id="id_checkbox_accessions" name="checkbox_accessions">
+                                  Distinguish plasmids from chromosomes
+                              </label>
+                        </div>
+                    </div>
+                </div>
+
+
+                {% csrf_token %}
+                {{ form_venn.as_p }}
+                <input type="submit" name="venn" value="extract homologues" id="venn_button" />
+
+            </form>
+
+        </div>
+
+     {% if envoi_venn %}
+
+        {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=orthogroup2description %}
+
+    {% endif %}
+
+
+
+    </div>
+
+</div>
+<div id="footer"></div>
+<!--
+<script type="text/javascript">$(document).ready( function(){ $("#jqtest").html("JQuery installed successfully!"); } ); </script>
+
+-->
+
+<script>
+    $(document).ready(function() {
+        /* no plasmids by default */
+        var y=document.getElementById("id_targets");
+        for (var i = 0; i < y.options.length; i++) {
+            if (y.options[i].text.includes('plasmid')) {
+                $("#id_targets").children("option[value^=" + y.options[i].value + "]").hide();
+            } else {
+                $("#id_targets").children("option[value^=" + y.options[i].value + "]").show()
+            }
+        }
+    $("#id_checkbox_accessions").change(function() {
+            var x = document.getElementById("id_targets");
+            for (var i = 0; i < x.options.length; i++) {
+
+                if (y.options[i].text.includes('plasmid')) {
+                    if (document.getElementById('id_checkbox_accessions').checked) {
+                        $("#id_targets").children("option[value^=" + y.options[i].value + "]").show()
+                    } else {
+                        $("#id_targets").children("option[value^=" + y.options[i].value + "]").hide()
+                    }
+                } else {
+                    $("#id_targets").children("option[value^=" + y.options[i].value + "]").show()
+                }
+            }
+    })
+
+    })
+
+
+</script>
+
+
+
+<p id="jqtest"></p>
+
+</body>
+</html>

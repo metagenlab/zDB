@@ -70,13 +70,20 @@
 
                 {%if input_type != 'orthogroup' %}
                 <li class="active"><a href="#tab1" data-toggle="tab">Overview</a></li>
+                <li><a href="#tab3" data-toggle="tab">Sequences</a></li>
                 <li><a href="#tab2" data-toggle="tab">InterproScan</a></li>
                 <li><a href="#tab33" data-toggle="tab">Homologs</a></li>
                 {% else %}
                  <li class="active"><a href="#tab33" data-toggle="tab">Homologs</a></li>
                 {% endif %}
 
+                {% if input_type == 'locus_tag'%}
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' biodb locus %}', 'orthoIDframe'); return false">Phylogenetic distribution</a></li>
+                {%else%}
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' biodb data.0 %}', 'orthoIDframe'); return false">Phylogenetic distribution</a></li>
+                {%endif%}
+
+
                 <li><a href="#tab55" data-toggle="tab">MSA</a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' biodb data.0 True %}', 'orthoIDframe'); return false">Orthogroup conservation</a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' biodb data.0 %}', 'orthoIDframe'); return false">Pfam tree</a></li>
@@ -85,7 +92,7 @@
                 {% endif %}
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' biodb data.1 %}', 'orthoIDframe'); return false">Region</a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastnr' biodb data.1 %}', 'orthoIDframe'); return false">Blast NR</a></li>
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'interactions' biodb data.0 %}', 'orthoIDframe'); return false">Interactions</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'interactions' biodb data.1 %}', 'orthoIDframe'); return false">Interactions</a></li>
 
             </ul>
             <div id="my-tab-content" class="tab-content">
@@ -105,152 +112,253 @@
                     </div>
 
 
+                    <div class="row">
+                        <div class="col-xs-4" style="padding-left: 15px">
+                            <h3>General</h3>
+                            <div style="width: 100%;padding-left:20px">
+                                <table style="width: 100%">
+                                    <tr>
+                                        <td id="description_field">Organism</td>
+                                        <td>{{ data.12 }}</td>
+                                    </tr>
+
+
+
+                                    <tr>
+                                        <td id="description_field">locus_tag</td>
+                                        <td>{{ data.1 }}</td>
+                                    </tr>
+                                    {% if old_locus_tag %}
+                                        <tr>
+                                            <td id="description_field">old locus_tag</td>
+                                            <td>{{ old_locus_tag }}</td>
+                                        </tr>
+                                    {% endif %}
+                                    <td  id="description_field">gene</td>
+                                        <td>{{ data.6 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>protein_id</td>
+                                        <td>{{ data.2 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Location</td>
+                                        <td>{{ data.3 }} - {{ data.4 }} (strand: {{ data.5 }})</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Length</td>
+                                        <td>{{ nucl_length }} (nucleotides) / {{aa_length}} (amino acids)</td>
+                                    </tr>
+
+
+
+                                </table>
+                            </div>
+                            <h3>Download</h3>
+                            <div style="width: 100%;padding-left:20px">
+                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' biodb data.0 "aa"%}'">fasta aa</button>
+                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' biodb data.0 "nucl"%}'">fasta nucl</button>
+                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_newick_tree' biodb data.0 %}'">newick tree</button>
+                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% static alignment_fasta %}'">MSA</button>
+                            </div>
+
+                            <h3>Orthology</h3>
+                            <div style="width: 100%;padding-left:20px">
+                                <table>
+
+                                    <tr>
+                                        <td id="description_field">orthogroup</td>
+                                        <td>{{ data.0 }}</td>
+                                    </tr>
+                                    <td id="description_field">orthogroup size</td>
+                                        <td>{{ data.7 }}</td>
+                                    </tr>
+
+                                    <td id="description_field">n genomes</td>
+                                        <td>{{ data.8 }}</td>
+                                    </tr>
+                                    {%if cog_data %}
+                                        <tr>
+                                        <td id="description_field"><a href="{% url 'fam' biodb cog_data.0 'cog' %}" target="_top">COG</a></td>
+                                        <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}"  target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
+                                        </tr>
+                                    {% endif %}
+                                    {%if ko_data %}
+                                        <tr>
+                                        <td id="description_field"><a href="{% url 'fam' biodb ko_data.0 'ko' %}" target="_top">KO</a></td>
+                                        <td><a href="http://www.genome.jp/dbget-bin/www_bget?ko:{{ko_data.0}}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
+                                        </tr>
+                                    {% endif %}
+
+
+                                </table>
+                            </div>
+                            {% if protparams_data %}
+                            <h3>ProtParams</h3>
+                            <div style="width: 100%;padding-left:20px">
+                                <table>
+                                    <tr>
+                                        <td id="description_field">Molecular Weight</td>
+                                        <td>{{protparams_data.0}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td id="description_field">Isoelectric Point</td>
+                                        <td>{{protparams_data.1}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td id="description_field">Aromaticity</td>
+                                        <td>{{protparams_data.2}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td id="description_field">Instability Index</td>
+                                        <td>{{protparams_data.3}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td id="description_field">Fractions helix/turn/sheet</td>
+                                        <td>{{protparams_data.4}}/{{protparams_data.5}}/{{protparams_data.6}}</td>
+                                    </tr>
+
+                                </table>
+                            </div>
+                            {% endif %}
+
+                            <h3>Orthogroup {{ data.0 }} Annotation</h3>
+                            <div style="width: 100%;padding-left:20px">
+                                <table>
+                                    <tr>
+                                    <td id="description_field">Comment orthogroup   <a href="{% url 'add_comment' biodb data.1 %}">  edit</a></td>
+                                    <td>
+                                        {% for values in cmt_format%}
+                                            {{values.0}}: {{values.1|safe}} </br>
+                                        {% endfor %}
+                                     </td>
+                                    </tr>
+
+                                </table>
+                            </div>
+
+                            {%if uniprot_id %}
+                            <h3>Annotation evidence</h3>
+                                <table>
+                                    <tr>
+                                    <td>BLast VS Uniprot</td>
+                                    <td><a href="http://www.uniprot.org/uniprot/{{uniprot_id}}"  target="_top">{{uniprot_id}}</a></td>
+                                    </tr>
+                                </table>
+                            {% endif %}
+
+
+                        </div>
+                        <div class="col-xs-8">
+                            <h3>Product</h3>
+                            <table>
+                                <tr>
+                                    <td id="description_field">Product</td>
+                                    <td>{{ data.11 }}</td>
+                                </tr>
+
+                            </table>
+                            <h3>Domains</h3>
+                            <table>
+                                <tr>
+                                    <td id="description_field">TM</td>
+                                    <td id="description_field">{{ data.9 }}</td>
+                                </tr>
+                                    <td id="description_field">SP</td>
+                                    <td>{{ data.10 }}</td>
+                                </tr>
+                                {%if pfam_data %}
+                                    {% for values in pfam_data %}
+                                        <tr>
+                                            <td id="description_field"><a href="{% url 'fam' biodb values.0 'pfam' %}" target="_top">Pfam: {{values.0}}</a></td>
+                                            <td>{{values.1}}</td>
+                                        </tr>
+
+                                    {% endfor %}
+                                {% endif %}
+
+                                {%if interpro_data %}
+                                    {% for values in interpro_data %}
+                                        <tr>
+                                            <td id="description_field"><a href="{% url 'fam' biodb values.0 'interpro' %}" target="_top">Interpro: {{values.0}}</a></td>
+                                            <td>{{values.1}}</td>
+                                        </tr>
+
+                                    {% endfor %}
+                                {% endif %}
+
+                            </table>
+                            {%if ko_pathway_data or ko_module_data %}
+                                <h3>Pathways/Modules</h3>
+                                <table>
+                                    {%if ko_pathway_data %}
+
+                                        {% for pathway in ko_pathway_data %}
+                                            <tr>
+                                                <td>Pathway: {{pathway.1}} <a href="{% url 'KEGG_mapp_ko' biodb pathway.1 %}" target="_top">ko_based</a> /
+                                                    <a href="{% url 'KEGG_mapp' biodb pathway.1 %}" target="_top">priam_ec based</a></td>
+                                                <td>{{pathway.2}}</td>
+                                                <td>{{pathway.3}}</td>
+                                            </tr>
+                                        {% endfor %}
+
+
+                                    {% endif %}
+                                    {%if ko_module_data %}
+
+                                        {% for module in ko_module_data %}
+                                            <tr>
+                                                <td>Module: <a href="{% url 'KEGG_module_map' biodb module.1 %}" target="_top">{{module.1}} (ko_based)</a>
+                                                <td>{{module.2}}</td>
+                                                <td>{{module.3}}</td>
+                                            </tr>
+                                        {% endfor %}
+
+
+                                    {% endif %}
+                            {% endif %}
+                            </table>
+                            {%if operon %}
+                                <h3>Operon</h3>
+                                <table>
+                                    <tr>
+                                        <th>DOOR2 id</th>
+                                        <th>locus</th>
+                                        <th>old_locus</th>
+                                        <th>COG</th>
+                                        <th>Product</th>
+                                    </tr>
+                                    {% for locus in operon %}
+
+                                    <tr>
+                                        <td><a href="http://csbl.bmb.uga.edu/DOOR/operon.php?id={{locus.0}}#basic">{{locus.0}}</a></td>
+                                        {%if locus.2 != '-'%}
+                                            <td><a href="{% url 'locusx' biodb locus.2 True %}" target="_top">{{locus.2}}</a></td>
+                                        {% else %}
+                                            <td>{{locus.2}}</td>
+                                        {% endif %}
+                                        {%if locus.3 != '-'%}
+                                            <td><a href="{% url 'locusx' biodb locus.3 True %}" target="_top">{{locus.3}}</a></td>
+                                        {% else %}
+                                            <td>{{locus.3}}</td>
+                                        {% endif %}
+                                        <td>{{locus.4}}</td>
+                                        <td>{{locus.5}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                            {% endif %}
+
+
+                        </div>
+                    </div>
 
 
 
                     <table>
-                    <tr>
-                    <th id="entete">Feature</th>
-                    <th>Value</th>
-                    </tr>
-                        <tr>
-                        <td>download</td>
-                        <td id="entete_features">
-                            <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' biodb data.0 "aa"%}'">fasta aa</button>
-                            <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' biodb data.0 "nucl"%}'">fasta nucl</button>
-                            <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_newick_tree' biodb data.0 %}'">newick tree</button>
-                            <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% static alignment_fasta %}'">MSA</button>
-                        </td>
-                        </tr>
-                        <tr>
-                        <td>orthogroup</td>
-                        <td id="entete_features">{{ data.0 }}</td>
-                        </tr>
-
-                        <tr>
-                        <td>locus_tag</td>
-                        <td id="entete_features">{{ data.1 }}</td>
-                        </tr>
-                        {% if old_locus_tag %}
-                            <tr>
-                            <td>old locus_tag</td>
-                            <td id="entete_features">{{ old_locus_tag }}</td>
-                            </tr>
-                        {% endif %}
-                        <tr>
-                        <td>protein_id</td>
-                        <td id="entete_features">{{ data.2 }}</td>
-                        </tr>
-
-                        <tr>
-                        <td>start</td>
-                        <td id="entete_features">{{ data.3 }}</td>
-                        </tr>
-                        <tr>
-                        <td>stop</td>
-                        <td id="entete_features">{{ data.4 }}</td>
-                        </tr>
-                        <tr>
-                        <td>Length</td>
-                        <td id="entete_features">{{ nucl_length }} (nucleotides) / {{aa_length}} (amino acids)</td>
-                        </tr>
-                         <tr>
-                        <td>strand</td>
-                        <td id="entete_features">{{ data.5 }}</td>
-                        </tr>
-                        <td>gene</td>
-                        <td id="entete_features">{{ data.6 }}</td>
-                        </tr>
-                        <td>orthogroup size</td>
-                        <td id="entete_features">{{ data.7 }}</td>
-                        </tr>
-
-                        <td>n genomes</td>
-                        <td id="entete_features">{{ data.8 }}</td>
-                        </tr>
-                        <td>TM</td>
-                        <td id="entete_features">{{ data.9 }}</td>
-                        </tr>
-                        <td>SP</td>
-                        <td id="entete_features">{{ data.10 }}</td>
-                        </tr>
-                        <td>Product</td>
-                        <td id="entete_features">{{ data.11 }}</td>
-                        </tr>
-                        <td>Organism</td>
-                        <td id="entete_features">{{ data.12 }}</td>
-                        </tr>
-                        <tr>
-                        <td>Translation</td>
-                        <td id="entete_features">{{ data.13 }}</td>
-                        </tr>
-                        <tr>
-                        <td>Sequence</td>
-                        <td id="entete_features">{{ seq|safe }}</td>
-                        </tr>
-                        <td>Comment orthogroup   <a href="{% url 'add_comment' biodb data.1 %}">  edit</a></td>
-                        <td id="entete_features">
-                            {% for values in cmt_format%}
-                            {{values.0}}: {{values.1|safe}} </br>
-                            {% endfor %}
-                        </td>
-                        </tr>
 
 
-                        {%if cog_data %}
-                            <tr>
-                            <td><a href="{% url 'fam' biodb cog_data.0 'cog' %}" target="_top">COG</a></td>
-                            <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}"  target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
-                            </tr>
-                        {% endif %}
-                        {%if ko_data %}
-                            <tr>
-                            <td><a href="{% url 'fam' biodb ko_data.0 'ko' %}" target="_top">KO</a></td>
-                            <td><a href="http://www.genome.jp/dbget-bin/www_bget?ko:{{ko_data.0}}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
-                            </tr>
-                        {% endif %}
-                        {%if pathways %}
-                            <tr>
-                            <td>Pathways</td>
-                            <td>
-                                {% for pathway in pathways %}
-                                <a href="{% url 'KEGG_mapp_ko' biodb pathway %}" target="_top">{{pathway}} (ko based)</a>,
-                                <a href="{% url 'KEGG_mapp' biodb pathway %}" target="_top">{{pathway}} (priam_ec based)</a>
-                                {% endfor %}
-                            </td>
-                            </tr>
-                        {% endif %}
-                        {%if modules %}
-                            <tr>
-                            <td>Modules (ko based)</td>
-                            <td>
-                                {% for module in modules %}
-                                <a href="{% url 'KEGG_module_map' biodb module %}" target="_top">{{module}}</a>
-                                {% endfor %}
-                            </td>
-                            </tr>
-                        {% endif %}
-
-
-                        {%if pfam_data %}
-                        {% for values in pfam_data %}
-                            <tr>
-                            <td><a href="{% url 'fam' biodb values.0 'pfam' %}" target="_top">Pfam: {{values.0}}</a></td>
-                            <td id="entete_features">{{values.1}}</td>
-                            </tr>
-
-                        {% endfor %}
-                        {% endif %}
-
-                        {%if interpro_data %}
-                        {% for values in interpro_data %}
-                            <tr>
-                            <td><a href="{% url 'fam' biodb values.0 'interpro' %}" target="_top">Interpro: {{values.0}}</a></td>
-                            <td id="entete_features">{{values.1}}</td>
-                            </tr>
-
-                        {% endfor %}
-                        {% endif %}
 
                         {%if pathway_data %}
                         {% for key, values in all_path.items %}
@@ -258,27 +366,27 @@
                                 {% if key == 'KEGG' %}
                                     <tr>
                                     <td>{{key}} (IP based)</td>
-                                    <td id="entete_features"><a href="http://www.genome.jp/kegg-bin/show_pathway?ec{{v}}">{{v}}</a></td>
+                                    <td><a href="http://www.genome.jp/kegg-bin/show_pathway?ec{{v}}">{{v}}</a></td>
                                     </tr>
                                 {% elif key == 'UniPathway' %}
                                     <tr>
                                     <td>{{key}} (IP based)</td>
-                                    <td id="entete_features"><a href="http://www.unipathway.org//upa?upid={{v}}">{{v}}</a></td>
+                                    <td><a href="http://www.unipathway.org//upa?upid={{v}}">{{v}}</a></td>
                                     </tr>
                                 {% elif key == 'Reactome' %}
                                     <tr>
                                     <td>{{key}} (IP based)</td>
-                                    <td id="entete_features"><a href="http://www.reactome.org/content/detail/{{v}}">{{v}}</a></td>
+                                    <td><a href="http://www.reactome.org/content/detail/{{v}}">{{v}}</a></td>
                                     </tr>
                                 {% elif key == 'MetaCyc' %}
                                     <tr>
                                     <td>{{key}} (IP based)</td>
-                                    <td id="entete_features"><a href="http://metacyc.org/META/NEW-IMAGE?type=NIL&object={{v}}">{{v}}</a></td>
+                                    <td><a href="http://metacyc.org/META/NEW-IMAGE?type=NIL&object={{v}}">{{v}}</a></td>
                                     </tr>
                                 {% else %}
                                     <tr>
                                     <td>{{key}} (IP based)</td>
-                                    <td id="entete_features">{{v}}</td>
+                                    <td>{{v}}</td>
                                     </tr>
                                 {% endif %}
 
@@ -288,8 +396,20 @@
 
                     </table>
                 </div>
+                <div class="tab-pane" id="tab3" width="100%" height="100%">
 
+                    <table>
+                        <tr id="description_field">>
+                            <td>Translation</td>
+                            <td>{{ data.13 }}</td>
+                        </tr>
+                        <tr id="description_field">>
+                            <td>Sequence</td>
+                            <td>{{ seq|safe }}</td>
+                        </tr>
+                    </table>
 
+                </div>
                 <div class="tab-pane" id="tab2" width="100%" height="100%">
 
                    <h3>Interpro</h3>
@@ -297,14 +417,16 @@
                     <table>
                         <tr>
                             <th id="entete">Analysis</th>
-                            <th>Name</th>
-                            <th>Start</th>
-                            <th>End</th>
-                            <th>Description</th>
-                            <th>Interpro</th>
+                            <th>signature_accession</th>
+                            <th>signature_description</th>
+                            <th>start</th>
+                            <th>stop</th>
+                            <th>score</th>
+                            <th>interpro_accession</th>
+                            <th>interpro_description</th>
                         </tr>
 
-                        {% for values in interpro_data %}
+                        {% for values in interpro_data_detail %}
                         <tr>
                             <td>{{values.0}}</td>
 
@@ -339,9 +461,12 @@
                             <td>{{values.2}}</td>
                             <td>{{values.3}}</td>
                             <td>{{values.4}}</td>
-                            {% if values.5 != '0' %}
+                            <td>{{values.5}}</td>
 
-                               <td><a href="http://www.ebi.ac.uk/interpro/entry/{{values.5}}">{{values.5}}: {{values.6}}</a></td>
+                            {% if values.6 != '0' %}
+
+                               <td><a href="http://www.ebi.ac.uk/interpro/entry/{{values.6}}">{{values.6}}</a></td>
+                               <td>{{values.7}}</td>
                             {% else %}
                                <td>-</td>
                             {% endif %}
@@ -524,10 +649,14 @@
   $("#id_plot_region").change(update_fields);
 </script>
 -->
+<style>
+#description_field{
+    width:100px;
 
 
+}
 
-
+</style>
 
 </body>
 </html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+{% load staticfiles %}
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
+{% load custom_tags %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+</head>
+
+<body style="margin:0px;padding:0px;overflow:hidden">
+<div id="container">
+
+
+           <div id="content">
+
+
+                <div id="sidebar">
+                    {% include "chlamdb/menu.html" %}
+                </div>
+                <div id="header">
+                    {% include "chlamdb/user.html" %}
+                </div>
+
+                   <nav>
+                        <ul id="tabs_main" class="nav nav-tabs">
+                            <li class="active"><a href="{% url 'extract_cog' biodb %}">Heatmap</a></li>
+                            <li><a href="{% url 'module_comparison' biodb %}">Compare strains</a></li>
+                        </ul>
+                    </nav>
+
+
+
+                   <form action='{% url "chlamdb.views.module2heatmap" biodb %}' method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="submit" value="Submit" />
+
+                    </form>
+
+                    {%if envoi %}
+
+
+                            <div>
+                                <object type="image/svg+xml" data="{% static asset_path %}" id="metabo_tree"></object>
+                            </div>
+
+
+
+
+                    {%endif%}
+
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>
