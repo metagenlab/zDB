@@ -2,7 +2,7 @@
 
 from ete2 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace, BarChartFace, StackedBarFace, NodeStyle
 
-def plot_heat_tree(tree_file, biodb="chlamydia_04_16"):
+def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, bw_scale=False):
     import manipulate_biosqldb
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
@@ -40,13 +40,20 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16"):
 
     my_taxons = [lf.name for lf in t1.iter_leaves()]
 
-    genome_sizes = [float(taxon2genome_size[i]) for i in my_taxons]
-    gc_list = [float(taxon2gc[i]) for i in my_taxons]
-    fraction_list = [float(taxon2coding_density[i]) for i in my_taxons]
     # Calculate the midpoint node
     R = t1.get_midpoint_outgroup()
     # and set it as tree outgroup
     t1.set_outgroup(R)
+    
+    if exclude_outgroup:
+        excluded = str(list(t1.iter_leaves())[0].name)
+        my_taxons.pop(my_taxons.index(excluded))
+    print my_taxons
+        
+    genome_sizes = [float(taxon2genome_size[i]) for i in my_taxons]
+    gc_list = [float(taxon2gc[i]) for i in my_taxons]
+    fraction_list = [float(taxon2coding_density[i]) for i in my_taxons]
+
 
     value=1
 
@@ -101,6 +108,13 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16"):
             lf.add_face(n, 6, position="aligned")
 
         value+=1
+
+        print '------ %s' % lf.name
+        if exclude_outgroup and i == 0:
+            lf.name = taxon2description[lf.name]
+            print '#######################'
+            continue
+        
         n = TextFace('  %s ' % str(round(taxon2genome_size[lf.name]/float(1000000),2)))
         n.margin_top = 1
         n.margin_right = 1
@@ -113,11 +127,13 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16"):
         print taxon2genome_size[lf.name]
         fraction_biggest = (float(taxon2genome_size[lf.name])/max_genome_size)*100
         fraction_rest = 100-fraction_biggest
-        print fraction_biggest, fraction_rest
         if taxon2description[lf.name] == 'Rhabdochlamydia helveticae T3358':
             col = 'black'
         else:
-            col = rgb2hex(m1.to_rgba(float(taxon2genome_size[lf.name])))  # 'grey'
+            if not bw_scale:
+                col = rgb2hex(m1.to_rgba(float(taxon2genome_size[lf.name])))  # 'grey'
+            else:
+                col = 'grey'
 
         b = StackedBarFace([fraction_biggest, fraction_rest], width=100, height=10,colors=[col, 'white'])
         b.rotation= 0
@@ -132,7 +148,10 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16"):
         if taxon2description[lf.name] == 'Rhabdochlamydia helveticae T3358':
             col = 'black'
         else:
-            col = rgb2hex(m2.to_rgba(float(taxon2gc[lf.name])))
+            if not bw_scale:
+                col = rgb2hex(m2.to_rgba(float(taxon2gc[lf.name])))
+            else:
+                col = 'grey'
         b = StackedBarFace([fraction_biggest, fraction_rest], width=100, height=10,colors=[col, 'white'])
         b.rotation= 0
         b.inner_border.color = "grey"
@@ -155,7 +174,10 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16"):
         if taxon2description[lf.name] == 'Rhabdochlamydia helveticae T3358':
             col = 'black'
         else:
-            col = rgb2hex(m3.to_rgba(float(taxon2coding_density[lf.name])*100))
+            if not bw_scale:
+                col = rgb2hex(m3.to_rgba(float(taxon2coding_density[lf.name])*100))
+            else:
+                col = 'grey'
         n = TextFace('  %s ' % str(round(float(taxon2coding_density[lf.name])*100, 1)))
         n.margin_top = 1
         n.margin_right = 0
@@ -203,6 +225,8 @@ if __name__ == '__main__':
     parser.add_argument("-m",'--matrix',type=str,help="matrix (tab file)")
     parser.add_argument("-s",'--mlst',type=str,help="mlst file")
     parser.add_argument("-d",'--biodb',type=str,help="biodatabase name")
+    parser.add_argument("-e",'--exclude_outgroup',action="store_true",help="exclude outroup from annotation")
+    parser.add_argument("-w",'--bw_scale',action="store_true",help="use black and white color scale") 
     parser.add_argument("-a",'--accession2description',default=False, type=str,help="tab file with accessions and corresponding descriptions for leaf labels")
 
     args = parser.parse_args()
@@ -217,7 +241,7 @@ if __name__ == '__main__':
     else:
         tree = args.tree
 
-    t = plot_heat_tree(tree, args.biodb)
+    t = plot_heat_tree(tree, args.biodb, args.exclude_outgroup, args.bw_scale)
     ts = TreeStyle()
     ts.show_branch_support = False
     t.render("test2.svg", tree_style=ts)

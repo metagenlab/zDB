@@ -37,21 +37,18 @@ def organism2color(locus2data):
     return dict(zip(organism_list, colors))
 
 
-def plot_heat_tree_V1(taxid2n, tree_file, taxid2st, genes, accession2description=False, orgnames=False):
+def plot_heat_tree_V1(taxid2n, tree_file, genes, taxid2st=False, leaf_label_conversion_dico=False):
     '''
     Plot heatmap next to a tree. The order of the heatmap **MUST** be the same,
     as order of the leafs on the tree. The tree must be in the Newick format. If
     *output_file* is specified, then heat-tree will be rendered as a PNG,
     otherwise interactive browser will pop-up with your heat-tree.
 
+    TODO ajouter en option la possibilite d'ajouter en option la valeur dans la cellule
+
     Parameters
     ----------
-    heatmap_file: str
-        Path to the heatmap file. The first row must have '#Names' as first
-        element of the header.
-            e.g. #Names, A, B, C, D
-                row1, 2, 4, 0, 4
-                row2, 4, 6, 2, -1
+
 
     tree_file: str
         Path to the tree file in Newick format. The leaf node labels should
@@ -62,14 +59,6 @@ def plot_heat_tree_V1(taxid2n, tree_file, taxid2st, genes, accession2description
         otherwise interactive browser will pop-up. **N.B.** program will wait
         for you to exit the browser before continuing.
     '''
-    import numpy
-
-    from ete2.treeview.faces import add_face_to_node
-    from ete2 import ClusterTree, TreeStyle, AttrFace, ProfileFace
-
-    if orgnames:
-        pass
-        #taxid2organism = manipulate_biosqldb.taxon_id2genome_description(server, biodb, True)
 
     t1 = Tree(tree_file)
     #t.populate(8)
@@ -88,20 +77,18 @@ def plot_heat_tree_V1(taxid2n, tree_file, taxid2st, genes, accession2description
     leaf_number = 0
     for lf in t1.iter_leaves():
         leaf_number+=1
-
-        #lf.add_face(AttrFace("name", fsize=20), 0, position="branch-right")
         lf.branch_vertical_margin = 0
-        #data = [random.randint(0,2) for x in xrange(3)]
+
         try:
             data = taxid2n[str(lf.name)]
         except:
             data=[0]
-        print 'taxon', lf.name
-        if orgnames:
-            pass
+
         try:
             st = taxid2st[lf.name]
         except:
+            st = False
+            '''
             if "taxon2accession_list" not in locals():
                 import manipulate_biosqldb
                 server, db = manipulate_biosqldb.load_db("k_cosson_05_16")
@@ -125,14 +112,18 @@ def plot_heat_tree_V1(taxid2n, tree_file, taxid2st, genes, accession2description
                                 break
                             except:
                                 continue
+             '''
+
 
         if accession2description:
             try:
                 lf.name = accession2description[lf.name]
             except:
                 pass
-        lf.name = lf.name + ' (' + st + ')'
-
+        if st:
+            lf.name = lf.name + ' (' + st + ')'
+        else:
+            pass
         for col, value in enumerate(data):
 
             print 'col', col, 'value', value
@@ -170,8 +161,6 @@ def plot_heat_tree_V1(taxid2n, tree_file, taxid2st, genes, accession2description
                 n.opacity = 1.
                 lf.add_face(n, col, position="aligned")
 
-
-    #a = t1.render(output_file, dpi=800, h=i*15)
     return t1, leaf_number
 
 def plot_heat_tree_V0(heatmap_file, tree_file, output_file=None):
@@ -275,6 +264,9 @@ def plot_heat_tree_V0(heatmap_file, tree_file, output_file=None):
 
 
 
+
+
+
 def plot_heat_tree(biodb, taxid2n, tree_file):
     '''
     Plot heatmap next to a tree. The order of the heatmap **MUST** be the same,
@@ -300,92 +292,24 @@ def plot_heat_tree(biodb, taxid2n, tree_file):
         otherwise interactive browser will pop-up. **N.B.** program will wait
         for you to exit the browser before continuing.
     '''
-    import numpy
-
-    from ete2.treeview.faces import add_face_to_node
-    from ete2 import ClusterTree, TreeStyle, AttrFace, ProfileFace
-
-
 
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
-
     taxid2organism = manipulate_biosqldb.taxon_id2genome_description(server, biodb, True)
 
-    print taxid2organism
-
     t1 = Tree(tree_file)
-    #t.populate(8)
+
     # Calculate the midpoint node
     R = t1.get_midpoint_outgroup()
     # and set it as tree outgroup
-    t1.set_outgroup(R)    # To operate with numbers efficiently
+    t1.set_outgroup(R)
 
-    # Loads tree and array
-
-
-    '''
-    # Calculates some stats on the matrix. Needed to establish the color
-    # gradients.
-    matrix_dist = [i for r in xrange(len(array.matrix))\
-                   for i in array.matrix[r] if numpy.isfinite(i)]
-    matrix_max = numpy.max(matrix_dist)
-    matrix_min = numpy.min(matrix_dist)
-    matrix_avg = matrix_min+((matrix_max-matrix_min)/2)
-
-    # Creates a profile face that will represent node's profile as a
-    # heatmap
-    profileFace  = ProfileFace(1., 0., 0.5, 100, 14, "heatmap",colorscheme=2)
-
-    nameFace = AttrFace("name", fsize=8)
-    # Creates my own layout function that uses previous faces
-    def mylayout(node):
-        # If node is a leaf
-        if node.is_leaf():
-            # And a line profile
-            add_face_to_node(profileFace, node, 0, aligned=True)
-            node.img_style["size"]=0
-            add_face_to_node(nameFace, node, 1, aligned=True)
-
-    # Use my layout to visualize the tree
-    ts = TreeStyle()
-    ts.layout_fn = mylayout
-    t.show(tree_style=ts)
-    '''
-    import random
-
-    '''
-    for lf in t1.iter_leaves():
-        # Each leaf node must have a profile and a deviation vector, which will be based on your source matrix of values
-        data = [random.randint(0,2) for x in xrange(2)]
-        print data
-        lf.add_features(profile = data)
-        lf.img_style["size"]=0
-        # if no std deviation for the vector values, just use 0
-        lf.add_features(deviation = [0 for x in xrange(10)])
-
-        # Add a ProfileFace to each leaf node (you probably want aligned position). Choose among the following types.
-
-        ProFace =  ProfileFace(max_v=1, min_v=0.0, center_v=0.5, width=40, height=20, style='heatmap', colorscheme=0)
-        ProFace.margin_bottom = 2
-        ProFace.margin_top = 2
-        ProFace.opacity = 0.5
-        lf.add_face(ProFace, column=0, position="aligned")
-        lf.add_face(TextFace("hola "), column=1)
-        #lf.add_face(ProfileFace(max_v=1, min_v=0.0, center_v=0.5, width=200, height=40, style='heatmap', colorscheme=1), column=1, position="aligned")
-        #lf.add_face(ProfileFace(max_v=1, min_v=0.0, center_v=0.5, width=200, height=40, style='heatmap', colorscheme=2), column=2, position="aligned")
-        #lf.add_face(ProfileFace(max_v=1, min_v=0.0, center_v=0.5, width=200, height=40, style='lines', colorscheme=2), column=1, position="aligned")
-        #lf.add_face(ProfileFace(max_v=1, min_v=0.0, center_v=0.5, width=200, height=40, style='bars', colorscheme=2), column=2, position="aligned")
-        #lf.add_face(ProfileFace(max_v=1, min_v=0.0, center_v=0.5, width=200, height=40, style='cbars', colorscheme=2), column=3, position="aligned")
-    '''
     leaf_number = 0
     for lf in t1.iter_leaves():
         leaf_number+=1
         print lf
-        #lf.add_face(AttrFace("name", fsize=20), 0, position="branch-right")
         lf.branch_vertical_margin = 0
-        #data = [random.randint(0,2) for x in xrange(3)]
         try:
             data = [taxid2n[str(lf.name)]]
         except:
@@ -413,8 +337,123 @@ def plot_heat_tree(biodb, taxid2n, tree_file):
                 n.opacity = 1.
                 lf.add_face(n, col, position="aligned")
 
+    return t1, leaf_number
 
-    #a = t1.render(output_file, dpi=800, h=i*15)
+
+def plot_heatmap_tree_locus(biodb, tree_file, taxid2count, taxid2identity=False, taxid2locus =False):
+
+    '''
+
+    plot tree and associated heatmap with count of homolgs
+    optional:
+        - add identity of closest homolog
+        - add locus tag of closest homolog
+
+    '''
+
+
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    taxid2organism = manipulate_biosqldb.taxon_id2genome_description(server, biodb, True)
+
+    print taxid2count
+    print taxid2identity
+
+
+    t1 = Tree(tree_file)
+
+    # Calculate the midpoint node
+    R = t1.get_midpoint_outgroup()
+    # and set it as tree outgroup
+    t1.set_outgroup(R)
+
+    leaf_number = 0
+    for lf in t1.iter_leaves():
+        leaf_number+=1
+        print lf
+        lf.branch_vertical_margin = 0
+        try:
+            data = [taxid2count[str(lf.name)]]
+        except:
+            data=[0]
+        print 'taxon', int(lf.name)
+
+
+        # possibility to add one or more columns
+        for col, value in enumerate(data):
+            if value > 0:
+                n = TextFace(' %s ' % str(value))
+                n.margin_top = 2
+
+                n.margin_right = 2
+                if col == 0:
+                    n.margin_left = 20
+                else:
+                    n.margin_left = 2
+                n.margin_bottom = 2
+                n.inner_background.color = "#81BEF7"
+                n.opacity = 1.
+                lf.add_face(n, col, position="aligned")
+
+            else:
+                n = TextFace(' %s ' % str(value))
+                n.margin_top = 2
+                n.margin_right = 2
+                if col == 0:
+                    n.margin_left = 20
+                else:
+                    n.margin_left = 2
+                n.margin_bottom = 2
+                n.inner_background.color = "white"
+                n.opacity = 1.
+                lf.add_face(n, col, position="aligned")
+        # optionally add additionnal column with identity
+        if taxid2identity:
+            import matplotlib.cm as cm
+            from matplotlib.colors import rgb2hex
+            import matplotlib as mpl
+
+            norm = mpl.colors.Normalize(vmin=0, vmax=100)
+            cmap = cm.OrRd
+            m = cm.ScalarMappable(norm=norm, cmap=cmap)
+
+            try:
+                if round(taxid2identity[str(lf.name)], 2) != 100:
+                    value = "%.2f" % round(taxid2identity[str(lf.name)], 2)
+                else:
+                    value = "%.1f" % round(taxid2identity[str(lf.name)], 2)
+            except:
+                value = '-'
+            n = TextFace(' %s ' % value)
+            n.margin_top = 2
+            n.margin_right = 2
+            n.margin_left = 20
+            n.margin_bottom = 2
+            if value != '-':
+                n.inner_background.color = rgb2hex(m.to_rgba(float(value)))
+                if float(value) > 82:
+                    n.fgcolor = 'white'
+            n.opacity = 1.
+
+            lf.add_face(n, col+1, position="aligned")
+        # optionaly add column with locus name
+        if taxid2locus:
+            try:
+                value = str(taxid2locus[str(lf.name)])
+            except:
+                value = '-'
+            n = TextFace(' %s ' % value)
+            n.margin_top = 2
+            n.margin_right = 2
+            n.margin_left = 2
+            n.margin_bottom = 2
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            lf.add_face(n, col+2, position="aligned")
+        lf.name = taxid2organism[int(lf.name)]
+
     return t1, leaf_number
 
 
@@ -482,5 +521,5 @@ if __name__ == '__main__':
                 data = row.rstrip().split('\t')
                 taxid2n[data[0]] = [float(i) for i in data[1:]]
     print taxid2n
-    t, n = plot_heat_tree_V1(taxid2n, args.tree, taxid2st, genes, accession2description)
+    t, n = plot_heat_tree_V1(taxid2n, args.tree, genes,taxid2st, accession2description)
     t.render("test.svg")

@@ -95,6 +95,57 @@ def get_taxon2orthogroup2count(biodb, orthogroup_id_list):
 
     return taxon2group2n_homologs
 
+
+def get_locus2taxon2identity(biodb, locus_tag_list):
+
+    '''
+    get presence/absence of pfam domain(s) in all organisms of database "biodb"
+    return it as a dictionnary taxon[pfam_id] --> count
+    :param biodb:
+    :param id_list: lit of COgs/interpro/pfam identifiers
+    :param type: COG/Pfam/interpro or any comparative table stored in "comparative_tables" mysql database
+    :return:
+    '''
+
+    import manipulate_biosqldb
+
+    server, db =manipulate_biosqldb.load_db(biodb)
+
+
+
+    sql = 'show columns from comparative_tables.orthology_%s' % (biodb)
+
+    ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
+
+    taxon2locus2identity_closest = {}
+    for locus in locus_tag_list:
+        taxon2locus2identity_closest[locus] = {}
+
+
+    for locus in locus_tag_list:
+        print 'locus', locus
+        sql = 'select taxon_2,locus_2,identity from comparative_tables.identity_closest_homolog_%s where locus_1="%s" UNION' \
+               ' select taxon_1,locus_1,identity from comparative_tables.identity_closest_homolog_%s where locus_2="%s";' % (biodb,
+                                                                                                                             locus,
+                                                                                                                             biodb,
+                                                                                                                             locus)
+
+        identity_data = server.adaptor.execute_and_fetchall(sql, )
+        taxon2identity_closest = {}
+
+        for row in identity_data:
+            taxon2identity_closest[str(row[0])] = row[2]
+        for taxon in ordered_taxons:
+            try:
+                taxon2locus2identity_closest[locus][taxon] = taxon2identity_closest[taxon]
+            except:
+                taxon2locus2identity_closest[locus][taxon] = '-'
+
+    return taxon2locus2identity_closest
+
+
+
+
 def combined_profiles_heatmap(biodb,
                               column_labels,
                               taxon2group2count,
@@ -186,6 +237,7 @@ def combined_profiles_heatmap(biodb,
 
             lf.add_face(n, col, position="aligned")
         lf.name = taxon_id2organism_name[lf.name]
+
         head=False
 
     return t1
@@ -231,7 +283,7 @@ def reverse_colourmap(cmap, name = 'my_cmap_r'):
 
 def pathways_heatmap(biodb,
                       category2maps,
-                      category2taxon2map2count, map2count):
+                      category2taxon2map2count):
 
     '''
     motives (or EC or cogs) are sometimes missed by the annotation. One possibility is to
@@ -401,6 +453,217 @@ def pathways_heatmap(biodb,
 
     return t1
 
+def pathways_heatmapV2(biodb,
+                      category2maps,
+                      category2taxon2map2count):
+
+    '''
+    motives (or EC or cogs) are sometimes missed by the annotation. One possibility is to
+    propagate the prediction of one orthogroup member to the whole orthogroup. This is what this vizualization do:
+    create a profile with hilights:
+    blue: any of the group with target profile is present
+    red: target profile itself is present
+    :param biodb:
+    :param column_labels:
+    :param taxon2group2count:
+    :param taxon2motif2count:
+    :return:
+    '''
+
+    import manipulate_biosqldb
+    import matplotlib.cm as cm
+    from matplotlib.colors import rgb2hex
+    import matplotlib as mpl
+
+
+
+
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
+
+    tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+
+    acc_list = [u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
+
+    filter = '"' + '","'.join(acc_list) + '"'
+    sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
+
+    taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
+
+
+
+    t1 = Tree(tree)
+    print taxon_list
+
+
+    for leaf in t1.iter_leaves():
+        print type(leaf.name)
+
+    print '@@@'
+    t2 = t1.prune(taxon_list)
+    print t2
+
+    R = t1.get_midpoint_outgroup()
+    t1.set_outgroup(R)
+    t1.ladderize()
+
+
+
+
+    taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+
+    taxon2map2color = {}
+    for category in category2maps:
+        for map in category2maps[category]:
+            count_list = []
+            taxon2count = {}
+            for taxon in taxon_id2organism_name.keys():
+                if str(taxon) not in taxon_list:
+                    continue
+                taxon=int(taxon)
+                try:
+                    count_list.append(float(category2taxon2map2count[category][taxon][map[0]][0]))
+                    taxon2count[taxon] = category2taxon2map2count[category][taxon][map[0]][0]
+                except:
+                    continue
+            if len(count_list)>0:
+                #print 'count list',map, count_list, category2taxon2map2count[category][taxon]
+                #if min(count_list) == max(count_list):
+                count_list.append(0)
+                norm = mpl.colors.Normalize(vmin=min(count_list), vmax=max(count_list)) # map2count[map[0]][0]
+                cmap_blue = cm.Blues
+                m2 = cm.ScalarMappable(norm=norm, cmap=cmap_blue)
+                taxon2map2color[map[0]] = {}
+                norm = mpl.colors.Normalize(vmin=min(count_list), vmax=max(count_list)) # map2count[map[0]][0]
+                norm2 = mpl.colors.Normalize(vmin=min(count_list), vmax=max(count_list))
+                cmap_bw = cm.afmhot#YlOrBr
+                #cmap_bw_r = reverse_colourmap(cmap_bw)
+                m1 = cm.ScalarMappable(norm=norm2, cmap=cmap_bw)
+                m2 = cm.ScalarMappable(norm=norm, cmap=cmap_blue)
+                taxon2map2color[map[0]] = {}
+
+
+
+                for taxon in taxon2count:
+                    taxon2map2color[map[0]][taxon] = [rgb2hex(m2.to_rgba(float(taxon2count[taxon]))),
+                                                      rgb2hex(m1.to_rgba(float(taxon2count[taxon])))]
+
+    longest = 0
+    longest_name = ''
+    for x, category in enumerate(category2taxon2map2count):
+
+        for y, map in enumerate(category2maps[category]):
+            name = '%s (%s)' % (map[0], map[1].split('=>')[-1].split('[')[0])
+            if len(name) > longest:
+                longest = len(name)
+                longest_name = name
+
+    head = True
+    for lf in t1.iter_leaves():
+        lf.branch_vertical_margin = 0
+        first_column = True
+        col = 0
+
+        colors = []
+
+        for x, category in enumerate(category2taxon2map2count):
+
+            for y, map in enumerate(category2maps[category]):
+                col +=1
+                #print "column", col
+                taxon = lf.name
+                #print category2taxon2map2count[category][int(taxon)]
+                try:
+                    map_data = category2taxon2map2count[category][int(taxon)][map[0]]
+                except:
+                    #print 'map', map[0]
+                    if head:
+
+                        #print 'ok!'
+                        name = '%s (%s)' % (map[0], map[1].split('=>')[-1].split('[')[0])
+                        diff = longest - len(name) +2
+                        name = name + ('_'*diff)
+                        print name, len(name)
+                        n = TextFace(name)
+                        #n.vt_align = 1
+                        #n.hz_align = 1
+                        n.rotation= 270
+                        n.margin_top = 0
+                        n.margin_right = 0
+                        n.margin_left = 0
+                        n.margin_bottom = 0
+                        if x%2==0:
+                            n.inner_background.color = "white"
+                        else:
+                            n.inner_background.color = "white"
+                        n.opacity = 1.
+                        lf.add_face(n, col, position="aligned")
+
+                    n = TextFace(' 0 ')
+                    n.margin_top = 1
+                    n.margin_right = 1
+                    n.margin_left = 1
+                    n.margin_bottom = 1
+                    # if motif + ==> red
+                    n.fgcolor = "#E0F8F7"
+                    n.inner_background.color = "#E0F8F7" #"#E0F8E0"
+
+                else:
+                    # first row has no enzyme for the considered module
+                    #print "map_data", map_data
+                    #print 'map', map
+                    if head:
+
+                        name = '%s (%s)' % (map[0], map[1].split('=>')[-1].split('[')[0])
+                        diff = longest - len(name)
+                        name = name + ('_'*diff)
+                        print name, len(name)
+                        n = TextFace(name)
+                        #n.vt_align = 1
+                        #n.hz_align = 1
+                        n.rotation= 270
+                        n.margin_top = 0
+                        n.margin_right = 0
+                        n.margin_left = 0
+                        n.margin_bottom = 0
+
+                        if x%2==0:
+                            n.inner_background.color = "white"
+                        else:
+                            n.inner_background.color = "white"
+                        n.opacity = 1.
+                        lf.add_face(n, col, position="aligned")
+
+                    n = TextFace(' %s ' % str(map_data[0]))
+                    n.rotation = 270
+                    n.margin_top = 0
+                    n.margin_right = 0
+                    n.margin_left = 0
+                    n.margin_bottom = 0
+                    # if motif + ==> red
+                    if map_data[0] > 0:
+                        #n.inner_background.color = "#FA5858"
+                        try:
+                            n.inner_background.color = taxon2map2color[map[0]][int(taxon)][0] #"#58ACFA"
+                            n.fgcolor = taxon2map2color[map[0]][int(taxon)][1]
+                        except:
+                            n.inner_background.color = "#58ACFA"
+
+                    else:
+                        n.inner_background.color = "#9FF781"
+                    if taxon_id2organism_name[lf.name]=="helveticae T3358":
+                        n.inner_background.color = "red"
+                        n.fgcolor='white'
+
+
+                lf.add_face(n, col, position="aligned")
+        lf.name = taxon_id2organism_name[lf.name]
+        head=False
+
+    return t1
+
 
 def multiple_profiles_heatmap(biodb,
                               column_labels,
@@ -408,11 +671,42 @@ def multiple_profiles_heatmap(biodb,
                               reference_taxon=False,
                               reference_column = False,
                               taxon2group2value=False,
-                              highlight_first_column=False):
+                              highlight_first_column=False,
+                              identity_scale=False,
+                              show_labels=True):
 
-    print "###################taxon2group2value###################", taxon2group2value
-    print "taxon2group2count", taxon2group2count
+    '''
+
+
+    :param biodb:
+    :param column_labels:
+    :param taxon2group2count:
+    :param reference_taxon:
+    :param reference_column:
+    :param taxon2group2value: color or not background based on
+    :param highlight_first_column:
+    :return:
+    '''
+    print "reference_taxon", reference_taxon
+    if isinstance(reference_taxon, dict):
+        import copy
+        reference_taxon_dico = copy.copy(reference_taxon)
+
+        reference_taxon = False
+    else:
+        reference_taxon_dico = False
+
+
     import manipulate_biosqldb
+
+    if identity_scale:
+        import matplotlib.cm as cm
+        from matplotlib.colors import rgb2hex
+        import matplotlib as mpl
+
+        norm = mpl.colors.Normalize(vmin=0, vmax=100)
+        cmap = cm.OrRd
+        m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -429,33 +723,44 @@ def multiple_profiles_heatmap(biodb,
     taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
     head = True
-    for lf in t1.iter_leaves():
+    leaf_list = [i for i in t1.iter_leaves()]
+    n_leaves = len(leaf_list)
+
+    for lf_count, lf in enumerate(t1.iter_leaves()):
         lf.branch_vertical_margin = 0
+
         first_column = True
         for col, value in enumerate(column_labels):
-            if head:
 
-                    'first row, print gene names'
-                    #print 'ok!'
+            if lf_count == 0:
+                    # add labels
                     n = TextFace(' %s ' % str(value))
+                    n.vt_align = 2
+                    n.hz_align = 2
                     n.rotation= 270
-                    n.margin_top = 2
-                    n.margin_right = 2
-                    n.margin_left = 2
-                    n.margin_bottom = 2
+                    n.margin_top = 0
+                    n.margin_right = 0
+                    n.margin_left = 0
+                    n.margin_bottom = 0
 
+                    from ete2 import NodeStyle
                     n.inner_background.color = "white"
                     n.opacity = 1.
                     lf.add_face(n, col, position="aligned")
+                    #nstyle = NodeStyle()
+                    #nstyle["fgcolor"] = "red"
+                    #nstyle["size"] = 15
+                    #lf.set_style(nstyle)
 
             if first_column and not reference_column and highlight_first_column:
+                # highlight of the first column only (red)
                 n = TextFace(' %s ' % str(taxon2group2count[value][lf.name]))
                 ref_data = str(value)
                 n.margin_top = 2
                 n.margin_right = 2
                 n.margin_left = 2
                 n.margin_bottom = 2
-                if taxon2group2count[value][lf.name] >0:
+                if taxon2group2count[value][lf.name] > 0 and taxon2group2count[value][lf.name] != '-':
                     n.inner_background.color = "#FA5858"
                 else:
                     n.inner_background.color = 'white'
@@ -463,23 +768,61 @@ def multiple_profiles_heatmap(biodb,
             else:
                 if not taxon2group2value:
                     try:
-                        n = TextFace(' %s ' % str(taxon2group2count[value][lf.name]))
-                    except:
-                        n = TextFace(' - ')
+                        # if identity scale: 2 digit format
+                        local_label = str(taxon2group2count[value][lf.name])
+                        if not identity_scale:
+                            local_label = str(taxon2group2count[value][lf.name])
+                        else:
+                            if round(taxon2group2count[value][lf.name], 2) != 100:
+                                local_label = "%.2f" % round(taxon2group2count[value][lf.name], 2)
+                            else:
+                                local_label = "%.1f" % round(taxon2group2count[value][lf.name], 2)
+                        if show_labels:
+                            n = TextFace(' %s ' % local_label)
 
-                    n.margin_top = 2
-                    n.margin_right = 2
-                    n.margin_left = 2
-                    n.margin_bottom = 2
+                        else:
+                            n = TextFace(' - ')
+
+                    except:
+
+                        if not reference_taxon_dico:
+                            n = TextFace(' - ')
+
+                        # if doctionnary locus2taxon report which taxon is the reference
+                        # color the cell in blue
+                        else:
+                            if str(reference_taxon_dico[value]) == lf.name and show_labels:
+                                n = TextFace(' 100.0 ')
+                                n.fgcolor = '#58ACFA'
+                            else:
+                                n = TextFace(' - ')
+
+                    if show_labels:
+                        n.margin_top = 2
+                        n.margin_right = 2
+                        n.margin_left = 2
+                        n.margin_bottom = 2
+                    else:
+                        n.margin_top = 0
+                        n.margin_right = 0
+                        n.margin_left = 0
+                        n.margin_bottom = 5
                     try:
                         count = taxon2group2count[value][lf.name]
                     except:
-                        count=0
-                    if count>0:
+                        count = 0
+                    if count > 0 and taxon2group2count[value][lf.name] != '-':
                         if not reference_column:
                             if not reference_taxon:
                                 if lf.name != str(reference_taxon):
-                                    n.inner_background.color = "#58ACFA"
+                                    # clor given a continuous scale
+                                    if not identity_scale:
+                                        n.inner_background.color = "#58ACFA"
+                                    else:
+                                        n.inner_background.color = rgb2hex(m.to_rgba(float(count)))
+                                        if not show_labels:
+                                            n.fgcolor = rgb2hex(m.to_rgba(float(count)))
+
                                 else:
                                     n.inner_background.color = "#FA5858"
                             else:
@@ -491,14 +834,23 @@ def multiple_profiles_heatmap(biodb,
                             else:
                                 n.inner_background.color = "#58ACFA"
                     else:
-                        n.inner_background.color = 'white'
+
+                        if not reference_taxon_dico:
+                            n.inner_background.color = 'white'
+                        # if doctionnary locus2taxon report which taxon is the reference
+                        # color the cell in blue
+                        else:
+                            if str(reference_taxon_dico[value]) == lf.name:
+                                n.inner_background.color = '#58ACFA'
+                            else:
+                                n.inner_background.color = 'white'
                 else:
                     n = TextFace(' %s ' % str(taxon2group2count[value][lf.name]))
                     n.margin_top = 2
                     n.margin_right = 2
                     n.margin_left = 2
                     n.margin_bottom = 2
-                    if taxon2group2count[value][lf.name] >0:
+                    if taxon2group2count[value][lf.name] > 0 and taxon2group2count[value][lf.name] != '-':
                         if not reference_column:
                             print 'no ref column'
                             if not reference_taxon:
@@ -531,11 +883,8 @@ def multiple_profiles_heatmap(biodb,
                     else:
                         n.inner_background.color = 'white'
 
-
-
-
-
             lf.add_face(n, col, position="aligned")
+
         lf.name = taxon_id2organism_name[lf.name]
         head=False
 
