@@ -13,7 +13,7 @@ def find_links_recusrsive(biodb, all_connected_groups, ratio_cutoff=0.5, n_comp_
     server, db = manipulate_biosqldb.load_db(biodb)
 
     filter = '"' + '","'.join(all_connected_groups) + '"'
-    sql = 'select group_1, group_2 from interactions.colocalization_table_%s where (group_1 in (%s) or group_2 in (%s)) and ' \
+    sql = 'select locus_1, locus_2 from interactions.colocalization_table_locus_%s where (locus_1 in (%s) or locus_2 in (%s)) and ' \
           ' (ratio >= %s and n_comparisons >= %s)' % (biodb, filter, filter, ratio_cutoff, n_comp_cutoff)
 
     print sql
@@ -32,20 +32,25 @@ def find_links_recusrsive(biodb, all_connected_groups, ratio_cutoff=0.5, n_comp_
         return all_groups
 
 
-def find_profile_links_recusrsive(biodb, all_connected_groups, max_euclidian_dist=1):
-    print 'find prifiles'
+def find_profile_links_recusrsive(biodb, all_connected_groups, max_euclidian_dist=1, max_iterations=0):
+
+    if max_iterations >= 1:
+        return all_connected_groups
+    else:
+        max_iterations+=1
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     filter = '"' + '","'.join(all_connected_groups) + '"'
-    sql = 'select * from comparative_tables.phylogenetic_profiles_euclidian_distance_%s where (group_1 in (%s) or group_2 in (%s)) and ' \
+    sql = 'select * from comparative_tables.phylogenetic_profiles_euclidian_distance2_%s where (group_1 in (%s) or group_2 in (%s)) and ' \
           ' (euclidian_dist <= %s)' % (biodb, filter, filter, max_euclidian_dist)
 
     print sql
 
     data = server.adaptor.execute_and_fetchall(sql,)
     print 'n hits', len(data)
-    if len(data)>50:
+    if len(data)>30:
+        print 'too much hits, return False'
         return False
     all_groups = []
     for i in data:
@@ -54,7 +59,7 @@ def find_profile_links_recusrsive(biodb, all_connected_groups, max_euclidian_dis
         if i[1] not in all_groups:
             all_groups.append(i[1])
     if len(all_groups) > len(all_connected_groups):
-        return find_profile_links_recusrsive(biodb, all_groups, max_euclidian_dist)
+        return find_profile_links_recusrsive(biodb, all_groups, max_euclidian_dist, max_iterations)
     else:
         return all_groups
 
@@ -223,11 +228,11 @@ class orthogroup2network:
 
 
     
-def generate_network(biodb, group_list, reference_group, ratio_limit, scale_link=True):
+def generate_network(biodb, locus_tag_list, reference_locus, ratio_limit, scale_link=True):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
-    filter = '"' + '","'.join(group_list) + '"'
-    sql = 'select * from interactions.colocalization_table_%s where (group_1 in (%s) or group_2 in (%s)) and ratio>=%s;' % (biodb, filter, filter, ratio_limit)
+    filter = '"' + '","'.join(locus_tag_list) + '"'
+    sql = 'select * from interactions.colocalization_table_locus_%s where (locus_1 in (%s) or locus_2 in (%s)) and ratio>=%s;' % (biodb, filter, filter, ratio_limit)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -262,7 +267,7 @@ def generate_network(biodb, group_list, reference_group, ratio_limit, scale_link
     '''
 
 
-
+    # layout cola
     template = '''
 
 <script>
@@ -271,7 +276,7 @@ $(function(){ // on dom ready
 
 var cy = cytoscape({
 layout: {
-	name: 'cola',
+	name: 'cose',
     maxSimulationTime: 6000,
     randomize: true,
     nodeSpacing: 50,
@@ -418,8 +423,8 @@ cy.$('node').on('click', function(e){
     edge_template = """{ data: { source: '%s', target: '%s', faveColor: '#%s', strength: %s , n_comp:%s, n_links: %s} }"""
 
     node_list = []
-    for node in group_list:
-        if node == reference_group:
+    for node in locus_tag_list:
+        if node == reference_locus:
             node_list.append(node_template % (node, node, "fd5713"))
         else:
             node_list.append(node_template % (node, node, "6FB1FC"))
@@ -429,12 +434,12 @@ cy.$('node').on('click', function(e){
     for edge in data:
         if float(edge[2])< 20:
             if scale_link:
-                edge_list.append(edge_template % (edge[0], edge[1], "47de47", 10, edge[2], edge[3]))
+                edge_list.append(edge_template % (edge[0], edge[1], "47de47", ((float(edge[2])/edge[3])*20)-10, edge[2], edge[3]))
             else:
-                edge_list.append(edge_template % (edge[0], edge[1], "47de47", 10, edge[2], edge[3]))
+                edge_list.append(edge_template % (edge[0], edge[1], "47de47", 2, edge[2], edge[3]))
         else:
             if scale_link:
-                edge_list.append(edge_template % (edge[0], edge[1], "ff0404", float(edge[2])/10, edge[2], edge[3]))
+                edge_list.append(edge_template % (edge[0], edge[1], "ff0404", ((float(edge[2])/edge[3])*20)-10, edge[2], edge[3]))
             else:
                 edge_list.append(edge_template % (edge[0], edge[1], "47de47", 10, edge[2], edge[3]))
 
@@ -446,11 +451,12 @@ def generate_network_profile(biodb, group_list, reference_group, euclidian_dista
     server, db = manipulate_biosqldb.load_db(biodb)
     filter = '"' + '","'.join(group_list) + '"'
     # group_1     | group_2     | euclidian_dist
-    sql = 'select * from comparative_tables.phylogenetic_profiles_euclidian_distance_%s where (group_1 in (%s) or group_2 in (%s)) and euclidian_dist<=%s;' % (biodb, filter, filter, euclidian_distance_limit)
-
+    sql = 'select * from comparative_tables.phylogenetic_profiles_euclidian_distance2_%s where (group_1 in (%s) and group_2 in (%s)) and euclidian_dist<=%s;' % (biodb, filter, filter, euclidian_distance_limit)
+    print sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
-
+    print '##############'
+    print data
 
     # group_1    | group_2    | n_links | n_comparisons | ratio
 
@@ -468,7 +474,7 @@ def generate_network_profile(biodb, group_list, reference_group, euclidian_dista
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/4.10.3/css/bootstrap-slider.min.css">
-    <script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script>
+
     <script src="cytoscape-cola.js"></script>
     <link href="style.css" rel="stylesheet" />
 
@@ -481,7 +487,11 @@ def generate_network_profile(biodb, group_list, reference_group, euclidian_dista
     '''
 
 
-
+    # breadthfirst
+    #maxSimulationTime: 6000,
+    #randomize: true,
+    #nodeSpacing: 50,
+    #animate: true,
     template = '''
 
 <script>
@@ -490,11 +500,11 @@ $(function(){ // on dom ready
 
 var cy = cytoscape({
 layout: {
-	name: 'cola',
-    maxSimulationTime: 6000,
-    randomize: true,
+	name: 'cose',
+    idealEdgeLength: 100,
+    nodeOverlap: 200,
     nodeSpacing: 50,
-    animate: true
+    randomize: true
   },
   container: document.getElementById('cy'),
   boxSelectionEnabled: false,
@@ -504,15 +514,15 @@ layout: {
     .selector('node')
       .css({
         'shape': 'data(faveShape)',
-        'width': 160,
-	    'height': 70,
+        'width': 80,
+	    'height': 50,
         'content': 'data(name)',
         'text-valign': 'center',
         'text-outline-width': 0,
         'text-outline-color': 'data(faveColor)',
         'background-color': 'data(faveColor)',
         'color': '#000000',
-	    'font-size': 22
+	    'font-size': 12
 
       })
     .selector(':selected')
@@ -592,7 +602,6 @@ cy.$('node').on('click', function(e){
         at: 'top right'
       },
       style: {
-
         classes: 'qtip-bootstrap',
         width: 180,
         height: 130,
@@ -650,7 +659,11 @@ cy.$('node').on('click', function(e){
             # self link
             continue
         if scale_link:
-            edge_list.append(edge_template % (edge[0], edge[1], "ff0404", float(edge[2]), edge[2], euclidian_distance_limit))
+            if euclidian_distance_limit == 0:
+                fscale = 1
+            else:
+                fscale = euclidian_distance_limit
+            edge_list.append(edge_template % (edge[0], edge[1], "ff0404", (fscale-float(edge[2]) + 0.1)*4, edge[2], euclidian_distance_limit))
         else:
             edge_list.append(edge_template % (edge[0], edge[1], "ff0404", 10, edge[2], euclidian_distance_limit))
     return template % (',\n'.join(node_list), ',\n'.join(edge_list))
