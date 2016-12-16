@@ -1776,7 +1776,55 @@ def locusx(request, biodb, locus=None, menu=False):
             sql10 = 'select operon_id from custom_tables.DOOR2_operons_%s where (locus_tag="%s" or old_locus_tag="%s")' % (biodb,
                                                                                                                         locus,
                                                                                                                         locus)
-            print 'sql10', sql10
+            sql11 = 'select db_xref_name,db_accession from custom_tables.locus2seqfeature_id_%s as t1 ' \
+                    ' inner join custom_tables.uniprot_id2seqfeature_id_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                    ' inner join custom_tables.uniprot_db_xref_%s as t3 on t2.uniprot_id=t3.uniprot_id ' \
+                    ' inner join custom_tables.db_xref as t4 on t3.db_xref_id=t4.db_xref_id ' \
+                    ' where locus_tag="%s" and db_xref_name not in ("GO","InterPro", "Pfam");' % (biodb,biodb,biodb,locus)
+
+            sql12 = 'select uniprot_status,annotation_score,gene,recommendedName_fullName,comment_function,ec_number,' \
+                    ' comment_similarity,comment_subunit,comment_catalyticactivity,proteinExistence ' \
+                    ' from custom_tables.locus2seqfeature_id_%s as t1 inner join custom_tables.uniprot_id2seqfeature_id_%s as t2 ' \
+                    ' on t1.seqfeature_id=t2.seqfeature_id inner join custom_tables.uniprot_annotation_%s as t3 ' \
+                    ' on t2.seqfeature_id=t3.seqfeature_id where locus_tag="%s";' % (biodb,biodb,biodb,locus)
+
+
+            sql13 = 'select go_term_id, term_type, go_description from (select go_term_id, go_description ' \
+                    ' from custom_tables.locus2seqfeature_id_%s as t1  ' \
+                    'inner join custom_tables.uniprot_go_terms_%s as t2 on t1.seqfeature_id=t2.seqfeature_id  ' \
+                    ' where t1.locus_tag="%s") A inner join gene_ontology.term as B on A.go_term_id=B.acc;' % (biodb, biodb, locus)
+            print sql13
+            try:
+                uniprot_go_terms = server.adaptor.execute_and_fetchall(sql13, )
+            except:
+                uniprot_go_terms = False
+            if not uniprot_go_terms or len(uniprot_go_terms) == 0:
+                try:
+                    # go terms from interpro data
+                    sql14 = 'select t4.acc,t4.term_type,t4.name from (select interpro_accession from biosqldb.interpro_%s ' \
+                          ' where locus_tag="%s" and interpro_accession != "0" group by interpro_accession) t1 ' \
+                          ' inner join interpro.entry as t2 on t1.interpro_accession=t2.name ' \
+                          ' inner join interpro.interpro2gene_ontology as t3 on t2.interpro_id=t3.interpro_id ' \
+                          ' inner join gene_ontology.term as t4 on t3.go_id=t4.id group by acc;' % (biodb, locus)
+
+                    interpro_go_terms = server.adaptor.execute_and_fetchall(sql14, )
+                except:
+
+                    uniprot_go_terms = False
+
+            try:
+                uniprot_annotation = server.adaptor.execute_and_fetchall(sql12, )[0]
+
+            except:
+                uniprot_annotation = False
+            print sql12
+            try:
+                dbxref_uniprot_data = server.adaptor.execute_and_fetchall(sql11, )
+                for i in dbxref_uniprot_data:
+                    if i[0] == 'Swiss-Prot' and not '_' in i[1]:
+                        uniprot_accession = i[1]
+            except:
+                dbxref_uniprot_data = False
             try:
                 operon_id = server.adaptor.execute_and_fetchall(sql10, )[0][0]
                 print operon_id
