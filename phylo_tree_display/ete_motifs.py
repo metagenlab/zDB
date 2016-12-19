@@ -121,27 +121,44 @@ def get_locus2taxon2identity(biodb, locus_tag_list):
     for locus in locus_tag_list:
         taxon2locus2identity_closest[locus] = {}
 
-
+    '''
+    select B.locus_tag,C.locus_tag,identity from (select * from comparative_tables.identity_closest_homolog2_chlamydia_04_16 where locus_1 in (17323786,17275213,17295471,17323784,17129361,17219096,17194936,17100717,17219094,17129363,17100715,17222853,17067094,17335066,17047317,17215018,17176196,17294883,17047319,17013495)) A left join custom_tables.locus2seqfeature_id_chlamydia_04_16 B on A.locus_1=B.seqfeature_id left join custom_tables.locus2seqfeature_id_chlamydia_04_16 C on A.locus_2=C.seqfeature_id;
+    '''
+    #print 'getting dico'
+    sql = 'select seqfeature_id,locus_tag from custom_tables.locus2seqfeature_id_%s' % biodb
+    #print sql
+    seqfeature_id2locus = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    #print 'ok'
+    all_id = []
     for locus in locus_tag_list:
         print 'locus', locus
-        sql = 'select taxon_2,locus_2,identity from comparative_tables.identity_closest_homolog_%s where locus_1="%s" UNION' \
-               ' select taxon_1,locus_1,identity from comparative_tables.identity_closest_homolog_%s where locus_2="%s";' % (biodb,
-                                                                                                                             locus,
-                                                                                                                             biodb,
-                                                                                                                             locus)
+        seqfeatre_id_sql = 'select seqfeature_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s";' % (biodb,locus)
+        print seqfeatre_id_sql
+        try:
+            seqfeatre_id = server.adaptor.execute_and_fetchall(seqfeatre_id_sql,)[0][0]
+            all_id.append(str(seqfeatre_id))
+        except:
+            # pseudogene
+            continue
+    filter = ','.join(all_id)
+    sql = 'select taxon_2,locus_1,identity from comparative_tables.identity_closest_homolog2_%s where locus_1 in (%s) ;' % (biodb,
+                                                                                                                      filter)
+    print sql
 
-        identity_data = server.adaptor.execute_and_fetchall(sql, )
-        taxon2identity_closest = {}
+    identity_data = server.adaptor.execute_and_fetchall(sql, )
+    taxon2identity_closest = {}
 
-        for row in identity_data:
-            taxon2identity_closest[str(row[0])] = row[2]
+    for row in identity_data:
+        #taxon2identity_closest[str(row[0])] = row[2]
+        taxon2locus2identity_closest[seqfeature_id2locus[row[1]]][str(row[0])] = row[2]
+    for locus in locus_tag_list:
         for taxon in ordered_taxons:
-            try:
-                taxon2locus2identity_closest[locus][taxon] = taxon2identity_closest[taxon]
-            except:
+            if taxon not in taxon2locus2identity_closest[locus]:
                 taxon2locus2identity_closest[locus][taxon] = '-'
 
-    return taxon2locus2identity_closest
+
+
+        return taxon2locus2identity_closest
 
 
 
