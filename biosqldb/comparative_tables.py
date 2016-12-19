@@ -628,19 +628,22 @@ def identity_closest_homolog(db_name):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
+    sql1 = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % db_name
+    locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql1,))
 
-    sql2 = "CREATE TABLE comparative_tables.identity_closest_homolog_%s(taxon_1 INT NOT NULL," \
+
+    sql2 = "CREATE TABLE comparative_tables.identity_closest_homolog2_%s(taxon_1 INT NOT NULL," \
           " taxon_2 INT NOT NULL," \
           " locus_1 VARCHAR(100) NOT NULL," \
           " locus_2 VARCHAR(100) NOT NULL," \
           " identity FLOAT, index locus_1(locus_1)," \
-          " index locus_2(locus_2))" % (db_name)
+          " index locus_2(locus_2), index taxon_1(taxon_1), index taxon_2(taxon_2))" % (db_name)
 
     server.adaptor.execute(sql2)
 
     #identitydico = biosql_own_sql_tables.calculate_average_protein_identity_new_tables(db_name)
     taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodatabase_name=db_name)
-    print len(taxon2description)
+
     all_taxons = taxon2description.keys()
     for i, taxon_1 in enumerate(all_taxons):
 
@@ -653,12 +656,12 @@ def identity_closest_homolog(db_name):
                 try:
                     #print taxon_1, taxon_2, locus, locus2identity[locus][long(taxon_2)][1], locus2identity[locus][long(taxon_2)][0]
                     sys.stdout.write("%s\t%s\n" % (taxon_1, taxon_2))
-                    sql = 'insert into comparative_tables.identity_closest_homolog_%s(taxon_1, taxon_2, locus_1, locus_2, identity) ' \
+                    sql = 'insert into comparative_tables.identity_closest_homolog2_%s(taxon_1, taxon_2, locus_1, locus_2, identity) ' \
                           ' VALUES ("%s", "%s", "%s", "%s", %s)' % (db_name,
                                                                     taxon_1,
                                                                     taxon_2,
-                                                                    locus,
-                                                                    locus2identity[locus][long(taxon_2)][1],
+                                                                    locus2seqfeature_id[locus],
+                                                                    locus2seqfeature_id[locus2identity[locus][long(taxon_2)][1]],
                                                                     locus2identity[locus][long(taxon_2)][0])
                     server.adaptor.execute(sql)
 

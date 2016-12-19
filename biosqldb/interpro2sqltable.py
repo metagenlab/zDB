@@ -9,6 +9,98 @@
 # Date: 2015
 # ---------------------------------------------------------------------------
 
+def get_interpro_entry_tables(interpro_release= '60.0'):
+    '''
+
+    :param interpro_release: par exemple: 60.0
+    :return:
+    '''
+    import urllib2
+    import MySQLdb
+
+    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
+                                user="root", # your username
+                                passwd="estrella3", # your password
+                                db="interpro") # name of the data base
+    cursor = conn.cursor()
+
+
+
+    sql = 'CREATE table entry (interpro_id INT AUTO_INCREMENT, name varchar(400), description TEXT, index interpro_id(interpro_id))'
+
+    cursor.execute(sql,)
+    conn.commit()
+    link = 'ftp://ftp.ebi.ac.uk/pub/databases/interpro/%s/entry.list' % interpro_release
+    print link
+    req = urllib2.Request(link)
+    entry_list = urllib2.urlopen(req)
+    for line in entry_list:
+        if not 'IPR' in line:
+            continue
+        accession = line.rstrip().split(' ')[0]
+        description = ' '.join(line.rstrip().split(' ')[1:])
+        sql = 'insert into entry (name, description) values ("%s", "%s")' % (accession, description)
+        cursor.execute(sql,)
+    conn.commit()
+
+def get_interpro_parent2child_table(interpro_release):
+
+
+
+    link = ''
+
+def get_interpro2go_table():
+
+    '''
+
+    :param interpro_release: par exemple: 60.0
+    :return:
+    '''
+    import urllib2
+    import MySQLdb
+    import manipulate_biosqldb
+
+    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
+                                user="root", # your username
+                                passwd="estrella3", # your password
+                                db="interpro") # name of the data base
+    cursor = conn.cursor()
+
+
+
+    sql = 'CREATE table interpro2gene_ontology (interpro_id INT, go_id INT, index interpro_id(interpro_id), index go_id(go_id))'
+    #cursor.execute(sql,)
+    #conn.commit()
+
+    sql = 'select name,interpro_id from entry'
+    cursor.execute(sql,)
+    interpro_name2interpro_id = manipulate_biosqldb.to_dict(cursor.fetchall())
+
+    sql = 'select acc,id from gene_ontology.term where acc like "GO%"'
+    cursor.execute(sql,)
+    go_name2go_id = manipulate_biosqldb.to_dict(cursor.fetchall())
+
+    link = 'ftp://ftp.ebi.ac.uk/pub/databases/interpro/interpro2go'
+
+    req = urllib2.Request(link)
+    entry_list = urllib2.urlopen(req)
+    echec = 0
+    for i, line in enumerate(entry_list):
+        if line[0] == '!':
+            continue
+        interpro_name = line.rstrip().split(':')[1].split(' ')[0]
+        go_name = line.rstrip().split(' ; ')[1]
+        try:
+            sql = 'insert into interpro2gene_ontology values(%s, %s)' % (interpro_name2interpro_id[interpro_name], go_name2go_id[go_name])
+            cursor.execute(sql,)
+            conn.commit()
+        except:
+            echec+=1
+    print echec, i
+
+
+    # InterPro:IPR000003 Retinoid X receptor/HNF4 > GO:DNA binding ; GO:0003677
+
 
 def interpro2biosql(server,
                     seqfeature_id2locus_tag,
@@ -153,6 +245,7 @@ if __name__ == '__main__':
 
     biodb = args.database_name
 
+    '''
     server, db = manipulate_biosqldb.load_db(biodb)
     print "creating locus_tag2seqfeature_id"
     locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, biodb)
@@ -180,4 +273,5 @@ if __name__ == '__main__':
                     seqfeature_id2organism,
                     biodb, *args.input_interpro)
 
-
+    '''
+    get_interpro2go_table()
