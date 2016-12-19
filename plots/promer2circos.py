@@ -232,7 +232,7 @@ class Fasta2circos():
         elif algo == "promer":
             self.execute_promer(fasta1, fasta2, algo="promer")
         if not heatmap:
-            hit_list, query_list = self.get_link("%s.coords" % fasta2[0].split('.')[0])
+            hit_list, query_list = self.get_link("%s.coords" % fasta2[0].split('.')[0], algo=algo)
         else:
 
             # coords for cumulated coorginates
@@ -263,9 +263,9 @@ class Fasta2circos():
                 #try:
                 if algo == "nucmer" or algo == 'promer':
                     print  one_fasta
-                    hit_list, query_list, contig2start_stop_list = self.nucmer_coords2heatmap("%s.coords" % one_fasta.split('.')[0], col = col, algo=algo)
+                    hit_list, query_list, contig2start_stop_list = self.nucmer_coords2heatmap("%s.coords" % one_fasta.split('.')[0], col=col, algo=algo)
                 elif algo == "megablast":
-                    hit_list, query_list, contig2start_stop_list = self.megablast2heatmap("blast_result_%s.tab" % one_fasta.split('.')[0], col = col)
+                    hit_list, query_list, contig2start_stop_list = self.megablast2heatmap("blast_result_%s.tab" % one_fasta.split('.')[0], col=col)
                 else:
                     raise IOError('unknown algo!')
                 all_hit_list += hit_list
@@ -403,6 +403,10 @@ class Fasta2circos():
                     self.add_samtools_depth_track('circos_samtools_depth_%s.txt' % i)
 
         else:
+            # c1 last_seq_id
+            # c2 first_seq_id
+            # c3 mid1 last hit id
+            # c4 mid2
             c1, c2, c3, c4 = self.get_karyotype_from_fasta(fasta1, fasta2, hit_list, query_list, filter_ref, filter_query, both_fasta=True)
 
             self.config = self.get_circos_config(c1, c2, c3, c4, heat=False)
@@ -661,7 +665,7 @@ class Fasta2circos():
         chr_spacing = '''
 
            <pairwise %s %s>
-         spacing = 2u
+         spacing = 14u
         </pairwise>
 
         '''
@@ -831,9 +835,6 @@ class Fasta2circos():
             contig_start = 0
             contig_end = 0
             for record in fasta_data1:
-
-
-
                 name = re.sub("\|", "", record.name)
                 print '#### contig ####', name
                 # cumulated length if not link plot and not filter_ref (TODO, put it as an argument?)
@@ -901,8 +902,10 @@ class Fasta2circos():
                 a, b, c = shell_command.shell_command(cmd1)
                 a, b, c = shell_command.shell_command(cmd2)
             elif algo == 'promer':
-                cmd1 = 'promer --mum -l 5 %s %s' % (fasta1, one_fasta)
-                cmd2 = 'show-coords -T -r -c -L 100 -I 30 out.delta > %s.coords' % one_fasta.split('.')[0]
+                # promer --mum -l 5
+                cmd1 = 'promer -l 5 %s %s' % (fasta1, one_fasta)
+                # show-coords -T -r -c -L 100 -I 30 out.delta
+                cmd2 = 'show-coords -T -r -c -L 30 -I 20 out.delta > %s.coords' % one_fasta.split('.')[0]
                 a, b, c = shell_command.shell_command(cmd1)
                 a, b, c = shell_command.shell_command(cmd2)
 
@@ -931,12 +934,16 @@ class Fasta2circos():
         return coords_input[headerRow:None]
 
 
-    def get_link(self, coords_input, link_file="circos.link"):
+    def get_link(self, coords_input, link_file="circos.link", algo="nucmer"):
         import re
         import matplotlib.cm as cm
         from matplotlib.colors import rgb2hex
         import matplotlib as mpl
 
+        if algo == 'promer':
+            shift = 4
+        elif algo == 'nucmer':
+            shift = 0
 
         with open(coords_input, 'rU') as infile:
             rawLinks = self.justLinks(infile.readlines());
@@ -985,11 +992,11 @@ class Fasta2circos():
                                                 int(round(color[2]*250,0)),
                                                 0.5))
 
-                f.write(re.sub("\|", "", l[9]) + '\t' + l[0] + '\t' + l[1] + '\t' + re.sub("\|", "", l[10]) + '\t' + l[2] + '\t' + l[3] + '\tcolor=%s' % color_id +'\n')
+                f.write(re.sub("\|", "", l[9+shift]) + '\t' + l[0] + '\t' + l[1] + '\t' + re.sub("\|", "", l[10+shift]) + '\t' + l[2] + '\t' + l[3] + '\tcolor=%s' % color_id +'\n')
                 # sys.stdout.write
                 i += 1
-                hit_list.append(re.sub("\|", "", l[9]))
-                query_list.append(re.sub("\|", "", l[10]))
+                hit_list.append(re.sub("\|", "", l[9+shift]))
+                query_list.append(re.sub("\|", "", l[10+shift]))
         return (hit_list, query_list)
 
 

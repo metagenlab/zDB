@@ -535,16 +535,22 @@ def print_circos_GC_file(record_list, feature_type="CDS", out_directory=""):
     return (out_var_file, out_skew_file)
 
 
-def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordinates=False, exclude_family=False):
+def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordinates=False, exclude_family=False, taxon_list =False):
+
     '''
     :param record:
     :return: circos string with difference as compared to the average GC
     ex: average = 32
         GC(seq[3000:4000]) = 44
         diff = 44 - 32 = 12%
+    if taxon_list: restrict counts of homologs in the set if specified taxons
 
     '''
     import numpy
+    import pandas
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(db_name)
 
     print '##########  %s  ###############' % exclude_family
 
@@ -554,7 +560,33 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
 
     import biosql_own_sql_tables as bsql
 
-    locus_tag2n_genomes_dico = bsql.locus_tag2presence_in_n_genomes(db_name)
+    print '-------------- taxon list ------------'
+    print taxon_list
+
+    if not taxon_list:
+        locus_tag2n_genomes_dico = bsql.locus_tag2presence_in_n_genomes(db_name)
+    else:
+        taxon_list = [str(i) for i in taxon_list]
+        filter = '`' + '`,`'.join(taxon_list) + '`'
+        sql = 'select orthogroup,%s from comparative_tables.orthology_%s' % (filter,db_name)
+
+        data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
+        count_df = pandas.DataFrame(data, columns=['orthogroup'] + taxon_list)
+        count_df = count_df.set_index(['orthogroup'])
+        count_df = count_df.apply(pandas.to_numeric, args=('coerce',))
+
+        group2n_genomes = (count_df > 0).sum(axis=1)
+        print 'group2n_genomes--------------'
+        print group2n_genomes
+
+        accession_filter = '"'+'","'.join(accessions) + '"'
+        sql = 'select locus_tag, orthogroup from orthology_detail_%s where accession in (%s)' % (db_name, accession_filter)
+        locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        locus_tag2n_genomes_dico = {}
+        for locus in locus2orthogroup:
+            locus_tag2n_genomes_dico[locus] = group2n_genomes[locus2orthogroup[locus]]
+
+        #locus_tag2n_genomes = manipulate_biosqldb.get_orthology_table_subset()
 
     locus_tag2n_blastnr_dico = {}
     locus_tag2n_blast_bacteria = {}
@@ -581,8 +613,6 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
         locus_tag2n_non_chlamydiae.update(bsql.locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", reverse=True, exclude_family=exclude_family))
         print "locus_tag2n_paralogs"
         locus_tag2n_paralogs.update(bsql.locus_tag2n_paralogs(db_name, accession))
-
-    print 'dico OK'
 
 
     circos_string_n_genome_presence = ''
@@ -1062,6 +1092,7 @@ class Circos_config:
 
     # #" <<include colors.rn.conf>>\n" \
     self.settings ="<colors>\n" \
+                   " <<include colors.rn.conf>>\n" \
                    " <<include brewer.all.conf>>\n" \
                    " </colors>\n" \
                    " <image>\n"\
@@ -1086,23 +1117,32 @@ class Circos_config:
                '</pairwise>\n' % (chr1, chr2)
     return template
     
-  def _template_plot(self, file, type="line", r0=1, r1=1.05, color="black", fill_color="red", thickness = "0.8p", z = 1, rules ="", backgrounds="", url=""):
-    template = "<plot>\n" \
+  def _template_plot(self, file, type="line", r0=1,
+                     r1=1.05, color=False, fill_color="red", thickness = "0.8p", z = 1, rules ="", backgrounds="", url="", min=False, max=False):
+
+        print 'template color------------------', color
+        template1 = "<plot>\n" \
                "type		    = %s\n" \
-               " #min               = -0.4\n" \
-               " #max               = 0.4\n" \
                " url                = %s[id]\n" \
                " r0                 = %s\n" \
                " r1                 = %s\n" \
-               " color              = %s\n" \
                " fill_color         = %s\n" \
                " thickness          = %s\n" \
                " file               = %s\n" \
-               " z                  = %s\n" \
+               " z                  = %s\n" % (type, url, r0, r1, fill_color, thickness, file, z)
+        print '--------------- COLOR--------------'
+        print color
+        if color:
+            template1+= " color          = %s\n" % color
+        if min:
+            template1+= " min          = %s\n" % min
+        if max:
+            max+= " max          = %s\n" % max
+        template_rules = " %s\n" \
                " %s\n" \
-               " %s\n" \
-               " </plot>\n" % (type, url, r0, r1, color, fill_color, thickness, file, z, rules, backgrounds)
-    return template
+               " </plot>\n" % (rules, backgrounds)
+
+        return template1 + template_rules
 
   def template_rule(self, condition, fill_color):
     template = "<rule>\n" \
@@ -1142,8 +1182,9 @@ class Circos_config:
     return template
 
 
-  def add_plot(self, file, type="line", r0=1, r1=1.05, color="black", fill_color="grey_a1", thickness = "2p", z = 1, rules ="", backgrounds="", url=""):
-    plot = self._template_plot(file, type, r0, r1, color, fill_color, thickness, z, rules, backgrounds, url)
+  def add_plot(self, file, type="line", r0=1, r1=1.05,
+               fill_color="grey_a1", thickness = "2p", z = 1, rules ="", backgrounds="", url="", min=False, max=False, color=False):
+    plot = self._template_plot(file, type, r0, r1, color, fill_color, thickness, z, rules, backgrounds, url, min=min, max=max)
     if len(re.findall("</plots>", self.plots))>0:
       # remove end balise
       self.plots = re.sub("</plots>", "", self.plots)
