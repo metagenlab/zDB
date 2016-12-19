@@ -86,10 +86,17 @@ def gi2description(ncbi_gi_list, db="protein"):
 
     #print "gi_list", ','.join(ncbi_gi_list)
     # get link from genbank 2 refseq
-    handle = Entrez.efetch(db=db, id=','.join(ncbi_gi_list), rettype="gb", retmode="text")
+    match = False
+    while not match:
+        handle = Entrez.efetch(db=db, id=','.join(ncbi_gi_list), rettype="gb", retmode="text")
 
-    records = [i for i in SeqIO.parse(handle, "genbank")]
-
+        try:
+            records = [i for i in SeqIO.parse(handle, "genbank")]
+            match = True
+        except IncompleteRead:
+            print 'problem trying to fetch data for list:'
+            print ','.join(ncbi_gi_list)
+        
     res_list = []
 
     print len(records)

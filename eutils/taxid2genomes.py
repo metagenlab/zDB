@@ -37,10 +37,24 @@ def get_complete_genomes_data(ncbi_taxon, complete = False, representative =Fals
     local_dir = os.getcwd()
 
     for i, one_assembly in enumerate(record['IdList']):
-
-        handle_assembly = Entrez.esummary(db="assembly",id=one_assembly)
-        assembly_record = Entrez.read(handle_assembly, validate=False)
-
+        print "%s/%s" % (i, len(record['IdList']))
+        try:
+            handle_assembly = Entrez.esummary(db="assembly",id=one_assembly)
+        except urllib2.URLError:
+            import time
+            urlok = False
+            while not urlok:
+                print 'connexion problem, waiting 10s...'
+                time.sleep(10)
+                try:
+                    handle_assembly = Entrez.esummary(db="assembly",id=one_assembly)
+                    urlok = True
+                except:
+                    urlok = False
+        try:
+            assembly_record = Entrez.read(handle_assembly, validate=False)
+        except Bio.Entrez.Parser.CorruptedXMLError:
+            print 'assembly:', one_assembly
 
         '''
         # check if it is the latest available version of the genome, if not, download the latest

@@ -44,8 +44,11 @@ if __name__ == '__main__':
     parser.add_argument("-i",'--seq_id_genbank', default=False, type=str, help="genbank2refseq", nargs="+")
     parser.add_argument("-d",'--ncbi_database', default="nucleotide", type=str, help="database to search (protein/nucleotide/...)")
     parser.add_argument("-o",'--out_name', default="out.fa", type=str, help="out name")
+    parser.add_argument("-a",'--header_name', default=False, type=str, help="header (default False, uses from fetched data)")
     args = parser.parse_args()
 
 
     rec = accession2record(args.seq_id_genbank, args.ncbi_database)
+    if args.header_name:
+        rec[0].id = args.header_name
     SeqIO.write(rec,args.out_name, "fasta")
