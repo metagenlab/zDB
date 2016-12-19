@@ -312,6 +312,9 @@
 
                         </div>
                         <div class="col-xs-8">
+                            <div style="height:100px">
+                                <object width="95%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
+                            </div>
                             <h3>Product</h3>
                             <table>
                                 <tr>
@@ -655,45 +658,47 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th id="entete_locus">Orthogroup</th>
-                                    <th id="entete_gene">ID(%)</th>
-                                    <th id="entete_locus">Locus</th>
-                                    <th id="entete_locus">Protein id</th>
-                                    <th id="entete_gene">Start</th>
-                                    <th id="entete_gene">Stop</th>
-                                    <th id="entete_strand">S.</th>
-                                    <th id="entete_gene">Gene</th>
+                                    <th style="width:130px">Locus tag</th>
+                                    <th style="width:50px">ID(%)</th>
+                                    <th id="entete_locus">Uniprot Status</th>
+                                    <th id="entete_locus">Annot. score</th>
+                                    <th id="entete_gene">Gene (uniprot/refseq)</th>
                                     <th id="entete_n">nH</th>
                                     <th id="entete_n">nG</th>
                                     <th id="entete_n">TM</th>
                                     <th id="entete_n">SP</th>
-                                    <th id="entete_product">Product</th>
                                     <th id="entete_organism">Organism</th>
-                                    <th id="entete_translation">Translation</th>
+                                    <th id="entete_product">Product (uniprot/refseq)</th>
+                                    <th id="entete_translation">Function</th>
 
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for values in homologues %}
                                 {% load static %}
+                                <!-- 1locus_tag,2gene,3product,4organism ,5orthogroup_size,6n_genomes,7TM,8SP,9comment_function-->
+                                <!-- 10gene  | 11annotation_score | 12uniprot_status | 13recommendedName_fullName -->
                                 {% get_static_prefix as STATIC_PREFIX %}
                                     <tr>
                                         <td>{{values.0}}</td>
-                                        <td>{{values.1}}</td>
-                                        <td>{{values.15}}</td>
-                                        <td><a href="{% url 'locusx' biodb values.2 True %}" target="_top">{{values.2}}</a></td>
-                                        <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{values.3}}</a></td>
-                                        <td>{{values.4}}</td>
-                                        <td>{{values.5}}</td>
-                                        <td>{{values.6}}</td>
-                                        <td>{{values.7}}</td>
-                                        <td>{{values.8}}</td>
-                                        <td>{{values.9}}</td>
-                                        <td>{{values.10}}</td>
-                                        <td>{{values.11}}</td>
-                                        <td>{{values.12}}</td>
-                                        <td>{{values.13}}</td>
-                                        <td>{{values.14}}</td>
+                                        <td><a href="{% url 'locusx' biodb values.1 True %}" target="_top">{{values.1}}</a></td>
+                                        <td>{{values.14}}</td> <!-- identity -->
+                                        {% if values.12 != 'reviewed'%}
+                                            <td>{{values.12}}</td> <!-- review -->
+                                        {%else%}
+                                            <td><strong><font color="red">{{values.12}}<font></strong></td> <!-- review -->
+                                        {%endif%}
+                                        <td>{{values.11}}</td> <!-- annotation score -->
+
+
+                                        <td>{{values.2}} <br> {{values.10}}</td> <!-- gene -->
+                                        <td>{{values.5}}</td> <!-- ortho size -->
+                                        <td>{{values.6}}</td> <!-- n genomes -->
+                                        <td>{{values.7}}</td> <!-- tm -->
+                                        <td>{{values.8}}</td> <!-- sp -->
+                                        <td>{{values.4}}</td> <!-- organism -->
+                                        <td>{{values.13}} <br> {{values.3}}</td> <!-- gene -->
+                                        <td>{{values.9}}</td> <!-- gene -->
                                     </tr>
 
                                 {% endfor %}
@@ -706,9 +711,13 @@
                             <table>
 
                                 <tr>
-
+                                    {%if homologues|length < 100 %}
                                     <script src="https://cdn.bio.sh/msa/latest/msa.min.gz.js"></script>
                                     <div id="msa">Loading Multiple Alignment...</div>
+                                    {%else%}
+                                        Alignment larger than 100 sequences. Cannot be displayed.
+                                        <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% static alignment_fasta %}'">download MSA</button>
+                                    {%endif%}
 
                                     <script>
                                     var getKeys = function(obj){

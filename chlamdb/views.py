@@ -1748,6 +1748,10 @@ def locusx(request, biodb, locus=None, menu=False):
 
 
         if input_type == 'locus_tag':
+
+
+
+
             sql4 = 'select accession from orthology_detail_%s where locus_tag="%s" limit 1' % (biodb, locus)
             genome_accession = server.adaptor.execute_and_fetchall(sql4,)[0][0]
 
@@ -1830,8 +1834,27 @@ def locusx(request, biodb, locus=None, menu=False):
                 print operon_id
                 sqlo = 'select * from custom_tables.DOOR2_operons_%s where operon_id=%s' % (biodb, operon_id)
                 operon = server.adaptor.execute_and_fetchall(sqlo, )
+                operon_locus = [i[2] for i in operon]
             except IndexError:
                 operon = False
+
+
+            temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
+            temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
+            name = 'temp/' + os.path.basename(temp_file.name)
+
+            if operon:
+                if operon_locus[0] == '-':
+                    lst = [i[3] for i in operon]
+                else:
+                    lst = operon_locus
+            else:
+                lst = []
+            print 'lst---------------', lst
+            locus_tags, orthogroup_list = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, [locus],
+                                                                              temp_file.name, 15000,
+                                                                              cache, color_locus_list=lst)
+
 
             try:
                 cog_data = server.adaptor.execute_and_fetchall(sql3, )[0]
@@ -1905,6 +1928,11 @@ def locusx(request, biodb, locus=None, menu=False):
             except:
                 pathways_data = False
 
+
+
+
+
+
         if input_type == 'locus_tag':
             seq_start = int(data[3])
             seq_end = int(data[4])
@@ -1942,11 +1970,26 @@ def locusx(request, biodb, locus=None, menu=False):
         tree_rooted = "%s_fasta/%s_tree_reroot.svg" % (biodb, orthogroup)
         tree_file = "%s_fasta/%s.phy_phyml_tree.txt" % (biodb, orthogroup)
 
-        columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-              'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-        sql3 = 'select %s from orthology_detail_%s where orthogroup = "%s" ' % (columns, biodb, orthogroup)
+        #columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+        #      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+        #sql3 = 'select %s from orthology_detail_%s where orthogroup = "%s" ' % (columns, biodb, orthogroup)
 
-        homologues = list(server.adaptor.execute_and_fetchall(sql3, ))
+        #homologues = list(server.adaptor.execute_and_fetchall(sql3, ))
+        sql_groups = 'select A.*,C.comment_function,C.gene,D.annotation_score,D.uniprot_status,C.recommendedName_fullName ' \
+                     ' from (select locus_tag, gene,product,organism,orthogroup_size,n_genomes,TM,SP from ' \
+                     ' biosqldb.orthology_detail_%s where orthogroup="%s") A ' \
+                     ' inner join custom_tables.locus2seqfeature_id_%s B on A.locus_tag=B.locus_tag ' \
+                     ' left join custom_tables.uniprot_annotation_%s as C on B.seqfeature_id=C.seqfeature_id ' \
+                     ' left join custom_tables.uniprot_id2seqfeature_id_%s as D on B.seqfeature_id=D.seqfeature_id;' % (biodb,
+                                                                                                          orthogroup,
+                                                                                                          biodb,
+                                                                                                          biodb,
+                                                                                                          biodb)
+
+        homologues = list(server.adaptor.execute_and_fetchall(sql_groups, ))
+        for i, row in enumerate(homologues):
+            homologues[i] = ['-' if v is None else v for v in list(row)]
+
 
         if len(homologues) >1:
             orthologs = True
@@ -1958,18 +2001,16 @@ def locusx(request, biodb, locus=None, menu=False):
 
             for count, value in enumerate(homologues):
                 value = list(value)
-                locus_2 = value[1]
-                if value[2] != '-':
-                    interpro_id = value[2]
-                else:
-                    value[2] = value[1]
+                locus_2 = value[0]
+                #if value[2] != '-':
+                #    interpro_id = value[2]
+                #else:
+                #    value[2] = value[1]
 
                 homologues[count] = [count+1] + value + [orthogroup2identity_dico[data[1]][locus_2]]
 
         else:
-            homologues[0] = (1,) + homologues[0] + (100,)
-
-
+            homologues[0] = [1] + homologues[0] + [100]
 
         sql = 'select t1.locus_tag, t1.annotation from manual_annotation as t1 ' \
               ' inner join orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag where orthogroup="%s";' % (biodb, data[0])
@@ -4437,15 +4478,9 @@ def plot_neighborhood(request, biodb, target_locus, region_size=23000):
         reference_taxon_id = reference_orthogroup[1]
         if plot_region:
 
-            home_dir = os.path.dirname(__file__)
-            print "home_dir", home_dir
-            temp_location = os.path.join(home_dir, "../assets")
-            print "temp loc", temp_location
+            temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
             temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-            print "temp file", temp_file.name
-            name = os.path.basename(temp_file.name)
-            print name.split('.')
-            name_png = name.split('.')[0] + '.png'
+            name = 'temp/' + os.path.basename(temp_file.name)
 
 
             locus_tags, orthogroup_list = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, [target_locus],
@@ -4482,13 +4517,14 @@ def plot_neighborhood(request, biodb, target_locus, region_size=23000):
     for i in locus_tags:
         locus2taxon[i] = reference_taxid
 
-    print locus2taxon
-    print 'WCW_RS07640' in locus2taxon
-    print 'WCW_RS07640' in locus_tags
+    # remove potential pseudogenes from the list
+    locus_tags_labels = []
+    for i in locus_tags:
+        if i in locus2taxon.keys():
+            locus_tags_labels.append(i)
 
-    labels = locus2taxon.keys()
     tree2 = ete_motifs.multiple_profiles_heatmap(biodb,
-                                                labels,
+                                                locus_tags_labels,
                                                 taxon2locus2identity_closest,
                                                 identity_scale=True,
                                                 show_labels=False,
