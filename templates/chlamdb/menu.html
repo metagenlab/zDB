@@ -77,7 +77,16 @@
                 <li class="item5"><a href="{% url 'blastnr_barchart' biodb %}">BlastNR hits</a>
                 </li>
             </ul>
+        <li class="rollmenu"><a href="">Locus interest</a>
+            <ul>
+                <li class="item5"><a href="{% url 'locus_int' biodb %}">Locus Int</a>
+                </li>
+                <li class="item5"><a href="{% url 'add_locus_int' biodb %}">ADD Locus Int</a>
+                </li>
+                <li class="item5"><a href="{% url 'orthogroup_annotation' biodb True%}">Orthog. annot.</a>
+                </li>
 
+            </ul>
 
 
         </li>
