@@ -27,7 +27,7 @@ def gi2taxon_id(gi_list, database="protein"):
             print 'connexion error, trying again...'
             time.sleep(60)
             gi2taxon_id(gi_list, database=database)
-    record = Entrez.parse(handle)
+    record = Entrez.parse(handle, validate=False)
     gi2taxon = {}
     try:
         for i in record:
@@ -49,7 +49,6 @@ def accession2taxon_id(ncbi_id_list, db="protein"):
     #print 'n unique taxons', len(set(ncbi_id_list))
 
     gi_list = gi(','.join(ncbi_id_list), db, retmax=len(ncbi_id_list))
-
 
     #print 'n unique gi', len(set(gi_list))
 
