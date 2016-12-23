@@ -45,17 +45,21 @@ def accession2operon_table(biodb):
     accession_list = [i[0] for i in server.adaptor.execute_and_fetchall(accession_list_sql,)]
 
     # get full join
-    sql = 'select old_locus_tag,seqfeature_id from custom_tables.locus_tag2old_locus_tag_%s t1 ' \
-          ' right join custom_tables.locus.locus2seqfeature_id_%s t2' \
-          ' on t1.seqfeature_id=t2.seqfeature_id'
+    sql = 'select old_locus_tag,t1.seqfeature_id from custom_tables.locus2seqfeature_id_%s t1' \
+          ' inner join custom_tables.seqfeature_id2old_locus_tag_%s t2 ' \
+          ' on t1.seqfeature_id=t2.seqfeature_id;' % (biodb, biodb)
+    print sql
+
+
     try:
         old_locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     except:
         old_locus2seqfeature_id = {}
-
+    #print old_locus2seqfeature_id
     sql = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
 
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    #print locus_tag2seqfeature_id
 
     pattern_ctracho = 'CT([0-9]+)'
 
@@ -82,6 +86,7 @@ def accession2operon_table(biodb):
                 try:
                     new_locus_seqfeature_id = locus_tag2seqfeature_id[door_entry[2]]
                 except KeyError:
+                    print door_entry[2]
                     new_locus_seqfeature_id = 0
             sql = 'INSERT INTO custom_tables.DOOR2_operons_%s values (%s, %s, %s, "%s", "%s", "%s")' % (biodb,
                                                                                      door_entry[0],
@@ -90,7 +95,7 @@ def accession2operon_table(biodb):
                                                                                      door_entry[2],
                                                                                      door_entry[7],
                                                                                      door_entry[8])
-            print sql
+
             server.adaptor.execute(sql,)
             server.commit()
 

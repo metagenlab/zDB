@@ -11,7 +11,7 @@ def create_locus_tag2seqfeature_table(biodb):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'CREATE TABLE IF NOT EXISTS custom_tables.locus2seqfeature_id_%s (locus_tag varchar(400), seqfeature_id INT,' \
-          ' index locus_tag (locus_tag))' % biodb
+          ' index locus_tag (locus_tag) index seqfeature_id(seqfeature_id))' % biodb
     server.adaptor.execute(sql)
     server.commit()
 
