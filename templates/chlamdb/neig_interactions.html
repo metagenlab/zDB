@@ -7,6 +7,7 @@
 
 <head>
     {% load staticfiles %}
+    {% load custom_tags %}
     {% load static %}
     {% get_static_prefix as STATIC_PREFIX %}
     <script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
@@ -39,7 +40,7 @@
     <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.2.5/cytoscape-qtip.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/4.10.3/css/bootstrap-slider.min.css">
-    <script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script>
+
     <script type="text/javascript" src="{% static 'js/cytoscape-cola.js' %}"></script>
 
 </head>
@@ -47,51 +48,127 @@
 <body height="2000px">
 <h3>Conserved neighborhood for {{orthogroup}}</h3>
     {% if match %}
-        <div id="cy" style="width:600px;height:600px"></div>
+        <object width="95%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
+
+        <div class="row">
+            <div class="col-xs-6" style="padding-left: 15px">
+                <div id="cy" style="width:600px;height:600px"></div>
+            </div>
+            <div class="col-xs-6" style="padding-left: 15px">
+                <object type="image/svg+xml" data="{% static asset_path %}" id="cluster_profile"></object>
+            </div>
+        </div>
 
 
-        <ul style="padding-top: 610px" id="tabs" class="nav nav-tabs" data-tabs="tabs">
+
+
+
+        <ul style="padding-top: 10px" id="tabs" class="nav nav-tabs" data-tabs="tabs">
             <li class="active"><a href="#tab1" data-toggle="tab">Annotation</a></li>
             <li><a href="#tab2" data-toggle="tab">Profile</a></li>
             <!--<li><a href="#tab77" data-toggle="tab" onclick="window.open('{% url 'plot_region_direct' biodb orthogroup %}{{plot_url|safe}}', 'orthoIDframe4'); return false">Region</a></li>-->
         </ul>
 
+
+
         <div id="my-tab-content" class="tab-content">
             <div class="tab-pane active" id="tab1">
-                <div id="export_bouttons_groups">
-                    <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
-                    <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                    <br/>
-                </div>
 
-                <p>Number of orthogroups: {{ sum_group }} </p>
+                        <div id="export_bouttons_groups">
+                            <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+                            <a href="{% url 'get_fasta' biodb %}{{fasta_url_ref}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Download fasta</a>
+                            <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                            <a href="{% url 'circos_main' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
 
-                <table class="sortable" id="table_groups">
+                            <br/>
+                        </div>
+                        <table id="cog_table" class="sortable">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th id="entete_locus">Orthogroup</th>
+                                    <th id="entete_locus">Locus</th>
+                                    <th style="width:10px">C</th>
+                                    <th style="width:70px">COGn</th>
+                                    <th style="width:55px">KO</th>
+                                    <th style="width:260px">Pathways</th>
+                                    <th style="width:230px">Modules</th>
+                                    <th style="width:230px">Interpro</th>
+                                    <th id="entete_gene">Gene</th>
+                                    <th id="entete_n">nH</th>
+                                    <th id="entete_n">nG</th>
+                                    <th id="entete_n">TM</th>
+                                    <th id="entete_n">SP</th>
+                                    <th id="entete_product">Product</th>
 
-                    <thead>
-                        <tr>
-                        <th></th>
-                        <th id="entete_locus">Orthogroup</th>
-                        <th>Genes</th>
-                        <th>Products</th>
-                        <th>Cogs</th>
-                        <th>Pfam</th>
-                        </tr>
-                    </thead>
 
-                    {% for value in match_groups_data %}
-                        <tr>
-                            <td>{{value.0}}</td>
-                            <td><a href="{% url 'locusx' biodb value.1 True%}" target="_top">{{value.1}}</a></td>
-                            <td>{{value.2|safe}}</td>
-                            <td>{{value.3|safe}}</td>
-                            <td>{{value.4|safe}}</td>
-                            <td>{{value.5|safe}}</td>
+                                </tr>
+                            </thead>
+                            <tbody>
 
-                        </tr>
-                    {% endfor %}
-                </table>
+                                {%for values in locus2annot%}
+                                <tr>
+                                    <td>{{values.0}}</td>
+                                    <td>{{values.1}}</td>
+                                    <td><a href="{% url 'locusx' biodb values.2 True %}" target="_top">{{values.2}}</a></td>
+                                    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
+                                    {% with locus_tag2cog_name|keyvalue:values.2 as name %}
+                                        {% if name == '-' %}
+                                            <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
+                                        {% else %}
+                                            <td><a href="{% url "fam" biodb name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
+                                        {% endif %}
+                                    {%endwith%}
+                                    {% with locus_tag2ko|keyvalue:values.2 as oneko %}
+                                        {% if oneko == '-' %}
+                                            <td>{{locus_tag2ko|keyvalue:values.2}}</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                        {% else %}
+                                            <td><a href="{% url "fam" biodb oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
+                                            {% with ko2ko_pathways|keyvalue:oneko as name %}
+                                                {% if name == '-' %}
+                                                    <td>-</td>
+                                                {% else %}
+                                                    <td>{{name|safe}}</td>
+                                                {% endif %}
+                                            {%endwith%}
+                                            {% with ko2ko_modules|keyvalue:oneko as name %}
+                                                {% if name == '-' %}
+                                                    <td>-</td>
+                                                {% else %}
+                                                    <td>{{name|safe}}</td>
+                                                {% endif %}
+                                            {%endwith%}
+                                        {% endif %}
+
+
+                                    {%endwith%}
+                                    {% with locus2interpro|keyvalue:values.2 as interpro_data %}
+                                    <td>
+                                        {% for one_interpro in interpro_data %}
+                                        {% if one_interpro.0 != '-' %}
+                                            <a href="{% url 'fam' biodb one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                        {%else%}
+                                            {{one_interpro.0}}
+                                        {%endif%}
+                                            {{one_interpro.1}} </br>
+                                        {% endfor %}
+                                        {%endwith%}
+                                    </td>
+                                    <td>{{values.7}}</td>
+                                    <td>{{values.8}}</td>
+                                    <td>{{values.9}}</td>
+                                    <td>{{values.10}}</td>
+                                    <td>{{values.11}}</td>
+                                    <td>{{values.12}}</td>
+
+                                </tr>
+
+                                {%endfor%}
+                            </tbody>
+                        </table>
             </div>
             <div class="tab-pane" id="tab2">
                 <object type="image/svg+xml" data="{% static asset_path %}" id="cluster_profile"></object>

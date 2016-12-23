@@ -142,14 +142,14 @@ def make_interpro_from(database_name):
     return InterproForm
 
 
-def make_metabo_from(database_name):
+def make_metabo_from(database_name, add_box=False):
 
     accession_choices = get_accessions(database_name)
 
-
     class MetaboForm(forms.Form):
         targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (len(accession_choices)/4) }), required = False)
-
+        if add_box:
+            input_box = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
     return MetaboForm
 
 
@@ -255,11 +255,18 @@ def locus_int_form(database_name):
     categories = server.adaptor.execute_and_fetchall(sql,)
     CHOICES = [(i[0],i[0]) for i in categories]
     CHOICES.append(("all","all"))
+
+    show_identity_CHOICES = (
+        ('ientity', 'Show identity percentages'),
+        ('color', 'Show coloured heatmap'),
+    )
+
+
     class IntCatChoice(forms.Form):
         category = forms.ChoiceField(choices=CHOICES)
+        #Show_identity_values = forms.ChoiceField(choices=show_identity_CHOICES,
+        #                                        widget=forms.RadioSelect)
     return IntCatChoice
-
-
 
 def make_module_overview_form(database_name):
     import manipulate_biosqldb
@@ -350,9 +357,17 @@ def make_comment_from(biodb, locus_tag):
     return CommentForm
 
 
+class LocusInt(forms.Form):
+    category = forms.CharField(max_length=600, required = True)
+    gene = forms.CharField(max_length=200, required = True)
+    locus_tag = forms.CharField(max_length=400, required = True)
+    description = forms.CharField(widget=forms.Textarea(attrs={'cols': 60, 'rows': 2,'style': 'float:left;position:relative;left:25px;font-size: 10px;width:400px;'}) , required = True)
+    reference = forms.CharField(widget=forms.Textarea(attrs={'cols': 60, 'rows': 2, 'style': 'float:left;position:relative;left:-5px;font-size: 10px;width:400px;'}), required = True)
+
+
+
 class AnnotForm(forms.Form):
     orthogroups = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
-    #biodatabase = forms.ChoiceField(choices=choices)
 
 
 

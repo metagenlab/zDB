@@ -39,7 +39,7 @@
             <li><a href="#tab55" data-toggle="tab" onclick="window.open('{% url 'profile_interactions' biodb orthogroup %}', 'orthoIDframe2'); return false">Similar profiles</a></li>
             {% endif %}
             {% if neig_match %}
-            <li><a href="#tab55" data-toggle="tab" onclick="window.open('{% url 'neig_interactions' biodb orthogroup %}', 'orthoIDframe2'); return false">Conserved neighbors</a></li>
+            <li><a href="#tab55" data-toggle="tab" onclick="window.open('{% url 'neig_interactions' biodb locus_tag %}', 'orthoIDframe2'); return false">Conserved neighbors</a></li>
             {% endif %}
         </ul>
 

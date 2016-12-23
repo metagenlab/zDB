@@ -43,8 +43,12 @@
                     </div>
                {% endif %}
 
-                   <h3>{{ fam }} </h3>
-
+                   <h3>{{ fam }}  {% if type == 'ko' %} <button type="button" class="btn btn-primary btn-xs"
+                                                                onclick="location.href='{% url 'ko2fasta' biodb fam %}'">ko fasta</button>
+                                                        <button type="button" class="btn btn-primary btn-xs"
+                                                                onclick="location.href='{% url 'ko2fasta' biodb fam "T" %}'"> ko fasta + homologs</button>
+                                       {%endif%}
+                   </h3>
                     <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                         <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
                         <li><a href="#tab2" data-toggle="tab">Details</a></li>
@@ -210,8 +214,11 @@
                                     <strong>Green:</strong>Highlight discrepencies between orthogroup clustering and <font size="2" color="red">{{type}}</font> prediction. Green homologs (same orthogroup) <font size="2" color="green">are not</font> positive hit(s) for the considered <font size="2" color="red">{{type}}</font>. Variations within orthogroups may be due to the clustering of multi domain proteins or because of erroneous homolog clustering or <font size="2" color="red">{{type}}</font> prediction.
                                 </p>
                              </div>
-
+                            {% if not big %}
                             <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
+                            {% else %}
+                            <img src="{% static asset_path %}" alt="profile" style="width:100%;">
+                            {% endif %}
                         </div>
                     </div>
            </div>
