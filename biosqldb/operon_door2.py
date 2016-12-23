@@ -46,8 +46,14 @@ def accession2operon_table(biodb):
     sql = 'select old_locus_tag,seqfeature_id from custom_tables.locus_tag2old_locus_tag_%s t1 ' \
           ' right join custom_tables.locus.locus2seqfeature_id_%s t2' \
           ' on t1.seqfeature_id=t2.seqfeature_id'
+    try:
+        old_locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    except:
+        old_locus2seqfeature_id = {}
 
-    old_locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    sql = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+
+    locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     pattern_ctracho = 'CT([0-9]+)'
 
@@ -71,7 +77,10 @@ def accession2operon_table(biodb):
             try:
                 new_locus_seqfeature_id = old_locus2seqfeature_id[door_entry[2]]
             except KeyError:
-                new_locus_seqfeature_id = '-'
+                try:
+                    new_locus_seqfeature_id = locus_tag2seqfeature_id[door_entry[2]]
+                except KeyError:
+                    new_locus_seqfeature_id = '-'
             sql = 'INSERT INTO custom_tables.DOOR2_operons_%s values (%s, %s, %s, "%s", "%s", "%s")' % (biodb,
                                                                                      door_entry[0],
                                                                                      door_entry[1],
