@@ -149,6 +149,10 @@ def get_locus2taxon2identity(biodb, locus_tag_list):
     taxon2identity_closest = {}
 
     for row in identity_data:
+        print seqfeature_id2locus[row[1]]
+        print row
+        print seqfeature_id2locus[row[1]] in taxon2locus2identity_closest
+        print locus_tag_list
         #taxon2identity_closest[str(row[0])] = row[2]
         taxon2locus2identity_closest[seqfeature_id2locus[row[1]]][str(row[0])] = row[2]
     for locus in locus_tag_list:
@@ -690,10 +694,13 @@ def multiple_profiles_heatmap(biodb,
                               taxon2group2value=False,
                               highlight_first_column=False,
                               identity_scale=False,
-                              show_labels=True):
+                              column_scale=False,
+                              show_labels=True,
+                              tree=False):
 
     '''
 
+    ATTENTION: dico inverse: il faut group2taxon2values
 
     :param biodb:
     :param column_labels:
@@ -725,11 +732,23 @@ def multiple_profiles_heatmap(biodb,
         cmap = cm.OrRd
         m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
+    elif column_scale:
+        import matplotlib.cm as cm
+        from matplotlib.colors import rgb2hex
+        import matplotlib as mpl
+        column2scale = {}
+        for column in column_labels:
+            values = taxon2group2count[column].values()
+            norm = mpl.colors.Normalize(vmin=min(values), vmax=max(values))
+            cmap = cm.OrRd
+            m = cm.ScalarMappable(norm=norm, cmap=cmap)
+            column2scale[column] = m
+
     server, db = manipulate_biosqldb.load_db(biodb)
+    if not tree:
+        sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
-    sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
-
-    tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+        tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
 
     t1 = Tree(tree)
 
@@ -737,8 +756,8 @@ def multiple_profiles_heatmap(biodb,
     t1.set_outgroup(R)
     t1.ladderize()
 
-    taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
-
+    taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb,filter_names=True)
+    print taxon_id2organism_name
     head = True
     leaf_list = [i for i in t1.iter_leaves()]
     n_leaves = len(leaf_list)
@@ -784,18 +803,26 @@ def multiple_profiles_heatmap(biodb,
                 first_column = False
             else:
                 if not taxon2group2value:
+
                     try:
+
                         # if identity scale: 2 digit format
                         local_label = str(taxon2group2count[value][lf.name])
-                        if not identity_scale:
-                            local_label = str(taxon2group2count[value][lf.name])
+                        if not identity_scale:# and not column_scale:
+                            local_label = "%.2f" % taxon2group2count[value][lf.name]
                         else:
-                            if round(taxon2group2count[value][lf.name], 2) != 100:
+                            if round(taxon2group2count[value][lf.name], 2) < 100:
                                 local_label = "%.2f" % round(taxon2group2count[value][lf.name], 2)
                             else:
                                 local_label = "%.1f" % round(taxon2group2count[value][lf.name], 2)
                         if show_labels:
-                            n = TextFace(' %s ' % local_label)
+                            if round(taxon2group2count[value][lf.name], 2) < 100 and column_scale:
+                                if round(taxon2group2count[value][lf.name], 2) < 10:
+                                    n = TextFace(' %s  ' % local_label)
+                                else:
+                                    n = TextFace(' %s' % local_label)
+                            else:
+                                n = TextFace('%s' % local_label)
 
                         else:
                             n = TextFace(' - ')
@@ -828,17 +855,21 @@ def multiple_profiles_heatmap(biodb,
                         count = taxon2group2count[value][lf.name]
                     except:
                         count = 0
+                    print value, lf.name
+                    #print taxon2group2count[value][lf.name]
                     if count > 0 and taxon2group2count[value][lf.name] != '-':
                         if not reference_column:
                             if not reference_taxon:
                                 if lf.name != str(reference_taxon):
                                     # clor given a continuous scale
-                                    if not identity_scale:
-                                        n.inner_background.color = "#58ACFA"
-                                    else:
+                                    if identity_scale:
                                         n.inner_background.color = rgb2hex(m.to_rgba(float(count)))
                                         if not show_labels:
                                             n.fgcolor = rgb2hex(m.to_rgba(float(count)))
+                                    elif column_scale:
+                                        n.inner_background.color = rgb2hex(column2scale[value].to_rgba(float(count)))
+                                    else:
+                                        n.inner_background.color = "#58ACFA"
 
                                 else:
                                     n.inner_background.color = "#FA5858"

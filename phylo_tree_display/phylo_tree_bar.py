@@ -26,7 +26,10 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
            ' where t2.biodatabase_id=%s and t1.description not like "%%%%plasmid%%%%";' % (biodb, db_id)
     sql4 = 'select taxon_id,sum(stop-start) as coding from orthology_detail_%s group by taxon_id;' % biodb
 
-    taxon2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql1,))
+    #taxon2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql1,))
+
+    taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb, filter_names=True)
+
     taxon2gc = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
     taxon2genome_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
     taxon2coding_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql4,))

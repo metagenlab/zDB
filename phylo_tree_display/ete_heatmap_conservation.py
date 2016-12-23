@@ -452,7 +452,7 @@ def plot_heatmap_tree_locus(biodb, tree_file, taxid2count, taxid2identity=False,
             n.inner_background.color = "white"
             n.opacity = 1.
             lf.add_face(n, col+2, position="aligned")
-        lf.name = taxid2organism[int(lf.name)]
+        lf.name = taxid2organism[str(lf.name)]
 
     return t1, leaf_number
 
