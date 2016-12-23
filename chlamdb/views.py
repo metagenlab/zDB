@@ -1837,7 +1837,7 @@ def locusx(request, biodb, locus=None, menu=False):
                 operon_id = server.adaptor.execute_and_fetchall(sql10, )[0][0]
                 print operon_id
                 sqlo = 'select operon_id,gi,locus_tag,old_locus_tag,COG_number,product from custom_tables.DOOR2_operons_%s t1 ' \
-                       ' inner join custom_tables.locus2seqfeature_id_chlamydia_04_16 t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                       ' left join custom_tables.locus2seqfeature_id_chlamydia_04_16 t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                        ' where operon_id=%s;' % (biodb, operon_id)
                 operon = server.adaptor.execute_and_fetchall(sqlo, )
                 operon_locus = [i[2] for i in operon]
