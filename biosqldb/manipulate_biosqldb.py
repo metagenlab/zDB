@@ -191,8 +191,9 @@ def taxon_id2genome_description(server, biodatabase_name, filter_names=False):
             description = re.sub("Merged record from ", "", description)
             description = re.sub(", wgs", "", description)
             description = re.sub("Candidatus ", "", description)
+            description = re.sub("Chlamydophila", "Chlamydia", description)
             description = re.sub(".contig.0_1, whole genome shotgun sequence.", "", description)
-            taxon_id2genome[accession[0]] = description
+            taxon_id2genome[str(accession[0])] = description
 
         return taxon_id2genome
     else:

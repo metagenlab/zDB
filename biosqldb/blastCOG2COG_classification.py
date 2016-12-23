@@ -12,7 +12,8 @@
 # '6 qacc sacc evalue nident pident positive gaps length qstart qend qcovs sstart send qseqid qgi qaccver '
 # 25.08.16 changed identity cutoff from 30 to 25
 # 01.09.16 changed identity cutoff from 25 to 30
-def blast2COG(blast_file, coverage_cutoff=60, identity_cutoff=30):
+# 21.12.16 changed identity cutoff from 25 to 20 and coverage from 60 to 50
+def blast2COG(blast_file, coverage_cutoff=50, identity_cutoff=20):
     with open(blast_file, "r") as f:
         locus2hit_accession = {}
         for line in f:

@@ -150,6 +150,7 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
                                 input_blast_files):
 
     import accession2taxon_id
+    from datetime import datetime
 
     '''
     Load tabulated blast results into sql table blastnr_`db_name`
@@ -199,14 +200,17 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
 
             input_file_hit_gi = [i[1].split('|')[1] for i in input_file]
 
+            
+
             print 'getting protein 2 taxon id for %s proteins' % len(input_file_hit_gi)
             gi2taxon_id = {}
             gi2descriptions = {}
 
             id_lists = _chunks(input_file_hit_gi, 300)
             for i, one_list in enumerate(id_lists):
-                print i, "/", len(id_lists)
+                #print i, "/", len(id_lists)
                 if i % 100 == 0:
+                    print i, " lists /", len(id_lists)
                     time.sleep(60)
                 gi2taxon_id.update(accession2taxon_id.gi2taxon_id(one_list, "protein"))
                 gi2descriptions.update(accession2taxon_id.gi2description(one_list, "protein"))
@@ -215,7 +219,7 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
 
             print 'loading blast results into database...'
             for n, line in enumerate(input_file):
-                print n, line[0]
+                #print n, line[0]
                 # qgi qacc sgi sacc sscinames sskingdoms staxids evalue nident pident positive gaps length qstart qend qcovs sstart send sstrand stitle
                 if n%1000 == 0:
                     print time.ctime() + ': ' + str(round((float(n)/len(input_file))*100,2)) + '%...'
@@ -236,6 +240,7 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
                         seqfeature_id_previous_line = locus_tag2seqfeature_id[query_accession_previous_line]
                     locus_tag_previous_line = seqfeature_id2locus_tag[str(seqfeature_id_previous_line)]
 
+                    # check if new from the same accession or new accession
                     if locus_tag2accession[locus_tag_previous_line] != locus_tag2accession[locus_tag]:
                             # insert previous hsps data
                             sql_hsps = sql_blast_hsp_head % (db_name, locus_tag2accession[locus_tag_previous_line], values[0:-1])
@@ -247,6 +252,9 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
                                 values = ''
                             except:
                                 print sql_hsps
+                    #else:
+                    #    
+                    #    print 'previous loocus accession: %s --- new locus: %s' % (locus_tag2accession[locus_tag_previous_line], locus_tag2accession[locus_tag])
 
                 evalue = line[10]
                 #n_identical = int(line[8]) # remove
@@ -437,12 +445,16 @@ def _load_taxonomic_data(biodb, mysql_host, mysql_user, mysql_pwd, mysql_db, acc
     '''
 
     import MySQLdb
+    from MySQLdb import ProgrammingError
     conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
                                 user=mysql_user, # your username
                                 passwd=mysql_pwd, # your password
                                 db=mysql_db) # name of the data base
     cursor = conn.cursor()
 
+
+
+    
     for accession in accession_list:
         print 'Loading...', accession
 
@@ -453,11 +465,15 @@ def _load_taxonomic_data(biodb, mysql_host, mysql_user, mysql_pwd, mysql_db, acc
             # new table for the multiples taxons ids/hits
             for taxon in nr_hit_id2taxon_ids[nr_hit].split(';'):
                 if taxon != 'N/A':
-                    sql = 'INSERT INTO blastnr_hits_taxonomy_%s_%s (' \
-                        'nr_hit_id, subject_taxon_id) values (%s, %s)' % (biodb,
-                                                                  accession,
-                                                                  nr_hit,
-                                                                  taxon)
+                    try:
+                        sql = 'INSERT INTO blastnr_hits_taxonomy_%s_%s (' \
+                            'nr_hit_id, subject_taxon_id) values (%s, %s)' % (biodb,
+                                                                      accession,
+                                                                      nr_hit,
+                                                                      taxon)
+                    except ProgrammingError:
+                        print 'PROBLEM WITH:'
+                        print sql
                 #try:
                     cursor.execute(sql)
                     conn.commit()
@@ -644,6 +660,21 @@ def create_sql_blastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
         conn.commit()
 
 
+def filter_blast_number(one_blast_file, out_name,max_hits_per_locus=100):
+    locus2count = {}
+    g = open(out_name, 'w')
+
+    with open(one_blast_file, 'r') as f:
+        for row in f:
+            locus = row.rstrip().split("\t")[0]
+            #print 'locus', locus
+            if locus not in locus2count:
+                locus2count[locus] = 1
+            else:
+                if locus2count[locus] <=max_hits_per_locus:
+                    g.write(row)
+                    locus2count[locus] += 1
+
 
 def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *input_blast_files):
     '''
@@ -667,11 +698,12 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
     '''
 
     import sequence_id2scientific_classification
-
+    from time import gmtime, strftime
 
     import MySQLdb
     import time
     import accession2taxon_id
+    import manipulate_biosqldb
 
     print 'host', mysql_host
 
@@ -683,50 +715,74 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
                                 db=mysql_db) # name of the data base
     cursor = conn.cursor()
 
-
+    sql1 = 'select gi, taxon_id from gi2taxon_id'
+    cursor.execute(sql1,)
+    gi2taxon_id_database = manipulate_biosqldb.to_dict(cursor.fetchall())
     sql = 'SELECT taxon_id from blastnr_taxonomy'
     all_taxon_ids = []
     cursor.execute(sql,)
     database_taxon_ids = [str(i[0]) for i in cursor.fetchall()]
     taxid2classification = {}
     print "Number of taxons into database: ", len(database_taxon_ids)
+
+    protein_gi_list = []
+    
     for one_blast_file in input_blast_files:
 
                 print 'blast file %s' % one_blast_file
                 with open(one_blast_file, 'r') as f:
 
                     #hit_column =
-                    all_taxons_ids = [i.rstrip().split("\t")[1].split('|')[1] for i in f]
+                    all_gi_ids = [i.rstrip().split("\t")[1].split('|')[1] for i in f]
+                    protein_gi_list+=all_gi_ids
 
-                    print 'getting gi 2 taxon id for %s proteins' % len(all_taxons_ids)
-                    gi2taxon_id = {}
+    nr_protein_gi_list = list(set(protein_gi_list))
+    gi_def_list = []
+    for gi in nr_protein_gi_list:
+        # if gi already into database with corresponding taxon_id, skip
+        try:
+            if gi2taxon_id_database[gi] in database_taxon_ids:
+                continue
+            else:
+                gi_def_list.append(gi)
+        except KeyError:
+            gi_def_list.append(gi)
+    print 'getting gi 2 taxon id for %s proteins' % len(gi_def_list)
+    gi2taxon_id = {}
 
-                    id_lists = _chunks(all_taxons_ids, 300)
-                    for i, one_list in enumerate(id_lists):
-                        print i, "/", len(id_lists)
-                        if i % 100 == 0:
-                            time.sleep(60)
-                        gi2taxon_id.update(accession2taxon_id.gi2taxon_id(one_list, "protein"))
-                        #print "protein_accession2taxon_id", protein_accession2taxon_id
-                    temp_subject_taxids = [str(i) for i in gi2taxon_id.values()]
+    id_lists = _chunks(gi_def_list, 300)
+    for i, one_list in enumerate(id_lists):
+        #print i, "/", len(id_lists)
+        if i % 100 == 0:
+            print i, "lists ok / %s lists" % len(id_lists), strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            time.sleep(60)
+            gi2taxon_id.update(accession2taxon_id.gi2taxon_id(one_list, "protein"))
+            #print "protein_accession2taxon_id", protein_accession2taxon_id
+            temp_subject_taxids = [str(i) for i in gi2taxon_id.values()]
 
-                    for i in temp_subject_taxids:
-                        if i not in database_taxon_ids and i not in all_taxon_ids:
-                            all_taxon_ids.append(i)
-                print 'Number of new taxons:', len(all_taxon_ids)
-                print 'i.e: ', all_taxon_ids[1:10]
-                time.sleep(60)
+            for i in temp_subject_taxids:
+                if i not in database_taxon_ids and i not in all_taxon_ids:
+                    all_taxon_ids.append(i)
+
+    # add new values to gi2taxon_id                
+    for gi in gi2taxon_id:
+        sql = 'insert into gi2taxon_id values(%s,%s)' % (gi, gi2taxon_id[gi])
+        cursor.execute(sql,)
+    conn.commit()
+                    
+    print 'Number of new taxons:', len(all_taxon_ids)
+    print 'i.e: ', all_taxon_ids[1:10]
+    time.sleep(60)
 
     print 'Fetching ncbi taxonomy... for %s taxons' % str(len(all_taxon_ids))
 
     # subdivide the taxon list in smaller lists, otherwise NCBI will limit the results to? 10000 (observed once only)
     id_lists = _chunks(all_taxon_ids, 300)
     for i, one_list in enumerate(id_lists):
-        print i, "/", len(id_lists)
+        #print i, "/", len(id_lists)
         if i % 100 == 0:
             time.sleep(60)
         taxid2classification.update(sequence_id2scientific_classification.taxon_id2scientific_classification(one_list))
-
 
     print 'Number of taxon id retrieved:', len(taxid2classification.keys())
 
@@ -800,6 +856,8 @@ def blastnr2biosql(seqfeature_id2locus_tag,
     n_cpu = n_procs
     n_poc_per_list = int(numpy.ceil(len(input_blast_files)/float(n_cpu)))
     query_lists = _chunks(input_blast_files, n_poc_per_list)
+    print 'n lists: %s' % len(query_lists)
+    
 
     if len(input_blast_files)>n_poc_per_list:
 
@@ -880,13 +938,24 @@ if __name__ == '__main__':
     parser.add_argument("-t", '--create_tables', action='store_true', help="Create SQL tables")
     parser.add_argument("-p", '--n_procs', type=int, help="Number of threads to use (default=8)", default=8)
     parser.add_argument("-c", '--clean_tables', action='store_true', help="delete all sql tables")
-
+    parser.add_argument("-l", '--load_tables', action='store_true', help="load tab files into biodatabase")
+    parser.add_argument("-f", '--filter_n_hits', action='store_true', help="filter_n_hits (max 100 hits/locus)")
     #create_protein_accession2taxon_id_table()
     #import sys
     #sys.exit()
 
 
     args = parser.parse_args()
+
+
+    mysql_host = 'localhost'
+    mysql_user = 'root'
+
+    mysql_pwd = 'estrella3'
+
+    mysql_db = 'blastnr'
+
+    biodb = args.mysql_database
 
     if args.clean_tables:
         del_blastnr_table_content(args.mysql_database)
@@ -905,42 +974,50 @@ if __name__ == '__main__':
 
     '''
 
-    mysql_host = 'localhost'
-    mysql_user = 'root'
 
-    mysql_pwd = 'estrella3'
 
-    mysql_db = 'blastnr'
+    if args.filter_n_hits:
+        for i in args.input_blast:
+            outname = i.split('.')[0] + '_filtered_100.tab'
+            print outname
+            filter_blast_number(i,outname,100)
 
-    biodb = args.mysql_database
-
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    sys.stdout.write("creating locus_tag2seqfeature_id")
-    locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, biodb)
-
-    sys.stdout.write("creating protein_id2seqfeature_id")
-    protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, biodb)
-
-    sys.stdout.write("getting seqfeature_id2locus_tag")
-    seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, biodb)
-
-    sys.stdout.write("getting locus_tag2accession")
-    locus_tag2accession = manipulate_biosqldb.locus_tag2accession(server, args.mysql_database)
 
     if args.create_tables:
+
+
+
         create_sql_blastnr_tables(args.mysql_database, mysql_host, mysql_user, mysql_pwd, mysql_db, main_blastnr_table=True, alternate_tables=True)
 
-    blastnr2biosql(seqfeature_id2locus_tag,
-                    locus_tag2seqfeature_id,
-                    protein_id2seqfeature_id,
-                    locus_tag2accession,
-                    biodb,
-                    args.n_procs,
-                    mysql_host,
-                    mysql_user,
-                    mysql_pwd,
-                    mysql_db,
-                    *args.input_blast)
+
+    if args.load_tables:
+
+
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+        sys.stdout.write("creating locus_tag2seqfeature_id")
+        locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, biodb)
+
+        sys.stdout.write("creating protein_id2seqfeature_id")
+        protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, biodb)
+
+        sys.stdout.write("getting seqfeature_id2locus_tag")
+        seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, biodb)
+
+        sys.stdout.write("getting locus_tag2accession")
+        locus_tag2accession = manipulate_biosqldb.locus_tag2accession(server, args.mysql_database)
+
+
+        blastnr2biosql(seqfeature_id2locus_tag,
+                        locus_tag2seqfeature_id,
+                        protein_id2seqfeature_id,
+                        locus_tag2accession,
+                        biodb,
+                        args.n_procs,
+                        mysql_host,
+                        mysql_user,
+                        mysql_pwd,
+                        mysql_db,
+                        *args.input_blast)
 
 
