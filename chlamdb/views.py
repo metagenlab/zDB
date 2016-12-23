@@ -1777,9 +1777,12 @@ def locusx(request, biodb, locus=None, menu=False):
                    ' fraction_sheet from custom_tables.locus2pepstats_%s where locus_tag="%s";' % (biodb, locus)
 
 
-            sql10 = 'select operon_id from custom_tables.DOOR2_operons_%s where (locus_tag="%s" or old_locus_tag="%s")' % (biodb,
-                                                                                                                        locus,
-                                                                                                                        locus)
+            sql10 = 'select operon_id from custom_tables.locus2seqfeature_id_%s t1 ' \
+                    ' inner join custom_tables.DOOR2_operons_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
+                    ' where t1.locus_tag="%s"' % (biodb,
+                                                                             biodb,
+                                                                            locus)
+            print sql10
             sql11 = 'select db_xref_name,db_accession from custom_tables.locus2seqfeature_id_%s as t1 ' \
                     ' inner join custom_tables.uniprot_id2seqfeature_id_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                     ' inner join custom_tables.uniprot_db_xref_%s as t3 on t2.uniprot_id=t3.uniprot_id ' \
@@ -1829,16 +1832,19 @@ def locusx(request, biodb, locus=None, menu=False):
                         uniprot_accession = i[1]
             except:
                 dbxref_uniprot_data = False
+
             try:
                 operon_id = server.adaptor.execute_and_fetchall(sql10, )[0][0]
                 print operon_id
-                sqlo = 'select * from custom_tables.DOOR2_operons_%s where operon_id=%s' % (biodb, operon_id)
+                sqlo = 'select operon_id,gi,locus_tag,old_locus_tag,COG_number,product from custom_tables.DOOR2_operons_%s t1 ' \
+                       ' left join custom_tables.locus2seqfeature_id_chlamydia_04_16 t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                       ' where operon_id=%s;' % (biodb, operon_id)
                 operon = server.adaptor.execute_and_fetchall(sqlo, )
                 operon_locus = [i[2] for i in operon]
             except IndexError:
                 operon = False
 
-
+            #operon=False
             temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
             temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
             name = 'temp/' + os.path.basename(temp_file.name)
@@ -7323,7 +7329,7 @@ def kegg_module(request, biodb):
     import ete_motifs
     print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
-    module_overview_form = get_locus_annotations(biodb)
+    module_overview_form = make_module_overview_form(biodb)#get_locus_annotations_form(biodb)
 
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         form = module_overview_form(request.POST)
