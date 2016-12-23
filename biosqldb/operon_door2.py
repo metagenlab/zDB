@@ -20,7 +20,8 @@ def door_accession2door_operon_table(accession):
 
     door_link = 'http://csbl.bmb.uga.edu/DOOR/downloadNCoperon.php?NC_id=%s' % accession
     print door_link
-    data = urllib2.urlopen(door_link)
+    req = urllib2.Request(door_link)
+    data = urllib2.urlopen(req)
 
     operon_table = []
     for i, row in enumerate(data):
