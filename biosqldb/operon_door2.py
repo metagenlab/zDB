@@ -19,7 +19,7 @@ def door_accession2door_operon_table(accession):
     import urllib2
 
     door_link = 'http://csbl.bmb.uga.edu/DOOR/downloadNCoperon.php?NC_id=%s' % accession
-    print door link
+    print door_link
     data = urllib2.urlopen(door_link)
 
     operon_table = []
