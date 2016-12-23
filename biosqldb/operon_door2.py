@@ -90,6 +90,7 @@ def accession2operon_table(biodb):
                                                                                      door_entry[2],
                                                                                      door_entry[7],
                                                                                      door_entry[8])
+            print sql
             server.adaptor.execute(sql,)
             server.commit()
 
