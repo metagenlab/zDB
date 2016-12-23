@@ -9,7 +9,7 @@ def create_DOOR_operon_table(biodb):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     # OperonID	GI	Synonym	Start	End	Strand	Length	COG_number	Product
-    sql = 'CREATE TABLE IF NOT EXISTS custom_tables.DOOR2_operons_%s (operon_id INT, gi INT, seqfeature_id varchar (400), old_locus_tag varchar(400), COG_number ' \
+    sql = 'CREATE TABLE IF NOT EXISTS custom_tables.DOOR2_operons_%s (operon_id INT, gi INT, seqfeature_id INT, old_locus_tag varchar(400), COG_number ' \
           ' varchar(400), product TEXT, index seqfeature_id (seqfeature_id), index old_locus_tag(old_locus_tag), index operon_id(operon_id))' % biodb
     server.adaptor.execute(sql)
     server.commit()
@@ -82,7 +82,7 @@ def accession2operon_table(biodb):
                 try:
                     new_locus_seqfeature_id = locus_tag2seqfeature_id[door_entry[2]]
                 except KeyError:
-                    new_locus_seqfeature_id = '-'
+                    new_locus_seqfeature_id = 0
             sql = 'INSERT INTO custom_tables.DOOR2_operons_%s values (%s, %s, %s, "%s", "%s", "%s")' % (biodb,
                                                                                      door_entry[0],
                                                                                      door_entry[1],
