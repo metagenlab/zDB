@@ -52,8 +52,8 @@ def contruct_graph():
 
     server, db = manipulate_biosqldb.load_db('chlamydia_04_16')
 
-    sql = 'select * from comparative_tables.phylogenetic_profiles_euclidian_distance_chlamydia_04_16 where group_1!=group_2 and euclidian_dist<=2'
-
+    #sql = 'select * from comparative_tables.phylogenetic_profiles_euclidian_distance_chlamydia_04_16 where group_1!=group_2 and euclidian_dist<=2'
+    sql = 'select * from interactions.colocalization_table_locus_chlamydia_04_16 where locus_1 like "%%%%Rh%%%%" and ratio>0.8 and n_comparisons<20;;'
     data = server.adaptor.execute_and_fetchall(sql,)
 
 
@@ -71,8 +71,8 @@ def contruct_graph():
 
     label = {}
     for n, orthogroup in enumerate(all_verticles):
-        label[n] = orthology_chlamydia_04_16orthogroup
-    print label[10], label[2388]
+        label[n] = orthogroup # orthology_chlamydia_04_16
+    #print label[10], label[2388]
 
     for i in data:
         index_1 = i[0]#all_verticles.index(i[0])
@@ -92,9 +92,11 @@ def contruct_graph():
         plt.savefig("path_%s.png" % n)
     '''
 
-    for i in range(0, 40):
-        print 'fig %s' % i
-        print len(graph_list[i])
+    for i in range(0, len(graph_list)):
+        #print len(graph_list[i])
+        if len(graph_list[i])>4:
+            #print dir(graph_list[i])
+            print graph_list[i].node
         gg = graph_list[i]
         #remove = [node for node,degree in gg.degree().items() if degree < 2]
         #gg.remove_nodes_from(remove)

@@ -42,7 +42,7 @@ def chunks(l, n):
         yield l[i:i+n]
 
 
-def get_gaps_from_start_stop_lists(contig2start_stop_lists, contig2length=False, out_highlight="circos_gaps_highlight.txt", out_labels='circos_gaps_labels.txt'):
+def get_gaps_from_start_stop_lists(contig2start_stop_lists, contig2length=False, out_highlight="circos_gaps_highlight.txt", out_labels='circos_gaps_labels.txt', min_gap_size=1000):
     import pandas as pd
     import numpy as np
 
@@ -85,7 +85,7 @@ def get_gaps_from_start_stop_lists(contig2start_stop_lists, contig2length=False,
                 index_start+=comparison_index
                 comparison_index=1
                 continue
-            elif int(data_sort['start'][index_start+comparison_index])-int(data_sort['stop'][index_start]) > 1000:
+            elif int(data_sort['start'][index_start+comparison_index])-int(data_sort['stop'][index_start]) > min_gap_size:
                 print '############# Potential gap!!! ', contig, data_sort['stop'][index_start], "-" , data_sort['start'][index_start+comparison_index]
                 if contig not in gap_data:
                     gap_data[contig] = [[data_sort['stop'][index_start], data_sort['start'][index_start+comparison_index]]]
@@ -219,7 +219,8 @@ class Fasta2circos():
                  blast=False,
                  gc=True,
                  highlight_list=[],
-                 algo="nucmer"):
+                 algo="nucmer",
+                 min_gap_size=1000):
         self.contigs_add = {}
         print "fasta1", fasta1
         print "fasta2", len(fasta2), fasta2
@@ -275,7 +276,7 @@ class Fasta2circos():
                 #    continue
                 if gaps:
                     print contig2start_stop_list
-                    get_gaps_from_start_stop_lists(contig2start_stop_list, out_highlight="circos_gaps_highlight_%s.txt" % i, out_labels="circos_gaps_labels_%s.txt" % i)
+                    get_gaps_from_start_stop_lists(contig2start_stop_list, out_highlight="circos_gaps_highlight_%s.txt" % i, out_labels="circos_gaps_labels_%s.txt" % i, min_gap_size=min_gap_size)
                     if i%2 == 0:
                         color = "orrd-9-seq-9"
                     else:
@@ -1199,6 +1200,7 @@ if __name__ == '__main__':
     arg_parser.add_argument("-b", "--blast", help="highlight blast hits (-outfmt 6)")
     arg_parser.add_argument("-n", "--highlight", help="highlight instead of heatmap corresponding list of records", nargs="+")
     arg_parser.add_argument("-a", "--algo", help="algorythm to use to compare the genome (megablast, nucmer or promer)", default="nucmer")
+    arg_parser.add_argument("-m", "--min_gap_size", help="minimum gap size to consider", default=1000)
     args = arg_parser.parse_args()
 
     if args.highlight is None:
@@ -1215,7 +1217,8 @@ if __name__ == '__main__':
                            gaps=args.gaps,
                            blast=args.blast,
                            highlight_list=args.highlight,
-                           algo=args.algo)
+                           algo=args.algo,
+                           min_gap_size=int(args.min_gap_size))
 
     circosf.write_circos_files(circosf.config, circosf.brewer_conf)
     circosf.run_circos(out_prefix=args.output_name)

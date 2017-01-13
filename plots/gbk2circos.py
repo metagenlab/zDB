@@ -180,6 +180,9 @@ def print_circos_record_file(record_list, out_name = "circos_contigs.txt", draft
 
       try:
           for contig in draft_data[x]:
+              print contig
+              if contig[1] == contig[2]:
+                  continue
               if draft_coordinates:
                   if i%2 == 0:
                       f.write("chr - %s %s %s %s spectral-5-div-%s\n" % (contig[0], contig[0], 0, contig[2]-contig[1], 3))
