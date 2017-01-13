@@ -6,8 +6,10 @@
 
 
 <head>
+
 {% load staticfiles %}
 {% load static %}
+{% load custom_tags %}
 {% get_static_prefix as STATIC_PREFIX %}
 <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
@@ -72,9 +74,9 @@
                 <li class="active"><a href="#tab1" data-toggle="tab">Overview</a></li>
                 <li><a href="#tab3" data-toggle="tab">Sequences</a></li>
                 <li><a href="#tab2" data-toggle="tab">InterproScan</a></li>
-                <li><a href="#tab33" data-toggle="tab">Homologs</a></li>
+                <li><a href="#tab33" data-toggle="tab">Homologs <span class="badge">{{homologues|length}}</span><br></a></li>
                 {% else %}
-                 <li class="active"><a href="#tab33" data-toggle="tab">Homologs</a></li>
+                 <li class="active"><a href="#tab33" data-toggle="tab">Homologs <span class="badge">{{homologues|length}}</span><br></a></li>
                 {% endif %}
 
                 {% if input_type == 'locus_tag'%}
@@ -91,7 +93,8 @@
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'string_page' biodb cog_data.0 genome_accession %}', 'orthoIDframe'); return false">string interactions</a></li>
                 {% endif %}
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' biodb data.1 %}', 'orthoIDframe'); return false">Region</a></li>
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastnr' biodb data.1 %}', 'orthoIDframe'); return false">Blast NR</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastnr' biodb data.1 %}', 'orthoIDframe'); return false">Blast RS <span class="badge">{{n_blastnr_hits}}</span></a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' biodb data.1 %}', 'orthoIDframe'); return false">Blast SP <span class="badge">{{n_swissprot_hits}}</span></a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'interactions' biodb data.1 %}', 'orthoIDframe'); return false">Interactions</a></li>
 
             </ul>
@@ -100,17 +103,6 @@
 
 
                 <div class="tab-pane active" id="tab1">
-                    <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                        <div class="panel-heading" style="width:100%">
-                            <h3 class="panel-title">Help</h3>
-                        </div>
-                        <p style="margin: 10px 10px 10px 10px; line-height: 160%">
-                            Annotatation of {{ data.2 }} <br>
-                            - click on COG/Pfam/EC/Interpro links (if available) to get informations about the distribution of the corresponding domain/annotated feature in other genomes <br>
-                            <a href="{% static "locus_tag2old_locus_tag.txt" %}">Old Locus tag orrespondance table</a></p>
-                        </p>
-                    </div>
-
 
                     <div class="row">
                         <div class="col-xs-4" style="padding-left: 15px">
@@ -180,13 +172,13 @@
                                     </tr>
                                     {%if cog_data %}
                                         <tr>
-                                        <td id="description_field"><a href="{% url 'fam' biodb cog_data.0 'cog' %}" target="_top">COG</a></td>
+                                        <td id="description_field"><a href="{% url 'fam' biodb cog_data.0 'cog' %}" target="_top">COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></td>
                                         <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}"  target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
                                         </tr>
                                     {% endif %}
                                     {%if ko_data %}
                                         <tr>
-                                        <td id="description_field"><a href="{% url 'fam' biodb ko_data.0 'ko' %}" target="_top">KO</a></td>
+                                        <td id="description_field"><a href="{% url 'fam' biodb ko_data.0 'ko' %}" target="_top">KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></td>
                                         <td><a href="http://www.genome.jp/dbget-bin/www_bget?ko:{{ko_data.0}}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
                                         </tr>
                                     {% endif %}
@@ -381,11 +373,21 @@
 
                             <h3>Domains</h3>
                             <table>
+                                {%if interpro_data %}
+                                   <tr>
+                                        <td style="width:105px"></td>
+                                        <td></td>
+                                        <td style="width:95px">Bacteria <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of bacterial sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                        <td style="width:95px">Euk. <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of eukaryotic sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                        <td style="width:95px">Archae <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of archaeal sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                        <td style="width:95px">Virus <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of virus sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                    </tr>
+                                {% endif %}
                                 <tr>
-                                    <td id="description_field">TM</td>
-                                    <td id="description_field">{{ data.9 }}</td>
+                                    <td>TM</td>
+                                    <td>{{ data.9 }}</td>
                                 </tr>
-                                    <td id="description_field">SP</td>
+                                    <td>SP</td>
                                     <td>{{ data.10 }}</td>
                                 </tr>
                                 {%if pfam_data %}
@@ -400,24 +402,35 @@
 
                                 {%if interpro_data %}
                                     {% for values in interpro_data %}
+                                        {% with interpro2taxononmy|keyvalue:values.0 as taxo %}
                                         <tr>
                                             <td id="description_field"><a href="{% url 'fam' biodb values.0 'interpro' %}" target="_top">Interpro: {{values.0}}</a></td>
-                                            <td>{{values.1}}</td>
+                                            <td>{{values.1}} </td>
+                                            {% if taxo.4 > taxo.5 %}
+                                                <td style="color:blue;">{{taxo.4}} ({{taxo.0}}%)</td>
+                                                <td>{{taxo.5}} ({{taxo.1}}%)</td>
+                                            {% else %}
+                                                <td>{{taxo.4}} ({{taxo.0}}%)</td>
+                                                <td style="color:red;">{{taxo.5}} ({{taxo.1}}%)</td>
+                                            {% endif %}
+                                            <td>{{taxo.6}} ({{taxo.2}}%)</td>
+                                            <td>{{taxo.7}} ({{taxo.3}}%)</td>
                                         </tr>
-
+                                        {% endwith %}
                                     {% endfor %}
                                 {% endif %}
 
                             </table>
                             {%if ko_pathway_data or ko_module_data %}
-                                <h3>Pathways/Modules</h3>
+                                <h3>Pathways/Modules <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and GhostKOALA"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
                                 <table>
+
                                     {%if ko_pathway_data %}
 
                                         {% for pathway in ko_pathway_data %}
                                             <tr>
                                                 <td>Pathway: {{pathway.1}} <a href="{% url 'KEGG_mapp_ko' biodb pathway.1 %}" target="_top">ko</a> /
-                                                    <a href="{% url 'KEGG_mapp' biodb pathway.1 %}" target="_top">priam_ec</a></td>
+                                                    <a href="{% url 'KEGG_mapp' biodb pathway.1 %}" target="_top">priam_ec</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
                                                 <td>{{pathway.2}}</td>
                                                 <td>{{pathway.3}}</td>
                                             </tr>
@@ -429,7 +442,7 @@
 
                                         {% for module in ko_module_data %}
                                             <tr>
-                                                <td>Module: <a href="{% url 'KEGG_module_map' biodb module.1 %}" target="_top">{{module.1}} (ko_based)</a>
+                                                <td>Module: <a href="{% url 'KEGG_module_map' biodb module.1 %}" target="_top">{{module.1}} (ko_based) </a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
                                                 <td>{{module.2}}</td>
                                                 <td>{{module.3}}</td>
                                             </tr>
@@ -440,13 +453,13 @@
                             {% endif %}
                             </table>
                             {%if operon %}
-                                <h3>Operon</h3>
+                                <h3>Operon <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data from the Door2 database"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
                                 <table>
                                     <tr>
                                         <th>DOOR2 id</th>
                                         <th>locus</th>
                                         <th>old_locus</th>
-                                        <th>COG</th>
+                                        <th>COG </th>
                                         <th>Product</th>
                                     </tr>
                                     {% for locus in operon %}
@@ -675,18 +688,18 @@
                             </thead>
                             <tbody>
                                 {% for values in homologues %}
-                                {% load static %}
+
                                 <!-- 1locus_tag,2gene,3product,4organism ,5orthogroup_size,6n_genomes,7TM,8SP,9comment_function-->
                                 <!-- 10gene  | 11annotation_score | 12uniprot_status | 13recommendedName_fullName -->
-                                {% get_static_prefix as STATIC_PREFIX %}
+
                                     <tr>
                                         <td>{{values.0}}</td>
                                         <td><a href="{% url 'locusx' biodb values.1 True %}" target="_top">{{values.1}}</a></td>
                                         <td>{{values.14}}</td> <!-- identity -->
                                         {% if values.12 != 'reviewed'%}
-                                            <td>{{values.12}}</td> <!-- review -->
+                                            <td>UR </td> <!-- review <img src="{{ STATIC_URL }}scales/unreviewed.gif" id="uw">-->
                                         {%else%}
-                                            <td><strong><font color="red">{{values.12}}<font></strong></td> <!-- review -->
+                                            <td style="color:red">RW </td>  <!-- review <img src="{{ STATIC_URL }}scales/reviewed.gif" id="rw">-->
                                         {%endif%}
                                         <td>{{values.11}}</td> <!-- annotation score -->
 
@@ -810,4 +823,10 @@
 </style>
 
 </body>
+
+<script>
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
 </html>

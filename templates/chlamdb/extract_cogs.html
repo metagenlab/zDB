@@ -46,9 +46,10 @@
             <nav>
                 <ul id="tabs_main" class="nav nav-tabs">
                     <li class="active"><a href="{% url 'extract_cog' biodb %}">Detailed comparison</a></li>
-
                     <li><a href="{% url 'venn_cog' biodb %}">Venn diagram</a></li>
                     <li><a href="{% url 'cog_barchart' biodb %}">COG categories barchart</a></li>
+                    <li><a href="{% url 'COG_phylo_heatmap' biodb True %}">COG heatmap freq.</a></li>
+                    <li><a href="{% url 'COG_phylo_heatmap' biodb False %}">COG heatmap counts</a></li>
 
                 </ul>
             </nav>

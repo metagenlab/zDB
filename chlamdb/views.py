@@ -1445,6 +1445,10 @@ def extract_cog(request, biodb):
 
 
 
+
+
+
+
 @login_required
 def venn_ko(request, biodb):
 
@@ -1685,7 +1689,6 @@ def locusx(request, biodb, locus=None, menu=False):
 
     cache = get_cache('default')
 
-
     if request.method == 'GET':  # S'il s'agit d'une requête POST
         import re
 
@@ -1800,7 +1803,22 @@ def locusx(request, biodb, locus=None, menu=False):
                     ' from custom_tables.locus2seqfeature_id_%s as t1  ' \
                     'inner join custom_tables.uniprot_go_terms_%s as t2 on t1.seqfeature_id=t2.seqfeature_id  ' \
                     ' where t1.locus_tag="%s") A inner join gene_ontology.term as B on A.go_term_id=B.acc;' % (biodb, biodb, locus)
-            print sql13
+
+            sql15 = 'select count(*) from custom_tables.locus2seqfeature_id_%s t1 inner join blastnr.blastnr_%s t2' \
+              ' on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s";' % (biodb, biodb, locus)
+
+            sql16 = 'select count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
+              ' inner join blastnr.blast_swissprot_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
+              ' where locus_tag="%s";' % (biodb, biodb,locus)
+
+            try:
+                n_blastnr_hits = server.adaptor.execute_and_fetchall(sql15, )[0][0]
+            except:
+                n_blastnr_hits = 0
+            try:
+                n_swissprot_hits = server.adaptor.execute_and_fetchall(sql16, )[0][0]
+            except:
+                n_swissprot_hits = 0
             try:
                 uniprot_go_terms = server.adaptor.execute_and_fetchall(sql13, )
             except:
@@ -1901,9 +1919,16 @@ def locusx(request, biodb, locus=None, menu=False):
                                ' group by interpro_accession;' % (biodb, locus)
                 interpro_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_interpro, )]
 
+                interpro2taxononmy = {}
+                for one_entry in interpro_data:
+                    sql = 'select p_bacteria,p_eukaryote,p_archae,p_virus, bacteria,eukaryote,archae,virus ' \
+                          ' from interpro.entry t1 inner join interpro.interpro_taxonomy_v_60 t2 on t1.interpro_id=t2.interpro_id ' \
+                          ' where name="%s";' % one_entry[0]
+                    interpro2taxononmy[one_entry[0]] = server.adaptor.execute_and_fetchall(sql,)[0]
+
             except:
                 interpro_data = False
-
+            print interpro2taxononmy
             try:
                 sql_pfam = 'select signature_accession, signature_description' \
                            ' from interpro_%s where locus_tag="%s" ' \
@@ -2245,6 +2270,42 @@ def fam(request, biodb, fam, type):
 
     return render(request, 'chlamdb/fam.html', locals())
 
+
+@login_required
+def COG_phylo_heatmap(request, biodb, frequency):
+
+
+    if request.method == 'GET':  # S'il s'agit d'une requête POST
+        from ete2 import Tree
+        import ete_motifs
+        import cog_heatmap
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+        if frequency == 'True':
+            freq = True
+        else:
+            freq = False
+
+        sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
+
+        tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+        print tree
+        t1 = Tree(tree)
+
+        tree = cog_heatmap.plot_cog_eatmap(biodb, tree, [], freq)
+
+        path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
+        asset_path = '/assets/temp/COG_tree.svg'
+        tree.render(path, dpi=600, h=400)
+
+        #path2 = settings.BASE_DIR + '/assets/temp/COG_tree_%s_complete.svg' % module_name
+        #asset_path2 = '/assets/temp/KEGG_tree_%s_complete.svg' % module_name
+
+        #tree2.render(path2, dpi=800, h=600)
+        envoi = True
+
+    return render(request, 'chlamdb/COG_phylo_heatmap.html', locals())
+
 @login_required
 def KEGG_module_map(request, biodb, module_name):
 
@@ -2498,18 +2559,30 @@ def sunburst(request, biodb, locus):
         sql = 'select accession from orthology_detail_%s where locus_tag = "%s"' % (biodb, locus)
         accession = server.adaptor.execute_and_fetchall(sql,)[0][0]
         print accession
+
+        sql1 = 'select t3.superkingdom,  t3.phylum,  t3.order,  t3.family,  t3.genus,  t3.species  from ' \
+                   ' blastnr.blastnr_hits_%s_%s as t1' \
+                   ' inner join blastnr.blastnr_taxonomy as t3 on ' \
+                   ' t1.subject_taxid = t3.taxon_id inner join blastnr.blastnr_hsps_%s_%s as t4 ' \
+                   ' on t1.nr_hit_id=t4.nr_hit_id where t1.locus_tag="%s"' % (biodb, accession, biodb, accession, locus)
+
         try:
+            '''
             sql1 = 'select t3.superkingdom,  t3.phylum,  t3.order,  t3.family,  t3.genus,  t3.species  from ' \
                    ' blastnr.blastnr_hits_%s_%s as t1  inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s ' \
                    ' as t2 on t1.nr_hit_id = t2.nr_hit_id  inner join blastnr.blastnr_taxonomy as t3 on ' \
                    ' t2.subject_taxon_id = t3.taxon_id inner join blastnr.blastnr_hsps_%s_%s as t4 ' \
                    ' on t1.nr_hit_id=t4.nr_hit_id where t1.locus_tag="%s"' % (biodb, accession, biodb, accession, biodb, accession, locus)
-            print sql
+            '''
+            
+            #print sql
             raw_data = server.adaptor.execute_and_fetchall(sql1,)
 
         except:
             print sql1
+            
             valid_id = False
+            print 'valid id', valid_id
             return render(request, 'chlamdb/sunburst.html', locals())
 
         print "asdffffffffffffffffffffff", sql1
@@ -4284,6 +4357,42 @@ def blastnr_barchart(request, biodb):
         form = blastnr_form_class()
     return render(request, 'chlamdb/blastnr_best_barplot.html', locals())
 
+@login_required
+def blastswissprot(request, biodb, locus_tag):
+
+
+    print biodb, locus_tag
+
+    cache = get_cache('default')
+    print "cache", cache
+    #cache.clear()
+
+    #bioentry_in_memory = cache.get("biodb")
+    print "loading db..."
+    server = manipulate_biosqldb.load_db()
+    print "db loaded..."
+    if request.method == 'GET':  # S'il s'agit d'une requête POST
+
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+        columns = 'hit_number,subject_accession,subject_kingdom,subject_scientific_name,subject_taxid,' \
+                  ' subject_title,evalue,bit_score,percent_identity,gaps,query_cov,genes,annot_score'
+        sql = 'select %s from custom_tables.locus2seqfeature_id_%s t1 ' \
+              ' inner join blastnr.blast_swissprot_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
+              ' where locus_tag="%s";' % (columns,biodb, biodb,locus_tag)
+        blast_data = server.adaptor.execute_and_fetchall(sql,)
+
+        if len(blast_data) > 0:
+            valid_id = True
+            #'<a href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s">%s<a> ' % (taxon, name)
+
+
+
+
+        return render(request, 'chlamdb/blastswiss.html', locals())
+
+
+    return render(request, 'chlamdb/blastswiss.html', locals())
 
 @login_required
 def blastnr(request, biodb, locus_tag):
@@ -4311,13 +4420,11 @@ def blastnr(request, biodb, locus_tag):
         organism = data[1]
 
         server, db = manipulate_biosqldb.load_db(biodb)
+        columns = 'hit_number, subject_accession, subject_kingdom,subject_scientific_name, ' \
+                  ' subject_taxid, subject_title, evalue, bit_score, percent_identity, gaps, length'
+        sql = 'select %s from custom_tables.locus2seqfeature_id_%s t1 inner join blastnr.blastnr_%s t2' \
+              ' on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s";' % (columns, biodb, biodb, locus_tag)
 
-        columns = 't1.hit_number, t1.locus_tag, t1.query_accession, t1.subject_accession, t1.subject_taxid, t1.subject_scientific_name,' \
-                  't1.subject_title, t1.subject_kingdom, t2.evalue, t2.percent_identity, t2.gaps, t2.length,' \
-                  't2.query_start, t2.query_end, t2.subject_start, t2.subject_end, t1.subject_title'
-        sql = 'select %s from blastnr.blastnr_hits_%s_%s as t1 inner join blastnr.blastnr_hsps_%s_%s as t2 on' \
-              ' t1.nr_hit_id = t2.nr_hit_id where  t1.locus_tag="%s" ' % (columns, biodb, accession, biodb, accession, locus_tag)
-        print sql
         blast_data = list(server.adaptor.execute_and_fetchall(sql))
         #blast_data = [i for i in ]
 
@@ -4326,18 +4433,6 @@ def blastnr(request, biodb, locus_tag):
             valid_id = True
             blast_query_locus = blast_data[0][1]
             blast_query_protein_id = blast_data[0][2]
-            if blast_query_protein_id == blast_query_locus:
-                 blast_query_protein_id = ''
-
-            for n, one_hit in enumerate(blast_data):
-                blast_data[n] = [i for i in one_hit]
-                subject_taxids = one_hit[4].split(';')
-                subject_scientific_names = one_hit[5].split(';')
-                all_taxonomy = ''
-                for taxon, name in zip(subject_taxids, subject_scientific_names):
-                    all_taxonomy += '<a href="http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=%s">%s<a> ' % (taxon, name)
-                blast_data[n][5] = all_taxonomy
-
 
 
         return render(request, 'chlamdb/blastnr.html', locals())
@@ -4473,10 +4568,10 @@ def plot_neighborhood(request, biodb, target_locus, region_size=23000):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql2 = 'select orthogroup, taxon_id from orthology_detail_%s where locus_tag = "%s"' % (biodb, target_locus)
-    print sql2
+
     reference_orthogroup = server.adaptor.execute_and_fetchall(sql2, )[0]
     reference_taxid = reference_orthogroup[1]
-    print "orthogroup", reference_orthogroup
+
     if not reference_orthogroup:
             valid_id = False
     if valid_id:
@@ -7157,8 +7252,14 @@ def orthogroup_conservation_tree(request, biodb, orthogroup_or_locus):
                                                                                    orthogroup_or_locus)
         orthogroup = server.adaptor.execute_and_fetchall(sql, )[0][0]
 
-        sql2 = 'select taxon_2,locus_2,identity from comparative_tables.identity_closest_homolog_%s where locus_1="%s";' % (biodb,
-                                                                                                                             orthogroup_or_locus)
+        sql2 = 'select taxon_2,B.locus_tag,identity from (select * from custom_tables.locus2seqfeature_id_%s t1 ' \
+               ' inner join comparative_tables.identity_closest_homolog2_%s t2 on t1.seqfeature_id=t2.locus_1 ' \
+               ' where locus_tag="%s") A inner join custom_tables.locus2seqfeature_id_%s B on A.locus_2=B.seqfeature_id;' % (biodb,
+                                                                                                                             biodb,
+                                                                                                                             orthogroup_or_locus,
+                                                                                                                             biodb)
+        print sql2
+
         identity_data = server.adaptor.execute_and_fetchall(sql2, )
         taxon2identity_closest = {}
         taxon2locus_tag_closest = {}
