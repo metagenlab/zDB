@@ -15,7 +15,7 @@ def gi2accession(ncbi_id):
     else:
         return False
 
-def uniprot_id2record(uniprot_accession):
+def uniprot_id2record(uniprot_accession, n_trial=0):
 
     link = "http://www.uniprot.org/uniprot/%s.xml" % (uniprot_accession)
 
@@ -28,8 +28,17 @@ def uniprot_id2record(uniprot_accession):
         return False
     rec = StringIO(data)
 
-    record = SeqIO.read(rec, 'uniprot-xml')
-
+    try:
+        record = SeqIO.read(rec, 'uniprot-xml')
+    except:
+        import time
+        print 'problem with %s, trying again, %s th trial' % (uniprot_accession, n_trial)
+        time.sleep(50)
+        n_trial+=1
+        if n_trial < 5:
+            record = uniprot_id2record(uniprot_accession, n_trial=n_trial)
+        else:
+            return False
     return record
 
 def uniprot_record2annotations(record):
@@ -137,12 +146,20 @@ def uniprot_accession2go_and_status(uniprot_accession):
         data = page.read().decode('utf-8').split('\n')
         rows = [i.rstrip().split('\t') for i in data]
     except URLError:
-        import time
-        time.sleep(10)
-        req = urllib2.Request(link)
-        page = urllib2.urlopen(req)
-        data = page.read().decode('utf-8').split('\n')
-        rows = [i.rstrip().split('\t') for i in data]
+        success = False
+        while not success:
+            import time
+            print 'connection problem, trying again...'
+            time.sleep(10)
+            try:
+                req = urllib2.Request(link)
+                page = urllib2.urlopen(req)
+                data = page.read().decode('utf-8').split('\n')
+                rows = [i.rstrip().split('\t') for i in data]
+                success=True
+            except:
+                success = False
+                
 
     go_id2description = {}
     if rows[1][0] != '':
@@ -172,10 +189,10 @@ def get_whole_db_uniprot_crossref(biodb):
 
     cursor = conn.cursor()
 
-    sql1 = 'CREATE TABLE IF NOT EXISTS uniprot_id2seqfeature_id_%s (seqfeature_id INT, uniprot_id INT AUTO_INCREMENT,' \
-           ' uniprot_accession varchar(400), uniprot_status varchar(400), annotation_score INT, insert_date varchar(300), INDEX seqfeature_id(seqfeature_id), INDEX uniprot_id(uniprot_id))' % biodb
+    sql1 = 'CREATE TABLE IF NOT EXISTS uniprot_id2seqfeature_id_%s (seqfeature_id INT UNIQUE, uniprot_id INT AUTO_INCREMENT,' \
+           ' uniprot_accession varchar(400), uniprot_status varchar(400), annotation_score INT, insert_date varchar(300), INDEX uniprot_id(uniprot_id))' % biodb
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS db_xref (db_xref_id INT AUTO_INCREMENT, db_xref_name varchar(200), INDEX db_xref_id(db_xref_id))'
+    sql2 = 'CREATE TABLE IF NOT EXISTS db_xref (db_xref_id INT AUTO_INCREMENT, db_xref_name varchar(200) UNIQUE, INDEX db_xref_id(db_xref_id))'
 
     sql3 = 'CREATE TABLE IF NOT EXISTS uniprot_db_xref_%s (uniprot_id INT, db_xref_id INT, db_accession varchar(200), ' \
            ' INDEX db_xref_id(db_xref_id), index uniprot_id(uniprot_id))' % biodb
@@ -188,6 +205,7 @@ def get_whole_db_uniprot_crossref(biodb):
            ' comment_subunit TEXT, gene TEXT, recommendedName_fullName TEXT, proteinExistence TEXT, ' \
            ' developmentalstage TEXT, index seqfeature_id(seqfeature_id))' % biodb
 
+    print sql1
     cursor.execute(sql1, )
     cursor.execute(sql2, )
     cursor.execute(sql3, )
@@ -200,8 +218,8 @@ def get_whole_db_uniprot_crossref(biodb):
     sql1 = 'select locus_tag, seqfeature_id from locus2seqfeature_id_%s' % biodb
     sql2 = 'select locus_tag, old_locus_tag from biosqldb.locus_tag2old_locus_tag'
     sql3 = 'select locus_tag, protein_id from biosqldb.orthology_detail_%s where protein_id not like "%%%%CHUV%%%%"' % biodb
-    sql4 = 'select t2.locus_tag,uniprot_accession from uniprot_id2seqfeature_id_%s t1 ' \
-           ' inner join locus2seqfeature_id_%s t2 on t1.seqfeature_id=t2.seqfeature_id' % (biodb, biodb)
+    sql4 = 'select locus_tag,t2.seqfeature_id from locus2seqfeature_id_%s t1 inner join uniprot_annotation_%s t2' \
+           ' on t1.seqfeature_id=t2.seqfeature_id group by locus_tag;' % (biodb, biodb)
 
     cursor.execute(sql1, )
     locus2seqfeature_id = manipulate_biosqldb.to_dict(cursor.fetchall())
@@ -259,8 +277,13 @@ def get_whole_db_uniprot_crossref(biodb):
                                                        uniprot_status,
                                                        uniprot_score,
                                                        str_date)
-            cursor.execute(sql, )
-            conn.commit()
+            try:
+                cursor.execute(sql, )
+                conn.commit()
+            # if seqfeature id already already inserted, no need to insert it again
+            except conn.IntegrityError:
+                print '%s already into uniprot_id2seqfeature_id_%s' % (seqid, biodb)
+                pass
             sqlid = 'select t1.uniprot_id from uniprot_id2seqfeature_id_%s as t1 where t1.seqfeature_id=%s' % (biodb,
                                                                                                   locus2seqfeature_id[locus])
             #print sqlid
