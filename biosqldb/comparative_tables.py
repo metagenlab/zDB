@@ -168,21 +168,21 @@ def collect_COGs(db_name):
              'COG.locus_tag2gi_hit_%s ' \
              'where COG_id = "%s" group by accession) A ' \
              'left join biosqldb.bioentry as B on A.accession=B.accession and biodatabase_id = %s;' % (db_name, accession, database_id)
-
+        print sql
         data = server.adaptor.execute_and_fetchall(sql,)
 
         taxon2count = {}
-        for i in data:
-            if i[0] not in taxon2count:
-                taxon2count[i[0]] = int(i[1])
+        for n in data:
+            if n[0] not in taxon2count:
+                taxon2count[n[0]] = int(n[1])
             else:
-                taxon2count[i[0]] += int(i[1])
-
+                taxon2count[n[0]] += int(n[1])
+        
         sql_temp = sql_head + '"%s",' % accession
 
         for taxon in taxon_id_list:
             try:
-                sql_temp += '%s,' % taxon2count[str(taxon)]
+                sql_temp += '%s,' % taxon2count[int(taxon)]
             except:
                 sql_temp += '0,'
         sql_temp = sql_temp[0:-1] + ');'
@@ -634,8 +634,8 @@ def identity_closest_homolog(db_name):
 
     sql2 = "CREATE TABLE comparative_tables.identity_closest_homolog2_%s(taxon_1 INT NOT NULL," \
           " taxon_2 INT NOT NULL," \
-          " locus_1 VARCHAR(100) NOT NULL," \
-          " locus_2 VARCHAR(100) NOT NULL," \
+          " locus_1 INT NOT NULL," \
+          " locus_2 INT NOT NULL," \
           " identity FLOAT, index locus_1(locus_1)," \
           " index locus_2(locus_2), index taxon_1(taxon_1), index taxon_2(taxon_2))" % (db_name)
 
@@ -693,7 +693,7 @@ def shared_orthogroups_average_identity(db_name):
     all_taxons = taxon2description.keys()
     for i, taxon_1 in enumerate(all_taxons):
         for taxon_2 in all_taxons[i+1:]:
-            data_sql = 'select identity from comparative_tables.identity_closest_homolog_%s where taxon_1=%s and taxon_2=%s' % (db_name,
+            data_sql = 'select identity from comparative_tables.identity_closest_homolog2_%s where taxon_1=%s and taxon_2=%s' % (db_name,
                                                                                                              taxon_1,
                                                                                                              taxon_2)
             data = list([i[0] for i in server.adaptor.execute_and_fetchall(data_sql,)])
@@ -723,18 +723,18 @@ if __name__ == '__main__':
     create_comparative_tables(args.database_name, "interpro")
     create_comparative_tables(args.database_name, "COG")
     create_comparative_tables(args.database_name, "ko")
+
     collect_pfam(args.database_name)
     collect_interpro(args.database_name)
     collect_EC(args.database_name)
     collect_COGs(args.database_name)
+    '''
     collect_ko(args.database_name)
 
     n_shared_orthogroup_table(args.database_name)
-    '''
 
     identity_closest_homolog(args.database_name)
-
-    '''
+    
     shared_orthogroups_average_identity(args.database_name)
 
     create_comparative_tables_accession(args.database_name, 'Pfam')
@@ -744,7 +744,6 @@ if __name__ == '__main__':
     create_comparative_tables_accession(args.database_name, "ko")
     create_comparative_tables_accession(args.database_name, "orthology")
 
-
     collect_Pfam_accession(args.database_name)
     collect_EC_accession(args.database_name)
     collect_interpro_accession(args.database_name)
@@ -753,4 +752,4 @@ if __name__ == '__main__':
     collect_orthogroup_accession(args.database_name)
 
     #get_mysql_table("chlamydia_03_15", "Pfam")
-    '''
+    

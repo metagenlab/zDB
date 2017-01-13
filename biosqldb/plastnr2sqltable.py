@@ -676,6 +676,78 @@ def filter_blast_number(one_blast_file, out_name,max_hits_per_locus=100):
                     locus2count[locus] += 1
 
 
+def insert_taxons_into_sqldb(taxon_id_list,
+                             chunk_size=300,
+                             mysql_host = 'localhost',
+                             mysql_user = 'root',
+                             mysql_pwd = 'estrella3',
+                             mysql_db = 'blastnr'):
+    import time
+    import MySQLdb
+    import sequence_id2scientific_classification
+    import re
+
+    conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
+                                user=mysql_user, # your username
+                                passwd=mysql_pwd, # your password
+                                db=mysql_db) # name of the data base
+    cursor = conn.cursor()
+
+    taxid2classification = {}
+
+    id_lists = _chunks(taxon_id_list, chunk_size)
+    for i, one_list in enumerate(id_lists):
+        #print i, "/", len(id_lists)
+        if i % 100 == 0:
+            time.sleep(60)
+        taxid2classification.update(sequence_id2scientific_classification.taxon_id2scientific_classification(one_list))
+
+    print 'Number of taxon id retrieved:', len(taxid2classification.keys())
+
+    print 'Updating blastnr_taxonomy table with %s new taxons' % str(len(taxon_id_list))
+    for taxon_id in taxon_id_list:
+            if taxon_id == 'N/A':
+                continue
+
+            sql = 'INSERT INTO blastnr_taxonomy(taxon_id) values (%s)' % (taxon_id)
+            try:
+
+                cursor.execute(sql)
+                conn.commit()
+            except MySQLdb.IntegrityError:
+                print 'Taxon %s already in database' % str(taxon_id)
+                continue
+            try:
+                for rank in taxid2classification[taxon_id].keys():
+
+                    sql_id = re.sub(' ', '_', rank)
+
+                    value = taxid2classification[taxon_id][rank]
+                    sql = 'UPDATE blastnr_taxonomy SET `%s`="%s" where taxon_id=%s' % (sql_id, value, taxon_id)
+                    #print sql
+
+                    cursor.execute(sql)
+                    conn.commit()
+            except KeyError:
+                print 'Could not add the following taxon: %s, trying again to get the data...' % taxon_id
+                temp_dico = sequence_id2scientific_classification.taxon_id2scientific_classification([taxon_id])
+
+                try:
+                    for rank in temp_dico[taxon_id].keys():
+
+                        sql_id = re.sub(' ', '_', rank)
+
+                        value = temp_dico[taxon_id][rank]
+                        sql = 'UPDATE blastnr_taxonomy SET `%s`="%s" where taxon_id=%s' % (sql_id, value, taxon_id)
+
+                        cursor.execute(sql)
+                        conn.commit()
+                    print 'sucess!'
+                except KeyError:
+                    print 'Could not add %s' % taxon_id
+                    print "temp_dico", temp_dico
+
+
 def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *input_blast_files):
     '''
     Update the main blastnr taxonomical table containing taxon ids and their full taxonomical path:
@@ -697,17 +769,13 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
     :return:
     '''
 
-    import sequence_id2scientific_classification
-    from time import gmtime, strftime
 
+    from time import gmtime, strftime
+    import re
     import MySQLdb
     import time
     import accession2taxon_id
     import manipulate_biosqldb
-
-    print 'host', mysql_host
-
-    print 'user', mysql_user
 
     conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
                                 user=mysql_user, # your username
@@ -722,7 +790,7 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
     all_taxon_ids = []
     cursor.execute(sql,)
     database_taxon_ids = [str(i[0]) for i in cursor.fetchall()]
-    taxid2classification = {}
+
     print "Number of taxons into database: ", len(database_taxon_ids)
 
     protein_gi_list = []
@@ -777,59 +845,10 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
     print 'Fetching ncbi taxonomy... for %s taxons' % str(len(all_taxon_ids))
 
     # subdivide the taxon list in smaller lists, otherwise NCBI will limit the results to? 10000 (observed once only)
-    id_lists = _chunks(all_taxon_ids, 300)
-    for i, one_list in enumerate(id_lists):
-        #print i, "/", len(id_lists)
-        if i % 100 == 0:
-            time.sleep(60)
-        taxid2classification.update(sequence_id2scientific_classification.taxon_id2scientific_classification(one_list))
+    insert_taxons_into_sqldb(all_taxon_ids, 300)
 
-    print 'Number of taxon id retrieved:', len(taxid2classification.keys())
 
-    print 'Updating blastnr_taxonomy table with %s new taxons' % str(len(all_taxon_ids))
-    for taxon_id in all_taxon_ids:
-            if taxon_id == 'N/A':
-                continue
-            import re
-            import MySQLdb
-            sql = 'INSERT INTO blastnr_taxonomy(taxon_id) values (%s)' % (taxon_id)
-            try:
 
-                cursor.execute(sql)
-                conn.commit()
-            except MySQLdb.IntegrityError:
-                print 'Taxon %s already in database' % str(taxon_id)
-                continue
-            try:
-                for rank in taxid2classification[taxon_id].keys():
-
-                    sql_id = re.sub(' ', '_', rank)
-
-                    value = taxid2classification[taxon_id][rank]
-                    sql = 'UPDATE blastnr_taxonomy SET `%s`="%s" where taxon_id=%s' % (sql_id, value, taxon_id)
-                    #print sql
-
-                    cursor.execute(sql)
-                    conn.commit()
-            except KeyError:
-                print 'Could not add the following taxon: %s, trying again to get the data...' % taxon_id
-                temp_dico = sequence_id2scientific_classification.taxon_id2scientific_classification([taxon_id])
-
-                try:
-                    for rank in temp_dico[taxon_id].keys():
-
-                        sql_id = re.sub(' ', '_', rank)
-
-                        value = temp_dico[taxon_id][rank]
-                        sql = 'UPDATE blastnr_taxonomy SET `%s`="%s" where taxon_id=%s' % (sql_id, value, taxon_id)
-                        #print sql
-
-                        cursor.execute(sql)
-                        conn.commit()
-                    print 'sucess!'
-                except KeyError:
-                    print 'Could not add %s' % taxon_id
-                    print "temp_dico", temp_dico
 
 def blastnr2biosql(seqfeature_id2locus_tag,
                     locus_tag2seqfeature_id,
