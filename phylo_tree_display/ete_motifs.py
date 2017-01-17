@@ -147,14 +147,10 @@ def get_locus2taxon2identity(biodb, locus_tag_list):
 
     identity_data = server.adaptor.execute_and_fetchall(sql, )
     taxon2identity_closest = {}
-
+    print seqfeature_id2locus
     for row in identity_data:
-        print seqfeature_id2locus[row[1]]
-        print row
-        print seqfeature_id2locus[row[1]] in taxon2locus2identity_closest
-        print locus_tag_list
         #taxon2identity_closest[str(row[0])] = row[2]
-        taxon2locus2identity_closest[seqfeature_id2locus[row[1]]][str(row[0])] = row[2]
+        taxon2locus2identity_closest[seqfeature_id2locus[str(row[1])]][str(row[0])] = row[2]
     for locus in locus_tag_list:
         for taxon in ordered_taxons:
             if taxon not in taxon2locus2identity_closest[locus]:
@@ -696,7 +692,8 @@ def multiple_profiles_heatmap(biodb,
                               identity_scale=False,
                               column_scale=False,
                               show_labels=True,
-                              tree=False):
+                              tree=False,
+                              as_float=False):
 
     '''
 
@@ -711,7 +708,7 @@ def multiple_profiles_heatmap(biodb,
     :param highlight_first_column:
     :return:
     '''
-    print "reference_taxon", reference_taxon
+
     if isinstance(reference_taxon, dict):
         import copy
         reference_taxon_dico = copy.copy(reference_taxon)
@@ -809,7 +806,10 @@ def multiple_profiles_heatmap(biodb,
                         # if identity scale: 2 digit format
                         local_label = str(taxon2group2count[value][lf.name])
                         if not identity_scale:# and not column_scale:
-                            local_label = "%.2f" % taxon2group2count[value][lf.name]
+                            if as_float:
+                                local_label = "%.2f" % taxon2group2count[value][lf.name]
+                            else:
+                                local_label = " %s " % int(taxon2group2count[value][lf.name])
                         else:
                             if round(taxon2group2count[value][lf.name], 2) < 100:
                                 local_label = "%.2f" % round(taxon2group2count[value][lf.name], 2)
@@ -855,7 +855,7 @@ def multiple_profiles_heatmap(biodb,
                         count = taxon2group2count[value][lf.name]
                     except:
                         count = 0
-                    print value, lf.name
+                    #print value, lf.name
                     #print taxon2group2count[value][lf.name]
                     if count > 0 and taxon2group2count[value][lf.name] != '-':
                         if not reference_column:

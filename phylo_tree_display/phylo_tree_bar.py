@@ -2,7 +2,7 @@
 
 from ete2 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace, BarChartFace, StackedBarFace, NodeStyle
 
-def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, bw_scale=False):
+def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, bw_scale=True):
     import manipulate_biosqldb
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
