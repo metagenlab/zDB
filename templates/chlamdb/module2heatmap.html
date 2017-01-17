@@ -38,7 +38,7 @@
 
 
 
-                   <form action='{% url "chlamdb.views.module2heatmap" biodb %}' method="post">
+                   <form action='{% url "module2heatmap" biodb %}' method="post">
                     {% csrf_token %}
                     {{ form.as_p }}
                     <input type="submit" value="Submit" />

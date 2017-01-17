@@ -178,7 +178,7 @@
                                         <td>{{values.0}}</td>
 
                                         <td>{{values.1}}</td>
-                                        <td><a href='{% url "chlamdb.views.locusx" biodb values.2 True %}' target="_top">{{values.2}}</a></td>
+                                        <td><a href='{% url "locusx" biodb values.2 True %}' target="_top">{{values.2}}</a></td>
                                         <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
                                         <td>{{values.4}}</td>
                                         <td>{{values.5}}</td>
@@ -190,7 +190,7 @@
                                         <td>{{values.11}}</td>
                                         <td>{{values.12}}</td>
                                         <td>{{values.13}}</td>
-                                        <td><a href="{% url "chlamdb.views.blastnr" biodb values.2  %}">{{values.14}}</a></td>
+                                        <td><a href="{% url "blastnr" biodb values.2  %}">{{values.14}}</a></td>
                                         </tr>
                                     {% endfor %}
                                     </tbody>

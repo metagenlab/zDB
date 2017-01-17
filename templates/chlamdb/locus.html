@@ -591,25 +591,25 @@
                             {% if values.0 == 'SUPERFAMILY' %}
                                <td><a href="http://supfam.cs.bris.ac.uk/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{values.1}}" target="_parent">{{values.1}}</a></td>
 
-                             {% elif values.0 = 'Pfam' %}
+                             {% elif values.0 == 'Pfam' %}
                                <td><a href="http://pfam.xfam.org/family/{{values.1}}" target="_parent">{{values.1}}</a></td>
 
-                             {% elif values.0 = 'SMART' %}
+                             {% elif values.0 == 'SMART' %}
                                <td><a href="http://smart.embl-heidelberg.de/smart/do_annotation.pl?ACC={{values.1}}&BLAST=DUMMY" target="_parent">{{values.1}}</a></td>
 
-                             {% elif values.0 = 'Gene3D' %}
+                             {% elif values.0 == 'Gene3D' %}
                                <td><a href="http://www.cathdb.info/version/latest/superfamily/{{values.1|slice:"6:"}}" target="_parent">{{values.1}}</a></td>
 
-                             {% elif values.0 = 'ProSiteProfiles' %}
+                             {% elif values.0 == 'ProSiteProfiles' %}
                                <td><a href="http://prosite.expasy.org/{{values.1}}" target="_parent">{{values.1}}</a></td>
 
-                             {% elif values.0 = 'ProSitePatterns' %}
+                             {% elif values.0 == 'ProSitePatterns' %}
                                <td><a href="http://prosite.expasy.org/{{values.1}}" target="_parent">{{values.1}}</a></td>
 
-                             {% elif values.0 = 'PRINTS' %}
+                             {% elif values.0 == 'PRINTS' %}
                                <td><a href="http://www.bioinf.manchester.ac.uk/cgi-bin/dbbrowser/sprint/searchprintss.cgi?display_opts=Prints&category=None&queryform=false&prints_accn={{values.1}} " target="_parent">{{values.1}}</a></td>
 
-                             {% elif values.0 = 'TIGRFAM' %}
+                             {% elif values.0 == 'TIGRFAM' %}
                                <td><a href="http://www.jcvi.org/cgi-bin/tigrfams/HmmReportPage.cgi?acc={{values.1}}" target="_parent">{{values.1}}</a></td>
 
                             {% else %}

@@ -44,7 +44,7 @@
     </div>
 
 
-    <form action='{% url "chlamdb.views.metabo_comparison" biodb %}' method="post">
+    <form action='{% url "metabo_comparison" biodb %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Submit" />

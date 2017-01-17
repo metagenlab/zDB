@@ -38,7 +38,7 @@
 
 
 
-                   <form action='{% url "chlamdb.views.kegg_module" biodb %}' method="post">
+                   <form action='{% url "kegg_module" biodb %}' method="post">
                     {% csrf_token %}
                     {{ form.as_p }}
                     <input type="submit" value="Submit" />

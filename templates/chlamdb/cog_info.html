@@ -54,7 +54,7 @@
                 {%for values in data%}
                 <tr>
                     <td>{{values.0}}</td>
-                    <td><a href='{% url "chlamdb.views.locusx" biodb values.1 True %}' target="_top">{{values.1}}</a></td>
+                    <td><a href='{% url "locusx" biodb values.1 True %}' target="_top">{{values.1}}</a></td>
                     <td><a href="{% url 'fam' biodb values.2 data_type %}" target="_top">{{values.2}}</a></td>
                     <td>{{values.3}}</td>
                     <td>

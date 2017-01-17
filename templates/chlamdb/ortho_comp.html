@@ -52,7 +52,7 @@
 
 
 
-                <form action='{% url "chlamdb.views.orthogroup_comparison" biodb %}' method="post">
+                <form action='{% url "orthogroup_comparison" biodb %}' method="post">
                     {% csrf_token %}
                     {{ form.as_p }}
                     <input type="submit" value="Submit" />

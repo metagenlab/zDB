@@ -14,7 +14,7 @@
 
 <section>
 
-<form action="{% url "chlamdb.views.choose_db" %}" method="post">{% csrf_token %}
+<form action="{% url "choose_db" %}" method="post">{% csrf_token %}
 
 <table>
 <tr>
@@ -34,7 +34,7 @@
 
 {% if envoi %}
 
-    <meta http-equiv="REFRESH" content="0;url={% url "chlamdb.views.home"  biodb %}"> <!-- {{ biodb }} -->
+    <meta http-equiv="REFRESH" content="0;url={% url "home"  biodb %}"> <!-- {{ biodb }} -->
 
 
 

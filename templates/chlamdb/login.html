@@ -27,9 +27,9 @@
     {% if user.is_authenticated %}
 
         You are logged in, {{ user.username }} !
-        <meta http-equiv="REFRESH" content="0;url={% url "chlamdb.views.home" biodb %}">
+        <meta http-equiv="REFRESH" content="0;url={% url "home" biodb %}">
     {% else %}
-    <form action="{% url "chlamdb.views.chlamdb_login" %}"  method="post">
+    <form action="{% url "chlamdb_login" %}"  method="post">
         {% csrf_token %}
         {{ form.as_p }}
     <input type="submit" value="Login" />
@@ -39,7 +39,7 @@
 
 {% else %}
 
-    <form action="{% url "chlamdb.views.chlamdb_login" %}"  method="post">
+    <form action="{% url "chlamdb_login" %}"  method="post">
         {% csrf_token %}
         {{ form.as_p }}
     <input type="submit" value="Login" />

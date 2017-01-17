@@ -59,7 +59,7 @@
 
 
 
-                    <form action="{% url "chlamdb.views.venn_cog" biodb accessions %}" method="post">
+                    <form action="{% url "venn_cog" biodb accessions %}" method="post">
                         {% csrf_token %}
                         {{ form_venn.as_p }}
                         <input type="submit" name="venn" value="Compare COGs" id="venn_button" />

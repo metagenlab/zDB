@@ -38,7 +38,7 @@
 
 
 
-<form action="{% url "chlamdb.views.venn_cog" biodb %}" method="post">{% csrf_token %}
+<form action="{% url "venn_cog" biodb %}" method="post">{% csrf_token %}
 {{ form.as_p }}
 
 

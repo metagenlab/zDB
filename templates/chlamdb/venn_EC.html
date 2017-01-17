@@ -58,7 +58,7 @@
 
 
 
-                    <form action="{% url "chlamdb.views.venn_EC" biodb %}" method="post">
+                    <form action="{% url "venn_EC" biodb %}" method="post">
                         {% csrf_token %}
                         {{ form_venn.as_p }}
                         <input type="submit" name="venn" value="Compare EC numbers" id="venn_button" />

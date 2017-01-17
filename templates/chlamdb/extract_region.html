@@ -32,7 +32,7 @@
 
 
         <div id="region_extraction_form">
-            <form action="{% url "chlamdb.views.extract_region" biodb %}" method="post">{% csrf_token %}
+            <form action="{% url "extract_region" biodb %}" method="post">{% csrf_token %}
               {{ form.as_p }}
 
              <br>

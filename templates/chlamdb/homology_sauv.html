@@ -24,7 +24,7 @@
 
 
     <div id="content">
-    <form action='{% url "chlamdb.views.homology" biodb %}' method="post">
+    <form action='{% url "homology" biodb %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Submit" />
@@ -261,7 +261,7 @@
                             <tr>
                                 <td><a href="{% static alignment_fasta_nucl %}">Nucleotide sequences (fasta)</a> </td>
                             </tr>
-                                <td><a href="{% url "chlamdb.views.blastnr" biodb data.1  %}">BLAST NR</a> </td>
+                                <td><a href="{% url "blastnr" biodb data.1  %}">BLAST NR</a> </td>
                             </tr>
 
                         </table>

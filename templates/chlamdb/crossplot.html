@@ -23,7 +23,7 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 
 {% block content %}
-  <form action="{% url "chlamdb.views.crossplot" %}" method="post" enctype='multipart/form-data'>
+  <form action="{% url "crossplot" %}" method="post" enctype='multipart/form-data'>
   {% csrf_token %}
 
   <table id="table_input_genome">

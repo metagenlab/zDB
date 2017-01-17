@@ -38,7 +38,7 @@
             </p>
         </div>
 
-    <form action='{% url "chlamdb.views.cog_barchart" biodb %}' method="post">
+    <form action='{% url "cog_barchart" biodb %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Submit" />

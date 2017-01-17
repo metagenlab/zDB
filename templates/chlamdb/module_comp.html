@@ -52,7 +52,7 @@
                         </ul>
                     </nav>
 
-            <form action='{% url "chlamdb.views.module_comparison" biodb %}' method="post">
+            <form action='{% url "module_comparison" biodb %}' method="post">
                 {% csrf_token %}
                 {{ form.as_p }}
                 <input type="submit" value="Submit" />

@@ -158,7 +158,7 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
             </p>
             </p>
         </div>
-        <form action="{% url "chlamdb.views.blast" biodb %}" method="post">{% csrf_token %}
+        <form action="{% url "blast" biodb %}" method="post">{% csrf_token %}
           {{ form.as_p }}
           <input type="submit" value="Submit" />
         </form>

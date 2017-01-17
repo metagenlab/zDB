@@ -20,7 +20,7 @@
 
         {% if display_from == 'yes' %}
             <div id="search_form">
-                <form action="{% url "chlamdb.views.search" biodb %}" method="post">{% csrf_token %}
+                <form action="{% url "search" biodb %}" method="post">{% csrf_token %}
                     {{ form.as_p }}
                     <input type="submit" value="Submit" />
                 </form>

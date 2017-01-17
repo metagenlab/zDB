@@ -49,7 +49,8 @@ from django.contrib.auth.decorators import login_required
 
 import manipulate_biosqldb
 import mysqldb_plot_genomic_feature
-from django.core.cache import get_cache
+#from django.core.cache import caches
+from django.core.cache import cache
 from tempfile import NamedTemporaryFile
 from Bio import SeqIO
 from gbk2table import Record
@@ -143,7 +144,7 @@ def home(request, biodb):
     ts.show_branch_support = False
     #t.render("test2.svg", tree_style=ts)
     path = settings.BASE_DIR + '/assets/temp/tree.svg'
-    asset_path = '/assets/temp/tree.svg'
+    asset_path = '/temp/tree.svg'
 
     t.render(path, dpi=800, h=600)
 
@@ -160,7 +161,6 @@ def substription():
 def circos_homology(request, biodb):
 
 
-    cache = get_cache('default')
     print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
     print "db loaded..."
@@ -253,7 +253,7 @@ def extract_orthogroup(request, biodb):
     :return:
     '''
 
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -398,7 +398,7 @@ def extract_orthogroup(request, biodb):
 
 @login_required
 def orthogroup_annotation(request, biodb, display_form):
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -427,7 +427,7 @@ def orthogroup_annotation(request, biodb, display_form):
 
             big = False
             path = settings.BASE_DIR + '/assets/temp/tree.svg'
-            asset_path = '/assets/temp/tree.svg'
+            asset_path = '/temp/tree.svg'
 
             tree.render(path, dpi=800, h=600)
 
@@ -455,7 +455,7 @@ def orthogroup_annotation(request, biodb, display_form):
 
             big = False
             path = settings.BASE_DIR + '/assets/temp/tree.svg'
-            asset_path = '/assets/temp/tree.svg'
+            asset_path = '/temp/tree.svg'
 
             tree.render(path, dpi=800, h=600)
 
@@ -467,7 +467,7 @@ def orthogroup_annotation(request, biodb, display_form):
 @login_required
 def venn_orthogroup(request, biodb):
 
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -561,7 +561,7 @@ def extract_pfam(request, biodb, classification="taxon_id"):
     :return:
     '''
 
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -650,7 +650,7 @@ def extract_pfam(request, biodb, classification="taxon_id"):
                         n+=1
 
                     envoi_extract = True
-                    asset_path = '/assets/temp/profil_tree.svg'
+                    asset_path = '/temp/profil_tree.svg'
 
                     motif_list = '"' + '","'.join(match_groups) + '"'
 
@@ -691,7 +691,7 @@ def extract_ko(request, biodb):
     '''
 
 
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -849,7 +849,7 @@ def extract_EC(request, biodb):
 
 
 
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -981,7 +981,7 @@ def extract_EC(request, biodb):
                     print 'BIGGGGGGGGGGG', len(labels)
                     big = True
                     path = settings.BASE_DIR + '/assets/temp/profil_tree.png'
-                    asset_path = '/assets/temp/profil_tree.png'
+                    asset_path = '/temp/profil_tree.png'
                     tree2.render(path, dpi=1200, h=600)
 
 
@@ -991,7 +991,7 @@ def extract_EC(request, biodb):
                     big = False
 
                     path2 = settings.BASE_DIR + '/assets/temp/profil_tree.svg'
-                    asset_path = '/assets/temp/profil_tree.svg'
+                    asset_path = '/temp/profil_tree.svg'
 
                     tree2.render(path2, dpi=800, h=600)
 
@@ -1024,7 +1024,7 @@ def extract_EC(request, biodb):
 @login_required
 def venn_pfam(request, biodb):
 
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -1076,7 +1076,7 @@ def venn_pfam(request, biodb):
 @login_required
 def venn_EC(request, biodb):
 
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -1152,7 +1152,7 @@ def extract_interpro(request, biodb, classification="taxon_id"):
     :return:
     '''
 
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -1273,7 +1273,7 @@ def extract_interpro(request, biodb, classification="taxon_id"):
 @login_required
 def venn_interpro(request, biodb):
 
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -1322,7 +1322,7 @@ def venn_interpro(request, biodb):
 @login_required
 def extract_cog(request, biodb):
 
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -1452,7 +1452,7 @@ def extract_cog(request, biodb):
 @login_required
 def venn_ko(request, biodb):
 
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -1512,7 +1512,7 @@ def venn_cog(request, biodb, accessions=False):
         accessions = False
 
     display_form = True
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -1586,7 +1586,7 @@ def extract_region(request, biodb):
     from Bio.Alphabet import generic_protein
     import re
 
-    cache = get_cache('default')
+    
 
     if request.method == 'POST':
 
@@ -1687,7 +1687,7 @@ def extract_region(request, biodb):
 @login_required
 def locusx(request, biodb, locus=None, menu=False):
 
-    cache = get_cache('default')
+    
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
         import re
@@ -2068,7 +2068,7 @@ def locusx(request, biodb, locus=None, menu=False):
 @login_required
 def fam(request, biodb, fam, type):
 
-    cache = get_cache('default')
+    
 
     #cache.clear()
 
@@ -2259,12 +2259,12 @@ def fam(request, biodb, fam, type):
             if len(labels) > 30:
                 big = True
                 path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
-                asset_path = '/assets/temp/fam_tree_%s.png' % fam
+                asset_path = '/temp/fam_tree_%s.png' % fam
                 tree.render(path, dpi=2200, h=1000)
             else:
                 big = False
                 path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.svg' % fam
-                asset_path = '/assets/temp/fam_tree_%s.svg' % fam
+                asset_path = '/temp/fam_tree_%s.svg' % fam
 
                 tree.render(path, dpi=800, h=600)
 
@@ -2295,7 +2295,7 @@ def COG_phylo_heatmap(request, biodb, frequency):
         tree = cog_heatmap.plot_cog_eatmap(biodb, tree, [], freq)
 
         path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
-        asset_path = '/assets/temp/COG_tree.svg'
+        asset_path = '/temp/COG_tree.svg'
         tree.render(path, dpi=600, h=400)
 
         #path2 = settings.BASE_DIR + '/assets/temp/COG_tree_%s_complete.svg' % module_name
@@ -2309,7 +2309,7 @@ def COG_phylo_heatmap(request, biodb, frequency):
 @login_required
 def KEGG_module_map(request, biodb, module_name):
 
-    cache = get_cache('default')
+    
 
     #cache.clear()
 
@@ -2358,7 +2358,7 @@ def KEGG_module_map(request, biodb, module_name):
         if len(labels) > 40:
             big = True
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % module_name
-            asset_path = '/assets/temp/KEGG_tree_%s.png' % module_name
+            asset_path = '/temp/KEGG_tree_%s.png' % module_name
             tree.render(path, dpi=1200, h=600)
 
 
@@ -2366,11 +2366,11 @@ def KEGG_module_map(request, biodb, module_name):
         else:
             big = False
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % module_name
-            asset_path = '/assets/temp/KEGG_tree_%s.svg' % module_name
+            asset_path = '/temp/KEGG_tree_%s.svg' % module_name
             tree.render(path, dpi=800, h=600)
 
             path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % module_name
-            asset_path2 = '/assets/temp/KEGG_tree_%s_complete.svg' % module_name
+            asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % module_name
 
             tree2.render(path2, dpi=800, h=600)
         envoi = True
@@ -2384,7 +2384,7 @@ def KEGG_module_map(request, biodb, module_name):
 @login_required
 def KEGG_mapp_ko(request, biodb, map_name):
 
-    cache = get_cache('default')
+    
 
     #cache.clear()
 
@@ -2437,17 +2437,17 @@ def KEGG_mapp_ko(request, biodb, map_name):
         if len(labels) > 70:
             big = True
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % map_name
-            asset_path = '/assets/temp/KEGG_tree_%s.png' % map_name
+            asset_path = '/temp/KEGG_tree_%s.png' % map_name
             tree.render(path, dpi=1200, h=600)
 
         else:
             big = False
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % map_name
-            asset_path = '/assets/temp/KEGG_tree_%s.svg' % map_name
+            asset_path = '/temp/KEGG_tree_%s.svg' % map_name
             tree.render(path, dpi=800, h=600)
 
             path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
-            asset_path2 = '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
+            asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % map_name
 
             tree2.render(path2, dpi=800, h=600)
         envoi = True
@@ -2463,7 +2463,7 @@ def KEGG_mapp_ko(request, biodb, map_name):
 @login_required
 def KEGG_mapp(request, biodb, map_name):
 
-    cache = get_cache('default')
+    
 
     #cache.clear()
 
@@ -2520,7 +2520,7 @@ def KEGG_mapp(request, biodb, map_name):
             print 'BIGGGGGGGGGGG', len(labels)
             big = True
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % map_name
-            asset_path = '/assets/temp/KEGG_tree_%s.png' % map_name
+            asset_path = '/temp/KEGG_tree_%s.png' % map_name
             tree.render(path, dpi=1200, h=600)
 
 
@@ -2529,11 +2529,11 @@ def KEGG_mapp(request, biodb, map_name):
             print 'not BIGGGGGGGGGG', len(labels)
             big = False
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % map_name
-            asset_path = '/assets/temp/KEGG_tree_%s.svg' % map_name
+            asset_path = '/temp/KEGG_tree_%s.svg' % map_name
             tree.render(path, dpi=800, h=600)
 
             path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
-            asset_path2 = '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
+            asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % map_name
 
             tree2.render(path2, dpi=800, h=600)
         envoi = True
@@ -2546,7 +2546,7 @@ def KEGG_mapp(request, biodb, map_name):
 @login_required
 def sunburst(request, biodb, locus):
 
-    cache = get_cache('default')
+    
 
     #cache.clear()
 
@@ -2877,7 +2877,7 @@ def get_ko_multiple(request, biodb, type, category):
     return render(request, 'chlamdb/ko_info_multiple.html', locals())
 
 def cog_venn_subset(request, biodb, category):
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -2925,7 +2925,7 @@ def cog_venn_subset(request, biodb, category):
 
 
 def ko_venn_subset(request, biodb, category):
-    cache = get_cache('default')
+    
     print "loading db..."
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
@@ -4363,7 +4363,7 @@ def blastswissprot(request, biodb, locus_tag):
 
     print biodb, locus_tag
 
-    cache = get_cache('default')
+    
     print "cache", cache
     #cache.clear()
 
@@ -4400,7 +4400,7 @@ def blastnr(request, biodb, locus_tag):
 
     print biodb, locus_tag
 
-    cache = get_cache('default')
+    
     print "cache", cache
     #cache.clear()
 
@@ -4423,7 +4423,7 @@ def blastnr(request, biodb, locus_tag):
         columns = 'hit_number, subject_accession, subject_kingdom,subject_scientific_name, ' \
                   ' subject_taxid, subject_title, evalue, bit_score, percent_identity, gaps, length'
         sql = 'select %s from custom_tables.locus2seqfeature_id_%s t1 inner join blastnr.blastnr_%s t2' \
-              ' on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s";' % (columns, biodb, biodb, locus_tag)
+              ' on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s" order by hit_number;' % (columns, biodb, biodb, locus_tag)
 
         blast_data = list(server.adaptor.execute_and_fetchall(sql))
         #blast_data = [i for i in ]
@@ -4444,7 +4444,7 @@ def blastnr(request, biodb, locus_tag):
 @login_required
 def homology(request, biodb):
     import shell_command
-    cache = get_cache('default')
+    
     print "cache", cache
     #cache.clear()
 
@@ -4554,7 +4554,7 @@ def ortho_id_plot(request, group):
 @login_required
 def plot_neighborhood(request, biodb, target_locus, region_size=23000):
 
-    cache = get_cache('default')
+    
     print "cache", cache
 
     #bioentry_in_memory = cache.get("biodb")
@@ -4638,7 +4638,7 @@ def plot_neighborhood(request, biodb, target_locus, region_size=23000):
 
 
     path = settings.BASE_DIR + '/assets/temp/cog_tree.svg'
-    asset_path = '/assets/temp/cog_tree.svg'
+    asset_path = '/temp/cog_tree.svg'
     tree2.render(path, dpi=800, h=600)
     return render(request, 'chlamdb/plot_region_and_profile.html', locals())
 
@@ -4646,7 +4646,7 @@ def plot_region_generic(biodb, orthogroup, taxon_list, region_size):
     import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
-    cache = get_cache('default')
+    
 
     filter = '"' + '","'.join(taxon_list) + '"'
     sql3 = 'select locus_tag from orthology_detail_%s where orthogroup = "%s" and taxon_id in (%s)' % (biodb, orthogroup, filter)
@@ -4682,7 +4682,7 @@ def plot_region_direct(request, biodb, orthogroup):
 @login_required
 def plot_region(request, biodb):
 
-    cache = get_cache('default')
+    
     print "cache", cache
 
     #bioentry_in_memory = cache.get("biodb")
@@ -4775,7 +4775,7 @@ def plot_region(request, biodb):
 @login_required
 def plot_region(request, biodb):
     plot_form_class = make_plot_form(biodb)
-    cache = get_cache('default')
+    
     print "cache", cache
     server = manipulate_biosqldb.load_db()
 
@@ -5020,7 +5020,7 @@ def circos_main(request, biodb):
     import gbk2circos
     import circos
 
-    cache = get_cache('default')
+    
     server, db = manipulate_biosqldb.load_db(biodb)
 
     reference_taxon = int(request.GET.getlist('ref')[0])
@@ -5181,7 +5181,7 @@ def circos(request, biodb):
     circos_form_class = make_circos_form(biodb)
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    cache = get_cache('default')
+    
 
     if request.method == 'POST':
 
@@ -6242,7 +6242,7 @@ def mummer(request, biodb):
     server = manipulate_biosqldb.load_db()
     mummer_form_class = make_mummer_form(biodb)
 
-    cache = get_cache('default')
+    
 
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         #make_circos2genomes_form
@@ -6311,7 +6311,7 @@ def circos2genomes(request, biodb):
     server = manipulate_biosqldb.load_db()
     circos2genomes_form_class = make_circos2genomes_form(biodb)
 
-    cache = get_cache('default')
+    
 
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         #make_circos2genomes_form
@@ -6455,7 +6455,7 @@ def update_genomes_db(server, biodatabase_name):
 @login_required
 def crossplot(request):
 
-    cache = get_cache('default')
+    
     print "cache", cache
     cache.clear()
     bioentry_in_memory = cache.get('biodb')
@@ -6685,12 +6685,12 @@ def multiple_COGs_heatmap(request, biodb):
     if len(cog_list) > 30:
         big = True
         path = settings.BASE_DIR + '/assets/temp/cog_tree.png'
-        asset_path = '/assets/temp/cog_tree.png'
+        asset_path = '/temp/cog_tree.png'
         t1.render(path, dpi=1200, h=600)
     else:
         big = False
         path = settings.BASE_DIR + '/assets/temp/cog_tree.svg'
-        asset_path = '/assets/temp/cog_tree.svg'
+        asset_path = '/temp/cog_tree.svg'
 
         t1.render(path, dpi=800, h=600)
 
@@ -6740,7 +6740,7 @@ def pfam_tree(request, biodb, orthogroup):
     print
     t, ts, leaf_number = ete_motifs.draw_pfam_tree(tree, locus2pfam_data, locus2protein_id, taxon_id2family=False)
     path = settings.BASE_DIR + '/assets/temp/pfam_tree.svg'
-    asset_path = '/assets/temp/pfam_tree.svg'
+    asset_path = '/temp/pfam_tree.svg'
     #print "path", path
     t.render(path, h=leaf_number*12, dpi=800, tree_style=ts)
 
@@ -6907,12 +6907,12 @@ def multiple_orthogroup_heatmap(request, biodb, reference_orthogroup, max_distan
     if len(ordered_orthogroups) > 30:
         big = True
         path = settings.BASE_DIR + '/assets/temp/profile_tree_%s.png' % reference_orthogroup
-        asset_path = '/assets/temp/profile_tree_%s.png' % reference_orthogroup
+        asset_path = '/temp/profile_tree_%s.png' % reference_orthogroup
         t1.render(path, dpi=1200, h=800)
     else:
         big = False
         path = settings.BASE_DIR + '/assets/temp/profile_tree_%s.svg' % reference_orthogroup
-        asset_path = '/assets/temp/profile_tree_%s.svg' % reference_orthogroup
+        asset_path = '/temp/profile_tree_%s.svg' % reference_orthogroup
         t1.render(path, dpi=800, h=600)
 
     # get data about orthogroups
@@ -7106,7 +7106,7 @@ def profile_interactions(request, biodb, orthogroup):
         tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all,reference_column=orthogroup_n)
         print 'plot ok, drawing plot'
         path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
-        asset_path = '/assets/temp/ortho_tree.svg'
+        asset_path = '/temp/ortho_tree.svg'
         tree.render(path, dpi=800, h=600)
 
 
@@ -7125,7 +7125,7 @@ def neig_interactions(request, biodb, locus_tag):
     import biosql_own_sql_tables
 
 
-    cache = get_cache('default')
+    
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -7169,7 +7169,7 @@ def neig_interactions(request, biodb, locus_tag):
         print "orthogroup_n", orthogroup_n
         tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all, reference_column=orthogroup_n)
         path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
-        asset_path = '/assets/temp/ortho_tree.svg'
+        asset_path = '/temp/ortho_tree.svg'
         tree.render(path, dpi=800, h=600)
 
         sql = 'select taxon_id from biosqldb.orthology_detail_%s where locus_tag ="%s" group by taxon_id' % (biodb, locus_tag)
@@ -7268,8 +7268,9 @@ def orthogroup_conservation_tree(request, biodb, orthogroup_or_locus):
             taxon2identity_closest[str(row[0])] = row[2]
             taxon2locus_tag_closest[str(row[0])] = row[1]
 
-    asset_path = '/assets/temp/phylo.svg'
-    path = settings.BASE_DIR + asset_path
+    asset_path = '/temp/phylo.svg'
+    path = settings.BASE_DIR + '/assets/' + asset_path
+    print 'path', path
     a,b,c = shell_command.shell_command("rm %s" % path)
 
 
@@ -7405,16 +7406,16 @@ def locus_int(request, biodb):
                 big = True
                 path = settings.BASE_DIR + '/assets/temp/ortho_tree.png'
                 path2 = settings.BASE_DIR + '/assets/temp/ortho_tree2.png'
-                asset_path = '/assets/temp/ortho_tree.png'
-                asset_path2 = '/assets/temp/ortho_tree2.png'
+                asset_path = '/temp/ortho_tree.png'
+                asset_path2 = '/temp/ortho_tree2.png'
                 tree1.render(path, dpi=1200, h=600)
                 tree2.render(path2, dpi=1200, h=600)
             else:
                 big = False
                 path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
                 path2 = settings.BASE_DIR + '/assets/temp/ortho_tree2.svg'
-                asset_path = '/assets/temp/ortho_tree.svg'
-                asset_path2 = '/assets/temp/ortho_tree2.svg'
+                asset_path = '/temp/ortho_tree.svg'
+                asset_path2 = '/temp/ortho_tree2.svg'
                 tree1.render(path, dpi=800, h=600)
                 tree2.render(path2, dpi=800, h=600)
             envoi = True
@@ -7500,12 +7501,12 @@ def kegg_module(request, biodb):
             if len(all_maps) > 1000:
                 big = True
                 path = settings.BASE_DIR + '/assets/temp/metabo_tree.png'
-                asset_path = '/assets/temp/metabo_tree.png'
+                asset_path = '/temp/metabo_tree.png'
                 tree.render(path, dpi=1200, h=600)
             else:
                 big = False
                 path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
-                asset_path = '/assets/temp/metabo_tree.svg'
+                asset_path = '/temp/metabo_tree.svg'
 
                 tree.render(path, dpi=800, h=600)
 
@@ -7612,7 +7613,7 @@ def module2heatmap(request, biodb):
 
             big = False
             path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
-            asset_path = '/assets/temp/metabo_tree.svg'
+            asset_path = '/temp/metabo_tree.svg'
 
             from ete2 import Tree, TreeStyle
 
@@ -7778,12 +7779,12 @@ def metabo_overview(request, biodb):
     if len(all_maps) > 1000:
         big = True
         path = settings.BASE_DIR + '/assets/temp/metabo_tree.png'
-        asset_path = '/assets/temp/metabo_tree.png'
+        asset_path = '/temp/metabo_tree.png'
         tree.render(path, dpi=1200, h=600)
     else:
         big = False
         path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
-        asset_path = '/assets/temp/metabo_tree.svg'
+        asset_path = '/temp/metabo_tree.svg'
 
         tree.render(path, dpi=800, h=600)
 
