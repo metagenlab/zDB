@@ -90,7 +90,8 @@
                     </table>
                 </div>
                 <div class="tab-pane" id="tab2">
-                    <img src="{{ STATIC_URL }}scales/scale_identity_red.png" id="circos_legend"  width="160" style="position: absolute; top: 170px; left: 600px;">
+                    <img src='{%static scale_path%}' id="circos_legend"  width="160" style="position: absolute; top: 170px; left: 600px;">
+
                     <object type="image/svg+xml" data="{% static asset_path2 %}" id="inter_tree" style="position: relative; top: 10px; left: 10px;"></object>
                     <table class="sortable" id="mytable">
                        <tr>

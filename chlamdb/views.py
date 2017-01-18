@@ -7356,38 +7356,37 @@ def locus_int(request, biodb):
             else:
                 identity_heatmap=True
 
-            print 'show id', show_identity
-
 
             if category == 'all':
-                 sql = 'select t1.*,t2.orthogroup from custom_tables.annot_table_chlamydia_04_16 as t1 inner ' \
-                         ' join biosqldb.orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag;' % (biodb)
+                 sql = 'select t1.*,t2.orthogroup from custom_tables.annot_table_%s as t1 inner ' \
+                         ' join biosqldb.orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag;' % (biodb,
+                                                                                                     biodb)
             else:
 
-                 sql = 'select t1.*,t2.orthogroup from custom_tables.annot_table_chlamydia_04_16 as t1 inner ' \
+                 sql = 'select t1.*,t2.orthogroup from custom_tables.annot_table_%s as t1 inner ' \
                          ' join biosqldb.orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag ' \
-                         ' where category="%s";' % (biodb, category) # where pathway_category!="1.0 Global and overview maps"
+                         ' where category="%s";' % (biodb,
+                                                    biodb,
+                                                    category) # where pathway_category!="1.0 Global and overview maps"
 
 
             print sql
             data = server.adaptor.execute_and_fetchall(sql,)
-            print 'ok'
+
             orthogroups = set([i[-1] for i in data])
             locus_tag_list = [i[2] for i in data]
 
             filter = '"'+'","'.join(locus_tag_list)+'"'
             sql = 'select locus_tag, taxon_id from orthology_detail_%s where locus_tag in (%s)' % (biodb, filter)
-            print sql
+
             locus2taxon = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-            print 'ok'
+
 
             taxon2locus2identity_closest = ete_motifs.get_locus2taxon2identity(biodb, locus_tag_list)
 
             taxon2orthogroup2count_all = ete_motifs.get_taxon2orthogroup2count(biodb, orthogroups)
 
             labels = orthogroups
-
-            print 'locus2taxon', locus2taxon
 
             tree1 = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all)
             labels = locus_tag_list
@@ -7397,6 +7396,7 @@ def locus_int(request, biodb):
                                                         identity_scale=True,
                                                         show_labels=identity_heatmap,
                                                         reference_taxon=locus2taxon)
+            scale_path = "/scales/scale_identity_red.png"
 
 
             #except:
