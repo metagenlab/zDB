@@ -147,7 +147,7 @@ def get_locus2taxon2identity(biodb, locus_tag_list):
 
     identity_data = server.adaptor.execute_and_fetchall(sql, )
     taxon2identity_closest = {}
-    print seqfeature_id2locus
+
     for row in identity_data:
         #taxon2identity_closest[str(row[0])] = row[2]
         taxon2locus2identity_closest[seqfeature_id2locus[str(row[1])]][str(row[0])] = row[2]
