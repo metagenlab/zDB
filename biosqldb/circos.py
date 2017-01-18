@@ -2980,11 +2980,11 @@ if __name__ == '__main__':
 
     taxon_lst = [67,1279767,1279774,1279496,48,46,55,87925,1279815,62,1279822,66,59,52,49,64,60,804807,886707,283,314,1069693,1069694,1137444,1143376,313,1172027,1172028,1035343,307,293,1279839,1279497]
 
-    genome = db.lookup(accession="NC_015713")
-    plasmid = db.lookup(accession="NC_015710")
+    genome = db.lookup(accession="hat2")
+    #plasmid = db.lookup(accession="NC_015710")
 
     a = CircosAccession2blastnr_plot(server,
                      'chlamydia_12_16_austr',
-                     [genome, plasmid],
+                     [genome],
                      "/home/trestan/work/projets/rhabdo/circos_nr_update/test2",
                      taxon_list=[])

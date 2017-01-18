@@ -697,8 +697,8 @@ def insert_taxons_into_sqldb(taxon_id_list,
 
     id_lists = _chunks(taxon_id_list, chunk_size)
     for i, one_list in enumerate(id_lists):
-        #print i, "/", len(id_lists)
-        if i % 100 == 0:
+        print i, "/", len(id_lists)
+        if i % 100 == 0 and i != 0:
             time.sleep(60)
         taxid2classification.update(sequence_id2scientific_classification.taxon_id2scientific_classification(one_list))
 

@@ -300,7 +300,30 @@ def create_sql_plastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
 
 
 
+def update_blastnr_taxonomy_table(blast_table_name,
+                                  mysql_host="localhost",
+                                  mysql_user="root",
+                                  mysql_pwd="estrella3",
+                                  mysql_db="blastnr"):
+    import MySQLdb
+    from plastnr2sqltable import insert_taxons_into_sqldb
 
+    conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
+                                user=mysql_user, # your username
+                                passwd=mysql_pwd, # your password
+                                db=mysql_db) # name of the data base
+    cursor = conn.cursor()
+    sql = 'select A.subject_taxid from (select distinct subject_taxid from %s) A ' \
+          ' left join blastnr_taxonomy as B on A.subject_taxid=B.taxon_id where B.taxon_id is NULL;' % blast_table_name
+
+    cursor.execute(sql,)
+    taxon_list = [str(i[0]) for i in cursor.fetchall()]
+    if len(taxon_list) > 0:
+        print 'Fetching ncbi taxonomy... for %s taxons' % str(len(taxon_list))
+        print taxon_list[0:10]
+
+        # subdivide the taxon list in smaller lists, otherwise NCBI will limit the results to? 10000 (observed once only)
+        insert_taxons_into_sqldb(taxon_list, 300)
 
 def blastnr2biosql( locus_tag2seqfeature_id,
                     protein_id2seqfeature_id,
@@ -478,6 +501,7 @@ if __name__ == '__main__':
     parser.add_argument("-c", '--clean_tables', action='store_true', help="delete all sql tables")
     parser.add_argument("-l", '--load_tables', action='store_true', help="load tab files into biodatabase")
     parser.add_argument("-f", '--filter_n_hits', action='store_true', help="filter_n_hits (max 100 hits/locus)")
+    parser.add_argument("-u", '--update_taxo_table', action='store_true', help="update blastnr taxonomy table based on all hits taxons")
     #create_protein_accession2taxon_id_table()
     #import sys
     #sys.exit()
@@ -532,3 +556,6 @@ if __name__ == '__main__':
                         *args.input_blast)
 
 
+    if args.update_taxo_table:
+        update_blastnr_taxonomy_table('blastnr_%s' % biodb)
+        update_blastnr_taxonomy_table('blast_swissprot_%s' % biodb)
