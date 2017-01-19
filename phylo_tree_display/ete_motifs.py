@@ -1097,6 +1097,8 @@ def multiple_orthogroup_heatmap(biodb, reference_orthogroup, max_distance=2.2):
 
 
 def get_pfam_data(orthogroup, biodb):
+
+
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -1109,6 +1111,7 @@ def get_pfam_data(orthogroup, biodb):
     sql = 'select accession, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where orthogroup="%s" and analysis="Pfam"' % (biodb, orthogroup)
     '''
+    print sql
     data = server.adaptor.execute_and_fetchall(sql,)
     print sql
     print 'data', data
