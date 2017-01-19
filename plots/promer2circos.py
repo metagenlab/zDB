@@ -20,12 +20,6 @@ import string
 
 
 
-
-
-
-
-
-
 def purge(dir, pattern):
     import os
     for f in os.listdir(dir):
@@ -42,147 +36,7 @@ def chunks(l, n):
         yield l[i:i+n]
 
 
-def get_gaps_from_start_stop_lists(contig2start_stop_lists, contig2length=False, out_highlight="circos_gaps_highlight.txt", out_labels='circos_gaps_labels.txt', min_gap_size=1000):
-    import pandas as pd
-    import numpy as np
 
-    h = open(out_highlight, 'w')
-    gap_data = {}
-    for contig in contig2start_stop_lists:
-        print contig
-        #print contig2start_stop_lists[contig]["start"]
-        data = pd.DataFrame({'start': contig2start_stop_lists[contig]["start"],
-                'stop': contig2start_stop_lists[contig]["stop"] })
-        data.start = data.start.astype(np.int64)
-        data.stop = data.stop.astype(np.int64)
-        #print 'add', data['start'][0]+1
-        data_sort = data.sort(columns=["start"])
-        #print data_sort
-        index_start = 0
-        comparison_index = 1
-        stop = False
-
-        while index_start < len(data_sort['start']):
-            #print 'index', index_start
-            #print 'compt', comparison_index
-            if index_start+comparison_index >= len(data_sort['start']):
-                break
-            #print 'index', index_start
-            #print 'comp index', comparison_index
-            # cas si fragment suivant est compris a l'interieur du 1er
-            # comparer avec le fragment suivant
-            if int(data_sort['stop'][index_start+comparison_index])<= int(data_sort['stop'][index_start]):
-                #print 'compris interne', index_start, comparison_index
-                #print '1', data_sort['start'][index_start], data_sort['stop'][index_start]
-                #print '2', data_sort['start'][index_start+comparison_index], data_sort['stop'][index_start+comparison_index]
-
-                comparison_index+=1
-                continue
-            # si le start du 2eme se trouve dans le premier et est plus long
-            # skipper le 1er fragment
-            elif int(data_sort['start'][index_start+comparison_index])<=int(data_sort['stop'][index_start]) and  \
-                int(data_sort['stop'][index_start+comparison_index]) > int(data_sort['stop'][index_start]):
-                index_start+=comparison_index
-                comparison_index=1
-                continue
-            elif int(data_sort['start'][index_start+comparison_index])-int(data_sort['stop'][index_start]) > min_gap_size:
-                print '############# Potential gap!!! ', contig, data_sort['stop'][index_start], "-" , data_sort['start'][index_start+comparison_index]
-                if contig not in gap_data:
-                    gap_data[contig] = [[data_sort['stop'][index_start], data_sort['start'][index_start+comparison_index]]]
-                else:
-                    gap_data[contig].append([data_sort['stop'][index_start], data_sort['start'][index_start+comparison_index]])
-
-
-                #print index_start, comparison_index
-                #print '1', data_sort['start'][index_start], data_sort['stop'][index_start]
-                #print '2', data_sort['start'][index_start+comparison_index], data_sort['stop'][index_start+comparison_index]
-                #print data_sort
-
-                index_start+=comparison_index
-                comparison_index=1
-            else:
-                #print 'add'
-                index_start+=comparison_index
-                comparison_index=1
-    print "gap_data"
-    print gap_data
-    #import sys
-    #sys.exit()
-
-    g = open(out_labels, 'w')
-    for contig in gap_data:
-        print gap_data[contig]
-        if len(gap_data[contig])>1:
-            start_list = []
-            stop_list = []
-            for gap in gap_data[contig]:
-                start_list.append(gap[0])
-                stop_list.append(gap[1])
-            print "start_list"
-            print start_list
-            print "stop_list"
-            print stop_list
-            data = pd.DataFrame({'start': start_list,
-            'stop': stop_list })
-            data.start = data.start.astype(np.int64)
-            data.stop = data.stop.astype(np.int64)
-            #print 'add', data['start'][0]+1
-            data_sort = data.sort(columns=["start"])
-            print data_sort
-            start = data_sort['start'][0]
-            stop = data_sort['stop'][0]
-
-            for i in range(0, len(data_sort['start'])-1):
-                print i, len(data_sort['start'])
-                # if less than 10kb between 2 gaps, merge
-                if data_sort['start'][i+1]-data_sort['stop'][i] <10000:
-                    stop = data_sort['stop'][i+1]
-                    # if the last gap considered, write it
-                    if (i+2) == len(data_sort['start']):
-                        # gap highlight
-                        h.write("%s\t%s\t%s\n" % (contig,start, stop))
-                        # gap lables (start and stop)
-                        g.write("%s\t%s\t%s\t%s\n"% (contig,start, start+5, start))
-                        g.write("%s\t%s\t%s\t%s\n"% (contig,stop, stop+5, stop))
-                # more than 10kb between the 2 gaps
-                else:
-                    if i+2 == len(data_sort['start']):
-                        # last gaps compared. as not merged, write both
-                        h.write("%s\t%s\t%s\n" % (contig,start, stop))
-                        # write labels
-                        g.write("%s\t%s\t%s\t%s\n"% (contig,start, start+5, start))
-                        g.write("%s\t%s\t%s\t%s\n"% (contig,stop, stop+5, stop))
-                        h.write("%s\t%s\t%s\n" % (contig,data_sort['start'][i+1], data_sort['stop'][i+1]))
-                        # write labels
-                        g.write("%s\t%s\t%s\t%s\n"% (contig,data_sort['start'][i+1], data_sort['start'][i+1]+5, data_sort['start'][i+1]))
-                        g.write("%s\t%s\t%s\t%s\n"% (contig,data_sort['stop'][i+1], data_sort['stop'][i+1]+5, data_sort['stop'][i+1]))
-                    else:
-                        # not merged, write gap and reinitialize start and stop of the next gap
-                        h.write("%s\t%s\t%s\n" % (contig,start, stop))
-                        # write labels
-                        g.write("%s\t%s\t%s\t%s\n"% (contig,start, start+5, start))
-                        g.write("%s\t%s\t%s\t%s\n"% (contig,stop, stop+5, stop))
-                        start = data_sort['start'][i+1]
-                        stop = data_sort['stop'][i+1]
-
-            #print data_sort
-            #import sys
-            #sys.exit()
-
-
-        else:
-            start = gap_data[contig][0][0]
-            stop = gap_data[contig][0][1]
-            h.write("%s\t%s\t%s\n" % (contig, start, stop))
-            # write labels
-            g.write("%s\t%s\t%s\t%s\n"% (contig,start, start+5, start))
-            g.write("%s\t%s\t%s\t%s\n"% (contig,stop, stop+5, stop))
-
-
-    h.close()
-    g.close()
-    #import sys
-    #sys.exit()
 
 '''
 <plot>
@@ -221,17 +75,18 @@ class Fasta2circos():
                  highlight_list=[],
                  algo="nucmer",
                  min_gap_size=1000):
+        import nucmer_utility
         self.contigs_add = {}
         print "fasta1", fasta1
         print "fasta2", len(fasta2), fasta2
         print "highlight list", highlight_list
         print "heatmap", heatmap
         if algo == "nucmer":
-            self.execute_promer(fasta1, fasta2, algo="nucmer")
+            nucmer_utility.execute_promer(fasta1, fasta2, algo="nucmer")
         elif algo == "megablast":
             self.execute_megablast(fasta1, fasta2)
         elif algo == "promer":
-            self.execute_promer(fasta1, fasta2, algo="promer")
+            nucmer_utility.execute_promer(fasta1, fasta2, algo="promer")
         if not heatmap:
             hit_list, query_list = self.get_link("%s.coords" % fasta2[0].split('.')[0], algo=algo)
         else:
@@ -263,8 +118,14 @@ class Fasta2circos():
                     col=250
                 #try:
                 if algo == "nucmer" or algo == 'promer':
-                    print  one_fasta
-                    hit_list, query_list, contig2start_stop_list = self.nucmer_coords2heatmap("%s.coords" % one_fasta.split('.')[0], col=col, algo=algo)
+                    print one_fasta
+
+                    #hit_list, query_list, contig2start_stop_list = self.nucmer_coords2heatmap("%s.coords" % one_fasta.split('.')[0], col=col, algo=algo)
+                    hit_list, query_list = nucmer_utility.coord_file2circos_heat_file("%s.coords" % one_fasta.split('.')[0],
+                                                                                      self.contigs_add, algo=algo)
+                    contig2start_stop_list = nucmer_utility.delta_file2start_stop_list("%s.delta" % one_fasta.split('.')[0],
+                                                                                       self.contigs_add, algo=algo, minimum_identity=85)
+
                 elif algo == "megablast":
                     hit_list, query_list, contig2start_stop_list = self.megablast2heatmap("blast_result_%s.tab" % one_fasta.split('.')[0], col=col)
                 else:
@@ -275,8 +136,13 @@ class Fasta2circos():
                 #except:
                 #    continue
                 if gaps:
-                    print contig2start_stop_list
-                    get_gaps_from_start_stop_lists(contig2start_stop_list, out_highlight="circos_gaps_highlight_%s.txt" % i, out_labels="circos_gaps_labels_%s.txt" % i, min_gap_size=min_gap_size)
+
+                    nucmer_utility.get_circos_gap_file_from_gap_start_stop(contig2start_stop_list,
+                                                                           self.contigs_add,
+                                                                           out_highlight="circos_gaps_highlight_%s.txt" % i,
+                                                                           min_gap_size=min_gap_size,
+                                                                           gap_merge_distance=0)
+                    #get_gaps_from_start_stop_lists(contig2start_stop_list, out_highlight="circos_gaps_highlight_%s.txt" % i, out_labels="circos_gaps_labels_%s.txt" % i, min_gap_size=min_gap_size)
                     if i%2 == 0:
                         color = "orrd-9-seq-9"
                     else:
@@ -349,7 +215,7 @@ class Fasta2circos():
                 out_skew = ''
                 for record in fasta_records:
                     contig = re.sub("\|", "", record.name)
-                    shift = self.contigs_add[contig]
+                    shift = self.contigs_add[contig][0]
                     # this function handle scaffolds (split sequence when encountering NNNNN regions)
                     out_var += GC.circos_gc_var(record, 1000, shift=shift)
 
@@ -493,8 +359,8 @@ class Fasta2circos():
             for gene in blast2data[contig]:
                 if float(blast2data[contig][gene][0])>80:
                     location = sorted(blast2data[contig][gene][1:3])
-                    o.write("%s\t%s\t%s\n" % (contig, location[0]+ self.contigs_add[cname], location[1]+ self.contigs_add[cname]))
-                    l.write("%s\t%s\t%s\t%s\n" % (contig,  location[0] + self.contigs_add[cname], location[1]+ self.contigs_add[cname], gene))
+                    o.write("%s\t%s\t%s\n" % (contig, location[0]+ self.contigs_add[cname][0], location[1]+ self.contigs_add[cname][0]))
+                    l.write("%s\t%s\t%s\t%s\n" % (contig,  location[0] + self.contigs_add[cname][0], location[1]+ self.contigs_add[cname][0], gene))
 
         o.close()
 
@@ -889,26 +755,10 @@ class Fasta2circos():
             name = re.sub("\|", "", record.name)
             contig_start = contig_end+1
             contig_end = contig_start+len(record)
-            self.contigs_add[name] = contig_start
+            self.contigs_add[name] = [contig_start,contig_end]
 
 
-    def execute_promer(self,fasta1, fasta2, out_file = "out.coords", algo="nucmer"):
-        import shell_command
 
-        #cmd1 = 'promer --mum -l 5 %s %s' % (fasta1, fasta2)
-        for one_fasta in fasta2:
-            if algo == 'nucmer':
-                cmd1 = 'nucmer -mum -b 200 -c 65 -g 90 -l 20 %s %s' % (fasta1, one_fasta)
-                cmd2 = 'show-coords -T -r -c -L 100 -I 30 out.delta > %s.coords' % one_fasta.split('.')[0]
-                a, b, c = shell_command.shell_command(cmd1)
-                a, b, c = shell_command.shell_command(cmd2)
-            elif algo == 'promer':
-                # promer --mum -l 5
-                cmd1 = 'promer -l 5 %s %s' % (fasta1, one_fasta)
-                # show-coords -T -r -c -L 100 -I 30 out.delta
-                cmd2 = 'show-coords -T -r -c -L 30 -I 20 out.delta > %s.coords' % one_fasta.split('.')[0]
-                a, b, c = shell_command.shell_command(cmd1)
-                a, b, c = shell_command.shell_command(cmd2)
 
 
     def execute_megablast(self,fasta1, fasta2):
@@ -1000,99 +850,6 @@ class Fasta2circos():
                 query_list.append(re.sub("\|", "", l[10+shift]))
         return (hit_list, query_list)
 
-
-
-    def nucmer_coords2heatmap(self, coords_input, link_file="circos.heat", col=250, algo="nucmer"):
-        import re
-        import matplotlib.cm as cm
-        from matplotlib.colors import rgb2hex
-        import matplotlib as mpl
-
-
-        with open(coords_input, 'rU') as infile:
-            rawLinks = self.justLinks(infile.readlines());
-
-        all_id = [float(re.split(r'\t+', i.rstrip('\n'))[6]) for i in rawLinks]
-
-        #print len(all_id), all_id
-
-        #print sorted(all_id)
-        try:
-            id_min = min(all_id)
-        except:
-            return None
-        id_max = max(all_id)
-        #print 'mimax', id_min, id_max
-        norm = mpl.colors.Normalize(vmin=id_min, vmax=id_max)
-        cmap = cm.Blues
-        cmap_blue = cm.OrRd
-        m = cm.ScalarMappable(norm=norm, cmap=cmap)
-        m2 = cm.ScalarMappable(norm=norm, cmap=cmap_blue)
-        c = open('colors.my', 'w')
-
-
-        if algo == 'promer':
-            shift = 4
-        elif algo == 'nucmer':
-            shift = 0
-
-        contig2start_stop_list = {}
-
-        link_file = coords_input.split('.')[0] + '.heat'
-        with open(link_file, 'w') as f:
-            i = 1
-            hit_list = []
-            query_list = []
-
-            for n, row in enumerate(rawLinks):
-                color = ''
-                l = re.split(r'\t+', row.rstrip('\n'))
-                if n == 0:
-                    contig = re.sub("\|", "", l[9+shift])
-                    start = int(l[0]) + self.contigs_add[contig]
-                    end = int(l[0])+1 + self.contigs_add[contig]
-                    f.write("%s\t%s\t%s\t0\tz=0\n" % (contig, start, end))
-                    f.write("%s\t%s\t%s\t100\tz=0\n" % (contig, start, end))
-                if l[9] not in contig2start_stop_list:
-                    contig2start_stop_list[l[9+shift]] = {}
-                    contig2start_stop_list[l[9+shift]]["start"] = [int(l[0]) + self.contigs_add[l[9+shift]]]
-                    contig2start_stop_list[l[9+shift]]["stop"] = [int(l[1]) + self.contigs_add[l[9+shift]]]
-                else:
-                    contig2start_stop_list[l[9+shift]]["start"].append(int(l[0])+self.contigs_add[l[9+shift]])
-                    contig2start_stop_list[l[9+shift]]["stop"].append(int(l[1])+self.contigs_add[l[9+shift]])
-                # print l[14]
-                #f.write(l[13] + '\t' + l[0] + '\t' + l[1] + '\t' + re.sub("\|", "", l[14]) + '\t' + l[2] + '\t' + l[3] + '\n')
-                if int(l[0]) < int(l[1]) and int(l[2]) > int(l[3]):
-                    color = m.to_rgba(float(l[6]))
-
-                elif int(l[0]) > int(l[1]) and int(l[2]) < int(l[3]):
-                    color = m.to_rgba(float(l[6]))
-
-                else:
-                    color = m2.to_rgba(float(l[6]))
-                #print color, float(l[6])
-                color_id = self.id_generator()
-                #print color_id, 'id:',l[6]
-
-                c.write('%s = %s,%s,%s,%s\n' % (color_id,
-                                                int(round(color[0]*col,0)),
-                                                int(round(color[1]*col,0)),
-                                                int(round(color[2]*col,0)),
-                                                0.5))
-
-                # RhT_1 178 895 0
-                contig = re.sub("\|", "", l[9+shift])
-                start = int(l[0]) + self.contigs_add[contig]
-                end = int(l[1]) + self.contigs_add[contig]
-                identity = l[6]
-                f.write('%s\t%s\t%s\t%s\tz=%s\n' % (contig, start, end, identity, identity))
-                # sys.stdout.write
-                i += 1
-                hit_list.append(re.sub("\|", "", l[9+shift]))
-                query_list.append(re.sub("\|", "", l[10+shift]))
-        return (hit_list, query_list, contig2start_stop_list)
-
-
     def megablast2heatmap(self, megablast_input, link_file="circos.heat", col=250):
         import re
         import matplotlib.cm as cm
@@ -1179,8 +936,8 @@ class Fasta2circos():
                 for i, cov_list in enumerate(mychunks):
                     #print cov_list
                     median_depth = numpy.median(cov_list)
-                    g.write("%s\t%s\t%s\t%s\n" % (contig, (i*1000)+self.contigs_add[contig],
-                                                  ((i*1000)+999)+self.contigs_add[contig],
+                    g.write("%s\t%s\t%s\t%s\n" % (contig, (i*1000)+self.contigs_add[contig][0],
+                                                  ((i*1000)+999)+self.contigs_add[contig][0],
                                                   median_depth))
 
 
