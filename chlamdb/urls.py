@@ -35,6 +35,7 @@ urlpatterns = [
                        url(r'^ko_venn_subset/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.\+-]+)$', ko_venn_subset, name="ko_venn_subset"),
                        url(r'^homology/([a-zA-Z0-9_]+)$', homology, name="homology"),
                        url(r'^pfam_tree/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)$', pfam_tree, name="pfam_tree"),
+                       url(r'^TM_tree/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)$', TM_tree, name="TM_tree"),
                        url(r'^orthogroup_conservation_tree/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)$', orthogroup_conservation_tree, name="orthogroup_conservation_tree"),
                        url(r'^search_taxonomy/([a-zA-Z0-9_]+)$', search_taxonomy, name="search_taxonomy"),
                        url(r'^priam_kegg/([a-zA-Z0-9_]+)$', priam_kegg, name="priam_kegg"),

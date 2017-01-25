@@ -422,14 +422,14 @@ def orthogroup_annotation(request, biodb, display_form):
             taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, match_groups, type="orthogroup")
 
             labels = match_groups
-            tree = ete_motifs.multiple_profiles_heatmap(biodb, match_groups,taxon2orthogroup2count)
+            tree, style = ete_motifs.multiple_profiles_heatmap(biodb, match_groups,taxon2orthogroup2count)
 
 
             big = False
             path = settings.BASE_DIR + '/assets/temp/tree.svg'
             asset_path = '/temp/tree.svg'
 
-            tree.render(path, dpi=800, h=600)
+            tree.render(path, dpi=800, h=600, tree_style=style)
 
             envoi_annot = True
             envoi_annot = True
@@ -450,14 +450,14 @@ def orthogroup_annotation(request, biodb, display_form):
             taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, match_groups, type="orthogroup")
 
             labels = match_groups
-            tree = ete_motifs.multiple_profiles_heatmap(biodb, match_groups,taxon2orthogroup2count)
+            tree, style = ete_motifs.multiple_profiles_heatmap(biodb, match_groups,taxon2orthogroup2count)
 
 
             big = False
             path = settings.BASE_DIR + '/assets/temp/tree.svg'
             asset_path = '/temp/tree.svg'
 
-            tree.render(path, dpi=800, h=600)
+            tree.render(path, dpi=800, h=600, tree_style=style)
 
             envoi_annot = True
 
@@ -2018,6 +2018,16 @@ def locusx(request, biodb, locus=None, menu=False):
                                                                                                           biodb)
 
         homologues = list(server.adaptor.execute_and_fetchall(sql_groups, ))
+
+        # check if one of the homolog has TM(s) domains
+        tm_count = 0
+        for i in homologues:
+            if i[7] != '-':
+                tm_count +=  int(i[7])
+        if tm_count > 0:
+            show_tm_tree = True
+
+
         for i, row in enumerate(homologues):
             homologues[i] = ['-' if v is None else v for v in list(row)]
 
@@ -2249,7 +2259,7 @@ def fam(request, biodb, fam, type):
             labels = [fam] + group_count
 
 
-            tree = ete_motifs.multiple_profiles_heatmap(biodb,
+            tree, style = ete_motifs.multiple_profiles_heatmap(biodb,
                                                         labels,
                                                         merged_dico,
                                                         taxon2group2value=taxon2orthogroup2ec,
@@ -2260,13 +2270,13 @@ def fam(request, biodb, fam, type):
                 big = True
                 path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
                 asset_path = '/temp/fam_tree_%s.png' % fam
-                tree.render(path, dpi=2200, h=1000)
+                tree.render(path, dpi=2200, h=1000, tree_style=style)
             else:
                 big = False
                 path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.svg' % fam
                 asset_path = '/temp/fam_tree_%s.svg' % fam
 
-                tree.render(path, dpi=800, h=600)
+                tree.render(path, dpi=800, h=600, tree_style=style)
 
     return render(request, 'chlamdb/fam.html', locals())
 
@@ -2292,11 +2302,11 @@ def COG_phylo_heatmap(request, biodb, frequency):
         print tree
         t1 = Tree(tree)
 
-        tree = cog_heatmap.plot_cog_eatmap(biodb, tree, [], freq)
+        tree, style = cog_heatmap.plot_cog_eatmap(biodb, tree, [], freq)
 
         path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
         asset_path = '/temp/COG_tree.svg'
-        tree.render(path, dpi=600, h=400)
+        tree.render(path, dpi=600, h=400, tree_style=style)
 
         #path2 = settings.BASE_DIR + '/assets/temp/COG_tree_%s_complete.svg' % module_name
         #asset_path2 = '/assets/temp/KEGG_tree_%s_complete.svg' % module_name
@@ -2346,7 +2356,7 @@ def KEGG_module_map(request, biodb, module_name):
         print "taxon2orthogroup2count", taxon2orthogroup2count
         print "ko2orthogroups",ko2orthogroups
         labels = ko_list
-        tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2ko2count)
+        tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2ko2count)
 
         tree2 = ete_motifs.combined_profiles_heatmap(biodb,
                                                      labels,
@@ -2359,7 +2369,7 @@ def KEGG_module_map(request, biodb, module_name):
             big = True
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % module_name
             asset_path = '/temp/KEGG_tree_%s.png' % module_name
-            tree.render(path, dpi=1200, h=600)
+            tree.render(path, dpi=1200, h=600, tree_style=style)
 
 
 
@@ -2367,7 +2377,7 @@ def KEGG_module_map(request, biodb, module_name):
             big = False
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % module_name
             asset_path = '/temp/KEGG_tree_%s.svg' % module_name
-            tree.render(path, dpi=800, h=600)
+            tree.render(path, dpi=800, h=600, tree_style=style)
 
             path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % module_name
             asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % module_name
@@ -2425,7 +2435,7 @@ def KEGG_mapp_ko(request, biodb, map_name):
         taxon2ko2count = ete_motifs.get_taxon2name2count(biodb, ko_list_found_in_db, type="ko")
 
         labels = ko_list_found_in_db
-        tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2ko2count)
+        tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2ko2count)
 
         tree2 = ete_motifs.combined_profiles_heatmap(biodb,
                                                      labels,
@@ -2438,13 +2448,13 @@ def KEGG_mapp_ko(request, biodb, map_name):
             big = True
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % map_name
             asset_path = '/temp/KEGG_tree_%s.png' % map_name
-            tree.render(path, dpi=1200, h=600)
+            tree.render(path, dpi=1200, h=600, tree_style=style)
 
         else:
             big = False
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % map_name
             asset_path = '/temp/KEGG_tree_%s.svg' % map_name
-            tree.render(path, dpi=800, h=600)
+            tree.render(path, dpi=800, h=600, tree_style=style)
 
             path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
             asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % map_name
@@ -2507,7 +2517,7 @@ def KEGG_mapp(request, biodb, map_name):
 
         print taxon2enzyme2count
         labels = enzyme_list_found_in_db
-        tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2enzyme2count)
+        tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2enzyme2count)
 
         tree2 = ete_motifs.combined_profiles_heatmap(biodb,
                                                      labels,
@@ -2521,7 +2531,7 @@ def KEGG_mapp(request, biodb, map_name):
             big = True
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % map_name
             asset_path = '/temp/KEGG_tree_%s.png' % map_name
-            tree.render(path, dpi=1200, h=600)
+            tree.render(path, dpi=1200, h=600, tree_style=style)
 
 
 
@@ -2530,7 +2540,7 @@ def KEGG_mapp(request, biodb, map_name):
             big = False
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % map_name
             asset_path = '/temp/KEGG_tree_%s.svg' % map_name
-            tree.render(path, dpi=800, h=600)
+            tree.render(path, dpi=800, h=600, tree_style=style)
 
             path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
             asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % map_name
@@ -4624,7 +4634,7 @@ def plot_neighborhood(request, biodb, target_locus, region_size=23000):
         if i in locus2taxon.keys():
             locus_tags_labels.append(i)
 
-    tree2 = ete_motifs.multiple_profiles_heatmap(biodb,
+    tree2, style = ete_motifs.multiple_profiles_heatmap(biodb,
                                                 locus_tags_labels,
                                                 taxon2locus2identity_closest,
                                                 identity_scale=True,
@@ -4639,7 +4649,7 @@ def plot_neighborhood(request, biodb, target_locus, region_size=23000):
 
     path = settings.BASE_DIR + '/assets/temp/cog_tree.svg'
     asset_path = '/temp/cog_tree.svg'
-    tree2.render(path, dpi=800, h=600)
+    tree2.render(path, dpi=800, h=600, tree_style=style)
     return render(request, 'chlamdb/plot_region_and_profile.html', locals())
 
 def plot_region_generic(biodb, orthogroup, taxon_list, region_size):
@@ -6702,16 +6712,23 @@ def pfam_tree(request, biodb, orthogroup):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql_locus2protein_id = 'select locus_tag, protein_id from orthology_detail_%s where orthogroup="%s"' % (biodb, orthogroup)
+    #sql_locus2protein_id = 'select locus_tag, protein_id from orthology_detail_%s where orthogroup="%s"' % (biodb, orthogroup)
 
-    locus2protein_id= manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_locus2protein_id,))
+    #locus2protein_id= manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_locus2protein_id,))
 
-    locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb)
+    alignment_fasta = "../assets/%s_fasta/%s.fa" % (biodb, orthogroup)
+
+    home_dir = os.path.dirname(__file__)
+
+    alignment_path = os.path.join(home_dir, alignment_fasta)
+    if os.path.exists(alignment_path):
+        locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb, aa_alignment=alignment_path)
+    else:
+        locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb, aa_alignment=False)
 
     motif_count = {}
     for data in locus2pfam_data.values():
         for motif in data:
-            print data
             try:
                 if motif[4] not in motif_count:
                     motif_count[motif[4]] = [1, motif[5]]
@@ -6720,28 +6737,25 @@ def pfam_tree(request, biodb, orthogroup):
             except:
                 print "motif", motif
 
-    print "motif_count", motif_count
 
     sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
-    print sql_tree
-    try:
 
+    try:
         tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
     except IndexError:
         no_tree = True
         return render(request, 'chlamdb/pfam_tree.html', locals())
-    import manipulate_biosqldb
+
 
     sql = 'select taxon_id, family from genomes_classification;'
 
     taxon_id2family = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    print 'tree', tree
-    print
-    t, ts, leaf_number = ete_motifs.draw_pfam_tree(tree, locus2pfam_data, locus2protein_id, taxon_id2family=False)
+    t, ts, leaf_number = ete_motifs.draw_pfam_tree(tree, locus2pfam_data, False, taxon_id2family=False)
     path = settings.BASE_DIR + '/assets/temp/pfam_tree.svg'
     asset_path = '/temp/pfam_tree.svg'
-    #print "path", path
+    if leaf_number < 10:
+        leaf_number = 10
     t.render(path, h=leaf_number*12, dpi=800, tree_style=ts)
 
     return render(request, 'chlamdb/pfam_tree.html', locals())
@@ -6753,14 +6767,24 @@ def TM_tree(request, biodb, orthogroup):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    locus2TM_data = ete_motifs.get_TM_data(orthogroup, biodb)
+    home_dir = os.path.dirname(__file__)
+    alignment_fasta = "../assets/%s_fasta/%s.fa" % (biodb, orthogroup)
+    alignment_path = os.path.join(home_dir, alignment_fasta)
+    if os.path.exists(alignment_path):
+        locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=alignment_path)
+    else:
+        locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False)
+
+    #locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup)
 
     sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
-    tree = server.adaptor.execute_and_fetchall(sql_tree,)[0]
-    print 'tree', tree
+    tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
+
     t, ts, leaf_number = ete_motifs.draw_TM_tree(tree, locus2TM_data)
-    path = settings.BASE_DIR + '/assets/temp/tm_tree.svg'
-    #print "path", path
+    path = settings.BASE_DIR + '/assets/temp/TM_tree.svg'
+    asset_path = '/temp/TM_tree.svg'
+    if leaf_number < 10:
+        leaf_number = 10
     t.render(path, h=leaf_number*12, dpi=800, tree_style=ts)
 
     return render(request, 'chlamdb/pfam_tree.html', locals())
@@ -7103,11 +7127,11 @@ def profile_interactions(request, biodb, orthogroup):
         print 'count ok, making plot'
         labels = all_groups_profile
         orthogroup_n = all_groups_profile.index(orthogroup)
-        tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all,reference_column=orthogroup_n)
+        tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all,reference_column=orthogroup_n)
         print 'plot ok, drawing plot'
         path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
         asset_path = '/temp/ortho_tree.svg'
-        tree.render(path, dpi=800, h=600)
+        tree.render(path, dpi=800, h=600, tree_style=style)
 
 
 
@@ -7167,10 +7191,10 @@ def neig_interactions(request, biodb, locus_tag):
         print orthogroup
         orthogroup_n = all_groups.index(orthogroup)
         print "orthogroup_n", orthogroup_n
-        tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all, reference_column=orthogroup_n)
+        tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all, reference_column=orthogroup_n)
         path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
         asset_path = '/temp/ortho_tree.svg'
-        tree.render(path, dpi=800, h=600)
+        tree.render(path, dpi=800, h=600, tree_style=style)
 
         sql = 'select taxon_id from biosqldb.orthology_detail_%s where locus_tag ="%s" group by taxon_id' % (biodb, locus_tag)
 
@@ -7388,9 +7412,9 @@ def locus_int(request, biodb):
 
             labels = orthogroups
 
-            tree1 = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all)
+            tree1, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all)
             labels = locus_tag_list
-            tree2 = ete_motifs.multiple_profiles_heatmap(biodb,
+            tree2, style2 = ete_motifs.multiple_profiles_heatmap(biodb,
                                                         labels,
                                                         taxon2locus2identity_closest,
                                                         identity_scale=True,
@@ -7408,16 +7432,16 @@ def locus_int(request, biodb):
                 path2 = settings.BASE_DIR + '/assets/temp/ortho_tree2.png'
                 asset_path = '/temp/ortho_tree.png'
                 asset_path2 = '/temp/ortho_tree2.png'
-                tree1.render(path, dpi=1200, h=600)
-                tree2.render(path2, dpi=1200, h=600)
+                tree1.render(path, dpi=1200, h=600, tree_style=style)
+                tree2.render(path2, dpi=1200, h=600, tree_style=style2)
             else:
                 big = False
                 path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
                 path2 = settings.BASE_DIR + '/assets/temp/ortho_tree2.svg'
                 asset_path = '/temp/ortho_tree.svg'
                 asset_path2 = '/temp/ortho_tree2.svg'
-                tree1.render(path, dpi=800, h=600)
-                tree2.render(path2, dpi=800, h=600)
+                tree1.render(path, dpi=800, h=600, tree_style=style)
+                tree2.render(path2, dpi=800, h=600, tree_style=style2)
             envoi = True
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET

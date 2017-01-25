@@ -89,6 +89,10 @@
                 <li><a href="#tab55" data-toggle="tab">MSA</a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' biodb data.0 True %}', 'orthoIDframe'); return false">Orthogroup conservation</a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' biodb data.0 %}', 'orthoIDframe'); return false">Pfam tree</a></li>
+                {% if show_tm_tree %}
+                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'TM_tree' biodb data.0 %}', 'orthoIDframe'); return false">TM tree</a></li>
+                {% endif %}
+
                 {% if cog_data %}
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'string_page' biodb cog_data.0 genome_accession %}', 'orthoIDframe'); return false">string interactions</a></li>
                 {% endif %}
