@@ -748,6 +748,8 @@ def multiple_profiles_heatmap(biodb,
         tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
 
     t1 = Tree(tree)
+    tss = TreeStyle()
+    tss.show_branch_support = True
 
     R = t1.get_midpoint_outgroup()
     t1.set_outgroup(R)
@@ -771,15 +773,17 @@ def multiple_profiles_heatmap(biodb,
                     n.vt_align = 2
                     n.hz_align = 2
                     n.rotation= 270
-                    n.margin_top = 0
-                    n.margin_right = 0
-                    n.margin_left = 0
-                    n.margin_bottom = 0
+                    n.margin_top = 1
+                    n.margin_right = 1
+                    n.margin_left = 1
+                    n.margin_bottom = 6
 
                     from ete2 import NodeStyle
                     n.inner_background.color = "white"
                     n.opacity = 1.
-                    lf.add_face(n, col, position="aligned")
+                    tss.aligned_header.add_face(n, col)
+                    #lf.add_face(n, col, position="aligned")
+
                     #nstyle = NodeStyle()
                     #nstyle["fgcolor"] = "red"
                     #nstyle["size"] = 15
@@ -793,6 +797,7 @@ def multiple_profiles_heatmap(biodb,
                 n.margin_right = 2
                 n.margin_left = 2
                 n.margin_bottom = 2
+
                 if taxon2group2count[value][lf.name] > 0 and taxon2group2count[value][lf.name] != '-':
                     n.inner_background.color = "#FA5858"
                 else:
@@ -936,7 +941,7 @@ def multiple_profiles_heatmap(biodb,
         lf.name = taxon_id2organism_name[lf.name]
         head=False
 
-    return t1
+    return t1, tss
 
 
 def multiple_orthogroup_heatmap(biodb, reference_orthogroup, max_distance=2.2):
@@ -946,7 +951,6 @@ def multiple_orthogroup_heatmap(biodb, reference_orthogroup, max_distance=2.2):
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
     import matplotlib as mpl
-
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -1096,11 +1100,11 @@ def multiple_orthogroup_heatmap(biodb, reference_orthogroup, max_distance=2.2):
 
 
 
-def get_pfam_data(orthogroup, biodb):
+def get_pfam_data(orthogroup, biodb, aa_alignment=False):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select A.protein_id, B.start, B.stop, A.organism, A.sequence_length, B.signature_accession, B.signature_description, A.taxon_id ' \
+    sql = 'select A.locus_tag, B.start, B.stop, A.organism, A.sequence_length, B.signature_accession, B.signature_description, A.taxon_id ' \
           ' from (select taxon_id, orthogroup,locus_tag, protein_id, organism, length(translation) as sequence_length from orthology_detail_%s ' \
           ' where orthogroup="%s" ) A ' \
           ' left join (select * from interpro_%s where orthogroup="%s" and analysis="Pfam") B ' \
@@ -1110,18 +1114,30 @@ def get_pfam_data(orthogroup, biodb):
           ' from interpro_%s as t2 where orthogroup="%s" and analysis="Pfam"' % (biodb, orthogroup)
     '''
     data = server.adaptor.execute_and_fetchall(sql,)
-    print sql
-    print 'data', data
-    
-    protein2data = {}
-    for one_locus in data:
-        if one_locus[0] not in protein2data:
-            protein2data[one_locus[0]] = [one_locus[1:len(one_locus)]]
-        else:
-            protein2data[one_locus[0]].append(one_locus[1:len(one_locus)])
-    return protein2data
 
-def get_TM_data(biodb, orthogroup=False):
+    locus2aa_seq = {}
+    # getting aa alignment
+    if aa_alignment:
+        from Bio import AlignIO
+        alignment = AlignIO.read(aa_alignment, "fasta")
+        for record in alignment:
+            locus2aa_seq[record.id] = str(record.seq)
+
+    locus2data = {}
+    for one_locus in data:
+        if one_locus[0] not in locus2data:
+            if aa_alignment:
+                locus2data[one_locus[0]] = [list(one_locus[1:len(one_locus)]) + [locus2aa_seq[one_locus[0]]]]
+            else:
+                locus2data[one_locus[0]] = [list(one_locus[1:len(one_locus)])]
+        else:
+            if aa_alignment:
+                locus2data[one_locus[0]].append(list(one_locus[1:len(one_locus)])+ [locus2aa_seq[one_locus[0]]])
+            else:
+                locus2data[one_locus[0]].append(list(one_locus[1:len(one_locus)]))
+    return locus2data
+
+def get_TM_data(biodb, orthogroup=False, aa_alignment=False):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     if orthogroup:
@@ -1133,12 +1149,26 @@ def get_TM_data(biodb, orthogroup=False):
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
+    locus2aa_seq = {}
+    # getting aa alignment
+    if aa_alignment:
+        from Bio import AlignIO
+        alignment = AlignIO.read(aa_alignment, "fasta")
+        for record in alignment:
+            locus2aa_seq[record.id] = str(record.seq)
+
     protein2data = {}
     for one_locus in data:
         if one_locus[0] not in protein2data:
-            protein2data[one_locus[0]] = [one_locus[1:len(one_locus)]]
+            if aa_alignment:
+                protein2data[one_locus[0]] = [list(one_locus[1:len(one_locus)])+[locus2aa_seq[one_locus[0]]]]
+            else:
+                protein2data[one_locus[0]] = [list(one_locus[1:len(one_locus)])]
         else:
-            protein2data[one_locus[0]].append(one_locus[1:len(one_locus)])
+            if aa_alignment:
+                protein2data[one_locus[0]].append(list(one_locus[1:len(one_locus)])+[locus2aa_seq[one_locus[0]]])
+            else:
+                protein2data[one_locus[0]].append(one_locus[1:len(one_locus)])
     return protein2data
 
 
@@ -1192,9 +1222,9 @@ def organism2color(locus2data, taxon_id2family=False):
         return dict(zip(family_list, colors))
 
 
-def draw_pfam_tree(tree_name, locus2data, locus2protein_id = False, taxon_id2family=False):
-    # Create a random tree and add to each leaf a random set of motifs
+def draw_pfam_tree(tree_name, locus2data, locus2protein_id=False, taxon_id2family=False):
     # from the original set
+    from ete2 import Tree, TreeStyle, faces, AttrFace
     t = Tree(tree_name)
     #t.populate(8)
     # Calculate the midpoint node
@@ -1208,27 +1238,40 @@ def draw_pfam_tree(tree_name, locus2data, locus2protein_id = False, taxon_id2fam
     for l in t.iter_leaves():
         leaf_number+=1
         if locus2protein_id:
-            protein_id = locus2protein_id[str(l)[3:len(str(l))]]
-            data = locus2data[protein_id]
+            #protein_id = locus2protein_id[str(l)[3:len(str(l))]]
+            data = locus2data[l]
         else:
             data = locus2data[str(l)[3:len(str(l))]]
 
         seq_motifs = []
-        if not taxon_id2family:
-            l.img_style['fgcolor'] = color_dico[data[0][2]]
-        else:
-            taxon_id = data[0][-1]
-            family = taxon_id2family[str(taxon_id)]
-            l.img_style['fgcolor'] = color_dico[family]
-        l.img_style['hz_line_type'] = 0
-        l.img_style['size'] = 10
+
+
+        #l.img_style['hz_line_type'] = 0
+        #l.img_style['size'] = 10
 
         for motif in data:
             if motif[0]:
 
                 seq_motifs.append([motif[0], motif[1], "[]", None, 10, "black", "PaleGreen", "arial|8|red|%s" % motif[4]])
+        # check if alignment is available or not
+        if len(data[0]) == 8:
+            seqFace = SeqMotifFace(data[0][-1],motifs=seq_motifs,
+                                   width=10,
+                                   height=12,
+                                   intermotif_format='-',
+                                   seqtail_format="-",
+                                   seq_format='-',
+                                   gapcolor='white') #seq, seq_motifs, scale_factor=1, intermotif_format=None) #intermotif_format="seq", seqtail_format=None, seqtype='aa')
+        else:
+            # no alignment available
+            seqFace = SeqMotifFace(data[0][3]*'N',motifs=seq_motifs,
+                                   width=10,
+                                   height=12,
+                                   intermotif_format='-',
+                                   seqtail_format="-",
+                                   seq_format='-',
+                                   gapcolor='white') #seq, seq_motifs, scale_factor=1, intermotif_format=None) #intermotif_format="seq", seqtail_format=None, seqtype='aa')
 
-        seqFace = SeqMotifFace(data[0][3]*'N',motifs=seq_motifs, width=10,height=12, intermotif_format='-', seqtail_format="-", seq_format='-') #seq, seq_motifs, scale_factor=1, intermotif_format=None) #intermotif_format="seq", seqtail_format=None, seqtype='aa')
         seqFace.margin_bottom = 2
         seqFace.margin_top = 2
         seqFace.opacity = 1.0
@@ -1236,20 +1279,37 @@ def draw_pfam_tree(tree_name, locus2data, locus2protein_id = False, taxon_id2fam
         l.add_face(seqFace, column=1, position="aligned")
         locus = TextFace(str(l)[3:len(str(l))])
         l.name = data[0][2]
+
+        if not taxon_id2family:
+
+            l.img_style['fgcolor'] = color_dico[data[0][2]]
+            l.img_style['size'] = 6
+
+        else:
+            taxon_id = data[0][-1]
+            family = taxon_id2family[str(taxon_id)]
+            col = color_dico[family]
+
+            ff = AttrFace("name", fsize=12)
+            #ff.background.color = 'red'
+            ff.fgcolor = col
+            l.add_face(ff, column=0)
+
+
         locus.margin_right = 10
         locus.margin_left = 10
         locus.margin_bottom = 0
         l.add_face(locus, column=0, position="aligned")
 
-
-
     ts = TreeStyle()
+    #ts.show_leaf_name = False
+    ts.show_branch_support = True
     #ts.layout_fn = layout
     return t, ts, leaf_number
 
 def draw_TM_tree(tree_name, locus2data):
-    # Create a random tree and add to each leaf a random set of motifs
     # from the original set
+    from ete2 import Tree, TreeStyle, faces, AttrFace
     t = Tree(tree_name)
     #t.populate(8)
     # Calculate the midpoint node
@@ -1259,8 +1319,9 @@ def draw_TM_tree(tree_name, locus2data):
 
 
     color_dico = organism2color(locus2data)
-
+    leaf_number = 0
     for l in t.iter_leaves():
+        leaf_number+=1
         locus_name = str(l)[3:len(str(l))]
         locus_name = locus_name.split('|')[0]
         data = locus2data[locus_name]
@@ -1273,10 +1334,27 @@ def draw_TM_tree(tree_name, locus2data):
 
         for motif in data:
 
-            seq_motifs.append([motif[0], motif[1], "[]", None, 10, "black", "PaleGreen", "arial|8|red|TM"])
+            seq_motifs.append([motif[0], motif[1], "()", None, 10, "black", "PaleGreen", "arial|8|red|"])
+        print len(data[0])
+        if len(data[0]) == 7:
+            seqFace = SeqMotifFace(data[0][-1],
+                                   motifs=seq_motifs,
+                                   width=10,
+                                   height=12,
+                                   intermotif_format='-',
+                                   seqtail_format="-",
+                                   seq_format='-',
+                                   gapcolor='white') #seq, seq_motifs, scale_factor=1, intermotif_format=None) #intermotif_format="seq", seqtail_format=None, seqtype='aa')
+        else:
+            seqFace = SeqMotifFace(data[0][3]*'N',
+                                   motifs=seq_motifs,
+                                   width=10,
+                                   height=12,
+                                   intermotif_format='-',
+                                   seqtail_format="-",
+                                   seq_format='-',
+                                   gapcolor='white')
 
-
-        seqFace = SeqMotifFace(data[0][3]*'N',motifs=seq_motifs, width=10,height=12, intermotif_format='-', seqtail_format="-", seq_format='-') #seq, seq_motifs, scale_factor=1, intermotif_format=None) #intermotif_format="seq", seqtail_format=None, seqtype='aa')
         seqFace.margin_bottom = 2
         seqFace.margin_top = 2
         seqFace.opacity = 1.0
@@ -1284,7 +1362,7 @@ def draw_TM_tree(tree_name, locus2data):
         l.add_face(seqFace, column=1, position="aligned")
         locus = TextFace(str(l)[3:len(str(l))])
         l.name = data[0][2]
-        print dir(l), '########################'
+        #print dir(l), '########################'
         locus.margin_right = 10
         locus.margin_left = 10
         locus.margin_bottom = 0
@@ -1292,7 +1370,7 @@ def draw_TM_tree(tree_name, locus2data):
 
     ts = TreeStyle()
     #ts.layout_fn = layout
-    return t, ts
+    return t, ts, leaf_number
 
 if __name__ == '__main__':
     import argparse
