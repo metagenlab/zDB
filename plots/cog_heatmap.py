@@ -103,9 +103,22 @@ taxon_list = ["67",
 "1279839",
 "1279497"]
 
-tree = plot_cog_eatmap('chlamydia_04_16',
-                       '/home/trestan/work/projets/rhabdo/core_phylo_chlam_staleyi_all_single_copy_07_16/core_chlamydia.tree',
-                       taxon_list,
+import manipulate_biosqldb
+from ete2 import Tree
+server, db = manipulate_biosqldb.load_db('chlamydia_04_16')
+
+sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % 'chlamydia_04_16'
+
+tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+print tree
+t1 = Tree(tree)
+
+tree, style = plot_cog_eatmap('chlamydia_04_16',
+                       tree,#'/home/trestan/work/projets/rhabdo/core_phylo_chlam_staleyi_all_single_copy_07_16/core_chlamydia.tree',
+                       [],#taxon_list,
                        True
                        )
-tree.render('test_percent.svg', dpi=800, h=600)
+
+
+
+tree.render('test_percent.svg', dpi=800, h=600, tree_style=style)

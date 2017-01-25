@@ -87,31 +87,53 @@ class Genbank2circos():
         self.fasta_nucl = genbank.split(".")[0] + '.fna'
 
         a,b,c = shell_command.shell_command("gbk2fna.py -i %s -o %s" % (genbank, self.fasta_nucl))
-        a,b,c = shell_command.shell_command("gbk2faa.py -i %s -o %s -f" % (genbank, self.fasta_aa))
+        a,b,c = shell_command.shell_command("gbk2faa.py -i %s -f" % (genbank))
 
         print a,b,c
 
         self.circos_reference = gbk2circos.Circos_config("circos_contigs.txt", show_ideogram_labels="no", radius=0.5,show_tick_labels="yes", show_ticks="yes")
 
         self.get_karyotype_from_genbank(genbank)
-        self.execute_blast(self.fasta_aa, database)
+        print 'executing BLASTP'
+        #self.execute_blast(self.fasta_aa, database)
 
-        class_colors = self.blast2barplot("blast_result.tab", bar_file="circos.bar", accession2classification=accession2classification)
+        class_colors = self.blast2barplot(self.fasta_aa, database, "blast_result.tab", bar_file="circos.bar", accession2classification=accession2classification)
+
+        countour_col = 'black'
+
         if not class_colors:
-            histo_colors = 'blue'
+            histo_colors = 'orange'
+
             self.last_track = 0.7
         else:
             histo_colors = ''
+
             for class_col in class_colors:
                 print class_col, class_colors[class_col]
                 histo_colors+='%s,' % class_colors[class_col]
             histo_colors = histo_colors[0:-1]
             self.circos_reference.add_plot("best_hit.bar",type="histogram",r0="0.65r", r1="0.67r",color=histo_colors, fill_color=histo_colors, thickness=0)
             self.last_track = 0.65
-        self.circos_reference.add_plot("circos.bar",type="histogram",r0="0.7r", r1="0.9r",color=histo_colors, fill_color=histo_colors, thickness=0)
 
-
-
+        add = '''
+                <axes>
+                <axis>
+                spacing   = 0.1r
+                color     = lgrey
+                thickness = 2
+                </axis>
+                </axes>
+                '''
+        self.circos_reference.add_plot("circos.bar",
+                                       type="histogram",
+                                       r0="0.7r",
+                                       r1="0.9r",
+                                       color=countour_col,
+                                       fill_color=histo_colors,
+                                       thickness=1,
+                                       min="0",
+                                       max="50",
+                                       rules=add)
 
         if samtools_depth is not None:
             for i, depth_file in enumerate(samtools_depth):
@@ -285,7 +307,7 @@ class Genbank2circos():
 
         self.locus_tag2start_stop = {}
 
-        genbank_data = [i for i in SeqIO.parse(open(genbank), "genbank")]
+        self.genbank_data = [i for i in SeqIO.parse(open(genbank), "genbank")]
 
         #print "hit_list", hit_list
         with open(out, 'w') as f:
@@ -293,7 +315,7 @@ class Genbank2circos():
             i = 0
             contig_start = 0
             contig_end = 0
-            for record in genbank_data:
+            for record in self.genbank_data:
                 if i == 4:
                     i =0
                 i+=1
@@ -308,7 +330,7 @@ class Genbank2circos():
                 for feature in record.features:
                     if feature.type == 'CDS':
                         self.locus_tag2start_stop[feature.qualifiers['locus_tag'][0]] = [record.name, int(feature.location.start), int(feature.location.end)]
-        print self.locus_tag2start_stop
+       #print self.locus_tag2start_stop
 
     def execute_blast(self,fasta, database):
         import shell_command
@@ -319,30 +341,88 @@ class Genbank2circos():
         a, b, c = shell_command.shell_command(cmd2)
         print a,b,c
 
+    def read_blast_tab_file(self, query_fasta, input_database, blast_file, identity_cutoff, evalue_cutoff, query_cov_cutoff):
+        from Bio import SeqIO
+        # get the length of each query sequence
+        # calculate coverage and filter hits
+        with open(query_fasta, 'r') as f:
+            locus2length = {}
+            records = SeqIO.parse(f,'fasta')
+            for record in records:
+                locus2length[record.id] = len(record.seq)
 
+        with open(input_database, 'r') as f:
+            accession2description = {}
+            records = SeqIO.parse(f,'fasta')
+            for record in records:
+                accession2description[record.id] = record.description
 
-    def blast2barplot(self, blast_output, bar_file="circos.bar", accession2classification=False):
+        with open(blast_file, 'rU') as infile:
+            infile = [i.rstrip().split('\t') for i in infile]
+            # KpGe_00001	gi|410609158|ref|YP_006952151.1|	82.88	146	25	0	1	146	1	146	4e-85	 250
+            locus_list = []
+            hit_list = []
+            keep = []
+            for line in infile:
+                query_name = line[0]
+                hit_name = line[1]
+                query_align_length = (int(line[7])-int(line[6]))+1
+                query_cov = query_align_length/float(locus2length[query_name])
+                e_value = float(line[10])
+                identity = float(line[2])
+                if e_value <= evalue_cutoff and identity>=identity_cutoff and query_cov >= query_cov_cutoff:
+                    keep.append(line)
+                    hit_list.append(hit_name)
+                    locus_list.append(query_name)
+        with open('blast_best_hit.txt', 'w') as o:
+            for n,line in enumerate(keep):
+                if n==0:
+                    locus = line[0]
+                    o.write('\t'.join(line) + '\t%s\n' % accession2description[line[1]].split('| ')[1])
+                else:
+                    if locus == line[0]:
+                        continue
+                    else:
+                        locus=line[0]
+                        o.write('\t'.join(line) + '\t%s\n' % accession2description[line[1]].split('| ')[1])
+        return locus_list, hit_list
+
+    def blast2barplot(self, input_fasta, input_database, blast_output, bar_file="circos.bar", accession2classification=False):
         import re
         import matplotlib.cm as cm
         from matplotlib.colors import rgb2hex
         import matplotlib as mpl
 
+        # group blast into categories
+        # categories will be coloured differently on the circos figure
         if accession2classification:
             class2color = {}
             all_class = set(accession2classification.values())
             n_class = len(all_class)
             if n_class > 10:
-                print all_class
-                print n_class
+                #print all_classblast2barplot
+                #print n_class
                 raise('Too mainy classes of match')
             else:
                 for i, one_class in enumerate(all_class):
                     class2color[one_class] = 'paired-10-qual-%s' % (i+1)
+        else:
+            class2color = False
 
+        # parse blast
+        '''
         with open(blast_output, 'rU') as infile:
             infile = [i for i in infile]
             locus_list = [i.rstrip().split('\t')[0] for i in infile]
             hit_list = [i.rstrip().split('\t')[1] for i in infile]
+        '''
+
+        locus_list, hit_list = self.read_blast_tab_file(query_fasta=input_fasta,
+                                                        blast_file=blast_output,
+                                                        input_database=input_database,
+                                                        identity_cutoff=50, # 80
+                                                        evalue_cutoff=0.00005,
+                                                        query_cov_cutoff=0.6)
 
         locus_tag2count = {}
         locus_tag2best_hit = {}
@@ -370,26 +450,38 @@ class Genbank2circos():
         bar_file = bar_file
         best_hit_classif = open('best_hit.bar', 'w')
         with open(bar_file, 'w') as f:
-            for locus in locus_tag2count:
+                for record in self.genbank_data:
+                    for feature in record.features:
+                        if feature.type == 'CDS':
+                            start = int(feature.location.start)
+                            stop = int(feature.location.end)
+                            locus = feature.qualifiers['locus_tag'][0]
+                            try:
+                                count = locus_tag2count[locus]
+                                # set to 50 of to much hits
+                                if count > 50:
+                                    count = 50
+                            except:
+                                count = 0
+                            # RhT_1 178 895 0
+                            if not accession2classification:
 
-                # RhT_1 178 895 0
-                if not accession2classification:
-
-                    f.write("%s\t%s\t%s\t%s\n" % (self.locus_tag2start_stop[locus][0],
-                                                  self.locus_tag2start_stop[locus][1],
-                                                  self.locus_tag2start_stop[locus][2],
-                                                  locus_tag2count[locus]))
-                else:
-                    counts = [str(i) for i in locus_tag2count[locus].values()]
-                    f.write("%s\t%s\t%s\t%s\n" % (self.locus_tag2start_stop[locus][0],
-                                                  self.locus_tag2start_stop[locus][1],
-                                                  self.locus_tag2start_stop[locus][2],
-                                                  ','.join(counts)))
-                    counts = [str(i) for i in locus_tag2best_hit[locus].values()]
-                    best_hit_classif.write("%s\t%s\t%s\t%s\n" % (self.locus_tag2start_stop[locus][0],
-                                                  self.locus_tag2start_stop[locus][1],
-                                                  self.locus_tag2start_stop[locus][2],
-                                                  ','.join(counts)))
+                                f.write("%s\t%s\t%s\t%s\tid=%s\n" % (record.name,
+                                                              start,
+                                                              stop,
+                                                              count,
+                                                              locus))
+                            else:
+                                counts = [str(i) for i in locus_tag2count[locus].values()]
+                                f.write("%s\t%s\t%s\t%s\n" % (self.locus_tag2start_stop[locus][0],
+                                                              self.locus_tag2start_stop[locus][1],
+                                                              self.locus_tag2start_stop[locus][2],
+                                                              ','.join(counts)))
+                                counts = [str(i) for i in locus_tag2best_hit[locus].values()]
+                                best_hit_classif.write("%s\t%s\t%s\t%s\n" % (self.locus_tag2start_stop[locus][0],
+                                                              self.locus_tag2start_stop[locus][1],
+                                                              self.locus_tag2start_stop[locus][2],
+                                                              ','.join(counts)))
         return class2color
 
 
