@@ -1095,12 +1095,8 @@ def multiple_orthogroup_heatmap(biodb, reference_orthogroup, max_distance=2.2):
     t1.render("test.png", dpi=800, h=400)
     #t1.write(format=0, outfile="new_tree.nw")
 
-
-
-
-
-
 def get_pfam_data(orthogroup, biodb, aa_alignment=False):
+
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -1113,6 +1109,7 @@ def get_pfam_data(orthogroup, biodb, aa_alignment=False):
     sql = 'select accession, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where orthogroup="%s" and analysis="Pfam"' % (biodb, orthogroup)
     '''
+    print sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
     locus2aa_seq = {}
