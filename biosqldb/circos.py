@@ -2740,6 +2740,10 @@ class CircosAccession2blastnr_plot():
         print '################ draft fasta ################'
         print draft_fasta
 
+        if len(draft_fasta) == 2:
+            if draft_fasta[0] is None and draft_fasta[1] is None:
+                draft_fasta = False
+
         # add spacing between chromosome and plasmids
         chr_spacing_list = []
         print "reference_records", len(reference_records), reference_records
@@ -2962,7 +2966,7 @@ class CircosAccession2blastnr_plot():
 if __name__ == '__main__':
 
     import manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db('chlamydia_04_16')
+
 
     #refernce = db.lookup(accession="AE001273") trachomatis
 
@@ -2970,14 +2974,17 @@ if __name__ == '__main__':
 
     #refernce =  db.lookup(accession="NC_015713") # simkania
     #plamsid = db.lookup(accession="NC_015710") # simkania plasmid
-
-    reference = db.lookup(accession="Rht")
-    plasmid = db.lookup(accession="RhTp")
+    server, db = manipulate_biosqldb.load_db('chlamydia_12_16_austr')
+    #reference = db.lookup(accession="Rht")
+    #plasmid = db.lookup(accession="RhTp")
 
     taxon_lst = [67,1279767,1279774,1279496,48,46,55,87925,1279815,62,1279822,66,59,52,49,64,60,804807,886707,283,314,1069693,1069694,1137444,1143376,313,1172027,1172028,1035343,307,293,1279839,1279497]
 
+    genome = db.lookup(accession="hat2")
+    #plasmid = db.lookup(accession="NC_015710")
+
     a = CircosAccession2blastnr_plot(server,
-                     'chlamydia_04_16',
-                     [reference, plasmid],
-                     "/home/trestan/work/projets/rhabdo/circos_nr_update",
-                     taxon_list=taxon_lst)
+                     'chlamydia_12_16_austr',
+                     [genome],
+                     "/home/trestan/work/projets/rhabdo/circos_nr_update/test2",
+                     taxon_list=[])

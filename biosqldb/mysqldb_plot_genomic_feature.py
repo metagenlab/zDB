@@ -729,8 +729,6 @@ def location2simpleplot(biodb, biodb_name, bioentry, location_start, location_st
     plot_simple_region(sub_record, out_name)
 
 
-
-
 def proteins_id2sub_record_list(server, biodb, biodb_name, locus_tag_list, region_size_bp):
     plasmid_list = []
     sub_record_list = []

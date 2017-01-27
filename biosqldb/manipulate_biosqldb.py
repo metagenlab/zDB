@@ -106,12 +106,12 @@ def seqfeature_id2seqfeature_object_dict(*DBSeqRecord_objects):
 #SELECT seqfeature_id FROM seqfeature_qualifier_value join term using (term_id) WHERE value = "CAQ51124.1";
 def get_bioentry_and_seqfeature_id_from_locus_tag_list(server, locus_tag_list, biodatabase_name):
 
-
+    '''
     query_locus_tag = '('
     for i in range(0, len(locus_tag_list)-1):
         query_locus_tag+='value = "%s" or ' % str(locus_tag_list[i])
     query_locus_tag+='value = "%s")' % locus_tag_list[-1]
-    
+
     sql = 'select t6.accession, t1.seqfeature_id from biosqldb.seqfeature as t1' \
           ' inner join seqfeature_qualifier_value as t2 on t1.seqfeature_id = t2.seqfeature_id and %s' \
           ' inner join term as t3 on t2.term_id = t3.term_id and t3.name = "locus_tag"' \
@@ -119,9 +119,20 @@ def get_bioentry_and_seqfeature_id_from_locus_tag_list(server, locus_tag_list, b
           ' inner join term as t5 on t1.source_term_id = t5.term_id' \
           ' inner join bioentry as t6 on t1.bioentry_id = t6.bioentry_id' \
           ' inner join biodatabase on t6.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"'
+    '''
+
+    filter = '"'+'","'.join(locus_tag_list)+'"'
+
+    sql = 'select accession,t1.seqfeature_id from custom_tables.locus2seqfeature_id_%s t1 ' \
+          ' inner join biosqldb.seqfeature t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+          ' inner join biosqldb.bioentry t3 on t2.bioentry_id=t3.bioentry_id ' \
+          ' inner join biosqldb.biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \
+          ' where t4.name="%s" and locus_tag in (%s);' % (biodatabase_name,
+                                                          biodatabase_name,
+                                                          filter)
 
     
-    sql = sql % (query_locus_tag, biodatabase_name)
+    #sql = sql % (query_locus_tag, biodatabase_name)
     #print sql
     b = server.adaptor.execute_and_fetchall(sql, )
     bioentry_id_list = [i[0] for i in b]

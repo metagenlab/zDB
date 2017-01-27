@@ -835,6 +835,11 @@ def locus_tag2n_nr_hits(db_name, genome_accession, exclude_family = False):
               ' left join (select t2.nr_hit_id,t2.locus_tag,t2.subject_kingdom,t2.subject_accession,count(t2.locus_tag) as n_hits ' \
               ' from blastnr.blastnr_hits_%s_%s as t2 ' \
               ' group by locus_tag) B on A.locus_tag=B.locus_tag;' %(db_name, genome_accession, db_name, genome_accession)
+
+        sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
+              ' left join blastnr.blastnr_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+              ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
+              ' where t3.accession="%s" group by locus_tag;' % (db_name, db_name,genome_accession)
     else:
         sql = 'select  A.locus_tag, B.n_hits from (select * from biosqldb.orthology_detail_%s as t1 where t1.accession="%s") A ' \
               ' left join (select t2.nr_hit_id,t2.locus_tag,t2.subject_kingdom,t2.subject_accession, count(t2.locus_tag) as n_hits ' \
@@ -1017,7 +1022,16 @@ def locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", 
                                                                         accession,                                                                                                              db_name,
                                                                         accession,
                                                                         superkingdom)
+        sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
+              ' inner join blastnr.blastnr_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+              ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
+              ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
+              'where t3.accession="%s" and t4.superkingdom="%s" group by locus_tag;' % (db_name,
+                                                                                        db_name,
+                                                                                        accession,
+                                                                                        superkingdom)
     else:
+
         sql = 'select A.locus_tag, count(*)' \
               ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
               ' left join (select t2.nr_hit_id, locus_tag from blastnr.blastnr_hits_%s_%s as t2) B on A.locus_tag=B.locus_tag' \
@@ -1051,6 +1065,14 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                                                                             accession,                                                                                                              db_name,
                                                                             accession,
                                                                             phylum)
+            sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
+                  ' inner join blastnr.blastnr_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                  ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
+                  ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
+                  'where t3.accession="%s" and t4.phylum="%s" group by locus_tag;' % (db_name,
+                                                                                        db_name,
+                                                                                        accession,
+                                                                                        phylum)
         else:
             sql = 'select A.locus_tag, count(*)' \
                   ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
@@ -1077,6 +1099,15 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                                                                             accession,                                                                                                              db_name,
                                                                             accession,
                                                                             phylum)
+
+            sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
+                  ' inner join blastnr.blastnr_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                  ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
+                  ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
+                  'where t3.accession="%s" and t4.superkingdom="Bacteria" and t4.phylum !="%s" group by locus_tag;' % (db_name,
+                                                                                        db_name,
+                                                                                        accession,
+                                                                                        phylum)
         else:
             sql = 'select A.locus_tag, count(*)' \
                   ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
@@ -1089,6 +1120,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                                                                             accession,                                                                                                              db_name,
                                                                             accession,
                                                                             phylum, exclude_family)
+
     print sql
     server, db = manipulate_biosqldb.load_db(db_name)
     data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
@@ -1454,6 +1486,54 @@ def get_cooccurring_groups(db_name, accession1, accession2, windows_size=10, min
 
     return conserved_regions
 
+def locus_list2nucleotide_fasta(biodb,locus_list):
+    import manipulate_biosqldb
+    from Bio import SeqRecord
+    from Bio.Seq import Seq
+    from Bio import SeqIO
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    filter = '"' + '","'.join(locus_list) + '"'
+    sql = 'select locus_tag, accession, start, stop, strand, organism from orthology_detail_%s' \
+          ' where locus_tag in (%s)' % (biodb, filter)
+
+
+
+    data = server.adaptor.execute_and_fetchall(sql,)
+    accession_list = list(set([i[1] for i in data]))
+
+    accession2record = {}
+    for accession in accession_list:
+        print accession
+        accession2record[accession] = db.lookup(accession=accession)
+
+
+    record_list = []
+    for one_locus in data:
+        locus_tag, accession, start, stop, strand, description = one_locus
+        '''
+        leng = stop-start
+        seq = manipulate_biosqldb.location2sequence(server, accession, biodb, start, leng)
+        if strand == -1:
+            seq_obj = Seq(seq)
+            seq = seq_obj.reverse_complement()
+        record = SeqRecord.SeqRecord(seq,
+                 id=locus_tag, name=locus_tag,
+                 description=description)
+        '''
+
+        for feature in accession2record[accession].features:
+            if feature.type == 'CDS':
+                if feature.qualifiers['locus_tag'][0] == locus_tag:
+                    seq = feature.extract(accession2record[accession].seq)
+        record = SeqRecord.SeqRecord(seq,
+                 id=locus_tag, name=locus_tag,
+                 description=description)
+        record_list.append(record)
+    return record_list
+
+
+
 def orthogroup2protein_id_list(db_name):
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -1539,8 +1619,9 @@ def add_orthogroup_to_interpro_table(biodb_name):
           ' orthogroup varchar(100))' % biodb_name
     server.adaptor.execute(sql)
     i=0
-    for one_row in interpro_data:
-        print i
+    for t, one_row in enumerate(interpro_data):
+        if t % 100 == 0:
+            print "%s / %s" % (t, len(interpro_data))
         i+=1
         
         orthogroup = locus2ortho[one_row[1]]

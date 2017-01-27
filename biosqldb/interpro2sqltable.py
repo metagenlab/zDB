@@ -245,7 +245,7 @@ if __name__ == '__main__':
 
     biodb = args.database_name
 
-    '''
+
     server, db = manipulate_biosqldb.load_db(biodb)
     print "creating locus_tag2seqfeature_id"
     locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, biodb)
@@ -273,5 +273,5 @@ if __name__ == '__main__':
                     seqfeature_id2organism,
                     biodb, *args.input_interpro)
 
-    '''
+
     get_interpro2go_table()
