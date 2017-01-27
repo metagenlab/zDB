@@ -7055,15 +7055,18 @@ def plot_heatmap(request, biodb, type):
             collabels = [""]*len(m[1,:])
             for i in range(0,len(m[1,:]), 100):
                 collabels[i] = i
-            heatmap.heatmap_pangenome(m, output="/home/trestan/test_heatmap.png",
+
+            path = settings.BASE_DIR + '/assets/temp/heatmap_%s.svg' % type
+            asset_path = '/temp/heatmap_%s.svg' % type
+
+            heatmap.heatmap_pangenome(m, output=path,
                             breaks="-0.5, 0.5, 1.5, 2.5",
                             rows=labels,
                             format="png",
                             orderCols=True)
+            envoi = True
 
-
-
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:
         form_venn = form_class()
     return render(request, 'chlamdb/plot_heatmap.html', locals())
 

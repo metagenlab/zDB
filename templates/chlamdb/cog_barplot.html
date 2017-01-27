@@ -24,6 +24,9 @@
             <li ><a href="{% url 'extract_cog' biodb %}">Detailed comparison</a></li>
             <li><a href="{% url 'venn_cog' biodb %}">Venn diagram</a></li>
             <li class="active"><a href="{% url 'cog_barchart' biodb %}">COG categories barchart</a></li>
+            <li><a href="{% url 'COG_phylo_heatmap' biodb True %}">COG heatmap freq.</a></li>
+            <li><a href="{% url 'COG_phylo_heatmap' biodb False %}">COG heatmap counts</a></li>
+            <li><a href="{% url 'plot_heatmap' biodb 'COG' %}">Whole proteomes heatmaps</a></li>
         </ul>
         </nav>
 

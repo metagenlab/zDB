@@ -35,9 +35,12 @@
         <div id="content">
             <nav>
                 <ul id="tabs_main" class="nav nav-tabs">
+
                     <li><a href="{% url 'extract_ko' biodb %}">Detailed comparison</a></li>
                     <li class="active"><a href="{% url 'ko_comparison' biodb %}">Compare KO counts</a></li>
                     <li><a href="{% url 'module_barchart' biodb %}">KO categories barchart</a></li>
+                    <li><a href="{% url 'venn_ko' biodb %}">Venn KO</a></li>
+                    <li><a href="{% url 'plot_heatmap' biodb 'ko' %}">Whole proteomes heatmaps</a></li>
 
                 </ul>
             </nav>

@@ -4,6 +4,7 @@
 <html>
 <div id="container">
 
+    {% load static %}
 
     <div id="sidebar">
         {% include "chlamdb/menu.html" %}
@@ -16,21 +17,53 @@
 
     <div id="content">
 
-        <nav>
-            <ul id="tabs" class="nav nav-tabs">
-                        <li><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
-                        <li class="active"><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
-                        <li><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups with paralogs</a></li>
+            <nav>
+                <ul id="tabs_main" class="nav nav-tabs">
+                {% if type == 'Pfam' %}
 
-            </ul>
-        </nav>
+                    <li><a href="{% url 'extract_pfam' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_pfam' biodb %}">Venn diagram</a></li>
+                    <li><a href="{% url 'pfam_comparison' biodb %}">Compare Pfam Domains</a></li>
+                    <li class="active"><a href="{% url 'plot_heatmap' biodb 'Pfam' %}">Whole proteomes heatmaps</a></li>
+
+
+                {% elif type == 'COG' %}
+                    <li><a href="{% url 'extract_cog' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_cog' biodb %}">Venn diagram</a></li>
+                    <li><a href="{% url 'cog_barchart' biodb %}">COG categories barchart</a></li>
+                    <li><a href="{% url 'COG_phylo_heatmap' biodb True %}">COG heatmap freq.</a></li>
+                    <li><a href="{% url 'COG_phylo_heatmap' biodb False %}">COG heatmap counts</a></li>
+                    <li class="active"><a href="{% url 'plot_heatmap' biodb 'COG' %}">Whole proteomes heatmaps</a></li>
+                {% elif type == 'interpro'%}
+                    <li><a href="{% url 'extract_interpro' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_interpro' biodb %}">Venn diagram</a></li>
+                    <li class="active"><a href="{% url 'plot_heatmap' biodb 'interpro' %}">Whole proteomes heatmaps</a></li>
+                {% elif type == 'EC' %}
+
+                    <li><a href="{% url 'extract_EC' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_pfam' biodb %}">Venn diagram</a></li>
+                    <li class="active"><a href="{% url 'plot_heatmap' biodb 'EC' %}">Whole proteomes heatmaps</a></li>
+                {% elif type == 'ko' %}
+                    <li><a href="{% url 'extract_ko' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'ko_comparison' biodb %}">Compare KO counts</a></li>
+                    <li><a href="{% url 'module_barchart' biodb %}">KO categories barchart</a></li>
+                    <li><a href="{% url 'venn_ko' biodb %}">Venn KO</a></li>
+                    <li class="active"><a href="{% url 'plot_heatmap' biodb 'ko' %}">Whole proteomes heatmaps</a></li>
+                {% elif type == 'orthology' %}
+                    <li><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
+                    <li><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups size between genomes</a></li>
+                    <li class="active"><a href="{% url 'plot_heatmap' biodb 'orthology' %}">Whole proteomes heatmaps</a></li>
+                {% endif %}
+                </ul>
+            </nav>
 
         <div id="extract_form">
             <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
                   <div class="panel-heading" style="width:100%">
                       <h3 class="panel-title">Help</h3>
                   </div>
-                <p style="margin: 10px 10px 10px 10px">Venn diagramm of orthologous groups constructed based on BLAST using orthoMCL, max 6 genomes</p>
+                <p style="margin: 10px 10px 10px 10px">Hepatmap showing presence/absence of domain/orthologous group</p>
             </div>
 
 
@@ -50,15 +83,15 @@
 
                 {% csrf_token %}
                 {{ form_venn.as_p }}
-                <input type="submit" name="venn" value="extract homologues" id="venn_button" />
+                <input type="submit" name="venn" value="Show" id="venn_button" />
 
             </form>
 
         </div>
 
-     {% if envoi_venn %}
+     {% if envoi %}
 
-        {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=orthogroup2description %}
+        <img src="{% static asset_path %}" alt="heatmap" style="width:90%;">
 
     {% endif %}
 
