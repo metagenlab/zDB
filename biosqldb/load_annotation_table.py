@@ -30,6 +30,7 @@ def import_annot(annot_file, biodb):
             str_date = "%s-%s-%s" % (now.year, now.month, now.day)
 
             data = one_row.rstrip().split('\t')
+            print data
             print len(data)
             if len(data) == 5:
                 sql = 'insert into  custom_tables.annot_table_%s (category, gene, locus_tag, description,' \

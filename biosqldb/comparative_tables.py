@@ -730,13 +730,13 @@ if __name__ == '__main__':
     collect_ko(args.database_name)
 
     n_shared_orthogroup_table(args.database_name)
-    '''
+    
 
     identity_closest_homolog(args.database_name)
 
-    '''
+    
     shared_orthogroups_average_identity(args.database_name)
-
+'''
     create_comparative_tables_accession(args.database_name, 'Pfam')
     create_comparative_tables_accession(args.database_name, "EC")
     create_comparative_tables_accession(args.database_name, "interpro")
@@ -753,4 +753,3 @@ if __name__ == '__main__':
     collect_orthogroup_accession(args.database_name)
 
     #get_mysql_table("chlamydia_03_15", "Pfam")
-    '''
