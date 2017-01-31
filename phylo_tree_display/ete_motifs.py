@@ -399,8 +399,8 @@ def pathways_heatmap(biodb,
 
                         #print 'ok!'
                         n = TextFace('%s (%s)' % (map[1], category))
-                        n.vt_align = 1
-                        n.hz_align = 1
+                        n.vt_align = 2
+                        n.hz_align = 2
                         n.rotation= 270
                         n.margin_top = 0
                         n.margin_right = 0
@@ -428,8 +428,8 @@ def pathways_heatmap(biodb,
 
                         #print 'ok!'
                         n = TextFace('%s (%s)' % (map[1], category))
-                        n.vt_align = 1
-                        n.hz_align = 1
+                        n.vt_align = 2
+                        n.hz_align = 2
                         n.rotation= 270
                         n.margin_top = 0
                         n.margin_right = 0
@@ -693,7 +693,8 @@ def multiple_profiles_heatmap(biodb,
                               column_scale=False,
                               show_labels=True,
                               tree=False,
-                              as_float=False):
+                              as_float=False,
+                              rotate=False):
 
     '''
 
@@ -773,9 +774,9 @@ def multiple_profiles_heatmap(biodb,
                     n.vt_align = 2
                     n.hz_align = 2
                     n.rotation= 270
-                    n.margin_top = 1
-                    n.margin_right = 1
-                    n.margin_left = 1
+                    n.margin_top = 2
+                    n.margin_right = 2
+                    n.margin_left = 2
                     n.margin_bottom = 6
 
                     from ete2 import NodeStyle
@@ -814,7 +815,7 @@ def multiple_profiles_heatmap(biodb,
                             if as_float:
                                 local_label = "%.2f" % taxon2group2count[value][lf.name]
                             else:
-                                local_label = " %s " % int(taxon2group2count[value][lf.name])
+                                local_label = "%s" % int(taxon2group2count[value][lf.name])
                         else:
                             if round(taxon2group2count[value][lf.name], 2) < 100:
                                 local_label = "%.2f" % round(taxon2group2count[value][lf.name], 2)
@@ -823,11 +824,11 @@ def multiple_profiles_heatmap(biodb,
                         if show_labels:
                             if round(taxon2group2count[value][lf.name], 2) < 100 and column_scale:
                                 if round(taxon2group2count[value][lf.name], 2) < 10:
-                                    n = TextFace(' %s  ' % local_label)
+                                    n = TextFace('  %s  ' % local_label)
                                 else:
-                                    n = TextFace(' %s' % local_label)
+                                    n = TextFace(' %s ' % local_label)
                             else:
-                                n = TextFace('%s' % local_label)
+                                n = TextFace('%s ' % local_label)
 
                         else:
                             n = TextFace(' - ')
@@ -935,7 +936,8 @@ def multiple_profiles_heatmap(biodb,
 
                     else:
                         n.inner_background.color = 'white'
-
+            if rotate:
+               n.rotation= 270
             lf.add_face(n, col, position="aligned")
 
         lf.name = taxon_id2organism_name[lf.name]
