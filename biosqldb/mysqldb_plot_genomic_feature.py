@@ -267,9 +267,7 @@ def plot_multiple_regions_crosslink(target_protein_list,
 
                     except:
                             pass
-            print region_record_list[x].name
-            print region_record_list[x+1].name
-            print 'counts same and different strand:', same_strand_count, different_strand_count
+
             if different_strand_count>same_strand_count:
                 region_record_list[x+1] = region_record_list[x+1].reverse_complement(id=region_record_list[x+1].id,
                                                                                      name=region_record_list[x+1].description)
