@@ -908,6 +908,85 @@ def get_nucleotide_core_fasta(server, db, biodb_name, path):
     '''
 
 
+def get_non_protein_coding_locus(server, biodb,term_list=["rRNA","tRNA","assembly_gap"]):
+
+
+    sql0 = 'CREATE table non_protein_coding_locus_%s (seqfeature_id INT, taxon_id INT, bioentry_id INT, ' \
+           ' accession varchar(200), type varchar(200), locus_tag varchar(200), product TEXT, start INT, stop INT, strand INT)' % biodb
+
+    server.adaptor.execute(sql0,)
+
+    filter = '"'+'","'.join(term_list)+'"'
+    print filter
+
+    sql = 'select t2.bioentry_id,taxon_id,accession,seqfeature_id,type_term_id,t4.name ' \
+          ' from biodatabase as t1 inner join bioentry as t2 on t1.biodatabase_id =t2.biodatabase_id ' \
+          ' inner join seqfeature as t3 on t2.bioentry_id=t3.bioentry_id ' \
+          ' inner join term t4 on t3.type_term_id=t4.term_id where t1.name="%s" and t4.name in (%s);' % (biodb, filter)
+    print sql
+
+    non_protein_coding_data = server.adaptor.execute_and_fetchall(sql,)
+
+    sql2 = 'select A.seqfeature_id,value from ' \
+           ' (select t2.bioentry_id,taxon_id,accession,seqfeature_id,type_term_id,t4.name ' \
+           ' from biodatabase as t1 inner join bioentry as t2 on t1.biodatabase_id =t2.biodatabase_id ' \
+           ' inner join seqfeature as t3 on t2.bioentry_id=t3.bioentry_id ' \
+           ' inner join term t4 on t3.type_term_id=t4.term_id where t1.name="%s" ' \
+           ' and t4.name in (%s))A inner join seqfeature_qualifier_value B on A.seqfeature_id=B.seqfeature_id ' \
+           'inner join term as C on B.term_id=C.term_id where C.name="locus_tag"' % (biodb, filter)
+    print sql2
+    seqfeature_id2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+    print "seqfeature_id2locus_tag", seqfeature_id2locus_tag
+    sql3 = 'select A.seqfeature_id,value from ' \
+           ' (select t2.bioentry_id,taxon_id,accession,seqfeature_id,type_term_id,t4.name ' \
+           ' from biodatabase as t1 inner join bioentry as t2 on t1.biodatabase_id =t2.biodatabase_id ' \
+           ' inner join seqfeature as t3 on t2.bioentry_id=t3.bioentry_id ' \
+           ' inner join term t4 on t3.type_term_id=t4.term_id where t1.name="%s" ' \
+           ' and t4.name in (%s))A inner join seqfeature_qualifier_value B on A.seqfeature_id=B.seqfeature_id ' \
+           'inner join term as C on B.term_id=C.term_id where C.name="product"' % (biodb, filter)
+    print sql3
+    seqfeature_id2product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
+
+    sql4 = 'select A.seqfeature_id,start_pos,end_pos,strand ' \
+           ' from (select t2.bioentry_id,taxon_id,accession,seqfeature_id,type_term_id,t4.name ' \
+           ' from biodatabase as t1 ' \
+           ' inner join bioentry as t2 on t1.biodatabase_id =t2.biodatabase_id ' \
+           ' inner join seqfeature as t3 on t2.bioentry_id=t3.bioentry_id ' \
+           ' inner join term t4 on t3.type_term_id=t4.term_id where t1.name="%s" and t4.name in (%s))A ' \
+           ' inner join location B on A.seqfeature_id=B.seqfeature_id' % (biodb, filter)
+
+    seqfeature_id2location = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql4,))
+    print sql4
+
+    for seqfeature_data in non_protein_coding_data:
+
+        bioentry_id, taxon_id, accession, seqfeature_id, type_term_id, name = seqfeature_data
+        #print type(seqfeature_id)
+        try:
+            locus_tag = seqfeature_id2locus_tag[str(seqfeature_id)]
+        except:
+            locus_tag = '-'
+        try:
+            product = seqfeature_id2product[str(seqfeature_id)]
+        except:
+            product = '-'
+        start, stop, strand = seqfeature_id2location[seqfeature_id]
+
+        sql = 'insert into non_protein_coding_locus_%s values (%s,%s,%s,"%s","%s","%s","%s",%s,%s,%s)' % (biodb,
+                                                                                                  seqfeature_id,
+                                                                                                  taxon_id,
+                                                                                                  bioentry_id,
+                                                                                                  accession,
+                                                                                                  name,
+                                                                                                  locus_tag,
+                                                                                                  product,
+                                                                                                  start,
+                                                                                                  stop,
+                                                                                                  strand)
+
+        server.adaptor.execute(sql,)
+        server.adaptor.commit()
+
 
 def get_accession_list_from_taxon_id(server, biodatabase_name, taxon_id):
     sql = "select accession from bioentry" \
@@ -1070,9 +1149,6 @@ if __name__ == '__main__':
                     os.path.join(asset_path, "%s_fasta_core/%s.txt" % (args.db_name, group)))
 
         get_nucleotide_core_fasta(server, db, args.db_name, "./nucl")
-
-
-
 
     if args.core_groups_path:
         taxon_ids = manipulate_biosqldb.get_taxon_id_list(server, args.db_name)

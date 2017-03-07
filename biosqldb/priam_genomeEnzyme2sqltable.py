@@ -378,6 +378,7 @@ def get_module_table(module2category):
         except:
             cat = 'uncategorized'
             cat_short = 'uncategorized'
+            print '------------------------------------------------'
         sql = 'INSERT into kegg_module (module_name, module_cat,module_sub_cat, module_sub_sub_cat, description) ' \
               'values ("%s", "%s", "%s", "%s", "%s");' % (module,
                                                           cat,
@@ -518,10 +519,10 @@ def get_ec_data_from_IUBMB(ec):
                                 db="enzyme") # name of the data base
     cursor = conn.cursor()
 
-    name = re.compile(".*Accepted name.*")
-    alname = re.compile(".*Other name.*")
-    reaction = re.compile(".*Reaction:\<\/b\>.*")
-    comments = re.compile(".*Comments.*")
+    name_m = re.compile(u".*Accepted name.*")
+    alname = re.compile(u".*Other name.*")
+    reaction = re.compile(u".*Reaction:\<\/b\>.*")
+    comments = re.compile(u".*Comments.*")
 
     conn.set_character_set('utf8')
     cursor.execute('SET NAMES utf8;')
@@ -548,12 +549,15 @@ def get_ec_data_from_IUBMB(ec):
 
     for i, data in enumerate(list(html.split('<p>'))):
 
-        if re.match(name, data):
+        if re.match(name_m, data):
+            print 'name'
             name = data.split("</b>")[-1]
             #name = re.sub("&alpha;","", name)
         elif re.match(alname, data):
+            print 'altname'
             altname = data.split("):</b>")[1].split(';')
         elif re.match(reaction, data):
+            print 'reaction'
             rr = data.split("<br>")
             reaction_list = []
             for i in rr:
@@ -562,7 +566,7 @@ def get_ec_data_from_IUBMB(ec):
                 reaction_list.append(i)
 
         elif re.match(comments, data):
-
+            print 'comment'
             cc = data.split("</b>")[1].split(';')
         else:
             continue
@@ -601,18 +605,7 @@ def get_ec_data_from_IUBMB(ec):
     return id
 
 
-
-
-def get_ec2get_pathway_table(map2category):
-    '''
-    1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme.kegg_pathway table
-    2. get all ec associated for each pathway => create enzyme.kegg2ec table
-    todo: remove existing tables for uptade if rerun
-
-    :return: nothing
-    '''
-
-
+def get_pathay_table(map2category):
     import MySQLdb
     import urllib2
     import sys
@@ -631,22 +624,6 @@ def get_ec2get_pathway_table(map2category):
 
     print sql1
     cursor.execute(sql1,)
-
-    sql2 = 'CREATE TABLE IF NOT EXISTS kegg2ec (pathway_id INT,' \
-           ' ec_id INT,' \
-           ' FOREIGN KEY(pathway_id) REFERENCES kegg_pathway(pathway_id),' \
-           ' FOREIGN KEY(ec_id) REFERENCES enzymes(enzyme_id))' \
-
-
-    sql3 = ' CONSTRAINT fk_pathway_id' \
-           ' FOREIGN KEY(pathway_id) REFERENCES kegg_pathway(id)' \
-           ' ON DELETE CASCADE,' \
-           ' CONSTRAINT fk_ec_id' \
-           ' FOREIGN KEY(ec_id) REFERENCES enzymes(id)' \
-           ' ON DELETE CASCADE);'
-
-    print sql2
-    cursor.execute(sql2,)
 
 
 
@@ -672,18 +649,51 @@ def get_ec2get_pathway_table(map2category):
         cursor.execute(sql,)
         conn.commit()
 
-        sql = 'SELECT LAST_INSERT_ID();'
+def get_ec2get_pathway_table():
+    '''
+    1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme.kegg_pathway table
+    2. get all ec associated for each pathway => create enzyme.kegg2ec table
+    todo: remove existing tables for uptade if rerun
 
-        cursor.execute(sql, )
-        try:
-            id = cursor.fetchall()[0][0]
-        except:
-            pass
+    :return: nothing
+    '''
 
-        #print 'id', id
 
+    import MySQLdb
+    import urllib2
+    import sys
+    import manipulate_biosqldb
+
+    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
+                                user="root", # your username
+                                passwd="estrella3", # your password
+                                db="enzyme") # name of the data base
+    cursor = conn.cursor()
+
+    sql2 = 'CREATE TABLE IF NOT EXISTS kegg2ec (pathway_id INT,' \
+           ' ec_id INT,' \
+           ' FOREIGN KEY(pathway_id) REFERENCES kegg_pathway(pathway_id),' \
+           ' FOREIGN KEY(ec_id) REFERENCES enzymes(enzyme_id))' \
+
+
+    sql3 = ' CONSTRAINT fk_pathway_id' \
+           ' FOREIGN KEY(pathway_id) REFERENCES kegg_pathway(id)' \
+           ' ON DELETE CASCADE,' \
+           ' CONSTRAINT fk_ec_id' \
+           ' FOREIGN KEY(ec_id) REFERENCES enzymes(id)' \
+           ' ON DELETE CASCADE);'
+
+    print sql2
+    cursor.execute(sql2,)
+
+    sql = 'select pathway_name,pathway_id from kegg_pathway;'
+    cursor.execute(sql,)
+    map2id = manipulate_biosqldb.to_dict(cursor.fetchall())
+    for map in map2id:
+        id = map2id[map]
 
         ec_numbers_link = "http://rest.kegg.jp/link/ec/%s" % map
+        print ec_numbers_link
         ec_data = urllib2.urlopen(ec_numbers_link)
 
         for line in ec_data:
@@ -702,15 +712,14 @@ def get_ec2get_pathway_table(map2category):
                 try:
                     ec_id = cursor.fetchall()[0][0]
                 except:
-                    sys.stdout.write("trying to get enzyme data from IUBMB...")
+                    sys.stdout.write("trying to get enzyme data from IUBMB: %s...\n" % ec)
                     try:
                         ec_id = int(get_ec_data_from_IUBMB(ec))
                     except urllib2.HTTPError:
-                        sys.stdout.write("NO DATA FOR %s" % ec)
+                        sys.stdout.write("NO DATA FOR %s\n" % ec)
                         continue
 
                 sql = 'INSERT into kegg2ec (pathway_id, ec_id) values (%s,"%s");' % (id, ec_id)
-                #print sql
                 cursor.execute(sql,)
         conn.commit()
 
@@ -748,7 +757,25 @@ def get_kegg_pathway_classification():
                  #print map_description
                  map2category[map_number] = [main_cat, sub_cat, map_description]
              except:
-                 pass
+                 try:
+                    map_number = 'map'+re.findall("ko[0-9]+&", line)[0][2:-1]
+                    map_description = re.findall(">(.*)<\/a", line)[0]
+                    #print map_description
+                    map2category[map_number] = [main_cat, sub_cat, map_description]
+                 except:
+                     try:
+                        map_number = 'map'+re.findall("hsa[0-9]+&", line)[0][3:-1]
+                        map_description = re.findall(">(.*)<\/a", line)[0]
+                        #print map_description
+                        map2category[map_number] = [main_cat, sub_cat, map_description]
+                     except:
+                         try:
+                            map_number = 'map'+re.findall("[a-z]{3}[0-9]+&", line)[0][3:-1]
+                            map_description = re.findall(">(.*)<\/a", line)[0]
+                            #print map_description
+                            map2category[map_number] = [main_cat, sub_cat, map_description]
+                         except:
+                             pass
          else:
              pass
     return map2category
@@ -904,6 +931,62 @@ def locus2ec_table(locus_tag2ec_dico, biodatabase):
             server.adaptor.execute(sql,)
             server.commit()
 
+def get_microbial_metabolism_in_diverse_environments_kegg01120():
+
+    import urllib2
+    import re
+    import MySQLdb
+    from bs4 import BeautifulSoup
+
+    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
+                                user="root", # your username
+                                passwd="estrella3", # your password
+                                db="enzyme") # name of the data base
+    cursor = conn.cursor()
+
+    conn.set_character_set('utf8')
+    cursor.execute('SET NAMES utf8;')
+    cursor.execute('SET CHARACTER SET utf8;')
+    cursor.execute('SET character_set_connection=utf8;')
+
+    sql = 'CREATE TABLE IF NOT EXISTS microbial_metabolism_map01120 (module_name varchar(400));'
+
+    cursor.execute(sql,)
+    conn.commit()
+
+    adress = "http://www.genome.jp/kegg-bin/show_pathway?ko01120"
+
+    html = urllib2.urlopen(adress).read()
+
+    html = re.sub("\&\#","-" ,html)
+    soup = BeautifulSoup(html, "html")
+    #html = soup.encode('utf-8')#.encode('latin-1') #encode('utf-8') # prettify()
+
+    div = soup.findAll("div", { "class" : "control" })[0]
+    input_list = soup.findAll("input")
+
+    list_of_modules = []
+    begin = False
+    temp_list = []
+    for one_input in input_list:
+        if 'c_level' in str(one_input):
+            if begin == False:
+                begin = True
+            else:
+                list_of_modules.append(temp_list)
+                temp_list = []
+            continue
+        if begin == True:
+            module = str(one_input).split('value="')[1][0:-3].split('_')[1]
+            sql = 'insert into microbial_metabolism_map01120 values("%s")' % module
+            cursor.execute(sql,)
+
+            print sql
+        else:
+            print '---', one_input
+    conn.commit()
+
+
 if __name__ == '__main__':
     import argparse
     import manipulate_biosqldb
@@ -920,13 +1003,16 @@ if __name__ == '__main__':
 
     if args.update_database:
         #load_enzyme_nomenclature_table()
-        #get_ec2get_pathway_table(get_kegg_pathway_classification())
+        #map2category = get_kegg_pathway_classification()
+        #get_pathay_table(map2category)
+        #get_ec2get_pathway_table()
         #get_complete_ko_table(args.database_name)
         #get_module_table(get_kegg_module_hierarchy())
         #get_ec_data_from_IUBMB("1.14.13.217")
         #get_ec_data_from_IUBMB("1.1.1.1")
         #get_pathway2ko()
-        get_ko2ec(args.database_name)
+        get_microbial_metabolism_in_diverse_environments_kegg01120()
+        #get_ko2ec(args.database_name)
         #get_ec_data_from_IUBMB("3.2.1.196")
     if args.input_priam_files:
         locus2ec={}

@@ -302,9 +302,6 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
     from Bio.Alphabet import IUPAC
     server, db = manipulate_biosqldb.load_db(biodb)
 
-
-
-
     sql_include = ''
     if len(taxon_list) > 0:
         for i in range(0, len(taxon_list)-1):

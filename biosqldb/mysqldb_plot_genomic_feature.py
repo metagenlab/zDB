@@ -78,7 +78,7 @@ def plot_multiple_regions_crosslink2(target_protein_list, region_record_list, pl
                 except:
                         group1 = "one_singleton"
                         group2 = "two_singleton"
-                print "group1, group2", group1, group2
+
                 if group1 == group2:
                     border = colors.lightgrey
                     color = colors.lightgrey
@@ -95,7 +95,7 @@ def plot_multiple_regions_crosslink2(target_protein_list, region_record_list, pl
         i = 0
 
         if plasmid_list[x]:
-            #print "PLASMID!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            #print "PLASMID!!!"
             color1 = colors.HexColor('#2837B7')
             color2 = colors.blue
         else:
@@ -198,7 +198,13 @@ def colorscale(hexstr, scalefactor):
 
 
 
-def plot_multiple_regions_crosslink(target_protein_list, region_record_list, plasmid_list, out_name, biodb_name="chlamydia_03_15", color_locus_list = []):
+def plot_multiple_regions_crosslink(target_protein_list,
+                                    region_record_list,
+                                    plasmid_list,
+                                    out_name,
+                                    biodb_name="chlamydia_03_15",
+                                    color_locus_list = [],
+                                    flip_record_based_on_first=True):
 
 
     import matplotlib.cm as cm
@@ -228,6 +234,51 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
     
     record_length = [len(record) for record in region_record_list] 
 
+
+
+    if flip_record_based_on_first:
+        region_record_list_flip = [region_record_list[0]]
+        region_record_list_flip[0].name = region_record_list_flip[0].description
+        for x in range(0,len(region_record_list)-1):
+            same_strand_count = 0
+            different_strand_count = 0
+            features_X = region_record_list[x].features
+            features_Y = region_record_list[x+1].features
+            for feature_1 in features_X:
+
+
+                if feature_1.type != "CDS":
+                    continue
+
+                for feature_2 in features_Y:
+                    if feature_2.type != "CDS":
+                        continue
+                    try:
+
+                        group1 = feature_1.qualifiers["orthogroup"][0]
+                        group2 = feature_2.qualifiers["orthogroup"][0]
+                        if group1 == group2:
+                            strand1 = feature_1.location.strand
+                            strand2 = feature_2.location.strand
+                            if strand1 == strand2:
+                                same_strand_count+=1
+                            else:
+                                different_strand_count+=1
+
+                    except:
+                            pass
+            print region_record_list[x].name
+            print region_record_list[x+1].name
+            print 'counts same and different strand:', same_strand_count, different_strand_count
+            if different_strand_count>same_strand_count:
+                region_record_list[x+1] = region_record_list[x+1].reverse_complement(id=region_record_list[x+1].id,
+                                                                                     name=region_record_list[x+1].description)
+            else:
+                region_record_list[x+1].name = region_record_list[x+1].description
+
+
+        #region_record_list = region_record_list_flip
+
     for i, record in enumerate(region_record_list):
         max_len = max(max_len, len(record))
         print "i", i
@@ -241,6 +292,9 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
            print "already in feature_sets!"
            print record
            quit
+
+
+
 
     print 'looping....'
     for x in range(0,len(region_record_list)-1):
@@ -266,7 +320,7 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
                 except:
                         group1 = "one_singleton"
                         group2 = "two_singleton"
-                #print "group1, group2", group1, group2
+
                 if group1 == group2:
                     border = colors.lightgrey
                     color = colors.lightgrey
@@ -285,59 +339,6 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
 
                     color2 = colors.HexColor(rgb2hex(m.to_rgba(float(identity))))
                     border2 = colors.HexColor(rgb2hex(m.to_rgba(float(identity))))
-                    print 'identity', identity
-                    '''
-                    if identity == 100:
-                        color2 = colors.HexColor('#1AFF00')
-                        border2 = colors.HexColor('#1AFF00')
-
-                    elif 95 <= identity < 100:
-                        color2 = colors.HexColor('#08298A')
-                        border2 = colors.HexColor('#08298A')
-
-                    elif 90 <= identity < 95:
-                        color2 = colors.HexColor('#0431B4')
-                        border2 = colors.HexColor('#0431B4')
-
-                    elif 85 <= identity < 90:
-                        color2 = colors.HexColor('#013ADF')
-                        border2 = colors.HexColor('#013ADF')
-
-                    elif 80 <= identity < 85:
-
-                        color2 = colors.HexColor('#0040FF')
-                        border2 = colors.HexColor('#0040FF')
-
-                    elif 75 <= identity < 80:
-                        color2 = colors.HexColor('#2E64FE')
-                        border2 = colors.HexColor('#2E64FE')
-
-                    elif 70 <= identity < 75:
-                        color2 = colors.HexColor('#5882FA')
-                        border2 = colors.HexColor('#5882FA')
-
-                    elif 65 <= identity < 70:
-                        color2 = colors.HexColor('#819FF7')
-                        border2 = colors.HexColor('#819FF7')
-
-                    elif 55 <= identity < 60:
-                        color2 = colors.HexColor('#A9BCF5')
-                        border2 = colors.HexColor('#A9BCF5')
-
-                    elif 50 <= identity < 55:
-                        color2 = colors.HexColor('#CED8F6')
-                        border2 = colors.HexColor('#CED8F6')
-                    else:
-                        color2 = colors.lightgrey
-                        border2 = colors.lightgrey
-                    '''
-                    #else:
-
-                    """
-                    color = colors.HexColor(colorscale("004DFF", identity/50.))
-                    border = colors.HexColor(colorscale("004DFF", identity/50.))
-                    """
-
 
                     F_x = set_X.add_feature(SeqFeature(FeatureLocation(feature_1.location.start, feature_1.location.end, strand=0)),
                                     color=color, border=border, set_id=feature_1.qualifiers["locus_tag"])
@@ -358,7 +359,7 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
 
 
         if plasmid_list[x]:
-            #print "PLASMID!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            #print "PLASMID!!"
             color1 = colors.HexColor('#2837B7')
             color2 = colors.blue
         else:
@@ -403,7 +404,7 @@ def plot_multiple_regions_crosslink(target_protein_list, region_record_list, pla
                     # cas des pseudogenes qui sont des CDS mais n'ont pas de protein ID
                     continue
 
-                print 'locus!!!!!!!', a
+
                 if a in color_locus_list:
                     print '###########################', a, color_locus_list
                     if len(gd_feature_set) % 2 == 0:
@@ -670,7 +671,7 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
                      pass
         else:
             print "Getting region from %s" % record_id
-            print record
+            #print record
             sub_record = get_feature_neighborhood(target_feature_start,  target_feature_end, record, region_size_bp, "rec")
             sub_record_list.append(sub_record)
             print
