@@ -217,7 +217,7 @@ def plot_multiple_regions_crosslink(target_protein_list,
     m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
+    conn = MySQLdb.connect(host="127.0.0.1", # your host, usually localhost
                                 user="root", # your username
                                 passwd="estrella3", # your password
                                 db="orth_%s" % biodb_name) # name of the data base
