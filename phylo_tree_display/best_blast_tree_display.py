@@ -235,7 +235,7 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
     print blast_result_file_list
 
 def main(input_reference, input_queries_folder, blast_file, mlst_scheme, input_gbk, skip_parsnp=False, skip_blast=False,
-         input_tree=None, skip_mlst=False, check_overlap=False, id_cutoff=80):
+         input_tree=None, skip_mlst=False, check_overlap=False, id_cutoff=80, blast_type='tblastn'):
 
     import shell_command
     import os
@@ -298,7 +298,7 @@ def main(input_reference, input_queries_folder, blast_file, mlst_scheme, input_g
     if input_tree:
         reference_phylogeny = input_tree
 
-    from Bio.Blast.Applications import NcbitblastnCommandline
+
 
     sys.stdout.write('Blasting %s...\n' % blast_file)
 
@@ -318,20 +318,32 @@ def main(input_reference, input_queries_folder, blast_file, mlst_scheme, input_g
         if not skip_blast:
             cmd = 'formatdb -i %s -p F' % genome_file
             out, err, code = shell_command.shell_command(cmd)
-            #print err, code
-            out, err, code = shell_command.shell_command('export BLASTDB=$BLASTDB:%s' % blastp_folder)
+            if blast_type == 'tblastn':
+                from Bio.Blast.Applications import NcbitblastnCommandline
+
+                #print err, code
+                out, err, code = shell_command.shell_command('export BLASTDB=$BLASTDB:%s' % blastp_folder)
 
 
-            blastp_cline = NcbitblastnCommandline(query= blast_file_fullpath,
-                                                db=genome_file,
-                                                evalue=0.001,
-                                                outfmt=6,
-                                                out=outpath)
+                blastp_cline = NcbitblastnCommandline(query= blast_file_fullpath,
+                                                    db=genome_file,
+                                                    evalue=0.001,
+                                                    outfmt=6,
+                                                    out=outpath)
+
+            elif blast_type == 'blastn':
+                from Bio.Blast.Applications import NcbiblastnCommandline
+                blastp_cline = NcbiblastnCommandline(query= blast_file_fullpath,
+                                                    db=genome_file,
+                                                    evalue=0.001,
+                                                    outfmt=6,
+                                                    out=outpath)
+
+            else:
+                raise ('unsupported blast type')
+
             stdout, stderr = blastp_cline()
             result_handle = open(outpath, 'r')
-
-
-
             best_hit_handle = open(best_hit_path, 'w')
 
             hit_list = []
@@ -366,7 +378,8 @@ if __name__ == '__main__':
     parser.add_argument("-l",'--skip_blast', action='store_true', help="skip blast part")
     parser.add_argument("-t",'--input_tree', type=str, help="user provided tree /no parsnp tree/", default=None)
     parser.add_argument("-n",'--skip_mlst', action='store_true', help="skip mlst part")
-    parser.add_argument("-c",'--id_cutoff', default=80, help="identity cutoff /defult 80 percent/")
+    parser.add_argument("-c",'--id_cutoff', default=80, help="identity cutoff /default 80 percent/")
+    parser.add_argument("-bt",'--blast_type', default='tblastn', help="blast type (default: tblastn. Alternative: blastn)")
     
     args = parser.parse_args()
 
@@ -377,8 +390,18 @@ if __name__ == '__main__':
     else:
         ref = args.reference
 
-    main(ref, args.input_queries_folder, args.blast_file, args.mlst_shemes, args.input_gbk, args.skip_parsnp,
-         args.skip_blast, args.input_tree, args.skip_mlst, False, float(args.id_cutoff))
+    main(ref,
+         args.input_queries_folder,
+         args.blast_file,
+         args.mlst_shemes,
+         args.input_gbk,
+         args.skip_parsnp,
+         args.skip_blast,
+         args.input_tree,
+         args.skip_mlst,
+         False,
+         float(args.id_cutoff),
+         blast_type=args.blast_type)
 
 
 

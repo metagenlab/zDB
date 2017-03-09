@@ -737,6 +737,7 @@ def multiple_profiles_heatmap(biodb,
         column2scale = {}
         for column in column_labels:
             values = taxon2group2count[column].values()
+            print values, column
             norm = mpl.colors.Normalize(vmin=min(values), vmax=max(values))
             cmap = cm.OrRd
             m = cm.ScalarMappable(norm=norm, cmap=cmap)
@@ -757,7 +758,7 @@ def multiple_profiles_heatmap(biodb,
     t1.ladderize()
 
     taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb,filter_names=True)
-    print taxon_id2organism_name
+
     head = True
     leaf_list = [i for i in t1.iter_leaves()]
     n_leaves = len(leaf_list)
@@ -807,32 +808,47 @@ def multiple_profiles_heatmap(biodb,
             else:
                 if not taxon2group2value:
 
-                    try:
-
-                        # if identity scale: 2 digit format
-                        local_label = str(taxon2group2count[value][lf.name])
-                        if not identity_scale:# and not column_scale:
-                            if as_float:
-                                local_label = "%.2f" % taxon2group2count[value][lf.name]
-                            else:
-                                local_label = "%s" % int(taxon2group2count[value][lf.name])
-                        else:
-                            if round(taxon2group2count[value][lf.name], 2) < 100:
-                                local_label = "%.2f" % round(taxon2group2count[value][lf.name], 2)
-                            else:
-                                local_label = "%.1f" % round(taxon2group2count[value][lf.name], 2)
-                        if show_labels:
-                            if round(taxon2group2count[value][lf.name], 2) < 100 and column_scale:
-                                if round(taxon2group2count[value][lf.name], 2) < 10:
-                                    n = TextFace('  %s  ' % local_label)
-                                else:
-                                    n = TextFace(' %s ' % local_label)
-                            else:
-                                n = TextFace('%s ' % local_label)
-
-                        else:
+                    if value not in taxon2group2count:
+                        n = TextFace(' - ')
+                    else:
+                        if lf.name not in taxon2group2count[value]:
                             n = TextFace(' - ')
+                        else:
+                            if taxon2group2count[value][lf.name] == '-':
+                                n = TextFace(' - ')
+                            else:
+                                # if identity scale: 2 digit format
+                                local_label = str(taxon2group2count[value][lf.name])
+                                if not identity_scale:# and not column_scale:
+                                    if as_float:
+                                        local_label = "%.2f" % taxon2group2count[value][lf.name]
+                                    else:
+                                        try:
+                                            local_label = "%s" % int(taxon2group2count[value][lf.name])
+                                        except:
+                                            local_label = "%s" % taxon2group2count[value][lf.name]
+                                else:
+                                    if round(float(taxon2group2count[value][lf.name]), 2) < 100:
+                                        local_label = "%.2f" % round(taxon2group2count[value][lf.name], 2)
+                                    else:
+                                        local_label = "%.1f" % round(taxon2group2count[value][lf.name], 2)
+                                if show_labels:
+                                    try:
+                                        if round(taxon2group2count[value][lf.name], 2) < 100 and column_scale:
+                                            if round(taxon2group2count[value][lf.name], 2) < 10:
+                                                n = TextFace('  %s  ' % local_label)
+                                            else:
+                                                n = TextFace(' %s ' % local_label)
+                                        else:
+                                            n = TextFace('%s ' % local_label)
+                                    # labels are not floats
+                                    except TypeError:
+                                        n = TextFace(' %s ' % taxon2group2count[value][lf.name])
 
+                                else:
+                                    n = TextFace(' - ')
+
+                    '''
                     except:
 
                         if not reference_taxon_dico:
@@ -846,7 +862,7 @@ def multiple_profiles_heatmap(biodb,
                                 n.fgcolor = '#58ACFA'
                             else:
                                 n = TextFace(' - ')
-
+                    '''
                     if show_labels:
                         n.margin_top = 2
                         n.margin_right = 2

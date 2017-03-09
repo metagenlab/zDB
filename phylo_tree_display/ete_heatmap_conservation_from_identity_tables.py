@@ -331,4 +331,6 @@ if __name__ == '__main__':
         taxid2st = False
 
     t, n = plot_heat_tree(gene2genome_id, args.tree, gene_list, accession2description, taxid2st)
-    t.render("test.svg")
+    tss = TreeStyle()
+    tss.show_branch_support = True
+    t.render("test.svg", tree_style=tss)
