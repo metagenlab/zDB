@@ -65,6 +65,89 @@ def randomize_table(M):
     return M
 
 
+
+
+def heatmap_refgenome(M,output=None,format='pdf',new=True,breaks=None, last=True,
+            rows=None,columns=None,return_rowInd=False,col_index=[],**kwargs):
+
+    """ create the equivalent of a flat circos:
+    on genome as a reference, and ordered columns of presence/absence of homologs"""
+
+    w = len(M[1,:])/float(150) + 16
+    h = len(M[:,1]) + 4
+    w = h*1.5
+    cex = h*0.2
+    oma_right = w*2
+
+    plotopt, output = _begin(output=output,format=format,new=new,width=w,height=h,**kwargs)
+
+    robjects.r.assign('Mdata', numpy2ri.numpy2ri(M))
+
+    if len(col_index)>0:
+        robjects.r.assign('col_index', col_index)
+
+    if rows is not None:
+        import numpy as np
+        rows = np.asarray(rows, dtype='a50')#np.chararray(rows)
+        robjects.r.assign('labRow',numpy2ri.numpy2ri(rows))
+        plotopt += ",labRow=labRow"
+    if columns is not None:
+        columns = np.asarray(columns, dtype='a50')
+        robjects.r.assign('labCol', numpy2ri.numpy2ri(columns))
+
+    if breaks is not None:
+        robjects.r("myBreaks = c(%s)" % breaks)
+    else:
+        robjects.r("myBreaks = seq(ymin,ymax,length.out=15)")
+    if kwargs.get('ymax') is not None:
+        robjects.r("ymax=%f" %float(kwargs['ymax']))
+    else:
+        robjects.r("ymax=ceiling(max(Mdata,na.rm=T))")
+    try:
+        ncol = int(kwargs.get('nb_colors'))
+    except (ValueError, TypeError):
+        ncol = 10
+    ncol = max(3,ncol)
+    robjects.r("""
+
+library(gplots)
+library(RColorBrewer)
+print(myBreaks)
+library(vegan)
+
+Mdata[Mdata>1] <- 1
+
+Mdata[,unlist(col_index)] <- Mdata[,unlist(col_index)]*2
+
+
+#w <- which(colSums(Mdata) != 1)
+#Mdata <- Mdata[,w]
+
+print('Drawing heatmap')
+
+myColors=c("white","black","red")
+#myColors = rev(colorRampPalette(brewer.pal(%i,"RdYlBu"))(length(myBreaks)-1))
+par(oma = c(2, 2, 2, 2), xpd=TRUE)
+par(mar = c(1,1,1,1))
+par(cex.main=1,oma=c(24,2,2,%s), xpd=TRUE, new=TRUE)
+
+heatmap.2(as.matrix(Mdata),col=myColors, trace="none", breaks=myBreaks, key="False",
+ na.rm=TRUE, density.info='none', Rowv=TRUE, Colv=FALSE,labRow=labRow,labCol=labCol,cexRow=6,cexCol=4
+ ,distfun=function(m) vegdist(m,method="jaccard", binary=TRUE)) # , Colv=cdendo
+
+#legend("topright", inset=c(0.4,1.5), y=NULL, legend=c("single copy", "multicopy"), lty=c(1,1), lwd=c(2.5,2.5),col=c("blue","red"))
+
+
+
+    """ % (ncol, oma_right)) #
+    _end("",last,**kwargs)
+
+    if return_rowInd:
+        return (output,array(robjects.r("odhrow")))
+    else:
+        return output
+
+
 def heatmap_pangenome(M,output=None,format='pdf',new=True,breaks=None, last=True,
             rows=None,columns=None,orderRows=True,orderCols=True,
             return_rowInd=False,cor=False,**kwargs):
@@ -175,6 +258,9 @@ heatmap.2(as.matrix(Mdata),col=myColors, trace="none", breaks=myBreaks, key="Fal
         return (output,array(robjects.r("odhrow")))
     else:
         return output
+
+
+
 
 
 def heatmap(M,output=None,format='pdf',new=True,breaks=None, last=True,

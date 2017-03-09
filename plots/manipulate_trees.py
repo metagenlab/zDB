@@ -147,7 +147,7 @@ def convert_tree_taxon2genome(biodb_name, input_tree, output_tree ):
 
     print taxon_id2genome_description
     new_tree = parse_newick_tree.convert_terminal_node_names(input_tree, taxon_id2genome_description)
-    print new_tree[0]
+    #print new_tree[0]
     print "writing converted tree..."
     print output_tree
     Phylo.write(new_tree, output_tree, 'newick')

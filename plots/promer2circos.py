@@ -76,19 +76,22 @@ class Fasta2circos():
                  algo="nucmer",
                  min_gap_size=1000):
         import nucmer_utility
+        import os
         self.contigs_add = {}
         print "fasta1", fasta1
         print "fasta2", len(fasta2), fasta2
         print "highlight list", highlight_list
         print "heatmap", heatmap
         if algo == "nucmer":
+            print "fasta1", fasta1
             nucmer_utility.execute_promer(fasta1, fasta2, algo="nucmer")
         elif algo == "megablast":
             self.execute_megablast(fasta1, fasta2)
         elif algo == "promer":
             nucmer_utility.execute_promer(fasta1, fasta2, algo="promer")
         if not heatmap:
-            hit_list, query_list = self.get_link("%s.coords" % fasta2[0].split('.')[0], algo=algo)
+            outname = os.path.basename(fasta2[0]).split('.')[0]
+            hit_list, query_list = self.get_link("%s.coords" % outname, algo=algo)
         else:
 
             # coords for cumulated coorginates
@@ -112,6 +115,9 @@ class Fasta2circos():
             all_hit_list = []
             all_query_list = []
             for i, one_fasta in enumerate(fasta2):
+
+                out_prefix = os.path.basename(one_fasta).split('.')[0]
+
                 if i%2 == 0:
                     col=200
                 else:
@@ -121,18 +127,19 @@ class Fasta2circos():
                     print one_fasta
 
                     #hit_list, query_list, contig2start_stop_list = self.nucmer_coords2heatmap("%s.coords" % one_fasta.split('.')[0], col=col, algo=algo)
-                    hit_list, query_list = nucmer_utility.coord_file2circos_heat_file("%s.coords" % one_fasta.split('.')[0],
+
+                    hit_list, query_list = nucmer_utility.coord_file2circos_heat_file("%s.coords" % out_prefix,
                                                                                       self.contigs_add, algo=algo)
-                    contig2start_stop_list = nucmer_utility.delta_file2start_stop_list("%s.delta" % one_fasta.split('.')[0],
+                    contig2start_stop_list = nucmer_utility.delta_file2start_stop_list("%s.delta" % out_prefix,
                                                                                        self.contigs_add, algo=algo, minimum_identity=85)
 
                 elif algo == "megablast":
-                    hit_list, query_list, contig2start_stop_list = self.megablast2heatmap("blast_result_%s.tab" % one_fasta.split('.')[0], col=col)
+                    hit_list, query_list, contig2start_stop_list = self.megablast2heatmap("blast_result_%s.tab" % out_prefix, col=col)
                 else:
                     raise IOError('unknown algo!')
                 all_hit_list += hit_list
                 all_query_list += query_list
-                updated_list.append(one_fasta)
+                updated_list.append(os.path.basename(one_fasta))
                 #except:
                 #    continue
                 if gaps:
@@ -199,7 +206,7 @@ class Fasta2circos():
                         padding  = 0p
                         rpadding = 0p
                         '''
-                self.circos_reference.add_plot("circos_blast_labels.txt", type="text", r0="1r", r1="1.3r",color="black")
+                self.circos_reference.add_plot("circos_blast_labels.txt", type="text", r0="1r", r1="1.3r", color="black", rules=supp)
             if gc:
                 import GC
                 from Bio import SeqIO
@@ -266,8 +273,10 @@ class Fasta2circos():
 
             if samtools_depth is not None:
                 for i, depth_file in enumerate(samtools_depth):
-                    self.samtools_depth2circos_data(depth_file, i)
-                    self.add_samtools_depth_track('circos_samtools_depth_%s.txt' % i)
+                    all_contigs_median = self.samtools_depth2circos_data(depth_file, i)
+                    self.add_samtools_depth_track('circos_samtools_depth_%s.txt' % i,
+                                                  lower_cutoff=int(all_contigs_median)/2,
+                                                  top_cutoff=int(all_contigs_median)*2)
 
         else:
             # c1 last_seq_id
@@ -391,27 +400,30 @@ class Fasta2circos():
         #t = open('circos.config', "w")
 
 
-    def add_samtools_depth_track(self, samtools_file):
+    def add_samtools_depth_track(self, samtools_file, lower_cutoff=50, top_cutoff=5000):
 
         rules = """
         <rules>
         <rule>
-        condition          = var(value) > 500
-        show               = no
+        condition          = var(value) > %s
+        color              = green
+        fill_color         = lgreen
         </rule>
 
         <rule>
-        condition          = var(value) < 100
+        condition          = var(value) < %s
         color              = red
+        fill_color         = lred
         </rule>
         </rules>
 
-        """
+        """ % (top_cutoff,
+               lower_cutoff)
 
         self.circos_reference.add_plot(samtools_file,
                         type="histogram",
                         r1="%sr" % (self.last_track - 0.08),
-                        r0= "%sr" % (self.last_track - 0.15),
+                        r0= "%sr" % (self.last_track - 0.25),
                         color="black",
                         fill_color="grey_a5",
                         thickness = "1p",
@@ -762,12 +774,16 @@ class Fasta2circos():
 
 
     def execute_megablast(self,fasta1, fasta2):
+        import os
         import shell_command
         for one_fasta in fasta2:
+
+            out_prefix = os.path.basename(one_fasta).split('.')[0]
+
             cmd1 = "formatdb -i %s -p F" % one_fasta
             cmd2 = 'blastn -task megablast -query %s -db %s -evalue 1e-5 -outfmt 6 -out blast_result_%s.tab' % (fasta1,
                                                                                                              one_fasta,
-                                                                                                             one_fasta.split('.')[0])
+                                                                                                             out_prefix)
             a, b, c = shell_command.shell_command(cmd1)
             a, b, c = shell_command.shell_command(cmd2)
 
@@ -852,6 +868,7 @@ class Fasta2circos():
 
     def megablast2heatmap(self, megablast_input, link_file="circos.heat", col=250):
         import re
+        import os
         import matplotlib.cm as cm
         from matplotlib.colors import rgb2hex
         import matplotlib as mpl
@@ -881,7 +898,7 @@ class Fasta2circos():
 
         contig2start_stop_list = {}
 
-        heatmap_file = megablast_input.split('.')[0] + '.heat'
+        heatmap_file = os.path.basename(megablast_input).split('.')[0] + '.heat'
         with open(heatmap_file, 'w') as f:
             i = 1
             hit_list = []
@@ -921,6 +938,7 @@ class Fasta2circos():
     def samtools_depth2circos_data(self, samtools_depth_file, i):
         import numpy
         contig2coverage = {}
+        all_positions_coverage = []
         with open(samtools_depth_file, 'r') as f:
             for line in f:
                 data = line.rstrip().split('\t')
@@ -929,6 +947,8 @@ class Fasta2circos():
                     contig2coverage[data[0]].append(int(data[2]))
                 else:
                     contig2coverage[data[0]].append(int(data[2]))
+                all_positions_coverage.append(int(data[2]))
+        all_contigs_median = float(numpy.median(all_positions_coverage))
         with open('circos_samtools_depth_%s.txt' % i, 'w') as g:
             for contig in contig2coverage:
                 # split list by chunks of 1000
@@ -936,10 +956,12 @@ class Fasta2circos():
                 for i, cov_list in enumerate(mychunks):
                     #print cov_list
                     median_depth = numpy.median(cov_list)
+                    if median_depth > (4*all_contigs_median):
+                        median_depth = 4*all_contigs_median
                     g.write("%s\t%s\t%s\t%s\n" % (contig, (i*1000)+self.contigs_add[contig][0],
                                                   ((i*1000)+999)+self.contigs_add[contig][0],
                                                   median_depth))
-
+        return all_contigs_median
 
 
 if __name__ == '__main__':

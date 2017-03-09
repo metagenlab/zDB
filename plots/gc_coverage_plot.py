@@ -10,8 +10,9 @@ rpy2.robjects.numpy2ri.activate()
 
 def gc_coverage_plot(samtool_depth_file, contigs_file, blast_file=False, column1=1, column2=2, main=False, highlight=False):
 
+    import os
     if not main:
-        main = samtool_depth_file
+        main = os.path.basename(samtool_depth_file)
 
     import shell_command
 

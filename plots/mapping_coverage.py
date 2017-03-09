@@ -11,7 +11,8 @@ rpy2.robjects.numpy2ri.activate()
 def samtools_depth2coverage_plot(samtool_depth_file, main=False):
 
     if not main:
-        main = samtool_depth_file
+        import os
+        main = os.path.basename(samtool_depth_file)
 
     robjects.r("""
 

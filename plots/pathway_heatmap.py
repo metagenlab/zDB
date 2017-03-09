@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-def plot_pathway_heatmap(biodb, ref_tree, pathway_list, taxon_id_list=[]):
+def plot_pathway_heatmap(biodb, ref_tree, pathway_list, taxon_id_list=[], rotate=False):
     import manipulate_biosqldb
     import ete_motifs
 
@@ -53,7 +53,8 @@ def plot_pathway_heatmap(biodb, ref_tree, pathway_list, taxon_id_list=[]):
                                                 show_labels=True,
                                                 column_scale=True,
                                                 tree=ref_tree,
-                                                as_float=False)
+                                                as_float=False,
+                                                rotate=rotate)
     return tree2
 
 

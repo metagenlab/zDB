@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-def plot_module_heatmap(biodb, ref_tree, module_list,taxon_id_list=[]):
+def plot_module_heatmap(biodb, ref_tree, module_list,taxon_id_list=[], rotate=False):
     import manipulate_biosqldb
     import ete_motifs
 
@@ -24,7 +24,7 @@ def plot_module_heatmap(biodb, ref_tree, module_list,taxon_id_list=[]):
                                                                                                          filter_2,
                                                                                                          filter)
     else:
-        sql = 'select taxon_id, module_name,count(*) from (select distinct taxon_id,t1.ko_id,module_name,description ' \
+        sql = 'select taxon_id, description,count(*) from (select distinct taxon_id,t1.ko_id,module_name,description ' \
               ' from enzyme.locus2ko_%s t1 inner join enzyme.module2ko t2 on t1.ko_id=t2.ko_id ' \
               ' inner join enzyme.kegg_module as t3 on t2.module_id=t3.module_id ' \
               ' where module_name in (%s)) A group by A.taxon_id,A.module_name;' % (biodb, filter_2)
@@ -37,7 +37,11 @@ def plot_module_heatmap(biodb, ref_tree, module_list,taxon_id_list=[]):
     cog_list = []
     for row in data:
         row = list(row)
-        row[1] = row[1].split(',')[0]
+        split_name = row[1].split('=>')
+        if len(split_name[0]) >0:
+            row[1] = split_name[0]
+        #else:
+
         if row[1] not in cog_list:
             cog_list.append(row[1])
         if row[1] not in code2taxon2count:
@@ -52,7 +56,8 @@ def plot_module_heatmap(biodb, ref_tree, module_list,taxon_id_list=[]):
                                                 show_labels=True,
                                                 column_scale=True,
                                                 tree=ref_tree,
-                                                as_float=False)
+                                                as_float=False,
+                                                 rotate=rotate)
     return tree2
 
 
@@ -126,10 +131,34 @@ aa_synthesis = ["M00015",
                 "M00028","M00029","M00030","M00031","M00032","M00033","M00034","M00035","M00036","M00037","M00038",
                 "M00040","M00042","M00043","M00044","M00045","M00046","M00047","M00048","M00049","M00050","M00051","M00052","M00053"]
 
+atp_synthesis = [
+"M00142",
+"M00143",
+"M00144",
+"M00145",
+"M00146",
+"M00147",
+"M00148",
+"M00149",
+"M00150",
+"M00151",
+"M00152",
+"M00153",
+"M00154",
+"M00155",
+"M00156",
+"M00157",
+"M00158",
+"M00159",
+"M00160",
+"M00162",
+"M00416",
+"M00417"
+]
 
 tree, style = plot_module_heatmap('chlamydia_04_16',
                             '/home/trestan/work/projets/rhabdo/core_phylo_chlam_staleyi_all_single_copy_07_16/core_chlamydia.tree',
-                            aa_synthesis,
+                            atp_synthesis,
                             taxon_list
                             )
-tree.render('test_modules.svg', dpi=800, h=600, tree_style=style)
+tree.render('atp_synthesis.svg', dpi=800, h=600, tree_style=style)
