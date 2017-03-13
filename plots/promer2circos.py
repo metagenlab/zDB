@@ -305,28 +305,15 @@ class Fasta2circos():
         # sequential palettes
 
         # 5 color palettes
-        spectral-5-div = spectral-5-div-(\d+)
-        spectral-5-div-rev = rev(spectral-5-div-(\d+))
-        spectral-5-div-1 = 215,25,28 # 3
-        spectral-5-div-c = 215,25,28 # 3
-        spectral-5-div-2 = 253,174,97 # 3
-        spectral-5-div-f = 253,174,97 # 3
-        spectral-5-div-3 = 255,255,191 # 3
-        spectral-5-div-h = 255,255,191 # 3
-        spectral-5-div-4 = 171,221,164 # 3
-        spectral-5-div-j = 171,221,164 # 3
-        spectral-5-div-5 = 43,131,186 # 3
-        spectral-5-div-m = 43,131,186 # 3
 
-        violet = 197,27,138
-        mgrey = 217,217,217
+        #violet = 197,27,138
         ortho1 = 199,233,180
         ortho2 = 127,205,187
         ortho3 = 127,205,187
         ref = 254,153,41
         pred = 255,0,55
         pblue = 0, 55, 255
-        highlight = 107, 155, 0
+        #highlight = 107, 155, 0
         group_size = 187,255,167
         not_conserved = 254, 29,29
         chlamydiales = 24,116,205
@@ -334,9 +321,9 @@ class Fasta2circos():
         back = 240,240,240
         blue = 1,188,255
         green = 27,255,1
-        sta2 = 255,128,0
+        #sta2 = 255,128,0
         sta1 = 54,144,192
-        euk = 255,131,250
+        #euk = 255,131,250
 
         """
 
@@ -508,10 +495,14 @@ class Fasta2circos():
         import os
         with open("circos.config", 'w') as f:
             f.write(config)
-        os.mkdir(os.path.join(self.working_dir, '/etc'))
+        ''''
+        try:
+            os.mkdir(os.path.join(self.working_dir, 'etc/'))
+        except:
+            pass
         with open("etc/brewer.all.conf", "w") as f:
             f.write(color_config)
-
+        '''
     def id_generator(self, size=6, chars=string.ascii_lowercase ): # + string.digits
         return ''.join(random.choice(chars) for _ in range(size))
 
@@ -704,8 +695,8 @@ class Fasta2circos():
 
 
         <colors>
-          <<include colors.my>>
-         <<include brewer.all.conf>>
+         #<<include colors.my>>
+         #<<include brewer.all.conf>>
          </colors>
          <image>
          image_map_use      = yes
