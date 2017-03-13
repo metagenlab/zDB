@@ -398,7 +398,7 @@ anti_aliasing*     = no
         with open(self.config_path, 'w') as f:
             f.write(self.template_config)
 
-        cmd = 'circos -conf %s -outputfile %s' % (self.config_path, self.plot_path)
+        cmd = 'circos -noparanoid -conf %s -outputfile %s' % (self.config_path, self.plot_path)
         out, err, code = shell_command.shell_command(cmd)
         if code != 0:
             print out, err
