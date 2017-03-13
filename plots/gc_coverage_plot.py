@@ -194,6 +194,7 @@ if __name__ == '__main__':
     parser.add_argument("-2", '--column2', type=str, help="classification column", default=6)
     parser.add_argument("-l", '--highlight', type=str, help="highlight some contigs listed in input file", default=False)
 
+
     args = parser.parse_args()
 
     gc_coverage_plot(args.input_samtools_depth, args.input_contigs, args.blast_file, args.column1, args.column2, False, args.highlight)

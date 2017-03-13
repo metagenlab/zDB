@@ -74,7 +74,8 @@ class Fasta2circos():
                  gc=True,
                  highlight_list=[],
                  algo="nucmer",
-                 min_gap_size=1000):
+                 min_gap_size=1000,
+                 blastn=False):
         import nucmer_utility
         import os
         self.contigs_add = {}
@@ -82,6 +83,7 @@ class Fasta2circos():
         print "fasta2", len(fasta2), fasta2
         print "highlight list", highlight_list
         print "heatmap", heatmap
+        self.working_dir = os.getcwd()
         if algo == "nucmer":
             print "fasta1", fasta1
             nucmer_utility.execute_promer(fasta1, fasta2, algo="nucmer")
@@ -183,7 +185,7 @@ class Fasta2circos():
 
                     
             if blast:
-                self.blast2circos_file(blast, fasta1)
+                self.blast2circos_file(blast, fasta1, blastn=blastn)
 
                 #self.circos_reference.add_highlight("circos_blast.txt",
                 #                               'red',
@@ -315,25 +317,66 @@ class Fasta2circos():
         spectral-5-div-j = 171,221,164 # 3
         spectral-5-div-5 = 43,131,186 # 3
         spectral-5-div-m = 43,131,186 # 3
+
+        violet = 197,27,138
+        mgrey = 217,217,217
+        ortho1 = 199,233,180
+        ortho2 = 127,205,187
+        ortho3 = 127,205,187
+        ref = 254,153,41
+        pred = 255,0,55
+        pblue = 0, 55, 255
+        highlight = 107, 155, 0
+        group_size = 187,255,167
+        not_conserved = 254, 29,29
+        chlamydiales = 24,116,205
+        non_chlamydiales = 0,255,255
+        back = 240,240,240
+        blue = 1,188,255
+        green = 27,255,1
+        sta2 = 255,128,0
+        sta1 = 54,144,192
+        euk = 255,131,250
+
         """
 
-    def blast2circos_file(self, blast, reference):
+    def blast2circos_file(self, blast, reference, blastn=False):
+
+        '''
+
+        tblastn vs contigs by default
+        can be switch to blastn
+
+        :param blast:
+        :param reference:
+        :param blastn:
+        :return:
+        '''
+
 
         import shell_command
         import best_blast_tree_display
         from Bio.Blast.Applications import NcbitblastnCommandline
+        from Bio.Blast.Applications import NcbiblastnCommandline
+
         # todo catch IO errors, orther potential errors
         a,b,c = shell_command.shell_command('formatdb -i %s -p F' % (reference))
         #print a
         #print b
         print c
-        tblastn_cline = NcbitblastnCommandline(query=blast,
-                                         db=reference,
-                                         evalue=0.001,
-                                         outfmt=6,
-                                         out="blast.tmp")
-
-        stdout, stderr = tblastn_cline()
+        if not blastn:
+            blast_cline = NcbitblastnCommandline(query=blast,
+                                                 db=reference,
+                                                 evalue=0.001,
+                                                 outfmt=6,
+                                                 out="blast.tmp")
+        else:
+            blast_cline = NcbiblastnCommandline(query=blast,
+                                                 db=reference,
+                                                 evalue=0.001,
+                                                 outfmt=6,
+                                                 out="blast.tmp")
+        stdout, stderr = blast_cline()
 
         #a,b,c = shell_command.shell_command('tblastn -query %s -db %s -evalue 1e-5 -max_target_seqs 1 -outfmt 6 > blast.tmp' % (blast, reference))
         #a,b,c = shell_command.shell_command('tblastn -query %s -db %s -evalue 1e-5 -max_target_seqs 1 -outfmt 6' % (blast, reference))
@@ -462,10 +505,11 @@ class Fasta2circos():
         purge(d, ".*a.n.*")
 
     def write_circos_files(self, config, color_config):
-
+        import os
         with open("circos.config", 'w') as f:
             f.write(config)
-        with open("brewer.all.conf", "w") as f:
+        os.mkdir(os.path.join(self.working_dir, '/etc'))
+        with open("etc/brewer.all.conf", "w") as f:
             f.write(color_config)
 
     def id_generator(self, size=6, chars=string.ascii_lowercase ): # + string.digits
@@ -801,6 +845,8 @@ class Fasta2circos():
         return coords_input[headerRow:None]
 
 
+
+
     def get_link(self, coords_input, link_file="circos.link", algo="nucmer"):
         import re
         import matplotlib.cm as cm
@@ -980,6 +1026,8 @@ if __name__ == '__main__':
     arg_parser.add_argument("-n", "--highlight", help="highlight instead of heatmap corresponding list of records", nargs="+")
     arg_parser.add_argument("-a", "--algo", help="algorythm to use to compare the genome (megablast, nucmer or promer)", default="nucmer")
     arg_parser.add_argument("-m", "--min_gap_size", help="minimum gap size to consider", default=1000)
+    arg_parser.add_argument("-bn", '--blastn', action="store_true", help="excute blastn and not blastp")
+
     args = arg_parser.parse_args()
 
     if args.highlight is None:
@@ -997,7 +1045,8 @@ if __name__ == '__main__':
                            blast=args.blast,
                            highlight_list=args.highlight,
                            algo=args.algo,
-                           min_gap_size=int(args.min_gap_size))
+                           min_gap_size=int(args.min_gap_size),
+                           blastn=args.blastn)
 
     circosf.write_circos_files(circosf.config, circosf.brewer_conf)
     circosf.run_circos(out_prefix=args.output_name)
