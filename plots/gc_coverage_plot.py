@@ -53,7 +53,7 @@ def gc_coverage_plot(samtool_depth_file, contigs_file, blast_file=False, column1
     if not blast_file:
         robjects.r("""
 
-        library(Cairo)
+        #library(Cairo)
         library(R.utils)
 
         if (isGzipped("%s")){
@@ -79,7 +79,7 @@ def gc_coverage_plot(samtool_depth_file, contigs_file, blast_file=False, column1
 
     %s
 
-     CairoSVG("gc_cov_buble.svg", width = 12, height = 12,)
+     svg("gc_cov_buble.svg", width = 12, height = 12,)
     symbols(x=gc_coverage_table[,3], y= gc_coverage_table[,4], circles=gc_coverage_table[,2], inches=1/3, ann=F, bg=rgb(1, 0, 0,0.5), fg=rgb(1, 0, 0,0.5), main=%s)
     if (any("gc_coverage_subset" %%in%% ls())) {
 
@@ -101,7 +101,7 @@ l <- gsub('(^[^_]+_[^_]+)_(.*)$', '\\\\1', gc_coverage_subset$Name)
 
      %s
 
-     CairoSVG("gc_cov_buble_2m.svg", width = 12, height = 12,)
+     svg("gc_cov_buble_2m.svg", width = 12, height = 12,)
      symbols(x=gc_coverage_table_2m[,3], y= gc_coverage_table_2m[,4], circles=gc_coverage_table_2m[,2], inches=1/3, ann=F, bg=rgb(1, 0, 0,0.5), fg=rgb(1, 0, 0,0.5), main=%s)
 
 
