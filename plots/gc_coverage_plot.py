@@ -160,7 +160,7 @@ l <- gsub('(^[^_]+_[^_]+)_(.*)$', '\\\\1', gc_coverage_subset$Name)
         
         write.table(gc_coverage_table, 'gc_coverage_table.tab', sep="\t", row.names=F)
 
-     CairoSVG("gc_cov_buble.svg", width = 12, height = 12,)
+     svg("gc_cov_buble.svg", width = 12, height = 12,)
      symbols(x=gc_coverage_table[,3], y= gc_coverage_table[,4], circles=gc_coverage_table[,2], inches=1/3, ann=F, bg=gc_coverage_table$taxon, fg=gc_coverage_table$taxon, main=%s)
      dev.off()
 
@@ -170,8 +170,8 @@ l <- gsub('(^[^_]+_[^_]+)_(.*)$', '\\\\1', gc_coverage_subset$Name)
      w <- which(gc_coverage_table[,4]< (4*cov_biggest))
      gc_coverage_table_2m <- gc_coverage_table[w,]
 
-     CairoSVG("gc_cov_buble_2m.svg", width = 12, height = 12,)
-    symbols(x=gc_coverage_table_2m[,3], y= gc_coverage_table_2m[,4], circles=gc_coverage_table_2m[,2], inches=1/3, ann=F, bg=gc_coverage_table$taxon, fg=gc_coverage_table$taxon, main=%s)
+     svg("gc_cov_buble_2m.svg", width = 12, height = 12,)
+     symbols(x=gc_coverage_table_2m[,3], y= gc_coverage_table_2m[,4], circles=gc_coverage_table_2m[,2], inches=1/3, ann=F, bg=gc_coverage_table$taxon, fg=gc_coverage_table$taxon, main=%s)
      dev.off()
 
 
