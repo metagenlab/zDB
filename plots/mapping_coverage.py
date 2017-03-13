@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import numpy
 import rpy2.robjects.numpy2ri
 import rpy2.robjects as robjects
 rpy2.robjects.numpy2ri.activate()
