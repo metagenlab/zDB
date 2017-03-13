@@ -1095,7 +1095,7 @@ class Circos_config:
 
     # #" <<include colors.rn.conf>>\n" \
     self.settings ="<colors>\n" \
-                   " <<include colors.rn.conf>>\n" \
+                   " #<<include colors.rn.conf>>\n" \
                    " #<<include brewer.all.conf>>\n" \
                    " </colors>\n" \
                    " <image>\n"\
