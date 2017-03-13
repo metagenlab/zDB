@@ -133,7 +133,7 @@ l <- gsub('(^[^_]+_[^_]+)_(.*)$', '\\\\1', gc_coverage_subset$Name)
 
         robjects.r("""
 
-        library(Cairo)
+        #library(Cairo)
         library(R.utils)
 
         if (isGzipped("%s")){
