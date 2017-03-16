@@ -22,7 +22,7 @@
 
 
             <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                <li class="active"><a href="#tab0" data-toggle="tab">Genomes</a></li>
+                <li class="sorttable"><a href="#tab0" data-toggle="tab">Genomes</a></li>
                 <li><a href="#tab1" data-toggle="tab">Phylogeny</a></li>
             </ul>
 
@@ -39,27 +39,30 @@
                         <br/>
                     </div>
 
-                    <table class="sortable" cellspacing="0" border="0" id="genomes_table">
-                        <col style="width: 37px;"/>
-                        <col style="width: 27px;"/>
-                        <col style="width: 20px;"/>
-                        <col style="width: 20px;"/>
-                        <col style="width: 20px;"/>
-                        <col style="width: 80px;"/>
-                        <col style="width: 10px;"/>
-                        <col style="width: 10px;"/>
-                        <col style="width: 10px;"/>
-                        <col style="width: 10px;"/>
-                        <col style="width: 10px;"/>
-                        <tr>
-                        <th>Accession</th>
-                        <th>GC</th>
-                        <th>N proteins</th>
-                        <th>N contigs</th>
-                        <th>Size</th>
-                        <th>Organism</th>
-                        <th colspan="5">Download</th>
-                        </tr>
+                    <table class="sortable" cellspacing="0" border="0" id="genomes_table"> <!-- class="sortable" cellspacing="0" border="0" id="genomes_table" -->
+                        <thead>
+                            <col style="width: 37px;"/>
+                            <col style="width: 27px;"/>
+                            <col style="width: 20px;"/>
+                            <col style="width: 20px;"/>
+                            <col style="width: 20px;"/>
+                            <col style="width: 80px;"/>
+                            <col style="width: 10px;"/>
+                            <col style="width: 10px;"/>
+                            <col style="width: 10px;"/>
+                            <col style="width: 10px;"/>
+                            <col style="width: 10px;"/>
+                            <tr>
+                                <th>Accession</th>
+                                <th>GC</th>
+                                <th>N proteins</th>
+                                <th>N contigs</th>
+                                <th>Size</th>
+                                <th>Organism</th>
+                                <th colspan="5">Download</th>
+                            </tr>
+                         </thead>
+                         <tbody>
                         {% for values in genomes_data %}
 
                             <tr>
@@ -96,6 +99,7 @@
                             </td>
 
                         {% endfor %}
+                        </tbody>
                     </table>
                 </div>
                 <div class="tab-pane" id="tab1">

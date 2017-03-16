@@ -47,7 +47,8 @@
 
                    <nav>
                         <ul id="tabs_main" class="nav nav-tabs">
-                            <li><a href="{% url 'kegg_module' biodb %}">Heatmap</a></li>
+                            <li><a href="{% url 'kegg_module' biodb %}">Category Heatmap</a></li>
+                            <li><a href="{% url 'kegg_module_subcat' biodb %}">Sub Category Heatmap</a></li>
                             <li class="active"><a href="{% url 'module_comparison' biodb %}">Compare strains</a></li>
                         </ul>
                     </nav>

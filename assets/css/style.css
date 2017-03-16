@@ -620,6 +620,10 @@ table.table_genomes tr {
 
 }
 
+.dropdown-menu{
+z-index:1051;
+}
+
 table.table_genomes td {
     display: block;
     width: auto;

@@ -268,17 +268,35 @@ def locus_int_form(database_name):
         #                                        widget=forms.RadioSelect)
     return IntCatChoice
 
-def make_module_overview_form(database_name):
+def make_module_overview_form(database_name, sub_sub_cat=False):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
-
-    sql = 'select distinct module_sub_cat from enzyme.kegg_module;'
+    if not sub_sub_cat:
+        sql = 'select distinct module_sub_cat from enzyme.kegg_module;'
+    else:
+        sql = 'select distinct module_sub_sub_cat from enzyme.kegg_module;'
     categories = server.adaptor.execute_and_fetchall(sql,)
     CHOICES = [(i[0],i[0]) for i in categories]
+    CHOICES.append(('microbial_metabolism', 'microbial_metabolism'))
 
     class ModuleCatChoice(forms.Form):
         category = forms.ChoiceField(choices=CHOICES)
     return ModuleCatChoice
+
+def make_pathway_overview_form(database_name):
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(database_name)
+    sql = 'select distinct pathway_category from enzyme.kegg_pathway where pathway_category_short not in ("drug","disease","organismal") ' \
+          ' order by pathway_category;'
+
+    categories = server.adaptor.execute_and_fetchall(sql,)
+    CHOICES = [(i[0],i[0]) for i in categories]
+
+
+    class PathwayCatChoice(forms.Form):
+        category = forms.ChoiceField(choices=CHOICES)
+    return PathwayCatChoice
+
 
 class SearchForm(forms.Form):
 
@@ -301,10 +319,28 @@ def make_circos_orthology_form(biodb):
 def make_blastnr_form(biodb):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
+
+
+
+    sql ='SELECT bioentry.bioentry_id, bioentry.description FROM bioentry ' \
+             'inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id ' \
+             'where biodatabase.name ="%s"' \
+             'order by bioentry.description' % biodb
+    result = server.adaptor.execute_and_fetchall(sql, )
+    accession_list = [i for i in result]
+    accession_choices = []
+
+    for accession in accession_list:
+        accession_choices.append((accession[0], accession[1]))
+
     sql = 'show columns from blastnr.blastnr_taxonomy;'
-    accession_choices = get_accessions(biodb, plasmid=True, all=False)
     ranks = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
     rank_choices = []
+
+    sql2 = 'select max(hit_number) from blastnr.blastnr_%s;' % biodb
+
+    max_nr_hits = server.adaptor.execute_and_fetchall(sql2,)[0][0]
+
     for rank in ranks:
         rank_choices.append((rank, rank))
 
@@ -314,9 +350,26 @@ def make_blastnr_form(biodb):
         CHOICES=[('BBH','BBH'),
          ('Majority','Majority Rule')]
         type = forms.ChoiceField(choices=CHOICES)
-        top_number = forms.CharField(max_length=3, label="Majority over top n hits", initial = 200, required = False)
+        top_number = forms.CharField(max_length=3, label="Majority over top n hits", initial = max_nr_hits, required = False)
 
     return Blastnr_top
+
+def make_interpro_taxonomy(biodb):
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    accession_choices = get_accessions(biodb)
+    # p_eukaryote | p_archae | p_virus
+    TAXO_CHOICES = (('p_eukaryote', 'eukaryote'), ('p_archae','archae'), ('p_virus','virus'))
+
+    class Interpro_taxonomy(forms.Form):
+
+        target_taxons = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" }), required = False)
+        percentage_cutoff = forms.CharField(max_length=3, label="Percentage Cutoff", initial=90, required=True)
+        kingdom = forms.ChoiceField(choices=TAXO_CHOICES)
+
+    return Interpro_taxonomy
+
 
 
 def make_blast_form(biodb):

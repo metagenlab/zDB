@@ -12,17 +12,19 @@
 {% load custom_tags %}
 {% get_static_prefix as STATIC_PREFIX %}
 <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
+<!--<script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>-->
 <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
 <!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
 <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
+<!--<script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>-->
+<!--<script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>-->
+<!--<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>-->
+
+
 
 <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
-<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
+<!--<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />-->
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
 
@@ -112,7 +114,11 @@
                         <div class="col-xs-4" style="padding-left: 15px">
                             <h3>General</h3>
                             <div style="width: 100%;padding-left:20px">
+
+
+
                                 <table style="width: 100%">
+
                                     <tr>
                                         <td id="description_field">Organism</td>
                                         <td>{{ data.12 }}</td>
@@ -486,6 +492,75 @@
                                     {% endfor %}
                                 </table>
                             {% endif %}
+                            {%if operon_ofs %}
+                                <h3>Operon <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data predicted based on the method from Westover et al, 2004"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
+                                <table id="cog_table" class="sortable">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th id="entete_locus">Locus</th>
+                                            <th style="width:10px">C</th>
+                                            <th style="width:160px">Pathways</th>
+                                            <th style="width:260px">Interpro</th>
+                                            <th id="entete_gene">Gene</th>
+                                            <th id="entete_n">nH</th>
+                                            <th id="entete_n">nG</th>
+                                            <th id="entete_n">TM</th>
+                                            <th id="entete_n">SP</th>
+                                            <th id="entete_product">Product</th>
+
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+                                        {%for values in locus2annot%}
+                                        <tr>
+                                            <td>{{values.0}}</td>
+                                            <td><a href="{% url 'locusx' biodb values.2 True %}" target="_top">{{values.2}}</a></td>
+                                            <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
+                                            {% with locus_tag2ko|keyvalue:values.2 as oneko %}
+                                                {% if oneko == '-' %}
+                                                    <td>-</td>
+                                                {% else %}
+                                                    {% with ko2ko_pathways|keyvalue:oneko as name %}
+                                                        {% if name == '-' %}
+                                                            <td>-</td>
+                                                        {% else %}
+                                                            <td>{{name|safe}}</td>
+                                                        {% endif %}
+                                                    {%endwith%}
+                                                {% endif %}
+
+                                            {%endwith%}
+                                            {% with locus2interpro|keyvalue:values.2 as interpro_data %}
+                                            <td>
+                                                {% for one_interpro in interpro_data %}
+                                                {% if one_interpro.0 != '-' %}
+                                                    <a href="{% url 'fam' biodb one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                                {%else%}
+                                                    {{one_interpro.0}}
+                                                {%endif%}
+                                                    {{one_interpro.1}} </br>
+                                                {% endfor %}
+                                                {%endwith%}
+                                            </td>
+                                            <td>{{values.7}}</td>
+                                            <td>{{values.8}}</td>
+                                            <td>{{values.9}}</td>
+                                            <td>{{values.10}}</td>
+                                            <td>{{values.11}}</td>
+                                            <td>{{values.12}}</td>
+
+                                        </tr>
+
+                                        {%endfor%}
+                                    </tbody>
+                                </table>
+                            {% endif %}
+
+
+
                             {% if uniprot_go_terms or interpro_go_terms%}
                                 <h3>Gene Ontology</h3>
                                 <table class="sortable">
@@ -671,7 +746,7 @@
                         <br/>
                         </div>
 
-                       <table id="homologues_table" class="sortable">
+                       <table class="display dataTable" id="homologues_table"> <!--  class="sortable" -->
                             <thead>
                                 <tr>
                                     <th></th>
@@ -832,5 +907,15 @@
 $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip();
 });
+
+$(document).ready(function() {
+    $('#homologues_table').DataTable( {
+        dom: 'Bfrtip',
+        buttons: [
+            'colvis'
+        ]
+    } );
+} );
+
 </script>
 </html>
