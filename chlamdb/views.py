@@ -1896,6 +1896,7 @@ def locusx(request, biodb, locus=None, menu=False):
 
                 except:
                     operon = False
+                    operon_ofs = False
 
             #operon=False
             temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
