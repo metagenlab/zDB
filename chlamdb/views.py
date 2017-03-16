@@ -4794,7 +4794,8 @@ def plot_neighborhood(request, biodb, target_locus, region_size=23000):
         orthogroup = reference_orthogroup[0]
         reference_taxon_id = reference_orthogroup[1]
         if plot_region:
-
+            operon_locus = []
+            operon_ofs = False
             temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
             temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
             name = 'temp/' + os.path.basename(temp_file.name)
