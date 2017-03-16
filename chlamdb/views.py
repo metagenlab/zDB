@@ -4831,6 +4831,7 @@ def plot_neighborhood(request, biodb, target_locus, region_size=23000):
 
                 except:
                     operon_locus = []
+                    operon_ofs = False
 
             locus_tags, orthogroup_list = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, [target_locus],
                                                                               temp_file.name, int(region_size),
