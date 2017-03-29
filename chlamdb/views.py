@@ -1861,7 +1861,7 @@ def locusx(request, biodb, locus=None, menu=False):
                        ' where operon_id=%s;' % (biodb, operon_id)
                 operon = server.adaptor.execute_and_fetchall(sqlo, )
                 operon_locus = [i[2] for i in operon]
-            except IndexError:
+            except (IndexError, server.module.ProgrammingError):
                 try:
                     sqlo = 'select C.locus_tag' \
                            ' from (select operon_id from custom_tables.locus2seqfeature_id_%s t1 ' \
@@ -1888,8 +1888,6 @@ def locusx(request, biodb, locus=None, menu=False):
                     ko2ko_pathways, \
                     ko2ko_modules,\
                     locus2interpro = get_locus_annotations(biodb, operon_locus)
-
-
 
                     operon = False
 
@@ -2059,7 +2057,7 @@ def locusx(request, biodb, locus=None, menu=False):
         tm_count = 0
         for i in homologues:
             if i[7] != '-':
-                tm_count +=  int(i[7])
+                tm_count += int(i[7])
         if tm_count > 0:
             show_tm_tree = True
 
@@ -5370,7 +5368,7 @@ def circos_main(request, biodb):
                               locus_highlight=highlight,
                               out_directory=temp_location,
                               draft_fasta=draft_data,
-                              href="/chlamdb/locusx/%s/" % biodb,
+                              href="/chlamdb/locusx/%s/T" % biodb,
                               ordered_taxons = ordered_taxons)
 
 
