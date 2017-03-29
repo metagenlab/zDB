@@ -17,7 +17,7 @@ import re;
 # coords_input=open('data/promerdata.txt','rU').readlines()
 import random
 import string
-
+import circos_utils
 
 def purge(dir, pattern):
     import os
@@ -74,30 +74,75 @@ def chunks(l, n):
 class Genbank2circos():
     def __init__(self, genbank,
                  database,
+                 tabulated_blast_file = False,
                  samtools_depth=None,
                  gc=True,
-                 accession2classification=False):
+                 accession2classification=False,
+                 identity_cutoff=50,
+                 query_coverage_cutoff=0.6,
+                 evalue_cutoff=0.00005,
+                 execute_blast=True,
+                 blast_tab_file=False):
 
 
         import gbk2circos
         import shell_command
+        from Bio import SeqIO
 
 
+
+        self.reference_records = [i for i in SeqIO.parse(open(genbank), 'genbank')]
+        self.contig_list = [record.name for record in self.reference_records]
+        self.contig2gc_percent = circos_utils.contig2gc(self.reference_records)
+
+        if samtools_depth:
+            self.contig2median_depth = circos_utils.get_median_contig_coverage(self.contig_list, samtools_depth)
+        else:
+            self.contig2median_depth = False
+
+        self.records2locus_tag2start_stop = circos_utils.records2locus_tag2start_stop(self.reference_records)
+        # coordinates to get concatenated chromosome coord
+        self.contigs_add = circos_utils.get_contigs_coords(self.reference_records)
+
+
+        if not blast_tab_file:
+            self.blast_tab_file = "blast_result.tab"
+        else:
+            self.blast_tab_file = blast_tab_file
         self.fasta_aa = genbank.split(".")[0] + '.faa'
         self.fasta_nucl = genbank.split(".")[0] + '.fna'
-
+        print 'extractint aa and fna sequences...'
         a,b,c = shell_command.shell_command("gbk2fna.py -i %s -o %s" % (genbank, self.fasta_nucl))
-        a,b,c = shell_command.shell_command("gbk2faa.py -i %s -f" % (genbank))
+        a,b,c = shell_command.shell_command("gbk2faa.py -i %s -f -o %s" % (genbank, self.fasta_aa))
 
-        print a,b,c
+        self.fasta_aa_records = [i for i in SeqIO.parse(open(self.fasta_aa), 'fasta')]
+        self.fasta_nucl_records = [i for i in SeqIO.parse(open(self.fasta_nucl), 'fasta')]
 
-        self.circos_reference = gbk2circos.Circos_config("circos_contigs.txt", show_ideogram_labels="no", radius=0.5,show_tick_labels="yes", show_ticks="yes")
+        #else:
+        #    self.blast_tab_file = tabulated_blast_file
 
-        self.get_karyotype_from_genbank(genbank)
-        print 'executing BLASTP'
-        #self.execute_blast(self.fasta_aa, database)
+        if execute_blast:
+            print 'executing BLASTP...'
+            self.execute_blast(self.fasta_aa, database)
 
-        class_colors = self.blast2barplot(self.fasta_aa, database, "blast_result.tab", bar_file="circos.bar", accession2classification=accession2classification)
+        self.circos_reference = gbk2circos.Circos_config("circos_contigs.txt",
+                                                         show_ideogram_labels="yes",
+                                                         radius=0.7,
+                                                         show_tick_labels="yes",
+                                                         show_ticks="yes")
+
+
+        self.first_contig, self.last_contig = circos_utils.get_karyotype_from_gbk_or_fasta_single_ref(self.reference_records,
+                                                                                                      out="circos_contigs.txt")
+
+        class_colors = self.blast2barplot(self.fasta_aa_records,
+                                          database,
+                                          self.blast_tab_file,
+                                          bar_file="circos.bar",
+                                          accession2classification=accession2classification,
+                                          identity_cutoff=identity_cutoff,
+                                          query_coverage_cutoff=query_coverage_cutoff,
+                                          evalue_cutoff=evalue_cutoff)
 
         countour_col = 'black'
 
@@ -112,7 +157,14 @@ class Genbank2circos():
                 print class_col, class_colors[class_col]
                 histo_colors+='%s,' % class_colors[class_col]
             histo_colors = histo_colors[0:-1]
-            self.circos_reference.add_plot("best_hit.bar",type="histogram",r0="0.65r", r1="0.67r",color=histo_colors, fill_color=histo_colors, thickness=0)
+            self.circos_reference.add_plot("best_hit.bar",
+                                           type="histogram",
+                                           r0="0.65r", r1="0.67r",
+                                           color=histo_colors,
+                                           fill_color=histo_colors,
+                                           thickness=0,
+                                           min=0,
+                                           max=50)
             self.last_track = 0.65
 
         add = '''
@@ -135,10 +187,14 @@ class Genbank2circos():
                                        max="50",
                                        rules=add)
 
-        if samtools_depth is not None:
-            for i, depth_file in enumerate(samtools_depth):
-                self.samtools_depth2circos_data(depth_file, i)
-                self.add_samtools_depth_track('circos_samtools_depth_%s.txt' % i)
+        if samtools_depth:
+            #for i, depth_file in enumerate(samtools_depth):
+            all_contigs_median = circos_utils.samtools_depth2circos_data(samtools_depth,
+                                                    self.contigs_add,
+                                                    1)
+            self.add_samtools_depth_track('circos_samtools_depth_1.txt',
+                                          lower_cutoff=int(all_contigs_median)/2,
+                                          top_cutoff=int(all_contigs_median)*2)
 
         if gc:
             import GC
@@ -155,9 +211,13 @@ class Genbank2circos():
             out_skew = ''
             for record in fasta_records:
                 # this function handle scaffolds (split sequence when encountering NNNNN regions)
-                out_var += GC.circos_gc_var(record, 1000)
+                out_var += GC.circos_gc_var(record,
+                                            1000,
+                                            shift=self.contigs_add[record.name][0])
 
-                out_skew += GC.circos_gc_skew(record, 1000)
+                out_skew += GC.circos_gc_skew(record,
+                                              1000,
+                                              shift=self.contigs_add[record.name][0])
             #print out_skew
             f.write(out_var)
             g.write(out_skew)
@@ -231,27 +291,31 @@ class Genbank2circos():
         """
 
 
-    def add_samtools_depth_track(self, samtools_file):
+
+    def add_samtools_depth_track(self, samtools_file, lower_cutoff=50, top_cutoff=5000):
 
         rules = """
         <rules>
         <rule>
-        condition          = var(value) > 500
-        show               = no
+        condition          = var(value) > %s
+        color              = green
+        fill_color         = lgreen
         </rule>
 
         <rule>
-        condition          = var(value) < 100
+        condition          = var(value) < %s
         color              = red
+        fill_color         = lred
         </rule>
         </rules>
 
-        """
+        """ % (top_cutoff,
+               lower_cutoff)
 
         self.circos_reference.add_plot(samtools_file,
                         type="histogram",
                         r1="%sr" % (self.last_track - 0.08),
-                        r0= "%sr" % (self.last_track - 0.15),
+                        r0= "%sr" % (self.last_track - 0.20),
                         color="black",
                         fill_color="grey_a5",
                         thickness = "1p",
@@ -259,9 +323,10 @@ class Genbank2circos():
                         rules =rules,
                         backgrounds="",
                         url="")
-        self.last_track -= 0.15
+        self.last_track -= 0.20
 
         self.config = self.circos_reference.get_file()
+
 
 
     def run_circos(self, config_file="circos.config", out_prefix="circos"):
@@ -301,35 +366,6 @@ class Genbank2circos():
 
 
 
-    def get_karyotype_from_genbank(self, genbank, out="circos_contigs.txt"):
-        from Bio import SeqIO
-        import re
-
-        self.locus_tag2start_stop = {}
-
-        self.genbank_data = [i for i in SeqIO.parse(open(genbank), "genbank")]
-
-        #print "hit_list", hit_list
-        with open(out, 'w') as f:
-            # chr - Rhab Rhab 0 1879212 spectral-5-div-4
-            i = 0
-            contig_start = 0
-            contig_end = 0
-            for record in self.genbank_data:
-                if i == 4:
-                    i =0
-                i+=1
-                name = re.sub("\|", "", record.name)
-
-                n4 = name
-                if not 'n2' in locals():
-                    n2 = name
-                # spectral-5-div-%s
-                f.write("chr - %s %s %s %s greys-3-seq-%s\n" % (name, name, 0, len(record.seq), i)) # , i
-
-                for feature in record.features:
-                    if feature.type == 'CDS':
-                        self.locus_tag2start_stop[feature.qualifiers['locus_tag'][0]] = [record.name, int(feature.location.start), int(feature.location.end)]
        #print self.locus_tag2start_stop
 
     def execute_blast(self,fasta, database):
@@ -341,15 +377,14 @@ class Genbank2circos():
         a, b, c = shell_command.shell_command(cmd2)
         print a,b,c
 
-    def read_blast_tab_file(self, query_fasta, input_database, blast_file, identity_cutoff, evalue_cutoff, query_cov_cutoff):
+    def read_blast_tab_file(self, query_records, input_database, blast_file, identity_cutoff, evalue_cutoff, query_cov_cutoff):
         from Bio import SeqIO
         # get the length of each query sequence
         # calculate coverage and filter hits
-        with open(query_fasta, 'r') as f:
-            locus2length = {}
-            records = SeqIO.parse(f,'fasta')
-            for record in records:
-                locus2length[record.id] = len(record.seq)
+        locus2length = {}
+        for record in query_records:
+            locus2length[record.id] = len(record.seq)
+
 
         with open(input_database, 'r') as f:
             accession2description = {}
@@ -374,20 +409,37 @@ class Genbank2circos():
                     keep.append(line)
                     hit_list.append(hit_name)
                     locus_list.append(query_name)
+
         with open('blast_best_hit.txt', 'w') as o:
             for n,line in enumerate(keep):
+                try:
+                    acc = accession2description[line[1]].split('| ')[1]
+                except:
+                    try:
+                        acc = accession2description[line[1]].split('|')[1]
+                    except:
+                        acc='-'
                 if n==0:
                     locus = line[0]
-                    o.write('\t'.join(line) + '\t%s\n' % accession2description[line[1]].split('| ')[1])
+                    o.write('\t'.join(line) + '\t%s\n' % acc)
                 else:
                     if locus == line[0]:
                         continue
                     else:
                         locus=line[0]
-                        o.write('\t'.join(line) + '\t%s\n' % accession2description[line[1]].split('| ')[1])
+
+                        o.write('\t'.join(line) + '\t%s\n' % acc)
+
         return locus_list, hit_list
 
-    def blast2barplot(self, input_fasta, input_database, blast_output, bar_file="circos.bar", accession2classification=False):
+    def blast2barplot(self, input_records,
+                      input_database,
+                      blast_output,
+                      bar_file="circos.bar",
+                      accession2classification=False,
+                      identity_cutoff=50,
+                      query_coverage_cutoff=0.6,
+                      evalue_cutoff=0.00005):
         import re
         import matplotlib.cm as cm
         from matplotlib.colors import rgb2hex
@@ -416,13 +468,15 @@ class Genbank2circos():
             locus_list = [i.rstrip().split('\t')[0] for i in infile]
             hit_list = [i.rstrip().split('\t')[1] for i in infile]
         '''
-
-        locus_list, hit_list = self.read_blast_tab_file(query_fasta=input_fasta,
+        print 'identity', identity_cutoff
+        print 'cov', query_coverage_cutoff
+        print 'evalue', evalue_cutoff
+        locus_list, hit_list = self.read_blast_tab_file(query_records=input_records,
                                                         blast_file=blast_output,
                                                         input_database=input_database,
-                                                        identity_cutoff=50, # 80
-                                                        evalue_cutoff=0.00005,
-                                                        query_cov_cutoff=0.6)
+                                                        identity_cutoff=identity_cutoff, # 80
+                                                        evalue_cutoff=evalue_cutoff,
+                                                        query_cov_cutoff=query_coverage_cutoff)
 
         locus_tag2count = {}
         locus_tag2best_hit = {}
@@ -449,8 +503,15 @@ class Genbank2circos():
 
         bar_file = bar_file
         best_hit_classif = open('best_hit.bar', 'w')
+        contig_counts = open('coutig_couts.tab', 'w')
+        if not self.contig2median_depth:
+            contig_counts.write("contig\tN_blast\tN_no_blast\tratio\tGC\n")
+        else:
+            contig_counts.write("contig\tN_blast\tN_no_blast\tratio\tGC\tmedian_depth\tassembly_depth\tratio_depth\n")
         with open(bar_file, 'w') as f:
-                for record in self.genbank_data:
+                for record in self.reference_records:
+                    contig_hit_count = 0
+                    contig_cds_count = 0
                     for feature in record.features:
                         if feature.type == 'CDS':
                             start = int(feature.location.start)
@@ -461,50 +522,58 @@ class Genbank2circos():
                                 # set to 50 of to much hits
                                 if count > 50:
                                     count = 50
-                            except:
+                            except KeyError:
                                 count = 0
+                            if count > 0:
+                                contig_hit_count+=1
+                            if not 'pseudo' in feature.qualifiers:
+                                contig_cds_count+=1
                             # RhT_1 178 895 0
                             if not accession2classification:
-
+                                print start
+                                print stop
+                                print self.contigs_add[record.name]
                                 f.write("%s\t%s\t%s\t%s\tid=%s\n" % (record.name,
-                                                              start,
-                                                              stop,
+                                                              str(int(start) + self.contigs_add[record.name][0]),
+                                                              str(int(stop) + self.contigs_add[record.name][0]),
                                                               count,
                                                               locus))
                             else:
                                 counts = [str(i) for i in locus_tag2count[locus].values()]
-                                f.write("%s\t%s\t%s\t%s\n" % (self.locus_tag2start_stop[locus][0],
-                                                              self.locus_tag2start_stop[locus][1],
-                                                              self.locus_tag2start_stop[locus][2],
+                                f.write("%s\t%s\t%s\t%s\n" % (record.name,
+                                                              str(self.records2locus_tag2start_stop[locus][0] + self.contigs_add[record.name][0]),
+                                                              str(self.records2locus_tag2start_stop[locus][1] + self.contigs_add[record.name][0]),
                                                               ','.join(counts)))
                                 counts = [str(i) for i in locus_tag2best_hit[locus].values()]
-                                best_hit_classif.write("%s\t%s\t%s\t%s\n" % (self.locus_tag2start_stop[locus][0],
-                                                              self.locus_tag2start_stop[locus][1],
-                                                              self.locus_tag2start_stop[locus][2],
+                                best_hit_classif.write("%s\t%s\t%s\t%s\n" % (record.name,
+                                                              str(self.records2locus_tag2start_stop[locus][0] + self.contigs_add[record.name][0]),
+                                                              str(self.records2locus_tag2start_stop[locus][1] + self.contigs_add[record.name][0]),
                                                               ','.join(counts)))
+
+                    print 'hits', contig_hit_count
+                    print 'cds', contig_cds_count
+                    if contig_cds_count == 0 and contig_hit_count == 0:
+                        ratio = 0
+                    else:
+                        ratio = round(contig_hit_count/float(contig_cds_count), 2)
+                    if not self.contig2median_depth:
+                        contig_counts.write("%s\t%s\t%s\t%s\t%s\n" % (record.name,
+                                                                  contig_cds_count,
+                                                                  contig_hit_count,
+                                                                  round(self.contig2gc_percent[record.name],2),
+                                                                  ratio))
+                    else:
+                        ratio_depth = round(self.contig2median_depth[record.name]/float(self.contig2median_depth["assembly"]),2)
+                        contig_counts.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (record.name,
+                                                                                  contig_cds_count,
+                                                                                  contig_hit_count,
+                                                                                  ratio,
+                                                                                  round(self.contig2gc_percent[record.name],2),
+                                                                                  self.contig2median_depth[record.name],
+                                                                                  self.contig2median_depth["assembly"],
+                                                                                  ratio_depth))
+        contig_counts.close()
         return class2color
-
-
-    def samtools_depth2circos_data(self, samtools_depth_file, i):
-        import numpy
-        contig2coverage = {}
-        with open(samtools_depth_file, 'r') as f:
-            for line in f:
-                data = line.rstrip().split('\t')
-                if data[0] not in contig2coverage:
-                    contig2coverage[data[0]] = []
-                    contig2coverage[data[0]].append(int(data[2]))
-                else:
-                    contig2coverage[data[0]].append(int(data[2]))
-        with open('circos_samtools_depth_%s.txt' % i, 'w') as g:
-            for contig in contig2coverage:
-                # split list by chunks of 1000
-                mychunks = chunks(contig2coverage[contig], 1000)
-                for i, cov_list in enumerate(mychunks):
-                    #print cov_list
-                    median_depth = numpy.median(cov_list)
-                    g.write("%s\t%s\t%s\t%s\n" % (contig, i*1000, (i*1000)+999, median_depth))
-
 
 
 if __name__ == '__main__':
@@ -515,17 +584,33 @@ if __name__ == '__main__':
     arg_parser.add_argument("-d", "--database", help="database")
     arg_parser.add_argument("-o", "--out_name", help="output name", default="circos_out")
     arg_parser.add_argument("-p", "--phast_database", action="store_true",help="PHAST database")
+    arg_parser.add_argument("-e", "--cutoff_evalue", help="e-value cutoff", default=0.00005, type=float)
+    arg_parser.add_argument("-c", "--cutoff_coverage", help="query coverage cutoff", default=0.6, type=float)
+    arg_parser.add_argument("-i", "--cutoff_identity", help="Percentage identity cutoff", default=50, type=float)
+    arg_parser.add_argument("-b", "--blast", help="execute blast", action="store_false")
+    arg_parser.add_argument("-s", "--samtools_depth", help="add samtools depth", default=False)
+    arg_parser.add_argument("-bt", "--blast_tab", help="uses input blast tab file")
     args = arg_parser.parse_args()
 
     ##Run main
     if args.phast_database:
         p = PHAST(args.database)
         accession2classif = p.accession2classification
-
     else:
         accession2classif = False
 
-    circosf = Genbank2circos(args.genbank, args.database, accession2classification=accession2classif)
+
+    print 'execute_blast:', args.blast
+    circosf = Genbank2circos(args.genbank,
+                             args.database,
+                             accession2classification=accession2classif,
+                             identity_cutoff=args.cutoff_identity,
+                             query_coverage_cutoff=args.cutoff_coverage,
+                             evalue_cutoff=args.cutoff_evalue,
+                             execute_blast=args.blast,
+                             samtools_depth=args.samtools_depth,
+                             blast_tab_file=args.blast_tab)
+
     circosf.write_circos_files(circosf.config, circosf.brewer_conf)
     circosf.run_circos(out_prefix=args.out_name)
 

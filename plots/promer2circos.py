@@ -13,6 +13,7 @@
 import sys;
 import argparse;
 import re;
+import circos_utils
 
 # coords_input=open('data/promerdata.txt','rU').readlines()
 import random
@@ -75,15 +76,19 @@ class Fasta2circos():
                  highlight_list=[],
                  algo="nucmer",
                  min_gap_size=1000,
-                 blastn=False):
+                 blastn=False,
+                 gbk2orf=False):
         import nucmer_utility
         import os
+        from Bio import SeqIO
         self.contigs_add = {}
         print "fasta1", fasta1
         print "fasta2", len(fasta2), fasta2
         print "highlight list", highlight_list
         print "heatmap", heatmap
         self.working_dir = os.getcwd()
+        self.last_track = 0.99
+
         if algo == "nucmer":
             print "fasta1", fasta1
             nucmer_utility.execute_promer(fasta1, fasta2, algo="nucmer")
@@ -94,19 +99,35 @@ class Fasta2circos():
         if not heatmap:
             outname = os.path.basename(fasta2[0]).split('.')[0]
             hit_list, query_list = self.get_link("%s.coords" % outname, algo=algo)
+
+
         else:
 
             # coords for cumulated coorginates
-            self.get_contigs_coords(fasta1)
-
-            print 'wrinting link file'
+            records = [i for i in SeqIO.parse(open(fasta1), "fasta")]
+            self.contigs_add = circos_utils.get_contigs_coords(records)
 
             import gbk2circos
             self.circos_reference = gbk2circos.Circos_config("circos_contigs.txt",
                                                              show_ideogram_labels="no",
-                                                             radius=0.8,
+                                                             radius=0.7,
                                                              show_tick_labels="yes",
                                                              show_ticks="yes")
+
+
+            if gbk2orf:
+                minus, plus = self.gbk2circos_data(gbk2orf)
+                self.circos_reference.add_highlight(minus,
+                                                    'grey_a1',
+                                                    r1="%sr" % (self.last_track - 0.01),
+                                                    r0="%sr" % (self.last_track - 0.03))
+                self.last_track-=0.03
+
+                self.circos_reference.add_highlight(plus,
+                                                    'grey_a1',
+                                                    r1="%sr" % (self.last_track),
+                                                    r0="%sr" % (self.last_track - 0.02))
+                self.last_track-=0.05
 
             #genome_list = [i.split('.')[0] + '.heat' for i in fasta2]
 
@@ -196,9 +217,9 @@ class Fasta2circos():
                 supp = '''
                         label_snuggle             = yes
                         
-                        max_snuggle_distance            = 10r
+                        max_snuggle_distance            = 20r
                         show_links     = yes
-                        link_dims      = 10p,88p,20p,4p,4p
+                        link_dims      = 10p,88p,30p,4p,4p
                         link_thickness = 2p
                         link_color     = red
 
@@ -222,13 +243,18 @@ class Fasta2circos():
 
                 out_var = ''
                 out_skew = ''
-                for record in fasta_records:
+                out_cumul_skew=''
+                out_gc_content=''
+                initial = 0
+                for n, record in enumerate(fasta_records):
                     contig = re.sub("\|", "", record.name)
                     shift = self.contigs_add[contig][0]
                     # this function handle scaffolds (split sequence when encountering NNNNN regions)
                     out_var += GC.circos_gc_var(record, 1000, shift=shift)
-
+                    circos_cumul, initial = GC.circos_cumul_gc_skew(record, 1000, shift=shift, initial=initial)
+                    out_cumul_skew+=circos_cumul
                     out_skew += GC.circos_gc_skew(record, 1000, shift=shift)
+                    out_gc_content+=GC.circos_gc_content(record, 1000, shift=shift)
                 #print out_skew
                 f.write(out_var)
                 g.write(out_skew)
@@ -260,12 +286,45 @@ class Fasta2circos():
                         color = blue
                         </rule>
                 """
+                rule3 = """<rule>
+                        condition          = var(value) < 0
+                        fill_color         = lgreen
+                        color = green
+                        </rule>
+
+                        <rule>
+                        condition          = var(value) > 0
+                        fill_color         = lblue
+                        color = blue
+                        </rule>
+                """
+
+                self.last_track = self.last_track-0.1
 
                 conditions = self.circos_reference.template_rules % (rule)
-                self.circos_reference.add_plot('circos_GC_skew.txt', fill_color="green", r1="%sr" % (self.last_track -0.02), r0= "%sr" % (self.last_track -0.1), type="line", rules=conditions)
+                self.circos_reference.add_plot('circos_GC_skew.txt', fill_color="green", r0="%sr" % (self.last_track -0.01), r1= "%sr" % (self.last_track -0.09), type="line", rules=conditions)
+
                 conditions = self.circos_reference.template_rules % (rule2)
-                self.circos_reference.add_plot('circos_GC_var.txt', fill_color="green", r1="%sr" % (self.last_track -0.12), r0= "%sr" % (self.last_track -0.2), type="line", rules=conditions)
-                self.last_track = self.last_track -0.12
+                self.circos_reference.add_plot('circos_GC_var.txt', fill_color="green", r0="%sr" % (self.last_track -0.11), r1= "%sr" % (self.last_track -0.19), type="line", rules=conditions)
+                self.last_track = self.last_track -0.11
+
+
+                '''
+                out_cumul = open('circos_cumul_GC_skew.txt', 'w')
+                out_cumul.write(out_cumul_skew)
+                out_cumul.close()
+                conditions = self.circos_reference.template_rules % (rule3)
+                self.circos_reference.add_plot('circos_cumul_GC_skew.txt', fill_color="white", r0="%sr" % (self.last_track -0.11), r1= "%sr" % (self.last_track -0.19), type="line", rules=conditions)
+                self.last_track = self.last_track -0.11
+
+                out_cumul = open('circos_GC_content.txt', 'w')
+                out_cumul.write(out_gc_content)
+                out_cumul.close()
+                conditions = self.circos_reference.template_rules % (rule3)
+                self.circos_reference.add_plot('circos_GC_content.txt', fill_color="black", r0="%sr" % (self.last_track -0.11), r1= "%sr" % (self.last_track -0.19), type="line", min="0", max="100")
+                self.last_track = self.last_track -0.11
+                '''
+
 
         if heatmap:
             c1, c2, c3, c4 = self.get_karyotype_from_fasta(fasta1, fasta2, list(set(all_hit_list)), list(set(all_query_list)), filter_ref, filter_query, both_fasta=False)
@@ -273,21 +332,57 @@ class Fasta2circos():
 
             self.config = self.circos_reference.get_file()
 
+
+
+
             if samtools_depth is not None:
                 for i, depth_file in enumerate(samtools_depth):
                     all_contigs_median = self.samtools_depth2circos_data(depth_file, i)
                     self.add_samtools_depth_track('circos_samtools_depth_%s.txt' % i,
                                                   lower_cutoff=int(all_contigs_median)/2,
-                                                  top_cutoff=int(all_contigs_median)*2)
+                                                  top_cutoff=int(all_contigs_median)*2,
+                                                  r1=self.last_track - 0.08,
+                                                  r0=self.last_track - 0.25)
+                    self.last_track -= 0.25
 
         else:
             # c1 last_seq_id
             # c2 first_seq_id
             # c3 mid1 last hit id
             # c4 mid2
-            c1, c2, c3, c4 = self.get_karyotype_from_fasta(fasta1, fasta2, hit_list, query_list, filter_ref, filter_query, both_fasta=True)
+            import gbk2circos
+            last_seq_id, first_seq_id, mid1, mid2 = self.get_karyotype_from_fasta(fasta1, fasta2, hit_list, query_list, filter_ref, filter_query, both_fasta=True, cumul=False)
 
-            self.config = self.get_circos_config(c1, c2, c3, c4, heat=False)
+
+            self.circos_reference = gbk2circos.Circos_config("circos_contigs.txt",
+                                                             show_ideogram_labels="yes",
+                                                             radius=0.7,
+                                                             show_tick_labels="yes",
+                                                             show_ticks="yes",
+                                                             chr_spacing_list=[[last_seq_id, first_seq_id],[mid1, mid2]],
+                                                             ideogram_spacing=0.5,
+                                                             color_files='\n<<include colors.my>>')
+
+            self.circos_reference.add_link("circos.link")
+
+
+            if samtools_depth is not None:
+                for i, depth_file in enumerate(samtools_depth):
+                    all_contigs_median = circos_utils.samtools_depth2circos_data(depth_file, False, i)
+                    self.add_samtools_depth_track('circos_samtools_depth_%s.txt' % i,
+                                                  lower_cutoff=int(all_contigs_median)/2,
+                                                  top_cutoff=int(all_contigs_median)*2,
+                                                  r1=1.45,
+                                                  r0=1.25)
+                    #self.last_track -= 0.25
+            self.config = self.circos_reference.get_file()
+            # last_seq_id, first_seq_id, mid1, mid2
+            '''
+            self.config = self.get_circos_config(last_seq_id,
+                                                 first_seq_id,
+                                                 mid1,
+                                                 mid2, heat=False)
+            '''
 
         self.brewer_conf = """
 
@@ -406,13 +501,17 @@ class Fasta2circos():
     def add_multiple_genome_tracks(self, track_file_list, highlight_list=[]):
         print 'track file list', track_file_list
         import os
-        r1 = 0.95
-        r0 = 0.935
+
+        # r1 doit etre plus grand que r1
+        r1 = self.last_track
+        #r0 = self.last_track-0.015
         n = 0
+        hc = 0
         for i, orthofile in enumerate(track_file_list):
             n+=1
             if orthofile not in highlight_list:
                 #print orthofile
+                r0 = r1-0.015
                 if n%2==0: # orrd-9-seq # blues
                     self.circos_reference.add_plot(orthofile, type="heatmap", r1="%sr" % r1, r0= "%sr" % r0, color="ylorrd-9-seq", fill_color="", thickness = "2p", z = 1, rules ="", backgrounds="",url="")
                 else:
@@ -422,15 +521,23 @@ class Fasta2circos():
                 r1 = r1-0.023 # 046
                 r0 = r0-0.023 # 046
             else:
+                r0 = r1-0.013
                 n-=1
-                self.circos_reference.add_highlight(orthofile, r1="0.99r", r0= "0.97r",fill_color="piyg-9-div-8")
+                if hc>9:
+                    hc=0
+                color = 'set1-9-qual-%s' % hc
+                hc+=1
+                self.circos_reference.add_highlight(orthofile, r1="%sr" % r1, r0= "%sr" % r0,fill_color=color)
+                r1 = r1-0.020 # 046
+                #r0 = r0-0.011
+
         self.last_track = r0
         self.config = self.circos_reference.get_file()
 
         #t = open('circos.config', "w")
 
 
-    def add_samtools_depth_track(self, samtools_file, lower_cutoff=50, top_cutoff=5000):
+    def add_samtools_depth_track(self, samtools_file, lower_cutoff=50, top_cutoff=5000, r0=0.8, r1=0.7):
 
         rules = """
         <rules>
@@ -452,8 +559,8 @@ class Fasta2circos():
 
         self.circos_reference.add_plot(samtools_file,
                         type="histogram",
-                        r1="%sr" % (self.last_track - 0.08),
-                        r0= "%sr" % (self.last_track - 0.25),
+                        r1="%sr" % (r1),
+                        r0= "%sr" % (r0),
                         color="black",
                         fill_color="grey_a5",
                         thickness = "1p",
@@ -461,7 +568,7 @@ class Fasta2circos():
                         rules =rules,
                         backgrounds="",
                         url="")
-        self.last_track -= 0.15
+
 
         self.config = self.circos_reference.get_file()
 
@@ -517,7 +624,7 @@ class Fasta2circos():
         <link>
         ribbon = yes
         file          = circos.link
-        color         = orange
+        color         = orrd-9-seq
         radius        = 0.95r
         bezier_radius = 0.1r
         thickness     = 3
@@ -559,21 +666,6 @@ class Fasta2circos():
 
         '''
 
-
-
-        heatmap = '''
-        <plot>
-        type		    = heatmap
-         r0                 = 0.9r
-         r1                 = 0.97r
-         color              = blues-6-seq-3, orrd-9-seq
-         fill_color         =
-         thickness          = 2p
-         file               = circos.heat
-         z                  = 1
-
-         </plot>
-        '''
 
 
         chr_spacing = '''
@@ -695,7 +787,7 @@ class Fasta2circos():
 
 
         <colors>
-         #<<include colors.my>>
+         <<include colors.my>>
          #<<include brewer.all.conf>>
          </colors>
          <image>
@@ -721,10 +813,6 @@ class Fasta2circos():
                 ch2 = chr_spacing % (mid1, mid2)
                 return circos_config % (0.5, ch1 + ch2, link_code)
 
-        if heat:
-            print '############ ok ###########'
-            return circos_config % (0, "", plot_template % heatmap)
-
 
     def get_karyotype_from_fasta(self,
                                  fasta1,
@@ -734,7 +822,8 @@ class Fasta2circos():
                                  filter_ref=True,
                                  filter_query=True,
                                  out="circos_contigs.txt",
-                                 both_fasta = True):
+                                 both_fasta = True,
+                                 cumul=True):
         from Bio import SeqIO
         import re
 
@@ -752,7 +841,7 @@ class Fasta2circos():
                 name = re.sub("\|", "", record.name)
                 print '#### contig ####', name
                 # cumulated length if not link plot and not filter_ref (TODO, put it as an argument?)
-                if not both_fasta or not filter_ref:
+                if cumul:
                     contig_start = contig_end+1
                 contig_end = contig_start+len(record)
 
@@ -792,21 +881,6 @@ class Fasta2circos():
         if not 'n2' in locals():
             n2 = n1
         return (n1, n2, n3, n4)
-
-    def get_contigs_coords(self, ref_fasta):
-        from Bio import SeqIO
-        fasta_data1 = [i for i in SeqIO.parse(open(ref_fasta), "fasta")]
-        contig_start = 0
-        contig_end = 0
-        for record in fasta_data1:
-            name = re.sub("\|", "", record.name)
-            contig_start = contig_end+1
-            contig_end = contig_start+len(record)
-            self.contigs_add[name] = [contig_start,contig_end]
-
-
-
-
 
     def execute_megablast(self,fasta1, fasta2):
         import os
@@ -972,6 +1046,50 @@ class Fasta2circos():
         return (hit_list, query_list, contig2start_stop_list)
 
 
+    def gbk2circos_data(self, gbk_file,
+                        minus_file="circos_orf_minus.txt",
+                        plus_file="circos_orf_plus.txt"):
+
+        m = open(minus_file, 'w')
+        p = open(plus_file, 'w')
+        from Bio import SeqIO
+
+        with open(gbk_file, 'r') as f:
+            for record in SeqIO.parse(f, 'genbank'):
+                for feature in record.features:
+                    start = str(feature.location.start+self.contigs_add[record.name][0])
+                    end = str(feature.location.end+self.contigs_add[record.name][0])
+                    if abs(int(end)-int(start)) > 100000:
+                        continue
+                    if feature.type == 'CDS':
+                        # deal with impossible size ORF
+
+
+
+                        if int(feature.location.strand) == 1:
+                            p.write('%s\t%s\t%s\n' % (record.name,
+                                                      start,
+                                                      end))
+                        else:
+                            m.write('%s\t%s\t%s\n' % (record.name,
+                                                      start,
+                                                      end))
+                    elif feature.type == 'rRNA' or feature.type == 'tRNA':
+                        if feature.location.strand == '1':
+                            p.write('%s\t%s\t%s\tfill_color=red\n' % (record.name,
+                                                      start,
+                                                      end))
+                        else:
+                            m.write('%s\t%s\t%s\tfill_color=red\n' % (record.name,
+                                                      start,
+                                                      end))
+                    else:
+                        pass
+        m.close()
+        p.close()
+
+        return minus_file, plus_file
+
     def samtools_depth2circos_data(self, samtools_depth_file, i):
         import numpy
         contig2coverage = {}
@@ -993,8 +1111,8 @@ class Fasta2circos():
                 for i, cov_list in enumerate(mychunks):
                     #print cov_list
                     median_depth = numpy.median(cov_list)
-                    if median_depth > (4*all_contigs_median):
-                        median_depth = 4*all_contigs_median
+                    if median_depth > (3*all_contigs_median):
+                        median_depth = 3*all_contigs_median
                     g.write("%s\t%s\t%s\t%s\n" % (contig, (i*1000)+self.contigs_add[contig][0],
                                                   ((i*1000)+999)+self.contigs_add[contig][0],
                                                   median_depth))
@@ -1013,6 +1131,7 @@ if __name__ == '__main__':
     arg_parser.add_argument("-s", "--samtools_depth", help="samtools depth file", nargs="+")
     arg_parser.add_argument("-o", "--output_name", help="output circos pefix", default="nucmer2circos")
     arg_parser.add_argument("-g", "--gaps", help="highlight gaps", action="store_true")
+    arg_parser.add_argument("-gb", "--genbank", help="add ORF based on GBK file", default=False)
     arg_parser.add_argument("-b", "--blast", help="highlight blast hits (-outfmt 6)")
     arg_parser.add_argument("-n", "--highlight", help="highlight instead of heatmap corresponding list of records", nargs="+")
     arg_parser.add_argument("-a", "--algo", help="algorythm to use to compare the genome (megablast, nucmer or promer)", default="nucmer")
@@ -1037,7 +1156,8 @@ if __name__ == '__main__':
                            highlight_list=args.highlight,
                            algo=args.algo,
                            min_gap_size=int(args.min_gap_size),
-                           blastn=args.blastn)
+                           blastn=args.blastn,
+                           gbk2orf=args.genbank)
 
     circosf.write_circos_files(circosf.config, circosf.brewer_conf)
     circosf.run_circos(out_prefix=args.output_name)

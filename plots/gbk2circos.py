@@ -983,7 +983,8 @@ class Circos_config:
                ideogram_spacing=0,
                radius=0.75,
                label_radius=0.05,
-               show_ideogram_labels="no"):
+               show_ideogram_labels="no",
+               color_files=""):
     import re
 
     self.plots = ""
@@ -1029,7 +1030,11 @@ class Circos_config:
                               " fill_bands         = yes\n" \
                               " band_transparency  = 1\n" \
                               " \n" \
-                              " </ideogram>\n" % (ideogram_spacing, self.add_spacing(chr_spacing_list), radius, show_ideogram_labels, label_radius)
+                              " </ideogram>\n" % (ideogram_spacing,
+                                                  self.add_spacing(chr_spacing_list),
+                                                  radius,
+                                                  show_ideogram_labels,
+                                                  label_radius)
 
     self.end_ticks = "  <tick>\n" \
                       "  multiplier   = 1\n" \
@@ -1095,7 +1100,7 @@ class Circos_config:
 
     # #" <<include colors.rn.conf>>\n" \
     self.settings ="<colors>\n" \
-                   " #<<include colors.rn.conf>>\n" \
+                   " %s\n" \
                    " #<<include brewer.all.conf>>\n" \
                    " </colors>\n" \
                    " <image>\n"\
@@ -1112,7 +1117,7 @@ class Circos_config:
                    " <<include housekeeping.conf>>\n" \
                    " anti_aliasing*     = no\n"
 
-    self.complete_file = self.template_caryotype + self.template_ideograms + self.template_ticks + "%s %s %s" + self.settings
+    self.complete_file = self.template_caryotype + self.template_ideograms + self.template_ticks + "%s %s %s" + self.settings % (color_files)
 
   def _template_spacing(self, chr1, chr2):
     template = '<pairwise %s %s>\n' \
@@ -1164,6 +1169,7 @@ class Circos_config:
 
   def _template_link(self, link_file, color="black_a5", thickness=1):
     template = "<link>\n" \
+               "ribbon = yes\n" \
                "file          = %s\n" \
                "color         = %s\n" \
                "radius        = 0.99r\n" \
