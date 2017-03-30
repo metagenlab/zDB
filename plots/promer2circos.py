@@ -937,7 +937,7 @@ class Fasta2circos():
         #print 'mimax', id_min, id_max
         norm = mpl.colors.Normalize(vmin=id_min, vmax=id_max)
         cmap = cm.Blues
-        cmap_blue = cm.OrRd
+        cmap_blue = cm.Reds #OrRd
         m = cm.ScalarMappable(norm=norm, cmap=cmap)
         m2 = cm.ScalarMappable(norm=norm, cmap=cmap_blue)
         c = open('colors.my', 'w')
@@ -1001,7 +1001,7 @@ class Fasta2circos():
         #print 'mimax', id_min, id_max
         norm = mpl.colors.Normalize(vmin=id_min, vmax=id_max)
         cmap = cm.Blues
-        cmap_blue = cm.OrRd
+        cmap_blue = cm.Reds#OrRd
         m = cm.ScalarMappable(norm=norm, cmap=cmap)
         m2 = cm.ScalarMappable(norm=norm, cmap=cmap_blue)
         c = open('colors.my', 'w')
