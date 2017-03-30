@@ -965,9 +965,9 @@ class Fasta2circos():
                 color_id = self.id_generator()
                 #print color_id, 'id:',l[6]
                 c.write('%s = %s,%s,%s,%s\n' % (color_id,
-                                                int(round(color[0]*250,0)),
-                                                int(round(color[1]*250,0)),
-                                                int(round(color[2]*250,0)),
+                                                int(round(color[0]*250, 0)),
+                                                int(round(color[1]*250, 0)),
+                                                int(round(color[2]*250, 0)),
                                                 0.5))
 
                 f.write(re.sub("\|", "", l[9+shift]) + '\t' + l[0] + '\t' + l[1] + '\t' + re.sub("\|", "", l[10+shift]) + '\t' + l[2] + '\t' + l[3] + '\tcolor=%s' % color_id +'\n')
@@ -1031,9 +1031,9 @@ class Fasta2circos():
                 #print color_id, 'id:',l[6]
 
                 c.write('%s = %s,%s,%s,%s\n' % (color_id,
-                                                int(round(color[0]*col,0)),
-                                                int(round(color[1]*col,0)),
-                                                int(round(color[2]*col,0)),
+                                                int(round(color[0]*col, 0)),
+                                                int(round(color[1]*col ,0)),
+                                                int(round(color[2]*col, 0)),
                                                 0.5))
 
                 # RhT_1 178 895 0
