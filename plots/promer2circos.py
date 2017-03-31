@@ -77,7 +77,8 @@ class Fasta2circos():
                  algo="nucmer",
                  min_gap_size=1000,
                  blastn=False,
-                 gbk2orf=False):
+                 gbk2orf=False,
+                 window_size=1000):
         import nucmer_utility
         import os
         from Bio import SeqIO
@@ -88,6 +89,7 @@ class Fasta2circos():
         print "heatmap", heatmap
         self.working_dir = os.getcwd()
         self.last_track = 0.99
+        self.window_size = window_size
 
         if algo == "nucmer":
             print "fasta1", fasta1
@@ -250,11 +252,11 @@ class Fasta2circos():
                     contig = re.sub("\|", "", record.name)
                     shift = self.contigs_add[contig][0]
                     # this function handle scaffolds (split sequence when encountering NNNNN regions)
-                    out_var += GC.circos_gc_var(record, 1000, shift=shift)
-                    circos_cumul, initial = GC.circos_cumul_gc_skew(record, 1000, shift=shift, initial=initial)
+                    out_var += GC.circos_gc_var(record, self.window_size, shift=shift)
+                    circos_cumul, initial = GC.circos_cumul_gc_skew(record, self.window_size, shift=shift, initial=initial)
                     out_cumul_skew+=circos_cumul
-                    out_skew += GC.circos_gc_skew(record, 1000, shift=shift)
-                    out_gc_content+=GC.circos_gc_content(record, 1000, shift=shift)
+                    out_skew += GC.circos_gc_skew(record, self.window_size, shift=shift)
+                    out_gc_content+=GC.circos_gc_content(record, self.window_size, shift=shift)
                 #print out_skew
                 f.write(out_var)
                 g.write(out_skew)
@@ -337,7 +339,7 @@ class Fasta2circos():
 
             if samtools_depth is not None:
                 for i, depth_file in enumerate(samtools_depth):
-                    all_contigs_median = self.samtools_depth2circos_data(depth_file, i)
+                    all_contigs_median = self.samtools_depth2circos_data(depth_file, i, window=self.window_size)
                     self.add_samtools_depth_track('circos_samtools_depth_%s.txt' % i,
                                                   lower_cutoff=int(all_contigs_median)/2,
                                                   top_cutoff=int(all_contigs_median)*2,
@@ -1090,7 +1092,7 @@ class Fasta2circos():
 
         return minus_file, plus_file
 
-    def samtools_depth2circos_data(self, samtools_depth_file, i):
+    def samtools_depth2circos_data(self, samtools_depth_file, i, window=1000):
         import numpy
         contig2coverage = {}
         all_positions_coverage = []
@@ -1107,14 +1109,14 @@ class Fasta2circos():
         with open('circos_samtools_depth_%s.txt' % i, 'w') as g:
             for contig in contig2coverage:
                 # split list by chunks of 1000
-                mychunks = chunks(contig2coverage[contig], 1000)
+                mychunks = chunks(contig2coverage[contig], window)
                 for i, cov_list in enumerate(mychunks):
                     #print cov_list
                     median_depth = numpy.median(cov_list)
                     if median_depth > (3*all_contigs_median):
                         median_depth = 3*all_contigs_median
-                    g.write("%s\t%s\t%s\t%s\n" % (contig, (i*1000)+self.contigs_add[contig][0],
-                                                  ((i*1000)+999)+self.contigs_add[contig][0],
+                    g.write("%s\t%s\t%s\t%s\n" % (contig, (i*window)+self.contigs_add[contig][0],
+                                                  ((i*window)+window-1)+self.contigs_add[contig][0],
                                                   median_depth))
         return all_contigs_median
 
@@ -1137,6 +1139,7 @@ if __name__ == '__main__':
     arg_parser.add_argument("-a", "--algo", help="algorythm to use to compare the genome (megablast, nucmer or promer)", default="nucmer")
     arg_parser.add_argument("-m", "--min_gap_size", help="minimum gap size to consider", default=1000)
     arg_parser.add_argument("-bn", '--blastn', action="store_true", help="excute blastn and not blastp")
+    arg_parser.add_argument("-w", '--window', type=int, help="window size (default=1000)", default=1000)
 
     args = arg_parser.parse_args()
 
@@ -1157,7 +1160,8 @@ if __name__ == '__main__':
                            algo=args.algo,
                            min_gap_size=int(args.min_gap_size),
                            blastn=args.blastn,
-                           gbk2orf=args.genbank)
+                           gbk2orf=args.genbank,
+                           window_size=args.window)
 
     circosf.write_circos_files(circosf.config, circosf.brewer_conf)
     circosf.run_circos(out_prefix=args.output_name)
