@@ -125,7 +125,85 @@ def contig2gc(records):
         contig2gc_dico[record.name] = GC(record.seq)
     return contig2gc_dico
 
-def samtools_depth2circos_data(samtools_depth_file, contigs_add, i):
+
+def macsyfinder_table2circos(macsyfinder_table, gbk_record, contigs_add, outfile_name="circos_macsyfinder.txt"):
+    from Bio import SeqRecord
+
+    # keep:
+    # locus_tag
+    # gene
+    # system
+    # status (mandatory or not)
+    hit_data = []
+
+
+
+    locus2location = {}
+    if type(gbk_record) == list:
+        print 'list!'
+        for record in gbk_record:
+            print record
+            for feature in record.features:
+                if feature.type == 'CDS':
+                    print 'CDS'
+                    locus2location[feature.qualifiers['locus_tag'][0]] = [feature.location, record.name]
+    elif isinstance(gbk_record, SeqRecord):
+        for feature in gbk_record.features:
+            if feature.type == 'CDS':
+                locus2location[feature.qualifiers['locus_tag'][0]] = [feature.location, gbk_record.name]
+    else:
+        print 'wrong input format'
+    print locus2location
+
+    all_systems = []
+    all_labels=[]
+
+
+    with open(macsyfinder_table, 'r') as f:
+        for i, line in enumerate(f):
+            if i==0:
+                continue
+            else:
+
+                data = line.rstrip().split()
+                print len(data)
+                if len(data) == 16:
+                    shift=1
+                else:
+                    shift=0
+                gene = data[5-shift]
+                locus_tag= data[0]
+                system=data[7]
+                if system not in all_systems:
+                    all_systems.append(system)
+                status=data[10]
+                record_name = locus2location[locus_tag][1]
+                start = str(locus2location[locus_tag][0].start+contigs_add[record_name][0])
+                end = str(locus2location[locus_tag][0].end+contigs_add[record_name][0])
+                if status == 'forbidden':
+                    continue
+                elif status == 'mandatory':
+                    label = '%s_M' % (gene)
+                else:
+                    label = '%s' % (gene)
+
+                all_labels.append([record_name, start, end, label, system])
+
+    c=1
+    system2color={}
+    for system in all_systems:
+        if c==9:
+            c=1
+        color = 'set1-8-qual-%s' % c
+        system2color[system] = color
+        c+=1
+    o = open(outfile_name, 'w')
+    for label in all_labels:
+        o.write("%s\t%s\t%s\t%s\tcolor=%s\n" % (label[0], label[1], label[2], label[3], system2color[label[4]]))
+    o.close()
+
+
+def samtools_depth2circos_data(samtools_depth_file, contigs_add, i, window=1000):
     import numpy
     contig2coverage = {}
     all_positions_coverage = []
@@ -142,19 +220,19 @@ def samtools_depth2circos_data(samtools_depth_file, contigs_add, i):
     with open('circos_samtools_depth_%s.txt' % i, 'w') as g:
         for contig in contig2coverage:
             # split list by chunks of 1000
-            mychunks = chunks(contig2coverage[contig], 1000)
+            mychunks = chunks(contig2coverage[contig], window)
             for i, cov_list in enumerate(mychunks):
                 #print cov_list
                 median_depth = numpy.median(cov_list)
                 if median_depth > (4*all_contigs_median):
                     median_depth = 4*all_contigs_median
                 if contigs_add:
-                    g.write("%s\t%s\t%s\t%s\n" % (contig, (i*1000)+contigs_add[contig][0],
-                                                  ((i*1000)+999)+contigs_add[contig][0],
+                    g.write("%s\t%s\t%s\t%s\n" % (contig, (i*window)+contigs_add[contig][0],
+                                                  ((i*window)+(window-1))+contigs_add[contig][0],
                                                   median_depth))
                 else:
-                    g.write("%s\t%s\t%s\t%s\n" % (contig, (i*1000),
-                                                  ((i*1000)+999),
+                    g.write("%s\t%s\t%s\t%s\n" % (contig, (i*window),
+                                                  ((i*window)+(window-1)),
                                                   median_depth))
     return all_contigs_median
 

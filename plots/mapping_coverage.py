@@ -59,6 +59,7 @@ def samtools_depth2coverage_plot(samtool_depth_file, main=False):
         y_sym <- filter(cov_100bp, f1001,sides=2)
         lines(x,y_sym,col="blue")
         text(length(cov_data)*0.2,max_depth*0.2, paste("Median depth:", median_depth), col="blue")
+        abline(h=median_depth)
         abline(v=contig_limits, col=rgb(1, 0, 0, 0.5), lty=3, lwd=0.5)
         abline(h=10, col="red")
     dev.off()

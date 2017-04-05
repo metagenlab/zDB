@@ -78,7 +78,8 @@ class Fasta2circos():
                  min_gap_size=1000,
                  blastn=False,
                  gbk2orf=False,
-                 window_size=1000):
+                 window_size=1000,
+                 secretion_systems=False):
         import nucmer_utility
         import os
         from Bio import SeqIO
@@ -118,6 +119,8 @@ class Fasta2circos():
 
 
             if gbk2orf:
+
+
                 minus, plus = self.gbk2circos_data(gbk2orf)
                 self.circos_reference.add_highlight(minus,
                                                     'grey_a1',
@@ -232,6 +235,32 @@ class Fasta2circos():
                         rpadding = 0p
                         '''
                 self.circos_reference.add_plot("circos_blast_labels.txt", type="text", r0="1r", r1="1.3r", color="black", rules=supp)
+
+
+            if gbk2orf and secretion_systems:
+                self.records = [i for i in SeqIO.parse(gbk2orf, 'genbank')]
+                circos_utils.macsyfinder_table2circos(secretion_systems, self.records, self.contigs_add,'circos_secretion_systems.txt')
+
+                supp = '''
+                        label_snuggle             = yes
+
+                        max_snuggle_distance            = 20r
+                        show_links     = yes
+                        link_dims      = 10p,128p,30p,4p,4p
+                        link_thickness = 2p
+                        link_color     = red
+                        snuggle_link_overlap_test = yes
+                        snuggle_link_overlap_tolerance = 10p
+                        label_size   = 14p
+                        label_font   = condensed
+                        padding  = 0p
+                        rpadding = 0p
+
+                        '''
+                self.circos_reference.add_plot('circos_secretion_systems.txt', type="text", r0="1r", r1="1.6r", color="black", rules=supp)
+
+
+
             if gc:
                 import GC
                 from Bio import SeqIO
@@ -370,7 +399,7 @@ class Fasta2circos():
 
             if samtools_depth is not None:
                 for i, depth_file in enumerate(samtools_depth):
-                    all_contigs_median = circos_utils.samtools_depth2circos_data(depth_file, False, i)
+                    all_contigs_median = circos_utils.samtools_depth2circos_data(depth_file, False, i,window=self.window_size)
                     self.add_samtools_depth_track('circos_samtools_depth_%s.txt' % i,
                                                   lower_cutoff=int(all_contigs_median)/2,
                                                   top_cutoff=int(all_contigs_median)*2,
@@ -1140,6 +1169,7 @@ if __name__ == '__main__':
     arg_parser.add_argument("-m", "--min_gap_size", help="minimum gap size to consider", default=1000)
     arg_parser.add_argument("-bn", '--blastn', action="store_true", help="excute blastn and not blastp")
     arg_parser.add_argument("-w", '--window', type=int, help="window size (default=1000)", default=1000)
+    arg_parser.add_argument("-ss", '--secretion_systems', type=str, help="macsyfinder table", default=False)
 
     args = arg_parser.parse_args()
 
@@ -1161,7 +1191,8 @@ if __name__ == '__main__':
                            min_gap_size=int(args.min_gap_size),
                            blastn=args.blastn,
                            gbk2orf=args.genbank,
-                           window_size=args.window)
+                           window_size=args.window,
+                           secretion_systems=args.secretion_systems)
 
     circosf.write_circos_files(circosf.config, circosf.brewer_conf)
     circosf.run_circos(out_prefix=args.output_name)
