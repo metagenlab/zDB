@@ -234,7 +234,7 @@ class Fasta2circos():
                         padding  = 0p
                         rpadding = 0p
                         '''
-                self.circos_reference.add_plot("circos_blast_labels.txt", type="text", r0="1r", r1="1.3r", color="black", rules=supp)
+                self.circos_reference.add_plot("circos_blast_labels.txt", type="text", r0="1r", r1="2r", color="black", rules=supp)
 
 
             if gbk2orf and secretion_systems:
