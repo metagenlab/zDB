@@ -44,6 +44,7 @@ from forms import locus_int_form
 from forms import LocusInt
 from forms import make_pathway_overview_form
 from forms import make_interpro_taxonomy
+from forms import BlastProfileForm
 
 from django.contrib.auth import logout
 from django.conf import settings
@@ -6304,6 +6305,90 @@ def motif_search(request, biodb):
         form = motif_form_class()  # empty form
 
     return render(request, 'chlamdb/motifs.html', locals())
+
+@login_required
+def blast_profile(request, biodb):
+
+    server = manipulate_biosqldb.load_db()
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+        form = BlastProfileForm(request.POST, request.FILES)  # Nous reprenons les données
+
+        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+            from tempfile import NamedTemporaryFile
+            import StringIO
+            import biosqldb_plot_blast_hits_phylo
+            import biosql_own_sql_tables
+            from ete2 import Tree, TreeStyle
+
+            fasta_file = request.FILES['fasta_file']
+            fasta_string = StringIO.StringIO(request.FILES['fasta_file'].read())
+            fasta_rec = [i for i in SeqIO.parse(fasta_string, 'fasta')]
+
+            try:
+                ordered_labels_all = [i.id.split('|')[1] for i in fasta_rec]
+            except:
+                ordered_labels_all = [i.id for i in fasta_rec]
+
+            blast_type = form.cleaned_data['blast']
+
+            #my_record = SeqIO.read(request.FILES['fasta_file'].open(), 'fasta')
+
+
+            tree, style1, tree2, style2, tree3, style3, locus2taxon2locus_closest = biosqldb_plot_blast_hits_phylo.plot_BBH_phylo(fasta_rec, biodb)
+
+
+            sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
+
+            tt = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+
+            t1 = Tree(tt)
+
+            R = t1.get_midpoint_outgroup()
+            t1.set_outgroup(R)
+            t1.ladderize()
+            ordered_taxons_all = [str(i.name) for i in t1.iter_leaves()]
+
+            sql = 'select taxon_id, t2.description from biodatabase t1 inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id ' \
+                  ' where t1.name="%s" and t2.description not like "%%%%plasmid%%%%"' % (biodb)
+
+            taxon2genome = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+            taxon_list = taxon2genome.keys()
+
+
+            ordered_taxons_keep=[]
+            for taxon in ordered_taxons_all:
+                if taxon in taxon_list:
+                    ordered_taxons_keep.append(taxon)
+
+            ordered_labels_keep=[]
+            for label in ordered_labels_all:
+                if label in locus2taxon2locus_closest:
+                    ordered_labels_keep.append(label)
+
+            path = settings.BASE_DIR + '/assets/temp/profile_tree.svg'
+            path2 = settings.BASE_DIR + '/assets/temp/profile_tree2.svg'
+            path3 = settings.BASE_DIR + '/assets/temp/profile_tree3.svg'
+            asset_path = '/temp/profile_tree.svg'
+            asset_path2 = '/temp/profile_tree2.svg'
+            asset_path3 = '/temp/profile_tree3.svg'
+
+            tree3.render(path3, dpi=800, h=600, tree_style=style3)
+            tree.render(path2, dpi=800, h=600, tree_style=style1)
+            tree2.render(path, dpi=800, h=600, tree_style=style2)
+
+
+            envoi = True
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = BlastProfileForm()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/blast_profile.html', locals())
+
+
+
+
 
 
 

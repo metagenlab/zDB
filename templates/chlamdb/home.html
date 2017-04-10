@@ -2,11 +2,12 @@
 
 
 <html>
+
 <head>
 
     {% load staticfiles %}
     {% load static %}
-
+<script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
 </head>
 
 <body>
@@ -52,6 +53,7 @@
                             <col style="width: 10px;"/>
                             <col style="width: 10px;"/>
                             <col style="width: 10px;"/>
+                            <col style="width: 37px;"/>
                             <tr>
                                 <th>Accession</th>
                                 <th>GC</th>
@@ -60,6 +62,7 @@
                                 <th>Size</th>
                                 <th>Organism</th>
                                 <th colspan="5">Download</th>
+                                <th>Browse Online</th>
                             </tr>
                          </thead>
                          <tbody>
@@ -96,9 +99,11 @@
                             <td nowrap>
                             <a  style="text-decoration:none;" href="/assets/{{biodb}}/tab/{{values.0}}.tab">
                             <span style="background-color:#DCFFF0;color:black;padding:1px;">TAB</span></a>
+                            <td><a href="{% url 'genome_annotation' biodb values.0 %}">{{values.0}}<a></td>
                             </td>
 
                         {% endfor %}
+
                         </tbody>
                     </table>
                 </div>

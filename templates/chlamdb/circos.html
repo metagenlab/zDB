@@ -82,7 +82,7 @@
             <div style="position: relative; left: 0; top: 0;">
                     <a href="{{ circos_new_file }}"><img src="{% static ""%}{{circos_file}}" id="circos_plot" style="position: absolute; top: 00px; left: 00px;"></a>
 
-                    <img src="{{ STATIC_URL }}scales/circos_legend.png" id="circos_legend"  width="160" style="position: relative; top: 0; left: 0;">
+                    <img src="{% static "/scales/circos_legend.png" %}" id="circos_legend"  width="160" style="position: relative; top: 0; left: 0;">
 
             </div>
         {% endif %}

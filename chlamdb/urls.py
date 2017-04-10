@@ -84,6 +84,7 @@ urlpatterns = [
                        url(r'^extract_ko/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$$', extract_ko, name="extract_ko"),
                        url(r'^venn_pfam/([a-zA-Z0-9_]+)$$', venn_pfam, name="venn_pfam"),
                        url(r'^venn_EC/([a-zA-Z0-9_]+)$$', venn_EC, name="venn_EC"),
+                       url(r'^blast_profile/([a-zA-Z0-9_]+)$$', blast_profile, name="blast_profile"),
                        url(r'^KEGG_mapp/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)$', KEGG_mapp, name="KEGG_mapp"),
                        url(r'^KEGG_mapp_ko/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)$', KEGG_mapp_ko, name="KEGG_mapp_ko"),
                        url(r'^KEGG_module_map/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)$', KEGG_module_map, name="KEGG_module_map"),

@@ -371,6 +371,16 @@ def make_interpro_taxonomy(biodb):
     return Interpro_taxonomy
 
 
+class BlastProfileForm(forms.Form):
+
+    fasta_file = forms.FileField(label='Select a file')
+
+    blast = forms.ChoiceField(choices=[("blastn_fna", "blastn_fna"),
+                                       ("blastp", "blastp"),
+                                       ("tblastn", "tblastn")], required = False)
+
+
+
 
 def make_blast_form(biodb):
 
