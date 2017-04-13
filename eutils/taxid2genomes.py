@@ -27,7 +27,7 @@ def get_ncbi_genome(path, destination):
     
 def get_complete_genomes_data(ncbi_taxon, complete = False, representative =False):
 
-    handle = Entrez.esearch(db="assembly", term="txid%s[Organism:exp]" % ncbi_taxon, retmax=100000)
+    handle = Entrez.esearch(db="assembly", term="txid%s[Organism:exp]  AND (latest[filter])" % ncbi_taxon, retmax=100000)
     record = Entrez.read(handle)
     f = open('ncbi_genome_download.log', 'w')
     nn = open("assembly_log.tx", "w")
@@ -39,7 +39,7 @@ def get_complete_genomes_data(ncbi_taxon, complete = False, representative =Fals
     for i, one_assembly in enumerate(record['IdList']):
         print "%s/%s" % (i, len(record['IdList']))
         try:
-            handle_assembly = Entrez.esummary(db="assembly",id=one_assembly)
+            handle_assembly = Entrez.esummary(db="assembly", id=one_assembly)
         except urllib2.URLError:
             import time
             urlok = False
@@ -74,8 +74,10 @@ def get_complete_genomes_data(ncbi_taxon, complete = False, representative =Fals
         Taxid = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Taxid']
         Organism = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Organism']
         AssemblyStatus = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['AssemblyStatus']
-
-        NCBIReleaseDate = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['NCBIReleaseDate']
+        try:
+            NCBIReleaseDate = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['NCBIReleaseDate']
+        except KeyError:
+            NCBIReleaseDate = '-'
         SpeciesName = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['SpeciesName']
         SubmitterOrganization = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['SubmitterOrganization']
         AssemblyName = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['AssemblyName']
@@ -187,6 +189,7 @@ def get_complete_genomes_data(ncbi_taxon, complete = False, representative =Fals
                                                                              anomalous)
 
         f.write(line.encode("utf-8"))
+        os.chdir(local_dir)
 
     f.close()
     nn.close()
@@ -253,7 +256,10 @@ def accession2assembly(accession):
     Taxid = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Taxid']
     Organism = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Organism']
     AssemblyStatus = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['AssemblyStatus']
-    NCBIReleaseDate = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['NCBIReleaseDate']
+    try:
+        NCBIReleaseDate = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['NCBIReleaseDate']
+    except KeyError:
+        NCBIReleaseDate = '-'
     SpeciesName = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['SpeciesName']
     SubmitterOrganization = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['SubmitterOrganization']
     AssemblyName = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['AssemblyName']
@@ -311,30 +317,9 @@ def accession2assembly(accession):
     f.write(line.encode("utf-8"))
 
 
+def download_assembly(assembly_gi, out_dir, complete=False):
 
-def bioproject2assemblies(accession, complete=False):
-
-    handle1 = Entrez.esearch(db="bioproject", term=accession)
-    record1 = Entrez.read(handle1)
-
-    ncbi_id = record1['IdList'][0]
-
-    handle = Entrez.elink(dbfrom="bioproject", db="assembly", id=ncbi_id)
-    record = Entrez.read(handle)
-
-    id_list = [i['Id'] for i in record[0]['LinkSetDb'][0]['Link']]
-    print id_list
-
-
-    local_dir = os.getcwd()
-    f = open('ncbi_genome_download.log', 'w')
-    header = 'AssemblyName\tLastMajorReleaseAccession\tTaxid\tSpeciesName\tOrganism\t' \
-             'AssemblyStatus\tNCBIReleaseDate\tSubmitterOrganization\tftpPath\tPartialGenomeRepresentation\tCoverage\tRefSeq\tGenbank\tSimilarity\tAnomalousAssembly\n'
-    f.write(header)
-
-    for i, one_assembly in enumerate(id_list):
-        print 'assembly %s (%s/%s)' % (one_assembly, i, len(id_list))
-        handle_assembly = Entrez.esummary(db="assembly",id=one_assembly)
+        handle_assembly = Entrez.esummary(db="assembly",id=assembly_gi)
         assembly_record = Entrez.read(handle_assembly, validate=False)
 
         LastMajorReleaseAccession = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['LastMajorReleaseAccession']
@@ -345,9 +330,11 @@ def bioproject2assemblies(accession, complete=False):
         if complete:
             if AssemblyStatus not in ['Complete Genome', 'Chromosome']:
                 print 'status:', AssemblyStatus
-                continue
-
-        NCBIReleaseDate = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['NCBIReleaseDate']
+                return False
+        try:
+            NCBIReleaseDate = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['NCBIReleaseDate']
+        except KeyError:
+            NCBIReleaseDate = '-'
         SpeciesName = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['SpeciesName']
         SubmitterOrganization = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['SubmitterOrganization']
         AssemblyName = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['AssemblyName']
@@ -357,7 +344,7 @@ def bioproject2assemblies(accession, complete=False):
         PartialGenomeRepresentation = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PartialGenomeRepresentation']
         Coverage = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Coverage']
 
-        out_dir = local_dir+'/%s' % LastMajorReleaseAccession
+        out_dir = out_dir+'/%s' % LastMajorReleaseAccession
         os.mkdir(out_dir)
 
         # get ftp link in meta data string
@@ -378,6 +365,7 @@ def bioproject2assemblies(accession, complete=False):
             print 'Downloading RefSeq record'
             try:
                 ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                print '\nftp path: %s\n' % ftp_path
                 ftp_path = '/' + ftp_path
                 get_ncbi_genome(ftp_path, out_dir)
             except IndexError:
@@ -423,8 +411,33 @@ def bioproject2assemblies(accession, complete=False):
                                                                              Similarity,
                                                                              anomalous)
 
-        f.write(line.encode("utf-8"))
+        return line
 
+def bioproject2assemblies(accession, complete=False):
+
+    handle1 = Entrez.esearch(db="bioproject", term=accession)
+    record1 = Entrez.read(handle1)
+
+    ncbi_id = record1['IdList'][0]
+
+    handle = Entrez.elink(dbfrom="bioproject", db="assembly", id=ncbi_id)
+    record = Entrez.read(handle)
+
+    id_list = [i['Id'] for i in record[0]['LinkSetDb'][0]['Link']]
+    print id_list
+
+
+    local_dir = os.getcwd()
+    f = open('ncbi_genome_download.log', 'w')
+    header = 'AssemblyName\tLastMajorReleaseAccession\tTaxid\tSpeciesName\tOrganism\t' \
+             'AssemblyStatus\tNCBIReleaseDate\tSubmitterOrganization\tftpPath\tPartialGenomeRepresentation\tCoverage\tRefSeq\tGenbank\tSimilarity\tAnomalousAssembly\n'
+    f.write(header)
+
+    for i, one_assembly in enumerate(id_list):
+        print 'assembly %s (%s/%s)' % (one_assembly, i, len(id_list))
+        dw = download_assembly(one_assembly, local_dir, complete)
+        if dw:
+            f.write(dw.encode("utf-8"))
 
 if __name__ == '__main__':
     import argparse
