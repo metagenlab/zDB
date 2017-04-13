@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+{% load staticfiles %}
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
+{% load custom_tags %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+</head>
+
+<body style="margin:0px;padding:0px;overflow:hidden">
+<div id="container">
+
+
+           <div id="content">
+
+
+                <div id="sidebar">
+                    {% include "chlamdb/menu.html" %}
+                </div>
+                <div id="header">
+                    {% include "chlamdb/user.html" %}
+                </div>
+
+                   <nav>
+                       <ul id="tabs_main" class="nav nav-tabs">
+                           <li><a href="{% url 'metabo_overview' biodb %}">Map list</a></li>
+                           <li><a href="#tab2" data-toggle="tab">Profile</a></li>
+                           <li class="active"><a href="{% url 'kegg_pathway_heatmap' biodb %}">Category profiles</a></li>
+                           <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'metabo_comparison' biodb %}', 'orthoIDframe'); return false">Compare strains (EC)</a></li>
+                           <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'metabo_comparison_ko' biodb %}', 'orthoIDframe'); return false">Compare strains (KO)</a></li>
+
+                       </ul>
+                    </nav>
+
+
+
+                   <form action='{% url "kegg_pathway_heatmap" biodb %}' method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="submit" value="Submit" />
+
+                    </form>
+
+                    {%if envoi %}
+                       <h3>{{ fam }} </h3>
+
+                        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                            <li class="active"><a href="#tab1" data-toggle="tab">Profile</a></li>
+                        </ul>
+
+                        <div id="my-tab-content" class="tab-content">
+
+
+                            <div class="tab-pane active" id="tab2">
+                                <object type="image/svg+xml" data="{% static asset_path %}" id="metabo_tree" style="width:98%;"></object>
+                            </div>
+
+
+                        </div>
+                    {%endif%}
+
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>

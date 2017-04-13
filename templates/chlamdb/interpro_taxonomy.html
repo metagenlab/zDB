@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+
+    <div id="content">
+
+        <nav>
+        <ul id="tabs" class="nav nav-tabs">
+                    <li><a href="{% url 'extract_interpro' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_interpro' biodb %}">Venn diagram</a></li>
+                    <li><a href="{% url 'plot_heatmap' biodb 'interpro' %}">Whole proteomes heatmaps</a></li>
+                    <li class="active"><a href="{% url 'interpro_taxonomy' biodb %}">Interpro taxonomy</a></li>
+        </ul>
+        </nav>
+
+
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">Investigate Interpro domains taxonomy<br>
+            </p>
+        </div>
+
+    <form action='{% url "interpro_taxonomy" biodb %}' method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit" />
+
+    </form>
+
+    {% if envoi %}
+
+        <object width="90%" align="left" style="margin-left: 0px" type="image/svg+xml" data="{% static asset_path %}" id="interpro_tree"></object>
+
+    {% endif %}
+
+    </div>
+</div>
+</body>
+</html>

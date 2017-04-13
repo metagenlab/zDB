@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+<head>
+{% load staticfiles %}
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
+{% load custom_tags %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+</head>
+
+<body id="locus_body">
+    <div id="container">
+        <div id="content">
+            <div id="sidebar">
+                {% include "chlamdb/menu.html" %}
+            </div>
+            <div id="header">
+                {% include "chlamdb/user.html" %}
+            </div>
+
+            <form action='{% url "blast_profile" biodb %}' method="post"  enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="Submit" />
+
+            </form>
+
+
+            {% if envoi %}
+
+            <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                <li class="active"><a href="#tab3" data-toggle="tab">Profile</a></li>
+                <li><a href="#tab1" data-toggle="tab">Identity closest</a></li>
+                <li><a href="#tab2" data-toggle="tab">Locus</a></li>
+                <li><a href="#tab4" data-toggle="tab">Table</a></li>
+
+            </ul>
+
+
+            <div id="my-tab-content" class="tab-content">
+
+                <div class="tab-pane active" id="tab3">
+                    <img src="{% static "/scales/scale_identity_red.png" %}" id="circos_legend"  width="160" style="position: absolute; top: 100px; left: 600px;">
+
+                    <object type="image/svg+xml" data="{% static asset_path3 %}" id="inter_tree" style="position: relative; top: 10px; left: 10px;"></object>
+                </div>
+
+                <div class="tab-pane" id="tab1">
+
+                    <img src="{% static "/scales/scale_identity_red.png" %}" id="circos_legend"  width="160" style="position: absolute; top: 100px; left: 600px;">
+                    <object type="image/svg+xml" data="{% static asset_path %}" id="inter_tree"></object>
+                </div>
+
+                <div class="tab-pane" id="tab2">
+                    <img src='{%static scale_path%}' id="circos_legend"  width="160" style="position: absolute; top: 170px; left: 600px;">
+
+                    <object type="image/svg+xml" data="{% static asset_path2 %}" id="inter_tree" style="position: relative; top: 10px; left: 10px;"></object>
+                </div>
+
+
+
+                <div class="tab-pane" id="tab4">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Genome</th>
+                        {% for label in ordered_labels_keep%}
+                            <th>{{label}}</th>
+                        {% endfor %}
+                        </tr>
+
+                        </thead>
+                        <tbody>
+                            {% for taxon in ordered_taxons_keep %}
+                                <tr>
+                                    <th>{{taxon2genome|keyvalue:taxon}}</th>
+                                    {% for label in ordered_labels_keep%}
+                                        {% with locus2taxon2locus_closest|keyvalue:label as taxon2locus_closest %}
+                                           {% with taxon2locus_closest|keyvalue:taxon as hitlocus %}
+                                                {%if hitlocus != None%}
+                                                    <td><a href="{% url 'locusx' biodb hitlocus True %}" target="_top">{{hitlocus}}</a></td>
+                                                {%else%}
+                                                    <td></td>
+                                                {%endif%}
+                                           {%endwith%}
+                                        {% endwith %}
+                                    {% endfor %}
+                                </tr>
+
+                            {% endfor %}
+                        </tbody>
+
+                    </table>
+
+
+                </div>
+
+
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</body>
+<style>
+#id_category{
+    width:280px;
+    text-align:left;
+    left:600px;
+
+}
+
+
+</style>
+
+</html>
