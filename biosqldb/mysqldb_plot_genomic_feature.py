@@ -279,7 +279,6 @@ def plot_multiple_regions_crosslink(target_protein_list,
 
     for i, record in enumerate(region_record_list):
         max_len = max(max_len, len(record))
-        print "i", i
         #Allocate tracks 3 (top), 1 (bottom) for region 1 and 2
         #(empty tracks 2 useful white space to emphasise the cross links
         #and also serve to make the tracks vertically more compressed)
@@ -296,7 +295,6 @@ def plot_multiple_regions_crosslink(target_protein_list,
 
     print 'looping....'
     for x in range(0,len(region_record_list)-1):
-        print "x", x
         features_X = region_record_list[x].features
         features_Y = region_record_list[x+1].features
         set_X = feature_sets[x]
@@ -331,8 +329,6 @@ def plot_multiple_regions_crosslink(target_protein_list,
                         print "problem with identity table %s and locus %s %s" % (group1,
                                                                                   feature_1.qualifiers["locus_tag"][0],
                                                                                   feature_1.qualifiers["locus_tag"][0])
-                    print "Identity:", identity
-
 
 
                     color2 = colors.HexColor(rgb2hex(m.to_rgba(float(identity))))
@@ -344,8 +340,6 @@ def plot_multiple_regions_crosslink(target_protein_list,
                                     color=color, border=border)
                     gd_diagram.cross_track_links.append(CrossLink(F_x, F_y, color2, border2))
 
-
-                    print set_X
 
     #for x in range(0,len(region_record_list)-1):
     x = 0
@@ -559,12 +553,7 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
     sub_record_list = []
     
     bioentry_id_list, seqfeature_id_list = manipulate_biosqldb.get_bioentry_and_seqfeature_id_from_locus_tag_list(server, locus_tag_list, biodb_name)
-    print "bioentry_id_list", bioentry_id_list
-    print "seqfeature_id_list", seqfeature_id_list
-    #print "getting records..."
-    
-    print "formatting records..."
-   
+
     #n_cpu = 8
     #n_poc_per_list = math.ceil(len(bioentry_id_list)/float(n_cpu))
     #query_lists = chunks(range(0, len(bioentry_id_list)), int(n_poc_per_list))

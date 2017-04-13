@@ -1608,7 +1608,7 @@ def add_orthogroup_to_interpro_table(biodb_name):
           ' signature_description VARCHAR(1000), ' \
           ' start INT, ' \
           ' stop INT, ' \
-          ' score VARCHAR(10) NOT NULL, ' \
+          ' score VARCHAR(20) NOT NULL, ' \
           ' interpro_accession VARCHAR(1000) NOT NULL, ' \
           ' interpro_description VARCHAR(10000),' \
           ' GO_terms varchar(10000),' \
