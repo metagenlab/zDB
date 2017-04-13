@@ -79,7 +79,9 @@ class Fasta2circos():
                  blastn=False,
                  gbk2orf=False,
                  window_size=1000,
-                 secretion_systems=False):
+                 secretion_systems=False,
+                 condensed_tracks=False,
+                 label_file=False):
         import nucmer_utility
         import os
         from Bio import SeqIO
@@ -198,7 +200,7 @@ class Fasta2circos():
                             '''
                     #self.circos_reference.add_plot("circos_gaps_labels_%s.txt" % i ,type="text", r0="1r", r1="1.3r",color="black",rules=supp)
             genome_list = [i.split('.')[0] + '.heat' for i in updated_list]
-            self.add_multiple_genome_tracks(genome_list, highlight_list)
+            self.add_multiple_genome_tracks(genome_list, highlight_list, condensed=condensed_tracks)
             if gaps:
                 for i in gap_hilight_list:
                     self.circos_reference.add_highlight(i[1],
@@ -235,6 +237,37 @@ class Fasta2circos():
                         rpadding = 0p
                         '''
                 self.circos_reference.add_plot("circos_blast_labels.txt", type="text", r0="1r", r1="2r", color="black", rules=supp)
+
+
+            if label_file:
+                supp = '''
+                        label_snuggle             = yes
+
+                        max_snuggle_distance            = 20r
+                        show_links     = yes
+                        link_dims      = 10p,288p,30p,4p,4p
+                        link_thickness = 2p
+                        link_color     = blue
+
+                        label_size   = 24p
+                        label_font   = condensed
+
+                        padding  = 0p
+                        rpadding = 0p
+                        '''
+
+                o = open('circos.labels.tab', 'w')
+                with open(label_file, 'r') as f:
+                    for line in f:
+                        data = line.rstrip().split('\t')
+                        start = str(int(data[1]) + self.contigs_add[data[0]][0])
+                        end = str(int(data[2]) + self.contigs_add[data[0]][0])
+                        data[1] = start
+                        data[2] = end
+                        o.write('\t'.join(data)+'\n')
+                o.close()
+
+                self.circos_reference.add_plot('circos.labels.tab', type="text", r0="1r", r1="2r", color="black", rules=supp)
 
 
             if gbk2orf and secretion_systems:
@@ -529,7 +562,7 @@ class Fasta2circos():
 
         o.close()
 
-    def add_multiple_genome_tracks(self, track_file_list, highlight_list=[]):
+    def add_multiple_genome_tracks(self, track_file_list, highlight_list=[], condensed=False):
         print 'track file list', track_file_list
         import os
 
@@ -542,15 +575,22 @@ class Fasta2circos():
             n+=1
             if orthofile not in highlight_list:
                 #print orthofile
-                r0 = r1-0.015
+                if not condensed:
+                    r0 = r1-0.015
+                else:
+                    r0 = r1-0.008
                 if n%2==0: # orrd-9-seq # blues
                     self.circos_reference.add_plot(orthofile, type="heatmap", r1="%sr" % r1, r0= "%sr" % r0, color="ylorrd-9-seq", fill_color="", thickness = "2p", z = 1, rules ="", backgrounds="",url="")
                 else:
                     self.circos_reference.add_plot(orthofile, type="heatmap", r1="%sr" % r1, r0= "%sr" % r0, color="gnbu-9-seq", fill_color="", thickness = "2p", z = 1, rules ="", backgrounds="",url="")
 
                 #circos.add_highlight(orthofile, fill_color="ortho3", r1="%sr" % r1, r0= "%sr" % r0, href=href)
-                r1 = r1-0.023 # 046
-                r0 = r0-0.023 # 046
+                if not condensed:
+                    r1 = r1-0.023 # 046
+                    r0 = r0-0.023 # 046
+                else:
+                    r1 = r1-0.011 # 046
+                    r0 = r0-0.011 # 046
             else:
                 r0 = r1-0.013
                 n-=1
@@ -1170,6 +1210,8 @@ if __name__ == '__main__':
     arg_parser.add_argument("-bn", '--blastn', action="store_true", help="excute blastn and not blastp")
     arg_parser.add_argument("-w", '--window', type=int, help="window size (default=1000)", default=1000)
     arg_parser.add_argument("-ss", '--secretion_systems', type=str, help="macsyfinder table", default=False)
+    arg_parser.add_argument("-c", '--condensed', action="store_true", help="condensed display (for mor tracks)", default=False)
+    arg_parser.add_argument("-lf", '--label_file', type=str, help="label file ==> tab file with: contig, start, end label (and color)", default=False)
 
     args = arg_parser.parse_args()
 
@@ -1192,7 +1234,9 @@ if __name__ == '__main__':
                            blastn=args.blastn,
                            gbk2orf=args.genbank,
                            window_size=args.window,
-                           secretion_systems=args.secretion_systems)
+                           secretion_systems=args.secretion_systems,
+                           condensed_tracks=args.condensed,
+                           label_file=args.label_file)
 
     circosf.write_circos_files(circosf.config, circosf.brewer_conf)
     circosf.run_circos(out_prefix=args.output_name)

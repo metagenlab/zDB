@@ -505,7 +505,7 @@ class Genbank2circos():
         best_hit_classif = open('best_hit.bar', 'w')
         contig_counts = open('coutig_couts.tab', 'w')
         if not self.contig2median_depth:
-            contig_counts.write("contig\tN_blast\tN_no_blast\tratio\tGC\n")
+            contig_counts.write("contig\tN_blast\tN_no_blast\tGC\tratio\n")
         else:
             contig_counts.write("contig\tN_blast\tN_no_blast\tratio\tGC\tmedian_depth\tassembly_depth\tratio_depth\n")
         with open(bar_file, 'w') as f:
