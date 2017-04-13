@@ -768,7 +768,6 @@ def multiple_profiles_heatmap(biodb,
 
         first_column = True
         for col, value in enumerate(column_labels):
-
             if lf_count == 0:
                     # add labels
                     n = TextFace(' %s ' % str(value))

@@ -207,7 +207,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
     for n in t1.traverse():
        nstyle = NodeStyle()
        if n.support < 1:
-           nstyle["fgcolor"] = "red"
+           nstyle["fgcolor"] = "black"
            nstyle["size"] = 6
            n.set_style(nstyle)
        else:

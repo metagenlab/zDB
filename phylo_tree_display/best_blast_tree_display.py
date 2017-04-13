@@ -4,7 +4,7 @@
 import sys
 from random import sample
 from random import randint
-from ete2 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace, faces
+from ete2 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace, faces, NodeStyle
 
 
 import numpy as np
@@ -14,12 +14,13 @@ import matplotlib.cm as cm
 from matplotlib.colors import rgb2hex
 import matplotlib as mpl
 
-norm = mpl.colors.Normalize(vmin=70, vmax=100)
-cmap = cm.OrRd
+norm = mpl.colors.Normalize(vmin=90, vmax=100)
+cmap_red = cm.OrRd
 cmap_blue = cm.Blues
-m = cm.ScalarMappable(norm=norm, cmap=cmap)
-m2 = cm.ScalarMappable(norm=norm, cmap=cmap_blue)
-
+cmap_green = cm.Greens
+m_red = cm.ScalarMappable(norm=norm, cmap=cmap_red)
+m_blue = cm.ScalarMappable(norm=norm, cmap=cmap_blue)
+m_green = cm.ScalarMappable(norm=norm, cmap=cmap_green)
 
 
 
@@ -111,7 +112,14 @@ def remove_blast_redundancy(blast_file_list, check_overlap=True):
 
 
 
-def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst,check_overlap, id_cutoff=80):
+def plot_blast_result(tree_file,
+                      blast_result_file_list,
+                      id2description,
+                      id2mlst,check_overlap,
+                      ordered_queries,
+                      id_cutoff=80,
+                      reference_accession='-',
+                      accession2hit_filter=False):
     '''
     Projet Staph aureus PVL avec Laure Jaton
     Script pour afficher une phylogénie et la conservation de facteurs de virulence côte à côte
@@ -161,7 +169,8 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
     '''
     #queries = ['selv']
     t1 = Tree(tree_file)
-
+    tss = TreeStyle()
+    #tss.show_branch_support = True
     # Calculate the midpoint node
     R = t1.get_midpoint_outgroup()
     t1.set_outgroup(R)
@@ -176,35 +185,58 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
         lf.branch_vertical_margin = 0
         #data = [random.randint(0,2) for x in xrange(3)]
 
-        for col, value in enumerate(queries):
+        for col, value in enumerate(ordered_queries):
             print 'leaf:', lf.name, 'gene:', value 
             if head:
                     #'first row, print gene names'
                     #print 'ok!'
                     n = TextFace(' %s ' % str(value))
-                    n.margin_top = 4
-                    n.margin_right = 4
-                    n.margin_left = 4
-                    n.margin_bottom = 4
+                    n.margin_top = 2
+                    n.margin_right = 2
+                    n.margin_left = 2
+                    n.margin_bottom = 2
+                    n.rotation = 270
+                    n.vt_align = 2
+                    n.hz_align = 2
                     n.inner_background.color = "white"
                     n.opacity = 1.
-                    lf.add_face(n, col, position="aligned")
+                    #lf.add_face(n, col, position="aligned")
+                    tss.aligned_header.add_face(n, col)
             try:
 
                 identity_value = blast2data[lf.name][value][0]
                 print 'identity', lf.name, value, identity_value
-                color = rgb2hex(m2.to_rgba(float(identity_value)))
+
+                if lf.name != reference_accession:
+                    if not accession2hit_filter:
+                        color = rgb2hex(m_red.to_rgba(float(identity_value)))
+                    else:
+                        # if filter, color hits that are not in the filter in green
+                        if value in accession2hit_filter[lf.name]:
+                            color = rgb2hex(m_red.to_rgba(float(identity_value)))
+
+                        else:
+                            color = rgb2hex(m_green.to_rgba(float(identity_value)))
+                else:
+                    # reference taxon, blue scale
+                    color = rgb2hex(m_blue.to_rgba(float(identity_value)))
+
+
             except:
                 identity_value = 0
                 color = "white"
             print id_cutoff, float(identity_value)
             if float(identity_value) > id_cutoff:
+
+
                 if str(identity_value) == '100.00' or str(identity_value) == '100.0':
                     identity_value = '100'
+                    n = TextFace("%s   " % identity_value)
                 else:
-                    identity_value = str(round(float(identity_value), 1))
-                n = TextFace(' %s ' % str(identity_value))
-                if float(identity_value) >98:
+                    #    identity_value = str(round(float(identity_value), 1))
+
+                    n = TextFace("%.2f" % round(float(identity_value), 2))
+                if float(identity_value) >95:
                     n.fgcolor = "white"
 
                 n.opacity = 1.
@@ -228,31 +260,90 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
         except KeyError:
             lf.name = ' %s (%s)' % (lf.name, id2mlst[lf.name])
         head = False
+
+
+    for n in t1.traverse():
+       nstyle = NodeStyle()
+       if n.support < 0.9:
+           #mundo = TextFace("%s" % str(n.support))
+           #n.add_face(mundo, column=1, position="branch-bottom")
+           nstyle["fgcolor"] = "blue"
+           nstyle["size"] = 6
+           n.set_style(nstyle)
+       else:
+           nstyle["fgcolor"] = "red"
+           nstyle["size"] = 0
+           n.set_style(nstyle)
+
+
     print 'rendering tree'
-    t1.render("test.svg", dpi=800, h=400)
+    t1.render("profile.svg", dpi=1000, h=400, tree_style=tss)
 
     print blast2data
     print blast_result_file_list
 
-def main(input_reference, input_queries_folder, blast_file, mlst_scheme, input_gbk, skip_parsnp=False, skip_blast=False,
-         input_tree=None, skip_mlst=False, check_overlap=False, id_cutoff=80, blast_type='tblastn'):
+
+def get_accession_filter_from_blast_list(tab_blast_results, identity_cutoff=80):
+    accession2locus = {}
+    for one_blast in tab_blast_results:
+        with open(one_blast, 'r') as f:
+            for row in f:
+                data = row.rstrip().split()
+                if float(data[2])>=identity_cutoff:
+                    if data[1] not in accession2locus:
+                        accession2locus[data[1]] = [data[0]]
+                    else:
+                        accession2locus[data[1]].append(data[0])
+
+    return accession2locus
+
+
+
+def main(input_reference,
+         input_queries_folder,
+         blast_file,
+         mlst_scheme,
+         input_gbk,
+         skip_parsnp=False,
+         skip_blast=False,
+         input_tree=None,
+         skip_mlst=False,
+         check_overlap=False,
+         id_cutoff=80,
+         blast_type='tblastn',
+         reference_accession='-',
+         blast_filter=False):
 
     import shell_command
     import os
     import sys
     import glob
+    from Bio import SeqIO
     sys.stdout.write('Building tree using parsnp...\n')
 
     wd = os.getcwd()
+
+    ordered_queries = [record.name for record in SeqIO.parse(blast_file, 'fasta')]
 
     #print 'input fasta folder', input_queries_folder
     fasta_folder = os.path.abspath(input_queries_folder)
     reference_file = os.path.abspath(input_reference)
 
+    if blast_filter:
+        accession2hit_filter=get_accession_filter_from_blast_list(blast_filter)
+    else:
+        accession2hit_filter=False
+
     #print 'fasta folder', fasta_folder
     pp = fasta_folder + '/*fna'
     #print pp
     fasta_files = glob.glob(pp)
+    if len(fasta_files) == 0:
+        pp = fasta_folder + '/*ffn'
+        #print pp
+        fasta_files = glob.glob(pp)
+        if len(fasta_files) == 0:
+            raise ('could not find fasta files')
     #print 'fasta files', fasta_files
 
     reference_phylogeny_folder = os.path.join(wd, 'reference_parsnp_phylogeny')
@@ -284,15 +375,17 @@ def main(input_reference, input_queries_folder, blast_file, mlst_scheme, input_g
 
     os.chdir(wd)
     if not skip_mlst:
-	    sys.stdout.write('Identifying mlst...\n')
-	    if not os.path.exists(os.path.join(wd, 'mlst_results')):
-		os.mkdir(os.path.join(wd, 'mlst_results'))
-	    all_fasta = ' '.join(fasta_files)
+        sys.stdout.write('Identifying mlst...\n')
+        if not os.path.exists(os.path.join(wd, 'mlst_results')):
+            os.mkdir(os.path.join(wd, 'mlst_results'))
+        all_fasta = ' '.join(fasta_files)
 
-	    cmd = 'mlst --quiet --nopath --scheme %s %s > %s' % (mlst_scheme, all_fasta, out_mlst)
-	    out, err, code = shell_command.shell_command(cmd)
-	    cmd = 'sed -i "s/.fna//g" %s' % out_mlst
-	    out, err, code = shell_command.shell_command(cmd)
+        cmd = 'mlst --quiet --nopath --scheme %s %s > %s' % (mlst_scheme, all_fasta, out_mlst)
+        out, err, code = shell_command.shell_command(cmd)
+        cmd = 'sed -i "s/.fna//g" %s' % out_mlst
+        out, err, code = shell_command.shell_command(cmd)
+        cmd = 'sed -i "s/.ffn//g" %s' % out_mlst
+        out, err, code = shell_command.shell_command(cmd)
 
     #print err, code
     if input_tree:
@@ -361,7 +454,15 @@ def main(input_reference, input_queries_folder, blast_file, mlst_scheme, input_g
 
     #print reference_phylogeny
 
-    plot_blast_result(reference_phylogeny, blast_best_hit_results, id2description, accession2st_type, check_overlap, id_cutoff)
+    plot_blast_result(reference_phylogeny,
+                      blast_best_hit_results,
+                      id2description,
+                      accession2st_type,
+                      check_overlap,
+                      ordered_queries,
+                      id_cutoff,
+                      reference_accession=reference_accession,
+                      accession2hit_filter=accession2hit_filter)
 
 
 if __name__ == '__main__':
@@ -380,6 +481,8 @@ if __name__ == '__main__':
     parser.add_argument("-n",'--skip_mlst', action='store_true', help="skip mlst part")
     parser.add_argument("-c",'--id_cutoff', default=80, help="identity cutoff /default 80 percent/")
     parser.add_argument("-bt",'--blast_type', default='tblastn', help="blast type (default: tblastn. Alternative: blastn)")
+    parser.add_argument("-re",'--reference_accession', default='-', help="reference accession (colored in blue scale)")
+    parser.add_argument("-bf",'--blast_filter', default=False, help="blast filter (color in green hits found in the provided blast files)", nargs='+')
     
     args = parser.parse_args()
 
@@ -401,7 +504,9 @@ if __name__ == '__main__':
          args.skip_mlst,
          False,
          float(args.id_cutoff),
-         blast_type=args.blast_type)
+         blast_type=args.blast_type,
+         reference_accession=args.reference_accession,
+         blast_filter=args.blast_filter)
 
 
 
