@@ -61,6 +61,7 @@ def plot_heat_tree_V1(taxid2n, tree_file, genes, taxid2st=False, leaf_label_conv
     '''
 
     t1 = Tree(tree_file)
+    tss = TreeStyle()
     #t.populate(8)
     # Calculate the midpoint node
     R = t1.get_midpoint_outgroup()
@@ -129,17 +130,18 @@ def plot_heat_tree_V1(taxid2n, tree_file, genes, taxid2st=False, leaf_label_conv
             print 'col', col, 'value', value
 
             if leaf_number==1:
-                n = TextFace('%s' % (genes[col]), fsize=5)
-                n.vt_align = 0
-                n.hz_align = 1
+                n = TextFace('%s' % (genes[col]), fsize=6)
+                n.vt_align = 2
+                n.hz_align = 2
                 n.rotation= 270
                 n.margin_top = 0
                 n.margin_right = 0
-                n.margin_left = 0
+                n.margin_left = 4
                 n.margin_bottom = 0
                 n.inner_background.color = "white"
                 n.opacity = 1.
-                lf.add_face(n, col, position="aligned")
+                tss.aligned_header.add_face(n, col)
+                #lf.add_face(n, col, position="aligned")
 
             if value > 0:
                 n = TextFace('  ')
@@ -161,7 +163,7 @@ def plot_heat_tree_V1(taxid2n, tree_file, genes, taxid2st=False, leaf_label_conv
                 n.opacity = 1.
                 lf.add_face(n, col, position="aligned")
 
-    return t1, leaf_number
+    return t1, leaf_number, tss
 
 def plot_heat_tree_V0(heatmap_file, tree_file, output_file=None):
     '''
@@ -521,5 +523,5 @@ if __name__ == '__main__':
                 data = row.rstrip().split('\t')
                 taxid2n[data[0]] = [float(i) for i in data[1:]]
     print taxid2n
-    t, n = plot_heat_tree_V1(taxid2n, args.tree, genes,taxid2st, accession2description)
-    t.render("test.svg")
+    t, n, style = plot_heat_tree_V1(taxid2n, args.tree, genes,taxid2st, accession2description)
+    t.render("test.svg", tree_style=style)

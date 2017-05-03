@@ -14,7 +14,7 @@ import matplotlib.cm as cm
 from matplotlib.colors import rgb2hex
 import matplotlib as mpl
 
-norm = mpl.colors.Normalize(vmin=90, vmax=100)
+norm = mpl.colors.Normalize(vmin=80, vmax=100)
 cmap_red = cm.OrRd
 cmap_blue = cm.Blues
 cmap_green = cm.Greens
@@ -119,7 +119,8 @@ def plot_blast_result(tree_file,
                       ordered_queries,
                       id_cutoff=80,
                       reference_accession='-',
-                      accession2hit_filter=False):
+                      accession2hit_filter=False,
+                      show_identity_values=True):
     '''
     Projet Staph aureus PVL avec Laure Jaton
     Script pour afficher une phylogénie et la conservation de facteurs de virulence côte à côte
@@ -176,18 +177,32 @@ def plot_blast_result(tree_file,
     t1.set_outgroup(R)
     t1.ladderize()
 
-    print t1
+    ordered_queries_filtered = []
+    for query in ordered_queries:
+        hit_count = 0
+        for lf2 in t1.iter_leaves():
+            try:
+                tmpidentity = blast2data[lf2.name][query][0]
+                if float(tmpidentity)>float(id_cutoff):
+                    hit_count+=1
+            except:
+                continue
+        if hit_count>0:
+            ordered_queries_filtered.append(query)
+            #print 'skippink-----------'
     
     head = True
     print 'drawing tree'
+    print 'n initial queries: %s n kept: %s' % (len(ordered_queries), len(ordered_queries_filtered))
     for lf in t1.iter_leaves():
         #lf.add_face(AttrFace("name", fsize=20), 0, position="branch-right")
         lf.branch_vertical_margin = 0
         #data = [random.randint(0,2) for x in xrange(3)]
 
-        for col, value in enumerate(ordered_queries):
-            print 'leaf:', lf.name, 'gene:', value 
+        for col, value in enumerate(ordered_queries_filtered):
+
             if head:
+                if show_identity_values:
                     #'first row, print gene names'
                     #print 'ok!'
                     n = TextFace(' %s ' % str(value))
@@ -202,10 +217,23 @@ def plot_blast_result(tree_file,
                     n.opacity = 1.
                     #lf.add_face(n, col, position="aligned")
                     tss.aligned_header.add_face(n, col)
+                else:
+                    n = TextFace(' %s ' % str(value), fsize=6)
+                    n.margin_top = 0
+                    n.margin_right = 0
+                    n.margin_left = 0
+                    n.margin_bottom = 0
+                    n.rotation = 270
+                    n.vt_align = 2
+                    n.hz_align = 2
+                    n.inner_background.color = "white"
+                    n.opacity = 1.
+                    #lf.add_face(n, col, position="aligned")
+                    tss.aligned_header.add_face(n, col)
             try:
 
                 identity_value = blast2data[lf.name][value][0]
-                print 'identity', lf.name, value, identity_value
+                #print 'identity', lf.name, value, identity_value
 
                 if lf.name != reference_accession:
                     if not accession2hit_filter:
@@ -220,39 +248,51 @@ def plot_blast_result(tree_file,
                 else:
                     # reference taxon, blue scale
                     color = rgb2hex(m_blue.to_rgba(float(identity_value)))
-
+                if not show_identity_values:
+                    color = rgb2hex(m_blue.to_rgba(float(identity_value)))
 
             except:
                 identity_value = 0
                 color = "white"
-            print id_cutoff, float(identity_value)
-            if float(identity_value) > id_cutoff:
+            #print id_cutoff, float(identity_value)
+            if show_identity_values:
+                if float(identity_value) > float(id_cutoff):
 
 
-                if str(identity_value) == '100.00' or str(identity_value) == '100.0':
-                    identity_value = '100'
-                    n = TextFace("%s   " % identity_value)
+                    if str(identity_value) == '100.00' or str(identity_value) == '100.0':
+                        identity_value = '100'
+                        n = TextFace("%s   " % identity_value)
+                    else:
+                        #    identity_value = str(round(float(identity_value), 1))
+
+                        n = TextFace("%.2f" % round(float(identity_value), 2))
+                    if float(identity_value) >95:
+                        n.fgcolor = "white"
+
+                    n.opacity = 1.
                 else:
-                    #    identity_value = str(round(float(identity_value), 1))
-
-                    n = TextFace("%.2f" % round(float(identity_value), 2))
-                if float(identity_value) >95:
-                    n.fgcolor = "white"
-
-                n.opacity = 1.
+                    #print 'identity not ok', lf.name, identity_value, value
+                    #print blast2data[lf.name]
+                    identity_value = '-'
+                    n = TextFace(' %s ' % str(identity_value))
+                    n.opacity = 1.
+                n.margin_top = 2
+                n.margin_right = 2
+                n.margin_left = 2
+                n.margin_bottom = 2
+                n.inner_background.color = color
+                lf.add_face(n, col, position="aligned")
             else:
-                print 'identity not ok', lf.name, identity_value, value
-                print blast2data[lf.name]
-                identity_value = '-'
-                n = TextFace(' %s ' % str(identity_value))
-                n.opacity = 1.
+                # don't show identity values
+                n = TextFace('  ')
 
-            n.margin_top = 2
-            n.margin_right = 2
-            n.margin_left = 2
-            n.margin_bottom = 2
-            n.inner_background.color = color
-            lf.add_face(n, col, position="aligned")
+                n.margin_top = 0
+                n.margin_right = 0
+                n.margin_left = 0
+                n.margin_bottom = 0
+                #n.color = color
+                n.inner_background.color = color
+                lf.add_face(n, col, position="aligned")
 
 
         try:
@@ -312,7 +352,9 @@ def main(input_reference,
          id_cutoff=80,
          blast_type='tblastn',
          reference_accession='-',
-         blast_filter=False):
+         blast_filter=False,
+         show_identity_values=True,
+         accession2description=False):
 
     import shell_command
     import os
@@ -449,7 +491,18 @@ def main(input_reference,
             best_hit_handle.close()
     os.chdir(wd)
 
-    id2description = gbk2accessiontodefinition.get_coressp(input_gbk)
+
+    if accession2description:
+        id2description = {}
+        with open(accession2description, 'r') as f:
+            for row in f:
+                data = row.rstrip().split('\t')
+                id2description[data[0]] = data[1]
+    else:
+        id2description = gbk2accessiontodefinition.get_coressp(input_gbk)
+    #else:
+    #    IOError('either provide id2description og gbk files')
+
     accession2st_type = parse_mlst_results(out_mlst)
 
     #print reference_phylogeny
@@ -462,7 +515,8 @@ def main(input_reference,
                       ordered_queries,
                       id_cutoff,
                       reference_accession=reference_accession,
-                      accession2hit_filter=accession2hit_filter)
+                      accession2hit_filter=accession2hit_filter,
+                      show_identity_values=show_identity_values)
 
 
 if __name__ == '__main__':
@@ -479,11 +533,14 @@ if __name__ == '__main__':
     parser.add_argument("-l",'--skip_blast', action='store_true', help="skip blast part")
     parser.add_argument("-t",'--input_tree', type=str, help="user provided tree /no parsnp tree/", default=None)
     parser.add_argument("-n",'--skip_mlst', action='store_true', help="skip mlst part")
-    parser.add_argument("-c",'--id_cutoff', default=80, help="identity cutoff /default 80 percent/")
+    parser.add_argument("-c",'--id_cutoff', default=80, help="identity cutoff /default 80 percent/", type=int)
     parser.add_argument("-bt",'--blast_type', default='tblastn', help="blast type (default: tblastn. Alternative: blastn)")
     parser.add_argument("-re",'--reference_accession', default='-', help="reference accession (colored in blue scale)")
     parser.add_argument("-bf",'--blast_filter', default=False, help="blast filter (color in green hits found in the provided blast files)", nargs='+')
-    
+    parser.add_argument("-id",'--dont_display_id', action="store_false", help="don't show identity values", default=True)
+    parser.add_argument("-a",'--accession2description',default=False, type=str,help="tab file with accessions and corresponding descriptions for leaf labels")
+
+
     args = parser.parse_args()
 
     if 'ref' in args.reference:
@@ -492,6 +549,9 @@ if __name__ == '__main__':
         ref = 'temp.fna'
     else:
         ref = args.reference
+
+
+
 
     main(ref,
          args.input_queries_folder,
@@ -506,7 +566,9 @@ if __name__ == '__main__':
          float(args.id_cutoff),
          blast_type=args.blast_type,
          reference_accession=args.reference_accession,
-         blast_filter=args.blast_filter)
+         blast_filter=args.blast_filter,
+         show_identity_values=args.dont_display_id,
+         accession2description=args.accession2description)
 
 
 

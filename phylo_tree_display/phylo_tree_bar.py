@@ -1,6 +1,432 @@
 #!/usr/bin/env python
 
-from ete2 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace, BarChartFace, StackedBarFace, NodeStyle
+from ete2 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace, BarChartFace, StackedBarFace, NodeStyle, faces
+
+
+
+def plot_tree_stacked_barplot(tree_file,
+                      taxon2value_list_barplot,
+                      header_list,
+                      taxon2set2value_heatmap=False,
+                      taxon2label=False,
+                      header_list2=False,
+                      biodb="chlamydia_04_16",
+                      column_scale=True,
+                      general_max=False):
+
+    '''
+
+    taxon2value_list_barplot list of lists:
+    [[bar1_part1, bar1_part2,...],[bar2_part1, bar2_part2]]
+    valeures de chaque liste transformes en pourcentages
+
+    :param tree_file:
+    :param taxon2value_list:
+    :param biodb:
+    :param exclude_outgroup:
+    :param bw_scale:
+    :return:
+    '''
+
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb, filter_names=True)
+
+    t1 = Tree(tree_file)
+
+    # Calculate the midpoint node
+    R = t1.get_midpoint_outgroup()
+    # and set it as tree outgroup
+    t1.set_outgroup(R)
+
+    colors = ["red","#FFFF00","#58FA58","#819FF7","#F781F3", "#2E2E2E","#F7F8E0"]
+
+
+    tss = TreeStyle()
+    tss.draw_guiding_lines = True
+    tss.guiding_lines_color = "gray"
+    tss.show_leaf_name = False
+    if column_scale and header_list2:
+        import matplotlib.cm as cm
+        from matplotlib.colors import rgb2hex
+        import matplotlib as mpl
+        column2scale = {}
+        for column in header_list2:
+            values = taxon2set2value_heatmap[column].values()
+            print values, column
+            norm = mpl.colors.Normalize(vmin=min(values), vmax=max(values))
+            cmap = cm.OrRd
+            m = cm.ScalarMappable(norm=norm, cmap=cmap)
+            column2scale[column] = m
+
+    for i, lf in enumerate(t1.iter_leaves()):
+        print '#############', i, lf.name
+
+        #if taxon2description[lf.name] == 'Pirellula staleyi DSM 6068':
+        #    lf.name = 'Pirellula staleyi DSM 6068'
+        #    continue
+        if i==0:
+
+            if taxon2label:
+                n = TextFace('%s' % 'label')
+                n.margin_top = 1
+                n.margin_right = 1
+                n.margin_left = 20
+                n.margin_bottom = 1
+                n.inner_background.color = "white"
+                n.opacity = 1.
+
+                tss.aligned_header.add_face(n, 1)
+                col_add=1
+            else:
+                col_add=0
+
+            for col, header in enumerate(header_list):
+                print 'header----- %s' % header, col
+                n = TextFace('%s' % header)
+                n.margin_top = 1
+                n.margin_right = 1
+                n.margin_left = 20
+                n.margin_bottom = 1
+                n.inner_background.color = "white"
+                n.opacity = 1.
+
+                tss.aligned_header.add_face(n, col+col_add+1)
+
+            col_add2 = col_add+len(header_list)+1
+            if header_list2:
+                for col, header in enumerate(header_list2):
+                    n = TextFace('%s' % header)
+                    n.margin_top = 1
+                    n.margin_right = 1
+                    n.margin_left = 20
+                    n.margin_bottom = 1
+                    n.rotation = 270
+                    n.inner_background.color = "white"
+                    n.opacity = 1.
+                    tss.aligned_header.add_face(n, col+col_add2)
+
+
+        if taxon2label:
+            try:
+                n = TextFace('%s' % taxon2label[lf.name])
+            except:
+                n = TextFace('%s' % taxon2label[int(lf.name)])
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 20
+            n.margin_bottom = 1
+            n.inner_background.color = "white"
+            n.opacity = 1.
+
+            lf.add_face(n, 1, position="aligned")
+            col_add=1
+        else:
+            col_add=0
+        try:
+            val_list_of_lists = taxon2value_list_barplot[lf.name]
+        except:
+            val_list_of_lists = taxon2value_list_barplot[int(lf.name)]
+
+        col_count = 0
+        for col, value_list in enumerate(val_list_of_lists):
+
+            total = float(sum(value_list))
+            percentages = [(i/total)*100 for i in value_list]
+            b = StackedBarFace(percentages,
+                                width=300, height=20, colors=colors[0:len(percentages)])
+            b.rotation= 0
+            b.inner_border.color = "white"
+            b.inner_border.width = 0
+            b.margin_right = 15
+            b.margin_left = 0
+            lf.add_face(b, col+col_add+1, position="aligned")
+            col_count+=1
+
+        col_add=col_count+ 2
+
+        if taxon2set2value_heatmap:
+            i = 0
+            for col2 in range(col_add, len(header_list2)+col_add):
+                col_name = header_list2[i]
+                try:
+                    value = taxon2set2value_heatmap[col_name][lf.name]
+                except:
+                    try:
+                        value = taxon2set2value_heatmap[col_name][int(lf.name)]
+                    except:
+                        value = 0
+
+                if int(value) >0:
+                    if int(value) >10 and int(value) < 100:
+                        n = TextFace('%5i' % value)
+                    elif int(value)>=100:
+                        n = TextFace('%4i' % value)
+                    else:
+                        n = TextFace('%6i' % value)
+                    print '----%5i----' % value
+                    n.margin_top = 1
+                    n.margin_right = 1
+                    n.margin_left = 5
+                    n.margin_bottom = 1
+                    n.hz_align = 2
+                    n.inner_background.color = rgb2hex(column2scale[col_name].to_rgba(float(value)))#"orange"
+                    n.opacity = 1.
+
+                    lf.add_face(n, col2, position="aligned")
+                    i+=1
+                else:
+                    n = TextFace('')
+                    n.margin_top = 1
+                    n.margin_right = 1
+                    n.margin_left = 5
+                    n.margin_bottom = 1
+                    n.inner_background.color = "white"
+                    n.opacity = 1.
+
+                    lf.add_face(n, col2, position="aligned")
+                    i+=1
+
+
+        #lf.name = taxon2description[lf.name]
+        n = TextFace(taxon2description[lf.name], fgcolor = "black", fsize = 16, fstyle = 'italic')
+        lf.add_face(n, 0)
+
+    for n in t1.traverse():
+       nstyle = NodeStyle()
+
+       if n.support < 1:
+           nstyle["fgcolor"] = "black"
+           nstyle["size"] = 6
+           n.set_style(nstyle)
+       else:
+           nstyle["fgcolor"] = "red"
+           nstyle["size"] = 0
+           n.set_style(nstyle)
+
+    #print t1
+    return t1, tss
+
+
+def plot_tree_barplot(tree_file,
+                      taxon2value_list_barplot,
+                      header_list,
+                      taxon2set2value_heatmap=False,
+                      header_list2=False,
+                      presence_only=True,
+                      biodb="chlamydia_04_16",
+                      column_scale=True,
+                      general_max=False):
+
+    '''
+
+    display one or more barplot
+
+    :param tree_file:
+    :param taxon2value_list:
+    :param biodb:
+    :param exclude_outgroup:
+    :param bw_scale:
+    :return:
+    '''
+
+    import manipulate_biosqldb
+    import matplotlib.cm as cm
+    from matplotlib.colors import rgb2hex
+    import matplotlib as mpl
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb, filter_names=True)
+
+    t1 = Tree(tree_file)
+
+    # Calculate the midpoint node
+    R = t1.get_midpoint_outgroup()
+    # and set it as tree outgroup
+    t1.set_outgroup(R)
+
+
+    tss = TreeStyle()
+    value=1
+
+
+
+    if column_scale and header_list2:
+        import matplotlib.cm as cm
+        from matplotlib.colors import rgb2hex
+        import matplotlib as mpl
+        column2scale = {}
+        for column in header_list2:
+            values = taxon2set2value_heatmap[column].values()
+            print values, column
+            norm = mpl.colors.Normalize(vmin=min(values), vmax=max(values))
+            cmap = cm.OrRd
+            m = cm.ScalarMappable(norm=norm, cmap=cmap)
+            column2scale[column] = m
+
+    cmap = cm.YlGnBu#YlOrRd#OrRd
+
+    values_lists = taxon2value_list_barplot.values()
+
+    scale_list = []
+    max_value_list = []
+
+    for n, header in enumerate(header_list):
+
+        data = [int(i[n]) for i in values_lists]
+
+        max_value = max(data)#3424182#
+
+        min_value = min(data) #48.23
+        norm = mpl.colors.Normalize(vmin=min_value, vmax=max_value)
+        m1 = cm.ScalarMappable(norm=norm, cmap=cmap)
+        scale_list.append(m1)
+        if not general_max:
+            max_value_list.append(float(max_value))
+        else:
+            max_value_list.append(general_max)
+
+    for i, lf in enumerate(t1.iter_leaves()):
+        print '#############', i, lf.name
+
+        #if taxon2description[lf.name] == 'Pirellula staleyi DSM 6068':
+        #    lf.name = 'Pirellula staleyi DSM 6068'
+        #    continue
+        if i==0:
+
+            col_add=0
+            for col, header in enumerate(header_list):
+
+                #lf.add_face(n, column, position="aligned")
+                n2 = TextFace('')
+                tss.aligned_header.add_face(n2, col+col_add)
+
+
+                n = TextFace('%s' % header)
+                n.margin_top = 1
+                n.margin_right = 1
+                n.margin_left = 20
+                n.margin_bottom = 1
+                n.inner_background.color = "white"
+                n.opacity = 1.
+
+                tss.aligned_header.add_face(n, col+col_add+1)
+                col_add+=1
+            col2 = col+col_add+1
+            if header_list2:
+                for header in header_list2:
+                    n = TextFace('%s' % header)
+                    n.margin_top = 1
+                    n.margin_right = 1
+                    n.margin_left = 20
+                    n.margin_bottom = 1
+                    n.rotation = 270
+                    n.inner_background.color = "white"
+                    n.opacity = 1.
+                    print 'header 2 column:', col2
+                    tss.aligned_header.add_face(n, col2)
+                    col2+=1
+
+
+        try:
+            val_list = taxon2value_list_barplot[lf.name]
+        except:
+            val_list = taxon2value_list_barplot[int(lf.name)]
+        col_add=0
+        for col, value in enumerate(val_list):
+            #print 'column!', col, value
+
+            # show value itself
+            try:
+                n = TextFace('  %s ' % str(value))
+            except:
+                n = TextFace('  %s ' % str(value))
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 20
+            n.margin_bottom = 1
+            n.inner_background.color = "white"
+            n.opacity = 1.
+
+            lf.add_face(n, col+col_add, position="aligned")
+            # show bar
+
+            color = rgb2hex(scale_list[col].to_rgba(float(value)))
+
+            b = StackedBarFace([(value/max_value_list[col])*100,
+                                ((max_value_list[col]-value)/max_value_list[col])*100],
+                                width=100, height=10, colors=[color, "white"])
+            b.rotation= 0
+            b.inner_border.color = "grey"
+            b.inner_border.width = 0
+            b.margin_right = 15
+            b.margin_left = 0
+            lf.add_face(b, col+col_add+1, position="aligned")
+            col_add+=1
+
+        if taxon2set2value_heatmap:
+            print 'taxon2alue_list_heatmap!!!'
+            shift = col+col_add+1
+
+            i = 0
+            print val_list
+
+            for col2 in range(shift, len(header_list2)+shift):
+                col_name = header_list2[i]
+                print 'col2', col2, shift, i
+                try:
+                    value = taxon2set2value_heatmap[col_name][lf.name]
+                except:
+                    try:
+                        value = taxon2set2value_heatmap[col_name][int(lf.name)]
+                    except:
+                        value = 0
+
+                if int(value) >0:
+                    if int(value)>9:
+                        n = TextFace(' %i ' % int(value))
+                    else:
+                        n = TextFace(' %i   ' % int(value))
+                    n.margin_top = 1
+                    n.margin_right = 1
+                    n.margin_left = 20
+                    n.margin_bottom = 1
+                    n.color = "red"
+                    n.inner_background.color = rgb2hex(column2scale[col_name].to_rgba(float(value)))#"orange"
+                    n.opacity = 1.
+                    print 'value column:', col2
+                    lf.add_face(n, col2, position="aligned")
+                    i+=1
+                else:
+                    n = TextFace('  ') #% str(value))
+                    n.margin_top = 1
+                    n.margin_right = 1
+                    n.margin_left = 20
+                    n.margin_bottom = 1
+                    n.inner_background.color = "white"
+                    n.opacity = 1.
+
+                    lf.add_face(n, col2, position="aligned")
+                    i+=1
+
+
+        lf.name = taxon2description[lf.name]
+        #print lf.name
+    for n in t1.traverse():
+       nstyle = NodeStyle()
+       if n.support < 1:
+           nstyle["fgcolor"] = "black"
+           nstyle["size"] = 6
+           n.set_style(nstyle)
+       else:
+           nstyle["fgcolor"] = "red"
+           nstyle["size"] = 0
+           n.set_style(nstyle)
+    #print t1
+    return t1, tss
 
 def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, bw_scale=True):
     import manipulate_biosqldb
@@ -17,7 +443,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
     db_id = server.adaptor.execute_and_fetchall(sql_biodatabase_id,)[0][0]
 
     t1 = Tree(tree_file)
-
+    tss = TreeStyle()
     sql1 = 'select taxon_id, description from bioentry where biodatabase_id=%s and description not like "%%%%plasmid%%%%"' % db_id
     sql2 = 'select t2.taxon_id, t1.GC from genomes_info_%s as t1 inner join bioentry as t2 ' \
            ' on t1.accession=t2.accession where t2.biodatabase_id=%s and t1.description not like "%%%%plasmid%%%%";' % (biodb, db_id)
@@ -73,8 +499,6 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
     m3 = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 
-
-    #print "max_genome_size", max_genome_size
     for i, lf in enumerate(t1.iter_leaves()):
         #if taxon2description[lf.name] == 'Pirellula staleyi DSM 6068':
         #    lf.name = 'Pirellula staleyi DSM 6068'
@@ -87,7 +511,8 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
             n.margin_bottom = 1
             n.inner_background.color = "white"
             n.opacity = 1.
-            lf.add_face(n, 3, position="aligned")
+            #lf.add_face(n, 3, position="aligned")
+            tss.aligned_header.add_face(n, 3)
             n = TextFace('GC (%)')
             n.margin_top = 1
             n.margin_right = 1
@@ -95,10 +520,13 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
             n.margin_bottom = 1
             n.inner_background.color = "white"
             n.opacity = 1.
-            lf.add_face(n, 5, position="aligned")
+            #lf.add_face(n, 5, position="aligned")
+            tss.aligned_header.add_face(n, 5)
             n = TextFace('')
-            lf.add_face(n, 2, position="aligned")
-            lf.add_face(n, 4, position="aligned")
+            #lf.add_face(n, 2, position="aligned")
+            tss.aligned_header.add_face(n, 2)
+            #lf.add_face(n, 4, position="aligned")
+            tss.aligned_header.add_face(n, 4)
             n = TextFace('Coding density (%)')
             n.margin_top = 1
             n.margin_right = 1
@@ -106,9 +534,11 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
             n.margin_bottom = 1
             n.inner_background.color = "white"
             n.opacity = 1.
-            lf.add_face(n, 7, position="aligned")
+            #lf.add_face(n, 7, position="aligned")
+            tss.aligned_header.add_face(n, 7)
             n = TextFace('')
-            lf.add_face(n, 6, position="aligned")
+            #lf.add_face(n, 6, position="aligned")
+            tss.aligned_header.add_face(n, 6)
 
         value+=1
 
@@ -202,7 +632,9 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         b.margin_left = 5
         lf.add_face(b, 7, position="aligned")
 
+
         lf.name = taxon2description[lf.name]
+
 
     for n in t1.traverse():
        nstyle = NodeStyle()
@@ -215,10 +647,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
            nstyle["size"] = 0
            n.set_style(nstyle)
 
-    return t1
-
-
-
+    return t1, tss
 
 if __name__ == '__main__':
     import argparse

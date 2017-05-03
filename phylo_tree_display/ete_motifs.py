@@ -682,6 +682,8 @@ def pathways_heatmapV2(biodb,
     return t1
 
 
+
+
 def multiple_profiles_heatmap(biodb,
                               column_labels,
                               taxon2group2count,
@@ -736,7 +738,7 @@ def multiple_profiles_heatmap(biodb,
         import matplotlib as mpl
         column2scale = {}
         for column in column_labels:
-            values = taxon2group2count[column].values()
+            values = [float(i) for i in taxon2group2count[column].values()]
             print values, column
             norm = mpl.colors.Normalize(vmin=min(values), vmax=max(values))
             cmap = cm.OrRd

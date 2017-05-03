@@ -73,7 +73,7 @@ def plot_heat_tree(gene2genome_id, tree_file, genes, accession2description=False
     import numpy
 
     from ete2.treeview.faces import add_face_to_node
-    from ete2 import ClusterTree, TreeStyle, AttrFace, ProfileFace
+    from ete2 import ClusterTree, TreeStyle, AttrFace, ProfileFace, NodeStyle
     genome_list = []
     for gene in gene_list:
         for genome in gene2genome_id[gene]:
@@ -87,6 +87,7 @@ def plot_heat_tree(gene2genome_id, tree_file, genes, accession2description=False
         #taxid2organism = manipulate_biosqldb.taxon_id2genome_description(server, biodb, True)
 
     t1 = Tree(tree_file)
+    tss = TreeStyle()
     #t.populate(8)
     # Calculate the midpoint node
     R = t1.get_midpoint_outgroup()
@@ -182,16 +183,18 @@ def plot_heat_tree(gene2genome_id, tree_file, genes, accession2description=False
 
             if leaf_number==1:
                 n = TextFace('%s' % (file2gene[gene]), fsize=5)
-                n.vt_align = 0
-                n.hz_align = 1
+                n.vt_align = 2
+                n.hz_align = 2
                 n.rotation= 270
                 n.margin_top = 0
                 n.margin_right = 0
                 n.margin_left = 0
                 n.margin_bottom = 0
+                n.fsize = 15
                 n.inner_background.color = "white"
                 n.opacity = 1.
-                lf.add_face(n, col, position="aligned")
+                #lf.add_face(n, col, position="aligned")
+                tss.aligned_header.add_face(n, col)
 
             if value > 0:
                 if len(str(value)) < 5:
@@ -235,8 +238,19 @@ def plot_heat_tree(gene2genome_id, tree_file, genes, accession2description=False
                 lf.name = accession2description[lf.name]
             except:
                 pass
+    for n in t1.traverse():
+       nstyle = NodeStyle()
+       if n.support < 1:
+           nstyle["fgcolor"] = "black"
+           nstyle["size"] = 6
+           n.set_style(nstyle)
+       else:
+           nstyle["fgcolor"] = "red"
+           nstyle["size"] = 0
+           n.set_style(nstyle)
+
     #a = t1.render(output_file, dpi=800, h=i*15)
-    return t1, leaf_number
+    return t1, tss,leaf_number
 
 
 
@@ -290,7 +304,9 @@ if __name__ == '__main__':
     parser.add_argument("-r",'--reference',
                         type=str,
                         help="reference_accession")
-
+    parser.add_argument("-o",'--outname',
+                        type=str,
+                        help="outname")
     args = parser.parse_args()
 
     print len(args.identity_tables)
@@ -330,7 +346,7 @@ if __name__ == '__main__':
     else:
         taxid2st = False
 
-    t, n = plot_heat_tree(gene2genome_id, args.tree, gene_list, accession2description, taxid2st)
-    tss = TreeStyle()
-    tss.show_branch_support = True
-    t.render("test.svg", tree_style=tss)
+    t, tss,n = plot_heat_tree(gene2genome_id, args.tree, gene_list, accession2description, taxid2st)
+    #tss = TreeStyle()
+    #tss.show_branch_support = False
+    t.render("%s.svg" % args.outname, tree_style=tss)
