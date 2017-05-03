@@ -42,8 +42,27 @@ def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False):
               ' where biodatabase_id=%s group by taxon_id;' % (biodb, db_id)
         taxon_id2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    code2taxon2count = {}
-    cog_list = []
+        code2taxon2count = {}
+        cog_list = []
+
+    else:
+        sql = 'select taxon_id, count(*) from biosqldb.orthology_detail_%s t1 left join COG.locus_tag2gi_hit_%s t2 ' \
+              ' on t1.locus_tag=t2.locus_tag where COG_id is NULL group by t1.taxon_id;' % (biodb,  biodb)
+
+        taxon2count_no_GOG = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+        sql = 'select taxon_id, count(*) from orthology_detail_%s group by taxon_id' % biodb
+
+        taxon2proteome_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+        code2taxon2count = {}
+        code2taxon2count['-'] = {}
+        code2taxon2count['TOTAL'] = {}
+        for taxon in taxon2count_no_GOG:
+            code2taxon2count['-'][taxon] = int(taxon2count_no_GOG[taxon])
+            code2taxon2count['TOTAL'][taxon] = int(taxon2proteome_size[taxon])
+
+        cog_list = ['TOTAL', '-']
     for row in data:
         if row[1] not in cog_list:
             cog_list.append(row[1])

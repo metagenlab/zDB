@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-15 -*-
 
-def plot_phylo(nw_tree, out_name, parenthesis_classif=False):
-    from ete2 import Tree, AttrFace,TreeStyle
+def plot_phylo(nw_tree, out_name, parenthesis_classif=False, show_support=False):
+    from ete2 import Tree, AttrFace,TreeStyle,NodeStyle
     import orthogroup2phylogeny_best_refseq_uniprot_hity
 
     ete2_tree = Tree(nw_tree, format=0)
@@ -39,6 +39,18 @@ def plot_phylo(nw_tree, out_name, parenthesis_classif=False):
 
         lf.add_face(ff, column=0)
 
+        if not show_support:
+            for n in ete2_tree.traverse():
+               nstyle = NodeStyle()
+               if n.support < 1:
+                   nstyle["fgcolor"] = "blue"
+                   nstyle["size"] = 5
+                   n.set_style(nstyle)
+               else:
+                   nstyle["fgcolor"] = "red"
+                   nstyle["size"] = 0
+                   n.set_style(nstyle)
+
         #nameFace = AttrFace(lf.name, fsize=30, fgcolor=phylum2col[accession2name_and_phylum[lf.name][1]])
         #faces.add_face_to_node(nameFace, lf, 0, position="branch-right")
         #
@@ -58,7 +70,8 @@ def plot_phylo(nw_tree, out_name, parenthesis_classif=False):
 
     ts = TreeStyle()
     ts.show_leaf_name = False
-    ts.show_branch_support = True
+    ts.scale=2000
+    ts.show_branch_support = show_support
     ete2_tree.render(out_name, tree_style=ts)
 
 if __name__ == '__main__':
@@ -71,4 +84,4 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    plot_phylo(args.input_tree, 'test.svg', True)
+    plot_phylo(args.input_tree, 'test.svg', parenthesis_classif=False, show_support=False)

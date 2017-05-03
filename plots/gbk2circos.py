@@ -209,6 +209,60 @@ def print_circos_record_file(record_list, out_name = "circos_contigs.txt", draft
             x += 1
     f.close()
 
+
+
+
+def print_circos_labels_file(record_list, locus2label, out_name = "circos_labels.txt",
+                           draft_data=[None], draft_coordinates=False):
+
+    import numpy
+
+    f = open(out_name, "w")
+
+    for y, record in enumerate(record_list):
+        for feature in record.features:
+            if feature.type == "CDS":
+
+                    try:
+                        for i in draft_data[y]:
+                            # determine to which contig the feature belong
+
+                            if feature.location.start >= i[1] and feature.location.end <= i[2]:
+                                if draft_coordinates:
+                                    contig = i[0]
+                                    start = feature.location.start - i[1]
+                                    end = feature.location.end - i[1]
+                                else:
+                                    contig = i[0]
+                                    start = feature.location.start
+                                    end = feature.location.end
+                    except IndexError:
+                        contig = record.id # fill_color=violet
+                        start = feature.location.start
+                        end = feature.location.end
+                    except TypeError:
+                        contig = record.id # fill_color=violet
+                        start = feature.location.start
+                        end = feature.location.end
+
+                    # absurd features
+                    if numpy.abs(feature.location.start-feature.location.end) > 50000:
+                        continue
+
+                    if 'pseudo' in feature.qualifiers:
+                        continue
+
+                    if feature.qualifiers['orthogroup'][0] in locus2label or feature.qualifiers['locus_tag'][0] in locus2label:
+
+                            f.write('%s %s %s %s color=spectral-5-div-2,z=1\n' % (contig,
+                                                                               start,
+                                                                               end,
+                                                                               locus2label[feature.qualifiers['locus_tag'][0]]))
+
+    f.close()
+
+
+
 def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                            out_name = "circos_genes_plus.txt",
                            locus_highlight=[], draft_data=[None],
@@ -771,7 +825,7 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
   
 def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_name, out_dir, locus_highlight=[],
                            feature_type="CDS", taxon_list=False, draft_data=[None], query_taxon_id=False,
-                           draft_coordinates=False, color_missing=True):
+                           draft_coordinates=False, color_missing=True, locus2label=False, show_homologs=True):
 
     import biosql_own_sql_tables
     import os
@@ -817,6 +871,16 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
     all_file_names["orthogroups_family"] = os.path.join(out_dir,
                                                "circos_orthogroup_family_size_%s.txt"  % reference_taxon_id)
 
+    if locus2label:
+        all_file_names["labels"] = os.path.join(out_dir,
+                                                   "circos_labels_%s.txt"  % reference_taxon_id)
+
+        print_circos_labels_file(record_list,
+                                 locus2label,
+                                 all_file_names["labels"],
+                                 draft_data=draft_data,
+                                 draft_coordinates=draft_coordinates)
+
     print "writing record file"
     print_circos_record_file(record_list, out_name = all_file_names["contigs"], draft_data=draft_data)
     print "writing minus strand file"
@@ -829,6 +893,8 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                          locus_highlight=locus_highlight, group_id2orthologs_presence=group_id2orthologs_presence,
                          query_taxon_id=query_taxon_id, draft_coordinates=draft_coordinates)
     print "writing GC file"
+
+
 
     all_file_names["GC_var"], all_file_names["GC_skew"] = print_circos_GC_file(record_list, out_directory = out_dir)
 
@@ -851,9 +917,9 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
             all_file_names["genomes"].append(file_name)
             taxon_files.append(open(file_name, "w"))
     print 'get closest homolog identity dictionnary'
-    locus2locus_identity = biosql_own_sql_tables.circos_locus2taxon_highest_identity(biodatabase_name, reference_taxon_id)
+    if show_homologs:
+        locus2locus_identity = biosql_own_sql_tables.circos_locus2taxon_highest_identity(biodatabase_name, reference_taxon_id)
 
-    print locus2locus_identity.keys()[1:10]
     print "get plasmid locus"
     plasmid_locus = biosql_own_sql_tables.get_locus2plasmid_or_not(biodatabase_name)
 

@@ -452,23 +452,32 @@ class Locus2genoplotR():
 
         if show_labels:
             plot = '''
+
                 plot_gene_map(dna_segs=dna_seg_list,
                                comparisons=comp_list,
                                main="",
-                               dna_seg_scale=TRUE, scale=FALSE,
-                               annotations=annots, annotation_height=0.4, annotation_cex=0.5)
+                               dna_seg_scale=TRUE,
+                               scale=TRUE,
+                               global_color_scheme=c("per_id", "increasing", "grey", 0.5),
+                               annotations=annots, annotation_height=0.4, annotation_cex=0.5,
+                               override_color_schemes=TRUE,
+                               plot_new=FALSE)
             '''
         else:
             plot = '''
             plot_gene_map(dna_segs=dna_seg_list,
                            comparisons=comp_list,
                            main="",
-                           dna_seg_scale=TRUE, scale=FALSE)
+                           scale=TRUE,
+                           global_color_scheme=TRUE,
+                           dna_seg_scale=TRUE,
+                           scale=FALSE)
             '''
 
         robjects.r('''
             library(genoPlotR)
             library(Cairo)
+            library(squash)
 
             dna_seg_list <- list()
             for (i in 1:length(genbank_list)){
@@ -510,6 +519,9 @@ class Locus2genoplotR():
 
             names(dna_seg_list) <- names
 
+
+            all_id <- c()
+
             comp_list <- list()
             for (i in 1:length(blast_list)){
                 print(blast_list[[i]])
@@ -518,6 +530,7 @@ class Locus2genoplotR():
 
                 fake_row1 <- comp_list[[i]][1,]
                 fake_row2 <- comp_list[[i]][1,]
+
                 fake_row1$per_id <- 50
                 fake_row2$per_id <- 100
                 fake_row1$aln_len <- 1
@@ -536,10 +549,39 @@ class Locus2genoplotR():
                 fake_row1$end2 <- 2
                 fake_row2$end2 <- 2
 
-                comp_list[[i]] <- rbind(comp_list[[i]], fake_row1, fake_row1)
+                #comp_list[[i]] <- rbind(comp_list[[i]], fake_row1, fake_row1)
 
                 comp_list[[i]]$col <- apply_color_scheme(comp_list[[i]]$per_id, "grey")
+
+                all_id <- c(all_id,comp_list[[i]]$per_id)
             }
+
+            rng <- range(all_id)
+
+            if (diff(rng) == 0){
+              col <- rep(grey(0.5), length(all_id))
+            } else {
+              level <- 0.75-((all_id-rng[1])/diff(rng))*0.5
+              col <- grey(level)
+            }
+
+            col <- grey(sort(unique(level)))
+
+            transparency <- 0.5
+            tpc <- floor(transparency*256)
+
+            tpc <- sprintf("%%X", tpc)
+            if (nchar(tpc) == 1) tpc <- paste("0", tpc, sep="")
+            col <- paste(col, tpc, sep="")
+
+            map <- makecmap(sort(unique(level)))
+            map$colors<-col
+
+            map$include.lowest<-TRUE
+            map$breaks <- rep("",length(map$colors)+1)
+            map$breaks[1] <-rng[2]
+
+            map$breaks[length(map$colors)+1]<-rng[1]
 
             annots <- lapply(dna_seg_list, function(x){
                mid <- middle(x)
@@ -549,27 +591,16 @@ class Locus2genoplotR():
              })
 
 
-
-            #BH <- try(read_dna_seg_from_file(""))
-            #BQ <- try(read_dna_seg_from_file(""))
-            #BH_vs_BQ <- try(read_comparison_from_blast(""))
-
-            #The data, or a sample thereof (using xlims) can now be plotted.
-
-             #mid_pos <- middle(BH)
-             #annot <- annotation(x1=mid_pos,
-             #                    text=BH$name,
-             #                    rot=30)
-
             CairoPDF('test2.pdf',height=4,width=12)# 4,14 / 3.8 (yersinia)/2 (oxa)
 
             xlims <- list(c(1,50000), c(1,50000))
+                plot.new()
+                pushViewport(viewport(layout.pos.row=1, name="panelA"))
                 %s
+                hkey(map)
+                upViewport()
             dev.off()
         ''' % plot)
-
-
-
 
 
 if __name__ == '__main__':

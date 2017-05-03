@@ -1134,17 +1134,23 @@ class Fasta2circos():
                         continue
                     if feature.type == 'CDS':
                         # deal with impossible size ORF
-
+                        if 'hyp' in feature.qualifiers['product'][0]:
+                            col='blue'
+                        else:
+                            col='grey_a1'
 
 
                         if int(feature.location.strand) == 1:
-                            p.write('%s\t%s\t%s\n' % (record.name,
+
+                            p.write('%s\t%s\t%s\tfill_color=%s\n' % (record.name,
                                                       start,
-                                                      end))
+                                                      end,
+                                                      col))
                         else:
-                            m.write('%s\t%s\t%s\n' % (record.name,
+                            m.write('%s\t%s\t%s\tfill_color=%s\n' % (record.name,
                                                       start,
-                                                      end))
+                                                      end,
+                                                      col))
                     elif feature.type == 'rRNA' or feature.type == 'tRNA':
                         if feature.location.strand == '1':
                             p.write('%s\t%s\t%s\tfill_color=red\n' % (record.name,
