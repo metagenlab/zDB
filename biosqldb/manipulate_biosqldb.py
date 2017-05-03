@@ -948,6 +948,8 @@ def locus_tag2genome_taxon_id(server, biodatabase_name):
           ' inner join bioentry as t6 on t1.bioentry_id = t6.bioentry_id' \
           ' inner join biodatabase as t7 on t6.biodatabase_id = t7.biodatabase_id and t7.name = "%s"' % biodatabase_name
 
+    print sql
+
     result = server.adaptor.execute_and_fetchall(sql,)
 
     locus_tag2taxon_id = {}

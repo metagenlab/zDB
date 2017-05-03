@@ -10,20 +10,26 @@ def create_locus_tag2seqfeature_table(biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'CREATE TABLE IF NOT EXISTS custom_tables.locus2seqfeature_id_%s (locus_tag varchar(400), seqfeature_id INT,' \
-          ' index locus_tag (locus_tag), index seqfeature_id(seqfeature_id))' % biodb
+    sql = 'CREATE TABLE IF NOT EXISTS custom_tables.locus2seqfeature_id_%s (locus_tag varchar(400), seqfeature_id INT, taxon_id INT,' \
+          ' index locus_tag (locus_tag), index seqfeature_id(seqfeature_id), index taxon_id (taxon_id))' % biodb
     print sql
     server.adaptor.execute(sql)
     server.commit()
 
     locus2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, biodb)
 
+    sql = 'select locus_tag, taxon_id from orthology_detail_%s' % biodb
+
+    locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
     for locus in locus2seqfeature_id:
-        sql = 'insert into custom_tables.locus2seqfeature_id_%s values ("%s", %s)' % (biodb, locus, locus2seqfeature_id[locus])
-        server.adaptor.execute(sql)
+        try:
+            sql = 'insert into custom_tables.locus2seqfeature_id_%s values ("%s", %s, %s)' % (biodb, locus, locus2seqfeature_id[locus], locus2taxon_id[locus])
+            server.adaptor.execute(sql)
+        except:
+            sql = 'insert into custom_tables.locus2seqfeature_id_%s values ("%s", %s, %s)' % (biodb, locus, locus2seqfeature_id[locus], "NULL")
+            server.adaptor.execute(sql)
         server.commit()
-
-
 
 if __name__ == '__main__':
     import argparse

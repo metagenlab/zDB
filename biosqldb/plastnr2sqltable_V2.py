@@ -88,8 +88,7 @@ def load_blastnr_file_into_db(locus_tag2taxon_id,
                                 mysql_db,
                                 input_blast_files,
                                 biodb,
-                                gi2descriptions,
-                                gi2taxon_id):
+                                accession2descriptions):
 
     import accession2taxon_id
 
@@ -152,15 +151,18 @@ def load_blastnr_file_into_db(locus_tag2taxon_id,
                 bit_score = float(line[11])
                 #subject_strand = line[18] # remove
 
-                subject_accession = line[1].split("|")[3]
-                #query_gi = int(line[1].split("|")[1]) # remove
-                subject_gi = int(line[1].split("|")[1]) # parse it from plastp result
+                subject_accession = line[1].split("|")[1]
+                subject_gi = accession2descriptions[subject_accession]['id']#int(line[1].split("|")[1]) # remove
+                subject_taxon_id = accession2descriptions[subject_accession]['taxon_id']
+
+                #subject_gi = int(line[1].split("|")[1]) # parse it from plastp result
+
                 try:
-                    subject_kingdom = gi2descriptions[str(subject_gi)]['taxonomy'][0]  # get from accession2annotations
+                    subject_kingdom = accession2descriptions[subject_accession]['taxonomy']  # get from accession2annotations
                 except:
                     subject_kingdom = '-'
-                subject_scientific_names = gi2descriptions[str(subject_gi)]['source'] # get from accession2annotations
-                subject_title = gi2descriptions[str(subject_gi)]['description'] # get from accession2annotations
+                subject_scientific_names = accession2descriptions[subject_accession]['source'] # get from accession2annotations
+                subject_title = accession2descriptions[subject_accession]['description'] # get from accession2annotations
 
                 # first hit of the file
                 if n == 0:
@@ -203,7 +205,7 @@ def load_blastnr_file_into_db(locus_tag2taxon_id,
                                                                                                     subject_accession,
                                                                                                     subject_kingdom,
                                                                                                     subject_scientific_names,
-                                                                                                    gi2taxon_id[subject_gi],
+                                                                                                    subject_taxon_id,
                                                                                                     subject_title,
                                                                                                     evalue,
                                                                                                     bit_score,
@@ -217,6 +219,7 @@ def load_blastnr_file_into_db(locus_tag2taxon_id,
                                                                                                     )
 
                 sql = 'insert into blastnr_%s values %s' % (biodb,values)
+                #print sql
                 cursor.execute(sql,)
                 conn.commit()
 
@@ -359,7 +362,7 @@ def blastnr2biosql( locus_tag2seqfeature_id,
 
 
 
-    sql = 'create table if not exists blastnr.gi2taxon_and_description (gi INT, taxon_id INT, description TEXT,' \
+    sql = 'create table if not exists blastnr.accession2taxon_and_description (gi INT AUTO_INCREMENT PRIMARY KEY, accession varchar(600),taxon_id INT, description TEXT,' \
           ' taxonomy TEXT, source TEXT);'
     server.adaptor.execute(sql,)
 
@@ -371,78 +374,97 @@ def blastnr2biosql( locus_tag2seqfeature_id,
            ' inner join bioentry as t2 on t1.biodatabase_id=t2.biodatabase_id' \
            ' inner join orthology_detail_%s t3 on t2.accession=t3.accession where t1.name="%s"' % (db_name,db_name)
 
+
     locus_tag2bioentry_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
-    sql = 'select gi from blastnr.gi2taxon_and_description'
-    gi_in_db = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
+    sql = 'select accession from blastnr.accession2taxon_and_description'
+    accession_in_db = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
-    protein_gi_list = []
+    protein_accession_list = []
     for one_blast_file in input_blast_files:
-
                 print 'blast file %s' % one_blast_file
                 with open(one_blast_file, 'r') as f:
-                    all_gi_ids = [i.rstrip().split("\t")[1].split('|')[1] for i in f]
-                    protein_gi_list+=all_gi_ids
+                    all_accession_ids = [i.rstrip().split("\t")[1].split('|')[1] for i in f]
+                    protein_accession_list+=all_accession_ids
 
     print 'filtering gi from db'
-    nr_protein_gi_list = list(set(protein_gi_list) - set(gi_in_db))
+    nr_protein_accession_list = list(set(protein_accession_list) - set(accession_in_db))
     #nr_protein_gi_list = list(set(protein_gi_list))
-    print 'ok'
-    sql = 'select gi, taxon_id from blastnr.gi2taxon_and_description'
+    '''
+    sql = 'select accession, taxon_id from blastnr.accession2taxon_and_description'
 
-    gi2taxon_id = {}
+    accession2taxon_id_dico = {}
     data = server.adaptor.execute_and_fetchall(sql,)
     for row in data:
-        gi2taxon_id[int(row[0])] = str(row[1])
+        accession2taxon_id_dico[int(row[0])] = str(row[1])
+    '''
 
-    print 'getting protein 2 taxon id for %s proteins' % len(nr_protein_gi_list)
-    sql = 'select * from blastnr.gi2taxon_and_description'
-    data = server.adaptor.execute_and_fetchall(sql,)
-    gi2descriptions = {}
-    for row in data:
-        descr = {}
-        descr['description'] = row[2]
-        descr['source'] = row[4]
-        descr['taxonomy'] = [row[3]]
-        gi2descriptions[str(row[0])] = descr
+    print 'getting protein 2 taxon id for %s proteins (out of %s)' % (len(nr_protein_accession_list), len(set(protein_accession_list)))
 
-    id_lists = _chunks(nr_protein_gi_list, 5000)
+    id_lists = _chunks(nr_protein_accession_list, 50)
 
     for i, one_list in enumerate(id_lists):
         print i, " lists /", len(id_lists), str(datetime.now())
+        #print one_list[0:10]
         if i % 100 == 0 and i != 0:
             time.sleep(60)
-        gi2taxon_id.update(accession2taxon_id.gi2taxon_id(one_list, "protein"))
-        gi2descriptions.update(accession2taxon_id.gi2description(one_list, "protein"))
-        for gi in one_list:
-            descr = gi2descriptions[str(gi)]
+        try:
+            #print 'getting taxon dico'
+            accession2taxon_id_dico = accession2taxon_id.gi2taxon_id(one_list, "protein")
+            #print len(accession2taxon_id_dico), accession2taxon_id_dico
+            #print 'getting accession dico'
+            accession2descriptions = accession2taxon_id.gi2description(one_list, "protein")
+            #print len(accession2descriptions), accession2descriptions
+        except:
+            print 'problem getting accession2data...'
+        for accession in one_list:
             try:
-                descr['description'] = re.sub("'", "''", descr['description'])
-            except:
-                print descr
-                import sys
-                sys.exit()
-            try:
-                taxonomy = descr['taxonomy'][0]
-            except:
-                taxonomy = '-'
+                descr = accession2descriptions[str(accession)]
+                try:
+                    descr['description'] = re.sub("'", "''", descr['description'])
+                except:
+                    print descr
+                    import sys
+                    sys.exit()
+                try:
+                    taxonomy = descr['taxonomy'][0]
+                except:
+                    taxonomy = '-'
 
-            taxon_id = gi2taxon_id[int(gi)]
-            description = descr['description']
-            source = descr['source']
+                taxon_id = accession2taxon_id_dico[accession]
+                description = descr['description']
+                source = descr['source']
 
-            sql = 'insert into blastnr.gi2taxon_and_description values(%s,%s,"%s", "%s", "%s")' % (gi,
-                                                                                                   taxon_id,
-                                                                                                   description,
-                                                                                                   taxonomy,
-                                                                                                   source)
-            #try:
-            server.adaptor.execute(sql, )
-            #except:
-            #    print sql
-            #    import sys
-            #    sys.exit()
+                sql = 'insert into blastnr.accession2taxon_and_description (accession, taxon_id, description, taxonomy, source) ' \
+                      ' values("%s",%s,"%s", "%s", "%s")' % (accession,
+                                                           taxon_id,
+                                                           description,
+                                                           taxonomy,
+                                                           source)
+                #try:
+                server.adaptor.execute(sql, )
+                #except:
+                #    print sql
+                #    import sys
+                #    sys.exit()
+            except:
+                print 'problem with:', accession
         server.adaptor.commit()
+
+    # collect annotation for all proteins in the database
+    print 'collecting annotation for blastnr_table'
+    sql = 'select * from blastnr.accession2taxon_and_description'
+    data = server.adaptor.execute_and_fetchall(sql,)
+    accession2descriptions = {}
+    for row in data:
+        descr = {}
+        descr['description'] = row[3]
+        descr['source'] = row[5]
+        descr['taxonomy'] = row[4]
+        descr['taxon_id'] = row[2]
+        descr['id'] = row[0]
+        accession2descriptions[str(row[1])] = descr
+        #gi2taxon_id[row[0]] = row[2]
 
     if len(input_blast_files)>n_poc_per_list:
 
@@ -458,8 +480,7 @@ def blastnr2biosql( locus_tag2seqfeature_id,
                                                                    mysql_db,
                                                                    one_list,
                                                                    db_name,
-                                                                   gi2descriptions,
-                                                                   gi2taxon_id))
+                                                                   accession2descriptions))
             procs.append(proc)
             proc.start()
 
@@ -545,7 +566,7 @@ if __name__ == '__main__':
         sys.stdout.write("creating protein_id2seqfeature_id")
         protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, biodb)
 
-        blastnr2biosql( locus_tag2seqfeature_id,
+        blastnr2biosql(locus_tag2seqfeature_id,
                         protein_id2seqfeature_id,
                         biodb,
                         args.n_procs,
@@ -555,7 +576,6 @@ if __name__ == '__main__':
                         mysql_db,
                         *args.input_blast)
 
-
     if args.update_taxo_table:
         update_blastnr_taxonomy_table('blastnr_%s' % biodb)
-        update_blastnr_taxonomy_table('blast_swissprot_%s' % biodb)
+        #update_blastnr_taxonomy_table('blast_swissprot_%s' % biodb)

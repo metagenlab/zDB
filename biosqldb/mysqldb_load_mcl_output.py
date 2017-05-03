@@ -1079,7 +1079,7 @@ if __name__ == '__main__':
         print "adding orthogroup to seqfeature_qualifier_values"
         add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
 
-
+        
         print "creating orthology table merging plasmid"
         orthogroup2detailed_count = get_orthology_matrix_merging_plasmids_biosqldb(server, args.db_name)
         print "orthogroup2detailed_count", orthogroup2detailed_count
@@ -1125,7 +1125,7 @@ if __name__ == '__main__':
         print "writing fasta files"
         #ortho_table = "orthology_%s" % args.db_name
         #all_taxon_ids = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
-
+        
     if args.get_sequences and not args.core_groups_path:
 
         if not os.path.exists(os.path.join(asset_path, "%s_fasta/" % args.db_name)):
@@ -1164,3 +1164,4 @@ if __name__ == '__main__':
         locus_or_protein_id2taxon_id = manipulate_biosqldb.locus_or_protein_id2taxon_id(server, args.db_name)
         print 'Number of core groups: %s' % len(group_list)
         get_one_group_data_taxon(group_list, locus_or_protein_id2taxon_id, args.db_name, args.core_groups_path)
+        

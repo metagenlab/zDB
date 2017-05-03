@@ -167,5 +167,64 @@ def get_whole_db_interpro_taxonomy():
         cursor.execute(sql,)
         conn.commit()
 
+
+def get_biodb_summary_statistics(biodb, cutoff=50):
+
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'create table if not exists interpro.taxonomy_summary_%s_%s(taxon_id INT, eukaryote_count INT, ' \
+          ' bacteria_count INT, archae_count INT, virus_count INT)' % (cutoff, biodb)
+
+    server.adaptor.execute(sql,)
+
+
+    taxon_list_sql = 'select taxon_id from biodatabase t1 inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id' \
+                 ' where t1.name="%s" group by taxon_id' % biodb
+
+    taxon_list = [i[0] for i in server.adaptor.execute_and_fetchall(taxon_list_sql,)]
+
+    print 'taxon_list', taxon_list
+    for taxon in taxon_list:
+        print taxon
+        sql_euk = 'select count(*) from (select interpro_accession from interpro_%s ' \
+                  ' where taxon_id=%s and interpro_accession!="0" group by locus_tag,interpro_accession) A ' \
+                  ' inner join interpro.entry B on A.interpro_accession=B.name  ' \
+                  ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_eukaryote>%s;' % (biodb,taxon, cutoff)
+        sql_virus = 'select count(*) from (select interpro_accession from interpro_%s ' \
+                  ' where taxon_id=%s and interpro_accession!="0" group by locus_tag,interpro_accession) A ' \
+                  ' inner join interpro.entry B on A.interpro_accession=B.name  ' \
+                  ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_virus>%s;'  % (biodb,taxon, cutoff)
+        sql_archae = 'select count(*) from (select interpro_accession from interpro_%s ' \
+                  ' where taxon_id=%s and interpro_accession!="0" group by locus_tag,interpro_accession) A ' \
+                  ' inner join interpro.entry B on A.interpro_accession=B.name  ' \
+                  ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_archae>%s;' % (biodb,taxon, cutoff)
+        sql_bact = 'select count(*) from (select interpro_accession from interpro_%s ' \
+                  ' where taxon_id=%s and interpro_accession!="0" group by locus_tag,interpro_accession) A ' \
+                  ' inner join interpro.entry B on A.interpro_accession=B.name  ' \
+                  ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_bacteria>%s;' % (biodb,taxon, cutoff)
+
+        count_euk = server.adaptor.execute_and_fetchall(sql_euk,)[0][0]
+        count_virus = server.adaptor.execute_and_fetchall(sql_virus,)[0][0]
+        count_archae = server.adaptor.execute_and_fetchall(sql_archae,)[0][0]
+        count_bact = server.adaptor.execute_and_fetchall(sql_bact,)[0][0]
+
+        sql = 'insert into interpro.taxonomy_summary_%s_%s values (%s,%s,%s,%s,%s)' % (cutoff,
+                                                                                       biodb,
+                                                                                       taxon,
+                                                                                       count_euk,
+                                                                                       count_bact,
+                                                                                       count_archae,
+                                                                                       count_virus)
+        print sql
+        server.adaptor.execute(sql,)
+        server.commit()
+
 #print interpro_entry2taxonomy("IPR014000")
-get_whole_db_interpro_taxonomy()
+
+
+#get_whole_db_interpro_taxonomy()
+get_biodb_summary_statistics('2017_04_19_chlamydiae_taxo', 98)
+get_biodb_summary_statistics('2017_04_19_chlamydiae_taxo', 50)
+get_biodb_summary_statistics('2017_04_19_chlamydiae_taxo', 90)
