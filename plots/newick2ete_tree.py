@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-15 -*-
 
 def plot_phylo(nw_tree, out_name, parenthesis_classif=False, show_support=False):
-    from ete2 import Tree, AttrFace,TreeStyle,NodeStyle
+    from ete2 import Tree, AttrFace,TreeStyle,NodeStyle, TextFace
     import orthogroup2phylogeny_best_refseq_uniprot_hity
 
     ete2_tree = Tree(nw_tree, format=0)
@@ -33,7 +33,7 @@ def plot_phylo(nw_tree, out_name, parenthesis_classif=False, show_support=False)
             #print col
             #lf.name = '%s|%s-%s' % (lf.name, accession2name_and_phylum[lf.name][0],accession2name_and_phylum[lf.name][1])
 
-        ff = AttrFace("name", fsize=12)
+        ff = AttrFace("name", fsize=12, fstyle = 'italic')
         #ff.background.color = 'red'
         ff.fgcolor = col
 
@@ -43,8 +43,8 @@ def plot_phylo(nw_tree, out_name, parenthesis_classif=False, show_support=False)
             for n in ete2_tree.traverse():
                nstyle = NodeStyle()
                if n.support < 1:
-                   nstyle["fgcolor"] = "blue"
-                   nstyle["size"] = 5
+                   nstyle["fgcolor"] = "red"
+                   nstyle["size"] = 2
                    n.set_style(nstyle)
                else:
                    nstyle["fgcolor"] = "red"
@@ -67,11 +67,14 @@ def plot_phylo(nw_tree, out_name, parenthesis_classif=False, show_support=False)
 
             lf.add_face(ff, column=0)
         '''
+        #n = TextFace(lf.name, fgcolor = "black", fsize = 12, fstyle = 'italic')
+        #lf.add_face(n, 0)
 
     ts = TreeStyle()
     ts.show_leaf_name = False
     ts.scale=2000
     ts.show_branch_support = show_support
+    ts.complete_branch_lines_when_necessary =False
     ete2_tree.render(out_name, tree_style=ts)
 
 if __name__ == '__main__':

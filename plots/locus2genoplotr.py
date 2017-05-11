@@ -33,7 +33,7 @@ class Locus2genoplotR():
         elif type(reference_genbank) == list and isinstance(reference_genbank[0], SeqRecord.SeqRecord):
             self.reference_record = reference_genbank
         else:
-            print 'wrong inpur reference'
+            print 'wrong input reference'
 
         self.ref_locus_seqrecord, self.ref_sub_record, self.ref_feature = self.get_target_locus_region(self.query_locus,
                                                                                      self.reference_record,
