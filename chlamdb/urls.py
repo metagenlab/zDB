@@ -6,9 +6,10 @@ import views
 from django.contrib.auth.views import logout
 
 urlpatterns = [
-                       url(r'^home/([a-zA-Z0-9_]+)$', home, name="home"),
+                       url(r'^home/([a-zA-Z0-9_\.]+)$', home, name="home"),
                        url(r'^cog_barchart/([a-zA-Z0-9_]+)', cog_barchart, name="cog_barchart"),
-                        url(r'^COG_phylo_heatmap/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', COG_phylo_heatmap, name="COG_phylo_heatmap"),
+                       url(r'^COG_phylo_heatmap/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', COG_phylo_heatmap, name="COG_phylo_heatmap"),
+                       url(r'^interactions_genome/([a-zA-Z0-9_]+)', interactions_genome, name="interactions_genome"),
                        url(r'^module_barchart/([a-zA-Z0-9_]+)', module_barchart, name="module_barchart"),
                        url(r'^locus_int/([a-zA-Z0-9_]+)', locus_int, name="locus_int"),
                        url(r'^module2heatmap/([a-zA-Z0-9_]+)', module2heatmap, name="module2heatmap"),
@@ -34,6 +35,8 @@ urlpatterns = [
                        url(r'^cog_venn_subset/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.\%-]+)$', cog_venn_subset, name="cog_venn_subset"),
                        url(r'^ko_venn_subset/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.\+-]+)$', ko_venn_subset, name="ko_venn_subset"),
                        url(r'^homology/([a-zA-Z0-9_]+)$', homology, name="homology"),
+                       url(r'^hmm/([a-zA-Z0-9_]+)$', hmm, name="hmm"),
+                       url(r'^hmm2circos/([a-zA-Z0-9_]+)$', hmm2circos, name="hmm2circos"),
                        url(r'^pfam_tree/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)$', pfam_tree, name="pfam_tree"),
                        url(r'^TM_tree/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)$', TM_tree, name="TM_tree"),
                        url(r'^orthogroup_conservation_tree/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)$', orthogroup_conservation_tree, name="orthogroup_conservation_tree"),
@@ -43,6 +46,7 @@ urlpatterns = [
                        url(r'^locusx/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)', locusx, name="locusx"),
                        url(r'^locusx/([a-zA-Z0-9_]+)/', locusx, name="locusx"),
                        url(r'^compare_homologs/([a-zA-Z0-9_]+)/', compare_homologs, name="compare_homologs"),
+                       url(r'^pairwiseid/([a-zA-Z0-9_]+)/', pairwiseid, name="pairwiseid"),
                        url(r'^sunburst/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)$', sunburst, name="sunburst"),
                        url(r'^fam/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)$', fam, name="fam"),
                        url(r'^blastnr/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)$', blastnr, name="blastnr"),
@@ -67,7 +71,7 @@ urlpatterns = [
                        url(r'^extract_orthogroup/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$$', extract_orthogroup, name="extract_orthogroup"),
                        url(r'^venn_orthogroup/([a-zA-Z0-9_]+)$$', venn_orthogroup, name="venn_orthogroup"),
                        url(r'^extract_cog/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$$', extract_cog, name="extract_cog"),
-                       url(r'^genome_annotation/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$$', genome_annotation, name="genome_annotation"),
+                       url(r'^genome_annotation/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)$$', genome_annotation, name="genome_annotation"),
                        url(r'^extract_cog/([a-zA-Z0-9_]+)$$', extract_cog, name="extract_cog"),
                        url(r'^venn_cog/([a-zA-Z0-9_]+)$$', venn_cog, name="venn_cog"),
                        url(r'^interpro_taxonomy/([a-zA-Z0-9_]+)$', interpro_taxonomy, name="interpro_taxonomy"),
@@ -101,6 +105,7 @@ urlpatterns = [
                        url(r'^module_comparison/([a-zA-Z0-9_]+)/$', module_comparison, name="module_comparison"),
                        url(r'^pfam_comparison/([a-zA-Z0-9_]+)/$', pfam_comparison, name="pfam_comparison"),
                        url(r'^ko_comparison/([a-zA-Z0-9_]+)/$', ko_comparison, name="ko_comparison"),
+                       url(r'^locus_list2orthogroups/([a-zA-Z0-9_]+)/$', locus_list2orthogroups, name="locus_list2orthogroups"),
                        url(r'^orthogroup_comparison/([a-zA-Z0-9_]+)/$', orthogroup_comparison, name="orthogroup_comparison"),
                        url(r'^crossplot/$', crossplot, name="crossplot"),
                        url(r'^login/$', views.chlamdb_login, name='chlamdb_login'),
@@ -113,6 +118,7 @@ urlpatterns = [
                        url(r'^multiple_COGs_heatmap/([a-zA-Z0-9_]+)', multiple_COGs_heatmap, name="multiple_COGs_heatmap"),
                        url(r'^plot_neighborhood/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)$', plot_neighborhood, name="plot_neighborhood"),
                        url(r'^orthogroup_annotation/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$', orthogroup_annotation, name="orthogroup_annotation"),
+                       url(r'^locus_annotation/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$', locus_annotation, name="locus_annotation"),
                        url(r'^logout/$', logout, {'next_page': '/'}),
 
 ]

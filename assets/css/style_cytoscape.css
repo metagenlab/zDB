@@ -1,9 +1,9 @@
 body { 
-  font: 14px helvetica neue, helvetica, arial, sans-serif;
+  font: 18px helvetica neue, helvetica, arial, sans-serif;
 }
 
 #cy {
-  height: 600px;
+  height: 800px;
   width: 600px;
   position: absolute;
   left: 10px;
@@ -11,12 +11,12 @@ body {
 }
 
 .qtip-bootstrap .qtip-content {
-font-size: 22px;
+font-size: 12px;
  line-height: 1.55em;
 }
 
 .qtip-bootstrap .qtip-content {
-font-size: 26px;
+font-size: 12px;
 }
 
 div.tooltip-inner {
@@ -24,5 +24,5 @@ div.tooltip-inner {
     /* If max-width does not work, try using width instead */
     width: 550px; 
 }
-.MyQtip {max-width: 1000px;
-	width: 1000px}
+.MyQtip {max-width: 800px;
+	width: 600px}

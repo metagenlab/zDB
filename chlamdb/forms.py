@@ -102,11 +102,14 @@ def make_plot_form(database_name):
     accession_choices = get_accessions(database_name)
 
     class PlotForm(forms.Form):
+        choices = (("yes","yes"),("no", "best hit only"))
         accession = forms.CharField(max_length=100)
         #location_start = forms.CharField(max_length=9, label="sart (bp)", required=False)
         #location_stop = forms.CharField(max_length=9, label="end (bp)", required=False)
         region_size = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
         genomes = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" }), required = False)
+        all_homologs = forms.ChoiceField(choices=choices, widget=forms.RadioSelect, initial="no")
+
     return PlotForm
 
 
@@ -135,9 +138,12 @@ def make_interpro_from(database_name):
     '''
     class InterproForm(forms.Form):
         SEARCH_CHOICES = (('description', 'Description'), ('GO','GO Number'), ('EC','EC Number'), ('interpro_accession','Interpro Accession'))
+
+
         targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (len(accession_choices)/2) }), required = False)
         search_type = forms.ChoiceField(choices=SEARCH_CHOICES)
         search_term = forms.CharField(max_length=100)
+
 
     return InterproForm
 
@@ -268,6 +274,71 @@ def locus_int_form(database_name):
         #                                        widget=forms.RadioSelect)
     return IntCatChoice
 
+
+def hmm_sets_form_circos(database_name):
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(database_name)
+
+    sql = 'select distinct name from hmm.hmm_sets;' #% database_name
+    categories = server.adaptor.execute_and_fetchall(sql,)
+    CHOICES = [(i[0],i[0]) for i in categories]
+    CHOICES.append(("all","all"))
+
+    accession_choices = get_accessions(database_name)
+
+    class HmmSetChoice(forms.Form):
+        hmm_set = forms.ChoiceField(choices=CHOICES)
+        genome = forms.ChoiceField(choices=accession_choices)
+        score_cutoff = forms.CharField(max_length=3, label="Bitscoire cutoff", initial = 10, required = False)
+        query_coverage_cutoff = forms.CharField(max_length=3, label="Query coverage cutoff", initial = 0.5, required = False)
+
+    return HmmSetChoice
+
+def hmm_sets_form(database_name):
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(database_name)
+
+    sql = 'select distinct name from hmm.hmm_sets;' #% database_name
+    categories = server.adaptor.execute_and_fetchall(sql,)
+    CHOICES = [(i[0],i[0]) for i in categories]
+    CHOICES.append(("all","all"))
+
+    class HmmSetChoice(forms.Form):
+        hmm_set = forms.ChoiceField(choices=CHOICES)
+
+        score_cutoff = forms.CharField(max_length=3, label="Bitscoire cutoff", initial = 10, required = False)
+        query_coverage_cutoff = forms.CharField(max_length=3, label="Query coverage cutoff", initial = 0.5, required = False)
+
+    return HmmSetChoice
+
+
+def make_locus2network_form(database_name):
+    accessions = get_accessions(database_name)
+
+    class Network(forms.Form):
+        genome = forms.ChoiceField(choices=accessions)
+        locus_list = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}), required = False)
+
+    return Network
+
+def make_pairwiseid_form(database_name):
+
+    plot_CHOICES = (('blast_identity', 'blast_identity'), ('msa_identity','msa_identity'), ('score','score'))
+
+    accessions = get_accessions(database_name)
+    accessions2 = [['None', 'None']] + accessions
+
+    class PairwiseID(forms.Form):
+        plot = forms.ChoiceField(choices=plot_CHOICES)
+        genome_1 = forms.ChoiceField(choices=accessions)
+        genome_2 = forms.ChoiceField(choices=accessions)
+        genome_3 = forms.ChoiceField(choices=accessions2)
+        genome_4 = forms.ChoiceField(choices=accessions2)
+
+    return PairwiseID
+
+
+
 def make_module_overview_form(database_name, sub_sub_cat=False):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
@@ -358,7 +429,8 @@ def make_interpro_taxonomy(biodb):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    accession_choices = get_accessions(biodb)
+    accession_choices = get_accessions(biodb,all=True)
+
     # p_eukaryote | p_archae | p_virus
     TAXO_CHOICES = (('p_eukaryote', 'eukaryote'), ('p_archae','archae'), ('p_virus','virus'))
 

@@ -44,10 +44,25 @@
 
     </form>
 
-    {% if envoi %}
+    {% if not_all %}
 
         <object width="90%" align="left" style="margin-left: 0px" type="image/svg+xml" data="{% static asset_path %}" id="interpro_tree"></object>
 
+    {% elif all %}
+        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+
+            <li class="active"><a href="#tab1" data-toggle="tab">domains taxonomy</a></li>
+            <li><a href="#tab2" data-toggle="tab">effectors</a></li>
+        </ul>
+        <div id="my-tab-content" class="tab-content">
+            <div class="tab-pane active" id="tab1">
+                <object width="70%" align="center" style="margin-left: 0px" type="image/svg+xml" data="{% static asset_path %}" id="interpro_tree"></object>
+            </div>
+            <div class="tab-pane" id="tab2">
+                <object width="70%" align="center" style="margin-left: 0px" type="image/svg+xml" data="{% static asset_path2 %}" id="interpro_tree"></object>
+            </div>
+
+        </div>
     {% endif %}
 
     </div>

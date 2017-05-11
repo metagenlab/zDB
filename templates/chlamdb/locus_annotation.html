@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+
+
+<html>
+    <head>
+        {% load custom_tags %}
+        <script type="text/javascript" id="js">
+            $(document).ready(function() {
+            // call the tablesorter plugin
+            $("table").tablesorter({
+            // change the default sorting order from 'asc' to 'desc'
+            sortInitialOrder: 1
+            });
+            });
+        </script>
+    {% load staticfiles %}
+    {% load static %}
+    </head>
+
+
+    <div id="container">
+
+
+        <div id="sidebar">
+            {% include "chlamdb/menu.html" %}
+        </div>
+
+        <div id="header">
+            {% include "chlamdb/user.html" %}
+        </div>
+
+        <div id="content">
+
+
+                    {% if display_form == "True" %}
+
+                     <div id="extract_form">
+
+                        <form action="{% url "locus_annotation" biodb True %}" method="post">
+
+                        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                            <div class="panel-heading" style="width:100%">
+                                <h3 class="panel-title">Help</h3>
+                            </div>
+                            <p style="margin: 10px 10px 10px 10px">Get annotations from a list of orthogroups (comma sep?)</p>
+                        </div>
+
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                         <input type="submit" name="annot" value="Get annotation"/>
+                         </form>
+                    </div>
+                    {% endif %}
+
+            {% if envoi_annot %}
+
+
+                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                        <li class="active"><a href="#tab1" data-toggle="tab">Annotation</a></li>
+                        <li><a href="#tab2" data-toggle="tab">Profile</a></li>
+                    </ul>
+
+
+                    <div id="my-tab-content" class="tab-content">
+                        <div class="tab-pane active" id="tab1">
+
+
+                            <div id="export_bouttons_groups">
+                                <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+
+                                <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                                <br/>
+                            </div>
+
+                            <p>Number of orthogroups: {{ sum_group }} </p>
+
+                            <table class="sortable" id="table_groups">
+
+                                <thead>
+                                    <tr>
+                                    <th>Locus</th>
+                                        <th>Accession</th>
+                                        <th>Start</th>
+                                        <th>End</th>
+                                    <th id="entete_locus">gene</th>
+                                        <th>product</th>
+                                    <th>present_n_genomes</th>
+                                    <th>group</th>
+                                    <th>length (aa)</th>
+                                    <th>COG ID</th>
+                                        <th>COG category</th>
+                                        <th>COG description</th>
+                                    </tr>
+                                </thead>
+
+                                {% for value in locus_annot %}
+                                    <tr>
+
+                                        <td><a href="{% url 'locusx' biodb value.0 True%}">{{value.0}}</a></td>
+                                        <td>{{value.1}}</td>
+                                        <td>{{value.2|safe}}</td>
+                                        <td>{{value.3|safe}}</td>
+                                        <td>{{value.4|safe}}</td>
+                                        <td>{{value.5|safe}}</td>
+                                        <td>{{value.6|safe}}</td>
+                                        <td>{{value.7|safe}}</td>
+                                        <td>{{value.8|safe}}</td>
+                                        <td>{{value.9|safe}}</td>
+                                        <td>{{value.10|safe}}</td>
+                                        <td>{{value.11|safe}}</td>
+                                        <td>{{value.12|safe}}</td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                        <div class="tab-pane" id="tab2">
+
+                            <object width="90%" align="left" style="margin-left: 0px" type="image/svg+xml" data="{% static asset_path %}" id="orthogroup_tree"></object>
+
+                        </div>
+                    </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+
+    <div id="footer">
+
+    </div>
+
+    </body>
+</html>
