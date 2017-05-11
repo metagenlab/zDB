@@ -228,28 +228,38 @@ class orthogroup2network:
 
 
     
-def generate_network(biodb, locus_tag_list, reference_locus, ratio_limit, scale_link=True):
+def generate_network(biodb,
+                     locus_tag_list,
+                     target_locus_list,
+                     ratio_limit,
+                     scale_link=True,
+                     width=160,
+                     height=70,
+                     interpro=False,
+                     annot=False):
     import manipulate_biosqldb
+    import re
+
+
     server, db = manipulate_biosqldb.load_db(biodb)
     filter = '"' + '","'.join(locus_tag_list) + '"'
     sql = 'select * from interactions.colocalization_table_locus_%s where (locus_1 in (%s) or locus_2 in (%s)) and ratio>=%s;' % (biodb, filter, filter, ratio_limit)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
-
-
+    # filtering singletons
+    locus_keep = []
+    for i in data:
+        if i[0] not in locus_keep:
+            locus_keep.append(i[0])
+        if i[1] not in locus_keep:
+            locus_keep.append(i[1])
     # group_1    | group_2    | n_links | n_comparisons | ratio
-
+    #print locus_keep
     sources = '''
     <meta charset=utf-8 />
     <title>Visual style</title>
     <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-    <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
-
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.js"></script>
-    <link href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.2.5/cytoscape-qtip.js"></script>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
@@ -290,8 +300,8 @@ layout: {
     .selector('node')
       .css({
         'shape': 'data(faveShape)',
-        'width': 160,
-	    'height': 70,
+        'width': %s,
+	    'height': %s,
         'content': 'data(name)',
         'text-valign': 'center',
         'text-outline-width': 0,
@@ -348,27 +358,17 @@ layout: {
   }*/
 });
 
-cy.$('node').on('click', function(e){
-  var ele = e.cyTarget;
-  console.log('clicked ' + ele.id());
-});
 
-  cy.nodes().forEach(function(n){
-    var g = n.data('name');
+
+  cy.$('node').forEach(function(n){
+    var g = n.data('annot');
+    var l = n.data('name');
 
     n.qtip({
       content: [
         {
-          name: 'NCBI COGS',
-          url: 'http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid=' + g
-        },
-        {
-          name: 'eggnog',
-          url: 'http://eggnogdb.embl.de/#/app/results?target_nogs='+ g
-        },
-        {
-          name: 'STRING',
-          url: 'http://string.embl.de/newstring_cgi/show_network_section.pl?all_channels_on=1&interactive=yes&network_flavor=evidence&targetmode=cogs&identifier=' + g
+          name: g,
+          url: '/chlamdb/locusx/%s/' + l + '/T'
         }
       ].map(function( link ){
         return '<a target="_blank" href="' + link.url + '">' + link.name + '</a>';
@@ -382,10 +382,10 @@ cy.$('node').on('click', function(e){
         classes: 'qtip-bootstrap',
         width: 180,
         height: 130,
-        lineHeight: 5.5,
+        lineHeight: 1,
         tip: {
-          width: 22,
-          height: 22,
+          width: 12,
+          height: 12,
         }
       }
     });
@@ -405,9 +405,6 @@ cy.$('node').on('click', function(e){
       position: {
         my: 'bottom left',
         at: 'top right'
-      },
-      style: {
-        style: {classes: "MyQtip"},
       }
     });
   });
@@ -419,34 +416,55 @@ cy.$('node').on('click', function(e){
 
 
     '''
-    node_template = """{ data: { id: '%s', name: '%s', weight: 1, faveColor: '#%s', faveShape: 'ellipse' } }""" # 6FB1FC
-    edge_template = """{ data: { source: '%s', target: '%s', faveColor: '#%s', strength: %s , n_comp:%s, n_links: %s} }"""
 
+    node_template1 = """{ data: { id: '%s', name: '%s', weight: 1, faveColor: '#%s', faveShape: 'ellipse' } }""" # 6FB1FC
+    node_template2 = """{ data: { id: '%s', name: '%s', weight: 1, faveColor: '#%s', faveShape: 'ellipse', annot: '%s' } }""" # 6FB1FC
+    edge_template = """{ data: { source: '%s', target: '%s', faveColor: '#%s', strength: %s , n_comp:%s, n_links: %s} }"""
+    #print interpro,interpro
     node_list = []
-    for node in locus_tag_list:
-        if node == reference_locus:
-            node_list.append(node_template % (node, node, "fd5713"))
+    for node in locus_keep:#locus_tag_list:
+        if node in target_locus_list:
+            color = "FA58F4"
         else:
-            node_list.append(node_template % (node, node, "6FB1FC"))
+            color="6FB1FC"
+        if annot:
+            #print interpro[node][0],
+            try:
+                node_annot = '%s<br>%s: %s' % (annot[node][1], interpro[node][0], interpro[node][1])
+            except:
+                node_annot = '%s<br>' % (annot[node][1])
+            node_annot = re.sub('\'', '', node_annot)
+            if 'hyp' in node_annot and not 'IPR' in node_annot:
+                color="F7BE81"
+            node_list.append(node_template2 % (node, node, color, node_annot))
+
+        else:
+            node_list.append(node_template1 % (node, node, "6FB1FC"))
 
     edge_list = []
     # group_1    | group_2    | n_links | n_comparisons | ratio
     for edge in data:
-        if float(edge[2])< 20:
+        if float(edge[2])< 5:
             if scale_link:
-                edge_list.append(edge_template % (edge[0], edge[1], "47de47", ((float(edge[2])/edge[3])*20)-10, edge[2], edge[3]))
+                edge_list.append(edge_template % (edge[0], edge[1], "47de47", (float(edge[2])*5), edge[2], edge[3]))
             else:
                 edge_list.append(edge_template % (edge[0], edge[1], "47de47", 2, edge[2], edge[3]))
         else:
             if scale_link:
-                edge_list.append(edge_template % (edge[0], edge[1], "ff0404", ((float(edge[2])/edge[3])*20)-10, edge[2], edge[3]))
+                edge_list.append(edge_template % (edge[0], edge[1], "ff0404", (float(edge[2])), edge[2], edge[3]))
             else:
                 edge_list.append(edge_template % (edge[0], edge[1], "47de47", 10, edge[2], edge[3]))
 
-    return template % (',\n'.join(node_list), ',\n'.join(edge_list))
+    return template % (width, height, ',\n'.join(node_list), ',\n'.join(edge_list), biodb)
 
 
-def generate_network_profile(biodb, group_list, reference_group, euclidian_distance_limit=1.5, scale_link=True):
+def generate_network_profile(biodb,
+                             group_list,
+                             reference_group_list,
+                             euclidian_distance_limit=1.5,
+                             scale_link=True,
+                             interpro=False,
+                             annot=False):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     filter = '"' + '","'.join(group_list) + '"'
@@ -467,9 +485,9 @@ def generate_network_profile(biodb, group_list, reference_group, euclidian_dista
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
     <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
 
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.js"></script>
-    <link href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.2.5/cytoscape-qtip.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.js"></script>
+<link href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
+<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.7.0/cytoscape-qtip.js"></script>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
@@ -572,19 +590,14 @@ layout: {
   }*/
 });
 
-cy.$('node').on('click', function(e){
-  var ele = e.cyTarget;
-  console.log('clicked ' + ele.id());
-});
 
   cy.nodes().forEach(function(n){
-    var g = n.data('name');
+    var g = n.data('annot');
 
     n.qtip({
       content: [
         {
-          name: 'NCBI COGS',
-          url: 'http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid=' + g
+          name: g
         },
         {
           name: 'eggnog',
@@ -642,15 +655,20 @@ cy.$('node').on('click', function(e){
 
 
     '''
-    node_template = """{ data: { id: '%s', name: '%s', weight: 1, faveColor: '#%s', faveShape: 'ellipse' } }""" # 6FB1FC
+    node_template = """{ data: { id: '%s', name: '%s', weight: 1, faveColor: '#%s', faveShape: 'ellipse'} }""" # 6FB1FC
     edge_template = """{ data: { source: '%s', target: '%s', faveColor: '#%s', strength: %s , n_comp:%s, n_links: %s} }"""
 
     node_list = []
     for node in group_list:
-        if node == reference_group:
+        if node in reference_group_list:
+
             node_list.append(node_template % (node, node, "fd5713"))
         else:
-            node_list.append(node_template % (node, node, "6FB1FC"))
+            if annot:
+                node_annot = '%s\t%s' % (annot[node][0],annot[node][1])
+                node_list.append(node_template % (node, node, "6FB1FC", ""))
+            else:
+                node_list.append(node_template % (node, node, "6FB1FC"))
 
     edge_list = []
     # group_1    | group_2    | n_links | n_comparisons | ratio
@@ -669,6 +687,48 @@ cy.$('node').on('click', function(e){
     return template % (',\n'.join(node_list), ',\n'.join(edge_list))
 
 
+def get_subgraph(biodb, locus_tag_list, ratio_limit, target_locus):
+
+    import networkx as nx
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    myfilter = '"' + '","'.join(locus_tag_list) + '"'
+    sql = 'select * from interactions.colocalization_table_locus_%s where (locus_1 in (%s) or locus_2 in (%s)) and ratio>=%s;' % (biodb, myfilter, myfilter, ratio_limit)
+
+    data = server.adaptor.execute_and_fetchall(sql,)
+    print 'ex', data[0]
+
+    all_verticles = []
+    for i in data:
+        all_verticles.append(i[0])
+        all_verticles.append(i[1])
+    all_verticles = list(set(all_verticles))
+
+    G = nx.Graph()
+    G.add_nodes_from(all_verticles)
+
+    label = {}
+    for n, orthogroup in enumerate(all_verticles):
+        label[n] = orthogroup # orthology_chlamydia_04_16
+    #print label[10], label[2388]
+
+    for i in data:
+        index_1 = i[0]
+        index_2 = i[1]
+        weight = i[2]
+        G.add_edge(index_1, index_2, weight=weight)
+
+    graph_list = [i for i in nx.connected_component_subgraphs(G)]
+    print 'n subgraphs', len(graph_list)
+    locus_keep = []
+    for i in range(0, len(graph_list)):
+
+        n_list = graph_list[i].node.keys()
+        common = set(n_list).intersection(target_locus)
+        if len(common) > 0:
+            locus_keep+=n_list
+    return locus_keep
 
 if __name__ == '__main__':
     import argparse
