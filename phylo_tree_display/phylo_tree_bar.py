@@ -55,14 +55,14 @@ def plot_tree_stacked_barplot(tree_file,
         column2scale = {}
         for column in header_list2:
             values = taxon2set2value_heatmap[column].values()
-            print values, column
+
             norm = mpl.colors.Normalize(vmin=min(values), vmax=max(values))
             cmap = cm.OrRd
             m = cm.ScalarMappable(norm=norm, cmap=cmap)
             column2scale[column] = m
 
     for i, lf in enumerate(t1.iter_leaves()):
-        print '#############', i, lf.name
+
 
         #if taxon2description[lf.name] == 'Pirellula staleyi DSM 6068':
         #    lf.name = 'Pirellula staleyi DSM 6068'
@@ -84,7 +84,7 @@ def plot_tree_stacked_barplot(tree_file,
                 col_add=0
 
             for col, header in enumerate(header_list):
-                print 'header----- %s' % header, col
+
                 n = TextFace('%s' % header)
                 n.margin_top = 1
                 n.margin_right = 1
@@ -166,7 +166,7 @@ def plot_tree_stacked_barplot(tree_file,
                         n = TextFace('%4i' % value)
                     else:
                         n = TextFace('%6i' % value)
-                    print '----%5i----' % value
+
                     n.margin_top = 1
                     n.margin_right = 1
                     n.margin_left = 5
@@ -191,7 +191,7 @@ def plot_tree_stacked_barplot(tree_file,
 
 
         #lf.name = taxon2description[lf.name]
-        n = TextFace(taxon2description[lf.name], fgcolor = "black", fsize = 16, fstyle = 'italic')
+        n = TextFace(taxon2description[lf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
         lf.add_face(n, 0)
 
     for n in t1.traverse():
@@ -206,7 +206,6 @@ def plot_tree_stacked_barplot(tree_file,
            nstyle["size"] = 0
            n.set_style(nstyle)
 
-    #print t1
     return t1, tss
 
 
@@ -251,7 +250,9 @@ def plot_tree_barplot(tree_file,
 
     tss = TreeStyle()
     value=1
-
+    tss.draw_guiding_lines = True
+    tss.guiding_lines_color = "gray"
+    tss.show_leaf_name = False
 
 
     if column_scale and header_list2:
@@ -261,7 +262,7 @@ def plot_tree_barplot(tree_file,
         column2scale = {}
         for column in header_list2:
             values = taxon2set2value_heatmap[column].values()
-            print values, column
+
             norm = mpl.colors.Normalize(vmin=min(values), vmax=max(values))
             cmap = cm.OrRd
             m = cm.ScalarMappable(norm=norm, cmap=cmap)
@@ -290,7 +291,6 @@ def plot_tree_barplot(tree_file,
             max_value_list.append(general_max)
 
     for i, lf in enumerate(t1.iter_leaves()):
-        print '#############', i, lf.name
 
         #if taxon2description[lf.name] == 'Pirellula staleyi DSM 6068':
         #    lf.name = 'Pirellula staleyi DSM 6068'
@@ -326,7 +326,6 @@ def plot_tree_barplot(tree_file,
                     n.rotation = 270
                     n.inner_background.color = "white"
                     n.opacity = 1.
-                    print 'header 2 column:', col2
                     tss.aligned_header.add_face(n, col2)
                     col2+=1
 
@@ -337,7 +336,6 @@ def plot_tree_barplot(tree_file,
             val_list = taxon2value_list_barplot[int(lf.name)]
         col_add=0
         for col, value in enumerate(val_list):
-            #print 'column!', col, value
 
             # show value itself
             try:
@@ -355,9 +353,15 @@ def plot_tree_barplot(tree_file,
             # show bar
 
             color = rgb2hex(scale_list[col].to_rgba(float(value)))
-
-            b = StackedBarFace([(value/max_value_list[col])*100,
-                                ((max_value_list[col]-value)/max_value_list[col])*100],
+            try:
+                percentage = (value/max_value_list[col])*100
+                #percentage = value
+            except:
+                percentage = 0
+            maximum_bar = ((max_value_list[col]-value)/max_value_list[col])*100
+            #maximum_bar = 100-percentage
+            b = StackedBarFace([percentage,
+                                maximum_bar],
                                 width=100, height=10, colors=[color, "white"])
             b.rotation= 0
             b.inner_border.color = "grey"
@@ -368,15 +372,12 @@ def plot_tree_barplot(tree_file,
             col_add+=1
 
         if taxon2set2value_heatmap:
-            print 'taxon2alue_list_heatmap!!!'
             shift = col+col_add+1
 
             i = 0
-            print val_list
 
             for col2 in range(shift, len(header_list2)+shift):
                 col_name = header_list2[i]
-                print 'col2', col2, shift, i
                 try:
                     value = taxon2set2value_heatmap[col_name][lf.name]
                 except:
@@ -397,7 +398,6 @@ def plot_tree_barplot(tree_file,
                     n.color = "red"
                     n.inner_background.color = rgb2hex(column2scale[col_name].to_rgba(float(value)))#"orange"
                     n.opacity = 1.
-                    print 'value column:', col2
                     lf.add_face(n, col2, position="aligned")
                     i+=1
                 else:
@@ -413,8 +413,10 @@ def plot_tree_barplot(tree_file,
                     i+=1
 
 
-        lf.name = taxon2description[lf.name]
-        #print lf.name
+        #lf.name = taxon2description[lf.name]
+        n = TextFace(taxon2description[lf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
+        lf.add_face(n, 0)
+
     for n in t1.traverse():
        nstyle = NodeStyle()
        if n.support < 1:
@@ -444,6 +446,11 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
 
     t1 = Tree(tree_file)
     tss = TreeStyle()
+    tss.draw_guiding_lines = True
+    tss.guiding_lines_color = "gray"
+    tss.show_leaf_name = False
+
+
     sql1 = 'select taxon_id, description from bioentry where biodatabase_id=%s and description not like "%%%%plasmid%%%%"' % db_id
     sql2 = 'select t2.taxon_id, t1.GC from genomes_info_%s as t1 inner join bioentry as t2 ' \
            ' on t1.accession=t2.accession where t2.biodatabase_id=%s and t1.description not like "%%%%plasmid%%%%";' % (biodb, db_id)
@@ -464,8 +471,6 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
     for taxon in taxon2coding_size:
         taxon2coding_density[taxon] = float(taxon2coding_size[taxon])/float(taxon2genome_size[taxon])
 
-    print sql2
-    print taxon2genome_size
 
     my_taxons = [lf.name for lf in t1.iter_leaves()]
 
@@ -477,7 +482,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
     if exclude_outgroup:
         excluded = str(list(t1.iter_leaves())[0].name)
         my_taxons.pop(my_taxons.index(excluded))
-    print my_taxons
+
         
     genome_sizes = [float(taxon2genome_size[i]) for i in my_taxons]
     gc_list = [float(taxon2gc[i]) for i in my_taxons]
@@ -490,7 +495,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
     max_gc = max(gc_list) #48.23
 
     cmap = cm.YlGnBu#YlOrRd#OrRd
-    print 'maxmin', max(genome_sizes)
+
     norm = mpl.colors.Normalize(vmin=min(genome_sizes)-100000, vmax=max(genome_sizes))
     m1 = cm.ScalarMappable(norm=norm, cmap=cmap)
     norm = mpl.colors.Normalize(vmin=min(gc_list), vmax=max(gc_list))
@@ -551,13 +556,13 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         n = TextFace('  %s ' % str(round(taxon2genome_size[lf.name]/float(1000000),2)))
         n.margin_top = 1
         n.margin_right = 1
-        n.margin_left = 20
+        n.margin_left = 0
         n.margin_bottom = 1
         n.inner_background.color = "white"
         n.opacity = 1.
 
         lf.add_face(n, 2, position="aligned")
-        print taxon2genome_size[lf.name]
+
         fraction_biggest = (float(taxon2genome_size[lf.name])/max_genome_size)*100
         fraction_rest = 100-fraction_biggest
         if taxon2description[lf.name] == 'Rhabdochlamydia helveticae T3358':
@@ -633,8 +638,10 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         lf.add_face(b, 7, position="aligned")
 
 
-        lf.name = taxon2description[lf.name]
-
+        #lf.name = taxon2description[lf.name]
+        n = TextFace(taxon2description[lf.name], fgcolor = "black", fsize = 9, fstyle = 'italic')
+        n.margin_right = 30
+        lf.add_face(n, 0)
 
     for n in t1.traverse():
        nstyle = NodeStyle()

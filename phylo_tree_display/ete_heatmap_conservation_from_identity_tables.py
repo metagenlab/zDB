@@ -88,6 +88,10 @@ def plot_heat_tree(gene2genome_id, tree_file, genes, accession2description=False
 
     t1 = Tree(tree_file)
     tss = TreeStyle()
+    tss.draw_guiding_lines = True
+    tss.guiding_lines_color = "gray"
+    tss.show_leaf_name = False
+
     #t.populate(8)
     # Calculate the midpoint node
     R = t1.get_midpoint_outgroup()
@@ -187,7 +191,7 @@ def plot_heat_tree(gene2genome_id, tree_file, genes, accession2description=False
                 n.hz_align = 2
                 n.rotation= 270
                 n.margin_top = 0
-                n.margin_right = 0
+                n.margin_right = 10
                 n.margin_left = 0
                 n.margin_bottom = 0
                 n.fsize = 15
@@ -224,20 +228,27 @@ def plot_heat_tree(gene2genome_id, tree_file, genes, accession2description=False
                 lf.add_face(n, col, position="aligned")
 
             else:
-                n = TextFace('   -   ')
+                n = TextFace('     -     ')
                 n.margin_top = 0
                 n.margin_right = 0
-                n.margin_left = 0
+                n.margin_left = 2
                 n.margin_bottom = 0
                 n.inner_background.color = "white"
                 n.opacity = 1.
                 lf.add_face(n, col, position="aligned")
+
     if accession2description:
         for lf in t1.iter_leaves():
             try:
-                lf.name = accession2description[lf.name]
+                #lf.name = [lf.name]
+                n = TextFace(accession2description[lf.name], fgcolor = "black", fsize = 9, fstyle = 'italic')
+                n.margin_right = 30
+                lf.add_face(n, 0)
             except:
-                pass
+                n = TextFace(lf.name, fgcolor = "black", fsize = 9, fstyle = 'italic')
+                n.margin_right = 30
+                lf.add_face(n, 0)
+
     for n in t1.traverse():
        nstyle = NodeStyle()
        if n.support < 1:
