@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+<div id="container">
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+    </div>
+
+    <div id="content">
+
+        <nav>
+        <ul id="tabs" class="nav nav-tabs">
+                {% if type == 'Pfam' %}
+
+                    <li><a href="{% url 'extract_pfam' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_pfam' biodb %}">Venn diagram</a></li>
+                    <li><a href="{% url 'pfam_comparison' biodb %}">Compare Pfam Domains</a></li>
+                    <li class="active"><a href="{% url 'plot_heatmap' biodb 'Pfam' %}">Whole proteomes heatmaps</a></li>
+
+
+                {% elif type == 'COG' %}
+                    <li><a href="{% url 'extract_cog' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_cog' biodb %}">Venn diagram</a></li>
+                    <li><a href="{% url 'cog_barchart' biodb %}">COG categories barchart</a></li>
+                    <li><a href="{% url 'COG_phylo_heatmap' biodb True %}">COG heatmap freq.</a></li>
+                    <li><a href="{% url 'COG_phylo_heatmap' biodb False %}">COG heatmap counts</a></li>
+                    <li><a href="{% url 'plot_heatmap' biodb 'COG' %}">Whole proteomes heatmaps</a></li>
+                    <li class="active"><a href="{% url 'pan_genome' biodb 'COG' %}">Pan/Core genome plots</a></li>
+                {% elif type == 'interpro'%}
+                    <li><a href="{% url 'extract_interpro' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_interpro' biodb %}">Venn diagram</a></li>
+                    <li><a href="{% url 'plot_heatmap' biodb 'interpro' %}">Whole proteomes heatmaps</a></li>
+                    <li class="active"><a href="{% url 'pan_genome' biodb 'interpro' %}">Pan/Core genome plots</a></li>
+                {% elif type == 'EC' %}
+
+                    <li><a href="{% url 'extract_EC' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_pfam' biodb %}">Venn diagram</a></li>
+                    <li><a href="{% url 'plot_heatmap' biodb 'EC' %}">Whole proteomes heatmaps</a></li>
+                    <li class="active"><a href="{% url 'pan_genome' biodb 'EC' %}">Pan/Core genome plots</a></li>
+                {% elif type == 'ko' %}
+                    <li><a href="{% url 'extract_ko' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'ko_comparison' biodb %}">Compare KO counts</a></li>
+                    <li><a href="{% url 'module_barchart' biodb %}">KO categories barchart</a></li>
+                    <li><a href="{% url 'venn_ko' biodb %}">Venn KO</a></li>
+                    <li><a href="{% url 'plot_heatmap' biodb 'ko' %}">Whole proteomes heatmaps</a></li>
+                    <li class="active"><a href="{% url 'pan_genome' biodb 'ko' %}">Pan/Core genome plots</a></li>
+                {% elif type == 'orthology' %}
+                    <li><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
+                    <li><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups size between genomes</a></li>
+                    <li><a href="{% url 'plot_heatmap' biodb 'orthology' %}">Whole proteomes heatmaps</a></li>
+                    <li class="active"><a href="{% url 'pan_genome' biodb 'orthology' %}">Pan/Core genome plots</a></li>
+                {% endif %}
+        </ul>
+        </nav>
+
+
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">Pan genome plots<br>
+            </p>
+        </div>
+
+    <form action='{% url "pan_genome" biodb type %}' method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit" />
+
+    </form>
+
+    {% if envoi %}
+        <ul id="tabs2" class="nav nav-tabs" data-tabs="tabs">
+            <li class="active"><a href="#tab1" data-toggle="tab">Plot</a></li>
+            <li><a href="#tab2" data-toggle="tab">Barplot</a></li>
+        </ul>
+
+        <div id="my-tab-content" class="tab-content">
+            <div class="tab-pane active" id="tab1">
+
+                <table style="width:190px; float: left;">
+                    <tr>
+                        <th style="width:90px">TOTAL</th>
+                        <td>{{total}}</td>
+                    </tr>
+                    <tr>
+                        <th>CORE</th>
+                        <td>{{core}}</td>
+                    </tr>
+                    <tr>
+                        <th>CORE - 1</th>
+                        <td>{{core_minus1}}</td>
+                    </tr>
+                </table>
+
+                <object type="image" data="{% static asset_path %}" id="plot" style="width:50%; margin-left: 100px;"></object>
+            </div>
+            <div class="tab-pane" id="tab2">
+                <table style="width:190px; float: left;">
+
+                    {% for n, count in genome_count_list%}
+
+                        <tr>
+                            <th style="width:90px">{{n}}</th>
+                            <td>{{count}}</td>
+                        </tr>
+
+
+                    {% endfor %}
+                </table>
+
+                <object type="image" data="{% static asset_path2 %}" id="plot" style="width:50%; margin-left: 100px;"></object>
+            </div>
+        </div>
+    {% endif %}
+
+    </div>
+</div>
+</body>
+</html>

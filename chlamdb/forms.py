@@ -161,7 +161,7 @@ def make_metabo_from(database_name, add_box=False):
 
 def make_venn_from(database_name, plasmid=False):
 
-    accession_choices = get_accessions(database_name,plasmid=plasmid)
+    accession_choices = get_accessions(database_name, plasmid=plasmid)
 
     class VennForm(forms.Form):
         targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'20' }), required = False)
@@ -233,6 +233,34 @@ def make_circos_form(database_name):
             self.region = self.cleaned_data["region"]
     return CircosForm
 
+
+
+def make_kegg_form(database_name):
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(database_name)
+
+    sql_pathways = 'select description,description from enzyme.locus2ko_%s t1 ' \
+                   ' inner join  enzyme.pathway2ko t2 ' \
+                   ' on t1.ko_id = t2.ko_id ' \
+                   ' inner join  enzyme.kegg_pathway t3 ' \
+                   ' on t3.pathway_id=t2.pathway_id group by description;' % (database_name)
+
+    pathway_choices = server.adaptor.execute_and_fetchall(sql_pathways,)
+
+    sql_modules = 'select description,description from  enzyme.locus2ko_%s t1 ' \
+                  ' inner join  enzyme.module2ko t2 on t1.ko_id = t2.ko_id ' \
+                  ' inner join  enzyme.kegg_module t3 on t3.module_id=t2.module_id group by description;' % database_name
+
+    module_choices = server.adaptor.execute_and_fetchall(sql_modules,)
+
+    class KeggForm(forms.Form):
+
+        pathway_choice = forms.MultipleChoiceField(label='', choices=pathway_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17" }), required = False)
+        module_choice = forms.MultipleChoiceField(choices=module_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17" }), required = False, label="")
+
+    return KeggForm
+
+
 def make_extract_form(database_name, plasmid=False):
 
     if not plasmid:
@@ -294,6 +322,8 @@ def hmm_sets_form_circos(database_name):
 
     return HmmSetChoice
 
+
+
 def hmm_sets_form(database_name):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
@@ -311,6 +341,52 @@ def hmm_sets_form(database_name):
 
     return HmmSetChoice
 
+
+def transporters_superfam_form(database_name, show_taxon=False):
+
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(database_name)
+
+    sql = 'select distinct description from transporters.transporter_table t1 ' \
+          'inner join transporters.tc_table t2 on t1.superfamily=t2.tc_id;' #% database_name
+
+    categories = server.adaptor.execute_and_fetchall(sql,)
+    CHOICES = [("all","all")]
+    CHOICES += [(i[0],i[0]) for i in categories]
+    if show_taxon:
+        accession_choices = get_accessions(database_name)
+    class TransporterSuperfamilyChoice(forms.Form):
+
+        if show_taxon:
+            genome = forms.ChoiceField(choices=accession_choices)
+
+        transporter_superfamily = forms.MultipleChoiceField(choices=CHOICES, widget=forms.SelectMultiple(attrs={'size':'20' }), required = False)
+
+        score_cutoff = forms.CharField(max_length=3, label="Bitscore cutoff", initial = 10, required = False)
+        evalue_cutoff = forms.CharField(max_length=10, label="Evalue cutoff", initial = 0.005, required = False)
+        query_coverage_cutoff = forms.CharField(max_length=3, label="Query coverage cutoff", initial = 0.5, required = False)
+        hit_coverage_cutoff = forms.CharField(max_length=3, label="Query coverage cutoff", initial = 0.5, required = False)
+
+    return TransporterSuperfamilyChoice
+
+
+def blast_sets_form(database_name):
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(database_name)
+
+    sql = 'select distinct name from blast.blast_sets;' #% database_name
+    categories = server.adaptor.execute_and_fetchall(sql,)
+    CHOICES = [(i[0],i[0]) for i in categories]
+    CHOICES.append(("all","all"))
+
+    class BlastSetChoice(forms.Form):
+        blast_set = forms.MultipleChoiceField(choices=CHOICES, widget=forms.SelectMultiple(attrs={'size':'20' }), required = False)
+
+        score_cutoff = forms.CharField(max_length=3, label="Bitscore cutoff", initial = 10, required = False)
+        query_coverage_cutoff = forms.CharField(max_length=3, label="Query coverage cutoff", initial = 0.5, required = False)
+        hit_coverage_cutoff = forms.CharField(max_length=3, label="Query coverage cutoff", initial = 0.5, required = False)
+
+    return BlastSetChoice
 
 def make_locus2network_form(database_name):
     accessions = get_accessions(database_name)
@@ -337,7 +413,18 @@ def make_pairwiseid_form(database_name):
 
     return PairwiseID
 
+def heatmap_form(database_name):
 
+    plot_CHOICES = (('blast_identity', 'blast_identity'), ('core_msa_identity','core_msa_identity'),
+                    ('n_RBBH','n_RBBH'), ('n_shared_orthogroups','n_shared_orthogroups'))
+
+    accessions = get_accessions(database_name)
+
+    class Heatmap(forms.Form):
+        plot = forms.ChoiceField(choices=plot_CHOICES)
+        targets = forms.MultipleChoiceField(choices=accessions, widget=forms.SelectMultiple(attrs={'size':'20' }), required = False)
+
+    return Heatmap
 
 def make_module_overview_form(database_name, sub_sub_cat=False):
     import manipulate_biosqldb

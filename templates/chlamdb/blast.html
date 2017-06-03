@@ -3,6 +3,7 @@
 
 <html>
 <head>
+{% load static %}
 <STYLE TYPE="text/css">
 <!--
 A:link{background:transparent;color:blue}
@@ -129,12 +130,11 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
 #container{font-size: 10px; line-height: 12px;}
 #blast_res {font-size: 8px; line-height: 10px;}
 </STYLE>
-
+<script type="text/javascript" src="{% static 'js/html2canvas.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/blaster.min.js' %}"></script>
 </head>
 <body>
 <div id="container">
-
-
 
     <div id="sidebar">
         {% include "chlamdb/menu.html" %}
@@ -167,8 +167,19 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
 
         {% if envoi %}
             &nbsp
+
             <h2>Blast result</h2>
 
+            {% if js_out %}
+                <div id='snippetDiv'></div>
+                <div id="blast-multiple-alignments"></div>
+                <div id="blast-alignments-table"></div>
+                <div id="blast-single-alignment"></div>
+            {% else %}
+                     <div id="blast_res">
+                        {% autoescape off %}{{blast_stdout}}{% endautoescape %}
+                     </div>
+            {%endif%}
         {% if blast_result %}
              <div id="blast_res">
             {% autoescape off %}{{blast_result}}{% endautoescape %}</div>
@@ -246,6 +257,27 @@ function addColor(domNode, color, letter){
     }
 }
 addColor(document.getElementById('tblastn'), 'red', '*');
+
+</script>
+
+
+<script>
+
+var blasterjs = require("biojs-vis-blasterjs");
+
+$(document).ready(function(){
+    $.get( "{{asset_blast_path}}", function(text, status, xhr) {
+        var tmp = String(text);
+        var instance = new blasterjs({
+             string: tmp,
+             multipleAlignments: "blast-multiple-alignments",
+             alignmentsTable: "blast-alignments-table",
+             singleAlignment: "blast-single-alignment",
+             biodb: "{{biodb}}"
+        });
+
+    }, 'text');
+});
 
 </script>
 

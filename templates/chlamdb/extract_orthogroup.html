@@ -29,7 +29,7 @@
                     <li><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
                     <li><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups size between genomes</a></li>
                     <li><a href="{% url 'plot_heatmap' biodb 'orthology' %}">Whole proteomes heatmaps</a></li>
-
+                    <li><a href="{% url 'pan_genome' biodb 'orthology' %}">Pan/Core genome plots</a></li>
                 </ul>
             </nav>
 
@@ -180,6 +180,10 @@
                                 <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'datatable', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
                                 <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'datatable');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+
+                                {% if show_reference_annot %}
+                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{biodb}}{{fasta_ref_url|safe}}'">fasta aa</button>
+                                {% endif %}
                                   <br/>
                             </div>
 

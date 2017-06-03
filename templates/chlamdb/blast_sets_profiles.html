@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+<head>
+{% load staticfiles %}
+{% load static %}
+{% get_static_prefix as STATIC_PREFIX %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+</head>
+
+<body id="locus_body">
+    <div id="container">
+        <div id="content">
+            <div id="sidebar">
+                {% include "chlamdb/menu.html" %}
+            </div>
+            <div id="header">
+                {% include "chlamdb/user.html" %}
+            </div>
+            <form action='{% url "blast_sets" biodb %}' method="post">
+                {% csrf_token %}
+                    {{ form.as_p }}
+
+                <div class="form-inline">
+                    <div class="form-group">
+                         <div class="col-md-11" style="width: 100%;">
+                              <label style="width:380px;text-align:left;" >
+                                  <input type="radio" id="counts" name="counts" checked="checked">
+                                  Show counts only
+                              </label>
+
+                              <label style="width:380px;text-align:left;">
+                                  <input id="detailed" value="detailed" name="counts" type="radio">
+                                  Show detailed profiles
+                              </label>
+                        </div>
+                    </div>
+                </div>
+
+
+
+            <input type="submit" value="Submit" />
+            </form>
+
+
+            {% if envoi %}
+                {% if counts == "detailed" %}
+                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                        <li class="active"><a href="#tab1" data-toggle="tab">score</a></li>
+                        <li><a href="#tab2" data-toggle="tab">Query Coverage</a></li>
+                        <li><a href="#tab3" data-toggle="tab">Locus</a></li>
+                        <li><a href="#tab4" data-toggle="tab">Identity</a></li>
+                        <li><a href="#tab5" data-toggle="tab">evalue</a></li>
+                        <li><a href="#tab6" data-toggle="tab">Table</a></li>
+                    </ul>
+
+
+                    <div id="my-tab-content" class="tab-content">
+                        <div class="tab-pane active" id="tab1">
+                            <object type="image/svg+xml" data="{% static asset_path1 %}" id="inter_tree1"></object>
+                        </div>
+                        <div class="tab-pane" id="tab2">
+                            <object type="image/svg+xml" data="{% static asset_path2 %}" id="inter_tree2"></object>
+                        </div>
+                        <div class="tab-pane" id="tab3">
+                            <object type="image/svg+xml" data="{% static asset_path3 %}" id="inter_tree3"></object>
+                        </div>
+                        <div class="tab-pane" id="tab4">
+                            <object type="image/svg+xml" data="{% static asset_path4 %}" id="inter_tree5"></object>
+                        </div>
+                        <div class="tab-pane" id="tab5">
+                            <object type="image/svg+xml" data="{% static asset_path5 %}" id="inter_tree6"></object>
+                        </div>
+                        <div class="tab-pane" id="tab6">
+                            <img src='{%static scale_path%}' id="circos_legend"  width="160" style="position: absolute; top: 170px; left: 600px;">
+
+                            <object type="image/svg+xml" data="{% static asset_path4 %}" id="inter_tree4" style="position: relative; top: 10px; left: 10px;"></object>
+                            <table class="sortable" id="mytable">
+                               <tr>
+                                    <th id="entete_meta" >Orthogroup</th>
+                                    <th id="entete_meta3">Category</th>
+                                    <th id="entete_meta3">Gene</th>
+                                <th id="entete_meta3">Locus</th>
+                                <th id="entete_meta3">Description</th>
+
+                                <tr>
+                                {% for values in data%}
+                                    <tr>
+                                        <td>{{values.5}}</td>
+                                        <td>{{values.1}}</td>
+                                        <td>{{values.2}}</td>
+                                        <td>{{values.3}}</td>
+                                        <td>{{values.4}}</td>
+                                        <td>{{values.5}}</td>
+                                    </tr>
+
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                {% else %}
+                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                        <li class="active"><a href="#tab1" data-toggle="tab">score</a></li>
+                        <li><a href="#tab4" data-toggle="tab">Table</a></li>
+                    </ul>
+
+
+                    <div id="my-tab-content" class="tab-content">
+                        <div class="tab-pane active" id="tab1">
+                            <object type="image/svg+xml" data="{% static asset_path1 %}" id="inter_tree1" style="width:80%"></object>
+                        </div>
+
+                        <div class="tab-pane" id="tab4">
+                            <img src='{%static scale_path%}' id="circos_legend"  width="160" style="position: absolute; top: 170px; left: 600px;">
+
+                            <object type="image/svg+xml" data="{% static asset_path4 %}" id="inter_tree4" style="position: relative; top: 10px; left: 10px;"></object>
+                            <table class="sortable" id="mytable">
+                               <tr>
+                                    <th id="entete_meta" >Orthogroup</th>
+                                    <th id="entete_meta3">Category</th>
+                                    <th id="entete_meta3">Gene</th>
+                                <th id="entete_meta3">Locus</th>
+                                <th id="entete_meta3">Description</th>
+
+                                <tr>
+                                {% for values in data%}
+                                    <tr>
+                                        <td>{{values.5}}</td>
+                                        <td>{{values.1}}</td>
+                                        <td>{{values.2}}</td>
+                                        <td>{{values.3}}</td>
+                                        <td>{{values.4}}</td>
+                                        <td>{{values.5}}</td>
+                                    </tr>
+
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+
+
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+</body>
+<style>
+#id_category{
+    width:280px;
+    text-align:left;
+    left:600px;
+
+}
+
+
+</style>
+
+</html>

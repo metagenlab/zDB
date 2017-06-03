@@ -49,7 +49,10 @@ from forms import make_interpro_taxonomy
 from forms import BlastProfileForm
 from forms import make_pairwiseid_form
 from forms import make_locus2network_form
-
+from forms import heatmap_form
+from forms import blast_sets_form
+from forms import make_kegg_form
+from forms import transporters_superfam_form
 from django.contrib.auth import logout
 from django.conf import settings
 from django.contrib.auth import authenticate, login
@@ -358,6 +361,12 @@ def extract_orthogroup(request, biodb):
                                                                                                                   biodb,
                                                                                                                   taxon_filter=include,
                                                                                                                   accessions=accessions)
+
+                    if len(include) == 1:
+                        # get url to get single include taxon fasta
+                        locus_list = [i[2] for i in extract_result]
+                        fasta_ref_url = '?l=' + '&l='.join(locus_list)
+
                     columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                               'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
 
@@ -382,6 +391,9 @@ def extract_orthogroup(request, biodb):
                                                                                                                       '"' + '","'.join(match_groups) + '"',
                                                                                                                       reference_taxon)
                         locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+
+                        fasta_ref_url = '?l=' + '&l='.join(locus_list)
 
                         locus2annot, \
                         locus_tag2cog_catego, \
@@ -521,8 +533,6 @@ def locus_annotation(request, biodb, display_form):
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
 
-    print request.method
-
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form = AnnotForm(request.POST)  # Nous reprenons les données
@@ -531,16 +541,18 @@ def locus_annotation(request, biodb, display_form):
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             import biosql_own_sql_tables
             import ete_motifs
+            from ete2 import Tree
+
             server, db = manipulate_biosqldb.load_db(biodb)
 
             match_locus = [i.rstrip() for i in form.cleaned_data['orthogroups'].rstrip().split('\n')]
-            print 'match locus', match_locus
 
             filter = '"'+'","'.join(match_locus)+'"'
-            sql = 'select locus_tag, accession, start, stop, gene, product, n_genomes, orthogroup, CHAR_LENGTH(translation) from orthology_detail_%s ' \
+            sql = 'select locus_tag, accession, start, stop, gene, product, n_genomes, orthogroup, ' \
+                  ' CHAR_LENGTH(translation) from orthology_detail_%s ' \
                   ' where locus_tag in (%s)' % (biodb, filter)
             locus_annot = [list(i) for i in server.adaptor.execute_and_fetchall(sql,)]
-            print 'annot ok'
+
             sql = 'select locus_tag,t1.COG_id,functon,name from COG.locus_tag2gi_hit_%s t1 ' \
                   ' inner join COG.cog_names_2014 t2 on t1.COG_id=t2.COG_id;' % biodb
             print sql
@@ -555,7 +567,6 @@ def locus_annotation(request, biodb, display_form):
                     one_locus_annot.append('-')
                     one_locus_annot.append('-')
 
-
             sql = 'select locus_tag, taxon_id from orthology_detail_%s where locus_tag in (%s)' % (biodb, filter)
 
             locus2taxon = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -564,20 +575,47 @@ def locus_annotation(request, biodb, display_form):
             taxon2locus2identity_closest = ete_motifs.get_locus2taxon2identity(biodb, match_locus)
 
             #taxon2orthogroup2count_all = ete_motifs.get_taxon2orthogroup2count(biodb, orthogroups)
+            locus2annot, \
+            locus_tag2cog_catego, \
+            locus_tag2cog_name, \
+            locus_tag2ko, \
+            pathway2category, \
+            module2category, \
+            ko2ko_pathways, \
+            ko2ko_modules,\
+            locus2interpro = get_locus_annotations(biodb, match_locus)
 
             labels = match_locus
+
+            sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
+                       ' where t2.name="%s";' % biodb
+            server, db = manipulate_biosqldb.load_db(biodb)
+            tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
+            acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
+            filter = '"' + '","'.join(acc_list) + '"'
+            sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
+            taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
+            t1 = Tree(tree)
+            R = t1.get_midpoint_outgroup()
+            t1.set_outgroup(R)
+            t2 = t1.prune(taxon_list)
+            t1.ladderize()
+
+            fasta_url = '?l=' + '&l='.join(match_locus)
+
             tree2, style2 = ete_motifs.multiple_profiles_heatmap(biodb,
                                                         labels,
                                                         taxon2locus2identity_closest,
                                                         identity_scale=True,
                                                         show_labels=False,
-                                                        reference_taxon=locus2taxon)
+                                                        reference_taxon=locus2taxon,
+                                                                 tree=t1, rotate=True)
 
 
             big = False
             path = settings.BASE_DIR + '/assets/temp/tree.svg'
             asset_path = '/temp/tree.svg'
-
+            style2.rotation = 90
             tree2.render(path, dpi=800, h=600, tree_style=style2)
 
             envoi_annot = True
@@ -1836,8 +1874,6 @@ def extract_region(request, biodb):
 @login_required
 def locusx(request, biodb, locus=None, menu=False):
 
-    
-
     if request.method == 'GET':  # S'il s'agit d'une requête POST
         import re
 
@@ -1856,11 +1892,18 @@ def locusx(request, biodb, locus=None, menu=False):
             old_locus_tag = locus
             locus = data
             input_type = 'locus_tag'
+        except IndexError:
+            sql0 = 'select locus_tag from orthology_detail_%s where (locus_tag="%s" or protein_id="%s")' % (biodb,
+                                                                                                            locus,
+                                                                                                            locus)
+        try:
+            locus = server.adaptor.execute_and_fetchall(sql0, )[0][0]
+            input_type = 'locus_tag'
 
         except IndexError:
 
 
-
+            '''
             sql1 =   'SELECT' \
                      ' CASE' \
                      '   WHEN locus_tag = "%s" THEN "locus_tag"' \
@@ -1875,12 +1918,11 @@ def locusx(request, biodb, locus=None, menu=False):
                                                                                                                        locus,
                                                                                                                        locus,
                                                                                                                        locus)
-
-            print sql1
+            '''
+            sql1 = 'select orthogroup from orthology_detail_%s where orthogroup="%s"' % (biodb, locus)
             try:
-                input_type = server.adaptor.execute_and_fetchall(sql1, )[0][0]
-                if input_type is None:
-                    return search(request,biodb)
+                locus = server.adaptor.execute_and_fetchall(sql1, )[0][0]
+                input_type = 'orthogroup'
             except IndexError:
                 print 'not a valid id, trying search'
                 return search(request,biodb)
@@ -1960,6 +2002,13 @@ def locusx(request, biodb, locus=None, menu=False):
               ' inner join blastnr.blast_swissprot_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where locus_tag="%s";' % (biodb, biodb,locus)
 
+            sql17 = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s"' % (biodb, data[0])
+            try:
+                trial = server.adaptor.execute_and_fetchall(sql17, )[0][0]
+                closest_phylo = True
+            except:
+                closest_phylo = False
+
             try:
                 n_blastnr_hits = server.adaptor.execute_and_fetchall(sql15, )[0][0]
             except:
@@ -1991,7 +2040,6 @@ def locusx(request, biodb, locus=None, menu=False):
 
             except:
                 uniprot_annotation = False
-            print sql12
             try:
                 dbxref_uniprot_data = server.adaptor.execute_and_fetchall(sql11, )
                 for i in dbxref_uniprot_data:
@@ -2054,7 +2102,6 @@ def locusx(request, biodb, locus=None, menu=False):
                     lst = operon_locus
             else:
                 lst = []
-            print 'lst---------------', lst
             locus_tags, orthogroup_list = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, [locus],
                                                                               temp_file.name, 15000,
                                                                               cache, color_locus_list=lst)
@@ -2078,7 +2125,6 @@ def locusx(request, biodb, locus=None, menu=False):
                 ko_data= False
             try:
                 ko_pathway_data = server.adaptor.execute_and_fetchall(sql7, )
-                print "ko_pathway_data", ko_pathway_data
             except IndexError:
                 ko_pathway_data = False
             try:
@@ -2106,15 +2152,20 @@ def locusx(request, biodb, locus=None, menu=False):
                           ' where name="%s";' % one_entry[0]
                     interpro2taxononmy[one_entry[0]] = server.adaptor.execute_and_fetchall(sql,)[0]
 
+
+
+
+
             except:
                 interpro_data = False
             #print interpro2taxononmy
             try:
-                sql_pfam = 'select signature_accession, signature_description' \
+                sql_pfam = 'select signature_accession, signature_description,start,stop' \
                            ' from interpro_%s where locus_tag="%s" ' \
                            ' and analysis="Pfam";' % (biodb, locus)
                 pfam_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_pfam, )]
-                print pfam_data
+                import uniprot_feature_viewer
+                features_js = uniprot_feature_viewer.intero_data2features_string(pfam_data)
 
             except:
                 pfam_data = False
@@ -2155,16 +2206,15 @@ def locusx(request, biodb, locus=None, menu=False):
             aa_length = nucl_length/3
 
             seq = manipulate_biosqldb.location2sequence(server, genome_accession, biodb, seq_start-50, leng)
+
+
+
             if strand == -1:
 
                 from Bio.Seq import Seq
                 seq_obj = Seq(seq)
-                print seq
                 seq = str(seq_obj.reverse_complement())
-                print seq
-
                 seq = seq[0:49] + '<font color="red">' + seq[49:-50] + '</font>' + seq[-50:len(seq)]
-
             else:
                 seq = seq[0:50] + '<font color="red">' + seq[50:-50] + '</font>' + seq[-50:len(seq)]
 
@@ -2207,7 +2257,6 @@ def locusx(request, biodb, locus=None, menu=False):
         if tm_count > 0:
             show_tm_tree = True
 
-
         for i, row in enumerate(homologues):
             homologues[i] = ['-' if v is None else v for v in list(row)]
 
@@ -2236,7 +2285,7 @@ def locusx(request, biodb, locus=None, menu=False):
         sql = 'select t1.locus_tag, t1.annotation from manual_annotation as t1 ' \
               ' inner join orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag where orthogroup="%s";' % (biodb, data[0])
         cmt = server.adaptor.execute_and_fetchall(sql,)
-        print cmt
+
         cmt_format = []
         for i in cmt:
             cmt_format.append([i[0], i[1].replace('\n', '<br />')])
@@ -2479,10 +2528,18 @@ def COG_phylo_heatmap(request, biodb, frequency):
         sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
         tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
-        print tree
+        acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
+        filter = '"' + '","'.join(acc_list) + '"'
+        sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
+        taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
         t1 = Tree(tree)
+        R = t1.get_midpoint_outgroup()
+        t1.set_outgroup(R)
+        t2 = t1.prune(taxon_list)
+        t1.ladderize()
+        #t1 = Tree(tree)
 
-        tree, style = cog_heatmap.plot_cog_eatmap(biodb, tree, [], freq)
+        tree, style = cog_heatmap.plot_cog_eatmap(biodb, t1, [], freq)
 
         path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
         asset_path = '/temp/COG_tree.svg'
@@ -4473,6 +4530,14 @@ def blastnr_cat_info(request, biodb, accession, rank, taxon):
     target_taxons.pop(target_taxons.index(reference_taxon))
     circos_url += "t="+('&t=').join((target_taxons)) + '&h=' + ('&h=').join(locus_list)
 
+    locus_filter = '"' + '","'.join(locus_list) + '"'
+    sql = 'select locus_tag,subject_accession,subject_kingdom,subject_scientific_name,subject_taxid,evalue,percent_identity ' \
+          ' from custom_tables. locus2seqfeature_id_%s t1 ' \
+          ' inner join blastnr.blastnr_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+          ' where t1.locus_tag in (%s) and hit_number=2;' % (biodb, biodb, locus_filter)
+
+    locus_tag2blastnr_BBH = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
     series, \
     labels, \
     serie_all_counts, \
@@ -4486,9 +4551,113 @@ def blastnr_cat_info(request, biodb, accession, rank, taxon):
 
     return render(request, 'chlamdb/blastnr_info.html', locals())
 
+def identity_heatmap(request, biodb):
+    import numpy as np
+    import pairwiseid_plots
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    form_class = heatmap_form(biodb)
+
+    if request.method == 'POST':
+
+        form_venn = form_class(request.POST)
+
+        if 'venn' in request.POST and form_venn.is_valid():
+            taxon_list = form_venn.cleaned_data['targets']
+            plot_type = form_venn.cleaned_data['plot']
+            taxon_filter = '"'+'","'.join(taxon_list)+'"'
+
+
+            if plot_type == 'blast_identity':
+                sql2 = 'select taxon_1, taxon_2, median_identity from comparative_tables.reciprocal_BBH_average_identity_%s ' \
+                       'where taxon_1 in (%s) and taxon_2 in (%s);' % (biodb,
+                                                                       taxon_filter,
+                                                                       taxon_filter)
+            if plot_type == 'core_msa_identity':
+                sql2 = 'select taxon_1, taxon_2, identity from comparative_tables.core_orthogroups_identity_msa_%s ' \
+                       'where taxon_1 in (%s) and taxon_2 in (%s);' % (biodb, taxon_filter, taxon_filter)
+            if plot_type == 'n_RBBH':
+                sql2 = 'select taxon_1, taxon_2, n_pairs from comparative_tables.reciprocal_BBH_average_identity_%s ' \
+                      ' where taxon_1 in (%s) and taxon_2 in (%s) UNION select taxon_1, taxon_2, n_pairs ' \
+                      ' from comparative_tables.reciprocal_BBH_average_identity_%s' \
+                      ' where taxon_2 in (%s) and taxon_1 in (%s)' % (biodb,
+                                                                      taxon_filter,
+                                                                      taxon_filter,
+                                                                      biodb,
+                                                                      taxon_filter,
+                                                                      taxon_filter)
+            if plot_type == 'n_shared_orthogroups':
+                sql2 = 'select taxon_1, taxon_2, n_shared_orthogroups from comparative_tables.shared_orthogroups_%s ' \
+                       'where taxon_1 in (%s) and taxon_2 in (%s);' % (biodb,
+                                                                      taxon_filter,
+                                                                      taxon_filter)
+            data = server.adaptor.execute_and_fetchall(sql2,)
+            m = np.empty([len(taxon_list), len(taxon_list)], dtype=float)
+            for row in data:
+                index1 = taxon_list.index(str(row[0]))
+                index2 = taxon_list.index(str(row[1]))
+                #print index1, index2, float(row[2])
+                m[index1][index2] = float(row[2])
+                m[index2][index1] = float(row[2])
+            for n in range(0, len(taxon_list)):
+                m[n][n] = None
+
+            sql3 = 'select taxon_id, t2.description from biodatabase t1 inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id' \
+                   ' where t1.name="%s" and t2.description not like "%%%%plasmid%%%%"' % (biodb)
+
+            taxon_id2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
+
+            labels = [taxon_id2description[i] for i in taxon_list]
+            if len(labels) < 9:
+                small = True
+            path = settings.BASE_DIR + '/assets/temp/heatmap.svg'
+            asset_path = '/temp/heatmap.svg'
+            pairwiseid_plots.identity_heatmap_plot(m, output_path=path, labels=labels)
+
+
+
+            envoi = True
+
+    else:
+        form_venn = form_class()
+    return render(request, 'chlamdb/identity_heatmap.html', locals())
+
+
+def pan_genome(request, biodb, type):
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    venn_form_class = make_venn_from(biodb)
+
+    if request.method == 'POST':
+        form = venn_form_class(request.POST)
+        if form.is_valid():
+            import core_pan_genome_plots
+            import numpy
+
+
+            taxon_list = form.cleaned_data['targets']
+
+            filter = '`'+'`,`'.join(taxon_list)+'`'
+            sql = 'select %s from comparative_tables.%s_%s' % (filter, type, biodb)
+
+            data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
+            path = settings.BASE_DIR + '/assets/temp/pangenome.svg'
+            asset_path = '/temp/pangenome.svg'
+            path2 = settings.BASE_DIR + '/assets/temp/pangenome_barplot.svg'
+            asset_path2 = '/temp/pangenome_barplot.svg'
+            total, core, core_minus1 = core_pan_genome_plots.core_pan_genome_plot(data, output_path=path)
+            counts_n_genomes = core_pan_genome_plots.pan_genome_barplot(data, output_path=path2)
+            genome_count_list = []
+            for i, count in enumerate(counts_n_genomes):
+                genome_count_list.append([i+1, count])
+            envoi = True
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = venn_form_class()
+    return render(request, 'chlamdb/pan_genome.html', locals())
 
 def pairwiseid(request, biodb):
-
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -4497,6 +4666,7 @@ def pairwiseid(request, biodb):
     if request.method == 'POST':
         import pairwiseid_plots
         import biosql_own_sql_tables
+        import ete_motifs
 
         form = pairwiseid_form_class(request.POST)
 
@@ -4548,6 +4718,7 @@ def pairwiseid(request, biodb):
                 label_list.append("%s_vs_%s" %(taxid2description[genome_1], taxid2description[genome_4]))
 
             path1 = settings.BASE_DIR + '/assets/temp/plot.svg'
+            print path1
             asset_path1 = '/temp/plot.svg'
             pairwiseid_plots.density_plot(data_list,
                                           label_list,
@@ -4580,11 +4751,293 @@ def pairwiseid(request, biodb):
 
             pairwiseid_plots.basic_plot(genome_count_list, identity_list)
 
+            sql = 'select taxon_2, median_identity, average_identity,n_pairs from comparative_tables.reciprocal_BBH_average_identity_%s ' \
+                  ' where taxon_1=%s UNION select taxon_1, median_identity, average_identity,n_pairs ' \
+                  ' from comparative_tables.reciprocal_BBH_average_identity_%s' \
+                  ' where taxon_2=%s' % (biodb,
+                                         genome_1,
+                                         biodb,
+                                         genome_1)
+            data = server.adaptor.execute_and_fetchall(sql,)
+
+            sql2 = 'select taxon_2, identity from comparative_tables.core_orthogroups_identity_msa_%s ' \
+                   'where taxon_1=%s;' % (biodb, genome_1)
+            #   taxon2core_msa_identity = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+
+            sql3 = 'select taxon_2, n_shared_orthogroups from comparative_tables.shared_orthogroups_%s ' \
+                   'where taxon_1=%s;' % (biodb, genome_1)
+            taxon2n_shared_orthogroups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
+
+            sql = 'select SUM(n_CDS) from biodatabase t1 ' \
+                  ' inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id ' \
+                  ' inner join genomes_info_%s t3 on t2.ACCESSION=t3.ACCESSION ' \
+                  ' where t1.name="chlamydia_04_16" and taxon_id=%s group by taxon_id;' % (biodb, genome_1)
+            n_CDS = server.adaptor.execute_and_fetchall(sql,)[0][0]
+
+            sql = 'select count(*) from (select taxon_id from orthology_detail_%s ' \
+                  ' WHERE taxon_id=%s group by orthogroup) A;' % (biodb, genome_1)
+            n_orthogroups = server.adaptor.execute_and_fetchall(sql,)[0][0]
+
+            taxon2category2id = {}
+            taxon2category2id['mean'] = {}
+            taxon2category2id['median'] = {}
+            taxon2category2id['n_RBBH'] = {}
+            taxon2category2id['n_RBBH'][str(genome_1)] = n_CDS
+            taxon2category2id['n_shared_orthogroups'] = {}
+            taxon2category2id['n_shared_orthogroups'][str(genome_1)] = n_orthogroups
+            #taxon2category2id['core_align'] = {}
+            #print taxon2core_msa_identity
+            for row in data:
+                #taxon2category2id[str(row[0])] = {}
+                taxon2category2id['mean'][str(row[0])] = row[2]
+                taxon2category2id['median'][str(row[0])] = row[1]
+                taxon2category2id['n_RBBH'][str(row[0])] = int(row[3])
+                taxon2category2id['n_shared_orthogroups'][str(row[0])] = int(taxon2n_shared_orthogroups[str(row[0])])
+                #taxon2category2id['core_align'][str(row[0])] = taxon2core_msa_identity[str(row[0])]
+
+            tree1, style1 = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                        column_labels=['mean', 'median', 'n_RBBH', 'n_shared_orthogroups'],
+                                                        group2taxon2count=taxon2category2id,
+                                                        identity_scale=False,
+                                                        show_labels=True,
+                                                        column_scale=True,
+                                                                 reference_taxon=genome_1)
+
+            path2 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
+            asset_path2 = '/temp/ortho_tree1.svg'
+            tree1.render(path2, dpi=800, h=600, tree_style=style1)
+
             envoi = True
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
         form = pairwiseid_form_class()
     return render(request, 'chlamdb/pairwise_id.html', locals())
 
+
+def blastnr_euk(request, biodb):
+
+
+    import phylo_tree_bar
+    import pairwiseid_plots
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'select seqfeature_id, locus_tag from custom_tables.locus2seqfeature_id_%s' % biodb
+
+    seqfeature_id2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    sql = 'select locus_tag,n_species from custom_tables.seqfeature_id2n_species_%s t1 ' \
+          ' inner join custom_tables.locus2seqfeature_id_%s t2 on t1.seqfeature_id=t2.seqfeature_id;' % (biodb, biodb)
+
+    locus_tag2n_species = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 ' \
+               ' on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
+
+    tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+
+    sql_taxon = 'select taxon_id,t2.description from biodatabase t1 inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id ' \
+                ' where t1.name="%s" and t2.description not like "%%%%plasmid%%%%"' % biodb
+    taxon_id2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_taxon,))
+
+    taxon_list = taxon_id2description.keys()
+
+    sql_genome_size = 'select taxon_id, n_CDS from biodatabase t1 ' \
+                      ' inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id ' \
+                      ' inner join genomes_info_%s t3 on t2.accession=t3.accession ' \
+                      ' where t1.name="%s" and t2.description not like "%%%%plasmid%%%%";' % (biodb, biodb)
+
+    taxon_id2n_CDS = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_genome_size,))
+
+    sql_best_hit_euk = 'select t1.query_taxon_id, count(*) from blastnr.blastnr_%s t1 ' \
+                       ' inner join blastnr.blastnr_taxonomy t2 on t1.subject_taxid=t2.taxon_id ' \
+                       ' where t2.superkingdom = "Eukaryota" and t1.hit_number=1 group by t1.query_taxon_id;' % biodb
+
+    sql_any_hit_euk = 'select A.query_taxon_id, count(*) from (select t1.query_taxon_id, t1.seqfeature_id ' \
+                      ' from blastnr.blastnr_%s t1 inner join blastnr.blastnr_taxonomy t2 on t1.subject_taxid=t2.taxon_id ' \
+                      ' where t2.superkingdom = "Eukaryota" group by t1.query_taxon_id, t1.seqfeature_id) A ' \
+                      ' group by A.query_taxon_id;' % biodb
+
+    taxon_id2n_best_hits_euk = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_best_hit_euk,))
+    taxon_id2n_any_hits_euk = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_any_hit_euk,))
+
+
+    sql = 'select t1.query_taxon_id, t1.seqfeature_id, t1.hit_number, t2.superkingdom, t1.subject_scientific_name, ' \
+          ' t1.percent_identity, t2.taxon_id,kingdom,phylum,class,subject_title from blastnr.blastnr_%s t1 ' \
+          ' inner join blastnr.blastnr_taxonomy t2 on t1.subject_taxid=t2.taxon_id ' \
+          ' where t2.phylum != "Chlamydiae" order by seqfeature_id' % (biodb)
+
+    taxon_id2n_best_non_chlamydial_euk = {}
+    taxon_id2n_best_non_chlamydial_euk_50 = {}
+    taxon_id2n_species_specific = {}
+    identity_values = []
+    count_n_species = []
+    top_hits = []
+    for taxon in taxon_list:
+        taxon_id2n_best_non_chlamydial_euk[taxon] = 0
+        taxon_id2n_best_non_chlamydial_euk_50[taxon] = 0
+        taxon_id2n_species_specific[taxon] = 0
+    data = server.adaptor.execute_and_fetchall(sql,)
+    for n, row in enumerate(data):
+        if n%1000 == 0:
+            print "%s / %s" % (n, len(data))
+        if n == 0:
+            if row[3] == 'Eukaryota':
+                taxon_id2n_best_non_chlamydial_euk[str(row[0])] += 1
+                identity_values.append(float(row[5]))
+                locus_tag = seqfeature_id2locus_tag[str(row[1])]
+                n_species = locus_tag2n_species[locus_tag]
+                count_n_species.append(n_species)
+                # identity cutoff
+                if float(row[5]) >= 10:
+
+                    if n_species <= 5:
+                        top_hits.append([taxon_id2description[str(row[0])],locus_tag,row[4],
+                                         row[5], row[6], row[7], row[8],row[9],row[10], n_species])
+                    taxon_id2n_best_non_chlamydial_euk_50[str(row[0])] +=1
+                if n_species == 1:
+                    taxon_id2n_species_specific[str(row[0])] +=1
+        else:
+            # if new feature, check if eukaryote
+            if row[1] != data[n-1][1] and row[3] == 'Eukaryota':
+                taxon_id2n_best_non_chlamydial_euk[str(row[0])] +=1
+                identity_values.append(float(row[5]))
+                locus_tag = seqfeature_id2locus_tag[str(row[1])]
+                n_species = locus_tag2n_species[locus_tag]
+                count_n_species.append(n_species)
+
+                if float(row[5]) >= 10:
+                    if n_species <= 5:
+                        top_hits.append([taxon_id2description[str(row[0])],locus_tag,row[4],
+                                         row[5], row[6], row[7],row[8],row[9],row[10], n_species])
+                    taxon_id2n_best_non_chlamydial_euk_50[str(row[0])] +=1
+                if n_species == 1:
+                    taxon_id2n_species_specific[str(row[0])] +=1
+    taxon2values = {}
+
+    for taxon in taxon_list:
+        try:
+            n_best_euk = taxon_id2n_best_hits_euk[taxon]
+        except:
+            n_best_euk = 0
+        try:
+            n_euk = taxon_id2n_any_hits_euk[taxon]
+            percent_euk = round((taxon_id2n_any_hits_euk[taxon]/float(taxon_id2n_CDS[taxon]))*100,2)
+        except:
+            n_euk = 0
+            percent_euk = 0
+
+        taxon2values[taxon] = [n_best_euk,
+                               n_euk,
+                               percent_euk,
+                               taxon_id2n_best_non_chlamydial_euk[taxon],
+                               taxon_id2n_best_non_chlamydial_euk_50[taxon],
+                               taxon_id2n_species_specific[taxon]]
+    print taxon2values
+    tree1, style1 = phylo_tree_bar.plot_tree_barplot(tree,
+                                                    taxon2values,
+                                                    ["n_best_euk",
+                                                     "n any euk",
+                                                     'percent euk',
+                                                     'n_best_non_chlam_euk',
+                                                     'n_best_non_chlam_euk_50',
+                                                     'n specific'],
+                                                    taxon2set2value_heatmap=False,
+                                                    header_list2=False,
+                                                    biodb=biodb,
+                                                     general_max=False)
+
+
+    path1 = settings.BASE_DIR + '/assets/temp/interpro_tree2.svg'
+    asset_path1 = '/temp/interpro_tree2.svg'
+    tree1.render(path1, dpi=600, h=400, tree_style=style1)
+
+    pairwiseid_plots.density_plot([identity_values],["identity hits Eukaryota"])
+    pairwiseid_plots.basic_plot(identity_values, count_n_species, output_path="~/tata.svg")
+    pairwiseid_plots.basic_plot(count_n_species, output_path="~/tata2.svg")
+
+    return render(request, 'chlamdb/blastnr_euk.html', locals())
+
+
+def blastnr_overview(request, biodb):
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 ' \
+               ' on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
+
+
+
+    tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+
+
+    header_list2 = ['effectiveT3', 'BPBAac', 'T3MM', 'T4SEpre_bpbAac', 'T4SEpre_psAac', 'chaperones', 'intesect']
+
+    import phylo_tree_bar
+    import hmm_heatmap
+
+    set2taxon2value, column_names = hmm_heatmap.get_set_data(biodb, score_cutoff=20)
+
+    my_sets = ['T3SS', 'T6SSi', 'T4SS', 'flagellum', 'rinke_et_al_2013', 'dupont_et_al_2012', 'eisen_et_al_2013']
+    print column_names
+    print my_sets
+    set2taxon2value_new = {}
+    for set in my_sets:
+        set2taxon2value_new[set] = {}
+        for taxon in set2taxon2value[set]:
+
+            try:
+                value = set2taxon2value[set][taxon]
+                if value < 4:
+                    value = 0
+                set2taxon2value_new[set][taxon] = value
+            except:
+                set2taxon2value_new[set][taxon] = 0
+
+    sql = 'select taxon_id,n_no_hits,n_less_100_hits,n_100_hits from blastnr.count_n_blast_%s order by n_no_hits;' % biodb
+    # blast_hits_taxonomy_overview
+    sql3 = 'select * from blastnr.BBH_taxo_hit_number_2_%s;' % biodb
+
+    taxon_id2values_data2 = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
+
+    taxon_id2values_data = server.adaptor.execute_and_fetchall(sql,)
+    taxon_id2values = {}
+    for row in taxon_id2values_data:
+        taxon_id2values[row[0]] = [list(reversed(row[1:])), list(taxon_id2values_data2[row[0]])]
+    header_list = ['nr_n_hits', "nr_taxonomy"]
+
+
+    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr.blastnr_majority_phylum_%s' \
+          ' group by taxon_id,best_hit_phylum order by taxon_id,n DESC;' % biodb
+
+    sql2 = 'select taxon_id, count(*) as n, majority_phylum from blastnr.blastnr_majority_phylum_%s ' \
+           ' group by taxon_id,majority_phylum order by taxon_id,n DESC;' % biodb
+
+    data = server.adaptor.execute_and_fetchall(sql,)
+    data2 = server.adaptor.execute_and_fetchall(sql2,)
+
+
+    taxon2most_freq_phylum = {}
+    for row in data:
+        if row[0] not in taxon2most_freq_phylum:
+            taxon2most_freq_phylum[row[0]] = row[2]
+    taxon_match = []
+    for row in data2:
+        if row[0] not in taxon_match:
+            taxon2most_freq_phylum[row[0]] += "/%s" % row[2]
+            taxon_match.append(row[0])
+
+    tree1, style1 = phylo_tree_bar.plot_tree_stacked_barplot(tree,
+                                                    taxon_id2values,
+                                                    header_list,
+                                                    taxon2set2value_heatmap=set2taxon2value_new,
+                                                    header_list2=my_sets,
+                                                    biodb=biodb, general_max=False,
+                                                    taxon2label=taxon2most_freq_phylum)
+
+
+    path1 = settings.BASE_DIR + '/assets/temp/interpro_tree2.svg'
+    asset_path1 = '/temp/interpro_tree2.svg'
+    tree1.render(path1, dpi=600, h=400, tree_style=style1)
+    return render(request, 'chlamdb/blastnr_overview.html', locals())
 
 def blastnr_barchart(request, biodb):
 
@@ -4715,84 +5168,6 @@ def blastnr_barchart(request, biodb):
 
             circos_url = '?h=' + ('&h=').join(target_accessions) + '&t=%s&n=%s' % (counttype, top_n)
 
-
-
-            sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 ' \
-                       ' on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
-
-
-
-            tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
-
-
-            header_list2 = ['effectiveT3', 'BPBAac', 'T3MM', 'T4SEpre_bpbAac', 'T4SEpre_psAac', 'chaperones', 'intesect']
-
-            import phylo_tree_bar
-            import hmm_heatmap
-
-            set2taxon2value, column_names = hmm_heatmap.get_set_data(biodb, score_cutoff=20)
-
-            my_sets = ['T3SS', 'T6SSi', 'T4SS', 'flagellum', 'rinke_et_al_2013', 'dupont_et_al_2012', 'eisen_et_al_2013']
-            print column_names
-            print my_sets
-            set2taxon2value_new = {}
-            for set in my_sets:
-                set2taxon2value_new[set] = {}
-                for taxon in set2taxon2value[set]:
-
-                    try:
-                        value = set2taxon2value[set][taxon]
-                        if value < 4:
-                            value = 0
-                        set2taxon2value_new[set][taxon] = value
-                    except:
-                        set2taxon2value_new[set][taxon] = 0
-
-            sql = 'select taxon_id,n_no_hits,n_less_100_hits,n_100_hits from blastnr.count_n_blast_%s order by n_no_hits;' % biodb
-            # blast_hits_taxonomy_overview
-            sql3 = 'select * from blastnr.BBH_taxo_hit_number_2_%s;' % biodb
-
-            taxon_id2values_data2 = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
-
-            taxon_id2values_data = server.adaptor.execute_and_fetchall(sql,)
-            taxon_id2values = {}
-            for row in taxon_id2values_data:
-                taxon_id2values[row[0]] = [list(reversed(row[1:])), list(taxon_id2values_data2[row[0]])]
-            header_list = ['nr_n_hits', "nr_taxonomy"]
-
-
-            sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr.blastnr_majority_phylum_%s' \
-                  ' group by taxon_id,best_hit_phylum order by taxon_id,n DESC;' % biodb
-
-            sql2 = 'select taxon_id, count(*) as n, majority_phylum from blastnr.blastnr_majority_phylum_%s ' \
-                   ' group by taxon_id,majority_phylum order by taxon_id,n DESC;' % biodb
-
-            data = server.adaptor.execute_and_fetchall(sql,)
-            data2 = server.adaptor.execute_and_fetchall(sql2,)
-
-
-            taxon2most_freq_phylum = {}
-            for row in data:
-                if row[0] not in taxon2most_freq_phylum:
-                    taxon2most_freq_phylum[row[0]] = row[2]
-            taxon_match = []
-            for row in data2:
-                if row[0] not in taxon_match:
-                    taxon2most_freq_phylum[row[0]] += "/%s" % row[2]
-                    taxon_match.append(row[0])
-
-            tree1, style1 = phylo_tree_bar.plot_tree_stacked_barplot(tree,
-                                                            taxon_id2values,
-                                                            header_list,
-                                                            taxon2set2value_heatmap=set2taxon2value_new,
-                                                            header_list2=my_sets,
-                                                            biodb=biodb, general_max=False,
-                                                            taxon2label=taxon2most_freq_phylum)
-
-
-            path1 = settings.BASE_DIR + '/assets/temp/interpro_tree2.svg'
-            asset_path1 = '/temp/interpro_tree2.svg'
-            tree1.render(path1, dpi=600, h=400, tree_style=style1)
 
             envoi = True
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
@@ -5708,6 +6083,36 @@ def ko2fasta(request, biodb, ko_id, include_orthologs=False):
     response.write(fasta)
     return response
 
+def fasta(request, biodb):
+
+    '''
+    get fasta from locus_list
+
+    :param request:
+    :param biodb:
+    :return: fasta file
+    '''
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    locus_list = [str(i) for i in request.GET.getlist('l')]
+
+    filter = '"'+'","'.join(locus_list)+'"'
+
+    sql = 'select locus_tag, organism, translation from orthology_detail_%s where locus_tag in (%s)' % (biodb,
+                                                                                                       filter)
+
+    data = server.adaptor.execute_and_fetchall(sql,)
+    fasta = ''
+    for seq_data in data:
+        fasta+='>%s %s\n' % (seq_data[0], seq_data[1])
+        for i in range(0, len(seq_data[2]), 60):
+            fasta+=(seq_data[2][i:i + 60] + "\n")
+
+    response = HttpResponse(content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename="fasta.fa"'
+    response.write(fasta)
+    return response
 
 def get_fasta(request, biodb):
 
@@ -5761,7 +6166,8 @@ def get_fasta(request, biodb):
                                                                   single_copy=single_copy,
                                                                   accessions=accessions)
     match_groups = mat.index.tolist()
-    print 'match', match_groups
+
+    print 'match', len(match_groups), match_groups
     filter = '"'+'","'.join(match_groups)+'"'
     if not accessions:
         if reference:
@@ -5784,22 +6190,16 @@ def get_fasta(request, biodb):
                                                                                                                              taxon_filter,
                                                                                                                              filter)
 
-    print sql
-
-
-
-
-
     data = server.adaptor.execute_and_fetchall(sql,)
     fasta = ''
-    for i in data:
-        fasta+='>%s %s\n%s\n' % (i[0], i[1], i[2])
+    for seq_data in data:
+        fasta+='>%s %s\n' % (seq_data[0], seq_data[1])
+        for i in range(0, len(seq_data[2]), 60):
+            fasta+=(seq_data[2][i:i + 60] + "\n")
     response = HttpResponse(content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename="fasta.fa"'
     response.write(fasta)
     return response #HttpResponse(request, fasta, content_type='text/plain; charset=utf8')
-
-
 
 def circos_main(request, biodb):
 
@@ -6954,7 +7354,8 @@ def blast(request, biodb):
             from Bio.Blast.Applications import NcbitblastnCommandline
             from Bio.Blast.Applications import NcbiblastxCommandline
             from tempfile import NamedTemporaryFile
-
+            from StringIO import StringIO
+            from Bio.Blast import NCBIXML
             from Bio.Alphabet import IUPAC
             import os
             import shell_command
@@ -6968,18 +7369,18 @@ def blast(request, biodb):
             blast_type = form.cleaned_data['blast']
 
 
-            input_sequence = extract_alphanumeric(input_sequence)
-            print "one", input_sequence
-
-            input_sequence = input_sequence.rstrip(os.linesep)
-            print "two", input_sequence
-
-            my_record = SeqRecord(Seq(input_sequence, IUPAC.protein), id="INPUT", description="INPUT")
+            #input_sequence = extract_alphanumeric(input_sequence)
+            print input_sequence
+            print '>' in input_sequence
+            if '>' in input_sequence:
+                my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta')]
+            else:
+                input_sequence = input_sequence.rstrip(os.linesep)
+                my_record = [SeqRecord(Seq(input_sequence, IUPAC.protein), id="INPUT", description="INPUT")]
 
             query_file = NamedTemporaryFile()
             SeqIO.write(my_record, query_file, "fasta")
             query_file.flush()
-
 
             if blast_type=='blastn_ffn':
                 blastdb = settings.BASE_DIR + "/assets/%s/ffn/%s.ffn" % (biodb, target_accession)
@@ -6998,15 +7399,13 @@ def blast(request, biodb):
                 blastdb = settings.BASE_DIR + "/assets/%s/faa/%s.faa" % (biodb, target_accession)
                 blast_cline = NcbiblastxCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
 
-
-            print blast_cline
             blast_stdout, blast_stderr = blast_cline()
 
             if blast_type=='tblastn':
                 from Bio.SeqUtils import six_frame_translations
-                from StringIO import StringIO
+
                 blast_stdout2, blast_stderr2 = blast_cline2()
-                from Bio.Blast import NCBIXML
+
                 blast_records = NCBIXML.parse(StringIO(blast_stdout2))
                 all_data = []
                 for record in blast_records:
@@ -7050,30 +7449,52 @@ def blast(request, biodb):
                 print "blast error"
                 blast_err = blast_stderr
             else:
-                print "running mview"
-                blast_file = NamedTemporaryFile()
+                #print "running mview"
+                #blast_file = NamedTemporaryFile()
 
-                f = open('/tmp/blast.temp', 'w')
+                from Bio.Blast import NCBIStandalone
+                blast_parser = NCBIStandalone.BlastParser()
+                blast_record = blast_parser.parse(StringIO(blast_stdout))
+                all_locus_tag = []
+
+                for alignment in blast_record.alignments:
+                    print alignment.title
+                    locus_tag = alignment.title.split(' ')[1]
+                    all_locus_tag.append(locus_tag)
+
+                locus_filter = '"' + '","'.join(all_locus_tag) + '"'
+                sql = 'select locus_tag, product from orthology_detail_%s where locus_tag in (%s)' % (biodb, locus_filter)
+                locus2product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+                rand_id = id_generator(6)
+
+                blast_file_l = settings.BASE_DIR + '/assets/temp/%s' % rand_id
+                f = open(blast_file_l, 'w')
                 f.write(blast_stdout)
                 f.close()
 
-                blast_file_l = "/tmp/blast.temp"
+                asset_blast_path = '/assets/temp/%s' % rand_id
 
+                if len(my_record) == 1:
+                    js_out = True
+                else:
+                    js_out = False
+                    print blast_stdout
 
                 #blast_file.write(blast_stdout)
-                out, err, code = shell_command.shell_command('cat /temp/blast.temp | wc -l')
-                print 'n lines', out
-                if blast_type=='blastp' or blast_type=='blastn_ffn':
-                    mview_cmd = 'mview -in blast -srs on -ruler on -html data -css on -coloring identity /tmp/blast.temp' #% blast_file.name
-                else:
-                    mview_cmd = 'mview -in blast -ruler on -html data -css on -coloring identity /tmp/blast.temp'
-                stdout, stderr, code = shell_command.shell_command(mview_cmd)
+                #out, err, code = shell_command.shell_command('cat /temp/blast.temp | wc -l')
+                #print 'n lines', out
+                #if blast_type=='blastp' or blast_type=='blastn_ffn':
+                #    mview_cmd = 'mview -in blast -srs on -ruler on -html data -css on -coloring identity /tmp/blast.temp' #% blast_file.name
+                #else:
+                #    mview_cmd = 'mview -in blast -ruler on -html data -css on -coloring identity /tmp/blast.temp'
+                #stdout, stderr, code = shell_command.shell_command(mview_cmd)
 
-                if len(stdout) == 0:
-                    blast_no_hits = blast_stdout
-                    blast_result = None
-                else:
-                    blast_result = stdout
+                #if len(stdout) == 0:
+                #    blast_no_hits = blast_stdout
+                #    blast_result = None
+                #else:
+                #    blast_result = stdout
             #blast_result = NCBIXML.parse(StringIO(stdout))
             #print blast_result
             #blast_record = next(blast_result)
@@ -7650,6 +8071,27 @@ def TM_tree(request, biodb, orthogroup):
     return render(request, 'chlamdb/pfam_tree.html', locals())
 
 
+def refseq_swissprot_tree(request, biodb, orthogroup):
+    import manipulate_biosqldb
+    from ete2 import Tree
+    import orthogroup2phylogeny_best_refseq_uniprot_hity
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s";' % (biodb, orthogroup)
+
+    ete2_tree = Tree(server.adaptor.execute_and_fetchall(sql,)[0][0])
+
+    t, ts = orthogroup2phylogeny_best_refseq_uniprot_hity.plot_tree(ete2_tree,
+                                                                   orthogroup,
+                                                                   biodb)
+    path = settings.BASE_DIR + '/assets/temp/BBH_tree.svg'
+    asset_path = '/temp/BBH_tree.svg'
+
+    t.render(path, tree_style=ts)
+
+    return render(request, 'chlamdb/best_refseq_swissprot_tree.html', locals())
+
 def multiple_orthogroup_heatmap(request, biodb, reference_orthogroup, max_distance=2.2):
 
 
@@ -7806,7 +8248,57 @@ def multiple_orthogroup_heatmap(request, biodb, reference_orthogroup, max_distan
 
     return render(request, 'chlamdb/profile_tree.html', locals())
 
+def locus2locus(request, biodb):
 
+    NetForm = make_locus2network_form(biodb)
+
+    if request.method == 'POST':
+
+        form = NetForm(request.POST)
+
+        if form.is_valid():
+
+            import manipulate_biosqldb
+            import string_networks
+
+            server, db = manipulate_biosqldb.load_db(biodb)
+
+
+            taxon_id = form.cleaned_data['genome']
+            target_list = [i.rstrip() for i in form.cleaned_data['locus_list'].split('\n')]
+
+            filter1 = "'"+"','".join(target_list)+"'"
+
+            sql = 'select locus_tag, orthogroup from orthology_detail_%s where locus_tag in (%s)' % (biodb, filter1)
+
+            data = server.adaptor.execute_and_fetchall(sql,)
+            orthogroup2locus_list = {}
+            for row in data:
+                if row[1] not in orthogroup2locus_list:
+                    orthogroup2locus_list[row[1]] = [row[0]]
+                else:
+                    orthogroup2locus_list[row[1]].append(row[0])
+
+            orthogroup_list = orthogroup2locus_list.keys()
+
+            filter2 = "'"+"','".join(orthogroup_list)+"'"
+
+            sql = 'select locus_tag, orthogroup from orthology_detail_%s where orthogroup in (%s) and taxon_id=%s' % (biodb,
+                                                                                                           filter2,
+                                                                                                           taxon_id)
+            data = server.adaptor.execute_and_fetchall(sql,)
+            orthogroup2locus_list_corresp = {}
+            for row in data:
+                if row[1] not in orthogroup2locus_list_corresp:
+                    orthogroup2locus_list_corresp[row[1]] = [row[0]]
+                else:
+                    orthogroup2locus_list_corresp[row[1]].append(row[0])
+            for group in orthogroup_list:
+                if group not in orthogroup2locus_list_corresp:
+                    orthogroup2locus_list_corresp[group] = ['-']
+    else:
+        form = NetForm()
+    return render(request, 'chlamdb/locus2locus.html', locals())
 
 def interactions_genome(request, biodb):
 
@@ -7913,8 +8405,8 @@ def interactions(request, biodb, locus_tag):
 
     print 'n profile hits', all_groups_profile
 
-    all_groups_neig = string_networks.find_links_recusrsive(biodb, [locus_tag], 0.8, n_comp_cutoff=2)
-
+    all_groups_neig = string_networks.find_links_recusrsive(biodb, [locus_tag], 0.8, n_comp_cutoff=0)
+    print 'all grp', all_groups_neig
     if len(all_groups_neig) == 0:
         neig_match = False
     else:
@@ -7984,8 +8476,8 @@ def plot_heatmap(request, biodb, type):
             for i in range(0,len(m[1,:]), 100):
                 collabels[i] = i
 
-            path = settings.BASE_DIR + '/assets/temp/heatmap_%s.svg' % type
-            asset_path = '/temp/heatmap_%s.svg' % type
+            path = settings.BASE_DIR + '/assets/temp/heatmap_%s.png' % type
+            asset_path = '/temp/heatmap_%s.png' % type
 
             heatmap.heatmap_pangenome(m, output=path,
                             breaks="-0.5, 0.5, 1.5, 2.5",
@@ -8436,6 +8928,378 @@ def hmm2circos(request, biodb):
 
     return render(request, 'chlamdb/hmm2circos.html', locals())
 
+
+
+@login_required
+def transporters_list(request, biodb):
+    import ete_motifs
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    transporters_form = transporters_superfam_form(biodb, True)
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+        form = transporters_form(request.POST)
+        if form.is_valid():
+            import blast_heatmap
+            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            genome = form.cleaned_data['genome']
+            transporter_superfamily = form.cleaned_data['transporter_superfamily'][0]
+            score_cutoff = form.cleaned_data['score_cutoff']
+            evalue_cutoff = form.cleaned_data['evalue_cutoff']
+            query_coverage_cutoff = form.cleaned_data['query_coverage_cutoff']
+            hit_coverage_cutoff = form.cleaned_data['hit_coverage_cutoff']
+
+            if transporter_superfamily == 'all':
+                sql = 'select t8.locus_tag,t3.description,t1.n_hsps, t1.evalue, t1.bitscore_first_hsp, ' \
+                      ' t1.identity, t1.query_TMS, t1.hit_TMS, t1.query_cov, t1.hit_cov,t7.uniprot_accession, ' \
+                      ' t7.substrate, t7.description, t5.description,t6.description from transporters.transporters_%s t1 ' \
+                      ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
+                      ' inner join transporters.tc_table t3 on t2.family=t3.tc_id ' \
+                      ' inner join transporters.tc_table t4 on t2.superfamily=t4.tc_id ' \
+                      ' inner join transporters.tc_table t5 on t2.subfamily=t5.tc_id ' \
+                      ' inner join transporters.tc_table t6 on t2.transporter_id=t6.tc_id ' \
+                      ' inner join transporters.uniprot_table t7 on t1.hit_uniprot_id=t7.uniprot_id ' \
+                      ' inner join custom_tables.locus2seqfeature_id_%s t8 on t1.seqfeature_id=t8.seqfeature_id ' \
+                      ' where query_cov>=%s and hit_cov>=%s and evalue<=%s and bitscore_first_hsp>=%s ' \
+                      ' and t1.taxon_id=%s;' % (biodb,
+                                                biodb,
+                                                query_coverage_cutoff,
+                                                hit_coverage_cutoff,
+                                                evalue_cutoff,
+                                                score_cutoff,
+                                                genome)
+                print sql
+
+                data = list(server.adaptor.execute_and_fetchall(sql,))
+                for n, row in enumerate(data):
+                    data[n] = list(data[n])
+                    print data[n][-4]
+                    data[n][-4] = ','.join(set([i.rstrip().lstrip() for i in data[n][-4].split(',')]))
+                    for i in range(0,len(row)):
+                        data[n][i] = str(data[n][i]).decode("latin-1")
+                envoi = True
+
+            else:
+                sql = 'select t6.locus_tag,t3.description,t1.n_hsps, t1.evalue, t1.bitscore_first_hsp, ' \
+                      ' t1.identity, t1.query_TMS, t1.hit_TMS, t1.query_cov, t1.hit_cov,t5.uniprot_accession, ' \
+                      ' t5.substrate, t5.description from transporters.transporters_%s t1 ' \
+                      ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
+                      ' inner join transporters.tc_table t3 on t2.family=t3.tc_id ' \
+                      ' inner join transporters.tc_table t4 on t2.superfamily=t4.tc_id ' \
+                      ' inner join transporters.uniprot_table t5 on t1.hit_uniprot_id=t5.uniprot_id ' \
+                      ' inner join custom_tables.locus2seqfeature_id_%s t6 on t1.seqfeature_id=t6.seqfeature_id ' \
+                      ' where query_cov>=%s and hit_cov>=%s and evalue<=%s and bitscore_first_hsp>=%s ' \
+                      ' and t4.description="%s" ' \
+                      ' and t1.taxon_id=%s;' % (biodb,
+                                                biodb,
+                                                query_coverage_cutoff,
+                                                hit_coverage_cutoff,
+                                                evalue_cutoff,
+                                                score_cutoff,
+                                                transporter_superfamily,
+                                                genome)
+                print sql
+
+                data = list(server.adaptor.execute_and_fetchall(sql,))
+                for n, row in enumerate(data):
+                    data[n] = list(data[n])
+                    for i in range(0,len(row)):
+                        data[n][i] = str(data[n][i]).decode("latin-1")
+
+                envoi = True
+
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = transporters_form()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/transporters_table.html', locals())
+
+
+
+@login_required
+def transporters(request, biodb):
+    import ete_motifs
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    transporters_form = transporters_superfam_form(biodb)
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+        form = transporters_form(request.POST)
+        if form.is_valid():
+            import blast_heatmap
+            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+            transporter_superfamily = form.cleaned_data['transporter_superfamily'][0]
+            score_cutoff = form.cleaned_data['score_cutoff']
+            evalue_cutoff = form.cleaned_data['evalue_cutoff']
+            query_coverage_cutoff = form.cleaned_data['query_coverage_cutoff']
+            hit_coverage_cutoff = form.cleaned_data['hit_coverage_cutoff']
+
+            from ete2 import Tree
+            sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
+                       ' where t2.name="%s";' % biodb
+            server, db = manipulate_biosqldb.load_db(biodb)
+            tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
+
+            acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
+            filter = '"' + '","'.join(acc_list) + '"'
+            sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
+            taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
+            t1 = Tree(tree)
+            R = t1.get_midpoint_outgroup()
+            t1.set_outgroup(R)
+            t2 = t1.prune(taxon_list)
+            t1.ladderize()
+
+
+            if transporter_superfamily == 'all':
+
+                print 'all---------------'
+
+                import transporters_heatmap
+
+                superfam_list, taxon2code2count = transporters_heatmap.transporter_superfamily_heatmap(biodb,
+                                                                                                       evalue_cutoff,
+                                                                                                       score_cutoff,
+                                                                                                       query_coverage_cutoff,
+                                                                                                       hit_coverage_cutoff)
+
+                tree1, style1 = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                            superfam_list,
+                                                            taxon2code2count,
+                                                            tree=t1,
+                                                            identity_scale=False,
+                                                            show_labels=True,
+                                                            column_scale=True,
+                                                            as_float=False,
+                                                            rotate=True)
+                style1.rotation = 90
+                path1 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
+                asset_path1 = '/temp/ortho_tree1.svg'
+                tree1.render(path1, dpi=800, h=600, tree_style=style1)
+                envoi = True
+
+            else:
+                print 'NOT all---------------'
+
+                import transporters_heatmap
+
+                superfam_list, taxon2code2count = transporters_heatmap.transporter_family_heatmap(biodb,
+                                                                                                  transporter_superfamily,
+                                                                                                   evalue_cutoff,
+                                                                                                   score_cutoff,
+                                                                                                   query_coverage_cutoff,
+                                                                                                   hit_coverage_cutoff)
+
+                tree1, style1 = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                            superfam_list,
+                                                            taxon2code2count,
+                                                            tree=t1,
+                                                            identity_scale=False,
+                                                            show_labels=True,
+                                                            column_scale=True,
+                                                            as_float=False,
+                                                            rotate=True)
+                style1.rotation = 90
+                path1 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
+                asset_path1 = '/temp/ortho_tree1.svg'
+                tree1.render(path1, dpi=800, h=600, tree_style=style1)
+                envoi = True
+
+
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = transporters_form()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/transporters_superfam.html', locals())
+
+
+
+
+
+@login_required
+def blast_sets(request, biodb):
+    import ete_motifs
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    sets_form = blast_sets_form(biodb)
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+        form = sets_form(request.POST)
+        if form.is_valid():
+            import blast_heatmap
+            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+            hmm_sets = form.cleaned_data['blast_set']
+            score_cutoff = form.cleaned_data['score_cutoff']
+            query_coverage_cutoff = form.cleaned_data['query_coverage_cutoff']
+            hit_coverage_cutoff = form.cleaned_data['hit_coverage_cutoff']
+
+            counts = request.POST['counts']
+
+
+            print 'detailed, counts', counts
+            if counts == 'detailed':
+                blast_set_filter = '"'+'","'.join(hmm_sets)+'"'
+
+                gene2taxon2score, gene_list = blast_heatmap.get_multiple_set_profiles(biodb,
+                                                                              hmm_sets,
+                                                                              'bitscore',
+                                                                              score_cutoff,
+                                                                              query_coverage_cutoff,
+                                                                              hit_coverage_cutoff)
+                if hmm_sets == 'flagellum':
+                    gene_list = ['Flg_fliE','Flg_flgC', 'Flg_flgB','Flg_sctJ_FLG','Flg_sctN_FLG','Flg_sctQ_FLG','Flg_sctR_FLG',
+                                 'Flg_sctS_FLG','Flg_sctT_FLG','Flg_sctU_FLG','Flg_sctV_FLG']
+
+                print gene2taxon2score, gene_list
+
+                sql = 'select accession, t1.name from blast.blast_sets t1 inner join blast.blast_sets_entry t2 on t1.set_id=t2.set_id ' \
+                      ' inner join blast.blast_db t3 on t2.seq_id=t3.seq_id where t1.name in (%s) order by t1.name;' % (blast_set_filter)
+
+                ordered_gene_list = []
+                for row in server.adaptor.execute_and_fetchall(sql):
+                    ordered_gene_list.append('%s (%s)' % (row[0], row[1]))
+
+                tree1, style1 = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                            ordered_gene_list,
+                                                            gene2taxon2score,
+                                                            identity_scale=True,
+                                                            show_labels=True,
+                                                            column_scale=True)
+
+                path1 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
+                asset_path1 = '/temp/ortho_tree1.svg'
+                tree1.render(path1, dpi=800, h=600, tree_style=style1)
+
+
+                gene2taxon2score2, gene_list2 = blast_heatmap.get_multiple_set_profiles(biodb,
+                                                                              hmm_sets,
+                                                                              'query_coverage',
+                                                                              score_cutoff,
+                                                                              query_coverage_cutoff,
+                                                                              hit_coverage_cutoff)
+
+
+                tree2, style2 = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                            gene_list2,
+                                                            gene2taxon2score2,
+                                                            identity_scale=True,
+                                                            show_labels=True,
+                                                            column_scale=True)
+
+                path2 = settings.BASE_DIR + '/assets/temp/ortho_tree2.svg'
+                asset_path2 = '/temp/ortho_tree2.svg'
+                tree2.render(path2, dpi=800, h=600, tree_style=style2)
+
+                gene2taxon2score3, gene_list3 = blast_heatmap.get_multiple_set_profiles(biodb,
+                                                                              hmm_sets,
+                                                                              'locus_tag',
+                                                                              score_cutoff,
+                                                                              query_coverage_cutoff,
+                                                                              hit_coverage_cutoff)
+
+
+                tree3, style3 = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                            gene_list3,
+                                                            gene2taxon2score3,
+                                                            identity_scale=False,
+                                                            show_labels=True,
+                                                            column_scale=False)
+
+                path3 = settings.BASE_DIR + '/assets/temp/ortho_tree3.svg'
+                asset_path3 = '/temp/ortho_tree3.svg'
+                tree3.render(path3, dpi=800, h=600, tree_style=style3)
+
+                gene2taxon2score4, gene_list4 = blast_heatmap.get_multiple_set_profiles(biodb,
+                                                                              hmm_sets,
+                                                                              'identity',
+                                                                              score_cutoff,
+                                                                              query_coverage_cutoff,
+                                                                              hit_coverage_cutoff)
+
+
+                tree4, style4 = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                            gene_list4,
+                                                            gene2taxon2score4,
+                                                            identity_scale=True,
+                                                            show_labels=True,
+                                                            column_scale=True)
+
+                path4 = settings.BASE_DIR + '/assets/temp/ortho_tree4.svg'
+                asset_path4 = '/temp/ortho_tree4.svg'
+                tree4.render(path4, dpi=800, h=600, tree_style=style4)
+
+
+                gene2taxon2score5, gene_list5 = blast_heatmap.get_multiple_set_profiles(biodb,
+                                                                              hmm_sets,
+                                                                              'evalue',
+                                                                              score_cutoff,
+                                                                              query_coverage_cutoff,
+                                                                              hit_coverage_cutoff)
+
+
+                tree5, style5 = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                            gene_list5,
+                                                            gene2taxon2score5,
+                                                            identity_scale=False,
+                                                            show_labels=True,
+                                                            column_scale=True,
+                                                                     as_float=True)
+
+                path5 = settings.BASE_DIR + '/assets/temp/ortho_tree5.svg'
+                asset_path5 = '/temp/ortho_tree5.svg'
+                tree5.render(path5, dpi=800, h=600, tree_style=style5)
+
+                envoi = True
+            else:
+                from ete2 import Tree
+                sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
+                           ' where t2.name="%s";' % biodb
+                server, db = manipulate_biosqldb.load_db(biodb)
+                tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
+
+                acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
+                filter = '"' + '","'.join(acc_list) + '"'
+                sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
+                taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
+                t1 = Tree(tree)
+                R = t1.get_midpoint_outgroup()
+                t1.set_outgroup(R)
+                t2 = t1.prune(taxon_list)
+                t1.ladderize()
+
+                set2taxon2count = blast_heatmap.get_multiple_set_counts(biodb,
+                                                                        hmm_sets,
+                                                                        score_cutoff,
+                                                                        query_coverage_cutoff,
+                                                                        hit_coverage_cutoff)
+
+                tree1, style1 = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                            hmm_sets,
+                                                            set2taxon2count,
+                                                                     tree=t1,
+                                                            identity_scale=False,
+                                                            show_labels=True,
+                                                            column_scale=True,
+                                                            as_float=False,
+                                                            rotate=True)
+                style1.rotation = 90
+                path1 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
+                asset_path1 = '/temp/ortho_tree1.svg'
+                tree1.render(path1, dpi=800, h=600, tree_style=style1)
+                envoi = True
+
+
+
+
+
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = sets_form()  # Nous créons un formulaire vide
+
+    return render(request, 'chlamdb/blast_sets_profiles.html', locals())
+
+
 @login_required
 def hmm(request, biodb):
     import ete_motifs
@@ -8639,6 +9503,7 @@ def kegg_pathway_heatmap(request, biodb):
         form = pathway_form(request.POST)
         if form.is_valid():
             import pathway_heatmap
+            from ete2 import Tree
             #if request.method == 'POST':  # S'il s'agit d'une requête POST
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
@@ -8656,9 +9521,18 @@ def kegg_pathway_heatmap(request, biodb):
             server, db = manipulate_biosqldb.load_db(biodb)
             tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
 
+            acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
+            filter = '"' + '","'.join(acc_list) + '"'
+            sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
+            taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
+            t1 = Tree(tree)
+            R = t1.get_midpoint_outgroup()
+            t1.set_outgroup(R)
+            t2 = t1.prune(taxon_list)
+            t1.ladderize()
 
             tree, style = pathway_heatmap.plot_pathway_heatmap(biodb,
-                            tree,
+                            t1,
                             modules,
                             taxon_id_list = [],
                             rotate=True)
@@ -8749,6 +9623,7 @@ def kegg_module(request, biodb):
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         form = module_overview_form(request.POST)
         if form.is_valid():
+            import module_heatmap
             #if request.method == 'POST':  # S'il s'agit d'une requête POST
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
@@ -8807,6 +9682,12 @@ def kegg_module(request, biodb):
                                               category2maps,
                                               pathway_category2taxon2map)
 
+            from ete2 import Tree, TreeStyle
+
+            ts = TreeStyle()
+            ts.show_leaf_name = True
+            ts.rotation = 90
+
 
             #except:
             #    tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, merged_dico)
@@ -8815,13 +9696,13 @@ def kegg_module(request, biodb):
                 big = True
                 path = settings.BASE_DIR + '/assets/temp/metabo_tree.png'
                 asset_path = '/temp/metabo_tree.png'
-                tree.render(path, dpi=1200, h=600)
+                tree.render(path, dpi=1200, h=600, tree_style=ts)
             else:
                 big = False
                 path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
                 asset_path = '/temp/metabo_tree.svg'
 
-                tree.render(path, dpi=800, h=600)
+                tree.render(path, dpi=800, h=600, tree_style=ts)
 
             envoi = True
 
@@ -8835,111 +9716,68 @@ def module2heatmap(request, biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    comp_metabo_form = make_metabo_from(biodb)
+    comp_metabo_form = make_kegg_form(biodb)
 
     if request.method == 'POST':  # S'il s'agit d'une requête POST
-        form = AnnotForm(request.POST)  # Nous reprenons les données
+        form = comp_metabo_form(request.POST)  # Nous reprenons les données
         if form.is_valid():
+            import pathway_heatmap
             import biosql_own_sql_tables
             import ete_motifs
+            from ete2 import Tree
 
-            module_list = [i.rstrip() for i in form.cleaned_data['orthogroups'].rstrip().split('\n')]
-
-            sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
-
-            database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
-
-            taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
-
-
-            sql_category2maps = 'select module_sub_cat,module_name,description from enzyme.kegg_module;'
-
-            data = server.adaptor.execute_and_fetchall(sql_category2maps,)
-
-            print data
-            with open('/home/trestan/tmp/biodblog/biodb.log', 'a') as f:
-                f.write(str(module_list)+ '\n')
-
-
-
-            category2maps={}
-            for one_map in data:
-
-                if not one_map[1] in module_list:
-                    continue
-                if one_map[0] not in category2maps:
-                    category2maps[one_map[0]] = [[one_map[1], one_map[2]]]
-                else:
-                    category2maps[one_map[0]].append([one_map[1], one_map[2]])
-
-            print "category2maps", category2maps
-
-            sql = 'select distinct module_name,module_sub_sub_cat from enzyme.kegg_module;'
-            module2sub_category = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-            module_filter = '"' + '","'.join(module_list) + '"'
-
-            pathway_category2taxon2map = {}
-            sql = 'select B.module_sub_cat,A.taxon_id,B.module_name,A.n,B.description from ' \
-                                ' (select taxon_id, module_id, count(*) as n from ' \
-                                ' (select distinct taxon_id,ko_id from enzyme.locus2ko_%s) t1 ' \
-                                ' inner join enzyme.module2ko as t2 on t1.ko_id=t2.ko_id group by taxon_id, module_id) A ' \
-                                ' inner join enzyme.kegg_module as B on A.module_id=B.module_id where B.module_name in (%s);' % (biodb, module_filter)
-
+            pathway_category = form.cleaned_data['pathway_choice']
+            pathway_filter = '"' + '","'.join(pathway_category) + '"'
+            sql = 'select pathway_name from enzyme.kegg_pathway where description in (%s);' % (pathway_filter)
             print sql
-            pathway_data = server.adaptor.execute_and_fetchall(sql,)
+            pathways = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
-            with open('/home/trestan/tmp/biodblog/biodb.log', 'a') as f:
-                f.write(str(pathway_data)+ '\n')
+            module_category = form.cleaned_data['module_choice']
+            module_filter = '"' + '","'.join(module_category) + '"'
+            sql = 'select module_name from enzyme.kegg_module where description in (%s);' % (module_filter)
+            print sql
+            modules = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
-            all_maps = []
-            category2maps = {}
-            # pathway cat 2 taxon_id 2 pathway_map 2 [count, pathway description]
-            pathway_category2taxon2map = {}
-            for one_row in pathway_data:
-                # first pathway category
-                if one_row[0] not in pathway_category2taxon2map:
-                    category2maps[one_row[0]] = [[one_row[2],one_row[4]]]
-                    all_maps.append(one_row[2])
-                    pathway_category2taxon2map[one_row[0]] = {}
-                    pathway_category2taxon2map[one_row[0]][one_row[1]] = {}
-                    pathway_category2taxon2map[one_row[0]][one_row[1]][one_row[2]] = one_row[3:]
-                else:
+            sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
+                       ' where t2.name="%s";' % biodb
+            server, db = manipulate_biosqldb.load_db(biodb)
+            tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
 
-                    if one_row[2] not in all_maps:
-                        category2maps[one_row[0]].append([one_row[2],one_row[4]])
-                        all_maps.append(one_row[2])
-                    # if new taxon
-                    if one_row[1] not in pathway_category2taxon2map[one_row[0]]:
-                        pathway_category2taxon2map[one_row[0]][one_row[1]] = {}
+            acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
+            filter = '"' + '","'.join(acc_list) + '"'
+            sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
+            taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
+            t1 = Tree(tree)
+            R = t1.get_midpoint_outgroup()
+            t1.set_outgroup(R)
+            t2 = t1.prune(taxon_list)
+            t1.ladderize()
 
-                        pathway_category2taxon2map[one_row[0]][one_row[1]][one_row[2]] = one_row[3:]
-                    # if new map for existing taxon
-                    else:
 
-                        pathway_category2taxon2map[one_row[0]][one_row[1]][one_row[2]] = one_row[3:]
+            print 'modules', modules
+            print 'pathays', pathways
 
-            tree = ete_motifs.pathways_heatmapV2(biodb,
-                                              category2maps,
-                                              pathway_category2taxon2map)
 
+            tree, style = pathway_heatmap.plot_module_and_pathway_combinaison_heatmap(biodb,
+                                                                                        t1,
+                                                                                        pathways,
+                                                                                        modules,
+                                                                                        [],
+                                                                                        rotate=True)
 
             big = False
             path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
             asset_path = '/temp/metabo_tree.svg'
 
-            from ete2 import Tree, TreeStyle
+            style.show_leaf_name = False
+            style.rotation = 90
 
-            ts = TreeStyle()
-            ts.show_leaf_name = True
-            ts.rotation = 90
-
-            tree.render(path, dpi=200, w=900, tree_style=ts)
+            tree.render(path, dpi=200, w=900, tree_style=style)
 
             envoi = True
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = AnnotForm()  # Nous créons un formulaire vide
+        form = comp_metabo_form()  # Nous créons un formulaire vide
 
     return render(request, 'chlamdb/module2heatmap.html', locals())
 

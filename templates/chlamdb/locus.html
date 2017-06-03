@@ -20,7 +20,7 @@
 <!--<script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>-->
 <!--<script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>-->
 <!--<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>-->
-
+<script src="https://wzrd.in/bundle/feature-viewer@0.1.44"></script>
 
 
 <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
@@ -102,6 +102,10 @@
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastnr' biodb data.1 %}', 'orthoIDframe'); return false">Blast RS <span class="badge">{{n_blastnr_hits}}</span></a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' biodb data.1 %}', 'orthoIDframe'); return false">Blast SP <span class="badge">{{n_swissprot_hits}}</span></a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'interactions' biodb data.1 %}', 'orthoIDframe'); return false">Interactions</a></li>
+                {%if closest_phylo%}
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' biodb data.0 %}', 'orthoIDframe'); return false">refseq_swissprot_tree</a></li>
+
+                {%endif %}
 
             </ul>
             <div id="my-tab-content" class="tab-content">
@@ -382,6 +386,11 @@
                             {%endif%}
 
                             <h3>Domains</h3>
+
+
+                            <div id="div_features" style="margin-top: 1px; width: 95%"></div>
+
+
                             <table>
                                 {%if interpro_data %}
                                    <tr>
@@ -918,4 +927,38 @@ $(document).ready(function() {
 } );
 
 </script>
+
+
+<script>
+
+var FeatureViewer = require("feature-viewer");
+//Create a new Feature Viewer and add some rendering options
+
+window.onload = function() {
+    //Create a new Feature Viewer and add some rendering options
+    var ft2 = new FeatureViewer("{{ data.13 }}","#div_features", {
+        showAxis: true,
+        showSequence: false,
+        brushActive: false,
+        toolbar:false,
+        bubbleHelp:true,
+        zoomMax:1
+                });
+
+
+    //Beside positions of each element, you can also give a specific description, which will appears in the tooltip when mouse hover, and a specific ID, for example to link a click event on the feature with something else in your project.
+
+    {{features_js|safe}}
+
+    ft2.on('all',function(name,data){var obj = {name: name, data: data};if(inIframe()){ parent.postMessage(obj, "*") }})
+    ft2.onAll(function(name,data){
+        console.log(arguments);
+    });
+
+
+};
+function inIframe(){try{return window.self!==window.top}catch(e){return true}}
+</script>
+
+
 </html>

@@ -42,7 +42,7 @@
                             <div class="panel-heading" style="width:100%">
                                 <h3 class="panel-title">Help</h3>
                             </div>
-                            <p style="margin: 10px 10px 10px 10px">Get annotations from a list of orthogroups (comma sep?)</p>
+                            <p style="margin: 10px 10px 10px 10px">Get annotations from a list of locus list (tab sep)</p>
                         </div>
 
                         {% csrf_token %}
@@ -69,6 +69,9 @@
                                 <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
                                 <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+
+                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{biodb}}{{fasta_url|safe}}'">fasta aa</button>
+
                                 <br/>
                             </div>
 
@@ -90,7 +93,9 @@
                                     <th>COG ID</th>
                                         <th>COG category</th>
                                         <th>COG description</th>
+                                        <th>InterproScan</th>
                                     </tr>
+
                                 </thead>
 
                                 {% for value in locus_annot %}
@@ -108,7 +113,19 @@
                                         <td>{{value.9|safe}}</td>
                                         <td>{{value.10|safe}}</td>
                                         <td>{{value.11|safe}}</td>
-                                        <td>{{value.12|safe}}</td>
+
+                                        {% with locus2interpro|keyvalue:value.0 as interpro_data %}
+                                        <td>
+                                            {% for one_interpro in interpro_data %}
+                                            {% if one_interpro.0 != '-' %}
+                                                <a href="{% url 'fam' biodb one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                            {%else%}
+                                                {{one_interpro.0}}
+                                            {%endif%}
+                                                {{one_interpro.1}} </br>
+                                            {% endfor %}
+                                            {%endwith%}
+                                        </td>
                                     </tr>
                                 {% endfor %}
                             </table>

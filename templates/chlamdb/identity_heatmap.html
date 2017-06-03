@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+
+
+<html>
+<div id="container">
+
+    {% load static %}
+
+    <div id="sidebar">
+        {% include "chlamdb/menu.html" %}
+    </div>
+
+    <div id="header">
+        {% include "chlamdb/user.html" %}
+
+    </div>
+
+    <div id="content">
+        <nav>
+        <ul id="tabs" class="nav nav-tabs">
+            <li><a  href="{% url 'pairwiseid' biodb %}">Pairwise Identity</a></li>
+            <li class="active"><a>Heatmaps</a></li>
+        </ul>
+        </nav>
+
+        <div id="extract_form">
+            <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                  <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Help</h3>
+                  </div>
+                <p style="margin: 10px 10px 10px 10px">Hepatmap showing presence/absence of domain/orthologous group</p>
+            </div>
+
+
+                    <form action="{% url "identity_heatmap" biodb %}" method="post">
+                        {% csrf_token %}
+                        {{ form_venn.as_p }}
+                    <input type="submit" name="venn" value="Get heatmap" id="venn_button" />
+                    </form>
+
+        </div>
+
+         {% if envoi %}
+            {% if not small%}
+            <img src="{% static asset_path %}" alt="heatmap" style="width:90%;">
+            {% else%}
+            <img src="{% static asset_path %}" alt="heatmap" style="width:50%;">
+            {% endif %}
+         {% endif %}
+
+    </div>
+
+</div>
+<div id="footer"></div>
+
+
+</body>
+</html>

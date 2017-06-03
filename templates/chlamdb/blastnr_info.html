@@ -50,7 +50,7 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th id="entete_locus">Orthogroup</th>
+
                                     <th id="entete_locus">Locus</th>
                                     <th style="width:10px">C</th>
                                     <th style="width:70px">COGn</th>
@@ -64,6 +64,11 @@
                                     <th id="entete_n">TM</th>
                                     <th id="entete_n">SP</th>
                                     <th id="entete_product">Product</th>
+                                    <th id="entete_locus">Hit</th>
+                                    <th id="entete_n">KD</th>
+                                    <th id="entete_locus">Organism</th>
+                                    <th id="entete_gene">Identity</th>
+                                    <th id="entete_gene">E-value</th>
 
 
                                 </tr>
@@ -73,7 +78,6 @@
                                 {%for values in locus2annot%}
                                 <tr>
                                     <td>{{values.0}}</td>
-                                    <td>{{values.1}}</td>
                                     <td><a href="{% url 'locusx' biodb values.2 True %}" target="_top">{{values.2}}</a></td>
                                     <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
                                     {% with locus_tag2cog_name|keyvalue:values.2 as name %}
@@ -126,6 +130,13 @@
                                     <td>{{values.10}}</td>
                                     <td>{{values.11}}</td>
                                     <td>{{values.12}}</td>
+                                    {% with locus_tag2blastnr_BBH|keyvalue:values.2 as blastnr_data %}
+                                    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{blastnr_data.0}}">{{blastnr_data.0}}</a></td>
+                                    <td>{{blastnr_data.1|first}}</td>
+                                    <td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{blastnr_data.3}}" target="_top">{{blastnr_data.2}}</a></td>
+                                    <td>{{blastnr_data.5}}</td>
+                                    <td>{{blastnr_data.4}}</td>
+                                    {% endwith %}
 
                                 </tr>
 

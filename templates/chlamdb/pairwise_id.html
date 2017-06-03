@@ -21,7 +21,8 @@
 
         <nav>
         <ul id="tabs" class="nav nav-tabs">
-            <li class="active"><a href="{% url 'pairwiseid' biodb %}">COG categories barchart</a></li>
+            <li class="active"><a>Pairwise Identity</a></li>
+            <li><a href="{% url 'identity_heatmap' biodb %}">Heatmaps</a></li>
         </ul>
         </nav>
 
@@ -30,9 +31,7 @@
             <div class="panel-heading" style="width:100%">
                 <h3 class="panel-title">Help</h3>
             </div>
-            <p style="margin: 10px 10px 10px 10px">Compare Cog categories between genomes. <br>
-                Click on bars to get the corresponding locus.<br>
-                Click on labels to get venn diagram of the category (max 6 species will be diplayed).<br>
+            <p style="margin: 10px 10px 10px 10px">Barchart blastnr hits <br>
             </p>
         </div>
 
@@ -44,9 +43,19 @@
     </form>
 
     {% if envoi %}
+        <ul id="tabs2" class="nav nav-tabs" data-tabs="tabs">
+            <li class="active"><a href="#tab1" data-toggle="tab">ID distrib</a></li>
+            <li><a href="#tab2" data-toggle="tab">ID Profile</a></li>
+        </ul>
 
-        <object type="image" data="{% static asset_path1 %}" id="plot"></object>
-
+        <div id="my-tab-content" class="tab-content">
+            <div class="tab-pane active" id="tab1">
+                <object type="image" data="{% static asset_path1 %}" id="plot"></object>
+            </div>
+            <div class="tab-pane" id="tab2">
+                <object type="image/svg+xml" data="{% static asset_path2 %}" id="inter_tree4" style="position: relative; top: 10px; left: 10px;"></object>
+            </div>
+        </div>
     {% endif %}
 
     </div>
