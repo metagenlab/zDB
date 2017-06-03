@@ -12,6 +12,16 @@ def gi(ncbi_term, database="nuccore", retmax=20):
 
     return record["IdList"]
 
+def species_name2taxon_id(species_name):
+    from socket import error as SocketError
+    import errno
+    handle = Entrez.esearch(db="taxonomy", term=species_name)
+    record1 = Entrez.read(handle)
+    try:
+        ncbi_id = record1['IdList'][0]
+        return ncbi_id
+    except:
+        return False
 
 def gi2taxon_id(gi_list, database="protein"):
     from socket import error as SocketError
@@ -31,7 +41,9 @@ def gi2taxon_id(gi_list, database="protein"):
     gi2taxon = {}
     try:
         for i in record:
-            gi2taxon[i['Gi']] = i['TaxId']
+            # i['Gi']
+            #print i
+            gi2taxon[i['AccessionVersion']] = i['TaxId']
     except RuntimeError:
         gi2taxon_id(gi_list, database=database)
 
@@ -87,6 +99,7 @@ def gi2description(ncbi_gi_list, db="protein"):
     # get link from genbank 2 refseq
     match = False
     while not match:
+        #print ncbi_gi_list
         handle = Entrez.efetch(db=db, id=','.join(ncbi_gi_list), rettype="gb", retmode="text")
 
         try:
@@ -159,13 +172,14 @@ def accession2description(ncbi_id_list, db="protein"):
 def accession2full_taxonomic_path(accession_list, database="nucleotide"):
     import sequence_id2scientific_classification
 
-    taxon_id_list = accession2taxon_id(accession_list, database).values()
+    accession2taxon = accession2taxon_id(accession_list, database)
+    taxon_id_list = accession2taxon.values()
 
     #print 'taxon_id list',
 
     classif = sequence_id2scientific_classification.taxon_id2scientific_classification(taxon_id_list)
 
-    return classif
+    return classif, accession2taxon
 
 if __name__ == '__main__':
     import argparse
@@ -179,9 +193,12 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    species_name2taxon_id("Gemmata obscuriglobus baba")
+    import sys
+    sys.exit()
 
     if args.full_path:
-        dico = accession2full_taxonomic_path(args.seq_id_genbank, args.ncbi_database)
+        taxon2path, accession2taxon = accession2full_taxonomic_path(args.seq_id_genbank, args.ncbi_database)
         # {'superkingdom': 'Bacteria',
         # 'no rank': 'Chlamydia/Chlamydophila group',
         # 'phylum': 'Chlamydiae',
@@ -192,9 +209,9 @@ if __name__ == '__main__':
         # 'genus': 'Chlamydia',
         # }
         #print "superkingdom\tphylum\tclass\torder\tfamily\tgenus\tspecies"
-        if dico:
-            for accession in dico:
-                data = dico[accession]
+        if taxon2path:
+            for accession in taxon2path:
+                data = taxon2path[accession]
                 try:
                     superkingdom = data["superkingdom"]
                 except:
@@ -223,8 +240,15 @@ if __name__ == '__main__':
                     species = data["species"]
                 except:
                     species = "-"
-
-                print "%s\t%s\t%s\t%s\t%s\t%s\t%s" % (superkingdom, phylum, class_, order, family, genus, species)
+                print "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (accession2taxon.keys()[accession2taxon.values().index(accession)],
+                                                              accession,
+                                                              superkingdom,
+                                                              phylum,
+                                                              class_,
+                                                              order,
+                                                              family,
+                                                              genus,
+                                                              species)
         else:
             print args.seq_id_genbank
     elif args.description:

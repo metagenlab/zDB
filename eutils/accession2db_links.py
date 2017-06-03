@@ -5,6 +5,29 @@ from Bio import Entrez
 
 Entrez.email = "trestan.pillonel@unil.ch"
 
+def sequence2uniprot_id(sequence):
+
+    link = "http://research.bioinformatics.udel.edu/peptidematch/webservices/peptidematch_rest?query=%s" % (sequence)
+
+    from StringIO import StringIO
+    import urllib2
+    try:
+        data = urllib2.urlopen(link).read().decode('utf-8')
+    except urllib2.URLError:
+        print 'echec', link
+        return False
+    for row in data.split('\n'):
+        if len(row) == 0:
+            continue
+        elif row[0] == '#':
+            continue
+        elif len(row.split('\t')) == 3:
+            return False
+        else:
+            return row.split('\t')[0]
+    #rec = StringIO(data)
+    #print rec
+
 def gi2accession(ncbi_id):
 
     # https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=663070995,568815587&rettype=acc
@@ -108,7 +131,7 @@ def uniprot_record2db_refs(record):
                 ref_name2ref_id[ref_dat[0]].append(ref_dat[1])
     return ref_name2ref_id
 
-def ncbi_accession2uniprotid(ncbi_accession):
+def ncbi_accession2uniprotid(ncbi_accession, gene=False, organism=False):
     '''
     :param genbank/refseq protein accession
     :return: unirpot accession
@@ -116,8 +139,13 @@ def ncbi_accession2uniprotid(ncbi_accession):
 
     import urllib2
     from urllib2 import URLError
-
-    link = "http://www.uniprot.org/uniprot/?query=%s&format=tab" % (ncbi_accession)
+    if not gene:
+        link = "http://www.uniprot.org/uniprot/?query=%s&format=tab" % (ncbi_accession)
+    else:
+        if not organism:
+            link = "http://www.uniprot.org/uniprot/?query=gene:%s&format=tab" % (ncbi_accession)
+        else:
+            link = "http://www.uniprot.org/uniprot/?query=organism:%s+gene:%s&format=tab" % (organism, ncbi_accession)
     req = urllib2.Request(link)
     try:
         page = urllib2.urlopen(req)
@@ -220,7 +248,8 @@ def get_whole_db_uniprot_crossref(biodb):
     sql3 = 'select locus_tag, protein_id from biosqldb.orthology_detail_%s where protein_id not like "%%%%CHUV%%%%"' % biodb
     sql4 = 'select locus_tag,t2.seqfeature_id from locus2seqfeature_id_%s t1 inner join uniprot_annotation_%s t2' \
            ' on t1.seqfeature_id=t2.seqfeature_id group by locus_tag;' % (biodb, biodb)
-
+    sql5 = 'select locus_tag, organism from biosqldb.orthology_detail_%s' % biodb
+    sql6 = 'select locus_tag, translation from biosqldb.orthology_detail_%s' % biodb
     cursor.execute(sql1, )
     locus2seqfeature_id = manipulate_biosqldb.to_dict(cursor.fetchall())
 
@@ -232,6 +261,12 @@ def get_whole_db_uniprot_crossref(biodb):
 
     cursor.execute(sql4, )
     locus2uniprot_id = manipulate_biosqldb.to_dict(cursor.fetchall())
+
+    cursor.execute(sql5, )
+    locus2organism = manipulate_biosqldb.to_dict(cursor.fetchall())
+
+    cursor.execute(sql6, )
+    locus2sequence = manipulate_biosqldb.to_dict(cursor.fetchall())
 
     for i, locus in enumerate(locus2protein_id):
         print "%s -- %s : %s / %s" % (locus, locus2protein_id[locus],i, len(locus2protein_id))
@@ -247,14 +282,25 @@ def get_whole_db_uniprot_crossref(biodb):
                 old_locus = locus2old_locus[locus]
             except KeyError:
                 print 'no old locus for %s' % locus
-                continue
-            uniprot_id = ncbi_accession2uniprotid(old_locus)
+                uniprot_id = sequence2uniprot_id(locus2sequence[locus])
+                print 'tried to match with sequence: %s' % uniprot_id
+                if not uniprot_id:
+                    continue
+            genus = locus2organism[locus].split(' ')[0]
+            print 'trying with old_locus_tag'
+            uniprot_id = ncbi_accession2uniprotid(old_locus, gene=True, organism=genus)
+            if not uniprot_id:
+                uniprot_id = sequence2uniprot_id(locus2sequence[locus])
+                print 'tried to match with sequence: %s' % uniprot_id
         if uniprot_id:
             # insert uniprot_id into mysql table
             # 1. get seqfeatureid of the corresponding locus
             seqid = locus2seqfeature_id[locus]
-
-            uniprot_score, uniprot_status, go_data = uniprot_accession2go_and_status(uniprot_id)
+            try:
+                uniprot_score, uniprot_status, go_data = uniprot_accession2go_and_status(uniprot_id)
+            except:
+                print 'echec, continue'
+                continue
             # add go data
             if go_data:
                 for one_go in go_data:
@@ -365,7 +411,11 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    #seq = 'BMNKKTETGLRESMNKMRTSLGNFKNFRGVFSNDIGIDLGTANTLVYVRGKGIVLAEPSVVAVDSNTNEVLAVGHKAKAMLGRTPRKIHAVRPMKDGVIADFEVAEGMLKALIKRVTPSRSLFRPKILIAVPSGITGVEKRAVEDSALHAGAQEVILIEEPMAAAIGVDLPVHEPSANMIIDIGGGTTEIAIISLGGIVESRSLRIAGDEFDECIINYMRRTYNLMIGPRTAEEIKMTIGSAYPLGENELEMEVRGRDQVAGLPVTKRINSVEIRECLSEPIQQIIESVKLTLEKCPPELAADLVERGMVVAGGGALIKGLDKYLIKETGLPVILAQNPLLAVCLGTGKALEYLDKFKKRKATA'
+    #print sequence2uniprot_id(seq)
     get_whole_db_uniprot_crossref(args.biodb)
+    #uaccession = ncbi_accession2uniprotid('pc1161', True, organism='protochlamydia')
+    #print uaccession
     #accession2db_xrefs('15604941')
 
     #urecord = uniprot_id2record('O84081')

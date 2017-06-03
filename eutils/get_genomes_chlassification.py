@@ -35,13 +35,20 @@ def make_random_genome_selection(taxon_id2classification, rank_name, n_represent
 
     clade2taxons = {}
     # for each clade of the rank, get list of taxons
+    unclassified_count=1
     for taxon in taxon_id2classification:
+        # unnamed ranks
         if not rank_name in taxon_id2classification[taxon]:
-            continue
-        if taxon_id2classification[taxon][rank_name] not in clade2taxons:
-            clade2taxons[taxon_id2classification[taxon][rank_name]] = [taxon]
+            print 'not %s for %s!-----' % (rank_name, taxon_id2classification[taxon])
+            clade2taxons["unkown_%s" % unclassified_count] = [taxon]
+            unclassified_count+=1
+
         else:
-            clade2taxons[taxon_id2classification[taxon][rank_name]].append(taxon)
+        #    # named ranks
+            if taxon_id2classification[taxon][rank_name] not in clade2taxons:
+                clade2taxons[taxon_id2classification[taxon][rank_name]] = [taxon]
+            else:
+                clade2taxons[taxon_id2classification[taxon][rank_name]].append(taxon)
     keep = []
     for clade in clade2taxons:
         #print 'initial', clade2taxons[clade]
@@ -136,7 +143,10 @@ def taxon2genome_subset(ncbi_taxon,
                         print_only=True,
                         download_all=False):
 
-    taxonomy_dico = get_complete_genomes_taxonmy(ncbi_taxon, complete=complete, reference=reference, representative=representative)
+    taxonomy_dico = get_complete_genomes_taxonmy(ncbi_taxon,
+                                                 complete=complete,
+                                                 reference=reference,
+                                                 representative=representative)
 
     if print_only:
         if not show_all:
