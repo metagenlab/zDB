@@ -13,7 +13,7 @@ import pandas.rpy.common as com
 
 
 
-def density_plot(value_list_of_lists, label_list, header="", xlab="", ylab="", output_path="~/test.pdf", type="hist"):
+def density_plot(value_list_of_lists, label_list, header="", xlab="", ylab="", output_path="~/test.svg", type="hist"):
 
         import rpy2.robjects as robjects
         import rpy2.robjects.numpy2ri
@@ -29,7 +29,6 @@ def density_plot(value_list_of_lists, label_list, header="", xlab="", ylab="", o
             for value in value_list:
                 format_list.append([value, label])
         df = DataFrame(format_list, columns=['identity', 'comp'])
-        print df.as_matrix()
         #m = m.astype(float)
         robjects.r.assign('plot_data', pandas2ri.py2ri(df))
 
@@ -103,9 +102,6 @@ def basic_plot(values_x, values_y=False, header="", xlab="", ylab="", output_pat
         if values_y:
             b = np.asarray(values_y, dtype='float')
 
-            print len(a)
-            print len(b), '----'
-
             robjects.r.assign('values_x', numpy2ri.numpy2ri(a))
             robjects.r.assign('values_y', numpy2ri.numpy2ri(b))
 
@@ -113,17 +109,15 @@ def basic_plot(values_x, values_y=False, header="", xlab="", ylab="", output_pat
                 library(genoPlotR)
                 library(Cairo)
                 library(ggplot2)
-                print (length(values_x))
-                print (length(values_y))
+
 
                 library(plyr)
                 mu <- ddply(plot_data, "comp", summarise, identity.mean=median(identity))
                 print (mu)
-                print('mumu')
                 plot_data$identity <- as.numeric(plot_data$identity)
 
                 svg('%s',height=6,width=14)
-                plot(values_x, values_y, ylim=c(0,100))
+                plot(values_x, values_y, pch=20) # , ylim=c(0,100)
                 dev.off()
 
 
@@ -135,11 +129,62 @@ def basic_plot(values_x, values_y=False, header="", xlab="", ylab="", output_pat
                 library(genoPlotR)
                 library(Cairo)
                 library(ggplot2)
-                print (length(values_x))
 
                 svg('%s',height=7,width=7)
                 barplot(table(values_x), main="Conservation of predicted effectors in other genomes")
                 dev.off()
 
-
             ''' % (output_path))
+
+def identity_heatmap_plot(numpy_matrix, labels,
+                          header="",
+                          xlab="",
+                          ylab="",
+                          reverse=False,
+                          output_path="~/test.svg"):
+
+        import rpy2.robjects as robjects
+        import rpy2.robjects.numpy2ri
+        rpy2.robjects.numpy2ri.activate()
+        import rpy2.robjects.numpy2ri as numpy2ri
+        from pandas import DataFrame
+        from rpy2.robjects import pandas2ri
+        pandas2ri.activate()
+
+        robjects.r.assign('Mdata',numpy2ri.numpy2ri(numpy_matrix))
+        b = np.asarray(labels, dtype='str')
+        robjects.r.assign('labels',numpy2ri.numpy2ri(b))
+
+        if reverse:
+            plot = '''
+                cols <- rev(brewer.pal(9, "Blues"))
+                heatmap.2(100-as.matrix(Mdata), trace="none", key="True",col=cols,
+                na.rm=TRUE, density.info='none', cellnote=as.matrix(Mdata), notecol="black", labRow=labels, labCol=labels)
+            '''
+        else:
+            plot = '''
+                cols <- brewer.pal(9, "Blues")
+                heatmap.2(as.matrix(Mdata), trace="none", key="True",col=cols,
+                na.rm=TRUE, density.info='none', cellnote=as.matrix(Mdata), notecol="black", labRow=labels, labCol=labels)
+            '''
+
+
+        robjects.r('''
+            library(Cairo)
+            library(ggplot2)
+            library(gplots)
+            library(RColorBrewer)
+
+
+            h <- length(Mdata[,1])/4+8
+            w <- length(Mdata[,1])/2+8
+            print(h)
+            svg('%s',height=h,width=w)
+                par(oma = c(5, 0, 0, 8), xpd=TRUE)
+                par(mar = c(5,1,1,8))
+                par(cex.main=1,oma=c(22,0,0,20), xpd=TRUE, new=TRUE)
+                %s
+            dev.off()
+
+        ''' % (output_path, plot))
+

@@ -1,7 +1,11 @@
 #!/usr/bin/python
 
 
-def get_single_set_data(biodb, set_name,column="bitscore", bitscore_cutoff=0, query_coverage_cutoff=0):
+def get_multiple_set_profiles(biodb,
+                        set_list,column="bitscore",
+                        bitscore_cutoff=0,
+                        query_coverage_cutoff=0,
+                        hit_coverage_cut0ff=0):
 
     '''
 
@@ -13,36 +17,89 @@ def get_single_set_data(biodb, set_name,column="bitscore", bitscore_cutoff=0, qu
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select  from hmm_sets t1 inner join hmm_sets_entry t2 on t1.set_id=t2.set_id inner join hmm_hits_annotated_genome_chlamydia_04_16 t3 ' \
+    set_filter = '"'+'","'.join(set_list)+'"'
+
+    sql = 'select  from blast_sets t1 inner join blast_sets_entry t2 on t1.set_id=t2.set_id inner join blast_hits_annotated_genome_chlamydia_04_16 t3 ' \
           'on t2.hmm_id=t3.hmm_id inner join custom_tables.locus2seqfeature_id_chlamydia_04_16 t4 on t3.seqfeature_id=t4.seqfeature_id where t1.name="T3SS"'
 
-    sql = 'select t3.taxon_id,t4.name,%s from hmm.hmm_sets t1 ' \
-          ' inner join hmm.hmm_sets_entry t2 on t1.set_id=t2.set_id ' \
-          ' inner join hmm.hmm_hits_annotated_genome_%s t3 on t2.hmm_id=t3.hmm_id ' \
-          ' inner join hmm.hmm_profiles t4 on t2.hmm_id=t4.hmm_id ' \
-          ' inner join custom_tables.locus2seqfeature_id_chlamydia_04_16 t5 on t3.seqfeature_id=t5.seqfeature_id' \
-          ' where t1.name="%s" and bitscore>=%s and query_coverage>=%s order by bitscore;' % (column,
+    sql = 'select t3.taxon_id,t4.accession,%s,t1.name from blast.blast_sets t1 ' \
+          ' inner join blast.blast_sets_entry t2 on t1.set_id=t2.set_id ' \
+          ' inner join blast.blast_hits_annotated_genome_%s t3 on t2.seq_id=t3.seq_id ' \
+          ' inner join blast.blast_db t4 on t2.seq_id=t4.seq_id ' \
+          ' inner join custom_tables.locus2seqfeature_id_%s t5 on t3.seqfeature_id=t5.seqfeature_id' \
+          ' where t1.name in (%s) and bitscore>=%s and query_coverage>=%s and hit_coverage>=%s order by bitscore;' % (column,
                                                                             biodb,
-                                                                            set_name,
+                                                                            biodb,
+                                                                            set_filter,
                                                                             bitscore_cutoff,
-                                                                            query_coverage_cutoff)
+                                                                            query_coverage_cutoff,
+                                                                            hit_coverage_cut0ff)
 
     gene2taxon2score = {}
     gene_list = []
     data = server.adaptor.execute_and_fetchall(sql,)
     for row in data:
-        if row[1] not in gene_list:
-            gene_list.append(row[1])
-        if row[1] not in gene2taxon2score:
-            gene2taxon2score[row[1]] = {}
-            gene2taxon2score[row[1]][str(row[0])] = row[2]
+        gene_id = "%s (%s)" % (row[1],row[3])
+        if gene_id not in gene_list:
+            gene_list.append(gene_id)
+        if gene_id not in gene2taxon2score:
+            gene2taxon2score[gene_id] = {}
+            gene2taxon2score[gene_id][str(row[0])] = row[2]
         else:
-            if str(row[0]) not in gene2taxon2score[row[1]]:
-                gene2taxon2score[row[1]][str(row[0])] = row[2]
+            if str(row[0]) not in gene2taxon2score[gene_id]:
+                gene2taxon2score[gene_id][str(row[0])] = row[2]
             else:
                 print 'already present!!!!!!!'
                 continue
     return gene2taxon2score, gene_list
+
+def get_multiple_set_counts(biodb,
+                        set_list,
+                        bitscore_cutoff=0,
+                        query_coverage_cutoff=0,
+                        hit_coverage_cut0ff=0):
+
+    '''
+
+    :param biodb:
+    :param set_name:
+    :param score: should one of those:  bitscore, bias, evalue, query_coverage
+    :return:
+    '''
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    set_filter = '"'+'","'.join(set_list)+'"'
+
+    sql = 'select  from blast_sets t1 inner join blast_sets_entry t2 on t1.set_id=t2.set_id inner join blast_hits_annotated_genome_chlamydia_04_16 t3 ' \
+          'on t2.hmm_id=t3.hmm_id inner join custom_tables.locus2seqfeature_id_chlamydia_04_16 t4 on t3.seqfeature_id=t4.seqfeature_id where t1.name="T3SS"'
+
+    sql = 'select taxon_id,A.name, count(*) from (select t1.*,t4.* from blast.blast_sets t1 inner join blast.blast_sets_entry t2 ' \
+          ' on t1.set_id=t2.set_id inner join blast.blast_db t3 on t2.seq_id=t3.seq_id ' \
+          ' inner join blast.blast_hits_annotated_genome_%s t4 on t3.seq_id=t4.seq_id ' \
+          ' where t1.name in (%s) and bitscore>=%s and query_coverage>=%s and hit_coverage>=%s ' \
+          ' group by taxon_id,name,seq_id) A group by taxon_id,A.name;' % (biodb,
+                                                                      set_filter,
+                                                                      bitscore_cutoff,
+                                                                      query_coverage_cutoff,
+                                                                      hit_coverage_cut0ff)
+    print sql
+    set2taxon2count = {}
+    # taxon_id, set_name, count
+    data = server.adaptor.execute_and_fetchall(sql,)
+    for row in data:
+        taxon_id, set_name, count = row
+        if set_name not in set2taxon2count:
+            set2taxon2count[set_name] = {}
+            set2taxon2count[set_name][str(taxon_id)] = int(count)
+        else:
+            if str(row[0]) not in set2taxon2count[set_name]:
+                set2taxon2count[set_name][str(taxon_id)] = int(count)
+            else:
+                print 'already present!!!!!!!'
+                continue
+    return set2taxon2count
+
 
 
 def get_set_data(biodb,
@@ -56,7 +113,7 @@ def get_set_data(biodb,
 
     :param biodb:
     :param set_list: restrict analysis to specific sets (empty list mean all sets)
-    :param frequency: return ratio n genes identified/n genes iun the set
+    :param frequency: return ratio n genes identified/n genes in the set
     :param cutoff_percent: onle return presence absence data (1 and 0) given a cutoff percentage of the genes identified/genes in the set
     :param six_frame_translation: get data from the six fram translation analysis
     :return: dictionnary taxon2list of values OR taxon2set2value dictionnary

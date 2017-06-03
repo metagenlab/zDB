@@ -180,6 +180,9 @@ def print_circos_record_file(record_list, out_name = "circos_contigs.txt", draft
 
       try:
           for contig in draft_data[x]:
+              if contig[2] < contig[1]:
+                  print 'impossible contig limits!', contig
+                  continue
               print contig
               if contig[1] == contig[2]:
                   continue

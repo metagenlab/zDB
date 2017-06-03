@@ -18,13 +18,15 @@ class Locus2genoplotR():
                  reference_genbank,
                  target_genbank_list,
                  left_side=0,
-                 right_side=0):
+                 right_side=0,
+                 tblastx=False):
 
         from Bio import SeqRecord, SeqIO
         self.query_locus = query_locus
         self.target_genbank_list = target_genbank_list
         self.right_side = right_side
         self.left_side = left_side
+        self.tblastx = tblastx
 
         if type(reference_genbank) == str:
             self.reference_record = [i for i in SeqIO.parse(open(reference_genbank), 'genbank')]
@@ -272,7 +274,7 @@ class Locus2genoplotR():
             out_names.append(temp_ref.name)
         return out_names
 
-    def record_list2blstn(self, record_list, min_identity):
+    def record_list2blast(self, record_list, min_identity):
         '''
 
         :param record_list:
@@ -293,7 +295,11 @@ class Locus2genoplotR():
             print 'formatting...'
             B.format_database()
             print 'blasting...'
-            blast_file = B.run_blastn(min_identity=min_identity)
+            if not self.tblastx:
+                blast_file = B.run_blastn(min_identity=min_identity)
+            else:
+                blast_file = B.run_tblastx()
+
             blast_result_files.append(blast_file)
 
         return blast_result_files
@@ -458,7 +464,7 @@ class Locus2genoplotR():
                                main="",
                                dna_seg_scale=TRUE,
                                scale=TRUE,
-                               global_color_scheme=c("per_id", "increasing", "grey", 0.5),
+                               global_color_scheme=c("per_id", "increasing", "grey", 0.99),
                                annotations=annots, annotation_height=0.4, annotation_cex=0.5,
                                override_color_schemes=TRUE,
                                plot_new=FALSE)
@@ -469,9 +475,8 @@ class Locus2genoplotR():
                            comparisons=comp_list,
                            main="",
                            scale=TRUE,
-                           global_color_scheme=TRUE,
-                           dna_seg_scale=TRUE,
-                           scale=FALSE)
+                           global_color_scheme=c("per_id", "increasing", "grey", 0.99),
+                           dna_seg_scale=TRUE)
             '''
 
         robjects.r('''
@@ -531,7 +536,7 @@ class Locus2genoplotR():
                 fake_row1 <- comp_list[[i]][1,]
                 fake_row2 <- comp_list[[i]][1,]
 
-                fake_row1$per_id <- 50
+                fake_row1$per_id <- 20
                 fake_row2$per_id <- 100
                 fake_row1$aln_len <- 1
                 fake_row2$aln_len <- 1
@@ -549,33 +554,37 @@ class Locus2genoplotR():
                 fake_row1$end2 <- 2
                 fake_row2$end2 <- 2
 
-                #comp_list[[i]] <- rbind(comp_list[[i]], fake_row1, fake_row1)
+                comp_list[[i]] <- rbind(comp_list[[i]], fake_row1, fake_row1)
 
                 comp_list[[i]]$col <- apply_color_scheme(comp_list[[i]]$per_id, "grey")
 
                 all_id <- c(all_id,comp_list[[i]]$per_id)
             }
 
-            rng <- range(all_id)
+            rng <- c(0.20,1)#range(all_id)
+            print (rng)
 
-            if (diff(rng) == 0){
-              col <- rep(grey(0.5), length(all_id))
-            } else {
-              level <- 0.75-((all_id-rng[1])/diff(rng))*0.5
-              col <- grey(level)
-            }
+            #if (diff(rng) == 0){
+            #  col <- rep(grey(0.5), length(all_id))
+            #} else {
+            #  level <- 0.75-((all_id-rng[1])/diff(rng))*0.5
+            #  col <- grey(level)
+            #}
 
-            col <- grey(sort(unique(level)))
+            #col <- grey(sort(unique(level)))
 
-            transparency <- 0.5
+            breaks <- c(0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1)
+            col <- grey(breaks)
+            transparency <- 0.99
             tpc <- floor(transparency*256)
-
             tpc <- sprintf("%%X", tpc)
             if (nchar(tpc) == 1) tpc <- paste("0", tpc, sep="")
             col <- paste(col, tpc, sep="")
 
-            map <- makecmap(sort(unique(level)))
+            map <- makecmap(sort(unique(rng)), n=10)
+            print(map)
             map$colors<-col
+            print(col)
 
             map$include.lowest<-TRUE
             map$breaks <- rep("",length(map$colors)+1)
@@ -590,8 +599,8 @@ class Locus2genoplotR():
                annot #[idx[idx %% 4 == 0],]
              })
 
-
-            CairoPDF('test2.pdf',height=4,width=12)# 4,14 / 3.8 (yersinia)/2 (oxa)
+            height <- length(blast_list)*2.5
+            CairoPDF('test2.pdf',height=height,width=12)# 4,14 / 3.8 (yersinia)/2 (oxa)
 
             xlims <- list(c(1,50000), c(1,50000))
                 plot.new()
@@ -616,14 +625,17 @@ if __name__ == '__main__':
     parser.add_argument("-rs",'--right_side_window', type=int, help="right side window")
     parser.add_argument("-i",'--min_identity', type=int, help="minimum identity for blast", default=50)
     parser.add_argument("-sl",'--show_labels', action="store_false", help="do not show show labels")
+    parser.add_argument("-x",'--tblastx', action="store_true", help="execute tblastx and not blasn (6 frame translations)")
+
 
     args = parser.parse_args()
 
     L = Locus2genoplotR(args.locus,
-                    args.reference,
-                    args.query,
-                    left_side=args.left_side_window,
-                    right_side=args.right_side_window)
+                        args.reference,
+                        args.query,
+                        left_side=args.left_side_window,
+                        right_side=args.right_side_window,
+                        tblastx=args.tblastx)
 
     if args.query:
         L.blast_target_genbank()
@@ -641,7 +653,7 @@ if __name__ == '__main__':
             tmp_name = re.sub('-contig_48','', tmp_name)
             tmp_name = re.sub('subsp. pneumoniae','', tmp_name)
             names[i] = tmp_name
-        blast_result_files = L.record_list2blstn(all_records, args.min_identity)
+        blast_result_files = L.record_list2blast(all_records, args.min_identity)
         gbk_list = L.write_genbank_subrecords(all_records)
         print 'gbks', gbk_list
         L.record2multi_plot(gbk_list, blast_result_files, names, args.show_labels)

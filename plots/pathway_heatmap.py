@@ -1,9 +1,11 @@
 #!/usr/bin/python
 
-def plot_pathway_heatmap(biodb, ref_tree, pathway_list, taxon_id_list=[], rotate=False):
-    import manipulate_biosqldb
-    import ete_motifs
 
+
+
+
+def pathway_list2profile_dico(biodb, pathway_list, taxon_id_list=[], group_by_KO=True):
+    import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
@@ -24,31 +26,77 @@ def plot_pathway_heatmap(biodb, ref_tree, pathway_list, taxon_id_list=[], rotate
                                                                                            filter_2,
                                                                                            filter)
     else:
-        sql = 'select taxon_id,description,count(*) from (select distinct taxon_id,description,t3.pathway_id,t1.ko_id ' \
-              ' from enzyme.locus2ko_%s t1 inner join enzyme.pathway2ko t2 on t1.ko_id=t2.ko_id ' \
-              ' inner join enzyme.kegg_pathway as t3 on t2.pathway_id=t3.pathway_id ' \
-              ' where t3.pathway_name in (%s)) A group by taxon_id,pathway_id;' % (biodb,
-                                                                                           filter_2)
-    print sql    
+        if not group_by_KO:
+            sql = 'select taxon_id,description,count(*) from (select distinct taxon_id,description,t3.pathway_id,t1.ko_id ' \
+                  ' from enzyme.locus2ko_%s t1 inner join enzyme.pathway2ko t2 on t1.ko_id=t2.ko_id ' \
+                  ' inner join enzyme.kegg_pathway as t3 on t2.pathway_id=t3.pathway_id ' \
+                  ' where t3.pathway_name in (%s)) A group by taxon_id,pathway_id;' % (biodb,
+                                                                                               filter_2)
+        else:
+            sql = 'select taxon_id,description,count(*) from (select distinct taxon_id,description,t1.ko_id ' \
+                  ' from enzyme.locus2ko_%s t1 inner join enzyme.pathway2ko t2 on t1.ko_id=t2.ko_id ' \
+                  ' inner join enzyme.kegg_pathway as t3 on t2.pathway_id=t3.pathway_id ' \
+                  ' where t3.pathway_name in (%s)) A group by taxon_id,description;' % (biodb,
+                                                                                               filter_2)
+    print sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
 
 
     code2taxon2count = {}
-    cog_list = []
+    pathway_list = []
     for row in data:
         row = list(row)
         print row
-        if row[1] not in cog_list:
-            cog_list.append(row[1])
+        if row[1] not in pathway_list:
+            pathway_list.append(row[1])
         if row[1] not in code2taxon2count:
             code2taxon2count[row[1]] = {}
             code2taxon2count[row[1]][str(row[0])] = int(row[2])
         else:
             code2taxon2count[row[1]][str(row[0])] = int(row[2])
+    return pathway_list, code2taxon2count
+
+def plot_module_and_pathway_combinaison_heatmap(biodb,
+                                                ref_tree,
+                                                pathway_list,
+                                                module_list,
+                                                taxon_id_list=[],
+                                                group_by_KO=True,
+                                                rotate=False):
+    import manipulate_biosqldb
+    import ete_motifs
+    import module_heatmap
+
+    pathway_list, code2taxon2count_pathway = pathway_list2profile_dico(biodb, pathway_list, taxon_id_list=taxon_id_list,
+                                                                       group_by_KO=group_by_KO)
+    module_list, code2taxon2count_modules = module_heatmap.module_list2profile_dico(biodb, module_list, taxon_id_list=taxon_id_list)
+
+    merged_list = pathway_list + module_list
+    code2taxon2count_pathway.update(code2taxon2count_modules)
+
 
     tree2 = ete_motifs.multiple_profiles_heatmap(biodb,
-                                                cog_list,
+                                                merged_list,
+                                                code2taxon2count_pathway,
+                                                show_labels=True,
+                                                column_scale=True,
+                                                tree=ref_tree,
+                                                as_float=False,
+                                                rotate=rotate)
+    return tree2
+
+
+
+
+def plot_pathway_heatmap(biodb, ref_tree, pathway_list, taxon_id_list=[], rotate=False, group_by_KO=True):
+    import manipulate_biosqldb
+    import ete_motifs
+
+    pathway_list, code2taxon2count = pathway_list2profile_dico(biodb, pathway_list, taxon_id_list=taxon_id_list, group_by_KO=group_by_KO)
+
+    tree2 = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                pathway_list,
                                                 code2taxon2count,
                                                 show_labels=True,
                                                 column_scale=True,

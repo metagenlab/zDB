@@ -1184,12 +1184,15 @@ class Fasta2circos():
         with open('circos_samtools_depth_%s.txt' % i, 'w') as g:
             for contig in contig2coverage:
                 # split list by chunks of 1000
-                mychunks = chunks(contig2coverage[contig], window)
+                mychunks = [i for i in chunks(contig2coverage[contig], window)]
+                print 'depth size!!!', len(contig2coverage[contig]), '--------------------------------------'
+                print 'n chunks', len(mychunks)
+                print 'median depth all', all_contigs_median
                 for i, cov_list in enumerate(mychunks):
                     #print cov_list
                     median_depth = numpy.median(cov_list)
-                    if median_depth > (3*all_contigs_median):
-                        median_depth = 3*all_contigs_median
+                    if median_depth > (2*all_contigs_median):
+                        median_depth = 2*all_contigs_median
                     g.write("%s\t%s\t%s\t%s\n" % (contig, (i*window)+self.contigs_add[contig][0],
                                                   ((i*window)+window-1)+self.contigs_add[contig][0],
                                                   median_depth))

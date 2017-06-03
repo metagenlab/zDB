@@ -203,8 +203,7 @@ def plot_tree(ete2_tree,
               mysql_host="localhost",
               mysql_user="root",
               mysql_pwd="estrella3",
-              mysql_db="blastnr",
-              out_name='phylo.svg'):
+              mysql_db="blastnr"):
 
     import MySQLdb
     import manipulate_biosqldb
@@ -296,7 +295,8 @@ def plot_tree(ete2_tree,
     ts = TreeStyle()
     ts.show_leaf_name = False
     ts.show_branch_support = True
-    ete2_tree.render(out_name, tree_style=ts)
+    return ete2_tree, ts
+
 
 def aafasta2phylogeny(aa_fasta, phylo=False):
     import os
@@ -354,11 +354,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    exclude = ['Chlamydiae', 'Verrucomicrobia', 'Planctomycetes', 'Lentisphaerae']
+    exclude = ['Chlamydiae'] #chlamydia_04_16: , 'Verrucomicrobia', 'Planctomycetes', 'Lentisphaerae']
 
     if not args.all_biodb:
         grp = str(args.orthogroup)
-
 
         alignment = orthogroup2alignment_closest(grp,
                                      args.biodb,
@@ -372,7 +371,9 @@ if __name__ == '__main__':
         if alignment:
             t = aafasta2phylogeny("%s_swiss_homologs.faa" % grp)
 
-            plot_tree(t, grp,"chlamydia_04_16", out_name="%s.svg" % grp)
+            tree, ts = plot_tree(t, grp,"chlamydia_04_16")
+            out_name = "%s.svg" % grp
+            tree.render(out_name, tree_style=ts)
     else:
         server, db = manipulate_biosqldb.load_db(args.biodb)
         sql = 'select orthogroup, count(*) as n from orthology_detail_%s group by orthogroup' % args.biodb

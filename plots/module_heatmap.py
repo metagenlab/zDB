@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-def plot_module_heatmap(biodb, ref_tree, module_list,taxon_id_list=[], rotate=False):
+def module_list2profile_dico(biodb, module_list, taxon_id_list=[]):
+
     import manipulate_biosqldb
-    import ete_motifs
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -28,30 +28,39 @@ def plot_module_heatmap(biodb, ref_tree, module_list,taxon_id_list=[], rotate=Fa
               ' from enzyme.locus2ko_%s t1 inner join enzyme.module2ko t2 on t1.ko_id=t2.ko_id ' \
               ' inner join enzyme.kegg_module as t3 on t2.module_id=t3.module_id ' \
               ' where module_name in (%s)) A group by A.taxon_id,A.module_name;' % (biodb, filter_2)
-    print sql    
+    print sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
 
 
     code2taxon2count = {}
-    cog_list = []
+    module_list = []
     for row in data:
         row = list(row)
+        '''
         split_name = row[1].split('=>')
         if len(split_name[0]) >0:
             row[1] = split_name[0]
+        '''
         #else:
 
-        if row[1] not in cog_list:
-            cog_list.append(row[1])
+        if row[1] not in module_list:
+            module_list.append(row[1])
         if row[1] not in code2taxon2count:
             code2taxon2count[row[1]] = {}
             code2taxon2count[row[1]][str(row[0])] = int(row[2])
         else:
             code2taxon2count[row[1]][str(row[0])] = int(row[2])
+    return module_list, code2taxon2count
+
+def plot_module_heatmap(biodb, ref_tree, module_list, taxon_id_list=[], rotate=False):
+
+    import ete_motifs
+
+    module_list, code2taxon2count = module_list2profile_dico(biodb, module_list, taxon_id_list=taxon_id_list)
 
     tree2 = ete_motifs.multiple_profiles_heatmap(biodb,
-                                                cog_list,
+                                                module_list,
                                                 code2taxon2count,
                                                 show_labels=True,
                                                 column_scale=True,

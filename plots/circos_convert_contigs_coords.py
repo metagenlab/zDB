@@ -10,18 +10,25 @@ def get_contig(location, contig_coordlist, contig_pos):
         if location >= one_contig[1] and location <=one_contig[2]:
             #print 'match!'
             return one_contig, contig_coordlist[i+1:len(contig_coordlist)], location
-        elif location > contig_coordlist[-1][2] and location < one_contig[1]:
+        elif location > contig_coordlist[i-1][2] and location <= one_contig[1]:
             #print 'between contigs!'
             if contig_pos == 'start':
-                # start located between contigs
+                print "start located between contigs,------", location, '-->new start:', one_contig[1]
+                #print one_contig
+		#print contig_coordlist[i+1:len(contig_coordlist)]
+                # return contig start as location
                 return one_contig, contig_coordlist[i+1:len(contig_coordlist)], one_contig[1]
             else:
-                # end of contig located between contigs
-                return contig_coordlist[-1], contig_coordlist[i:len(contig_coordlist)], contig_coordlist[-1][2]
+		print "end located between contigs-------", location, '-->new end:', contig_coordlist[i-1][2]
+                # end of contig located between contigs, return previous contig data
+                #print 'contig', contig_coordlist[i-1]
+                #print 'following contigs', contig_coordlist[i:len(contig_coordlist)]
+                return contig_coordlist[i-1], contig_coordlist[i:len(contig_coordlist)], contig_coordlist[i-1][2]
 
         else:
-            pass
-            #print "no match!", one_contig
+            #print "partial match, probably overlap between end contig and gap region", one_contig
+	    continue
+    return False, False, False
 
 
 def rename_karyotype(ref, target, out_name):
@@ -42,26 +49,32 @@ def rename_karyotype(ref, target, out_name):
         start = int(data[1])
         end = int(data[2])
 
-        try:
-            contig_start, following_contigs1, position1 = get_contig(start, contig_coords, contig_pos="start")
-        except:
-            print 'problem with start:', data
-            continue
-        try:
-            contig_end, following_contigs2, position2 = get_contig(end, contig_coords, contig_pos="end")
-        except:
-            print 'problem with end:', data
-            continue
+	contig_start, following_contigs1, position1 = get_contig(start, contig_coords, contig_pos="start")
+
+	contig_end, following_contigs2, position2 = get_contig(end, contig_coords, contig_pos="end")
+
+	if contig_start is False or contig_end is False:
+            print 'ERRRRRRRRRRRRRRRRRRRRRRRRR'
+            if start > contig_coords[-1][1]:
+                print 'last contig'
+                contig_start, following_contigs1, position1 = contig_coords[-1],[], start
+                contig_end, following_contigs2, position2 = contig_coords[-1],[],contig_coords[-1][2]
+
         data[1] = position1
         data[2] = position2
-        #print 'contig start', contig_start
-        #print 'contig end', contig_end
+        if position2-position1>1000:
+            print 'current range:', position1, position2
+
 
 
         if contig_start[0] == contig_end[0]:
             data[0] = contig_start[0]
             renamed_data.append(data)
         else:
+            
+            print 'new start end', position1, position2 
+            print 'contig start', contig_start
+            print 'contig end', contig_end
             print 'spanning several contigs!'
             # span across 2 contigs: make 2 coordinates (until the end of the first contig and from the begining of the second)
             data_1 = copy.copy(data)

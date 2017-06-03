@@ -27,6 +27,8 @@ def _begin(output,format,new,height=7,width=14,**kwargs):
                 robjects.r('library(Cairo);CairoPDF("%s",paper="a4",height=%s,width=%s)' %(output, height, width))
         elif format == 'png':
             robjects.r('png("%s",height=%s*100,width=%s*100,type="cairo")' %(output, height, width))
+        elif format == 'svg':
+            robjects.r('svg("%s",height=%s*1.2,width=%s*1.2)' %(output, height, width))
         else:
             raise ValueError("Format not supported: %s" %format)
         pars = "lwd=2,cex=1.1,cex.main=1.5,cex.lab=1.3,cex.axis=1.1,mar=c(4,4,1,1),las=1,pch=20"
