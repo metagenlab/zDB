@@ -1942,7 +1942,7 @@ def locusx(request, biodb, locus=None, menu=False):
 
 
         if input_type == 'locus_tag':
-
+            import uniprot_feature_viewer
 
 
 
@@ -2003,6 +2003,34 @@ def locusx(request, biodb, locus=None, menu=False):
               ' where locus_tag="%s";' % (biodb, biodb,locus)
 
             sql17 = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s"' % (biodb, data[0])
+
+            sql18 = 'select signature_accession,start,stop from interpro_%s where analysis="Phobius" and locus_tag="%s" ' \
+                    ' and signature_accession in ("TRANSMEMBRANE",' \
+                    ' "SIGNAL_PEPTIDE_C_REGION","SIGNAL_PEPTIDE_N_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_H_REGION");' % (biodb, locus)
+
+
+            sql19 = 'select signature_accession, interpro_description,start, stop from interpro_%s ' \
+                    ' where analysis="SUPERFAMILY" and locus_tag="%s";' % (biodb, locus)
+
+            try:
+
+                superfamily_data = server.adaptor.execute_and_fetchall(sql19, )
+
+                superfamily_features = uniprot_feature_viewer.superfamily_data2features_string(superfamily_data)
+
+            except:
+
+                superfamily_features = ""
+
+            try:
+
+                phobius_data = server.adaptor.execute_and_fetchall(sql18, )
+
+                phobius_features = uniprot_feature_viewer.phobius_data2features_string(phobius_data)
+
+            except:
+
+                phobius_features = ""
             try:
                 trial = server.adaptor.execute_and_fetchall(sql17, )[0][0]
                 closest_phylo = True

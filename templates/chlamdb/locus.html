@@ -402,13 +402,6 @@
                                         <td style="width:95px">Virus <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of virus sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
                                     </tr>
                                 {% endif %}
-                                <tr>
-                                    <td>TM</td>
-                                    <td>{{ data.9 }}</td>
-                                </tr>
-                                    <td>SP</td>
-                                    <td>{{ data.10 }}</td>
-                                </tr>
                                 {%if pfam_data %}
                                     {% for values in pfam_data %}
                                         <tr>
@@ -646,11 +639,11 @@
 
                     <table>
                         <tr id="description_field">>
-                            <td>Translation</td>
+                            <th style="width: 110px">Translation</th>
                             <td>{{ data.13 }}</td>
                         </tr>
                         <tr id="description_field">>
-                            <td>Sequence</td>
+                            <th>Sequence <br> +/- flanking 50bp</th>
                             <td>{{ seq|safe }}</td>
                         </tr>
                     </table>
@@ -949,6 +942,10 @@ window.onload = function() {
     //Beside positions of each element, you can also give a specific description, which will appears in the tooltip when mouse hover, and a specific ID, for example to link a click event on the feature with something else in your project.
 
     {{features_js|safe}}
+
+    {{phobius_features|safe}}
+
+    {{superfamily_features|safe}}
 
     ft2.on('all',function(name,data){var obj = {name: name, data: data};if(inIframe()){ parent.postMessage(obj, "*") }})
     ft2.onAll(function(name,data){
