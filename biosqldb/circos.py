@@ -2224,17 +2224,17 @@ if __name__ == '__main__':
 
     #refernce =  db.lookup(accession="NC_015713") # simkania
     #plamsid = db.lookup(accession="NC_015710") # simkania plasmid
-    server, db = manipulate_biosqldb.load_db('2017_04_19_chlamydiae_taxo')
+    server, db = manipulate_biosqldb.load_db('chlamydia_04_16')
     #reference = db.lookup(accession="Rht")
     #plasmid = db.lookup(accession="RhTp")
 
     taxon_lst = [67,1279767,1279774,1279496,48,46,55,87925,1279815,62,1279822,66,59,52,49,64,60,804807,886707,283,314,1069693,1069694,1137444,1143376,313,1172027,1172028,1035343,307,293,1279839,1279497]
 
-    genome = db.lookup(accession="MGMD01000000")
-    #plasmid = db.lookup(accession="NC_015710")
+    genome = db.lookup(accession="Rht")
+    plasmid = db.lookup(accession="RhTp")
 
     a = CircosAccession2blastnr_plot(server,
-                     '2017_04_19_chlamydiae_taxo',
-                     [genome],
-                     "/home/trestan/work/projets/classification_chlamydiae/circos_blast_refseq",
+                     'chlamydia_04_16',
+                     [genome, plasmid],
+                     "/home/trestan/work/virtualshared/documents/papiers/article_rhabdo/update_09_16/papier/figures/refseq_plast",
                      taxon_list=[])

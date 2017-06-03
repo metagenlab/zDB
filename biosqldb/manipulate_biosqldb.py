@@ -938,6 +938,14 @@ def locus_tag2genome_description(server, biodatabase_name):
        locus_tag2genome_name[protein[0]] = protein[1]
     return locus_tag2genome_name
 
+def id_generator(size=6, chars=False): # + string.digits
+    import random
+    import string
+
+    if not chars:
+        chars = string.ascii_lowercase
+    return ''.join(random.choice(chars) for _ in range(size))
+
 def locus_tag2genome_taxon_id(server, biodatabase_name):
 
     sql = 'select t2.value, t6.taxon_id from biosqldb.seqfeature as t1' \

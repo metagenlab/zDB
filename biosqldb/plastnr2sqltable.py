@@ -725,9 +725,11 @@ def insert_taxons_into_sqldb(taxon_id_list,
                     value = taxid2classification[taxon_id][rank]
                     sql = 'UPDATE blastnr_taxonomy SET `%s`="%s" where taxon_id=%s' % (sql_id, value, taxon_id)
                     #print sql
-
-                    cursor.execute(sql)
-                    conn.commit()
+                    try:
+                        cursor.execute(sql)
+                        conn.commit()
+                    except:
+                        print 'could not insert rank', sql
             except KeyError:
                 print 'Could not add the following taxon: %s, trying again to get the data...' % taxon_id
                 temp_dico = sequence_id2scientific_classification.taxon_id2scientific_classification([taxon_id])

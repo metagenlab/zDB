@@ -223,8 +223,15 @@ def get_biodb_summary_statistics(biodb, cutoff=50):
 
 #print interpro_entry2taxonomy("IPR014000")
 
+if __name__ == '__main__':
+    import argparse
 
-#get_whole_db_interpro_taxonomy()
-get_biodb_summary_statistics('2017_04_19_chlamydiae_taxo', 98)
-get_biodb_summary_statistics('2017_04_19_chlamydiae_taxo', 50)
-get_biodb_summary_statistics('2017_04_19_chlamydiae_taxo', 90)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", '--biodb', type=str, help="biodatabase name")
+
+
+    args = parser.parse_args()
+    #get_whole_db_interpro_taxonomy()
+    get_biodb_summary_statistics(args.biodb, 98)
+    get_biodb_summary_statistics(args.biodb, 50)
+    get_biodb_summary_statistics(args.biodb, 90)

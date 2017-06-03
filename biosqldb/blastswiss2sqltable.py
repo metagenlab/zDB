@@ -490,7 +490,7 @@ if __name__ == '__main__':
         sys.stdout.write("creating protein_id2seqfeature_id")
         protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, biodb)
 
-        blastswiss2biosql( locus_tag2seqfeature_id,
+        blastswiss2biosql(locus_tag2seqfeature_id,
                         biodb,
                         args.n_procs,
                         mysql_host,

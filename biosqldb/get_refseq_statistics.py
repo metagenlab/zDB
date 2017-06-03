@@ -299,7 +299,6 @@ def count_majority_phylum_consensus(biodb):
         server.adaptor.execute(sql,)
         server.commit()
 
-
 if __name__ == '__main__':
     import argparse
 
@@ -311,4 +310,5 @@ if __name__ == '__main__':
 
     #majority_phylum(args.biodb, 100)
     #count_less_than_n_hits(args.biodb)
+    count_majority_phylum(args.biodb, 1)
     count_majority_phylum(args.biodb, 2)

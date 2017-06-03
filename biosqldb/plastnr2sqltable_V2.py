@@ -300,7 +300,14 @@ def create_sql_plastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
                     ' infraclass VARCHAR(200) default "-", ' \
                     ' varietas VARCHAR(200) default "-", ' \
                     ' parvorder VARCHAR(200) default "-")'
+    try:
 
+        cursor.execute(sql_taxonomy1)
+        print 'sql hits ok'
+        conn.commit()
+    except:
+        print sql_taxonomy1
+        print 'not created'
 
 
 def update_blastnr_taxonomy_table(blast_table_name,
@@ -310,12 +317,52 @@ def update_blastnr_taxonomy_table(blast_table_name,
                                   mysql_db="blastnr"):
     import MySQLdb
     from plastnr2sqltable import insert_taxons_into_sqldb
-
     conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
                                 user=mysql_user, # your username
                                 passwd=mysql_pwd, # your password
                                 db=mysql_db) # name of the data base
     cursor = conn.cursor()
+
+    sql_taxonomy1 = 'CREATE TABLE IF NOT EXISTS blastnr_taxonomy (taxon_id int unique PRIMARY KEY, ' \
+                    ' no_rank VARCHAR(200) default "-", ' \
+                    ' superkingdom VARCHAR(200) default "-", ' \
+                    ' kingdom VARCHAR(200) default "-", ' \
+                    ' subkingdom VARCHAR(200) default "-", ' \
+                    ' superphylum VARCHAR(200) default "-", ' \
+                    ' phylum VARCHAR(200) default "-", ' \
+                    ' subphylum VARCHAR(200) default "-", ' \
+                    ' superclass VARCHAR(200) default "-", ' \
+                    ' class VARCHAR(200) default "-", ' \
+                    ' subclass VARCHAR(200) default "-", ' \
+                    ' superorder VARCHAR(200) default "-", ' \
+                    ' `order` VARCHAR(200) default "-", ' \
+                    ' suborder VARCHAR(200) default "-", ' \
+                    ' superfamily VARCHAR(200) default "-", ' \
+                    ' family VARCHAR(200) default "-", ' \
+                    ' subfamily VARCHAR(200) default "-", ' \
+                    ' genus VARCHAR(200) default "-", ' \
+                    ' subgenus VARCHAR(200) default "-", ' \
+                    ' species VARCHAR(200) default "-", ' \
+                    ' species_subgroup VARCHAR(200) default "-", ' \
+                    ' species_group VARCHAR(200) default "-", ' \
+                    ' subspecies VARCHAR(200) default "-", ' \
+                    ' tribe VARCHAR(200) default "-", ' \
+                    ' infraorder VARCHAR(200) default "-", ' \
+                    ' subtribe VARCHAR(200) default "-", ' \
+                    ' forma VARCHAR(200) default "-", ' \
+                    ' infraclass VARCHAR(200) default "-", ' \
+                    ' varietas VARCHAR(200) default "-", ' \
+                    ' parvorder VARCHAR(200) default "-")'
+    try:
+
+        cursor.execute(sql_taxonomy1)
+        print 'sql hits ok'
+        conn.commit()
+    except:
+        print sql_taxonomy1
+        print 'not created'
+
+
     sql = 'select A.subject_taxid from (select distinct subject_taxid from %s) A ' \
           ' left join blastnr_taxonomy as B on A.subject_taxid=B.taxon_id where B.taxon_id is NULL;' % blast_table_name
 
@@ -577,5 +624,6 @@ if __name__ == '__main__':
                         *args.input_blast)
 
     if args.update_taxo_table:
-        update_blastnr_taxonomy_table('blastnr_%s' % biodb)
+        #update_blastnr_taxonomy_table('blastnr_%s' % biodb)
+        update_blastnr_taxonomy_table('blast_swissprot_%s' % biodb)
         #update_blastnr_taxonomy_table('blast_swissprot_%s' % biodb)
