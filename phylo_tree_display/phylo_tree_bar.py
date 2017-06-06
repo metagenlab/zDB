@@ -476,11 +476,13 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
     my_taxons = [lf.name for lf in t1.iter_leaves()]
 
     # Calculate the midpoint node
-    R = t1.get_midpoint_outgroup()
-    print 'root', R
-    # and set it as tree outgroup
-    t1.set_outgroup(R)
-    
+    try:
+        R = t1.get_midpoint_outgroup()
+        print 'root', R
+        # and set it as tree outgroup
+        t1.set_outgroup(R)
+    except:
+        pass
     if exclude_outgroup:
         excluded = str(list(t1.iter_leaves())[0].name)
         my_taxons.pop(my_taxons.index(excluded))
