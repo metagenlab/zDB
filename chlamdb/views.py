@@ -2331,6 +2331,117 @@ def locusx(request, biodb, locus=None, menu=False):
 
     return render(request, 'chlamdb/locus.html', locals())
 
+@login_required
+def hydropathy(request, biodb, locus):
+
+    import hydrophobicity_plots
+
+    fig = hydrophobicity_plots.locus2hydrophobicity_plot(biodb, locus)
+
+    path = settings.BASE_DIR + '/assets/temp/hydro.png'
+    fig.savefig(path)
+    asset_path = '/temp/hydro.png'
+
+    return render(request, 'chlamdb/hydropathy.html', locals())
+
+
+@login_required
+def aa_comp_locus(request, biodb, locus_tag):
+
+    import pca_seq_composition
+    import numpy
+    server, db = manipulate_biosqldb.load_db("chlamydia_04_16")
+
+    sql1 = 'select t2.taxon_id, t2.seqfeature_id from custom_tables.locus2seqfeature_id_%s t1 ' \
+           ' inner join custom_tables.aa_usage_count_%s t2 ' \
+           ' on t1.seqfeature_id=t2.seqfeature_id where t1.locus_tag="%s"' % (biodb, biodb, locus_tag)
+
+    data = server.adaptor.execute_and_fetchall(sql1,)[0]
+    taxon_id = data[0]
+    seqfeature_id = data[1]
+
+    sql2 = 'select * from custom_tables.aa_usage_count_%s where taxon_id=%s' % (biodb, taxon_id)
+    data = [i for i in server.adaptor.execute_and_fetchall(sql2,)]
+    for n, row in enumerate(data):
+        if row[1] == seqfeature_id:
+            target_feature = n + 1
+    mat = numpy.array([list(i)[3:23] for i in data])
+    path = settings.BASE_DIR + '/assets/temp/hydro.png'
+    asset_path = '/temp/hydro.png'
+    pca_seq_composition.aa_composition_pca(mat, target_feature, path)
+
+
+    return render(request, 'chlamdb/aa_pca_locus.html', locals())
+
+@login_required
+def gc_locus(request, biodb, locus_tag):
+
+    import pairwiseid_plots
+    import numpy
+
+    server, db = manipulate_biosqldb.load_db("chlamydia_04_16")
+
+    sql1 = 'select t2.taxon_id, t2.seqfeature_id, t2.gc_percent, t2.gc_1, t2.gc_2, t2.gc_3 from custom_tables.locus2seqfeature_id_%s t1 ' \
+           ' inner join custom_tables.gc_content_%s t2 ' \
+           ' on t1.seqfeature_id=t2.seqfeature_id where t1.locus_tag="%s"' % (biodb, biodb, locus_tag)
+
+    data = server.adaptor.execute_and_fetchall(sql1,)[0]
+    taxon_id = data[0]
+    seqfeature_id = data[1]
+    gc_locus = data[2]
+    gc_1_locus = data[3]
+    gc_2_locus = data[4]
+    gc_3_locus = data[5]
+
+
+    sql2 = 'select gc_percent, gc_1, gc_2, gc_3 from custom_tables.gc_content_%s where taxon_id=%s' % (biodb, taxon_id)
+
+    data = server.adaptor.execute_and_fetchall(sql2,)
+    gc_all = []
+    gc_1 = []
+    gc_2 = []
+    gc_3 = []
+    for row in data:
+        gc_all.append(row[0])
+        gc_1.append(row[1])
+        gc_2.append(row[2])
+        gc_3.append(row[3])
+
+    gc_all_mean = round(numpy.mean(gc_all),2)
+    gc_all_median = numpy.median(gc_all)
+
+    gc_1_mean = round(numpy.mean(gc_1),2)
+    gc_1_median = numpy.median(gc_1)
+
+    gc_2_mean = round(numpy.mean(gc_2),2)
+    gc_2_median = numpy.median(gc_2)
+
+    gc_3_mean = round(numpy.mean(gc_3),2)
+    gc_3_median = numpy.median(gc_3)
+
+    path = settings.BASE_DIR + '/assets/temp/gc.svg'
+    asset_path = '/temp/gc.svg'
+
+    pairwiseid_plots.density_plot([gc_all],
+                                  ['GC content'],
+                                  header="",
+                                  xlab="GC (%)",
+                                  ylab="density",
+                                  output_path=path,
+                                  abline_list=[gc_locus],
+                                  show_median=False)
+    path2 = settings.BASE_DIR + '/assets/temp/gc2.svg'
+    asset_path2 = '/temp/gc2.svg'
+    pairwiseid_plots.density_plot([gc_1, gc_2, gc_3],
+                                  ['gc 1', 'gc 2', 'gc 3'],
+                                  header="",
+                                  xlab="GC (%)",
+                                  ylab="density",
+                                  output_path=path2,
+                                  abline_list=[gc_1_locus,gc_2_locus,gc_3_locus],
+                                  show_median=False)
+
+    return render(request, 'chlamdb/gc_locus.html', locals())
 
 @login_required
 def fam(request, biodb, fam, type):
@@ -2578,6 +2689,8 @@ def COG_phylo_heatmap(request, biodb, frequency):
 
         #tree2.render(path2, dpi=800, h=600)
         envoi = True
+        path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
+        asset_path = '/temp/COG_tree.svg'
 
     return render(request, 'chlamdb/COG_phylo_heatmap.html', locals())
 
@@ -4642,8 +4755,6 @@ def identity_heatmap(request, biodb):
             path = settings.BASE_DIR + '/assets/temp/heatmap.svg'
             asset_path = '/temp/heatmap.svg'
             pairwiseid_plots.identity_heatmap_plot(m, output_path=path, labels=labels)
-
-
 
             envoi = True
 
@@ -8698,8 +8809,6 @@ def orthogroup_conservation_tree(request, biodb, orthogroup_or_locus):
     '''
 
 
-
-
     import manipulate_biosqldb
     import ete_heatmap_conservation
     import shell_command
@@ -9785,7 +9894,54 @@ def module2heatmap(request, biodb):
             print 'modules', modules
             print 'pathays', pathways
 
+            modules = [
+"M00015",
+"M00763",
+"M00016",
+"M00031",
+"M00032",
+"M00433",
+"M00525",
+"M00526",
+"M00527",
+"M00017",
+"M00021",
+"M00034",
+"M00035",
+"M00338",
+"M00609",
+"M00018",
+"M00020",
+"M00019",
+"M00036",
+"M00432",
+"M00535",
+"M00570",
+"M00022",
+"M00023",
+"M00024",
+"M00025",
+"M00037",
+"M00040",
+"M00043",
+"M00533",
+"M00026",
+"M00045",
 
+
+
+            ]
+
+            pathways = [
+"map03030",
+"map03410",
+"map03420",
+"map03430",
+"map03440",
+"map03450"
+
+            ]
+            pathways = []
             tree, style = pathway_heatmap.plot_module_and_pathway_combinaison_heatmap(biodb,
                                                                                         t1,
                                                                                         pathways,

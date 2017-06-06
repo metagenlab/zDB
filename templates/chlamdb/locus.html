@@ -11,26 +11,7 @@
 {% load static %}
 {% load custom_tags %}
 {% get_static_prefix as STATIC_PREFIX %}
-<script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
-<!--<script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>-->
-<script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
-<!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
-<script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
-<!--<script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>-->
-<!--<script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>-->
-<!--<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>-->
-<script src="https://wzrd.in/bundle/feature-viewer@0.1.44"></script>
 
-
-<script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
-<!--<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />-->
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-
-<script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
-<link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 
 </head>
 
@@ -103,9 +84,11 @@
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' biodb data.1 %}', 'orthoIDframe'); return false">Blast SP <span class="badge">{{n_swissprot_hits}}</span></a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'interactions' biodb data.1 %}', 'orthoIDframe'); return false">Interactions</a></li>
                 {%if closest_phylo%}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' biodb data.0 %}', 'orthoIDframe'); return false">refseq_swissprot_tree</a></li>
-
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' biodb data.0 %}', 'orthoIDframe'); return false">BBH phylogeny</a></li>
                 {%endif %}
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'hydropathy' biodb data.1 %}', 'orthoIDframe'); return false">Hydropathy plot</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'aa_comp_locus' biodb data.1 %}', 'orthoIDframe'); return false">AA composition PCA</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'gc_locus' biodb data.1 %}', 'orthoIDframe'); return false">GC</a></li>
 
             </ul>
             <div id="my-tab-content" class="tab-content">
@@ -748,7 +731,7 @@
                         <br/>
                         </div>
 
-                       <table class="display dataTable" id="homologues_table"> <!--  class="sortable" -->
+                       <table class="display dataTable" id="homologues_table" style="width:100%"> <!--  class="sortable" -->
                             <thead>
                                 <tr>
                                     <th></th>
@@ -878,7 +861,7 @@
 
 
 <!--
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
 <script>
   var update_fields = function () {
     if ($("#id_plot_region").is(":checked")) {
@@ -906,25 +889,41 @@
 </body>
 
 <script>
-$(document).ready(function(){
-    $('[data-toggle="tooltip"]').tooltip();
-});
 
 $(document).ready(function() {
     $('#homologues_table').DataTable( {
         dom: 'Bfrtip',
+        columnDefs: [
+            {
+                targets: 6,
+                visible: false
+            },
+            {
+                targets: 8,
+                visible: false
+            },
+            {
+                targets: 9,
+                visible: false
+            }
+        ],
         buttons: [
-            'colvis'
-        ]
+            {
+                extend: 'colvis',
+                columns: ':not(.noVis)'
+            }
+        ],
+        "pageLength": 250
     } );
 } );
 
-</script>
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+});
 
 
-<script>
 
-var FeatureViewer = require("feature-viewer");
+//var FeatureViewer = require("feature-viewer");
 //Create a new Feature Viewer and add some rendering options
 
 window.onload = function() {
@@ -956,6 +955,5 @@ window.onload = function() {
 };
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 </script>
-
 
 </html>
