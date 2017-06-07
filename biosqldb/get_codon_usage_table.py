@@ -6,6 +6,7 @@ def biodb2aa_usage(biodb):
     from Bio.SeqUtils.ProtParam import ProteinAnalysis
     from Bio.SeqUtils import CodonUsage
     import biosql_own_sql_tables
+    import copy
 
     CodonsDict = {'TTT': 0, 'TTC': 0, 'TTA': 0, 'TTG': 0, 'CTT': 0,
    'CTC': 0, 'CTA': 0, 'CTG': 0, 'ATT': 0, 'ATC': 0,
@@ -23,19 +24,16 @@ def biodb2aa_usage(biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql1 = 'select locus_tag, accession from orthology_detail_%s' % biodb
+    sql1 = 'select distinct accession from orthology_detail_%s' % biodb
     sql2 = 'select locus_tag, taxon_id from orthology_detail_%s' % biodb
     sql3 = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
-    sql4 = 'select locus_tag, start from orthology_detail_%s' % biodb
-    sql5 = 'select locus_tag, stop from orthology_detail_%s' % biodb
+
+    accession_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql1,)]
 
     locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
     locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
-    locus2accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql1,))
-    locus2start = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql4,))
-    locus2end = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql5,))
 
-    sql_head = 'create table IF NOT EXISTS custom_tables.codons_usage_%s (taxon_id INT, ' \
+    sql_head = 'create table IF NOT EXISTS custom_tables.codon_usage_%s (taxon_id INT, ' \
           ' seqfeature_id INT,' \
           ' seq_length INT,' % biodb
     for aa in CodonsDict.keys():
@@ -43,34 +41,64 @@ def biodb2aa_usage(biodb):
     sql_head+=' INDEX taxon_id(taxon_id),' \
               ' INDEX seqfeature_id(seqfeature_id));'
 
-    print sql_head
+    server.adaptor.execute(sql_head,)
+
+    sql_head = 'create table IF NOT EXISTS custom_tables.codon_usage_percent_%s (taxon_id INT, ' \
+          ' seqfeature_id INT,' \
+          ' seq_length INT,' % biodb
+    for aa in CodonsDict.keys():
+        sql_head+=' %s FLOAT,' % aa
+    sql_head+=' INDEX taxon_id(taxon_id),' \
+              ' INDEX seqfeature_id(seqfeature_id));'
 
     server.adaptor.execute(sql_head,)
 
-    for n, locus in enumerate(locus2taxon_id):
-        seq_start = int(locus2start[locus])
-        seq_end = int(locus2end[locus])
-        genome_accession = locus2accession[locus]
-        leng = (seq_end-seq_start)
-        seq = manipulate_biosqldb.location2sequence(server, genome_accession, biodb, seq_start, leng)
+    codon_list = [str(i) for i in CodonsDict.keys()]
+    count_all=0
+    for accession in accession_list:
+        record = db.lookup(accession=accession)
+        seq = record.seq
+        for n, feature in enumerate(record.features):
+            if feature.type == 'CDS' and not 'pseudo' in feature.qualifiers:
+                count_all+=1
+                print count_all
+                dna_sequence = feature.extract(seq)
+                locus = feature.qualifiers['locus_tag'][0]
+                codon_count = copy.copy(CodonsDict)
+                for i in range(0, len(dna_sequence), 3):
 
-        codon_usage = CodonUsage(seq)
-        aa_percent = analysed_seq.get_amino_acids_percent()
+                    codon = dna_sequence[i:i + 3]
+                    #if codon in codon_count:
+                    try:
+                        codon_count[codon] += 1
+                    except KeyError:
+                        print 'unknown codon'
+                    #else:
+                    #    raise TypeError("illegal codon %s in gene: %s" % (codon, feature))
 
-        aa_list = [str(i) for i in aa_percent.keys()]
-        columns = ','.join(aa_list)
-        values = ','.join([str(aa_percent[i]) for i in aa_list])
+                columns = ','.join(codon_list)
+                values = ','.join([str(codon_count[i]) for i in codon_list])
 
-
-        sql = 'insert into  custom_tables.aa_usage_count_%s (taxon_id, seqfeature_id, seq_length, %s' \
-              ' ) values (%s, %s, %s, %s);' % (biodb,
-                                               columns,
-                                               locus2taxon_id[locus],
-                                               locus2seqfeature_id[locus],
-                                               len(seq),
-                                               values)
-        print sql
-        server.adaptor.execute(sql,)
+                sql = 'insert into  custom_tables.codon_usage_%s (taxon_id, seqfeature_id, seq_length, %s' \
+                      ' ) values (%s, %s, %s, %s);' % (biodb,
+                                                       columns,
+                                                       locus2taxon_id[locus],
+                                                       locus2seqfeature_id[locus],
+                                                       len(dna_sequence),
+                                                       values)
+                print sql
+                server.adaptor.execute(sql,)
+                n_codons = float(len(dna_sequence)/3)
+                values = ','.join([str(codon_count[i]/n_codons) for i in codon_list])
+                sql = 'insert into  custom_tables.codon_usage_percent_%s (taxon_id, seqfeature_id, seq_length, %s' \
+                      ' ) values (%s, %s, %s, %s);' % (biodb,
+                                                       columns,
+                                                       locus2taxon_id[locus],
+                                                       locus2seqfeature_id[locus],
+                                                       len(dna_sequence),
+                                                       values)
+                print sql
+                server.adaptor.execute(sql,)
         server.commit()
 
 if __name__ == '__main__':

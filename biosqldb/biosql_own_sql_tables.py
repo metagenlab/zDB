@@ -451,6 +451,79 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
             n+=1
     return match_groups_data, extract_result
 
+def accession2coding_density(biodb):
+    import manipulate_biosqldb
+    from Bio.SeqUtils import GC123
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql1 = 'select distinct accession from orthology_detail_%s' % biodb
+
+    accession_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql1,)]
+
+    sql_head = 'create table IF NOT EXISTS custom_tables.gc_content_%s (taxon_id INT, ' \
+          ' seqfeature_id INT,' \
+          ' seq_length INT, gc_percent FLOAT, gc_1 FLOAT, gc_2 FLOAT, gc_3 FLOAT, ' \
+               ' INDEX seqfeature_id(seqfeature_id), index taxon_id(taxon_id))' % biodb
+
+    server.adaptor.execute(sql_head,)
+
+    accession2density = {}
+    accession2n_trna = {}
+    accession2n_rrna = {}
+    accession2big_contig_length = {}
+    for n, accession in enumerate(accession_list):
+
+        record = db.lookup(accession=accession)
+        long_record_list = []
+        start = 0
+        stop = 0
+        big_contig_length = 0
+        for feature in record.features:
+            if feature.type == 'assembly_gap':
+                stop = feature.location.start -1
+                sub_record = record[start:stop]
+                start = feature.location.end+1
+                if len(sub_record)>=10000:
+                    big_contig_length+=len(sub_record)
+                    long_record_list.append(sub_record)
+        stop = len(record)
+        sub_record = record[start:stop]
+        if len(sub_record)>=10000:
+            big_contig_length+=len(sub_record)
+            long_record_list.append(sub_record)
+        print accession, 'number of big contigs:', len(long_record_list)
+
+        len_coding = 0
+        rrna_count_16 = 0
+        rrna_count_23 = 0
+        rrna_count_5 = 0
+        trna_count = 0
+        # if small plasmid < 10kb
+        if len(long_record_list) == 0:
+            long_record_list = [record]
+            big_contig_length = len(record.seq)
+        for one_record in long_record_list:
+            print one_record
+            #len_seq = len(str(one_record.seq).replace("N", ""))
+            for n, feature in enumerate(one_record.features):
+                if feature.type in ['rRNA','tRNA','CDS'] and not 'pseudo' in feature.qualifiers:
+                    len_coding += len(feature)
+                if feature.type == 'tRNA':
+                    trna_count+=1
+                if feature.type == 'rRNA':
+                    if '16S' in feature.qualifiers['product'][0]:
+                        rrna_count_16+=1
+                    if '23S' in feature.qualifiers['product'][0]:
+                        rrna_count_23+=1
+                    if '5S' in feature.qualifiers['product'][0]:
+                        rrna_count_5+=1
+        accession2density[accession] = round((len_coding/float(big_contig_length))*100,2)
+        accession2n_trna[accession] = trna_count
+        accession2n_rrna[accession] = [rrna_count_16, rrna_count_23, rrna_count_5]
+        accession2big_contig_length[accession] = big_contig_length
+        print round((len_coding/float(big_contig_length))*100,2), trna_count, rrna_count_16, rrna_count_23, rrna_count_5
+    return accession2density, accession2n_trna, accession2n_rrna, accession2big_contig_length
 
 
 def taxonomical_form(db_name, hit_number=1):
@@ -872,6 +945,7 @@ def collect_genome_statistics(biodb):
     # organism name, protein encoding ORF number
     accession2genome_data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
+    accession2density, accession2n_trna, accession2n_rrna,accession2big_contig_length = accession2coding_density(biodb)
 
     #print '<td colspan="6"><table width="800" border=0  class=table_genomes>'
 
@@ -901,17 +975,26 @@ def collect_genome_statistics(biodb):
 
     #['NC_017080', 73.29, 2955L, 1, '3803225', 'Phycisphaera mikurensis NBRC 102666'], ['LVAZ01000000', 67.26, 3793L, 662, '4951698', 'Victivallales bacterium Lenti_02']
     # accession, GC, n_CDS, n_contigs, genome_size, description
-    sql = 'create table if not EXISTS genomes_info_%s (ACCESSION VARCHAR(200), GC FLOAT, n_CDS INT ,n_contigs INT, genome_size INT, description VARCHAR (20000))' % biodb
+    sql = 'create table if not EXISTS genomes_info_%s (ACCESSION VARCHAR(200), ' \
+          ' GC FLOAT, n_CDS INT ,n_contigs INT, genome_size INT, ' \
+          ' n_tRNA INT, n_16S INT, n_23S INT, n_5S INT, percent_non_coding FLOAT, big_contig_length INT, ' \
+          ' description VARCHAR (20000))' % biodb
 
     server.adaptor.execute_and_fetchall(sql,)
 
     for one_genome in genomes_data:
-        sql = 'insert into genomes_info_%s values ("%s", %s, %s, %s, %s, "%s")' % (biodb,
+        sql = 'insert into genomes_info_%s values ("%s", %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, "%s")' % (biodb,
                                                                            one_genome[0],
                                                                            one_genome[1],
                                                                            one_genome[2],
                                                                            one_genome[3],
                                                                            one_genome[4],
+                                                                           accession2n_trna[one_genome[0]],
+                                                                           accession2n_rrna[one_genome[0]][0],
+                                                                           accession2n_rrna[one_genome[0]][1],
+                                                                           accession2n_rrna[one_genome[0]][2],
+                                                                           100-accession2density[one_genome[0]],
+                                                                           accession2big_contig_length[one_genome[0]],
                                                                            one_genome[5])
         print sql
         server.adaptor.execute(sql,)
