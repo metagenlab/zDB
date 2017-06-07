@@ -48,6 +48,11 @@
                                 <th>N proteins</th>
                                 <th>N contigs</th>
                                 <th>Size</th>
+                                <th>N tRNA</th>
+                                <th>N 16S</th>
+                                <th>N 23S</th>
+                                <th>N 5S</th>
+                                <th>Percent non coding</th>
                                 <th>Organism</th>
                                 <th>Browse Online</th>
                                 <th colspan="5">Download</th>
@@ -64,7 +69,12 @@
                                 <td>{{values.3}}</td>
                                 <td>{{values.4}}</td>
                                 <td>{{values.5}}</td>
-                                <!--<td><a href="{% url 'genome_annotation' biodb values.0 %}">{{values.0}}</a></td>-->
+                                <td>{{values.6}}</td>
+                                <td>{{values.7}}</td>
+                                <td>{{values.8}}</td>
+                                <td>{{values.9}}</td>
+                                <td>{{values.11}}</td>
+                                <td><a href="{% url 'genome_annotation' biodb values.0 %}">{{values.0}}</a></td>
 
                                 <td style="vertical-align:top" nowrap>
                                     <a  style="text-decoration:none;" href="/assets/{{biodb}}/gbk/{{values.0}}.gbk">

@@ -139,6 +139,7 @@ def logout_view(request):
 def home(request, biodb):
     from ete2 import TreeStyle
     import phylo_tree_bar
+    from ete2 import Tree
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -150,7 +151,21 @@ def home(request, biodb):
                ' where t2.name="%s";' % biodb
     server, db = manipulate_biosqldb.load_db(biodb)
     tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
-    t, tss = phylo_tree_bar.plot_heat_tree(tree, biodb)
+
+    acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
+    filter = '"' + '","'.join(acc_list) + '"'
+    sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
+    taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
+    t1 = Tree(tree)
+    R = t1.get_midpoint_outgroup()
+    t1.set_outgroup(R)
+    try:
+        t2 = t1.prune(taxon_list)
+    except:
+        pass
+    t1.ladderize()
+
+    t, tss = phylo_tree_bar.plot_heat_tree(t1, biodb)
 
     tss.show_branch_support = False
     #t.render("test2.svg", tree_style=ts)
@@ -598,7 +613,10 @@ def locus_annotation(request, biodb, display_form):
             t1 = Tree(tree)
             R = t1.get_midpoint_outgroup()
             t1.set_outgroup(R)
-            t2 = t1.prune(taxon_list)
+            try:
+                t2 = t1.prune(taxon_list)
+            except:
+                pass
             t1.ladderize()
 
             fasta_url = '?l=' + '&l='.join(match_locus)
@@ -2012,9 +2030,27 @@ def locusx(request, biodb, locus=None, menu=False):
             sql19 = 'select signature_accession, interpro_description,start, stop from interpro_%s ' \
                     ' where analysis="SUPERFAMILY" and locus_tag="%s";' % (biodb, locus)
 
+            sql20 = 'select t2.hit_uniprot_id,t2.evalue, t2.bitscore_first_hsp, t2.identity, t2.query_TMS, t2.hit_TMS, ' \
+                    ' t2.query_cov, t2.hit_cov,t4.tc_name as transporter_name, t4.description as transporter_description, ' \
+                    ' t5.tc_name as superfamily, t5.description as superfamily_description, ' \
+                    ' t6.tc_name as family_name, t6.description as family_description, t7.tc_name as subfamily_name, ' \
+                    ' t7.description as subfamily_description  from custom_tables.locus2seqfeature_id_%s t1 ' \
+                    ' inner join transporters.transporters_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                    ' inner join transporters.transporter_table t3 on t2.transporter_id=t3.transporter_id ' \
+                    ' inner join transporters.tc_table t4 on t3.transporter_id=t4.tc_id ' \
+                    ' inner join transporters.tc_table t5 on t3.superfamily=t5.tc_id ' \
+                    ' inner join transporters.tc_table t6 on t3.family=t6.tc_id ' \
+                    ' inner join transporters.tc_table t7 on t3.subfamily=t7.tc_id ' \
+                    ' where t1.locus_tag="%s";' % (biodb, biodb, locus)
+            try:
+                transporter_data = [str(i).decode('utf-8','ignore').encode("utf-8") for i in server.adaptor.execute_and_fetchall(sql20, )[0]]
+                print transporter_data
+            except:
+                transporter_data = False
+
             try:
 
-                superfamily_data = server.adaptor.execute_and_fetchall(sql19, )
+                superfamily_data =  server.adaptor.execute_and_fetchall(sql19, )
 
                 superfamily_features = uniprot_feature_viewer.superfamily_data2features_string(superfamily_data)
 
@@ -2674,7 +2710,10 @@ def COG_phylo_heatmap(request, biodb, frequency):
         t1 = Tree(tree)
         R = t1.get_midpoint_outgroup()
         t1.set_outgroup(R)
-        t2 = t1.prune(taxon_list)
+        try:
+            t2 = t1.prune(taxon_list)
+        except:
+            pass
         t1.ladderize()
         #t1 = Tree(tree)
 
@@ -9185,7 +9224,10 @@ def transporters(request, biodb):
             t1 = Tree(tree)
             R = t1.get_midpoint_outgroup()
             t1.set_outgroup(R)
-            t2 = t1.prune(taxon_list)
+            try:
+                t2 = t1.prune(taxon_list)
+            except:
+                pass
             t1.ladderize()
 
 
@@ -9403,7 +9445,10 @@ def blast_sets(request, biodb):
                 t1 = Tree(tree)
                 R = t1.get_midpoint_outgroup()
                 t1.set_outgroup(R)
-                t2 = t1.prune(taxon_list)
+                try:
+                    t2 = t1.prune(taxon_list)
+                except:
+                    pass
                 t1.ladderize()
 
                 set2taxon2count = blast_heatmap.get_multiple_set_counts(biodb,
@@ -9665,7 +9710,10 @@ def kegg_pathway_heatmap(request, biodb):
             t1 = Tree(tree)
             R = t1.get_midpoint_outgroup()
             t1.set_outgroup(R)
-            t2 = t1.prune(taxon_list)
+            try:
+                t2 = t1.prune(taxon_list)
+            except:
+                pass
             t1.ladderize()
 
             tree, style = pathway_heatmap.plot_pathway_heatmap(biodb,
@@ -9887,7 +9935,10 @@ def module2heatmap(request, biodb):
             t1 = Tree(tree)
             R = t1.get_midpoint_outgroup()
             t1.set_outgroup(R)
-            t2 = t1.prune(taxon_list)
+            try:
+                t2 = t1.prune(taxon_list)
+            except:
+                pass
             t1.ladderize()
 
 
@@ -9897,23 +9948,17 @@ def module2heatmap(request, biodb):
             modules = [
 "M00015",
 "M00763",
-"M00016",
 "M00031",
-"M00032",
 "M00433",
-"M00525",
-"M00526",
 "M00527",
 "M00017",
 "M00021",
-"M00034",
 "M00035",
 "M00338",
 "M00609",
 "M00018",
 "M00020",
 "M00019",
-"M00036",
 "M00432",
 "M00535",
 "M00570",
@@ -9922,26 +9967,17 @@ def module2heatmap(request, biodb):
 "M00024",
 "M00025",
 "M00037",
-"M00040",
 "M00043",
 "M00533",
 "M00026",
-"M00045",
-
+"M00045"
 
 
             ]
 
-            pathways = [
-"map03030",
-"map03410",
-"map03420",
-"map03430",
-"map03440",
-"map03450"
-
-            ]
-            pathways = []
+            pathways = ["map00250",
+"map00220"
+]
             tree, style = pathway_heatmap.plot_module_and_pathway_combinaison_heatmap(biodb,
                                                                                         t1,
                                                                                         pathways,

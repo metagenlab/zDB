@@ -367,7 +367,53 @@
 
                                 </table>
                             {%endif%}
+                            {% if transporter_data%}
+                            <h3>Transporter</h3>
 
+                            <table>
+                                <tr>
+                                    <th>Hit</th>
+                                    <th>Evalue</th>
+                                    <th>Score</th>
+                                    <th>Identity</th>
+                                    <th>TM_query</th>
+                                    <th>TM_hit</th>
+                                    <th>query_cov</th>
+                                    <th>hit_cov</th>
+                                </tr>
+                                <tr>
+                                    <td>{{transporter_data.0}}</td>
+                                    <td>{{transporter_data.1}}</td>
+                                    <td>{{transporter_data.2}}</td>
+                                    <td>{{transporter_data.3}}</td>
+                                    <td>{{transporter_data.4}}</td>
+                                    <td>{{transporter_data.5}}</td>
+                                    <td>{{transporter_data.6}}</td>
+                                    <td>{{transporter_data.7}}</td>
+                                </tr>
+
+                            </table>
+                            <table>
+
+                                <tr>
+                                    <th style="width:80px">SuperFamily</th>
+                                    <td style="width:70px"><a href="http://tcdb.org/search/result.php?tc={{transporter_data.10}}">{{transporter_data.10}}</a></td><td>{{transporter_data.11}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Family</th>
+                                    <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.12}}">{{transporter_data.12}}</a></td><td>{{transporter_data.13}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Subfamily</th>
+                                    <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.14}}">{{transporter_data.14}}</a></td><td>{{transporter_data.15}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Transporter</th>
+                                    <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.14}}#{{transporter_data.8}}">{{transporter_data.8}}</a></td><td>{{transporter_data.9}}</td>
+                                </tr>
+                            </table>
+
+                            {% endif %}
                             <h3>Domains</h3>
 
 
