@@ -413,6 +413,20 @@ def make_pairwiseid_form(database_name):
 
     return PairwiseID
 
+
+def make_pairwiseCDS_length_form(database_name):
+
+    accessions = get_accessions(database_name)
+    accessions2 = [['None', 'None']] + accessions
+
+    class PairwiseID(forms.Form):
+        genome_1 = forms.ChoiceField(choices=accessions)
+        genome_2 = forms.ChoiceField(choices=accessions)
+        genome_3 = forms.ChoiceField(choices=accessions2)
+        genome_4 = forms.ChoiceField(choices=accessions2)
+
+    return PairwiseID
+
 def heatmap_form(database_name):
 
     plot_CHOICES = (('blast_identity', 'blast_identity'), ('core_msa_identity','core_msa_identity'),

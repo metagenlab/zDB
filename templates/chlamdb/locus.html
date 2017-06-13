@@ -11,8 +11,12 @@
 {% load static %}
 {% load custom_tags %}
 {% get_static_prefix as STATIC_PREFIX %}
-
-
+<script>
+function clearBox(elementID)
+{
+    document.getElementById(elementID).innerHTML = "";
+}
+</script>
 </head>
 
 <body id="locus_body">
@@ -54,7 +58,7 @@
             <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
 
                 {%if input_type != 'orthogroup' %}
-                <li class="active"><a href="#tab1" data-toggle="tab">Overview</a></li>
+                <li class="active" id="main_overview"><a href="#tab1" data-toggle="tab">Overview</a></li>
                 <li><a href="#tab3" data-toggle="tab">Sequences</a></li>
                 <li><a href="#tab2" data-toggle="tab">InterproScan</a></li>
                 <li><a href="#tab33" data-toggle="tab">Homologs <span class="badge">{{homologues|length}}</span><br></a></li>
@@ -417,7 +421,7 @@
                             <h3>Domains</h3>
 
 
-                            <div id="div_features" style="margin-top: 1px; width: 95%"></div>
+                            <div id="div_features" style="margin-top: 1px; width: 800px"></div>
 
 
                             <table>
@@ -617,6 +621,60 @@
                                 </table>
 
                             {% endif %}
+                            {% if rnaseq_data%}
+                                <h3>RNAseq data</h3>
+                                <table class="sortable">
+                                    <tr>
+                                        <th>temporal_class</th>
+                                        <th>EB_proteome</th>
+                                        <th>eggNOG</th>
+                                        <th>comment</th>
+
+
+                                    </tr>
+
+
+                                    <tr>
+                                        <td><a href="{% url 'rnaseq_class' biodb rnaseq_data.0 taxon_id %}" target="_top">{{rnaseq_data.0}}</a></td>
+                                        <td>{{rnaseq_data.1}}</td>
+                                        <td>{{rnaseq_data.2}}</td>
+                                        <td>{{rnaseq_data.3}}</td>
+                                    </tr>
+
+                                </table>
+
+                                <table>
+                                    <tr>
+                                        <th>2_1</th>
+                                        <th>2_2</th>
+                                        <th>2_3</th>
+                                        <th>48_1</th>
+                                        <th>48_2</th>
+                                        <th>48_3</th>
+                                        <th>96_1</th>
+                                        <th>96_2</th>
+                                        <th>96_3</th>
+                                        <th>extracellular_1</th>
+                                        <th>extracellular_2</th>
+                                        <th>extracellular_3</th>
+
+                                    </tr>
+                                    <tr>
+                                        <td>{{rnaseq_data.4}}</td>
+                                        <td>{{rnaseq_data.5}}</td>
+                                        <td>{{rnaseq_data.6}}</td>
+                                        <td>{{rnaseq_data.7}}</td>
+                                        <td>{{rnaseq_data.8}}</td>
+                                        <td>{{rnaseq_data.9}}</td>
+                                        <td>{{rnaseq_data.10}}</td>
+                                        <td>{{rnaseq_data.11}}</td>
+                                        <td>{{rnaseq_data.12}}</td>
+                                        <td>{{rnaseq_data.13}}</td>
+                                        <td>{{rnaseq_data.14}}</td>
+                                        <td>{{rnaseq_data.15}}</td>
+                                    </tr>
+                                </table>
+                            {%endif%}
 
 
                         </div>
@@ -999,6 +1057,11 @@ window.onload = function() {
 
 
 };
+
+
+
+
+
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 </script>
 
