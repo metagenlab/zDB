@@ -141,7 +141,7 @@ def plot_tree_stacked_barplot(tree_file,
             b.inner_border.color = "white"
             b.inner_border.width = 0
             b.margin_right = 15
-            b.margin_left = 0
+            b.margin_left = 20
             lf.add_face(b, col+col_add+1, position="aligned")
             col_count+=1
 

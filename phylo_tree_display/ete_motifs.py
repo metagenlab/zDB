@@ -5,7 +5,6 @@ from random import sample
 from random import randint
 from ete2 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace
 
-
 import numpy as np
 import colorsys
 import matplotlib.colors as pcolors
@@ -160,7 +159,48 @@ def get_locus2taxon2identity(biodb, locus_tag_list):
 
         return taxon2locus2identity_closest
 
+def get_locus2taxon2n_paralogs(biodb, locus_tag_list):
 
+    '''
+    get presence/absence of pfam domain(s) in all organisms of database "biodb"
+    return it as a dictionnary taxon[pfam_id] --> count
+    :param biodb:
+    :param id_list: lit of COgs/interpro/pfam identifiers
+    :param type: COG/Pfam/interpro or any comparative table stored in "comparative_tables" mysql database
+    :return:
+    '''
+
+    import manipulate_biosqldb
+
+    server, db =manipulate_biosqldb.load_db(biodb)
+
+    print 'get_locus2taxon2n_paralogs!!!!!!!!!!!!!!!!'
+
+    sql = 'show columns from comparative_tables.orthology_%s' % (biodb)
+
+    ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
+
+    taxon2locus2n_paralogs = {}
+    for locus in locus_tag_list:
+        taxon2locus2n_paralogs[locus] = {}
+
+
+    for locus in locus_tag_list:
+
+        orthogroup_sql = 'select orthogroup from biosqldb.orthology_detail_%s where locus_tag="%s";' % (biodb,locus)
+
+        orthogroup = server.adaptor.execute_and_fetchall(orthogroup_sql,)[0][0]
+
+        sql = 'select taxon_id,count(*) from biosqldb.orthology_detail_%s where orthogroup="%s" group by taxon_id;' % (biodb,
+                                                                                                                       orthogroup)
+        taxon_id2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+        for taxon in ordered_taxons:
+            if taxon not in taxon_id2count:
+                taxon2locus2n_paralogs[locus][str(taxon)] = 0
+            else:
+                taxon2locus2n_paralogs[locus][str(taxon)] = taxon_id2count[str(taxon)]
+    return taxon2locus2n_paralogs
 
 
 def combined_profiles_heatmap(biodb,
@@ -797,7 +837,14 @@ def multiple_profiles_heatmap(biodb,
 
             if first_column and not reference_column and highlight_first_column:
                 # highlight of the first column only (red)
-                n = TextFace(' %s ' % str(group2taxon2count[value][lf.name]))
+                try:
+
+                    n = TextFace(' %s ' % str(group2taxon2count[value][lf.name]))
+
+                except:
+                    n = TextFace(' - ')
+                    #n = RectFace(width=10, height=10, fgcolor="red", bgcolor="blue", label='-')
+                    group2taxon2count[value][lf.name] = 0
                 ref_data = str(value)
                 n.margin_top = 2
                 n.margin_right = 2
@@ -853,10 +900,10 @@ def multiple_profiles_heatmap(biodb,
                                                 n = TextFace(' %s ' % local_label)
                                         else:
                                             n = TextFace('%s ' % local_label)
+
                                     # labels are not floats
                                     except TypeError:
                                         n = TextFace(' %s ' % group2taxon2count[value][lf.name])
-
                                 else:
                                     n = TextFace(' - ')
 
@@ -925,7 +972,11 @@ def multiple_profiles_heatmap(biodb,
                             else:
                                 n.inner_background.color = 'white'
                 else:
-                    n = TextFace(' %s ' % str(group2taxon2count[value][lf.name]))
+                    try:
+                        n = TextFace(' %s ' % str(group2taxon2count[value][lf.name]))
+                    except:
+                        group2taxon2count[value][lf.name] = 0
+                        n = TextFace(' - ')
                     n.margin_top = 2
                     n.margin_right = 2
                     n.margin_left = 2
@@ -936,6 +987,8 @@ def multiple_profiles_heatmap(biodb,
                             if not reference_taxon:
                                 if lf.name != str(reference_taxon):
                                     print 'group', value
+                                    print 'ref data', ref_data
+                                    #print taxon2group2value[str(lf.name)][value]
                                     try:
                                         if ref_data not in taxon2group2value[int(lf.name)][value]:
                                             n.inner_background.color = "#9FF781" #58ACFA
