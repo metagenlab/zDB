@@ -368,9 +368,9 @@ class Locus2genoplotR():
             dna_seg_list[[1]]$gene_type[w] <- "bars"
             dna_seg_list[[1]]$col[w] <- "red"
             dna_seg_list[[1]]$lty[w] <- 1
-            dna_seg_list[[1]]$proteinid[w] <- ""
-            dna_seg_list[[1]]$synonym[w] <- ""
-            dna_seg_list[[1]]$name[w] <- ""
+            #dna_seg_list[[1]]$proteinid[w] <- ""
+            #dna_seg_list[[1]]$synonym[w] <- ""
+            #dna_seg_list[[1]]$name[w] <- ""
             w <- which(abs(dna_seg_list[[1]]$length)<20000)
             dna_seg_list[[1]] <- dna_seg_list[[1]][w,]
 
@@ -599,8 +599,8 @@ class Locus2genoplotR():
                annot #[idx[idx %% 4 == 0],]
              })
 
-            height <- length(blast_list)*2.5
-            CairoPDF('test2.pdf',height=height,width=12)# 4,14 / 3.8 (yersinia)/2 (oxa)
+            height <- length(blast_list)*1.4
+            CairoPDF('test2.pdf',height=height,width=10)# 4,14 / 3.8 (yersinia)/2 (oxa)
 
             xlims <- list(c(1,50000), c(1,50000))
                 plot.new()

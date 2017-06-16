@@ -72,7 +72,7 @@ def plot_module_and_pathway_combinaison_heatmap(biodb,
                                                                        group_by_KO=group_by_KO)
     module_list, code2taxon2count_modules = module_heatmap.module_list2profile_dico(biodb, module_list, taxon_id_list=taxon_id_list)
 
-    merged_list = pathway_list + module_list
+    merged_list = sorted(pathway_list + module_list)
     code2taxon2count_pathway.update(code2taxon2count_modules)
 
 

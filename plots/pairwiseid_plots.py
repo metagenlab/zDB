@@ -13,7 +13,17 @@ import pandas.rpy.common as com
 
 
 
-def density_plot(value_list_of_lists, label_list, header="", xlab="", ylab="", output_path="~/test.svg", type="hist"):
+def density_plot(value_list_of_lists, label_list,
+                 header="-",
+                 xlab="-",
+                 ylab="-",
+                 output_path="~/test.svg",
+                 type="hist",
+                 abline_list=[],
+                 show_median=True,
+                 min_value=False,
+                 max_value=False,
+                 breaks_manual=False):
 
         import rpy2.robjects as robjects
         import rpy2.robjects.numpy2ri
@@ -31,6 +41,22 @@ def density_plot(value_list_of_lists, label_list, header="", xlab="", ylab="", o
         df = DataFrame(format_list, columns=['identity', 'comp'])
         #m = m.astype(float)
         robjects.r.assign('plot_data', pandas2ri.py2ri(df))
+
+        if show_median:
+            median = ' + geom_vline(data=mu, aes(xintercept=identity.mean, color=comp), linetype="dashed")'
+
+        else:
+            median = ""
+
+        if min_value:
+            limits = '+ scale_x_continuous(limits = c(%s, %s))' % (min_value, max_value)
+        else:
+            limits = ''
+
+        if breaks_manual:
+            breaks = 'breaks=pretty(range(plot_data$identity), n = %s, min.n = 1),' % breaks_manual
+        else:
+            breaks= ''
 
         if type == 'density':
             plot_code = '''
@@ -54,17 +80,26 @@ def density_plot(value_list_of_lists, label_list, header="", xlab="", ylab="", o
                ylab)
         elif type == "hist":
             plot_code = '''
-           ggplot(plot_data, aes(identity, fill = comp)) + geom_histogram(alpha = 0.5, aes(y = ..density..), position = 'identity') + geom_density(alpha=0.01)+
-           geom_vline(data=mu, aes(xintercept=identity.mean, color=comp),
-           linetype="dashed")
-           #barplot(table(as.numeric(value_list)), main="%s", xlab="%s", ylab="%s")
 
-            ''' % (
-               header,
+
+
+            p <- ggplot(plot_data, aes(identity, fill = comp)) + geom_histogram(%s alpha = 0.5, aes(y = ..density..), position = 'identity')
+            p <- p + geom_density(alpha=0.01) %s
+            p <- p + xlab("%s") +  ylab("%s") + ggtitle("%s")
+
+            ''' % (breaks,median,
                xlab,
-               ylab)
+               ylab,
+                   header)
         else:
             print "unkown type"
+
+        robjects.r.assign('abline_list', abline_list)
+
+        if len(abline_list)>0:
+            abline = "+ geom_vline(xintercept = unlist(abline_list))"
+        else:
+            abline = ""
 
         robjects.r.assign('value_list_of_lists', value_list_of_lists)
         robjects.r.assign('label_list', label_list)
@@ -81,12 +116,12 @@ def density_plot(value_list_of_lists, label_list, header="", xlab="", ylab="", o
 
             svg('%s',height=6,width=14)
             p <- %s
-            print (p + theme_bw() + scale_x_continuous(limits = c(0, 100))+theme(axis.text=element_text(size=12),
-        axis.title=element_text(size=14))+ theme(legend.text=element_text(size=14)))
+            print (p + theme_bw() %s    +theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14))+ theme(legend.text=element_text(size=14)) %s )
             dev.off()
 
 
-        ''' % (output_path, plot_code))
+        ''' % (output_path, plot_code, abline, limits))
 
 def basic_plot(values_x, values_y=False, header="", xlab="", ylab="", output_path="~/test.svg", type="hist"):
 

@@ -268,9 +268,12 @@ def print_circos_labels_file(record_list, locus2label, out_name = "circos_labels
 
 def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                            out_name = "circos_genes_plus.txt",
-                           locus_highlight=[], draft_data=[None],
-                           group_id2orthologs_presence=False, query_taxon_id=False,
-                           color_missing=True, draft_coordinates=False):
+                           locus_highlight=[],
+                           draft_data=[None],
+                           group_id2orthologs_presence=False,
+                           query_taxon_id=False,
+                           color_missing=True,
+                           draft_coordinates=False):
 
     print "highlight:", locus_highlight
     
@@ -585,8 +588,8 @@ def print_circos_GC_file(record_list, feature_type="CDS", out_directory=""):
     out_skew = ''
     for record in record_list:
         # this function handle scaffolds (split sequence when encountering NNNNN regions)
-        out_var += GC.circos_gc_var(record)
-        out_skew += GC.circos_gc_skew(record)
+        out_var += GC.circos_gc_var(record, windows=1000)
+        out_skew += GC.circos_gc_skew(record, windows=1000)
     f.write(out_var)
     g.write(out_skew)
 
@@ -826,9 +829,20 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
 
 
   
-def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_name, out_dir, locus_highlight=[],
-                           feature_type="CDS", taxon_list=False, draft_data=[None], query_taxon_id=False,
-                           draft_coordinates=False, color_missing=True, locus2label=False, show_homologs=True):
+def orthology_circos_files(server,
+                           record_list,
+                           reference_taxon_id,
+                           biodatabase_name, out_dir,
+                           locus_highlight=[],
+                           feature_type="CDS",
+                           taxon_list=False,
+                           draft_data=[None],
+                           query_taxon_id=False,
+                           draft_coordinates=False,
+                           color_missing=True,
+                           locus2label=False,
+                           show_homologs=True,
+                           get_orthogroup_counts=False):
 
     import biosql_own_sql_tables
     import os
@@ -844,15 +858,18 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
     sql = 'select orthogroup, count(*) from orthology_detail_%s group by orthogroup' % biodatabase_name
     ortho_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    print 'getting each orthogroup size'
-    try:
-        ortho_identity = orthogroup_identity_db.orthogroup2average_identity(biodatabase_name)
-    except:
-        pass
-    ortho_family_size = mysqldb_load_mcl_output.get_family_size(server, biodatabase_name)
+    #print 'getting each orthogroup size'
+    #try:
+    #    ortho_identity = orthogroup_identity_db.orthogroup2average_identity(biodatabase_name)
+    #except:
+    #    pass
+    #ortho_family_size = mysqldb_load_mcl_output.get_family_size(server, biodatabase_name)
 
     ortho_table = "orthology_%s" % biodatabase_name
-    group_id2orthologs_presence = biosql_own_sql_tables.get_orthology_matrix_merging_plasmids(server, biodatabase_name, taxon_list)
+    if get_orthogroup_counts:
+        group_id2orthologs_presence = biosql_own_sql_tables.get_orthology_matrix_merging_plasmids(server, biodatabase_name, taxon_list)
+    else:
+        group_id2orthologs_presence = False
     # get taxons ids used as column names in orthology table
     if taxon_list is False:
         taxon_list = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
@@ -887,13 +904,21 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
     print "writing record file"
     print_circos_record_file(record_list, out_name = all_file_names["contigs"], draft_data=draft_data)
     print "writing minus strand file"
-    print_circos_gene_file(record_list, strand="-1", out_name = all_file_names["minus"], draft_data=draft_data,
-                         locus_highlight=locus_highlight, group_id2orthologs_presence=group_id2orthologs_presence,
-                         query_taxon_id=query_taxon_id, draft_coordinates=draft_coordinates)
+    print_circos_gene_file(record_list, strand="-1",
+                           out_name = all_file_names["minus"],
+                           draft_data=draft_data,
+                           locus_highlight=locus_highlight,
+                           group_id2orthologs_presence=group_id2orthologs_presence,
+                           query_taxon_id=query_taxon_id,
+                           draft_coordinates=draft_coordinates)
 
     print "writing plus strand file"
-    print_circos_gene_file(record_list, strand="1", out_name = all_file_names["plus"], draft_data=draft_data,
-                         locus_highlight=locus_highlight, group_id2orthologs_presence=group_id2orthologs_presence,
+    print_circos_gene_file(record_list,
+                           strand="1",
+                           out_name = all_file_names["plus"],
+                           draft_data=draft_data,
+                         locus_highlight=locus_highlight,
+                           group_id2orthologs_presence=group_id2orthologs_presence,
                          query_taxon_id=query_taxon_id, draft_coordinates=draft_coordinates)
     print "writing GC file"
 
@@ -904,8 +929,8 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
     locus_highlight = []
 
     f = open(all_file_names["orthogroups"], "w")
-    g = open(all_file_names["orthogroups_identity"], "w")
-    h = open(all_file_names["orthogroups_family"], "w")
+    #g = open(all_file_names["orthogroups_identity"], "w")
+    #h = open(all_file_names["orthogroups_family"], "w")
 
     taxon_files = []
     all_file_names["genomes"] = []
@@ -972,17 +997,17 @@ def orthology_circos_files(server, record_list, reference_taxon_id, biodatabase_
                         print contig, start, end
                         print feature
                         continue
-                    try:
-                        line2 = "%s %s %s %s\n" % (contig, start, end, ortho_identity[feature.qualifiers['orthogroup'][0]][0])
-                    except:
-                        pass
-                    line3 = "%s %s %s %s\n" % (contig, start, end, ortho_family_size[feature.qualifiers['orthogroup'][0]])
+                    #try:
+                    #    line2 = "%s %s %s %s\n" % (contig, start, end, ortho_identity[feature.qualifiers['orthogroup'][0]][0])
+                    #except:
+                    #    pass
+                    #line3 = "%s %s %s %s\n" % (contig, start, end, ortho_family_size[feature.qualifiers['orthogroup'][0]])
                     f.write(line)
-                    try:
-                        g.write(line2)
-                    except UnboundLocalError:
-                        pass
-                    h.write(line3)
+                    #try:
+                    #    g.write(line2)
+                    #except UnboundLocalError:
+                    #    pass
+                    #h.write(line3)
                     #print "################## highlight ###################"
                     #print locus_highlight
 
@@ -1338,12 +1363,6 @@ def get_circos_GC_config_files(biodatabase_name, accession_list):
         #pylab.show()
 
     return (final_gc_var, final_gc_skew)
-
-
-
-
-
-
 
 
 

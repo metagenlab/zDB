@@ -13,13 +13,13 @@ def get_contig(location, contig_coordlist, contig_pos):
         elif location > contig_coordlist[i-1][2] and location <= one_contig[1]:
             #print 'between contigs!'
             if contig_pos == 'start':
-                print "start located between contigs,------", location, '-->new start:', one_contig[1]
+                #print "start located between contigs,------", location, '-->new start:', one_contig[1]
                 #print one_contig
-		#print contig_coordlist[i+1:len(contig_coordlist)]
+		        #print contig_coordlist[i+1:len(contig_coordlist)]
                 # return contig start as location
                 return one_contig, contig_coordlist[i+1:len(contig_coordlist)], one_contig[1]
             else:
-		print "end located between contigs-------", location, '-->new end:', contig_coordlist[i-1][2]
+                #print "end located between contigs-------", location, '-->new end:', contig_coordlist[i-1][2]
                 # end of contig located between contigs, return previous contig data
                 #print 'contig', contig_coordlist[i-1]
                 #print 'following contigs', contig_coordlist[i:len(contig_coordlist)]
@@ -31,30 +31,27 @@ def get_contig(location, contig_coordlist, contig_pos):
     return False, False, False
 
 
-def rename_karyotype(ref, target, out_name):
-    import copy
-    with open(ref, 'r') as f:
-        contig_coords = []
-        for row in f:
-            #print row
-            data = row.rstrip().split(' ')
-            if len(data) <3:
-                data = row.rstrip().split('\t')
-            contig_coords.append([data[3], int(data[4]), int(data[5])])
+def rename_karyotype(contig_coords, data_list):
 
-    data_list = read_circos_file(target)
+    '''
+
+    :param contig_coords: chr - NZ_JSAM00000000_1 NZ_JSAM00000000_1 0 104228 spectral-5-div-4 ==> keep 3, 4 et 5
+    :param data_list: list of contig coords: [[contig_X, start, end],[...]]
+    :return:
+    '''
+
+    import copy
 
     renamed_data = []
     for i, data in enumerate(data_list):
         start = int(data[1])
         end = int(data[2])
+        #print i, data
+        contig_start, following_contigs1, position1 = get_contig(start, contig_coords, contig_pos="start")
 
-	contig_start, following_contigs1, position1 = get_contig(start, contig_coords, contig_pos="start")
+        contig_end, following_contigs2, position2 = get_contig(end, contig_coords, contig_pos="end")
 
-	contig_end, following_contigs2, position2 = get_contig(end, contig_coords, contig_pos="end")
-
-	if contig_start is False or contig_end is False:
-            print 'ERRRRRRRRRRRRRRRRRRRRRRRRR'
+        if contig_start is False or contig_end is False:
             if start > contig_coords[-1][1]:
                 print 'last contig'
                 contig_start, following_contigs1, position1 = contig_coords[-1],[], start
@@ -62,20 +59,18 @@ def rename_karyotype(ref, target, out_name):
 
         data[1] = position1
         data[2] = position2
-        if position2-position1>1000:
-            print 'current range:', position1, position2
-
-
+        #if position2-position1>1000:
+        #    print 'current range:', position1, position2
 
         if contig_start[0] == contig_end[0]:
             data[0] = contig_start[0]
             renamed_data.append(data)
         else:
-            
-            print 'new start end', position1, position2 
-            print 'contig start', contig_start
-            print 'contig end', contig_end
-            print 'spanning several contigs!'
+
+            #print 'new start end', position1, position2
+            #print 'contig start', contig_start
+            #print 'contig end', contig_end
+            #print 'spanning several contigs!'
             # span across 2 contigs: make 2 coordinates (until the end of the first contig and from the begining of the second)
             data_1 = copy.copy(data)
             data_1[0] = contig_start[0]
@@ -111,12 +106,7 @@ def rename_karyotype(ref, target, out_name):
         '''
 
 
-
-
-    with open(out_name, 'w') as new_circos_file:
-        for row in renamed_data:
-            row = [str(i) for i in row]
-            new_circos_file.write('\t'.join(row)+'\n')
+    return renamed_data
 
 
 def read_circos_file(circos_file):
@@ -144,5 +134,21 @@ if __name__ == '__main__':
     if not args.out_name:
         out_name = args.target_karyotype.split('.')[0] + '_renamed.' + args.target_karyotype.split('.')[1]
 
-    rename_karyotype(args.reference_karyotype, args.target_karyotype, out_name)
 
+    with open(args.reference_karyotype, 'r') as f:
+        contig_coords = []
+        for row in f:
+            #print row
+            data = row.rstrip().split(' ')
+            if len(data) <3:
+                data = row.rstrip().split('\t')
+            contig_coords.append([data[3], int(data[4]), int(data[5])])
+
+    data_list = read_circos_file(args.target_karyotype)
+
+    renamed_data = rename_karyotype(contig_coords, data_list)
+
+    with open(out_name, 'w') as new_circos_file:
+        for row in renamed_data:
+            row = [str(i) for i in row]
+            new_circos_file.write('\t'.join(row)+'\n')
