@@ -44,6 +44,7 @@ from forms import make_blastnr_form
 from forms import make_comment_from
 from forms import locus_int_form
 from forms import LocusInt
+from forms import get_LocusAnnotForm
 from forms import make_pathway_overview_form
 from forms import make_interpro_taxonomy
 from forms import BlastProfileForm
@@ -153,19 +154,22 @@ def home(request, biodb):
     server, db = manipulate_biosqldb.load_db(biodb)
     tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
 
+    '''
     acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
     filter = '"' + '","'.join(acc_list) + '"'
     sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
     taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
+    '''
     t1 = Tree(tree)
     R = t1.get_midpoint_outgroup()
     t1.set_outgroup(R)
+    '''
     try:
         t2 = t1.prune(taxon_list)
     except:
         pass
     t1.ladderize()
-
+    '''
     t, tss = phylo_tree_bar.plot_heat_tree(t1, biodb)
 
     tss.show_branch_support = False
@@ -549,9 +553,12 @@ def locus_annotation(request, biodb, display_form):
     server = manipulate_biosqldb.load_db()
     print "db loaded..."
 
+    form_class = get_LocusAnnotForm(biodb)
+
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
-        form = AnnotForm(request.POST)  # Nous reprenons les données
+        form = form_class(request.POST)
+        # Nous reprenons les données
 
         #form2 = ContactForm(request.POST)
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
@@ -562,7 +569,8 @@ def locus_annotation(request, biodb, display_form):
 
             server, db = manipulate_biosqldb.load_db(biodb)
 
-            match_locus = [i.rstrip() for i in form.cleaned_data['orthogroups'].rstrip().split('\n')]
+            match_locus = [i.rstrip() for i in form.cleaned_data['locus_list'].rstrip().split('\n')]
+            circos_target = form.cleaned_data['circos_target']
 
             filter = '"'+'","'.join(match_locus)+'"'
             sql = 'select locus_tag, accession, start, stop, gene, product, n_genomes, orthogroup, ' \
@@ -658,7 +666,7 @@ def locus_annotation(request, biodb, display_form):
             t1.ladderize()
             
             taxon2locus2n_paralogs = ete_motifs.get_locus2taxon2n_paralogs(biodb, match_locus)
-            print "taxon2locus2n_paralogs", taxon2locus2n_paralogs
+
             tree3, style3 = ete_motifs.multiple_profiles_heatmap(biodb,
                                                         labels,
                                                         taxon2locus2n_paralogs,
@@ -670,6 +678,8 @@ def locus_annotation(request, biodb, display_form):
                                                         as_float=False,
                                                         rotate=True)
 
+            show_on_circos_url = "/%s?" % circos_target +  '&l='.join(locus2taxon.keys())
+            print "show_on_circos_url", show_on_circos_url
 
             path2 = settings.BASE_DIR + '/assets/temp/tree2.svg'
             asset_path2 = '/temp/tree2.svg'
@@ -679,7 +689,7 @@ def locus_annotation(request, biodb, display_form):
             envoi_annot = True
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
         if display_form == "True":
-            form = AnnotForm()
+            form = form_class()
         else:
 
             import ete_motifs
@@ -1929,7 +1939,7 @@ def extract_region(request, biodb):
 
 
 @login_required
-def locusx(request, biodb, locus=None, menu=False):
+def locusx(request, biodb, locus=None, menu=True):
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
         import re
@@ -9332,6 +9342,130 @@ def priam_kegg(request, biodb):
 
 
 @login_required
+def locus_list2circos(request, biodb, target_taxon):
+    import gbk2circos
+    import circos
+    import re
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    locus_list = [i for i in request.GET.getlist('l')]
+
+    print 'locus_list', locus_list
+
+    # 1. check if locus_list is part of the target genome
+    # 2. if not part of the target genome, get orthogroup id
+
+    locus_filter = '"'+'","'.join(locus_list)+'"'
+    sql = 'select locus_tag, product from orthology_detail_%s where taxon_id=%s and locus_tag in (%s)' % (biodb,
+                                                                                                 target_taxon,
+                                                                                                 locus_filter)
+    print sql
+
+    data = server.adaptor.execute_and_fetchall(sql,)
+    locus_target_genome = [i[0] for i in data]
+    print data
+    locus2label = {}
+    for row in data:
+        locus2label[row[0]] = row[0] #+ "-%s" % re.sub(" ","-",row[1])
+    print "locus2label", locus2label
+    locus_other_genomes = []
+    for locus in locus_list:
+        if locus not in locus_target_genome:
+            locus_other_genomes.append(locus)
+    locus_other_genomes_filter = '"' + '","'.join(locus_other_genomes) + '"'
+    sql2 = 'select B.locus_tag, A.orthogroup, B.product from (select orthogroup from orthology_detail_%s where locus_tag in (%s) group by orthogroup) A' \
+           ' inner join orthology_detail_%s B on A.orthogroup=B.orthogroup where taxon_id=%s' % (biodb,
+                                                                                                 locus_other_genomes_filter,
+                                                                                                 biodb,
+                                                                                                 target_taxon)
+
+    data = server.adaptor.execute_and_fetchall(sql2,)
+
+    for row in data:
+        locus2label[row[0]] = row[1] #+ "-%s" % re.sub(" ","-",row[2])
+
+    reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, target_taxon, biodb) # ["NC_009648"] NZ_CP009208 NC_016845
+
+    print "reference_accessions", reference_accessions
+    record_list = []
+    for accession in reference_accessions:
+        print "reference accession", accession
+        biorecord = cache.get(biodb + "_" + accession)
+
+        if not biorecord:
+            print biodb + "_" + accession, "NOT in memory"
+            new_record = db.lookup(accession=accession)
+            biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
+                                                     id=new_record.id, name=new_record.name,
+                                                     description=new_record.description,
+                                                     dbxrefs =new_record.dbxrefs,
+                                                     features=new_record.features,
+                                                     annotations=new_record.annotations)
+            record_id = biorecord.id.split(".")[0]
+            cache.set(biodb + "_" + record_id, biorecord)
+            record_list.append(biorecord)
+        else:
+            print biodb + "_" + accession, "In memory"
+            record_list.append(biorecord)
+
+    ref_name = ('').join(reference_accessions)
+
+    circos_file = "circos/%s.svg" % ref_name
+
+    draft_data = []
+    for biorecord in record_list:
+        draft_data.append(gbk2circos.circos_fasta_draft_misc_features(biorecord))
+
+    home_dir = os.path.dirname(__file__)
+
+    temp_location = os.path.join(home_dir, "../assets/circos/")
+
+    print "locus2label", locus2label
+
+    myplot = circos.CircosAccession2multiplot(server,
+                                              db,
+                                              biodb,
+                                              record_list,
+                                              [],
+                                              locus_highlight=locus2label.keys(),
+                                              out_directory=temp_location,
+                                              draft_fasta=draft_data,
+                                              href="/chlamdb/locusx/%s/" % biodb,
+                                              ordered_taxons=[],
+                                              locus2label=locus2label,
+                                              show_homologs=False,
+                                              radius=0.3)
+
+    original_map_file = settings.BASE_DIR + "/assets/circos/%s.html" % ref_name
+    with open(original_map_file, "r") as f:
+        map_string = ''.join([line for line in f.readlines()])
+
+    circos_html = '<!DOCTYPE html>\n' \
+                  ' <html>\n' \
+                  ' <body>\n' \
+                  ' %s\n' \
+                  ' <img src="%s.svg" usemap="#%s">' \
+                  ' </body>\n' \
+                  ' </html>\n' % (map_string, ref_name, ref_name)
+
+
+    circos_new_file = '/assets/circos/circos_clic.html'
+    print settings.BASE_DIR + circos_new_file
+    with open(settings.BASE_DIR + circos_new_file, "w") as f:
+        f.write(circos_html)
+
+    original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % ref_name
+    map_file = "circos/%s.html" % ref_name
+    svg_file = "circos/%s.svg" % ref_name
+    map_name = ref_name
+
+    envoi_circos = True
+
+
+    return render(request, 'chlamdb/locus2circos.html', locals())
+
+@login_required
 def hmm2circos(request, biodb):
     import ete_motifs
 
@@ -10501,37 +10635,47 @@ def module2heatmap(request, biodb):
             print 'pathays', pathways
 
             modules = [
-"M00015",
-"M00763",
-"M00031",
-"M00433",
-"M00527",
-"M00017",
-"M00021",
-"M00035",
-"M00338",
-"M00609",
-"M00018",
-"M00020",
-"M00019",
-"M00432",
-"M00535",
-"M00570",
-"M00022",
-"M00023",
-"M00024",
-"M00025",
-"M00037",
-"M00043",
-"M00533",
-"M00026",
-"M00045"
+"M00051",
+"M00052",
+"M00053",
+"M00048",
+"M00049",
+"M00050",
+"M00115",
+"M00116",
+"M00117",
+"M00119",
+"M00120",
+"M00121",
+"M00123",
+"M00125",
+"M00126",
+"M00127",
+"M00122",
+"M00133",
+"M00134",
+
 
 
             ]
 
-            pathways = ["map00250",
-"map00220"
+            pathways = ["map00230",
+"map00240",
+"map00220",
+"map00250",
+"map00260",
+"map00270",
+"map00280",
+"map00290",
+"map00300",
+"map00310",
+"map00330",
+"map00340",
+"map00350",
+"map00360",
+"map00380",
+"map00400",
+
 ]
             tree, style = pathway_heatmap.plot_module_and_pathway_combinaison_heatmap(biodb,
                                                                                         t1,

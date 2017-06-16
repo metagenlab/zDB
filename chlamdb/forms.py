@@ -605,7 +605,14 @@ class LocusInt(forms.Form):
 class AnnotForm(forms.Form):
     orthogroups = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
 
+def get_LocusAnnotForm(database_name):
 
+    accession_choices = get_accessions(database_name)
+
+    class LocusAnnotForm(forms.Form):
+        locus_list = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
+        circos_target = forms.ChoiceField(choices=accession_choices)
+    return LocusAnnotForm
 
 def make_motif_form(database_name):
 

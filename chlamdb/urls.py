@@ -83,6 +83,7 @@ urlpatterns = [
                        url(r'^interpro/([a-zA-Z0-9_]+)$', interpro, name="interpro"),
                        url(r'^blast/([a-zA-Z0-9_]+)$$', blast, name="blast"),
                        url(r'^mummer/([a-zA-Z0-9_]+)$$', mummer, name="mummer"),
+                       url(r'^locus_list2circos/([a-zA-Z0-9_]+)/([0-9]+)', locus_list2circos, name="locus_list2circos"),
                        url(r'^prot_length_barchart/([a-zA-Z0-9_]+)$$', prot_length_barchart, name="prot_length_barchart"),
                        url(r'^extract_orthogroup/([a-zA-Z0-9_]+)$$', extract_orthogroup, name="extract_orthogroup"),
                        url(r'^extract_orthogroup/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$$', extract_orthogroup, name="extract_orthogroup"),
