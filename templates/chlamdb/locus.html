@@ -80,9 +80,9 @@ function clearBox(elementID)
                     <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'TM_tree' biodb data.0 %}', 'orthoIDframe'); return false">TM tree</a></li>
                 {% endif %}
 
-                {% if cog_data %}
+                <!--{% if cog_data %}
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'string_page' biodb cog_data.0 genome_accession %}', 'orthoIDframe'); return false">string interactions</a></li>
-                {% endif %}
+                {% endif %}-->
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' biodb data.1 %}', 'orthoIDframe'); return false">Region</a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastnr' biodb data.1 %}', 'orthoIDframe'); return false">Blast RS <span class="badge">{{n_blastnr_hits}}</span></a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' biodb data.1 %}', 'orthoIDframe'); return false">Blast SP <span class="badge">{{n_swissprot_hits}}</span></a></li>

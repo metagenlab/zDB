@@ -2797,6 +2797,7 @@ def COG_phylo_heatmap(request, biodb, frequency):
         filter = '"' + '","'.join(acc_list) + '"'
         sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
         taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
+        print "taxon_list", taxon_list
         t1 = Tree(tree)
         R = t1.get_midpoint_outgroup()
         t1.set_outgroup(R)
@@ -2807,7 +2808,7 @@ def COG_phylo_heatmap(request, biodb, frequency):
         t1.ladderize()
         #t1 = Tree(tree)
 
-        tree, style = cog_heatmap.plot_cog_eatmap(biodb, t1, [], freq)
+        tree, style = cog_heatmap.plot_cog_eatmap(biodb, t1, ['59','67', '1279767', '1279774', '1279496', '48', '46', '55', '87925', '1279815', '62', '1279822', '66', '59', '52', '49', '64', '60', '804807', '886707', '283', '314', '1069693', '1069694', '1137444', '1143376', '313', '1172027', '1172028', '1035343', '307', '293', '1279839', '1279497'], freq)
 
         path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
         asset_path = '/temp/COG_tree.svg'
@@ -6981,14 +6982,16 @@ def circos(request, biodb):
 
                 #sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
-                sql_order = 'select A.taxon_1 from (select taxon_1,median_identity from comparative_tables.shared_orthogroups_average_identity_%s where taxon_2=%s ' \
+                sql_order = 'select A.taxon_1 from (select taxon_1, median_identity from comparative_tables.shared_orthogroups_average_identity_%s where taxon_2=%s ' \
                             ' union select taxon_2,median_identity from comparative_tables.shared_orthogroups_average_identity_%s ' \
                             ' where taxon_1=%s order by median_identity DESC) A;' % (biodb, reference_taxon, biodb, reference_taxon)
                 try:
                     sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
                     print sql_order
                     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
+                    print 'msa core identity order!'
                 except:
+                    print 'msa orthogroups_average_identity order!'
                     '''
                     # median identity
                     sql_order = 'select taxon from (select taxon_2 as taxon, median_identity ' \
@@ -10654,9 +10657,6 @@ def module2heatmap(request, biodb):
 "M00122",
 "M00133",
 "M00134",
-
-
-
             ]
 
             pathways = ["map00230",
