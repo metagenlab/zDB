@@ -488,39 +488,31 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                         '''
 
             if feature.type == 'rRNA':
+                print 'rrna--------------------'
                 if str(feature.strand) == strand:
                     try:
                         for i in draft_data[y]:
-                            print 'ok'
-                            if draft_coordinates:
-                                print 'draft coord'
-                                if feature.location.start >= i[1] and feature.location.end <= i[2]:
+                            # determine to which contig the feature belong
+
+                            if feature.location.start >= i[1] and feature.location.end <= i[2]:
+                                if draft_coordinates:
                                     contig = i[0]
                                     start = feature.location.start - i[1]
                                     end = feature.location.end - i[1]
-                            else:
-                                contig = i[0]
-                                start = feature.location.start
-                                end = feature.location.end
-                            '''
-                            else:
-                                print 'draft coord'
-                                if feature.location.start >= i[1] and feature.location.end <= i[2]:
-                                    contig = i[0]
-                                    start = feature.location.start
-                                    end = feature.location.end
                                 else:
                                     contig = i[0]
                                     start = feature.location.start
                                     end = feature.location.end
-                            '''
-                    except:
-                        print 'except'
+                    except IndexError:
+                        contig = record.id # fill_color=violet
+                        start = feature.location.start
+                        end = feature.location.end
+                    except TypeError:
                         contig = record.id # fill_color=violet
                         start = feature.location.start
                         end = feature.location.end
 
-
+                    print 'rrna position:', contig, start, end, feature.qualifiers
                     f.write('%s %s %s fill_color=pblue\n ' % (contig,
                                                             start,
                                                             end))
@@ -530,11 +522,22 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                 if str(feature.strand) == strand:
                     try:
                         for i in draft_data[y]:
+                            # determine to which contig the feature belong
+
                             if feature.location.start >= i[1] and feature.location.end <= i[2]:
-                                contig = i[0]
-                                start = feature.location.start - i[1]
-                                end = feature.location.end - i[1]
-                    except:
+                                if draft_coordinates:
+                                    contig = i[0]
+                                    start = feature.location.start - i[1]
+                                    end = feature.location.end - i[1]
+                                else:
+                                    contig = i[0]
+                                    start = feature.location.start
+                                    end = feature.location.end
+                    except IndexError:
+                        contig = record.id # fill_color=violet
+                        start = feature.location.start
+                        end = feature.location.end
+                    except TypeError:
                         contig = record.id # fill_color=violet
                         start = feature.location.start
                         end = feature.location.end
@@ -542,6 +545,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                     f.write('%s %s %s fill_color=pred\n ' % (contig,
                                                             start,
                                                             end))
+                    
 
     f.close()
 """

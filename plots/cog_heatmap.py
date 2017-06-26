@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by_cog_id=True):
+def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by_cog_id=False):
     import manipulate_biosqldb
     import ete_motifs
 
@@ -64,8 +64,9 @@ def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by
         code2taxon2count['-'] = {}
         code2taxon2count['TOTAL'] = {}
         for taxon in taxon2count_no_GOG:
-            code2taxon2count['-'][taxon] = int(taxon2count_no_GOG[taxon])
-            code2taxon2count['TOTAL'][taxon] = int(taxon2proteome_size[taxon])
+            if taxon in taxon_id_list:
+                code2taxon2count['-'][taxon] = int(taxon2count_no_GOG[taxon])
+                code2taxon2count['TOTAL'][taxon] = int(taxon2proteome_size[taxon])
 
         cog_list = ['TOTAL', '-']
     for row in data:

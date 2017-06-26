@@ -51,12 +51,18 @@ def rename_karyotype(contig_coords, data_list):
 
         contig_end, following_contigs2, position2 = get_contig(end, contig_coords, contig_pos="end")
 
-        if contig_start is False or contig_end is False:
+        if (contig_start is False) or (contig_end is False):
+            #print 'one falese!'
+            #print start, end, contig_start, contig_end
+
             if start > contig_coords[-1][1]:
-                print 'last contig'
+                #print 'last contig'
                 contig_start, following_contigs1, position1 = contig_coords[-1],[], start
                 contig_end, following_contigs2, position2 = contig_coords[-1],[],contig_coords[-1][2]
-
+        if contig_end is False:
+            continue
+        #print 'contig_start', contig_start
+        #print 'contig_end', contig_end
         data[1] = position1
         data[2] = position2
         #if position2-position1>1000:

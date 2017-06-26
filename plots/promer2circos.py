@@ -161,7 +161,7 @@ class Fasta2circos():
                     hit_list, query_list = nucmer_utility.coord_file2circos_heat_file("%s.coords" % out_prefix,
                                                                                       self.contigs_add, algo=algo)
                     contig2start_stop_list = nucmer_utility.delta_file2start_stop_list("%s.delta" % out_prefix,
-                                                                                       self.contigs_add, algo=algo, minimum_identity=85)
+                                                                                       self.contigs_add, algo=algo, minimum_identity=5)
 
                 elif algo == "megablast":
                     hit_list, query_list, contig2start_stop_list = self.megablast2heatmap("blast_result_%s.tab" % out_prefix, col=col)
