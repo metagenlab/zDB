@@ -22,6 +22,18 @@
             <div id="header">
                 {% include "chlamdb/user.html" %}
             </div>
+
+
+        <nav>
+        <ul id="tabs" class="nav nav-tabs">
+            <li class="active"><a href="{% url 'transporters' biodb %}">Transporters superfamilies</a></li>
+            <li ><a href="{% url 'transporters_list' biodb %}">Transporters lists</a></li>
+
+        </ul>
+        </nav>
+
+
+
             <form action='{% url "transporters" biodb %}' method="post">
                 {% csrf_token %}
                     {{ form.as_p }}

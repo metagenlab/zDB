@@ -22,6 +22,16 @@
             <div id="header">
                 {% include "chlamdb/user.html" %}
             </div>
+
+            <nav>
+            <ul id="tabs" class="nav nav-tabs">
+                <li><a href="{% url 'transporters' biodb %}">Transporters superfamilies</a></li>
+                <li class="active"><a href="{% url 'transporters_list' biodb %}">Transporters lists</a></li>
+
+            </ul>
+            </nav>
+
+
             <form action='{% url "transporters_list" biodb %}' method="post">
                 {% csrf_token %}
                     {{ form.as_p }}
@@ -43,7 +53,8 @@
                                 <thead>
                                     <tr>
                                         <th>Locus</th>
-                                        <th style="width:260px">Category</th>
+                                        <th style="width:40px">Category</th>
+                                        <th style="width:260px">Description</th>
                                         <th style="width:260px">SubCategory</th>
                                         <th style="width:260px">Transporter</th>
                                         <th>hsps</th>
@@ -64,7 +75,9 @@
                                     {% for values in data %}
                                         <tr>
                                             <td><a href="{% url 'locusx' biodb values.0 True %}" target="_top">{{values.0}}</a></td>
+                                            <td><a href="{% url 'transporters_family' biodb values.15 %}" target="_top">{{values.15}}</a></td>
                                             <td>{{values.1}}</td>
+
                                             <td>{{values.13}}</td>
                                             <td>{{values.14}}</td>
                                             <td>{{values.2}}</td>

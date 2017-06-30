@@ -28,7 +28,11 @@
                   <div class="panel-heading" style="width:100%">
                       <h3 class="panel-title">Help</h3>
                   </div>
-                <p style="margin: 10px 10px 10px 10px">Hepatmap showing presence/absence of domain/orthologous group</p>
+                <p style="margin: 10px 10px 10px 10px">Hepatmap showing various similarity metrics between genomes. <br>
+                    1: median reciprocal blast hit identity<br>
+                    2: average identity calculated based on the concatenate of core single copy orthogroups<br>
+                    3: counts of reciprocal best blast hits<br>
+                    4: number of shared orthogroups</p>
             </div>
 
 
@@ -41,11 +45,21 @@
         </div>
 
          {% if envoi %}
-            {% if not small%}
-            <img src="{% static asset_path %}" alt="heatmap" style="width:90%;">
-            {% else%}
-            <img src="{% static asset_path %}" alt="heatmap" style="width:50%;">
-            {% endif %}
+
+                {% if not small%}
+                <img src="{% static asset_path %}" alt="heatmap" style="width:90%;">
+                {% else%}
+                <img src="{% static asset_path %}" alt="heatmap" style="width:50%;">
+                {% endif %}
+
+
+         {%else%}
+              <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                  <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Help</h3>
+                  </div>
+                <p style="margin: 10px 10px 10px 10px">A minimum of 3 genomes should be selected</p>
+            </div>
          {% endif %}
 
     </div>

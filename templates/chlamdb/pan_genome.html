@@ -70,7 +70,24 @@
             <div class="panel-heading" style="width:100%">
                 <h3 class="panel-title">Help</h3>
             </div>
-            <p style="margin: 10px 10px 10px 10px">Pan genome plots<br>
+            <p style="margin: 10px 10px 10px 10px">Accumulation/rarefaction plot of
+
+                {% if type == 'Pfam' %}
+                    Pfam domains
+                {% elif type == 'COG' %}
+                    COG
+                {% elif type == 'interpro'%}
+                    Interpro entries
+                {% elif type == 'EC' %}
+                    PRIAM predicted EC
+                {% elif type == 'ko' %}
+                    Kegg orthologs
+                {% elif type == 'orthology' %}
+                    Orthologous grooups (pan/core genome plots)
+                {% endif %}
+
+
+                <br>
             </p>
         </div>
 
@@ -89,6 +106,39 @@
 
         <div id="my-tab-content" class="tab-content">
             <div class="tab-pane active" id="tab1">
+
+        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">
+                {% if type == 'Pfam' %}
+                    Show the relationship between the total number of Pfam domains and the number of genomes considered (blue). <br>
+                    Show the relationship between the number of pfam domains conserved in all compared genomes and the number of compared genomes (red).
+                {% elif type == 'COG' %}
+                    Show the relationship between the total number of Pfam domains and the number of genomes considered (blue). <br>
+                    Show the relationship between the number of pfam domains conserved in all compared genomes and the number of compared genomes (red).
+
+                {% elif type == 'interpro'%}
+                    Show the relationship between the total number of interpro entries and the number of genomes considered (blue). <br>
+                    Show the relationship between the number of interpro entries conserved in all compared genomes and the number of compared genomes (red).
+
+                {% elif type == 'EC' %}
+                    Show the relationship between the total number of EC and the number of genomes considered (blue). <br>
+                    Show the relationship between the number of EC conserved in all compared genomes and the number of compared genomes (red).
+
+                {% elif type == 'ko' %}
+                    Show the relationship between the total number of KO and the number of genomes considered (blue). <br>
+                    Show the relationship between the number of KO conserved in all compared genomes and the number of compared genomes (red).
+
+                {% elif type == 'orthology' %}
+                    Orthologous groups (pan/core genome plots)
+                {% endif %}
+
+
+                <br>
+            </p>
+        </div>
 
                 <table style="width:190px; float: left;">
                     <tr>

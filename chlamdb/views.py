@@ -4593,7 +4593,7 @@ def get_locus_annotations(biodb, locus_list):
     sql3 = 'select locus_tag,ko_id from enzyme.locus2ko_%s where locus_tag in (%s) ' % (biodb,
                                                                             '"' + '","'.join(locus_list) + '"')
     sql4 = 'select pathway_name,pathway_category from enzyme.kegg_pathway'
-    sql5 = 'select module_name,module_sub_sub_cat from enzyme.kegg_module'
+    sql5 = 'select module_name,description from enzyme.kegg_module'
 
     sql6 = 'select * from (select distinct locus_tag,interpro_accession,interpro_description ' \
            ' from interpro_%s where locus_tag in (%s)) A where interpro_accession!="0"' % (biodb,
@@ -4805,7 +4805,7 @@ def blastnr_cat_info(request, biodb, accession, rank, taxon):
     sql = 'select locus_tag,subject_accession,subject_kingdom,subject_scientific_name,subject_taxid,evalue,percent_identity ' \
           ' from custom_tables. locus2seqfeature_id_%s t1 ' \
           ' inner join blastnr.blastnr_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-          ' where t1.locus_tag in (%s) and hit_number=2;' % (biodb, biodb, locus_filter)
+          ' where t1.locus_tag in (%s) and hit_number=1;' % (biodb, biodb, locus_filter)
 
     locus_tag2blastnr_BBH = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -4836,6 +4836,11 @@ def identity_heatmap(request, biodb):
 
         if 'venn' in request.POST and form_venn.is_valid():
             taxon_list = form_venn.cleaned_data['targets']
+
+            if len(taxon_list) < 3:
+                wrong_count = True
+                return render(request, 'chlamdb/identity_heatmap.html', locals())
+
             plot_type = form_venn.cleaned_data['plot']
             taxon_filter = '"'+'","'.join(taxon_list)+'"'
 
@@ -9638,7 +9643,7 @@ def transporters_list(request, biodb):
             if transporter_superfamily == 'all':
                 sql = 'select t8.locus_tag,t3.description,t1.n_hsps, t1.evalue, t1.bitscore_first_hsp, ' \
                       ' t1.identity, t1.query_TMS, t1.hit_TMS, t1.query_cov, t1.hit_cov,t7.uniprot_accession, ' \
-                      ' t7.substrate, t7.description, t5.description,t6.description from transporters.transporters_%s t1 ' \
+                      ' t7.substrate, t7.description, t5.description,t6.description, t3.tc_name from transporters.transporters_%s t1 ' \
                       ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
                       ' inner join transporters.tc_table t3 on t2.family=t3.tc_id ' \
                       ' inner join transporters.tc_table t4 on t2.superfamily=t4.tc_id ' \
@@ -9666,9 +9671,9 @@ def transporters_list(request, biodb):
                 envoi = True
 
             else:
-                sql = 'select t6.locus_tag,t3.description,t1.n_hsps, t1.evalue, t1.bitscore_first_hsp, ' \
-                      ' t1.identity, t1.query_TMS, t1.hit_TMS, t1.query_cov, t1.hit_cov,t5.uniprot_accession, ' \
-                      ' t5.substrate, t5.description from transporters.transporters_%s t1 ' \
+                sql = 'select t8.locus_tag,t3.description,t1.n_hsps, t1.evalue, t1.bitscore_first_hsp, ' \
+                      ' t1.identity, t1.query_TMS, t1.hit_TMS, t1.query_cov, t1.hit_cov,t7.uniprot_accession, ' \
+                      ' t7.substrate, t7.description, t5.description,t6.description, t3.tc_name from transporters.transporters_%s t1 ' \
                       ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
                       ' inner join transporters.tc_table t3 on t2.family=t3.tc_id ' \
                       ' inner join transporters.tc_table t4 on t2.superfamily=t4.tc_id ' \
@@ -10837,7 +10842,7 @@ def metabo_overview(request, biodb):
             else:
 
                 pathway_category2taxon2map[one_row[0]][one_row[1]][one_row[2]] = one_row[3:]
-
+    '''
     tree = ete_motifs.pathways_heatmap(biodb,
                                       category2maps,
                                       pathway_category2taxon2map)
@@ -10857,7 +10862,7 @@ def metabo_overview(request, biodb):
         asset_path = '/temp/metabo_tree.svg'
 
         tree.render(path, dpi=800, h=600)
-
+    '''
     envoi = True
 
     #else:  # Si ce n'est pas du POST, c'est probablement une requête GET
