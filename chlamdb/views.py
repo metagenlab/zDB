@@ -9913,7 +9913,8 @@ def transporters(request, biodb):
                        ' where t2.name="%s";' % biodb
             server, db = manipulate_biosqldb.load_db(biodb)
             tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
-
+            t1 = Tree(tree)
+            '''
             acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
             filter = '"' + '","'.join(acc_list) + '"'
             sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
@@ -9926,6 +9927,7 @@ def transporters(request, biodb):
             except:
                 pass
             t1.ladderize()
+            '''
 
 
             if transporter_superfamily == 'all':
