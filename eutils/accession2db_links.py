@@ -208,11 +208,12 @@ def get_whole_db_uniprot_crossref(biodb):
     import manipulate_biosqldb
     import re
     import urllib2
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     from tempfile import NamedTemporaryFile
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="custom_tables") # name of the data base
 
     cursor = conn.cursor()

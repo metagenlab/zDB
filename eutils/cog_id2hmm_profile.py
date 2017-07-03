@@ -8,10 +8,12 @@ Entrez.email = "trestan.pillonel@unil.ch"
 def cog_id2sequences(cog_id):
 
     import MySQLdb
+    import os
+    sqlpsw = os.environ['SQLPSW']
     from tempfile import NamedTemporaryFile
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="COG") # name of the data base
     cursor = conn.cursor()
 

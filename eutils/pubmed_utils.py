@@ -6,12 +6,20 @@ from Bio import Entrez
 Entrez.email = "trestan.pillonel@unil.ch"
 
 def pmid2abstract_info(pmid):
-    handle = Entrez.esummary(db="pubmed", id="%s" % pmid, retmode="xml")
-    records = Entrez.parse(handle)
-    for record in records:
-        print record['Title']
-        print record['FullJournalName']
-        print record['SO']
+    from Bio import Medline
+    handle = Entrez.efetch(db="pubmed", id=pmid, rettype="medline",
+                           retmode="text")
+    record = Medline.read(handle)
+
+    print record
+    pmid_data = {}
+    pmid_data["title"] = record.get("TI", "?")
+    pmid_data["authors"] = record.get("AU", "?")
+    pmid_data["source"] = record.get("SO", "?")
+    pmid_data["abstract"] = record.get("AB", "?")
+    pmid_data["pmid"] = pmid
+
+    return pmid_data
 
 def doi2abstract_info():
     pass
