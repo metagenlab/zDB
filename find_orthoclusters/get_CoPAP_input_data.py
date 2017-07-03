@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-def get_profile_fasta(biodb):
+def get_profile_fasta(biodb, taxon_id):
     '''
 
     - ordered taxon
@@ -24,7 +24,10 @@ def get_profile_fasta(biodb):
 
     taxon2accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select * from comparative_tables.orthology_%s' % biodb
+    taxon_id_filter = '`'+'`,`'.join(taxon2accession.keys())+'`'
+
+    sql = 'select t2.locus_tag,%s from comparative_tables.orthology_%s t1 inner join orthology_detail_%s t2 on t1.orthogroup=t2.orthogroup' \
+          ' where t2.taxon_id=%s' % (taxon_id_filter, biodb, biodb, taxon_id)
     sql3 = 'show columns from comparative_tables.orthology_%s' % (biodb)
 
     data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
@@ -56,7 +59,7 @@ def get_profile_fasta(biodb):
 
         #print ">%s\n%s" % (taxon2accession[taxon], profile)
 
-def get_annotation_file(biodb):
+def get_annotation_file(biodb, taxon_id):
     '''
     Pos	ID	Description
     1	G0001	Module A subunit 1
@@ -68,13 +71,12 @@ def get_annotation_file(biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select orthogroup from comparative_tables.orthology_%s' % biodb
-    data = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+    sql = 'select t2.locus_tag,t2.product from comparative_tables.orthology_%s t1 inner join orthology_detail_%s t2 on t1.orthogroup=t2.orthogroup' \
+          ' where t2.taxon_id=%s' % (biodb, biodb, taxon_id)
+    data = server.adaptor.execute_and_fetchall(sql,)
     print 'Pos\tID\tDescription'
-    for i, group in enumerate(data):
-        print "%s\t%s\t%s" % (i+1, group, "")
-
-
+    for i, row in enumerate(data):
+        print "%s\t%s\t%s" % (i+1, row[0], row[1])
 
 def get_phylogeny(biodb):
     import manipulate_biosqldb
@@ -86,6 +88,6 @@ def get_phylogeny(biodb):
     tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
     return tree
 
-#get_profile_fasta('chlamydia_04_16')
+#get_profile_fasta('chlamydia_04_16', 66)
 #print get_phylogeny('chlamydia_04_16')
-get_annotation_file('chlamydia_04_16')
+get_annotation_file('chlamydia_04_16', 66)

@@ -108,7 +108,7 @@ def euclidian_dist_orthogroups(biodb, merge_taxons=False):
     library(reshape2)
 
     con <- dbConnect(MySQL(),
-             user="root", password="estrella3",
+             user="root", password="baa",
              dbname="comparative_tables", host="localhost")
 
     rs1 <- dbSendQuery(con, 'select * from core_orthogroups_identity_msa_%s;')
