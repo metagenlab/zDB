@@ -68,9 +68,12 @@ class orthogroup2network:
 
     def __init__(self, orthogroup, threshold=995):
         import MySQLdb
+        import os
+        sqlpsw = os.environ['SQLPSW']
+
         mysql_host = 'localhost'
         mysql_user = 'root'
-        mysql_pwd = 'estrella3'
+        mysql_pwd = sqlpsw
         mysql_db = 'string'
         conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
                                user=mysql_user, # your username
@@ -289,7 +292,7 @@ layout: {
 	name: 'cose',
     maxSimulationTime: 6000,
     randomize: true,
-    nodeSpacing: 50,
+    nodeSpacing: 30,
     animate: true
   },
   container: document.getElementById('cy'),
@@ -308,7 +311,7 @@ layout: {
         'text-outline-color': 'data(faveColor)',
         'background-color': 'data(faveColor)',
         'color': '#000000',
-	    'font-size': 22
+	    'font-size': 18
 
       })
     .selector(':selected')
@@ -407,6 +410,7 @@ layout: {
         at: 'top right'
       }
     });
+
   });
 }); // on dom ready
 
