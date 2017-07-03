@@ -211,15 +211,18 @@ def plot_multiple_regions_crosslink(target_protein_list,
     from matplotlib.colors import rgb2hex
     import matplotlib as mpl
     import MySQLdb
+    import os
+    sqlpsw = os.environ['SQLPSW']
 
     norm = mpl.colors.Normalize(vmin=-30, vmax=100)
     cmap = cm.Blues
     m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 
+
     conn = MySQLdb.connect(host="127.0.0.1", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="orth_%s" % biodb_name) # name of the data base
     cursor = conn.cursor()
 
@@ -361,6 +364,10 @@ def plot_multiple_regions_crosslink(target_protein_list,
 
         one_row_locus = []
         for feature in record.features:
+            if feature.type == "tblast_target":
+                feature.name = 'match'
+                gd_feature_set.add_feature(feature, sigil="BOX", color="#ff4a0c86", label=False, label_position="middle", label_size=25, label_angle=0)
+
 
             if feature.type == "assembly_gap":
                 print "gap", feature
@@ -384,6 +391,10 @@ def plot_multiple_regions_crosslink(target_protein_list,
             if feature.type == "repeat_region":
 
                 gd_feature_set.add_feature(feature, sigil="BOX", color="blue", label=True, label_position="middle", label_strand=1, label_size=14, label_angle=40)
+
+            if 'pseudo' in feature.qualifiers:
+
+                gd_feature_set.add_feature(feature, sigil="OCTO", color="#6E6E6E", label=True, label_position="middle", label_strand=1, label_size=10, label_angle=40)
 
 
             elif feature.type != "CDS":
@@ -676,18 +687,51 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
                                                         color_locus_list=color_locus_list)
     return region_locus_list, orthogroup_list
     
-    #for record in reformat_records:
-    #    print "record id", record.id
-    #    print "record name", record.name
-    #    if record.id not in loaded_records.keys():
-            
-    #        loaded_records[record.id] = record
-            
-    #return loaded_records
+def location2plot(biodb,
+                  biodb_name,
+                  accession,
+                  out_name,
+                  start,
+                  end,
+                  cache,
+                  color_locus_list = [],
+                  region_highlight=[]):
+    import copy
 
+    key = biodb_name + "_" + accession
+    biorecord = cache.get(key)
+    if biorecord:
+        print key, "in memory"
+    else:
+        print key, "NOT in memory"
+        cache_time = None
 
-#server, db = manipulate_biosqldb.load_db("chlamydiales")
-#proteins_id2cossplot(server, db, "chlamydiales", ["CAQ48442.1"], "first_test.svg", 16000)
+        new_record = biodb.lookup(accession=accession)
+        new_record_reformat = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
+                                                         id=new_record.id, name=new_record.name,
+                                                         description=new_record.description,
+                                                         dbxrefs =new_record.dbxrefs,
+                                                         features=new_record.features,
+                                                         annotations=new_record.annotations)
+        cache.set(key, new_record_reformat, cache_time)
+        biorecord = cache.get(key)
+        if biorecord:
+            print key, "in memory"
+
+    fake_feature = copy.copy(biorecord.features[1])
+    fake_feature.type = "tblast_target"
+    fake_feature.location = FeatureLocation(region_highlight[0], region_highlight[1], strand=0)
+    biorecord.features.append(fake_feature)
+    sub_record = biorecord[start:end]
+    sub_record.features = ([sub_record.features[-1]] + sub_record.features[0:-1])
+    region_locus_list = plot_multiple_regions_crosslink([],
+                                                        [sub_record],
+                                                        [False],
+                                                        out_name,
+                                                        biodb_name,
+                                                        color_locus_list=color_locus_list)
+    return region_locus_list
+
 
 
 

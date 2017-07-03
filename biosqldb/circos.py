@@ -156,7 +156,8 @@ class CircosAccession2multiplot():
                  href,
                  ordered_taxons,
                  locus2label=False,
-                 show_homologs=True):
+                 show_homologs=True,
+                 radius=0.75):
 
         import manipulate_biosqldb
         import gbk2circos
@@ -1599,7 +1600,8 @@ class CircosAccession2multiplot():
                                                                    draft_data=draft_fasta,
                                                                    draft_coordinates=False,
                                                                    locus2label=locus2label,
-                                                                   show_homologs=show_homologs)
+                                                                   show_homologs=show_homologs,
+                                                                   get_orthogroup_counts=True)
 
 
         #print "taxon_id2description_ref", taxon_id2description_reference
@@ -1620,7 +1622,7 @@ class CircosAccession2multiplot():
         else:
             chr_spacing_list.append([reference_records[-1].id, reference_records[0].id])
 
-        circos_reference = gbk2circos.Circos_config(circos_files_reference["contigs"], chr_spacing_list)
+        circos_reference = gbk2circos.Circos_config(circos_files_reference["contigs"], chr_spacing_list, radius=radius)
 
         # add plus minus genes
         circos_reference.add_highlight(circos_files_reference["plus"], fill_color="grey_a1", r1="0.98r", r0="0.95r", href=href)

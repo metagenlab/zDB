@@ -330,10 +330,11 @@ def get_module_table(module2category):
     import urllib2
     import re
     import sys
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="enzyme") # name of the data base
     cursor = conn.cursor()
 
@@ -438,10 +439,11 @@ def get_pathway2ko():
     import urllib2
     import re
     import sys
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="enzyme") # name of the data base
     cursor = conn.cursor()
 
@@ -512,10 +514,11 @@ def get_ec_data_from_IUBMB(ec):
     import re
     import MySQLdb
     from bs4 import BeautifulSoup
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="enzyme") # name of the data base
     cursor = conn.cursor()
 
@@ -609,10 +612,11 @@ def get_pathay_table(map2category):
     import MySQLdb
     import urllib2
     import sys
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="enzyme") # name of the data base
     cursor = conn.cursor()
 
@@ -663,10 +667,11 @@ def get_ec2get_pathway_table():
     import urllib2
     import sys
     import manipulate_biosqldb
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="enzyme") # name of the data base
     cursor = conn.cursor()
 
@@ -797,10 +802,11 @@ def load_enzyme_nomenclature_table():
     from Bio.ExPASy import Enzyme
     import MySQLdb
     import urllib2
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="enzyme") # name of the data base
     cursor = conn.cursor()
     conn.set_character_set('utf8')
@@ -937,10 +943,11 @@ def get_microbial_metabolism_in_diverse_environments_kegg01120():
     import re
     import MySQLdb
     from bs4 import BeautifulSoup
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="enzyme") # name of the data base
     cursor = conn.cursor()
 

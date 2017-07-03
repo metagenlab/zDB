@@ -8,10 +8,11 @@ def add_one_tc_id(biodb, tc_id):
     import tcdb_utils
     import MySQLdb
     import re
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="transporters") # name of the data base
     cursor = conn.cursor()
 
@@ -101,10 +102,11 @@ def insert_uniprot_in_db(biodb, uniprot_accession, tc_id):
     import re
     import accession2taxon_id
     import sequence_id2scientific_classification
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="transporters") # name of the data base
     cursor = conn.cursor()
 

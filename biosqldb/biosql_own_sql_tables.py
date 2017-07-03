@@ -473,7 +473,8 @@ def accession2coding_density(biodb):
     accession2n_rrna = {}
     accession2big_contig_length = {}
     for n, accession in enumerate(accession_list):
-
+        print accession
+        accession = accession.split('.')[0]
         record = db.lookup(accession=accession)
         long_record_list = []
         start = 0
@@ -484,7 +485,7 @@ def accession2coding_density(biodb):
                 stop = feature.location.start -1
                 sub_record = record[start:stop]
                 start = feature.location.end+1
-                if len(sub_record)>=10000:
+                if len(sub_record)>=50000: # 10000
                     big_contig_length+=len(sub_record)
                     long_record_list.append(sub_record)
         stop = len(record)
@@ -943,6 +944,7 @@ def collect_genome_statistics(biodb):
 
     print 'getting accession2genome_data...'
     # organism name, protein encoding ORF number
+    print sql
     accession2genome_data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     accession2density, accession2n_trna, accession2n_rrna,accession2big_contig_length = accession2coding_density(biodb)
@@ -953,6 +955,7 @@ def collect_genome_statistics(biodb):
     genomes_data = []
 
     for accession in accession2genome_data:
+        accession = accession.split('.')[0]
         print accession
         one_genome_data = []
         one_genome_data.append(accession)

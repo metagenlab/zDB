@@ -115,10 +115,11 @@ def get_interpro_version():
 def create_interpro_taxonomy_table(interpro_version):
 
     import MySQLdb
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="interpro") # name of the data base
     cursor = conn.cursor()
 
@@ -132,10 +133,11 @@ def create_interpro_taxonomy_table(interpro_version):
 def get_whole_db_interpro_taxonomy():
     import MySQLdb
     import manipulate_biosqldb
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="interpro") # name of the data base
     cursor = conn.cursor()
 

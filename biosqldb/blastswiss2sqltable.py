@@ -458,6 +458,7 @@ if __name__ == '__main__':
     import argparse
     import manipulate_biosqldb
     import sys
+    import os
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--input_blast', type=str, help="input blast tab files", nargs='+')
@@ -474,8 +475,7 @@ if __name__ == '__main__':
     mysql_host = 'localhost'
     mysql_user = 'root'
 
-    mysql_pwd = 'estrella3'
-
+    mysql_pwd = os.environ['SQLPSW']
     mysql_db = 'blastnr'
 
     biodb = args.mysql_database

@@ -680,7 +680,7 @@ def insert_taxons_into_sqldb(taxon_id_list,
                              chunk_size=300,
                              mysql_host = 'localhost',
                              mysql_user = 'root',
-                             mysql_pwd = 'estrella3',
+                             mysql_pwd = 'wnkonwn',
                              mysql_db = 'blastnr'):
     import time
     import MySQLdb
@@ -847,7 +847,7 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
     print 'Fetching ncbi taxonomy... for %s taxons' % str(len(all_taxon_ids))
 
     # subdivide the taxon list in smaller lists, otherwise NCBI will limit the results to? 10000 (observed once only)
-    insert_taxons_into_sqldb(all_taxon_ids, 300)
+    insert_taxons_into_sqldb(all_taxon_ids, 300, mysql_pwd=mysql_pwd)
 
 
 
@@ -951,6 +951,7 @@ if __name__ == '__main__':
     import argparse
     import manipulate_biosqldb
     import sys
+    import os
     import json
 
     parser = argparse.ArgumentParser()
@@ -972,8 +973,7 @@ if __name__ == '__main__':
     mysql_host = 'localhost'
     mysql_user = 'root'
 
-    mysql_pwd = 'estrella3'
-
+    mysql_pwd = os.environ['SQLPSW']
     mysql_db = 'blastnr'
 
     biodb = args.mysql_database

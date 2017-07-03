@@ -45,7 +45,9 @@ def insert_blast_table(input_file, table_name):
     import os
     wd = os.getcwd()
     path = os.path.join(wd, input_file)
-    cmd = 'mysql -uroot -pestrella3 biosqldb -e \'LOAD DATA LOCAL INFILE "%s" INTO TABLE temp_tables.%s;\'' % (path, table_name)
+
+    sqlpsw = os.environ['SQLPSW']
+    cmd = 'mysql -uroot -p%s biosqldb -e \'LOAD DATA LOCAL INFILE "%s" INTO TABLE temp_tables.%s;\'' % (sqlpsw,path, table_name)
     print cmd
     a, b, c = shell_command.shell_command(cmd)
     print a

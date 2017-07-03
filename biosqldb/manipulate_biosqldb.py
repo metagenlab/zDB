@@ -47,9 +47,10 @@ def query_yes_no(question, default="yes"):
 
 
 def load_db(db_name=False):
-    
+    import os
+    sqlpsw = os.environ['SQLPSW']
     server = BioSeqDatabase.open_database(driver="MySQLdb", user="root",
-                       passwd = "estrella3", host = "127.0.0.1", db="biosqldb")
+                       passwd = sqlpsw, host = "127.0.0.1", db="biosqldb")
     if db_name:
         try:
             db = server[db_name]

@@ -313,7 +313,7 @@ def create_sql_plastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
 def update_blastnr_taxonomy_table(blast_table_name,
                                   mysql_host="localhost",
                                   mysql_user="root",
-                                  mysql_pwd="estrella3",
+                                  mysql_pwd="baba",
                                   mysql_db="blastnr"):
     import MySQLdb
     from plastnr2sqltable import insert_taxons_into_sqldb
@@ -559,6 +559,7 @@ if __name__ == '__main__':
     import argparse
     import manipulate_biosqldb
     import sys
+    import os
     import json
 
     parser = argparse.ArgumentParser()
@@ -581,8 +582,7 @@ if __name__ == '__main__':
     mysql_host = 'localhost'
     mysql_user = 'root'
 
-    mysql_pwd = 'estrella3'
-
+    mysql_pwd = os.environ['SQLPSW']
     mysql_db = 'blastnr'
 
     biodb = args.mysql_database
@@ -624,6 +624,8 @@ if __name__ == '__main__':
                         *args.input_blast)
 
     if args.update_taxo_table:
-        #update_blastnr_taxonomy_table('blastnr_%s' % biodb)
+        import os
+        sqlpsw = os.environ['SQLPSW']
+        #update_blastnr_taxonomy_table('blastnr_%s' % biodb,  mysql_pwd=sqlpsw)
         update_blastnr_taxonomy_table('blast_swissprot_%s' % biodb)
         #update_blastnr_taxonomy_table('blast_swissprot_%s' % biodb)
