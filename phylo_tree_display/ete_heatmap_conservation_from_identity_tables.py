@@ -94,10 +94,12 @@ def plot_heat_tree(gene2genome_id, tree_file, genes, accession2description=False
 
     #t.populate(8)
     # Calculate the midpoint node
-    R = t1.get_midpoint_outgroup()
-    # and set it as tree outgroup
-    t1.set_outgroup(R)    # To operate with numbers efficiently
-
+    try:
+        R = t1.get_midpoint_outgroup()
+        # and set it as tree outgroup
+        t1.set_outgroup(R)    # To operate with numbers efficiently
+    except:
+        pass
     family = ["16S", "23S"]
 
     genus = [
@@ -251,14 +253,24 @@ def plot_heat_tree(gene2genome_id, tree_file, genes, accession2description=False
 
     for n in t1.traverse():
        nstyle = NodeStyle()
-       if n.support < 1:
-           nstyle["fgcolor"] = "black"
-           nstyle["size"] = 6
-           n.set_style(nstyle)
+       if n.support > 1:
+           if n.support < 90:
+               nstyle["fgcolor"] = "black"
+               nstyle["size"] = 6
+               n.set_style(nstyle)
+           else:
+               nstyle["fgcolor"] = "red"
+               nstyle["size"] = 0
+               n.set_style(nstyle)
        else:
-           nstyle["fgcolor"] = "red"
-           nstyle["size"] = 0
-           n.set_style(nstyle)
+           if n.support < 1:
+               nstyle["fgcolor"] = "black"
+               nstyle["size"] = 6
+               n.set_style(nstyle)
+           else:
+               nstyle["fgcolor"] = "red"
+               nstyle["size"] = 0
+               n.set_style(nstyle)
 
     #a = t1.render(output_file, dpi=800, h=i*15)
     return t1, tss,leaf_number

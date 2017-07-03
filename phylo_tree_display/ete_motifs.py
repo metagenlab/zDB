@@ -897,7 +897,7 @@ def multiple_profiles_heatmap(biodb,
                                             if round(group2taxon2count[value][lf.name], 2) < 10:
                                                 n = TextFace('  %s  ' % local_label)
                                             else:
-                                                n = TextFace(' %s ' % local_label)
+                                                n = TextFace(' %s  ' % local_label)
                                         else:
                                             n = TextFace('%s ' % local_label)
 
@@ -1404,8 +1404,10 @@ def draw_TM_tree(tree_name, locus2data):
         leaf_number+=1
         locus_name = str(l)[3:len(str(l))]
         locus_name = locus_name.split('|')[0]
-        data = locus2data[locus_name]
-
+        try:
+            data = locus2data[locus_name]
+        except:
+            pass
         seq_motifs = []
         l.img_style['fgcolor'] = color_dico[data[0][2]]
         l.img_style['hz_line_type'] = 0
