@@ -6,7 +6,7 @@ def orthogroup2blast_hits(biodb,
                             exclude_phylum=["Chlamydiae", 'Verrucomicrobia', 'Planctomycetes'],
                             mysql_host="localhost",
                             mysql_user="root",
-                            mysql_pwd="estrella3",
+                            mysql_pwd="baba",
                             mysql_db="blastnr",
                             database='blast_swissprot'):
 
@@ -127,6 +127,9 @@ def orthogroup2alignment_closest(orthogroup,
                                  swissprot=True,
                                  refseq=True):
     from promer2circos import chunks
+    import os
+    sqlpsw = os.environ['SQLPSW']
+
     if swissprot:
         print 'getting swissprot best hits...'
         # get uniprot record of the <max_n_hits_uniprot> best hits of each <orthogroup> locus
@@ -134,7 +137,8 @@ def orthogroup2alignment_closest(orthogroup,
                                                              orthogroup,
                                                              max_n_hits=max_n_hits_uniprot,
                                                              exclude_phylum=exclude_phylum,
-                                                             database='blast_swissprot')
+                                                             database='blast_swissprot',
+                                                             mysql_pwd=sqlpsw)
         if len(locus2uniprot_accession_list) == 0:
             uniprot_sequence_records = []
             swissprot = False
@@ -202,7 +206,7 @@ def plot_tree(ete2_tree,
               biodb,
               mysql_host="localhost",
               mysql_user="root",
-              mysql_pwd="estrella3",
+              mysql_pwd="baba",
               mysql_db="blastnr"):
 
     import MySQLdb
@@ -347,6 +351,8 @@ if __name__ == '__main__':
     import sys
     from Bio import SeqIO
     import manipulate_biosqldb
+    import os
+    sqlpsw = os.environ['SQLPSW']
     parser = argparse.ArgumentParser()
     parser.add_argument("-i",'--orthogroup', type=str, help="orthogroup name")
     parser.add_argument("-d",'--biodb', type=str, help="biodb")
@@ -371,7 +377,7 @@ if __name__ == '__main__':
         if alignment:
             t = aafasta2phylogeny("%s_swiss_homologs.faa" % grp)
 
-            tree, ts = plot_tree(t, grp,"chlamydia_04_16")
+            tree, ts = plot_tree(t, grp,"chlamydia_04_16", mysql_pwd=sqlpsw)
             out_name = "%s.svg" % grp
             tree.render(out_name, tree_style=ts)
     else:
