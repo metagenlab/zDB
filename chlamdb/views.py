@@ -59,6 +59,7 @@ from django.contrib.auth import logout
 from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.forms.utils import flatatt
 
 import manipulate_biosqldb
 import mysqldb_plot_genomic_feature
@@ -4909,14 +4910,30 @@ def pan_genome(request, biodb, type):
         if form.is_valid():
             import core_pan_genome_plots
             import numpy
+            import pandas
 
 
             taxon_list = form.cleaned_data['targets']
 
             filter = '`'+'`,`'.join(taxon_list)+'`'
+
+            sql = 'select  orthogroup from comparative_tables.%s_%s' % (type, biodb)
+            group_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+
             sql = 'select %s from comparative_tables.%s_%s' % (filter, type, biodb)
 
             data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
+            print 'grp', len(group_list)
+            print 'tt', data[0:5,:]
+            count_df = pandas.DataFrame(data, columns=taxon_list, index=group_list)
+            t = count_df[(count_df == 1).sum(axis=1) == len(taxon_list)]
+            t2 = count_df[(count_df == 1).sum(axis=1) == len(taxon_list)-1]
+            print 't', t.index.tolist()
+            print 't', t2.index.tolist()
+            print 'core single copy', len(t)
+            print 'core single copy-1', len(t2)
+
             path = settings.BASE_DIR + '/assets/temp/pangenome.svg'
             asset_path = '/temp/pangenome.svg'
             path2 = settings.BASE_DIR + '/assets/temp/pangenome_barplot.svg'
@@ -4930,6 +4947,140 @@ def pan_genome(request, biodb, type):
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
         form = venn_form_class()
     return render(request, 'chlamdb/pan_genome.html', locals())
+
+
+
+
+def core_genome_missing(request, biodb, type):
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    venn_form_class = make_venn_from(biodb)
+
+    if request.method == 'POST':
+        form = venn_form_class(request.POST)
+        if form.is_valid():
+            import core_pan_genome_plots
+            import numpy
+            import pandas
+            import ete_motifs
+            import biosql_own_sql_tables
+
+
+            taxon_list = form.cleaned_data['targets']
+
+            filter = '`'+'`,`'.join(taxon_list)+'`'
+
+            sql = 'select  orthogroup from comparative_tables.%s_%s' % (type, biodb)
+            group_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+
+            sql = 'select %s from comparative_tables.%s_%s' % (filter, type, biodb)
+
+            data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
+            print 'grp', len(group_list)
+            print 'tt', data[0:5,:]
+            count_df = pandas.DataFrame(data, columns=taxon_list, index=group_list)
+            t0 = count_df[(count_df == 1).sum(axis=1) >= len(taxon_list)]
+            t1 = count_df[(count_df == 1).sum(axis=1) >= len(taxon_list)-1]
+            t2 = count_df[(count_df == 1).sum(axis=1) >= len(taxon_list)-2]
+            t3 = count_df[(count_df == 1).sum(axis=1) >= len(taxon_list)-3]
+            t4 = count_df[(count_df == 1).sum(axis=1) >= len(taxon_list)-4]
+            t5 = count_df[(count_df == 1).sum(axis=1) >= len(taxon_list)-5]
+            t6 = count_df[(count_df == 1).sum(axis=1) >= len(taxon_list)-6]
+
+            core0 = t0.index.tolist()
+            core1 = t1.index.tolist()
+            core2 = t2.index.tolist()
+            core3 = t3.index.tolist()
+            core4 = t4.index.tolist()
+            core5 = t5.index.tolist()
+            core6 = t6.index.tolist()
+
+            count_list = t1.sum(axis=1)
+            group2count = zip(count_list.index.tolist(), list(count_list))
+
+            taxon2n_missing1 = {}
+            taxon2n_missing2 = {}
+            taxon2n_missing3 = {}
+            taxon2n_missing4 = {}
+            taxon2n_missing5 = {}
+            taxon2n_missing6 = {}
+
+            for group in core1:
+                for taxon in taxon_list:
+                    if count_df.loc[group,taxon] != 1:
+                        if int(taxon) == 66:
+                            print 'wadd!', group
+                        if taxon not in taxon2n_missing1:
+
+                            taxon2n_missing1[taxon] = 1
+                        else:
+                            taxon2n_missing1[taxon] += 1
+
+            for group in core2:
+                for taxon in taxon_list:
+                    if count_df.loc[group,taxon] != 1:
+                        if taxon not in taxon2n_missing2:
+                            taxon2n_missing2[taxon] = 1
+                        else:
+                            taxon2n_missing2[taxon] += 1
+            for group in core3:
+                for taxon in taxon_list:
+                    if count_df.loc[group, taxon] != 1:
+                        if taxon not in taxon2n_missing3:
+                            taxon2n_missing3[taxon] = 1
+                        else:
+                            taxon2n_missing3[taxon] += 1
+            for group in core4:
+                for taxon in taxon_list:
+                    if count_df.loc[group, taxon] != 1:
+                        if taxon not in taxon2n_missing4:
+                            taxon2n_missing4[taxon] = 1
+                        else:
+                            taxon2n_missing4[taxon] += 1
+            for group in core5:
+                for taxon in taxon_list:
+                    if count_df.loc[group,taxon] != 1:
+                        if taxon not in taxon2n_missing5:
+                            taxon2n_missing5[taxon] = 1
+                        else:
+                            taxon2n_missing5[taxon] += 1
+            for group in core6:
+                for taxon in taxon_list:
+                    if count_df.loc[group,taxon] != 1:
+                        if taxon not in taxon2n_missing6:
+                            taxon2n_missing6[taxon] = 1
+                        else:
+                            taxon2n_missing6[taxon] += 1
+
+            # group2taxon2count
+
+            n_missing2taxon2count = {}
+            n_missing2taxon2count['1'] = taxon2n_missing1
+            n_missing2taxon2count['2'] = taxon2n_missing2
+            n_missing2taxon2count['3'] = taxon2n_missing3
+            n_missing2taxon2count['4'] = taxon2n_missing4
+            n_missing2taxon2count['5'] = taxon2n_missing5
+            n_missing2taxon2count['6'] = taxon2n_missing6
+
+            labels = ['1','2','3','4', '5', '6']
+            tree1, style1 = ete_motifs.multiple_profiles_heatmap(biodb,labels,n_missing2taxon2count, column_scale=True, as_float=False)
+
+            path2 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
+            asset_path2 = '/temp/ortho_tree1.svg'
+            tree1.render(path2, dpi=800, h=600, tree_style=style1)
+
+            envoi = True
+
+            envoi = True
+    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+        form = venn_form_class()
+    return render(request, 'chlamdb/core_genome_missing.html', locals())
+
+
+
+
 
 def pairwiseid(request, biodb):
 

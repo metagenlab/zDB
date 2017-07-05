@@ -11,6 +11,7 @@ urlpatterns = [
                        url(r'^cog_barchart/([a-zA-Z0-9_]+)', cog_barchart, name="cog_barchart"),
                        url(r'^blast_sets/([a-zA-Z0-9_]+)', blast_sets, name="blast_sets"),
                        url(r'^pan_genome/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', pan_genome, name="pan_genome"),
+                       url(r'^core_genome_missing/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', core_genome_missing, name="core_genome_missing"),
                        url(r'^blastnr_overview/([a-zA-Z0-9_]+)', blastnr_overview, name="blastnr_overview"),
                        url(r'^refseq_swissprot_tree/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', refseq_swissprot_tree, name="refseq_swissprot_tree"),
                        url(r'^COG_phylo_heatmap/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', COG_phylo_heatmap, name="COG_phylo_heatmap"),
@@ -97,6 +98,7 @@ urlpatterns = [
                        url(r'^venn_ko/([a-zA-Z0-9_]+)$$', venn_ko, name="venn_ko"),
                        url(r'^extract_interpro/([a-zA-Z0-9_]+)$$', extract_interpro, name="extract_interpro"),
                        url(r'^extract_interpro/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$$', extract_interpro, name="extract_interpro"),
+
                        url(r'^venn_interpro/([a-zA-Z0-9_]+)$$', venn_interpro, name="venn_interpro"),
                        url(r'^extract_pfam/([a-zA-Z0-9_]+)$$', extract_pfam, name="extract_pfam"),
                        url(r'^extract_pfam/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$$', extract_pfam, name="extract_pfam"),
