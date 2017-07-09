@@ -410,6 +410,8 @@ def make_pairwiseid_form(database_name):
         genome_2 = forms.ChoiceField(choices=accessions)
         genome_3 = forms.ChoiceField(choices=accessions2)
         genome_4 = forms.ChoiceField(choices=accessions2)
+        genome_5 = forms.ChoiceField(choices=accessions2)
+        genome_6 = forms.ChoiceField(choices=accessions2)
 
     return PairwiseID
 
