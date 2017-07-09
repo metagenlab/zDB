@@ -282,14 +282,16 @@ def get_whole_db_uniprot_crossref(biodb):
             try:
                 old_locus = locus2old_locus[locus]
             except KeyError:
+                old_locus = False
                 print 'no old locus for %s' % locus
                 uniprot_id = sequence2uniprot_id(locus2sequence[locus])
                 print 'tried to match with sequence: %s' % uniprot_id
                 if not uniprot_id:
                     continue
             genus = locus2organism[locus].split(' ')[0]
-            print 'trying with old_locus_tag'
-            uniprot_id = ncbi_accession2uniprotid(old_locus, gene=True, organism=genus)
+            if old_locus:
+                print 'trying with old_locus_tag'
+                uniprot_id = ncbi_accession2uniprotid(old_locus, gene=True, organism=genus)
             if not uniprot_id:
                 uniprot_id = sequence2uniprot_id(locus2sequence[locus])
                 print 'tried to match with sequence: %s' % uniprot_id
