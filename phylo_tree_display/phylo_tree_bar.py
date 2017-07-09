@@ -6,13 +6,15 @@ from ete2 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace, BarC
 
 def plot_tree_stacked_barplot(tree_file,
                       taxon2value_list_barplot,
-                      header_list,
+                      header_list, # header stackedbarplots
                       taxon2set2value_heatmap=False,
                       taxon2label=False,
-                      header_list2=False,
+                      header_list2=False, # header counts columns
                       biodb="chlamydia_04_16",
                       column_scale=True,
-                      general_max=False):
+                      general_max=False,
+                              header_list3 =False,
+                              set2taxon2value_list_simple_barplot=False):
 
     '''
 
@@ -41,8 +43,8 @@ def plot_tree_stacked_barplot(tree_file,
     # and set it as tree outgroup
     t1.set_outgroup(R)
 
-    colors = ["red","#FFFF00","#58FA58","#819FF7","#F781F3", "#2E2E2E","#F7F8E0"]
-
+    colors = ["red","#FFFF00","#58FA58","#819FF7","#F781F3", "#2E2E2E","#F7F8E0", 'black']
+    colors2 = ["#7fc97f","#386cb0","#fdc086","#ffffb3","#fdb462", "#f0027f","#F7F8E0", 'black']
 
     tss = TreeStyle()
     tss.draw_guiding_lines = True
@@ -53,13 +55,19 @@ def plot_tree_stacked_barplot(tree_file,
         from matplotlib.colors import rgb2hex
         import matplotlib as mpl
         column2scale = {}
+        col_n = 0
         for column in header_list2:
             values = taxon2set2value_heatmap[column].values()
 
-            norm = mpl.colors.Normalize(vmin=min(values), vmax=max(values))
-            cmap = cm.OrRd
+            norm = mpl.colors.Normalize(vmin=min(values), vmax=max(values)*1.1)
+            if col_n < 4:
+                cmap = cm.OrRd#
+            else:
+                cmap = cm.YlGnBu#PuBu#OrRd
+
             m = cm.ScalarMappable(norm=norm, cmap=cmap)
-            column2scale[column] = m
+            column2scale[column] = [m,float(max(values))*0.7]
+            col_n+=1
 
     for i, lf in enumerate(t1.iter_leaves()):
 
@@ -90,12 +98,30 @@ def plot_tree_stacked_barplot(tree_file,
                 n.margin_right = 1
                 n.margin_left = 20
                 n.margin_bottom = 1
+                n.hz_align = 2
+                n.vt_align = 2
                 n.inner_background.color = "white"
                 n.opacity = 1.
+                tss.aligned_header.add_face(n, col+col_add)
+            final_col = col+1
 
-                tss.aligned_header.add_face(n, col+col_add+1)
+            if header_list3:
+                print 'header_list 3!'
+                for col, header in enumerate(header_list3):
+                    n = TextFace('%s' % header)
+                    n.margin_top = 1
+                    n.margin_right = 1
+                    n.margin_left = 20
+                    n.margin_bottom = 1
+                    n.rotation = 0
+                    n.hz_align = 2
+                    n.vt_align = 2
+                    n.inner_background.color = "white"
+                    n.opacity = 1.
+                    print col+final_col
+                    tss.aligned_header.add_face(n, col+final_col)
+                final_col += col+1
 
-            col_add2 = col_add+len(header_list)+1
             if header_list2:
                 for col, header in enumerate(header_list2):
                     n = TextFace('%s' % header)
@@ -104,9 +130,14 @@ def plot_tree_stacked_barplot(tree_file,
                     n.margin_left = 20
                     n.margin_bottom = 1
                     n.rotation = 270
+                    n.hz_align = 2
+                    n.vt_align = 2
                     n.inner_background.color = "white"
                     n.opacity = 1.
-                    tss.aligned_header.add_face(n, col+col_add2)
+                    tss.aligned_header.add_face(n, col+final_col)
+                final_col += col+1
+
+
 
 
         if taxon2label:
@@ -135,46 +166,91 @@ def plot_tree_stacked_barplot(tree_file,
 
             total = float(sum(value_list))
             percentages = [(i/total)*100 for i in value_list]
+            if col % 2 == 0:
+                col_list = colors2
+            else:
+                col_list = colors
             b = StackedBarFace(percentages,
-                                width=300, height=20, colors=colors[0:len(percentages)])
+                                width=150, height=18, colors=col_list[0:len(percentages)])
             b.rotation= 0
             b.inner_border.color = "white"
             b.inner_border.width = 0
-            b.margin_right = 15
-            b.margin_left = 20
-            lf.add_face(b, col+col_add+1, position="aligned")
+            b.margin_right = 5
+            b.margin_left = 5
+            lf.add_face(b, col+col_add, position="aligned")
             col_count+=1
 
-        col_add=col_count+ 2
+        col_add=col_count
+
+        if set2taxon2value_list_simple_barplot:
+            col_list = ['#fc8d59', '#91bfdb', '#99d594']
+            color_i=0
+            for col, one_set in enumerate(header_list3):
+                if color_i>2:
+                    color_i=0
+                color = col_list[color_i]
+                color_i+=1
+                # values for all taxons
+                values_lists = [float(i) for i in set2taxon2value_list_simple_barplot[one_set].values()]
+                print values_lists
+                value = set2taxon2value_list_simple_barplot[one_set][lf.name]
+                print 'value and max', value, max(values_lists)
+                fraction_biggest = (float(value)/max(values_lists))*100
+                fraction_rest = 100-fraction_biggest
+
+                print 'fractions', fraction_biggest, fraction_rest
+                b = StackedBarFace([fraction_biggest, fraction_rest], width=100, height=15,colors=[color, 'white'])
+                b.rotation= 0
+                b.inner_border.color = "grey"
+                b.inner_border.width = 0
+                b.margin_right = 15
+                b.margin_left = 0
+                lf.add_face(b, col+col_add, position="aligned")
+            col_add+= col+1
 
         if taxon2set2value_heatmap:
             i = 0
+            #if not taxon2label:
+            #    col_add-=1
             for col2 in range(col_add, len(header_list2)+col_add):
+
+
+
                 col_name = header_list2[i]
                 try:
-                    value = taxon2set2value_heatmap[col_name][lf.name]
+                    value = taxon2set2value_heatmap[col_name][str(lf.name)]
                 except:
                     try:
                         value = taxon2set2value_heatmap[col_name][int(lf.name)]
                     except:
                         value = 0
-
-                if int(value) >0:
-                    if int(value) >10 and int(value) < 100:
-                        n = TextFace('%5i' % value)
-                    elif int(value)>=100:
+                if header_list2[i] == 'duplicates':
+                    print 'dupli', lf.name, value
+                print 'val', value
+                if int(value) > 0:
+                    if int(value) >=10 and int(value) < 100:
                         n = TextFace('%4i' % value)
+                    elif int(value)>=100:
+                        n = TextFace('%3i' % value)
                     else:
-                        n = TextFace('%6i' % value)
+
+                        n = TextFace('%5i' % value)
 
                     n.margin_top = 1
-                    n.margin_right = 1
+                    n.margin_right = 2
                     n.margin_left = 5
                     n.margin_bottom = 1
-                    n.hz_align = 2
-                    n.inner_background.color = rgb2hex(column2scale[col_name].to_rgba(float(value)))#"orange"
-                    n.opacity = 1.
+                    n.hz_align = 1
+                    n.vt_align = 1
 
+                    n.inner_background.color = rgb2hex(column2scale[col_name][0].to_rgba(float(value)))#"orange"
+                    #print 'xaxaxaxaxa', value,
+                    if float(value) > column2scale[col_name][1]:
+
+                        n.fgcolor = 'white'
+                    n.opacity = 1.
+                    n.hz_align = 1
+                    n.vt_align = 1
                     lf.add_face(n, col2, position="aligned")
                     i+=1
                 else:

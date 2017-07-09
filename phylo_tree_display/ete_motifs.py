@@ -860,7 +860,7 @@ def multiple_profiles_heatmap(biodb,
                 if not taxon2group2value:
                     if value not in group2taxon2count:
 
-                        print 'not-------------------', value
+                        #print 'not-------------------', value
 
                         n = TextFace(' - ')
                     else:
@@ -1325,17 +1325,34 @@ def draw_pfam_tree(tree_name, locus2data, locus2protein_id=False, taxon_id2famil
 
         seq_motifs = []
 
+        print 'data!', data
 
         #l.img_style['hz_line_type'] = 0
         #l.img_style['size'] = 10
 
         for motif in data:
             if motif[0]:
+                '''
+                #print 'motif', motif[0], motif[1]
+                seq = data[0][-1]
+
+                count=0
+                for n, letter in enumerate(seq):
+                    if letter != '-':
+                        count+=1
+                    if count == motif[0]:
+                        align_start = n+1
+                    if count == motif[1]:
+                        align_end = n+1
+                '''
+
+
 
                 seq_motifs.append([motif[0], motif[1], "[]", None, 10, "black", "PaleGreen", "arial|8|red|%s" % motif[4]])
         # check if alignment is available or not
         if len(data[0]) == 8:
-            seqFace = SeqMotifFace(data[0][-1],motifs=seq_motifs,
+            print 'tata', len(data[0][-1])
+            seqFace = SeqMotifFace(data[0][-1], motifs=seq_motifs,
                                    width=10,
                                    height=12,
                                    intermotif_format='-',
@@ -1406,13 +1423,17 @@ def draw_TM_tree(tree_name, locus2data):
         locus_name = locus_name.split('|')[0]
         try:
             data = locus2data[locus_name]
+            seq_motifs = []
+            l.img_style['fgcolor'] = color_dico[data[0][2]]
+            l.img_style['hz_line_type'] = 0
+            l.img_style['size'] = 10
         except:
-            pass
-        seq_motifs = []
-        l.img_style['fgcolor'] = color_dico[data[0][2]]
-        l.img_style['hz_line_type'] = 0
-        l.img_style['size'] = 10
-
+            #pass
+            seq_motifs = []
+            l.img_style['fgcolor'] = 'blue'
+            l.img_style['hz_line_type'] = 0
+            l.img_style['size'] = 10
+            continue
 
         for motif in data:
 
