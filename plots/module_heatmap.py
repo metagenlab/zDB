@@ -28,7 +28,7 @@ def module_list2profile_dico(biodb, module_list, taxon_id_list=[]):
               ' from enzyme.locus2ko_%s t1 inner join enzyme.module2ko t2 on t1.ko_id=t2.ko_id ' \
               ' inner join enzyme.kegg_module as t3 on t2.module_id=t3.module_id ' \
               ' where module_name in (%s)) A group by A.taxon_id,A.module_name;' % (biodb, filter_2)
-    print sql
+    #print sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
 

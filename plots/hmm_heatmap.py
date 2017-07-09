@@ -13,20 +13,23 @@ def get_single_set_data(biodb, set_name,column="bitscore", bitscore_cutoff=0, qu
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select  from hmm_sets t1 inner join hmm_sets_entry t2 on t1.set_id=t2.set_id inner join hmm_hits_annotated_genome_chlamydia_04_16 t3 ' \
-          'on t2.hmm_id=t3.hmm_id inner join custom_tables.locus2seqfeature_id_chlamydia_04_16 t4 on t3.seqfeature_id=t4.seqfeature_id where t1.name="T3SS"'
+    sql = 'select  from hmm_sets t1 inner join hmm_sets_entry t2 on t1.set_id=t2.set_id ' \
+          ' inner join hmm_hits_annotated_genome_chlamydia_04_16 t3 ' \
+          ' on t2.hmm_id=t3.hmm_id inner join custom_tables.locus2seqfeature_id_chlamydia_04_16 t4 ' \
+          ' on t3.seqfeature_id=t4.seqfeature_id where t1.name="T3SS"'
 
     sql = 'select t3.taxon_id,t4.name,%s from hmm.hmm_sets t1 ' \
           ' inner join hmm.hmm_sets_entry t2 on t1.set_id=t2.set_id ' \
           ' inner join hmm.hmm_hits_annotated_genome_%s t3 on t2.hmm_id=t3.hmm_id ' \
           ' inner join hmm.hmm_profiles t4 on t2.hmm_id=t4.hmm_id ' \
-          ' inner join custom_tables.locus2seqfeature_id_chlamydia_04_16 t5 on t3.seqfeature_id=t5.seqfeature_id' \
+          ' inner join custom_tables.locus2seqfeature_id_%s t5 on t3.seqfeature_id=t5.seqfeature_id' \
           ' where t1.name="%s" and bitscore>=%s and query_coverage>=%s order by bitscore;' % (column,
+                                                                            biodb,
                                                                             biodb,
                                                                             set_name,
                                                                             bitscore_cutoff,
                                                                             query_coverage_cutoff)
-
+    print sql
     gene2taxon2score = {}
     gene_list = []
     data = server.adaptor.execute_and_fetchall(sql,)

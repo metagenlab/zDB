@@ -49,7 +49,10 @@ def density_plot(value_list_of_lists, label_list,
             median = ""
 
         if min_value:
-            limits = '+ scale_x_continuous(limits = c(%s, %s))' % (min_value, max_value)
+            limits = '+ scale_x_continuous(limits = c(%s, %s),breaks = seq(%s, %s, 5))' % (min_value,
+                                                                                            max_value,
+                                                                                            min_value,
+                                                                                            max_value)
         else:
             limits = ''
 
@@ -81,11 +84,9 @@ def density_plot(value_list_of_lists, label_list,
         elif type == "hist":
             plot_code = '''
 
-
-
             p <- ggplot(plot_data, aes(identity, fill = comp)) + geom_histogram(%s alpha = 0.5, aes(y = ..density..), position = 'identity')
-            p <- p + geom_density(alpha=0.01) %s
-            p <- p + xlab("%s") +  ylab("%s") + ggtitle("%s")
+            p <- p + geom_density(alpha=0.01, aes(identity, colour = comp)) %s
+            p <- p + xlab("%s") +  ylab("%s") + ggtitle("%s")+theme(legend.position="bottom")
 
             ''' % (breaks,median,
                xlab,
@@ -114,10 +115,11 @@ def density_plot(value_list_of_lists, label_list,
 
             plot_data$identity <- as.numeric(plot_data$identity)
 
-            svg('%s',height=6,width=14)
+            CairoSVG('%s',height=8,width=8)
             p <- %s
-            print (p + theme_bw() %s    +theme(axis.text=element_text(size=12),
-        axis.title=element_text(size=14))+ theme(legend.text=element_text(size=14)) %s )
+            print (p + theme_bw() %s +theme(axis.text=element_text(size=10),
+            axis.title=element_text(size=14))+ theme(legend.text=element_text(size=10)) %s
+             +theme(legend.position="bottom",legend.direction="vertical"))
             dev.off()
 
 

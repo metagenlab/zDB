@@ -38,7 +38,7 @@ def pathway_list2profile_dico(biodb, pathway_list, taxon_id_list=[], group_by_KO
                   ' inner join enzyme.kegg_pathway as t3 on t2.pathway_id=t3.pathway_id ' \
                   ' where t3.pathway_name in (%s)) A group by taxon_id,description;' % (biodb,
                                                                                                filter_2)
-    print sql
+    #print sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
 
@@ -47,7 +47,7 @@ def pathway_list2profile_dico(biodb, pathway_list, taxon_id_list=[], group_by_KO
     pathway_list = []
     for row in data:
         row = list(row)
-        print row
+        #print row
         if row[1] not in pathway_list:
             pathway_list.append(row[1])
         if row[1] not in code2taxon2count:
@@ -179,7 +179,7 @@ server, db = manipulate_biosqldb.load_db('chlamydia_04_16')
 sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % 'chlamydia_04_16'
 
 tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
-print tree
+#print tree
 t1 = Tree(tree)
 tree, style = plot_pathway_heatmap('chlamydia_04_16',
                             tree, #'/home/trestan/work/projets/rhabdo/core_phylo_chlam_staleyi_all_single_copy_07_16/core_chlamydia.tree',

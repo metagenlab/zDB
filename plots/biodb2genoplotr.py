@@ -144,6 +144,7 @@ def accession_list2plot(accession_list, biodb):
             dna_seg_dataframes[[i]]$start <- as.numeric(as.character(dna_seg_dataframes[[i]]$start))
             dna_seg_dataframes[[i]]$end <- as.numeric(as.character(dna_seg_dataframes[[i]]$end))
             dna_seg_dataframes[[i]] <- dna_seg(dna_seg_dataframes[[i]])
+            dna_seg_dataframes[[i]]$gene_type <- rep("side_blocks", length(dna_seg_dataframes[[i]]$start))
         }
 
         for (i in 1:length(dna_comparison_dataframes)){
@@ -164,6 +165,8 @@ def accession_list2plot(accession_list, biodb):
         #df3$start2 <- as.numeric(as.character(df3$start2))
         #df3$end2 <- as.numeric(as.character(df3$end2))
 
+
+
         #print(head(df1))
         #print(head(df2))
         #print(head(df3))
@@ -173,7 +176,7 @@ def accession_list2plot(accession_list, biodb):
         #comparison <- as.comparison(df3)
         #dna_segs <- list(dna_seg1,dna_seg2)
 
-        CairoPDF('test2.pdf',height=8,width=15)
+        CairoPDF('test2.pdf',height=6,width=15)
         plot_gene_map(dna_segs=dna_seg_dataframes, comparisons=dna_comparison_dataframes)
         dev.off()
     ''')
@@ -191,5 +194,5 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    accession_list2plot(['NC_015713','Rht', 'LNES01000000', 'NC_014225', 'CWGJ01000001', 'NZ_CCEJ000000000'],'chlamydia_04_16')
+    accession_list2plot(['NZ_LN879502','NC_005861', 'NC_015702', 'NC_014225', 'NC_015713'],'2017_06_29b_motile_chlamydiae')
 

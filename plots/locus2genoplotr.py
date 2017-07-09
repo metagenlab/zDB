@@ -599,7 +599,7 @@ class Locus2genoplotR():
                annot #[idx[idx %% 4 == 0],]
              })
 
-            height <- length(blast_list)*1.4
+            height <- length(blast_list)*2.4
             CairoPDF('test2.pdf',height=height,width=10)# 4,14 / 3.8 (yersinia)/2 (oxa)
 
             xlims <- list(c(1,50000), c(1,50000))

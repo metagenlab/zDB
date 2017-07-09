@@ -129,7 +129,7 @@ def orthogroup2alignment_closest(orthogroup,
     from promer2circos import chunks
     import os
     sqlpsw = os.environ['SQLPSW']
-
+    print 'sqlpwd', sqlpsw
     if swissprot:
         print 'getting swissprot best hits...'
         # get uniprot record of the <max_n_hits_uniprot> best hits of each <orthogroup> locus
@@ -157,6 +157,7 @@ def orthogroup2alignment_closest(orthogroup,
                                                                orthogroup,
                                                                max_n_hits=max_n_hits_refseq,
                                                                exclude_phylum=exclude_phylum,
+                                                               mysql_pwd=sqlpsw,
                                                                database='blastnr')
         if len(locus2refseq_accession_list) == 0:
             refseq_sequence_records = []
@@ -213,7 +214,7 @@ def plot_tree(ete2_tree,
     import manipulate_biosqldb
     from ete2 import Tree, TreeStyle, faces, AttrFace
 
-
+    print 'pwd!', mysql_pwd
     conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
                            user=mysql_user, # your username
                            passwd=mysql_pwd, # your password
@@ -434,7 +435,7 @@ if __name__ == '__main__':
                                              args.biodb,
                                              max_n_hits_uniprot=2,
                                              max_n_hits_refseq=5,
-                                             exclude_phylum=["Chlamydiae", 'Verrucomicrobia', 'Planctomycetes', 'Lentisphaerae'],
+                                             exclude_phylum=["Chlamydiae"], # , 'Verrucomicrobia', 'Planctomycetes', 'Lentisphaerae'
                                              outname="%s_swiss_homologs.faa" % group,
                                              swissprot=True,
                                              refseq=True)
@@ -444,7 +445,7 @@ if __name__ == '__main__':
                                              args.biodb,
                                              max_n_hits_uniprot=2,
                                              max_n_hits_refseq=4,
-                                             exclude_phylum=["Chlamydiae", 'Verrucomicrobia', 'Planctomycetes', 'Lentisphaerae'],
+                                             exclude_phylum=["Chlamydiae"], # , 'Verrucomicrobia', 'Planctomycetes', 'Lentisphaerae'
                                              outname="%s_swiss_homologs.faa" % group,
                                              swissprot=True,
                                              refseq=True)
@@ -454,7 +455,7 @@ if __name__ == '__main__':
                                              args.biodb,
                                              max_n_hits_uniprot=1,
                                              max_n_hits_refseq=1,
-                                             exclude_phylum=["Chlamydiae", 'Verrucomicrobia', 'Planctomycetes', 'Lentisphaerae'],
+                                             exclude_phylum=["Chlamydiae"], # , 'Verrucomicrobia', 'Planctomycetes', 'Lentisphaerae'
                                              outname="%s_swiss_homologs.faa" % group,
                                              swissprot=True,
                                              refseq=True)
@@ -463,7 +464,7 @@ if __name__ == '__main__':
                                              args.biodb,
                                              max_n_hits_uniprot=2,
                                              max_n_hits_refseq=2,
-                                             exclude_phylum=["Chlamydiae", 'Verrucomicrobia', 'Planctomycetes', 'Lentisphaerae'],
+                                             exclude_phylum=["Chlamydiae"], # , 'Verrucomicrobia', 'Planctomycetes', 'Lentisphaerae'
                                              outname="%s_swiss_homologs.faa" % group,
                                              swissprot=True,
                                              refseq=True)

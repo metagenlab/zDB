@@ -40,7 +40,7 @@ def core_pan_genome_plot(numpy_matrix,
                   plot(sp,ci.lty=2,xlab="# Genomes", ylab="Orthologous groups", main="", col="blue", ci.col="black",ylim=c(0,ylim))
                   m <- c()
                   for (i in 2:length(matrice[1,])){
-                      print(i)
+                      #print(i)
                       count_list <- c()
                       for (perm in 1:n_permutatations){
                           sub_mat <- matrice[,sample(ncol(matrice), i)]
@@ -51,7 +51,7 @@ def core_pan_genome_plot(numpy_matrix,
                       #print(rep(i,n_permutatations))
                       #lines(rep(i,n_permutatations),count_list,lty=2, type="l", col="black")
                       segments(i, min(count_list),i, max(count_list),col="blue",lty=2)
-                      print(count_list)
+                      #print(count_list)
                       m <- c(m,quantile(c(min(count_list),max(count_list)),0.5))
                   }
 
