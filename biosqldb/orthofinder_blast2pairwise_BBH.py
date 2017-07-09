@@ -128,6 +128,10 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id):
                         evalue_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][2]
                         evalue_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][2]
 
+                        if (evalue_a_vs_b > 0.00001) or (identity_b_vs_a > 0.00001):
+                            continue
+
+
                         score_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][3]
                         score_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][3]
 
@@ -172,7 +176,7 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id):
 
 
             except:
-                print 'FAIL!'
+                #print 'FAIL!'
                 continue
 
 def median_RBBH2species(biodb):
@@ -216,6 +220,7 @@ def median_RBBH2species(biodb):
                 if float(taxon2taxon2identity[taxon_1][taxon_2]) >=98:
                     species_list.append(taxon_2)
         for taxon in species_list:
+            taxons_classified.append(taxon)
             sql = 'insert into species_%s values(%s,%s)' % (biodb, taxon, species_index)
             server.adaptor.execute(sql,)
         server.commit()
@@ -312,9 +317,22 @@ if __name__ == '__main__':
     parser.add_argument("-d",'--database', help="bioadatabase name")
 
     args = parser.parse_args()
+    '''
+    seqid2locus_tag = parse_seqid_file(args.seq_id_file)
+    locus2taxon2best_hit_id = parse_orthofinder_blast_files(args.database,
+                                                            args.blast_files,
+                                                            seqid2locus_tag)
+
+    get_reciproval_BBH_table(args.database,
+                             locus2taxon2best_hit_id)
+    '''
     #get_parwise_genome_median_identity_table(args.database)
+    
     #median_RBBH2species(args.database)
-    #seqfeature_id2n_species(args.database)
+    seqfeature_id2n_species(args.database)
+
+
+    
     taxid_chlam_list =       [314,
    886707,
    804807,
@@ -348,13 +366,10 @@ if __name__ == '__main__':
   1279774,
        64,
        66]
-    print len(taxid_chlam_list)
-    seqfeature_id2n_species_chlamydiae_only(args.database, taxid_chlam_list)
+    #print len(taxid_chlam_list)
+    #median_RBBH2species
+    #seqfeature_id2n_species_chlamydiae_only(args.database, taxid_chlam_list)
     '''
-    seqid2locus_tag = parse_seqid_file(args.seq_id_file)
-    locus2taxon2best_hit_id = parse_orthofinder_blast_files(args.database,
-                                                            args.blast_files,
-                                                            seqid2locus_tag)
-    get_reciproval_BBH_table(args.database,
-                             locus2taxon2best_hit_id)
+
+
     '''

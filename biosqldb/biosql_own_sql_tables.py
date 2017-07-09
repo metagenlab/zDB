@@ -472,8 +472,31 @@ def accession2coding_density(biodb):
     accession2n_trna = {}
     accession2n_rrna = {}
     accession2big_contig_length = {}
+    accession2n_contigs_without_cds = {}
+    accession2n_countigs_without_BBH_chlamydiae = {}
     for n, accession in enumerate(accession_list):
         print accession
+
+        # get list of BBH chlamydiae
+        sql = 'select locus_tag from blastnr.blastnr_%s t1 ' \
+              ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
+              ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
+              ' inner join blastnr.blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
+              ' inner join custom_tables.locus2seqfeature_id_%s t5 ' \
+              ' on t1.seqfeature_id=t5.seqfeature_id ' \
+              ' where t1.hit_number=1 and t3.name="%s" and t4.phylum="Chlamydiae" and t2.accession="%s";' % (biodb,
+                                                                                                             biodb,
+                                                                                                             biodb,
+                                                                                                             accession)
+        try:
+            locus_BBH_chlamydiae = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+        except:
+            print 'echec'
+            locus_BBH_chlamydiae = []
+        print sql
+        print 'locus_BBH_chlamydiae', len(locus_BBH_chlamydiae)
+        accession2n_contigs_without_cds[accession] = 0
+        accession2n_countigs_without_BBH_chlamydiae[accession] = 0
         accession = accession.split('.')[0]
         record = db.lookup(accession=accession)
         long_record_list = []
@@ -488,6 +511,25 @@ def accession2coding_density(biodb):
                 if len(sub_record)>=50000: # 10000
                     big_contig_length+=len(sub_record)
                     long_record_list.append(sub_record)
+
+                # count number of cds
+                n_CDS = 0
+                for feature in sub_record.features:
+                    if feature.type == 'CDS':
+                        n_CDS+=1
+                if n_CDS == 0:
+                    accession2n_contigs_without_cds[accession] += 1
+                else:
+                    # count number of BBH Chlamydiae
+                    n_BBH_Chlamydiae = 0
+                    for feature in sub_record.features:
+                        if feature.type == 'CDS':
+                            if not 'pseudo' in feature.qualifiers:
+                                if feature.qualifiers['locus_tag'][0] in locus_BBH_chlamydiae:
+                                    n_BBH_Chlamydiae+=1
+                    if n_BBH_Chlamydiae == 0:
+                        accession2n_countigs_without_BBH_chlamydiae[accession] += 1
+
         stop = len(record)
         sub_record = record[start:stop]
         if len(sub_record)>=10000:
@@ -524,7 +566,9 @@ def accession2coding_density(biodb):
         accession2n_rrna[accession] = [rrna_count_16, rrna_count_23, rrna_count_5]
         accession2big_contig_length[accession] = big_contig_length
         print round((len_coding/float(big_contig_length))*100,2), trna_count, rrna_count_16, rrna_count_23, rrna_count_5
-    return accession2density, accession2n_trna, accession2n_rrna, accession2big_contig_length
+    return accession2density, accession2n_trna, accession2n_rrna, accession2big_contig_length, \
+           accession2n_countigs_without_BBH_chlamydiae, accession2n_contigs_without_cds
+
 
 
 def taxonomical_form(db_name, hit_number=1):
@@ -947,7 +991,12 @@ def collect_genome_statistics(biodb):
     print sql
     accession2genome_data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    accession2density, accession2n_trna, accession2n_rrna,accession2big_contig_length = accession2coding_density(biodb)
+    accession2density, \
+    accession2n_trna, \
+    accession2n_rrna, \
+    accession2big_contig_length, \
+    accession2n_countigs_without_BBH_chlamydiae, \
+    accession2n_contigs_without_cds = accession2coding_density(biodb)
 
     #print '<td colspan="6"><table width="800" border=0  class=table_genomes>'
 
@@ -981,12 +1030,14 @@ def collect_genome_statistics(biodb):
     sql = 'create table if not EXISTS genomes_info_%s (ACCESSION VARCHAR(200), ' \
           ' GC FLOAT, n_CDS INT ,n_contigs INT, genome_size INT, ' \
           ' n_tRNA INT, n_16S INT, n_23S INT, n_5S INT, percent_non_coding FLOAT, big_contig_length INT, ' \
+          ' n_no_CDS INT,' \
+          ' n_no_BBH_chlamydiae INT,' \
           ' description VARCHAR (20000))' % biodb
 
     server.adaptor.execute_and_fetchall(sql,)
 
     for one_genome in genomes_data:
-        sql = 'insert into genomes_info_%s values ("%s", %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, "%s")' % (biodb,
+        sql = 'insert into genomes_info_%s values ("%s", %s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s,"%s")' % (biodb,
                                                                            one_genome[0],
                                                                            one_genome[1],
                                                                            one_genome[2],
@@ -998,6 +1049,8 @@ def collect_genome_statistics(biodb):
                                                                            accession2n_rrna[one_genome[0]][2],
                                                                            100-accession2density[one_genome[0]],
                                                                            accession2big_contig_length[one_genome[0]],
+                                                                           accession2n_contigs_without_cds[one_genome[0]],
+                                                                           accession2n_countigs_without_BBH_chlamydiae[one_genome[0]],
                                                                            one_genome[5])
         print sql
         server.adaptor.execute(sql,)

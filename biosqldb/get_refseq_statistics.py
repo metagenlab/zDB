@@ -305,10 +305,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", '--biodb', type=str, help="biodatabase name")
 
-
     args = parser.parse_args()
 
-    #majority_phylum(args.biodb, 100)
-    #count_less_than_n_hits(args.biodb)
+    majority_phylum(args.biodb, 100)
+    count_less_than_n_hits(args.biodb)
     count_majority_phylum(args.biodb, 1)
     count_majority_phylum(args.biodb, 2)

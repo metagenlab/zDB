@@ -1915,7 +1915,8 @@ class CircosAccession2blastnr_plot():
                  locus_highlight=[],
                  queries_accession=[],
                  exclude_family=False,
-                 taxon_list=False):
+                 taxon_list=False,
+                 highlight_BBH=False):
 
         import manipulate_biosqldb
         import gbk2circos
@@ -1945,12 +1946,28 @@ class CircosAccession2blastnr_plot():
         print draft_fasta
         print '###### draft ########'
         #print record_list
+
+        if highlight_BBH:
+            sql = 'select locus_tag from blastnr.blastnr_%s t1 ' \
+              ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
+              ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
+              ' inner join blastnr.blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
+              ' inner join custom_tables.locus2seqfeature_id_%s t5 ' \
+              ' on t1.seqfeature_id=t5.seqfeature_id ' \
+              ' where t1.hit_number=1 and t3.name="%s" and t4.phylum!="Chlamydiae" and t1.query_taxon_id=%s;' % (biodatabase_name,
+                                                                                                             biodatabase_name,
+                                                                                                             biodatabase_name,
+                                                                                                             reference_taxon_id)
+            BBH_color = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+        else:
+            BBH_color  = []
+        print 'BBH_COLOR!!', len(BBH_color)
         circos_files_reference = gbk2circos.orthology_circos_files(server,
                                                                    reference_records,
                                                                    reference_taxon_id,
                                                                    biodatabase_name,
                                                                    out_directory,
-                                                                   locus_highlight,
+                                                                   locus_highlight=BBH_color,
                                                                    taxon_list = queries_taxon_id,
                                                                    query_taxon_id=False,
                                                                    draft_data=draft_fasta)
@@ -2226,17 +2243,18 @@ if __name__ == '__main__':
 
     #refernce =  db.lookup(accession="NC_015713") # simkania
     #plamsid = db.lookup(accession="NC_015710") # simkania plasmid
-    server, db = manipulate_biosqldb.load_db('chlamydia_04_16')
+    server, db = manipulate_biosqldb.load_db('2017_06_29b_motile_chlamydiae')
     #reference = db.lookup(accession="Rht")
     #plasmid = db.lookup(accession="RhTp")
 
     taxon_lst = [67,1279767,1279774,1279496,48,46,55,87925,1279815,62,1279822,66,59,52,49,64,60,804807,886707,283,314,1069693,1069694,1137444,1143376,313,1172027,1172028,1035343,307,293,1279839,1279497]
 
-    genome = db.lookup(accession="Rht")
-    plasmid = db.lookup(accession="RhTp")
+    genome = db.lookup(accession="MGLZ01000000")
+    #plasmid = db.lookup(accession="RhTp")
 
     a = CircosAccession2blastnr_plot(server,
-                     'chlamydia_04_16',
-                     [genome, plasmid],
-                     "/home/trestan/work/virtualshared/documents/papiers/article_rhabdo/update_09_16/papier/figures/refseq_plast",
-                     taxon_list=[])
+                     '2017_06_29b_motile_chlamydiae',
+                     [genome],
+                     "/home/trestan/tmp/circos_test", #"/home/trestan/work/virtualshared/documents/papiers/article_rhabdo/update_09_16/papier/figures/refseq_plast",
+                     taxon_list=[],
+                     highlight_BBH=True)
