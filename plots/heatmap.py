@@ -158,7 +158,7 @@ def heatmap_pangenome(M,output=None,format='pdf',new=True,breaks=None, last=True
     If either *orderRows* or *orderCols* is True, will cluster accordingly and display a dendrogram."""
 
     w = len(M[1,:])/float(150) + 16
-    h = len(M[:,1]) + 4
+    h = len(M[:,1]) + 6
     w = h*1.5
     cex = h*0.2
     oma_right = w*3
@@ -240,11 +240,23 @@ cdendo <- reorder(as.dendrogram(cfit), Colv)
 
 m <- match(labels(cdendo), seq(1:length(Mdata[1,])))
 
-labels <- rep("",length(cfit$order))
-for (i in seq(0,length(cfit$order),100)){
-    labels[m[i]] <- i
-    }
-labels[m[length(cfit$order)]] <- length(cfit$order)
+if (length(cfit$order) < 3000) {
+
+    labels <- rep("",length(cfit$order))
+    for (i in seq(0,length(cfit$order),100)){
+        labels[m[i]] <- i
+        }
+    labels[m[length(cfit$order)]] <- length(cfit$order)
+
+}else{
+
+    labels <- rep("",length(cfit$order))
+    for (i in seq(0,length(cfit$order),1000)){
+        labels[m[i]] <- i
+        }
+    labels[m[length(cfit$order)]] <- length(cfit$order)
+}
+
 
 heatmap.2(as.matrix(Mdata),col=myColors, trace="none", breaks=myBreaks, key="False",distfun=function(m) vegdist(m,method="jaccard", binary=TRUE),
           na.rm=TRUE, density.info='none'%s, labCol=labels, hclustfun=function(m) hclust(m, method="average")) # , Colv=cdendo

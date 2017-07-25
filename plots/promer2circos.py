@@ -513,7 +513,7 @@ class Fasta2circos():
         if not blastn:
             blast_cline = NcbitblastnCommandline(query=blast,
                                                  db=reference,
-                                                 evalue=0.001,
+                                                 evalue=0.00000001, # 0.001
                                                  outfmt=6,
                                                  out="blast.tmp")
         else:
@@ -555,7 +555,7 @@ class Fasta2circos():
         for contig in blast2data:
             cname = re.sub("\|", "", contig)
             for gene in blast2data[contig]:
-                if float(blast2data[contig][gene][0])>80:
+                if float(blast2data[contig][gene][0])>30: # 80,20
                     location = sorted(blast2data[contig][gene][1:3])
                     o.write("%s\t%s\t%s\n" % (contig, location[0]+ self.contigs_add[cname][0], location[1]+ self.contigs_add[cname][0]))
                     l.write("%s\t%s\t%s\t%s\n" % (contig,  location[0] + self.contigs_add[cname][0], location[1]+ self.contigs_add[cname][0], gene))

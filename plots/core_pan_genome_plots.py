@@ -104,8 +104,16 @@ def pan_genome_barplot(numpy_matrix,
 
             row_counts <- rowSums(Mdata>0)
             t <- table(row_counts)
-              svg('%s',height=6,width=6)
-                barplot(t,xlab="Number of Genomes", ylab="Number of orthologous groups")
+              svg('%s',height=5,width=8)
+                #barplot(t,xlab="Number of Genomes", ylab="Number of orthologous groups")
+
+                  mytable <- as.data.frame(table(row_counts))
+                  print(mytable)
+                  p <- ggplot(mytable, aes(x = row_counts, y = Freq)) + geom_bar(stat = "identity")
+                  p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))#+ coord_flip()
+                  print(p+ theme_bw())
+
+
               dev.off()
 
         ''' % (output_path))

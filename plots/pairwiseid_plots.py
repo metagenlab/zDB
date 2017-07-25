@@ -48,8 +48,8 @@ def density_plot(value_list_of_lists, label_list,
         else:
             median = ""
 
-        if min_value:
-            limits = '+ scale_x_continuous(limits = c(%s, %s),breaks = seq(%s, %s, 5))' % (min_value,
+        if min_value is not False:
+            limits = '+ scale_x_continuous(limits = c(%s, %s),breaks = seq(%s, %s, 500))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))' % (min_value,
                                                                                             max_value,
                                                                                             min_value,
                                                                                             max_value)
@@ -84,9 +84,9 @@ def density_plot(value_list_of_lists, label_list,
         elif type == "hist":
             plot_code = '''
 
-            p <- ggplot(plot_data, aes(identity, fill = comp)) + geom_histogram(%s alpha = 0.5, aes(y = ..density..), position = 'identity')
+            p <- ggplot(plot_data, aes(identity, fill = comp)) #+ geom_histogram(%s alpha = 0.5, aes(y = ..density..), position = 'identity')
             p <- p + geom_density(alpha=0.01, aes(identity, colour = comp)) %s
-            p <- p + xlab("%s") +  ylab("%s") + ggtitle("%s")+theme(legend.position="bottom")
+            p <- p + xlab("%s") +  ylab("%s") + ggtitle("%s")+theme(legend.position="bottom")+ theme_bw()
 
             ''' % (breaks,median,
                xlab,
@@ -115,7 +115,7 @@ def density_plot(value_list_of_lists, label_list,
 
             plot_data$identity <- as.numeric(plot_data$identity)
 
-            CairoSVG('%s',height=8,width=8)
+            svg('%s',height=8,width=8)
             p <- %s
             print (p + theme_bw() %s +theme(axis.text=element_text(size=10),
             axis.title=element_text(size=14))+ theme(legend.text=element_text(size=10)) %s
@@ -149,9 +149,9 @@ def basic_plot(values_x, values_y=False, header="", xlab="", ylab="", output_pat
 
 
                 library(plyr)
-                mu <- ddply(plot_data, "comp", summarise, identity.mean=median(identity))
-                print (mu)
-                plot_data$identity <- as.numeric(plot_data$identity)
+                #mu <- ddply(plot_data, "comp", summarise, identity.mean=median(identity))
+                #print (mu)
+                #plot_data$identity <- as.numeric(plot_data$identity)
 
                 svg('%s',height=6,width=14)
                 plot(values_x, values_y, pch=20) # , ylim=c(0,100)
@@ -168,10 +168,50 @@ def basic_plot(values_x, values_y=False, header="", xlab="", ylab="", output_pat
                 library(ggplot2)
 
                 svg('%s',height=7,width=7)
-                barplot(table(values_x), main="Conservation of predicted effectors in other genomes")
+                #barplot(table(values_x), main="Conservation of predicted effectors in other genomes")
+
+                  library(ggplot2)
+
+                  mytable <- as.data.frame(table(values_x))
+                  print(mytable)
+                  p <- ggplot(mytable, aes(x = reorder(values_x, -order(values_x)), y = Freq)) + geom_bar(stat = "identity")
+                  p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))+ coord_flip()
+                  print(p)
                 dev.off()
 
             ''' % (output_path))
+
+def plot_multiseries_points(data, output_path ):
+        import pandas as pd
+        df = pd.DataFrame(data, columns=['category','val_x', 'val_y'])
+        #m = m.astype(float)
+        robjects.r.assign('plot_data', pandas2ri.py2ri(df))
+
+        robjects.r('''
+            library(genoPlotR)
+            library(Cairo)
+            library(ggplot2)
+
+            svg('%s.svg',height=7,width=8)
+            p <- ggplot(data = plot_data, aes(x = val_x, y = val_y, color = category)) + geom_point(alpha = 0.4, shape=2, size=0.8)
+            p <- p + scale_x_continuous(limits = c(35, 100),breaks = seq(35, 100, 5))
+            p <- p + scale_y_continuous(limits = c(82, 100),breaks = seq(82, 100, 2))
+            p <- p + theme_bw()
+            print(p)
+            dev.off()
+
+            svg('%s_density.svg',height=7,width=8)
+            p <- ggplot(plot_data, aes(val_x, fill = category)) + geom_histogram(alpha = 0.5, aes(y = ..density..), position = 'identity')
+            p <- p + geom_density(alpha=0.01, aes(val_x, colour = category))+ theme_bw()
+            print(p)
+            dev.off()
+
+
+        ''' % (output_path,output_path))
+
+
+
+
 
 def identity_heatmap_plot(numpy_matrix, labels,
                           header="",
@@ -201,7 +241,7 @@ def identity_heatmap_plot(numpy_matrix, labels,
         else:
             plot = '''
                 cols <- brewer.pal(9, "Blues")
-                heatmap.2(as.matrix(Mdata), trace="none", key="True",col=cols,
+                h <- heatmap.2(as.matrix(Mdata), trace="none", key="True",col=cols,
                 na.rm=TRUE, density.info='none', cellnote=as.matrix(Mdata), notecol="black", labRow=labels, labCol=labels)
             '''
 
@@ -212,6 +252,9 @@ def identity_heatmap_plot(numpy_matrix, labels,
             library(gplots)
             library(RColorBrewer)
 
+            rownames(Mdata) <- labels
+            colnames(Mdata) <- labels
+
 
             h <- length(Mdata[,1])/4+8
             w <- length(Mdata[,1])/2+8
@@ -221,6 +264,8 @@ def identity_heatmap_plot(numpy_matrix, labels,
                 par(mar = c(5,1,1,8))
                 par(cex.main=1,oma=c(22,0,0,20), xpd=TRUE, new=TRUE)
                 %s
+                print(h)
+                write.table(Mdata, "/home/trestan/identity.tab", sep="\t",col.names = NA)
             dev.off()
 
         ''' % (output_path, plot))

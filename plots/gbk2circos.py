@@ -273,7 +273,8 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                            group_id2orthologs_presence=False,
                            query_taxon_id=False,
                            color_missing=True,
-                           draft_coordinates=False):
+                           draft_coordinates=False,
+                           locus_highlight2=[]):
 
     print "highlight:", locus_highlight
     
@@ -373,6 +374,19 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                                                                         start,
                                                                         end,
                                                                         feature.qualifiers['locus_tag'][0]))
+                        elif feature.qualifiers['orthogroup'][0] in locus_highlight2 or feature.qualifiers['locus_tag'][0] in locus_highlight2:
+                            try:
+                                f.write('%s %s %s fill_color=paired-11-qual-10,id=%s,z=1\n' % (contig,
+                                                                        start,
+                                                                        end, feature.qualifiers['locus_tag'][0]))
+
+
+                            except:
+                                f.write('%s %s %s fill_color=spectral-5-div-4,id=%s,z=1\n' % (contig,
+                                                                        start,
+                                                                        end,
+                                                                        feature.qualifiers['locus_tag'][0]))
+
 
                         else:
 
@@ -846,7 +860,8 @@ def orthology_circos_files(server,
                            color_missing=True,
                            locus2label=False,
                            show_homologs=True,
-                           get_orthogroup_counts=False):
+                           get_orthogroup_counts=False,
+                           locus_highlight2=[]):
 
     import biosql_own_sql_tables
     import os
@@ -914,7 +929,8 @@ def orthology_circos_files(server,
                            locus_highlight=locus_highlight,
                            group_id2orthologs_presence=group_id2orthologs_presence,
                            query_taxon_id=query_taxon_id,
-                           draft_coordinates=draft_coordinates)
+                           draft_coordinates=draft_coordinates,
+                           locus_highlight2=locus_highlight2)
 
     print "writing plus strand file"
     print_circos_gene_file(record_list,
@@ -923,7 +939,8 @@ def orthology_circos_files(server,
                            draft_data=draft_data,
                          locus_highlight=locus_highlight,
                            group_id2orthologs_presence=group_id2orthologs_presence,
-                         query_taxon_id=query_taxon_id, draft_coordinates=draft_coordinates)
+                         query_taxon_id=query_taxon_id, draft_coordinates=draft_coordinates,
+                           locus_highlight2=locus_highlight)
     print "writing GC file"
 
 

@@ -50,7 +50,13 @@ def plot_phylo(nw_tree, out_name, parenthesis_classif=False, show_support=False)
                    nstyle["fgcolor"] = "red"
                    nstyle["size"] = 0
                    n.set_style(nstyle)
-
+        else:
+            for n in ete2_tree.traverse():
+               nstyle = NodeStyle()
+               nstyle["fgcolor"] = "red"
+               nstyle["size"] = 0
+               n.set_style(nstyle)
+          
         #nameFace = AttrFace(lf.name, fsize=30, fgcolor=phylum2col[accession2name_and_phylum[lf.name][1]])
         #faces.add_face_to_node(nameFace, lf, 0, position="branch-right")
         #
@@ -74,7 +80,7 @@ def plot_phylo(nw_tree, out_name, parenthesis_classif=False, show_support=False)
     ts.show_leaf_name = False
     ts.scale=2000
     ts.show_branch_support = show_support
-    ts.complete_branch_lines_when_necessary =False
+    ts.complete_branch_lines_when_necessary = True
     ete2_tree.render(out_name, tree_style=ts)
 
 if __name__ == '__main__':
@@ -82,9 +88,10 @@ if __name__ == '__main__':
     from Bio import SeqIO
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--input_tree', type=str, help="input newick tree")
+    parser.add_argument("-s", '--support', action="store_true", help="show support")
     parser.add_argument("-c", '--color', type=str, help="color based on taxon: taxon2color table")
     parser.add_argument("-c2", '--color2', type=str, help="color based on parenthesis content")
 
     args = parser.parse_args()
 
-    plot_phylo(args.input_tree, 'test.svg', parenthesis_classif=False, show_support=False)
+    plot_phylo(args.input_tree, 'test.svg', parenthesis_classif=False, show_support=args.support)
