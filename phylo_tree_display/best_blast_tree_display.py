@@ -41,6 +41,27 @@ def parse_mlst_results(mlst_file):
 
 def remove_blast_redundancy(blast_file_list, check_overlap=True):
 
+
+    '''
+
+    0   Query
+    1   Subject
+    2   % id
+    3   alignment length
+    4   mistmatches
+    5   gap openings
+    6   q.start
+    7   q.end
+    8   s.start
+    9  s.end
+    10  e-value
+    11  bit score
+
+    :param blast_file_list:
+    :param check_overlap:
+    :return:
+    '''
+
     blast2data = {}
     queries = []
 

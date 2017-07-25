@@ -58,15 +58,21 @@ def plot_tree_stacked_barplot(tree_file,
         col_n = 0
         for column in header_list2:
             values = taxon2set2value_heatmap[column].values()
-
-            norm = mpl.colors.Normalize(vmin=min(values), vmax=max(values)*1.1)
+            if min(values) == max(values):
+                min_val = 0
+                max_val = 1.5*max(values)
+            else:
+                min_val = min(values)
+                max_val = max(values)
+            norm = mpl.colors.Normalize(vmin=min_val,vmax=max_val*1.1)
             if col_n < 4:
                 cmap = cm.OrRd#
             else:
                 cmap = cm.YlGnBu#PuBu#OrRd
 
             m = cm.ScalarMappable(norm=norm, cmap=cmap)
-            column2scale[column] = [m,float(max(values))*0.7]
+
+            column2scale[column] = [m, float(max_val)*0.7]
             col_n+=1
 
     for i, lf in enumerate(t1.iter_leaves()):
@@ -83,11 +89,13 @@ def plot_tree_stacked_barplot(tree_file,
                 n.margin_right = 1
                 n.margin_left = 20
                 n.margin_bottom = 1
+                n.hz_align = 2
+                n.vt_align = 2
                 n.inner_background.color = "white"
                 n.opacity = 1.
 
                 tss.aligned_header.add_face(n, 1)
-                col_add=1
+                col_add=2
             else:
                 col_add=0
 
@@ -103,7 +111,7 @@ def plot_tree_stacked_barplot(tree_file,
                 n.inner_background.color = "white"
                 n.opacity = 1.
                 tss.aligned_header.add_face(n, col+col_add)
-            final_col = col+1
+            col_add += col+1
 
             if header_list3:
                 print 'header_list 3!'
@@ -118,9 +126,9 @@ def plot_tree_stacked_barplot(tree_file,
                     n.vt_align = 2
                     n.inner_background.color = "white"
                     n.opacity = 1.
-                    print col+final_col
-                    tss.aligned_header.add_face(n, col+final_col)
-                final_col += col+1
+
+                    tss.aligned_header.add_face(n, col+col_add)
+                col_add += col+1
 
             if header_list2:
                 for col, header in enumerate(header_list2):
@@ -134,8 +142,8 @@ def plot_tree_stacked_barplot(tree_file,
                     n.vt_align = 2
                     n.inner_background.color = "white"
                     n.opacity = 1.
-                    tss.aligned_header.add_face(n, col+final_col)
-                final_col += col+1
+                    tss.aligned_header.add_face(n, col+col_add)
+                col_add += col+1
 
 
 
@@ -153,7 +161,7 @@ def plot_tree_stacked_barplot(tree_file,
             n.opacity = 1.
 
             lf.add_face(n, 1, position="aligned")
-            col_add=1
+            col_add=2
         else:
             col_add=0
         try:
@@ -166,7 +174,7 @@ def plot_tree_stacked_barplot(tree_file,
 
             total = float(sum(value_list))
             percentages = [(i/total)*100 for i in value_list]
-            if col % 2 == 0:
+            if col % 3 == 0:
                 col_list = colors2
             else:
                 col_list = colors
@@ -180,7 +188,7 @@ def plot_tree_stacked_barplot(tree_file,
             lf.add_face(b, col+col_add, position="aligned")
             col_count+=1
 
-        col_add=col_count
+        col_add+=col_count
 
         if set2taxon2value_list_simple_barplot:
             col_list = ['#fc8d59', '#91bfdb', '#99d594']
@@ -293,7 +301,8 @@ def plot_tree_barplot(tree_file,
                       presence_only=True,
                       biodb="chlamydia_04_16",
                       column_scale=True,
-                      general_max=False):
+                      general_max=False,
+                      barplot2percentage=False):
 
     '''
 
@@ -304,6 +313,8 @@ def plot_tree_barplot(tree_file,
     :param biodb:
     :param exclude_outgroup:
     :param bw_scale:
+    :param barplot2percentage: list of bool to indicates if the number are percentages and the range should be set to 0-100
+
     :return:
     '''
 
@@ -316,7 +327,13 @@ def plot_tree_barplot(tree_file,
 
     taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb, filter_names=True)
 
-    t1 = Tree(tree_file)
+    print isinstance(tree_file, Tree)
+    print type(tree_file)
+
+    if isinstance(tree_file, Tree):
+       t1 = tree_file
+    else:
+       t1 = Tree(tree_file)
 
     # Calculate the midpoint node
     R = t1.get_midpoint_outgroup()
@@ -352,12 +369,19 @@ def plot_tree_barplot(tree_file,
     max_value_list = []
 
     for n, header in enumerate(header_list):
+        print 'scale', n, header
+        data = [float(i[n]) for i in values_lists]
 
-        data = [int(i[n]) for i in values_lists]
-
-        max_value = max(data)#3424182#
-
-        min_value = min(data) #48.23
+        if barplot2percentage is False:
+            max_value = max(data)#3424182#
+            min_value = min(data) #48.23
+        else:
+            if barplot2percentage[n] is True:
+                max_value = 100
+                min_value = 0
+            else:
+                max_value = max(data)#3424182#
+                min_value = min(data) #48.23
         norm = mpl.colors.Normalize(vmin=min_value, vmax=max_value)
         m1 = cm.ScalarMappable(norm=norm, cmap=cmap)
         scale_list.append(m1)
@@ -490,7 +514,10 @@ def plot_tree_barplot(tree_file,
 
 
         #lf.name = taxon2description[lf.name]
-        n = TextFace(taxon2description[lf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
+        try:
+            n = TextFace(taxon2description[lf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
+        except:
+            n = TextFace(lf.name, fgcolor = "black", fsize = 12, fstyle = 'italic')
         lf.add_face(n, 0)
 
     for n in t1.traverse():
@@ -574,7 +601,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
 
     value=1
 
-    max_genome_size = 3424182#max(genome_sizes)#3424182#
+    max_genome_size = max(genome_sizes)#3424182#
     max_gc = max(gc_list) #48.23
 
     cmap = cm.YlGnBu#YlOrRd#OrRd
@@ -641,6 +668,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         n.margin_right = 1
         n.margin_left = 0
         n.margin_bottom = 1
+        n.fsize = 7
         n.inner_background.color = "white"
         n.opacity = 1.
 
@@ -657,7 +685,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
             else:
                 col = '#fc8d59'
 
-        b = StackedBarFace([fraction_biggest, fraction_rest], width=100, height=10,colors=[col, 'white'])
+        b = StackedBarFace([fraction_biggest, fraction_rest], width=100, height=9,colors=[col, 'white'])
         b.rotation= 0
         b.inner_border.color = "black"
         b.inner_border.width = 0
@@ -674,7 +702,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
                 col = rgb2hex(m2.to_rgba(float(taxon2gc[lf.name])))
             else:
                 col = '#91bfdb'
-        b = StackedBarFace([fraction_biggest, fraction_rest], width=100, height=10,colors=[col, 'white'])
+        b = StackedBarFace([fraction_biggest, fraction_rest], width=100, height=9,colors=[col, 'white'])
         b.rotation= 0
         b.inner_border.color = "black"
         b.inner_border.width = 0
@@ -688,6 +716,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         n.margin_right = 0
         n.margin_left = 0
         n.margin_bottom = 1
+        n.fsize = 7
         n.inner_background.color = "white"
         n.opacity = 1.
         lf.add_face(n, 4, position="aligned")
@@ -706,13 +735,14 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         n.margin_left = 0
         n.margin_right = 0
         n.margin_bottom = 1
+        n.fsize = 7
         n.inner_background.color = "white"
         n.opacity = 1.
         lf.add_face(n, 6, position="aligned")
         fraction = (float(taxon2coding_density[lf.name])/max(taxon2coding_density.values()))*100
         fraction_rest = ((max(taxon2coding_density.values()) - taxon2coding_density[lf.name])/float(max(taxon2coding_density.values())))*100
         print 'fraction, rest', fraction, fraction_rest
-        b = StackedBarFace([fraction, fraction_rest], width=100, height=10,colors=[col, 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
+        b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=[col, 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
         b.rotation = 0
         b.margin_right = 1
         b.inner_border.color = "black"
