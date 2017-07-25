@@ -34,8 +34,8 @@
                            <li><a href="{% url 'metabo_overview' biodb %}">Map list</a></li>
                            <!--<li><a href="#tab2" data-toggle="tab">Profile</a></li>-->
                            <li class="active"><a href="{% url 'kegg_pathway_heatmap' biodb %}">Category profiles</a></li>
-                           <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'metabo_comparison' biodb %}', 'orthoIDframe'); return false">Compare strains (EC)</a></li>
-                           <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'metabo_comparison_ko' biodb %}', 'orthoIDframe'); return false">Compare strains (KO)</a></li>
+                           <li><a href="{% url 'metabo_comparison' biodb %}" >Compare strains (EC)</a></li>
+                           <li><a href="{% url 'metabo_comparison_ko' biodb %}">Compare strains (KO)</a></li>
 
                        </ul>
                     </nav>
