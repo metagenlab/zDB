@@ -31,11 +31,11 @@
             <div class="panel-heading" style="width:100%">
                 <h3 class="panel-title">Help</h3>
             </div>
-            <p style="margin: 10px 10px 10px 10px">Plot the distribution of amino acid identity of pairwise reciprocal best blast hits. Can include between 3 and 4 genomes.<br>
+            <p style="margin: 10px 10px 10px 10px">Barchart blastnr hits <br>
             </p>
         </div>
 
-    <form action='{% url "pairwiseid" biodb %}' method="post">
+    <form action='{% url "multiple_codon_usage" biodb %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Submit" />
@@ -44,16 +44,16 @@
 
     {% if envoi %}
         <ul id="tabs2" class="nav nav-tabs" data-tabs="tabs">
-            <li class="active"><a href="#tab1" data-toggle="tab">ID distrib</a></li>
-            <li><a href="#tab2" data-toggle="tab">ID Profile</a></li>
+            <li class="active"><a href="#tab1" data-toggle="tab">Length distrib</a></li>
+            <li><a href="#tab2" data-toggle="tab">-</a></li>
         </ul>
 
         <div id="my-tab-content" class="tab-content">
             <div class="tab-pane active" id="tab1">
-                <object type="image" data="{% static asset_path1 %}" id="plot"></object>
+                <object type="image" data="{% static asset_path %}" id="plot"></object>
             </div>
             <div class="tab-pane" id="tab2">
-                <object type="image/svg+xml" data="{% static asset_path2 %}" id="inter_tree4" style="position: relative; top: 10px; left: 10px;"></object>
+
             </div>
         </div>
     {% endif %}

@@ -32,10 +32,10 @@
                    <nav>
                        <ul id="tabs_main" class="nav nav-tabs">
                            <li><a href="{% url 'metabo_overview' biodb %}">Map list</a></li>
-                           <li><a href="#tab2" data-toggle="tab">Profile</a></li>
+                           <!--<li><a href="#tab2" data-toggle="tab">Profile</a></li>-->
                            <li class="active"><a href="{% url 'kegg_pathway_heatmap' biodb %}">Category profiles</a></li>
-                           <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'metabo_comparison' biodb %}', 'orthoIDframe'); return false">Compare strains (EC)</a></li>
-                           <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'metabo_comparison_ko' biodb %}', 'orthoIDframe'); return false">Compare strains (KO)</a></li>
+                           <li><a href="{% url 'metabo_comparison' biodb %}" >Compare strains (EC)</a></li>
+                           <li><a href="{% url 'metabo_comparison_ko' biodb %}">Compare strains (KO)</a></li>
 
                        </ul>
                     </nav>
@@ -63,7 +63,9 @@
                                 <object type="image/svg+xml" data="{% static asset_path %}" id="metabo_tree" style="width:98%;"></object>
                             </div>
 
-
+                            <div class="tab-pane" id="tab66" style="height:5000px">
+                                <iframe name="orthoIDframe" id="theFrame2" scrolling="no" style="overflow:hidden;height:100%;width:100%" height="100%" width="100%"></iframe>
+                            </div>
                         </div>
                     {%endif%}
 

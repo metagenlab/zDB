@@ -91,7 +91,7 @@
             </p>
         </div>
 
-    <form action='{% url "pan_genome" biodb type %}' method="post">
+    <form action='{% url "core_genome_missing" biodb type %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Submit" />
@@ -147,23 +147,44 @@
                     </tr>
                     <tr>
                         <th>CORE</th>
-                        <td>{{core}}</td>
+                        <td>{{core0|length}}</td>
                     </tr>
                     <tr>
+                    <tr>
                         <th>CORE - 1</th>
-                        <td>{{core_minus1}}</td>
+                        <td>{{core1|length}}</td>
+                    </tr>
+                    <tr>
+                        <th>CORE - 2</th>
+                        <td>{{core2|length}}</td>
+                    </tr>
+                    <tr>
+                        <th>CORE - 3</th>
+                        <td>{{core3|length}}</td>
+                    </tr>
+                    <tr>
+                        <th>CORE - 4</th>
+                        <td>{{core4|length}}</td>
+                    </tr>
+                    <tr>
+                        <th>CORE - 5</th>
+                        <td>{{core5|length}}</td>
+                    </tr>
+                    <tr>
+                        <th>CORE - 6</th>
+                        <td>{{core6|length}}</td>
                     </tr>
                 </table>
 
-                <object type="image" data="{% static asset_path %}" id="plot" style="width:50%; margin-left: 100px;"></object>
+                <object type="image" data="{% static asset_path2 %}" id="plot" style="width:50%; margin-left: 100px;"></object>
             </div>
             <div class="tab-pane" id="tab2">
                 <table style="width:190px; float: left;">
 
-                    {% for n, count in genome_count_list%}
+                    {% for group, count in group2count %}
 
                         <tr>
-                            <th style="width:90px">{{n}}</th>
+                            <th style="width:90px">{{group}}</th>
                             <td>{{count}}</td>
                         </tr>
 
@@ -171,7 +192,6 @@
                     {% endfor %}
                 </table>
 
-                <object type="image" data="{% static asset_path2 %}" id="plot" style="width:50%; margin-left: 100px;"></object>
             </div>
         </div>
     {% endif %}

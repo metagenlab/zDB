@@ -32,11 +32,8 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
     <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-    <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
+    <script src="{% static 'js/cytoscape.min.js' %}"></script>
 
-
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-<script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
 <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.js"></script>
 <link href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
 <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.7.0/cytoscape-qtip.js"></script>
@@ -83,7 +80,11 @@
             <div id="my-tab-content" class="tab-content" style="height: 4000px;">
             <div class="row">
                 <div class="col-xs-6" style="padding-left: 15px">
-                    <div id="cy" style="width:1800px;height:1200px"></div>
+                    <a id="cy_png" download="myimage">png</a>
+                    <div id="cy" style="width:1200px;height:1200px">
+
+                    </div>
+
                 </div>
             </div>
             </div>

@@ -12,7 +12,7 @@
             </li>
             <!--<li class="item6"><a href="{% url 'motif_search' biodb %}">Motif search</a>-->
             <!--</li>-->
-            <li class="item6"><a href="{% url 'interpro' biodb %}">Interpro search</a>
+            <!--<li class="item6"><a href="{% url 'interpro' biodb %}">Interpro search</a>-->
             </li>
             <li class="item6"><a href="{% url 'extract_region' biodb %}">Retrieve sequence</a>
             </li>
@@ -43,6 +43,11 @@
             </li>
             <li class="item6"><a href="{% url 'pairwiseid' biodb %}">PairwiseID</a>
             </li>
+            <li class="item5"><a href="{% url 'pairwiseCDS_length' biodb %}">CDS length</a>
+            </li>
+            <li class="item5"><a href="{% url 'transporters' biodb %}">transporters</a>
+            </li>
+
             </ul>
         </li>
 
@@ -53,7 +58,7 @@
                 </li>
                 <li class="item6"><a href="{% url 'circos' biodb %}">Circos</a>
                 </li>
-                <li class="item6"><a href="{% url 'circos2genomes' biodb %}">Circos 2 genomes</a>
+                <!--<li class="item6"><a href="{% url 'circos2genomes' biodb %}">Circos 2 genomes</a>-->
                 </li>
                 <!--<li class="item5"><a href="{% url 'circos_homology' biodb %}">Homologues location</a>-->
                 <!--</li>-->
@@ -76,8 +81,10 @@
                 <li class="item5"><a href="{% url 'blastnr_barchart' biodb %}">BlastNR hits</a>
                 </li>
             </ul>
-        <li class="rollmenu"><a href="">Locus interest</a>
+        <li class="rollmenu"><a href="">DEV</a>
             <ul>
+
+
                 <li class="item5"><a href="{% url 'locus_int' biodb %}">Locus Int</a>
                 </li>
                 <li class="item5"><a href="{% url 'add_locus_int' biodb %}">ADD Locus Int</a>

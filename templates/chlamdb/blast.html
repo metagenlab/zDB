@@ -194,7 +194,10 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
         {% endif %}
 
         {% if all_data %}
-
+            <h2>Best hit region </h2>
+            <div style="height:100px;">
+                <object width="70%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
+            </div>
             <table id="tblastn">
             <h2>Hits</h2>
             {% for values in all_data %}

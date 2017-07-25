@@ -410,6 +410,22 @@ def make_pairwiseid_form(database_name):
         genome_2 = forms.ChoiceField(choices=accessions)
         genome_3 = forms.ChoiceField(choices=accessions2)
         genome_4 = forms.ChoiceField(choices=accessions2)
+        genome_5 = forms.ChoiceField(choices=accessions2)
+        genome_6 = forms.ChoiceField(choices=accessions2)
+
+    return PairwiseID
+
+
+def make_pairwiseCDS_length_form(database_name):
+
+    accessions = get_accessions(database_name)
+    accessions2 = [['None', 'None']] + accessions
+
+    class PairwiseID(forms.Form):
+        genome_1 = forms.ChoiceField(choices=accessions)
+        genome_2 = forms.ChoiceField(choices=accessions)
+        genome_3 = forms.ChoiceField(choices=accessions2)
+        genome_4 = forms.ChoiceField(choices=accessions2)
 
     return PairwiseID
 
@@ -591,7 +607,14 @@ class LocusInt(forms.Form):
 class AnnotForm(forms.Form):
     orthogroups = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
 
+def get_LocusAnnotForm(database_name):
 
+    accession_choices = get_accessions(database_name)
+
+    class LocusAnnotForm(forms.Form):
+        locus_list = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
+        circos_target = forms.ChoiceField(choices=accession_choices)
+    return LocusAnnotForm
 
 def make_motif_form(database_name):
 
