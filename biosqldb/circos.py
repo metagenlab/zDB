@@ -157,7 +157,8 @@ class CircosAccession2multiplot():
                  ordered_taxons,
                  locus2label=False,
                  show_homologs=True,
-                 radius=0.75):
+                 radius=0.75,
+                 locus_highlight2=[]):
 
         import manipulate_biosqldb
         import gbk2circos
@@ -1601,7 +1602,8 @@ class CircosAccession2multiplot():
                                                                    draft_coordinates=False,
                                                                    locus2label=locus2label,
                                                                    show_homologs=show_homologs,
-                                                                   get_orthogroup_counts=True)
+                                                                   get_orthogroup_counts=True,
+                                                                   locus_highlight2=locus_highlight2)
 
 
         #print "taxon_id2description_ref", taxon_id2description_reference
@@ -1987,14 +1989,20 @@ class CircosAccession2blastnr_plot():
             for i in range(0, len(reference_records)-1):
                 chr_spacing_list.append([reference_records[i].id, reference_records[i+1].id])
             chr_spacing_list.append([reference_records[-1].id, reference_records[0].id])
+        
+        #print reference_records[-1].name
+        #print draft_fasta[0][-1][0]
         elif len(reference_records) == 2 and draft_fasta is not False:
             try:
                 chr_spacing_list.append([draft_fasta[0][-1][0], draft_fasta[1][0][0]])
                 chr_spacing_list.append([draft_fasta[0][0][0], draft_fasta[1][-1][0]])
             except:
-                chr_spacing_list.append([draft_fasta[0][-1][0], reference_records[-1].name])
-                chr_spacing_list.append([draft_fasta[0][0][0], reference_records[-1].name])
-
+                try:
+                    chr_spacing_list.append([draft_fasta[0][-1][0], reference_records[-1].name])
+                    chr_spacing_list.append([draft_fasta[0][0][0], reference_records[-1].name])
+                except:
+                    chr_spacing_list.append([draft_fasta[1][-1][0], reference_records[0].id])
+                    chr_spacing_list.append([draft_fasta[1][0][0], reference_records[0].id])                    
         # get circos config object
         col_file = os.path.join(out_directory, 'colors.conf')
         circos_reference = gbk2circos.Circos_config(circos_files_reference["contigs"],

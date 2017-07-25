@@ -505,6 +505,15 @@ def accession2coding_density(biodb):
         big_contig_length = 0
         for feature in record.features:
             if feature.type == 'assembly_gap':
+                # assembly gap within scaffolds
+                print 'len gap:', len(feature)
+                if "gap_type" in feature.qualifiers:
+                    if feature.qualifiers["gap_type"][0] == "within scaffold":
+                        continue
+                    else:
+                        print 'new gap type:', feature.qualifiers["gap_type"][0]
+                if len(feature) != 200:
+                    continue
                 stop = feature.location.start -1
                 sub_record = record[start:stop]
                 start = feature.location.end+1
@@ -1056,10 +1065,24 @@ def collect_genome_statistics(biodb):
         server.adaptor.execute(sql,)
         server.commit()
 
-def get_comparative_subtable(biodb, table_name, first_col_name, taxon_list, exclude_taxon_list, ratio=1, single_copy=False, accessions=False):
+def get_comparative_subtable(biodb,
+                             table_name,
+                             first_col_name,
+                             taxon_list,
+                             exclude_taxon_list,
+                             ratio=1,
+                             single_copy=False,
+                             accessions=False):
 
     import pandas
     import numpy
+
+    '''
+    ratio: ratio of missing data tolaration
+    single_copy: only consider singly copy locus
+    accessions (bol): compare accession and not taxons (differentiate plasmids from chromosome)
+
+    '''
 
     server, db = manipulate_biosqldb.load_db(biodb)
     if not accessions:
@@ -1102,8 +1125,12 @@ def get_comparative_subtable(biodb, table_name, first_col_name, taxon_list, excl
     count_df2 = count_df2.apply(pandas.to_numeric, args=('coerce',))
 
     if not single_copy:
-        return count_df[(count_df > 0).sum(axis=1) >= limit], count_df2
+        return count_df[(count_df > 0).sum(axis=1) >= limit], count_df2 #
     else:
+
+        groups_with_paralogs = count_df[(count_df > 1).sum(axis=1) > 0].index
+        count_df = count_df.drop(groups_with_paralogs)
+
         return count_df[(count_df == 1).sum(axis=1) >= limit], count_df2
 
 def best_hit_classification(db_name, accession):

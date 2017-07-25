@@ -377,7 +377,10 @@ def plot_multiple_regions_crosslink(target_protein_list,
             if feature.type == "rRNA":
 
                 gd_feature_set.add_feature(feature, sigil="ARROW", color="orange", label=True, label_position="middle", label_strand=1, label_size=10, label_angle=40)
-                one_row_locus.append(feature.qualifiers["locus_tag"][0])
+                try:
+                    one_row_locus.append(feature.qualifiers["locus_tag"][0])
+                except:
+                    pass
             if feature.type == "tRNA":
 
                 gd_feature_set.add_feature(feature, sigil="ARROW", color="orange", label=True, label_position="middle", label_strand=1, label_size=10, label_angle=40)
