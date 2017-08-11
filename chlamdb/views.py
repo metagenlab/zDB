@@ -3125,7 +3125,7 @@ def KEGG_mapp_ko_organism(request, biodb, map_name, taxon_id):
               ' inner join enzyme.ko_annotation as D on B.ko_id=D.ko_id ' \
               ' inner join enzyme.locus2ko_%s E on B.ko_id=E.ko_id ' \
               ' group by B.ko_id,taxon_id) bb group by KO_id;' % (map_name, biodb)
-
+        print sql
         ko2freq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
         sql = 'select t1.ko_id from enzyme.locus2ko_%s t1 inner join enzyme.pathway2ko t2 on t1.ko_id=t2.ko_id ' \
