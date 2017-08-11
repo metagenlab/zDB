@@ -298,7 +298,7 @@ class Locus2genoplotR():
             if not self.tblastx:
                 blast_file = B.run_blastn(min_identity=min_identity)
             else:
-                blast_file = B.run_tblastx()
+                blast_file = B.run_tblastx(evalue=0.0005)
 
             blast_result_files.append(blast_file)
 

@@ -10,6 +10,7 @@ def plot_phylo(nw_tree, out_name, parenthesis_classif=False, show_support=False)
     R = ete2_tree.get_midpoint_outgroup()
     # and set it as tree outgroup
     ete2_tree.set_outgroup(R)
+    ete2_tree.ladderize()
 
     if parenthesis_classif:
         name2classif = {}

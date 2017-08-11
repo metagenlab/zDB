@@ -49,7 +49,7 @@ def density_plot(value_list_of_lists, label_list,
             median = ""
 
         if min_value is not False:
-            limits = '+ scale_x_continuous(limits = c(%s, %s),breaks = seq(%s, %s, 500))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))' % (min_value,
+            limits = '+ scale_x_continuous(limits = c(%s, %s),breaks = seq(%s, %s, 10))+ theme(axis.text.x = element_text(angle = 90, hjust = 1))' % (min_value,
                                                                                             max_value,
                                                                                             min_value,
                                                                                             max_value)
@@ -193,9 +193,11 @@ def plot_multiseries_points(data, output_path ):
             library(ggplot2)
 
             svg('%s.svg',height=7,width=8)
-            p <- ggplot(data = plot_data, aes(x = val_x, y = val_y, color = category)) + geom_point(alpha = 0.4, shape=2, size=0.8)
-            p <- p + scale_x_continuous(limits = c(35, 100),breaks = seq(35, 100, 5))
-            p <- p + scale_y_continuous(limits = c(82, 100),breaks = seq(82, 100, 2))
+            p <- ggplot(data = plot_data, aes(x = val_x, y = val_y, color = category)) + geom_point(alpha = 1, shape=1, size=2) # alpha = 0.4, shape=3, size=0.8
+            #p <- p + scale_x_continuous(limits = c(35, 100),breaks = seq(35, 100, 5))
+            p <- p + scale_x_continuous(limits = c(0, 1),breaks = seq(0, 1, 0.1))
+            #p <- p + scale_y_continuous(limits = c(82, 100),breaks = seq(82, 100, 2))
+            #p <- p + geom_smooth(method=lm, se=FALSE)
             p <- p + theme_bw()
             print(p)
             dev.off()
