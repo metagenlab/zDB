@@ -1221,8 +1221,12 @@ def get_TM_data(biodb, orthogroup=False, aa_alignment=False):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     if orthogroup:
+
+
         sql = 'select locus_tag, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where orthogroup="%s" and analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (biodb, orthogroup)
+        sql2 = 'select locus_tag, char_length(translation), organism from orthology_detail_%s where orthogroup="%s";' % (biodb, orthogroup)
+        locus2seq_length = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
     else:
         sql = 'select locus_tag, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (biodb)
@@ -1249,6 +1253,10 @@ def get_TM_data(biodb, orthogroup=False, aa_alignment=False):
                 protein2data[one_locus[0]].append(list(one_locus[1:len(one_locus)])+[locus2aa_seq[one_locus[0]]])
             else:
                 protein2data[one_locus[0]].append(one_locus[1:len(one_locus)])
+    if orthogroup:
+        for locus in locus2seq_length:
+            if locus not in protein2data:
+                protein2data[locus] = list(locus2seq_length[locus])
     return protein2data
 
 
@@ -1286,8 +1294,13 @@ def organism2color(locus2data, taxon_id2family=False):
     if not taxon_id2family:
         organism_list = []
         for locus in locus2data:
-            if locus2data[locus][0][2] not in organism_list:
-                organism_list.append(locus2data[locus][0][2])
+            # case in which we only hace seq length
+            if len(locus2data[locus]) == 2:
+                if locus2data[locus][1] not in organism_list:
+                    organism_list.append(locus2data[locus][1])
+            else:
+                if locus2data[locus][0][2] not in organism_list:
+                    organism_list.append(locus2data[locus][0][2])
         colors = _get_colors(len(organism_list))
 
         return dict(zip(organism_list, colors))
@@ -1416,9 +1429,9 @@ def draw_TM_tree(tree_name, locus2data):
 
 
     color_dico = organism2color(locus2data)
-    leaf_number = 0
-    for l in t.iter_leaves():
-        leaf_number+=1
+
+    for leaf_number, l in enumerate(t.iter_leaves()):
+        print 'leaf', leaf_number
         locus_name = str(l)[3:len(str(l))]
         locus_name = locus_name.split('|')[0]
         try:
@@ -1426,37 +1439,56 @@ def draw_TM_tree(tree_name, locus2data):
             seq_motifs = []
             l.img_style['fgcolor'] = color_dico[data[0][2]]
             l.img_style['hz_line_type'] = 0
-            l.img_style['size'] = 10
+            l.img_style['size'] = 6
         except:
             #pass
             seq_motifs = []
-            l.img_style['fgcolor'] = 'blue'
+            l.img_style['fgcolor'] = color_dico[data[1]]
             l.img_style['hz_line_type'] = 0
-            l.img_style['size'] = 10
-            continue
+            l.img_style['size'] = 6
 
-        for motif in data:
+            #continue
+        # case in which we have more than seq length
+        if len(data) != 2:
+            for motif in data:
+                seq_motifs.append([motif[0], motif[1], "()", None, 10, "black", "PaleGreen", "arial|8|red|"])
 
-            seq_motifs.append([motif[0], motif[1], "()", None, 10, "black", "PaleGreen", "arial|8|red|"])
-        print len(data[0])
-        if len(data[0]) == 7:
-            seqFace = SeqMotifFace(data[0][-1],
-                                   motifs=seq_motifs,
-                                   width=10,
-                                   height=12,
-                                   intermotif_format='-',
-                                   seqtail_format="-",
-                                   seq_format='-',
-                                   gapcolor='white') #seq, seq_motifs, scale_factor=1, intermotif_format=None) #intermotif_format="seq", seqtail_format=None, seqtype='aa')
+        print data
+        if type(data[0]) == long:
+
+            print 'int!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+
+            seqFace = SeqMotifFace(data[0]*'N',
+                                   motifs=[],
+                       width=10,
+                       height=12,
+                       intermotif_format='-',
+                       seqtail_format="-",
+                       seq_format='-',
+                       gapcolor='white')
         else:
-            seqFace = SeqMotifFace(data[0][3]*'N',
-                                   motifs=seq_motifs,
-                                   width=10,
-                                   height=12,
-                                   intermotif_format='-',
-                                   seqtail_format="-",
-                                   seq_format='-',
-                                   gapcolor='white')
+            if type(data[0]) == long:
+                print 'baba1', data[0][-1]
+                seqFace = SeqMotifFace(data[0][-1],
+                                       motifs=seq_motifs,
+                                       width=10,
+                                       height=12,
+                                       intermotif_format='-',
+                                       seqtail_format="-",
+                                       seq_format='-',
+                                       gapcolor='white') #seq, seq_motifs, scale_factor=1, intermotif_format=None) #intermotif_format="seq", seqtail_format=None, seqtype='aa')
+
+
+            else:
+                print 'baba', data[0][3]*'N'
+                seqFace = SeqMotifFace(data[0][3]*'N',
+                                       motifs=seq_motifs,
+                                       width=10,
+                                       height=12,
+                                       intermotif_format='-',
+                                       seqtail_format="-",
+                                       seq_format='-',
+                                       gapcolor='white')
 
         seqFace.margin_bottom = 2
         seqFace.margin_top = 2
@@ -1464,7 +1496,10 @@ def draw_TM_tree(tree_name, locus2data):
 
         l.add_face(seqFace, column=1, position="aligned")
         locus = TextFace(str(l)[3:len(str(l))])
-        l.name = data[0][2]
+        try:
+            l.name = data[0][2]
+        except:
+            l.name = data[1]
         #print dir(l), '########################'
         locus.margin_right = 10
         locus.margin_left = 10
@@ -1473,7 +1508,7 @@ def draw_TM_tree(tree_name, locus2data):
 
     ts = TreeStyle()
     #ts.layout_fn = layout
-    return t, ts, leaf_number
+    return t, ts, leaf_number+1
 
 if __name__ == '__main__':
     import argparse
