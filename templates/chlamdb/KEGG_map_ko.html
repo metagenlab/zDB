@@ -83,7 +83,7 @@
                                        <td>{{ko2freq|keyvalue:values.4}}</td>
                                     {%else%}
                                        <td>{{values.4}}</td>
-                                       <td>-</td>
+                                       <td>0</td>
                                     {%endif%}
 
                                     <td>{{values.5}}</td>
@@ -141,7 +141,7 @@
 $(document).ready(function(){
     $('#ko_table').DataTable({
 
-        "order": [[2, "asc" ]],
+        "order": [[2, "desc" ]],
         "pageLength": 250,
 "aoColumns": [
 null,
