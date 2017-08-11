@@ -80,10 +80,12 @@
                                     {% endif %}
                                     {%if ko2freq|keyvalue:values.4 != None %}
                                        <td><a href="{% url 'fam' biodb values.4 'ko' %}" target="_top">{{values.4}}</a></td>
+                                       <td>{{ko2freq|keyvalue:values.4}}</td>
                                     {%else%}
                                        <td>{{values.4}}</td>
+                                       <td>-</td>
                                     {%endif%}
-                                    <td>{{ko2freq|keyvalue:values.4}}</td>
+
                                     <td>{{values.5}}</td>
                                 </tr>
                             {% endfor %}
