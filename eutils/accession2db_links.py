@@ -131,16 +131,23 @@ def uniprot_record2db_refs(record):
                 ref_name2ref_id[ref_dat[0]].append(ref_dat[1])
     return ref_name2ref_id
 
-def ncbi_accession2uniprotid(ncbi_accession, gene=False, organism=False):
+def ncbi_accession2uniprotid(ncbi_accession, gene=False, organism=False, genome_accession=False):
     '''
     :param genbank/refseq protein accession
     :return: unirpot accession
     '''
+    print genome_accession
+
 
     import urllib2
     from urllib2 import URLError
     if not gene:
-        link = "http://www.uniprot.org/uniprot/?query=%s&format=tab" % (ncbi_accession)
+        if genome_accession is False:
+            link = "http://www.uniprot.org/uniprot/?query=%s&format=tab" % (ncbi_accession)
+        else:
+
+            link = "http://www.uniprot.org/uniprot/?query=%s+%s&format=tab" % (genome_accession, ncbi_accession)
+        print link
     else:
         if not organism:
             link = "http://www.uniprot.org/uniprot/?query=gene:%s&format=tab" % (ncbi_accession)
@@ -205,6 +212,8 @@ def get_whole_db_uniprot_crossref(biodb):
 
     import MySQLdb
     from datetime import datetime
+    import httplib
+    import time
     import manipulate_biosqldb
     import re
     import urllib2
@@ -246,11 +255,19 @@ def get_whole_db_uniprot_crossref(biodb):
 
     sql1 = 'select locus_tag, seqfeature_id from locus2seqfeature_id_%s' % biodb
     sql2 = 'select locus_tag, old_locus_tag from biosqldb.locus_tag2old_locus_tag'
+
+    # attention EDIT!!!!!!!!!!!!!!
     sql3 = 'select locus_tag, protein_id from biosqldb.orthology_detail_%s where protein_id not like "%%%%CHUV%%%%"' % biodb
+
+
     sql4 = 'select locus_tag,t2.seqfeature_id from locus2seqfeature_id_%s t1 inner join uniprot_annotation_%s t2' \
            ' on t1.seqfeature_id=t2.seqfeature_id group by locus_tag;' % (biodb, biodb)
     sql5 = 'select locus_tag, organism from biosqldb.orthology_detail_%s' % biodb
     sql6 = 'select locus_tag, translation from biosqldb.orthology_detail_%s' % biodb
+
+    sql7 = 'select locus_tag, accession from biosqldb.orthology_detail_%s' % biodb
+
+
     cursor.execute(sql1, )
     locus2seqfeature_id = manipulate_biosqldb.to_dict(cursor.fetchall())
 
@@ -269,32 +286,38 @@ def get_whole_db_uniprot_crossref(biodb):
     cursor.execute(sql6, )
     locus2sequence = manipulate_biosqldb.to_dict(cursor.fetchall())
 
+    cursor.execute(sql7, )
+    locus2genome_accession = manipulate_biosqldb.to_dict(cursor.fetchall())
+
     for i, locus in enumerate(locus2protein_id):
         print "%s -- %s : %s / %s" % (locus, locus2protein_id[locus],i, len(locus2protein_id))
 
         # already into database
         if locus in locus2uniprot_id:
             continue
+        genome_accession = locus2genome_accession[locus]
 
-        uniprot_id = ncbi_accession2uniprotid(locus2protein_id[locus])
+        uniprot_id = ncbi_accession2uniprotid(locus2protein_id[locus], genome_accession=genome_accession)
+
+        if not uniprot_id:
+            uniprot_id = ncbi_accession2uniprotid(locus2protein_id[locus])
 
         if not uniprot_id:
             try:
                 old_locus = locus2old_locus[locus]
             except KeyError:
                 old_locus = False
-                print 'no old locus for %s' % locus
-                uniprot_id = sequence2uniprot_id(locus2sequence[locus])
-                print 'tried to match with sequence: %s' % uniprot_id
-                if not uniprot_id:
-                    continue
-            genus = locus2organism[locus].split(' ')[0]
             if old_locus:
+                genus = locus2organism[locus].split(' ')[0]
                 print 'trying with old_locus_tag'
                 uniprot_id = ncbi_accession2uniprotid(old_locus, gene=True, organism=genus)
             if not uniprot_id:
-                uniprot_id = sequence2uniprot_id(locus2sequence[locus])
-                print 'tried to match with sequence: %s' % uniprot_id
+                print 'trying to match with sequence: %s' % locus
+                try:
+                    uniprot_id = sequence2uniprot_id(locus2sequence[locus])
+                    print 'ok: %s' % uniprot_id
+                except:
+                    continue
         if uniprot_id:
             # insert uniprot_id into mysql table
             # 1. get seqfeatureid of the corresponding locus

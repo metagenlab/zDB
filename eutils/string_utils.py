@@ -62,18 +62,23 @@ def biodb2all_connections(biodb):
 
     import manipulate_biosqldb
     import time
+    import re
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'select db_accession from custom_tables.uniprot_id2seqfeature_id_%s t0 ' \
           ' inner join custom_tables.uniprot_db_xref_%s t1 on t0.uniprot_id=t1.uniprot_id ' \
-          ' inner join custom_tables.db_xref t2 on t1.db_xref_id=t2.db_xref_id where db_xref_name="string";' % (biodb, biodb)
+          ' inner join custom_tables.db_xref t2 on t1.db_xref_id=t2.db_xref_id where db_xref_name="string" and db_accession like "%%%%CPn%%%%";' % (biodb, biodb)
 
     all_string_accessions = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
     sql = 'select seqfeature_id, taxon_id from custom_tables.locus2seqfeature_id_%s' % biodb
 
     seqfeature_id2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    sql = 'select locus_tag,seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+
+    new_locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     sql = 'select old_locus_tag,seqfeature_id from custom_tables.seqfeature_id2old_locus_tag_%s' % biodb
 
@@ -99,7 +104,7 @@ def biodb2all_connections(biodb):
           ' INDEX old_locus_tag_1 (old_locus_tag_1),' \
           ' index old_locus_tag_2 (old_locus_tag_2))' % biodb
     print sql
-    server.adaptor.execute(sql,)
+    #server.adaptor.execute(sql,)
 
     ref_locus_list = []
 
@@ -146,8 +151,13 @@ def biodb2all_connections(biodb):
             try:
                 ref_locus_seqfeature_id = old_locus_tag2seqfeature_id[ref_locus]
             except:
-                ref_locus_seqfeature_id = 'NULL'
-
+                # special case trachomatis
+                try:
+                    ref_locus = re.sub('CT','CT_',ref_locus)
+                    ref_locus_seqfeature_id = new_locus_tag2seqfeature_id[ref_locus]
+                except:
+                    ref_locus_seqfeature_id = 'NULL'
+            print 'ref_locus', ref_locus
             # locus tag corresp OK but pseudogene
             try:
                 taxon_id = seqfeature_id2taxon_id[str(ref_locus_seqfeature_id)]
@@ -159,7 +169,11 @@ def biodb2all_connections(biodb):
             try:
                 link_locus_seqfeature_id = old_locus_tag2seqfeature_id[link_locus]
             except:
-                link_locus_seqfeature_id = 'NULL'
+                try:
+                    link_locus = re.sub('CT','CT_',link_locus)
+                    link_locus_seqfeature_id = new_locus_tag2seqfeature_id[link_locus]
+                except:
+                    link_locus_seqfeature_id = 'NULL'
 
             scores = one_interaction[4].split('|')
 
@@ -218,7 +232,7 @@ def biodb2string_pmid_data(biodb):
 
     sql = 'select db_accession from custom_tables.uniprot_id2seqfeature_id_%s t0 ' \
           ' inner join custom_tables.uniprot_db_xref_%s t1 on t0.uniprot_id=t1.uniprot_id ' \
-          ' inner join custom_tables.db_xref t2 on t1.db_xref_id=t2.db_xref_id where db_xref_name="string";' % (biodb, biodb)
+          ' inner join custom_tables.db_xref t2 on t1.db_xref_id=t2.db_xref_id where db_xref_name="string" and db_accession like "%%%%CPn%%%%";' % (biodb, biodb)
 
     all_string_accessions = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
@@ -242,6 +256,9 @@ def biodb2string_pmid_data(biodb):
 
     old_locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
+    sql = 'select locus_tag,seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+
+    new_locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     for n, string_accession in enumerate(all_string_accessions):
         print "%s / %s" % (n, len(all_string_accessions))
@@ -250,7 +267,12 @@ def biodb2string_pmid_data(biodb):
         try:
             seqfeature_id = old_locus_tag2seqfeature_id[old_locus_tag]
         except:
-            continue
+            try:
+                # special case trachomatis
+                old_locus_tag = re.sub('CT', 'CT_', old_locus_tag)
+                seqfeature_id = new_locus_tag2seqfeature_id[old_locus_tag]
+            except:
+                continue
         taxon_id = seqfeature_id2taxon_id[str(seqfeature_id)]
         if taxon_id is None:
             taxon_id = 'NULL'
