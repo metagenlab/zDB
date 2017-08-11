@@ -93,6 +93,10 @@ function clearBox(elementID)
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'hydropathy' biodb data.1 %}', 'orthoIDframe'); return false">Hydropathy plot</a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'aa_comp_locus' biodb data.1 %}', 'orthoIDframe'); return false">AA composition PCA</a></li>
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'gc_locus' biodb data.1 %}', 'orthoIDframe'); return false">GC</a></li>
+                {% if pubmed_data  %}
+                <li><a href="#tab22" data-toggle="tab">Pubmed  <span class="badge">{{pubmed_data|length}}</span></a></li>
+                {%endif %}
+
 
             </ul>
             <div id="my-tab-content" class="tab-content">
@@ -950,7 +954,30 @@ function clearBox(elementID)
             <div class="tab-pane" id="tab66" style="height:2px;" >
             <iframe name="orthoIDframe" id="theFrame" style="height:8000px;overflow:hidden;" width="500px" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
             </div>
+            {% if pubmed_data  %}
+                <div class="tab-pane" id="tab22" style="height:2px;" >
 
+                    <table>
+
+                        {% for row in pubmed_data%}
+                            <tr>
+                                <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{row.0}}"><font size="2">{{row.2}}</font>
+                                    <br>
+                                    {{row.4}}
+                                    </font></a></td>
+                                <td>{{row.1}}</td>
+
+
+                            </tr>
+                            <tr>
+                                <td colspan="3">{{row.3}}</td>
+                            </tr>
+
+                        {%endfor%}
+                    </table>
+
+                </div>
+            {% endif %}
         </div>
         {% endif %}
 

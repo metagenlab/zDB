@@ -114,7 +114,7 @@
                                 <li>KO part of <strong>{{pathway_data|length }} pathways</strong></li>
                                 <ul>
                                     {% for path in pathway_data %}
-                                    <li><a href="{% url 'KEGG_mapp' biodb path.0 %}">{{path.0}} :: {{path.1}}</a></li>
+                                    <li><a href="{% url 'KEGG_mapp_ko' biodb path.0 %}">{{path.0}} :: {{path.1}}</a></li>
                                     {% endfor %}
                                 </ul>
                                 <li>KO part of <strong>{{module_data|length }} modules</strong></li>

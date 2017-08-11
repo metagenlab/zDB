@@ -33,16 +33,6 @@
            <div id="content">
 
 
-
-
-
-
-
-
-
-
-
-
            {%  if menu %}
 
                 <div id="sidebar">
@@ -60,7 +50,7 @@
                     </div>
                     <p style="margin: 10px 10px 10px 10px; line-height: 180%">
                         Informations about Kegg Module: {% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %} <br>
-                        KO list, phylogenetic profile of each KO, and external informations.
+                        KO list, phylogenetic profile of each KO, interactive KEGG map and external informations.
                     </p>
                 </div>
                 <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
@@ -68,11 +58,7 @@
                     <li><a href="#tab2" data-toggle="tab">Profile</a></li>
                     <li><a href="#tab3" data-toggle="tab">Profile + homologs</a></li>
 
-                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.genome.jp/kegg-bin/show_module?{{module_name}}', 'orthoIDframe2'); return false">Informations</a></li>
-
-
-
-
+                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.genome.jp/kegg-bin/show_module?{{module_name}}{{ko_url}}', 'orthoIDframe2'); return false">Informations</a></li>
 
                 </ul>
 

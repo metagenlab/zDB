@@ -1939,7 +1939,7 @@ def extract_region(request, biodb):
     return render(request, 'chlamdb/extract_region.html', locals())
 
 
-@login_required
+#@login_required
 def locusx(request, biodb, locus=None, menu=True):
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
@@ -2106,7 +2106,13 @@ def locusx(request, biodb, locus=None, menu=True):
                     ' hpi_2_3, hpi_48_1,hpi_48_2,hpi_48_3,hpi_96_1,hpi_96_2,hpi_96_3, extracellular_1, ' \
                     ' extracellular_2, extracellular_3 from rnaseq.%s_%s where seqfeature_id=%s' % (biodb, taxon_id, seqfeature_id)
 
-            print "rnaseq", sql22
+            sql23 = 'select pmid,authors,title,abstract,source from string.seqfeature_id2string_pmid_%s ' \
+                    ' t2 where seqfeature_id=%s;' % (biodb, seqfeature_id)
+            try:
+                pubmed_data = server.adaptor.execute_and_fetchall(sql23,)
+            except:
+                pubmed_data = False
+
 
             try:
                 rnaseq_data = server.adaptor.execute_and_fetchall(sql22,)[0]
@@ -2895,6 +2901,9 @@ def KEGG_module_map(request, biodb, module_name):
             asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % module_name
 
             tree2.render(path2, dpi=800, h=600)
+
+
+        ko_url = '+' + '+'.join(ko_list)
         envoi = True
         menu = True
         valid_id = True
@@ -2902,6 +2911,46 @@ def KEGG_module_map(request, biodb, module_name):
 
     return render(request, 'chlamdb/KEGG_module_map.html', locals())
 
+
+@login_required
+def kegg_multi(request, biodb, map_name, ko_name):
+
+
+
+    #cache.clear()
+
+    if request.method == 'GET':  # S'il s'agit d'une requête POST
+        import ete_motifs
+        import kegg_maps
+
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+
+        sql = 'select bb.KO_id, count(*) from (select B.ko_id, E.taxon_id from  (select * from enzyme.kegg_pathway ' \
+              ' where pathway_name="%s") A inner join enzyme.pathway2ko as B  on A.pathway_id=B.pathway_id ' \
+              ' inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id  ' \
+              ' inner join enzyme.ko_annotation as D on B.ko_id=D.ko_id ' \
+              ' inner join enzyme.locus2ko_%s E on B.ko_id=E.ko_id ' \
+              ' group by B.ko_id,taxon_id) bb group by KO_id;' % (map_name, biodb)
+
+        ko2freq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+        sql = 'select node_id from enzyme.pathway2ortholog_associations t1 ' \
+              ' inner join enzyme.kegg_pathway  t2 on t1.pathway_id=t2.pathway_id ' \
+              ' where pathway_name="%s" and ko_id="%s";' % (map_name, ko_name)
+        node_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
+
+        sql2 = 'select ko_id from enzyme.pathway2ortholog_associations t1 ' \
+               ' inner join enzyme.kegg_pathway  t2 on t1.pathway_id=t2.pathway_id ' \
+               ' where pathway_name="%s" and node_id=%s;' % (map_name, node_id)
+
+        ko_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql2,)]
+        ko_filter = '"'+ '","'.join(ko_list)+'"'
+        sql = 'select ko_id,name,definition,modules,pathways from enzyme.ko_annotation where ko_id in (%s)' % (ko_filter)
+        ko_data = server.adaptor.execute_and_fetchall(sql,)
+
+
+    return render(request, 'chlamdb/KEGG_map_multi.html', locals())
 
 @login_required
 def KEGG_mapp_ko(request, biodb, map_name):
@@ -2912,6 +2961,8 @@ def KEGG_mapp_ko(request, biodb, map_name):
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
         import ete_motifs
+        import kegg_maps
+
         server, db = manipulate_biosqldb.load_db(biodb)
 
         sql = 'select pathway_name,pathway_category,description,C.EC, B.ko_id, D.definition from ' \
@@ -2976,18 +3027,132 @@ def KEGG_mapp_ko(request, biodb, map_name):
         menu = True
         valid_id = True
 
+        sql = 'select bb.KO_id, count(*) from (select B.ko_id, E.taxon_id from  (select * from enzyme.kegg_pathway ' \
+              ' where pathway_name="%s") A inner join enzyme.pathway2ko as B  on A.pathway_id=B.pathway_id ' \
+              ' inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id  ' \
+              ' inner join enzyme.ko_annotation as D on B.ko_id=D.ko_id ' \
+              ' inner join enzyme.locus2ko_%s E on B.ko_id=E.ko_id ' \
+              ' group by B.ko_id,taxon_id) bb group by KO_id;' % (map_name, biodb)
+
+        ko2freq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+        path_map_freq = settings.BASE_DIR + '/assets/temp/KEGG_map_freq_%s' % map_name
+        path_map_freq_svg = '/temp/KEGG_map_freq_%s.svg' % map_name
+
+        keg_path_highlight = '+'+'+'.join(ko_list_found_in_db)
+
+        kegg_maps.map2highlighted_map(map_name, ko_list_found_in_db, ko2freq, biodb, path_map_freq+'.pdf')
 
     return render(request, 'chlamdb/KEGG_map_ko.html', locals())
 
 
+@login_required
+def KEGG_mapp_ko_organism(request, biodb, map_name, taxon_id):
 
+
+
+    #cache.clear()
+
+    if request.method == 'GET':  # S'il s'agit d'une requête POST
+        import ete_motifs
+        import kegg_maps
+
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+        sql = 'select pathway_name,pathway_category,description,C.EC, B.ko_id, D.definition from ' \
+              ' (select * from enzyme.kegg_pathway where pathway_name="%s") A inner join enzyme.pathway2ko as B ' \
+              ' on A.pathway_id=B.pathway_id inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id ' \
+              ' inner join enzyme.ko_annotation as D on B.ko_id=D.ko_id;' % (map_name)
+
+        map_data = server.adaptor.execute_and_fetchall(sql,)
+
+        ko_list = [i[4] for i in map_data]
+
+        sql = 'select id from comparative_tables.ko_%s where id in (%s);' % (biodb,
+                                                          '"' + '","'.join(ko_list) + '"')
+        ko_list_found_in_db = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+        # get list of all orthogroups with corresponding KO
+        sql = 'select distinct ko_id,orthogroup from enzyme.locus2ko_%s as t1 ' \
+              ' where ko_id in (%s);' % (biodb,
+                                         '"' + '","'.join(ko_list_found_in_db) + '"')
+        orthogroup_data = server.adaptor.execute_and_fetchall(sql,)
+        ko2orthogroups = {}
+        orthogroup_list = []
+        for i in orthogroup_data:
+            if i[0] not in ko2orthogroups:
+                ko2orthogroups[i[0]] = [i[1]]
+            else:
+                ko2orthogroups[i[0]].append(i[1])
+            orthogroup_list.append(i[1])
+
+        taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, orthogroup_list, type="orthogroup")
+        taxon2ko2count = ete_motifs.get_taxon2name2count(biodb, ko_list_found_in_db, type="ko")
+
+        labels = ko_list_found_in_db
+        tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2ko2count)
+
+        tree2 = ete_motifs.combined_profiles_heatmap(biodb,
+                                                     labels,
+                                                     taxon2orthogroup2count,
+                                                     taxon2ko2count,
+                                                     ko2orthogroups)
+
+
+        if len(labels) > 70:
+            big = True
+            path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % map_name
+            asset_path = '/temp/KEGG_tree_%s.png' % map_name
+            tree.render(path, dpi=1200, h=600, tree_style=style)
+
+        else:
+            big = False
+            path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % map_name
+            asset_path = '/temp/KEGG_tree_%s.svg' % map_name
+            tree.render(path, dpi=800, h=600, tree_style=style)
+
+            path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
+            asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % map_name
+
+            tree2.render(path2, dpi=800, h=600)
+        envoi = True
+        menu = True
+        valid_id = True
+
+        sql = 'select bb.KO_id, count(*) from (select B.ko_id, E.taxon_id from  (select * from enzyme.kegg_pathway ' \
+              ' where pathway_name="%s") A inner join enzyme.pathway2ko as B  on A.pathway_id=B.pathway_id ' \
+              ' inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id  ' \
+              ' inner join enzyme.ko_annotation as D on B.ko_id=D.ko_id ' \
+              ' inner join enzyme.locus2ko_%s E on B.ko_id=E.ko_id ' \
+              ' group by B.ko_id,taxon_id) bb group by KO_id;' % (map_name, biodb)
+
+        ko2freq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+        sql = 'select t1.ko_id from enzyme.locus2ko_%s t1 inner join enzyme.pathway2ko t2 on t1.ko_id=t2.ko_id ' \
+              ' inner join enzyme.kegg_pathway t3 on t2.pathway_id=t3.pathway_id where taxon_id=%s and pathway_name="%s";' % (biodb,
+                                                                                                                       taxon_id,
+                                                                                                                       map_name)
+
+        print sql
+        ko_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+        print 'ko list!', ko_list
+        path_map_freq = settings.BASE_DIR + '/assets/temp/KEGG_map_freq_%s' % map_name
+        path_map_freq_svg = '/temp/KEGG_map_freq_%s.svg' % map_name
+
+        keg_path_highlight = '+'+'+'.join(ko_list_found_in_db)
+
+        kegg_maps.map2highlighted_map(map_name, ko_list, ko2freq, biodb, path_map_freq+'.pdf', taxon_id=taxon_id)
+
+        sql = 'select t1.description from bioentry t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id' \
+              ' where t2.name="%s" and t1.taxon_id=%s' % (biodb,
+                                                          taxon_id)
+
+        organism = server.adaptor.execute_and_fetchall(sql,)[0][0]
+
+    return render(request, 'chlamdb/KEGG_map_ko.html', locals())
 
 @login_required
 def KEGG_mapp(request, biodb, map_name):
-
-    
-
-    #cache.clear()
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
         import ete_motifs
@@ -5190,7 +5355,8 @@ def pairwiseid(request, biodb):
                                           ylab="density",
                                           output_path=path1,
                                           min_value=10,
-                                          max_value=100)
+                                          max_value=100
+                                          )
 
             sql = 'SELECT orthogroup, count(*) as n FROM (select  orthogroup,taxon_id from orthology_detail_%s ' \
                   ' group by orthogroup,taxon_id) A  GROUP BY orthogroup' % biodb
@@ -5335,15 +5501,21 @@ def get_BBH_non_chlamydiae_taxonomy(request, biodb):
     server, db = manipulate_biosqldb.load_db(biodb)
 
 
+    acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
+    filter = '"' + '","'.join(acc_list) + '"'
+    sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
+    taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
+
+    filter = ','.join(taxon_list)
 
     sql = 'select seqfeature_id,query_taxon_id,hit_number,subject_taxid,t2.superkingdom, t2.phylum ' \
           ' from blastnr.blastnr_%s t1 inner join blastnr.blastnr_taxonomy t2 on t1.subject_taxid=taxon_id ' \
           ' where t1.query_taxon_id!=127 and phylum!="Chlamydiae" order by hit_number' % biodb
 
     sql = 'select seqfeature_id,query_taxon_id,hit_number,subject_taxid,' \
-          ' t2.superkingdom, t2.kingdom,t2.order ' \
+          ' t2.superkingdom, t2.kingdom,t2.order, t2.phylum ' \
           ' from blastnr.blastnr_%s t1 inner join blastnr.blastnr_taxonomy t2 on t1.subject_taxid=taxon_id ' \
-          ' where t1.query_taxon_id!=127 and phylum!="Chlamydiae" order by hit_number' % biodb
+          ' where t1.query_taxon_id in (%s) and phylum!="Chlamydiae" order by hit_number' % (biodb, filter)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -5366,6 +5538,7 @@ def get_BBH_non_chlamydiae_taxonomy(request, biodb):
     kingdom2count = {}
     order2count = {}
     seqfeature_ok = []
+    phylum2count= {}
     for n,row in enumerate(data):
         if n % 1000 == 0:
             print "%s / %s" % (n, len(data))
@@ -5385,6 +5558,11 @@ def get_BBH_non_chlamydiae_taxonomy(request, biodb):
             else:
                 order2count[row[6]] += 1
 
+            if row[7] not in phylum2count:
+                phylum2count[row[7]] = 1
+            else:
+                phylum2count[row[7]] += 1
+
             seqfeature_ok.append(row[0])
 
     with open('/home/trestan/superkingdom_count.tab', 'w') as f:
@@ -5396,7 +5574,9 @@ def get_BBH_non_chlamydiae_taxonomy(request, biodb):
     with open('/home/trestan/order_count.tab', 'w') as f:
         for order in order2count:
             f.write('%s\t%s\n' % (order, str(order2count[order])))
-
+    with open('/home/trestan/phylum_count.tab', 'w') as f:
+        for phylum in phylum2count:
+            f.write('%s\t%s\n' % (phylum, str(phylum2count[phylum])))
 
 def multipleGC(request, biodb):
 
@@ -5658,23 +5838,28 @@ def blastnr_euk(request, biodb):
         try:
             n_euk = taxon_id2n_any_hits_euk[taxon]
             percent_euk = round((taxon_id2n_any_hits_euk[taxon]/float(taxon_id2n_CDS[taxon]))*100,2)
+
         except:
             n_euk = 0
             percent_euk = 0
+        try:
+            perc_best_euk = round((taxon_id2n_best_non_chlamydial_euk[taxon]/float(taxon_id2n_CDS[taxon]))*100,2)
+        except:
+            perc_best_euk = 0
 
-        taxon2values[taxon] = [n_best_euk,
-                               n_euk,
+        taxon2values[taxon] = [n_euk,
                                percent_euk,
                                taxon_id2n_best_non_chlamydial_euk[taxon],
+                               perc_best_euk,
                                taxon_id2n_best_non_chlamydial_euk_50[taxon],
                                taxon_id2n_species_specific[taxon]]
     print taxon2values
     tree1, style1 = phylo_tree_bar.plot_tree_barplot(tree,
                                                     taxon2values,
-                                                    ["n_best_euk",
-                                                     "n any euk",
+                                                    ["n any euk",
                                                      'percent euk',
                                                      'n_best_non_chlam_euk',
+                                                     'perc_best_non_chlam_euk',
                                                      'n_best_non_chlam_euk_50',
                                                      'n specific'],
                                                     taxon2set2value_heatmap=False,
@@ -5775,7 +5960,7 @@ def blastnr_overview(request, biodb):
     tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
 
 
-    header_list2 = ['effectiveT3', 'BPBAac', 'T3MM', 'T4SEpre_bpbAac', 'T4SEpre_psAac', 'chaperones', 'intesect']
+    header_list2 = ['effectiveT3',  'BPBAac', 'T3MM', 'T4SEpre_bpbAac', 'T4SEpre_psAac', 'chaperones', 'intesect']
 
     import phylo_tree_bar
     import hmm_heatmap
@@ -7368,6 +7553,7 @@ def annotation_overview(request, biodb):
     import manipulate_biosqldb
     import biosql_own_sql_tables
     import phylo_tree_bar
+    import pairwiseid_plots
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -7425,7 +7611,14 @@ def annotation_overview(request, biodb):
                          ' inner join custom_tables.db_xref t2 on t1.db_xref_id=t2.db_xref_id ' \
                          ' inner join custom_tables.locus2seqfeature_id_%s t3 on t0.seqfeature_id=t3.seqfeature_id ' \
                          ' where db_xref_name="string" group by taxon_id;' % (biodb, biodb, biodb)
+
+    sql_uniprot_mapping = 'select taxon_id, count(*) from custom_tables.uniprot_id2seqfeature_id_%s t0 ' \
+                         ' inner join custom_tables.locus2seqfeature_id_%s t3 on t0.seqfeature_id=t3.seqfeature_id ' \
+                         ' group by taxon_id;' % (biodb, biodb)
+
+
     taxon_id2n_string = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_string_mapping,))
+    taxon_id2n_uniprot_map = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_uniprot_mapping,))
 
     taxon_id2barplot_data = {}
 
@@ -7439,6 +7632,10 @@ def annotation_overview(request, biodb):
         taxon_id2barplot_data[taxon].append(round((float(taxon_id2CDS_with_EC[taxon])/float(taxon_id2n_CDS[taxon]))*100,2))
         taxon_id2barplot_data[taxon].append(round((float(taxon_id2n_swiss_hits[taxon])/float(taxon_id2n_CDS[taxon]))*100,2))
         taxon_id2barplot_data[taxon].append(round((float(taxon_id2n_Pfam[taxon])/float(taxon_id2n_CDS[taxon]))*100,2))
+        try:
+            taxon_id2barplot_data[taxon].append(round((float(taxon_id2n_uniprot_map[taxon])/float(taxon_id2n_CDS[taxon]))*100,2))
+        except:
+            taxon_id2barplot_data[taxon].append(0)
         try:
             taxon_id2barplot_data[taxon].append(round((float(taxon_id2n_string[taxon])/float(taxon_id2n_CDS[taxon]))*100,2))
         except:
@@ -7479,18 +7676,28 @@ def annotation_overview(request, biodb):
     print taxon_id2door
     tree1, style1 = phylo_tree_bar.plot_tree_barplot(tree,
                       taxon_id2barplot_data,
-                      ['nCDS','COG', 'KO', 'PRIAM', 'SwissProt', 'Pfam', 'STRING-mapping'],
+                      ['nCDS','COG', 'KO', 'PRIAM', 'SwissProt', 'Pfam', 'UniProt-mapping','STRING-mapping'],
                       taxon2set2value_heatmap=taxon2set2value_heatmap,
                       header_list2=['Doors', 'STRING', 'PMID'],
                       presence_only=True,
                       biodb=biodb,
                       column_scale=True,
                       general_max=False,
-                      barplot2percentage=[False, True, True, True, True, True, True])
+                      barplot2percentage=[False, True, True, True, True, True, True, True])
 
     #t.render("test2.svg", tree_style=ts)
     path = settings.BASE_DIR + '/assets/temp/tree.svg'
     asset_path = '/temp/tree.svg'
+
+    proportions = []
+
+    for taxon in taxon_id2n_CDS:
+
+        proportions.append(["KO",float(taxon_id2CDS_with_KO[taxon])/float(taxon_id2n_CDS[taxon]), int(taxon_id2n_CDS[taxon])])
+        proportions.append(["Hits SwissProt",float(taxon_id2n_swiss_hits[taxon])/float(taxon_id2n_CDS[taxon]), int(taxon_id2n_CDS[taxon])])
+        proportions.append(["COG",float(taxon_id2CDS_with_COG[taxon])/float(taxon_id2n_CDS[taxon]), int(taxon_id2n_CDS[taxon])])
+
+    pairwiseid_plots.plot_multiseries_points(proportions,output_path="/home/trestan/ko2size.svg")
 
     tree1.render(path, dpi=800, h=600, tree_style=style1)
     return render(request, 'chlamdb/species_specific.html', locals())
@@ -7519,7 +7726,6 @@ def orthogroup_KO_COG(request, biodb):
     group2n_KO = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     pairwiseid_plots.basic_plot(group2n_KO.values(),output_path="/home/trestan/test2.svg")
-
 
     return render(request, 'chlamdb/species_specific.html', locals())
 
@@ -7624,8 +7830,8 @@ def species_specific_groups(request, biodb):
     R = tree.get_midpoint_outgroup()
     tree.set_outgroup(R)
 
-    sql = 'select taxon_id, species_description from custom_tables.taxonomy_%s' % biodb
-    sql2 = 'select species_description, taxon_id from custom_tables.taxonomy_%s' % biodb
+    sql = 'select taxon_id, family_description from custom_tables.taxonomy_%s' % biodb
+    sql2 = 'select family_description, taxon_id from custom_tables.taxonomy_%s' % biodb
     taxon_id2species_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     species_id2taxon_id = {}
     data = server.adaptor.execute_and_fetchall(sql2,)
@@ -7681,7 +7887,7 @@ def species_specific_groups(request, biodb):
                                                                   "orthogroup",
                                                                   species_taxons,
                                                                   other_taxons,
-                                                                  ratio=1,#/float(len(species_taxons)),
+                                                                  ratio=1/float(len(species_taxons)),
                                                                   single_copy=False,
                                                                   accessions=False)
 
@@ -8701,7 +8907,7 @@ def search(request, biodb):
             elif len(search_term) == len('M00406') and search_term[0:3] == 'M00':
                 return KEGG_module_map(request,biodb, search_term)
             elif len(search_term) == len('map00550') and search_term[0:3] == 'map':
-                return KEGG_mapp(request,biodb, search_term)
+                return KEGG_mapp_ko(request,biodb, search_term)
             elif re.match("^[0-9\.]+$", search_term):
                 print 'ec number!'
                 return fam(request, biodb, search_term, 'EC')
@@ -8799,7 +9005,7 @@ def search(request, biodb):
             elif len(search_term) == len('M00406') and search_term[0:3] == 'M00':
                 return KEGG_module_map(request,biodb, search_term)
             elif len(search_term) == len('map00550') and search_term[0:3] == 'map':
-                return KEGG_mapp(request,biodb, search_term)
+                return KEGG_mapp_ko(request,biodb, search_term)
             elif re.match("^[0-9\.]+$", search_term):
                 print 'ec number!'
                 return fam(request, biodb, search_term, 'EC')
@@ -10639,8 +10845,29 @@ def priam_kegg(request, biodb):
         #form2 = ContactForm(request.POST)
         print 'aaa'
         if form.is_valid():
+
+            server, db = manipulate_biosqldb.load_db(biodb)
+
             genome = form.cleaned_data['genome']
 
+            sql = 'select taxon_id from bioentry t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id' \
+                  ' where t2.name="%s" and t1.accession="%s"' % (biodb, genome)
+            taxon_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
+
+            sql = 'select pathway_name,pathway_category,description from enzyme.locus2ko_%s t1 ' \
+                  ' inner join enzyme.pathway2ko t2 on t1.ko_id=t2.ko_id  ' \
+                  ' inner join enzyme.kegg_pathway t3 on t2.pathway_id=t3.pathway_id ' \
+                  ' where taxon_id=%s and pathway_category ' \
+                  ' not in ("6.9 Infectious diseases: Viral", "6.8 Infectious diseases: Bacterial", ' \
+                  ' "6.7 Endocrine and metabolic diseases", "6.5 Substance dependence", ' \
+                  ' "6.4 Neurodegenerative diseases", "6.3 Immune diseases", "6.2 Cancers: Specific types", ' \
+                  ' "6.12 Drug resistance: Antineoplastic", "6.1 Cancers: Overview", "5.9 Aging", ' \
+                  ' "5.6 Nervous system", "5.7 Sensory system", "5.8 Development", "6.10 Infectious diseases: Parasitic", ' \
+                  ' "5.1 Immune system", "5.3 Circulatory system", "5.2 Endocrine system", ' \
+                  ' "5.5 Excretory system", "5.10 Environmental adaptation","4.4 Cellular community - eukaryotes", ' \
+                  ' "5.4 Digestive system", "3.3 Signaling molecules and interaction", "1.0 Global and overview maps") ' \
+                  ' group by pathway_name order by pathway_category;' % (biodb, taxon_id)
+            data = server.adaptor.execute_and_fetchall(sql,)
 
 
             envoi = True

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+{% load staticfiles %}
+{% load static %}
+{% load custom_tags %}
+{% get_static_prefix as STATIC_PREFIX %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+</head>
+
+<body id="locus_body">
+<div id="container">
+
+           <div id="content">
+
+
+                <div id="sidebar">
+                    {% include "chlamdb/menu.html" %}
+                </div>
+                <div id="header">
+                    {% include "chlamdb/user.html" %}
+                </div>
+
+
+               <h3> Multiple KO associated with {{map_name}} node {{node_id}}</h3>
+                <table>
+                    <tr>
+                        <th style="width:80px">KO id</th>
+                        <th style="width:100px">Frequency in the database</th>
+                        <th style="width:100px">Name</th>
+                        <th style="width:400px">Description</th>
+                    </tr>
+                {% for ko in ko_data%}
+                    <tr>
+                        {%if ko2freq|keyvalue:ko.0 != None %}
+                        <td><a href="{% url 'fam' biodb ko.0 'ko' %}">{{ko.0}}</a></td>
+                        <td>{{ko2freq|keyvalue:ko.0}}</td>
+                        {%else%}
+                        <td>{{ko.0}}</td>
+                        <td>0</td>
+                        {%endif%}
+                        <td>{{ko.1}}</td>
+                        <td>{{ko.2}}</td>
+                    </tr>
+                {% endfor %}
+                </table>
+
+        </div>
+    </div>
+</div>
+
+
+
+</body>
+<script>
+$(document).ready(function(){
+    $('#ko_table').DataTable({
+
+        "order": [[2, "asc" ]],
+        "pageLength": 250,
+"aoColumns": [
+null,
+null,
+{ "sType": 'numeric' },
+null
+]
+    });
+});
+</script>
+</html>
