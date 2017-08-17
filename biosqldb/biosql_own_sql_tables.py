@@ -245,7 +245,7 @@ def get_locus2plasmid_or_not(biodb):
 
 
 
-def circos_locus2taxon_highest_identity(biodb, reference_taxon_id):
+def circos_locus2taxon_highest_identity(biodb, reference_taxon_id, use_identity_closest_homolog2_table=False):
     '''
     Given one reference taxon, get a dictionnary of the highest identity of homolog(s) in other taxons
 
@@ -256,38 +256,55 @@ def circos_locus2taxon_highest_identity(biodb, reference_taxon_id):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select locus_tag, orthogroup from orthology_detail_%s where taxon_id = %s' % (biodb,reference_taxon_id)
-    sql2 = 'select locus_tag, taxon_id from orthology_detail_%s' % (biodb)
+    if not use_identity_closest_homolog2_table:
+        sql = 'select locus_tag, orthogroup from orthology_detail_%s where taxon_id = %s' % (biodb,reference_taxon_id)
+        sql2 = 'select locus_tag, taxon_id from orthology_detail_%s' % (biodb)
 
-    # get all locus tags and orthogroups from reference genome
-    reference_orthogroup2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+        # get all locus tags and orthogroups from reference genome
+        reference_orthogroup2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
-    locus2locus_identity = {}
-    i = 0
-    # for each locus tag, get highest identity in each other taxons
-    for locus_A in reference_orthogroup2locus_tag:
-        i+=1
-        sql = 'select locus_b,identity from orth_%s.%s where locus_a ="%s" ' \
-              ' UNION select locus_a,identity from orth_%s.%s where locus_b ="%s";' % (biodb,
-                                                                                      reference_orthogroup2locus_tag[locus_A],
-                                                                                      locus_A,
-                                                                                      biodb,
-                                                                                      reference_orthogroup2locus_tag[locus_A],
-                                                                                      locus_A)
-        try:
-            locus2identity = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-            locus2locus_identity[locus_A] = {}
-            for locus_B in locus2identity:
-                if locus_tag2taxon_id[locus_B] not in locus2locus_identity[locus_A]:
-                    locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]] = [locus2identity[locus_B], locus_B]
-                else:
-                    # if identity of a second homolog is higher, use this value
-                    if locus2identity[locus_B] > locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]][0]:
+        locus2locus_identity = {}
+        i = 0
+        # for each locus tag, get highest identity in each other taxons
+        for locus_A in reference_orthogroup2locus_tag:
+            i+=1
+            sql = 'select locus_b,identity from orth_%s.%s where locus_a ="%s" ' \
+                  ' UNION select locus_a,identity from orth_%s.%s where locus_b ="%s";' % (biodb,
+                                                                                          reference_orthogroup2locus_tag[locus_A],
+                                                                                          locus_A,
+                                                                                          biodb,
+                                                                                          reference_orthogroup2locus_tag[locus_A],
+                                                                                          locus_A)
+            try:
+                locus2identity = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+                locus2locus_identity[locus_A] = {}
+                for locus_B in locus2identity:
+                    if locus_tag2taxon_id[locus_B] not in locus2locus_identity[locus_A]:
                         locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]] = [locus2identity[locus_B], locus_B]
-        except:
-            #print 'no homologs for %s' % locus_A
-            pass
+                    else:
+                        # if identity of a second homolog is higher, use this value
+                        if locus2identity[locus_B] > locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]][0]:
+                            locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]] = [locus2identity[locus_B], locus_B]
+            except:
+                #print 'no homologs for %s' % locus_A
+                pass
+        print '------------------', locus2locus_identity.keys()[0], locus2locus_identity[locus2locus_identity.keys()[0]]
+
+    else:
+        sql = 'select t2.locus_tag, t3.locus_tag, identity, taxon_2 from comparative_tables.identity_closest_homolog2_%s t1 ' \
+              ' inner join custom_tables.locus2seqfeature_id_%s t2 on t1.locus_1=t2.seqfeature_id ' \
+              ' inner join custom_tables.locus2seqfeature_id_%s t3 on t1.locus_2=t3.seqfeature_id ' \
+              ' where taxon_1=%s' % (biodb, biodb, biodb, reference_taxon_id)
+        data = server.adaptor.execute_and_fetchall(sql,)
+        locus2locus_identity = {}
+        for row in data:
+            if row[0] not in locus2locus_identity:
+                locus2locus_identity[row[0]] = {}
+                locus2locus_identity[row[0]][row[3]] = [row[3],row[1]]
+            else:
+                locus2locus_identity[row[0]][row[3]] = [row[3],row[1]]
+    print '------------------', locus2locus_identity.keys()[0], locus2locus_identity[locus2locus_identity.keys()[0]]
     return locus2locus_identity
 
 
