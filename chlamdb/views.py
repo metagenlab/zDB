@@ -2368,7 +2368,7 @@ def locusx(request, biodb, locus=None, menu=True):
 
         fasta = "%s_fasta/%s.txt" % (biodb, orthogroup)
         alignment = "%s_fasta/%s.html" % (biodb, orthogroup)
-        alignment_fasta = "%s_fasta/%s.fa" % (biodb, orthogroup)
+        alignment_fasta = "%s_fasta/%s.faa" % (biodb, orthogroup)
         alignment_fasta_nucl = "%s_fasta_nucl/%s_nucl.txt" % (biodb, orthogroup)
         tree_unrooted = "%s_fasta/%s_tree.svg" % (biodb, orthogroup)
         tree_rooted = "%s_fasta/%s_tree_reroot.svg" % (biodb, orthogroup)
@@ -10457,22 +10457,24 @@ def interactions(request, biodb, locus_tag):
     sql = 'select orthogroup from orthology_detail_%s where locus_tag="%s"' % (biodb,locus_tag)
 
     orthogroup = server.adaptor.execute_and_fetchall(sql,)[0][0]
-
-    print 'cotoff 2 #######################'
-    all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2.2)
-    too_much_hits = False
-    if all_groups_profile == False:
-        # try with of more stringeant cutoff
-        print 'cotoff 1 #######################'
-        all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2)
+    try:
+        print 'cotoff 2 #######################'
+        all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2.2)
+        too_much_hits = False
         if all_groups_profile == False:
-            print 'cotoff 0 #######################'
-            all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
-            print all_groups_profile
+            # try with of more stringeant cutoff
+            print 'cotoff 1 #######################'
+            all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2)
             if all_groups_profile == False:
-                all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 0)
+                print 'cotoff 0 #######################'
+                all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
+                print all_groups_profile
                 if all_groups_profile == False:
-                    too_much_hits = True
+                    all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 0)
+                    if all_groups_profile == False:
+                        too_much_hits = True
+    except:
+        all_groups_profile = []
 
     if all_groups_profile:
         if len(all_groups_profile) <= 1:
@@ -10481,8 +10483,11 @@ def interactions(request, biodb, locus_tag):
             profile_match = True
 
     print 'n profile hits', all_groups_profile
+    sql = 'select seqfeature_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s"' % (biodb,
+                                                                                                   locus_tag)
 
-    all_groups_neig = string_networks.find_links_recusrsive(biodb, [locus_tag], 0.8, n_comp_cutoff=0)
+    seqfeature_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
+    all_groups_neig = string_networks.find_links_recusrsive(biodb, [seqfeature_id], 0.8, n_comp_cutoff=0)
     print 'all grp', all_groups_neig
     if len(all_groups_neig) == 0:
         neig_match = False
@@ -10656,14 +10661,23 @@ def neig_interactions(request, biodb, locus_tag):
     
 
     server, db = manipulate_biosqldb.load_db(biodb)
+    sql = 'select seqfeature_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s"' % (biodb,
+                                                                                                   locus_tag)
 
-    locus_tag_list = string_networks.find_links_recusrsive(biodb, [locus_tag], 0.8, n_comp_cutoff=2)
+    seqfeature_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
+    locus_tag_list = string_networks.find_links_recusrsive(biodb, [seqfeature_id], 0.8, n_comp_cutoff=1)
 
     if len(locus_tag_list) == 0:
         match = False
     else:
         import ete_motifs
 
+        if biodb != 'chlamydia_04_16':
+            locus_tag_list = [str(i) for i in locus_tag_list]
+            filter_seqfeatures = ','.join(locus_tag_list)
+            sql = 'select locus_tag from custom_tables.locus2seqfeature_id_%s where seqfeature_id in (%s)' % (biodb, filter_seqfeatures)
+            locus_tag_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+        print 'locus list', locus_tag_list
         #match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(all_groups, biodb)
         locus2annot, \
         locus_tag2cog_catego, \
