@@ -18,8 +18,10 @@ def accession2coding_density(biodb, static_dir_path):
     accession_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql1,)]
 
     db_static_path = os.path.join(static_dir_path, biodb)
-    os.mkdir(db_static_path)
-
+    try:
+        os.mkdir(db_static_path)
+    except:
+        pass
     faa_path = os.path.join(db_static_path, 'faa')
     print faa_path
     os.mkdir(faa_path)
@@ -70,4 +72,7 @@ def accession2coding_density(biodb, static_dir_path):
     shell_command.shell_command("cd %s; for i in `ls *ffn`;do formatdb -i $i -p F; done" % ffn_path)
     shell_command.shell_command("cd %s; for i in `ls *fna`;do formatdb -i $i -p F; done" % fna_path)
 
-accession2coding_density("2017_06_29b_motile_chlamydiae","/home/trestan/work/dev/django/chlamydia/assets")
+accession2coding_density("2017_06_29b_motile_chlamydiae","/webapps/biodb/chlamdb/assets/")
+accession2coding_density("2017_06_29_parilichlamydiae","/webapps/biodb/chlamdb/assets/")
+accession2coding_density("2017_05_11_proteobacteria","/webapps/biodb/chlamdb/assets/")
+
