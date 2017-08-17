@@ -1295,14 +1295,17 @@ def organism2color(locus2data, taxon_id2family=False):
         organism_list = []
         for locus in locus2data:
             # case in which we only hace seq length
-            if len(locus2data[locus]) == 2:
+            if type(locus2data[locus][0]) != list:
+                print locus2data[locus]
+                print '2!!!!'
                 if locus2data[locus][1] not in organism_list:
                     organism_list.append(locus2data[locus][1])
             else:
+                print 'not 2!!!!!'
                 if locus2data[locus][0][2] not in organism_list:
                     organism_list.append(locus2data[locus][0][2])
         colors = _get_colors(len(organism_list))
-
+        print organism_list, colors
         return dict(zip(organism_list, colors))
     else:
         family_list = []
