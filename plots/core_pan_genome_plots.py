@@ -8,8 +8,8 @@ pandas2ri.activate()
 
 def core_pan_genome_plot(numpy_matrix,
                           header="",
-                          xlab="",
-                          ylab="",
+                          xlab="Number of genomes",
+                          ylab="Number of Orthologous groups",
                           reverse=False,
                           output_path="~/test.svg"):
 
@@ -37,7 +37,7 @@ def core_pan_genome_plot(numpy_matrix,
             pan_groups <- length(Mdata[,1])
 
               rarefact <- function(matrice, n_permutatations, sp,ylim){
-                  plot(sp,ci.lty=2,xlab="# Genomes", ylab="Orthologous groups", main="", col="blue", ci.col="black",ylim=c(0,ylim))
+                  plot(sp,ci.lty=2,xlab="%s", ylab="%s", main="", col="blue", ci.col="black",ylim=c(0,ylim))
                   m <- c()
                   for (i in 2:length(matrice[1,])){
                       #print(i)
@@ -60,7 +60,7 @@ def core_pan_genome_plot(numpy_matrix,
                   print(seq(2:(length(matrice[2,]))))
                   print(m)
                   }
-              svg('%s',height=6,width=6)
+              CairoSVG('%s',height=6,width=6)
               if (length(Mdata[1,]) < 10){n_random <- 2} else if (length(Mdata[1,]) < 20) {n_random <- 5} else {n_random <- 10}
               sp <- specaccum(t(Mdata), "random", permutations=n_random)
               rarefact(Mdata, n_random,sp,length(Mdata[,1])*1.3)
@@ -68,7 +68,7 @@ def core_pan_genome_plot(numpy_matrix,
               #abline(h=pan_groups)
               dev.off()
 
-        ''' % (output_path))
+        ''' % (xlab, ylab, output_path))
 
         total = robjects.r['pan_groups']
         core_genome = robjects.r['core_groups']

@@ -967,7 +967,9 @@ def orthology_circos_files(server,
             taxon_files.append(open(file_name, "w"))
     print 'get closest homolog identity dictionnary'
     if show_homologs:
-        locus2locus_identity = biosql_own_sql_tables.circos_locus2taxon_highest_identity(biodatabase_name, reference_taxon_id)
+        locus2locus_identity = biosql_own_sql_tables.circos_locus2taxon_highest_identity(biodatabase_name,
+                                                                                         reference_taxon_id,
+                                                                                         use_identity_closest_homolog2_table=True)
 
     print "get plasmid locus"
     plasmid_locus = biosql_own_sql_tables.get_locus2plasmid_or_not(biodatabase_name)
