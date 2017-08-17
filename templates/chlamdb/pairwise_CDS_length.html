@@ -49,9 +49,18 @@
 
         <div id="my-tab-content" class="tab-content">
             <div class="tab-pane active" id="tab1">
-                <object type="image" data="{% static asset_path1 %}" id="plot"></object>
+
+<embed src="{% static asset_path1 %}"
+       width="600px" height="600px"
+       type="image/svg+xml"
+       pluginspage="http://www.adobe.com/svg/viewer/install/" />
+
+
             </div>
             <div class="tab-pane" id="tab2">
+
+
+
                 <object type="image/svg+xml" data="{% static asset_path2 %}" id="inter_tree4" style="position: relative; top: 10px; left: 10px;"></object>
             </div>
         </div>

@@ -37,8 +37,9 @@
                 <ul id="tabs_main" class="nav nav-tabs">
                     <li><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
                     <li><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
-                    <li class="active"><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups with paralogs</a></li>
+                    <li class="active"><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups size</a></li>
                     <li><a href="{% url 'plot_heatmap' biodb 'orthology' %}">Whole proteomes heatmaps</a></li>
+                    <li><a href="{% url 'pan_genome' biodb 'orthology' %}">Pan/Core genome plots</a></li>
 
                 </ul>
             </nav>
@@ -47,7 +48,7 @@
                     <div class="panel-heading" style="width:100%">
                         <h3 class="panel-title">Help</h3>
                     </div>
-                    <p style="margin: 10px 10px 10px 10px; line-height: 160%">Compare orthogroup presenting more than one homolog in one of the selected genomes</p>
+                    <p style="margin: 10px 10px 10px 10px; line-height: 160%">Compare orthogroup presenting more than one homolog in one of the selected genomes.</p>
                 </p>
                 </div>
 

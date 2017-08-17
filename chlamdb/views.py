@@ -4,6 +4,7 @@
 # todo save temp files in temp folder
 
 
+
 #from django.shortcuts import render
 #from datetime import datetime
 from django.shortcuts import render
@@ -72,6 +73,12 @@ import models
 import simplejson
 import string
 import random
+
+if settings.DEBUG == True:
+    debug_mode = 1
+else:
+    debug_mode = 0
+
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
    return ''.join(random.choice(chars) for _ in range(size))
@@ -1942,6 +1949,8 @@ def extract_region(request, biodb):
 #@login_required
 def locusx(request, biodb, locus=None, menu=True):
 
+    print 'debug!!', debug_mode
+
     if request.method == 'GET':  # S'il s'agit d'une requête POST
         import re
 
@@ -2373,6 +2382,12 @@ def locusx(request, biodb, locus=None, menu=True):
         tree_unrooted = "%s_fasta/%s_tree.svg" % (biodb, orthogroup)
         tree_rooted = "%s_fasta/%s_tree_reroot.svg" % (biodb, orthogroup)
         tree_file = "%s_fasta/%s.phy_phyml_tree.txt" % (biodb, orthogroup)
+
+
+        if not os.path.exists(settings.BASE_DIR + '/assets/' + alignment):
+            align_path = False
+        else:
+            align_path = True
 
         #columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
         #      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
@@ -5108,7 +5123,34 @@ def pan_genome(request, biodb, type):
             asset_path = '/temp/pangenome.svg'
             path2 = settings.BASE_DIR + '/assets/temp/pangenome_barplot.svg'
             asset_path2 = '/temp/pangenome_barplot.svg'
-            total, core, core_minus1 = core_pan_genome_plots.core_pan_genome_plot(data, output_path=path)
+
+            if type == 'orthology':
+                xlab = 'Number of genomes'
+                ylab = 'Number of orthologous groups'
+            if type == 'ko':
+                xlab = 'Number of genomes'
+                ylab = 'Number of Kegg Orthologous groups'
+            if type == 'EC':
+                xlab = 'Number of genomes'
+                ylab = 'Number of EC'
+            if type == 'Pfam':
+                xlab = 'Number of genomes'
+                ylab = 'Number of Pfam domains'
+            if type == 'interpro':
+                xlab = 'Number of genomes'
+                ylab = 'Number of Interpro Entries'
+            if type == 'COG':
+                xlab = 'Number of genomes'
+                ylab = 'Number of COG'
+
+
+
+
+            total, core, core_minus1 = core_pan_genome_plots.core_pan_genome_plot(data,
+                                                                                  output_path=path,
+                                                                                  xlab=xlab,
+                                                                                  ylab=ylab)
+
             counts_n_genomes = core_pan_genome_plots.pan_genome_barplot(data, output_path=path2)
             genome_count_list = []
             for i, count in enumerate(counts_n_genomes):
@@ -10482,13 +10524,15 @@ def interactions(request, biodb, locus_tag):
         else:
             profile_match = True
 
-    print 'n profile hits', all_groups_profile
-    sql = 'select seqfeature_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s"' % (biodb,
-                                                                                                   locus_tag)
+    if biodb != 'chlamydia_04_16':
+        sql = 'select seqfeature_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s"' % (biodb,
+                                                                                                       locus_tag)
 
-    seqfeature_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
-    all_groups_neig = string_networks.find_links_recusrsive(biodb, [seqfeature_id], 0.8, n_comp_cutoff=0)
-    print 'all grp', all_groups_neig
+        seqfeature_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
+
+        all_groups_neig = string_networks.find_links_recusrsive(biodb, [seqfeature_id], 0.8, n_comp_cutoff=0)
+    else:
+        all_groups_neig = string_networks.find_links_recusrsive(biodb, [locus_tag], 0.8, n_comp_cutoff=0)
     if len(all_groups_neig) == 0:
         neig_match = False
     else:
@@ -10661,12 +10705,15 @@ def neig_interactions(request, biodb, locus_tag):
     
 
     server, db = manipulate_biosqldb.load_db(biodb)
-    sql = 'select seqfeature_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s"' % (biodb,
-                                                                                                   locus_tag)
 
-    seqfeature_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
-    locus_tag_list = string_networks.find_links_recusrsive(biodb, [seqfeature_id], 0.8, n_comp_cutoff=1)
+    if biodb != 'chlamydia_04_16':
+        sql = 'select seqfeature_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s"' % (biodb,
+                                                                                                       locus_tag)
 
+        seqfeature_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
+        locus_tag_list = string_networks.find_links_recusrsive(biodb, [seqfeature_id], 0.8, n_comp_cutoff=1)
+    else:
+        locus_tag_list = string_networks.find_links_recusrsive(biodb, [locus_tag], 0.8, n_comp_cutoff=1)
     if len(locus_tag_list) == 0:
         match = False
     else:

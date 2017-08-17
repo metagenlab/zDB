@@ -72,10 +72,13 @@ function clearBox(elementID)
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' biodb data.0 %}', 'orthoIDframe'); return false">Phylogenetic distribution</a></li>
                 {%endif%}
 
-
+                {% if align_path %}
                 <li><a href="#tab55" data-toggle="tab">MSA</a></li>
+                {% endif %}
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' biodb data.0 True %}', 'orthoIDframe'); return false">Orthogroup conservation</a></li>
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' biodb data.0 %}', 'orthoIDframe'); return false">Pfam tree</a></li>
+                {% if homologues|length > 3%}
+                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' biodb data.0 %}', 'orthoIDframe'); return false">Pfam tree</a></li>
+                {% endif %}
                 {% if show_tm_tree %}
                     <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'TM_tree' biodb data.0 %}', 'orthoIDframe'); return false">TM tree</a></li>
                 {% endif %}
@@ -91,7 +94,7 @@ function clearBox(elementID)
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' biodb data.0 %}', 'orthoIDframe'); return false">BBH phylogeny</a></li>
                 {%endif %}
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'hydropathy' biodb data.1 %}', 'orthoIDframe'); return false">Hydropathy plot</a></li>
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'aa_comp_locus' biodb data.1 %}', 'orthoIDframe'); return false">AA composition PCA</a></li>
+                <!--<li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'aa_comp_locus' biodb data.1 %}', 'orthoIDframe'); return false">AA composition PCA</a></li>-->
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'gc_locus' biodb data.1 %}', 'orthoIDframe'); return false">GC</a></li>
                 {% if pubmed_data  %}
                 <li><a href="#tab22" data-toggle="tab">Pubmed  <span class="badge">{{pubmed_data|length}}</span></a></li>
@@ -105,52 +108,54 @@ function clearBox(elementID)
 
                 <div class="tab-pane active" id="tab1">
 
-                    <div class="row">
-                        <div class="col-xs-4" style="padding-left: 15px">
-                            <h3>General</h3>
-                            <div style="width: 100%;padding-left:20px">
+                    <!--<div class="row">-->
+                        <div class="col-sm-4" style="padding-left: 15px">
+                            <div class="row">
+                                <h3>General</h3>
+                                <div style="width: 100%;padding-left:20px">
 
 
 
-                                <table style="width: 100%">
+                                    <table style="width: 100%">
 
-                                    <tr>
-                                        <td id="description_field">Organism</td>
-                                        <td>{{ data.12 }}</td>
-                                    </tr>
-
-
-
-                                    <tr>
-                                        <td id="description_field">locus_tag</td>
-                                        <td>{{ data.1 }}</td>
-                                    </tr>
-                                    {% if old_locus_tag %}
                                         <tr>
-                                            <td id="description_field">old locus_tag</td>
-                                            <td>{{ old_locus_tag }}</td>
+                                            <td id="description_field">Organism</td>
+                                            <td>{{ data.12 }}</td>
                                         </tr>
-                                    {% endif %}
-                                    <td  id="description_field">gene</td>
-                                        <td>{{ data.6 }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>protein_id</td>
-                                        <td>{{ data.2 }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Location</td>
-                                        <td>{{ data.3 }} - {{ data.4 }} (strand: {{ data.5 }})</td>
-                                    </tr>
-
-                                    <tr>
-                                        <td>Length</td>
-                                        <td>{{ nucl_length }} (nucleotides) / {{aa_length}} (amino acids)</td>
-                                    </tr>
 
 
 
-                                </table>
+                                        <tr>
+                                            <td id="description_field">locus_tag</td>
+                                            <td>{{ data.1 }}</td>
+                                        </tr>
+                                        {% if old_locus_tag %}
+                                            <tr>
+                                                <td id="description_field">old locus_tag</td>
+                                                <td>{{ old_locus_tag }}</td>
+                                            </tr>
+                                        {% endif %}
+                                        <td  id="description_field">gene</td>
+                                            <td>{{ data.6 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>protein_id</td>
+                                            <td>{{ data.2 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Location</td>
+                                            <td>{{ data.3 }} - {{ data.4 }} (strand: {{ data.5 }})</td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>Length</td>
+                                            <td>{{ nucl_length }} (nucleotides) / {{aa_length}} (amino acids)</td>
+                                        </tr>
+
+
+
+                                    </table>
+                                </div>
                             </div>
                             <h3>Download</h3>
                             <div style="width: 100%;padding-left:20px">
@@ -308,10 +313,11 @@ function clearBox(elementID)
                             {% endif %}
 
                         </div>
-                        <div class="col-xs-8">
-                            <div style="height:100px">
+                        <div class="col-sm-8">
+                            <div class="row" style="height:100px">
                                 <object width="95%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
                             </div>
+                            <div class="row">
                             <h3>Product</h3>
                             <table>
                                 <tr>
@@ -320,6 +326,7 @@ function clearBox(elementID)
                                 </tr>
 
                             </table>
+                            </div>
                             {% if uniprot_annotation%}
                                 <table>
                                         <tr>
@@ -431,18 +438,18 @@ function clearBox(elementID)
                             <table>
                                 {%if interpro_data %}
                                    <tr>
-                                        <td style="width:105px"></td>
-                                        <td></td>
-                                        <td style="width:95px">Bacteria <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of bacterial sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                        <td style="width:95px">Euk. <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of eukaryotic sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                        <td style="width:95px">Archae <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of archaeal sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                        <td style="width:95px">Virus <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of virus sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                        <td style="width:70px"></td>
+                                        <td style="width:300px"></td>
+                                        <td style="width:90px">Bacteria <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of bacterial sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                        <td style="width:80px">Euk. <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of eukaryotic sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                        <td style="width:80px">Archae <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of archaeal sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                        <td style="width:80px">Virus <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of virus sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
                                     </tr>
                                 {% endif %}
                                 {%if pfam_data %}
                                     {% for values in pfam_data %}
                                         <tr>
-                                            <td id="description_field"><a href="{% url 'fam' biodb values.0 'pfam' %}" target="_top">Pfam: {{values.0}}</a></td>
+                                            <td id="description_field"><a href="{% url 'fam' biodb values.0 'pfam' %}" target="_top">Pf: {{values.0}}</a></td>
                                             <td>{{values.1}}</td>
                                         </tr>
 
@@ -453,7 +460,7 @@ function clearBox(elementID)
                                     {% for values in interpro_data %}
                                         {% with interpro2taxononmy|keyvalue:values.0 as taxo %}
                                         <tr>
-                                            <td id="description_field"><a href="{% url 'fam' biodb values.0 'interpro' %}" target="_top">Interpro: {{values.0}}</a></td>
+                                            <td id="description_field"><a href="{% url 'fam' biodb values.0 'interpro' %}" target="_top">IP: {{values.0}}</a></td>
                                             <td>{{values.1}} </td>
                                             {% if taxo.4 > taxo.5 %}
                                                 <td style="color:blue;">{{taxo.4}} ({{taxo.0}}%)</td>
@@ -682,7 +689,7 @@ function clearBox(elementID)
 
 
                         </div>
-                    </div>
+                    <!--</div>-->
 
 
 
@@ -891,18 +898,16 @@ function clearBox(elementID)
                         </table>
         </div>
 
+            {% if align_path %}
             <div class="tab-pane" id="tab55">
-                            <h2>Multiple Sequence Alignment</h2>
+                            <h3>Multiple Sequence Alignment</h3>
                             <table>
 
                                 <tr>
-                                    {%if homologues|length < 100 %}
+                                    {%if homologues|length < 200 %}
                                     <script src="https://cdn.bio.sh/msa/latest/msa.min.gz.js"></script>
+
                                     <div id="msa">Loading Multiple Alignment...</div>
-                                    {%else%}
-                                        Alignment larger than 100 sequences. Cannot be displayed.
-                                        <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% static alignment_fasta %}'">download MSA</button>
-                                    {%endif%}
 
                                     <script>
                                     var getKeys = function(obj){
@@ -923,11 +928,11 @@ function clearBox(elementID)
                                     var h = $(window).height();
                                     m.g.config.set("registerMouseHover", "True");
                                     m.g.zoomer.set("alignmentHeight", h*0.55);
-                                    m.g.zoomer.set("alignmentWidth", w*0.83);
-                                    m.g.zoomer.set("overviewboxPaddingTop", "80");
-                                    m.g.zoomer.set("boxRectHeight", 1.1);
-                                    m.g.zoomer.set("boxRectWidth", 1.1);
-                                    m.g.zoomer.set("labelFontsize", 9);
+                                    m.g.zoomer.set("alignmentWidth", w*0.73);
+                                    m.g.zoomer.set("overviewboxPaddingTop", "10");
+                                    m.g.zoomer.set("boxRectHeight", 1);
+                                    m.g.zoomer.set("boxRectWidth", 1);
+                                    m.g.zoomer.set("labelFontsize", 11);
                                     m.g.zoomer.set("rowHeight", 11);
                                     m.g.zoomer.set("columnWidth", 11);
                                     m.g.vis.set("overviewbox", "True");
@@ -945,12 +950,57 @@ function clearBox(elementID)
 
 
 
+                                    {%else%}
+                                    <script src="https://cdn.bio.sh/msa/latest/msa.min.gz.js"></script>
+                                        Alignment larger than 200 sequences, only overview.
+                                        <div id="msa">Loading Multiple Alignment...</div>
+                                    <script>
+                                    var getKeys = function(obj){
+                                       var keys = [];
+                                       for(var key in obj){
+                                          keys.push(key);
+                                       }
+                                       return keys;
+                                    };
+
+                                    var m = msa({
+                                        importURL: "{% static alignment_fasta %}",
+                                        el: document.getElementById("msa"),
+                                        bootstrapMenu: true
+                                    });
+
+                                    var w = $(window).width();
+                                    var h = $(window).height();
+                                    m.g.config.set("registerMouseHover", false);
+                                    m.g.zoomer.set("alignmentHeight", h*0.45);
+                                    m.g.zoomer.set("alignmentWidth", w*0.73);
+                                    m.g.zoomer.set("boxRectHeight", 1);
+                                    m.g.zoomer.set("boxRectWidth", 1);
+                                    m.g.zoomer.set("rowHeight", 1);
+                                    m.g.zoomer.set("columnWidth", 1);
+                                    m.g.vis.set("overviewbox", false);
+                                    m.g.vis.set("sequences", true);
+                                    m.g.vis.set("leftHeader", false);
+                                    m.g.vis.set("labels", false);
+                                    m.g.vis.set("labelName", false);
+                                    m.g.vis.set("labelId", false);
+                                    m.render();
+                                    </script>
+
+
+
+                                    {%endif%}
+
+
+
+
 
                                 </tr>
 
 
                             </table>
             </div>
+            {% endif %}
             <div class="tab-pane" id="tab66" style="height:2px;" >
             <iframe name="orthoIDframe" id="theFrame" style="height:8000px;overflow:hidden;" width="500px" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
             </div>

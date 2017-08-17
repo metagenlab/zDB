@@ -10,6 +10,7 @@ urlpatterns = [
                        url(r'^blastnr_euk/([a-zA-Z0-9_\.\-]+)$', blastnr_euk, name="blastnr_euk"),
                        url(r'^cog_barchart/([a-zA-Z0-9_]+)', cog_barchart, name="cog_barchart"),
                        url(r'^blast_sets/([a-zA-Z0-9_]+)', blast_sets, name="blast_sets"),
+                       url(r'^rnaseq_class/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', rnaseq_class, name="rnaseq_class"),
                        url(r'^orthogroup_KO_COG/([a-zA-Z0-9_]+)', orthogroup_KO_COG, name="orthogroup_KO_COG"),
                        url(r'^pan_genome/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', pan_genome, name="pan_genome"),
                        url(r'^blastnr_overview/([a-zA-Z0-9_\-]+)', blastnr_overview, name="blastnr_overview"),

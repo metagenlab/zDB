@@ -58,7 +58,7 @@
                 {% elif type == 'orthology' %}
                     <li><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
                     <li><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
-                    <li><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups size between genomes</a></li>
+                    <li><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups size</a></li>
                     <li><a href="{% url 'plot_heatmap' biodb 'orthology' %}">Whole proteomes heatmaps</a></li>
                     <li class="active"><a href="{% url 'pan_genome' biodb 'orthology' %}">Pan/Core genome plots</a></li>
                 {% endif %}
@@ -155,8 +155,19 @@
                     </tr>
                 </table>
 
-                <object type="image" data="{% static asset_path %}" id="plot" style="width:50%; margin-left: 100px;"></object>
+<embed src="{% static asset_path %}"
+       width="600px" height="600px"
+       type="image/svg+xml"
+       pluginspage="http://www.adobe.com/svg/viewer/install/" />
+
+
             </div>
+
+
+
+
+
+
             <div class="tab-pane" id="tab2">
                 <table style="width:190px; float: left;">
 
@@ -171,7 +182,10 @@
                     {% endfor %}
                 </table>
 
-                <object type="image" data="{% static asset_path2 %}" id="plot" style="width:50%; margin-left: 100px;"></object>
+                <object type="image/svg+xml" data="{% static asset_path2 %}" id="plot" width="50%"></object>
+
+
+
             </div>
         </div>
     {% endif %}

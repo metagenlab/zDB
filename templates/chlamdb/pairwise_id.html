@@ -31,7 +31,7 @@
             <div class="panel-heading" style="width:100%">
                 <h3 class="panel-title">Help</h3>
             </div>
-            <p style="margin: 10px 10px 10px 10px">Plot the distribution of amino acid identity of pairwise reciprocal best blast hits. Can include between 3 and 4 genomes.<br>
+            <p style="margin: 10px 10px 10px 10px">Plot the distribution of amino acid identity of pairwise reciprocal best blast hits. Can include between 3 and 6 genomes.<br>
             </p>
         </div>
 
@@ -50,10 +50,15 @@
 
         <div id="my-tab-content" class="tab-content">
             <div class="tab-pane active" id="tab1">
-                <object type="image" data="{% static asset_path1 %}" id="plot"></object>
+
+                <embed src="{% static asset_path1 %}"
+       width="600px" height="600px"
+       type="image/svg+xml"
+       pluginspage="http://www.adobe.com/svg/viewer/install/" />
+
             </div>
             <div class="tab-pane" id="tab2">
-                <object type="image/svg+xml" data="{% static asset_path2 %}" id="inter_tree4" style="position: relative; top: 10px; left: 10px;"></object>
+                <object type="image/svg+xml" data="{% static asset_path2 %}" id="inter_tree4" style="position: relative; top: 10px; left: 10px;width: 600px"></object>
             </div>
         </div>
     {% endif %}
