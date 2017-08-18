@@ -301,9 +301,9 @@ def circos_locus2taxon_highest_identity(biodb, reference_taxon_id, use_identity_
         for row in data:
             if row[0] not in locus2locus_identity:
                 locus2locus_identity[row[0]] = {}
-                locus2locus_identity[row[0]][row[3]] = [row[3],row[1]]
+                locus2locus_identity[row[0]][row[3]] = [row[2],row[1]]
             else:
-                locus2locus_identity[row[0]][row[3]] = [row[3],row[1]]
+                locus2locus_identity[row[0]][row[3]] = [row[2],row[1]]
     print '------------------', locus2locus_identity.keys()[0], locus2locus_identity[locus2locus_identity.keys()[0]]
     return locus2locus_identity
 
