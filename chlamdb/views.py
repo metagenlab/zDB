@@ -10834,10 +10834,13 @@ def orthogroup_conservation_tree(request, biodb, orthogroup_or_locus):
         orthogroup = orthogroup_or_locus
         taxon2identity_closest = False
         taxon2locus_tag_closest = False
+        taxon_id = False
     else:
-        sql = 'select orthogroup from orthology_detail_%s where locus_tag="%s"' % (biodb,
+        sql = 'select orthogroup, taxon_id from orthology_detail_%s where locus_tag="%s"' % (biodb,
                                                                                    orthogroup_or_locus)
-        orthogroup = server.adaptor.execute_and_fetchall(sql, )[0][0]
+        data = server.adaptor.execute_and_fetchall(sql, )[0]
+        orthogroup = data[0]
+        taxon_id = data[1]
 
         sql2 = 'select taxon_2,B.locus_tag,identity from (select * from custom_tables.locus2seqfeature_id_%s t1 ' \
                ' inner join comparative_tables.identity_closest_homolog2_%s t2 on t1.seqfeature_id=t2.locus_1 ' \
@@ -10854,6 +10857,7 @@ def orthogroup_conservation_tree(request, biodb, orthogroup_or_locus):
         for row in identity_data:
             taxon2identity_closest[str(row[0])] = row[2]
             taxon2locus_tag_closest[str(row[0])] = row[1]
+        taxon2locus_tag_closest[str(taxon_id)] = orthogroup_or_locus
 
     asset_path = '/temp/phylo.svg'
     path = settings.BASE_DIR + '/assets/' + asset_path
@@ -10884,7 +10888,8 @@ def orthogroup_conservation_tree(request, biodb, orthogroup_or_locus):
                                                                        tree,
                                                                        taxid2n,
                                                                        taxid2identity= taxon2identity_closest,
-                                                                       taxid2locus = taxon2locus_tag_closest)
+                                                                       taxid2locus = taxon2locus_tag_closest,
+                                                                       reference_taxon=taxon_id)
     shell_command.shell_command('rm %s' % path)
 
     t1.render(path, dpi=800, h=leaf_number*12)
