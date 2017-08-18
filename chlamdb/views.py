@@ -10858,6 +10858,7 @@ def orthogroup_conservation_tree(request, biodb, orthogroup_or_locus):
             taxon2identity_closest[str(row[0])] = row[2]
             taxon2locus_tag_closest[str(row[0])] = row[1]
         taxon2locus_tag_closest[str(taxon_id)] = orthogroup_or_locus
+        taxon2identity_closest[str(taxon_id)] = 100
 
     asset_path = '/temp/phylo.svg'
     path = settings.BASE_DIR + '/assets/' + asset_path
