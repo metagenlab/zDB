@@ -432,7 +432,7 @@ def plot_heatmap_tree_locus(biodb,
                 else:
                     value = "%.1f" % round(taxid2identity[str(lf.name)], 2)
             except:
-                value = '         '
+                value = '-'
             if str(lf.name) == str(reference_taxon):
                 value = '         '
             n = TextFace(' %s ' % value)
@@ -440,7 +440,7 @@ def plot_heatmap_tree_locus(biodb,
             n.margin_right = 2
             n.margin_left = 20
             n.margin_bottom = 2
-            if not value.isspace():
+            if not value.isspace() and value is not '-':
                 n.inner_background.color = rgb2hex(m.to_rgba(float(value)))
                 if float(value) > 82:
                     n.fgcolor = 'white'
