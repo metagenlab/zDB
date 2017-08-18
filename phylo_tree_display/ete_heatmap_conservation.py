@@ -342,7 +342,12 @@ def plot_heat_tree(biodb, taxid2n, tree_file):
     return t1, leaf_number
 
 
-def plot_heatmap_tree_locus(biodb, tree_file, taxid2count, taxid2identity=False, taxid2locus =False):
+def plot_heatmap_tree_locus(biodb,
+                            tree_file,
+                            taxid2count,
+                            taxid2identity=False,
+                            taxid2locus =False,
+                            reference_taxon=False):
 
     '''
 
@@ -427,17 +432,19 @@ def plot_heatmap_tree_locus(biodb, tree_file, taxid2count, taxid2identity=False,
                 else:
                     value = "%.1f" % round(taxid2identity[str(lf.name)], 2)
             except:
-                value = '-'
+                value = '         '
             n = TextFace(' %s ' % value)
             n.margin_top = 2
             n.margin_right = 2
             n.margin_left = 20
             n.margin_bottom = 2
-            if value != '-':
+            if not value.isspace():
                 n.inner_background.color = rgb2hex(m.to_rgba(float(value)))
                 if float(value) > 82:
                     n.fgcolor = 'white'
             n.opacity = 1.
+            if str(lf.name) == str(reference_taxon):
+                n.inner_background.color = '#800000'
 
             lf.add_face(n, col+1, position="aligned")
         # optionaly add column with locus name
@@ -451,7 +458,11 @@ def plot_heatmap_tree_locus(biodb, tree_file, taxid2count, taxid2identity=False,
             n.margin_right = 2
             n.margin_left = 2
             n.margin_bottom = 2
-            n.inner_background.color = "white"
+            if str(lf.name) != str(reference_taxon):
+                n.inner_background.color = "white"
+            else:
+                n.fgcolor = '#ff0000'
+                n.inner_background.color = "white"
             n.opacity = 1.
             lf.add_face(n, col+2, position="aligned")
         lf.name = taxid2organism[str(lf.name)]
