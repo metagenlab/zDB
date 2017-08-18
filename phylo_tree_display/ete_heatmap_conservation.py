@@ -433,6 +433,8 @@ def plot_heatmap_tree_locus(biodb,
                     value = "%.1f" % round(taxid2identity[str(lf.name)], 2)
             except:
                 value = '         '
+            if str(lf.name) == str(reference_taxon):
+                value = '         '
             n = TextFace(' %s ' % value)
             n.margin_top = 2
             n.margin_right = 2
