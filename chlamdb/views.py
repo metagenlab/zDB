@@ -5422,7 +5422,7 @@ def pairwiseid(request, biodb):
                 print group2n_organisms[row[0]]
                 genome_count_list.append(group2n_organisms[row[0]])
 
-            pairwiseid_plots.basic_plot(genome_count_list, identity_list)
+            #pairwiseid_plots.basic_plot(genome_count_list, identity_list)
 
             sql = 'select taxon_2, median_identity, average_identity,n_pairs from comparative_tables.reciprocal_BBH_average_identity_%s ' \
                   ' where taxon_1=%s UNION select taxon_1, median_identity, average_identity,n_pairs ' \
