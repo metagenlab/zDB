@@ -165,9 +165,11 @@ atp_synthesis = [
 "M00417"
 ]
 
+'''
 tree, style = plot_module_heatmap('chlamydia_04_16',
                             '/home/trestan/work/projets/rhabdo/core_phylo_chlam_staleyi_all_single_copy_07_16/core_chlamydia.tree',
                             atp_synthesis,
                             taxon_list
                             )
 tree.render('atp_synthesis.svg', dpi=800, h=600, tree_style=style)
+'''
