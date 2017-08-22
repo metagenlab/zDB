@@ -47,7 +47,7 @@ def get_taxon2name2count(biodb, id_list, type="COG"):
         sql = 'show columns from comparative_tables.orthology_%s' % (biodb)
         ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
         sql = 'select * from comparative_tables.orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
-    print sql
+    #print sql
     profile_tuples = list(server.adaptor.execute_and_fetchall(sql,))
 
     taxon2group2n_homologs = {}
@@ -130,9 +130,9 @@ def get_locus2taxon2identity(biodb, locus_tag_list):
     #print 'ok'
     all_id = []
     for locus in locus_tag_list:
-        print 'locus', locus
+        #print 'locus', locus
         seqfeatre_id_sql = 'select seqfeature_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s";' % (biodb,locus)
-        print seqfeatre_id_sql
+        #print seqfeatre_id_sql
         try:
             seqfeatre_id = server.adaptor.execute_and_fetchall(seqfeatre_id_sql,)[0][0]
             all_id.append(str(seqfeatre_id))
@@ -142,7 +142,7 @@ def get_locus2taxon2identity(biodb, locus_tag_list):
     filter = ','.join(all_id)
     sql = 'select taxon_2,locus_1,identity from comparative_tables.identity_closest_homolog2_%s where locus_1 in (%s) ;' % (biodb,
                                                                                                                       filter)
-    print sql
+    #print sql
 
     identity_data = server.adaptor.execute_and_fetchall(sql, )
     taxon2identity_closest = {}
@@ -174,7 +174,7 @@ def get_locus2taxon2n_paralogs(biodb, locus_tag_list):
 
     server, db =manipulate_biosqldb.load_db(biodb)
 
-    print 'get_locus2taxon2n_paralogs!!!!!!!!!!!!!!!!'
+    #print 'get_locus2taxon2n_paralogs!!!!!!!!!!!!!!!!'
 
     sql = 'show columns from comparative_tables.orthology_%s' % (biodb)
 
@@ -222,7 +222,7 @@ def combined_profiles_heatmap(biodb,
     :return:
     '''
 
-    print ec2orthogroups
+    #print ec2orthogroups
 
     import manipulate_biosqldb
 
@@ -231,7 +231,7 @@ def combined_profiles_heatmap(biodb,
     sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
     tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
-    print tree
+    #print tree
     t1 = Tree(tree)
 
     R = t1.get_midpoint_outgroup()
@@ -246,7 +246,7 @@ def combined_profiles_heatmap(biodb,
         first_column = True
         for col, value in enumerate(column_labels):
             if head:
-                'first row, print gene names'
+                #'first row, print gene names'
                 #print 'ok!'
                 n = TextFace(' %s ' % str(value))
                 n.rotation= 270
@@ -553,8 +553,8 @@ def pathways_heatmapV2(biodb,
 
     t1 = Tree(tree)
 
-    for leaf in t1.iter_leaves():
-        print type(leaf.name)
+    #for leaf in t1.iter_leaves():
+    #    print type(leaf.name)
 
     t2 = t1.prune(taxon_list)
 
@@ -639,7 +639,7 @@ def pathways_heatmapV2(biodb,
                         name = '%s (%s)' % (map[0], map[1].split('=>')[-1].split('[')[0])
                         diff = longest - len(name) +2
                         name = name + ('_'*diff)
-                        print name, len(name)
+                        #print name, len(name)
                         n = TextFace(name)
                         #n.vt_align = 1
                         #n.hz_align = 1
@@ -673,7 +673,7 @@ def pathways_heatmapV2(biodb,
                         name = '%s (%s)' % (map[0], map[1].split('=>')[-1].split('[')[0])
                         diff = longest - len(name)
                         name = name + ('_'*diff)
-                        print name, len(name)
+                        #print name, len(name)
                         n = TextFace(name)
                         #n.vt_align = 1
                         #n.hz_align = 1
@@ -776,7 +776,7 @@ def multiple_profiles_heatmap(biodb,
         column2scale = {}
         for column in column_labels:
             values = [float(i) for i in group2taxon2count[column].values()]
-            print values, column
+            #print values, column
             norm = mpl.colors.Normalize(vmin=min(values), vmax=max(values))
             cmap = cm.OrRd
             m = cm.ScalarMappable(norm=norm, cmap=cmap)
@@ -983,11 +983,11 @@ def multiple_profiles_heatmap(biodb,
                     n.margin_bottom = 2
                     if group2taxon2count[value][lf.name] > 0 and group2taxon2count[value][lf.name] != '-':
                         if not reference_column:
-                            print 'no ref column'
+                            #print 'no ref column'
                             if not reference_taxon:
                                 if lf.name != str(reference_taxon):
-                                    print 'group', value
-                                    print 'ref data', ref_data
+                                    #print 'group', value
+                                    #print 'ref data', ref_data
                                     #print taxon2group2value[str(lf.name)][value]
                                     try:
                                         if ref_data not in taxon2group2value[int(lf.name)][value]:
@@ -999,13 +999,13 @@ def multiple_profiles_heatmap(biodb,
                                 else:
                                     n.inner_background.color = "#FA5858"
                             else:
-                                print 'group', lf.name
+                                #print 'group', lf.name
                                 if ref_data not in taxon2group2value[lf.name][value]:
                                     n.inner_background.color = "#FA5858"
                                 else:
                                     n.inner_background.color = "#FA5858"
                         else:
-                            print 'ref column'
+                            #print 'ref column'
                             if lf.name == str(reference_taxon) or col == reference_column:
                                 n.inner_background.color = "#FA5858"
                                 n.fgcolor = "white"
@@ -1042,7 +1042,7 @@ def multiple_orthogroup_heatmap(biodb, reference_orthogroup, max_distance=2.2):
     sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
     tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
-    print tree
+    #print tree
     t1 = Tree(tree)
     #t.populate(8)
     # Calculate the midpoint node
@@ -1130,7 +1130,7 @@ def multiple_orthogroup_heatmap(biodb, reference_orthogroup, max_distance=2.2):
             #print 'value', value
             if head:
 
-                    'first row, print gene names'
+                    #'first row, print gene names'
                     #print 'ok!'
                     n = TextFace(' %s ' % str(value))
                     n.rotation= 270
@@ -1192,7 +1192,7 @@ def get_pfam_data(orthogroup, biodb, aa_alignment=False):
     sql = 'select accession, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where orthogroup="%s" and analysis="Pfam"' % (biodb, orthogroup)
     '''
-    print sql
+    #print sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
     locus2aa_seq = {}
@@ -1296,16 +1296,16 @@ def organism2color(locus2data, taxon_id2family=False):
         for locus in locus2data:
             # case in which we only hace seq length
             if type(locus2data[locus][0]) != list:
-                print locus2data[locus]
-                print '2!!!!'
+                #print locus2data[locus]
+                #print '2!!!!'
                 if locus2data[locus][1] not in organism_list:
                     organism_list.append(locus2data[locus][1])
             else:
-                print 'not 2!!!!!'
+                #print 'not 2!!!!!'
                 if locus2data[locus][0][2] not in organism_list:
                     organism_list.append(locus2data[locus][0][2])
         colors = _get_colors(len(organism_list))
-        print organism_list, colors
+        #print organism_list, colors
         return dict(zip(organism_list, colors))
     else:
         family_list = []
@@ -1341,7 +1341,7 @@ def draw_pfam_tree(tree_name, locus2data, locus2protein_id=False, taxon_id2famil
 
         seq_motifs = []
 
-        print 'data!', data
+        #print 'data!', data
 
         #l.img_style['hz_line_type'] = 0
         #l.img_style['size'] = 10
@@ -1367,7 +1367,7 @@ def draw_pfam_tree(tree_name, locus2data, locus2protein_id=False, taxon_id2famil
                 seq_motifs.append([motif[0], motif[1], "[]", None, 10, "black", "PaleGreen", "arial|8|red|%s" % motif[4]])
         # check if alignment is available or not
         if len(data[0]) == 8:
-            print 'tata', len(data[0][-1])
+            #print 'tata', len(data[0][-1])
             seqFace = SeqMotifFace(data[0][-1], motifs=seq_motifs,
                                    width=10,
                                    height=12,
@@ -1434,7 +1434,7 @@ def draw_TM_tree(tree_name, locus2data):
     color_dico = organism2color(locus2data)
 
     for leaf_number, l in enumerate(t.iter_leaves()):
-        print 'leaf', leaf_number
+        #print 'leaf', leaf_number
         locus_name = str(l)[3:len(str(l))]
         locus_name = locus_name.split('|')[0]
         try:
@@ -1456,10 +1456,10 @@ def draw_TM_tree(tree_name, locus2data):
             for motif in data:
                 seq_motifs.append([motif[0], motif[1], "()", None, 10, "black", "PaleGreen", "arial|8|red|"])
 
-        print data
+        #print data
         if type(data[0]) == long:
 
-            print 'int!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            #print 'int!!!!!!!!!!!!!!!!!!!!!!!!!!!'
 
             seqFace = SeqMotifFace(data[0]*'N',
                                    motifs=[],
@@ -1471,7 +1471,7 @@ def draw_TM_tree(tree_name, locus2data):
                        gapcolor='white')
         else:
             if type(data[0]) == long:
-                print 'baba1', data[0][-1]
+                #print 'baba1', data[0][-1]
                 seqFace = SeqMotifFace(data[0][-1],
                                        motifs=seq_motifs,
                                        width=10,
@@ -1483,7 +1483,7 @@ def draw_TM_tree(tree_name, locus2data):
 
 
             else:
-                print 'baba', data[0][3]*'N'
+                #print 'baba', data[0][3]*'N'
                 seqFace = SeqMotifFace(data[0][3]*'N',
                                        motifs=seq_motifs,
                                        width=10,

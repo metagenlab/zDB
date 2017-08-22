@@ -5,16 +5,17 @@ from ete2 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace, BarC
 
 
 def plot_tree_stacked_barplot(tree_file,
-                      taxon2value_list_barplot,
-                      header_list, # header stackedbarplots
-                      taxon2set2value_heatmap=False,
-                      taxon2label=False,
-                      header_list2=False, # header counts columns
-                      biodb="chlamydia_04_16",
-                      column_scale=True,
-                      general_max=False,
-                              header_list3 =False,
-                              set2taxon2value_list_simple_barplot=False):
+                             taxon2value_list_barplot=False,
+                             header_list=False, # header stackedbarplots
+                             taxon2set2value_heatmap=False,
+                             taxon2label=False,
+                             header_list2=False, # header counts columns
+                             biodb="chlamydia_04_16",
+                             column_scale=True,
+                             general_max=False,
+                             header_list3 =False,
+                             set2taxon2value_list_simple_barplot=False,
+                             set2taxon2value_list_simple_barplot_counts=True ):
 
     '''
 
@@ -84,55 +85,72 @@ def plot_tree_stacked_barplot(tree_file,
         if i==0:
 
             if taxon2label:
-                n = TextFace('%s' % 'label')
+                n = TextFace('  ')
                 n.margin_top = 1
                 n.margin_right = 1
                 n.margin_left = 20
                 n.margin_bottom = 1
                 n.hz_align = 2
                 n.vt_align = 2
+                n.rotation = 270
                 n.inner_background.color = "white"
                 n.opacity = 1.
 
-                tss.aligned_header.add_face(n, 1)
-                col_add=2
+                tss.aligned_header.add_face(n, 0)
+                col_add=1
             else:
-                col_add=0
+                col_add=1
+            if header_list:
+                for col, header in enumerate(header_list):
 
-            for col, header in enumerate(header_list):
-
-                n = TextFace('%s' % header)
-                n.margin_top = 1
-                n.margin_right = 1
-                n.margin_left = 20
-                n.margin_bottom = 1
-                n.hz_align = 2
-                n.vt_align = 2
-                n.inner_background.color = "white"
-                n.opacity = 1.
-                tss.aligned_header.add_face(n, col+col_add)
-            col_add += col+1
+                    n = TextFace('%s' % (header))
+                    n.margin_top = 0
+                    n.margin_right = 1
+                    n.margin_left = 20
+                    n.margin_bottom = 1
+                    n.rotation = 270
+                    n.hz_align = 2
+                    n.vt_align = 2
+                    n.inner_background.color = "white"
+                    n.opacity = 1.
+                    tss.aligned_header.add_face(n, col+col_add)
+                col_add += col+1
 
             if header_list3:
-                print 'header_list 3!'
-                for col, header in enumerate(header_list3):
-                    n = TextFace('%s' % header)
+                #print 'header_list 3!'
+                col_tmp=0
+                for header in header_list3:
+                    n = TextFace('%s' % (header))
                     n.margin_top = 1
                     n.margin_right = 1
                     n.margin_left = 20
                     n.margin_bottom = 1
-                    n.rotation = 0
+                    n.rotation = 270
                     n.hz_align = 2
                     n.vt_align = 2
                     n.inner_background.color = "white"
                     n.opacity = 1.
 
-                    tss.aligned_header.add_face(n, col+col_add)
-                col_add += col+1
+
+
+                    if set2taxon2value_list_simple_barplot_counts:
+                        if col_tmp==0:
+                            col_tmp+=1
+                        tss.aligned_header.add_face(n, col_tmp+1+col_add)
+                        n = TextFace('       ')
+                        tss.aligned_header.add_face(n, col_tmp+col_add)
+                        col_tmp+=2
+                    else:
+                        tss.aligned_header.add_face(n, col_tmp+col_add)
+                        col_tmp+=1
+                if set2taxon2value_list_simple_barplot_counts:
+                    col_add += col_tmp
+                else:
+                    col_add += col_tmp
 
             if header_list2:
                 for col, header in enumerate(header_list2):
-                    n = TextFace('%s' % header)
+                    n = TextFace('%s %s' % (header, col+col_add))
                     n.margin_top = 1
                     n.margin_right = 1
                     n.margin_left = 20
@@ -163,66 +181,93 @@ def plot_tree_stacked_barplot(tree_file,
             lf.add_face(n, 1, position="aligned")
             col_add=2
         else:
-            col_add=0
-        try:
-            val_list_of_lists = taxon2value_list_barplot[lf.name]
-        except:
-            val_list_of_lists = taxon2value_list_barplot[int(lf.name)]
+            col_add=2
 
-        col_count = 0
-        for col, value_list in enumerate(val_list_of_lists):
+        if taxon2value_list_barplot:
 
-            total = float(sum(value_list))
-            percentages = [(i/total)*100 for i in value_list]
-            if col % 3 == 0:
-                col_list = colors2
-            else:
-                col_list = colors
-            b = StackedBarFace(percentages,
-                                width=150, height=18, colors=col_list[0:len(percentages)])
-            b.rotation= 0
-            b.inner_border.color = "white"
-            b.inner_border.width = 0
-            b.margin_right = 5
-            b.margin_left = 5
-            lf.add_face(b, col+col_add, position="aligned")
-            col_count+=1
+            try:
+                val_list_of_lists = taxon2value_list_barplot[lf.name]
+            except:
+                val_list_of_lists = taxon2value_list_barplot[int(lf.name)]
 
-        col_add+=col_count
+            #col_count = 0
+            for col, value_list in enumerate(val_list_of_lists):
+
+                total = float(sum(value_list))
+                percentages = [(i/total)*100 for i in value_list]
+                if col % 3 == 0:
+                    col_list = colors2
+                else:
+                    col_list = colors
+                b = StackedBarFace(percentages,
+                                    width=150, height=18, colors=col_list[0:len(percentages)])
+                b.rotation= 0
+                b.inner_border.color = "white"
+                b.inner_border.width = 0
+                b.margin_right = 5
+                b.margin_left = 5
+                lf.add_face(b, col+col_add, position="aligned")
+                #col_count+=1
+
+            col_add+=col+1
 
         if set2taxon2value_list_simple_barplot:
-            col_list = ['#fc8d59', '#91bfdb', '#99d594']
+            col_list = ['#fc8d59', '#91bfdb', '#99d594', '#c51b7d', '#f1a340', '#999999']
             color_i=0
-            for col, one_set in enumerate(header_list3):
-                if color_i>2:
+            col=0
+            for one_set in header_list3:
+                if color_i>5:
                     color_i=0
                 color = col_list[color_i]
                 color_i+=1
                 # values for all taxons
                 values_lists = [float(i) for i in set2taxon2value_list_simple_barplot[one_set].values()]
-                print values_lists
+                #print values_lists
+                print one_set
                 value = set2taxon2value_list_simple_barplot[one_set][lf.name]
-                print 'value and max', value, max(values_lists)
+
+                if set2taxon2value_list_simple_barplot_counts:
+                    if isinstance(value, float):
+                        a = TextFace(" %s " % str(round(value,2)))
+                    else:
+                        a = TextFace(" %s " % str(value))
+                    a.margin_top = 1
+                    a.margin_right = 2
+                    a.margin_left = 5
+                    a.margin_bottom = 1
+                    lf.add_face(a, col+col_add, position="aligned")
+
+
+                #print 'value and max', value, max(values_lists)
                 fraction_biggest = (float(value)/max(values_lists))*100
                 fraction_rest = 100-fraction_biggest
 
-                print 'fractions', fraction_biggest, fraction_rest
+                #print 'fractions', fraction_biggest, fraction_rest
                 b = StackedBarFace([fraction_biggest, fraction_rest], width=100, height=15,colors=[color, 'white'])
                 b.rotation= 0
                 b.inner_border.color = "grey"
                 b.inner_border.width = 0
                 b.margin_right = 15
                 b.margin_left = 0
-                lf.add_face(b, col+col_add, position="aligned")
-            col_add+= col+1
+                if set2taxon2value_list_simple_barplot_counts:
+                    if col == 0:
+                        col+=1
+                    lf.add_face(b, col+1+col_add, position="aligned")
+                    col+=2
+                else:
+                    lf.add_face(b, col+col_add, position="aligned")
+                    col+=1
+            if set2taxon2value_list_simple_barplot_counts:
+                col_add+=col
+
+            else:
+                col_add+=col
 
         if taxon2set2value_heatmap:
             i = 0
             #if not taxon2label:
             #    col_add-=1
-            for col2 in range(col_add, len(header_list2)+col_add):
-
-
+            for col2, head in enumerate(header_list2):
 
                 col_name = header_list2[i]
                 try:
@@ -234,7 +279,7 @@ def plot_tree_stacked_barplot(tree_file,
                         value = 0
                 if header_list2[i] == 'duplicates':
                     print 'dupli', lf.name, value
-                print 'val', value
+                #print 'val', value
                 if int(value) > 0:
                     if int(value) >=10 and int(value) < 100:
                         n = TextFace('%4i' % value)
@@ -259,7 +304,7 @@ def plot_tree_stacked_barplot(tree_file,
                     n.opacity = 1.
                     n.hz_align = 1
                     n.vt_align = 1
-                    lf.add_face(n, col2, position="aligned")
+                    lf.add_face(n, col2+col_add, position="aligned")
                     i+=1
                 else:
                     n = TextFace('')
@@ -270,9 +315,8 @@ def plot_tree_stacked_barplot(tree_file,
                     n.inner_background.color = "white"
                     n.opacity = 1.
 
-                    lf.add_face(n, col2, position="aligned")
+                    lf.add_face(n, col2+col_add, position="aligned")
                     i+=1
-
 
         #lf.name = taxon2description[lf.name]
         n = TextFace(taxon2description[lf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
@@ -327,8 +371,8 @@ def plot_tree_barplot(tree_file,
 
     taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb, filter_names=True)
 
-    print isinstance(tree_file, Tree)
-    print type(tree_file)
+    #print isinstance(tree_file, Tree)
+    #print type(tree_file)
 
     if isinstance(tree_file, Tree):
        t1 = tree_file
@@ -369,7 +413,7 @@ def plot_tree_barplot(tree_file,
     max_value_list = []
 
     for n, header in enumerate(header_list):
-        print 'scale', n, header
+        #print 'scale', n, header
         data = [float(i[n]) for i in values_lists]
 
         if barplot2percentage is False:
@@ -401,34 +445,46 @@ def plot_tree_barplot(tree_file,
             for col, header in enumerate(header_list):
 
                 #lf.add_face(n, column, position="aligned")
-                n2 = TextFace('')
-                tss.aligned_header.add_face(n2, col+col_add)
+                n = TextFace(' ')
+                n.margin_top = 1
+                n.margin_right = 2
+                n.margin_left = 2
+                n.margin_bottom = 1
+                n.rotation = 90
+                n.inner_background.color = "white"
+                n.opacity = 1.
+                n.hz_align = 2
+                n.vt_align = 2
+
+                tss.aligned_header.add_face(n, col_add)
 
 
                 n = TextFace('%s' % header)
                 n.margin_top = 1
-                n.margin_right = 1
-                n.margin_left = 20
-                n.margin_bottom = 1
+                n.margin_right = 2
+                n.margin_left = 2
+                n.margin_bottom = 80
+                n.rotation = 270
                 n.inner_background.color = "white"
                 n.opacity = 1.
+                n.hz_align = 2
+                n.vt_align = 2
+                tss.aligned_header.add_face(n, col_add+1)
+                col_add+=2
 
-                tss.aligned_header.add_face(n, col+col_add+1)
-                col_add+=1
-            col2 = col+col_add+1
             if header_list2:
-                for header in header_list2:
+                for col, header in enumerate(header_list2):
                     n = TextFace('%s' % header)
                     n.margin_top = 1
-                    n.margin_right = 1
-                    n.margin_left = 20
+                    n.margin_right = 20
+                    n.margin_left = 2
                     n.margin_bottom = 1
                     n.rotation = 270
+                    n.hz_align = 2
+                    n.vt_align = 2
                     n.inner_background.color = "white"
                     n.opacity = 1.
-                    tss.aligned_header.add_face(n, col2)
-                    col2+=1
-
+                    tss.aligned_header.add_face(n, col+col_add)
 
         try:
             val_list = taxon2value_list_barplot[lf.name]
@@ -439,17 +495,17 @@ def plot_tree_barplot(tree_file,
 
             # show value itself
             try:
-                n = TextFace('  %s ' % str(value))
+                n = TextFace('  %s  ' % str(value))
             except:
-                n = TextFace('  %s ' % str(value))
+                n = TextFace('  %s  ' % str(value))
             n.margin_top = 1
-            n.margin_right = 1
-            n.margin_left = 20
+            n.margin_right = 10
+            n.margin_left = 2
             n.margin_bottom = 1
             n.inner_background.color = "white"
             n.opacity = 1.
 
-            lf.add_face(n, col+col_add, position="aligned")
+            lf.add_face(n, col_add, position="aligned")
             # show bar
 
             color = rgb2hex(scale_list[col].to_rgba(float(value)))
@@ -468,16 +524,15 @@ def plot_tree_barplot(tree_file,
             b.inner_border.width = 0
             b.margin_right = 15
             b.margin_left = 0
-            lf.add_face(b, col+col_add+1, position="aligned")
-            col_add+=1
+            lf.add_face(b, col_add+1, position="aligned")
+            col_add+=2
+
 
         if taxon2set2value_heatmap:
             shift = col+col_add+1
 
             i = 0
-
-            for col2 in range(shift, len(header_list2)+shift):
-                col_name = header_list2[i]
+            for col, col_name in enumerate(header_list2):
                 try:
                     value = taxon2set2value_heatmap[col_name][lf.name]
                 except:
@@ -498,7 +553,7 @@ def plot_tree_barplot(tree_file,
                     n.color = "red"
                     n.inner_background.color = rgb2hex(column2scale[col_name].to_rgba(float(value)))#"orange"
                     n.opacity = 1.
-                    lf.add_face(n, col2, position="aligned")
+                    lf.add_face(n, col+col_add, position="aligned")
                     i+=1
                 else:
                     n = TextFace('  ') #% str(value))
@@ -509,8 +564,8 @@ def plot_tree_barplot(tree_file,
                     n.inner_background.color = "white"
                     n.opacity = 1.
 
-                    lf.add_face(n, col2, position="aligned")
-                    i+=1
+                    lf.add_face(n, col+col_add, position="aligned")
+
 
 
         #lf.name = taxon2description[lf.name]
@@ -550,7 +605,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         t1 = Tree(tree_file)
         try:
             R = t1.get_midpoint_outgroup()
-            print 'root', R
+            #print 'root', R
             # and set it as tree outgroup
             t1.set_outgroup(R)
         except:
@@ -564,7 +619,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
     tss.guiding_lines_color = "gray"
     tss.show_leaf_name = False
 
-    print "tree", t1
+    #print "tree", t1
 
     sql1 = 'select taxon_id, description from bioentry where biodatabase_id=%s and description not like "%%%%plasmid%%%%"' % db_id
     sql2 = 'select t2.taxon_id, t1.GC from genomes_info_%s as t1 inner join bioentry as t2 ' \
@@ -657,7 +712,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
 
         value+=1
 
-        print '------ %s' % lf.name
+        #print '------ %s' % lf.name
         if exclude_outgroup and i == 0:
             lf.name = taxon2description[lf.name]
             print '#######################'
@@ -741,7 +796,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         lf.add_face(n, 6, position="aligned")
         fraction = (float(taxon2coding_density[lf.name])/max(taxon2coding_density.values()))*100
         fraction_rest = ((max(taxon2coding_density.values()) - taxon2coding_density[lf.name])/float(max(taxon2coding_density.values())))*100
-        print 'fraction, rest', fraction, fraction_rest
+        #print 'fraction, rest', fraction, fraction_rest
         b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=[col, 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
         b.rotation = 0
         b.margin_right = 1
@@ -789,7 +844,7 @@ if __name__ == '__main__':
                    ' where t2.name="%s";' % args.biodb
         server, db = manipulate_biosqldb.load_db(args.biodb)
         tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
-        print tree
+        #print tree
     else:
         tree = args.tree
 

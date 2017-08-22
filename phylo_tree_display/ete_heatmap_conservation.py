@@ -365,10 +365,6 @@ def plot_heatmap_tree_locus(biodb,
 
     taxid2organism = manipulate_biosqldb.taxon_id2genome_description(server, biodb, True)
 
-    print taxid2count
-    print taxid2identity
-
-
     t1 = Tree(tree_file)
 
     # Calculate the midpoint node
@@ -379,13 +375,13 @@ def plot_heatmap_tree_locus(biodb,
     leaf_number = 0
     for lf in t1.iter_leaves():
         leaf_number+=1
-        print lf
+        #print lf
         lf.branch_vertical_margin = 0
         try:
             data = [taxid2count[str(lf.name)]]
         except:
             data=[0]
-        print 'taxon', int(lf.name)
+        #print 'taxon', int(lf.name)
 
 
         # possibility to add one or more columns
@@ -523,7 +519,7 @@ if __name__ == '__main__':
             else:
                 data = row.rstrip().split('\t')
                 taxid2st[data[0]] = data[2]
-    print taxid2st
+    #print taxid2st
 
 
 
@@ -535,6 +531,6 @@ if __name__ == '__main__':
             else:
                 data = row.rstrip().split('\t')
                 taxid2n[data[0]] = [float(i) for i in data[1:]]
-    print taxid2n
+    #print taxid2n
     t, n, style = plot_heat_tree_V1(taxid2n, args.tree, genes,taxid2st, accession2description)
     t.render("test.svg", tree_style=style)
