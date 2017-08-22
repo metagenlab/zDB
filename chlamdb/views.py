@@ -6831,8 +6831,9 @@ def effector_pred(request, biodb):
         if int(group2n_organisms[group]) > 50:
             print group2n_organisms[group], group
         genome_count_list.append(group2n_organisms[group])
-    import pairwiseid_plots
-    pairwiseid_plots.basic_plot(genome_count_list)
+        
+    #import pairwiseid_plots
+    #pairwiseid_plots.basic_plot(genome_count_list)
 
 
     #for taxon in taxon2values2:

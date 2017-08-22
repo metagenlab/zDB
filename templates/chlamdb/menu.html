@@ -44,9 +44,11 @@
                 </li>
                 <li class="item5"><a href="{% url 'pairwiseCDS_length' biodb %}">CDS length</a>
                 </li>
+		{% if biodb in 'chlamydia_04_16,2017_06_29b_motile_chlamydiae'|slice:',' %}
                 <li class="item5"><a href="{% url 'transporters' biodb %}">transporters</a>
                 </li>
-
+		{% endif %}
+		
                 </ul>
             </li>
 
@@ -75,6 +77,7 @@
                     </li>
 
                 </ul>
+	    {% if biodb in 'chlamydia_04_16,2017_06_29b_motile_chlamydiae,2017_06_29_parilichlamydiae'|slice:',' %}	
             <li class="rollmenu"><a href="">BlastNR</a>
                 <ul>
                     <li class="item5"><a href="{% url 'blastnr_barchart' biodb %}">BlastNR hits</a>
@@ -91,7 +94,7 @@
                     </li>
                     {% endif %}
                 </ul>
-
+	    {% endif %}	
             {% if debug %}
 
             <li class="rollmenu"><a href="">DEV</a>
