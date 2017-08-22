@@ -59,10 +59,10 @@ def map2highlighted_map(map_id, ko_list, ko2freq, biodb, outpath = 'test.pdf', t
                 if match:
                     g.bgcolor = rgb2hex(m2.to_rgba(float(total)))
                 else:
-                    print 'no match!!!!'
-                    print ko_temp_list
-                    print ko2freq.keys()
-                    print 'TOTAL:', total
+                    #print 'no match!!!!'
+                    #print ko_temp_list
+                    #print ko2freq.keys()
+                    #print 'TOTAL:', total
                     g.bgcolor = rgb2hex(m.to_rgba(float(total)))
             o.name = "%s (%s)" % (o.name.split('ko:')[0], total)
         #else:
@@ -93,10 +93,10 @@ def map2highlighted_map(map_id, ko_list, ko2freq, biodb, outpath = 'test.pdf', t
             print g.name
     '''
 
-    print re.sub('pdf', 'svg', outpath)
+    #print re.sub('pdf', 'svg', outpath)
     shell_command.shell_command('inkscape %s --export-plain-svg=%s' % (outpath, re.sub('pdf', 'svg', outpath))) # 'pdf2svg %s %s all'
     t = edit_svg_map("%s" % re.sub('pdf', 'svg', outpath), ko2freq.keys(), biodb, map_id, taxon_id=taxon_id)
-    print "%s" % re.sub('pdf', 'svg', outpath)
+    #print "%s" % re.sub('pdf', 'svg', outpath)
     t.write("%s" % re.sub('pdf', 'svg', outpath))
 
 #map2highlighted_map('ko00010',['K00001','K00162'])
@@ -115,7 +115,7 @@ def edit_svg_map(map_path, keep_ko_list, biodb_name, map_name,taxon_id=False):
 
     from xml.etree import ElementTree
     tree = ElementTree.parse(map_path)
-    print tree
+    #print tree
     for element in tree.iter():
         if element.tag.split("}")[1] == 'text':
             #print element.tag
@@ -125,7 +125,7 @@ def edit_svg_map(map_path, keep_ko_list, biodb_name, map_name,taxon_id=False):
                 #print child.tag
                 #print child.attrib
                 if child.text[0] != 'K':
-                    print child.text
+                    #print child.text
                     try:
                         if not taxon_id:
                             add = 'window.open("/chlamdb/KEGG_mapp_ko/%s/%s", "_top");' % (biodb_name, description2map[child.text])

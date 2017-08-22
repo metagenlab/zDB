@@ -128,7 +128,7 @@ def superfamily_data2features_string(superfamily_data):
 
 
 
-
+'''
 import manipulate_biosqldb
 server, db = manipulate_biosqldb.load_db("chlamydia_04_16")
 sql_pfam = 'select signature_accession, signature_description,start,stop' \
@@ -142,5 +142,6 @@ sql18 = 'select signature_accession,start,stop from interpro_%s where analysis="
         ' "SIGNAL_PEPTIDE_C_REGION","SIGNAL_PEPTIDE_N_REGION");' % ("chlamydia_04_16", "BN1013_01691")
 
 
-phobius_data = server.adaptor.execute_and_fetchall(sql18, )
-print phobius_data2features_string(phobius_data)
+#phobius_data = server.adaptor.execute_and_fetchall(sql18, )
+#print phobius_data2features_string(phobius_data)
+'''
