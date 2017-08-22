@@ -1,6 +1,97 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-15 -*-
 
+def get_best_non_top_phylum_hit(biodb):
+
+    import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr.blastnr_majority_phylum_%s' \
+          ' group by taxon_id,best_hit_phylum order by taxon_id,n DESC;' % biodb
+
+    data = server.adaptor.execute_and_fetchall(sql,)
+
+    taxon2most_freq_phylum = {}
+    for row in data:
+        if row[0] not in taxon2most_freq_phylum:
+            taxon2most_freq_phylum[row[0]] = row[2]
+
+    sql = 'create table blastnr.blastnr_best_non_self_phylum_%s (query_taxon_id INT, ' \
+          ' seqfeature_id INT, ' \
+          ' hit_number INT, ' \
+          ' superkingdom varchar(200),' \
+          ' subject_taxon_id INT,' \
+          ' percent_identity FLOAT,' \
+          ' subject_accession varchar(200),' \
+          ' subject_title TEXT,' \
+          ' index query_taxon_id(query_taxon_id),' \
+          ' index seqfeature_id(seqfeature_id),' \
+          ' index subject_taxon_id(subject_taxon_id),' \
+          ' index superkingdom(superkingdom))' % (biodb)
+
+    server.adaptor.execute(sql,)
+    server.commit()
+
+    # iter taxons
+    for taxon in taxon2most_freq_phylum:
+
+        print 'taxon', taxon
+        # get all non top phylum hits
+        phylum_filter = taxon2most_freq_phylum[taxon]
+
+        sql = 'select t1.query_taxon_id, t1.seqfeature_id, t1.hit_number, t2.superkingdom, t1.subject_scientific_name, ' \
+              ' t1.percent_identity, t2.taxon_id,kingdom,phylum,class,subject_title, subject_accession from blastnr.blastnr_%s t1 ' \
+              ' inner join blastnr.blastnr_taxonomy t2 on t1.subject_taxid=t2.taxon_id ' \
+              ' where (t1.query_taxon_id=%s and t2.phylum != "%s") order by seqfeature_id' % (biodb,
+                                                                                        taxon,
+                                                                                        phylum_filter)
+
+        data = server.adaptor.execute_and_fetchall(sql,)
+
+        # keep best non top phylum hit for each feature
+        for n, row in enumerate(data):
+
+            query_taxon_id = row[0]
+            seqfeature_id = row[1]
+            hit_number = row[2]
+            superkingdom = row[3]
+            subject_taxon_id = row[6]
+            percent_identity = row[5]
+            subject_accession = row[10]
+            subject_title = row[11]
+            if n%10000 == 0:
+                print "%s / %s" % (n, len(data))
+            if n == 0:
+
+                sql = 'insert into blastnr.blastnr_best_non_self_phylum_%s values (%s, %s, %s, "%s", %s, %s, "%s", "%s")' % (biodb,
+                                                                                                                 query_taxon_id,
+                                                                                                                seqfeature_id,
+                                                                                                                hit_number,
+                                                                                                                superkingdom,
+                                                                                                                subject_taxon_id,
+                                                                                                                percent_identity,
+                                                                                                                subject_accession,
+                                                                                                                subject_title)
+                print sql
+                server.adaptor.execute(sql,)
+                server.commit()
+
+            else:
+                # if new feature
+                if row[1] != data[n-1][1]:
+                    sql = 'insert into blastnr.blastnr_best_non_self_phylum_%s values (%s, %s, %s, "%s", %s, %s, "%s", "%s")' % (biodb,
+                                                                                                                     query_taxon_id,
+                                                                                                                    seqfeature_id,
+                                                                                                                    hit_number,
+                                                                                                                    superkingdom,
+                                                                                                                    subject_taxon_id,
+                                                                                                                    percent_identity,
+                                                                                                                    subject_accession,
+                                                                                                                    subject_title)
+                    server.adaptor.execute(sql,)
+                    server.commit()
+
 
 def majority_phylum(biodb, n_hits):
     import manipulate_biosqldb
@@ -307,7 +398,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    majority_phylum(args.biodb, 100)
-    count_less_than_n_hits(args.biodb)
-    count_majority_phylum(args.biodb, 1)
-    count_majority_phylum(args.biodb, 2)
+    #majority_phylum(args.biodb, 100)
+    #count_less_than_n_hits(args.biodb)
+    #count_majority_phylum(args.biodb, 1)
+    #count_majority_phylum(args.biodb, 2)
+    get_best_non_top_phylum_hit(args.biodb)
+
