@@ -22,20 +22,20 @@ def get_accessions(database_name, all=False, plasmid=False):
     import manipulate_biosqldb
     server = manipulate_biosqldb.load_db()
     if not plasmid:
-        print "no plasmid"
+        #print "no plasmid"
         sql ='SELECT bioentry.taxon_id, bioentry.description FROM bioentry ' \
              'inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id ' \
              'where biodatabase.name ="%s"and bioentry.description not like "%%%%plasmid%%%%" and bioentry.description not like "%%%%phage%%%%"' \
              'order by bioentry.description' % database_name #
     else:
-        print 'plasmid'
+        #print 'plasmid'
         sql ='SELECT bioentry.accession, bioentry.description FROM bioentry ' \
              'inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id ' \
              'where biodatabase.name ="%s"' \
              'order by bioentry.description' % database_name
     result = server.adaptor.execute_and_fetchall(sql, )
     accession_list = [i for i in result]
-    print "acc", accession_list
+    #print "acc", accession_list
     accession_choices = []
 
 
@@ -47,7 +47,7 @@ def get_accessions(database_name, all=False, plasmid=False):
     import re
     accessions = {}
     for i, accession in enumerate(accession_choices):
-        print i, accession
+        #print i, accession
         description = accession[1]
         description = re.sub(", complete genome\.", "", description)
         description = re.sub(", complete genome", "", description)
@@ -488,6 +488,21 @@ def make_circos_orthology_form(biodb):
         accession = forms.CharField(max_length=100)
         targets = forms.ChoiceField(choices=accession_choices)
     return Circos_orthology
+
+
+def make_blastnr_best_non_top_phylum_form(biodb):
+    import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    accession_choices = get_accessions(biodb, all=False)
+
+    class Blastnr_top(forms.Form):
+        accessions = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" }), required = False)
+
+        CHOICES=[('all','all'),
+         ('specific','species specific')]
+        selection = forms.ChoiceField(choices=CHOICES)
+    return Blastnr_top
 
 
 def make_blastnr_form(biodb):

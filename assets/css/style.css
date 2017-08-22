@@ -746,9 +746,9 @@ ul ul {
     -moz-box-shadow: inset 0px 1px 0px 0px #878e98;
     box-shadow: inset 0px 1px 0px 0px #878e98;
 
-    height: 2.00em;
-    line-height: 2.00em;
-    text-indent: 2.0em;
+    height: 1.60em;
+    line-height: 1.60em;
+    text-indent: 1.6em;
     display: block;
 
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -761,9 +761,9 @@ ul ul {
     background: #fff;
     border-bottom: 1px solid #efeff0;
     width: 100%;
-    height: 2.25em;
-    line-height: 2.25em;
-    text-indent: 2.25em;
+    height: 1.85em;
+    line-height: 1.85em;
+    text-indent: 1.85em;
     display: block;
     position: relative;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;

@@ -50,9 +50,9 @@ function clearBox(elementID)
             </div>
             {% endif %}
             <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
-            <p>  <img height="32" width="32" src="{% static "warrning.svg" %}" alt="warrning"/>
-        Some genomes where recently reannotated ba the NCBI, including the Waddlia genome.
-        <a href="{% static "NC_014225_locus2old_locus.txt" %}">Locus tag orrespondance table</a></p>
+            <p>
+
+
        {% else %}
 
             <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
@@ -736,11 +736,11 @@ function clearBox(elementID)
                 <div class="tab-pane" id="tab3" width="100%" height="100%">
 
                     <table>
-                        <tr id="description_field">>
+                        <tr id="description_field">
                             <th style="width: 110px">Translation</th>
                             <td>{{ data.13 }}</td>
                         </tr>
-                        <tr id="description_field">>
+                        <tr id="description_field">
                             <th>Sequence <br> +/- flanking 50bp</th>
                             <td>{{ seq|safe }}</td>
                         </tr>

@@ -21,9 +21,10 @@
 
         <nav>
             <ul id="tabs" class="nav nav-tabs">
-                <li><a href="{% url 'blastnr_barchart' biodb %}">BlastNR barchart</a></li>
-                <li><a>BlastNR overview</a></li>
-                <li class="active"><a>BlastNR Euk</a></li>
+                <li class="active"><a>Overview</a></li>
+                <li><a href="{% url 'blastnr_top_non_phylum' biodb %}">Locus lists</a></li>
+                <!--<li><a>Barcharts BBH non top phylum</a></li>-->
+
             </ul>
         </nav>
 
@@ -32,58 +33,20 @@
             <div class="panel-heading" style="width:100%">
                 <h3 class="panel-title">Help</h3>
             </div>
-            <p style="margin: 10px 10px 10px 10px">Bests RefSeq hits taxonomy<br>
-                <br>
+            <p style="margin: 10px 10px 10px 10px">Number and percentage of the first best RefSeq hit not part of the most frequent BBH phylum. <br>
+                Column 1: Most frequent BBH phylum <br>
+                Column 2/3: Number of best 'non top phylum' hit which is an hit against eukaryotic sequences. <br>
+                Column 4/5: Percentage of the proteome of best 'non top phylum' hit which is an hit against eukaryotic sequences. <br>
+                Column 4/5: Number of such hits that are species specific. <br>
             </p>
         </div>
 
-        <nav>
-            <ul id="tabs2" class="nav nav-tabs" data-tabs="tabs">
-                <li class="active"><a href="#taba" data-toggle="tab">Euk barchart</a></li>
-                <li><a href="#tabb" data-toggle="tab">Best Euk table</a></li>
-            </ul>
-        </nav>
 
-        <div id="my-tab-content" class="tab-content">
 
-            <div class="tab-pane active" id="taba">
-                <img src="{% static asset_path1 %}" alt="phylo" style="width:90%;">
+            <div>
+                <img src="{% static asset_path1 %}" alt="phylo" style="width:800px;">
             </div>
 
-            <div class="tab-pane" id="tabb">
-                <table id="euk_table" class="sortable">
-                    <thead>
-                        <tr>
-                            <th>Organism</th>
-                            <th>Feature</th>
-                            <th>Hit Organism</th>
-                            <th>% id</th>
-                            <th>Taxon_id</th>
-                            <th>Kingdom</th>
-                            <th>Phylum</th>
-                            <th>Class</th>
-                            <th>Product</th>
-                            <th>n genomes</th>
-                        </tr>
-
-                    </thead>
-                    {% for row in top_hits%}
-                        <tr>
-                            <td>{{row.0}}</td>
-                            <td><a href="{% url 'locusx' biodb row.1 True%}">{{row.1}}</a></td>
-                            <td>{{row.2}}</td>
-                            <td>{{row.3}}</td>
-                            <td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id={{row.4}}">{{row.4}}</a></td>
-                            <td>{{row.5}}</td>
-                            <td>{{row.6}}</td>
-                            <td>{{row.7}}</td>
-                            <td>{{row.8}}</td>
-                            <td>{{row.9}}</td>
-                        </tr>
-                    {%endfor%}
-                </table>
-            </div>
-        </div>
     </div>
 </div>
 </body>
