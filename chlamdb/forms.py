@@ -140,7 +140,7 @@ def make_interpro_from(database_name):
         SEARCH_CHOICES = (('description', 'Description'), ('GO','GO Number'), ('EC','EC Number'), ('interpro_accession','Interpro Accession'))
 
 
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (len(accession_choices)/2) }), required = False)
+        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (20) }), required = False)
         search_type = forms.ChoiceField(choices=SEARCH_CHOICES)
         search_term = forms.CharField(max_length=100)
 
@@ -153,7 +153,7 @@ def make_metabo_from(database_name, add_box=False):
     accession_choices = get_accessions(database_name)
 
     class MetaboForm(forms.Form):
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (len(accession_choices)/4) }), required = False)
+        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (20) }), required = False)
         if add_box:
             input_box = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
     return MetaboForm
