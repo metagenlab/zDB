@@ -9326,7 +9326,10 @@ def search(request, biodb):
                 raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
 
                 sql = 'select * from ko_annotation where definition REGEXP "%s"' % (search_term)
-                raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
+                try:
+                    raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
+                except:
+                    raw_data_ko = False
 
                 sql = 'select COG_id,code,description,name from COG.cog_names_2014 as t1 inner join ' \
                       ' COG.code2category as t2 on t1.functon=t2.code where description REGEXP "%s"' % (search_term)
@@ -9444,7 +9447,10 @@ def search(request, biodb):
                         raw_data_EC = False
                     sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme.ko_annotation ' \
                           'where definition REGEXP "%s") A inner join comparative_tables.ko_%s as B on A.ko_id=B.id' % (search_term, biodb)
-                    raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
+                    try:
+                        raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
+                    except:
+                        raw_data_ko = []
                     if len(raw_data_ko) == 0:
                         raw_data_ko = False
                     sql = 'select A.COG_id,A.code,A.description, A.name from (select COG_id,code,description,name from COG.cog_names_2014 as t1 inner join ' \
