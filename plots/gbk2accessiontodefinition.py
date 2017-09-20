@@ -9,7 +9,7 @@ from Bio import Phylo
 
 def get_coressp(gbk_file_list, molis_table=None, use_gbk_file_names=False):
     name2description = {}
-
+    import os
     print gbk_file_list
 
     for file in gbk_file_list:
@@ -20,7 +20,7 @@ def get_coressp(gbk_file_list, molis_table=None, use_gbk_file_names=False):
             if not use_gbk_file_names:
                 name = record.name
             else:
-                name = file.split('.')[0]
+                name = os.path.basename(file).split('.')[0]
             description = record.description
             description = re.sub(" DNA, complete genome\.", "", description)
             description = re.sub(", complete genome\.", "", description)
