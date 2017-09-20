@@ -7,7 +7,7 @@ import parse_newick_tree
 from Bio import Phylo
 
 
-def get_coressp(gbk_file_list, molis_table=None):
+def get_coressp(gbk_file_list, molis_table=None, use_gbk_file_names=False):
     name2description = {}
 
     print gbk_file_list
@@ -17,7 +17,10 @@ def get_coressp(gbk_file_list, molis_table=None):
         records = [i for i in SeqIO.parse(file, "genbank")]
         for i, record in enumerate(records):
             print i, record.name, record.description
-            name = record.name
+            if not use_gbk_file_names:
+                name = record.name
+            else:
+                name = file.split('.')[0]
             description = record.description
             description = re.sub(" DNA, complete genome\.", "", description)
             description = re.sub(", complete genome\.", "", description)

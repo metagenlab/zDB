@@ -84,7 +84,7 @@ def density_plot(value_list_of_lists, label_list,
         elif type == "hist":
             plot_code = '''
 
-            p <- ggplot(plot_data, aes(identity, fill = comp)) #+ geom_histogram(%s alpha = 0.5, aes(y = ..density..), position = 'identity')
+            p <- ggplot(plot_data, aes(identity, fill = comp)) + geom_histogram(%s alpha = 0.5, aes(y = ..density..), position = 'identity')
             p <- p + geom_density(alpha=0.01, aes(identity, colour = comp)) %s
             p <- p + xlab("%s") +  ylab("%s") + ggtitle("%s")+theme(legend.position="bottom")+ theme_bw()
 
@@ -112,7 +112,7 @@ def density_plot(value_list_of_lists, label_list,
 
             library(plyr)
             mu <- ddply(plot_data, "comp", summarise, identity.mean=median(identity))
-
+            print(mu)
             plot_data$identity <- as.numeric(plot_data$identity)
 
             svg('%s',height=8,width=8)
@@ -173,7 +173,7 @@ def basic_plot(values_x, values_y=False, header="", xlab="", ylab="", output_pat
                   library(ggplot2)
 
                   mytable <- as.data.frame(table(values_x))
-                  print(mytable)
+                  #print(mytable)
                   p <- ggplot(mytable, aes(x = reorder(values_x, -order(values_x)), y = Freq)) + geom_bar(stat = "identity")
                   p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))+ coord_flip()
                   print(p)
@@ -260,13 +260,13 @@ def identity_heatmap_plot(numpy_matrix, labels,
 
             h <- length(Mdata[,1])/4+8
             w <- length(Mdata[,1])/2+8
-            print(h)
+            #print(h)
             svg('%s',height=h,width=w)
                 par(oma = c(5, 0, 0, 8), xpd=TRUE)
                 par(mar = c(5,1,1,8))
                 par(cex.main=1,oma=c(22,0,0,20), xpd=TRUE, new=TRUE)
                 %s
-                print(h)
+                #print(h)
                 write.table(Mdata, "/home/trestan/identity.tab", sep="\t",col.names = NA)
             dev.off()
 

@@ -69,20 +69,27 @@ def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by
                 code2taxon2count['TOTAL'][taxon] = int(taxon2proteome_size[taxon])
 
         cog_list = ['TOTAL', '-']
+
+    sql = 'select * from COG.code2category;'
+    code2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
     for row in data:
-        if row[1] not in cog_list:
-            cog_list.append(row[1])
-        if row[1] not in code2taxon2count:
-            code2taxon2count[row[1]] = {}
+        descr = "%s (%s)" % (code2description[row[1]], row[1])
+        if descr not in cog_list:
+            cog_list.append(descr)
+        if descr not in code2taxon2count:
+            code2taxon2count[descr] = {}
             if frequency:
-                code2taxon2count[row[1]][str(row[0])] = round((float(row[2])/float(taxon_id2count[str(row[0])]))*100,2)
+                code2taxon2count[descr][str(row[0])] = round((float(row[2])/float(taxon_id2count[str(row[0])]))*100,2)
             else:
-                code2taxon2count[row[1]][str(row[0])] = int(row[2])
+                code2taxon2count[descr][str(row[0])] = int(row[2])
         else:
             if frequency:
-                code2taxon2count[row[1]][str(row[0])] = round((float(row[2])/float(taxon_id2count[str(row[0])]))*100,2)
+                code2taxon2count[descr][str(row[0])] = round((float(row[2])/float(taxon_id2count[str(row[0])]))*100,2)
             else:
-                code2taxon2count[row[1]][str(row[0])] = int(row[2])
+                code2taxon2count[descr][str(row[0])] = int(row[2])
+
+
 
     tree2 = ete_motifs.multiple_profiles_heatmap(biodb,
                                                 cog_list,

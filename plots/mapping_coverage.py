@@ -50,7 +50,7 @@ def samtools_depth2coverage_plot(samtool_depth_file, main=False):
     cov_matrix <- matrix(cov_data,nrow=100)
     cov_100bp <- colMeans(cov_matrix, na.rm=TRUE)
     write.table(as.data.frame(cov_100bp), "coverage_100bp.tab", sep="\t")
-    pdf('%s_coverage.pdf')
+    pdf('%s_coverage2.pdf', height=12, width=19)
         #par(mfrow=c(1,2))
         x<-seq(100,newlength,100)
         print(max_depth)

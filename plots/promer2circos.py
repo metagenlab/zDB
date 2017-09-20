@@ -1134,10 +1134,10 @@ class Fasta2circos():
                         continue
                     if feature.type == 'CDS':
                         # deal with impossible size ORF
-                        if 'hyp' in feature.qualifiers['product'][0]:
-                            col='blue'
-                        else:
-                            col='grey_a1'
+                        #if 'hyp' in feature.qualifiers['product'][0]:
+                        #    col='blue'
+                        #else:
+                        col='grey_a1'
 
 
                         if int(feature.location.strand) == 1:

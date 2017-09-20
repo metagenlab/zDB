@@ -57,7 +57,7 @@ def plot_phylo(nw_tree, out_name, parenthesis_classif=False, show_support=False)
                nstyle["fgcolor"] = "red"
                nstyle["size"] = 0
                n.set_style(nstyle)
-          
+         
         #nameFace = AttrFace(lf.name, fsize=30, fgcolor=phylum2col[accession2name_and_phylum[lf.name][1]])
         #faces.add_face_to_node(nameFace, lf, 0, position="branch-right")
         #
@@ -76,11 +76,25 @@ def plot_phylo(nw_tree, out_name, parenthesis_classif=False, show_support=False)
         '''
         #n = TextFace(lf.name, fgcolor = "black", fsize = 12, fstyle = 'italic')
         #lf.add_face(n, 0)
-
+    for n in ete2_tree.traverse():
+       nstyle = NodeStyle()
+       if n.support < 1:
+           nstyle["fgcolor"] = "black"
+           nstyle["size"] = 4
+           n.set_style(nstyle)
+       else:
+           nstyle["fgcolor"] = "red"
+           nstyle["size"] = 0
+           n.set_style(nstyle)
+           
     ts = TreeStyle()
     ts.show_leaf_name = False
-    ts.scale=2000
+    #ts.scale=2000
+    #ts.scale=20000
     ts.show_branch_support = show_support
+
+
+    
     ts.complete_branch_lines_when_necessary = True
     ete2_tree.render(out_name, tree_style=ts)
 
