@@ -17,10 +17,12 @@ def get_interpro_entry_tables(interpro_release= '60.0'):
     '''
     import urllib2
     import MySQLdb
+    import os
+    sqlpsw = os.environ['SQLPSW']
 
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="interpro") # name of the data base
     cursor = conn.cursor()
 
@@ -59,10 +61,11 @@ def get_interpro2go_table():
     import urllib2
     import MySQLdb
     import manipulate_biosqldb
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="interpro") # name of the data base
     cursor = conn.cursor()
 

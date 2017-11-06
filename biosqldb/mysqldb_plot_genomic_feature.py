@@ -23,6 +23,8 @@ def get_feature_neighborhood(feature_start, feature_end, contig_or_genome_record
     end = feature_end + neighborhood_size_bp
 
     if start < 0:
+        diff = abs(0-start)
+        end += diff
         start = 0
 
     #if contig_or_genome_record.features[0].location.start > start:
@@ -30,6 +32,10 @@ def get_feature_neighborhood(feature_start, feature_end, contig_or_genome_record
     #if contig_or_genome_record.features[0].location.end < end:
     #        end = contig_or_genome_record.features[0].location.end
     if end > len(contig_or_genome_record.seq):
+        diff = abs(len(contig_or_genome_record.seq) - end)
+        start = start-diff
+        if start < 0:
+            start = 0
         record = contig_or_genome_record[int(start):]
     else:
         record = contig_or_genome_record[int(start):int(end)]
@@ -46,7 +52,7 @@ def plot_multiple_regions_crosslink2(target_protein_list, region_record_list, pl
 
     for i, record in enumerate(region_record_list):
         max_len = max(max_len, len(record))
-        print "i", i
+        #print "i", i
         #Allocate tracks 3 (top), 1 (bottom) for region 1 and 2
         #(empty tracks 2 useful white space to emphasise the cross links
         #and also serve to make the tracks vertically more compressed)
@@ -59,7 +65,7 @@ def plot_multiple_regions_crosslink2(target_protein_list, region_record_list, pl
            quit
         
     for x in range(0,len(region_record_list)-1):
-        print "x", x
+        #print "x", x
         features_X = region_record_list[x].features
         features_Y = region_record_list[x+1].features
         set_X = feature_sets[x]
@@ -130,28 +136,28 @@ def plot_multiple_regions_crosslink2(target_protein_list, region_record_list, pl
 
             for target_protein in target_protein_list:
                     if target_protein in feature.qualifiers["locus_tag"]:
-                        print "target prot!"
+                        #print "target prot!"
                         color = colors.red
 
             gd_feature_set.add_feature(feature, sigil="ARROW", color=color, label=True, label_position="middle",label_strand=1, label_size=12, label_angle=45)
             i += 1
         x += 1
 
-    print "max", max_len
-    print "n records", len(region_record_list)
+    #print "max", max_len
+    #print "n records", len(region_record_list)
     if len(region_record_list) == 2:
         hauteur = 700
     else:
         hauteur = 250*len(region_record_list)
     largeur = max(record_length)/30
-    print "hauteur", hauteur
-    print "largeur", largeur
+    #print "hauteur", hauteur
+    #print "largeur", largeur
     #gd_diagram.set_page_size(, orientation)
     if hauteur > largeur:
             gd_diagram.draw(format="linear", pagesize=(hauteur,largeur), orientation='portrait', fragments=1,start=0, end=max_len)
     else:
             gd_diagram.draw(format="linear", pagesize=(hauteur,largeur), orientation='landscape', fragments=1,start=0, end=max_len)
-    print "writing diagram", out_name
+    #print "writing diagram", out_name
     
     gd_diagram.write(out_name, "SVG")
 
@@ -211,15 +217,18 @@ def plot_multiple_regions_crosslink(target_protein_list,
     from matplotlib.colors import rgb2hex
     import matplotlib as mpl
     import MySQLdb
+    import os
+    sqlpsw = os.environ['SQLPSW']
 
     norm = mpl.colors.Normalize(vmin=-30, vmax=100)
     cmap = cm.Blues
     m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 
+
     conn = MySQLdb.connect(host="127.0.0.1", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="orth_%s" % biodb_name) # name of the data base
     cursor = conn.cursor()
 
@@ -276,7 +285,6 @@ def plot_multiple_regions_crosslink(target_protein_list,
 
 
         #region_record_list = region_record_list_flip
-
     for i, record in enumerate(region_record_list):
         max_len = max(max_len, len(record))
         #Allocate tracks 3 (top), 1 (bottom) for region 1 and 2
@@ -292,8 +300,7 @@ def plot_multiple_regions_crosslink(target_protein_list,
 
 
 
-
-    print 'looping....'
+    #print 'looping....'
     for x in range(0,len(region_record_list)-1):
         features_X = region_record_list[x].features
         features_Y = region_record_list[x+1].features
@@ -361,16 +368,23 @@ def plot_multiple_regions_crosslink(target_protein_list,
 
         one_row_locus = []
         for feature in record.features:
+            if feature.type == "tblast_target":
+                feature.name = 'match'
+                gd_feature_set.add_feature(feature, sigil="BOX", color="#ff4a0c86", label=False, label_position="middle", label_size=25, label_angle=0)
+
 
             if feature.type == "assembly_gap":
-                print "gap", feature
+                #print "gap", feature
                 feature.location.strand = None
                 gd_feature_set.add_feature(feature, sigil="BOX", color="red", label=True, label_position="middle", label_strand=1, label_size=14, label_angle=40)
 
             if feature.type == "rRNA":
 
                 gd_feature_set.add_feature(feature, sigil="ARROW", color="orange", label=True, label_position="middle", label_strand=1, label_size=10, label_angle=40)
-                one_row_locus.append(feature.qualifiers["locus_tag"][0])
+                try:
+                    one_row_locus.append(feature.qualifiers["locus_tag"][0])
+                except:
+                    pass
             if feature.type == "tRNA":
 
                 gd_feature_set.add_feature(feature, sigil="ARROW", color="orange", label=True, label_position="middle", label_strand=1, label_size=10, label_angle=40)
@@ -385,6 +399,10 @@ def plot_multiple_regions_crosslink(target_protein_list,
 
                 gd_feature_set.add_feature(feature, sigil="BOX", color="blue", label=True, label_position="middle", label_strand=1, label_size=14, label_angle=40)
 
+            if 'pseudo' in feature.qualifiers:
+
+                gd_feature_set.add_feature(feature, sigil="OCTO", color="#6E6E6E", label=True, label_position="middle", label_strand=1, label_size=10, label_angle=40)
+
 
             elif feature.type != "CDS":
                 continue
@@ -398,7 +416,7 @@ def plot_multiple_regions_crosslink(target_protein_list,
 
 
                 if a in color_locus_list:
-                    print '###########################', a, color_locus_list
+                    #print '###########################', a, color_locus_list
                     if len(gd_feature_set) % 2 == 0:
                         color = colors.HexColor('#ca4700')
                     else:
@@ -421,7 +439,7 @@ def plot_multiple_regions_crosslink(target_protein_list,
 
                 for target_protein in target_protein_list:
                         if target_protein in feature.qualifiers["locus_tag"]:
-                            print "target prot!"
+                            #print "target prot!"
                             color = colors.red
 
                 gd_feature_set.add_feature(feature, sigil="ARROW", color=color, label=True, label_position="middle",label_strand=1, label_size=10, label_angle=40)
@@ -436,22 +454,22 @@ def plot_multiple_regions_crosslink(target_protein_list,
 
         x += 1
 
-    print "max", max_len
-    print "n record", len(region_record_list)
+    #print "max", max_len
+    #print "n record", len(region_record_list)
 
     if len(region_record_list) == 2:
         hauteur = 300
     else:
         hauteur = 150*len(region_record_list)
     largeur = max(record_length)/30
-    print "hauteur", hauteur
-    print "largeur", largeur
+    #print "hauteur", hauteur
+    #print "largeur", largeur
     #gd_diagram.set_page_size(, orientation)
     if hauteur > largeur:
             gd_diagram.draw(format="linear", pagesize=(hauteur,largeur), orientation='portrait', fragments=1,start=0, end=max_len)
     else:
             gd_diagram.draw(format="linear", pagesize=(hauteur,largeur), orientation='landscape', fragments=1,start=0, end=max_len)
-    print "writing diagram", out_name
+    #print "writing diagram", out_name
 
     #gd_diagram.write(out_name, "SVG")
 
@@ -480,7 +498,7 @@ def plot_multiple_regions_crosslink(target_protein_list,
     except:
         pass
     import shell_command
-    print cmd
+    #print cmd
     shell_command.shell_command(cmd)
 
     return all_locus
@@ -514,14 +532,14 @@ def plot_simple_region(region_record, out_name):
 
     hauteur = 250
     largeur = len(region_record)/30
-    print "hauteur", hauteur
-    print "largeur", largeur
+    #print "hauteur", hauteur
+    #print "largeur", largeur
 
     if hauteur > largeur:
             gd_diagram.draw(format="linear", pagesize=(hauteur,largeur), orientation='portrait', fragments=1,start=0, end=len(region_record))
     else:
             gd_diagram.draw(format="linear", pagesize=(hauteur,largeur), orientation='landscape', fragments=1,start=0, end=len(region_record))
-    print "writing diagram", out_name
+    #print "writing diagram", out_name
 
     gd_diagram.write(out_name, "SVG")
 
@@ -551,7 +569,7 @@ out_q = Queue()
 def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, region_size_bp, cache, color_locus_list = []):
     plasmid_list = []
     sub_record_list = []
-    
+
     bioentry_id_list, seqfeature_id_list = manipulate_biosqldb.get_bioentry_and_seqfeature_id_from_locus_tag_list(server, locus_tag_list, biodb_name)
 
     #n_cpu = 8
@@ -636,9 +654,9 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
             print key, "still not in memory"
 
         #print "seqfeature_id", seqfeature_id
-        print "record OKKKKK"
+        #print "record OKKKKK"
         target_feature_start,  target_feature_end, strand = manipulate_biosqldb.seqfeature_id2feature_location(server, seqfeature_id)
-        print "target_feature_start,  target_feature_end strand", target_feature_start,  target_feature_end, strand
+        #print "target_feature_start,  target_feature_end strand", target_feature_start,  target_feature_end, strand
         #target = seqfeature_id2seqfeature[seqfeature_id]
         try:
             plasmid = record.features[0].qualifiers["plasmid"]
@@ -657,17 +675,18 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
                  except:
                      pass
         else:
-            print "Getting region from %s" % record_id
+            #print "Getting region from %s" % record_id
             #print record
             sub_record = get_feature_neighborhood(target_feature_start,  target_feature_end, record, region_size_bp, "rec")
             sub_record_list.append(sub_record)
-            print
+            #print
             for feature in sub_record.features:
              if feature.type == 'CDS':
                  try:
                      orthogroup_list.append(feature.qualifiers['orthogroup'][0])
                  except:
                      pass
+
     region_locus_list = plot_multiple_regions_crosslink(locus_tag_list,
                                                         sub_record_list,
                                                         plasmid_list,
@@ -676,18 +695,51 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
                                                         color_locus_list=color_locus_list)
     return region_locus_list, orthogroup_list
     
-    #for record in reformat_records:
-    #    print "record id", record.id
-    #    print "record name", record.name
-    #    if record.id not in loaded_records.keys():
-            
-    #        loaded_records[record.id] = record
-            
-    #return loaded_records
+def location2plot(biodb,
+                  biodb_name,
+                  accession,
+                  out_name,
+                  start,
+                  end,
+                  cache,
+                  color_locus_list = [],
+                  region_highlight=[]):
+    import copy
 
+    key = biodb_name + "_" + accession
+    biorecord = cache.get(key)
+    if biorecord:
+        print key, "in memory"
+    else:
+        print key, "NOT in memory"
+        cache_time = None
 
-#server, db = manipulate_biosqldb.load_db("chlamydiales")
-#proteins_id2cossplot(server, db, "chlamydiales", ["CAQ48442.1"], "first_test.svg", 16000)
+        new_record = biodb.lookup(accession=accession)
+        new_record_reformat = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
+                                                         id=new_record.id, name=new_record.name,
+                                                         description=new_record.description,
+                                                         dbxrefs =new_record.dbxrefs,
+                                                         features=new_record.features,
+                                                         annotations=new_record.annotations)
+        cache.set(key, new_record_reformat, cache_time)
+        biorecord = cache.get(key)
+        if biorecord:
+            print key, "in memory"
+
+    fake_feature = copy.copy(biorecord.features[1])
+    fake_feature.type = "tblast_target"
+    fake_feature.location = FeatureLocation(region_highlight[0], region_highlight[1], strand=0)
+    biorecord.features.append(fake_feature)
+    sub_record = biorecord[start:end]
+    sub_record.features = ([sub_record.features[-1]] + sub_record.features[0:-1])
+    region_locus_list = plot_multiple_regions_crosslink([],
+                                                        [sub_record],
+                                                        [False],
+                                                        out_name,
+                                                        biodb_name,
+                                                        color_locus_list=color_locus_list)
+    return region_locus_list
+
 
 
 
@@ -742,7 +794,7 @@ def proteins_id2sub_record_list(server, biodb, biodb_name, locus_tag_list, regio
         
         target_feature_start,  target_feature_end, strand = manipulate_biosqldb.seqfeature_id2feature_location(server, seqfeature_id)
 
-        print "target_feature_start,  target_feature_end, strand:", target_feature_start,  target_feature_end, strand
+        #print "target_feature_start,  target_feature_end, strand:", target_feature_start,  target_feature_end, strand
 
         
         try:

@@ -245,7 +245,7 @@ def get_locus2plasmid_or_not(biodb):
 
 
 
-def circos_locus2taxon_highest_identity(biodb, reference_taxon_id):
+def circos_locus2taxon_highest_identity(biodb, reference_taxon_id, use_identity_closest_homolog2_table=False):
     '''
     Given one reference taxon, get a dictionnary of the highest identity of homolog(s) in other taxons
 
@@ -256,38 +256,55 @@ def circos_locus2taxon_highest_identity(biodb, reference_taxon_id):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select locus_tag, orthogroup from orthology_detail_%s where taxon_id = %s' % (biodb,reference_taxon_id)
-    sql2 = 'select locus_tag, taxon_id from orthology_detail_%s' % (biodb)
+    if not use_identity_closest_homolog2_table:
+        sql = 'select locus_tag, orthogroup from orthology_detail_%s where taxon_id = %s' % (biodb,reference_taxon_id)
+        sql2 = 'select locus_tag, taxon_id from orthology_detail_%s' % (biodb)
 
-    # get all locus tags and orthogroups from reference genome
-    reference_orthogroup2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+        # get all locus tags and orthogroups from reference genome
+        reference_orthogroup2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
-    locus2locus_identity = {}
-    i = 0
-    # for each locus tag, get highest identity in each other taxons
-    for locus_A in reference_orthogroup2locus_tag:
-        i+=1
-        sql = 'select locus_b,identity from orth_%s.%s where locus_a ="%s" ' \
-              ' UNION select locus_a,identity from orth_%s.%s where locus_b ="%s";' % (biodb,
-                                                                                      reference_orthogroup2locus_tag[locus_A],
-                                                                                      locus_A,
-                                                                                      biodb,
-                                                                                      reference_orthogroup2locus_tag[locus_A],
-                                                                                      locus_A)
-        try:
-            locus2identity = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-            locus2locus_identity[locus_A] = {}
-            for locus_B in locus2identity:
-                if locus_tag2taxon_id[locus_B] not in locus2locus_identity[locus_A]:
-                    locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]] = [locus2identity[locus_B], locus_B]
-                else:
-                    # if identity of a second homolog is higher, use this value
-                    if locus2identity[locus_B] > locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]][0]:
+        locus2locus_identity = {}
+        i = 0
+        # for each locus tag, get highest identity in each other taxons
+        for locus_A in reference_orthogroup2locus_tag:
+            i+=1
+            sql = 'select locus_b,identity from orth_%s.%s where locus_a ="%s" ' \
+                  ' UNION select locus_a,identity from orth_%s.%s where locus_b ="%s";' % (biodb,
+                                                                                          reference_orthogroup2locus_tag[locus_A],
+                                                                                          locus_A,
+                                                                                          biodb,
+                                                                                          reference_orthogroup2locus_tag[locus_A],
+                                                                                          locus_A)
+            try:
+                locus2identity = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+                locus2locus_identity[locus_A] = {}
+                for locus_B in locus2identity:
+                    if locus_tag2taxon_id[locus_B] not in locus2locus_identity[locus_A]:
                         locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]] = [locus2identity[locus_B], locus_B]
-        except:
-            #print 'no homologs for %s' % locus_A
-            pass
+                    else:
+                        # if identity of a second homolog is higher, use this value
+                        if locus2identity[locus_B] > locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]][0]:
+                            locus2locus_identity[locus_A][locus_tag2taxon_id[locus_B]] = [locus2identity[locus_B], locus_B]
+            except:
+                #print 'no homologs for %s' % locus_A
+                pass
+        print '------------------', locus2locus_identity.keys()[0], locus2locus_identity[locus2locus_identity.keys()[0]]
+
+    else:
+        sql = 'select t2.locus_tag, t3.locus_tag, identity, taxon_2 from comparative_tables.identity_closest_homolog2_%s t1 ' \
+              ' inner join custom_tables.locus2seqfeature_id_%s t2 on t1.locus_1=t2.seqfeature_id ' \
+              ' inner join custom_tables.locus2seqfeature_id_%s t3 on t1.locus_2=t3.seqfeature_id ' \
+              ' where taxon_1=%s' % (biodb, biodb, biodb, reference_taxon_id)
+        data = server.adaptor.execute_and_fetchall(sql,)
+        locus2locus_identity = {}
+        for row in data:
+            if row[0] not in locus2locus_identity:
+                locus2locus_identity[row[0]] = {}
+                locus2locus_identity[row[0]][row[3]] = [row[2],row[1]]
+            else:
+                locus2locus_identity[row[0]][row[3]] = [row[2],row[1]]
+    print '------------------', locus2locus_identity.keys()[0], locus2locus_identity[locus2locus_identity.keys()[0]]
     return locus2locus_identity
 
 
@@ -472,8 +489,32 @@ def accession2coding_density(biodb):
     accession2n_trna = {}
     accession2n_rrna = {}
     accession2big_contig_length = {}
+    accession2n_contigs_without_cds = {}
+    accession2n_countigs_without_BBH_chlamydiae = {}
     for n, accession in enumerate(accession_list):
+        print accession
 
+        # get list of BBH chlamydiae
+        sql = 'select locus_tag from blastnr.blastnr_%s t1 ' \
+              ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
+              ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
+              ' inner join blastnr.blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
+              ' inner join custom_tables.locus2seqfeature_id_%s t5 ' \
+              ' on t1.seqfeature_id=t5.seqfeature_id ' \
+              ' where t1.hit_number=1 and t3.name="%s" and t4.phylum="Chlamydiae" and t2.accession="%s";' % (biodb,
+                                                                                                             biodb,
+                                                                                                             biodb,
+                                                                                                             accession)
+        try:
+            locus_BBH_chlamydiae = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+        except:
+            print 'echec'
+            locus_BBH_chlamydiae = []
+        print sql
+        print 'locus_BBH_chlamydiae', len(locus_BBH_chlamydiae)
+        accession2n_contigs_without_cds[accession] = 0
+        accession2n_countigs_without_BBH_chlamydiae[accession] = 0
+        accession = accession.split('.')[0]
         record = db.lookup(accession=accession)
         long_record_list = []
         start = 0
@@ -481,12 +522,40 @@ def accession2coding_density(biodb):
         big_contig_length = 0
         for feature in record.features:
             if feature.type == 'assembly_gap':
+                # assembly gap within scaffolds
+                print 'len gap:', len(feature)
+                if "gap_type" in feature.qualifiers:
+                    if feature.qualifiers["gap_type"][0] == "within scaffold":
+                        continue
+                    else:
+                        print 'new gap type:', feature.qualifiers["gap_type"][0]
+                if len(feature) != 200:
+                    continue
                 stop = feature.location.start -1
                 sub_record = record[start:stop]
                 start = feature.location.end+1
-                if len(sub_record)>=10000:
+                if len(sub_record)>=50000: # 10000
                     big_contig_length+=len(sub_record)
                     long_record_list.append(sub_record)
+
+                # count number of cds
+                n_CDS = 0
+                for feature in sub_record.features:
+                    if feature.type == 'CDS':
+                        n_CDS+=1
+                if n_CDS == 0:
+                    accession2n_contigs_without_cds[accession] += 1
+                else:
+                    # count number of BBH Chlamydiae
+                    n_BBH_Chlamydiae = 0
+                    for feature in sub_record.features:
+                        if feature.type == 'CDS':
+                            if not 'pseudo' in feature.qualifiers:
+                                if feature.qualifiers['locus_tag'][0] in locus_BBH_chlamydiae:
+                                    n_BBH_Chlamydiae+=1
+                    if n_BBH_Chlamydiae == 0:
+                        accession2n_countigs_without_BBH_chlamydiae[accession] += 1
+
         stop = len(record)
         sub_record = record[start:stop]
         if len(sub_record)>=10000:
@@ -523,7 +592,9 @@ def accession2coding_density(biodb):
         accession2n_rrna[accession] = [rrna_count_16, rrna_count_23, rrna_count_5]
         accession2big_contig_length[accession] = big_contig_length
         print round((len_coding/float(big_contig_length))*100,2), trna_count, rrna_count_16, rrna_count_23, rrna_count_5
-    return accession2density, accession2n_trna, accession2n_rrna, accession2big_contig_length
+    return accession2density, accession2n_trna, accession2n_rrna, accession2big_contig_length, \
+           accession2n_countigs_without_BBH_chlamydiae, accession2n_contigs_without_cds
+
 
 
 def taxonomical_form(db_name, hit_number=1):
@@ -943,9 +1014,15 @@ def collect_genome_statistics(biodb):
 
     print 'getting accession2genome_data...'
     # organism name, protein encoding ORF number
+    print sql
     accession2genome_data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    accession2density, accession2n_trna, accession2n_rrna,accession2big_contig_length = accession2coding_density(biodb)
+    accession2density, \
+    accession2n_trna, \
+    accession2n_rrna, \
+    accession2big_contig_length, \
+    accession2n_countigs_without_BBH_chlamydiae, \
+    accession2n_contigs_without_cds = accession2coding_density(biodb)
 
     #print '<td colspan="6"><table width="800" border=0  class=table_genomes>'
 
@@ -953,6 +1030,7 @@ def collect_genome_statistics(biodb):
     genomes_data = []
 
     for accession in accession2genome_data:
+        accession = accession.split('.')[0]
         print accession
         one_genome_data = []
         one_genome_data.append(accession)
@@ -978,12 +1056,14 @@ def collect_genome_statistics(biodb):
     sql = 'create table if not EXISTS genomes_info_%s (ACCESSION VARCHAR(200), ' \
           ' GC FLOAT, n_CDS INT ,n_contigs INT, genome_size INT, ' \
           ' n_tRNA INT, n_16S INT, n_23S INT, n_5S INT, percent_non_coding FLOAT, big_contig_length INT, ' \
+          ' n_no_CDS INT,' \
+          ' n_no_BBH_chlamydiae INT,' \
           ' description VARCHAR (20000))' % biodb
 
     server.adaptor.execute_and_fetchall(sql,)
 
     for one_genome in genomes_data:
-        sql = 'insert into genomes_info_%s values ("%s", %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, "%s")' % (biodb,
+        sql = 'insert into genomes_info_%s values ("%s", %s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s,"%s")' % (biodb,
                                                                            one_genome[0],
                                                                            one_genome[1],
                                                                            one_genome[2],
@@ -995,15 +1075,31 @@ def collect_genome_statistics(biodb):
                                                                            accession2n_rrna[one_genome[0]][2],
                                                                            100-accession2density[one_genome[0]],
                                                                            accession2big_contig_length[one_genome[0]],
+                                                                           accession2n_contigs_without_cds[one_genome[0]],
+                                                                           accession2n_countigs_without_BBH_chlamydiae[one_genome[0]],
                                                                            one_genome[5])
         print sql
         server.adaptor.execute(sql,)
         server.commit()
 
-def get_comparative_subtable(biodb, table_name, first_col_name, taxon_list, exclude_taxon_list, ratio=1, single_copy=False, accessions=False):
+def get_comparative_subtable(biodb,
+                             table_name,
+                             first_col_name,
+                             taxon_list,
+                             exclude_taxon_list,
+                             ratio=1,
+                             single_copy=False,
+                             accessions=False):
 
     import pandas
     import numpy
+
+    '''
+    ratio: ratio of missing data tolaration
+    single_copy: only consider singly copy locus
+    accessions (bol): compare accession and not taxons (differentiate plasmids from chromosome)
+
+    '''
 
     server, db = manipulate_biosqldb.load_db(biodb)
     if not accessions:
@@ -1046,8 +1142,12 @@ def get_comparative_subtable(biodb, table_name, first_col_name, taxon_list, excl
     count_df2 = count_df2.apply(pandas.to_numeric, args=('coerce',))
 
     if not single_copy:
-        return count_df[(count_df > 0).sum(axis=1) >= limit], count_df2
+        return count_df[(count_df > 0).sum(axis=1) >= limit], count_df2 #
     else:
+
+        groups_with_paralogs = count_df[(count_df > 1).sum(axis=1) > 0].index
+        count_df = count_df.drop(groups_with_paralogs)
+
         return count_df[(count_df == 1).sum(axis=1) >= limit], count_df2
 
 def best_hit_classification(db_name, accession):

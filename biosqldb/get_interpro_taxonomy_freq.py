@@ -115,10 +115,11 @@ def get_interpro_version():
 def create_interpro_taxonomy_table(interpro_version):
 
     import MySQLdb
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="interpro") # name of the data base
     cursor = conn.cursor()
 
@@ -132,10 +133,11 @@ def create_interpro_taxonomy_table(interpro_version):
 def get_whole_db_interpro_taxonomy():
     import MySQLdb
     import manipulate_biosqldb
-
+    import os
+    sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="interpro") # name of the data base
     cursor = conn.cursor()
 
@@ -191,19 +193,19 @@ def get_biodb_summary_statistics(biodb, cutoff=50):
         sql_euk = 'select count(*) from (select interpro_accession from interpro_%s ' \
                   ' where taxon_id=%s and interpro_accession!="0" group by locus_tag,interpro_accession) A ' \
                   ' inner join interpro.entry B on A.interpro_accession=B.name  ' \
-                  ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_eukaryote>%s;' % (biodb,taxon, cutoff)
+                  ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_eukaryote>=%s;' % (biodb,taxon, cutoff)
         sql_virus = 'select count(*) from (select interpro_accession from interpro_%s ' \
                   ' where taxon_id=%s and interpro_accession!="0" group by locus_tag,interpro_accession) A ' \
                   ' inner join interpro.entry B on A.interpro_accession=B.name  ' \
-                  ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_virus>%s;'  % (biodb,taxon, cutoff)
+                  ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_virus>=%s;'  % (biodb,taxon, cutoff)
         sql_archae = 'select count(*) from (select interpro_accession from interpro_%s ' \
                   ' where taxon_id=%s and interpro_accession!="0" group by locus_tag,interpro_accession) A ' \
                   ' inner join interpro.entry B on A.interpro_accession=B.name  ' \
-                  ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_archae>%s;' % (biodb,taxon, cutoff)
+                  ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_archae>=%s;' % (biodb,taxon, cutoff)
         sql_bact = 'select count(*) from (select interpro_accession from interpro_%s ' \
                   ' where taxon_id=%s and interpro_accession!="0" group by locus_tag,interpro_accession) A ' \
                   ' inner join interpro.entry B on A.interpro_accession=B.name  ' \
-                  ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_bacteria>%s;' % (biodb,taxon, cutoff)
+                  ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_bacteria>=%s;' % (biodb,taxon, cutoff)
 
         count_euk = server.adaptor.execute_and_fetchall(sql_euk,)[0][0]
         count_virus = server.adaptor.execute_and_fetchall(sql_virus,)[0][0]
@@ -232,6 +234,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     #get_whole_db_interpro_taxonomy()
-    get_biodb_summary_statistics(args.biodb, 98)
-    get_biodb_summary_statistics(args.biodb, 50)
-    get_biodb_summary_statistics(args.biodb, 90)
+    #get_biodb_summary_statistics(args.biodb, 98)
+    #get_biodb_summary_statistics(args.biodb, 50)
+    #get_biodb_summary_statistics(args.biodb, 90)
+    get_biodb_summary_statistics(args.biodb, 100)

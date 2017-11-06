@@ -11,8 +11,9 @@ def create_locus_tag2seqfeature_table(biodb):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'CREATE TABLE IF NOT EXISTS custom_tables.locus2seqfeature_id_%s (locus_tag varchar(400), seqfeature_id INT, taxon_id INT,' \
+          ' orthogroup varchar(400), index orthogroup(orthogroup), ' \
           ' index locus_tag (locus_tag), index seqfeature_id(seqfeature_id), index taxon_id (taxon_id))' % biodb
-    print sql
+
     server.adaptor.execute(sql)
     server.commit()
 
@@ -22,12 +23,23 @@ def create_locus_tag2seqfeature_table(biodb):
 
     locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
+    sql2 = 'select locus_tag, orthogroup from orthology_detail_%s' % biodb
+
+    locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+
     for locus in locus2seqfeature_id:
         try:
-            sql = 'insert into custom_tables.locus2seqfeature_id_%s values ("%s", %s, %s)' % (biodb, locus, locus2seqfeature_id[locus], locus2taxon_id[locus])
+            sql = 'insert into custom_tables.locus2seqfeature_id_%s values ("%s", %s, %s, "%s")' % (biodb, locus,
+                                                                                              locus2seqfeature_id[locus],
+                                                                                              locus2taxon_id[locus],
+                                                                                              locus2orthogroup[locus])
             server.adaptor.execute(sql)
         except:
-            sql = 'insert into custom_tables.locus2seqfeature_id_%s values ("%s", %s, %s)' % (biodb, locus, locus2seqfeature_id[locus], "NULL")
+            # pseudogenes
+            sql = 'insert into custom_tables.locus2seqfeature_id_%s values ("%s", %s, %s, %s)' % (biodb, locus,
+                                                                                              locus2seqfeature_id[locus],
+                                                                                              "NULL",
+                                                                                              "NULL")
             server.adaptor.execute(sql)
         server.commit()
 

@@ -313,7 +313,7 @@ def create_sql_plastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
 def update_blastnr_taxonomy_table(blast_table_name,
                                   mysql_host="localhost",
                                   mysql_user="root",
-                                  mysql_pwd="estrella3",
+                                  mysql_pwd="baba",
                                   mysql_db="blastnr"):
     import MySQLdb
     from plastnr2sqltable import insert_taxons_into_sqldb
@@ -373,7 +373,7 @@ def update_blastnr_taxonomy_table(blast_table_name,
         print taxon_list[0:10]
 
         # subdivide the taxon list in smaller lists, otherwise NCBI will limit the results to? 10000 (observed once only)
-        insert_taxons_into_sqldb(taxon_list, 300)
+        insert_taxons_into_sqldb(taxon_list, 300,mysql_pwd=mysql_pwd)
 
 def blastnr2biosql( locus_tag2seqfeature_id,
                     protein_id2seqfeature_id,
@@ -383,12 +383,14 @@ def blastnr2biosql( locus_tag2seqfeature_id,
                     mysql_user,
                     mysql_pwd,
                     mysql_db,
-                    *input_blast_files):
+                    input_blast_files,
+                    load_blastnr_tables=True):
 
     import numpy
     import re
     import accession2taxon_id
     import time
+    import re
     from datetime import datetime
     from multiprocessing import Process
     from plastnr2sqltable import update2biosql_blastnr_table
@@ -479,8 +481,8 @@ def blastnr2biosql( locus_tag2seqfeature_id,
                     taxonomy = '-'
 
                 taxon_id = accession2taxon_id_dico[accession]
-                description = descr['description']
-                source = descr['source']
+                description = re.sub('"','',descr['description'])
+                source = re.sub('"','',descr['source'])
 
                 sql = 'insert into blastnr.accession2taxon_and_description (accession, taxon_id, description, taxonomy, source) ' \
                       ' values("%s",%s,"%s", "%s", "%s")' % (accession,
@@ -495,59 +497,63 @@ def blastnr2biosql( locus_tag2seqfeature_id,
                 #    import sys
                 #    sys.exit()
             except:
+                print sql
                 print 'problem with:', accession
         server.adaptor.commit()
 
-    # collect annotation for all proteins in the database
-    print 'collecting annotation for blastnr_table'
-    sql = 'select * from blastnr.accession2taxon_and_description'
-    data = server.adaptor.execute_and_fetchall(sql,)
-    accession2descriptions = {}
-    for row in data:
-        descr = {}
-        descr['description'] = row[3]
-        descr['source'] = row[5]
-        descr['taxonomy'] = row[4]
-        descr['taxon_id'] = row[2]
-        descr['id'] = row[0]
-        accession2descriptions[str(row[1])] = descr
-        #gi2taxon_id[row[0]] = row[2]
+    if load_blastnr_tables:
+        # collect annotation for all proteins in the database
+        print 'collecting annotation for blastnr_table'
+        sql = 'select * from blastnr.accession2taxon_and_description'
+        data = server.adaptor.execute_and_fetchall(sql,)
+        accession2descriptions = {}
+        for row in data:
+            descr = {}
+            descr['description'] = row[3]
+            descr['source'] = row[5]
+            descr['taxonomy'] = row[4]
+            descr['taxon_id'] = row[2]
+            descr['id'] = row[0]
+            accession2descriptions[str(row[1])] = descr
+            #gi2taxon_id[row[0]] = row[2]
 
-    if len(input_blast_files)>n_poc_per_list:
 
-        procs = []
-        for one_list in query_lists:
-            proc = Process(target=load_blastnr_file_into_db, args=(locus_tag2taxon_id,
-                                                                   locus_tag2seqfeature_id,
-                                                                   protein_id2seqfeature_id,
-                                                                   locus_tag2bioentry_id,
-                                                                   mysql_host,
-                                                                   mysql_user,
-                                                                   mysql_pwd,
-                                                                   mysql_db,
-                                                                   one_list,
-                                                                   db_name,
-                                                                   accession2descriptions))
-            procs.append(proc)
-            proc.start()
 
-        # Wait for all worker processes to finish
-        for proc in procs:
-            proc.join()
-    else:
-        print 'Only %s input blast file(s), not working in paralell mode' % (len(input_blast_files))
-        load_blastnr_file_into_db(locus_tag2taxon_id,
-                                   locus_tag2seqfeature_id,
-                                   protein_id2seqfeature_id,
-                                   locus_tag2bioentry_id,
-                                   mysql_host,
-                                   mysql_user,
-                                   mysql_pwd,
-                                   mysql_db,
-                                   input_blast_files,
-                                   db_name,
-                                   gi2descriptions,
-                                   gi2taxon_id)
+        if len(input_blast_files)>n_poc_per_list:
+
+            procs = []
+            for one_list in query_lists:
+                proc = Process(target=load_blastnr_file_into_db, args=(locus_tag2taxon_id,
+                                                                       locus_tag2seqfeature_id,
+                                                                       protein_id2seqfeature_id,
+                                                                       locus_tag2bioentry_id,
+                                                                       mysql_host,
+                                                                       mysql_user,
+                                                                       mysql_pwd,
+                                                                       mysql_db,
+                                                                       one_list,
+                                                                       db_name,
+                                                                       accession2descriptions))
+                procs.append(proc)
+                proc.start()
+
+            # Wait for all worker processes to finish
+            for proc in procs:
+                proc.join()
+        else:
+            print 'Only %s input blast file(s), not working in paralell mode' % (len(input_blast_files))
+            load_blastnr_file_into_db(locus_tag2taxon_id,
+                                       locus_tag2seqfeature_id,
+                                       protein_id2seqfeature_id,
+                                       locus_tag2bioentry_id,
+                                       mysql_host,
+                                       mysql_user,
+                                       mysql_pwd,
+                                       mysql_db,
+                                       input_blast_files,
+                                       db_name,
+                                       gi2descriptions,
+                                       gi2taxon_id)
 
     #sys.stdout.write("done!")
 
@@ -559,13 +565,14 @@ if __name__ == '__main__':
     import argparse
     import manipulate_biosqldb
     import sys
+    import os
     import json
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--input_blast', type=str, help="input blast tab files", nargs='+')
     parser.add_argument("-d", '--mysql_database', type=str, help="Biosql biodatabase name")
     parser.add_argument("-t", '--create_tables', action='store_true', help="Create SQL tables")
-    parser.add_argument("-p", '--n_procs', type=int, help="Number of threads to use (default=8)", default=6)
+    parser.add_argument("-p", '--n_procs', type=int, help="Number of threads to use (default=8)", default=4)
     parser.add_argument("-c", '--clean_tables', action='store_true', help="delete all sql tables")
     parser.add_argument("-l", '--load_tables', action='store_true', help="load tab files into biodatabase")
     parser.add_argument("-f", '--filter_n_hits', action='store_true', help="filter_n_hits (max 100 hits/locus)")
@@ -581,8 +588,7 @@ if __name__ == '__main__':
     mysql_host = 'localhost'
     mysql_user = 'root'
 
-    mysql_pwd = 'estrella3'
-
+    mysql_pwd = os.environ['SQLPSW']
     mysql_db = 'blastnr'
 
     biodb = args.mysql_database
@@ -621,9 +627,11 @@ if __name__ == '__main__':
                         mysql_user,
                         mysql_pwd,
                         mysql_db,
-                        *args.input_blast)
+                        args.input_blast)
 
     if args.update_taxo_table:
-        #update_blastnr_taxonomy_table('blastnr_%s' % biodb)
-        update_blastnr_taxonomy_table('blast_swissprot_%s' % biodb)
+        import os
+        sqlpsw = os.environ['SQLPSW']
+        update_blastnr_taxonomy_table('blastnr_%s' % biodb,  mysql_pwd=sqlpsw)
+        update_blastnr_taxonomy_table('blast_swissprot_%s' % biodb,  mysql_pwd=sqlpsw)
         #update_blastnr_taxonomy_table('blast_swissprot_%s' % biodb)

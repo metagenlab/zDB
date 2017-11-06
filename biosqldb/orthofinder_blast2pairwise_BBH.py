@@ -40,23 +40,45 @@ def parse_orthofinder_blast_files(biodb,
                 identity = data[2]
                 evalue = data[10]
                 bitscore = data[11]
+                query_align_length = int(data[7]) - int(data[6])
+                hit_align_length = int(data[9]) - int(data[8])
                 taxon_id_seq_2 = locus_tag2taxon_id[locus_tag_2]
                 if locus_tag_1 not in locus2taxon2best_hit_id:
                     locus2taxon2best_hit_id[locus_tag_1] = {}
-                    locus2taxon2best_hit_id[locus_tag_1][taxon_id_seq_2] = [locus_tag_2, identity, evalue, bitscore]
+                    locus2taxon2best_hit_id[locus_tag_1][taxon_id_seq_2] = [locus_tag_2,
+                                                                            identity,
+                                                                            evalue,
+                                                                            bitscore,
+                                                                            query_align_length,
+                                                                            hit_align_length]
                 else:
                     # not the best hit, skip
                     if taxon_id_seq_2 in locus2taxon2best_hit_id[locus_tag_1]:
                         continue
                     # best hit
                     else:
-                        locus2taxon2best_hit_id[locus_tag_1][taxon_id_seq_2] = [locus_tag_2, identity, evalue, bitscore]
+                        locus2taxon2best_hit_id[locus_tag_1][taxon_id_seq_2] = [locus_tag_2,
+                                                                                identity,
+                                                                                evalue,
+                                                                                bitscore,
+                                                                                query_align_length,
+                                                                                hit_align_length]
     return locus2taxon2best_hit_id
 
 def get_parwise_genome_median_identity_table(biodb):
 
     import manipulate_biosqldb
     import numpy
+    import rpy2.robjects.numpy2ri
+
+    import numpy as np
+    import rpy2.robjects as robjects
+    import rpy2.robjects.numpy2ri as numpy2ri
+    from rpy2.robjects.packages import importr
+    import rpy2.rlike.container as rlc
+    from rpy2.robjects import pandas2ri
+    pandas2ri.activate()
+
     server, db = manipulate_biosqldb.load_db(biodb)
     sql = 'select taxon_id from biodatabase t1 inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id ' \
           ' where t1.name="%s" group by taxon_id' % biodb
@@ -76,12 +98,22 @@ def get_parwise_genome_median_identity_table(biodb):
             data = [float(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
             median_id = numpy.median(data)
             mean_id = numpy.mean(data)
-            print taxon_1, taxon_2
-            sql = 'insert into comparative_tables.reciprocal_BBH_average_identity_%s values(%s, %s, %s, %s, %s)' % (biodb,
+
+            data_array = np.asarray(data, dtype='float')
+            robjects.r.assign('identity_values', numpy2ri.numpy2ri(data_array))
+            robjects.r('''
+                d <- density(identity_values)
+                w <- which(d$y==max(d$y))
+                max_density <- d$x[w]
+            ''')
+            max_density = robjects.r('max_density')
+
+            sql = 'insert into comparative_tables.reciprocal_BBH_average_identity_%s values(%s, %s, %s, %s, %s, %s)' % (biodb,
                                                                                                   taxon_1,
                                                                                                   taxon_2,
                                                                                                   round(mean_id,2),
                                                                                                   round(median_id,2),
+                                                                                                  round(float(max_density[0]),2),
                                                                                                   len(data)
                                                                                                   )
             server.adaptor.execute(sql,)
@@ -93,6 +125,7 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id):
 
     import manipulate_biosqldb
     import numpy
+    from datetime import datetime
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'create table if not exists comparative_tables.reciprocal_BBH_%s (taxon_1 INT, taxon_2 INT, seqfeature_id_1 INT, seqfeature_id_2 INT,' \
@@ -115,11 +148,27 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id):
     sql = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
 
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    sql = 'select locus_tag,char_length(translation) from biosqldb.orthology_detail_%s' % biodb
+
+    locus_tag2sequence_length = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
     for n1, locus_1 in enumerate(locus2taxon2best_hit_id):
+        if n1 % 100000 == 0:
+            print str(datetime.now())
         taxon_1 = locus_tag2taxon_id[locus_1]
         for taxon_2 in locus2taxon2best_hit_id[locus_1]:
             locus_2 = locus2taxon2best_hit_id[locus_1][taxon_2][0]
             try:
+                '''
+                0 locus_tag_2,
+                1 identity,
+                2 evalue,
+                3 bitscore,
+                4 query_align_length,
+                5 hit_align_length
+                '''
+
                 if locus2taxon2best_hit_id[locus_2][taxon_1][0] == locus_1:
 
                         identity_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][1]
@@ -128,6 +177,28 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id):
                         evalue_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][2]
                         evalue_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][2]
 
+                        if (float(evalue_a_vs_b) > 0.00001) or (float(evalue_b_vs_a) > 0.00001):
+                            #print 'evalue too high!', evalue_a_vs_b, float(evalue_a_vs_b), 'and', evalue_b_vs_a, float(evalue_b_vs_a)
+                            continue
+                        query_align_length_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][4]
+                        hit_align_length_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][5]
+                        query_align_length_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][4]
+                        hit_align_length_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][5]
+
+                        locus_1_length = locus_tag2sequence_length[locus_1]
+                        locus_2_length = locus_tag2sequence_length[locus_1]
+
+                        query_cov_a_vs_b = query_align_length_a_vs_b/float(locus_1_length)
+                        hit_cov_a_vs_b = hit_align_length_a_vs_b/float(locus_2_length)
+                        query_cov_b_vs_a = query_align_length_b_vs_a/float(locus_2_length)
+                        hit_cov_b_vs_a = hit_align_length_b_vs_a/float(locus_1_length)
+
+
+
+                        if (hit_cov_b_vs_a < 0.5) or (hit_cov_a_vs_b < 0.5) or (query_cov_b_vs_a < 0.5) or (hit_cov_b_vs_a < 0.5):
+                            #print 'COV:', query_cov_a_vs_b, hit_cov_a_vs_b, query_cov_b_vs_a, hit_cov_b_vs_a
+                            continue
+                        #print 'ok--------------------'
                         score_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][3]
                         score_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][3]
 
@@ -164,16 +235,18 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id):
                                                       msa_identity,
                                                       group_1,
                                                       group_2)
+                        #print sql
                         try:
-                            server.adaptor.execute_and_fetchall(sql,)
+                            server.adaptor.execute(sql,)
                         except:
                             print sql
-                        server.commit()
+
 
 
             except:
-                print 'FAIL!'
+                #print 'FAIL!'
                 continue
+        server.commit()
 
 def median_RBBH2species(biodb):
 
@@ -216,6 +289,7 @@ def median_RBBH2species(biodb):
                 if float(taxon2taxon2identity[taxon_1][taxon_2]) >=98:
                     species_list.append(taxon_2)
         for taxon in species_list:
+            taxons_classified.append(taxon)
             sql = 'insert into species_%s values(%s,%s)' % (biodb, taxon, species_index)
             server.adaptor.execute(sql,)
         server.commit()
@@ -312,10 +386,23 @@ if __name__ == '__main__':
     parser.add_argument("-d",'--database', help="bioadatabase name")
 
     args = parser.parse_args()
-    get_parwise_genome_median_identity_table(args.database)
-    median_RBBH2species(args.database)
-    seqfeature_id2n_species(args.database)
     '''
+    seqid2locus_tag = parse_seqid_file(args.seq_id_file)
+    locus2taxon2best_hit_id = parse_orthofinder_blast_files(args.database,
+                                                            args.blast_files,
+                                                            seqid2locus_tag)
+    print 'get reciprocal bbh table ...'
+    get_reciproval_BBH_table(args.database,
+                             locus2taxon2best_hit_id)
+    '''
+    print 'get pairwise median id table...'
+    get_parwise_genome_median_identity_table(args.database)
+    
+    #median_RBBH2species(args.database)
+    #seqfeature_id2n_species(args.database)
+
+
+    
     taxid_chlam_list =       [314,
    886707,
    804807,

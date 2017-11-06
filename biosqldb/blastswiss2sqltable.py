@@ -155,9 +155,25 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
                 if temp_dico:
                     accession2annotation.update(temp_dico)
                 else:
+                    print 'waiting 20 sec...'
                     time.sleep(20)
                     temp_dico = get_swissprot_annotation(one_list)
-                    accession2annotation.update(temp_dico)
+                    if temp_dico:
+                        accession2annotation.update(temp_dico)
+                    else:
+                        print '1-waiting another 60 sec...'
+                        time.sleep(60)
+                        temp_dico = get_swissprot_annotation(one_list)
+                        if temp_dico:
+                            accession2annotation.update(temp_dico)
+                        else:
+                            print '2-waiting another 60 sec...'
+                            print one_list
+                            time.sleep(60)
+                            temp_dico = get_swissprot_annotation(one_list)                            
+                        
+
+                        
 
             all_taxid = [str(accession2annotation[i][0]) for i in accession2annotation]
 
@@ -166,7 +182,7 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
             missing_taxons = list(set(all_taxid)-set(taxid_in_db))
 
             print 'downloading taxonomy data for %s taxons...' % len(missing_taxons)
-            plastnr2sqltable.insert_taxons_into_sqldb(missing_taxons)
+            plastnr2sqltable.insert_taxons_into_sqldb(missing_taxons, mysql_pwd=mysql_pwd)
 
             print "getting taxid2superkingdom"
             sql = 'select taxon_id,superkingdom from blastnr.blastnr_taxonomy'
@@ -458,6 +474,7 @@ if __name__ == '__main__':
     import argparse
     import manipulate_biosqldb
     import sys
+    import os
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--input_blast', type=str, help="input blast tab files", nargs='+')
@@ -474,8 +491,7 @@ if __name__ == '__main__':
     mysql_host = 'localhost'
     mysql_user = 'root'
 
-    mysql_pwd = 'estrella3'
-
+    mysql_pwd = os.environ['SQLPSW']
     mysql_db = 'blastnr'
 
     biodb = args.mysql_database

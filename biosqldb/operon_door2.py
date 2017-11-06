@@ -24,12 +24,18 @@ def door_accession2door_operon_table(accession):
     data = urllib2.urlopen(req)
 
     operon_table = []
-    for i, row in enumerate(data):
-        if i != 0 :
-            data = row.rstrip().split('\t')
-            if len(data) == 9:
-                operon_table.append(data)
-    return operon_table
+    try:
+        for i, row in enumerate(data):
+            if i != 0 :
+                data = row.rstrip().split('\t')
+                if len(data) == 9:
+                    operon_table.append(data)
+        return operon_table
+    except:
+        print 'echec'
+        import time
+        time.sleep(10)
+        return door_accession2door_operon_table(accession)
 
 def accession2operon_table(biodb):
 

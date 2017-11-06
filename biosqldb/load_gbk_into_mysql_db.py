@@ -23,6 +23,7 @@ def import_gbk(gbk_name, server_name, db_name):
     try:
         db_name.load(records)
     except:
+        db_name.load(records)
         print gbk_name, "already into db?"
         pass
     server_name.adaptor.commit()

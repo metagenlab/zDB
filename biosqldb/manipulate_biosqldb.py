@@ -47,9 +47,10 @@ def query_yes_no(question, default="yes"):
 
 
 def load_db(db_name=False):
-    
+    import os
+    sqlpsw = os.environ['SQLPSW']
     server = BioSeqDatabase.open_database(driver="MySQLdb", user="root",
-                       passwd = "estrella3", host = "127.0.0.1", db="biosqldb")
+                       passwd = sqlpsw, host = "127.0.0.1", db="biosqldb")
     if db_name:
         try:
             db = server[db_name]
@@ -818,9 +819,9 @@ def taxon_id2orthogroup_size(server, biodatabase_name, taxon_id):
 
 def seqfeature_id2feature_location(server, seqfeature_id):
     sql ='select start_pos, end_pos, strand from location where seqfeature_id= %s and rank = 1' % seqfeature_id
-    print sql
+    #print sql
     result = server.adaptor.execute_and_fetchall(sql, )
-    print "res", result
+    #print "res", result
     result = [int(i) for i in result[0]]
     return tuple(result)
 
@@ -1049,7 +1050,7 @@ def location2sequence(server, accession, biodb, start, end):
           'inner join bioentry on bioentry.bioentry_id=biosequence.bioentry_id ' \
           'inner join biodatabase on bioentry.biodatabase_id=biodatabase.biodatabase_id ' \
           'where accession="%s" and biodatabase.name="%s"' % (start, end, accession, biodb)
-    print sql
+    #print sql
     sequence = server.adaptor.execute_and_fetchall(sql,)
     return sequence[0][0]
 
