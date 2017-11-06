@@ -724,49 +724,49 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.orthology:
-
-        n_shared_orthogroup_table(args.database_name)
+        #create_comparative_tables_accession(args.database_name, "orthology")
+        #collect_orthogroup_accession(args.database_name)
+        n_shared_orthogroup_table(args.database_name)    
         identity_closest_homolog(args.database_name)
         shared_orthogroups_average_identity(args.database_name)
-        create_comparative_tables_accession(args.database_name, "orthology")
-        collect_orthogroup_accession(args.database_name)
-
+    
+    
     if args.cog:
         create_comparative_tables(args.database_name, "COG")
         collect_COGs(args.database_name)
 
-        create_comparative_tables_accession(args.database_name, "COG")
-        collect_COGs_accession(args.database_name)
+        #create_comparative_tables_accession(args.database_name, "COG")
+        #collect_COGs_accession(args.database_name)
         
         
     if args.pfam:
         create_comparative_tables(args.database_name, "Pfam")
         collect_pfam(args.database_name)
 
-        create_comparative_tables_accession(args.database_name, 'Pfam')
-        collect_Pfam_accession(args.database_name)
+        #create_comparative_tables_accession(args.database_name, 'Pfam')
+        #collect_Pfam_accession(args.database_name)
 
     if args.ec:
         create_comparative_tables(args.database_name, "EC")
         collect_EC(args.database_name)
 
-        create_comparative_tables_accession(args.database_name, "EC")
-        collect_EC_accession(args.database_name)
+        #create_comparative_tables_accession(args.database_name, "EC")
+        #collect_EC_accession(args.database_name)
         
     if args.interpro:
         create_comparative_tables(args.database_name, "interpro")
         collect_interpro(args.database_name)
 
-        create_comparative_tables_accession(args.database_name, "interpro")
-        collect_interpro_accession(args.database_name)
+        #create_comparative_tables_accession(args.database_name, "interpro")
+        #collect_interpro_accession(args.database_name)
         
         
     if args.ko:
         create_comparative_tables(args.database_name, "ko")
         collect_ko(args.database_name)
     
-        create_comparative_tables_accession(args.database_name, "ko")
-        collect_ko_accession(args.database_name)
+        #create_comparative_tables_accession(args.database_name, "ko")
+        #collect_ko_accession(args.database_name)
     
     
 
