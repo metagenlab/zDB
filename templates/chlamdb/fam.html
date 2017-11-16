@@ -57,6 +57,8 @@
                             <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{ fam }}', 'orthoIDframe2'); return false">Informations</a></li>
                         {% elif type == 'pfam' %}
                             <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://pfam.xfam.org/family/{{ fam }}', 'orthoIDframe2'); return false">Informations</a></li>
+                            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_profile' biodb fam "phylum" %}', 'orthoIDframe2'); return false">Taxonomic profile (phylum)</a></li>
+                        <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_profile' biodb fam "order" %}', 'orthoIDframe2'); return false">Taxonomic profile (order)</a></li>
                         {% elif type == 'interpro' %}
                             <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.ebi.ac.uk/interpro/entry/{{ fam }}', 'orthoIDframe2'); return false">Informations</a></li>
                         {% endif %}

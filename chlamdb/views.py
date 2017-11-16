@@ -2839,14 +2839,16 @@ def COG_phylo_heatmap(request, biodb, frequency):
         t1 = Tree(tree)
         R = t1.get_midpoint_outgroup()
         t1.set_outgroup(R)
-        #try:
-        #    t2 = t1.prune(taxon_list)
-        #except:
-        #    pass
+        '''
+        try:
+            t1.prune(taxon_list)
+        except:
+            pass
+        '''
         t1.ladderize()
         #t1 = Tree(tree)
         taxon_list = [i.name for i in t1.iter_leaves()]
-        # ['59','67', '1279767', '1279774', '1279496', '48', '46', '55', '87925', '1279815', '62', '1279822', '66', '59', '52', '49', '64', '60', '804807', '886707', '283', '314', '1069693', '1069694', '1137444', '1143376', '313', '1172027', '1172028', '1035343', '307', '293', '1279839', '1279497']
+        #taxon_list = ['59','67', '1279767', '1279774', '1279496', '48', '46', '55', '87925', '1279815', '62', '1279822', '66', '59', '52', '49', '64', '60', '804807', '886707', '283', '314', '1069693', '1069694', '1137444', '1143376', '313', '1172027', '1172028', '1035343', '307', '293', '1279839', '1279497']
         tree, style = cog_heatmap.plot_cog_eatmap(biodb, t1, taxon_list, freq)
 
         path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
@@ -5435,7 +5437,7 @@ def pairwiseid(request, biodb):
             for row in data:
                 identity_list.append(row[1])
 
-                print group2n_organisms[row[0]]
+                #print group2n_organisms[row[0]]
                 genome_count_list.append(group2n_organisms[row[0]])
 
             #pairwiseid_plots.basic_plot(genome_count_list, identity_list)
@@ -5455,6 +5457,7 @@ def pairwiseid(request, biodb):
 
             sql3 = 'select taxon_2, n_shared_orthogroups from comparative_tables.shared_orthogroups_%s ' \
                    'where taxon_1=%s;' % (biodb, genome_1)
+
             taxon2n_shared_orthogroups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
 
             sql = 'select SUM(n_CDS) from biodatabase t1 ' \
@@ -5544,7 +5547,7 @@ def multiple_codon_usage(request, biodb):
 
 
             mat = numpy.array([[list(i)[0]] + list(i)[4:68] for i in data])
-            print mat
+            #print mat
             path = settings.BASE_DIR + '/assets/temp/hydro.png'
             asset_path = '/temp/hydro.png'
             pca_seq_composition.multiple_aa_composition_pca(mat, path)
@@ -7927,6 +7930,26 @@ def get_fasta(request, biodb):
     response['Content-Disposition'] = 'attachment; filename="fasta.fa"'
     response.write(fasta)
     return response #HttpResponse(request, fasta, content_type='text/plain; charset=utf8')
+
+
+
+def pfam_profile(request, biodb, pfam_domain, rank):
+
+
+    from ete2 import Tree,TreeStyle
+    import manipulate_biosqldb
+    import pfam_phylogenetic_profile
+    server, db = manipulate_biosqldb.load_db(biodb)
+    path = settings.BASE_DIR + '/assets/temp/tree.svg'
+    asset_path = '/temp/tree.svg'
+    sql = 'select hmm_accession from pfam.pfam_summary_version_31 where hmm_accession like "%s%%%%"; ' % pfam_domain
+    pf_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
+
+    tree, style = pfam_phylogenetic_profile.plot_phylum_counts(pf_id,rank)
+
+    tree.render(path, h=600, tree_style=style) # dpi=800,
+    return render(request, 'chlamdb/pfam_profile.html', locals())
+
 
 
 def annotation_overview(request, biodb):
