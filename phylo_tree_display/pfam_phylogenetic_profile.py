@@ -273,7 +273,9 @@ def lead_reference_genome_table_into_database(genome_refseq_file=False):
 
 
 
-def plot_phylum_counts(domain_id, rank='phylum'):
+def plot_phylum_counts(domain_id, rank='phylum',
+                       colapse_low_species_counts=4,
+                       remove_unlassified=True):
 
     '''
 
@@ -292,6 +294,7 @@ def plot_phylum_counts(domain_id, rank='phylum'):
 
     import MySQLdb
     import os
+    import manipulate_biosqldb
     from ete2 import NCBITaxa, Tree, TextFace,TreeStyle, StackedBarFace
     ncbi = NCBITaxa()
 
@@ -316,12 +319,29 @@ def plot_phylum_counts(domain_id, rank='phylum'):
 
     sql = 'select * from pfam.taxid2label_%s' % rank
     cursor.execute(sql,)
+
     taxon_id2scientific_name_and_rank = manipulate_biosqldb.to_dict(cursor.fetchall())
     taxon_id2scientific_name_and_rank = {str(k):v for k,v in taxon_id2scientific_name_and_rank.items()}
 
     tss = TreeStyle()
     tss.draw_guiding_lines = True
     tss.guiding_lines_color = "blue"
+
+    keep = []
+    for lf in tree.iter_leaves():
+        # n genomes
+
+        if remove_unlassified:
+            label = taxon_id2scientific_name_and_rank[str(lf.name)][0]
+            if 'unclassified' in label:
+                continue
+
+        n_genomes = int(leaf_taxon2n_species[lf.name])
+        if n_genomes > colapse_low_species_counts:
+            keep.append(lf.name)
+    print 'number of leaaves:', len(keep)
+
+    tree.prune(keep)
 
     header_list = ['Rank', 'N genomes', 'N with %s' % domain_id, 'Percentage']
     for col, header in enumerate(header_list):
@@ -339,6 +359,13 @@ def plot_phylum_counts(domain_id, rank='phylum'):
         tss.aligned_header.add_face(n, col)
 
     for lf in tree.iter_leaves():
+        # n genomes
+
+        n_genomes = int(leaf_taxon2n_species[lf.name])
+        if n_genomes <= colapse_low_species_counts:
+            continue
+
+
         n = TextFace('  %s ' % str(leaf_taxon2n_species[lf.name]))
         n.margin_top = 1
         n.margin_right = 1
@@ -349,6 +376,7 @@ def plot_phylum_counts(domain_id, rank='phylum'):
         n.opacity = 1.
         lf.add_face(n, 2, position="aligned")
 
+        # n genomes with domain
         m = TextFace('  %s ' % str(leaf_taxon2n_species_with_domain[lf.name]))
         m.margin_top = 1
         m.margin_right = 1
@@ -359,12 +387,13 @@ def plot_phylum_counts(domain_id, rank='phylum'):
         m.opacity = 1.
         lf.add_face(m, 3, position="aligned")
 
+        # rank
         ranks = ncbi.get_rank([lf.name])
         try:
             r = ranks[max(ranks.keys())]
         except:
             r = '-'
-        n = TextFace('  %s ' % r)
+        n = TextFace('  %s ' % r, fsize=14, fgcolor='red')
         n.margin_top = 1
         n.margin_right = 1
         n.margin_left = 0
@@ -374,9 +403,11 @@ def plot_phylum_counts(domain_id, rank='phylum'):
         n.opacity = 1.
         lf.add_face(n, 1, position="aligned")
 
+        # percent with target domain
         percentage = (float(leaf_taxon2n_species_with_domain[lf.name])/float(leaf_taxon2n_species[lf.name]))*100
 
         m = TextFace('  %s ' % str(round(percentage,2)))
+        m.fsize = 1
         m.margin_top = 1
         m.margin_right = 1
         m.margin_left = 0
@@ -397,7 +428,7 @@ def plot_phylum_counts(domain_id, rank='phylum'):
         b.margin_left = 0
         lf.add_face(b, 5, position="aligned")
 
-        n = TextFace('%s' % taxon_id2scientific_name_and_rank[str(lf.name)][0], fgcolor = "black", fsize = 9, fstyle = 'italic')
+        n = TextFace('%s' % taxon_id2scientific_name_and_rank[str(lf.name)][0], fgcolor = "black", fsize = 9) # , fstyle = 'italic'
 
         lf.name = " %s (%s)" % (taxon_id2scientific_name_and_rank[str(lf.name)][0], str(lf.name))
         n.margin_right = 10
@@ -476,8 +507,8 @@ def load_pfam_result_into_database(pfam_tab_file, pfam_version=31):
             pfam_hmm_accession = data[3]
             evalue_full = data[4]
             score_full = data[5]
-            evalue_best = data[6]
-            score_best = data[7]
+            evalue_best = data[7]
+            score_best = data[8]
             inc = data[16]
             pfam_id = pfam_accession2pfam_id[pfam_hmm_accession]
 
@@ -493,9 +524,6 @@ def load_pfam_result_into_database(pfam_tab_file, pfam_version=31):
                                         inc)
             cursor.execute(sql,)
         conn.commit()
-
-
-
 
 
 if __name__ == '__main__':

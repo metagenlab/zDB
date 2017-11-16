@@ -45,7 +45,7 @@ def plot_tree_stacked_barplot(tree_file,
     t1.set_outgroup(R)
 
     colors = ["red","#FFFF00","#58FA58","#819FF7","#F781F3", "#2E2E2E","#F7F8E0", 'black']
-    colors2 = ["#7fc97f","#386cb0","#fdc086","#ffffb3","#fdb462", "#f0027f","#F7F8E0", 'black']
+    colors2 = ["#7fc97f","#386cb0","#fdc086","#ffffb3","#fdb462", "#f0027f","#F7F8E0", 'black'] # fdc086ff 386cb0ff f0027fff
 
     tss = TreeStyle()
     tss.draw_guiding_lines = True
