@@ -25,9 +25,21 @@ def get_ncbi_genome(path, destination):
     
     
     
-def get_complete_genomes_data(ncbi_taxon, complete = False, representative =False):
+def get_complete_genomes_data(ncbi_taxon,
+                              complete = False,
+                              representative =False,
+                              refseq_only=False):
 
-    handle = Entrez.esearch(db="assembly", term="txid%s[Organism:exp]  AND (latest[filter])" % ncbi_taxon, retmax=100000)
+    s_term = 'txid%s[Organism:exp] (AND all[filter] NOT anomalous[filter]) '
+    if complete:
+        s_term+=' AND "complete genome"[filter]'
+    if representative:
+        s_term+=' AND "representative genome"[filter]'
+    if refseq_only:
+        s_term+=' AND "latest refseq"[filter]'
+    else:
+        s_term+= ' AND latest[filter]'
+    handle = Entrez.esearch(db="assembly", term=s_term % ncbi_taxon, retmax=100000)
     record = Entrez.read(handle)
     f = open('ncbi_genome_download.log', 'w')
     nn = open("assembly_log.tx", "w")
@@ -56,19 +68,6 @@ def get_complete_genomes_data(ncbi_taxon, complete = False, representative =Fals
         except Bio.Entrez.Parser.CorruptedXMLError:
             print 'assembly:', one_assembly
 
-        '''
-        # check if it is the latest available version of the genome, if not, download the latest
-        if 'latest' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
-            pass
-        else:
-            handle = Entrez.esearch(db="assembly",
-                                    term=assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Synonym']['Genbank'],
-                                    retmax=100000)
-            record = Entrez.read(handle)
-            print record['IdList'][0]
-            handle_assembly = Entrez.esummary(db="assembly",id=record['IdList'][0])
-            assembly_record = Entrez.read(handle_assembly)
-        '''
         LastMajorReleaseAccession = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['LastMajorReleaseAccession']
         SubDate = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['SubmissionDate']
         Taxid = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Taxid']
@@ -105,32 +104,16 @@ def get_complete_genomes_data(ncbi_taxon, complete = False, representative =Fals
                                                                         SubDate,
                                                                         assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']))
 
-
-
-        if complete:
-            if AssemblyStatus not in ['Complete Genome']: # , 'Chromosome'
-                continue
-        if representative:
-            if not 'representative' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
-                continue
-
-            #print assembly_record['DocumentSummarySet']['DocumentSummary'][0]
-
         out_dir = local_dir+'/%s' % LastMajorReleaseAccession
         try:
             os.mkdir(out_dir)
         except:
             continue
         # get ftp link in meta data string
-        print assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta']
-        print assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']
+        #print assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta']
+        #print assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']
 
-        if 'anomalous' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
-            anomalous = True
-        else:
-            anomalous = False
-
-        # check if RefSeq assembly was supressed
+        # check if RefSeq assembly was supressed ==> if yes get the genbank link
         if 'suppressed_refseq' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
             print 'Supressed RefSeq record, downloading GenBank record'
             ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
@@ -146,16 +129,23 @@ def get_complete_genomes_data(ncbi_taxon, complete = False, representative =Fals
                     ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
                     get_ncbi_genome(ftp_path, out_dir)                    
             except IndexError:
-                print 'RefSeq link could not be identified, downloading GenBank record'
-                ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
-                get_ncbi_genome(ftp_path, out_dir)
+                try:
+                    print 'RefSeq ftp link could not be found, downloading GenBank record'
+                    #print assembly_record['DocumentSummarySet']['DocumentSummary'][0]
+                    ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                    get_ncbi_genome(ftp_path, out_dir)
+                except:
+                    print 'no ftp link found for assembly id:', one_assembly
+                    os.rmdir(out_dir)
+                    continue
 
         # check if the assembly was replaced
-        elif 'replaced' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
 
+        elif 'replaced' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
+            print 'replaced version-search for latest-------------------------'
             i = int(LastMajorReleaseAccession.split('.')[1]) + 1
             success = False
-            # identifiy new version of the assembly by increasing version number
+            # identifiy latest version of the assembly by increasing version number
             while not success:
                 if i < 5:
                     try:
@@ -172,7 +162,7 @@ def get_complete_genomes_data(ncbi_taxon, complete = False, representative =Fals
                     break
         else:
             'Unkown status for %s, not downloading' % LastMajorReleaseAccession
-        line = '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (AssemblyName,
+        line = '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (AssemblyName,
                                                                              LastMajorReleaseAccession,
                                                                              Taxid,
                                                                              SpeciesName,
@@ -185,8 +175,8 @@ def get_complete_genomes_data(ncbi_taxon, complete = False, representative =Fals
                                                                              Coverage,
                                                                              RefSeq,
                                                                              Genbank,
-                                                                             Similarity,
-                                                                             anomalous)
+                                                                             Similarity
+                                                                             )
 
         f.write(line.encode("utf-8"))
         os.chdir(local_dir)
