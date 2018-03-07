@@ -733,6 +733,312 @@ def multiple_profiles_heatmap(biodb,
                               show_labels=True,
                               tree=False,
                               as_float=False,
+                              rotate=False,
+                              sqlite3=False):
+
+    '''
+
+    ATTENTION: dico inverse: il faut group2taxon2values
+
+    :param biodb:
+    :param column_labels:
+    :param taxon2group2count:
+    :param reference_taxon:
+    :param reference_column:
+    :param taxon2group2value: color or not background based on
+    :param highlight_first_column:
+    :return:
+    '''
+
+    if isinstance(reference_taxon, dict):
+        import copy
+        reference_taxon_dico = copy.copy(reference_taxon)
+
+        reference_taxon = False
+    else:
+        reference_taxon_dico = False
+
+
+    import manipulate_biosqldb
+
+    if identity_scale:
+        import matplotlib.cm as cm
+        from matplotlib.colors import rgb2hex
+        import matplotlib as mpl
+
+        norm = mpl.colors.Normalize(vmin=0, vmax=100)
+        cmap = cm.OrRd
+        m = cm.ScalarMappable(norm=norm, cmap=cmap)
+
+    elif column_scale:
+        import matplotlib.cm as cm
+        from matplotlib.colors import rgb2hex
+        import matplotlib as mpl
+        column2scale = {}
+        for column in column_labels:
+            values = [float(i) for i in group2taxon2count[column].values()]
+            #print values, column
+            norm = mpl.colors.Normalize(vmin=min(values), vmax=max(values))
+            cmap = cm.OrRd
+            m = cm.ScalarMappable(norm=norm, cmap=cmap)
+            column2scale[column] = m
+
+    server, db = manipulate_biosqldb.load_db(biodb, sqlite=sqlite3)
+    if not tree:
+        sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
+
+        tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+    if not isinstance(tree, Tree):
+        t1 = Tree(tree)
+
+    else:
+        t1 = tree
+    tss = TreeStyle()
+    tss.show_branch_support = False
+    tss.draw_guiding_lines = True
+    tss.guiding_lines_color = "gray"
+    tss.show_leaf_name = False
+
+    R = t1.get_midpoint_outgroup()
+    t1.set_outgroup(R)
+    t1.ladderize()
+
+    taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb,filter_names=True)
+
+    head = True
+    leaf_list = [i for i in t1.iter_leaves()]
+    n_leaves = len(leaf_list)
+
+    for lf_count, lf in enumerate(t1.iter_leaves()):
+        lf.branch_vertical_margin = 0
+
+        first_column = True
+        for col, value in enumerate(column_labels):
+            if lf_count == 0:
+                    # add labels
+                    n = TextFace(' %s ' % str(value))
+                    n.vt_align = 2
+                    n.hz_align = 2
+                    n.rotation= 270
+                    n.margin_top = 2
+                    n.margin_right = 2
+                    n.margin_left = 2
+                    n.margin_bottom = 6
+
+                    from ete2 import NodeStyle
+                    n.inner_background.color = "white"
+                    n.opacity = 1.
+                    tss.aligned_header.add_face(n, col)
+                    #lf.add_face(n, col, position="aligned")
+
+                    #nstyle = NodeStyle()
+                    #nstyle["fgcolor"] = "red"
+                    #nstyle["size"] = 15
+                    #lf.set_style(nstyle)
+
+            if first_column and not reference_column and highlight_first_column:
+                # highlight of the first column only (red)
+                try:
+
+                    n = TextFace(' %s ' % str(group2taxon2count[value][lf.name]))
+
+                except:
+                    n = TextFace(' - ')
+                    #n = RectFace(width=10, height=10, fgcolor="red", bgcolor="blue", label='-')
+                    group2taxon2count[value][lf.name] = 0
+                ref_data = str(value)
+                n.margin_top = 2
+                n.margin_right = 2
+                n.margin_left = 30
+                n.margin_bottom = 2
+
+                if group2taxon2count[value][lf.name] > 0 and group2taxon2count[value][lf.name] != '-':
+                    n.inner_background.color = "#FA5858"
+                else:
+                    n.inner_background.color = 'white'
+                first_column = False
+            else:
+                if not taxon2group2value:
+                    if value not in group2taxon2count:
+
+                        #print 'not-------------------', value
+
+                        n = TextFace(' - ')
+                    else:
+                        if lf.name not in group2taxon2count[value]:
+                            n = TextFace(' - ')
+                        else:
+                            if group2taxon2count[value][lf.name] == '-':
+                                n = TextFace(' - ')
+                            else:
+                                # if identity scale: 2 digit format
+                                local_label = str(group2taxon2count[value][lf.name])
+                                if not identity_scale:# and not column_scale:
+                                    if as_float:
+                                        local_label = "%.2f" % group2taxon2count[value][lf.name]
+                                    else:
+                                        try:
+                                            local_label = "%s" % int(group2taxon2count[value][lf.name])
+                                        except:
+                                            local_label = "%s" % group2taxon2count[value][lf.name]
+                                else:
+                                    if round(float(group2taxon2count[value][lf.name]), 2) < 100:
+                                        if type(group2taxon2count[value][lf.name]) != int:
+                                            local_label = "%.2f" % round(group2taxon2count[value][lf.name], 2)
+                                        else:
+                                            local_label = "%s" % group2taxon2count[value][lf.name]
+                                    else:
+                                        if type(group2taxon2count[value][lf.name]) != int:
+                                            local_label = "%.1f" % round(group2taxon2count[value][lf.name], 2)
+                                        else:
+                                            local_label = "%s" % group2taxon2count[value][lf.name]
+                                if show_labels:
+                                    try:
+                                        if round(group2taxon2count[value][lf.name], 2) < 100 and column_scale:
+                                            if round(group2taxon2count[value][lf.name], 2) < 10:
+                                                n = TextFace('  %s  ' % local_label)
+                                            else:
+                                                n = TextFace(' %s  ' % local_label)
+                                        else:
+                                            n = TextFace('%s ' % local_label)
+
+                                    # labels are not floats
+                                    except TypeError:
+                                        n = TextFace(' %s ' % group2taxon2count[value][lf.name])
+                                else:
+                                    n = TextFace(' - ')
+
+                    '''
+                    except:
+
+                        if not reference_taxon_dico:
+                            n = TextFace(' - ')
+
+                        # if doctionnary locus2taxon report which taxon is the reference
+                        # color the cell in blue
+                        else:
+                            if str(reference_taxon_dico[value]) == lf.name and show_labels:
+                                n = TextFace(' 100.0 ')
+                                n.fgcolor = '#58ACFA'
+                            else:
+                                n = TextFace(' - ')
+                    '''
+                    if show_labels:
+                        n.margin_top = 2
+                        n.margin_right = 2
+                        n.margin_left = 2
+                        n.margin_bottom = 2
+                    else:
+                        n.margin_top = 0
+                        n.margin_right = 0
+                        n.margin_left = 0
+                        n.margin_bottom = 5
+                    try:
+                        count = group2taxon2count[value][lf.name]
+                    except:
+                        count = 0
+                    #print value, lf.name
+                    #print taxon2group2count[value][lf.name]
+                    if count > 0 and group2taxon2count[value][lf.name] != '-':
+                        if not reference_column:
+                            if lf.name != str(reference_taxon):
+                                # clor given a continuous scale
+                                if identity_scale:
+                                    n.inner_background.color = rgb2hex(m.to_rgba(float(count)))
+                                    if not show_labels:
+                                        n.fgcolor = rgb2hex(m.to_rgba(float(count)))
+                                elif column_scale:
+                                    n.inner_background.color = rgb2hex(column2scale[value].to_rgba(float(count)))
+                                else:
+                                    n.inner_background.color = "#58ACFA"
+                            else:
+                                n.inner_background.color = '#58ACFA'
+                                n.fgcolor = "white"
+
+                        else:
+                            if lf.name == str(reference_taxon) or col == reference_column:
+                                n.inner_background.color = "#FA5858"
+                                n.fgcolor = "white"
+                            else:
+                                n.inner_background.color = "#58ACFA"
+                    else:
+
+                        if not reference_taxon_dico:
+                            n.inner_background.color = 'white'
+                        # if doctionnary locus2taxon report which taxon is the reference
+                        # color the cell in blue
+                        else:
+                            if str(reference_taxon_dico[value]) == lf.name:
+                                n.inner_background.color = '#58ACFA'
+                            else:
+                                n.inner_background.color = 'white'
+                else:
+                    try:
+                        n = TextFace(' %s ' % str(group2taxon2count[value][lf.name]))
+                    except:
+                        group2taxon2count[value][lf.name] = 0
+                        n = TextFace(' - ')
+                    n.margin_top = 2
+                    n.margin_right = 2
+                    n.margin_left = 2
+                    n.margin_bottom = 2
+                    if group2taxon2count[value][lf.name] > 0 and group2taxon2count[value][lf.name] != '-':
+                        if not reference_column:
+                            #print 'no ref column'
+                            if not reference_taxon:
+                                if lf.name != str(reference_taxon):
+                                    #print 'group', value
+                                    #print 'ref data', ref_data
+                                    #print taxon2group2value[str(lf.name)][value]
+                                    try:
+                                        if ref_data not in taxon2group2value[int(lf.name)][value]:
+                                            n.inner_background.color = "#9FF781" #58ACFA
+                                        else:
+                                            n.inner_background.color = "#F78181" ##F6D8CE
+                                    except:
+                                        n.inner_background.color = "#9FF781"
+                                else:
+                                    n.inner_background.color = "#FA5858"
+                            else:
+                                #print 'group', lf.name
+                                if ref_data not in taxon2group2value[lf.name][value]:
+                                    n.inner_background.color = "#FA5858"
+                                else:
+                                    n.inner_background.color = "#FA5858"
+                        else:
+                            #print 'ref column'
+                            if lf.name == str(reference_taxon) or col == reference_column:
+                                n.inner_background.color = "#FA5858"
+                                n.fgcolor = "white"
+
+                            else:
+                                n.inner_background.color = "#58ACFA"
+
+                    else:
+                        n.inner_background.color = 'white'
+            if rotate:
+               n.rotation= 270
+            lf.add_face(n, col, position="aligned")
+
+        #lf.name = taxon_id2organism_name[lf.name]
+        n = TextFace(taxon_id2organism_name[lf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
+        lf.add_face(n, 0)
+        head=False
+
+    return t1, tss
+
+def multiple_profiles_heatmap_nobiodb(column_labels,
+                              group2taxon2count,
+                              taxon_id2organism_name,
+                              reference_taxon=False,
+                              reference_column = False,
+                              taxon2group2value=False,
+                              highlight_first_column=False,
+                              identity_scale=False,
+                              column_scale=False,
+                              show_labels=True,
+                              tree=False,
+                              as_float=False,
                               rotate=False):
 
     '''
@@ -782,11 +1088,6 @@ def multiple_profiles_heatmap(biodb,
             m = cm.ScalarMappable(norm=norm, cmap=cmap)
             column2scale[column] = m
 
-    server, db = manipulate_biosqldb.load_db(biodb)
-    if not tree:
-        sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
-
-        tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
     if not isinstance(tree, Tree):
         t1 = Tree(tree)
 
@@ -802,7 +1103,7 @@ def multiple_profiles_heatmap(biodb,
     t1.set_outgroup(R)
     t1.ladderize()
 
-    taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb,filter_names=True)
+
 
     head = True
     leaf_list = [i for i in t1.iter_leaves()]

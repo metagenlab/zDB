@@ -45,7 +45,13 @@ def organism2color(locus2data):
     return dict(zip(organism_list, colors))
 
 
-def plot_heat_tree(gene2genome_id, tree_file, genes, accession2description=False, orgnames=False, taxid2st=False):
+def plot_heat_tree(gene2genome_id,
+                   tree_file,
+                   genes,
+                   accession2description=False,
+                   orgnames=False,
+                   taxid2st=False,
+                   reroot=True):
     '''
     Plot heatmap next to a tree. The order of the heatmap **MUST** be the same,
     as order of the leafs on the tree. The tree must be in the Newick format. If
@@ -94,12 +100,14 @@ def plot_heat_tree(gene2genome_id, tree_file, genes, accession2description=False
 
     #t.populate(8)
     # Calculate the midpoint node
-    try:
-        R = t1.get_midpoint_outgroup()
-        # and set it as tree outgroup
-        t1.set_outgroup(R)    # To operate with numbers efficiently
-    except:
-        pass
+    if reroot:
+        try:
+            R = t1.get_midpoint_outgroup()
+            # and set it as tree outgroup
+            t1.set_outgroup(R)    # To operate with numbers efficiently
+        except:
+            pass
+
     family = ["16S", "23S"]
 
     genus = [
@@ -330,6 +338,9 @@ if __name__ == '__main__':
     parser.add_argument("-o",'--outname',
                         type=str,
                         help="outname")
+    parser.add_argument("-R",'--midpoint_root',
+                        action='store_true',
+                        help="Do not root at midpoint")
     args = parser.parse_args()
 
     print len(args.identity_tables)
@@ -369,7 +380,11 @@ if __name__ == '__main__':
     else:
         taxid2st = False
 
-    t, tss,n = plot_heat_tree(gene2genome_id, args.tree, gene_list, accession2description, taxid2st)
+    if args.midpoint_root:
+        reroot=False
+    else:
+        reroot=True
+    t, tss,n = plot_heat_tree(gene2genome_id, args.tree, gene_list, accession2description, taxid2st, reroot=reroot)
     #tss = TreeStyle()
     #tss.show_branch_support = False
     t.render("%s.svg" % args.outname, tree_style=tss)
