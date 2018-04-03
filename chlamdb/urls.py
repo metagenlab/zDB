@@ -40,6 +40,17 @@ urlpatterns = [
                        url(r'^profile_interactions/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)', profile_interactions, name="profile_interactions"),
                        url(r'^interactions/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)', interactions, name="interactions"),
                        url(r'^pfam_profile/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)', pfam_profile, name="pfam_profile"),
+                       url(r'^get_pfam_taxon_table/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)', get_pfam_taxon_table, name="get_pfam_taxon_table"),
+                       url(r'^get_pfam_hit_list/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)/(.*)/(.*)/(.*)/(.*)/(.*)', get_pfam_hit_list, name="get_pfam_hit_list"),
+                       url(r'^get_pfam_hit_list/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)/(.*)/(.*)/(.*)/(.*)', get_pfam_hit_list, name="get_pfam_hit_list"),
+                       url(r'^get_pfam_hit_list/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)/(.*)/(.*)/(.*)', get_pfam_hit_list, name="get_pfam_hit_list"),
+                       url(r'^get_pfam_hit_list/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)/(.*)/(.*)/', get_pfam_hit_list, name="get_pfam_hit_list"),
+                       url(r'^get_pfam_hit_list/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)/(.*)/', get_pfam_hit_list, name="get_pfam_hit_list"),
+                       url(r'^get_pfam_hit_list/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)/', get_pfam_hit_list, name="get_pfam_hit_list"),
+
+
+
+                       url(r'^eggnog_profile/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)', eggnog_profile, name="eggnog_profile"),
                        url(r'^blastnr_barchart/([a-zA-Z0-9_\.\-]+)', blastnr_barchart, name="blastnr_barchart"),
                        url(r'^get_cog/([a-zA-Z0-9_]+)/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.\%]+)$', get_cog, name="get_cog"),
                        url(r'^get_cog_multiple/([a-zA-Z0-9_]+)/([A-Z]+)/$', get_cog_multiple, name="get_cog_multiple"),
