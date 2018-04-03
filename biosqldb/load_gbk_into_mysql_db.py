@@ -20,7 +20,7 @@ def import_gbk(gbk_name, server_name, db_name, sqlite=False):
         print "genbank file contains more than one record, is it plasmid(s) and chromosome(s)? (if the assembly contain more than one contig, contactenate contigs into a single record before importing it the the sql database)"
         #sys.exit()
     #With this iterator, the loading of the database is another one-liner:
-    #db_name.load(records)
+    db_name.load(records)
     try:
         db_name.load(records)
     except:

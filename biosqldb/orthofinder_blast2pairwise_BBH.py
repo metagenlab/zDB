@@ -88,8 +88,8 @@ def get_parwise_genome_median_identity_table(biodb, sqlite3=False):
           ' where t1.name="%s" group by taxon_id' % biodb
     taxon_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
-    sql = 'CREATE table comparative_tables.reciprocal_BBH_average_identity_%s (taxon_1 INT, taxon_2 INT, ' \
-          ' average_identity FLOAT, median_identity FLOAT, max_density FLOAT, n_pairs INT)' % biodb
+    sql = 'CREATE table if not exists comparative_tables.reciprocal_BBH_average_identity_%s (taxon_1 INT, taxon_2 INT, ' \
+          ' average_identity FLOAT, median_identity FLOAT, n_pairs INT)' % biodb
     server.adaptor.execute(sql,)
     server.commit()
     for n, taxon_1 in enumerate(taxon_list):
@@ -138,7 +138,7 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
         server, db = manipulate_biosqldb.load_db(biodb,
                                                  sqlite=sqlite3)
 
-    sql = 'create table comparative_tables.reciprocal_BBH_%s (taxon_1 INT, taxon_2 INT, seqfeature_id_1 INT, seqfeature_id_2 INT,' \
+    sql = 'create table if not exists comparative_tables.reciprocal_BBH_%s (taxon_1 INT, taxon_2 INT, seqfeature_id_1 INT, seqfeature_id_2 INT,' \
           ' blast_evalue_a_vs_b FLOAT, blast_evalue_b_vs_a FLOAT,' \
           ' blast_score_a_vs_b FLOAT, blast_score_b_vs_a FLOAT, blast_identity_a_vs_b FLOAT, blast_identity_b_vs_a FLOAT, ' \
           ' mean_blast_identity FLOAT, msa_identity FLOAT, orthogroup_1 varchar(400), orthogroup_2 varchar(400))' % biodb
@@ -445,6 +445,8 @@ if __name__ == '__main__':
 
     print 'parsing files...'
 
+    '''
+>>>>>>> 99ef3249c176defe522e1a7ef9710c99a51afa46
     seqid2locus_tag = parse_seqid_file(args.seq_id_file)
     locus2taxon2best_hit_id = parse_orthofinder_blast_files(args.database,
                                                             args.blast_files,
@@ -494,10 +496,12 @@ if __name__ == '__main__':
   1279774,
        64,
        66]
-    #print len(taxid_chlam_list)
-    #median_RBBH2species
-    #seqfeature_id2n_species_chlamydiae_only(args.database, taxid_chlam_list)
-    '''
-
-
-    '''
+    print len(taxid_chlam_list)
+    seqfeature_id2n_species_chlamydiae_only(args.database, taxid_chlam_list)
+    '''  
+    seqid2locus_tag = parse_seqid_file(args.seq_id_file)
+    locus2taxon2best_hit_id = parse_orthofinder_blast_files(args.database,
+                                                            args.blast_files,
+                                                            seqid2locus_tag)
+    get_reciproval_BBH_table(args.database,
+                             locus2taxon2best_hit_id)
