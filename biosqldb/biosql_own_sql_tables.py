@@ -65,20 +65,23 @@ def COG_tables():
 
 333894695,Alteromonas_SN2_uid67349,333894695,427,1,427,COG0001,0,
 
-CREATE TABLE cog_3014 (domain_id varchar(100),
+CREATE TABLE cog_2014 (domain_id varchar(100),
                         genome_name varchar(200),
                         protein_id INT,
                         protein_length INT,
                         domain_start INT,
                         domain_end INT,
-                        COG_id varchar(100),
-                        membership_class INT)
+                        COG_id INT,
+                        membership_class INT,
+                        index COG_id(COG_id))
 
 # COG	func	name
 
-CREATE table cog_names_2014 (COG_id varchar(100),
-                            functon varchar(10),
-                             name varchar(200))
+CREATE table cog_names_2014 (COG_id INT,
+                             COG_name varchar(100),
+                             function varchar(10),
+                             name varchar(200),
+                             index COG_id(COG_id))
 
 create table locus_tag2COG_chlamydia_03_15 (locus_tag varchar(100), COG_id varchar (100))
 
@@ -420,7 +423,9 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
     orthogroup2cogs = biosql_own_sql_tables.orthogroup2cog(biodb)
     orthogroup2pfam = biosql_own_sql_tables.orthogroup2pfam(biodb)
 
-    sql = 'select COG_id,functon,name from COG.cog_names_2014;'
+    sql = 'select COG_name,code,t1.description from COG.cog_names_2014 t1 ' \
+          ' inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
+          ' inner join COG.code2category t3 on t2.category_id=t3.category_id;'
     sql2 = 'select signature_accession,signature_description from interpro_%s where analysis="Pfam" group by signature_accession;' % biodb
     cog2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     pfam2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
@@ -449,7 +454,7 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
                     cog_info = '-'
                     cog_info2 = '-'
                 cog_data += '<a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid=%s">' \
-                            '%s: %s: %s (%s)</a><br/>' % (cog,cog, cog_info, cog_info2, orthogroup2cogs[group][cog])
+                            '%s: %s: %s (%s)</a><br/>' % (cog, cog, cog_info, cog_info2, orthogroup2cogs[group][cog])
         cog_data = cog_data[0:-5]
         pfam_data = ''
         try:
@@ -468,22 +473,31 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
             n+=1
     return match_groups_data, extract_result
 
-def accession2coding_density(biodb):
+def accession2coding_density(biodb, sqlite=False):
     import manipulate_biosqldb
     from Bio.SeqUtils import GC123
 
-    server, db = manipulate_biosqldb.load_db(biodb)
+    server, db = manipulate_biosqldb.load_db(biodb, sqlite=sqlite)
 
-    sql1 = 'select distinct accession from orthology_detail_%s' % biodb
+    # gc content genes
+    sql1 = 'select distinct accession from bioentry t1 ' \
+           ' inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id' \
+           ' where t2.name="%s"' % biodb
 
     accession_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql1,)]
 
-    sql_head = 'create table IF NOT EXISTS custom_tables.gc_content_%s (taxon_id INT, ' \
+    '''
+    sql_head = 'create table IF NOT EXISTS annotation.gc_content_%s (taxon_id INT, ' \
           ' seqfeature_id INT,' \
-          ' seq_length INT, gc_percent FLOAT, gc_1 FLOAT, gc_2 FLOAT, gc_3 FLOAT, ' \
-               ' INDEX seqfeature_id(seqfeature_id), index taxon_id(taxon_id))' % biodb
+          ' seq_length INT, gc_percent FLOAT, gc_1 FLOAT, gc_2 FLOAT, gc_3 FLOAT)' % biodb
 
-    server.adaptor.execute(sql_head,)
+    server.adaptor.execute(sql_head, )
+
+    sql1 = 'create index annotation.seqfeature_gcidx_%s ON gc_content_%s (seqfeature_id);' % (biodb, biodb)
+    sql2 = 'create index annotation.taxon_id_gcidx%s ON gc_content_%s (taxon_id);' % (biodb, biodb)
+    server.adaptor.execute(sql1, )
+    server.adaptor.execute(sql2, )
+    '''
 
     accession2density = {}
     accession2n_trna = {}
@@ -998,9 +1012,9 @@ def locus_tag2n_nr_hits(db_name, genome_accession, exclude_family = False):
     print sql
     return manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-def collect_genome_statistics(biodb):
+def collect_genome_statistics(biodb, sqlite=False):
     from Bio.SeqUtils import GC
-    server, db = manipulate_biosqldb.load_db(biodb)
+    server, db = manipulate_biosqldb.load_db(biodb,sqlite=sqlite)
 
     sql = 'select accession, seq as length from bioentry as t1 ' \
           ' inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id ' \
@@ -1009,7 +1023,11 @@ def collect_genome_statistics(biodb):
 
     accession2genome_sequence = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select accession, organism, count(*) from orthology_detail_%s group by accession;' % biodb
+    sql = 'select t3.accession,t3.description, count(*) from annotation.seqfeature_id2locus_%s t1 ' \
+           ' inner join annotation.seqfeature_id2CDS_annotation_%s t2 ' \
+           ' on t1.seqfeature_id=t2.seqfeature_id inner join bioentry t3 on t1.bioentry_id=t3.bioentry_id ' \
+           ' inner join biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \
+           ' where t4.name="%s" group by t1.bioentry_id;' % (biodb, biodb, biodb)
 
 
     print 'getting accession2genome_data...'
@@ -1022,7 +1040,7 @@ def collect_genome_statistics(biodb):
     accession2n_rrna, \
     accession2big_contig_length, \
     accession2n_countigs_without_BBH_chlamydiae, \
-    accession2n_contigs_without_cds = accession2coding_density(biodb)
+    accession2n_contigs_without_cds = accession2coding_density(biodb, sqlite=sqlite)
 
     #print '<td colspan="6"><table width="800" border=0  class=table_genomes>'
 

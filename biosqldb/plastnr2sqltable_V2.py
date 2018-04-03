@@ -373,7 +373,7 @@ def update_blastnr_taxonomy_table(blast_table_name,
         print taxon_list[0:10]
 
         # subdivide the taxon list in smaller lists, otherwise NCBI will limit the results to? 10000 (observed once only)
-        insert_taxons_into_sqldb(taxon_list, 300,mysql_pwd=mysql_pwd)
+        insert_taxons_into_sqldb(taxon_list, 300, mysql_pwd=mysql_pwd)
 
 def blastnr2biosql( locus_tag2seqfeature_id,
                     protein_id2seqfeature_id,

@@ -1705,14 +1705,15 @@ class CircosAccession2multiplot():
     # add presence/absence of orthologs
     def add_gene_tracks(self, circos_files, circos, accessions, out_file, href):
         import os
-        r1 = 0.90
-        r0 = 0.89
+        r1 = 0.90 # 0.90
+        r0 = 0.87 # 0.89
+
         for orthofile in circos_files["genomes"]:
             print orthofile
             circos.add_plot(orthofile, type="heatmap", r1="%sr" % r1, r0= "%sr" % r0, color="blues-6-seq-3, orrd-9-seq", fill_color="", thickness = "2p", z = 1, rules ="", backgrounds="",url=href)
             #circos.add_highlight(orthofile, fill_color="ortho3", r1="%sr" % r1, r0= "%sr" % r0, href=href)
-            r1 = r1-0.012
-            r0 = r0-0.012
+            r1 = r1-0.036 # 0.012
+            r0 = r0-0.036 # 0.012
 
         return r0
 
