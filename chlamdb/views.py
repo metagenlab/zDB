@@ -1841,7 +1841,7 @@ def venn_cog(request, biodb, accessions=False):
                     ##print 'pas ok'
             #cog2description = cog2description[0:120000]
             #print 'COG0755' in all_cog_list
-            print len(cog2description)
+            #print len(cog2description)
 
             #print cog2description
             #print 'all_cog_list', all_cog_list
