@@ -38,8 +38,6 @@ def get_accessions(database_name, all=False, plasmid=False):
     #print "acc", accession_list
     accession_choices = []
 
-
-
     for accession in accession_list:
         accession_choices.append((accession[0], accession[1]))
 

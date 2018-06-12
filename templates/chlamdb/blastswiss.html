@@ -35,8 +35,6 @@
 <div id="container2">
 
     <div id="content">
-
-
         {% if not valid_id %}
 
             <section id="head_section">
@@ -71,6 +69,9 @@
                 <th>n</th>
                 <th>Subject</th>
                 <th>Kingdom</th>
+                <th>Phylum</th>
+                <th>Order</th>
+                <th>Family</th>
                 <th>eval.</th>
                 <th>score</th>
                 <th>ID(%)</th>
@@ -89,9 +90,10 @@
                 <tr>
                     <td>{{ values.0 }}</td>
                     <td><a href="http://www.uniprot.org/uniprot/{{ values.1 }}" target="_top">{{ values.1 }}<a></td>
-                    <td>{{ values.2 }}
-
-</td>
+                    <td>{{ values.2 }}</td>
+                    <td>{{ values.13 }}</td>
+                    <td>{{ values.14 }}</td>
+                    <td>{{ values.15 }}</td>
                     <td>{{ values.6 }}</td>
                     <td>{{ values.7 }}</td>
                     <td>{{ values.8 }}</td>
