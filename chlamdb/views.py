@@ -147,6 +147,7 @@ def chlamdb_login(request):
 def logout_view(request):
     logout(request)
     return render(request, 'chlamdb/logout.html', locals())
+    return render(request, 'chlamdb/logout.html', locals())
 
 @login_required
 def home(request, biodb):
@@ -8052,6 +8053,119 @@ def get_fasta_all(request, biodb):
     return response #HttpResponse(request, fasta, content_type='text/plain; charset=utf8')
 
 
+def get_pfam_hit_list(request,
+                      biodb,
+                      pfam_domain,
+                      superkingdom=False,
+                      phylum=False,
+                      order=False,
+                      family=False,
+                      genus=False):
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    if superkingdom == '-':
+        superkingdom = ''
+    if phylum == '-':
+        phylum = ''
+    if order == '-':
+        order = ''
+    if family == '-':
+        family = ''
+    if genus == '-':
+        genus = ''
+
+
+
+
+
+    if superkingdom is False:
+        sql = 'select t4.superkingdom,t4.phylum,t4.order,t4.family,t4.genus,t2.assembly_accession,t2.organism_name,t1.protein_id,t1.evalue_full,t1.score_full from pfam.refseq_ref_repres_genomes_domains_pfam_31 t1 ' \
+              ' inner join pfam.refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
+              ' inner join pfam.pfam_summary_version_31 t3 on t1.pfam_id=t3.hmm_id ' \
+              ' inner join blastnr.blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
+              ' where t3.hmm_accession like "%s%%%%" ' % (pfam_domain)
+    elif phylum is False:
+        sql = 'select t4.superkingdom,t4.phylum,t4.order,t4.family,t4.genus,t2.assembly_accession,t2.organism_name,t1.protein_id,t1.evalue_full,t1.score_full from pfam.refseq_ref_repres_genomes_domains_pfam_31 t1 ' \
+              ' inner join pfam.refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
+              ' inner join pfam.pfam_summary_version_31 t3 on t1.pfam_id=t3.hmm_id ' \
+              ' inner join blastnr.blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
+              ' where t3.hmm_accession like "%s%%%%" ' \
+              ' and t4.superkingdom="%s" '  % (pfam_domain, superkingdom)
+    elif order is False:
+        sql = 'select t4.superkingdom,t4.phylum,t4.order,t4.family,t4.genus,t2.assembly_accession,t2.organism_name,t1.protein_id,t1.evalue_full,t1.score_full from pfam.refseq_ref_repres_genomes_domains_pfam_31 t1 ' \
+              ' inner join pfam.refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
+              ' inner join pfam.pfam_summary_version_31 t3 on t1.pfam_id=t3.hmm_id ' \
+              ' inner join blastnr.blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
+              ' where t3.hmm_accession like "%s%%%%" ' \
+              ' and t4.superkingdom="%s" ' \
+              ' and t4.phylum="%s" ' % (pfam_domain, superkingdom, phylum)
+    elif family is False:
+        sql = 'select t4.superkingdom,t4.phylum,t4.order,t4.family,t4.genus,t2.assembly_accession,t2.organism_name,t1.protein_id,t1.evalue_full,t1.score_full from pfam.refseq_ref_repres_genomes_domains_pfam_31 t1 ' \
+              ' inner join pfam.refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
+              ' inner join pfam.pfam_summary_version_31 t3 on t1.pfam_id=t3.hmm_id ' \
+              ' inner join blastnr.blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
+              ' where t3.hmm_accession like "%s%%%%" ' \
+              ' and t4.superkingdom="%s" ' \
+              ' and t4.phylum="%s" ' \
+              ' and t4.order="%s" '  % (pfam_domain, superkingdom, phylum, order)
+    elif genus is False:
+        sql = 'select t4.superkingdom,t4.phylum,t4.order,t4.family,t4.genus,t2.assembly_accession,t2.organism_name,t1.protein_id,t1.evalue_full,t1.score_full from pfam.refseq_ref_repres_genomes_domains_pfam_31 t1 ' \
+              ' inner join pfam.refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
+              ' inner join pfam.pfam_summary_version_31 t3 on t1.pfam_id=t3.hmm_id ' \
+              ' inner join blastnr.blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
+              ' where t3.hmm_accession like "%s%%%%" ' \
+              ' and t4.superkingdom="%s" ' \
+              ' and t4.phylum="%s" ' \
+              ' and t4.order="%s" ' \
+              ' and t4.family="%s" ' % (pfam_domain, superkingdom, phylum, order, family)
+    else:
+        sql = 'select t4.superkingdom,t4.phylum,t4.order,t4.family,t4.genus,t2.assembly_accession,t2.organism_name,t1.protein_id,t1.evalue_full,t1.score_full from pfam.refseq_ref_repres_genomes_domains_pfam_31 t1 ' \
+              ' inner join pfam.refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
+              ' inner join pfam.pfam_summary_version_31 t3 on t1.pfam_id=t3.hmm_id ' \
+              ' inner join blastnr.blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
+              ' where t3.hmm_accession like "%s%%%%" ' \
+              ' and t4.superkingdom="%s" ' \
+              ' and t4.phylum="%s" ' \
+              ' and t4.order="%s" ' \
+              ' and t4.family="%s" ' \
+              ' and t4.genus="%s";' % (pfam_domain, superkingdom, phylum, order, family, genus)
+    print sql
+    taxon_data = server.adaptor.execute_and_fetchall(sql,)
+
+    return render(request, 'chlamdb/pfam_taxon_detail.html', locals())
+
+
+def get_pfam_taxon_table(request, biodb, pfam_domain):
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'select t4.superkingdom,t4.phylum,t4.order,t4.family,t4.genus,count(*) as n from ' \
+          ' pfam.refseq_ref_repres_genomes_domains_pfam_31 t1 ' \
+          ' inner join pfam.refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
+          ' inner join pfam.pfam_summary_version_31 t3 on t1.pfam_id=t3.hmm_id ' \
+          ' inner join blastnr.blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
+          ' where t3.hmm_accession like "%s%%%%" ' \
+          ' group by t4.superkingdom,t4.phylum,t4.family,t4.genus order by superkingdom,n DESC' % (pfam_domain)
+    print sql
+
+    raw_data = server.adaptor.execute_and_fetchall(sql,)
+    taxon_data = []
+    for row in raw_data:
+        row = list(row)
+        if row[0] == '':
+            row[0] = '-'
+        if row[1] == '':
+            row[1] = '-'
+        if row[2] == '':
+            row[2] = '-'
+        if row[3] == '':
+            row[3] = '-'
+        if row[4] == '':
+            row[4] = '-'
+        taxon_data.append(row)
+
+    return render(request, 'chlamdb/pfam_taxon_table.html', locals())
+
 
 def pfam_profile(request, biodb, pfam_domain, rank):
 
@@ -8084,7 +8198,7 @@ def eggnog_profile(request, biodb, eggnog_id, rank):
     tree, style = eggnog_data.plot_phylum_counts(eggnog_id, rank=rank,colapse_low_species_counts=0)
 
     tree.render(path, h=600, tree_style=style) # dpi=800,
-    return render(request, 'chlamdb/pfam_profile.html', locals())
+    return render(request, 'chlamdb/eggnog_profile.html', locals())
 
 def annotation_overview(request, biodb):
 
@@ -12555,7 +12669,7 @@ def kegg_pathway_heatmap(request, biodb):
 
             envoi = True
 
-
+    
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
         form = pathway_form()  # Nous créons un formulaire vide
 

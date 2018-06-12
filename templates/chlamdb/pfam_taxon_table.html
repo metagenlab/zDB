@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+
+<html>
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+
+{% load staticfiles %}
+<body height="4000px">
+    <div id="container">
+
+
+
+
+        <div id="content">
+               <div style="max-width:900px;">
+
+                <h3>Click on any rank to get the corresponding hit list</h3>
+
+                <table class="table" id="taxonomy_table">
+                    <thead>
+                        <tr>
+                          <th scope="col">Superkingdom</th>
+                          <th scope="col">Phylum</th>
+                          <th scope="col">Order</th>
+                          <th scope="col">Family</th>
+                          <th scope="col">Genus</th>
+                          <th scope="col">N-hits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in taxon_data %}
+                        <tr>
+                            <td><a href="{% url 'get_pfam_hit_list' biodb pfam_domain row.0 %}">{{row.0}}</a></td>
+                            <td><a href="{% url 'get_pfam_hit_list' biodb pfam_domain row.0 row.1 %}">{{row.1}}</a></td>
+                            <td><a href="{% url 'get_pfam_hit_list' biodb pfam_domain row.0 row.1 row.2 %}">{{row.2}}</a></td>
+                            <td><a href="{% url 'get_pfam_hit_list' biodb pfam_domain row.0 row.1 row.2 row.3 %}">{{row.3}}</a></td>
+                            <td><a href="{% url 'get_pfam_hit_list' biodb pfam_domain row.0 row.1 row.2 row.3 row.4 %}">{{row.4}}</a></td>
+                            <td>{{row.5}}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+               </div>
+        </div>
+    </div>
+
+</body>
+
+<script>
+
+$(document).ready(function() {
+    $('#taxonomy_table').DataTable( {
+        "order": [[ 5, "desc" ]],
+        dom: 'Bfrtip',
+        "pageLength": 20,
+        "searching": true,
+        "bLengthChange": false,
+        "paging":   true,
+        "info": false
+    } );
+} );
+
+
+</script>
+
+</html>
