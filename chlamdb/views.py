@@ -17,51 +17,51 @@ import circos_orthology
 import os
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
-from forms import make_contact_form
-from forms import make_plot_form
-from forms import SearchForm
-from forms import BiodatabaseForm
-from forms import make_circos_form
-from forms import make_circos2genomes_form
-from forms import make_mummer_form
-from forms import make_blast_form
-from forms import make_crossplot_form
-from forms import ConnexionForm
-from forms import DBForm
-from forms import make_motif_form
-from forms import PCRForm
-from forms import make_extract_form
-from forms import make_circos_orthology_form
-from forms import make_interpro_from
-from forms import make_metabo_from
-from forms import make_module_overview_form
-from forms import make_extract_region_form
-from forms import make_venn_from
-from forms import make_priam_form
-from forms import AnnotForm
-from forms import hmm_sets_form
-from forms import hmm_sets_form_circos
-from forms import make_blastnr_form
-from forms import make_comment_from
-from forms import locus_int_form
-from forms import LocusInt
-from forms import get_LocusAnnotForm
-from forms import make_pathway_overview_form
-from forms import make_interpro_taxonomy
-from forms import BlastProfileForm
-from forms import make_pairwiseid_form
-from forms import make_locus2network_form
-from forms import heatmap_form
-from forms import blast_sets_form
-from forms import make_kegg_form
-from forms import transporters_superfam_form
-from forms import make_pairwiseCDS_length_form
+from chlamdb.forms import make_contact_form
+from chlamdb.forms import make_plot_form
+from chlamdb.forms import SearchForm
+from chlamdb.forms import BiodatabaseForm
+from chlamdb.forms import make_circos_form
+from chlamdb.forms import make_circos2genomes_form
+from chlamdb.forms import make_mummer_form
+from chlamdb.forms import make_blast_form
+from chlamdb.forms import make_crossplot_form
+from chlamdb.forms import ConnexionForm
+from chlamdb.forms import DBForm
+from chlamdb.forms import make_motif_form
+from chlamdb.forms import PCRForm
+from chlamdb.forms import make_extract_form
+from chlamdb.forms import make_circos_orthology_form
+from chlamdb.forms import make_interpro_from
+from chlamdb.forms import make_metabo_from
+from chlamdb.forms import make_module_overview_form
+from chlamdb.forms import make_extract_region_form
+from chlamdb.forms import make_venn_from
+from chlamdb.forms import make_priam_form
+from chlamdb.forms import AnnotForm
+from chlamdb.forms import hmm_sets_form
+from chlamdb.forms import hmm_sets_form_circos
+from chlamdb.forms import make_blastnr_form
+from chlamdb.forms import make_comment_from
+from chlamdb.forms import locus_int_form
+from chlamdb.forms import LocusInt
+from chlamdb.forms import get_LocusAnnotForm
+from chlamdb.forms import make_pathway_overview_form
+from chlamdb.forms import make_interpro_taxonomy
+from chlamdb.forms import BlastProfileForm
+from chlamdb.forms import make_pairwiseid_form
+from chlamdb.forms import make_locus2network_form
+from chlamdb.forms import heatmap_form
+from chlamdb.forms import blast_sets_form
+from chlamdb.forms import make_kegg_form
+from chlamdb.forms import transporters_superfam_form
+from chlamdb.forms import make_pairwiseCDS_length_form
 from django.contrib.auth import logout
 from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.forms.utils import flatatt
-from forms import make_blastnr_best_non_top_phylum_form
+from chlamdb.forms import make_blastnr_best_non_top_phylum_form
 
 
 
@@ -72,7 +72,7 @@ from django.core.cache import cache
 from tempfile import NamedTemporaryFile
 from Bio import SeqIO
 from gbk2table import Record
-import models
+import chlamdb.models
 import simplejson
 import string
 import random
