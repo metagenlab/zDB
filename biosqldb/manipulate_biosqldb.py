@@ -649,7 +649,11 @@ def seqfeature_id2organism_dico(server, biodatabase_name):
           ' inner join term as t3 on t1.term_id = t3.term_id and t3.name = "translation" ' \
           ' inner join bioentry as t5 on t2.bioentry_id = t5.bioentry_id ' \
           ' inner join biodatabase on t5.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' % biodatabase_name
+<<<<<<< HEAD
     #print sql
+=======
+    print sql
+>>>>>>> f93459bbe98d5532341e32e0921fadd9648e5a85
     result = server.adaptor.execute_and_fetchall(sql,)
     return _to_dict(result)
 
@@ -659,7 +663,11 @@ def seqfeature_id2bioentry_id_dico(server, biodatabase_name):
           ' inner join term as t3 on t1.term_id = t3.term_id and t3.name = "locus_tag" ' \
           ' inner join bioentry as t5 on t2.bioentry_id = t5.bioentry_id ' \
           ' inner join biodatabase on t5.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' % biodatabase_name
+<<<<<<< HEAD
     #print sql
+=======
+    print sql
+>>>>>>> f93459bbe98d5532341e32e0921fadd9648e5a85
     result = server.adaptor.execute_and_fetchall(sql,)
     return _to_dict(result)
 
@@ -967,7 +975,7 @@ def get_orthology_table2(server, biodb_name):
     sql_taxons += ' `%s`' % all_taxons_id[-1]
 
     sql = "select orthogroup, %s from comparative_tables.orthology_%s" % (sql_taxons, biodb_name)
-    #print sql
+    print sql
     result = server.adaptor.execute_and_fetchall(sql,)
     return result
 

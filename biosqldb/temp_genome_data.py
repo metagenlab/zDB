@@ -2,7 +2,7 @@
 
 import biosql_own_sql_tables
 
-#biosql_own_sql_tables.collect_genome_statistics('chlamydia_04_16')
+biosql_own_sql_tables.collect_genome_statistics('corynedb5')
 #biosql_own_sql_tables.collect_genome_statistics('2017_04_19_chlamydiae_taxo')
 #biosql_own_sql_tables.collect_genome_statistics('2017_06_29b_motile_chlamydiae')
 #biosql_own_sql_tables.collect_genome_statistics('rhabdochlamydia_07_16')

@@ -725,7 +725,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.orthology:
-
         identity_closest_homolog(args.database_name)
         n_shared_orthogroup_table(args.database_name)
         
