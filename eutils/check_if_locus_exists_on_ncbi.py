@@ -4,6 +4,9 @@
 def locus_on_ncbi(locus_tag):
 
     from Bio import Entrez
+    from Bio import SeqIO
+    from dateutil.parser import parse
+
 
     Entrez.email = "trestan.pillonel@unil.ch"
 
@@ -11,9 +14,14 @@ def locus_on_ncbi(locus_tag):
     handle = Entrez.esearch(db='nucleotide', term=locus_tag)
 
     record1 = Entrez.read(handle)
-    print record1['Count']
+    print record1['IdList']
+
+
     if int(record1['Count']) == 0:
         return False
     else:
-        return True
+        handle2 = Entrez.efetch(db='nucleotide', id=record1['IdList'][0], rettype="gb", retmode="text")
+        record2 = SeqIO.read(handle2, "genbank")
+        dt = parse(record2.annotations['date'])
 
+        return dt
