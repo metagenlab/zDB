@@ -15,13 +15,16 @@ def parse_orthofinder_blast_files(biodb,
                                   orthofinder_blast_file_list,
                                   locus_tag2orthofinder_id,
                                   evalue_cutoff=0.01,
-                                  identity_cutoff=0):
+                                  identity_cutoff=0,
+                                  sqlite3=False):
 
     import manipulate_biosqldb
+    if not sqlite3:
+        server, db = manipulate_biosqldb.load_db(biodb)
+    else:
+        server, db = manipulate_biosqldb.load_db(biodb, sqlite3)
 
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    sql = 'select locus_tag, taxon_id from orthology_detail_%s' % biodb
+    sql = 'select locus_tag, taxon_id from annotation.seqfeature_id2locus_%s' % biodb
 
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -65,7 +68,7 @@ def parse_orthofinder_blast_files(biodb,
                                                                                 hit_align_length]
     return locus2taxon2best_hit_id
 
-def get_parwise_genome_median_identity_table(biodb):
+def get_parwise_genome_median_identity_table(biodb, sqlite3=False):
 
     import manipulate_biosqldb
     import numpy
@@ -79,7 +82,8 @@ def get_parwise_genome_median_identity_table(biodb):
     from rpy2.robjects import pandas2ri
     pandas2ri.activate()
 
-    server, db = manipulate_biosqldb.load_db(biodb)
+    server, db = manipulate_biosqldb.load_db(biodb, sqlite3)
+
     sql = 'select taxon_id from biodatabase t1 inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id ' \
           ' where t1.name="%s" group by taxon_id' % biodb
     taxon_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -89,6 +93,7 @@ def get_parwise_genome_median_identity_table(biodb):
     server.adaptor.execute(sql,)
     server.commit()
     for n, taxon_1 in enumerate(taxon_list):
+        print "%s / %s" % (n, len(taxon_list))
         for taxon_2 in taxon_list[n+1:len(taxon_list)]:
             sql = 'select blast_identity_a_vs_b from comparative_tables.reciprocal_BBH_%s where taxon_1 =%s ' \
                   'and taxon_2=%s;' % (biodb,
@@ -119,93 +124,138 @@ def get_parwise_genome_median_identity_table(biodb):
             server.adaptor.execute(sql,)
             server.commit()
 
-def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id):
+def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
 
     # taxon_id, taxon_2, seqfeature_id_1, seqfeature_id_2, blast_identity_a_vs_b, blast_identity_b_vs_a, mean_blast_identity, msa_identity, orthogroup
 
     import manipulate_biosqldb
     import numpy
     from datetime import datetime
-    server, db = manipulate_biosqldb.load_db(biodb)
+
+    if not sqlite3:
+        server, db = manipulate_biosqldb.load_db(biodb)
+    else:
+        server, db = manipulate_biosqldb.load_db(biodb,
+                                                 sqlite=sqlite3)
 
     sql = 'create table comparative_tables.reciprocal_BBH_%s (taxon_1 INT, taxon_2 INT, seqfeature_id_1 INT, seqfeature_id_2 INT,' \
           ' blast_evalue_a_vs_b FLOAT, blast_evalue_b_vs_a FLOAT,' \
           ' blast_score_a_vs_b FLOAT, blast_score_b_vs_a FLOAT, blast_identity_a_vs_b FLOAT, blast_identity_b_vs_a FLOAT, ' \
-          ' mean_blast_identity FLOAT, msa_identity FLOAT, orthogroup_1 varchar(400), orthogroup_2 varchar(400),' \
-          ' index taxon_1(taxon_1), INDEX taxon_2 (taxon_2), INDEX seqfeature_id_1(seqfeature_id_1),' \
-          ' INDEX seqfeature_id_2 (seqfeature_id_2))' % biodb
+          ' mean_blast_identity FLOAT, msa_identity FLOAT, orthogroup_1 varchar(400), orthogroup_2 varchar(400))' % biodb
+
     server.adaptor.execute(sql,)
     server.commit()
 
-    sql = 'select locus_tag, taxon_id from orthology_detail_%s' % biodb
+    sql2 = 'CREATE INDEX comparative_tables.taxon_1_idx_%s ON reciprocal_BBH_%s (taxon_1);' % (biodb, biodb)
+    sql3 = 'CREATE INDEX comparative_tables.taxon_2_idx_%s ON reciprocal_BBH_%s (taxon_2);' % (biodb, biodb)
+    sql4 = 'CREATE INDEX comparative_tables.seqfeature_id_1_idx_%s ON reciprocal_BBH_%s (seqfeature_id_1);' % (biodb, biodb)
+    sql5 = 'CREATE INDEX comparative_tables.seqfeature_id_2_idx_%s ON reciprocal_BBH_%s (seqfeature_id_2);' % (biodb, biodb)
+    server.adaptor.execute(sql2,)
+    server.adaptor.execute(sql3,)
+    server.adaptor.execute(sql4,)
+    server.adaptor.execute(sql5,)
+
+    sql = 'select locus_tag, taxon_id from annotation.seqfeature_id2locus_%s' % biodb
 
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     sql = 'select locus_tag, orthogroup from orthology_detail_%s' % biodb
 
-    locus_tag2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-    sql = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+    try:
+        locus_tag2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    except:
+        locus_tag2orthogroup = False
+    sql = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % biodb
 
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select locus_tag,char_length(translation) from biosqldb.orthology_detail_%s' % biodb
+    if not sqlite3:
+        sql = 'select seqfeature_id,char_length(translation) from annotation.seqfeature_id2CDS_annotation_%s' % biodb
+    else:
+        # sqlite use LENGTH to return the number of characters (return the size in bite in MySQL)
+        sql = 'select seqfeature_id,LENGTH(translation) from annotation.seqfeature_id2CDS_annotation_%s' % biodb
 
-    locus_tag2sequence_length = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    seqfeature_id2sequence_length = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     for n1, locus_1 in enumerate(locus2taxon2best_hit_id):
-        if n1 % 100000 == 0:
-            print str(datetime.now())
+        if n1 % 10 == 0:
+            print "%s / %s -- %s " % (n1, len(locus2taxon2best_hit_id),str(datetime.now()))
         taxon_1 = locus_tag2taxon_id[locus_1]
         for taxon_2 in locus2taxon2best_hit_id[locus_1]:
+
+            if taxon_1 == taxon_2:
+                # self blast, do not store results
+                continue
+
+            ok = False
             locus_2 = locus2taxon2best_hit_id[locus_1][taxon_2][0]
+            #try:
+            '''
+            0 locus_tag_2,
+            1 identity,
+            2 evalue,
+            3 bitscore,
+            4 query_align_length,
+            5 hit_align_length
+            '''
+
             try:
-                '''
-                0 locus_tag_2,
-                1 identity,
-                2 evalue,
-                3 bitscore,
-                4 query_align_length,
-                5 hit_align_length
-                '''
+                ll = locus2taxon2best_hit_id[locus_2][taxon_1][0]
+            except:
+                continue
+            if ll != locus_1:
+                # non reciprocal BBH hit
+                continue
+            else:
+                # reciprocal BBH
+                    identity_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][1]
+                    identity_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][1]
 
-                if locus2taxon2best_hit_id[locus_2][taxon_1][0] == locus_1:
+                    evalue_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][2]
+                    evalue_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][2]
 
-                        identity_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][1]
-                        identity_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][1]
+                    if (float(evalue_a_vs_b) > 0.00001) or (float(evalue_b_vs_a) > 0.00001):
+                        #print 'evalue too high!', evalue_a_vs_b, float(evalue_a_vs_b), 'and', evalue_b_vs_a, float(evalue_b_vs_a)
+                        continue
+                    query_align_length_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][4]
+                    hit_align_length_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][5]
+                    query_align_length_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][4]
+                    hit_align_length_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][5]
 
-                        evalue_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][2]
-                        evalue_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][2]
+                    seqfeature_id_1 = locus_tag2seqfeature_id[locus_1]
+                    seqfeature_id_2 = locus_tag2seqfeature_id[locus_2]
 
-                        if (float(evalue_a_vs_b) > 0.00001) or (float(evalue_b_vs_a) > 0.00001):
-                            #print 'evalue too high!', evalue_a_vs_b, float(evalue_a_vs_b), 'and', evalue_b_vs_a, float(evalue_b_vs_a)
-                            continue
-                        query_align_length_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][4]
-                        hit_align_length_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][5]
-                        query_align_length_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][4]
-                        hit_align_length_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][5]
+                    locus_1_length = seqfeature_id2sequence_length[str(seqfeature_id_1)]
+                    locus_2_length = seqfeature_id2sequence_length[str(seqfeature_id_2)]
 
-                        locus_1_length = locus_tag2sequence_length[locus_1]
-                        locus_2_length = locus_tag2sequence_length[locus_1]
+                    query_cov_a_vs_b = query_align_length_a_vs_b/float(locus_1_length)
+                    hit_cov_a_vs_b = hit_align_length_a_vs_b/float(locus_2_length)
+                    query_cov_b_vs_a = query_align_length_b_vs_a/float(locus_2_length)
+                    hit_cov_b_vs_a = hit_align_length_b_vs_a/float(locus_1_length)
 
-                        query_cov_a_vs_b = query_align_length_a_vs_b/float(locus_1_length)
-                        hit_cov_a_vs_b = hit_align_length_a_vs_b/float(locus_2_length)
-                        query_cov_b_vs_a = query_align_length_b_vs_a/float(locus_2_length)
-                        hit_cov_b_vs_a = hit_align_length_b_vs_a/float(locus_1_length)
+                    if (hit_cov_b_vs_a < 0.5) or (hit_cov_a_vs_b < 0.5) or (query_cov_b_vs_a < 0.5) or (query_cov_a_vs_b < 0.5):
+                        #print 'COV:', query_cov_a_vs_b, hit_cov_a_vs_b, query_cov_b_vs_a, hit_cov_b_vs_a
+                        #ok = True
+                        continue
 
+                    # attention bug found!
+                    #if (hit_cov_b_vs_a < 0.5) or (hit_cov_a_vs_b < 0.5) or (query_cov_b_vs_a < 0.5) or (query_cov_a_vs_b < 0.5):
+                    #    #print 'COV:', query_cov_a_vs_b, hit_cov_a_vs_b, query_cov_b_vs_a, hit_cov_b_vs_a
+                    #    if ok == False:
+                    #        print locus_1, locus_2
+                    #        print 'COV:', query_cov_a_vs_b, hit_cov_a_vs_b, query_cov_b_vs_a, hit_cov_b_vs_a
+                    #        import sys
+                    #        sys.exit()
+                    #    else:
+                    #        continue
+                    #print 'ok--------------------'
+                    score_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][3]
+                    score_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][3]
 
-
-                        if (hit_cov_b_vs_a < 0.5) or (hit_cov_a_vs_b < 0.5) or (query_cov_b_vs_a < 0.5) or (hit_cov_b_vs_a < 0.5):
-                            #print 'COV:', query_cov_a_vs_b, hit_cov_a_vs_b, query_cov_b_vs_a, hit_cov_b_vs_a
-                            continue
-                        #print 'ok--------------------'
-                        score_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][3]
-                        score_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][3]
-
+                    if locus_tag2orthogroup:
                         group_1 = locus_tag2orthogroup[locus_1]
                         group_2 = locus_tag2orthogroup[locus_2]
-                        seqfeature_id_1 = locus_tag2seqfeature_id[locus_1]
-                        seqfeature_id_2 = locus_tag2seqfeature_id[locus_2]
+
                         if group_1 != group_2:
                             msa_identity = "NULL"
                         else:
@@ -218,34 +268,40 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id):
                                                                                          locus_2)
 
                             msa_identity = server.adaptor.execute_and_fetchall(sql,)[0][0]
+                    else:
+                        msa_identity = 0
+                        group_1 = '-'
+                        group_2 = '-'
 
-                        sql = 'insert into comparative_tables.reciprocal_BBH_%s values (%s,%s,%s,%s,%s,%s,%s,%s' \
-                              ',%s,%s,%s,%s,"%s","%s")' % (biodb,
-                                                      taxon_1,
-                                                      taxon_2,
-                                                      seqfeature_id_1,
-                                                      seqfeature_id_2,
-                                                      evalue_a_vs_b,
-                                                      evalue_b_vs_a,
-                                                      score_a_vs_b,
-                                                      score_b_vs_a,
-                                                      identity_a_vs_b,
-                                                      identity_b_vs_a,
-                                                      numpy.mean( [float(identity_a_vs_b), float(identity_b_vs_a)]),
-                                                      msa_identity,
-                                                      group_1,
-                                                      group_2)
-                        #print sql
-                        try:
-                            server.adaptor.execute(sql,)
-                        except:
-                            print sql
+                    sql = 'insert into comparative_tables.reciprocal_BBH_%s values (%s,%s,%s,%s,%s,%s,%s,%s' \
+                          ',%s,%s,%s,%s,"%s","%s")' % (biodb,
+                                                  taxon_1,
+                                                  taxon_2,
+                                                  seqfeature_id_1,
+                                                  seqfeature_id_2,
+                                                  evalue_a_vs_b,
+                                                  evalue_b_vs_a,
+                                                  score_a_vs_b,
+                                                  score_b_vs_a,
+                                                  identity_a_vs_b,
+                                                  identity_b_vs_a,
+                                                  numpy.mean( [float(identity_a_vs_b), float(identity_b_vs_a)]),
+                                                  msa_identity,
+                                                  group_1,
+                                                  group_2)
+                    #print sql
+                    try:
+                        server.adaptor.execute(sql,)
+                    except:
+                        print 'FAIL'
+                        print sql
 
 
 
-            except:
-                #print 'FAIL!'
-                continue
+            #except:
+            #    print 'FAIL!'
+            #    print sql
+            #    continue
         server.commit()
 
 def median_RBBH2species(biodb):
@@ -388,17 +444,18 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     print 'parsing files...'
-    '''
+
     seqid2locus_tag = parse_seqid_file(args.seq_id_file)
     locus2taxon2best_hit_id = parse_orthofinder_blast_files(args.database,
                                                             args.blast_files,
-                                                            seqid2locus_tag)
+                                                            seqid2locus_tag,
+                                                            sqlite3=True)
     print 'get reciprocal bbh table ...'
     get_reciproval_BBH_table(args.database,
                              locus2taxon2best_hit_id)
-    '''
-    print 'get pairwise median id table...'
-    get_parwise_genome_median_identity_table(args.database)
+
+    #print 'get pairwise median id table...'
+    #get_parwise_genome_median_identity_table(args.database)
     
     #median_RBBH2species(args.database)
     #seqfeature_id2n_species(args.database)

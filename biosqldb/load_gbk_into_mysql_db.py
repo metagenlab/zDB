@@ -9,7 +9,8 @@ from BioSQL import BioSeqDatabase
 from manipulate_biosqldb import load_db
 from manipulate_biosqldb import query_yes_no
 
-def import_gbk(gbk_name, server_name, db_name):
+def import_gbk(gbk_name, server_name, db_name, sqlite=False):
+
     from Bio import SeqIO
     #parser = GenBank.FeatureParser()
     #iterator = GenBank.Iterator(open(gbk_name), parser)
@@ -27,6 +28,8 @@ def import_gbk(gbk_name, server_name, db_name):
         print gbk_name, "already into db?"
         pass
     server_name.adaptor.commit()
+
+
 
 
 def import_swiss(swiss_dat_file, server_name, db):
@@ -180,11 +183,13 @@ if __name__ == '__main__':
     parser.add_argument("-u", '--uniprot', type=str, help="uniprot dat file", nargs='+')
     parser.add_argument("-d", '--db_name', type=str, help="db name", required=True)
     parser.add_argument("-r", '--remove_db', type=str, help="remove db")
+    parser.add_argument("-s", '--sqlite_db', type=str, help="use sqlite3 database", default=False)
 
     
     args = parser.parse_args()
 
-    server, db = load_db(args.db_name)
+
+    server, db = load_db(args.db_name, args.sqlite_db)
 
     if args.gbk:
         for gbk in args.gbk:
@@ -193,7 +198,7 @@ if __name__ == '__main__':
                 import_gbk(gbk, server, db)
             except:
                 print 'problem importing %s' % gbk
-                import_gbk(gbk, server, db)
+                #import_gbk(gbk, server, db)
             #create_cds_tables(gbk, args.db_name)
     
     if args.remove_db:

@@ -28,7 +28,7 @@ def add_orthogroup_term(server):
         sql1 = 'SELECT term_id FROM term WHERE NAME = "orthogroup";'
         return server.adaptor.execute_and_fetchall(sql1)[0][0]
     except:
-        print "adding orthogroup seqfeature term to", server
+        #print "adding orthogroup seqfeature term to", server
         # add orthogroup, ontology term: 2
         sql2 = 'INSERT INTO term (name, ontology_id) values ("orthogroup", 2);'
         server.adaptor.execute(sql2)
@@ -52,8 +52,8 @@ def add_orthogroup_to_seq(server, protein_id2orthogroup, protein_id2seqfeature_i
         try:
             server.adaptor.execute(sql)
         except:
-            print 'group %s already inserted?' % group
-            print 'updating...'
+            #print 'group %s already inserted?' % group
+            #print 'updating...'
             #try:
             sql2 = 'UPDATE seqfeature_qualifier_value SET seqfeature_qualifier_value.value="%s" where seqfeature_id=%s and term_id=%s' % (group,
                                                                                                                 seqfeature_id,
@@ -61,167 +61,222 @@ def add_orthogroup_to_seq(server, protein_id2orthogroup, protein_id2seqfeature_i
             #print sql2
             server.adaptor.execute(sql2)
             #except:
-            #    print 'could not insert group %s' % group
+            #    #print 'could not insert group %s' % group
 
 
-            print sql
+            #print sql
 
     server.adaptor.commit()
         #select term_id from term where name = "orthogroup";
 
-def create_orthogroup_table(server, biodatabase_name,
+def create_orthogroup_table(server,
+                            biodatabase_name,
                             orthomcl_groups2locus_tag_list,
                             locus_tag2seqfeature_id_dico,
-                            protein_id2seqfeature_id_dico,
                             locus_tag2taxon_dico,
-                            protein_id2taxon_dico,
-                            locus_tag2accession_dico,
-                            protein_id2accession_dico,
-                            seqfeature_id2locus_tag_dico,
                             seqfeature_id2protein_id_dico,
                             seqfeature_id2gene_dico,
                             seqfeature_id2product_dico,
                             seqfeature_id2translation_dico,
-                            seqfeature_id2organism_dico,
+                            seqfeature_id2bioentry_id_dico,
                             seqfeature2location_dico,
                             group2orthogroup_size,
                             group2family_size,
-                            protein_id2TM,
-                            protein_id2signal_peptide):
-    import re
+                            seqfeature_id2feature_type_id,
+                            pseudogene_feature_list):
 
-    sql = 'CREATE TABLE orthology_detail_%s(orthogroup VARCHAR(100) NOT NULL, ' \
-          ' taxon_id INT, ' \
-          ' accession VARCHAR(100) NOT NULL, ' \
-          ' locus_tag VARCHAR(100) NOT NULL, ' \
-          ' protein_id VARCHAR(100) NOT NULL, ' \
-          ' start INT, ' \
-          ' stop INT, ' \
-          ' strand INT, ' \
-          ' gene VARCHAR(100) NOT NULL, ' \
-          ' product VARCHAR(10000) NOT NULL, ' \
-          ' translation TEXT NOT NULL, ' \
-          ' organism VARCHAR(1000) NOT NULL, ' \
+
+    sql = 'CREATE TABLE if not exists orthology.orthogroup_%s (orthogroup_id INT AUTO_INCREMENT PRIMARY KEY,' \
+          ' orthogroup_name varchar(400),' \
           ' orthogroup_size INT,' \
           ' n_genomes INT,' \
-          ' TM INT,' \
-          ' SP VARCHAR(1),' \
-          'seqfeature_id INT)' % biodatabase_name
+          ' INDEX orthogroup(orthogroup_name))' % biodatabase_name
 
     server.adaptor.execute(sql)
 
-    for i in range(0, len(orthomcl_groups2locus_tag_list.keys())):
-        group = "group_%s" % i
-        try:
-            orthogroup_size = group2orthogroup_size[group]
-        except:
-            continue
-        n_genomes = group2family_size[group]
-        locus_tag_list = orthomcl_groups2locus_tag_list[group]
+    sql0 = 'CREATE TABLE if not exists orthology.seqfeature_id2orthogroup_%s (seqfeature_id INT,' \
+           ' orthogroup_id INT,' \
+           ' INDEX seqfeature_id(seqfeature_id),' \
+           ' INDEX orthogroup_id(orthogroup_id))' % biodatabase_name
 
-        # iterate all proteins from orthomcl file
-        # add data to the summary table othology_detail...
-        for locus_tag in locus_tag_list:
-            # if the protein has no protein id (and a locus tag only => prokka annotation)
-            try:
-                seqfeature_id = locus_tag2seqfeature_id_dico[locus_tag]
-            except:
-                print locus_tag, 'not loaded'
-                continue
-            taxon_id = locus_tag2taxon_dico[locus_tag]
-            accession = locus_tag2accession_dico[locus_tag]
-            start = seqfeature2location_dico[seqfeature_id][0]
-            end = seqfeature2location_dico[seqfeature_id][1]
-            strand = seqfeature2location_dico[seqfeature_id][2]
-            organism = seqfeature_id2organism_dico[str(seqfeature_id)]
-            translation = seqfeature_id2translation_dico[str(seqfeature_id)]
+    server.adaptor.execute(sql0)
 
-            try:
-                gene = seqfeature_id2gene_dico[str(seqfeature_id)]
-            except KeyError:
-                gene = "-"
+    sql1 = 'CREATE TABLE if not exists annotation.seqfeature_id2locus_%s(seqfeature_id INT,' \
+          ' feature_type_id INT,' \
+          ' taxon_id INT,' \
+          ' pseudogene INT, ' \
+          ' bioentry_id VARCHAR(100) NOT NULL, ' \
+          ' locus_tag VARCHAR(100) NOT NULL, ' \
+          ' start INT, ' \
+          ' stop INT, ' \
+          ' strand INT, ' \
+          ' INDEX seqfeature_id(seqfeature_id),' \
+          ' INDEX bioentry_id(bioentry_id),' \
+          ' INDEX locus(locus_tag),' \
+          ' INDEX taxon_id(taxon_id))' % biodatabase_name
+    server.adaptor.execute(sql1)
 
-            try:
-                product = seqfeature_id2product_dico[str(seqfeature_id)]
-            except KeyError:
-                product = "-"
+    sql2 = 'CREATE TABLE if not exists annotation.seqfeature_id2CDS_annotation_%s(seqfeature_id INT,' \
+          ' gene VARCHAR(100) NOT NULL, ' \
+          ' protein_id VARCHAR(100) NOT NULL, ' \
+          ' product TEXT NOT NULL, ' \
+          ' translation TEXT NOT NULL, ' \
+          ' SP INT,' \
+          ' TM INT,' \
+          ' INDEX seqfeature_id(seqfeature_id))' % biodatabase_name
 
-            try:
-                SP = protein_id2signal_peptide[locus_tag]
-            except KeyError:
-                SP = '-'
+    server.adaptor.execute(sql2)
 
-            try:
-                TM = protein_id2TM[locus_tag]
-            except KeyError:
-                TM = 0
-            #try:
-            seqfeature_id = locus_tag2seqfeature_id_dico[locus_tag]
-            #print seqfeature_id2protein_id_dico.keys()
-            print 'seqfeature_id', seqfeature_id
-            try:
-                protein_id = seqfeature_id2protein_id_dico[str(seqfeature_id)]
-            except KeyError:
-                protein_id = locus_tag
-            print protein_id
+    sql3 = 'CREATE TABLE if not exists annotation.seqfeature_id2RNA_annotation_%s(seqfeature_id INT,' \
+          ' product TEXT NOT NULL,' \
+          ' INDEX seqfeature_id(seqfeature_id))' % biodatabase_name
 
-            '''
-            # if the protein has both locus_tag and protein id
-            except KeyError:
+    server.adaptor.execute(sql3)
 
-                seqfeature_id = protein_id2seqfeature_id_dico[protein]
-                taxon_id = protein_id2taxon_dico[protein]
-                accession = protein_id2accession_dico[protein]
-                start = seqfeature2location_dico[seqfeature_id][0]
-                end = seqfeature2location_dico[seqfeature_id][1]
-                strand = seqfeature2location_dico[seqfeature_id][2]
-                organism = seqfeature_id2organism_dico[str(seqfeature_id)]
+    # dico locus type (CDS, rRNA, tRNA)
+    sql = 'select term_id, name from term'
+    term_id2term = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    # fill seqfeature_id2CDS_annotation_ and seqfeature_id2locus_
+    #print 'Fill CDS tables (CDS and RNA tables)'
+    #print 'pseudo list:', pseudogene_feature_list[0:10]
+    #print 'seqfeature_id2bioentry_id_dico', seqfeature_id2bioentry_id_dico.keys()[0:10]
+    #print 'seqfeature_id2feature_type_id', seqfeature_id2feature_type_id.keys()[0:10]
+    #print 'seqfeature_id2protein_id_dico', seqfeature_id2protein_id_dico.keys()[0:10]
+
+    for n, locus_tag in enumerate(locus_tag2seqfeature_id_dico):
+        seqfeature_id = locus_tag2seqfeature_id_dico[locus_tag]
+        #print '%s / %s --' % (n, len(locus_tag2seqfeature_id_dico)), 'seqfeature', seqfeature_id
+        taxon_id = locus_tag2taxon_dico[locus_tag]
+        start = seqfeature2location_dico[seqfeature_id][0]
+        end = seqfeature2location_dico[seqfeature_id][1]
+        strand = seqfeature2location_dico[seqfeature_id][2]
+        bioentry_id = seqfeature_id2bioentry_id_dico[str(seqfeature_id)]
+
+        if seqfeature_id not in pseudogene_feature_list:
+            pseudo = 0
+        else:
+            pseudo = 1
+
+        seqfeature_type_id = seqfeature_id2feature_type_id[seqfeature_id]
+
+        sql = 'insert into annotation.seqfeature_id2locus_%s (seqfeature_id, feature_type_id, taxon_id, ' \
+              ' pseudogene, bioentry_id, locus_tag, start, stop, strand) ' \
+              ' values (%s, %s, %s, %s, %s, "%s", %s, %s, %s)' % (biodatabase_name,
+                                                                seqfeature_id,
+                                                                seqfeature_type_id,
+                                                                taxon_id,
+                                                                pseudo,
+                                                                bioentry_id,
+                                                                locus_tag,
+                                                                start,
+                                                                end,
+                                                                strand)
+
+
+        server.adaptor.execute(sql,)
+
+        # include rRNA, tRNA
+        if pseudo != 1:
+
+            if term_id2term[str(seqfeature_type_id)] == 'CDS':
                 translation = seqfeature_id2translation_dico[str(seqfeature_id)]
-
-                locus_tag = seqfeature_id2locus_tag_dico[str(seqfeature_id)]
                 try:
-                    SP = protein_id2signal_peptide[protein]
+                    protein_id = seqfeature_id2protein_id_dico[str(seqfeature_id)]
                 except KeyError:
-                    SP = '-'
-                try:
-                    TM = protein_id2TM[protein]
-                except:
-                    TM = 0
+                    #print 'No protein ID for,',  seqfeature_id, "(%s)" % locus_tag
+                    protein_id = locus_tag
+
                 try:
                     gene = seqfeature_id2gene_dico[str(seqfeature_id)]
                 except KeyError:
                     gene = "-"
+
                 try:
-                    product = re.sub('\%', '', seqfeature_id2product_dico[str(seqfeature_id)])
+                    product = seqfeature_id2product_dico[str(seqfeature_id)]
                 except KeyError:
                     product = "-"
 
-                protein_id = protein
-            '''
-            sql = 'INSERT INTO orthology_detail_%s(orthogroup, taxon_id, accession, locus_tag, protein_id, start, ' \
-                  'stop, strand, gene, product, translation, organism, orthogroup_size, n_genomes, TM, SP, seqfeature_id) ' \
-                  ' values ("%s", %s, "%s", "%s", "%s", %s, %s, %s, "%s", "%s", "%s", "%s", %s, %s, %s, "%s", %s);' % (biodatabase_name,
-                                                                                               group, taxon_id,
-                                                                                               accession,
-                                                                                               locus_tag,
-                                                                                               protein_id,
-                                                                                               start, end,
-                                                                                               strand,
-                                                                                               gene,
-                                                                                               product,
-                                                                                               translation,
-                                                                                               organism,
-                                                                                               orthogroup_size,
-                                                                                               n_genomes,
-                                                                                               TM,
-                                                                                               SP,
-                                                                                               seqfeature_id)
-            try:
-                server.adaptor.execute(sql)
-                server.adaptor.commit()
-            except:
-                print 'problem with:'
-                print sql
+                sql = 'insert into annotation.seqfeature_id2CDS_annotation_%s (seqfeature_id, ' \
+                      ' gene, protein_id, product, translation, SP, TM) ' \
+                      ' values (%s, "%s", "%s", "%s", "%s", %s, %s)' % (biodatabase_name,
+                                                                seqfeature_id,
+                                                                gene,
+                                                                protein_id,
+                                                                product,
+                                                                translation,
+                                                                0,
+                                                                0)
+                ##print sql
+                server.adaptor.execute(sql,)
+
+            elif term_id2term[str(seqfeature_type_id)] in ['rRNA', 'tRNA']:
+                try:
+                    product = seqfeature_id2product_dico[str(seqfeature_id)]
+                except KeyError:
+                    product = "-"
+                sql = 'insert into annotation.seqfeature_id2RNA_annotation_%s ' \
+                      ' (seqfeature_id, product)' \
+                      ' values (%s, "%s")' % (biodatabase_name,
+                                              seqfeature_id,
+                                              product)
+                server.adaptor.execute(sql,)
+            else:
+                print ('Unkown feature type', seqfeature_type_id)
+        server.adaptor.commit()
+
+    # create orthogroup table
+    #print 'Fill orthogroup table'
+    for i in range(0, len(orthomcl_groups2locus_tag_list.keys())):
+
+        group = "group_%s" % i
+
+        try:
+            orthogroup_size = group2orthogroup_size[group]
+        except:
+            #print 'no size?----------', group
+            continue
+        n_genomes = group2family_size[group]
+
+        sql = 'insert into orthology.orthogroup_%s (orthogroup_name, orthogroup_size, n_genomes) ' \
+              ' values ("%s", %s, %s)' % (biodatabase_name,
+                                          group,
+                                          orthogroup_size,
+                                          n_genomes)
+
+        server.adaptor.execute(sql,)
+
+    server.adaptor.commit()
+
+    # get orthogroup ids
+
+    sql = 'select orthogroup_name, orthogroup_id from orthology.orthogroup_%s' % biodatabase_name
+
+    orthogroup2orthogroup_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    # fill seqfeature_id2orthogroup
+    #print 'fill seqfeature_id2orthogroup'
+    for i in range(0, len(orthomcl_groups2locus_tag_list.keys())):
+
+        group = "group_%s" % i
+
+        locus_tag_list = orthomcl_groups2locus_tag_list[group]
+        orthogroup_id = orthogroup2orthogroup_id[group]
+
+        # iterate proteins of the group, insert in the seqfeature2orthogroup table
+        for locus_tag in locus_tag_list:
+            # if the protein has no protein id (and a locus tag only => prokka annotation)
+            seqfeature_id = locus_tag2seqfeature_id_dico[locus_tag]
+
+            sql = 'INSERT INTO orthology.seqfeature_id2orthogroup_%s(seqfeature_id, orthogroup_id) ' \
+                  ' values(%s,%s);' % (biodatabase_name,
+                                       seqfeature_id,
+                                       orthogroup_id)
+
+            server.adaptor.execute(sql)
+        server.adaptor.commit()
+
+
 def get_all_orthogroup_size(server, biodatabase_name):
     """
     return a dictonary with orthogroup size"
@@ -234,7 +289,7 @@ def get_all_orthogroup_size(server, biodatabase_name):
           ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' \
           ' group by seqfeature_qualifier_value.value' % biodatabase_name
 
-    print sql
+    #print sql
 
     result = server.adaptor.execute_and_fetchall(sql,)
 
@@ -275,10 +330,10 @@ def plot_orthogroup_size_distrib(server, biodatabase_name, out_name = "orthogrou
         all_taxons = manipulate_biosqldb.get_taxon_id_list(server, biodatabase_name)
         for key in all_taxons:
             sql = 'select description from bioentry where taxon_id=%s and description not like "%%%%plasmid%%%%" limit 1;'
-            print sql, key
+            #print sql, key
             description = server.adaptor.execute_and_fetchall(sql, key)[0][0]
 
-        print all_taxons
+        #print all_taxons
         all_data = {}
         for taxon in all_taxons:
             sql = 'select orthogroup,`%s` from comparative_tables.orthology_%s where `%s` >0' % (taxon, biodatabase_name, taxon)
@@ -313,16 +368,16 @@ def plot_orthogroup_size_distrib(server, biodatabase_name, out_name = "orthogrou
         # create figure with one subplot per genome
         # plot per genome group size distribution
         n = int(math.ceil(len(all_taxons)/2.0))
-        print n
+        #print n
         if n%2 ==0:
             n+=1
         fig, axes = plt.subplots(nrows=n, ncols=2)
         for key, location in zip(complete_data.keys(), list(itertools.product(range(n),repeat=2))):
             serie = complete_data[key]
             sql = 'select description from bioentry where taxon_id=%s and description not like "%%%%plasmid%%%%" limit 1;'
-            print sql, key
+            #print sql, key
             description = server.adaptor.execute_and_fetchall(sql, key)[0][0]
-            print description
+            #print description
 
             description = re.sub(", complete genome\.", "", description)
             description = re.sub(", complete genome", "", description)
@@ -368,7 +423,7 @@ def plot_orthogroup_size_distrib(server, biodatabase_name, out_name = "orthogrou
 
 
     if taxon_id:
-        print "ID!!!"
+        #print "ID!!!"
         sql = 'select orthogroup,`%s` from %s where `%s` >0'
         othogroup_id2size = manipulate_biosqldb._to_dict(server.adaptor.execute_and_fetchall(sql, (taxon_id, biodatabase_name, taxon_id)))
 
@@ -388,9 +443,9 @@ def plot_orthogroup_size_distrib(server, biodatabase_name, out_name = "orthogrou
 def get_orthology_matrix_separate_plasmids(server, biodatabase_name):
     genomes = manipulate_biosqldb.get_genome_description_list(server, biodatabase_name)
     for genome in genomes:
-        print genome
+        #print genome
         dico = manipulate_biosqldb.bioentry_name2orthoup_size(server, biodatabase_name, genome)
-        print dico
+        #print dico
 
 
 
@@ -405,12 +460,12 @@ def get_orthology_matrix_merging_plasmids_biosqldb(server, biodatabase_name):
 
 
     n_groups = len(all_orthogroups.keys())
-    #print "ngroups", n_groups
+    ##print "ngroups", n_groups
 
 
     all_taxons = manipulate_biosqldb.get_taxon_id_list(server, biodatabase_name)
-    #print all_taxons
-    print 'get dico ortho count'
+    ##print all_taxons
+    #print 'get dico ortho count'
     detailed_orthology_count = {}
     for group in all_orthogroups.keys():
         detailed_orthology_count[group] = {}
@@ -419,16 +474,16 @@ def get_orthology_matrix_merging_plasmids_biosqldb(server, biodatabase_name):
 
 
     for taxon_id in all_taxons:
-        #print taxon_id
+        ##print taxon_id
         dico = manipulate_biosqldb.taxon_id2orthogroup_size(server, biodatabase_name, taxon_id)
-        #print dico
+        ##print dico
         #import time
         #time.sleep(3)
-        #print "taxon", taxon_id
+        ##print "taxon", taxon_id
         for group in dico.keys():
             detailed_orthology_count[group][int(taxon_id)] += dico[group]
-    print 'count ok'
-    #print detailed_orthology_count
+    #print 'count ok'
+    ##print detailed_orthology_count
     return detailed_orthology_count
 
 
@@ -444,12 +499,12 @@ def get_orthology_matrix_merging_plasmids_own_tables(server, biodatabase_name):
 
 
     n_groups = len(all_orthogroups.keys())
-    #print "ngroups", n_groups
+    ##print "ngroups", n_groups
 
 
     all_taxons = manipulate_biosqldb.get_taxon_id_list(server, biodatabase_name)
-    #print all_taxons
-    print 'get dico ortho count'
+    ##print all_taxons
+    #print 'get dico ortho count'
     detailed_orthology_count = {}
     for group in all_orthogroups.keys():
         detailed_orthology_count[group] = {}
@@ -466,7 +521,7 @@ def get_orthology_matrix_merging_plasmids_own_tables(server, biodatabase_name):
         #print "taxon", taxon_id
         for group in dico.keys():
             detailed_orthology_count[group][int(taxon_id)] += dico[group]
-    print 'count ok'
+    #print 'count ok'
     #print detailed_orthology_count
     return detailed_orthology_count
 
@@ -477,7 +532,7 @@ def create_orthology_mysql_table(server, orthogroup2detailed_count, biodatabase_
     """
     CREATE TABLE table_name (column_name column_type);
     """
-    print
+    #print
     taxon_id_list = orthogroup2detailed_count[orthogroup2detailed_count.keys()[0]].keys()
 
     sql = "CREATE TABLE comparative_tables.orthology_%s(orthogroup VARCHAR(100) NOT NULL" % biodatabase_name
@@ -525,7 +580,7 @@ def _chunks(l, n):
 def get_one_group_data(group_list, biodatabase_name, out_dir):#, out_q):
     server = manipulate_biosqldb.load_db()
     for group in group_list:
-        print "group", group, "biodb", biodatabase_name
+        #print "group", group, "biodb", biodatabase_name
         seqfeature_ids = manipulate_biosqldb.orthogroup_id2seqfeature_id_list(server, group, biodatabase_name)
         # do not consider singletons
         one_fasta = ""
@@ -578,7 +633,7 @@ def get_all_orthogroup_protein_fasta(server, biodatabase_name, out_dir):
         proc.start()
 
 
-    print "join proc"
+    #print "join proc"
     time.sleep(5)
     for proc in procs:
         proc.join()
@@ -589,7 +644,7 @@ def get_all_orthogroup_protein_fasta2(server, biodatabase_name, out_dir):
     all_groups = get_all_orthogroup_size(server, biodatabase_name).keys()
 
     for group in all_groups:
-        print "group", group
+        #print "group", group
         seqfeature_ids = manipulate_biosqldb.orthogroup_id2seqfeature_id_list(server, group, biodatabase_name)
         # do not consider singletons
         one_fasta = ""
@@ -627,7 +682,7 @@ def get_all_orthogroup_protein_fasta2(server, biodatabase_name, out_dir):
 def get_one_group_data_taxon(group_list, locus_or_protein_id2taxon_id, biodatabase_name, out_dir):#, out_q):
     server = manipulate_biosqldb.load_db()
     for group in group_list:
-        print "group", group
+        #print "group", group
         seqfeature_ids = manipulate_biosqldb.orthogroup_id2seqfeature_id_list(server, group, biodatabase_name)
         # do not consider singletons
         one_fasta = ""
@@ -665,7 +720,7 @@ def get_all_orthogroup_protein_fasta_by_taxon(server, biodatabase_name, out_dir)
         procs.append(proc)
         proc.start()
 
-    print "join proc"
+    #print "join proc"
     time.sleep(5)
     for proc in procs:
         proc.join()
@@ -802,11 +857,11 @@ def get_cds_sequences(record, locus_tag2taxon_id):
                 taxon_id = locus_tag2taxon_id[str(i.qualifiers['locus_tag'][0])]
                 #print str(i.qualifiers['locus_tag'][0])
                 if str(i.qualifiers['locus_tag'][0]) == "HMPREF0772_11479":
-                    print i
-                    print len(i)
-                    print i.location
-                    print i.extract(record.seq)
-                    print len(i.extract(record.seq))
+                    print (i)
+                    #print len(i)
+                    #print i.location
+                    #print i.extract(record.seq)
+                    #print len(i.extract(record.seq))
                     #import sys
                     #sys.exit()
                 #if i.location.strand == -1:
@@ -818,7 +873,7 @@ def get_cds_sequences(record, locus_tag2taxon_id):
                 cds[str(i.qualifiers['locus_tag'][0])] = SeqRecord(seq, id=str(taxon_id), description=i.qualifiers['locus_tag'][0], name=i.qualifiers['locus_tag'][0])
             except:
                 #sys.exit()
-                print i
+                print (i)
     return cds
 
 
@@ -843,7 +898,7 @@ def get_group_nucl_fasta(biodb_name, locus_tag2nucl_sequence, path, group_list):
 def locus_tag2nucl_sequence_dict(server, db, biodb_name):
     sql = 'select accession from bioentry' \
           ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' % biodb_name
-    print sql
+    #print sql
 
     accessions = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
@@ -851,7 +906,7 @@ def locus_tag2nucl_sequence_dict(server, db, biodb_name):
 
     locus_tag2nucl_sequence = {}
     for accession in accessions:
-        print accession
+        #print accession
         record_data = db.lookup(accession=accession)
         sequences = get_cds_sequences(record_data, locus_or_protein_id2taxon_id)
         locus_tag2nucl_sequence.update(sequences)
@@ -911,19 +966,27 @@ def get_nucleotide_core_fasta(server, db, biodb_name, path):
 def get_non_protein_coding_locus(server, biodb,term_list=["rRNA","tRNA","assembly_gap"]):
 
 
-    sql0 = 'CREATE table non_protein_coding_locus_%s (seqfeature_id INT, taxon_id INT, bioentry_id INT, ' \
-           ' accession varchar(200), type varchar(200), locus_tag varchar(200), product TEXT, start INT, stop INT, strand INT)' % biodb
+    sql0 = 'CREATE table non_protein_coding_locus_%s (seqfeature_id INT, ' \
+           ' taxon_id INT, ' \
+           ' bioentry_id INT, ' \
+           ' accession varchar(200), ' \
+           ' type varchar(200), ' \
+           ' locus_tag varchar(200), ' \
+           ' product TEXT, ' \
+           ' start INT, ' \
+           ' stop INT, ' \
+           ' strand INT)' % biodb
 
     server.adaptor.execute(sql0,)
 
     filter = '"'+'","'.join(term_list)+'"'
-    print filter
+    #print filter
 
     sql = 'select t2.bioentry_id,taxon_id,accession,seqfeature_id,type_term_id,t4.name ' \
           ' from biodatabase as t1 inner join bioentry as t2 on t1.biodatabase_id =t2.biodatabase_id ' \
           ' inner join seqfeature as t3 on t2.bioentry_id=t3.bioentry_id ' \
           ' inner join term t4 on t3.type_term_id=t4.term_id where t1.name="%s" and t4.name in (%s);' % (biodb, filter)
-    print sql
+    #print sql
 
     non_protein_coding_data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -934,9 +997,9 @@ def get_non_protein_coding_locus(server, biodb,term_list=["rRNA","tRNA","assembl
            ' inner join term t4 on t3.type_term_id=t4.term_id where t1.name="%s" ' \
            ' and t4.name in (%s))A inner join seqfeature_qualifier_value B on A.seqfeature_id=B.seqfeature_id ' \
            'inner join term as C on B.term_id=C.term_id where C.name="locus_tag"' % (biodb, filter)
-    print sql2
+    #print sql2
     seqfeature_id2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
-    print "seqfeature_id2locus_tag", seqfeature_id2locus_tag
+    #print "seqfeature_id2locus_tag", seqfeature_id2locus_tag
     sql3 = 'select A.seqfeature_id,value from ' \
            ' (select t2.bioentry_id,taxon_id,accession,seqfeature_id,type_term_id,t4.name ' \
            ' from biodatabase as t1 inner join bioentry as t2 on t1.biodatabase_id =t2.biodatabase_id ' \
@@ -944,7 +1007,7 @@ def get_non_protein_coding_locus(server, biodb,term_list=["rRNA","tRNA","assembl
            ' inner join term t4 on t3.type_term_id=t4.term_id where t1.name="%s" ' \
            ' and t4.name in (%s))A inner join seqfeature_qualifier_value B on A.seqfeature_id=B.seqfeature_id ' \
            'inner join term as C on B.term_id=C.term_id where C.name="product"' % (biodb, filter)
-    print sql3
+    #print sql3
     seqfeature_id2product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
 
     sql4 = 'select A.seqfeature_id,start_pos,end_pos,strand ' \
@@ -956,7 +1019,7 @@ def get_non_protein_coding_locus(server, biodb,term_list=["rRNA","tRNA","assembl
            ' inner join location B on A.seqfeature_id=B.seqfeature_id' % (biodb, filter)
 
     seqfeature_id2location = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql4,))
-    print sql4
+    #print sql4
 
     for seqfeature_data in non_protein_coding_data:
 
@@ -1018,114 +1081,132 @@ if __name__ == '__main__':
 
         #print len(get_conserved_core_groups(server, "Chlamydiales_1"))
 
-        print "creating locus_tag2seqfeature_id"
+        #print "creating locus_tag2seqfeature_id"
         locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, args.db_name)
 
+        ##print "creating protein_id2taxon_id dictionnary..."
+        #protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, args.db_name)
+        #print "creating locus_tag2taxon_id dictionnary..."
+        locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, args.db_name)
 
-        print "creating protein_id2seqfeature_id"
+        ##print 'creating locustag2seqfature_id table'
+        #import get_locus2seqfeature_table
+        #try:
+        #    get_locus2seqfeature_table.create_locus_tag2seqfeature_table(args.db_name,
+        #                                                                 locus_tag2seqfeature_id,
+        #                                                                 locus_tag2genome_taxon_id)
+        #except:
+        #    #print 'error, does locustag2seqfature_id already exist?'
+
+        #print "creating protein_id2seqfeature_id"
         protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, args.db_name)
 
-        print "creating locus_tag2taxon_id dictionnary..."
-        locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, args.db_name)
-        print "creating protein_id2taxon_id dictionnary..."
-        protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, args.db_name)
-
-        print "creating locus_tag2accession dictionnary..."
+        #print "creating locus_tag2accession dictionnary..."
         locus_tag2accession = manipulate_biosqldb.locus_tag2accession(server, args.db_name)
-        print "creating protein_id2accession dictionnary..."
+        #print "creating protein_id2accession dictionnary..."
         protein_id2accession = manipulate_biosqldb.protein_id2accession(server, args.db_name)
 
-        print "getting location"
+        #print "getting location"
         seqfeature_id2seqfeature_location = manipulate_biosqldb.seqfeature_id2feature_location_dico(server, args.db_name)
 
-        print "getting seqfeature_id2locus_tag"
+        #print "getting seqfeature_id2locus_tag"
         seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, args.db_name)
 
-        print "getting seqfeature_id2protein_id"
+        #print "getting seqfeature_id2protein_id"
         seqfeature_id2protein_id = manipulate_biosqldb.seqfeature_id2protein_id_dico(server, args.db_name)
 
-        print "parsing mcl file"
+        #print "getting seqfeature_id2bioentry_id"
+        seqfeature_id2bioentry_id = manipulate_biosqldb.seqfeature_id2bioentry_id_dico(server, args.db_name)
+
+        #print "parsing mcl file"
         protein_id2orthogroup_id, \
         orthomcl_groups2locus_tag_list, \
         genome_orthomcl_code2proteins, \
         protein_id2genome_ortho_mcl_code = parse_orthomcl_output(args.mcl,
                                                                  args.orthofinder)
 
-        print "getting seqfeature_id2gene"
+        #print "getting seqfeature_id2gene"
         seqfeature_id2gene = manipulate_biosqldb.seqfeature_id2gene_dico(server, args.db_name)
 
-        print "getting seqfeature_id2product"
+        #print "getting seqfeature_id2product"
         seqfeature_id2product = manipulate_biosqldb.seqfeature_id2product_dico(server, args.db_name)
 
-        print "getting seqfeature_id2translation"
+        #print "getting seqfeature_id2feature_type_id"
+        seqfeature_id2feature_type_id = manipulate_biosqldb.seqfeature_id2feature_type_id(server, args.db_name)
+
+        #print "getting seqfeature_id2translation"
         seqfeature_id2translation = manipulate_biosqldb.seqfeature_id2translation_dico(server, args.db_name)
 
-        print "getting seqfeature_id2organism"
-
-        seqfeature_id2organism = manipulate_biosqldb.seqfeature_id2organism_dico(server, args.db_name)
-
-        print "getting protein_id2TM and protein_id2signal_peptide"
-
+        #print "getting seqfeature_id2organism"
+        #seqfeature_id2organism = manipulate_biosqldb.seqfeature_id2organism_dico(server, args.db_name)
+        #print "getting protein_id2TM and protein_id2signal_peptide"
         #protein_id2phobius = parse_phobius.parse_short_phobius(*args.phobius_files)
 
+        '''
         sql = 'select accession,count(*) from interpro_%s ' \
               ' where analysis="Phobius" and signature_accession="TRANSMEMBRANE" group by locus_tag;' % args.db_name
         sql2 = 'select accession,count(*) from interpro_%s ' \
                ' where analysis="Phobius" and signature_accession="SIGNAL_PEPTIDE" group by locus_tag' % args.db_name
+
         server, db = manipulate_biosqldb.load_db(args.db_name)
         protein_id2TM = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
         protein_id2signal_peptide = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+        '''
 
-        print "adding orthogroup to seqfeature_qualifier_values"
-        add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
+        #print "adding orthogroup to seqfeature_qualifier_values"
+        #add_orthogroup_to_seq(server, protein_id2orthogroup_id, protein_id2seqfeature_id, locus_tag2seqfeature_id)
 
-        
-        print "creating orthology table merging plasmid"
-        orthogroup2detailed_count = get_orthology_matrix_merging_plasmids_biosqldb(server, args.db_name)
-        print "orthogroup2detailed_count", orthogroup2detailed_count
+        #print "get pseudogene feature list"
+        pseudogene_feature_list = manipulate_biosqldb.pseudogene_feature_list(server, args.db_name)
+        #print pseudogene_feature_list[0:10]
 
-        print "creating orthology table"
-        create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
+        #print "creating orthology table merging plasmid"
+        #orthogroup2detailed_count = get_orthology_matrix_merging_plasmids_biosqldb(server, args.db_name)
+        ##print "orthogroup2detailed_count", orthogroup2detailed_count
 
+        #print "creating orthology table"
+        #create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
+
+        #print 'getting group2group size'
         group2group_size = get_all_orthogroup_size(server, args.db_name)
 
+        #print 'getting group2family size'
         group2family_size = get_family_size(server, args.db_name)
 
-        print "creating orthology table 1"
-        create_orthogroup_table(server, args.db_name,
+        #print "creating orthology table 1"
+        create_orthogroup_table(server,
+                                args.db_name,
                                 orthomcl_groups2locus_tag_list,
                                 locus_tag2seqfeature_id,
-                                protein_id2seqfeature_id,
                                 locus_tag2genome_taxon_id,
-                                protein_id2genome_taxon_id,
-                                locus_tag2accession,
-                                protein_id2accession,
-                                seqfeature_id2locus_tag,
                                 seqfeature_id2protein_id,
                                 seqfeature_id2gene,
                                 seqfeature_id2product,
                                 seqfeature_id2translation,
-                                seqfeature_id2organism,
+                                seqfeature_id2bioentry_id,
                                 seqfeature_id2seqfeature_location,
                                 group2group_size,
                                 group2family_size,
-                                protein_id2TM,
-                                protein_id2signal_peptide)
+                                seqfeature_id2feature_type_id,
+                                pseudogene_feature_list)
 
-
-        print 'adding orthogroup to interpro table'
-        biosql_own_sql_tables.add_orthogroup_to_interpro_table(args.db_name)
+        #print 'adding orthogroup to interpro table'
+        #biosql_own_sql_tables.add_orthogroup_to_interpro_table(args.db_name)
 
         #import biosql_own_sql_tables
-        biosql_own_sql_tables.collect_genome_statistics(args.db_name)
+        # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+        #print 'collecting genome statistics'
+        #biosql_own_sql_tables.collect_genome_statistics(args.db_name)
 
-        print "plotting orthogroup_size"
-        plot_orthogroup_size_distrib(server, args.db_name)
+        ##print "plotting orthogroup_size"
+        #plot_orthogroup_size_distrib(server, args.db_name)
 
-        print "writing fasta files"
+        #print "writing fasta files"
         #ortho_table = "orthology_%s" % args.db_name
         #all_taxon_ids = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
-        
+
+
+    '''
     if args.get_sequences and not args.core_groups_path:
 
         if not os.path.exists(os.path.join(asset_path, "%s_fasta/" % args.db_name)):
@@ -1164,4 +1245,4 @@ if __name__ == '__main__':
         locus_or_protein_id2taxon_id = manipulate_biosqldb.locus_or_protein_id2taxon_id(server, args.db_name)
         print 'Number of core groups: %s' % len(group_list)
         get_one_group_data_taxon(group_list, locus_or_protein_id2taxon_id, args.db_name, args.core_groups_path)
-        
+    '''

@@ -46,25 +46,39 @@ def query_yes_no(question, default="yes"):
                              "(or 'y' or 'n').\n")
 
 
-def load_db(db_name=False):
+def load_db(db_name=False, sqlite=False):
     import os
     sqlpsw = os.environ['SQLPSW']
-    server = BioSeqDatabase.open_database(driver="MySQLdb", user="root",
-                       passwd = sqlpsw, host = "127.0.0.1", db="biosqldb")
+
+    if not sqlite:
+
+        server = BioSeqDatabase.open_database(driver="MySQLdb", user="root",
+                           passwd = sqlpsw, host = "127.0.0.1", db="biosqldb")
+    else:
+        server = BioSeqDatabase.open_database(driver="sqlite3", user="root",
+                           passwd = sqlpsw, host = "127.0.0.1", db=sqlite)
+
+        sql1 = 'attach "%s/annotation.db" as annotation;' % os.path.dirname(sqlite)
+        #print sql1
+        server.adaptor.execute(sql1,)
+        sql2 = 'attach "%s/comparative_tables.db" as comparative_tables;' % os.path.dirname(sqlite)
+        #print sql2
+        server.adaptor.execute(sql2,)
+        server.commit()
+
     if db_name:
         try:
             db = server[db_name]
             return server, db
         except:
             if query_yes_no("Database %s do not exist, create it?" % db_name):
-                print "creating new db...", db_name
+                #print "creating new db...", db_name
                 db = server.new_database(db_name, description="db %s" % db_name)
                 return server, db
             else:
                 sys.exit("Stopping execution")
     else:
         return server
-
 
 def _to_dict(tuple_list):
     temp_dict = {}
@@ -157,7 +171,7 @@ def taxon_id2accessions(server, taxon_id, biodatabase_name):
     sql = 'select t1.accession from bioentry as t1 ' \
           'inner join biodatabase as t2 on t1.biodatabase_id = t2.biodatabase_id ' \
           'and taxon_id = %s and t2.name = "%s"' % (taxon_id, biodatabase_name)
-    print sql
+    #print sql
     result = server.adaptor.execute_and_fetchall(sql,)
     return [i[0] for i in result]
 
@@ -167,7 +181,7 @@ def taxon_id2accession_chromosome(server, biodatabase_name):
     sql = 'select t1.taxon_id,t1.accession from bioentry as t1 ' \
           'inner join biodatabase as t2 on t1.biodatabase_id = t2.biodatabase_id ' \
           'where t1.description not like "%%%%plasmid%%%%" and t2.name = "%s"' % (biodatabase_name)
-    print sql
+    #print sql
     result = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     return result
 
@@ -217,7 +231,7 @@ def taxon_id2chromosome_accession(server, biodatabase_name, taxon_id):
                  ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id ' \
                  ' where biodatabase.name ="%s" and bioentry.taxon_id = %s and bioentry.description not like "%%%%plasmid%%%%"' % (biodatabase_name, taxon_id)
 
-    print sql
+    #print sql
     result = server.adaptor.execute_and_fetchall(sql, )[0][0]
     return result
 
@@ -229,7 +243,7 @@ def gene_regex2seqfeature_ids(server, biodatabase_name, gene_regex):
           ' inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id' \
           ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id' \
           ' and biodatabase.name = "%s"' % (gene_regex, biodatabase_name)
-    #print sql
+    ##print sql
     result = server.adaptor.execute_and_fetchall(sql, )
     return [i[0] for i in result]
 
@@ -241,7 +255,7 @@ def product_regex2seqfeature_ids(server, biodatabase_name, product_regex):
           ' inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id' \
           ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id' \
           ' and biodatabase.name = "%s"' % (product_regex, biodatabase_name)
-    #print sql
+    ##print sql
     result = server.adaptor.execute_and_fetchall(sql, )
     return [i[0] for i in result]
 
@@ -293,7 +307,7 @@ def get_genome_accessions(server, biodatabase_name):
     sql = 'select bioentry.accession from bioentry' \
           ' inner join biodatabase on biodatabase.biodatabase_id = bioentry.biodatabase_id' \
           ' where biodatabase.name = "%s" and bioentry.description not like "%%%%plasmid%%%%" ' % biodatabase_name
-    #print sql
+    ##print sql
     result = server.adaptor.execute_and_fetchall(sql, )
     return [i[0] for i in result]
 
@@ -301,7 +315,7 @@ def get_genome_descriptions(server, biodatabase_name):
     sql = 'select bioentry.description from bioentry' \
           ' inner join biodatabase on biodatabase.biodatabase_id = bioentry.biodatabase_id' \
           ' where biodatabase.name = "%s" and bioentry.description not like "%%%%plasmid%%%%" ' % biodatabase_name
-    #print sql
+    ##print sql
     result = server.adaptor.execute_and_fetchall(sql, )
     return [i[0] for i in result]
 
@@ -329,11 +343,64 @@ def seqfeature_id2orthogroup(server, seqfeafeature_id, biodb_name):
     result = server.adaptor.execute_and_fetchall(sql, )
     return result[0][0]
 
+def pseudogene_feature_list(server, biodatabase_name):
+    '''
+
+    :param server:
+    :param biodatabase_name:
+    :return:
+    '''
+
+    sql_locus_tag_seqfeature_id_table = 'select t1.seqfeature_id from seqfeature as t1' \
+                                        ' inner join seqfeature_qualifier_value as t2 on t1.seqfeature_id = t2.seqfeature_id' \
+                                        ' inner join term as t3 on t2.term_id = t3.term_id and t3.name = "pseudo"' \
+                                        ' inner join bioentry as t6 on t1.bioentry_id = t6.bioentry_id' \
+                                        ' inner join biodatabase as t7 on t6.biodatabase_id = t7.biodatabase_id and t7.name = "%s"' % biodatabase_name
+
+    result = server.adaptor.execute_and_fetchall(sql_locus_tag_seqfeature_id_table, )
+
+    return [i[0] for i in result]
+
+def seqfeature_id2feature_type_id(server, biodatabase_name):
+    '''
+
+    get terms id of "CDS", "rRNA", "tRNA" and "rRNA"
+
+    :param server:
+    :param biodatabase_name:
+    :return:
+    '''
+
+    sql_locus_tag_seqfeature_id_table = 'select t1.seqfeature_id, t1.type_term_id from biosqldb.seqfeature as t1' \
+                                        ' inner join seqfeature_qualifier_value as t2 on t1.seqfeature_id = t2.seqfeature_id' \
+                                        ' inner join term as t3 on t2.term_id = t3.term_id and t3.name = "locus_tag"' \
+                                        ' inner join term as t4 on t1.type_term_id = t4.term_id and t4.name in("CDS", "rRNA", "tRNA", "pseudo")' \
+                                        ' inner join term as t5 on t1.source_term_id = t5.term_id' \
+                                        ' inner join bioentry as t6 on t1.bioentry_id = t6.bioentry_id' \
+                                        ' inner join biodatabase as t7 on t6.biodatabase_id = t7.biodatabase_id and t7.name = "%s"' % biodatabase_name
+
+    result = server.adaptor.execute_and_fetchall(sql_locus_tag_seqfeature_id_table, )
+
+    locus_tag2seqfeature_id = {}
+
+    for locus_tag in result:
+        locus_tag2seqfeature_id[locus_tag[0]] = locus_tag[1]
+    return locus_tag2seqfeature_id
+
 def locus_tag2seqfeature_id_dict(server, biodatabase_name):
+    '''
+
+    get seqfeature ids of "CDS", "rRNA", "tRNA" and "rRNA"
+
+    :param server:
+    :param biodatabase_name:
+    :return:
+    '''
+
     sql_locus_tag_seqfeature_id_table = 'select t2.value, t1.seqfeature_id from biosqldb.seqfeature as t1' \
                                         ' inner join seqfeature_qualifier_value as t2 on t1.seqfeature_id = t2.seqfeature_id' \
                                         ' inner join term as t3 on t2.term_id = t3.term_id and t3.name = "locus_tag"' \
-                                        ' inner join term as t4 on t1.type_term_id = t4.term_id and t4.name = "CDS"' \
+                                        ' inner join term as t4 on t1.type_term_id = t4.term_id and t4.name in("CDS", "rRNA", "tRNA")' \
                                         ' inner join term as t5 on t1.source_term_id = t5.term_id' \
                                         ' inner join bioentry as t6 on t1.bioentry_id = t6.bioentry_id' \
                                         ' inner join biodatabase as t7 on t6.biodatabase_id = t7.biodatabase_id and t7.name = "%s"' % biodatabase_name
@@ -342,10 +409,37 @@ def locus_tag2seqfeature_id_dict(server, biodatabase_name):
     result = server.adaptor.execute_and_fetchall(sql_locus_tag_seqfeature_id_table, )
 
     locus_tag2seqfeature_id = {}
+
     for locus_tag in result:
         locus_tag2seqfeature_id[locus_tag[0]] = locus_tag[1]
     return locus_tag2seqfeature_id
 
+def pseudogene_seqfeature_list(server, biodatabase_name):
+    '''
+
+    get seqfeature ids of "CDS", "rRNA", "tRNA" and "rRNA"
+
+    :param server:
+    :param biodatabase_name:
+    :return:
+    '''
+
+    sql_locus_tag_seqfeature_id_table = 'select t2.value, t1.seqfeature_id from biosqldb.seqfeature as t1' \
+                                        ' inner join seqfeature_qualifier_value as t2 on t1.seqfeature_id = t2.seqfeature_id' \
+                                        ' inner join term as t3 on t2.term_id = t3.term_id and t3.name = "locus_tag"' \
+                                        ' inner join term as t4 on t1.type_term_id = t4.term_id and t4.name in("CDS", "rRNA", "tRNA", "rRNA")' \
+                                        ' inner join term as t5 on t1.source_term_id = t5.term_id' \
+                                        ' inner join bioentry as t6 on t1.bioentry_id = t6.bioentry_id' \
+                                        ' inner join biodatabase as t7 on t6.biodatabase_id = t7.biodatabase_id and t7.name = "%s"' % biodatabase_name
+
+
+    result = server.adaptor.execute_and_fetchall(sql_locus_tag_seqfeature_id_table, )
+
+    locus_tag2seqfeature_id = {}
+
+    for locus_tag in result:
+        locus_tag2seqfeature_id[locus_tag[0]] = locus_tag[1]
+    return locus_tag2seqfeature_id
 
 def protein_id2seqfeature_id_dict(server, biodatabase_name):
 
@@ -358,7 +452,7 @@ def protein_id2seqfeature_id_dict(server, biodatabase_name):
     result = server.adaptor.execute_and_fetchall(sql_protein_id2_seqfeature_id_table, ("protein_id", biodatabase_name))
     protein_id2seqfeature_id = {}
     for protein in result:
-       #print "protein", protein
+       ##print "protein", protein
        #seqfeature_id = locus_tag2CDS_seqfeature_id(server, protein[0], biodatabase_name) 
        protein_id2seqfeature_id[protein[0]] = protein[1]
     return protein_id2seqfeature_id
@@ -417,7 +511,7 @@ def bioentry_id2taxon_id_dict(server, biodatabase_name):
     sql = 'select t1.accession, t1.taxon_id from bioentry as t1' \
           ' inner join biodatabase as t2 on t1.biodatabase_id = t2.biodatabase_id ' \
           ' and t2.name = "%s"' % (biodatabase_name)
-    #print sql
+    ##print sql
     result = server.adaptor.execute_and_fetchall(sql, )
     return _to_dict(result)
 
@@ -518,7 +612,7 @@ def seqfeature_id2locus_tag_dico(server, biodatabase_name):
           ' inner join term as t3 on t1.term_id = t3.term_id and t3.name = "locus_tag" ' \
           ' inner join bioentry as t5 on t2.bioentry_id = t5.bioentry_id ' \
           ' inner join biodatabase on t5.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' % biodatabase_name
-    print sql
+    #print sql
     result = server.adaptor.execute_and_fetchall(sql,)
     return _to_dict(result)
 
@@ -555,8 +649,20 @@ def seqfeature_id2organism_dico(server, biodatabase_name):
           ' inner join term as t3 on t1.term_id = t3.term_id and t3.name = "translation" ' \
           ' inner join bioentry as t5 on t2.bioentry_id = t5.bioentry_id ' \
           ' inner join biodatabase on t5.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' % biodatabase_name
+    #print sql
     result = server.adaptor.execute_and_fetchall(sql,)
     return _to_dict(result)
+
+def seqfeature_id2bioentry_id_dico(server, biodatabase_name):
+    sql = 'select t1.seqfeature_id, t5.bioentry_id from seqfeature_qualifier_value as t1 ' \
+          ' inner join seqfeature as t2 on t1.seqfeature_id = t2.seqfeature_id ' \
+          ' inner join term as t3 on t1.term_id = t3.term_id and t3.name = "locus_tag" ' \
+          ' inner join bioentry as t5 on t2.bioentry_id = t5.bioentry_id ' \
+          ' inner join biodatabase on t5.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' % biodatabase_name
+    #print sql
+    result = server.adaptor.execute_and_fetchall(sql,)
+    return _to_dict(result)
+
 
 def seqfeature_id2protein_id_dico(server, biodatabase_name):
     sql = 'select t1.seqfeature_id, t1.value from seqfeature_qualifier_value as t1 ' \
@@ -569,10 +675,10 @@ def seqfeature_id2protein_id_dico(server, biodatabase_name):
     
 def orthogroup_id2locus_tag_list(server, orthogroup_id, biodatabase_name):
 
-    print "orthogroup_id", orthogroup_id
+    #print "orthogroup_id", orthogroup_id
     seqfeaure_id_list = orthogroup_id2seqfeature_id_list(server, orthogroup_id, biodatabase_name)
 
-    print "seqfeaure_id_list", seqfeaure_id_list
+    #print "seqfeaure_id_list", seqfeaure_id_list
 
 
     query_seqfeature_id = "("
@@ -580,7 +686,7 @@ def orthogroup_id2locus_tag_list(server, orthogroup_id, biodatabase_name):
         query_seqfeature_id+="seqfeature_id = %s or " % str(seqfeaure_id_list[i])
     query_seqfeature_id+="seqfeature_id = %s)" % seqfeaure_id_list[-1]
     #for i in seqfeaure_id_list:
-    #    print i
+    #    #print i
 
 
     sql_seqfeature_id2locus_tag = 'select bioentry.accession, seqfeature_qualifier_value.seqfeature_id, seqfeature_qualifier_value.value, bioentry.description from seqfeature_qualifier_value' \
@@ -590,7 +696,7 @@ def orthogroup_id2locus_tag_list(server, orthogroup_id, biodatabase_name):
     ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' \
     ' group by seqfeature_qualifier_value.seqfeature_id' % (query_seqfeature_id, biodatabase_name)
 
-    #print sql_seqfeature_id2locus_tag
+    ##print sql_seqfeature_id2locus_tag
     
     result = server.adaptor.execute_and_fetchall(sql_seqfeature_id2locus_tag,)
     return result
@@ -652,9 +758,9 @@ def locus_tag2CDS_seqfeature_id(server, locus_tag, biodatabase_name):
           ' inner join term as t5 on t1.source_term_id = t5.term_id' \
           ' inner join bioentry as t6 on t1.bioentry_id = t6.bioentry_id' \
           ' inner join biodatabase as t7 on t6.biodatabase_id = t7.biodatabase_id and t7.name = "%s"' % (locus_tag, biodatabase_name)
-    print locus_tag, sql
+    #print locus_tag, sql
     result = server.adaptor.execute_and_fetchall(sql, )
-    print result
+    #print result
     return result[0][0]
 
 """
@@ -673,7 +779,7 @@ def locus_tag2protein_id_dict(server, biodatabase_name):
             ' inner join bioentry as t4 on t1.bioentry_id = t4.bioentry_id' \
             ' inner join biodatabase on t4.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s")' \
             ' B' % (biodatabase_name, biodatabase_name)
-    print sql
+    #print sql
     #result = server.adaptor.execute_and_fetchall(sql, biodatabase_name)
     #return _to_dict(result)
 
@@ -691,7 +797,7 @@ def protein_id2locus_tag_dict(server, biodatabase_name):
             ' inner join bioentry as t4 on t1.bioentry_id = t4.bioentry_id' \
             ' inner join biodatabase on t4.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "saureus_01_15")' \
             ' B'
-    print sql
+    #print sql
     result = server.adaptor.execute_and_fetchall(sql, biodatabase_name)
     return _to_dict(result)
 
@@ -759,25 +865,25 @@ def taxon_id2missing_orthogroups(server, biodatabase_name, taxon_id, conserved_i
           'and biodatabase.name = "%s" ' \
           'and bioentry.description not like "%%%%plasmid%%%%"' % biodatabase_name
     n_taxons = server.adaptor.execute_and_fetchall(sql, )[0][0]
-    print "n taxons", n_taxons
+    #print "n taxons", n_taxons
     threshold = conserved_in_n_percent * float(n_taxons)/100
-    print "thersold", threshold
+    #print "thersold", threshold
     for orthogroup in orthogroup2family_size.keys():
 
         if orthogroup2family_size[orthogroup] >= threshold and orthogroup not in orthogroup2n_copies:
-            print "Suspect missing protein!", orthogroup, orthogroup2family_size[orthogroup]
+            #print "Suspect missing protein!", orthogroup, orthogroup2family_size[orthogroup]
 
             locus_list = orthogroup_id2locus_tag_list(server, orthogroup, biodatabase_name)
-            #print locus_list
-            for genome in locus_list:
-                print genome[-1], genome[-2]
+            ##print locus_list
+            #for genome in locus_list:
+            #    #print genome[-1], genome[-2]
 
 def taxon_id2unique_orthogroups(server, biodatabase_name, taxon_id):
     all_taxons_id = get_taxon_id_list(server, biodatabase_name)
 
     taxon_index = all_taxons_id.index(str(taxon_id))
 
-    print taxon_index
+    #print taxon_index
 
     sql_taxons = "where"
     for i in range(0, len(all_taxons_id)-1):
@@ -792,7 +898,7 @@ def taxon_id2unique_orthogroups(server, biodatabase_name, taxon_id):
         sql_taxons += ' `%s` > 0' % all_taxons_id[-1]
 
     sql = "select orthogroup from comparative_tables.orthology_%s %s" % (biodatabase_name, sql_taxons)
-    #print sql
+    ##print sql
 
     result = server.adaptor.execute_and_fetchall(sql,)
     return [i[0] for i in result]
@@ -819,9 +925,9 @@ def taxon_id2orthogroup_size(server, biodatabase_name, taxon_id):
 
 def seqfeature_id2feature_location(server, seqfeature_id):
     sql ='select start_pos, end_pos, strand from location where seqfeature_id= %s and rank = 1' % seqfeature_id
-    #print sql
+    ##print sql
     result = server.adaptor.execute_and_fetchall(sql, )
-    #print "res", result
+    ##print "res", result
     result = [int(i) for i in result[0]]
     return tuple(result)
 
@@ -849,7 +955,7 @@ def get_orthology_table(server, biodb_name):
     sql_taxons += ' `%s`' % all_taxons_id[-1]
 
     sql = "select %s from comparative_tables.orthology_%s" % (sql_taxons, biodb_name)
-    #print sql
+    ##print sql
     result = server.adaptor.execute_and_fetchall(sql,)
     return result
 
@@ -949,15 +1055,13 @@ def id_generator(size=6, chars=False): # + string.digits
 
 def locus_tag2genome_taxon_id(server, biodatabase_name):
 
-    sql = 'select t2.value, t6.taxon_id from biosqldb.seqfeature as t1' \
+    sql = 'select t2.value, t6.taxon_id from seqfeature as t1' \
           ' inner join seqfeature_qualifier_value as t2 on t1.seqfeature_id = t2.seqfeature_id' \
           ' inner join term as t3 on t2.term_id = t3.term_id and t3.name = "locus_tag"' \
-          ' inner join term as t4 on t1.type_term_id = t4.term_id and t4.name = "CDS"' \
-          ' inner join term as t5 on t1.source_term_id = t5.term_id' \
           ' inner join bioentry as t6 on t1.bioentry_id = t6.bioentry_id' \
           ' inner join biodatabase as t7 on t6.biodatabase_id = t7.biodatabase_id and t7.name = "%s"' % biodatabase_name
 
-    print sql
+    #print sql
 
     result = server.adaptor.execute_and_fetchall(sql,)
 
@@ -1050,15 +1154,16 @@ def location2sequence(server, accession, biodb, start, end):
           'inner join bioentry on bioentry.bioentry_id=biosequence.bioentry_id ' \
           'inner join biodatabase on bioentry.biodatabase_id=biodatabase.biodatabase_id ' \
           'where accession="%s" and biodatabase.name="%s"' % (start, end, accession, biodb)
-    #print sql
+    ##print sql
     sequence = server.adaptor.execute_and_fetchall(sql,)
     return sequence[0][0]
 
 if __name__ == '__main__':
 
-    server, db = load_db("chlamydia_11_15")
+    #server, db = load_db("chlamydia_11_15")
 
-    locus_tag2protein_id_dict(server, "chlamydia_11_15")
+    #locus_tag2protein_id_dict(server, "chlamydia_11_15")
+    seqfeature_id2organism_dico("server", "biodatabase_name")
 
 
     #get_family_size(server, "saureus_01_15")

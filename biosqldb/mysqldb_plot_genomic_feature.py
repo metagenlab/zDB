@@ -60,8 +60,8 @@ def plot_multiple_regions_crosslink2(target_protein_list, region_record_list, pl
         if record.name not in feature_sets:
                 feature_sets.append(gd_track_for_features.new_set())
         else:
-           print "already in feature_sets!"
-           print record
+           print ("already in feature_sets!")
+           print (record)
            quit
         
     for x in range(0,len(region_record_list)-1):
@@ -294,8 +294,8 @@ def plot_multiple_regions_crosslink(target_protein_list,
         if record.name not in feature_sets:
                 feature_sets.append(gd_track_for_features.new_set())
         else:
-           print "already in feature_sets!"
-           print record
+           print ("already in feature_sets!")
+           print (record)
            quit
 
 
@@ -333,9 +333,9 @@ def plot_multiple_regions_crosslink(target_protein_list,
                                                                      feature_2.qualifiers["locus_tag"][0])
                     except:
                         identity = 0
-                        print "problem with identity table %s and locus %s %s" % (group1,
+                        print ("problem with identity table %s and locus %s %s" % (group1,
                                                                                   feature_1.qualifiers["locus_tag"][0],
-                                                                                  feature_1.qualifiers["locus_tag"][0])
+                                                                                  feature_1.qualifiers["locus_tag"][0]))
 
 
                     color2 = colors.HexColor(rgb2hex(m.to_rgba(float(identity))))
@@ -391,8 +391,8 @@ def plot_multiple_regions_crosslink(target_protein_list,
                 try:
                     one_row_locus.append(feature.qualifiers["locus_tag"][0])
                 except:
-                    print 'no locus tag for:'
-                    print feature
+                    print ('no locus tag for:')
+                    print (feature)
 
 
             if feature.type == "repeat_region":
@@ -447,8 +447,8 @@ def plot_multiple_regions_crosslink(target_protein_list,
                 try:
                     one_row_locus.append(feature.qualifiers["locus_tag"][0])
                 except:
-                    print 'no locus tag for:'
-                    print feature
+                    print ('no locus tag for:')
+                    print (feature)
         all_locus = one_row_locus + all_locus
 
 
@@ -614,11 +614,11 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
         key = biodb_name + "_" + bioentry
         biorecord = cache.get(key)
         if biorecord:
-            print key, "in memory"
+            #print key, "in memory"
             #loaded_bioentry.append(loaded_records[bioentry])
             continue
         else:
-            print key, "NOT in memory"
+            #print key, "NOT in memory"
             cache_time = None
             #unloaded_bioentry.append(bioentry)
             new_record = biodb.lookup(accession=bioentry)
@@ -632,7 +632,7 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
             cache.set(key, new_record_reformat, cache_time)
             biorecord = cache.get(key)
             if biorecord:
-                print key, "in memory"
+                print (key, "in memory")
 
     #all_records = [biodb.lookup(accession=one_bioentry) for one_bioentry in bioentry_id_list]
     #unloaded_records = [biodb.lookup(accession=one_bioentry) for one_bioentry in unloaded_bioentry]
@@ -651,7 +651,7 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
         key = biodb_name + "_" + record_id
         record = cache.get(key)
         if not record:
-            print key, "still not in memory"
+            print (key, "still not in memory")
 
         #print "seqfeature_id", seqfeature_id
         #print "record OKKKKK"
@@ -709,9 +709,9 @@ def location2plot(biodb,
     key = biodb_name + "_" + accession
     biorecord = cache.get(key)
     if biorecord:
-        print key, "in memory"
+        print (key, "in memory")
     else:
-        print key, "NOT in memory"
+        print (key, "NOT in memory")
         cache_time = None
 
         new_record = biodb.lookup(accession=accession)
@@ -724,7 +724,7 @@ def location2plot(biodb,
         cache.set(key, new_record_reformat, cache_time)
         biorecord = cache.get(key)
         if biorecord:
-            print key, "in memory"
+            print (key, "in memory")
 
     fake_feature = copy.copy(biorecord.features[1])
     fake_feature.type = "tblast_target"
@@ -748,10 +748,10 @@ def location2simpleplot(biodb, biodb_name, bioentry, location_start, location_st
     key = biodb_name + "_" + bioentry
     biorecord = cache.get(key)
     if biorecord:
-        print key, "in memory"
+        print (key, "in memory")
 
     else:
-        print key, "NOT in memory"
+        print (key, "NOT in memory")
 
         new_record = biodb.lookup(accession=bioentry)
         new_record_reformat = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),

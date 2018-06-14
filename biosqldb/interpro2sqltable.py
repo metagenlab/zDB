@@ -239,16 +239,21 @@ def interpro2biosqlV2(server,
                     sys.exit()
 
 
+def update_analysis_dico(server):
+
+    import manipulate_biosqldb
+
+    sql = 'select analysis_name, analysis_id from interpro.analysis'
+
+    analysis_nam2analysis_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+    return analysis_nam2analysis_id
+
 def interpro2biosql(server,
-                    seqfeature_id2locus_tag,
-                    locus_tag2genome_taxon_id,
-                    protein_id2genome_taxon_id,
                     locus_tag2seqfeature_id,
-                    protein_id2seqfeature_id,
-                    seqfeature_id2organism,
                     db_name,
                     *input_files):
-    import re
+    import MySQLdb
     '''
     1. Protein Accession (e.g. P51587)
     2. Sequence MD5 digest (e.g. 14086411a2cdf1c4cba63020e1622579)
@@ -269,27 +274,42 @@ def interpro2biosql(server,
     :return:
     '''
 
-    sql = 'CREATE TABLE interpro_%s (accession VARCHAR(100),' \
-          ' locus_tag VARCHAR(200), ' \
-          ' organism VARCHAR(200),  ' \
-          ' taxon_id INT,' \
+    sql = 'CREATE TABLE if not exists interpro.analysis(analysis_id INT AUTO_INCREMENT PRIMARY KEY, ' \
+          ' analysis_name varchar(400),' \
+          ' index analysis_name(analysis_name))'
+
+    server.adaptor.execute(sql,)
+
+    sql2 = 'CREATE TABLE if not exists interpro.signature (signature_id INT AUTO_INCREMENT PRIMARY KEY, ' \
+           ' signature_accession varchar(400),' \
+           ' signature_description TEXT,' \
+           ' analysis_id INT,' \
+           ' interpro_id INT, ' \
+           ' GO_terms TEXT,' \
+           ' pathways TEXT,' \
+           ' INDEX analysis_id (analysis_id),' \
+           ' index signature_accession(signature_accession),' \
+           ' index interpro_id(interpro_id))' \
+
+    server.adaptor.execute(sql2,)
+
+    sql3 = 'CREATE TABLE if not exists interpro.interpro_%s (seqfeature_id INT,' \
           ' sequence_length INT, ' \
-          ' analysis VARCHAR(100) NOT NULL, ' \
-          ' signature_accession VARCHAR(100), ' \
-          ' signature_description VARCHAR(1000), ' \
+          ' signature_id INT, ' \
           ' start INT, ' \
           ' stop INT, ' \
-          ' score VARCHAR(20) NOT NULL, ' \
-          ' interpro_accession VARCHAR(1000) NOT NULL, ' \
-          ' interpro_description VARCHAR(10000),' \
-          ' GO_terms varchar(10000),' \
-          ' pathways varchar(10000),' \
-          ' INDEX locus (locus_tag),' \
-          ' INDEX ia (interpro_accession))' % db_name
-    try:
-        server.adaptor.execute(sql)
-    except:
-        pass
+          ' score TEXT,' \
+          ' INDEX signature_id (signature_id),' \
+          ' INDEX seqfeature(seqfeature_id))' % db_name
+
+    server.adaptor.execute(sql3)
+
+    analysis2analysis_id = update_analysis_dico(server)
+    sql = 'select signature_accession, signature_id from interpro.signature'
+    signature2signature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    sql = 'select name, interpro_id from interpro.entry'
+    interpro_entry2interpro_entry_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
     for one_interpro_file in input_files:
         print one_interpro_file
         from pandas import read_csv
@@ -313,7 +333,7 @@ def interpro2biosql(server,
 
             for i in range(len(tsvin['accession'])):
 
-                data= list(tsvin.loc[i,:])
+                data = list(tsvin.loc[i,:])
                 for index, item in enumerate(data):
                     if type(item) == str:
                         data[index] = item.replace('\"','')
@@ -322,55 +342,97 @@ def interpro2biosql(server,
 
                 sequence_length = data[2]
                 analysis = data[3]
-                signature_accession = data[4]
                 signature_description = data[5]
-                start = data[6]
-                stop = data[7]
-                score = data[8]
-
-
                 interpro_accession = data[11]
                 interpro_description = data[12]
                 GO_terms = data[13]
                 pathways = data[14]
 
                 try:
-                    taxon_id = protein_id2genome_taxon_id[accession]
-                    seqfeature_id = protein_id2seqfeature_id[accession]
+                    analysis_id = analysis2analysis_id[analysis]
                 except KeyError:
-                    taxon_id = locus_tag2genome_taxon_id[accession]
-                    seqfeature_id = locus_tag2seqfeature_id[accession]
-                organism = seqfeature_id2organism[str(seqfeature_id)]
-                #print organism
-                locus_tag = seqfeature_id2locus_tag[str(seqfeature_id)]
-                sql = 'INSERT INTO interpro_%s(accession, locus_tag, organism, taxon_id,' \
-                      ' sequence_length, analysis, signature_accession, signature_description, start, ' \
-                      ' stop, score, interpro_accession, interpro_description, GO_terms, pathways) ' \
-                      ' values ("%s", "%s", "%s", %s, %s, "%s", "%s", "%s", %s, %s, "%s", "%s", "%s", "%s", "%s");' % (db_name,
-                                                                                                     accession,
-                                                                                                     locus_tag,
-                                                                                                     organism,
-                                                                                                     taxon_id,
-                                                                                               sequence_length,
-                                                                                               analysis,
-                                                                                               signature_accession,
-                                                                                               signature_description,
-                                                                                               int(start),
-                                                                                               int(stop),
-                                                                                               str(score),
-                                                                                               interpro_accession,
-                                                                                               interpro_description,
-                                                                                               GO_terms,
-                                                                                               pathways)
-                try:
+                    print 'New analysis:', analysis
+                    sql = 'insert into interpro.analysis (analysis_name) values ("%s")' % analysis
                     server.adaptor.execute(sql)
                     server.adaptor.commit()
+                    analysis2analysis_id = update_analysis_dico(server)
+                    analysis_id = analysis2analysis_id[analysis]
+
+                signature_accession = data[4]
+
+                #sql = 'select signature_id from interpro.signature where signature_accession="%s"' % signature_accession
+
+                try:
+                    signature_id = signature2signature_id[signature_accession]#server.adaptor.execute_and_fetchall(sql,)[0][0]
+                except KeyError:
+                    print 'New signature', signature_accession, signature_description
+                    #sql1 = 'select interpro_id from interpro.entry where name="%s"' % (interpro_accession)
+
+                    try:
+                        interpro_id = interpro_entry2interpro_entry_id[interpro_accession]#server.adaptor.execute_and_fetchall(sql1,)[0][0]
+                    except KeyError:
+                        if interpro_accession == 0:
+                            print 'No interpro-accession for ', signature_accession, signature_description
+                            interpro_id="NULL"
+                        else:
+                            print 'New Interpro entry', interpro_accession, interpro_description
+
+                            sql1b = 'insert into interpro.entry(name, description) values("%s","%s")' % (interpro_accession,
+                                                                                                         interpro_description)
+                            print sql1b
+                            server.adaptor.execute(sql1b,)
+                            server.adaptor.commit()
+                            sql1 = 'select interpro_id from interpro.entry where name="%s"' % (interpro_accession)
+                            interpro_id = server.adaptor.execute_and_fetchall(sql1,)[0][0]
+                            # update dictionnray
+                            interpro_entry2interpro_entry_id[interpro_accession] = interpro_id
+
+                    sql2 = 'insert into interpro.signature (signature_accession, signature_description, ' \
+                          ' analysis_id, interpro_id, GO_terms, pathways) values ("%s", "%s", %s, %s, "%s", "%s")' % (signature_accession,
+                                                                                                     signature_description,
+                                                                                                     analysis_id,
+                                                                                                     interpro_id,
+                                                                                                     GO_terms,
+                                                                                                     pathways)
+
+                    server.adaptor.execute(sql2,)
+                    server.adaptor.commit()
+                    sql = 'select signature_id from interpro.signature where signature_accession="%s"' % signature_accession
+                    signature_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
+                    # update dictionnary
+                    signature2signature_id[signature_accession] = signature_id
+
+                start = data[6]
+                stop = data[7]
+                score = data[8]
+
+                if analysis in ['Phobius', 'Coils', 'SignalP-TM', 'SignalP_EUK', 'ProSitePatterns', 'SignalP_GRAM_NEGATIVE', 'SignalP_GRAM_POSITIVE']:
+                    score = "NULL"
+
+                seqfeature_id = locus_tag2seqfeature_id[accession]
+
+                sql = 'INSERT INTO interpro.interpro_%s(seqfeature_id,' \
+                      ' signature_id,' \
+                      ' sequence_length, ' \
+                      ' start, ' \
+                      ' stop, ' \
+                      ' score) ' \
+                      ' values (%s, %s, %s, %s, %s, "%s");' % (db_name,
+                                                             seqfeature_id,
+                                                             signature_id,
+                                                             sequence_length,
+                                                             int(start),
+                                                             int(stop),
+                                                             score)
+                try:
+                    server.adaptor.execute(sql)
+
                 except:
                     print sql
                     print data
                     import sys
                     sys.exit()
-
+            server.adaptor.commit()
 
 
 if __name__ == '__main__':
@@ -388,38 +450,36 @@ if __name__ == '__main__':
 
 
     server, db = manipulate_biosqldb.load_db(biodb)
-    print "creating locus_tag2seqfeature_id"
-    locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, biodb)
-    print "creating protein_id2seqfeature_id"
-    protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, biodb)
-
-    print "getting seqfeature_id2organism"
-    seqfeature_id2organism = manipulate_biosqldb.seqfeature_id2organism_dico(server, biodb)
-
-    print "creating locus_tag2taxon_id dictionnary..."
-    locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, biodb)
+    #print "creating locus_tag2seqfeature_id"
+    #locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, biodb)
 
 
 
-    print "creating protein_id2taxon_id dictionnary..."
-    protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, biodb)
-    print "getting seqfeature_id2locus_tag"
-    seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, biodb)
+    #print "creating protein_id2seqfeature_id"
+    #protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, biodb)
 
-    print seqfeature_id2locus_tag.keys()[1:10]
+    #print "getting seqfeature_id2organism"
+    #seqfeature_id2organism = manipulate_biosqldb.seqfeature_id2organism_dico(server, biodb)
+
+    #print "creating locus_tag2taxon_id dictionnary..."
+    #locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, biodb)
+
+    #print "creating protein_id2taxon_id dictionnary..."
+    #protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, biodb)
+    #print "getting seqfeature_id2locus_tag"
+    #seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, biodb)
+
+    #print seqfeature_id2locus_tag.keys()[1:10]
     if not args.v2_table:
 
+        sql = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % biodb
+        locus_tag2seqfeature_id =manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
         interpro2biosql(server,
-                        seqfeature_id2locus_tag,
-                        locus_tag2genome_taxon_id,
-                        protein_id2genome_taxon_id,
                         locus_tag2seqfeature_id,
-                        protein_id2seqfeature_id,
-                        seqfeature_id2organism,
                         biodb, *args.input_interpro)
 
-
-        get_interpro2go_table()
+        #get_interpro2go_table()
     else:
 
 

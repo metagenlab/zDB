@@ -111,7 +111,7 @@ class Orthogroup_Identity_DB:
         server.execute(sql)
 
         locus_list = group_matrix[1:,0]
-        print locus_list
+        #print locus_list
         for x in range(1, len(group_matrix[:,0])):
             for y in range(x, len(group_matrix[:,0])):
                 if group_matrix[x,y] != 0:
@@ -209,8 +209,8 @@ class Orthogroup_Identity_DB:
         group_id2identity_matrix = {}
         for i in range(n_cpu):
             group_id2identity_matrix.update(out_q.get())
-        print "join proc"
-        print "n groups:", len(group_id2identity_matrix.keys())
+        #print "join proc"
+        #print "n groups:", len(group_id2identity_matrix.keys())
         time.sleep(5)
 
 
@@ -238,28 +238,28 @@ class Orthogroup_Identity_DB:
 
     def add_average_orthogroup_identity(self, biodatabase_name):
 
-        print 'adding average id to orthology table'
+        #print 'adding average id to orthology table'
         server, db = manipulate_biosqldb.load_db(biodatabase_name)
 
-        print 'get orthogroups'
+        #print 'get orthogroups'
         sql = 'select orthogroup from comparative_tables.orthology_%s' % biodatabase_name
         try:
-            print 'adding column'
+            #print 'adding column'
             self._create_orthogroup_average_identity_column(server, biodatabase_name)
         except:
-            print "column already created?"
+            print ("column already created?")
         groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql, )]
-        print len(groups)
+        #print len(groups)
 
         for group in groups:
-            print "group %s" % group
+            #print "group %s" % group
             try:
                 id_table = np.array(get_orthogroup_identity_table(biodatabase_name, group))
                 id_matrix = id_table[:,1:].astype(float)
                 #print np.mean(id_matrix)
                 #print self._get_average_identity_from_identity_matrix(id_matrix)
                 av_id = round(np.mean(id_matrix[np.triu_indices(len(id_matrix), k=1)]), 2)
-                print av_id
+                #print av_id
             except:
                 av_id = 0
 
@@ -345,12 +345,12 @@ def locus_tag2identity_best_hit_all_genomes(biodb_name, locus, group_name, locus
             genome2best_hit[genome1] = 0
         return genome2best_hit
 
-    print "identity table", len(identity_table)
+    #print "identity table", len(identity_table)
 
     #locus_tag2genome_name = manipulate_biosqldb.locus_tag2genome_description(server, biodb_name)
     locus_tag2taxonomic_id_dict = manipulate_biosqldb.locus_tag2genome_taxon_id(server, biodb_name)
 
-    print "locus_tag2taxonomic_id ok"
+    #print "locus_tag2taxonomic_id ok"
 
 
     locus_index_ref = list(all_locus).index(locus)
@@ -365,14 +365,14 @@ def locus_tag2identity_best_hit_all_genomes(biodb_name, locus, group_name, locus
     genome2best_hit = {}
     for genome1 in genomes:
         genome2best_hit[genome1] = 0
-    print genome2best_hit
+    #print genome2best_hit
     for target_locus in all_locus:
         locus_index_target = list(all_locus).index(target_locus)
         identity = identity_table[locus_index_ref, locus_index_target + 1]
         target_taxon = locus_tag2taxonomic_id_dict[target_locus]
         if float(identity) > genome2best_hit[str(target_taxon)]:
             genome2best_hit[str(target_taxon)] = float(identity)
-    print genome2best_hit
+    #print genome2best_hit
     return genome2best_hit
 
 
@@ -407,12 +407,12 @@ def locus_list2identity_in_other_genomes(locus_list, biodb):
     final_out = header + '\n'
 
     for locus in locus_list:
-        print "locus", i
+        #print "locus", i
         seqfeature_id = locus_tag2seqfeature_id[locus]
         orthogroup = manipulate_biosqldb.seqfeature_id2orthogroup(server, seqfeature_id, biodb)
-        print "ortho", orthogroup
+        #print "ortho", orthogroup
         dico = locus_tag2identity_best_hit_all_genomes(biodb, locus, orthogroup)
-        print "dico done..."
+        #print "dico done..."
         out = '%s\t' % orthogroup
         for i in dico.keys():
             identity = dico[i]
@@ -432,12 +432,12 @@ def heatmap_presence_absence(biodb_name, group_name):
         template += '`%s`, ' % genomes[i]
     template += '`%s`' % genomes[-1]
 
-    print "template", template
+    #print "template", template
 
     sql = 'select %s from orthology_%s where orthogroup = "%s"' % (template, biodb_name, group_name)
 
     result = [int(i) for i in server.adaptor.execute_and_fetchall(sql,)[0]]
-    print result
+    #print result
     taxon2presence_absence = {}
     for x, y in zip(genomes, result):
         taxon2presence_absence[x] = y
@@ -504,14 +504,14 @@ def locus_list2presence_absence_all_genomes(locus_list, biodb_name):
     final_out = header + '\n'
 
     for i in locus_list:
-        print "locus", i
+        #print "locus", i
         seqfeature_id = locus_tag2seqfeature_id[i]
         orthogroup = manipulate_biosqldb.seqfeature_id2orthogroup(server, seqfeature_id, biodb_name)
-        print "ortho", orthogroup
+        #print "ortho", orthogroup
         dico = heatmap_presence_absence(biodb_name, orthogroup)
 
-        print "dico done..."
-        print dico
+        #print "dico done..."
+        #print dico
         out = '%s\t' % orthogroup
         for i in genomes:
 
@@ -542,7 +542,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     tata = Orthogroup_Identity_DB(args.db_name)
-    print "importing alignments..."
+    #print "importing alignments..."
     tata.import_alignments(tata.cursor, args.align_files)
     tata.add_average_orthogroup_identity(args.db_name)
     #check_identity("Chlamydia_12_14", "group_825", "Cav1_00733", "CT565")

@@ -116,23 +116,33 @@ def get_complete_ko_table(biodb):
     import re
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'CREATE TABLE IF NOT EXISTS enzyme.ko_annotation (ko_id VARCHAR(20),' \
-           ' name varchar(40),' \
-           ' definition TEXT,' \
-           ' EC TEXT,' \
-           ' pathways TEXT,' \
-           ' modules TEXT, ' \
-           ' dbxrefs TEXT, index ko_id (ko_id));'
+    sql = 'CREATE TABLE IF NOT EXISTS enzyme.ko_annotation (ko_id INT AUTO_INCREMENT PRIMARY KEY, ' \
+          ' ko_accession VARCHAR(20),' \
+          ' name varchar(60),' \
+          ' definition TEXT,' \
+          ' EC TEXT,' \
+          ' pathways TEXT,' \
+          ' modules TEXT, ' \
+          ' dbxrefs TEXT, ' \
+          ' index ko_id (ko_id));'
     server.adaptor.execute_and_fetchall(sql)
 
     url = 'http://rest.kegg.jp/list/ko'
     data = [line for line in urllib2.urlopen(url)]
+
+    sql = 'select ko_accession from enzyme.ko_annotation'
+    ko_already_in_db = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+    print 'test:', ko_already_in_db[0:10]
 
     total = len(data)
     for n, line in enumerate(data):
         print "%s / %s" % (n, total)
         ko = line.rstrip().split('\t')[0][3:]
         print ko
+        if ko in ko_already_in_db:
+            print '%s already in DB' % ko
+            continue
         url_ko = 'http://rest.kegg.jp/get/%s' % ko
 
         ko_data = [line for line in urllib2.urlopen(url_ko)]
@@ -172,7 +182,7 @@ def get_complete_ko_table(biodb):
         else:
             pathways = '-'
 
-        sql = 'insert into enzyme.ko_annotation (ko_id, name, definition, EC, pathways, modules, dbxrefs)' \
+        sql = 'insert into enzyme.ko_annotation (ko_accession, name, definition, EC, pathways, modules, dbxrefs)' \
               ' values ("%s", "%s", "%s","%s", "%s", "%s", "%s")' % (ko,
                                                                 name,
                                                                 definition,
@@ -268,38 +278,39 @@ def ko2definition(ko_record):
             return definition
 
 
-def locus2ko_table(locus_tag2ko_dico, biodatabase):
+def locus2ko_table(locus_tag2ko_dico,
+                   biodatabase,
+                   ko_accession2ko_id):
 
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodatabase)
 
     sql = 'select locus_tag, taxon_id from orthology_detail_%s' % biodatabase
-    sql2 = 'select locus_tag, orthogroup from orthology_detail_%s' % biodatabase
+    sql2 = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % biodatabase
 
     locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
-    locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
+    locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme.locus2ko_%s (taxon_id INT,'\
-           ' locus_tag VARCHAR(20),' \
-           ' orthogroup varchar(20),' \
-           ' ko_id VARCHAR(20), index taxon_id (taxon_id), index ko_id (ko_id));' % (biodatabase)
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme.seqfeature_id2ko_%s (seqfeature_id INT,' \
+           ' ko_id INT, ' \
+           ' index taxon_id (taxon_id), ' \
+           ' index ko_id (ko_id));' % (biodatabase)
 
-    print sql2
     server.adaptor.execute_and_fetchall(sql2,)
 
     for locus in locus_tag2ko_dico:
         ko = locus_tag2ko_dico[locus]
-        print locus, ko, locus2taxon_id[locus], locus2orthogroup[locus]
+        ko_id = ko_accession2ko_id[ko]
+        seqfeature_id = locus2seqfeature_id[locus]
+        print locus, ko, locus2taxon_id[locus]
 
-        sql = 'insert into enzyme.locus2ko_%s (taxon_id, locus_tag, orthogroup, ko_id) values ("%s", "%s", "%s", "%s")' % (biodatabase,
-                                                                                                                   locus2taxon_id[locus],
-                                                                                                                   locus,
-                                                                                                                   locus2orthogroup[locus],
-                                                                                                                   ko)
+        sql = 'insert into enzyme.seqfeature_id2ko_%s (seqfeature_id, ko_id) values (%s, %s)' % (biodatabase,
+                                                                                                 seqfeature_id,
+                                                                                                 ko_id)
 
-        print sql
+
         server.adaptor.execute(sql,)
-        server.commit()
+    server.commit()
 
 
 def parse_blast_koala_output(result_file):
@@ -314,9 +325,39 @@ def parse_blast_koala_output(result_file):
     return locus2ko
 
 
+def definition2module_list(definition_string):
+    import re
+    return re.findall('M[0-9]+', definition_string)
 
 
-def get_module_table(module2category):
+def get_module2ko_data(cursor, ko_data, module_id, ko_accession2ko_id):
+        import urllib2
+        import re
+
+        for line in ko_data:
+            try:
+                ko = line.rstrip().split("\t")[1][3:]
+            except:
+                print 'ko not found in line:', line
+                print 'ko data:', ko_data
+                import sys
+                sys.exit()
+            try:
+                ko_url = "http://rest.kegg.jp/get/%s" % ko
+                ko_data = urllib2.urlopen(ko_url)
+                definition = ko2definition(ko_data)
+                ko_id = ko_accession2ko_id[ko]
+                sql = 'INSERT into module2ko (module_id, ko_id) values (%s,%s);' % (module_id,
+                                                                                    ko_id)
+                print sql
+                cursor.execute(sql,)
+            except:
+                print line
+                import sys
+                sys.exit()
+
+
+def get_module_table(module2category,ko_accession2ko_id):
     '''
     1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme.kegg_module table
     2. get all KO associated for each module => create enzyme.module2ko table
@@ -349,8 +390,13 @@ def get_module_table(module2category):
     cursor.execute(sql1,)
 
     sql2 = 'CREATE TABLE IF NOT EXISTS module2ko (module_id INT,' \
-           ' ko_id VARCHAR(200),' \
-           ' ko_description TEXT);'
+           ' ko_id INT,' \
+           ' index ko_id(ko_id),' \
+           ' index module_id(module_id));'
+
+    sqlm = 'select module_name from kegg_module'
+    cursor.execute(sqlm,)
+    module_in_db = [i[0] for i in cursor.fetchall()]
 
 
     sql3 = ' CONSTRAINT fk_pathway_id' \
@@ -371,6 +417,9 @@ def get_module_table(module2category):
         pathway = line.rstrip().split("\t")
         module = pathway[0][3:]
         description = pathway[1]
+        if module in module_in_db:
+            print '%s already in db' % module
+            continue
         try:
             cat = module2category[module][0]
             sub_cat = module2category[module][1]
@@ -380,6 +429,7 @@ def get_module_table(module2category):
             cat = 'uncategorized'
             cat_short = 'uncategorized'
             print '------------------------------------------------'
+
         sql = 'INSERT into kegg_module (module_name, module_cat,module_sub_cat, module_sub_sub_cat, description) ' \
               'values ("%s", "%s", "%s", "%s", "%s");' % (module,
                                                           cat,
@@ -394,38 +444,35 @@ def get_module_table(module2category):
         sql = 'SELECT LAST_INSERT_ID();'
 
         cursor.execute(sql, )
+
         try:
             module_id = cursor.fetchall()[0][0]
         except:
             pass
 
-
         ko_numbers_link = "http://rest.kegg.jp/link/ko/%s" % module
-        ko_data = urllib2.urlopen(ko_numbers_link)
+        ko_data = [l for l in urllib2.urlopen(ko_numbers_link)]
 
-        for line in ko_data:
-            ko = line.rstrip().split("\t")[1][3:]
-            try:
-                ko_url = "http://rest.kegg.jp/get/%s" % ko
-                ko_data = urllib2.urlopen(ko_url)
-                definition = ko2definition(ko_data)
-                sql = 'INSERT into module2ko (module_id, ko_id, ko_description) values ("%s","%s", "%s");' % (module_id,
-                                                                                                              ko,
-                                                                                                              re.sub('"',
-                                                                                                              '',
-                                                                                                              definition))
-                print sql
-                cursor.execute(sql,)
-            except:
-                print line
-                import sys
-                sys.exit()
+        print len(ko_data)
+        if ko_data[0] == '\n':
+            print 'MODULE MADE OF SUBMODULES----------'
+            module_link = "http://rest.kegg.jp/get/%s" % module
+            module_data = [l for l in urllib2.urlopen(module_link)]
+            definition = ko2definition(module_data)
+            module_list = definition2module_list(definition)
+            print 'modules:', module_list
+            for n,m in enumerate(module_list):
+                print n, m
+                ko_numbers_link2 = "http://rest.kegg.jp/link/ko/%s" % m
+                ko_data2 = [l for l in urllib2.urlopen(ko_numbers_link2)]
+                get_module2ko_data(cursor, ko_data2, module_id, ko_accession2ko_id)
+        else:
+            get_module2ko_data(cursor,ko_data,module_id, ko_accession2ko_id)
+
         conn.commit()
 
 
-
-
-def get_pathway2ko():
+def get_pathway2ko(ko_accession2ko_id):
     '''
     1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme.kegg_module table
     2. get all KO associated for each pathway => create enzyme.pathway2ko table
@@ -450,7 +497,7 @@ def get_pathway2ko():
 
 
     sql2 = 'CREATE TABLE IF NOT EXISTS pathway2ko (pathway_id INT,' \
-           ' ko_id VARCHAR(200),' \
+           ' ko_id INT,' \
            ' index pathway_id(pathway_id),' \
            ' index ko_id(ko_id));'
 
@@ -459,7 +506,8 @@ def get_pathway2ko():
     print sql2
     cursor.execute(sql2,)
 
-
+    sql = 'select pathway_name, pathway_id from enzyme.kegg_pathway'
+    pathway_name2pathway_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     pathway_file = 'http://rest.kegg.jp/list/pathway'
     data = urllib2.urlopen(pathway_file)
@@ -467,46 +515,42 @@ def get_pathway2ko():
         raw = line.rstrip().split("\t")
         pathway = raw[0][5:]
         description = raw[1]
-        print 'pathway', pathway
-        sql = 'select pathway_id from kegg_pathway where pathway_name="%s";' % pathway
-        print sql
+        #print 'pathway', pathway
+        #sql = 'select pathway_id from kegg_pathway where pathway_name="%s";' % pathway
+        #print sql
 
         cursor.execute(sql)
 
         try:
-            pathway_id = cursor.fetchall()[0][0]
+            pathway_id = pathway_name2pathway_id[pathway] # cursor.fetchall()[0][0]
             print 'path id', pathway_id
         except:
             print 'no pathway id for: %s, incomplete pathway table?' %  pathway
 
-
         ko_numbers_link = "http://rest.kegg.jp/link/ko/%s" % pathway
         ko_data = urllib2.urlopen(ko_numbers_link)
-
 
         for line in ko_data:
             try:
                 ko = line.rstrip().split("\t")[1][3:]
+
             except IndexError:
                 print 'No Ko for pathway %s?' % pathway
                 continue
             try:
-                sql = 'INSERT into pathway2ko (pathway_id, ko_id) values (%s,"%s");' % (pathway_id,
-                                                                                       ko)
+                ko_id = ko_accession2ko_id[ko]
+            except KeyError:
+                print 'PROBLEM with KO %s?' % ko
+                continue
+            try:
+                sql = 'INSERT into pathway2ko (pathway_id, ko_id) values (%s,%s);' % (pathway_id,
+                                                                                       ko_id)
                 cursor.execute(sql,)
             except:
                 print line
                 import sys
                 sys.exit()
         conn.commit()
-
-
-
-
-
-
-
-
 
 def get_ec_data_from_IUBMB(ec):
     import BeautifulSoup
@@ -620,7 +664,7 @@ def get_pathay_table(map2category):
                                 db="enzyme") # name of the data base
     cursor = conn.cursor()
 
-    sql1 = 'CREATE TABLE IF NOT EXISTS kegg_pathway (pathway_id INT AUTO_INCREMENT PRIMARY KEY,' \
+    sql1 = 'CREATE TABLE IF NOT EXISTS enzyme.kegg_pathway (pathway_id INT AUTO_INCREMENT PRIMARY KEY,' \
            ' pathway_name VARCHAR(200),' \
            ' pathway_category_short VARCHAR(200),' \
            ' pathway_category VARCHAR(200),' \
@@ -644,12 +688,12 @@ def get_pathay_table(map2category):
         except:
             cat = 'uncategorized'
             cat_short = 'uncategorized'
-        sql = 'INSERT into kegg_pathway (pathway_name, description,pathway_category_short, pathway_category) values ("%s", "%s", "%s", "%s");' % (map,
-                                                                                                                                                  description,
-                                                                                                                                                  cat_short,
-                                                                                                                                                  cat)
+        sql = 'INSERT into enzyme.kegg_pathway (pathway_name, description,' \
+              ' pathway_category_short, pathway_category) values ("%s", "%s", "%s", "%s");' % (map,
+                                                                                               description,
+                                                                                               cat_short,
+                                                                                               cat)
 
-        print sql
         cursor.execute(sql,)
         conn.commit()
 
@@ -675,7 +719,7 @@ def get_ec2get_pathway_table():
                                 db="enzyme") # name of the data base
     cursor = conn.cursor()
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS kegg2ec (pathway_id INT,' \
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme.kegg2ec (pathway_id INT,' \
            ' ec_id INT,' \
            ' FOREIGN KEY(pathway_id) REFERENCES kegg_pathway(pathway_id),' \
            ' FOREIGN KEY(ec_id) REFERENCES enzymes(enzyme_id))' \
@@ -691,7 +735,7 @@ def get_ec2get_pathway_table():
     print sql2
     cursor.execute(sql2,)
 
-    sql = 'select pathway_name,pathway_id from kegg_pathway;'
+    sql = 'select pathway_name,pathway_id from enzyme.kegg_pathway;'
     cursor.execute(sql,)
     map2id = manipulate_biosqldb.to_dict(cursor.fetchall())
     for map in map2id:
@@ -905,37 +949,33 @@ def locus2ec_table(locus_tag2ec_dico, biodatabase):
 
     server, db = manipulate_biosqldb.load_db(biodatabase)
 
-    sql = 'select locus_tag, accession from orthology_detail_%s' % biodatabase
-    sql2 = 'select locus_tag, orthogroup from orthology_detail_%s' % biodatabase
+    #sql = 'select locus_tag, accession from orthology_detail_%s' % biodatabase
+    #sql2 = 'select locus_tag, orthogroup from orthology_detail_%s' % biodatabase
+    #locus2bioentry_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
+    #locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
 
-    locus2accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
-    locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
-
-    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme.locus2ec_%s (enzyme_id INT AUTO_INCREMENT PRIMARY KEY,' \
-           ' accession varchar(60),'\
-           ' locus_tag VARCHAR(20),' \
-           ' orthogroup varchar(20),' \
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme.seqfeature_id2ec_%s (enzyme_id INT AUTO_INCREMENT PRIMARY KEY,' \
+           ' seqfeature_id INT,' \
            ' ec_id INT,' \
            ' FOREIGN KEY(ec_id) REFERENCES enzymes(enzyme_id));' % (biodatabase)
 
-    print sql2
     server.adaptor.execute_and_fetchall(sql2,)
+
+    sql = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % biodatabase
+
+    locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     for locus in locus_tag2ec_dico:
         for ec_data in locus_tag2ec_dico[locus]:
-            print locus, ec_data[0], locus2accession[locus], locus2orthogroup[locus]
 
             sql = 'select enzyme_id from enzyme.enzymes where ec="%s"' % ec_data[0]
             ec_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
-
-            sql = 'insert into enzyme.locus2ec_%s (accession, locus_tag, orthogroup, ec_id) values ("%s", "%s", "%s", %s)' % (biodatabase,
-                                                                                                                       locus2accession[locus],
-                                                                                                                       locus,
-                                                                                                                       locus2orthogroup[locus],
-                                                                                                                       ec_id)
-            print sql
+            seqfeature_id = locus_tag2seqfeature_id[locus]
+            sql = 'insert into enzyme.seqfeature_id2ec_%s (seqfeature_id, ec_id) values (%s, %s)' % (biodatabase,
+                                                                                             seqfeature_id,
+                                                                                             ec_id)
             server.adaptor.execute(sql,)
-            server.commit()
+    server.commit()
 
 def get_microbial_metabolism_in_diverse_environments_kegg01120():
 
@@ -1008,17 +1048,26 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+
+
     if args.update_database:
+
+        server, db = manipulate_biosqldb.load_db(args.database_name)
+
+        get_complete_ko_table(args.database_name)
         #load_enzyme_nomenclature_table()
+        sql = 'select ko_accession, ko_id from enzyme.ko_annotation'
+        ko_accession2ko_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
         #map2category = get_kegg_pathway_classification()
         #get_pathay_table(map2category)
+        #get_pathway2ko(ko_accession2ko_id)
+        get_module_table(get_kegg_module_hierarchy(), ko_accession2ko_id)
+
         #get_ec2get_pathway_table()
-        #get_complete_ko_table(args.database_name)
-        #get_module_table(get_kegg_module_hierarchy())
         #get_ec_data_from_IUBMB("1.14.13.217")
         #get_ec_data_from_IUBMB("1.1.1.1")
-        #get_pathway2ko()
-        get_microbial_metabolism_in_diverse_environments_kegg01120()
+
+        #get_microbial_metabolism_in_diverse_environments_kegg01120()
         #get_ko2ec(args.database_name)
         #get_ec_data_from_IUBMB("3.2.1.196")
     if args.input_priam_files:
@@ -1031,6 +1080,10 @@ if __name__ == '__main__':
 
 
     if args.ko_table:
-
+        server, db = manipulate_biosqldb.load_db(args.database_name)
+        sql = 'select ko_accession, ko_id from enzyme.ko_annotation'
+        ko_accession2ko_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
         locus2ko = parse_blast_koala_output(args.ko_table)
-        locus2ko_table(locus2ko, args.database_name)
+        locus2ko_table(locus2ko,
+                       args.database_name,
+                       ko_accession2ko_id)
