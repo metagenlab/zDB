@@ -315,6 +315,7 @@ def plot_phylum_counts(domain_id, rank='phylum',
     sql = 'select phylogeny from pfam.phylogeny where rank="%s"' % (rank)
 
     cursor.execute(sql,)
+    
     tree = Tree(cursor.fetchall()[0][0], format=1)
 
     sql = 'select * from pfam.taxid2label_%s' % rank
@@ -339,7 +340,7 @@ def plot_phylum_counts(domain_id, rank='phylum',
         n_genomes = int(leaf_taxon2n_species[lf.name])
         if n_genomes > colapse_low_species_counts:
             keep.append(lf.name)
-    print 'number of leaaves:', len(keep)
+    print 'number of leaves:', len(keep)
 
     tree.prune(keep)
 

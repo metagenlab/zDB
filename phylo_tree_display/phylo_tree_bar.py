@@ -10,12 +10,14 @@ def plot_tree_stacked_barplot(tree_file,
                              taxon2set2value_heatmap=False,
                              taxon2label=False,
                              header_list2=False, # header counts columns
-                             biodb="chlamydia_04_16",
+                             biodb=False,
                              column_scale=True,
                              general_max=False,
                              header_list3 =False,
                              set2taxon2value_list_simple_barplot=False,
-                             set2taxon2value_list_simple_barplot_counts=True ):
+                             set2taxon2value_list_simple_barplot_counts=True,
+                             taxon2description=False,
+                             rotate=False):
 
     '''
 
@@ -31,11 +33,14 @@ def plot_tree_stacked_barplot(tree_file,
     :return:
     '''
 
-    import manipulate_biosqldb
 
-    server, db = manipulate_biosqldb.load_db(biodb)
 
-    taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb, filter_names=True)
+    if biodb:
+        import manipulate_biosqldb
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+        taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb, filter_names=True)
+
 
     t1 = Tree(tree_file)
 
@@ -44,8 +49,8 @@ def plot_tree_stacked_barplot(tree_file,
     # and set it as tree outgroup
     t1.set_outgroup(R)
 
-    colors = ["red","#FFFF00","#58FA58","#819FF7","#F781F3", "#2E2E2E","#F7F8E0", 'black']
-    colors2 = ["#7fc97f","#386cb0","#fdc086","#ffffb3","#fdb462", "#f0027f","#F7F8E0", 'black'] # fdc086ff 386cb0ff f0027fff
+    colors2 = ["red","#FFFF00","#58FA58","#819FF7","#F781F3", "#2E2E2E","#F7F8E0", 'black']
+    colors = ["#7fc97f","#386cb0","#fdc086","#ffffb3","#fdb462", "#f0027f","#F7F8E0", 'black'] # fdc086ff 386cb0ff f0027fff
 
     tss = TreeStyle()
     tss.draw_guiding_lines = True
@@ -59,13 +64,15 @@ def plot_tree_stacked_barplot(tree_file,
         col_n = 0
         for column in header_list2:
             values = taxon2set2value_heatmap[column].values()
+            print values
             if min(values) == max(values):
                 min_val = 0
                 max_val = 1.5*max(values)
             else:
                 min_val = min(values)
                 max_val = max(values)
-            norm = mpl.colors.Normalize(vmin=min_val,vmax=max_val*1.1)
+            print 'min-max', min_val, max_val
+            norm = mpl.colors.Normalize(vmin=min_val,vmax=max_val) # *1.1
             if col_n < 4:
                 cmap = cm.OrRd#
             else:
@@ -73,7 +80,7 @@ def plot_tree_stacked_barplot(tree_file,
 
             m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
-            column2scale[column] = [m, float(max_val)*0.7]
+            column2scale[column] = [m, float(max_val)] # *0.7
             col_n+=1
 
     for i, lf in enumerate(t1.iter_leaves()):
@@ -170,14 +177,18 @@ def plot_tree_stacked_barplot(tree_file,
             try:
                 n = TextFace('%s' % taxon2label[lf.name])
             except:
-                n = TextFace('%s' % taxon2label[int(lf.name)])
+                try:
+                    n = TextFace('%s' % taxon2label[int(lf.name)])
+                except:
+                    n = TextFace('-')
             n.margin_top = 1
             n.margin_right = 1
             n.margin_left = 20
             n.margin_bottom = 1
             n.inner_background.color = "white"
             n.opacity = 1.
-
+            if rotate:
+               n.rotation= 270
             lf.add_face(n, 1, position="aligned")
             col_add=2
         else:
@@ -206,6 +217,8 @@ def plot_tree_stacked_barplot(tree_file,
                 b.inner_border.width = 0
                 b.margin_right = 5
                 b.margin_left = 5
+                if rotate:
+                    b.rotation = 270
                 lf.add_face(b, col+col_add, position="aligned")
                 #col_count+=1
 
@@ -235,6 +248,8 @@ def plot_tree_stacked_barplot(tree_file,
                     a.margin_right = 2
                     a.margin_left = 5
                     a.margin_bottom = 1
+                    if rotate:
+                        a.rotation = 270
                     lf.add_face(a, col+col_add, position="aligned")
 
 
@@ -249,6 +264,8 @@ def plot_tree_stacked_barplot(tree_file,
                 b.inner_border.width = 0
                 b.margin_right = 15
                 b.margin_left = 0
+                if rotate:
+                    b.rotation = 270
                 if set2taxon2value_list_simple_barplot_counts:
                     if col == 0:
                         col+=1
@@ -274,12 +291,12 @@ def plot_tree_stacked_barplot(tree_file,
                     value = taxon2set2value_heatmap[col_name][str(lf.name)]
                 except:
                     try:
-                        value = taxon2set2value_heatmap[col_name][int(lf.name)]
+                        value = taxon2set2value_heatmap[col_name][round(float(lf.name),2)]
                     except:
                         value = 0
                 if header_list2[i] == 'duplicates':
                     print 'dupli', lf.name, value
-                #print 'val', value
+                print 'val----------------', value
                 if int(value) > 0:
                     if int(value) >=10 and int(value) < 100:
                         n = TextFace('%4i' % value)
@@ -295,7 +312,8 @@ def plot_tree_stacked_barplot(tree_file,
                     n.margin_bottom = 1
                     n.hz_align = 1
                     n.vt_align = 1
-
+                    if rotate:
+                        n.rotation = 270
                     n.inner_background.color = rgb2hex(column2scale[col_name][0].to_rgba(float(value)))#"orange"
                     #print 'xaxaxaxaxa', value,
                     if float(value) > column2scale[col_name][1]:
@@ -314,7 +332,8 @@ def plot_tree_stacked_barplot(tree_file,
                     n.margin_bottom = 1
                     n.inner_background.color = "white"
                     n.opacity = 1.
-
+                    if rotate:
+                        n.rotation = 270
                     lf.add_face(n, col2+col_add, position="aligned")
                     i+=1
 
