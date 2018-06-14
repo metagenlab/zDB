@@ -16,8 +16,8 @@ def plot_tree_stacked_barplot(tree_file,
                              header_list3 =False,
                              set2taxon2value_list_simple_barplot=False,
                              set2taxon2value_list_simple_barplot_counts=True,
-                             taxon2description=False,
-                             rotate=False):
+                             rotate=False,
+                             taxon2description=False):
 
     '''
 
