@@ -25,7 +25,7 @@ def get_ncbi_genome(path, destination):
     
     
     
-def get_complete_genomes_data(ncbi_taxon, complete = False, representative =False):
+def get_complete_genomes_data(ncbi_taxon, complete = False, representative =False, genbank=False):
 
     handle = Entrez.esearch(db="assembly", term="txid%s[Organism:exp]  AND (latest[filter])" % ncbi_taxon, retmax=100000)
     record = Entrez.read(handle)
@@ -141,14 +141,23 @@ def get_complete_genomes_data(ncbi_taxon, complete = False, representative =Fals
                 ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
                 ftp_path = '/' + ftp_path
                 status = get_ncbi_genome(ftp_path, out_dir)
+
                 if status == False:
-                    print 'RefSeq link is empty, downloading GenBank record'
-                    ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
-                    get_ncbi_genome(ftp_path, out_dir)                    
+                    if genbank:
+                        print 'RefSeq link is empty, downloading GenBank record'
+                        ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                        get_ncbi_genome(ftp_path, out_dir)
+                    else:
+                        print 'no RefSeq record for assembly %s' % (one_assembly)
+                        continue
             except IndexError:
-                print 'RefSeq link could not be identified, downloading GenBank record'
-                ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
-                get_ncbi_genome(ftp_path, out_dir)
+                if genbank:
+                    print 'RefSeq link could not be identified, downloading GenBank record'
+                    ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+                    get_ncbi_genome(ftp_path, out_dir)
+                else:
+                    print 'no RefSeq record for assembly %s' % (one_assembly)
+                    continue
 
         # check if the assembly was replaced
         elif 'replaced' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
@@ -448,12 +457,16 @@ if __name__ == '__main__':
     parser.add_argument("-s",'--sample',type=str,help="get sample data from accession id")
     parser.add_argument("-b",'--bioproject',type=str,help="get all assemblies from bioproject")
     parser.add_argument("-r",'--representative',action="store_true", help="download only representative genomes")
+    parser.add_argument("-g", '--genbank', action="store_true", help="Download only Genbank record if the assembly is not in RefSeq")
 
     args = parser.parse_args()
     if args.taxon_id:
-        get_complete_genomes_data(ncbi_taxon= args.taxon_id, complete = args.complete, representative = args.representative)
+        get_complete_genomes_data(ncbi_taxon= args.taxon_id,
+                                  complete = args.complete,
+                                  representative = args.representative,
+                                  genbank=args.genbank)
     if args.accession:
-        accession2assembly(accession = args.accession)
+        accession2assembly(accession=args.accession)
     if args.sample:
         get_sample_data(accession=args.sample)
     if args.bioproject:
