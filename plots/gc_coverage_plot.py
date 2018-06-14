@@ -56,6 +56,9 @@ def gc_coverage_plot(samtool_depth_file, contigs_file, blast_file=False, column1
         #library(Cairo)
         library(R.utils)
 
+
+
+
         if (isGzipped("%s")){
             print('Gzipped file')
             all_depth <- read.table(gzfile('%s'), header=FALSE)
@@ -69,8 +72,8 @@ def gc_coverage_plot(samtool_depth_file, contigs_file, blast_file=False, column1
         contigs_gc <- read.table("/tmp/gc.tab", header=TRUE)
 
         gc_coverage_table <-cbind(contigs_gc,coverage=contigs_depth[match(contigs_gc$Name, contigs_depth$V1),2])
-        w<-which(gc_coverage_table$Length >=1000)
-        gc_coverage_table <- gc_coverage_table[w,]
+        #w<-which(gc_coverage_table$Length >=1000)
+        #gc_coverage_table <- gc_coverage_table[w,]
 
         
 
@@ -147,8 +150,8 @@ def gc_coverage_plot(samtool_depth_file, contigs_file, blast_file=False, column1
         contigs_gc <- read.table("/tmp/gc.tab", header=TRUE)
 
         gc_coverage_table <-cbind(contigs_gc,coverage=contigs_depth[match(contigs_gc$Name, contigs_depth$V1),2])
-        w<-which(gc_coverage_table$Length >=1000)
-        gc_coverage_table <- gc_coverage_table[w,]
+        #w<-which(gc_coverage_table$Length >=1000)
+        #gc_coverage_table <- gc_coverage_table[w,]
 
         gc_coverage_table$taxon <- blast_file[,2][match(gc_coverage_table$Name, blast_file[,1])]
         print (is.na(gc_coverage_table$taxon))
@@ -193,6 +196,7 @@ if __name__ == '__main__':
     parser.add_argument("-1", '--column1', type=str, help="contig names column", default=2)
     parser.add_argument("-2", '--column2', type=str, help="classification column", default=6)
     parser.add_argument("-l", '--highlight', type=str, help="highlight some contigs listed in input file", default=False)
+    parser.add_argument("-f", '--filter_size', type=int, help="filter contigs smaller than X", default=1000)
 
 
     args = parser.parse_args()

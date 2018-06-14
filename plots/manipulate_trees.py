@@ -118,8 +118,8 @@ Phylo.write(new_tree, 'renamed_tree.ML.tre', 'newick')
 
 
 
-def convert_tree_taxon2genome(biodb_name, input_tree, output_tree ):
-    server, db = manipulate_biosqldb.load_db(biodb_name)
+def convert_tree_taxon2genome(biodb_name, input_tree, output_tree, sqlite=False ):
+    server, db = manipulate_biosqldb.load_db(biodb_name, sqlite=sqlite)
     print biodb_name
     taxon_id2genome_description = manipulate_biosqldb.taxon_id2genome_description(server, biodb_name)
 
@@ -152,8 +152,8 @@ def convert_tree_taxon2genome(biodb_name, input_tree, output_tree ):
     print output_tree
     Phylo.write(new_tree, output_tree, 'newick')
 
-def convert_tree_accession2taxon_id(biodb_name, input_tree, output_tree ):
-    server, db = manipulate_biosqldb.load_db(biodb_name)
+def convert_tree_accession2taxon_id(biodb_name, input_tree, output_tree, sqlite=False ):
+    server, db = manipulate_biosqldb.load_db(biodb_name, sqlite=sqlite)
     accession2taxon_id = manipulate_biosqldb.accession2taxon_id(server, biodb_name)
     for i in accession2taxon_id:
         accession2taxon_id[i] = str(accession2taxon_id[i])
@@ -162,8 +162,8 @@ def convert_tree_accession2taxon_id(biodb_name, input_tree, output_tree ):
 
     Phylo.write(new_tree, output_tree, 'newick')
 
-def convert_tree_taxon_id2accession(biodb_name, input_tree, output_tree ):
-    server, db = manipulate_biosqldb.load_db(biodb_name)
+def convert_tree_taxon_id2accession(biodb_name, input_tree, output_tree, sqlite=False):
+    server, db = manipulate_biosqldb.load_db(biodb_name, sqlite=sqlite)
     taxon_id2accession = manipulate_biosqldb.taxon_id2accession_chromosome(server, biodb_name)
     for i in taxon_id2accession:
         taxon_id2accession[str(i)] = taxon_id2accession[i]
@@ -172,8 +172,8 @@ def convert_tree_taxon_id2accession(biodb_name, input_tree, output_tree ):
 
     Phylo.write(new_tree, output_tree, 'newick')
 
-def convert_tree_accession2genome(biodb_name, input_tree, output_tree ):
-    server, db = manipulate_biosqldb.load_db(biodb_name)
+def convert_tree_accession2genome(biodb_name, input_tree, output_tree, sqlite=False ):
+    server, db = manipulate_biosqldb.load_db(biodb_name, sqlite=sqlite)
     #taxon_id2genome_description = manipulate_biosqldb.taxon_id2genome_description(server, biodb_name)
     accession2genome_description = manipulate_biosqldb.accession2description(server, biodb_name)
     #accession2genome_description = taxon_id2genome_description
