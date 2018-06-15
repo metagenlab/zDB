@@ -1087,15 +1087,12 @@ if __name__ == '__main__':
         #print "creating locus_tag2seqfeature_id"
         locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, args.db_name)
 
-<<<<<<< HEAD
         ##print "creating protein_id2taxon_id dictionnary..."
         #protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, args.db_name)
         #print "creating locus_tag2taxon_id dictionnary..."
         locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, args.db_name)
-=======
         #print "creating protein_id2taxon_id dictionnary..."
         #protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, args.db_name)
-        print "creating locus_tag2taxon_id dictionnary..."
         locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, args.db_name)
 
         #print 'creating locustag2seqfature_id table'
@@ -1106,7 +1103,6 @@ if __name__ == '__main__':
         #                                                                 locus_tag2genome_taxon_id)
         #except:
         #    print 'error, does locustag2seqfature_id already exist?'
->>>>>>> f93459bbe98d5532341e32e0921fadd9648e5a85
 
         ##print 'creating locustag2seqfature_id table'
         #import get_locus2seqfeature_table
@@ -1117,14 +1113,10 @@ if __name__ == '__main__':
         #except:
         #    #print 'error, does locustag2seqfature_id already exist?'
 
-<<<<<<< HEAD
         #print "creating protein_id2seqfeature_id"
         protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, args.db_name)
 
         #print "creating locus_tag2accession dictionnary..."
-=======
-        print "creating locus_tag2accession dictionnary..."
->>>>>>> f93459bbe98d5532341e32e0921fadd9648e5a85
         locus_tag2accession = manipulate_biosqldb.locus_tag2accession(server, args.db_name)
         #print "creating protein_id2accession dictionnary..."
         protein_id2accession = manipulate_biosqldb.protein_id2accession(server, args.db_name)
@@ -1138,17 +1130,10 @@ if __name__ == '__main__':
         #print "getting seqfeature_id2protein_id"
         seqfeature_id2protein_id = manipulate_biosqldb.seqfeature_id2protein_id_dico(server, args.db_name)
 
-<<<<<<< HEAD
         #print "getting seqfeature_id2bioentry_id"
         seqfeature_id2bioentry_id = manipulate_biosqldb.seqfeature_id2bioentry_id_dico(server, args.db_name)
 
         #print "parsing mcl file"
-=======
-        print "getting seqfeature_id2bioentry_id"
-        seqfeature_id2bioentry_id = manipulate_biosqldb.seqfeature_id2bioentry_id_dico(server, args.db_name)
-
-        print "parsing mcl file"
->>>>>>> f93459bbe98d5532341e32e0921fadd9648e5a85
         protein_id2orthogroup_id, \
         orthomcl_groups2locus_tag_list, \
         genome_orthomcl_code2proteins, \
@@ -1161,17 +1146,10 @@ if __name__ == '__main__':
         #print "getting seqfeature_id2product"
         seqfeature_id2product = manipulate_biosqldb.seqfeature_id2product_dico(server, args.db_name)
 
-<<<<<<< HEAD
         #print "getting seqfeature_id2feature_type_id"
         seqfeature_id2feature_type_id = manipulate_biosqldb.seqfeature_id2feature_type_id(server, args.db_name)
 
         #print "getting seqfeature_id2translation"
-=======
-        print "getting seqfeature_id2feature_type_id"
-        seqfeature_id2feature_type_id = manipulate_biosqldb.seqfeature_id2feature_type_id(server, args.db_name)
-
-        print "getting seqfeature_id2translation"
->>>>>>> f93459bbe98d5532341e32e0921fadd9648e5a85
         seqfeature_id2translation = manipulate_biosqldb.seqfeature_id2translation_dico(server, args.db_name)
 
         #print "getting seqfeature_id2organism"
