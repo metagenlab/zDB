@@ -1800,6 +1800,15 @@ def multiple_orthogroup_heatmap(biodb, reference_orthogroup, max_distance=2.2):
 
 def get_pfam_data(orthogroup, biodb, aa_alignment=False):
 
+    '''
+
+    :param orthogroup: target orthogroup id
+    :param biodb: biodb to which the orthogroup belong
+    :param aa_alignment: get aa align as well (optional)
+    :return: a dictionnary with locus tags as keys, with all data necessary to draw a PFAM phylogeny figure with the
+             function "draw_pfam_tree"
+    '''
+
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -1906,8 +1915,6 @@ def layout(node):
         add_face_to_node(motifs_seqface, node, 1, position="aligned")
 
 
-
-
 def organism2color(locus2data, taxon_id2family=False):
 
 
@@ -1937,23 +1944,80 @@ def organism2color(locus2data, taxon_id2family=False):
 
         return dict(zip(family_list, colors))
 
+def interpro_tsv2pfam_data(interpro_tsv_file,
+                           locus2organism):
+    '''
 
-def draw_pfam_tree(tree_name, locus2data, locus2protein_id=False, taxon_id2family=False):
+    interpro_tsv_file: interpro output file for locus of interest. Consider first colum as locus_tags (or protein IDs)
+    locus2organism_name_table: Dictionnary to convert locus_tags to organism name for leaf labels for the tree.
+    :return: a dictionarry woth locus_tags as keys with all data necessary to draw a PFAM phylogeny figure with the
+             function "draw_pfam_tree"
+
+    0 domain start
+    1 domain stop
+    2 organism name
+    3 sequence_length
+    4 signature_accession
+    5 signature_description
+    6 taxon_id
+    7 sequence (optional)
 
     '''
-	format: locus2data 
-	
-	data: list of lists with:
-	
-	0 domain start
-	1 domain stop
-	2 organism name 
-	3 sequence_length
-	4 signature_accession
-	5 signature_description
-	6 taxon_id
-	7 sequence (optional)
-	
+
+    locus2data = {}
+    with open(interpro_tsv_file, 'r') as f:
+        for row in f:
+            data = row.rstrip().split('\t')
+            if len(data) != 13:
+                print (len(data))
+                print (data)
+                raise IOError('Unexpected number of columns in the tsv file (expected 13 of the standard 13 columns format from 2018)')
+            else:
+                locus_tag = data[0]
+                domain_start = int(data[6])
+                domain_stop = int(data[7])
+                organism_name = locus2organism[locus_tag]
+                seq_length = int(data[2])
+                signature_accession = data[4]
+                signature_description = data[5]
+                taxon_id = 0
+                if locus_tag not in locus2data:
+                    locus2data[data[0]] = [[domain_start,
+                                            domain_stop,
+                                            organism_name,
+                                            seq_length,
+                                            signature_accession,
+                                            signature_description,
+                                            taxon_id]]
+                else:
+                    locus2data[data[0]].append([domain_start,
+                                            domain_stop,
+                                            organism_name,
+                                            seq_length,
+                                            signature_accession,
+                                            signature_description,
+                                            taxon_id])
+    print locus2data
+    return locus2data
+
+
+def draw_pfam_tree(tree_name, locus2data,
+                   locus2protein_id=False,
+                   taxon_id2family=False,
+                   color_by_family=False):
+
+    '''
+    format: locus2data
+    data: list of lists with:
+
+    0 domain start
+    1 domain stop
+    2 organism name
+    3 sequence_length
+    4 signature_accession
+    5 signature_description
+    6 taxon_id
+    7 sequence (optional)
     '''
 
     # from the original set
@@ -2031,9 +2095,9 @@ def draw_pfam_tree(tree_name, locus2data, locus2protein_id=False, taxon_id2famil
         l.name = data[0][2]
 
         if not taxon_id2family:
-
-            l.img_style['fgcolor'] = color_dico[data[0][2]]
-            l.img_style['size'] = 6
+            if color_by_family:
+                l.img_style['fgcolor'] = color_dico[data[0][2]]
+                l.img_style['size'] = 6
 
         else:
             taxon_id = data[0][-1]
@@ -2043,8 +2107,9 @@ def draw_pfam_tree(tree_name, locus2data, locus2protein_id=False, taxon_id2famil
             ff = AttrFace("name", fsize=12)
             #ff.background.color = 'red'
             ff.fgcolor = col
-            l.add_face(ff, column=0)
-
+            if color_by_family:
+                print 'color----------'
+                l.add_face(ff, column=0)
 
         locus.margin_right = 10
         locus.margin_left = 10
