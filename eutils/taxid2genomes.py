@@ -29,7 +29,8 @@ def get_ncbi_genome(path, destination):
 def get_complete_genomes_data(ncbi_taxon,
                               complete = False,
                               representative =False,
-                              refseq_only=False):
+                              refseq_only=False,
+                              genbank=False):
 
     s_term = 'txid%s[Organism:exp] (AND all[filter] NOT anomalous[filter]) '
     if complete:
