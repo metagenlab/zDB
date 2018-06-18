@@ -20,7 +20,6 @@ def old_taxon_id2new_taxon_id(old_taxon_id):
     except:
         return False
 
-
 def gi(ncbi_term, database="nuccore", retmax=20):
 
     handle = Entrez.esearch(db=database, term=ncbi_term, retmax=retmax)
@@ -84,7 +83,6 @@ def gi2protein_accession(gi, database="nuccore"):
     import errno
 
     if database != 'protein':
-
         try:
             handle = Entrez.elink(dbfrom=database, id=gi, db='protein')
         except SocketError as e:
@@ -97,6 +95,7 @@ def gi2protein_accession(gi, database="nuccore"):
                 gi2protein_accession(gi, database=database)
         try:
             record = Entrez.read(handle, validate=False)
+            print 'record', record
             try:
                 gi_prot = record[0]['LinkSetDb'][0]['Link'][0]['Id']
             except IndexError:
@@ -111,6 +110,31 @@ def gi2protein_accession(gi, database="nuccore"):
         record = Entrez.read(handle, validate=False)
     return record[0]['AccessionVersion']
 
+def accession2gbk(accession, db='protein'):
+    from Bio import SeqIO
+
+    handle = Entrez.esearch(db=db, term="%s" % (accession), retmax=1)
+    record = Entrez.read(handle)
+
+    try:
+        gi_id = record['IdList'][0]
+    except KeyError:
+        print 'try again!'
+        return locus_tag2protein_accession(locus_tag)
+    if db == 'gene':
+        handle3 = Entrez.efetch(db="gene", id=gi_id, rettype="xml")
+        record3 = Entrez.read(handle3, validate=False)
+        gi_id = record3[0]['Entrezgene_xtra-iq'][1]['Xtra-Terms_value']
+
+    try:
+        handlexx = Entrez.efetch(db='protein',
+                                 id="%s" % gi_id,
+                                 rettype = "gb", retmode = "text")
+
+        record_gbk = SeqIO.read(handlexx, 'genbank')
+        return record_gbk
+    except:
+        return None
 
 def locus_tag2protein_accession(locus_tag, db='protein'):
     from socket import error as SocketError
@@ -133,7 +157,8 @@ def locus_tag2protein_accession(locus_tag, db='protein'):
 
     try:
         record = Entrez.read(handle2, validate=False)
-        #print record
+        print record
+
         if record[0]['Status'] == 'dead':
             if 'ReplacedBy' in record[0]:
                 return [record[0]['ReplacedBy'], record[0]['TaxId']]
