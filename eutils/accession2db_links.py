@@ -5,6 +5,101 @@ from Bio import Entrez
 
 Entrez.email = "trestan.pillonel@unil.ch"
 
+def uniprot2uniref100_with_refseq_or_embl_crossref(uniprot_id):
+    import urllib,urllib2
+
+    url = 'http://www.uniprot.org/uploadlists/' # to=EMBL_ID&query=A4D962&from=ACC&format=tab
+
+    params = {
+    'from':'ACC',
+    'to':'NF100',
+    'format':'tab',
+    'query':'%s' % uniprot_id
+    }
+
+    data = urllib.urlencode(params)
+    request = urllib2.Request(url, data)
+    contact = "trestan.pillonel@gmail.com" # Please set your email address here to help us debug in case of problems.
+    request.add_header('User-Agent', 'Python %s' % contact)
+    response = urllib2.urlopen(request)
+    page = response.read()
+    result = page.split('\n')
+
+    cluster_members = result[1].split('\t')[5].split(';')
+    for member in cluster_members:
+        if member != uniprot_id:
+            print 'member', member
+            acc = uniprot_accession2EMBL_GenBank_DDBJ_id(member, 'ACC', 'P_REFSEQ_AC')
+            if acc is not None:
+                return acc
+            else:
+                acc = uniprot_accession2EMBL_GenBank_DDBJ_id(member, 'ACC', 'EMBL')
+                if acc is not None:
+                    return acc
+
+    return None
+    #acc = result[1].split('\t')[1]
+    #return acc
+
+def uniparc2active_refseq(uniparc_id):
+    import urllib,urllib2
+    url = 'http://www.uniprot.org/uniparc/%s.tab' % uniparc_id
+    request = urllib2.Request(url)
+    contact = "trestan.pillonel@gmail.com" # Please set your email address here to help us debug in case of problems.
+    request.add_header('User-Agent', 'Python %s' % contact)
+    response = urllib2.urlopen(request)
+    page = response.read()
+    result = page.split('\n')
+    for row in result:
+        data = row.split('\t')
+        if data[0] == 'RefSeq':
+            print 'jackpot!'
+            return data[1]
+    return None
+
+def uniparc2active_uniprotkb(uniparc_id):
+    import urllib,urllib2
+    url = 'http://www.uniprot.org/uniparc/%s.tab' % uniparc_id
+    request = urllib2.Request(url)
+    contact = "trestan.pillonel@gmail.com" # Please set your email address here to help us debug in case of problems.
+    request.add_header('User-Agent', 'Python %s' % contact)
+    response = urllib2.urlopen(request)
+    page = response.read()
+    result = page.split('\n')
+    for row in result:
+        data = row.split('\t')
+        if data[0] == 'UniProtKB/TrEMBL' and data[-1] == 'Yes':
+            print 'jackpot UNIP!'
+            return data[1]
+    return None
+
+def uniprot_accession2EMBL_GenBank_DDBJ_id(accession, dbfrom='ACC', dbto='EMBL'):
+    import urllib,urllib2
+
+    url = 'http://www.uniprot.org/uploadlists/' # to=EMBL_ID&query=A4D962&from=ACC&format=tab
+
+    params = {
+    'from':'%s' % dbfrom,
+    'to':'%s' % dbto,
+    'format':'tab',
+    'query':'%s' % accession
+    }
+
+    data = urllib.urlencode(params)
+    request = urllib2.Request(url, data)
+    contact = "trestan.pillonel@gmail.com" # Please set your email address here to help us debug in case of problems.
+    request.add_header('User-Agent', 'Python %s' % contact)
+    response = urllib2.urlopen(request)
+    page = response.read()
+    result = page.split('\n')
+    try:
+        acc = result[1].split('\t')[1]
+        return acc
+    except:
+        return None
+
+
+
 def sequence2uniprot_id(sequence):
 
     link = "http://research.bioinformatics.udel.edu/peptidematch/webservices/peptidematch_rest?query=%s" % (sequence)

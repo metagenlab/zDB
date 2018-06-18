@@ -37,6 +37,7 @@ def sequence_id2scientific_classification(ncbi_id, protein=False):
     for record in records:
         # get scientific names of all classification levels
         classification = {}
+
         for level in record['LineageEx']:
 
             rank = level["Rank"]
@@ -44,7 +45,7 @@ def sequence_id2scientific_classification(ncbi_id, protein=False):
             classification[rank] = scientific_name
         return classification
 
-def taxon_id2scientific_classification(taxon_id_list):
+def taxon_id2scientific_classification(taxon_id_list, taxon2rank=False):
     '''
     :param ncbi taxon id
     :param key
@@ -66,6 +67,7 @@ def taxon_id2scientific_classification(taxon_id_list):
     new_taxon = [value for value in taxon_id_list if value != 'N/A']
 
     merged_taxons = ','.join(new_taxon)
+    #print 'merged taxonss', merged_taxons
     handle = Entrez.efetch(db="taxonomy", id=merged_taxons, rettype="xml")
     records = Entrez.parse(handle)
     try:
@@ -74,23 +76,39 @@ def taxon_id2scientific_classification(taxon_id_list):
         return None
     all_classifications = {}
 
-    for taxon, record in zip(new_taxon, records):
-        # get scientific names of all classification levels
-        classification = {}
-        #print record
-        for level in record['LineageEx']:
+    if taxon2rank:
 
-            rank = level["Rank"]
-            scientific_name = level["ScientificName"]
-            classification[rank] = scientific_name
-        all_classifications[taxon] = classification
-    return all_classifications
+        taxon2rank = {}
+
+        for taxon, record in zip(new_taxon, records):
+            taxon2rank[taxon] = [record['Rank'], record['ScientificName']]
+        return taxon2rank
+
+
+    else:
+
+        for taxon, record in zip(new_taxon, records):
+            # get scientific names of all classification levels
+            classification = {}
+            #print record
+            #print record['LineageEx']
+            #print 'rank', record['Rank'], record['ScientificName']
+
+            for level in record['LineageEx']:
+
+                rank = level["Rank"]
+                scientific_name = level["ScientificName"]
+                classification[rank] = scientific_name
+            classification[record['Rank']] = record['ScientificName']
+            all_classifications[taxon] = classification
+        return all_classifications
 
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-i",'--seq_id', type=str, help="sequence ncbi id")
+
     parser.add_argument("-p", '--protein_seq', action="store_true", help="Protein sequence (default=False, search in nucleotide databases)")
 
     args = parser.parse_args()
