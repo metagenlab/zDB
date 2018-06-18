@@ -49,6 +49,7 @@ if __name__ == '__main__':
 
 
     rec = accession2record(args.seq_id_genbank, args.ncbi_database)
+
     if args.header_name:
         rec[0].id = args.header_name
     SeqIO.write(rec,args.out_name, "fasta")
