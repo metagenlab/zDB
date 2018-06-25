@@ -47,6 +47,7 @@ def accession2exact_matches(sequence, target_databases):
 
     link = "http://www.ebi.ac.uk/Tools/picr/rest/getUPIForSequence?sequence=%s&database=%s&includeattributes=true" % (sequence,
                                                                                                                       database_string)
+    print link
 
     req = urllib2.Request(link)
     try:
