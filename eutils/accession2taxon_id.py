@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from Bio import Entrez
-
+import urllib2
 
 Entrez.email = "trestan.pillonel@unil.ch"
 
@@ -112,10 +112,15 @@ def gi2protein_accession(gi, database="nuccore"):
 
 def accession2gbk(accession, db='protein'):
     from Bio import SeqIO
+    
 
-    handle = Entrez.esearch(db=db, term="%s" % (accession), retmax=1)
-    record = Entrez.read(handle)
-
+    try:
+        handle = Entrez.esearch(db=db, term="%s" % (accession), retmax=1)
+        record = Entrez.read(handle)
+    except urllib2.HTTPError:
+        import time
+        time.sleep(5)
+        return accession2gbk(accession, db=db)
     try:
         gi_id = record['IdList'][0]
     except KeyError:
@@ -127,7 +132,7 @@ def accession2gbk(accession, db='protein'):
         gi_id = record3[0]['Entrezgene_xtra-iq'][1]['Xtra-Terms_value']
 
     try:
-        handlexx = Entrez.efetch(db='protein',
+        handlexx = Entrez.efetch(db=db,
                                  id="%s" % gi_id,
                                  rettype = "gb", retmode = "text")
 
