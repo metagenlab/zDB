@@ -85,7 +85,7 @@ def fasta_corresp(fasta_file, target_database, n_keep=1):
                                            target_database)
 
             if picr is None:
-                sys.stdout.write('%s\t%s\t%s\t%s\t%s\n' % (record.name, 'None', 'None', 'None', record.seq))
+                sys.stdout.write('%s\t%s\t%s\t%s\n' % (record.name, 'None', 'None', 'None'))
             else:
                 uniparc_accession, matches = picr
                 database2count = {}
@@ -98,11 +98,10 @@ def fasta_corresp(fasta_file, target_database, n_keep=1):
                         else:
 
                             break
-                    sys.stdout.write('%s\t%s\t%s\t%s\t%s\n' % (record.name,
-                                                               uniparc_accession,
-                                                               accession,
-                                                               matches[accession][1],
-                                                               record.seq))
+                    sys.stdout.write('%s\t%s\t%s\t%s\n' % (record.name,
+                                                           uniparc_accession,
+                                                           accession,
+                                                           matches[accession][1]))
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
