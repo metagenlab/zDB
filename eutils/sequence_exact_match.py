@@ -70,13 +70,16 @@ def accession2exact_matches(sequence, target_databases):
     return UPI, db2seq
 
 
-def fasta_corresp(fasta_file, target_database):
+def fasta_corresp(fasta_file, target_database, n_keep=1):
     from Bio import SeqIO
     import sys
+
+    print 'keep', n_keep
 
     with open(fasta_file, 'r') as f:
         records = SeqIO.parse(f, 'fasta')
         for record in records:
+
             picr = accession2exact_matches(record.seq,
                                            target_database)
 
@@ -84,7 +87,16 @@ def fasta_corresp(fasta_file, target_database):
                 sys.stdout.write('%s\t%s\t%s\t%s\n' % ('None', 'None', 'None', record.seq))
             else:
                 uniparc_accession, matches = picr
+                database2count = {}
                 for accession in matches:
+                    if matches[accession][0] not in database2count:
+                        database2count[matches[accession][0]] = 1
+                    else:
+                        if database2count[matches[accession][0]] < n_keep:
+                            database2count[matches[accession][0]] += 1
+                        else:
+
+                            break
                     sys.stdout.write('%s\t%s\t%s\t%s\n' % (uniparc_accession,
                                                      accession,
                                                      matches[accession][1],
@@ -96,6 +108,7 @@ if __name__ == '__main__':
     parser.add_argument("-p", '--protein_seq', type=str, help="Protein sequence")
     parser.add_argument("-d", '--database', type=str, help="Target database(s): 'REFSEQ', 'TREMBL', ...", nargs='+', default= ['TREMBL', 'SWISSPROT'])
     parser.add_argument("-f", '--fasta_file', type=str, help="Fasta file")
+    parser.add_argument("-k", '--keep', type=int, help="Number of hit(s) to keep (default: 1)", default=1)
 
     args = parser.parse_args()
 
@@ -111,4 +124,4 @@ if __name__ == '__main__':
         if len(args.database) > 1:
             raise(IOError('Fasta file match is only possible for a single database!'))
         else:
-            fasta_corresp(args.fasta_file, args.database)
+            fasta_corresp(args.fasta_file, args.database, n_keep=args.keep)
