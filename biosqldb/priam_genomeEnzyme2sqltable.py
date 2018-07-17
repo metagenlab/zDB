@@ -124,7 +124,8 @@ def get_complete_ko_table(biodb):
           ' pathways TEXT,' \
           ' modules TEXT, ' \
           ' dbxrefs TEXT, ' \
-          ' index ko_id (ko_id));'
+          ' index ko_id (ko_id),' \
+          ' index koa(ko_accession));'
     server.adaptor.execute_and_fetchall(sql)
 
     url = 'http://rest.kegg.jp/list/ko'
@@ -285,16 +286,14 @@ def locus2ko_table(locus_tag2ko_dico,
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodatabase)
 
-    sql = 'select locus_tag, taxon_id from orthology_detail_%s' % biodatabase
     sql2 = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % biodatabase
 
-    locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
     locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
 
     sql2 = 'CREATE TABLE IF NOT EXISTS enzyme.seqfeature_id2ko_%s (seqfeature_id INT,' \
            ' ko_id INT, ' \
-           ' index taxon_id (taxon_id), ' \
-           ' index ko_id (ko_id));' % (biodatabase)
+           ' index ko_id (ko_id),' \
+           ' index seqid (seqfeature_id));' % (biodatabase)
 
     server.adaptor.execute_and_fetchall(sql2,)
 
@@ -302,7 +301,6 @@ def locus2ko_table(locus_tag2ko_dico,
         ko = locus_tag2ko_dico[locus]
         ko_id = ko_accession2ko_id[ko]
         seqfeature_id = locus2seqfeature_id[locus]
-        print locus, ko, locus2taxon_id[locus]
 
         sql = 'insert into enzyme.seqfeature_id2ko_%s (seqfeature_id, ko_id) values (%s, %s)' % (biodatabase,
                                                                                                  seqfeature_id,
@@ -384,7 +382,11 @@ def get_module_table(module2category,ko_accession2ko_id):
            ' module_cat VARCHAR(200),' \
            ' module_sub_cat VARCHAR(200),' \
            ' module_sub_sub_cat VARCHAR(200),' \
-           ' description LONG);'
+           ' description LONG,' \
+           ' index mdn(module_name),' \
+           ' index mdc(module_cat),' \
+           ' index mdsc(module_sub_cat),' \
+           ' index mdssc(module_sub_sub_cat));'
 
     print sql1
     cursor.execute(sql1,)
@@ -501,10 +503,9 @@ def get_pathway2ko(ko_accession2ko_id):
            ' index pathway_id(pathway_id),' \
            ' index ko_id(ko_id));'
 
-
-
     print sql2
     cursor.execute(sql2,)
+    conn.commit()
 
     sql = 'select pathway_name, pathway_id from enzyme.kegg_pathway'
     pathway_name2pathway_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -668,17 +669,23 @@ def get_pathay_table(map2category):
            ' pathway_name VARCHAR(200),' \
            ' pathway_category_short VARCHAR(200),' \
            ' pathway_category VARCHAR(200),' \
-           ' description LONG);'
+           ' description LONG,' \
+           ' index pn(pathway_name),' \
+           ' index pcs(pathway_category_short),' \
+           ' index pc(pathway_category));'
 
     print sql1
     cursor.execute(sql1,)
 
-
+    conn.commit()
 
     pathway_file_file = 'http://rest.kegg.jp/list/pathway'
     data = urllib2.urlopen(pathway_file_file)
+
+    print 'iter pathway list...'
     for line in data:
         pathway = line.rstrip().split("\t")
+        print pathway
         map = pathway[0][5:]
         description = pathway[1]
 
@@ -734,6 +741,8 @@ def get_ec2get_pathway_table():
 
     print sql2
     cursor.execute(sql2,)
+    conn.commit()
+
 
     sql = 'select pathway_name,pathway_id from enzyme.kegg_pathway;'
     cursor.execute(sql,)
@@ -1054,13 +1063,17 @@ if __name__ == '__main__':
 
         server, db = manipulate_biosqldb.load_db(args.database_name)
 
-        get_complete_ko_table(args.database_name)
+        #get_complete_ko_table(args.database_name)
         #load_enzyme_nomenclature_table()
         sql = 'select ko_accession, ko_id from enzyme.ko_annotation'
         ko_accession2ko_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        #print 'getting map2category...'
         #map2category = get_kegg_pathway_classification()
+        #print 'getting pathway table...'
         #get_pathay_table(map2category)
-        #get_pathway2ko(ko_accession2ko_id)
+        print 'getting ko2pathway...'
+        get_pathway2ko(ko_accession2ko_id)
+        print 'getting module2ko...'
         get_module_table(get_kegg_module_hierarchy(), ko_accession2ko_id)
 
         #get_ec2get_pathway_table()

@@ -968,7 +968,7 @@ def get_orthology_table2(server, biodb_name):
     sql_taxons += ' `%s`' % all_taxons_id[-1]
 
     sql = "select orthogroup, %s from comparative_tables.orthology_%s" % (sql_taxons, biodb_name)
-    print sql
+
     result = server.adaptor.execute_and_fetchall(sql,)
     return result
 
