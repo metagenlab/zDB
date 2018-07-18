@@ -4832,7 +4832,7 @@ def get_locus_annotations(biodb, locus_list):
     for i, data in enumerate(all_data):
         locus2annot.append((i,) + data)
 
-    sql = 'select A.locus_tag, B.function from (select locus_tag, COG_id from COG.locus_tag2gi_hit_%s ' \
+    sql = 'select A.locus_tag, B.COG_name from (select locus_tag, COG_id from COG.locus_tag2gi_hit_%s ' \
           ' where locus_tag in (%s)) A inner JOIN ' \
           ' COG.cog_names_2014 as B on A.COG_id=B.COG_id' % (biodb,
                                                              '"' + '","'.join(locus_list) + '"')
@@ -4852,7 +4852,7 @@ def get_locus_annotations(biodb, locus_list):
            ' from interpro_%s where locus_tag in (%s)) A where interpro_accession!="0"' % (biodb,
                                                              '"' + '","'.join(locus_list) + '"')
 
-
+    print (sql)
     locus_tag2cog_catego = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     locus_tag2cog_name = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
     locus_tag2ko = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
@@ -11403,8 +11403,8 @@ def neig_interactions(request, biodb, locus_tag):
             if i[2] == locus_tag:
                 orthogroup = i[1]
 
-        middle_position = sorted(locus2start.values())[len(locus2start.values())/2]
-        middle_locus_tag = locus2start.keys()[locus2start.values().index(middle_position)]
+        middle_position = sorted(locus2start.values())[int(len(locus2start.values())/2)]
+        middle_locus_tag = list(locus2start.keys())[list(locus2start.values()).index(middle_position)]
 
         # get complete orthogroup list
         all_groups = list(set([i[1] for i in locus2annot]))
