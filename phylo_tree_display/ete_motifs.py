@@ -3,7 +3,7 @@
 import sys
 from random import sample
 from random import randint
-from ete2 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace
+from ete3 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace
 
 import numpy as np
 import colorsys
@@ -125,7 +125,7 @@ def get_locus2taxon2identity(biodb, locus_tag_list):
     '''
     #print 'getting dico'
     sql = 'select seqfeature_id,locus_tag from custom_tables.locus2seqfeature_id_%s' % biodb
-    print sql
+    
     seqfeature_id2locus = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     #print 'ok'
     all_id = []
@@ -826,7 +826,7 @@ def multiple_profiles_heatmap(biodb,
                     n.margin_left = 2
                     n.margin_bottom = 6
 
-                    from ete2 import NodeStyle
+                    from ete3 import NodeStyle
                     n.inner_background.color = "white"
                     n.opacity = 1.
                     tss.aligned_header.add_face(n, col)
@@ -875,7 +875,7 @@ def multiple_profiles_heatmap(biodb,
                                 # if identity scale: 2 digit format
                                 local_label = str(group2taxon2count[value][lf.name])
                                 if not identity_scale:# and not column_scale:
-                                    print 'not identity scale!'
+                                    #print 'not identity scale!'
                                     if as_float:
                                         local_label = "%.2f" % group2taxon2count[value][lf.name]
                                     else:
@@ -895,7 +895,7 @@ def multiple_profiles_heatmap(biodb,
                                         else:
                                             local_label = "%s" % group2taxon2count[value][lf.name]
                                 if show_labels:
-                                    print 'show label!'
+                                    #print 'show label!'
                                     try:
                                         if round(group2taxon2count[value][lf.name], 2) < 100 and column_scale:
                                             if round(group2taxon2count[value][lf.name], 2) < 10:
@@ -937,7 +937,7 @@ def multiple_profiles_heatmap(biodb,
                         n.margin_left = 0
                         n.margin_bottom = 5
                     try:
-                        count = group2taxon2count[value][lf.name]
+                        count = int(group2taxon2count[value][lf.name])
                     except:
                         count = 0
                     #print value, lf.name
@@ -1028,7 +1028,7 @@ def multiple_profiles_heatmap(biodb,
         lf.add_face(n, 0)
         head=False
     for n in t1.traverse():
-       from ete2 import NodeStyle
+       from ete3 import NodeStyle
        nstyle = NodeStyle()
        if n.support > 1:
            limit = 100
@@ -1144,7 +1144,7 @@ def multiple_profiles_heatmap_nobiodb(column_labels,
                     n.margin_left = 2
                     n.margin_bottom = 6
 
-                    from ete2 import NodeStyle
+                    from ete3 import NodeStyle
                     n.inner_background.color = "white"
                     n.opacity = 1.
                     tss.aligned_header.add_face(n, col)
@@ -1444,7 +1444,7 @@ def multiple_profiles_heatmap_nobiodb(column_labels,
                     n.margin_left = 2
                     n.margin_bottom = 6
 
-                    from ete2 import NodeStyle
+                    from ete3 import NodeStyle
                     n.inner_background.color = "white"
                     n.opacity = 1.
                     tss.aligned_header.add_face(n, col)
@@ -1997,7 +1997,7 @@ def interpro_tsv2pfam_data(interpro_tsv_file,
                                             signature_accession,
                                             signature_description,
                                             taxon_id])
-    print locus2data
+    #print locus2data
     return locus2data
 
 
@@ -2021,7 +2021,7 @@ def draw_pfam_tree(tree_name, locus2data,
     '''
 
     # from the original set
-    from ete2 import Tree, TreeStyle, faces, AttrFace
+    from ete3 import Tree, TreeStyle, faces, AttrFace
     t = Tree(tree_name)
     #t.populate(8)
     # Calculate the midpoint node
@@ -2069,22 +2069,24 @@ def draw_pfam_tree(tree_name, locus2data,
         # check if alignment is available or not
         if len(data[0]) == 8:
             #print 'tata', len(data[0][-1])
-            seqFace = SeqMotifFace(data[0][-1], motifs=seq_motifs,
+            seqFace = SeqMotifFace(data[0][-1], 
+                                   motifs=seq_motifs,
                                    width=10,
                                    height=12,
-                                   intermotif_format='-',
-                                   seqtail_format="-",
+                                   gap_format='-',
                                    seq_format='-',
-                                   gapcolor='white') #seq, seq_motifs, scale_factor=1, intermotif_format=None) #intermotif_format="seq", seqtail_format=None, seqtype='aa')
+                                   gapcolor='white') #seq, seq_motifs, scale_factor=1, intermotif_format=None) #intermotif_format="seq", seqtail_format=None, seqtype='aa') 
+                                   # seqtail_format="-",
         else:
             # no alignment available
-            seqFace = SeqMotifFace(data[0][3]*'N',motifs=seq_motifs,
+            seqFace = SeqMotifFace(data[0][3]*'N',
+                                   motifs=seq_motifs,
                                    width=10,
                                    height=12,
-                                   intermotif_format='-',
-                                   seqtail_format="-",
+                                   gap_format='-',
                                    seq_format='-',
                                    gapcolor='white') #seq, seq_motifs, scale_factor=1, intermotif_format=None) #intermotif_format="seq", seqtail_format=None, seqtype='aa')
+                                   #seqtail_format="-",
 
         seqFace.margin_bottom = 2
         seqFace.margin_top = 2
@@ -2108,7 +2110,7 @@ def draw_pfam_tree(tree_name, locus2data,
             #ff.background.color = 'red'
             ff.fgcolor = col
             if color_by_family:
-                print 'color----------'
+                #print 'color----------'
                 l.add_face(ff, column=0)
 
         locus.margin_right = 10
@@ -2124,7 +2126,7 @@ def draw_pfam_tree(tree_name, locus2data,
 
 def draw_TM_tree(tree_name, locus2data):
     # from the original set
-    from ete2 import Tree, TreeStyle, faces, AttrFace
+    from ete3 import Tree, TreeStyle, faces, AttrFace
     t = Tree(tree_name)
     #t.populate(8)
     # Calculate the midpoint node
@@ -2159,7 +2161,7 @@ def draw_TM_tree(tree_name, locus2data):
                 seq_motifs.append([motif[0], motif[1], "()", None, 10, "black", "PaleGreen", "arial|8|red|"])
 
         #print data
-        if type(data[0]) == long:
+        if isinstance(data[0], int):
 
             #print 'int!!!!!!!!!!!!!!!!!!!!!!!!!!!'
 
@@ -2167,19 +2169,17 @@ def draw_TM_tree(tree_name, locus2data):
                                    motifs=[],
                        width=10,
                        height=12,
-                       intermotif_format='-',
-                       seqtail_format="-",
+                                   gap_format='-',
                        seq_format='-',
                        gapcolor='white')
         else:
-            if type(data[0]) == long:
+            if isinstance(data[0], int):
                 #print 'baba1', data[0][-1]
                 seqFace = SeqMotifFace(data[0][-1],
                                        motifs=seq_motifs,
                                        width=10,
                                        height=12,
-                                       intermotif_format='-',
-                                       seqtail_format="-",
+                                       gap_format='-',
                                        seq_format='-',
                                        gapcolor='white') #seq, seq_motifs, scale_factor=1, intermotif_format=None) #intermotif_format="seq", seqtail_format=None, seqtype='aa')
 
@@ -2190,8 +2190,7 @@ def draw_TM_tree(tree_name, locus2data):
                                        motifs=seq_motifs,
                                        width=10,
                                        height=12,
-                                       intermotif_format='-',
-                                       seqtail_format="-",
+                                       gap_format='-',
                                        seq_format='-',
                                        gapcolor='white')
 

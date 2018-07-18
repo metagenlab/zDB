@@ -3,7 +3,7 @@
 import sys
 from random import sample
 from random import randint
-from ete2 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace
+from ete3 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace
 
 
 import numpy as np
@@ -18,8 +18,6 @@ def _get_colors(num_colors):
         lightness = (50 + np.random.rand() * 10)/100.
         saturation = (90 + np.random.rand() * 10)/100.
         rgb = colorsys.hls_to_rgb(hue, lightness, saturation)
-
-        print rgb
         colors.append(pcolors.rgb2hex(rgb))
     return colors
 
@@ -127,7 +125,7 @@ def plot_heat_tree_V1(taxid2n, tree_file, genes, taxid2st=False, leaf_label_conv
             pass
         for col, value in enumerate(data):
 
-            print 'col', col, 'value', value
+            #print 'col', col, 'value', value
 
             if leaf_number==1:
                 n = TextFace('%s' % (genes[col]), fsize=6)
@@ -192,8 +190,8 @@ def plot_heat_tree_V0(heatmap_file, tree_file, output_file=None):
     '''
     import numpy
 
-    from ete2.treeview.faces import add_face_to_node
-    from ete2 import ClusterTree, TreeStyle, AttrFace, ProfileFace
+    from ete3.treeview.faces import add_face_to_node
+    from ete3 import ClusterTree, TreeStyle, AttrFace, ProfileFace
 
 
     # To operate with numbers efficiently
@@ -310,13 +308,12 @@ def plot_heat_tree(biodb, taxid2n, tree_file):
     leaf_number = 0
     for lf in t1.iter_leaves():
         leaf_number+=1
-        print lf
         lf.branch_vertical_margin = 0
         try:
             data = [taxid2n[str(lf.name)]]
         except:
             data=[0]
-        print 'taxon', int(lf.name)
+        #print 'taxon', int(lf.name)
         lf.name = taxid2organism[int(lf.name)]
         for col, value in enumerate(data):
             if value > 0:

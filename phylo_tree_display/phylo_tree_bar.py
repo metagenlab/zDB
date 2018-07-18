@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from ete2 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace, BarChartFace, StackedBarFace, NodeStyle, faces
+from ete3 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace, BarChartFace, StackedBarFace, NodeStyle, faces
 
 
 
@@ -64,14 +64,14 @@ def plot_tree_stacked_barplot(tree_file,
         col_n = 0
         for column in header_list2:
             values = taxon2set2value_heatmap[column].values()
-            print values
+            #print values
             if min(values) == max(values):
                 min_val = 0
                 max_val = 1.5*max(values)
             else:
                 min_val = min(values)
                 max_val = max(values)
-            print 'min-max', min_val, max_val
+            #print 'min-max', min_val, max_val
             norm = mpl.colors.Normalize(vmin=min_val,vmax=max_val) # *1.1
             if col_n < 4:
                 cmap = cm.OrRd#
@@ -236,7 +236,7 @@ def plot_tree_stacked_barplot(tree_file,
                 # values for all taxons
                 values_lists = [float(i) for i in set2taxon2value_list_simple_barplot[one_set].values()]
                 #print values_lists
-                print one_set
+                #print one_set
                 value = set2taxon2value_list_simple_barplot[one_set][lf.name]
 
                 if set2taxon2value_list_simple_barplot_counts:
@@ -295,8 +295,8 @@ def plot_tree_stacked_barplot(tree_file,
                     except:
                         value = 0
                 if header_list2[i] == 'duplicates':
-                    print 'dupli', lf.name, value
-                print 'val----------------', value
+                    print ('dupli', lf.name, value)
+                #print 'val----------------', value
                 if int(value) > 0:
                     if int(value) >=10 and int(value) < 100:
                         n = TextFace('%4i' % value)
@@ -734,7 +734,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         #print '------ %s' % lf.name
         if exclude_outgroup and i == 0:
             lf.name = taxon2description[lf.name]
-            print '#######################'
+            #print '#######################'
             continue
         
         n = TextFace('  %s ' % str(round(taxon2genome_size[lf.name]/float(1000000),2)))
@@ -747,8 +747,8 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         n.opacity = 1.
 
         lf.add_face(n, 2, position="aligned")
-        if genome_sizes>3424182:
-            genome_sizes = 3424182
+        #if max_genome_size > 3424182:
+        #    max_genome_size = 3424182
         fraction_biggest = (float(taxon2genome_size[lf.name])/max_genome_size)*100
         fraction_rest = 100-fraction_biggest
         if taxon2description[lf.name] == 'Rhabdochlamydia helveticae T3358':
