@@ -12,7 +12,7 @@ def samtools_depth2coverage_plot(samtool_depth_file, fasta_file=False, main=Fals
         main = os.path.basename(samtool_depth_file)
 
     if fasta_file:
-        print 'fasta file --------------------------------'
+        print ('fasta file --------------------------------')
         from Bio import SeqIO
         concatenated_seq = ''
         with open(fasta_file, 'r') as f:
@@ -48,7 +48,6 @@ def samtools_depth2coverage_plot(samtool_depth_file, fasta_file=False, main=Fals
        axis(side = 2)
 
        #roll <- runmed(chunkGCs, k=windowsize2)
-
        #lines(starts, roll, col="blue")
        
        abline(v=contig_limits, col=rgb(1, 0, 0, 0.5), lty=3, lwd=0.5)
@@ -99,8 +98,6 @@ def samtools_depth2coverage_plot(samtool_depth_file, fasta_file=False, main=Fals
     length = 0
     for (i in contig_lengths){
         length <- length + as.numeric(i)
-        print('length')
-        print(length)
         contig_limits <- c(contig_limits,length)
     }
 
@@ -113,19 +110,19 @@ def samtools_depth2coverage_plot(samtool_depth_file, fasta_file=False, main=Fals
         grid.newpage()
         pushViewport(viewport(layout = grid.layout(2, 1, heights=unit(c(0.5,1), rep("null", 2)))))
 
-                pushViewport(viewport(layout.pos.row = 2, layout.pos.col = 1))
-                par(new=TRUE, fig=gridFIG(), las=1, mar=c(5, 5, 0, 5)) 
+            pushViewport(viewport(layout.pos.row = 2, layout.pos.col = 1))
+            par(new=TRUE, fig=gridFIG(), las=1, mar=c(5, 5, 0, 5)) 
 
-                slidingwindowplot_depth(100,5001, cov_data, contig_limits)
+            slidingwindowplot_depth(150,5001, cov_data, contig_limits)
 
-                upViewport()         
+            upViewport()         
 
             if (show_GC != FALSE) {
                 print("SHOW ---------------------------------------------------------------------------")
                     pushViewport(viewport(layout.pos.row = 1, layout.pos.col = 1))
                     par(new=TRUE, fig=gridFIG(), las=1, mar=c(0, 5, 3, 5)) 
                     myseq <- unlist(strsplit(dna_sequence, ""))
-                    slidingwindowplot_GC(1000, 21, myseq, contig_limits)
+                    slidingwindowplot_GC(2000, 21, myseq, contig_limits)
                     # ,xlab="Nucleotide start position",ylab="GC content"
                     #axis(1, at = seq(0, length(myseq), 10000), labels = seq(0, length(myseq), 10000)/1000, las=2)
                     upViewport()
