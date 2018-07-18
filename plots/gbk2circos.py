@@ -181,23 +181,23 @@ def print_circos_record_file(record_list, out_name = "circos_contigs.txt", draft
       try:
           for contig in draft_data[x]:
               if contig[2] < contig[1]:
-                  print 'impossible contig limits!', contig
+                  #print 'impossible contig limits!', contig
                   continue
-              print contig
+              #print contig
               if contig[1] == contig[2]:
                   continue
               if draft_coordinates:
                   if i%2 == 0:
                       f.write("chr - %s %s %s %s spectral-5-div-%s\n" % (contig[0], contig[0], 0, contig[2]-contig[1], 3))
                   else:
-                      #print "chr -", record.contig, record.contig, "0",len(record.seq), "spectral-5-div-%s" % (4)
+                      ##print "chr -", record.contig, record.contig, "0",len(record.seq), "spectral-5-div-%s" % (4)
                       f.write("chr - %s %s %s %s spectral-5-div-%s\n" % (contig[0], contig[0], 0, contig[2]-contig[1], 4))
                   i+=1
               else:
                   if i%2 == 0:
                       f.write("chr - %s %s %s %s spectral-5-div-%s\n" % (contig[0], contig[0], contig[1], contig[2], 3))
                   else:
-                      #print "chr -", record.contig, record.contig, "0",len(record.seq), "spectral-5-div-%s" % (4)
+                      ##print "chr -", record.contig, record.contig, "0",len(record.seq), "spectral-5-div-%s" % (4)
                       f.write("chr - %s %s %s %s spectral-5-div-%s\n" % (contig[0], contig[0], contig[1], contig[2], 4))
                   i+=1
 
@@ -206,7 +206,7 @@ def print_circos_record_file(record_list, out_name = "circos_contigs.txt", draft
             if i%2 == 0:
                 f.write("chr - %s %s 0 %s spectral-5-div-%s\n" % (record.id, record.id, len(record.seq), 3))
             else:
-                #print "chr -", record.contig, record.contig, "0",len(record.seq), "spectral-5-div-%s" % (4)
+                ##print "chr -", record.contig, record.contig, "0",len(record.seq), "spectral-5-div-%s" % (4)
                 f.write("chr - %s %s 0 %s spectral-5-div-%s\n" % (record.id, record.id, len(record.seq), 4))
             i += 1
             x += 1
@@ -276,7 +276,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                            draft_coordinates=False,
                            locus_highlight2=[]):
 
-    print "highlight:", locus_highlight
+    #print "highlight:", locus_highlight
     
     import numpy
 
@@ -285,7 +285,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
     if strand == "-1":
         f = open(out_name, "w")
 
-    print 'n records:', len(record_list)
+    #print 'n records:', len(record_list)
 
     for y, record in enumerate(record_list):
         for feature in record.features:
@@ -418,7 +418,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                         if group_id2orthologs_presence and query_taxon_id and color_missing:
                             try:
                                 pseudo = feature.qualifiers['pseudogene']
-                                print 'pseudogene, continue'
+                                #print 'pseudogene, continue'
                                 continue
                             except:
                                 pass
@@ -502,7 +502,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                         '''
 
             if feature.type == 'rRNA':
-                print 'rrna--------------------'
+                #print 'rrna--------------------'
                 if str(feature.strand) == strand:
                     try:
                         for i in draft_data[y]:
@@ -526,7 +526,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                         start = feature.location.start
                         end = feature.location.end
 
-                    print 'rrna position:', contig, start, end, feature.qualifiers
+                    #print 'rrna position:', contig, start, end, feature.qualifiers
                     f.write('%s %s %s fill_color=pblue\n ' % (contig,
                                                             start,
                                                             end))
@@ -633,7 +633,7 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    print '##########  %s  ###############' % exclude_family
+    #print '##########  %s  ###############' % exclude_family
 
     accessions = []
     for record in record_list:
@@ -641,8 +641,8 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
 
     import biosql_own_sql_tables as bsql
 
-    print '-------------- taxon list ------------'
-    print taxon_list
+    #print '-------------- taxon list ------------'
+    #print taxon_list
 
     if not taxon_list:
         locus_tag2n_genomes_dico = bsql.locus_tag2presence_in_n_genomes(db_name)
@@ -657,8 +657,8 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
         count_df = count_df.apply(pandas.to_numeric, args=('coerce',))
 
         group2n_genomes = (count_df > 0).sum(axis=1)
-        print 'group2n_genomes--------------'
-        print group2n_genomes
+        #print 'group2n_genomes--------------'
+        #print group2n_genomes
 
         accession_filter = '"'+'","'.join(accessions) + '"'
         sql = 'select locus_tag, orthogroup from orthology_detail_%s where accession in (%s)' % (db_name, accession_filter)
@@ -677,22 +677,22 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
     locus_tag2n_non_chlamydiae = {}
     locus_tag2n_paralogs = {}
 
-    print 'getting dictionnaries'
+    #print 'getting dictionnaries'
     for accession in accessions:
 
-        print "locus_tag2n_nr_hits"
+        #print "locus_tag2n_nr_hits"
         locus_tag2n_blastnr_dico.update(bsql.locus_tag2n_nr_hits(db_name, accession, exclude_family=exclude_family))
-        print "locus_tag2n_blast_superkingdom bacteria"
+        #print "locus_tag2n_blast_superkingdom bacteria"
         locus_tag2n_blast_bacteria.update(bsql.locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", exclude_family=exclude_family))
-        print "locus_tag2n_blast_superkingdom euk"
+        #print "locus_tag2n_blast_superkingdom euk"
         locus_tag2n_blast_eukariota.update(bsql.locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Eukaryota"))
-        print "locus_tag2n_blast_superkingdom archae"
+        #print "locus_tag2n_blast_superkingdom archae"
         locus_tag2n_archae.update(bsql.locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Archaea"))
-        print "locus_tag2n_blast_bacterial_phylum chlamydiae reverse = F"
+        #print "locus_tag2n_blast_bacterial_phylum chlamydiae reverse = F"
         locus_tag2n_chlamydiae.update(bsql.locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", reverse=False, exclude_family=exclude_family))
-        print "locus_tag2n_blast_bacterial_phylum chlamydiae reverse = T"
+        #print "locus_tag2n_blast_bacterial_phylum chlamydiae reverse = T"
         locus_tag2n_non_chlamydiae.update(bsql.locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", reverse=True, exclude_family=exclude_family))
-        print "locus_tag2n_paralogs"
+        #print "locus_tag2n_paralogs"
         locus_tag2n_paralogs.update(bsql.locus_tag2n_paralogs(db_name, accession))
 
 
@@ -745,7 +745,7 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
                         n_genomes = locus_tag2n_genomes_dico[feature.qualifiers['locus_tag'][0]]
                     except KeyError:
                         import sys
-                        print 'problem with n homologs in', feature
+                        #print 'problem with n homologs in', feature
                         sys.exit()
 
                     try:
@@ -920,9 +920,9 @@ def orthology_circos_files(server,
                                  draft_data=draft_data,
                                  draft_coordinates=draft_coordinates)
 
-    print "writing record file"
+    #print "writing record file"
     print_circos_record_file(record_list, out_name = all_file_names["contigs"], draft_data=draft_data)
-    print "writing minus strand file"
+    #print "writing minus strand file"
     print_circos_gene_file(record_list, strand="-1",
                            out_name = all_file_names["minus"],
                            draft_data=draft_data,
@@ -932,7 +932,7 @@ def orthology_circos_files(server,
                            draft_coordinates=draft_coordinates,
                            locus_highlight2=locus_highlight2)
 
-    print "writing plus strand file"
+    #print "writing plus strand file"
     print_circos_gene_file(record_list,
                            strand="1",
                            out_name = all_file_names["plus"],
@@ -941,7 +941,7 @@ def orthology_circos_files(server,
                            group_id2orthologs_presence=group_id2orthologs_presence,
                          query_taxon_id=query_taxon_id, draft_coordinates=draft_coordinates,
                            locus_highlight2=locus_highlight)
-    print "writing GC file"
+    #print "writing GC file"
 
 
 
@@ -958,20 +958,20 @@ def orthology_circos_files(server,
 
     temp_taxon_list = [int(i) for i in taxon_list]
     for i in range(0, len(taxon_list)):
-        print i
+        #print i
         if int(taxon_list[i]) == int(reference_taxon_id):
             temp_taxon_list.pop(temp_taxon_list.index(int(reference_taxon_id)))
         else:
             file_name = os.path.join(out_dir, "circos_taxon_%s_vs_%s.txt" % (reference_taxon_id, taxon_list[i]))
             all_file_names["genomes"].append(file_name)
             taxon_files.append(open(file_name, "w"))
-    print 'get closest homolog identity dictionnary'
+    #print 'get closest homolog identity dictionnary'
     if show_homologs:
         locus2locus_identity = biosql_own_sql_tables.circos_locus2taxon_highest_identity(biodatabase_name,
                                                                                          reference_taxon_id,
                                                                                          use_identity_closest_homolog2_table=True)
 
-    print "get plasmid locus"
+    #print "get plasmid locus"
     plasmid_locus = biosql_own_sql_tables.get_locus2plasmid_or_not(biodatabase_name)
 
     taxon_list = temp_taxon_list
@@ -1016,9 +1016,9 @@ def orthology_circos_files(server,
                     try:
                         line = "%s %s %s %s\n" % (contig, start, end, ortho_size[feature.qualifiers['orthogroup'][0]])
                     except:
-                        print "problem ith", feature
-                        print contig, start, end
-                        print feature
+                        #print "problem ith", feature
+                        #print contig, start, end
+                        #print feature
                         continue
                     #try:
                     #    line2 = "%s %s %s %s\n" % (contig, start, end, ortho_identity[feature.qualifiers['orthogroup'][0]][0])
@@ -1202,7 +1202,7 @@ class Circos_config:
                           " \n" \
                           " \n" \
                           " </ticks>\n" % (show_ticks, show_tick_labels, "%%.1d", self.big_ticks % "%%.1d")
-    print self.template_ticks
+    print (self.template_ticks)
 
 
 
@@ -1245,7 +1245,7 @@ class Circos_config:
   def _template_plot(self, file, type="line", r0=1,
                      r1=1.05, color=False, fill_color="red", thickness = "0.8p", z = 1, rules ="", backgrounds="", url="", min=False, max=False):
 
-        print 'template color------------------', color
+        #print 'template color------------------', color
         template1 = "<plot>\n" \
                "type		    = %s\n" \
                " url                = %s[id]\n" \
@@ -1255,8 +1255,8 @@ class Circos_config:
                " thickness          = %s\n" \
                " file               = %s\n" \
                " z                  = %s\n" % (type, url, r0, r1, fill_color, thickness, file, z)
-        print '--------------- COLOR--------------'
-        print color
+        #print '--------------- COLOR--------------'
+        #print color
         if color:
             template1+= " color          = %s\n" % color
         if min:
@@ -1372,7 +1372,7 @@ def get_circos_GC_config_files(biodatabase_name, accession_list):
 
         #print record
         mean_GC = GC.GC(record.seq)
-        print "mean GC", mean_GC
+        #print "mean GC", mean_GC
         circos_gc_var = GC.circos_gc_var(record)
         circos_gc_skew = GC.circos_gc_skew(record)
         final_gc_var += circos_gc_var
@@ -1441,5 +1441,5 @@ if __name__ == '__main__':
     t.write(circos_conf.get_file())
     t.close()
     cmd = "circos -outputfile circos -outputdir . -conf circos_config.txt"
-    print cmd
+    #print cmd
     (stdout, stderr, return_code) = shell_command.shell_command(cmd)
