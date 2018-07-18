@@ -26,9 +26,9 @@ def get_orthology_matrix_merging_plasmids(server, biodatabase_name, taxon_list=F
     else:
         all_taxons = taxon_list
 
-    print "taxons"
-    print all_taxons
-    print 'get dico ortho count'
+    #print "taxons"
+    #print all_taxons
+    #print 'get dico ortho count'
     detailed_orthology_count = {}
     for group in all_orthogroups.keys():
         detailed_orthology_count[group] = {}
@@ -37,9 +37,9 @@ def get_orthology_matrix_merging_plasmids(server, biodatabase_name, taxon_list=F
 
 
     for taxon_id in all_taxons:
-        print taxon_id
+        #print taxon_id
         sql = "select orthogroup, `%s` from comparative_tables.orthology_%s;" % (taxon_id, biodatabase_name)
-        print sql
+        #print sql
         dico = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
         #print dico
         #import time
@@ -47,8 +47,8 @@ def get_orthology_matrix_merging_plasmids(server, biodatabase_name, taxon_list=F
         #print "taxon", taxon_id
         for group in dico.keys():
             detailed_orthology_count[group][int(taxon_id)] += dico[group]
-    print 'count ok'
-    #print detailed_orthology_count
+    #print 'count ok'
+    ##print detailed_orthology_count
     return detailed_orthology_count
 
 
@@ -102,7 +102,7 @@ def create_contig_table(db_name):
 
     sql2 = 'select accession from bioentry inner join biodatabase on biodatabase.biodatabase_id = bioentry.biodatabase_id' \
            ' where biodatabase.name = "%s"' % db_name
-    print sql2
+    #print sql2
     accessions = [i[0] for i in server.adaptor.execute_and_fetchall(sql2,)]
 
 
@@ -175,7 +175,7 @@ def locus_tag2best_hit(db_name, accession, hit_number=1, rank=False, taxon_name=
                                                                          hit_number,
                                                                          rank,
                                                                          taxon_name)
-        print sql_rank_filter
+        #print sql_rank_filter
         data = server.adaptor.execute_and_fetchall(sql_rank_filter,)
 
         locus_tag2hit = {}
@@ -216,7 +216,7 @@ def locus_tag2best_hit(db_name, accession, hit_number=1, rank=False, taxon_name=
                                                        accession,
                                                        hit_number)
 
-        print sql_no_rank_filter
+        #print sql_no_rank_filter
         data = server.adaptor.execute_and_fetchall(sql_no_rank_filter,)
 
         locus_tag2hit = {}
@@ -234,14 +234,14 @@ def locus_tag2best_hit_n_taxon_ids(db_name, accession):
     sql = 'select t3.locus_tag, count(*) as n_taxons from blastnr.blastnr_hits_taxonomy_%s_%s as t1 ' \
           ' inner join blastnr.blastnr_hits_%s_%s as t3 on t1.nr_hit_id=t3.nr_hit_id ' \
           ' where t3.hit_number=1 group by t3.nr_hit_id' % (db_name, accession, db_name, accession)
-    print sql
+    #print sql
     all_blastnr_taxons = server.adaptor.execute_and_fetchall(sql,)
 
 
 def get_locus2plasmid_or_not(biodb):
 
     sql = 'SELECT locus_tag, IF(organism like "%%%%plasmid%%%%", "True", "False") AS NewResult from orthology_detail_%s;' % biodb
-    print sql
+    #print sql
     server, db = manipulate_biosqldb.load_db(biodb)
 
     return manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -292,7 +292,7 @@ def circos_locus2taxon_highest_identity(biodb, reference_taxon_id, use_identity_
             except:
                 #print 'no homologs for %s' % locus_A
                 pass
-        print '------------------', locus2locus_identity.keys()[0], locus2locus_identity[locus2locus_identity.keys()[0]]
+        #print '------------------', locus2locus_identity.keys()[0], locus2locus_identity[locus2locus_identity.keys()[0]]
 
     else:
         sql = 'select t2.locus_tag, t3.locus_tag, identity, taxon_2 from comparative_tables.identity_closest_homolog2_%s t1 ' \
@@ -307,7 +307,7 @@ def circos_locus2taxon_highest_identity(biodb, reference_taxon_id, use_identity_
                 locus2locus_identity[row[0]][row[3]] = [row[2],row[1]]
             else:
                 locus2locus_identity[row[0]][row[3]] = [row[2],row[1]]
-    print '------------------', locus2locus_identity.keys()[0], locus2locus_identity[locus2locus_identity.keys()[0]]
+    #print '------------------', locus2locus_identity.keys()[0], locus2locus_identity[locus2locus_identity.keys()[0]]
     return locus2locus_identity
 
 
@@ -329,7 +329,7 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
         sql_include+='`%s` = 1' % taxon_list[-1]
 
     sql ='select orthogroup from comparative_tables.orthology_%s where %s' % (biodb, sql_include)
-    print sql
+    #print sql
     sys.stdout.write("getting core orthogroup list\n")
     match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
     sys.stdout.write("N single copy core orthogroups: %s\n" % len(match_groups))
@@ -350,39 +350,39 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
                                                                                                                         ','.join([str(i) for i in taxon_list]))
             locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
-            print group, locus_list
+            #print group, locus_list
             seqs = []
             for locus in locus_list:
                 if locus_tag2taxon_id[locus] in taxon_list:
                     seq = locus_tag2nucl_sequence[locus]
                     seqs.append(seq)
             path = os.path.join(mypath, group + "_nucl.txt")
-            print path
+            #print path
             with open(path, "w") as f:
                 SeqIO.write(seqs, f, "fasta")
     else:
 
         locus_tag2aa_sequence = mysqldb_load_mcl_output.locus_tag2aa_sequence_dict(server, db, biodb)
 
-        print 'Number of core groups: %s' % len(match_groups)
+        #print 'Number of core groups: %s' % len(match_groups)
         for group in match_groups:
             sql = 'select locus_tag from orthology_detail_%s where orthogroup="%s" and taxon_id in (%s)' % (biodb,
                                                                                                            group,
                                                                                                            ','.join([str(i) for i in taxon_list]))
             locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
-            print group, locus_list
+            #print group, locus_list
             seqs = []
             for locus in locus_list:
                 if str(locus_tag2taxon_id[locus]) in taxon_list:
-                    print 'OKKKKKKKKKKKKKKKKKKKKKKK'
+                    #print 'OKKKKKKKKKKKKKKKKKKKKKKK'
                     seq = SeqRecord(Seq(locus_tag2aa_sequence[locus],
                                        IUPAC.protein),
                                        id=str(locus_tag2taxon_id[locus]), name="",
                                        description="")
                     seqs.append(seq)
             path = os.path.join(mypath, group + "_aa.txt")
-            print path
+            #print path
             with open(path, "w") as f:
                 SeqIO.write(seqs, f, "fasta")
 
@@ -423,17 +423,22 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
     orthogroup2cogs = biosql_own_sql_tables.orthogroup2cog(biodb)
     orthogroup2pfam = biosql_own_sql_tables.orthogroup2pfam(biodb)
 
+
+    # todo change cog_id2cog_category
     sql = 'select COG_name,code,t1.description from COG.cog_names_2014 t1 ' \
           ' inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
           ' inner join COG.code2category t3 on t2.category_id=t3.category_id;'
     sql2 = 'select signature_accession,signature_description from interpro_%s where analysis="Pfam" group by signature_accession;' % biodb
+
+    print (sql)
+
     cog2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     pfam2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
 
     match_groups_data = []
     group_data = ''
-    print 'getting annotation data for %s groups...' % len(ordered_orthogroups)
+    #print 'getting annotation data for %s groups...' % len(ordered_orthogroups)
     for i, group in enumerate(ordered_orthogroups):
         genes_data = ''
         for gene in orthogroup2genes[group]:
@@ -506,7 +511,7 @@ def accession2coding_density(biodb, sqlite=False):
     accession2n_contigs_without_cds = {}
     accession2n_countigs_without_BBH_chlamydiae = {}
     for n, accession in enumerate(accession_list):
-        print accession
+        #print accession
 
         # get list of BBH chlamydiae
         sql = 'select locus_tag from blastnr.blastnr_%s t1 ' \
@@ -522,10 +527,10 @@ def accession2coding_density(biodb, sqlite=False):
         try:
             locus_BBH_chlamydiae = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
         except:
-            print 'echec'
+            #print 'echec'
             locus_BBH_chlamydiae = []
-        print sql
-        print 'locus_BBH_chlamydiae', len(locus_BBH_chlamydiae)
+        #print sql
+        #print 'locus_BBH_chlamydiae', len(locus_BBH_chlamydiae)
         accession2n_contigs_without_cds[accession] = 0
         accession2n_countigs_without_BBH_chlamydiae[accession] = 0
         accession = accession.split('.')[0]
@@ -537,12 +542,14 @@ def accession2coding_density(biodb, sqlite=False):
         for feature in record.features:
             if feature.type == 'assembly_gap':
                 # assembly gap within scaffolds
-                print 'len gap:', len(feature)
+                #print 'len gap:', len(feature)
                 if "gap_type" in feature.qualifiers:
                     if feature.qualifiers["gap_type"][0] == "within scaffold":
                         continue
                     else:
-                        print 'new gap type:', feature.qualifiers["gap_type"][0]
+                        # print 'new gap type:', feature.qualifiers["gap_type"][0]
+                        pass
+
                 if len(feature) != 200:
                     continue
                 stop = feature.location.start -1
@@ -575,7 +582,7 @@ def accession2coding_density(biodb, sqlite=False):
         if len(sub_record)>=10000:
             big_contig_length+=len(sub_record)
             long_record_list.append(sub_record)
-        print accession, 'number of big contigs:', len(long_record_list)
+        #print accession, 'number of big contigs:', len(long_record_list)
 
         len_coding = 0
         rrna_count_16 = 0
@@ -587,7 +594,7 @@ def accession2coding_density(biodb, sqlite=False):
             long_record_list = [record]
             big_contig_length = len(record.seq)
         for one_record in long_record_list:
-            print one_record
+            #print one_record
             #len_seq = len(str(one_record.seq).replace("N", ""))
             for n, feature in enumerate(one_record.features):
                 if feature.type in ['rRNA','tRNA','CDS'] and not 'pseudo' in feature.qualifiers:
@@ -605,7 +612,7 @@ def accession2coding_density(biodb, sqlite=False):
         accession2n_trna[accession] = trna_count
         accession2n_rrna[accession] = [rrna_count_16, rrna_count_23, rrna_count_5]
         accession2big_contig_length[accession] = big_contig_length
-        print round((len_coding/float(big_contig_length))*100,2), trna_count, rrna_count_16, rrna_count_23, rrna_count_5
+        #print round((len_coding/float(big_contig_length))*100,2), trna_count, rrna_count_16, rrna_count_23, rrna_count_5
     return accession2density, accession2n_trna, accession2n_rrna, accession2big_contig_length, \
            accession2n_countigs_without_BBH_chlamydiae, accession2n_contigs_without_cds
 
@@ -983,7 +990,7 @@ def get_best_hit_excluding_one_family():
     sql='select t3.subject_taxon_id,t4.no_rank, t4.phylum, t4.order, t4.family, B.* from (select * from biosqldb.orthology_detail_chlamydia_03_15 as t1 where t1.accession="NC_015713") A left join (select t2.nr_hit_id,t2.locus_tag,t2.subject_kingdom,t2.subject_accession from blastnr.blastnr_hits_chlamydia_03_15_NC_015713 as t2) B on A.locus_tag=B.locus_tag inner join blastnr.blastnr_hits_taxonomy_chlamydia_03_15_NC_015713 as t3 on B.nr_hit_id=t3.nr_hit_id inner join blastnr.blastnr_taxonomy as t4 on t3.subject_taxon_id=t4.taxon_id where t4.family !="Simkaniaceae";'
 
 def locus_tag2n_nr_hits(db_name, genome_accession, exclude_family = False):
-    print 'exclude family', exclude_family
+    #print 'exclude family', exclude_family
     server, db = manipulate_biosqldb.load_db(db_name)
     if not exclude_family:
         sql = 'select  A.locus_tag, B.n_hits from (select * from biosqldb.orthology_detail_%s as t1 where t1.accession="%s") A ' \
@@ -1009,7 +1016,7 @@ def locus_tag2n_nr_hits(db_name, genome_accession, exclude_family = False):
                                                                      exclude_family)
 
 
-    print sql
+    #print sql
     return manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
 def collect_genome_statistics(biodb, sqlite=False):
@@ -1019,7 +1026,7 @@ def collect_genome_statistics(biodb, sqlite=False):
     sql = 'select accession, seq as length from bioentry as t1 ' \
           ' inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id ' \
           ' inner join biosequence as t3 on t1.bioentry_id=t3.bioentry_id where t2.name="%s";' % biodb
-    print 'getting accession2genome_sequence...'
+    #print 'getting accession2genome_sequence...'
 
     accession2genome_sequence = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -1030,9 +1037,9 @@ def collect_genome_statistics(biodb, sqlite=False):
            ' where t4.name="%s" group by t1.bioentry_id;' % (biodb, biodb, biodb)
 
 
-    print 'getting accession2genome_data...'
+    #print 'getting accession2genome_data...'
     # organism name, protein encoding ORF number
-    print sql
+    #print sql
     accession2genome_data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     accession2density, \
@@ -1044,12 +1051,12 @@ def collect_genome_statistics(biodb, sqlite=False):
 
     #print '<td colspan="6"><table width="800" border=0  class=table_genomes>'
 
-    print 'preparing data...'
+    #print 'preparing data...'
     genomes_data = []
 
     for accession in accession2genome_data:
         accession = accession.split('.')[0]
-        print accession
+        #print accession
         one_genome_data = []
         one_genome_data.append(accession)
         try:
@@ -1096,7 +1103,7 @@ def collect_genome_statistics(biodb, sqlite=False):
                                                                            accession2n_contigs_without_cds[one_genome[0]],
                                                                            accession2n_countigs_without_BBH_chlamydiae[one_genome[0]],
                                                                            one_genome[5])
-        print sql
+        #print sql
         server.adaptor.execute(sql,)
         server.commit()
 
@@ -1139,7 +1146,7 @@ def get_comparative_subtable(biodb,
             sql = 'select %s, %s from comparative_tables.%s_accessions_%s' % (first_col_name, columns, table_name,biodb)
         sql2 = 'select * from comparative_tables.%s_accessions_%s' % (table_name, biodb)
         sql3 = 'show columns from comparative_tables.%s_accessions_%s' % (table_name, biodb)
-    print sql
+    #print sql
     data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
     data2 = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql2,)])
 
@@ -1180,7 +1187,7 @@ def best_hit_classification(db_name, accession):
                                                                                                                         accession)
 
     import pandas
-    print sql
+    #print sql
     server, db = manipulate_biosqldb.load_db(db_name)
 
     data = [i for i in server.adaptor.execute_and_fetchall(sql)]
@@ -1197,7 +1204,7 @@ def best_hit_phylum_and_protein_length(db_name, accession):
                                                                                                                         db_name,
                                                                                                                         accession,                                                                                                              db_name,
                                                                                                                         accession)
-    print sql
+    #print sql
     import pandas
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -1244,7 +1251,7 @@ def locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", 
                                                                         exclude_family)
 
 
-    print sql
+    #print sql
     server, db = manipulate_biosqldb.load_db(db_name)
     data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
     return data
@@ -1319,7 +1326,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                                                                             accession,
                                                                             phylum, exclude_family)
 
-    print sql
+    #print sql
     server, db = manipulate_biosqldb.load_db(db_name)
     data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
     return data
@@ -1419,7 +1426,7 @@ def orthogroup2cog(db_name, accession=False, group_list=False): # group_list,
 
 
 
-    print 'df', sql
+    #print 'df', sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
     ortho2cog = {}
@@ -1447,7 +1454,7 @@ def orthogroup2pfam(db_name, accession=False):
         sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join (COG.locus_tag2gi_hit_%s ' \
               'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
 
-    print 'df', sql
+    #print 'df', sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
     ortho2pfam = {}
@@ -1479,7 +1486,7 @@ def orthogroup2interpro(db_name, group_list, accession=False):
         sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join COG.locus_tag2gi_hit_%s ' \
               'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
 
-    print 'df', sql
+    #print 'df', sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
     ortho2cog = {}
@@ -1574,12 +1581,12 @@ def calculate_average_protein_identity(db_name):
 
     average_id = {}
     for i_taxon in range(0,len(all_taxons)):
-        print 'i taxon', i_taxon
+        #print 'i taxon', i_taxon
         for y_taxon in range(i_taxon+1, len(all_taxons)):
             shared_groups_sql = 'select orthogroup from comparative_tables.orthology_%s where `%s` =1 and `%s`=1' % (db_name, all_taxons[i_taxon], all_taxons[y_taxon])
             all_groups = [i[0] for i in server.adaptor.execute_and_fetchall(shared_groups_sql,)]
             identity_values = []
-            print 'y taxon', y_taxon
+            #print 'y taxon', y_taxon
             for group in all_groups:
                 sql_ref = 'select locus_tag from orthology_detail_%s where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[i_taxon], group)
                 sql_query = 'select locus_tag from orthology_detail_%s where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[y_taxon], group)
@@ -1595,7 +1602,7 @@ def calculate_average_protein_identity(db_name):
             if not all_taxons[i_taxon] in average_id:
                 average_id[all_taxons[i_taxon]] = {}
             average_id[all_taxons[i_taxon]][all_taxons[y_taxon]] = [one_average_id, len(identity_values)]
-            print "one_average_id",all_taxons[i_taxon],all_taxons[y_taxon], one_average_id, len(identity_values)
+            #print "one_average_id",all_taxons[i_taxon],all_taxons[y_taxon], one_average_id, len(identity_values)
     #import json
     #with open('genome_identity_dico.json', 'wb') as fp:
     #    json.dump(average_id, fp)
@@ -1613,15 +1620,15 @@ def calculate_average_protein_identity_new_tables(db_name):
 
     average_id = {}
     for i_taxon in range(0,len(all_taxons)):
-        print 'i taxon', i_taxon
+        #print 'i taxon', i_taxon
         for y_taxon in range(i_taxon+1, len(all_taxons)):
             shared_groups_sql = 'select orthogroup from comparative_tables.orthology_%s where `%s` =1 and `%s`=1' % (db_name, all_taxons[i_taxon], all_taxons[y_taxon])
             all_groups = [i[0] for i in server.adaptor.execute_and_fetchall(shared_groups_sql,)]
             identity_values = []
-            print 'y taxon', y_taxon
+            #print 'y taxon', y_taxon
             for i, group in enumerate(all_groups):
                 if i%500 == 0:
-                    print "%s/%s" % (i, len(all_groups))
+                    print ("%s/%s" % (i, len(all_groups)))
                 sql_ref = 'select locus_tag from orthology_detail_%s where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[i_taxon], group)
                 sql_query = 'select locus_tag from orthology_detail_%s where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[y_taxon], group)
                 locus_ref = server.adaptor.execute_and_fetchall(sql_ref,)[0][0]
@@ -1640,7 +1647,7 @@ def calculate_average_protein_identity_new_tables(db_name):
             if not all_taxons[i_taxon] in average_id:
                 average_id[all_taxons[i_taxon]] = {}
             average_id[all_taxons[i_taxon]][all_taxons[y_taxon]] = [one_average_id, len(identity_values)]
-            print "one_average_id",all_taxons[i_taxon],all_taxons[y_taxon], one_average_id, len(identity_values)
+            #print "one_average_id",all_taxons[i_taxon],all_taxons[y_taxon], one_average_id, len(identity_values)
 
     return average_id
 
@@ -1702,7 +1709,7 @@ def locus_list2nucleotide_fasta(biodb,locus_list):
 
     accession2record = {}
     for accession in accession_list:
-        print accession
+        #print accession
         accession2record[accession] = db.lookup(accession=accession)
 
 
@@ -1769,7 +1776,7 @@ def update_interpro_table(biodb, locus_list, locus2ortho, i):
     y = 0
     for locus in locus_list:
         y+=1
-        print i,y, len(locus_list), locus
+        #print i,y, len(locus_list), locus
         sql = 'UPDATE interpro_%s SET orthogroup="%s" WHERE  locus_tag="%s";' % (biodb, locus2ortho[locus], locus)
         server.adaptor.execute(sql,)
         server.commit()
@@ -1819,7 +1826,7 @@ def add_orthogroup_to_interpro_table(biodb_name):
     i=0
     for t, one_row in enumerate(interpro_data):
         if t % 100 == 0:
-            print "%s / %s" % (t, len(interpro_data))
+            print ("%s / %s" % (t, len(interpro_data)))
         i+=1
         
         orthogroup = locus2ortho[one_row[1]]
@@ -2014,7 +2021,7 @@ if __name__ == '__main__':
     for i in genome_identity:
         header += '%s\t' % taxon_id2genome_description[str(i)]
 
-    print header
+    #print header
     for i in genome_identity:
         row_string = '%s\t' % taxon_id2genome_description[str(i)]
         for y in genome_identity:
@@ -2027,5 +2034,5 @@ if __name__ == '__main__':
                     row_string += '%s\t' % round(genome_identity[y][i][0],2)
                 except KeyError:
                     row_string += '-\t'
-        print row_string
+        print (row_string)
     

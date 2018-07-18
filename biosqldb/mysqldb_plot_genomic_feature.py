@@ -475,10 +475,10 @@ def plot_multiple_regions_crosslink(target_protein_list,
 
 
 
-    import StringIO
+    import io
     import edit_svg
 
-    svg_diagram = StringIO.StringIO()
+    svg_diagram = io.StringIO()
     gd_diagram.write(svg_diagram, "SVG")
     svg_diagram.flush()
     #gd_diagram
@@ -489,9 +489,9 @@ def plot_multiple_regions_crosslink(target_protein_list,
 
     png_name = out_name.split('.')[0] + '.png'
 
-    png_handle = open(png_name, 'w')
-    gd_diagram.write(png_handle, "PNG")
-    png_handle.close()
+    #png_handle = open(png_name, 'w')
+    #gd_diagram.write(png_handle, "PNG")
+    #png_handle.close()
 
     try:
         cmd = 'chmod 444 %s' % out_name
