@@ -5,4 +5,4 @@ def shell_command(command):
     process = subprocess.Popen(command, stdout = subprocess.PIPE,
                                 stderr = subprocess.PIPE, shell = True)
     stdout_str, stderr_str = process.communicate()
-    return(str(stdout_str), str(stderr_str), int(process.returncode))
+    return(stdout_str.decode(), stderr_str.decode(), process.returncode.decode())
