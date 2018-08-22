@@ -124,7 +124,7 @@ class CircosAccession2biplot():
         r1 = 0.90
         r0 = 0.87
         for orthofile in circos_files["genomes"]:
-            print orthofile
+            #print orthofile
             circos.add_highlight(orthofile, fill_color="blue", r1="%sr" % r1, r0= "%sr" % r0)
             r1 = r1-0.05
             r0 = r0-0.05
@@ -169,7 +169,7 @@ class CircosAccession2multiplot():
         for reference_record in reference_records:
             #print "one record", reference_record
             reference_accessions.append(reference_record.id.split(".")[0])
-        print "reference_accession", reference_accessions
+        #print "reference_accession", reference_accessions
 
 
         bioentry_id2taxon_id_dict = manipulate_biosqldb.bioentry_id2taxon_id_dict(server, biodatabase_name)
@@ -182,13 +182,13 @@ class CircosAccession2multiplot():
 
         ordered_queries_taxon_id = []
         for taxon in ordered_taxons:
-            if long(taxon) in queries_taxon_id:
-                ordered_queries_taxon_id.append(long(taxon))
+            if int(taxon) in queries_taxon_id:
+                ordered_queries_taxon_id.append(int(taxon))
 
-        print 'ordered_queries_taxon_id', ordered_queries_taxon_id
+        #print 'ordered_queries_taxon_id', ordered_queries_taxon_id
         taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodatabase_name)
-        for i in ordered_queries_taxon_id:
-            print taxon2description[str(i)]
+        #for i in ordered_queries_taxon_id:
+        #    print taxon2description[str(i)]
 
 
         #reference_record = gbk2circos.Record(reference_record)#db.lookup(accession=reference_accession))
@@ -1608,7 +1608,7 @@ class CircosAccession2multiplot():
 
         #print "taxon_id2description_ref", taxon_id2description_reference
         chr_spacing_list = []
-        print "reference_records", len(reference_records), reference_records
+        #print "reference_records", len(reference_records), reference_records
         if len(reference_records) == 1 and draft_fasta[0] is None:
             for i in range(0, len(reference_records)-1):
                 chr_spacing_list.append([reference_records[i].id, reference_records[i+1].id])
@@ -1699,7 +1699,7 @@ class CircosAccession2multiplot():
         t.write(circos_reference.get_file())
         t.close()
         cmd = "circos -outputfile %s -outputdir %s -conf %s" % (out_file, out_directory, config_file_reference)
-        print cmd
+        #print cmd
         (stdout, stderr, return_code) = shell_command.shell_command(cmd)
 
     # add presence/absence of orthologs
@@ -1709,7 +1709,7 @@ class CircosAccession2multiplot():
         r0 = 0.87 # 0.89
 
         for orthofile in circos_files["genomes"]:
-            print orthofile
+            #print orthofile
             circos.add_plot(orthofile, type="heatmap", r1="%sr" % r1, r0= "%sr" % r0, color="blues-6-seq-3, orrd-9-seq", fill_color="", thickness = "2p", z = 1, rules ="", backgrounds="",url=href)
             #circos.add_highlight(orthofile, fill_color="ortho3", r1="%sr" % r1, r0= "%sr" % r0, href=href)
             r1 = r1-0.036 # 0.012
@@ -1796,7 +1796,7 @@ class CircosAccession2nested_plots1():
         r0_minus = 0.94
 
         for orthofile in circos_files["genomes"]:
-            print orthofile
+            #print orthofile
             r1 = r0_minus - 0.02
             r0 = r0_minus - 0.03
             circos_obj.add_highlight(circos_files["plus"], fill_color="grey_a1", r1="%sr" % r1_plus, r0="%sr" % r0_plus)
@@ -1893,7 +1893,7 @@ class CircosAccession2nested_plot2():
         config_file_reference = os.path.join(out_directory, config_file)
         #out_file = os.path.join(out_directory, out_file)
 
-        print "out file", config_file_reference
+        #print "out file", config_file_reference
 
         t = open(config_file_reference, "w")
         t.write(circos_reference.get_file())
@@ -1927,9 +1927,9 @@ class CircosAccession2blastnr_plot():
         import shell_command
 
         reference_accessions = []
-        print reference_records
+        #print reference_records
         for reference_record in reference_records:
-            print "one record", reference_record
+            #print "one record", reference_record
             # remove version number
             reference_accessions.append(reference_record.id.split(".")[0])
 
@@ -1945,9 +1945,9 @@ class CircosAccession2blastnr_plot():
         draft_fasta = []
         for record in reference_records:
             draft_fasta.append(gbk2circos.circos_fasta_draft_misc_features(record))
-        print '###### draft ########'
-        print draft_fasta
-        print '###### draft ########'
+        #print '###### draft ########'
+        #print draft_fasta
+        #print '###### draft ########'
         #print record_list
 
         if highlight_BBH:
@@ -1964,7 +1964,7 @@ class CircosAccession2blastnr_plot():
             BBH_color = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
         else:
             BBH_color  = []
-        print 'BBH_COLOR!!', len(BBH_color)
+        #print 'BBH_COLOR!!', len(BBH_color)
         circos_files_reference = gbk2circos.orthology_circos_files(server,
                                                                    reference_records,
                                                                    reference_taxon_id,
@@ -1976,8 +1976,8 @@ class CircosAccession2blastnr_plot():
                                                                    draft_data=draft_fasta)
 
 
-        print '################ draft fasta ################'
-        print draft_fasta
+        #print '################ draft fasta ################'
+        #print draft_fasta
 
         if len(draft_fasta) == 2:
             if draft_fasta[0] is None and draft_fasta[1] is None:
@@ -1985,7 +1985,7 @@ class CircosAccession2blastnr_plot():
 
         # add spacing between chromosome and plasmids
         chr_spacing_list = []
-        print "reference_records", len(reference_records), reference_records
+        #print "reference_records", len(reference_records), reference_records
         if len(reference_records) > 0 and draft_fasta is False:
             for i in range(0, len(reference_records)-1):
                 chr_spacing_list.append([reference_records[i].id, reference_records[i+1].id])
@@ -2193,7 +2193,7 @@ euk = 255,131,250
         ####### stacked_bacteria/chlamydiales
         backgrounds = circos_reference.template_backgrounds % (circos_reference.template_background('back'))
 
-        print 'stacked------------'
+        #print 'stacked------------'
         circos_reference.add_plot(blastnr_files['file_stacked_chlamydiales'],
                                   thickness="0p",
                                   fill_color="sta1, sta2",
@@ -2237,7 +2237,7 @@ euk = 255,131,250
         t.write(circos_reference.get_file())
         t.close()
         cmd = "circos -outputfile %s -outputdir %s -conf %s" % (out_file, out_directory, config_file_reference)
-        print cmd
+        #print cmd
         (stdout, stderr, return_code) = shell_command.shell_command(cmd)
 
 
