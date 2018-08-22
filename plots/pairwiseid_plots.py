@@ -104,7 +104,7 @@ def density_plot(value_list_of_lists, label_list,
                    ylab,
                    header1, header2)
         else:
-            print "unkown type"
+            print ("unkown type")
 
         robjects.r.assign('abline_list', abline_list)
 

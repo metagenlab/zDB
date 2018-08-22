@@ -15,10 +15,8 @@ def locus2hydrophobicity_plot(biodb, locus):
 
     sql = 'select locus_tag, translation from orthology_detail_%s where locus_tag="%s"' % (biodb, locus)
     data = server.adaptor.execute_and_fetchall(sql,)[0]
-    print data
     locus = data[0]
     seq = data[1]
-    print data
     num_residues = len(seq)
 
     #print matplotlib.get_cachedir()
