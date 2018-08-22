@@ -182,7 +182,7 @@ def basic_plot(values_x, values_y=False, header="", xlab="", ylab="", output_pat
             robjects.r.assign('values_y', numpy2ri.numpy2ri(b))
 
             robjects.r('''
-                library(genoPlotR)
+                #library(genoPlotR)
                 library(Cairo)
                 library(ggplot2)
 
@@ -202,7 +202,7 @@ def basic_plot(values_x, values_y=False, header="", xlab="", ylab="", output_pat
             robjects.r.assign('values_x', numpy2ri.numpy2ri(a))
 
             robjects.r('''
-                library(genoPlotR)
+                #library(genoPlotR)
                 library(Cairo)
                 library(ggplot2)
 
