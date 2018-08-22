@@ -117,7 +117,7 @@ def density_plot(value_list_of_lists, label_list,
         robjects.r.assign('label_list', label_list)
 
         robjects.r('''
-            library(genoPlotR)
+            #library(genoPlotR)
             #library(Cairo)
             library(ggplot2)
             library(flextable)
@@ -232,7 +232,7 @@ def plot_multiseries_points(data,
         robjects.r.assign('plot_data', pandas2ri.py2ri(df))
 
         robjects.r('''
-            library(genoPlotR)
+            #library(genoPlotR)
             library(Cairo)
             library(ggplot2)
             library(svglite)
