@@ -31,7 +31,7 @@ def locus2hydrophobicity_plot(biodb, locus):
     # transmembrane regions.
 
     window_size = 19
-    half_window = (window_size-1)/2
+    half_window = int(round((window_size-1)/2,0))
 
     # Precompute the offsets list for better performance.
     offsets = range(-half_window, half_window+1)
