@@ -63,10 +63,10 @@ def swissprot_accession2fasta(accession_list):
         req = urllib2.Request(link)
         page = urllib2.urlopen(req)
     except urllib2.HTTPError as e:
-        print accession_list_req
+        print (accession_list_req)
         import time
-        print 'connexion error, trying again'
-        print accession_list
+        print ('connexion error, trying again')
+        print (accession_list)
         time.sleep(60)
         return swissprot_accession2fasta(accession_list)
 
@@ -85,17 +85,17 @@ def refseq_accession2fasta(accession_list):
     try:
         handle = Entrez.efetch(db='protein', id=','.join(accession_list), rettype="fasta", retmode="text")
     except urllib2.HTTPError as e:
-        print e
-        print accession_list
-        print 'connexion problem, waiting 60s. and trying again...'
+        print (e)
+        print (accession_list)
+        print ('connexion problem, waiting 60s. and trying again...')
         # run again if connexion error
         import time
         time.sleep(60)
         return refseq_accession2fasta(accession_list)
     except urllib2.URLError:
-        print e
-        print accession_list
-        print 'connexion problem, waiting 60s. and trying again...'
+        print (e)
+        print (accession_list)
+        print ('connexion problem, waiting 60s. and trying again...')
         # run again if connexion error
         import time
         time.sleep(60)
@@ -129,9 +129,8 @@ def orthogroup2alignment_closest(orthogroup,
     from promer2circos import chunks
     import os
     sqlpsw = os.environ['SQLPSW']
-    print 'sqlpwd', sqlpsw
     if swissprot:
-        print 'getting swissprot best hits...'
+        print ('getting swissprot best hits...')
         # get uniprot record of the <max_n_hits_uniprot> best hits of each <orthogroup> locus
         locus2uniprot_accession_list = orthogroup2blast_hits(biodb,
                                                              orthogroup,
@@ -151,7 +150,7 @@ def orthogroup2alignment_closest(orthogroup,
             uniprot_sequence_records = swissprot_accession2fasta(list(set(uniprot_accession_list)))
 
     if refseq:
-        print 'getting refseq best hits...'
+        print ('getting refseq best hits...')
         # get refseq record of the <max_n_hits_refseq> best hits of each <orthogroup> locus
         locus2refseq_accession_list = orthogroup2blast_hits(biodb,
                                                                orthogroup,
@@ -173,7 +172,7 @@ def orthogroup2alignment_closest(orthogroup,
             for one_list in split_lists:
                 refseq_sequence_records += refseq_accession2fasta(one_list)
 
-    print 'writing alignment file: %s' % outname
+    print ('writing alignment file: %s' % outname)
     ortho_sequences = orthogroup2locus_and_sequences(biodb, orthogroup)
 
     if len(refseq_sequence_records) > 0 or len(uniprot_sequence_records) > 0:
@@ -190,7 +189,7 @@ def orthogroup2alignment_closest(orthogroup,
                     f.write(">%s\n%s\n" % (name, str(record.seq)))
         return True
     else:
-        print 'no hits for %s' % orthogroup
+        print ('no hits for %s' % orthogroup)
         return False
 
 
@@ -214,7 +213,6 @@ def plot_tree(ete2_tree,
     import manipulate_biosqldb
     from ete2 import Tree, TreeStyle, faces, AttrFace
 
-    print 'pwd!', mysql_pwd
     conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
                            user=mysql_user, # your username
                            passwd=mysql_pwd, # your password
@@ -226,7 +224,7 @@ def plot_tree(ete2_tree,
 
     filter = '"' + '","'.join(locus_list)+'"'
 
-    print 'get uniprot taxnomy'
+    print ('get uniprot taxnomy')
     sql1 = 'select subject_accession,subject_scientific_name,t2.phylum from blast_swissprot_%s t1 ' \
           ' inner join blastnr_taxonomy as t2 on t1.subject_taxid=t2.taxon_id where subject_accession in (%s);' % (biodb,
                                                                                                                    filter)
@@ -239,7 +237,7 @@ def plot_tree(ete2_tree,
                                             biodb,
                                             biodb,
                                             orthogroup)
-    print 'get refseq taxonomy'
+    print ('get refseq taxonomy')
     cursor.execute(sql1,)
     accession2name_and_phylum = manipulate_biosqldb.to_dict(cursor.fetchall())
     sql2 = 'select subject_accession,subject_scientific_name,t4.phylum from biosqldb.orthology_detail_%s t1 ' \
@@ -256,7 +254,7 @@ def plot_tree(ete2_tree,
     cursor.execute(sql2,)
     accession2name_and_phylum.update(manipulate_biosqldb.to_dict(cursor.fetchall()))
 
-    print 'plotting tree'
+    print ('plotting tree')
     phylum_list = list(set([accession2name_and_phylum[i][1] for i in accession2name_and_phylum.keys()]))
 
     sql = 'select locus_tag, organism from biosqldb.orthology_detail_%s' % biodb
@@ -274,7 +272,6 @@ def plot_tree(ete2_tree,
 
         try:
             col = phylum2col[accession2name_and_phylum[lf.name][1]]
-            print col
             lf.name = '%s|%s-%s' % (lf.name, accession2name_and_phylum[lf.name][0],accession2name_and_phylum[lf.name][1])
 
             ff = AttrFace("name", fsize=12)
@@ -289,7 +286,6 @@ def plot_tree(ete2_tree,
             #nameFace.border.width = 1
         except:
             col = 'red'
-            print col
             lf.name = '%s| %s' % (lf.name, locus2organism[lf.name])
 
             ff = AttrFace("name", fsize=12)
@@ -311,7 +307,7 @@ def aafasta2phylogeny(aa_fasta, phylo=False):
 
     align_name = aa_fasta.split('.')[0] + '_mafft.fa'
 
-    print 'aligning with mafft...'
+    print ('aligning with mafft...')
     cmd_mafft = 'mafft --anysymbol --amino --auto --maxiterate 1000 %s > %s' % (aa_fasta, align_name)
 
     out, err, code = shell_command.shell_command(cmd_mafft)
@@ -319,7 +315,7 @@ def aafasta2phylogeny(aa_fasta, phylo=False):
     if code != 0:
         raise(err)
     if phylo:
-        print 'reconstructing phylogeny with RAxML...'
+        print ('reconstructing phylogeny with RAxML...')
         output_prefix = aa_fasta.split('.')[0]
         output_tree_name = os.path.join('RAxML_result.%s' % output_prefix)
         output_shtree_name = os.path.join('shtest_%s' % output_prefix)
@@ -333,8 +329,8 @@ def aafasta2phylogeny(aa_fasta, phylo=False):
 
         out, err, code = shell_command.shell_command(cmd_raxml)
         if code != 0:
-            print out, code
-            print err
+            print (out, code)
+            print (err)
             import sys
             sys.exit()
 
@@ -385,7 +381,7 @@ if __name__ == '__main__':
         server, db = manipulate_biosqldb.load_db(args.biodb)
         sql = 'select orthogroup, count(*) as n from orthology_detail_%s group by orthogroup' % args.biodb
 
-        print 'gettig orthogroup2n_hits refseq'
+        print ('gettig orthogroup2n_hits refseq')
         orthgroup2orthogroup_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
         filter = '"' + '","'.join(exclude) + '"'
         sql2 = 'select orthogroup, count(*) from ' \
@@ -400,7 +396,7 @@ if __name__ == '__main__':
                                           args.biodb)
 
         group2n_blast_refseq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
-        print 'gettig orthogroup2n_hits swissprot'
+        print ('gettig orthogroup2n_hits swissprot')
         sql3 = 'select orthogroup, count(*) from ' \
                ' (select locus_tag, count(*) as n from custom_tables.locus2seqfeature_id_%s t1 ' \
                ' inner join blastnr.blast_swissprot_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
@@ -415,7 +411,7 @@ if __name__ == '__main__':
         group2n_blast_swissprot = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
 
         for n, group in enumerate(orthgroup2orthogroup_size):
-            print "%s / %s, %s - %s" % (n, len(orthgroup2orthogroup_size), group, orthgroup2orthogroup_size[group])
+            print ("%s / %s, %s - %s" % (n, len(orthgroup2orthogroup_size), group, orthgroup2orthogroup_size[group]))
             try:
                 n_hits_swissprot = int(group2n_blast_refseq[group])
             except KeyError:
@@ -425,12 +421,12 @@ if __name__ == '__main__':
             except KeyError:
                 n_hits_refseq = 0
             if n_hits_refseq == 0 and n_hits_swissprot == 0:
-                print 'not hits for %s, continue' % group
+                print ('not hits for %s, continue' % group)
                 continue
 
             size = int(orthgroup2orthogroup_size[group])
             if size <= 10:
-                print 'less than 10 sequences!'
+                print ('less than 10 sequences!')
                 alignment = orthogroup2alignment_closest(group,
                                              args.biodb,
                                              max_n_hits_uniprot=2,
