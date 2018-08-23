@@ -2631,11 +2631,6 @@ def gc_locus(request, biodb, locus_tag):
 
 @login_required
 def fam(request, biodb, fam, type):
-
-
-
-    #cache.clear()
-
     if request.method == 'GET':  # S'il s'agit d'une requête POST
 
         valid_id = True
@@ -2646,14 +2641,15 @@ def fam(request, biodb, fam, type):
 
         #sql1 = 'SELECT column_name FROM information_schema.columns WHERE table_name="orthology_detail_chlamydia_03_15"'
         if type =='pfam':
-            sql1 =   'select locus_tag from interpro_%s where signature_accession="%s" group by locus_tag' % (biodb, fam)
+            sql1 =   'select seqfeature_id from interpro.signature t1 ' \
+                     ' inner join interpro.interpro_%s t2 on t1.signature_id=t2.signature_id ' \
+                     ' where t1.signature_accession="%s" group by seqfeature_id;' % (biodb, fam)
             sql2 = 'select signature_description from interpro_%s where signature_accession="%s" limit 1' % (biodb, fam)
             info = server.adaptor.execute_and_fetchall(sql2, )[0]
         elif type == 'cog':
             sql1 = 'select locus_tag from COG.locus_tag2gi_hit_%s where COG_id="%s"' % (biodb, fam)
             sql2 = 'select function, name from COG.cog_names_2014 where COG_id = "%s"' % (fam)
             info = server.adaptor.execute_and_fetchall(sql2, )[0]
-
         elif type == 'interpro':
             sql1 = 'select locus_tag from interpro_%s where interpro_accession="%s" group by locus_tag' % (biodb, fam)
             sql2 = 'select signature_description from interpro_%s where interpro_accession="%s" limit 1' % (biodb, fam)
@@ -2687,7 +2683,6 @@ def fam(request, biodb, fam, type):
             sql2 = 'select * from enzyme.ko_annotation where ko_accession="%s"' % (fam)
 
             ko_data = server.adaptor.execute_and_fetchall(sql2,)[0]
-
             external_link = 'http://www.genome.jp/dbget-bin/www_bget?%s' % (fam)
 
             sql_modules = 'select pathways, modules from enzyme.ko_annotation where ko_accession="%s";' % (fam)
@@ -2703,7 +2698,6 @@ def fam(request, biodb, fam, type):
                 module_list = '("' + '","'.join(data[1].split(',')) + '")'
                 sql = 'select module_name,module_sub_sub_cat,description from enzyme.kegg_module where module_name in %s' % module_list
                 module_data = server.adaptor.execute_and_fetchall(sql,)
-
         else:
             valid_id = False
             return render(request, 'chlamdb/fam.html', locals())
