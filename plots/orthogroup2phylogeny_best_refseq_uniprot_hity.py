@@ -201,7 +201,7 @@ def get_spaced_colors(n):
 
     return ['#%02x%02x%02x' % (int(i[:2], 16), int(i[2:4], 16), int(i[4:], 16)) for i in colors]
 
-def plot_tree(ete2_tree,
+def plot_tree(ete3_tree,
               orthogroup,
               biodb,
               mysql_host="localhost",
@@ -211,7 +211,7 @@ def plot_tree(ete2_tree,
 
     import MySQLdb
     import manipulate_biosqldb
-    from ete2 import Tree, TreeStyle, faces, AttrFace
+    from ete3 import Tree, TreeStyle, faces, AttrFace
 
     conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
                            user=mysql_user, # your username
@@ -220,7 +220,7 @@ def plot_tree(ete2_tree,
 
     cursor = conn.cursor()
 
-    locus_list = [lf.name for lf in ete2_tree.iter_leaves()]
+    locus_list = [lf.name for lf in ete3_tree.iter_leaves()]
 
     filter = '"' + '","'.join(locus_list)+'"'
 
@@ -263,12 +263,12 @@ def plot_tree(ete2_tree,
 
     phylum2col = dict(zip(phylum_list, get_spaced_colors(len(phylum_list))))
 
-    R = ete2_tree.get_midpoint_outgroup()
+    R = ete3_tree.get_midpoint_outgroup()
     # and set it as tree outgroup
-    ete2_tree.set_outgroup(R)
+    ete3_tree.set_outgroup(R)
 
 
-    for lf in ete2_tree.iter_leaves():
+    for lf in ete3_tree.iter_leaves():
 
         try:
             col = phylum2col[accession2name_and_phylum[lf.name][1]]
@@ -296,14 +296,14 @@ def plot_tree(ete2_tree,
     ts = TreeStyle()
     ts.show_leaf_name = False
     ts.show_branch_support = True
-    return ete2_tree, ts
+    return ete3_tree, ts
 
 
 def aafasta2phylogeny(aa_fasta, phylo=False):
     import os
     import shell_command
     import re
-    from ete2 import Tree
+    from ete3 import Tree
 
     align_name = aa_fasta.split('.')[0] + '_mafft.fa'
 
