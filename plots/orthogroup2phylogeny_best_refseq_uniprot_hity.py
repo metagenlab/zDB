@@ -250,7 +250,7 @@ def plot_tree(ete2_tree,
                                             biodb,
                                             orthogroup)
 
-    print sql2
+    print (sql2)
     cursor.execute(sql2,)
     accession2name_and_phylum.update(manipulate_biosqldb.to_dict(cursor.fetchall()))
 
