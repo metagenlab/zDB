@@ -163,10 +163,9 @@ def heatmap_pangenome(M,output=None,format='pdf',new=True,breaks=None, last=True
     cex = h*0.2
     oma_right = w*3
 
-    print 'size', h, w, oma_right
+    print ('size', h, w, oma_right)
 
     plotopt, output = _begin(output=output,format=format,new=new,width=w,height=h,**kwargs)
-    print "ok"
     robjects.r.assign('Mdata', numpy2ri.numpy2ri(M))
     if rows is not None:
         import numpy as np
