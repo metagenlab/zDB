@@ -2651,16 +2651,21 @@ def fam(request, biodb, fam, type):
             sql2 = 'select function, name from COG.cog_names_2014 where COG_id = "%s"' % (fam)
             info = server.adaptor.execute_and_fetchall(sql2, )[0]
         elif type == 'interpro':
-            sql1 = 'select locus_tag from interpro_%s where interpro_accession="%s" group by locus_tag' % (biodb, fam)
+            sql1 =   'select seqfeature_id from interpro.entry t1 inner join interpro.signature t2 on t1.interpro_id=t2.interpro_id ' \
+                     ' inner join interpro.interpro_%s t3 on t2.signature_id=t3.signature_id ' \
+                     ' where name="%s" group by seqfeature_id;;' % (biodb, fam)
             sql2 = 'select signature_description from interpro_%s where interpro_accession="%s" limit 1' % (biodb, fam)
             try:
                 info = server.adaptor.execute_and_fetchall(sql2, )[0]
             except IndexError:
                 valid_id = False
         elif type == 'EC':
-            sql1 = 'select locus_tag from enzyme.locus2ec_%s as t1 ' \
-                   ' inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id where ec="%s" group by locus_tag;' % (biodb,
-                                                                                                                    fam)
+            sql1 = 'select seqfeature_id from (select locus_tag from enzyme.locus2ec_%s as t1 ' \
+                   ' inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id ' \
+                   ' where ec="%s" group by locus_tag) A ' \
+                   ' inner join annotation.seqfeature_id2locus_%s B on A.locus_tag=B.locus_tag group by seqfeature_id;' % (biodb,
+                                                                                                                           fam,
+                                                                                                                           biodb)
             sql2 = 'select line,value from (select * from enzyme.enzymes where ec="%s") t1 ' \
                    ' inner join enzyme.enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id;' % (fam)
             path = fam.split('.')
