@@ -5,6 +5,7 @@
 
 
 
+
 #from django.shortcuts import render
 #from datetime import datetime
 from django.shortcuts import render
@@ -143,20 +144,20 @@ def chlamdb_login(request):
 
     return render(request, 'chlamdb/login.html', locals())
 
-
 def logout_view(request):
     logout(request)
     return render(request, 'chlamdb/logout.html', locals())
     return render(request, 'chlamdb/logout.html', locals())
 
 @login_required
-def home(request, biodb):
+def home(request):
     from ete3 import TreeStyle
     import phylo_tree_bar
     from ete3 import Tree
-
+    biodb = settings.BIODB
+    print ('biodb', biodb)
     server, db = manipulate_biosqldb.load_db(biodb)
-
+    print('ok')
     sql = 'select * from genomes_info_%s' % biodb
 
     genomes_data = server.adaptor.execute_and_fetchall(sql,)

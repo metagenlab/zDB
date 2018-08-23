@@ -155,7 +155,8 @@ urlpatterns = [
                        url(r'^plot_neighborhood/([a-zA-Z0-9_\.\-]+)/([a-zA-Z0-9_\.\-]+)$', views.plot_neighborhood, name="plot_neighborhood"),
                        url(r'^orthogroup_annotation/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$', views.orthogroup_annotation, name="orthogroup_annotation"),
                        url(r'^locus_annotation/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$', views.locus_annotation, name="locus_annotation"),
-                       url(r'^logout/$', logout, {'next_page': '/'}),
+                       url(r'^logout/$', logout, {'next_page': '/'},),
+                       url(r'^.*$', views.home, name="home"),
 
 ]
 
