@@ -44,7 +44,7 @@ def get_kegg_module_hierarchy():
 
             mod = module.match(line).group(1).split(' ')[0]
             description = module.match(line).group(1).split('  ')[-1]
-            print description
+            print (description)
             #print main_cat, sub_cat, sub_sub_cat, mod
             module2category[mod] = [main_cat, sub_cat, sub_sub_cat, description]
 
@@ -71,10 +71,10 @@ def get_ko2ec(biodb):
     total = len(data)
     #data = ["ko:K00512"]
     for n, ko_data in enumerate(data):
-        print "%s / %s" % (n, total)
+        print ("%s / %s" % (n, total))
 
         ko_id = ko_data.split('\t')[0][3:]
-        print ko_id
+        print (ko_id)
 
         url_ko = 'http://rest.kegg.jp/link/ec/%s' % ko_id
 
@@ -84,7 +84,7 @@ def get_ko2ec(biodb):
             try:
                 ec_name = one_ec[1][3:]
             except:
-                print 'problem with:', ko_id, 'no ec?'
+                print ('problem with:', ko_id, 'no ec?')
                 continue
 
             try:
@@ -96,16 +96,16 @@ def get_ko2ec(biodb):
                 server.adaptor.execute_and_fetchall(sql)
 
             except IndexError:
-                print 'problem getting ec ID for:', ec_name, 'not in biosqldb?'
-                print 'trying to add ec data from IUBMB'
+                print ('problem getting ec ID for:', ec_name, 'not in biosqldb?')
+                print ('trying to add ec data from IUBMB')
                 try:
                     ec_id = get_ec_data_from_IUBMB(ec_name)
-                    print "new_ec_id:", ec_id
+                    print ("new_ec_id:", ec_id)
                     sql = 'INSERT INTO enzyme.ko2ec(ko_id, enzyme_id) VALUES ("%s",%s);' % (one_ec[0][3:], ec_id)
                     #print sql
                     server.adaptor.execute_and_fetchall(sql)
                 except:
-                    print 'FAIL'
+                    print ('FAIL')
         server.commit()
 
 
@@ -134,15 +134,15 @@ def get_complete_ko_table(biodb):
     sql = 'select ko_accession from enzyme.ko_annotation'
     ko_already_in_db = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
-    print 'test:', ko_already_in_db[0:10]
+    print ('test:', ko_already_in_db[0:10])
 
     total = len(data)
     for n, line in enumerate(data):
-        print "%s / %s" % (n, total)
+        print ("%s / %s" % (n, total))
         ko = line.rstrip().split('\t')[0][3:]
-        print ko
+        print (ko)
         if ko in ko_already_in_db:
-            print '%s already in DB' % ko
+            print ('%s already in DB' % ko)
             continue
         url_ko = 'http://rest.kegg.jp/get/%s' % ko
 
@@ -192,7 +192,7 @@ def get_complete_ko_table(biodb):
                                                                 modules,
                                                                 refs_str)
 
-        print sql
+        print (sql)
         server.adaptor.execute(sql,)
         server.commit()
 
@@ -336,8 +336,8 @@ def get_module2ko_data(cursor, ko_data, module_id, ko_accession2ko_id):
             try:
                 ko = line.rstrip().split("\t")[1][3:]
             except:
-                print 'ko not found in line:', line
-                print 'ko data:', ko_data
+                print ('ko not found in line:', line)
+                print ('ko data:', ko_data)
                 import sys
                 sys.exit()
             try:
@@ -347,10 +347,10 @@ def get_module2ko_data(cursor, ko_data, module_id, ko_accession2ko_id):
                 ko_id = ko_accession2ko_id[ko]
                 sql = 'INSERT into module2ko (module_id, ko_id) values (%s,%s);' % (module_id,
                                                                                     ko_id)
-                print sql
+                print (sql)
                 cursor.execute(sql,)
             except:
-                print line
+                print (line)
                 import sys
                 sys.exit()
 
@@ -388,7 +388,7 @@ def get_module_table(module2category,ko_accession2ko_id):
            ' index mdsc(module_sub_cat),' \
            ' index mdssc(module_sub_sub_cat));'
 
-    print sql1
+    print (sql1)
     cursor.execute(sql1,)
 
     sql2 = 'CREATE TABLE IF NOT EXISTS module2ko (module_id INT,' \
@@ -408,7 +408,7 @@ def get_module_table(module2category,ko_accession2ko_id):
            ' FOREIGN KEY(ec_id) REFERENCES enzymes(id)' \
            ' ON DELETE CASCADE);'
 
-    print sql2
+    print (sql2)
     cursor.execute(sql2,)
 
 
@@ -420,7 +420,7 @@ def get_module_table(module2category,ko_accession2ko_id):
         module = pathway[0][3:]
         description = pathway[1]
         if module in module_in_db:
-            print '%s already in db' % module
+            print ('%s already in db' % module)
             continue
         try:
             cat = module2category[module][0]
@@ -430,7 +430,7 @@ def get_module_table(module2category,ko_accession2ko_id):
         except:
             cat = 'uncategorized'
             cat_short = 'uncategorized'
-            print '------------------------------------------------'
+            print ('------------------------------------------------')
 
         sql = 'INSERT into kegg_module (module_name, module_cat,module_sub_cat, module_sub_sub_cat, description) ' \
               'values ("%s", "%s", "%s", "%s", "%s");' % (module,
@@ -439,7 +439,7 @@ def get_module_table(module2category,ko_accession2ko_id):
                                                           sub_sub_cat,
                                                           description)
 
-        print sql
+        print (sql)
         cursor.execute(sql,)
         conn.commit()
 
@@ -455,16 +455,16 @@ def get_module_table(module2category,ko_accession2ko_id):
         ko_numbers_link = "http://rest.kegg.jp/link/ko/%s" % module
         ko_data = [l for l in urllib2.urlopen(ko_numbers_link)]
 
-        print len(ko_data)
+        print( len(ko_data))
         if ko_data[0] == '\n':
-            print 'MODULE MADE OF SUBMODULES----------'
+            print ('MODULE MADE OF SUBMODULES----------')
             module_link = "http://rest.kegg.jp/get/%s" % module
             module_data = [l for l in urllib2.urlopen(module_link)]
             definition = ko2definition(module_data)
             module_list = definition2module_list(definition)
-            print 'modules:', module_list
+            print ('modules:', module_list)
             for n,m in enumerate(module_list):
-                print n, m
+                print (n, m)
                 ko_numbers_link2 = "http://rest.kegg.jp/link/ko/%s" % m
                 ko_data2 = [l for l in urllib2.urlopen(ko_numbers_link2)]
                 get_module2ko_data(cursor, ko_data2, module_id, ko_accession2ko_id)
@@ -503,7 +503,7 @@ def get_pathway2ko(ko_accession2ko_id):
            ' index pathway_id(pathway_id),' \
            ' index ko_id(ko_id));'
 
-    print sql2
+    print (sql2)
     cursor.execute(sql2,)
     conn.commit()
 
@@ -524,9 +524,9 @@ def get_pathway2ko(ko_accession2ko_id):
 
         try:
             pathway_id = pathway_name2pathway_id[pathway] # cursor.fetchall()[0][0]
-            print 'path id', pathway_id
+            print ('path id', pathway_id)
         except:
-            print 'no pathway id for: %s, incomplete pathway table?' %  pathway
+            print ('no pathway id for: %s, incomplete pathway table?' %  pathway)
 
         ko_numbers_link = "http://rest.kegg.jp/link/ko/%s" % pathway
         ko_data = urllib2.urlopen(ko_numbers_link)
@@ -536,19 +536,19 @@ def get_pathway2ko(ko_accession2ko_id):
                 ko = line.rstrip().split("\t")[1][3:]
 
             except IndexError:
-                print 'No Ko for pathway %s?' % pathway
+                print ('No Ko for pathway %s?' % pathway)
                 continue
             try:
                 ko_id = ko_accession2ko_id[ko]
             except KeyError:
-                print 'PROBLEM with KO %s?' % ko
+                print ('PROBLEM with KO %s?' % ko)
                 continue
             try:
                 sql = 'INSERT into pathway2ko (pathway_id, ko_id) values (%s,%s);' % (pathway_id,
                                                                                        ko_id)
                 cursor.execute(sql,)
             except:
-                print line
+                print (line)
                 import sys
                 sys.exit()
         conn.commit()
@@ -598,14 +598,14 @@ def get_ec_data_from_IUBMB(ec):
     for i, data in enumerate(list(html.split('<p>'))):
 
         if re.match(name_m, data):
-            print 'name'
+            print ('name')
             name = data.split("</b>")[-1]
             #name = re.sub("&alpha;","", name)
         elif re.match(alname, data):
-            print 'altname'
+            print ('altname')
             altname = data.split("):</b>")[1].split(';')
         elif re.match(reaction, data):
-            print 'reaction'
+            print ('reaction')
             rr = data.split("<br>")
             reaction_list = []
             for i in rr:
@@ -614,7 +614,7 @@ def get_ec_data_from_IUBMB(ec):
                 reaction_list.append(i)
 
         elif re.match(comments, data):
-            print 'comment'
+            print ('comment')
             cc = data.split("</b>")[1].split(';')
         else:
             continue
@@ -629,7 +629,7 @@ def get_ec_data_from_IUBMB(ec):
     sql_id = 'SELECT LAST_INSERT_ID()'
     cursor.execute(sql_id, )
     id = int(cursor.fetchall()[0][0])
-    print id
+    print (id)
 
     sql = 'INSERT into enzymes_dat (enzyme_dat_id, line, value) values (%s, "description", "%s");' % (id, name)
     cursor.execute(sql,)
@@ -674,7 +674,7 @@ def get_pathay_table(map2category):
            ' index pcs(pathway_category_short),' \
            ' index pc(pathway_category));'
 
-    print sql1
+    print (sql1)
     cursor.execute(sql1,)
 
     conn.commit()
@@ -682,10 +682,10 @@ def get_pathay_table(map2category):
     pathway_file_file = 'http://rest.kegg.jp/list/pathway'
     data = urllib2.urlopen(pathway_file_file)
 
-    print 'iter pathway list...'
+    print ('iter pathway list...')
     for line in data:
         pathway = line.rstrip().split("\t")
-        print pathway
+        print (pathway)
         map = pathway[0][5:]
         description = pathway[1]
 
@@ -739,7 +739,7 @@ def get_ec2get_pathway_table():
            ' FOREIGN KEY(ec_id) REFERENCES enzymes(id)' \
            ' ON DELETE CASCADE);'
 
-    print sql2
+    print (sql2)
     cursor.execute(sql2,)
     conn.commit()
 
@@ -751,14 +751,14 @@ def get_ec2get_pathway_table():
         id = map2id[map]
 
         ec_numbers_link = "http://rest.kegg.jp/link/ec/%s" % map
-        print ec_numbers_link
+        print (ec_numbers_link)
         ec_data = urllib2.urlopen(ec_numbers_link)
 
         for line in ec_data:
             try:
                 ec = line.rstrip().split("\t")[1]
             except:
-                print 'problem:', line
+                print ('problem:', line)
                 continue
             if '-' in ec:
                 continue
@@ -895,11 +895,11 @@ def load_enzyme_nomenclature_table():
            ' FOREIGN KEY(enzyme_dat_id) REFERENCES enzymes(enzyme_id)' \
            ' ON DELETE CASCADE);'
 
-    print 'create enzyme table'
-    print sql1
+    print ('create enzyme table')
+    print (sql1)
     cursor.execute(sql1,)
-    print 'create dat table'
-    print sql2
+    print ('create dat table')
+    print (sql2)
     cursor.execute(sql2)
 
     for data in Enzyme.parse(data):
@@ -907,12 +907,12 @@ def load_enzyme_nomenclature_table():
         enzyme = data['ID']
 
 
-        print  data
+        print (data)
 
         # insert enzyme id into primary TABLE
         sql = 'INSERT into enzymes (ec) values ("%s");' % enzyme
 
-        print sql
+        print (sql)
         cursor.execute(sql,)
         conn.commit()
 
@@ -1037,9 +1037,9 @@ def get_microbial_metabolism_in_diverse_environments_kegg01120():
             sql = 'insert into microbial_metabolism_map01120 values("%s")' % module
             cursor.execute(sql,)
 
-            print sql
+            print (sql)
         else:
-            print '---', one_input
+            print ('---', one_input)
     conn.commit()
 
 
@@ -1071,9 +1071,9 @@ if __name__ == '__main__':
         #map2category = get_kegg_pathway_classification()
         #print 'getting pathway table...'
         #get_pathay_table(map2category)
-        print 'getting ko2pathway...'
+        print ('getting ko2pathway...')
         get_pathway2ko(ko_accession2ko_id)
-        print 'getting module2ko...'
+        print ('getting module2ko...')
         get_module_table(get_kegg_module_hierarchy(), ko_accession2ko_id)
 
         #get_ec2get_pathway_table()
