@@ -284,10 +284,7 @@ def heatmap(M,output=None,format='pdf',new=True,breaks=None, last=True,
     """Creates a heatmap of the matrix *M* using *rows* as row labels and *columns* as column labels.
     If either *orderRows* or *orderCols* is True, will cluster accordingly and display a dendrogram."""
 
-    print M
-    print "cols", columns
     plotopt,output = _begin(output=output,format=format,new=new,**kwargs)
-    print "ok"
     robjects.r.assign('Mdata',numpy2ri.numpy2ri(M))
     if rows is not None:
         import numpy as np
@@ -296,9 +293,7 @@ def heatmap(M,output=None,format='pdf',new=True,breaks=None, last=True,
         plotopt += ",labRow=labRow"
     if columns is not None:
         import numpy as np
-        print "cols", columns
         columns = np.asarray(columns, dtype='a50')
-        print (len(columns))
         robjects.r.assign('labCol',numpy2ri.numpy2ri(columns))
         plotopt += ",labCol=labCol"
     if cor:
@@ -386,7 +381,6 @@ def heatmap_ksnp(M,output=None,format='pdf',new=True,breaks=None, last=True,
         robjects.r.assign('labRow',numpy2ri.numpy2ri(rows))
         plotopt += ",labRow=labRow"
     if columns is not None:
-        print "columns", columns
         import numpy as np
         columns = np.asarray(columns, dtype='a50')
         robjects.r.assign('labCol',numpy2ri.numpy2ri(columns))
