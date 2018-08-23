@@ -948,6 +948,8 @@ def multiple_profiles_heatmap(biodb,
                                 # clor given a continuous scale
                                 if identity_scale:
                                     n.inner_background.color = rgb2hex(m.to_rgba(float(count)))
+                                    if float(count) >90:
+                                        n.fgcolor='white'
                                     if not show_labels:
                                         n.fgcolor = rgb2hex(m.to_rgba(float(count)))
                                 elif column_scale:
@@ -2025,7 +2027,9 @@ def draw_pfam_tree(tree_name, locus2data,
     t = Tree(tree_name)
     #t.populate(8)
     # Calculate the midpoint node
+    print (t)
     R = t.get_midpoint_outgroup()
+    print (R)
     # and set it as tree outgroup
     t.set_outgroup(R)
 

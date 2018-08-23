@@ -4,7 +4,7 @@
 def get_domain_taxonomy(domain_id, rank='phylum'):
     import MySQLdb
     import os
-    from ete2 import NCBITaxa, Tree, TextFace,TreeStyle, StackedBarFace
+    from ete3 import NCBITaxa, Tree, TextFace,TreeStyle, StackedBarFace
     ncbi = NCBITaxa()
 
 
@@ -61,7 +61,7 @@ def get_rank_summary_statistics(rank='phylum'):
 
     import MySQLdb
     import os
-    from ete2 import NCBITaxa, Tree, TextFace,TreeStyle, StackedBarFace
+    from ete3 import NCBITaxa, Tree, TextFace,TreeStyle, StackedBarFace
     ncbi = NCBITaxa()
 
 
@@ -138,14 +138,14 @@ def get_rank_summary_statistics(rank='phylum'):
         to_detach = []
         if name in collapse:
             to_detach.extend(node.children)
-            print 'ok-------------------', node.name
+            print ('ok-------------------', node.name)
         for n in to_detach:
             n.detach()
     leaves_list = [i.name for i in tree.iter_leaves()]
     leaf_taxon2n_species= {}
     leaf_taxon2n_species_with_domain = {}
     for leaf_taxon in leaves_list:
-        print 'leaf', leaf_taxon
+        print ('leaf', leaf_taxon)
         leaf_taxon2n_species[leaf_taxon] = 0
         leaf_taxon2n_species_with_domain[leaf_taxon] = 0
         for taxon in taxid_list:
@@ -232,7 +232,7 @@ def lead_reference_genome_table_into_database(genome_refseq_file=False):
         ftp_path = data[19]
         if refseq_category in ['reference genome','representative genome']:
             count+=1
-            print "%s\t%s\t%s\t%s\t%s" % (assembly_accession, refseq_category, organism_name, infraspecific_name, ftp_path)
+            print ("%s\t%s\t%s\t%s\t%s" % (assembly_accession, refseq_category, organism_name, infraspecific_name, ftp_path))
             sql = 'insert into pfam.refseq_ref_repres_genomes(assembly_accession,bioproject,biosample,wgs_master,' \
                   ' refseq_category,taxid,species_taxid,organism_name,infraspecific_name,version_status,' \
                   ' assembly_level,release_type,genome_rep,seq_rel_date,ftp_path) ' \
@@ -252,7 +252,7 @@ def lead_reference_genome_table_into_database(genome_refseq_file=False):
                                                        genome_rep,
                                                        seq_rel_date,
                                                        ftp_path)
-            print sql
+            print (sql)
             cursor.execute(sql,)
             conn.commit()
             # check if taxon id are in blastnr_taxonomy
@@ -268,7 +268,7 @@ def lead_reference_genome_table_into_database(genome_refseq_file=False):
                 taxob_id = cursor.fetchall()[0][0]
             except IndexError:
                 taxon_update_list.append(taxid)
-    print 'n update taxon:', len(taxon_update_list), 'out of:',count
+    print ('n update taxon:', len(taxon_update_list), 'out of:',count)
     insert_taxons_into_sqldb(taxon_update_list, 300, mysql_pwd=sqlpsw)
 
 
@@ -295,7 +295,7 @@ def plot_phylum_counts(domain_id, rank='phylum',
     import MySQLdb
     import os
     import manipulate_biosqldb
-    from ete2 import NCBITaxa, Tree, TextFace,TreeStyle, StackedBarFace
+    from ete3 import NCBITaxa, Tree, TextFace,TreeStyle, StackedBarFace
     ncbi = NCBITaxa()
 
     sqlpsw = os.environ['SQLPSW']
@@ -340,7 +340,7 @@ def plot_phylum_counts(domain_id, rank='phylum',
         n_genomes = int(leaf_taxon2n_species[lf.name])
         if n_genomes > colapse_low_species_counts:
             keep.append(lf.name)
-    print 'number of leaves:', len(keep)
+    print ('number of leaves:', len(keep))
 
     tree.prune(keep)
 
@@ -554,7 +554,7 @@ if __name__ == '__main__':
 
     if args.pfam_tab_files is not None:
         for n, one_table in enumerate(args.pfam_tab_files):
-            print '%s / %s -- %s' % (n, len(args.pfam_tab_files), one_table)
+            print ('%s / %s -- %s' % (n, len(args.pfam_tab_files), one_table))
             load_pfam_result_into_database(one_table)
 
     if args.pfam_database:
