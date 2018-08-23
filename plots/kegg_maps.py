@@ -6,9 +6,10 @@ def map2highlighted_map(map_id, ko_list, ko2freq, biodb, outpath = 'test.pdf', t
     import shell_command
     from Bio.Graphics.KGML_vis import KGMLCanvas
     from Bio.Graphics import KGML_vis
-    import urllib2
+    import urllib.request
     from Bio.KEGG.KGML.KGML_pathway import Pathway, Reaction, Relation
     import Bio.KEGG.KGML.KGML_pathway
+    from Bio.Graphics import KGML_vis
     from Bio.KEGG.KGML import KGML_parser
     from Bio.Graphics.ColorSpiral import ColorSpiral
     import matplotlib.cm as cm
@@ -24,12 +25,12 @@ def map2highlighted_map(map_id, ko_list, ko2freq, biodb, outpath = 'test.pdf', t
     m2 = cm.ScalarMappable(norm=norm, cmap=cmap2)
 
     url_template = 'http://rest.kegg.jp/get/%s/kgml' % re.sub('map', 'ko', map_id)
-    f = urllib2.urlopen(url_template)
 
-    from Bio.Graphics import KGML_vis
+    f = urllib.request.urlopen(url_template)
 
 
-    pathway = KGML_parser.read(f.read())
+
+    pathway = KGML_parser.read(f.read().decode('UTF-8'))
 
     kgml_map = KGMLCanvas(pathway, show_maps=True)
 
@@ -42,7 +43,7 @@ def map2highlighted_map(map_id, ko_list, ko2freq, biodb, outpath = 'test.pdf', t
     for o in orthologs:
         match = False
         if 'K00163' in o.name:
-            print '##################################'
+            print ('##################################')
         ko_temp_list = set([i.rstrip() for i in o.name.split('ko:') ])
         if len(ko_temp_list.intersection(set(ko2freq.keys())))>0:
 

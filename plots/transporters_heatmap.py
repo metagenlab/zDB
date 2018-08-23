@@ -49,7 +49,7 @@ def transporter_family_heatmap(biodb, family_list,evalue, bitscore, query_cov, h
           ' inner join transporters.tc_table t4 on t2.family=t4.tc_id ' \
           ' where query_cov>=%s and hit_cov>=%s and evalue<=%s and bitscore_first_hsp>=%s and t4.tc_name in (%s) ' \
           ' group by taxon_id,t3.tc_id;' % (biodb, query_cov, hit_cov, evalue, bitscore, family_filter)
-    print sql
+    print (sql)
     data = server.adaptor.execute_and_fetchall(sql,)
 
     code2taxon2count = {}
@@ -90,7 +90,7 @@ def transporter_superfamily_heatmap(biodb, family,evalue, bitscore, query_cov, h
           ' inner join transporters.tc_table t4 on t2.superfamily=t4.tc_id ' \
           ' where query_cov>%s and hit_cov>%s and evalue<=%s and bitscore_first_hsp>=%s and t4.description="%s" ' \
           ' group by taxon_id,t3.tc_id;' % (biodb, query_cov, hit_cov, evalue, bitscore, family)
-    print sql
+    print (sql)
     data = server.adaptor.execute_and_fetchall(sql,)
 
     code2taxon2count = {}
