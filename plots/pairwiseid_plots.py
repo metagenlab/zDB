@@ -120,7 +120,7 @@ def density_plot(value_list_of_lists, label_list,
             #library(genoPlotR)
             #library(Cairo)
             library(ggplot2)
-            library(flextable)
+            #library(flextable)
             library(svglite)
 
 
@@ -151,7 +151,7 @@ def density_plot(value_list_of_lists, label_list,
             p <- p + theme(legend.text=element_text(size=13)) %s 
             p <- p + theme(legend.position="bottom",legend.direction="vertical", plot.margin = margin(1, 1, 1, 1, "cm"),)
             p <- p + theme(legend.title=element_blank())+ theme(plot.title = element_text(size=18, face="bold.italic"))
-            p <- p + scale_y_continuous(limits = c(0, 0.042),breaks = seq(0, 0.042, 0.01))
+            p <- p #+ scale_y_continuous(limits = c(0, 1),breaks = seq(0, 1, 0.01))
             #p <- p + labs(title = ~ paste("test", italic("Species")))
             
             diff <- abs(5-length(label_list))
