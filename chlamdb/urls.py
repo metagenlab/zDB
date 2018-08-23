@@ -1,6 +1,6 @@
 from django.conf.urls import url
 from . import views
-from django.contrib.auth.views import logout
+from django.contrib.auth import logout
 
 urlpatterns = [
                        url(r'^home/([a-zA-Z0-9_\.]+)$', views.home, name="home"),
@@ -111,7 +111,6 @@ urlpatterns = [
                        url(r'^venn_ko/([a-zA-Z0-9_]+)$$', views.venn_ko, name="venn_ko"),
                        url(r'^extract_interpro/([a-zA-Z0-9_]+)$$', views.extract_interpro, name="extract_interpro"),
                        url(r'^extract_interpro/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$$', views.extract_interpro, name="extract_interpro"),
-
                        url(r'^venn_interpro/([a-zA-Z0-9_]+)$$', views.venn_interpro, name="venn_interpro"),
                        url(r'^extract_pfam/([a-zA-Z0-9_]+)$$', views.extract_pfam, name="extract_pfam"),
                        url(r'^extract_pfam/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$$', views.extract_pfam, name="extract_pfam"),

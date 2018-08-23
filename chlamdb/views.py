@@ -2613,7 +2613,8 @@ def gc_locus(request, biodb, locus_tag):
                                   ylab="density",
                                   output_path=path,
                                   abline_list=[gc_locus],
-                                  show_median=False)
+                                  show_median=False,
+                                  max_value=1)
     path2 = settings.BASE_DIR + '/assets/temp/gc2.svg'
     asset_path2 = '/temp/gc2.svg'
     pairwiseid_plots.density_plot([gc_1, gc_2, gc_3],
@@ -2623,7 +2624,8 @@ def gc_locus(request, biodb, locus_tag):
                                   ylab="density",
                                   output_path=path2,
                                   abline_list=[gc_1_locus,gc_2_locus,gc_3_locus],
-                                  show_median=False)
+                                  show_median=False,
+                                  max_value=1)
 
     return render(request, 'chlamdb/gc_locus.html', locals())
 
