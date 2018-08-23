@@ -10788,7 +10788,7 @@ def refseq_swissprot_tree(request, biodb, orthogroup):
                                                                    orthogroup,
                                                                    biodb,
                                                                    mysql_pwd=sqlpsw)
-    path = setti| ngs.BASE_DIR + '/assets/temp/BBH_tree.svg'
+    path = settings.BASE_DIR + '/assets/temp/BBH_tree.svg'
     asset_path = '/temp/BBH_tree.svg'
 
     t.render(path, tree_style=ts)
