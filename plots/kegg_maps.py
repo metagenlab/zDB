@@ -128,9 +128,9 @@ def edit_svg_map(map_path, keep_ko_list, biodb_name, map_name,taxon_id=False):
                     #print child.text
                     try:
                         if not taxon_id:
-                            add = 'window.open("/chlamdb/KEGG_mapp_ko/%s/%s", "_top");' % (biodb_name, description2map[child.text])
+                            add = 'window.open("/chlamdb/KEGG_mapp_ko/%s", "_top");' % ( description2map[child.text])
                         else:
-                            add = 'window.open("/chlamdb/KEGG_mapp_ko_organism/%s/%s/%s", "_top");' % (biodb_name, description2map[child.text], taxon_id)
+                            add = 'window.open("/chlamdb/KEGG_mapp_ko_organism/%s/%s", "_top");' % (description2map[child.text], taxon_id)
                     except:
                         continue
                     mystyle = element.get("style")
@@ -145,7 +145,7 @@ def edit_svg_map(map_path, keep_ko_list, biodb_name, map_name,taxon_id=False):
 
                 if child.text in keep_ko_list:
                     #print 'match-----------'
-                    add = 'window.open("/chlamdb/fam/%s/%s/ko", "_top");' % (biodb_name, child.text)
+                    add = 'window.open("/chlamdb/fam/%s/ko", "_top");' % (child.text)
                     mystyle = element.get("style")
 
                     add4 = "this.style.stroke = '#ff0000'; this.style['stroke-width'] = 1;"
@@ -157,8 +157,7 @@ def edit_svg_map(map_path, keep_ko_list, biodb_name, map_name,taxon_id=False):
                     element.set("onmouseout", add5)
                 if '...' in child.text:
                     #print 'match-----------'
-                    add = 'window.open("/chlamdb/kegg_multi/%s/%s/%s/", "_top");' % (biodb_name,
-                                                                                     map_name,
+                    add = 'window.open("/chlamdb/kegg_multi/%s/%s/", "_top");' % (map_name,
                                                                                      re.sub('\.\.\.', '', child.text))
                     mystyle = element.get("style")
 

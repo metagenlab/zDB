@@ -47,8 +47,9 @@ def locus2hydrophobicity_plot(biodb, locus):
     # The final list is in biologist coordinates (the first residue is
     # index 1)
     x_data = range(half_window, half_window+len(y_data))
-    fig, ax = pylab.subplots( nrows=1, ncols=1 )
+    fig, ax = pylab.subplots(nrows=1, ncols=1, figsize=(10,5))
     ax.plot(x_data, y_data, linewidth=1.0)
+
 
     # Draw a reasonable cutoff for membrane prediction
     # Value of 1.6 taken from
@@ -73,4 +74,4 @@ def locus2hydrophobicity_plot(biodb, locus):
     return fig   # save the figure to file
     #pylab.close(fig)
 
-locus2hydrophobicity_plot("chlamydia_04_16","WCW_RS07525")
+#locus2hydrophobicity_plot("chlamydia_04_16","WCW_RS07525")
