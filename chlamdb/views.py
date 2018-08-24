@@ -9745,7 +9745,7 @@ def search(request):
 
             import re
             if len(search_term) == len("PF04093") and search_term[0:2] == 'PF':
-                return fam(request,biodb,search_term, 'pfam')
+                return fam(request, search_term, 'pfam')
             elif len(search_term) == len('K03652') and search_term[0:1] == 'K':
                 return fam(request, search_term, 'ko')
             elif len(search_term) == len('COG0001') and search_term[0:3] == 'COG':
