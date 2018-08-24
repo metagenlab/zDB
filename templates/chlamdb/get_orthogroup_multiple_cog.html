@@ -51,7 +51,7 @@
                 {%for key, values in orthogroup2category2count.items %}
                 <tr>
                     <td>
-                        <a href="{% url 'locusx' biodb key %}">{{key}}</a>
+                        <a href="{% url 'locusx' key %}">{{key}}</a>
                     </td>
                     <td>
                         {{orthogroup2size|keyvalue:key}}

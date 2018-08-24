@@ -31,18 +31,18 @@
 
                    <nav>
                        <ul id="tabs_main" class="nav nav-tabs">
-                           <li><a href="{% url 'metabo_overview' biodb %}">Map list</a></li>
+                           <li><a href="{% url 'metabo_overview' %}">Map list</a></li>
                            <!--<li><a href="#tab2" data-toggle="tab">Profile</a></li>-->
-                           <li class="active"><a href="{% url 'kegg_pathway_heatmap' biodb %}">Category profiles</a></li>
-                           <li><a href="{% url 'metabo_comparison' biodb %}" >Compare strains (EC)</a></li>
-                           <li><a href="{% url 'metabo_comparison_ko' biodb %}">Compare strains (KO)</a></li>
+                           <li class="active"><a href="{% url 'kegg_pathway_heatmap' %}">Category profiles</a></li>
+                           <li><a href="{% url 'metabo_comparison' %}" >Compare strains (EC)</a></li>
+                           <li><a href="{% url 'metabo_comparison_ko' %}">Compare strains (KO)</a></li>
 
                        </ul>
                     </nav>
 
 
 
-                   <form action='{% url "kegg_pathway_heatmap" biodb %}' method="post">
+                   <form action='{% url "kegg_pathway_heatmap" %}' method="post">
                     {% csrf_token %}
                     {{ form.as_p }}
                     <input type="submit" value="Submit" />

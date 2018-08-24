@@ -39,7 +39,7 @@
 			value += '</ul>\n<table class="sortable" id="interpro_table"><tr><th>ID</th><th>Description</th><th>Count in Database</th><th>-</th></tr>';
 			for (val in this.list) {
                 <!-- h[this.list[val]] -->
-				value += '<tr><td><a href="/chlamdb/fam/{{biodb}}/'+
+				value += '<tr><td><a href="/chlamdb/fam/'+
 						this.list[val] + '/interpro">'+  this.list[val] + '</a></td><td>' + h[this.list[val]]
 						+ '</td></tr>';
 			}

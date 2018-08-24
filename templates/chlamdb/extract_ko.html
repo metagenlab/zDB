@@ -54,17 +54,17 @@
 
             <nav>
                 <ul id="tabs_main" class="nav nav-tabs">
-                    <li class="active"><a href="{% url 'extract_ko' biodb %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'ko_comparison' biodb %}">Compare KO counts</a></li>
-                    <li><a href="{% url 'module_barchart' biodb %}">KO categories barchart</a></li>
-                    <li><a href="{% url 'venn_ko' biodb %}">Venn KO</a></li>
-                    <li><a href="{% url 'plot_heatmap' biodb 'ko' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' biodb 'COG' %}">Pan/Core genome plots</a></li>
+                    <li class="active"><a href="{% url 'extract_ko' %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'ko_comparison' %}">Compare KO counts</a></li>
+                    <li><a href="{% url 'module_barchart' %}">KO categories barchart</a></li>
+                    <li><a href="{% url 'venn_ko' %}">Venn KO</a></li>
+                    <li><a href="{% url 'plot_heatmap' 'ko' %}">Whole proteomes heatmaps</a></li>
+                    <li><a href="{% url 'pan_genome' 'COG' %}">Pan/Core genome plots</a></li>
                 </ul>
             </nav>
 
                      <div id="extract_form">
-                        <form action="{% url "extract_ko" biodb %}" method="post">
+                        <form action="{% url "extract_ko" %}" method="post">
 
 
                         <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
@@ -116,9 +116,9 @@
 
                 <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                     <li class="active"><a href="#red" data-toggle="tab">KO list</a></li>
-                    <li><a data-toggle="tab" href="#tab66" onclick="window.open('{% url 'ko_subset_barchart' biodb mm %}{{taxons_in_url|safe}}{{taxon_out_url|safe}}', 'orthoIDframe2'); return false"
+                    <li><a data-toggle="tab" href="#tab66" onclick="window.open('{% url 'ko_subset_barchart' mm %}{{taxons_in_url|safe}}{{taxon_out_url|safe}}', 'orthoIDframe2'); return false"
 >KO modules</a></li>
-                    <li><a data-toggle="tab" href="#tab66" onclick="window.open('{% url 'ko_subset_barchart' biodb pp %}{{taxons_in_url|safe}}{{taxon_out_url|safe}}', 'orthoIDframe2'); return false"
+                    <li><a data-toggle="tab" href="#tab66" onclick="window.open('{% url 'ko_subset_barchart' pp %}{{taxons_in_url|safe}}{{taxon_out_url|safe}}', 'orthoIDframe2'); return false"
 >KO pathways</a></li>
                     <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
 
@@ -133,7 +133,7 @@
                             <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
                             <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                            <a href="{% url 'circos_main' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
+                            <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
 
                             <br/>
                         </div>
@@ -159,7 +159,7 @@
                             {% for value in match_groups_data %}
                                 <tr>
                                     <td>{{value.0}}</td>
-                                    <td><a href="{% url 'fam' biodb value.1 'ko' %}">{{value.1}}</a></td>
+                                    <td><a href="{% url 'fam' value.1 'ko' %}">{{value.1}}</a></td>
                                     {% for value_2 in value.2 %}
                                     <td>{{value_2|safe}}</td>
                                     {% endfor %}
@@ -184,9 +184,9 @@
                         <h3> Locus annotation </h3>
                         <div id="export_bouttons_groups">
                             <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-                            <a href="{% url 'get_fasta' biodb %}{{fasta_url_ref}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Download fasta</a>
+                            <a href="{% url 'get_fasta' %}{{fasta_url_ref}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Download fasta</a>
                             <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                            <a href="{% url 'circos_main' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
+                            <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
 
                             <br/>
                         </div>
@@ -218,13 +218,13 @@
                                 <tr>
                                     <td>{{values.0}}</td>
                                     <td>{{values.1}}</td>
-                                    <td><a href="{% url 'locusx' biodb values.2 True %}" target="_top">{{values.2}}</a></td>
+                                    <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
                                     <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
                                     {% with locus_tag2cog_name|keyvalue:values.2 as name %}
                                         {% if name == '-' %}
                                             <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
                                         {% else %}
-                                            <td><a href="{% url "fam" biodb name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
+                                            <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
                                         {% endif %}
                                     {%endwith%}
                                     {% with locus_tag2ko|keyvalue:values.2 as oneko %}
@@ -233,7 +233,7 @@
                                             <td>-</td>
                                             <td>-</td>
                                         {% else %}
-                                            <td><a href="{% url "fam" biodb oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
+                                            <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
                                             {% with ko2ko_pathways|keyvalue:oneko as name %}
                                                 {% if name == '-' %}
                                                     <td>-</td>
@@ -256,7 +256,7 @@
                                     <td>
                                         {% for one_interpro in interpro_data %}
                                         {% if one_interpro.0 != '-' %}
-                                            <a href="{% url 'fam' biodb one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                            <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
                                         {%else%}
                                             {{one_interpro.0}}
                                         {%endif%}

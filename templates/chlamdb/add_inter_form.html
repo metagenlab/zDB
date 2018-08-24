@@ -25,7 +25,7 @@
             </p>
             </p>
         </div>
-        <form action="{% url "add_locus_int" biodb %}" method="post">
+        <form action="{% url "add_locus_int" %}" method="post">
 
 
         <div class="row">
@@ -61,7 +61,7 @@
         {% if envoi %}
             &nbsp
             <h2>Comment added!</h2>
-            <meta http-equiv="REFRESH" content="0;url={% url 'add_locus_int' biodb %}">
+            <meta http-equiv="REFRESH" content="0;url={% url 'add_locus_int' %}">
 
         {% endif %}
     </div>

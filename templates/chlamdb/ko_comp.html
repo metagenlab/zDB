@@ -36,16 +36,16 @@
             <nav>
                 <ul id="tabs_main" class="nav nav-tabs">
 
-                    <li><a href="{% url 'extract_ko' biodb %}">Detailed comparison</a></li>
-                    <li class="active"><a href="{% url 'ko_comparison' biodb %}">Compare KO counts</a></li>
-                    <li><a href="{% url 'module_barchart' biodb %}">KO categories barchart</a></li>
-                    <li><a href="{% url 'venn_ko' biodb %}">Venn KO</a></li>
-                    <li><a href="{% url 'plot_heatmap' biodb 'ko' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' biodb 'ko' %}">Pan/Core genome plots</a></li>
+                    <li><a href="{% url 'extract_ko' %}">Detailed comparison</a></li>
+                    <li class="active"><a href="{% url 'ko_comparison' %}">Compare KO counts</a></li>
+                    <li><a href="{% url 'module_barchart' %}">KO categories barchart</a></li>
+                    <li><a href="{% url 'venn_ko' %}">Venn KO</a></li>
+                    <li><a href="{% url 'plot_heatmap' 'ko' %}">Whole proteomes heatmaps</a></li>
+                    <li><a href="{% url 'pan_genome' 'ko' %}">Pan/Core genome plots</a></li>
 
                 </ul>
             </nav>
-                <form action='{% url "ko_comparison" biodb %}' method="post">
+                <form action='{% url "ko_comparison" %}' method="post">
                     {% csrf_token %}
                     {{ form.as_p }}
                     <input type="submit" value="Submit" />
@@ -76,7 +76,7 @@
                                 <th id="entete_meta3">Annot</th>
                             <tr>
                             {% for key, values in ko2counts.items %}
-                                <tr> <td><a href="{% url 'fam' biodb key 'ko' %}" target="_top">{{key}}</a></td>
+                                <tr> <td><a href="{% url 'fam' key 'ko' %}" target="_top">{{key}}</a></td>
                                     <td>{{ko2total_count|keyvalue:key}}</td>
                                     {% for taxon_count in values%}
                                           {%if taxon_count != 0 %}

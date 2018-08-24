@@ -36,7 +36,7 @@
 
                      <div id="extract_form">
 
-                        <form action="{% url "orthogroup_annotation" biodb True %}" method="post">
+                        <form action="{% url "orthogroup_annotation" True %}" method="post">
 
                         <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                             <div class="panel-heading" style="width:100%">
@@ -90,7 +90,7 @@
                                 {% for value in match_groups_data %}
                                     <tr>
                                         <td>{{value.0}}</td>
-                                        <td><a href="{% url 'locusx' biodb value.1 True%}">{{value.1}}</a></td>
+                                        <td><a href="{% url 'locusx' value.1 True%}">{{value.1}}</a></td>
                                         <td>{{value.2|safe}}</td>
                                         <td>{{value.3|safe}}</td>
                                         <td>{{value.4|safe}}</td>

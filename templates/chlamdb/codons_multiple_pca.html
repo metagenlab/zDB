@@ -22,7 +22,7 @@
         <nav>
         <ul id="tabs" class="nav nav-tabs">
             <li class="active"><a>Pairwise Identity</a></li>
-            <li><a href="{% url 'identity_heatmap' biodb %}">Heatmaps</a></li>
+            <li><a href="{% url 'identity_heatmap' %}">Heatmaps</a></li>
         </ul>
         </nav>
 
@@ -35,7 +35,7 @@
             </p>
         </div>
 
-    <form action='{% url "multiple_codon_usage" biodb %}' method="post">
+    <form action='{% url "multiple_codon_usage" %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Submit" />

@@ -42,10 +42,10 @@
 
         <nav>
         <ul id="tabs" class="nav nav-tabs">
-            <li ><a href="{% url 'extract_EC' biodb %}">Detailed comparison</a></li>
-            <li class="active"><a href="{% url 'venn_pfam' biodb %}">Venn diagram</a></li>
-            <li><a href="{% url 'plot_heatmap' biodb 'EC' %}">Whole proteomes heatmaps</a></li>
-            <li><a href="{% url 'pan_genome' biodb 'EC' %}">Pan/Core genome plots</a></li>
+            <li ><a href="{% url 'extract_EC' %}">Detailed comparison</a></li>
+            <li class="active"><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
+            <li><a href="{% url 'plot_heatmap' 'EC' %}">Whole proteomes heatmaps</a></li>
+            <li><a href="{% url 'pan_genome' 'EC' %}">Pan/Core genome plots</a></li>
         </ul>
         </nav>
 
@@ -60,7 +60,7 @@
 
 
 
-                    <form action="{% url "venn_EC" biodb %}" method="post">
+                    <form action="{% url "venn_EC" %}" method="post">
                         {% csrf_token %}
                         {{ form_venn.as_p }}
                         <input type="submit" name="venn" value="Compare EC numbers" id="venn_button" />

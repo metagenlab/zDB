@@ -48,15 +48,15 @@
         <div id="content">
             <nav>
                 <ul id="tabs_main" class="nav nav-tabs">
-                    <li><a href="{% url 'extract_pfam' biodb %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_pfam' biodb %}">Venn diagram</a></li>
-                    <li class="active"><a href="{% url 'pfam_comparison' biodb %}">Compare Pfam Domains</a></li>
-                    <li><a href="{% url 'plot_heatmap' biodb 'Pfam' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' biodb 'Pfam' %}">Pan/Core genome plots</a></li>
+                    <li><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
+                    <li class="active"><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
+                    <li><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
+                    <li><a href="{% url 'pan_genome' 'Pfam' %}">Pan/Core genome plots</a></li>
 
                 </ul>
             </nav>
-                <form action='{% url "pfam_comparison" biodb %}' method="post">
+                <form action='{% url "pfam_comparison" %}' method="post">
                     {% csrf_token %}
                     {{ form.as_p }}
                     <input type="submit" value="Submit" />
@@ -89,7 +89,7 @@
                         <tr>
                         {% for key, values in pfam2data.items %}
                             <tr>
-                                <td><a href="{% url 'fam' biodb values.0 'pfam' %}" target="_top">{{values.0}}</a></td><td>{{values.1}}</td><td>{{values.2}}</td>
+                                <td><a href="{% url 'fam' values.0 'pfam' %}" target="_top">{{values.0}}</a></td><td>{{values.1}}</td><td>{{values.2}}</td>
                                 {%for taxon_dico in taxon_dicos %}
                                     <td data-hist="{{taxon_dico|keyvalue:values.0}}">{{taxon_dico|keyvalue:values.0}}</td>
                                 {% endfor %}

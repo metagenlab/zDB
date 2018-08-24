@@ -46,11 +46,11 @@
         </div>
 
         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-            <li><a href='{% url "metabo_overview" biodb %}'>Map list</a></li>
+            <li><a href='{% url "metabo_overview" %}'>Map list</a></li>
             <!--<li><a href="#tab2" data-toggle="tab">Profile</a></li>-->
-            <li><a href="{% url 'kegg_pathway_heatmap' biodb %}">Category profiles</a></li>
-            <li class="active"><a href='{% url "metabo_comparison" biodb %}'>Compare strains (EC)</a></li>
-            <li><a href='{% url "metabo_comparison_ko" biodb %}'>Compare strains (KO)</a></li>
+            <li><a href="{% url 'kegg_pathway_heatmap' %}">Category profiles</a></li>
+            <li class="active"><a href='{% url "metabo_comparison" %}'>Compare strains (EC)</a></li>
+            <li><a href='{% url "metabo_comparison_ko" %}'>Compare strains (KO)</a></li>
         </ul>
 
 
@@ -65,7 +65,7 @@
             </div>
 
 
-            <form action='{% url "metabo_comparison" biodb %}' method="post">
+            <form action='{% url "metabo_comparison" %}' method="post">
                 {% csrf_token %}
                 {{ form.as_p }}
                 <input type="submit" value="Submit" />
@@ -117,7 +117,7 @@
                         {% for value0, value1 in values %}
                         <tr>
 
-                            <td>{{category}}</td> <td><a href="{% url 'KEGG_mapp' biodb value0 %}" target="_top">{{value0}}</a></td>
+                            <td>{{category}}</td> <td><a href="{% url 'KEGG_mapp' value0 %}" target="_top">{{value0}}</a></td>
                             <td>{{value1}}</td>
                             {% for value in map2count|keyvalue:value0 %}
                                 <td>{{value}}</td>

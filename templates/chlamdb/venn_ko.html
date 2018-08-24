@@ -42,12 +42,12 @@
         {% if display_form %}
         <nav>
         <ul id="tabs" class="nav nav-tabs">
-                    <li><a href="{% url 'extract_ko' biodb %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'ko_comparison' biodb %}">Compare KO counts</a></li>
-                    <li><a href="{% url 'module_barchart' biodb %}">KO categories barchart</a></li>
-                    <li class="active"><a href="{% url 'venn_ko' biodb %}">Venn KO</a></li>
-                    <li><a href="{% url 'plot_heatmap' biodb 'ko' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' biodb 'ko' %}">Pan/Core genome plots</a></li>
+                    <li><a href="{% url 'extract_ko' %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'ko_comparison' %}">Compare KO counts</a></li>
+                    <li><a href="{% url 'module_barchart' %}">KO categories barchart</a></li>
+                    <li class="active"><a href="{% url 'venn_ko' %}">Venn KO</a></li>
+                    <li><a href="{% url 'plot_heatmap' 'ko' %}">Whole proteomes heatmaps</a></li>
+                    <li><a href="{% url 'pan_genome' 'ko' %}">Pan/Core genome plots</a></li>
         </ul>
         </nav>
 
@@ -62,7 +62,7 @@
 
 
 
-                    <form action="{% url "venn_ko" biodb %}" method="post">
+                    <form action="{% url "venn_ko" %}" method="post">
                         {% csrf_token %}
                         {{ form_venn.as_p }}
                         <input type="submit" name="venn" value="Compare COGs" id="venn_button" />

@@ -24,7 +24,7 @@
 
 
     <div id="content">
-    <form action='{% url "homology" biodb %}' method="post">
+    <form action='{% url "homology" %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Submit" />
@@ -44,7 +44,7 @@
 
         <li><a href="#tab44" data-toggle="tab">Phylogenetic distribution</a></li>
         <li><a href="#tab55" data-toggle="tab">Download</a></li>
-        <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' biodb data.0 group %}', 'theFrame'); return false">Orthogroup conservation</a></li>
+        <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' data.0 group %}', 'theFrame'); return false">Orthogroup conservation</a></li>
     </ul>
     <div id="my-tab-content" class="tab-content">
         <!-- check if locus of orthogroup was asked -->
@@ -261,7 +261,7 @@
                             <tr>
                                 <td><a href="{% static alignment_fasta_nucl %}">Nucleotide sequences (fasta)</a> </td>
                             </tr>
-                                <td><a href="{% url "blastnr" biodb data.1  %}">BLAST NR</a> </td>
+                                <td><a href="{% url "blastnr" data.1  %}">BLAST NR</a> </td>
                             </tr>
 
                         </table>

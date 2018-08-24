@@ -37,7 +37,7 @@
         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
             <li class="active"><a href="#tab1" data-toggle="tab">String network</a></li>
 
-            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'multiple_COGs_heatmap' biodb %}{{cog_url}}', 'orthoIDframe2'); return false">Orthogroup conservation</a></li>
+            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'multiple_COGs_heatmap' %}{{cog_url}}', 'orthoIDframe2'); return false">Orthogroup conservation</a></li>
         </ul>
 
         <div id="my-tab-content" class="tab-content">
@@ -71,7 +71,7 @@
                         {% for values in string_interactions %}
                         <tr>
                             {% if values.0 in cogs_in_reference %}
-                                <td><a href="{% url 'fam' biodb values.0 'cog' %}" target="_top">{{values.0}}</a></td>
+                                <td><a href="{% url 'fam' values.0 'cog' %}" target="_top">{{values.0}}</a></td>
                             {% else %}
                                 <td>{{values.0}}</td>
                             {% endif %}
@@ -79,7 +79,7 @@
                             <td><font size="1" color="red">{{ values.3 }}</font></td>
 
                             {% if values.1 in cogs_in_reference %}
-                                <td><a href="{% url 'fam' biodb values.1 'cog' %}" target="_top">{{values.1}}</a></td>
+                                <td><a href="{% url 'fam' values.1 'cog' %}" target="_top">{{values.1}}</a></td>
                             {% else %}
                                 <td>{{values.1}}</td>
                             {% endif %}

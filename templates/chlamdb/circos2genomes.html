@@ -33,7 +33,7 @@
         </div>
 
 
-    <form action="{% url "circos2genomes" biodb %}" method="post">{% csrf_token %}
+    <form action="{% url "circos2genomes" %}" method="post">{% csrf_token %}
     {{ form.as_p }}
 
     <input type="submit" name="GO" value="GO" id="id_GO" />

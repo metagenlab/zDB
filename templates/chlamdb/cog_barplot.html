@@ -21,13 +21,13 @@
 
         <nav>
         <ul id="tabs" class="nav nav-tabs">
-            <li ><a href="{% url 'extract_cog' biodb %}">Detailed comparison</a></li>
-            <li><a href="{% url 'venn_cog' biodb %}">Venn diagram</a></li>
-            <li class="active"><a href="{% url 'cog_barchart' biodb %}">COG categories barchart</a></li>
-            <li><a href="{% url 'COG_phylo_heatmap' biodb True %}">COG heatmap freq.</a></li>
-            <li><a href="{% url 'COG_phylo_heatmap' biodb False %}">COG heatmap counts</a></li>
-            <li><a href="{% url 'plot_heatmap' biodb 'COG' %}">Whole proteomes heatmaps</a></li>
-            <li><a href="{% url 'pan_genome' biodb 'COG' %}">Pan/Core genome plots</a></li>
+            <li ><a href="{% url 'extract_cog'  %}">Detailed comparison</a></li>
+            <li><a href="{% url 'venn_cog'  %}">Venn diagram</a></li>
+            <li class="active"><a href="{% url 'cog_barchart'  %}">COG categories barchart</a></li>
+            <li><a href="{% url 'COG_phylo_heatmap'  True %}">COG heatmap freq.</a></li>
+            <li><a href="{% url 'COG_phylo_heatmap'  False %}">COG heatmap counts</a></li>
+            <li><a href="{% url 'plot_heatmap'  'COG' %}">Whole proteomes heatmaps</a></li>
+            <li><a href="{% url 'pan_genome'  'COG' %}">Pan/Core genome plots</a></li>
 
         </ul>
         </nav>
@@ -43,7 +43,7 @@
             </p>
         </div>
 
-    <form action='{% url "cog_barchart" biodb %}' method="post">
+    <form action='{% url "cog_barchart"  %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Submit" />
@@ -198,11 +198,11 @@
         function drill(d, i) {
             var taxon = data.series[d3.select(this.parentNode).attr("taxon_id")].label; //data object
             var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
-            window.open("/chlamdb/get_cog/{{biodb}}/" + taxon + "/" + category + "{{circos_url|safe}}");
+            window.open("/chlamdb/get_cog/" + taxon + "/" + category + "{{circos_url|safe}}");
         }
         function drill2(d,j) {
                 var category = description2category[data.labels[d3.select(this.parentNode).attr("category_id")]]; //data object
-                window.open("/chlamdb/cog_venn_subset/{{biodb}}/" + category + "{{circos_url|safe}}") };
+                window.open("/chlamdb/cog_venn_subset/" + category + "{{circos_url|safe}}") };
 
         //bar.on("click", drill);
 

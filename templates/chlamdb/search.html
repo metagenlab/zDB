@@ -20,7 +20,7 @@
 
         {% if display_from == 'yes' %}
             <div id="search_form">
-                <form action="{% url "search" biodb %}" method="post">{% csrf_token %}
+                <form action="{% url "search" %}" method="post">{% csrf_token %}
                     {{ form.as_p }}
                     <input type="submit" value="Submit" />
                 </form>
@@ -110,8 +110,8 @@
                             {% for values in search_result %}
                             <tr>
                                 <td>{{values.0}}</td>
-                                <td><a href="{% url 'locusx' biodb values.1 True %}"  target="_top">{{values.1}}</a></td>
-                                <td><a href="{% url 'locusx' biodb values.2 True%}"  target="_top">{{values.2}}</a></td>
+                                <td><a href="{% url 'locusx' values.1 True %}"  target="_top">{{values.1}}</a></td>
+                                <td><a href="{% url 'locusx' values.2 True%}"  target="_top">{{values.2}}</a></td>
                                 <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
                                 <td>{{values.4}}</td>
                                 <td>{{values.5}}</td>
@@ -149,7 +149,7 @@
                             </thead>
                             {% for values in raw_data_EC %}
                                 <tr>
-                                    <td><a href="{% url 'fam' biodb values.0 'EC' %}"  target="_top">{{values.0}}</a></td>
+                                    <td><a href="{% url 'fam' values.0 'EC' %}"  target="_top">{{values.0}}</a></td>
                                     <td>{{values.1}}</td>
                                 </tr>
                             {% endfor %}
@@ -169,7 +169,7 @@
                             </thead>
                             {% for values in raw_data_ko %}
                                 <tr>
-                                    <td><a href="{% url 'fam' biodb values.0 'ko' %}"  target="_top">{{values.0}}</a></td>
+                                    <td><a href="{% url 'fam' values.0 'ko' %}"  target="_top">{{values.0}}</a></td>
                                     <td>{{values.1}}</td>
                                     <td>{{values.2}}</td>
                                 </tr>
@@ -190,7 +190,7 @@
                             </thead>
                             {% for values in raw_data_cog %}
                                 <tr>
-                                    <td><a href="{% url 'fam' biodb values.0 'cog' %}"  target="_top">{{values.0}}</a></td>
+                                    <td><a href="{% url 'fam' values.0 'cog' %}"  target="_top">{{values.0}}</a></td>
                                     <td>{{values.1}} / {{values.2}}</td>
                                     <td>{{values.3}}</td>
                                 </tr>
@@ -215,7 +215,7 @@
                             </thead>
                             {% for values in raw_data_interpro %}
                                 <tr>
-                                    <td><a href="{% url 'fam' biodb values.3 'interpro' %}"  target="_top">{{values.3}}</a></td>
+                                    <td><a href="{% url 'fam' values.3 'interpro' %}"  target="_top">{{values.3}}</a></td>
                                     <td>{{values.0}}</td>
                                     <td>{{values.1}}</td>
                                     <td>{{values.2}}</td>
@@ -242,7 +242,7 @@
                             </thead>
                             {% for values in raw_data_module %}
                                 <tr>
-                                    <td><a href="{% url 'KEGG_module_map' biodb values.0 %}"  target="_top">{{values.0}}</a></td>
+                                    <td><a href="{% url 'KEGG_module_map' values.0 %}"  target="_top">{{values.0}}</a></td>
                                     <td>{{values.1}}</td>
                                     <td>{{values.2}}</td>
                                     <td>{{values.3}}</td>
@@ -265,7 +265,7 @@
                             </thead>
                             {% for values in raw_data_pathway %}
                                 <tr>
-                                    <td><a href="{% url 'KEGG_mapp' biodb values.0 %}"  target="_top">{{values.0}}</a></td>
+                                    <td><a href="{% url 'KEGG_mapp' values.0 %}"  target="_top">{{values.0}}</a></td>
                                     <td>{{values.1}}</td>
                                     <td>{{values.2}}</td>
                                 </tr>

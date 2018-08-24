@@ -19,7 +19,7 @@
 
     <div id="content">
 
-        <form action='{% url "compare_homologs" biodb %}' method="post">
+        <form action='{% url "compare_homologs" %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Submit" />
@@ -37,7 +37,7 @@
             </p>
         </div>
         <ol>
-            <li>Selection: <strong>{{n_missing_cog}}</strong> out of <strong>{{orthogroup_list|length}}</strong> orthogroups without any cogs: <a href="{% url "orthogroup_annotation" biodb False %}{{no_cogs_url|safe}}">Show list</a></li>
+            <li>Selection: <strong>{{n_missing_cog}}</strong> out of <strong>{{orthogroup_list|length}}</strong> orthogroups without any cogs: <a href="{% url "orthogroup_annotation" False %}{{no_cogs_url|safe}}">Show list</a></li>
         </ol>
 
         <div class="chart"></div>
@@ -132,7 +132,7 @@
 
             function drill(d) {
             var orthogroup = d[2]; //data object
-            window.open("/chlamdb/locusx/{{biodb}}/"  + orthogroup + "/True");
+            window.open("/chlamdb/locusx/"  + orthogroup + "/True");
         }
 			//Create labels
 

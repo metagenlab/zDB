@@ -67,35 +67,35 @@ function clearBox(elementID)
                 {% endif %}
 
                 {% if input_type == 'locus_tag'%}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' biodb locus %}', 'orthoIDframe'); return false">Phylogenetic distribution</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' locus %}', 'orthoIDframe'); return false">Phylogenetic distribution</a></li>
                 {%else%}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' biodb data.0 %}', 'orthoIDframe'); return false">Phylogenetic distribution</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' data.0 %}', 'orthoIDframe'); return false">Phylogenetic distribution</a></li>
                 {%endif%}
 
                 {% if align_path %}
                 <li><a href="#tab55" data-toggle="tab">MSA</a></li>
                 {% endif %}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' biodb data.0 True %}', 'orthoIDframe'); return false">Orthogroup conservation</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' data.0 True %}', 'orthoIDframe'); return false">Orthogroup conservation</a></li>
                 {% if homologues|length > 3%}
-                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' biodb data.0 %}', 'orthoIDframe'); return false">Pfam tree</a></li>
+                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' data.0 %}', 'orthoIDframe'); return false">Pfam tree</a></li>
                 {% endif %}
                 {% if show_tm_tree %}
-                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'TM_tree' biodb data.0 %}', 'orthoIDframe'); return false">TM tree</a></li>
+                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'TM_tree' data.0 %}', 'orthoIDframe'); return false">TM tree</a></li>
                 {% endif %}
 
                 <!--{% if cog_data %}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'string_page' biodb cog_data.0 genome_accession %}', 'orthoIDframe'); return false">string interactions</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'string_page' cog_data.0 genome_accession %}', 'orthoIDframe'); return false">string interactions</a></li>
                 {% endif %}-->
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' biodb data.1 %}', 'orthoIDframe'); return false">Region</a></li>
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastnr' biodb data.1 %}', 'orthoIDframe'); return false">Blast RS <span class="badge">{{n_blastnr_hits}}</span></a></li>
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' biodb data.1 %}', 'orthoIDframe'); return false">Blast SP <span class="badge">{{n_swissprot_hits}}</span></a></li>
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'interactions' biodb data.1 %}', 'orthoIDframe'); return false">Interactions</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' data.1 %}', 'orthoIDframe'); return false">Region</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastnr' data.1 %}', 'orthoIDframe'); return false">Blast RS <span class="badge">{{n_blastnr_hits}}</span></a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' data.1 %}', 'orthoIDframe'); return false">Blast SP <span class="badge">{{n_swissprot_hits}}</span></a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'interactions' data.1 %}', 'orthoIDframe'); return false">Interactions</a></li>
                 {%if closest_phylo%}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' biodb data.0 %}', 'orthoIDframe'); return false">BBH phylogeny</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' data.0 %}', 'orthoIDframe'); return false">BBH phylogeny</a></li>
                 {%endif %}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'hydropathy' biodb data.1 %}', 'orthoIDframe'); return false">Hydropathy plot</a></li>
-                <!--<li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'aa_comp_locus' biodb data.1 %}', 'orthoIDframe'); return false">AA composition PCA</a></li>-->
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'gc_locus' biodb data.1 %}', 'orthoIDframe'); return false">GC</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'hydropathy' data.1 %}', 'orthoIDframe'); return false">Hydropathy plot</a></li>
+                <!--<li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'aa_comp_locus' data.1 %}', 'orthoIDframe'); return false">AA composition PCA</a></li>-->
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'gc_locus' data.1 %}', 'orthoIDframe'); return false">GC</a></li>
                 {% if pubmed_data  %}
                 <li><a href="#tab22" data-toggle="tab">Pubmed  <span class="badge">{{pubmed_data|length}}</span></a></li>
                 {%endif %}
@@ -159,9 +159,9 @@ function clearBox(elementID)
                             </div>
                             <h3>Download</h3>
                             <div style="width: 100%;padding-left:20px">
-                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' biodb data.0 "aa"%}'">fasta aa</button>
-                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' biodb data.0 "nucl"%}'">fasta nucl</button>
-                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_newick_tree' biodb data.0 %}'">newick tree</button>
+                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' data.0 "aa"%}'">fasta aa</button>
+                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' data.0 "nucl"%}'">fasta nucl</button>
+                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_newick_tree' data.0 %}'">newick tree</button>
                                 <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% static alignment_fasta %}'">MSA</button>
                             </div>
 
@@ -182,13 +182,13 @@ function clearBox(elementID)
                                     </tr>
                                     {%if cog_data %}
                                         <tr>
-                                        <td id="description_field"><a href="{% url 'fam' biodb cog_data.0 'cog' %}" target="_top">COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></td>
+                                        <td id="description_field"><a href="{% url 'fam' cog_data.0 'cog' %}" target="_top">COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></td>
                                         <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}"  target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
                                         </tr>
                                     {% endif %}
                                     {%if ko_data %}
                                         <tr>
-                                        <td id="description_field"><a href="{% url 'fam' biodb ko_data.0 'ko' %}" target="_top">KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></td>
+                                        <td id="description_field"><a href="{% url 'fam' ko_data.0 'ko' %}" target="_top">KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></td>
                                         <td><a href="http://www.genome.jp/dbget-bin/www_bget?ko:{{ko_data.0}}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
                                         </tr>
                                     {% endif %}
@@ -229,7 +229,7 @@ function clearBox(elementID)
                             <div style="width: 100%;padding-left:20px">
                                 <table>
                                     <tr>
-                                    <td id="description_field">Comment orthogroup   <a href="{% url 'add_comment' biodb data.1 %}">  edit</a></td>
+                                    <td id="description_field">Comment orthogroup   <a href="{% url 'add_comment' data.1 %}">  edit</a></td>
                                     <td>
                                         {% for values in cmt_format%}
                                             {{values.0}}: {{values.1|safe}} </br>
@@ -449,7 +449,7 @@ function clearBox(elementID)
                                 {%if pfam_data %}
                                     {% for values in pfam_data %}
                                         <tr>
-                                            <td id="description_field"><a href="{% url 'fam' biodb values.0 'pfam' %}" target="_top">Pf: {{values.0}}</a></td>
+                                            <td id="description_field"><a href="{% url 'fam' values.0 'pfam' %}" target="_top">Pf: {{values.0}}</a></td>
                                             <td>{{values.1}}</td>
                                         </tr>
 
@@ -460,7 +460,7 @@ function clearBox(elementID)
                                     {% for values in interpro_data %}
                                         {% with interpro2taxononmy|keyvalue:values.0 as taxo %}
                                         <tr>
-                                            <td id="description_field"><a href="{% url 'fam' biodb values.0 'interpro' %}" target="_top">IP: {{values.0}}</a></td>
+                                            <td id="description_field"><a href="{% url 'fam' values.0 'interpro' %}" target="_top">IP: {{values.0}}</a></td>
                                             <td>{{values.1}} </td>
                                             {% if taxo.4 > taxo.5 %}
                                                 <td style="color:blue;">{{taxo.4}} ({{taxo.0}}%)</td>
@@ -485,8 +485,8 @@ function clearBox(elementID)
 
                                         {% for pathway in ko_pathway_data %}
                                             <tr>
-                                                <td>Pathway: {{pathway.1}} <a href="{% url 'KEGG_mapp_ko' biodb pathway.1 %}" target="_top">ko</a> /
-                                                    <a href="{% url 'KEGG_mapp' biodb pathway.1 %}" target="_top">priam_ec</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                                <td>Pathway: {{pathway.1}} <a href="{% url 'KEGG_mapp_ko' pathway.1 %}" target="_top">ko</a> /
+                                                    <a href="{% url 'KEGG_mapp' pathway.1 %}" target="_top">priam_ec</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
                                                 <td>{{pathway.2}}</td>
                                                 <td>{{pathway.3}}</td>
                                             </tr>
@@ -498,7 +498,7 @@ function clearBox(elementID)
 
                                         {% for module in ko_module_data %}
                                             <tr>
-                                                <td>Module: <a href="{% url 'KEGG_module_map' biodb module.0 %}" target="_top">{{module.0}} (ko_based) </a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
+                                                <td>Module: <a href="{% url 'KEGG_module_map' module.0 %}" target="_top">{{module.0}} (ko_based) </a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
                                                 <td>{{module.1}}</td>
                                                 <td>{{module.2}}</td>
                                             </tr>
@@ -523,12 +523,12 @@ function clearBox(elementID)
                                     <tr>
                                         <td><a href="http://csbl.bmb.uga.edu/DOOR/operon.php?id={{locus.0}}#basic">{{locus.0}}</a></td>
                                         {%if locus.2 != '-'%}
-                                            <td><a href="{% url 'locusx' biodb locus.2 True %}" target="_top">{{locus.2}}</a></td>
+                                            <td><a href="{% url 'locusx' locus.2 True %}" target="_top">{{locus.2}}</a></td>
                                         {% else %}
                                             <td>{{locus.2}}</td>
                                         {% endif %}
                                         {%if locus.3 != '-'%}
-                                            <td><a href="{% url 'locusx' biodb locus.3 True %}" target="_top">{{locus.3}}</a></td>
+                                            <td><a href="{% url 'locusx' locus.3 True %}" target="_top">{{locus.3}}</a></td>
                                         {% else %}
                                             <td>{{locus.3}}</td>
                                         {% endif %}
@@ -563,7 +563,7 @@ function clearBox(elementID)
                                         {%for values in locus2annot%}
                                         <tr>
                                             <td>{{values.0}}</td>
-                                            <td><a href="{% url 'locusx' biodb values.2 True %}" target="_top">{{values.2}}</a></td>
+                                            <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
                                             <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
                                             {% with locus_tag2ko|keyvalue:values.2 as oneko %}
                                                 {% if oneko == '-' %}
@@ -583,7 +583,7 @@ function clearBox(elementID)
                                             <td>
                                                 {% for one_interpro in interpro_data %}
                                                 {% if one_interpro.0 != '-' %}
-                                                    <a href="{% url 'fam' biodb one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                                    <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
                                                 {%else%}
                                                     {{one_interpro.0}}
                                                 {%endif%}
@@ -646,7 +646,7 @@ function clearBox(elementID)
 
 
                                     <tr>
-                                        <td><a href="{% url 'rnaseq_class' biodb rnaseq_data.0 taxon_id %}" target="_top">{{rnaseq_data.0}}</a></td>
+                                        <td><a href="{% url 'rnaseq_class' rnaseq_data.0 taxon_id %}" target="_top">{{rnaseq_data.0}}</a></td>
                                         <td>{{rnaseq_data.1}}</td>
                                         <td>{{rnaseq_data.2}}</td>
                                         <td>{{rnaseq_data.3}}</td>
@@ -814,9 +814,9 @@ function clearBox(elementID)
                     </table>
                     {% static "" as baseUrl %}
                     {% if interpro_protein %}
-                        <iframe src="{{ baseUrl }}/{{biodb}}/interpro/{{data.2}}.html" width="100%" height="2000px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                        <iframe src="{{ baseUrl }}/interpro/{{data.2}}.html" width="100%" height="2000px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                     {% else %}
-                        <iframe src="{{ baseUrl }}/{{biodb}}/interpro/{{data.1}}.html" width="100%" height="2000px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                        <iframe src="{{ baseUrl }}/interpro/{{data.1}}.html" width="100%" height="2000px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                     {% endif %}
 
                 </div>
@@ -873,7 +873,7 @@ function clearBox(elementID)
 
                                     <tr>
                                         <td>{{values.0}}</td>
-                                        <td><a href="{% url 'locusx' biodb values.1 True %}" target="_top">{{values.1}}</a></td>
+                                        <td><a href="{% url 'locusx' values.1 True %}" target="_top">{{values.1}}</a></td>
                                         <td>{{values.14}}</td> <!-- identity -->
                                         {% if values.12 != 'reviewed'%}
                                             <td>UR </td> <!-- review <img src="{{ STATIC_URL }}scales/unreviewed.gif" id="uw">-->
@@ -938,7 +938,7 @@ function clearBox(elementID)
                                     m.g.vis.set("overviewbox", "True");
 
                                     m.g.on("row:click", function(data){
-                                        window.open("{% url 'locusx' biodb %}" + m.seqs.at(data.seqId).attributes['name'] + "/True")
+                                        window.open("{% url 'locusx' %}" + m.seqs.at(data.seqId).attributes['name'] + "/True")
                                     });
                                     msa.g.on("row:hover", function(data){
                                         console.log(data.seqId)

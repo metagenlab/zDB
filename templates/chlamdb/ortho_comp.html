@@ -35,11 +35,11 @@
         <div id="content">
             <nav>
                 <ul id="tabs_main" class="nav nav-tabs">
-                    <li><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
-                    <li class="active"><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups size</a></li>
-                    <li><a href="{% url 'plot_heatmap' biodb 'orthology' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' biodb 'orthology' %}">Pan/Core genome plots</a></li>
+                    <li><a href="{% url 'extract_orthogroup'  %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_orthogroup'  %}">Venn diagram</a></li>
+                    <li class="active"><a href="{% url 'orthogroup_comparison'  %}">Compare Orthogroups size</a></li>
+                    <li><a href="{% url 'plot_heatmap'  'orthology' %}">Whole proteomes heatmaps</a></li>
+                    <li><a href="{% url 'pan_genome'  'orthology' %}">Pan/Core genome plots</a></li>
 
                 </ul>
             </nav>
@@ -54,7 +54,7 @@
 
 
 
-                <form action='{% url "orthogroup_comparison" biodb %}' method="post">
+                <form action='{% url "orthogroup_comparison"  %}' method="post">
                     {% csrf_token %}
                     {{ form.as_p }}
                     <input type="submit" value="Submit" />
@@ -94,7 +94,7 @@
                                 <th id="entete_meta3">Annot</th>
                             <tr>
                             {% for key, values in orthogroups2counts.items %}
-                                <tr> <td><a href="{% url 'locusx' biodb key True%}">{{key}}</a></td>
+                                <tr> <td><a href="{% url 'locusx'  key True%}">{{key}}</a></td>
                                     <td>{{orthogroups2total_count|keyvalue:key}}</td>
                                     {% for taxon_count in values%}
                                           {%if taxon_count != 0 %}

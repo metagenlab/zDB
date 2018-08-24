@@ -40,7 +40,7 @@
                 {% for ko in ko_data%}
                     <tr>
                         {%if ko2freq|keyvalue:ko.0 != None %}
-                        <td><a href="{% url 'fam' biodb ko.0 'ko' %}">{{ko.0}}</a></td>
+                        <td><a href="{% url 'fam' ko.0 'ko' %}">{{ko.0}}</a></td>
                         <td>{{ko2freq|keyvalue:ko.0}}</td>
                         {%else%}
                         <td>{{ko.0}}</td>

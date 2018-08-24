@@ -42,7 +42,7 @@
                     <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
                     <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                    <a href="{% url 'circos_main' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
+                    <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
 
                     <br/>
                 </div>
@@ -78,13 +78,13 @@
                                 {%for values in locus2annot%}
                                 <tr>
                                     <td>{{values.0}}</td>
-                                    <td><a href="{% url 'locusx' biodb values.2 True %}" target="_top">{{values.2}}</a></td>
+                                    <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
                                     <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
                                     {% with locus_tag2cog_name|keyvalue:values.2 as name %}
                                         {% if name == '-' %}
                                             <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
                                         {% else %}
-                                            <td><a href="{% url "fam" biodb name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
+                                            <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
                                         {% endif %}
                                     {%endwith%}
                                     {% with locus_tag2ko|keyvalue:values.2 as oneko %}
@@ -93,7 +93,7 @@
                                             <td>-</td>
                                             <td>-</td>
                                         {% else %}
-                                            <td><a href="{% url "fam" biodb oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
+                                            <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
                                             {% with ko2ko_pathways|keyvalue:oneko as name %}
                                                 {% if name == '-' %}
                                                     <td>-</td>
@@ -116,7 +116,7 @@
                                     <td>
                                         {% for one_interpro in interpro_data %}
                                         {% if one_interpro.0 != '-' %}
-                                            <a href="{% url 'fam' biodb one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                            <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
                                         {%else%}
                                             {{one_interpro.0}}
                                         {%endif%}

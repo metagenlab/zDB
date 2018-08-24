@@ -5,7 +5,7 @@
     <!--<a href="{% url "logout_view" %}" class="btn btn-default btn-xs btn-info">Logout</a>-->
 
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-        <a style="float: left;" class="navbar-brand" href="{% url 'home' biodb %}"><strong>ChlamDB</strong></a>
+        <a style="float: left;" class="navbar-brand" href="{% url 'home' %}"><strong>ChlamDB</strong></a>
         <div class="container">
 
             <div class="collapse navbar-collapse">
@@ -17,7 +17,7 @@
                 </ul>
                 <div>
                     <div class="col-lg-8">
-                    <form action='{% url "locusx" biodb %}' method="GET" class="form-inline pull-xs-right">
+                    <form action='{% url "locusx" %}' method="GET" class="form-inline pull-xs-right">
 
                             <input class="form-control" type="text" placeholder="Gene, product, orthogroup, COG, interpro ID, KEGG id, ..." name="accession">
 

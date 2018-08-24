@@ -44,9 +44,9 @@
                {% endif %}
 
                    <h3>{{ fam }}  {% if type == 'ko' %} <button type="button" class="btn btn-primary btn-xs"
-                                                                onclick="location.href='{% url 'ko2fasta' biodb fam %}'">ko fasta</button>
+                                                                onclick="location.href='{% url 'ko2fasta' fam %}'">ko fasta</button>
                                                         <button type="button" class="btn btn-primary btn-xs"
-                                                                onclick="location.href='{% url 'ko2fasta' biodb fam "T" %}'"> ko fasta + homologs</button>
+                                                                onclick="location.href='{% url 'ko2fasta' fam "T" %}'"> ko fasta + homologs</button>
                                        {%endif%}
                    </h3>
                     <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
@@ -55,12 +55,12 @@
                         <li><a href="#tab3" data-toggle="tab">Profile</a></li>
                         {% if type == 'cog' %}
                             <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{ fam }}', 'orthoIDframe2'); return false">Informations</a></li>
-                            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'eggnog_profile' biodb fam 'phylum' %}', 'orthoIDframe2'); return false">Taxonomic profile (phylum)</a></li>
-                            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'eggnog_profile' biodb fam 'order' %}', 'orthoIDframe2'); return false">Taxonomic profile (order)</a></li>
+                            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'eggnog_profile' fam 'phylum' %}', 'orthoIDframe2'); return false">Taxonomic profile (phylum)</a></li>
+                            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'eggnog_profile' fam 'order' %}', 'orthoIDframe2'); return false">Taxonomic profile (order)</a></li>
                         {% elif type == 'pfam' %}
                             <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://pfam.xfam.org/family/{{ fam }}', 'orthoIDframe2'); return false">Informations</a></li>
-                            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_profile' biodb fam 'phylum' %}', 'orthoIDframe2'); return false">Taxonomic profile (phylum)</a></li>
-                            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_profile' biodb fam 'order' %}', 'orthoIDframe2'); return false">Taxonomic profile (order)</a></li>
+                            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_profile' fam 'phylum' %}', 'orthoIDframe2'); return false">Taxonomic profile (phylum)</a></li>
+                            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_profile' fam 'order' %}', 'orthoIDframe2'); return false">Taxonomic profile (order)</a></li>
                         {% elif type == 'interpro' %}
                             <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.ebi.ac.uk/interpro/entry/{{ fam }}', 'orthoIDframe2'); return false">Informations</a></li>
                         {% endif %}
@@ -101,14 +101,14 @@
 
                                 <ul>
                                     {% for group in group_count %}
-                                    <li><a href="{% url 'locusx' biodb group True%}">{{group}}</a></li>
+                                    <li><a href="{% url 'locusx' group True%}">{{group}}</a></li>
                                     {% endfor %}
                                 </ul>
                             {% if type == 'EC' %}
                                 <li>EC present in <strong>{{pathway_data|length }} pathways</strong></li>
                                 <ul>
                                     {% for path in pathway_data %}
-                                    <li><a href="{% url 'KEGG_mapp' biodb path.0 %}">{{path.2}} :: {{path.1}}</a></li>
+                                    <li><a href="{% url 'KEGG_mapp' path.0 %}">{{path.2}} :: {{path.1}}</a></li>
                                     {% endfor %}
 
 
@@ -118,13 +118,13 @@
                                 <li>KO part of <strong>{{pathway_data|length }} pathways</strong></li>
                                 <ul>
                                     {% for path in pathway_data %}
-                                    <li><a href="{% url 'KEGG_mapp_ko' biodb path.0 %}">{{path.0}} :: {{path.1}}</a></li>
+                                    <li><a href="{% url 'KEGG_mapp_ko' path.0 %}">{{path.0}} :: {{path.1}}</a></li>
                                     {% endfor %}
                                 </ul>
                                 <li>KO part of <strong>{{module_data|length }} modules</strong></li>
                                 <ul>
                                     {% for path in module_data %}
-                                    <li><a href="{% url 'KEGG_module_map' biodb path.0 %}">{{path.2}} :: {{path.1}}</a></li>
+                                    <li><a href="{% url 'KEGG_module_map' path.0 %}">{{path.2}} :: {{path.1}}</a></li>
                                     {% endfor %}
                                 </ul>
 
@@ -182,7 +182,7 @@
                                         <td>{{values.0}}</td>
 
                                         <td>{{values.1}}</td>
-                                        <td><a href='{% url "locusx" biodb values.2 True %}' target="_top">{{values.2}}</a></td>
+                                        <td><a href='{% url "locusx" values.2 True %}' target="_top">{{values.2}}</a></td>
                                         <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
                                         <td>{{values.4}}</td>
                                         <td>{{values.5}}</td>
@@ -194,7 +194,7 @@
                                         <td>{{values.11}}</td>
                                         <td>{{values.12}}</td>
                                         <td>{{values.13}}</td>
-                                        <td><a href="{% url "blastnr" biodb values.2  %}">{{values.14}}</a></td>
+                                        <td><a href="{% url "blastnr" values.2  %}">{{values.14}}</a></td>
                                         </tr>
                                     {% endfor %}
                                     </tbody>

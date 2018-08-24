@@ -42,10 +42,10 @@
 
         <nav>
         <ul id="tabs" class="nav nav-tabs">
-            <li ><a href="{% url 'extract_interpro' biodb %}">Detailed comparison</a></li>
-            <li class="active"><a href="{% url 'venn_interpro' biodb %}">Venn diagram</a></li>
-            <li><a href="{% url 'plot_heatmap' biodb 'interpro' %}">Whole proteomes heatmaps</a></li>
-            <li><a href="{% url 'pan_genome' biodb 'interpro' %}">Pan/Core genome plots</a></li>
+            <li ><a href="{% url 'extract_interpro' %}">Detailed comparison</a></li>
+            <li class="active"><a href="{% url 'venn_interpro' %}">Venn diagram</a></li>
+            <li><a href="{% url 'plot_heatmap' 'interpro' %}">Whole proteomes heatmaps</a></li>
+            <li><a href="{% url 'pan_genome' 'interpro' %}">Pan/Core genome plots</a></li>
         </ul>
         </nav>
 
@@ -60,7 +60,7 @@
 
 
 
-                    <form action="{% url "venn_interpro" biodb %}" method="post">
+                    <form action="{% url "venn_interpro" %}" method="post">
                         {% csrf_token %}
                         {{ form_venn.as_p }}
                         <input type="submit" name="venn" value="Compare interpro" id="venn_button" />

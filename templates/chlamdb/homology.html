@@ -40,7 +40,7 @@
             </div>
 
 
-            <form action='{% url "homology" biodb %}' method="post">
+            <form action='{% url "homology" %}' method="post">
                 {% csrf_token %}
                 {{ form.as_p }}
                 <input type="submit" value="Submit" />
@@ -48,7 +48,7 @@
             </form>
 
             {% if envoi %}
-                <div w3-include-html="{% url 'locusx' biodb accession %}"></div>
+                <div w3-include-html="{% url 'locusx' accession %}"></div>
             <script src="http://www.w3schools.com/lib/w3data.js"></script>
             <script>
             w3IncludeHTML();

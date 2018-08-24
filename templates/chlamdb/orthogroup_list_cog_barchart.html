@@ -32,7 +32,7 @@
             </p>
         </div>
         <ol>
-            <li>Selection: <strong>{{n_missing_cog}}</strong> out of <strong>{{orthogroup_list|length}}</strong> orthogroups without any cogs: <a href="{% url "orthogroup_annotation" biodb False %}{{no_cogs_url|safe}}">Show list</a></li>
+            <li>Selection: <strong>{{n_missing_cog}}</strong> out of <strong>{{orthogroup_list|length}}</strong> orthogroups without any cogs: <a href="{% url "orthogroup_annotation" False %}{{no_cogs_url|safe}}">Show list</a></li>
         </ol>
 
         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">

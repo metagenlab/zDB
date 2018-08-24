@@ -24,7 +24,7 @@
                 {% include "chlamdb/user.html" %}
             </div>
 
-            <form action='{% url "blast_profile" biodb %}' method="post"  enctype="multipart/form-data">
+            <form action='{% url "blast_profile" %}' method="post"  enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ form.as_p }}
                 <input type="submit" value="Submit" />
@@ -84,7 +84,7 @@
                                         {% with locus2taxon2locus_closest|keyvalue:label as taxon2locus_closest %}
                                            {% with taxon2locus_closest|keyvalue:taxon as hitlocus %}
                                                 {%if hitlocus != None%}
-                                                    <td><a href="{% url 'locusx' biodb hitlocus True %}" target="_top">{{hitlocus}}</a></td>
+                                                    <td><a href="{% url 'locusx' hitlocus True %}" target="_top">{{hitlocus}}</a></td>
                                                 {%else%}
                                                     <td></td>
                                                 {%endif%}

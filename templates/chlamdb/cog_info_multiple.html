@@ -50,7 +50,7 @@
 
                 {%for values in data%}
                 <tr>
-                    <td><a href="{% url 'fam' biodb values.0 "cog" %}">{{values.0}}</a></td>
+                    <td><a href="{% url 'fam' values.0 "cog" %}">{{values.0}}</a></td>
                     <td>{{values.1}}</td>
                     <td>{{values.2}}</td>
                     <td>{{values.3}}</td>

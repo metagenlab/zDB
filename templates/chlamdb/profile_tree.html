@@ -54,7 +54,7 @@
                 {% for value in match_groups_data %}
                     <tr>
                         <td>{{value.0}}</td>
-                        <td><a href="{% url 'locusx' biodb value.1 True%}" target="_top">{{value.1}}</a></td>
+                        <td><a href="{% url 'locusx' value.1 True%}" target="_top">{{value.1}}</a></td>
                         <td>{{value.2|safe}}</td>
                         <td>{{value.3|safe}}</td>
                         <td>{{value.4|safe}}</td>

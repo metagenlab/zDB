@@ -25,16 +25,16 @@
 
             <nav>
                 <ul id="tabs_main" class="nav nav-tabs">
-                    <li class="active"><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
-                    <li><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups size</a></li>
-                    <li><a href="{% url 'plot_heatmap' biodb 'orthology' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' biodb 'orthology' %}">Pan/Core genome plots</a></li>
+                    <li class="active"><a href="{% url 'extract_orthogroup' %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_orthogroup' %}">Venn diagram</a></li>
+                    <li><a href="{% url 'orthogroup_comparison' %}">Compare Orthogroups size</a></li>
+                    <li><a href="{% url 'plot_heatmap' 'orthology' %}">Whole proteomes heatmaps</a></li>
+                    <li><a href="{% url 'pan_genome' 'orthology' %}">Pan/Core genome plots</a></li>
                 </ul>
             </nav>
 
                      <div id="extract_form">
-                        <form action="{% url "extract_orthogroup" biodb %}" method="post">
+                        <form action="{% url "extract_orthogroup" %}" method="post">
 
 
                         <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
@@ -133,9 +133,9 @@
                             <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
                             <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                            <a href="{% url 'get_fasta' biodb %}{{fasta_url_noref}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Download fasta</a>
-                            <a href="{% url 'circos_main' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
-                            <a href="{% url 'orthogroup_list_cog_barchart' biodb accessions%}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show cog categories of orthogroup subset vs all orthogroups</a>
+                            <a href="{% url 'get_fasta' %}{{fasta_url_noref}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Download fasta</a>
+                            <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
+                            <a href="{% url 'orthogroup_list_cog_barchart' accessions%}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show cog categories of orthogroup subset vs all orthogroups</a>
 
                             <br/>
                         </div>
@@ -160,7 +160,7 @@
                             {% for value in match_groups_data %}
                                 <tr>
                                     <td>{{value.0}}</td>
-                                    <td><a href="{% url 'locusx' biodb value.1 True%}">{{value.1}}</a></td>
+                                    <td><a href="{% url 'locusx' value.1 True%}">{{value.1}}</a></td>
                                     <td>{{value.2|safe}}</td>
                                     <td>{{value.3|safe}}</td>
                                     <td>{{value.4|safe}}</td>
@@ -182,7 +182,7 @@
                                 <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'datatable');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
 
                                 {% if show_reference_annot %}
-                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{biodb}}{{fasta_ref_url|safe}}'">fasta aa</button>
+                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_ref_url|safe}}'">fasta aa</button>
                                 {% endif %}
                                   <br/>
                             </div>
@@ -216,7 +216,7 @@
                                     {% for values in extract_result %}
                                         <tr>
                                             <td>{{values.0}}</td>
-                                            <td><a href="{% url 'locusx' biodb values.1 True %}"  target="_top">{{values.1}}</a></td>
+                                            <td><a href="{% url 'locusx' values.1 True %}"  target="_top">{{values.1}}</a></td>
                                             <td>{{values.2}}</td>
                                             <td>{{values.3}}</td>
                                             <td>{{values.4}}</td>
@@ -240,9 +240,9 @@
                         <h3> Locus annotation </h3>
                         <div id="export_bouttons_groups">
                             <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-                            <a href="{% url 'get_fasta' biodb %}{{fasta_url_ref}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Download fasta</a>
+                            <a href="{% url 'get_fasta' %}{{fasta_url_ref}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Download fasta</a>
                             <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                            <a href="{% url 'circos_main' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
+                            <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
 
                             <br/>
                         </div>
@@ -274,13 +274,13 @@
                                 <tr>
                                     <td>{{values.0}}</td>
                                     <td>{{values.1}}</td>
-                                    <td><a href="{% url 'locusx' biodb values.2 True %}" target="_top">{{values.2}}</a></td>
+                                    <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
                                     <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
                                     {% with locus_tag2cog_name|keyvalue:values.2 as name %}
                                         {% if name == '-' %}
                                             <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
                                         {% else %}
-                                            <td><a href="{% url "fam" biodb name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
+                                            <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
                                         {% endif %}
                                     {%endwith%}
                                     {% with locus_tag2ko|keyvalue:values.2 as oneko %}
@@ -289,7 +289,7 @@
                                             <td>-</td>
                                             <td>-</td>
                                         {% else %}
-                                            <td><a href="{% url "fam" biodb oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
+                                            <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
                                             {% with ko2ko_pathways|keyvalue:oneko as name %}
                                                 {% if name == '-' %}
                                                     <td>-</td>
@@ -312,7 +312,7 @@
                                     <td>
                                         {% for one_interpro in interpro_data %}
                                         {% if one_interpro.0 != '-' %}
-                                            <a href="{% url 'fam' biodb one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                            <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
                                         {%else%}
                                             {{one_interpro.0}}
                                         {%endif%}

@@ -47,7 +47,7 @@
             <tbody>
             {% for values in cog_annotation %}
             <tr>
-                <td><a href="{% url 'fam' biodb values.0 'cog' %}" target="_top">{{values.0}}</a></td>
+                <td><a href="{% url 'fam' values.0 'cog' %}" target="_top">{{values.0}}</a></td>
                 <td>{{values.2}} ({{values.1}})</td>
             </tr>
             {% endfor %}

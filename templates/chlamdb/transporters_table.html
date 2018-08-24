@@ -25,14 +25,14 @@
 
             <nav>
             <ul id="tabs" class="nav nav-tabs">
-                <li><a href="{% url 'transporters' biodb %}">Transporters superfamilies</a></li>
-                <li class="active"><a href="{% url 'transporters_list' biodb %}">Transporters lists</a></li>
+                <li><a href="{% url 'transporters' %}">Transporters superfamilies</a></li>
+                <li class="active"><a href="{% url 'transporters_list' %}">Transporters lists</a></li>
 
             </ul>
             </nav>
 
 
-            <form action='{% url "transporters_list" biodb %}' method="post">
+            <form action='{% url "transporters_list" %}' method="post">
                 {% csrf_token %}
                     {{ form.as_p }}
 
@@ -74,8 +74,8 @@
 
                                     {% for values in data %}
                                         <tr>
-                                            <td><a href="{% url 'locusx' biodb values.0 True %}" target="_top">{{values.0}}</a></td>
-                                            <td><a href="{% url 'transporters_family' biodb values.15 %}" target="_top">{{values.15}}</a></td>
+                                            <td><a href="{% url 'locusx' values.0 True %}" target="_top">{{values.0}}</a></td>
+                                            <td><a href="{% url 'transporters_family' values.15 %}" target="_top">{{values.15}}</a></td>
                                             <td>{{values.1}}</td>
 
                                             <td>{{values.13}}</td>

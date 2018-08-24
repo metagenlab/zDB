@@ -30,7 +30,7 @@
             </p>
         </div>
 
-    <form action='{% url "interpro_taxonomy" biodb %}' method="post">
+    <form action='{% url "interpro_taxonomy" %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Submit" />
@@ -67,7 +67,7 @@
             </div>
             <div class="tab-pane" id="tab2c">
 
-                 <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{biodb}}{{fasta_url|safe}}'">download fasta</button>
+                 <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_url|safe}}'">download fasta</button>
 
                 <table>
 
@@ -85,7 +85,7 @@
                     <tr>
                         <td>{{row.11}}</td>
                         <td>{{row.0}}</td>
-                        <td><a href="{% url 'locusx' biodb row.3 True %}" target="_top">{{row.3}}</a></td>
+                        <td><a href="{% url 'locusx' row.3 True %}" target="_top">{{row.3}}</a></td>
                         <td>{{row.8}}</td>
                         <td>{{row.9}}</td>
 

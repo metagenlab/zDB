@@ -79,7 +79,7 @@
                                        {% if row.21 == None %}
                                           <td>{{row.21}}</td>
                                        {% else %}
-                                          <td><a href="{% url 'locusx' biodb row.21 True %}" target="_top">{{row.21}}</a></td>
+                                          <td><a href="{% url 'locusx' row.21 True %}" target="_top">{{row.21}}</a></td>
                                        {%endif%}
                                        <td>{{row.3}}</td>
                                        <td>{{row.5}}</td>

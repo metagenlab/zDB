@@ -22,7 +22,7 @@
         <nav>
         <ul id="tabs" class="nav nav-tabs">
             <li class="active"><a>pairwise CDS length</a></li>
-            <li><a href="{% url 'prot_length_barchart' biodb %}">CDS length counts</a></li>
+            <li><a href="{% url 'prot_length_barchart' %}">CDS length counts</a></li>
         </ul>
         </nav>
 
@@ -34,7 +34,7 @@
             </p>
         </div>
 
-    <form action='{% url "pairwiseCDS_length" biodb %}' method="post">
+    <form action='{% url "pairwiseCDS_length" %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Submit" />

@@ -32,7 +32,7 @@
             </p>
             </p>
         </div>
-        <form action="{% url "add_comment" biodb locus_tag %}" method="post">{% csrf_token %}
+        <form action="{% url "add_comment" locus_tag %}" method="post">{% csrf_token %}
           {{ form.as_p }}
           <input type="submit" value="Submit" />
         </form>
@@ -42,7 +42,7 @@
         {% if envoi %}
             &nbsp
             <h2>Comment added!</h2>
-            <meta http-equiv="REFRESH" content="0;url={% url 'locusx' biodb locus_tag True %}">
+            <meta http-equiv="REFRESH" content="0;url={% url 'locusx' locus_tag True %}">
 
         {% endif %}
     </div>

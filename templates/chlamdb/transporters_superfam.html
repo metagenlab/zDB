@@ -26,15 +26,15 @@
 
         <nav>
         <ul id="tabs" class="nav nav-tabs">
-            <li class="active"><a href="{% url 'transporters' biodb %}">Transporters superfamilies</a></li>
-            <li ><a href="{% url 'transporters_list' biodb %}">Transporters lists</a></li>
+            <li class="active"><a href="{% url 'transporters' %}">Transporters superfamilies</a></li>
+            <li ><a href="{% url 'transporters_list' %}">Transporters lists</a></li>
 
         </ul>
         </nav>
 
 
 
-            <form action='{% url "transporters" biodb %}' method="post">
+            <form action='{% url "transporters" %}' method="post">
                 {% csrf_token %}
                     {{ form.as_p }}
 

@@ -18,7 +18,7 @@
     <div id="content">
         <nav>
         <ul id="tabs" class="nav nav-tabs">
-            <li><a  href="{% url 'pairwiseid' biodb %}">Pairwise Identity</a></li>
+            <li><a  href="{% url 'pairwiseid' %}">Pairwise Identity</a></li>
             <li class="active"><a>Heatmaps</a></li>
         </ul>
         </nav>
@@ -36,7 +36,7 @@
             </div>
 
 
-                    <form action="{% url "identity_heatmap" biodb %}" method="post">
+                    <form action="{% url "identity_heatmap" %}" method="post">
                         {% csrf_token %}
                         {{ form_venn.as_p }}
                     <input type="submit" name="venn" value="Get heatmap" id="venn_button" />

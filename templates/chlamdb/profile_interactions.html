@@ -62,7 +62,7 @@
         <ul style="padding-top: 5px" id="tabs" class="nav nav-tabs" data-tabs="tabs">
             <li class="active"><a href="#tab1" data-toggle="tab">Annotation</a></li>
             <li><a href="#tab2" data-toggle="tab">Profile</a></li>
-            <!--<li><a href="#tab77" data-toggle="tab" onclick="window.open('{% url 'plot_region_direct' biodb orthogroup %}{{plot_url|safe}}', 'orthoIDframe4'); return false">Region</a></li>-->
+            <!--<li><a href="#tab77" data-toggle="tab" onclick="window.open('{% url 'plot_region_direct' orthogroup %}{{plot_url|safe}}', 'orthoIDframe4'); return false">Region</a></li>-->
         </ul>
 
         <div id="my-tab-content" class="tab-content">
@@ -92,7 +92,7 @@
                     {% for value in match_groups_data %}
                         <tr>
                             <td>{{value.0}}</td>
-                            <td><a href="{% url 'locusx' biodb value.1 True%}" target="_top">{{value.1}}</a></td>
+                            <td><a href="{% url 'locusx' value.1 True%}" target="_top">{{value.1}}</a></td>
                             <td>{{value.2|safe}}</td>
                             <td>{{value.3|safe}}</td>
                             <td>{{value.4|safe}}</td>

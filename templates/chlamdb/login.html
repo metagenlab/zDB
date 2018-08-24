@@ -27,7 +27,7 @@
     {% if user.is_authenticated %}
 
         You are logged in, {{ user.username }} !
-        <meta http-equiv="REFRESH" content="0;url={% url "home" biodb %}">
+        <meta http-equiv="REFRESH" content="0;url={% url "home"  %}">
     {% else %}
     <form action="{% url "chlamdb_login" %}"  method="post">
         {% csrf_token %}

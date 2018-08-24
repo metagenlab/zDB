@@ -23,44 +23,44 @@
         <ul id="tabs" class="nav nav-tabs">
                 {% if type == 'Pfam' %}
 
-                    <li><a href="{% url 'extract_pfam' biodb %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_pfam' biodb %}">Venn diagram</a></li>
-                    <li><a href="{% url 'pfam_comparison' biodb %}">Compare Pfam Domains</a></li>
-                    <li class="active"><a href="{% url 'plot_heatmap' biodb 'Pfam' %}">Whole proteomes heatmaps</a></li>
+                    <li><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
+                    <li><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
+                    <li class="active"><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
 
 
                 {% elif type == 'COG' %}
-                    <li><a href="{% url 'extract_cog' biodb %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_cog' biodb %}">Venn diagram</a></li>
-                    <li><a href="{% url 'cog_barchart' biodb %}">COG categories barchart</a></li>
-                    <li><a href="{% url 'COG_phylo_heatmap' biodb True %}">COG heatmap freq.</a></li>
-                    <li><a href="{% url 'COG_phylo_heatmap' biodb False %}">COG heatmap counts</a></li>
-                    <li><a href="{% url 'plot_heatmap' biodb 'COG' %}">Whole proteomes heatmaps</a></li>
-                    <li class="active"><a href="{% url 'pan_genome' biodb 'COG' %}">Pan/Core genome plots</a></li>
+                    <li><a href="{% url 'extract_cog' %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_cog' %}">Venn diagram</a></li>
+                    <li><a href="{% url 'cog_barchart' %}">COG categories barchart</a></li>
+                    <li><a href="{% url 'COG_phylo_heatmap' True %}">COG heatmap freq.</a></li>
+                    <li><a href="{% url 'COG_phylo_heatmap' False %}">COG heatmap counts</a></li>
+                    <li><a href="{% url 'plot_heatmap' 'COG' %}">Whole proteomes heatmaps</a></li>
+                    <li class="active"><a href="{% url 'pan_genome' 'COG' %}">Pan/Core genome plots</a></li>
                 {% elif type == 'interpro'%}
-                    <li><a href="{% url 'extract_interpro' biodb %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_interpro' biodb %}">Venn diagram</a></li>
-                    <li><a href="{% url 'plot_heatmap' biodb 'interpro' %}">Whole proteomes heatmaps</a></li>
-                    <li class="active"><a href="{% url 'pan_genome' biodb 'interpro' %}">Pan/Core genome plots</a></li>
+                    <li><a href="{% url 'extract_interpro' %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_interpro' %}">Venn diagram</a></li>
+                    <li><a href="{% url 'plot_heatmap' 'interpro' %}">Whole proteomes heatmaps</a></li>
+                    <li class="active"><a href="{% url 'pan_genome' 'interpro' %}">Pan/Core genome plots</a></li>
                 {% elif type == 'EC' %}
 
-                    <li><a href="{% url 'extract_EC' biodb %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_pfam' biodb %}">Venn diagram</a></li>
-                    <li><a href="{% url 'plot_heatmap' biodb 'EC' %}">Whole proteomes heatmaps</a></li>
-                    <li class="active"><a href="{% url 'pan_genome' biodb 'EC' %}">Pan/Core genome plots</a></li>
+                    <li><a href="{% url 'extract_EC' %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
+                    <li><a href="{% url 'plot_heatmap' 'EC' %}">Whole proteomes heatmaps</a></li>
+                    <li class="active"><a href="{% url 'pan_genome' 'EC' %}">Pan/Core genome plots</a></li>
                 {% elif type == 'ko' %}
-                    <li><a href="{% url 'extract_ko' biodb %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'ko_comparison' biodb %}">Compare KO counts</a></li>
-                    <li><a href="{% url 'module_barchart' biodb %}">KO categories barchart</a></li>
-                    <li><a href="{% url 'venn_ko' biodb %}">Venn KO</a></li>
-                    <li><a href="{% url 'plot_heatmap' biodb 'ko' %}">Whole proteomes heatmaps</a></li>
-                    <li class="active"><a href="{% url 'pan_genome' biodb 'ko' %}">Pan/Core genome plots</a></li>
+                    <li><a href="{% url 'extract_ko' %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'ko_comparison' %}">Compare KO counts</a></li>
+                    <li><a href="{% url 'module_barchart' %}">KO categories barchart</a></li>
+                    <li><a href="{% url 'venn_ko' %}">Venn KO</a></li>
+                    <li><a href="{% url 'plot_heatmap' 'ko' %}">Whole proteomes heatmaps</a></li>
+                    <li class="active"><a href="{% url 'pan_genome' 'ko' %}">Pan/Core genome plots</a></li>
                 {% elif type == 'orthology' %}
-                    <li><a href="{% url 'extract_orthogroup' biodb %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_orthogroup' biodb %}">Venn diagram</a></li>
-                    <li><a href="{% url 'orthogroup_comparison' biodb %}">Compare Orthogroups size</a></li>
-                    <li><a href="{% url 'plot_heatmap' biodb 'orthology' %}">Whole proteomes heatmaps</a></li>
-                    <li class="active"><a href="{% url 'pan_genome' biodb 'orthology' %}">Pan/Core genome plots</a></li>
+                    <li><a href="{% url 'extract_orthogroup' %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'venn_orthogroup' %}">Venn diagram</a></li>
+                    <li><a href="{% url 'orthogroup_comparison' %}">Compare Orthogroups size</a></li>
+                    <li><a href="{% url 'plot_heatmap' 'orthology' %}">Whole proteomes heatmaps</a></li>
+                    <li class="active"><a href="{% url 'pan_genome' 'orthology' %}">Pan/Core genome plots</a></li>
                 {% endif %}
         </ul>
         </nav>
@@ -91,7 +91,7 @@
             </p>
         </div>
 
-    <form action='{% url "pan_genome" biodb type %}' method="post">
+    <form action='{% url "pan_genome" type %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Submit" />

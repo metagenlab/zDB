@@ -22,7 +22,7 @@
             <div id="header">
                 {% include "chlamdb/user.html" %}
             </div>
-            <form action='{% url "locus_int" biodb %}' method="post">
+            <form action='{% url "locus_int" %}' method="post">
                 {% csrf_token %}
                     {{ form.as_p }}
                         <div class="form-inline">

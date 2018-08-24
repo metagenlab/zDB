@@ -23,12 +23,12 @@
 
         <nav>
         <ul id="tabs" class="nav nav-tabs">
-                    <li><a href="{% url 'extract_ko' biodb %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'ko_comparison' biodb %}">Compare KO counts</a></li>
-                    <li class="active"><a href="{% url 'module_barchart' biodb %}">KO categories barchart</a></li>
-                    <li><a href="{% url 'venn_ko' biodb %}">Venn KO</a></li>
-                    <li><a href="{% url 'plot_heatmap' biodb 'ko' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' biodb 'ko' %}">Pan/Core genome plots</a></li>
+                    <li><a href="{% url 'extract_ko' %}">Detailed comparison</a></li>
+                    <li><a href="{% url 'ko_comparison' %}">Compare KO counts</a></li>
+                    <li class="active"><a href="{% url 'module_barchart' %}">KO categories barchart</a></li>
+                    <li><a href="{% url 'venn_ko' %}">Venn KO</a></li>
+                    <li><a href="{% url 'plot_heatmap' 'ko' %}">Whole proteomes heatmaps</a></li>
+                    <li><a href="{% url 'pan_genome' 'ko' %}">Pan/Core genome plots</a></li>
         </ul>
         </nav>
 
@@ -43,7 +43,7 @@
             </p>
         </div>
 
-    <form action='{% url "module_barchart" biodb %}' method="post">
+    <form action='{% url "module_barchart" %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Submit" />
@@ -199,12 +199,12 @@
             var taxon = data.series[d3.select(this.parentNode).attr("taxon_id")].label; //data object
             var category = data.labels[d3.select(this.parentNode).attr("category_id")]; //data object
             var category = category.split(' ').join('+')
-            window.open("/chlamdb/module_cat_info/{{biodb}}/" + taxon + "/" + category + "{{circos_url|safe}}");
+            window.open("/chlamdb/module_cat_info/" + taxon + "/" + category + "{{circos_url|safe}}");
         }
         function drill2(d,j) {
                 var category = data.labels[d3.select(this.parentNode).attr("category_id")]; //data object
                 var category = category.split(' ').join('+')
-                window.open("/chlamdb/ko_venn_subset/{{biodb}}/" + category + "{{circos_url|safe}}") };
+                window.open("/chlamdb/ko_venn_subset/" + category + "{{circos_url|safe}}") };
 
         //bar.on("click", drill);
 

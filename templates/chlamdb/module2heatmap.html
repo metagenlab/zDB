@@ -31,14 +31,14 @@
 
                    <nav>
                         <ul id="tabs_main" class="nav nav-tabs">
-                            <li class="active"><a href="{% url 'extract_cog' biodb %}">Heatmap</a></li>
-                            <li><a href="{% url 'module_comparison' biodb %}">Compare strains</a></li>
+                            <li class="active"><a href="{% url 'extract_cog' %}">Heatmap</a></li>
+                            <li><a href="{% url 'module_comparison' %}">Compare strains</a></li>
                         </ul>
                     </nav>
 
 
 
-                   <form action='{% url "module2heatmap" biodb %}' method="post">
+                   <form action='{% url "module2heatmap" %}' method="post">
                     {% csrf_token %}
                     {{ form.as_p }}
                     <input type="submit" value="Submit" />

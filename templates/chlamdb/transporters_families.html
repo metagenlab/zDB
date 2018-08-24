@@ -48,7 +48,7 @@
 
                             <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
 
-                            <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{biodb}}{{fasta_url|safe}}'">fasta aa</button>
+                            <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_url|safe}}'">fasta aa</button>
 
                             <br/>
                         </div>
@@ -78,7 +78,7 @@
                             {% for value in locus_annot %}
                                 <tr>
 
-                                    <td><a href="{% url 'locusx' biodb value.0 True%}">{{value.0}}</a></td>
+                                    <td><a href="{% url 'locusx' value.0 True%}">{{value.0}}</a></td>
                                     <td>{{value.1}}</td>
                                     <td>{{value.2|safe}}</td>
                                     <td>{{value.3|safe}}</td>
@@ -95,7 +95,7 @@
                                     <td>
                                         {% for one_interpro in interpro_data %}
                                         {% if one_interpro.0 != '-' %}
-                                            <a href="{% url 'fam' biodb one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                            <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
                                         {%else%}
                                             {{one_interpro.0}}
                                         {%endif%}

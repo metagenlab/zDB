@@ -39,11 +39,11 @@
                     <tbody>
                     {% for row in taxon_data %}
                         <tr>
-                            <td><a href="{% url 'get_pfam_hit_list' biodb pfam_domain row.0 %}">{{row.0}}</a></td>
-                            <td><a href="{% url 'get_pfam_hit_list' biodb pfam_domain row.0 row.1 %}">{{row.1}}</a></td>
-                            <td><a href="{% url 'get_pfam_hit_list' biodb pfam_domain row.0 row.1 row.2 %}">{{row.2}}</a></td>
-                            <td><a href="{% url 'get_pfam_hit_list' biodb pfam_domain row.0 row.1 row.2 row.3 %}">{{row.3}}</a></td>
-                            <td><a href="{% url 'get_pfam_hit_list' biodb pfam_domain row.0 row.1 row.2 row.3 row.4 %}">{{row.4}}</a></td>
+                            <td><a href="{% url 'get_pfam_hit_list' pfam_domain row.0 %}">{{row.0}}</a></td>
+                            <td><a href="{% url 'get_pfam_hit_list' pfam_domain row.0 row.1 %}">{{row.1}}</a></td>
+                            <td><a href="{% url 'get_pfam_hit_list' pfam_domain row.0 row.1 row.2 %}">{{row.2}}</a></td>
+                            <td><a href="{% url 'get_pfam_hit_list' pfam_domain row.0 row.1 row.2 row.3 %}">{{row.3}}</a></td>
+                            <td><a href="{% url 'get_pfam_hit_list' pfam_domain row.0 row.1 row.2 row.3 row.4 %}">{{row.4}}</a></td>
                             <td>{{row.5}}</td>
                         </tr>
                     {% endfor %}

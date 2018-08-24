@@ -48,7 +48,7 @@
 
             <h3> SwissProt hits for: {{locus_tag}}</h3>
             <ul>
-             <li><A HREF={% url 'locusx' biodb locus_tag True%}>{{ locus_tag }}</A></li>
+             <li><A HREF={% url 'locusx' locus_tag True%}>{{ locus_tag }}</A></li>
               <li>N. SwisProt hits: {{ blast_data|length }}</li>
 
 

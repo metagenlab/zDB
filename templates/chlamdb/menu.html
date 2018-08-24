@@ -8,17 +8,17 @@
 
             <li class="rollmenu"><a href="">Search</a>
                  <ul>
-                <li class="item5"><a href="{% url 'blast' biodb %}">Blast</a>
+                <li class="item5"><a href="{% url 'blast' %}">Blast</a>
                 </li>
-                <!--<li class="item6"><a href="{% url 'motif_search' biodb %}">Motif search</a>-->
+                <!--<li class="item6"><a href="{% url 'motif_search' %}">Motif search</a>-->
                 <!--</li>-->
-                <!--<li class="item6"><a href="{% url 'interpro' biodb %}">Interpro search</a>-->
+                <!--<li class="item6"><a href="{% url 'interpro' %}">Interpro search</a>-->
                 </li>
-                <li class="item6"><a href="{% url 'extract_region' biodb %}">Retrieve sequence</a>
+                <li class="item6"><a href="{% url 'extract_region' %}">Retrieve sequence</a>
                 </li>
 
 
-                <!--<li class="item6"><a href="{% url 'primer_search' biodb %}">Primer search</a>->
+                <!--<li class="item6"><a href="{% url 'primer_search' %}">Primer search</a>->
                 <!--</li>-->
 
 
@@ -29,24 +29,24 @@
 
                  <ul>
 
-                <li class="item6"><a href="{% url 'extract_orthogroup' biodb %}">Orthogroups</a>
+                <li class="item6"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a>
                 </li>
-                <li class="item6"><a href="{% url 'extract_cog' biodb %}">COGs</a>
+                <li class="item6"><a href="{% url 'extract_cog' %}">COGs</a>
                 </li>
-                <li class="item6"><a href="{% url 'extract_pfam' biodb %}">Pfam domains</a>
+                <li class="item6"><a href="{% url 'extract_pfam' %}">Pfam domains</a>
                 </li>
-                <li class="item6"><a href="{% url 'extract_interpro' biodb %}">Interpro entries</a>
+                <li class="item6"><a href="{% url 'extract_interpro' %}">Interpro entries</a>
                 </li>
-                <li class="item6"><a href="{% url 'extract_EC' biodb %}">EC numbers</a>
+                <li class="item6"><a href="{% url 'extract_EC' %}">EC numbers</a>
                 </li>
-                <li class="item6"><a href="{% url 'extract_ko' biodb %}">Kegg Orthologs</a>
+                <li class="item6"><a href="{% url 'extract_ko' %}">Kegg Orthologs</a>
                 </li>
-                <li class="item6"><a href="{% url 'pairwiseid' biodb %}">PairwiseID</a>
+                <li class="item6"><a href="{% url 'pairwiseid' %}">PairwiseID</a>
                 </li>
-                <li class="item5"><a href="{% url 'pairwiseCDS_length' biodb %}">CDS length</a>
+                <li class="item5"><a href="{% url 'pairwiseCDS_length' %}">CDS length</a>
                 </li>
 		{% if biodb in 'chlamydia_04_16,2017_06_29b_motile_chlamydiae'|slice:',' %}
-                <li class="item5"><a href="{% url 'transporters' biodb %}">transporters</a>
+                <li class="item5"><a href="{% url 'transporters' %}">transporters</a>
                 </li>
 		{% endif %}
 		
@@ -56,42 +56,42 @@
             <li class="rollmenu"><a href="">Plots</a>
 
                  <ul>
-                    <li class="item5"><a href="{% url 'plot_region' biodb %}">Plot region</a>
+                    <li class="item5"><a href="{% url 'plot_region' %}">Plot region</a>
                     </li>
-                    <li class="item6"><a href="{% url 'circos' biodb %}">Circos</a>
+                    <li class="item6"><a href="{% url 'circos' %}">Circos</a>
                     </li>
-                    <!--<li class="item6"><a href="{% url 'circos2genomes' biodb %}">Circos 2 genomes</a>-->
+                    <!--<li class="item6"><a href="{% url 'circos2genomes' %}">Circos 2 genomes</a>-->
                     </li>
-                    <!--<li class="item5"><a href="{% url 'circos_homology' biodb %}">Homologues location</a>-->
+                    <!--<li class="item5"><a href="{% url 'circos_homology' %}">Homologues location</a>-->
                     <!--</li>-->
-                    <!--<li class="item5"><a href="{% url 'mummer' biodb %}">Dot plots</a>-->
+                    <!--<li class="item5"><a href="{% url 'mummer' %}">Dot plots</a>-->
                     </li>
                 </ul>
 
             <li class="rollmenu"><a href="">Metabolism</a>
                 <ul>
-                    <li class="item5"><a href="{% url 'priam_kegg' biodb %}">Kegg maps</a>
+                    <li class="item5"><a href="{% url 'priam_kegg' %}">Kegg maps</a>
                     </li>
-                    <li class="item5"><a href="{% url 'metabo_overview' biodb %}">Metabo comparisons</a>
+                    <li class="item5"><a href="{% url 'metabo_overview' %}">Metabo comparisons</a>
                     </li>
-                    <li class="item5"><a href="{% url 'kegg_module' biodb %}">Kegg modules</a>
+                    <li class="item5"><a href="{% url 'kegg_module' %}">Kegg modules</a>
                     </li>
 
                 </ul>
-	    {% if biodb in 'chlamydia_04_16,2017_06_29b_motile_chlamydiae,2017_06_29_parilichlamydiae'|slice:',' %}	
+	    {% if biodb in 'chlamydia_04_16,2017_06_29b_motile_chlamydiae,2017_06_29_parilichlamydiae'|slice:',' %}
             <li class="rollmenu"><a href="">BlastNR</a>
                 <ul>
-                    <li class="item5"><a href="{% url 'blastnr_barchart' biodb %}">BlastNR hits</a>
+                    <li class="item5"><a href="{% url 'blastnr_barchart' %}">BlastNR hits</a>
                     </li>
                 </ul>
             <li class="rollmenu"><a href="">Effectors</a>
                 <ul>
-                    <li class="item5"><a href="{% url 'interpro_taxonomy' biodb %}">Euk. domains</a>
+                    <li class="item5"><a href="{% url 'interpro_taxonomy' %}">Euk. domains</a>
                     </li>
-                    <li class="item5"><a href="{% url 'blastnr_euk' biodb %}">Euk. RefSeq hits</a>
+                    <li class="item5"><a href="{% url 'blastnr_euk' %}">Euk. RefSeq hits</a>
                     </li>
                     {% if biodb == 'chlamydia_04_16'%}
-                    <li class="item5"><a href="{% url 'effector_pred' biodb %}">Predictions</a>
+                    <li class="item5"><a href="{% url 'effector_pred' %}">Predictions</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -102,27 +102,27 @@
                 <ul>
 
 
-                    <li class="item5"><a href="{% url 'locus_int' biodb %}">Locus Int</a>
+                    <li class="item5"><a href="{% url 'locus_int' %}">Locus Int</a>
                     </li>
-                    <li class="item5"><a href="{% url 'add_locus_int' biodb %}">ADD Locus Int</a>
+                    <li class="item5"><a href="{% url 'add_locus_int' %}">ADD Locus Int</a>
                     </li>
-                    <li class="item5"><a href="{% url 'orthogroup_annotation' biodb True%}">Orthog. annot.</a>
-                    </li>
-                    </li>
-                    <li class="item5"><a href="{% url 'locus_annotation' biodb True%}">Locus annot.</a>
-                    </li>
-                    <li class="item5"><a href="{% url 'locus_list2orthogroups' biodb%}">locus2group</a>
+                    <li class="item5"><a href="{% url 'orthogroup_annotation' True%}">Orthog. annot.</a>
                     </li>
                     </li>
-                    <li class="item5"><a href="{% url 'blast_profile' biodb %}">blast2profile</a>
+                    <li class="item5"><a href="{% url 'locus_annotation' True%}">Locus annot.</a>
                     </li>
-                    <li class="item5"><a href="{% url 'hmm2circos' biodb %}">hmm2circos</a>
+                    <li class="item5"><a href="{% url 'locus_list2orthogroups' %}">locus2group</a>
                     </li>
-                    <li class="item5"><a href="{% url 'hmm' biodb %}">hmm sets</a>
                     </li>
-                    <li class="item5"><a href="{% url 'blast_sets' biodb %}">blast sets</a>
+                    <li class="item5"><a href="{% url 'blast_profile' %}">blast2profile</a>
                     </li>
-                    <li class="item5"><a href="{% url 'interactions_genome' biodb %}">locus2network</a>
+                    <li class="item5"><a href="{% url 'hmm2circos' %}">hmm2circos</a>
+                    </li>
+                    <li class="item5"><a href="{% url 'hmm' %}">hmm sets</a>
+                    </li>
+                    <li class="item5"><a href="{% url 'blast_sets' %}">blast sets</a>
+                    </li>
+                    <li class="item5"><a href="{% url 'interactions_genome' %}">locus2network</a>
                     </li>
                 </ul>
 

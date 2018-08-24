@@ -22,7 +22,7 @@
         <nav>
         <ul id="tabs" class="nav nav-tabs">
             <li class="active"><a >BlastNR barchart</a></li>
-            <li><a href="{% url 'blastnr_overview' biodb %}">BlastNR overview</a></li>
+            <li><a href="{% url 'blastnr_overview' %}">BlastNR overview</a></li>
         </ul>
         </nav>
 
@@ -37,7 +37,7 @@
             </p>
         </div>
 
-    <form action='{% url "blastnr_barchart" biodb %}' method="post">
+    <form action='{% url "blastnr_barchart" %}' method="post">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Submit" />

@@ -199,7 +199,7 @@
 
             var category = data.labels[d3.select(this.parentNode).attr("category_id")]; //data object
             category = category.split(' ').join('+');
-            window.open("/chlamdb/get_ko_multiple/{{biodb}}/{{type}}/" + category + "{{taxons_in_url|safe}}" + "{{taxon_out_url|safe}}");
+            window.open("/chlamdb/get_ko_multiple/{{type}}/" + category + "{{taxons_in_url|safe}}" + "{{taxon_out_url|safe}}");
         }
 
         chart.append("g")

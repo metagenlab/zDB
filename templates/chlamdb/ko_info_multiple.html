@@ -66,7 +66,7 @@
 
                 <tr>
                     {% if type == 'module'%}
-                    <td><a href="{% url 'fam' biodb values.0 "ko" %}">{{values.0}}</a></td>
+                    <td><a href="{% url 'fam' values.0 "ko" %}">{{values.0}}</a></td>
                     <td>{{values.1}}</td>
                     <td>{{values.2}}</td>
                     <td>{{values.3}}</td>
@@ -75,10 +75,10 @@
                     <td>{{values.6}}</td>
                     <td>{{values.7}}</td>
                     {%else%}
-                    <td><a href="{% url 'fam' biodb values.0 "ko" %}">{{values.0}}</a></td>
+                    <td><a href="{% url 'fam' values.0 "ko" %}">{{values.0}}</a></td>
                     <td>{{values.1}}</td>
                     <td>{{values.2}}</td>
-                    <td><a href="{% url 'KEGG_mapp' biodb values.3 %}">{{values.3}}</a></td>
+                    <td><a href="{% url 'KEGG_mapp' values.3 %}">{{values.3}}</a></td>
                     <td>{{values.4}}</td>
                     <td>{{values.5}}</td>
                     <td>{{values.6}}</td>

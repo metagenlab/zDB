@@ -42,13 +42,13 @@
         {% if display_form %}
         <nav>
         <ul id="tabs" class="nav nav-tabs">
-            <li><a href="{% url 'extract_cog' biodb %}">Detailed comparison</a></li>
-            <li class="active"><a href="{% url 'venn_cog' biodb %}">Venn diagram</a></li>
-            <li><a href="{% url 'cog_barchart' biodb %}">COG categories barchart</a></li>
-            <li><a href="{% url 'COG_phylo_heatmap' biodb True %}">COG heatmap freq.</a></li>
-            <li><a href="{% url 'COG_phylo_heatmap' biodb False %}">COG heatmap counts</a></li>
-            <li><a href="{% url 'plot_heatmap' biodb 'COG' %}">Whole proteomes heatmaps</a></li>
-            <li><a href="{% url 'pan_genome' biodb 'COG' %}">Pan/Core genome plots</a></li>
+            <li><a href="{% url 'extract_cog'  %}">Detailed comparison</a></li>
+            <li class="active"><a href="{% url 'venn_cog'  %}">Venn diagram</a></li>
+            <li><a href="{% url 'cog_barchart' %}">COG categories barchart</a></li>
+            <li><a href="{% url 'COG_phylo_heatmap' True %}">COG heatmap freq.</a></li>
+            <li><a href="{% url 'COG_phylo_heatmap' False %}">COG heatmap counts</a></li>
+            <li><a href="{% url 'plot_heatmap' 'COG' %}">Whole proteomes heatmaps</a></li>
+            <li><a href="{% url 'pan_genome' 'COG' %}">Pan/Core genome plots</a></li>
         </ul>
         </nav>
 
@@ -63,7 +63,7 @@
 
 
 
-                    <form action="{% url "venn_cog" biodb accessions %}" method="post">
+                    <form action="{% url "venn_cog" accessions %}" method="post">
                         {% csrf_token %}
                         {{ form_venn.as_p }}
                         <input type="submit" name="venn" value="Compare COGs" id="venn_button" />

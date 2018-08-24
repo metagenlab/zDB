@@ -72,10 +72,10 @@
                  <li class="active"><a href="#tab33" data-toggle="tab">Homologs</a></li>
                 {% endif %}
 
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' biodb data.0 %}', 'orthoIDframe'); return false">Phylogenetic distribution</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' data.0 %}', 'orthoIDframe'); return false">Phylogenetic distribution</a></li>
                 <li><a href="#tab55" data-toggle="tab">Download</a></li>
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' biodb data.0 True %}', 'orthoIDframe'); return false">Orthogroup conservation</a></li>
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' biodb data.0 %}', 'orthoIDframe'); return false">Pfam tree</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' data.0 True %}', 'orthoIDframe'); return false">Orthogroup conservation</a></li>
+                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' data.0 %}', 'orthoIDframe'); return false">Pfam tree</a></li>
             </ul>
             <div id="my-tab-content" class="tab-content">
             {% if input_type != 'orthogroup' %}
@@ -269,7 +269,7 @@
                                         <td>{{values.0}}</td>
                                         <td>{{values.1}}</td>
                                         <td>{{values.15}}</td>
-                                        <td><a href="{% url 'locusx' biodb values.2 True %}">{{values.2}}</a></td>
+                                        <td><a href="{% url 'locusx' values.2 True %}">{{values.2}}</a></td>
                                         <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</a></td>
                                         <td>{{values.4}}</td>
                                         <td>{{values.5}}</td>
@@ -304,7 +304,7 @@
                                 <tr>
                                     <td><a href="{% static alignment_fasta_nucl %}">Nucleotide sequences (fasta)</a> </td>
                                 </tr>
-                                    <td><a href="{% url "blastnr" biodb data.1  %}">BLAST NR</a> </td>
+                                    <td><a href="{% url "blastnr" data.1  %}">BLAST NR</a> </td>
                                 </tr>
 
                             </table>

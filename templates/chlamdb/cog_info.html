@@ -35,7 +35,7 @@
             <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
             <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-            <a href="{% url 'circos_main' biodb %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
+            <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
 
             <br/>
         </div>
@@ -54,8 +54,8 @@
                 {%for values in data%}
                 <tr>
                     <td>{{values.0}}</td>
-                    <td><a href='{% url "locusx" biodb values.1 True %}' target="_top">{{values.1}}</a></td>
-                    <td><a href="{% url 'fam' biodb values.2 data_type %}" target="_top">{{values.2}}</a></td>
+                    <td><a href='{% url "locusx" values.1 True %}' target="_top">{{values.1}}</a></td>
+                    <td><a href="{% url 'fam' values.2 data_type %}" target="_top">{{values.2}}</a></td>
                     <td>{{values.3}}</td>
                     <td>
                     {{ locus2annot|keyvalue:values.1 }}

@@ -32,7 +32,7 @@
 
 
         <div id="region_extraction_form">
-            <form action="{% url "extract_region" biodb %}" method="post">{% csrf_token %}
+            <form action="{% url "extract_region" %}" method="post">{% csrf_token %}
               {{ form.as_p }}
 
              <br>
@@ -87,8 +87,8 @@
                         {% for values in search_result %}
                         <tr>
                             <td>{{values.0}}</td>
-                            <td><a href="{% url 'locusx' biodb values.2 True%}">{{values.1}}</a></td>
-                            <td><a href="{% static biodb %}/interpro/{{values.15}}.html" target="_blank">{{values.2}}</a></td>
+                            <td><a href="{% url 'locusx' values.2 True%}">{{values.1}}</a></td>
+                            <td><a href="{% static %}/interpro/{{values.15}}.html" target="_blank">{{values.2}}</a></td>
                             <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
                             <td>{{values.4}}</td>
                             <td>{{values.5}}</td>
