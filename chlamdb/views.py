@@ -2032,7 +2032,7 @@ def locusx(request, locus=None, menu=True):
                 input_type = 'orthogroup'
             except IndexError:
                 print ('not a valid id, trying search')
-                return search(request,biodb)
+                return search(request)
 
 
 
