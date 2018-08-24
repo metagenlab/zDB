@@ -3124,7 +3124,7 @@ def KEGG_mapp_ko(request, map_name):
 
         keg_path_highlight = '+'+'+'.join(ko_list_found_in_db)
 
-        kegg_maps.map2highlighted_map(map_name, ko_list_found_in_db, ko2freq, biodb, path_map_freq+'.svg')
+        kegg_maps.map2highlighted_map(map_name, ko_list_found_in_db, ko2freq, biodb, path_map_freq+'.pdf')
 
     return render(request, 'chlamdb/KEGG_map_ko.html', locals())
 
@@ -3231,7 +3231,7 @@ def KEGG_mapp_ko_organism(request, map_name, taxon_id):
 
         keg_path_highlight = '+'+'+'.join(ko_list_found_in_db)
 
-        kegg_maps.map2highlighted_map(map_name, ko_list, ko2freq, biodb, path_map_freq+'.svg', taxon_id=taxon_id)
+        kegg_maps.map2highlighted_map(map_name, ko_list, ko2freq, biodb, path_map_freq+'.pdf', taxon_id=taxon_id)
 
         sql = 'select t1.description from bioentry t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id' \
               ' where t2.name="%s" and t1.taxon_id=%s' % (biodb,
