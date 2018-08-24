@@ -9,7 +9,6 @@ def map2highlighted_map(map_id, ko_list, ko2freq, biodb, outpath = 'test.pdf', t
     import urllib.request
     from Bio.KEGG.KGML.KGML_pathway import Pathway, Reaction, Relation
     import Bio.KEGG.KGML.KGML_pathway
-    from Bio.Graphics import KGML_vis
     from Bio.KEGG.KGML import KGML_parser
     from Bio.Graphics.ColorSpiral import ColorSpiral
     import matplotlib.cm as cm
@@ -27,7 +26,7 @@ def map2highlighted_map(map_id, ko_list, ko2freq, biodb, outpath = 'test.pdf', t
     url_template = 'http://rest.kegg.jp/get/%s/kgml' % re.sub('map', 'ko', map_id)
 
     f = urllib.request.urlopen(url_template)
-
+    from Bio.Graphics import KGML_vis
 
 
     pathway = KGML_parser.read(f.read().decode('UTF-8'))
@@ -95,10 +94,10 @@ def map2highlighted_map(map_id, ko_list, ko2freq, biodb, outpath = 'test.pdf', t
     '''
 
     #print re.sub('pdf', 'svg', outpath)
-    shell_command.shell_command('inkscape %s --export-plain-svg=%s' % (outpath,  outpath)) # 'pdf2svg %s %s all'
-    t = edit_svg_map("%s" % 'svg', ko2freq.keys(), biodb, map_id, taxon_id=taxon_id)
+    shell_command.shell_command('inkscape %s --export-plain-svg=%s' % (outpath, re.sub('pdf', 'svg', outpath))) # 'pdf2svg %s %s all'
+    t = edit_svg_map("%s" % re.sub('pdf', 'svg', outpath), ko2freq.keys(), biodb, map_id, taxon_id=taxon_id)
     #print "%s" % re.sub('pdf', 'svg', outpath)
-    t.write("%s" % outpath)
+    t.write("%s" % re.sub('pdf', 'svg', outpath))
 
 #map2highlighted_map('ko00010',['K00001','K00162'])
 
