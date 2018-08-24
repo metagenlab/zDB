@@ -3296,7 +3296,7 @@ def KEGG_mapp(request, map_name):
         map_data = server.adaptor.execute_and_fetchall(sql,)
 
         if len(map_data) == 0:
-            return KEGG_mapp_ko(request, biodb, map_name)
+            return KEGG_mapp_ko(request, map_name)
 
         enzyme_list = [i[3] for i in map_data]
 
@@ -9643,22 +9643,22 @@ def search(request):
         if not search_type:
             import re
             if len(search_term) == len("PF04093") and search_term[0:2] == 'PF':
-                return fam(request,biodb,search_term, 'pfam')
+                return fam(request,search_term, 'pfam')
             elif len(search_term) == len('K03652') and search_term[0:1] == 'K':
-                return fam(request, biodb, search_term, 'ko')
+                return fam(request, search_term, 'ko')
             elif len(search_term) == len('COG0001') and search_term[0:3] == 'COG':
-                return fam(request, biodb, search_term, 'cog')
+                return fam(request, search_term, 'cog')
             elif len(search_term) == len('IPR000014') and search_term[0:3] == 'IPR':
                 #request.method = 'GET'
-                return fam(request, biodb, search_term, 'interpro')
+                return fam(request, search_term, 'interpro')
             elif len(search_term) == len('M00406') and search_term[0:3] == 'M00':
-                return KEGG_module_map(request,biodb, search_term)
+                return KEGG_module_map(request, search_term)
             elif len(search_term) == len('map00550') and search_term[0:3] == 'map':
-                return KEGG_mapp_ko(request,biodb, search_term)
+                return KEGG_mapp_ko(request, search_term)
 
             elif re.match("^[0-9\.]+$", search_term) and '\.' in search_term:
                 #print 'ec number!', search_term
-                return fam(request, biodb, search_term, 'EC')
+                return fam(request, search_term, 'EC')
             else:
                 search_type = 'no_exact_accession'
 
@@ -9747,19 +9747,19 @@ def search(request):
             if len(search_term) == len("PF04093") and search_term[0:2] == 'PF':
                 return fam(request,biodb,search_term, 'pfam')
             elif len(search_term) == len('K03652') and search_term[0:1] == 'K':
-                return fam(request, biodb, search_term, 'ko')
+                return fam(request, search_term, 'ko')
             elif len(search_term) == len('COG0001') and search_term[0:3] == 'COG':
-                return fam(request, biodb, search_term, 'cog')
+                return fam(request, search_term, 'cog')
             elif len(search_term) == len('IPR000014') and search_term[0:3] == 'IPR':
                 #request.method = 'GET'
-                return fam(request, biodb, search_term, 'interpro')
+                return fam(request, search_term, 'interpro')
             elif len(search_term) == len('M00406') and search_term[0:3] == 'M00':
                 return KEGG_module_map(request,biodb, search_term)
             elif len(search_term) == len('map00550') and search_term[0:3] == 'map':
                 return KEGG_mapp_ko(request,biodb, search_term)
             elif re.match("^[0-9\.]+$", search_term) and '\.' in search_term:
                 #print 'ec number!'
-                return fam(request, biodb, search_term, 'EC')
+                return fam(request, search_term, 'EC')
             else:
                 search_type = 'no_exact_accession'
 
