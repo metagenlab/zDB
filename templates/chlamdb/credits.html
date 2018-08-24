@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+
+<html>
+
+<head>
+
+    {% load staticfiles %}
+    {% load static %}
+
+</head>
+
+<body>
+
+    <div id="container">
+        <div id="sidebar">
+            {% include "chlamdb/menu.html" %}
+        </div>
+        <div id="header">
+            {% include "chlamdb/user.html" %}
+        </div>
+        <div id="content">
+
+            <div id="credits">
+                <h2>Contact</h2>
+
+                <div id="adress">
+                Trestan Pillonel<br>
+                Microbial genomics & Bioinformatics<br>
+                University Hospital Center of Lausanne<br>
+                Bugnon 48<br>
+                1011 Lausanne<br>
+                &#116;&#114;&#101;&#115;&#116;&#097;&#110;&#046;&#112;&#105;&#108;&#108;&#111;&#110;&#101;&#108;[&#064;]&#099;&#104;&#117;&#118;&#046;&#099;&#104;<br>
+                </div>
+                <h2>Credits</h2>
+                <ul>
+                    {% for entry in entry_list%}
+                        <li>
+                        {{entry.0|safe}} (<a href="{{entry.1}}">Pubmed</a>) <br>
+                        </li>
+                    {%endfor%}
+                </ul>
+            <div id="content">
+        </div>
+        <div id="footer"></div>
+    </div>
+
+    <script>
+
+    $('.dropdown-toggle').dropdown()
+
+    </script>
+<!--<script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>-->
+</body>
+</html>
+

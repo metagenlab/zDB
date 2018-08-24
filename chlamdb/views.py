@@ -109,6 +109,45 @@ def choose_db(request):
     return render(request, 'chlamdb/choose_db.html', locals())
 
 
+def about(request):
+    import re
+    import bibtexparser
+    path = settings.BASE_DIR + '/assets/bibliography/references.bib'
+    with open(path) as bibtex_file:
+        bib_database = bibtexparser.load(bibtex_file)
+
+    entry_list = []
+
+    for entry in bib_database.entries:
+
+        """
+        Sophie S Abby, Jean Cury, Julien Guglielmini, Bertrand Néron, Marie Touchon, and Eduardo PC
+        Rocha. Identification of protein secretion systems in bacterial genomes. Scientific reports, 6, 2016.
+        53, 57, 61, 164
+    
+        Peter JA Cock, Tiago  Antao, Jeffrey T Chang, Brad
+        Biopython: freely    available    python    tools    for computational molecular biology and bioinformatics.Bioinformatics, 25(11):1422–1423, 2009.
+    
+        {'publisher': 'Oxford University Press', 'year': '2009', 'pages': '1422--1423', 'number': '11', 'volume': '25',
+         'journal': 'Bioinformatics',
+         'author': 'Cock, Peter JA and Antao, Tiago and Chang, Jeffrey T and Chapman, Brad A and Cox, Cymon J and Dalke, Andrew and Friedberg, Iddo and Hamelryck, Thomas and Kauff, Frank and Wilczynski, Bartek and others',
+         'title': 'Biopython: freely available Python tools for computational molecular biology and bioinformatics',
+         'ENTRYTYPE': 'article', 'ID': 'cock2009biopython'}
+    
+        """
+        string = ("%s. <b>%s</b> %s, %s(%s):%s, %s" % (  entry["author"],
+                                            re.sub('[{}]','', entry["title"]),
+                                            entry["journal"],
+                                            entry["volume"],
+                                            entry["number"],
+                                            entry["pages"],
+                                            entry["year"],
+                           ))
+        url = entry["url"]
+        entry_list.append([string, url])
+
+    return render(request, 'chlamdb/credits.html', locals())
+
 def create_user(username, mail, password, first_name, last_name, staff=True):
     from django.contrib.auth.models import User
     user = User.objects.create_user(username, mail, password)
