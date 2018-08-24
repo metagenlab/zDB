@@ -149,7 +149,7 @@ def logout_view(request):
     return render(request, 'chlamdb/logout.html', locals())
     return render(request, 'chlamdb/logout.html', locals())
 
-@login_required
+
 def home(request):
     from ete3 import TreeStyle
     import phylo_tree_bar
@@ -201,7 +201,7 @@ def substription():
 #cache = pylibmc.Client(['127.0.0.1:8000'])
 
 
-@login_required
+
 def circos_homology(request):
 
     biodb = settings.BIODB
@@ -287,7 +287,7 @@ def circos_homology(request):
 
     return render(request, 'chlamdb/circos_homology.html', locals())
 
-@login_required
+
 def extract_orthogroup(request):
 
     biodb = settings.BIODB
@@ -450,7 +450,7 @@ def extract_orthogroup(request):
     return render(request, 'chlamdb/extract_orthogroup.html', locals())
 
 
-@login_required
+
 def locus_list2orthogroups(request):
     biodb = settings.BIODB
     #print "loading db..."
@@ -493,7 +493,7 @@ def locus_list2orthogroups(request):
     return render(request, 'chlamdb/locus_list2orthogroups.html', locals())
 
 
-@login_required
+
 def orthogroup_annotation(request, display_form):
     biodb = settings.BIODB
     #print "loading db..."
@@ -561,7 +561,7 @@ def orthogroup_annotation(request, display_form):
     return render(request, 'chlamdb/orthogroup_annotation.html', locals())
 
 
-@login_required
+
 def locus_annotation(request, display_form):
     biodb = settings.BIODB
     #print "loading db..."
@@ -744,7 +744,7 @@ def locus_annotation(request, display_form):
     return render(request, 'chlamdb/locus_annotation.html', locals())
 
 
-@login_required
+
 def venn_orthogroup(request):
     biodb = settings.BIODB
 
@@ -830,7 +830,7 @@ def venn_orthogroup(request):
     return render(request, 'chlamdb/venn_orthogroup.html', locals())
 
 
-@login_required
+
 def extract_pfam(request, classification="taxon_id"):
     biodb = settings.BIODB
     '''
@@ -959,7 +959,7 @@ def extract_pfam(request, classification="taxon_id"):
     return render(request, 'chlamdb/extract_Pfam.html', locals())
 
 
-@login_required
+
 def extract_ko(request):
     biodb = settings.BIODB
     '''
@@ -1119,7 +1119,7 @@ def extract_ko(request):
     return render(request, 'chlamdb/extract_ko.html', locals())
 
 
-@login_required
+
 def extract_EC(request):
     biodb = settings.BIODB
 
@@ -1305,7 +1305,7 @@ def extract_EC(request):
 
     return render(request, 'chlamdb/extract_EC.html', locals())
 
-@login_required
+
 def venn_pfam(request):
     biodb = settings.BIODB
 
@@ -1357,7 +1357,7 @@ def venn_pfam(request):
     return render(request, 'chlamdb/venn_Pfam.html', locals())
 
 
-@login_required
+
 def venn_EC(request):
     biodb = settings.BIODB
 
@@ -1425,7 +1425,7 @@ def venn_EC(request):
     return render(request, 'chlamdb/venn_EC.html', locals())
 
 
-@login_required
+
 def extract_interpro(request, classification="taxon_id"):
     biodb = settings.BIODB
     '''
@@ -1554,7 +1554,7 @@ def extract_interpro(request, classification="taxon_id"):
 
 
 
-@login_required
+
 def venn_interpro(request):
     biodb = settings.BIODB
 
@@ -1603,7 +1603,7 @@ def venn_interpro(request):
     return render(request, 'chlamdb/venn_interpro.html', locals())
 
 
-@login_required
+
 def extract_cog(request):
     biodb = settings.BIODB
 
@@ -1733,7 +1733,7 @@ def extract_cog(request):
 
 
 
-@login_required
+
 def venn_ko(request):
     biodb = settings.BIODB
 
@@ -1789,7 +1789,7 @@ def venn_ko(request):
     return render(request, 'chlamdb/venn_ko.html', locals())
 
 
-@login_required
+
 def venn_cog(request, accessions=False):
     biodb = settings.BIODB
     if accessions == 'False' or accessions == 'F':
@@ -1863,7 +1863,7 @@ def venn_cog(request, accessions=False):
 
 
 
-@login_required
+
 def extract_region(request):
     biodb = settings.BIODB
     extract_region_form_class = make_extract_region_form(biodb)
@@ -1968,7 +1968,7 @@ def extract_region(request):
     return render(request, 'chlamdb/extract_region.html', locals())
 
 
-#@login_required
+#
 def locusx(request, locus=None, menu=True):
     biodb = settings.BIODB
     print ('-- locus or search term: %s -- biodb %s' % (locus, biodb))
@@ -2499,7 +2499,7 @@ def locusx(request, locus=None, menu=True):
 
     return render(request, 'chlamdb/locus.html', locals())
 
-@login_required
+
 def hydropathy(request, locus):
     biodb = settings.BIODB
     print ('hydropathy -- %s --%s' % (biodb, locus))
@@ -2515,7 +2515,7 @@ def hydropathy(request, locus):
     return render(request, 'chlamdb/hydropathy.html', locals())
 
 
-@login_required
+
 def aa_comp_locus(request, locus_tag):
     biodb = settings.BIODB
     import pca_seq_composition
@@ -2545,7 +2545,7 @@ def aa_comp_locus(request, locus_tag):
     return render(request, 'chlamdb/aa_pca_locus.html', locals())
 
 
-@login_required
+
 def rnaseq_class(request, temporal_class, taxon_id):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db("%s" % biodb)
@@ -2561,7 +2561,7 @@ def rnaseq_class(request, temporal_class, taxon_id):
     return render(request, 'chlamdb/rnaseq_temporal_class.html', locals())
 
 
-@login_required
+
 def gc_locus(request, locus_tag):
     biodb = settings.BIODB
     import pairwiseid_plots
@@ -2635,7 +2635,7 @@ def gc_locus(request, locus_tag):
 
     return render(request, 'chlamdb/gc_locus.html', locals())
 
-@login_required
+
 def fam(request, fam, type):
     biodb = settings.BIODB
     if request.method == 'GET':  # S'il s'agit d'une requête POST
@@ -2845,7 +2845,7 @@ def fam(request, fam, type):
     return render(request, 'chlamdb/fam.html', locals())
 
 
-@login_required
+
 def COG_phylo_heatmap(request, frequency):
     biodb = settings.BIODB
 
@@ -2899,7 +2899,7 @@ def COG_phylo_heatmap(request, frequency):
 
     return render(request, 'chlamdb/COG_phylo_heatmap.html', locals())
 
-@login_required
+
 def KEGG_module_map(request, module_name):
     biodb = settings.BIODB
 
@@ -2984,7 +2984,7 @@ def KEGG_module_map(request, module_name):
     return render(request, 'chlamdb/KEGG_module_map.html', locals())
 
 
-@login_required
+
 def kegg_multi(request, map_name, ko_name):
     biodb = settings.BIODB
 
@@ -3026,7 +3026,7 @@ def kegg_multi(request, map_name, ko_name):
 
     return render(request, 'chlamdb/KEGG_map_multi.html', locals())
 
-@login_required
+
 def KEGG_mapp_ko(request, map_name):
     biodb = settings.BIODB
 
@@ -3129,7 +3129,7 @@ def KEGG_mapp_ko(request, map_name):
     return render(request, 'chlamdb/KEGG_map_ko.html', locals())
 
 
-@login_required
+
 def KEGG_mapp_ko_organism(request, map_name, taxon_id):
     biodb = settings.BIODB
 
@@ -3241,7 +3241,7 @@ def KEGG_mapp_ko_organism(request, map_name, taxon_id):
 
     return render(request, 'chlamdb/KEGG_map_ko.html', locals())
 
-@login_required
+
 def KEGG_mapp(request, map_name):
     biodb = settings.BIODB
     if request.method == 'GET':  # S'il s'agit d'une requête POST
@@ -3320,7 +3320,7 @@ def KEGG_mapp(request, map_name):
 
     return render(request, 'chlamdb/KEGG_map.html', locals())
 
-@login_required
+
 def sunburst(request, locus):
     biodb = settings.BIODB
 
@@ -7276,7 +7276,7 @@ def interpro_taxonomy(request):
 
 
 
-@login_required
+
 def blastswissprot(request, locus_tag):
     biodb = settings.BIODB
     print ('blast swissprot %s -- %s' % (biodb, locus_tag))
@@ -7312,7 +7312,7 @@ def blastswissprot(request, locus_tag):
 
     return render(request, 'chlamdb/blastswiss.html', locals())
 
-@login_required
+
 def blastnr(request, locus_tag):
     biodb = settings.BIODB
 
@@ -7360,7 +7360,7 @@ def blastnr(request, locus_tag):
     return render(request, 'chlamdb/blastnr.html', locals())
 
 
-@login_required
+
 def homology(request):
     biodb = settings.BIODB
     import shell_command
@@ -7390,7 +7390,7 @@ def homology(request):
     return render(request, 'chlamdb/homology.html', locals())
 
 
-@login_required
+
 def orthogroup_identity(request, orthogroup, group=False):
     biodb = settings.BIODB
     server = manipulate_biosqldb.load_db()
@@ -7462,7 +7462,7 @@ def ortho_id_plot(request, group):
 
 
 
-@login_required
+
 def plot_neighborhood(request, target_locus, region_size=23000):
     biodb = settings.BIODB
 
@@ -7622,7 +7622,7 @@ def plot_region_direct(request, orthogroup):
 
     return render(request, 'chlamdb/plot_region_simple.html', locals())
 
-@login_required
+
 def plot_region(request):
     biodb = settings.BIODB
     #print "cache", cache
@@ -7734,7 +7734,7 @@ def plot_region(request):
     return render(request, 'chlamdb/plot_region.html', locals())
 
 '''
-@login_required
+
 def plot_region(request, biodb):
     plot_form_class = make_plot_form(biodb)
     
@@ -7762,7 +7762,7 @@ def plot_region(request, biodb):
 '''
 
 
-@login_required
+
 def comparative_extract():
     '''
     get features present in genomes X Y Z and not in A B C
@@ -7776,7 +7776,7 @@ def comparative_extract():
     '''
 
 
-@login_required
+
 def orthogroups(request):
     if request.method == 'POST':
         form = BiodatabaseForm(request.POST)
@@ -8999,7 +8999,7 @@ def circos_main(request):
 
 
 
-@login_required
+
 def circos(request):
     biodb = settings.BIODB
     import gbk2circos
@@ -9210,7 +9210,7 @@ def circos(request):
         form = circos_form_class()
     return render(request, 'chlamdb/circos.html', locals())
 
-@login_required
+
 def alignment(request, input_fasta):
 
     handle = open(input_fasta, "rU")
@@ -9314,7 +9314,7 @@ def format_search(count, seqfeature_data):
     pass
 
 
-@login_required
+
 def search_taxonomy(request):
     biodb = settings.BIODB
     from collections import Counter
@@ -9520,7 +9520,7 @@ def search_taxonomy(request):
     return render(request, 'chlamdb/search_taxonomy.html', locals())
 
 
-@login_required
+
 def interpro(request):
     biodb = settings.BIODB
     server = manipulate_biosqldb.load_db()
@@ -9593,7 +9593,7 @@ def interpro(request):
 
     return render(request, 'chlamdb/interpro.html', locals())
 
-@login_required
+
 def search(request):
     biodb = settings.BIODB
 
@@ -9818,7 +9818,7 @@ def search(request):
 
 
 
-@login_required
+
 def primer_search(request):
     biodb = settings.BIODB
     server = manipulate_biosqldb.load_db()
@@ -9883,7 +9883,7 @@ def primer_search(request):
     return render(request, 'chlamdb/pcr.html', locals())
 
 
-@login_required
+
 def motif_search(request):
     biodb = settings.BIODB
     import shell_command
@@ -9946,7 +9946,7 @@ def motif_search(request):
 
     return render(request, 'chlamdb/motifs.html', locals())
 
-@login_required
+
 def blast_profile(request):
     biodb = settings.BIODB
     server = manipulate_biosqldb.load_db()
@@ -10032,7 +10032,7 @@ def blast_profile(request):
 
 
 
-@login_required
+
 def blast(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -10239,7 +10239,7 @@ def get_record_from_memory(biodb, cache_obj, record_key, accession):
 
 
 
-@login_required
+
 def mummer(request):
     biodb = settings.BIODB
     server = manipulate_biosqldb.load_db()
@@ -10307,7 +10307,7 @@ def mummer(request):
 
 
 
-@login_required
+
 def circos2genomes(request):
     biodb = settings.BIODB
     import circos
@@ -10411,7 +10411,7 @@ def circos2genomes(request):
 
     return render(request, 'chlamdb/circos2genomes.html', locals())
 
-@login_required
+
 def circos2genomes_main(request):
     return render(request, 'chlamdb/circos2genomes_main.html', locals())
 
@@ -10456,7 +10456,7 @@ def update_genomes_db(server):
 
 
 
-@login_required
+
 def crossplot(request):
 
 
@@ -11580,7 +11580,7 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
 
 
 
-@login_required
+
 def priam_kegg(request):
     biodb = settings.BIODB
     priam_form_class = make_priam_form(biodb)
@@ -11626,7 +11626,7 @@ def priam_kegg(request):
     return render(request, 'chlamdb/priam_kegg.html', locals())
 
 
-@login_required
+
 def locus_list2circos(request, target_taxon):
     biodb = settings.BIODB
     import gbk2circos
@@ -11751,7 +11751,7 @@ def locus_list2circos(request, target_taxon):
 
     return render(request, 'chlamdb/locus2circos.html', locals())
 
-@login_required
+
 def hmm2circos(request):
     import ete_motifs
     biodb = settings.BIODB
@@ -11899,7 +11899,7 @@ def hmm2circos(request):
 
 
 
-@login_required
+
 def transporters_list(request):
     import ete_motifs
     biodb = settings.BIODB
@@ -11983,7 +11983,7 @@ def transporters_list(request):
 
     return render(request, 'chlamdb/transporters_table.html', locals())
 
-@login_required
+
 def transporters_family(request, family):
     biodb = settings.BIODB
     import ete_motifs
@@ -12168,7 +12168,7 @@ def transporters_family(request, family):
 
     return render(request, 'chlamdb/transporters_families.html', locals())
 
-@login_required
+
 def transporters(request):
     import ete_motifs
     biodb = settings.BIODB
@@ -12274,7 +12274,7 @@ def transporters(request):
 
 
 
-@login_required
+
 def blast_sets(request):
     biodb = settings.BIODB
     import ete_motifs
@@ -12461,7 +12461,7 @@ def blast_sets(request):
     return render(request, 'chlamdb/blast_sets_profiles.html', locals())
 
 
-@login_required
+
 def hmm(request):
     biodb = settings.BIODB
     import ete_motifs
@@ -12559,7 +12559,7 @@ def hmm(request):
 
     return render(request, 'chlamdb/hmm_profiles.html', locals())
 
-@login_required
+
 def locus_int(request):
     biodb = settings.BIODB
     import ete_motifs
@@ -12675,7 +12675,7 @@ def locus_int(request):
 
 
 
-@login_required
+
 def kegg_pathway_heatmap(request):
     biodb = settings.BIODB
     import ete_motifs
@@ -12742,7 +12742,7 @@ def kegg_pathway_heatmap(request):
     return render(request, 'chlamdb/pathway_cat.html', locals())
 
 
-@login_required
+
 def kegg_module_subcat(request):
     biodb = settings.BIODB
     import ete_motifs
@@ -12801,7 +12801,7 @@ def kegg_module_subcat(request):
 
     return render(request, 'chlamdb/module_subcat.html', locals())
 
-@login_required
+
 def kegg_module(request):
     biodb = settings.BIODB
     import ete_motifs
@@ -12900,7 +12900,7 @@ def kegg_module(request):
 
     return render(request, 'chlamdb/module_overview.html', locals())
 
-@login_required
+
 def module2heatmap(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -13015,7 +13015,7 @@ def module2heatmap(request):
     return render(request, 'chlamdb/module2heatmap.html', locals())
 
 
-@login_required
+
 def module_comparison(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -13086,7 +13086,7 @@ def module_comparison(request):
 
 
 
-@login_required
+
 def metabo_overview(request):
     biodb = settings.BIODB
     import ete_motifs
@@ -13181,7 +13181,7 @@ def metabo_overview(request):
     return render(request, 'chlamdb/metabo_overview.html', locals())
 
 
-@login_required
+
 def metabo_comparison(request):
     biodb = settings.BIODB
     #print 'request', request.method
@@ -13261,7 +13261,7 @@ def metabo_comparison(request):
 
     return render(request, 'chlamdb/metabo_comp.html', locals())
 
-@login_required
+
 def metabo_comparison_ko(request):
     biodb = settings.BIODB
     #print 'request', request.method
@@ -13339,7 +13339,7 @@ def metabo_comparison_ko(request):
 
     return render(request, 'chlamdb/metabo_comp_ko.html', locals())
 
-@login_required
+
 def pfam_comparison(request):
     biodb = settings.BIODB
     #print 'request', request.method
@@ -13404,7 +13404,7 @@ def pfam_comparison(request):
     return render(request, 'chlamdb/pfam_comp.html', locals())
 
 
-@login_required
+
 def orthogroup_comparison(request):
     biodb = settings.BIODB
     #print 'request', request.method
@@ -13463,7 +13463,7 @@ def orthogroup_comparison(request):
 
     return render(request, 'chlamdb/ortho_comp.html', locals())
 
-@login_required
+
 def ko_comparison(request):
     biodb = settings.BIODB
     #print 'request', request.method
