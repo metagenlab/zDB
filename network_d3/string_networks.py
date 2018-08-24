@@ -24,7 +24,7 @@ def find_links_recusrsive(biodb, all_connected_seqfeatures, ratio_cutoff=0.5, n_
         sql = 'select locus_1, locus_2 from interactions.colocalization_table_locus_%s where (locus_1 in (%s) or locus_2 in (%s)) and ' \
               ' (ratio >= %s and n_comparisons >= %s)' % (biodb, filter, filter, ratio_cutoff, n_comp_cutoff)
 
-        print sql
+        #print sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
     all_groups = []
@@ -52,12 +52,11 @@ def find_profile_links_recusrsive(biodb, all_connected_groups, max_euclidian_dis
     sql = 'select * from comparative_tables.phylo_profiles_eucl_dist2_%s where (group_1 in (%s) or group_2 in (%s)) and ' \
           ' (euclidian_dist <= %s)' % (biodb, filter, filter, max_euclidian_dist)
 
-    print sql
 
     data = server.adaptor.execute_and_fetchall(sql,)
-    print 'n hits', len(data)
+    #print 'n hits', len(data)
     if len(data)>30:
-        print 'too much hits, return False'
+        #print 'too much hits, return False'
         return False
     all_groups = []
     for i in data:
@@ -89,7 +88,7 @@ class orthogroup2network:
         self.cursor = conn.cursor()
         self.reference_link_data = self.get_reference_link_data(orthogroup, threshold)
         
-        print self.link_data
+        #print self.link_data
         
     def get_reference_link_data(self, orthogroup, threshold):
         sql = 'select * from detailed_cog_links_v10 where group1="%s" and combined_score >%s' % (orthogroup, threshold)
@@ -254,7 +253,7 @@ def generate_network(biodb,
     server, db = manipulate_biosqldb.load_db(biodb)
     filter = '"' + '","'.join(locus_tag_list) + '"'
     sql = 'select * from interactions.colocalization_table_locus_%s where (locus_1 in (%s) or locus_2 in (%s)) and ratio>=%s;' % (biodb, filter, filter, ratio_limit)
-    print sql
+
     data = server.adaptor.execute_and_fetchall(sql,)
 
     # filtering singletons
@@ -265,7 +264,7 @@ def generate_network(biodb,
         if i[1] not in locus_keep:
             locus_keep.append(i[1])
     # group_1    | group_2    | n_links | n_comparisons | ratio
-    print 'number of locus keep:', len(locus_keep)
+    #print 'number of locus keep:', len(locus_keep)
     sources = '''
     <meta charset=utf-8 />
     <title>Visual style</title>
@@ -520,7 +519,7 @@ def generate_network_string(biodb,
     # 2 label_1
     # 3 label_2
     # 4 global_score
-    print 'number of locus keep:', len(locus_keep)
+    #print 'number of locus keep:', len(locus_keep)
     sources = '''
     <meta charset=utf-8 />
     <title>Visual style</title>
@@ -748,11 +747,11 @@ def generate_network_profile(biodb,
     filter = '"' + '","'.join(group_list) + '"'
     # group_1     | group_2     | euclidian_dist
     sql = 'select * from comparative_tables.phylo_profiles_eucl_dist2_%s where (group_1 in (%s) and group_2 in (%s)) and euclidian_dist<=%s;' % (biodb, filter, filter, euclidian_distance_limit)
-    print sql
+
     data = server.adaptor.execute_and_fetchall(sql,)
 
-    print '##############'
-    print data
+    #print '##############'
+    #print data
 
     # group_1    | group_2    | n_links | n_comparisons | ratio
 
@@ -979,7 +978,7 @@ def get_subgraph(biodb, locus_tag_list, ratio_limit, target_locus):
     sql = 'select * from interactions.colocalization_table_locus_%s where (locus_1 in (%s) or locus_2 in (%s)) and ratio>=%s;' % (biodb, myfilter, myfilter, ratio_limit)
 
     data = server.adaptor.execute_and_fetchall(sql,)
-    print 'ex', data[0]
+    #print 'ex', data[0]
 
     all_verticles = []
     for i in data:
@@ -1002,7 +1001,7 @@ def get_subgraph(biodb, locus_tag_list, ratio_limit, target_locus):
         G.add_edge(index_1, index_2, weight=weight)
 
     graph_list = [i for i in nx.connected_component_subgraphs(G)]
-    print 'n subgraphs', len(graph_list)
+    #print 'n subgraphs', len(graph_list)
     locus_keep = []
     for i in range(0, len(graph_list)):
 
