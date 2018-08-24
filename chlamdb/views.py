@@ -2509,7 +2509,7 @@ def hydropathy(request, locus):
     fig = hydrophobicity_plots.locus2hydrophobicity_plot(biodb, locus)
 
     path = settings.BASE_DIR + '/assets/temp/hydro.png'
-    fig.savefig(path)
+    fig.savefig(path,dpi=500)
     asset_path = '/temp/hydro.png'
 
     return render(request, 'chlamdb/hydropathy.html', locals())
