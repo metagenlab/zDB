@@ -142,7 +142,7 @@ server, db = manipulate_biosqldb.load_db('chlamydia_04_16')
 sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % 'chlamydia_04_16'
 
 tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
-print tree
+
 t1 = Tree(tree)
 
 tree, style = plot_cog_eatmap('chlamydia_04_16',
