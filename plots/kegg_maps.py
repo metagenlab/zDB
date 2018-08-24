@@ -95,10 +95,10 @@ def map2highlighted_map(map_id, ko_list, ko2freq, biodb, outpath = 'test.pdf', t
     '''
 
     #print re.sub('pdf', 'svg', outpath)
-    shell_command.shell_command('inkscape %s --export-plain-svg=%s' % (outpath, re.sub('pdf', 'svg', outpath))) # 'pdf2svg %s %s all'
-    t = edit_svg_map("%s" % re.sub('pdf', 'svg', outpath), ko2freq.keys(), biodb, map_id, taxon_id=taxon_id)
+    shell_command.shell_command('inkscape %s --export-plain-svg=%s' % (outpath,  outpath)) # 'pdf2svg %s %s all'
+    t = edit_svg_map("%s" % 'svg', ko2freq.keys(), biodb, map_id, taxon_id=taxon_id)
     #print "%s" % re.sub('pdf', 'svg', outpath)
-    t.write("%s" % re.sub('pdf', 'svg', outpath))
+    t.write("%s" % outpath)
 
 #map2highlighted_map('ko00010',['K00001','K00162'])
 
