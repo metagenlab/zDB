@@ -11976,7 +11976,7 @@ def transporters_list(request):
                                                 evalue_cutoff,
                                                 score_cutoff,
                                                 genome)
-                #print sql
+                print (sql)
 
                 data = list(server.adaptor.execute_and_fetchall(sql,))
                 for n, row in enumerate(data):
@@ -11994,11 +11994,15 @@ def transporters_list(request):
                       ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
                       ' inner join transporters.tc_table t3 on t2.family=t3.tc_id ' \
                       ' inner join transporters.tc_table t4 on t2.superfamily=t4.tc_id ' \
-                      ' inner join transporters.uniprot_table t5 on t1.hit_uniprot_id=t5.uniprot_id ' \
+                      ' inner join transporters.tc_table t5 on t2.subfamily=t5.tc_id ' \
+                      ' inner join transporters.tc_table t6 on t2.transporter_id=t6.tc_id ' \
                       ' inner join custom_tables.locus2seqfeature_id_%s t6 on t1.seqfeature_id=t6.seqfeature_id ' \
+                      ' inner join transporters.uniprot_table t7 on t1.hit_uniprot_id=t7.uniprot_id ' \
+                      ' inner join custom_tables.locus2seqfeature_id_%s t8 on t1.seqfeature_id=t8.seqfeature_id ' \
                       ' where query_cov>=%s and hit_cov>=%s and evalue<=%s and bitscore_first_hsp>=%s ' \
                       ' and t4.description="%s" ' \
                       ' and t1.taxon_id=%s;' % (biodb,
+                                                biodb,
                                                 biodb,
                                                 query_coverage_cutoff,
                                                 hit_coverage_cutoff,
@@ -12006,13 +12010,13 @@ def transporters_list(request):
                                                 score_cutoff,
                                                 transporter_superfamily,
                                                 genome)
-                #print sql
+                print (sql)
 
                 data = list(server.adaptor.execute_and_fetchall(sql,))
                 for n, row in enumerate(data):
                     data[n] = list(data[n])
                     for i in range(0,len(row)):
-                        data[n][i] = str(data[n][i]).decode("latin-1")
+                        data[n][i] = str(data[n][i]) #.decode("latin-1")
 
                 envoi = True
 
