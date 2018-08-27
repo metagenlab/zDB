@@ -7981,6 +7981,71 @@ def fasta(request):
     response.write(fasta)
     return response
 
+def get_record(request, accession, seqtype):
+    '''
+    :param request:
+    :param type: fna, faa, gbk, tab, ffn
+    :return:
+    '''
+    from io import StringIO
+    import re
+    from Bio.Alphabet import IUPAC
+
+    biodb = settings.BIODB
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    record = db.lookup(accession=accession)
+    try:
+        evalstring = eval(str(record.seq))
+        if isinstance(evalstring, bytes):
+            record.seq = Seq(str(eval(str(record.seq)),  'utf-8'), IUPAC.extended_dna)
+    except NameError:
+        pass
+    strio = StringIO()
+    if seqtype=='fna':
+        SeqIO.write(record, strio, 'fasta')
+        response = HttpResponse(content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename="%s.fna"' % (accession)
+    elif seqtype=='ffn':
+        fasta_list = []
+        for seq_feature in record.features:
+            if seq_feature.type == "CDS":
+                print(seq_feature.qualifiers['locus_tag'])
+                biorecord = SeqRecord(Seq(str(seq_feature.extract(record.seq)), IUPAC.extended_dna),
+                                      id=seq_feature.qualifiers['locus_tag'][0],
+                                      name=seq_feature.qualifiers['locus_tag'][0],
+                                      description=record.description)
+                fasta_list.append(biorecord)
+        SeqIO.write(fasta_list, strio, 'fasta')
+        response = HttpResponse(content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename="%s.ffn"' % (accession)
+    elif seqtype=='faa':
+        fasta_list = []
+        for seq_feature in record.features:
+            if seq_feature.type == "CDS":
+                print(seq_feature.qualifiers['locus_tag'])
+                biorecord = SeqRecord(Seq(re.sub('\*$', '', str(seq_feature.extract(record.seq).translate())), IUPAC.protein),
+                                      id=seq_feature.qualifiers['locus_tag'][0],
+                                      name=seq_feature.qualifiers['locus_tag'][0],
+                                      description=record.description)
+                fasta_list.append(biorecord)
+        SeqIO.write(fasta_list, strio, 'fasta')
+        response = HttpResponse(content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename="%s.fna"' % (accession)
+
+
+    if seqtype == 'gbk':
+        SeqIO.write(record, strio, 'genbank')
+    
+        response = HttpResponse(content_type='text/plain')
+    
+        response['Content-Disposition'] = 'attachment; filename="%s.gbk"' % (accession)
+    else:
+        pass
+    response.write(strio.getvalue())
+    return response
+
 
 def get_fasta(request):
     biodb = settings.BIODB
