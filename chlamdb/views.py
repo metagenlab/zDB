@@ -7842,7 +7842,6 @@ def get_orthogroup_fasta(request, orthogroup, seqtype):
         data = server.adaptor.execute_and_fetchall(sql,)
         fasta = []
         for i in data:
-            #fasta+='>%s %s\n%s\n' % (i[0], i[1], i[2])
             biorecord = SeqRecord(Seq(i[2]),
                                   id=i[0],
                                   name=i[0],
@@ -7905,6 +7904,9 @@ def module2fasta():
 
 def ko2fasta(request, ko_id, include_orthologs=False):
     biodb = settings.BIODB
+    from io import StringIO
+    from Bio.Seq import Seq
+
     server, db = manipulate_biosqldb.load_db(biodb)
     if not include_orthologs:
         sql = 'select B.locus_tag, organism, B.product, translation from (' \
@@ -7927,16 +7929,25 @@ def ko2fasta(request, ko_id, include_orthologs=False):
 
 
     data = server.adaptor.execute_and_fetchall(sql,)
-    fasta = ''
+    fasta = []
     for i in data:
-        fasta+='>%s %s (%s)\n%s\n' % (i[0], i[2], i[1], i[3])
+        biorecord = SeqRecord(Seq(i[3]),
+                              id=i[0],
+                              name=i[0],
+                              description=i[1])
+        fasta.append(biorecord)
+
+        #fasta+='>%s %s (%s)\n%s\n' % (i[0], i[2], i[1], i[3])
+    strio = StringIO()
+    SeqIO.write(fasta, strio, 'fasta')
+
     response = HttpResponse(content_type='text/plain')
     if not include_orthologs:
         name = 'attachment; filename="%s.fa"' % ko_id
     else:
         name = 'attachment; filename="%s_ortho.fa"' % ko_id
     response['Content-Disposition'] = name
-    response.write(fasta)
+    response.write(strio.getvalue())
     return response
 
 def fasta(request):
