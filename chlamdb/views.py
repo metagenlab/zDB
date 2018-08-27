@@ -7830,35 +7830,51 @@ def orthogroups(request):
 
 def get_orthogroup_fasta(request, orthogroup, seqtype):
     biodb = settings.BIODB
+    from io import StringIO
+    from Bio.Seq import Seq
+
     server, db = manipulate_biosqldb.load_db(biodb)
+
     if seqtype == 'aa':
         sql = 'select locus_tag, organism, translation from orthology_detail_%s where orthogroup="%s"' % (biodb,
                                                                                                           orthogroup)
 
         data = server.adaptor.execute_and_fetchall(sql,)
-        fasta = ''
+        fasta = []
         for i in data:
-            fasta+='>%s %s\n%s\n' % (i[0], i[1], i[2])
+            #fasta+='>%s %s\n%s\n' % (i[0], i[1], i[2])
+            biorecord = SeqRecord(Seq(i[2]),
+                                  id=i[0],
+                                  name=i[0],
+                                  description=i[1])
+            fasta.append(biorecord)
     else:
         sql = 'select accession, locus_tag, start, stop, strand from orthology_detail_%s where orthogroup="%s"' % (biodb,
                                                                                                           orthogroup)
 
         locus2start_stop = server.adaptor.execute_and_fetchall(sql,)
-        fasta = ''
+        fasta = []
+
         for i in locus2start_stop:
             leng = i[3]-i[2]+1
             strand = int(i[4])
             seq = manipulate_biosqldb.location2sequence(server, i[0], biodb, int(i[2]), leng)
             if strand == -1:
 
-                from Bio.Seq import Seq
                 seq_obj = Seq(seq)
-                seq = str(seq_obj.reverse_complement())
-                fasta+='>%s %s\n%s\n' % (i[1], i[0], seq)
+                seq = seq_obj.reverse_complement()
+                biorecord = SeqRecord(seq,
+                                      id=i[1],
+                                      name=i[1],
+                                      description=i[0])
+                fasta.append(biorecord)
+
+    strio = StringIO()
+    SeqIO.write(fasta, strio, 'fasta') #+='>%s %s\n%s\n' % (i[1], i[0], seq)
 
     response = HttpResponse(content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename="%s_fasta.fa"' % orthogroup
-    response.write(fasta)
+    response.write(strio.getvalue())
     return response
 
 def get_newick_tree(request, orthogroup):
