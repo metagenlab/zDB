@@ -49,7 +49,7 @@ def blast2COG(blast_file, coverage_cutoff=50, identity_cutoff=20):
                 locus_tag = data[1].split('|')[3]
             except IndexError:
                 locus_tag = data[1]
-                print locus_tag
+                print (locus_tag)
             identity = float(data[9])
             query_coverage = float(data[15])
 
@@ -168,7 +168,7 @@ def load_locus2cog_into_sqldb(input_blast_files, biodb):
     protein_id2COG_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql4))
 
     for input_blast in input_blast_files:
-        print 'file', input_blast
+        print ('file', input_blast)
         locus2hit_gi, \
         locus2query_start, \
         locus2query_end, \
@@ -177,7 +177,7 @@ def load_locus2cog_into_sqldb(input_blast_files, biodb):
         locus2evalue = blast2COG(input_blast)
 
         for locus in locus2hit_gi:
-            print 'locus', locus
+            print ('locus', locus)
             sql = 'INSERT into seqfeature_id2best_COG_hit_%s (bioentry_id, ' \
                   ' seqfeature_id, ' \
                   ' hit_COG_id,' \
@@ -218,7 +218,7 @@ def locus2function(input_blast_files, display_print=False,):
 
     locus2function_dico = {}
     for input_blast in input_blast_files:
-        print 'file', input_blast
+        print ('file', input_blast)
         locus2hit_accession = blast2COG(input_blast)
 
         cogs = gi2COG(*locus2hit_accession.values())
@@ -232,12 +232,12 @@ def locus2function(input_blast_files, display_print=False,):
                 function = list(gi2cog_data[int(locus2hit_accession[locus])][1])
                 locus2function_dico[locus] = function
             except:
-                print 'problem with locus %s, skipping...' % locus
+                print ('problem with locus %s, skipping...' % locus)
 
     if display_print:
         for locus in locus2function_dico:
             for function in locus2function_dico[locus]:
-                print "%s\t%s" % (locus, function)
+                print ("%s\t%s" % (locus, function))
     else:
         return locus2function_dico
 
@@ -292,8 +292,8 @@ def investiguate_core_COGs(db_name, locus2function):
             core_annot+=1
         else:
             core_non_annot+=1
-    print 'annot:', core_annot
-    print 'non annot', core_non_annot
+    print ('annot:', core_annot)
+    print ('non annot', core_non_annot)
 
     with open('core_groups2cogs.tab', 'w') as f:
 
