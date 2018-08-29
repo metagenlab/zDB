@@ -569,7 +569,7 @@ def plot_tree_barplot(tree_file,
                     n.margin_right = 1
                     n.margin_left = 20
                     n.margin_bottom = 1
-                    n.color = "red"
+                    n.fgcolor = "white"
                     n.inner_background.color = rgb2hex(column2scale[col_name].to_rgba(float(value)))#"orange"
                     n.opacity = 1.
                     lf.add_face(n, col+col_add, position="aligned")
