@@ -101,7 +101,7 @@ def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by
     return tree2
 
 
-
+'''
 taxon_list = ["67",
 "1279767",
 "1279774",
@@ -136,7 +136,7 @@ taxon_list = ["67",
 "1279497"]
 
 import manipulate_biosqldb
-from ete2 import Tree
+from ete3 import Tree
 server, db = manipulate_biosqldb.load_db('chlamydia_04_16')
 
 sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % 'chlamydia_04_16'
@@ -154,3 +154,4 @@ tree, style = plot_cog_eatmap('chlamydia_04_16',
 
 
 tree.render('test_percent.svg', dpi=800, h=600, tree_style=style)
+'''

@@ -29,7 +29,6 @@ def get_single_set_data(biodb, set_name,column="bitscore", bitscore_cutoff=0, qu
                                                                             set_name,
                                                                             bitscore_cutoff,
                                                                             query_coverage_cutoff)
-    print sql
     gene2taxon2score = {}
     gene_list = []
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -43,7 +42,7 @@ def get_single_set_data(biodb, set_name,column="bitscore", bitscore_cutoff=0, qu
             if str(row[0]) not in gene2taxon2score[row[1]]:
                 gene2taxon2score[row[1]][str(row[0])] = row[2]
             else:
-                print 'already present!!!!!!!'
+                print ('already present!!!!!!!')
                 continue
     return gene2taxon2score, gene_list
 
@@ -136,7 +135,6 @@ def plot_hmm_heatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, six_fra
     import ete_motifs
 
     code2taxon2count, set_list = get_set_data(biodb)
-    print "code2taxon2count", code2taxon2count
 
     tree2 = ete_motifs.multiple_profiles_heatmap(biodb,
                                                 set_list,
@@ -198,7 +196,7 @@ if __name__ == '__main__':
     sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
     tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
-    print tree
+
     t1 = Tree(tree)
 
     taxon_list = []

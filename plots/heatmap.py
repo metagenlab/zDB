@@ -169,8 +169,8 @@ def heatmap_pangenome(M,output=None,format='pdf',new=True,breaks=None, last=True
     robjects.r.assign('Mdata', numpy2ri.numpy2ri(M))
     if rows is not None:
         import numpy as np
-        rows = np.asarray(rows, dtype='a50')#np.chararray(rows)
-        robjects.r.assign('labRow',numpy2ri.numpy2ri(rows))
+        rows = np.asarray(rows, dtype='U100')#np.chararray(rows)
+        robjects.r.assign('labRow', numpy2ri.numpy2ri(rows))
         plotopt += ",labRow=labRow"
     if columns is not None:
         columns = np.asarray(columns, dtype='a50')
@@ -256,7 +256,7 @@ if (length(cfit$order) < 3000) {
     labels[m[length(cfit$order)]] <- length(cfit$order)
 }
 
-
+print(labRow)
 heatmap.2(as.matrix(Mdata),col=myColors, trace="none", breaks=myBreaks, key="False",distfun=function(m) vegdist(m,method="jaccard", binary=TRUE),
           na.rm=TRUE, density.info='none'%s, labCol=labels, hclustfun=function(m) hclust(m, method="average")) # , Colv=cdendo
 
