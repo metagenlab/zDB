@@ -1696,7 +1696,7 @@ def extract_cog(request):
 
 
                 match_groups = mat.index.tolist()
-
+                print('matches', match_groups)
                 # get count in subgroup
                 cog2count = dict((mat > 0).sum(axis=1))
                 #print "cog2count", cog2count
@@ -1712,11 +1712,13 @@ def extract_cog(request):
                 # get data for each matching cog
                 cog_data = []
                 for i in match_groups:
-                    sql = 'select * from COG.cog_names_2014 where COG_id ="%s"' % i
+                    sql = 'select COG_name,t3.description, t3.code, t1.description ' \
+                          ' from COG.cog_names_2014 t1 inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
+                          ' inner join COG.code2category t3 on t2.category_id=t3.category_id where COG_name ="%s"' % i
                     try:
                         tmp = list(server.adaptor.execute_and_fetchall(sql,)[0])
                     except:
-                        tmp = [i, "-", "-"]
+                        tmp = [i, "-", "-", "-"]
                     cog_data.append(tmp+[cog2count[tmp[0]], cog2count_all[tmp[0]]])
                 #print cog_data
                 cog_list = '"' + '","'.join(match_groups) + '"'
@@ -11383,7 +11385,7 @@ def plot_heatmap(request, type):
 
             if not accessions:
                 # get sub matrix and complete matrix
-                taxon2description = manipulate_biosqldb.taxon_id2genome_description(server,biodb)
+                taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
                 mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
                                                                           type,
                                                                           col_id,
@@ -11394,7 +11396,7 @@ def plot_heatmap(request, type):
                                                                           accessions=accessions)
                 taxon_list = list(mat.columns.values)
                 labels = [taxon2description[i] for i in taxon_list]
-
+                print(labels)
             else:
                 accession2description = manipulate_biosqldb.accession2description(server,biodb)
                 mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
@@ -11417,7 +11419,8 @@ def plot_heatmap(request, type):
             path = settings.BASE_DIR + '/assets/temp/heatmap_%s.png' % type
             asset_path = '/temp/heatmap_%s.png' % type
 
-            heatmap.heatmap_pangenome(m, output=path,
+            heatmap.heatmap_pangenome(m,
+                                      output=path,
                             breaks="-0.5, 0.5, 1.5, 2.5",
                             rows=labels,
                             format="png",

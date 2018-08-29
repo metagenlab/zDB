@@ -166,10 +166,10 @@
                             {% for value in cog_data %}
                                 <tr>
                                     <td><a href="{% url 'fam' value.0 'cog' %}">{{value.0}}</a></td>
-                                    <td>{{value.1}}</td>
-                                    <td>{{value.2}}</td>
+                                    <td>{{value.1}} ({{value.2}})</td>
                                     <td>{{value.3}}</td>
                                     <td>{{value.4}}</td>
+                                    <td>{{value.5}}</td>
                                 </tr>
                             {% endfor %}
                         </table>
