@@ -145,7 +145,7 @@ width: 230px;
 
 #entete_n{
  border:1px solid black;
- width: 15px;
+ width: 25px;
     }
 
 #entete_meta{
@@ -177,7 +177,7 @@ width: 230px;
     }
 #entete_translation{
  border:1px solid black;
- width: 600px;
+ width: 300px;
     }
 
 #entete_organism{
@@ -186,10 +186,13 @@ width: 230px;
     }
 
 #entete_locus{
- width: 73px;
+ width: 140px;
+    }
+#entete_group{
+ width: 90px;
     }
 #entete_product{
- width: 300px;
+ width: 260px;
     }
 #entete_gene{
  width: 65px;

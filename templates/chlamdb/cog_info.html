@@ -30,7 +30,7 @@
             </p>
         </div>
 
-        <h3>   COG category: {% with data|first as first_doc %}{{ first_doc.4 }}{% endwith %}</h3>
+        <h3>   COG category: {% with data|first as first_doc %}{{ first_doc.4 }}{% endwith %} (n={{data|length}})</h3>
         <div id="export_bouttons_groups">
             <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 

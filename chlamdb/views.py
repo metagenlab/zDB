@@ -1712,7 +1712,7 @@ def extract_cog(request):
                 # get data for each matching cog
                 cog_data = []
                 for i in match_groups:
-                    sql = 'select COG_name,t3.description, t3.code, t1.description ' \
+                    sql = 'select COG_name,t3.code, t3.description, t1.description ' \
                           ' from COG.cog_names_2014 t1 inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
                           ' inner join COG.code2category t3 on t2.category_id=t3.category_id where COG_name ="%s"' % i
                     try:
@@ -1878,13 +1878,20 @@ def venn_cog(request, accessions=False):
             #h['Marilyn Monroe'] = 1;
 
             cog2description = []
-            sql = 'select * from COG.cog_names_2014'
+            sql = 'select COG_name, t3.code,t3.description,A.description from COG.cog_names_2014 A ' \
+                  ' inner join COG.cog_id2cog_category t2 on A.COG_id=t2.COG_id ' \
+                  ' inner join COG.code2category t3 on t2.category_id=t3.category_id;'
+            
             data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
             for i in data:
                 if i in all_cog_list:
-
                     ##print 'ok'
-                    cog2description.append('h["%s"] = "%s </td><td>%s";' % (i, data[i][0], data[i][1]))
+
+                    print(data[i])
+                    cog2description.append('h["%s"] = "%s (%s) </td><td>%s";' % (i,
+                                                                            data[i][1],
+                                                                            data[i][0],
+                                                                            data[i][2]))
                 else:
                     pass
                     ##print 'pas ok'
@@ -2695,8 +2702,15 @@ def fam(request, fam, type):
             sql2 = 'select signature_description from interpro_%s where signature_accession="%s" limit 1' % (biodb, fam)
             info = server.adaptor.execute_and_fetchall(sql2, )[0]
         elif type == 'cog':
-            sql1 = 'select locus_tag from COG.locus_tag2gi_hit_%s where COG_id="%s"' % (biodb, fam)
-            sql2 = 'select function, name from COG.cog_names_2014 where COG_id = "%s"' % (fam)
+            sql1 = 'select seqfeature_id from COG.seqfeature_id2best_COG_hit_%s t1 ' \
+                   ' inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.cog_id ' \
+                   ' where COG_id="%s"' % (biodb,
+                                           fam)
+            sql2 = 'select t2.description from COG.seqfeature_id2best_COG_hit_%s t1 ' \
+                   ' inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.cog_id where t2.COG_name="%s";' % (biodb,
+                                                                                                      fam)
+            print (sql1)
+            print (sql2)
             info = server.adaptor.execute_and_fetchall(sql2, )[0]
         elif type == 'interpro':
             sql1 =   'select seqfeature_id from interpro.entry t1 inner join interpro.signature t2 on t1.interpro_id=t2.interpro_id ' \
@@ -3485,14 +3499,17 @@ def get_cog(request, taxon, category):
     #print biodb_id_sql
     biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
 
-    sql = 'select C.description,locus_tag,COG_id,name, D.description from (' \
-          ' select description,locus_tag,A.COG_id,function,name from (' \
+    sql = 'select A.description,locus_tag,COG_name, B.description, D.description from (' \
           ' select description,locus_tag,COG_id from COG.locus_tag2gi_hit_%s as t1 inner join biosqldb.bioentry as t2 ' \
-          ' on t1.accession=t2.accession where biodatabase_id=%s and taxon_id=%s) A inner join ' \
-          ' COG.cog_names_2014 as B on A.COG_id=B.COG_id where B.function="%s") C ' \
-          ' inner join COG.code2category as D on C.function=D.code;' % (biodb, biodb_id, taxon, category)
+          ' on t1.accession=t2.accession where biodatabase_id=%s and taxon_id=%s) A ' \
+          ' inner join COG.cog_names_2014 as B on A.COG_id=B.COG_name ' \
+          ' inner join COG.cog_id2cog_category C on B.COG_id=C.COG_id ' \
+          ' inner join COG.code2category D on C.category_id=D.category_id where D.code="%s";' % (biodb,
+                                                                        biodb_id,
+                                                                        taxon,
+                                                                        category)
 
-    #print sql
+    print (sql)
     data = server.adaptor.execute_and_fetchall(sql,)
 
     locus_list = [line[1] for line in data]
@@ -3554,8 +3571,10 @@ def get_cog_multiple(request, category, accessions=False):
 
     match_groups_subset = mat.index.tolist()
     filter = '"' + '","'.join(match_groups_subset) + '"'
-    sql = 'select COG_id,function,description,name from (select * from COG.cog_names_2014 where COG_id in (%s) and function="%s") A ' \
-          'inner join COG.code2category as B on A.function=B.code;' % (filter, category)
+    sql = 'select COG_name, t3.code,t3.description,A.description from (select * from COG.cog_names_2014 where COG_name in (%s)) A ' \
+          ' inner join COG.cog_id2cog_category t2 on A.COG_id=t2.COG_id ' \
+          ' inner join COG.code2category t3 on t2.category_id=t3.category_id where t3.code="%s";' % (filter, category)
+    print(sql)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -3790,11 +3809,11 @@ def ko_venn_subset(request, category):
             if data[i][3] != '-':
                 pathdata = data[i][3].split(',')
                 for y in pathdata:
-                    pathways_string+='<a href=/chlamdb/KEGG_mapp/%s/%s>%s</a>, ' % (biodb, re.sub('ko', 'map',y), re.sub('ko', 'map',y))
+                    pathways_string+='<a href=/chlamdb/KEGG_mapp/%s>%s</a>, ' % (re.sub('ko', 'map',y), re.sub('ko', 'map',y))
             if data[i][4] != '-':
                 moduledata = data[i][4].split(',')
                 for y in moduledata:
-                    module_string+='<a href=/chlamdb/KEGG_module_map/%s/%s>%s</a>, ' % (biodb, y, y)
+                    module_string+='<a href=/chlamdb/KEGG_module_map/%s>%s</a>, ' % (y, y)
 
             cog2description.append('h["%s"] = "%s </td><td>%s</td><td>%s</td><td>%s";' % (i, data[i][0],
                                                                                           data[i][1],
@@ -4239,8 +4258,11 @@ def cog_subset_barchart(request, accessions=False):
     match_groups_subset = mat.index.tolist()
 
 
-    sql = 'select function, count(*) from COG.cog_names_2014 where COG_id in (%s) group by function;' % ('"'+'","'.join(match_groups_subset)+'"')
-    #print sql
+    sql = 'select t3.code, count(*) from COG.cog_names_2014 t1 ' \
+          ' inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
+          ' inner join COG.code2category t3 on t2.category_id=t3.category_id ' \
+          ' where COG_name in (%s) group by t3.description;' % ('"'+'","'.join(match_groups_subset)+'"')
+    print (sql)
     data_subset = server.adaptor.execute_and_fetchall(sql,)
 
 
@@ -4252,7 +4274,10 @@ def cog_subset_barchart(request, accessions=False):
         sql = 'select id from comparative_tables.COG_accessions_%s where (%s)' % (biodb, filter)
     match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
-    sql = 'select function, count(*) from COG.cog_names_2014 where COG_id in (%s) group by function;' % ('"'+'","'.join(match_groups)+'"')
+    sql = 'select t3.code, count(*) from COG.cog_names_2014 t1 ' \
+          ' inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
+          ' inner join COG.code2category t3 on t2.category_id=t3.category_id ' \
+          ' where COG_name in (%s) group by t3.description;' % ('"'+'","'.join(match_groups)+'"')
     data_all_include = server.adaptor.execute_and_fetchall(sql,)
 
     # count total
@@ -4415,6 +4440,7 @@ def orthogroup2cog_series(biodb, orthogroup_list, reference_taxon=None, accessio
                                                                                                          '"' + '","'.join(orthogroup_list) + '"',
                                                                                                          reference_taxon,
                                                                                                          biodb)
+        print (sql)
     else:
         sql = 'select A.orthogroup,C.function, count(*) from (select * from biosqldb.orthology_detail_%s as t1 ' \
               ' where orthogroup in (%s) and accession="%s") A left join COG.locus_tag2gi_hit_%s as B on A.locus_tag=B.locus_tag ' \
@@ -4437,6 +4463,7 @@ def orthogroup2cog_series(biodb, orthogroup_list, reference_taxon=None, accessio
               ' on t1.biodatabase_id=t2.biodatabase_id where t1.name="%s" ' \
               ' and taxon_id=%s and t2.description not like "%%%%plasmid%%%%";' % (biodb,
                                                                                     reference_taxon)
+        print(sql)
     else:
         sql = 'select t2.description from biodatabase as t1 inner join bioentry as t2 ' \
               ' on t1.biodatabase_id=t2.biodatabase_id where t1.name="%s" ' \
@@ -4479,6 +4506,7 @@ def orthogroup2cog_series(biodb, orthogroup_list, reference_taxon=None, accessio
         sql = 'select A.orthogroup,C.function, count(*) as n from (select * from biosqldb.orthology_detail_%s as t1) A ' \
               ' left join COG.locus_tag2gi_hit_%s as B on A.locus_tag=B.locus_tag ' \
               ' inner join COG.cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,function;' % (biodb, biodb)
+        print(sql)
 
     else:
         if not accessions:
@@ -4753,16 +4781,20 @@ def cog_barchart(request):
             biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
             biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
 
-            sql_taxon = 'select taxon_id,description from bioentry where biodatabase_id=%s and taxon_id in (%s) and description not like "%%%%plasmid%%%%"' % (biodb_id,','.join(target_taxons))
+            sql_taxon = 'select taxon_id,description from bioentry ' \
+                        ' where biodatabase_id=%s and taxon_id in (%s) and description not like "%%%%plasmid%%%%"' % (biodb_id,','.join(target_taxons))
 
             taxon2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_taxon,))
 
-            sql = 'select C.taxon_id,D.code,D.description, C.n from (select taxon_id,function, count(*) as n ' \
-                  ' from (select distinct taxon_id,COG_id from COG.locus_tag2gi_hit_%s as t1 ' \
-                  ' inner join biosqldb.bioentry as t2 on t1.accession=t2.accession where biodatabase_id=%s and ' \
-                  ' taxon_id in (%s)) A inner join COG.cog_names_2014 as B on A.COG_id=B.COG_id group by taxon_id,function) C ' \
-                  ' left join COG.code2category as D on C.function=D.code;' % (biodb, biodb_id,','.join(target_taxons))
-            #print sql
+            sql = 'select A.taxon_id,D.code,D.description, count(*) as n from (select t1.*,t2.taxon_id ' \
+                  ' from COG.locus_tag2gi_hit_%s as t1 ' \
+                  ' inner join biosqldb.bioentry as t2 on t1.accession=t2.accession ' \
+                  ' where biodatabase_id=%s and  taxon_id in (%s)) A ' \
+                  ' inner join COG.cog_names_2014 as B on A.COG_id=B.COG_name ' \
+                  ' inner join COG.cog_id2cog_category C on B.COG_id=C.COG_id ' \
+                  ' inner join COG.code2category D on C.category_id=D.category_id ' \
+                  ' group by taxon_id,D.category_id;' % (biodb, biodb_id,','.join(target_taxons))
+            print (sql)
             data = server.adaptor.execute_and_fetchall(sql,)
 
 
@@ -4887,15 +4919,16 @@ def get_locus_annotations(biodb, locus_list):
     for i, data in enumerate(all_data):
         locus2annot.append((i,) + data)
 
-    sql = 'select A.locus_tag, B.COG_name from (select locus_tag, COG_id from COG.locus_tag2gi_hit_%s ' \
+    sql2 = 'select A.locus_tag, B.COG_name from (select locus_tag, COG_id from COG.locus_tag2gi_hit_%s ' \
           ' where locus_tag in (%s)) A inner JOIN ' \
-          ' COG.cog_names_2014 as B on A.COG_id=B.COG_id' % (biodb,
+          ' COG.cog_names_2014 as B on A.COG_id=B.COG_name' % (biodb,
                                                              '"' + '","'.join(locus_list) + '"')
-    #print sql
 
-    sql2 = 'select A.locus_tag, B.COG_id from (select locus_tag, COG_id from COG.locus_tag2gi_hit_%s ' \
-          ' where locus_tag in (%s)) A inner JOIN ' \
-          ' COG.cog_names_2014 as B on A.COG_id=B.COG_id' % (biodb,
+
+    sql = 'select A.locus_tag, t3.code from (select locus_tag, COG_id from COG.locus_tag2gi_hit_%s ' \
+           ' where locus_tag in (%s)) A inner JOIN COG.cog_names_2014 B on A.COG_id=B.COG_name ' \
+           ' inner join COG.cog_id2cog_category t2 on B.COG_id=t2.COG_id ' \
+           ' inner join COG.code2category t3 on t2.category_id=t3.category_id;' % (biodb,
                                                              '"' + '","'.join(locus_list) + '"')
 
     sql3 = 'select locus_tag,ko_id from enzyme.locus2ko_%s where locus_tag in (%s) ' % (biodb,
@@ -4946,13 +4979,11 @@ def get_locus_annotations(biodb, locus_list):
             for one_pathway in one_ko[1].split(','):
                 one_pathway = one_pathway.replace('ko', 'map')
                 try:
-                    ko2ko_pathways[one_ko[0]]+='''<a href="/chlamdb/KEGG_mapp/%s/%s" target="_top">%s / %s</a></br>''' % (biodb,
-                                                                                                           one_pathway,
+                    ko2ko_pathways[one_ko[0]]+='''<a href="/chlamdb/KEGG_mapp/%s" target="_top">%s / %s</a></br>''' % (one_pathway,
                                                                                                            one_pathway,
                                                                                                            pathway2category[one_pathway].translate(None, digits+'\.'))
                 except:
-                    ko2ko_pathways[one_ko[0]]+='''<a href="/chlamdb/KEGG_mapp/%s/%s" target="_top">%s / %s</a></br>''' % (biodb,
-                                                                                                           one_pathway,
+                    ko2ko_pathways[one_ko[0]]+='''<a href="/chlamdb/KEGG_mapp/%s" target="_top">%s / %s</a></br>''' % (one_pathway,
                                                                                                            one_pathway,
                                                                                                            '?')
 
@@ -4960,8 +4991,7 @@ def get_locus_annotations(biodb, locus_list):
             ko2ko_modules[one_ko[0]] = ''
             for one_module in one_ko[2].split(','):
                 #one_pathway = one_pathway.replace('ko', 'map')
-                ko2ko_modules[one_ko[0]]+='''<a href="/chlamdb/KEGG_module_map/%s/%s" target="_top">%s / %s</a></br>''' % (biodb,
-                                                                                                           one_module,
+                ko2ko_modules[one_ko[0]]+='''<a href="/chlamdb/KEGG_module_map/%s" target="_top">%s / %s</a></br>''' % (one_module,
                                                                                                            one_module,
                                                                                                            module2category[one_module])
     for ko in locus_tag2ko.values():
@@ -9087,7 +9117,7 @@ def circos_main(request):
                               locus_highlight=highlight,
                               out_directory=temp_location,
                               draft_fasta=draft_data,
-                              href="/chlamdb/locusx/%s/T" % biodb,
+                              href="/chlamdb/locusx/T",
                               ordered_taxons = ordered_taxons)
 
 
@@ -9302,7 +9332,7 @@ def circos(request):
                                           locus_highlight2=no_BBH_hit_color,
                                           out_directory=temp_location,
                                           draft_fasta=draft_data,
-                                          href="/chlamdb/locusx/%s/" % biodb,
+                                          href="/chlamdb/locusx/",
                                           ordered_taxons = ordered_taxons)
 
 
@@ -9758,7 +9788,6 @@ def search(request):
 
         columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                   'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-
         if search_type == "gene":
             sql = 'select %s from orthology_detail_%s where gene REGEXP "%s"' % (columns, biodb, search_term)
             raw_data = server.adaptor.execute_and_fetchall(sql,)
@@ -9772,7 +9801,7 @@ def search(request):
             raw_data = server.adaptor.execute_and_fetchall(sql,)
 
         if search_type == "no_exact_accession":
-
+                print ('YES no_exact_accession')
                 sql = 'select %s from orthology_detail_%s where gene REGEXP "%s"' % (columns, biodb, search_term)
                 raw_data_gene = server.adaptor.execute_and_fetchall(sql,)
 
@@ -9803,6 +9832,7 @@ def search(request):
                 sql = 'select * from enzyme.kegg_pathway where description REGEXP "%s"' % (search_term)
                 raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
 
+
         else:
             n = 1
             search_result = []
@@ -9830,7 +9860,7 @@ def search(request):
             search_term = form.cleaned_data['search_term']
             #biodb = form.cleaned_data['biodatabase']
 
-            search_result = perform_search(search_term,search_type)
+            search_result = perform_search(search_term, search_type)
             envoi = True
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
@@ -9848,9 +9878,9 @@ def search(request):
                 #request.method = 'GET'
                 return fam(request, search_term, 'interpro')
             elif len(search_term) == len('M00406') and search_term[0:3] == 'M00':
-                return KEGG_module_map(request,biodb, search_term)
+                return KEGG_module_map(request, search_term)
             elif len(search_term) == len('map00550') and search_term[0:3] == 'map':
-                return KEGG_mapp_ko(request,biodb, search_term)
+                return KEGG_mapp_ko(request, search_term)
             elif re.match("^[0-9\.]+$", search_term) and '\.' in search_term:
                 #print 'ec number!'
                 return fam(request, search_term, 'EC')
@@ -9934,6 +9964,14 @@ def search(request):
                     raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_pathway) == 0:
                         raw_data_pathway = False
+                    if not raw_data_module \
+                            and not raw_data_pathway \
+                            and not raw_data_EC \
+                            and not raw_data_ko \
+                            and not raw_data_cog \
+                            and not raw_data_interpro \
+                            and not raw_data_product:
+                        search_echec = True
             envoi = True
             display_form = "no"
             #print "display_form",  display_form
@@ -11851,7 +11889,7 @@ def locus_list2circos(request, target_taxon):
                                               locus_highlight=locus2label.keys(),
                                               out_directory=temp_location,
                                               draft_fasta=draft_data,
-                                              href="/chlamdb/locusx/%s/" % biodb,
+                                              href="/chlamdb/locusx/",
                                               ordered_taxons=[],
                                               locus2label=locus2label,
                                               show_homologs=False,
@@ -11996,7 +12034,7 @@ def hmm2circos(request):
                                                       locus_highlight=target_locus_list,
                                                       out_directory=temp_location,
                                                       draft_fasta=draft_data,
-                                                      href="/chlamdb/locusx/%s/" % biodb,
+                                                      href="/chlamdb/locusx/",
                                                       ordered_taxons = ordered_taxons,
                                                       locus2label=locus2label,
                                                       show_homologs=False)
