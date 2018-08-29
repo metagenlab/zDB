@@ -14,17 +14,19 @@ def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by
 
     sql = ''
 
-
     if len(taxon_id_list) > 0:
         filter = ',' .join(taxon_id_list)
 
-        sql = 'select taxon_id,functon,count(*) as n ' \
-              ' from COG.locus_tag2gi_hit_%s t1 ' \
-              ' inner join COG.cog_names_2014 t2 on t1.COG_id=t2.COG_id ' \
-              ' inner join biosqldb.bioentry as t3 on t1.accession=t3.accession ' \
-              ' where biodatabase_id=%s and taxon_id in (%s) group by taxon_id,functon' % (biodb,db_id, filter)
+        sql = 'select taxon_id, code, count(*) as n from COG.seqfeature_id2best_COG_hit_%s t1 ' \
+              ' inner join biosqldb.bioentry t2 on t1.bioentry_id=t2.bioentry_id' \
+              ' inner join COG.cog_id2cog_category t3 on t1.hit_cog_id=t3.COG_id ' \
+              ' inner join COG.code2category t4 on t3.category_id=t4.category_id ' \
+              ' where t2.biodatabase_id=%s and taxon_id in (%s)' \
+              ' group by taxon_id, code;' % (biodb,
+                db_id,
+                filter)
 
-
+        print (sql)
     else:
         if not group_by_cog_id:
             sql = 'select taxon_id,functon,count(*) as n ' \
@@ -41,10 +43,13 @@ def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by
     data = server.adaptor.execute_and_fetchall(sql,)
 
     if frequency:
-        sql = 'select taxon_id,count(*) as n from COG.locus_tag2gi_hit_%s t1 ' \
-              ' inner join COG.cog_names_2014 t2 on t1.COG_id=t2.COG_id ' \
-              ' inner join biosqldb.bioentry as t3 on t1.accession=t3.accession ' \
-              ' where biodatabase_id=%s group by taxon_id;' % (biodb, db_id)
+        '''
+        ATTENTION: based on total annotated with COG and not genome size
+        
+        '''
+        sql = 'select taxon_id, count(*) as n from COG.seqfeature_id2best_COG_hit_%s t1' \
+              ' inner join biosqldb.bioentry t2 on t1.bioentry_id=t2.bioentry_id' \
+              ' where t2.biodatabase_id=%s group by taxon_id;' % (biodb, db_id)
         taxon_id2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
         code2taxon2count = {}
@@ -70,7 +75,7 @@ def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by
 
         cog_list = ['TOTAL', '-']
 
-    sql = 'select * from COG.code2category;'
+    sql = 'select code, description from COG.code2category;'
     code2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     for row in data:

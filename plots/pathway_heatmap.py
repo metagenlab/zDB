@@ -19,25 +19,32 @@ def pathway_list2profile_dico(biodb, pathway_list, taxon_id_list=[], group_by_KO
         filter = ',' .join(taxon_id_list)
 
 
-        sql = 'select taxon_id,description,count(*) from (select distinct taxon_id,description,t3.pathway_id,t1.ko_id ' \
+        sql = 'select taxon_id, description, count(*) from (select distinct taxon_id,description,t3.pathway_id,t1.ko_id ' \
               ' from enzyme.locus2ko_%s t1 inner join enzyme.pathway2ko t2 on t1.ko_id=t2.ko_id ' \
               ' inner join enzyme.kegg_pathway as t3 on t2.pathway_id=t3.pathway_id ' \
               ' where t3.pathway_name in (%s) and taxon_id in (%s)) A group by taxon_id,pathway_id;' % (biodb,
                                                                                            filter_2,
                                                                                            filter)
+        print (sql)
     else:
         if not group_by_KO:
+            print ('not grouping')
             sql = 'select taxon_id,description,count(*) from (select distinct taxon_id,description,t3.pathway_id,t1.ko_id ' \
                   ' from enzyme.locus2ko_%s t1 inner join enzyme.pathway2ko t2 on t1.ko_id=t2.ko_id ' \
                   ' inner join enzyme.kegg_pathway as t3 on t2.pathway_id=t3.pathway_id ' \
                   ' where t3.pathway_name in (%s)) A group by taxon_id,pathway_id;' % (biodb,
                                                                                                filter_2)
         else:
-            sql = 'select taxon_id,description,count(*) from (select distinct taxon_id,description,t1.ko_id ' \
-                  ' from enzyme.locus2ko_%s t1 inner join enzyme.pathway2ko t2 on t1.ko_id=t2.ko_id ' \
-                  ' inner join enzyme.kegg_pathway as t3 on t2.pathway_id=t3.pathway_id ' \
-                  ' where t3.pathway_name in (%s)) A group by taxon_id,description;' % (biodb,
-                                                                                               filter_2)
+            print ('grouping')
+            sql = 'select taxon_id, description, count(*) from (select distinct taxon_id,description,t4.ko_accession ' \
+                  ' from enzyme.seqfeature_id2ko_%s t1 ' \
+                  ' inner join annotation.seqfeature_id2locus_%s tb on t1.seqfeature_id=tb.seqfeature_id ' \
+                  ' inner join enzyme.pathway2ko t2 on t1.ko_id=t2.ko_id  inner join enzyme.kegg_pathway as t3 on t2.pathway_id=t3.pathway_id' \
+                  ' inner join enzyme.ko_annotation t4 on t1.ko_id=t4.ko_id where pathway_name in (%s) ) A ' \
+                  ' group by A.taxon_id, A.description;;' % (biodb,
+                                                             biodb,
+                                                             filter_2)
+            print (sql)
     #print sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -172,8 +179,9 @@ aa_sythesis = [
 "map00380",
 "map00400"
 ]
+'''
 import manipulate_biosqldb
-from ete2 import Tree
+from ete3 import Tree
 server, db = manipulate_biosqldb.load_db('chlamydia_04_16')
 
 sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % 'chlamydia_04_16'
@@ -187,3 +195,4 @@ tree, style = plot_pathway_heatmap('chlamydia_04_16',
                             [], #taxon_list
                             )
 tree.render('test_pathways2.svg', dpi=800, h=600, tree_style=style)
+'''

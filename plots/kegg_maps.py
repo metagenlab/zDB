@@ -24,7 +24,7 @@ def map2highlighted_map(map_id, ko_list, ko2freq, biodb, outpath = 'test.pdf', t
     m2 = cm.ScalarMappable(norm=norm, cmap=cmap2)
 
     url_template = 'http://rest.kegg.jp/get/%s/kgml' % re.sub('map', 'ko', map_id)
-
+    print(url_template)
     f = urllib.request.urlopen(url_template)
     from Bio.Graphics import KGML_vis
 
