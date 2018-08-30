@@ -3149,6 +3149,12 @@ def KEGG_mapp_ko(request, map_name):
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % map_name
             asset_path = '/temp/KEGG_tree_%s.png' % map_name
             tree.render(path, dpi=1200, h=600, tree_style=style)
+            print (path)
+
+            path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.png' % map_name
+            asset_path2 = '/temp/KEGG_tree_%s_complete.png' % map_name
+            print (path2)
+            tree2.render(path2, dpi=800, h=600)
 
         else:
             big = False
@@ -3158,7 +3164,7 @@ def KEGG_mapp_ko(request, map_name):
 
             path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
             asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % map_name
-
+            print (path2)
             tree2.render(path2, dpi=800, h=600)
         envoi = True
         menu = True
