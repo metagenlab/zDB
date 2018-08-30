@@ -10142,13 +10142,13 @@ def blast_profile(request):
 
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             from tempfile import NamedTemporaryFile
-            import StringIO
+            from io import StringIO
             import biosqldb_plot_blast_hits_phylo
             import biosql_own_sql_tables
             from ete3 import Tree, TreeStyle
 
             fasta_file = request.FILES['fasta_file']
-            fasta_string = StringIO.StringIO(request.FILES['fasta_file'].read())
+            fasta_string = StringIO(request.FILES['fasta_file'].read())
             fasta_rec = [i for i in SeqIO.parse(fasta_string, 'fasta')]
 
             try:
@@ -10234,7 +10234,7 @@ def blast(request):
             from Bio.Blast.Applications import NcbitblastnCommandline
             from Bio.Blast.Applications import NcbiblastxCommandline
             from tempfile import NamedTemporaryFile
-            from StringIO import StringIO
+            from io import StringIO
             from Bio.Blast import NCBIXML
             from Bio.Alphabet import IUPAC
             import os
@@ -10258,7 +10258,8 @@ def blast(request):
                 input_sequence = input_sequence.rstrip(os.linesep)
                 my_record = [SeqRecord(Seq(input_sequence, IUPAC.protein), id="INPUT", description="INPUT")]
 
-            query_file = NamedTemporaryFile()
+            query_file = NamedTemporaryFile(mode='w')
+            print(my_record)
             SeqIO.write(my_record, query_file, "fasta")
             query_file.flush()
 
