@@ -210,6 +210,27 @@ $(function() {
     });
 });
 
+$(function(){
+    // Get current url
+    // Select an a element that has the matching href and apply a class of 'active'. Also prepend a - to the content of the link
+    var url = window.location.href;
+    var url_edit = '/' + url.split("/").slice(3).join('/');
+    console.log(url_edit);
+    var sect = $(".menu a[href='"+url_edit+"']").css("color", "red");
+    console.log(sect)
+});
+</script>
+
+<script type="text/javascript">
 
 </script>
 
+<style>
+
+.current_page_item{
+color: blue;
+background-color: coral;
+
+}
+
+</style>

@@ -224,7 +224,7 @@
                                     <td>{{values.0}}</td>
                                     <td>{{values.1}}</td>
                                     <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
-                                    <td><a href="{% url 'fam' values.3 'cog' %}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
+                                    <td><a href="{% url 'fam' values.2 'cog' %}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
                                     {% with locus_tag2cog_name|keyvalue:values.2 as name %}
                                         {% if name == '-' %}
                                             <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>

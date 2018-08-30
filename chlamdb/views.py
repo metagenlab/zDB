@@ -4623,7 +4623,12 @@ def locus_tag2cog_series(biodb, locus_tag_list, reference_taxon=None):
           ' inner join orthology_detail_%s as B on A.locus_tag=B.locus_tag;' % (biodb,
                                                                               '"' + '","'.join(locus_tag_list) + '"',
                                                                               biodb)
-
+    sql = 'select locus_tag, taxon_id from COG.seqfeature_id2best_COG_hit_%s t1 ' \
+          ' inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+          ' where locus_tag in (%s) group by locus_tag;' % (biodb,
+                                         biodb,
+                                         '"' + '","'.join(locus_tag_list) + '"')
+    print (sql)
     data = server.adaptor.execute_and_fetchall(sql,)
     # non redundant list of locus with associated COG
     locus_with_cog_list = set([i[0] for i in data])
@@ -4655,8 +4660,10 @@ def locus_tag2cog_series(biodb, locus_tag_list, reference_taxon=None):
 
     sql = 'select A.locus_tag,C.function, count(*) as n from (select * from biosqldb.orthology_detail_%s as t1 where taxon_id=%s) A ' \
           ' left join COG.locus_tag2gi_hit_%s as B on A.locus_tag=B.locus_tag ' \
-          ' inner join COG.cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,function;' % (biodb, reference_taxon, biodb)
-
+          ' inner join COG.cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,function;' % (biodb,
+                                                                                                      reference_taxon,
+                                                                                                      biodb)
+    print(sql)
     data_all = server.adaptor.execute_and_fetchall(sql,)
     #print data_all
     # counting COG categories for the whole genome
@@ -4735,7 +4742,6 @@ def locus_tag2cog_series(biodb, locus_tag_list, reference_taxon=None):
     category_map = category_map[0:-1] + '};'
 
     return series, labels, serie_all_counts, serie_target_counts, series_counts, labels_counts, category_description, category_map, n_missing_cog, missing_cog_list
-
 
 
 def orthogroup_list_cog_barchart(request, accessions=False):
@@ -4930,7 +4936,7 @@ def get_locus_annotations(biodb, locus_list):
            ' inner join COG.cog_id2cog_category t2 on B.COG_id=t2.COG_id ' \
            ' inner join COG.code2category t3 on t2.category_id=t3.category_id;' % (biodb,
                                                              '"' + '","'.join(locus_list) + '"')
-
+    print (sql)
     sql3 = 'select locus_tag,ko_id from enzyme.locus2ko_%s where locus_tag in (%s) ' % (biodb,
                                                                             '"' + '","'.join(locus_list) + '"')
     sql4 = 'select pathway_name,pathway_category from enzyme.kegg_pathway'
@@ -4979,11 +4985,11 @@ def get_locus_annotations(biodb, locus_list):
             for one_pathway in one_ko[1].split(','):
                 one_pathway = one_pathway.replace('ko', 'map')
                 try:
-                    ko2ko_pathways[one_ko[0]]+='''<a href="/chlamdb/KEGG_mapp/%s" target="_top">%s / %s</a></br>''' % (one_pathway,
+                    ko2ko_pathways[one_ko[0]]+='''<a href="/chlamdb/KEGG_mapp_ko/%s" target="_top">%s / %s</a></br>''' % (one_pathway,
                                                                                                            one_pathway,
-                                                                                                           pathway2category[one_pathway].translate(None, digits+'\.'))
+                                                                                                           pathway2category[one_pathway]) # .translate(None, digits+'\.')
                 except:
-                    ko2ko_pathways[one_ko[0]]+='''<a href="/chlamdb/KEGG_mapp/%s" target="_top">%s / %s</a></br>''' % (one_pathway,
+                    ko2ko_pathways[one_ko[0]]+='''<a href="/chlamdb/KEGG_mapp_ko/%s" target="_top">%s / %s</a></br>''' % (one_pathway,
                                                                                                            one_pathway,
                                                                                                            '?')
 
@@ -5056,6 +5062,7 @@ def genome_annotation(request, accession):
           ' where t1.name="%s"' % biodb
     accession2taxon = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
+    '''
     series, \
     labels, \
     serie_all_counts, \
@@ -5066,6 +5073,7 @@ def genome_annotation(request, accession):
     category_map, \
     n_missing_cog, \
     missing_cog_list = locus_tag2cog_series(biodb, locus_list, reference_taxon=None)
+    '''
 
     return render(request, 'chlamdb/genome_annotation.html', locals())
 
