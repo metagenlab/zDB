@@ -6775,10 +6775,10 @@ def blastnr_barchart(request):
                             category2count[category] += int(taxon2category2count[taxon][category])
                     except:
                         pass
-
-            data = pd.DataFrame({'category': category2count.keys(),
-                    'count': category2count.values() })
-            data_sort = data.sort(columns=["count"],ascending=0)
+            print (category2count)
+            data = pd.DataFrame({'category': list(category2count.keys()),
+                    'count': list(category2count.values()) })
+            data_sort = data.sort_values("count", ascending=0)
 
             all_series_templates = []
             for taxon in taxon2category2count:
@@ -6796,7 +6796,8 @@ def blastnr_barchart(request):
 
             #print 'all series!', all_series_templates
             series = serie_template % ''.join(all_series_templates)
-            labels = labels_template % ('"'+'","'.join(data_sort['category']) + '"')
+            cat_list = [str(i) for i in data_sort['category']]
+            labels = labels_template % ('"'+'","'.join(cat_list) + '"')
 
 
             circos_url = '?h=' + ('&h=').join(target_accessions) + '&t=%s&n=%s' % (counttype, top_n)
