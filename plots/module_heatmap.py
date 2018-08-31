@@ -18,17 +18,26 @@ def module_list2profile_dico(biodb, module_list, taxon_id_list=[]):
 
 
         sql = 'select taxon_id, description, count(*) from (select distinct taxon_id,t1.ko_id,module_name,description ' \
-              ' from enzyme.locus2ko_%s t1 inner join enzyme.module2ko t2 on t1.ko_id=t2.ko_id ' \
+              ' from enzyme.seqfeature_id2ko_%s t1' \
+              ' inner join enzyme.module2ko t2 on t1.ko_id=t2.ko_id ' \
               ' inner join enzyme.kegg_module as t3 on t2.module_id=t3.module_id ' \
+              ' inner join annotation.seqfeature_id2locus_%s t4 ' \
+              ' on t1.seqfeature_id=t4.seqfeature_id' \
               ' where module_name in (%s) and taxon_id in (%s)) A group by A.taxon_id,A.module_name;' % (biodb,
+                                                                                                         biodb,
                                                                                                          filter_2,
                                                                                                          filter)
     else:
-        sql = 'select taxon_id, description,count(*) from (select distinct taxon_id,t1.ko_id,module_name,description ' \
-              ' from enzyme.locus2ko_%s t1 inner join enzyme.module2ko t2 on t1.ko_id=t2.ko_id ' \
+        sql = 'select taxon_id, description, count(*) from (select distinct taxon_id,t1.ko_id,module_name,description ' \
+              ' from enzyme.seqfeature_id2ko_%s t1' \
+              ' inner join enzyme.module2ko t2 on t1.ko_id=t2.ko_id ' \
               ' inner join enzyme.kegg_module as t3 on t2.module_id=t3.module_id ' \
-              ' where module_name in (%s)) A group by A.taxon_id,A.module_name;' % (biodb, filter_2)
-    #print sql
+              ' inner join annotation.seqfeature_id2locus_%s t4 ' \
+              ' on t1.seqfeature_id=t4.seqfeature_id' \
+              ' where module_name in (%s)) A group by A.taxon_id,A.module_name;' % (biodb,
+                                                                                                         biodb,
+                                                                                                         filter_2)
+    print (sql)
     data = server.adaptor.execute_and_fetchall(sql,)
 
 
@@ -57,7 +66,9 @@ def plot_module_heatmap(biodb, ref_tree, module_list, taxon_id_list=[], rotate=F
 
     import ete_motifs
 
-    module_list, code2taxon2count = module_list2profile_dico(biodb, module_list, taxon_id_list=taxon_id_list)
+    module_list, code2taxon2count = module_list2profile_dico(biodb,
+                                                             module_list,
+                                                             taxon_id_list=taxon_id_list)
 
     tree2 = ete_motifs.multiple_profiles_heatmap(biodb,
                                                 module_list,
