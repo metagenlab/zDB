@@ -6314,14 +6314,15 @@ def blastnr_overview(request):
 
     module_list, code2taxon2count_modules = module_heatmap.module_list2profile_dico(biodb, ["M00001","M00004","M00009"])
 
-    #print code2taxon2count_modules.keys()
+    print('-----------------')
+    print (code2taxon2count_modules.keys())
     set2taxon2value['gylcolysis'] = code2taxon2count_modules['Glycolysis (Embden-Meyerhof pathway), glucose => pyruvate [PATH:map01200 map00010]']
     set2taxon2value['TCA'] = code2taxon2count_modules['Citrate cycle (TCA cycle, Krebs cycle) [PATH:map01200 map00020]']
     set2taxon2value['PPP'] = code2taxon2count_modules['Pentose phosphate pathway (Pentose phosphate cycle) [PATH:map01200 map00030]']
 
     my_sets+= ["T3SS",
-                  "T4SS",
-                  'Flagellum',
+               "T4SS",
+               'Flagellum',
                   "chemosensory",
                   'Peptidoglycan biosynthesis',
                   "Menaquinone",
@@ -6525,11 +6526,12 @@ def blastnr_overview(request):
     my_sets.append('Lipid metabolism')
 
 
-    sql = 'select taxon_id,count(*) from COG.locus_tag2gi_hit_%s t1 ' \
-          ' inner join COG.cog_names_2014 t2 on t1.COG_id=t2.COG_id ' \
-          ' inner join biosqldb.bioentry t3 on t1.accession=t3.accession ' \
-          ' inner join biosqldb.biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \
-          ' where t4.name="%s" and t2.function="X" group by taxon_id;' % (biodb, biodb)
+    sql = 'select taxon_id, count(*) from COG.seqfeature_id2best_COG_hit_%s t1 ' \
+          ' inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.COG_id ' \
+          ' inner join COG.cog_id2cog_category ta on t1.hit_cog_id=ta.COG_id' \
+          ' inner join COG.code2category tb on ta.category_id=tb.category_id' \
+          ' inner join annotation.seqfeature_id2locus_%s tc on t1.seqfeature_id=tc.seqfeature_id' \
+          ' where tb.code="X" group by taxon_id;' % (biodb, biodb)
 
     taxon_id2mobile_elements = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     set2taxon2value['modile_elements'] = taxon_id2mobile_elements
