@@ -2955,6 +2955,151 @@ def COG_phylo_heatmap(request, frequency):
     return render(request, 'chlamdb/COG_phylo_heatmap.html', locals())
 
 
+def interpro_taxonom_with_homologs(request, domain, percentage):
+
+
+    from ete3 import TreeStyle
+
+    biodb = settings.BIODB
+
+    if request.method == 'GET':  # S'il s'agit d'une requête POST
+        import ete_motifs
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+        taxid_list = ['1279839', '1279496', '1035343', '314', '886707', '804807', '48', '283', '55', '1279822', '46', '1279815', '49', '87925', '52', '1137444', '67', '1172028', '1069693', '1172027', '307', '59', '60', '313', '1069694', '62', '1143376', '293', '1279767', '1279497', '1279774', '64', '66']
+
+        sql = 'select * from (select distinct interpro_accession from biosqldb.interpro_%s where ' \
+              ' interpro_accession!="0" and taxon_id in (%s))A inner join interpro.entry B on A.interpro_accession=B.name ' \
+              ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where %s>=%s;' % (biodb,
+                                                                                                              ','.join(
+                                                                                                                  taxid_list),
+                                                                                                              domain,
+                                                                                                              percentage)
+
+        data = server.adaptor.execute_and_fetchall(sql, )
+        interpro2description = {}
+        for row in data:
+            interpro2description[row[0]] = row[3]
+
+        # number of groups with identified signature domains
+        sql = 'select name,n from (select AA.interpro_id, count(*) as n from ' \
+              ' (select distinct A.interpro_id, B.orthogroup_id from ' \
+              ' (select distinct seqfeature_id,t2.interpro_id from interpro.interpro_%s t1 ' \
+              ' inner join interpro.signature t2 on t1.signature_id=t2.signature_id ' \
+              ' inner join interpro.interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
+              ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
+              ' inner join orthology.orthogroup_%s C on B.orthogroup_id=C.orthogroup_id) AA ' \
+              ' group by AA.interpro_id) BB inner join interpro.entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
+                                                                                                               domain,
+                                                                                                               percentage,
+                                                                                                               biodb,
+                                                                                                               biodb)
+        print(sql)
+        interpro_accession2n_groups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql, ))
+
+
+
+
+        # get list of all orthogroups with corresponding interpro entry
+        sql = 'select name,orthogroup_name from (select distinct A.interpro_id, C.orthogroup_name from ' \
+              '(select distinct seqfeature_id,t2.interpro_id from interpro.interpro_%s t1 ' \
+              ' inner join interpro.signature t2 on t1.signature_id=t2.signature_id ' \
+              ' inner join interpro.interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
+              ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
+              ' inner join annotation.seqfeature_id2locus_%s D on A.seqfeature_id=D.seqfeature_id' \
+              ' inner join orthology.orthogroup_%s C on B.orthogroup_id=C.orthogroup_id where D.taxon_id in (%s)) BB ' \
+              ' inner join interpro.entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
+                                                                          domain,
+                                                                          percentage,
+                                                                          biodb,
+                                                                          biodb,
+                                                                          biodb,
+                                                                          ','.join(taxid_list))
+
+
+        orthogroup_data = server.adaptor.execute_and_fetchall(sql, )
+        # print orthogroup_data
+        interpro2orthogroups = {}
+        orthogroup_list = []
+        for i in orthogroup_data:
+            if i[0] not in interpro2orthogroups:
+                interpro2orthogroups[i[0]] = [i[1]]
+            else:
+                interpro2orthogroups[i[0]].append(i[1])
+            orthogroup_list.append(i[1])
+
+        interpro_list = list(set(interpro2orthogroups.keys()))
+
+        taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, orthogroup_list, type="orthogroup", taxon_filter=taxid_list)
+
+        taxon2interpro2count = ete_motifs.get_taxon2name2count(biodb, interpro_list, type="interpro", taxon_filter=taxid_list)
+
+        # rename interpro accession
+        label_list = []
+        for interpro_accession in list(taxon2interpro2count.keys()):
+            try:
+                interpro_des = "%s: %s (%s groups)" % (
+                    interpro_accession,
+                    interpro2description[interpro_accession],
+                    interpro_accession2n_groups[interpro_accession])
+            except:
+                interpro_des = "%s: %s (? groups)" % (interpro_accession,
+                                                      interpro2description[interpro_accession])
+            taxon2interpro2count[interpro_des] = taxon2interpro2count[interpro_accession]
+            interpro2orthogroups[interpro_des] = interpro2orthogroups[interpro_accession]
+            if interpro_des not in label_list:
+                label_list.append(interpro_des)
+        # reporter interpro_accessions based on their frequency
+        accession2count =  {}
+        for i in label_list:
+            accession2count[i] = sum([taxon2interpro2count[i][n] for n in taxon2interpro2count[i]])
+        import pandas
+        freq_table =  pandas.DataFrame.from_dict(accession2count, orient='index')
+        sort = freq_table.sort_values(freq_table.columns[0], ascending=False)
+
+        label_list = list(sort.index)
+
+        tree, style = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                           label_list,
+                                                           taxon2interpro2count,
+                                                           rotate=True)
+        style.rotation=90
+
+
+
+        tree2, tss = ete_motifs.combined_profiles_heatmap(biodb,
+                                                     label_list,
+                                                     taxon2orthogroup2count,
+                                                     taxon2interpro2count,
+                                                     interpro2orthogroups,
+                                                     rotate=True)
+
+        tss.show_branch_support = False
+        tss.draw_guiding_lines = True
+        tss.guiding_lines_color = "gray"
+        tss.show_leaf_name = True
+        tss.rotation = 90
+        module_name = "taxonomy"
+
+        big = False
+        path = settings.BASE_DIR + '/assets/temp/interpro_tree_%s.svg' % module_name
+        asset_path = '/temp/interpro_tree_%s.svg' % module_name
+        tree.render(path, dpi=800, w=600, tree_style=style)
+
+        path2 = settings.BASE_DIR + '/assets/temp/interpro_tree_%s_complete.svg' % module_name
+        asset_path2 = '/temp/interpro_tree_%s_complete.svg' % module_name
+
+        tree2.render(path2, dpi=800, w=600, tree_style=tss)
+
+        ko_url = '+' + '+'.join(interpro_list)
+        envoi = True
+        menu = True
+        valid_id = True
+
+    return render(request, 'chlamdb/KEGG_module_map.html', locals())
+
+
+
 def KEGG_module_map(request, module_name):
     biodb = settings.BIODB
 
@@ -7045,7 +7190,7 @@ def interpro_taxonomy(request):
             kingdom = form.cleaned_data['kingdom']
             percentage_cutoff = form.cleaned_data['percentage_cutoff']
 
-
+            print(target_taxons)
 
             if target_taxons[0] == 'all':
                 import phylo_tree_bar
@@ -7285,6 +7430,19 @@ def interpro_taxonomy(request):
                                                                                                    biodb)
                 #print sql3
                 data_locus = server.adaptor.execute_and_fetchall(sql3,)
+
+                # get annotation summary
+
+                product2count = {}
+                for locus in data_locus:
+                    if locus[9] not in product2count:
+                        product2count[locus[9]] = 1
+                    else:
+                        product2count[locus[9]] += 1
+
+
+
+
                 locus_list = [i[3] for i in data_locus]
                 fasta_url = '?l=' + '&l='.join(locus_list)
 
@@ -7303,13 +7461,31 @@ def interpro_taxonomy(request):
                 R = t1.get_midpoint_outgroup()
                 t1.set_outgroup(R)
 
+                # number of groups with identified signature domains
+                sql = 'select name,n from (select AA.interpro_id, count(*) as n from ' \
+                      ' (select distinct A.interpro_id, B.orthogroup_id from ' \
+                      ' (select distinct seqfeature_id,t2.interpro_id from interpro.interpro_%s t1 ' \
+                      ' inner join interpro.signature t2 on t1.signature_id=t2.signature_id ' \
+                      ' inner join interpro.interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
+                      ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
+                      ' inner join orthology.orthogroup_%s C on B.orthogroup_id=C.orthogroup_id) AA ' \
+                      ' group by AA.interpro_id) BB inner join interpro.entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
+                                                                                                                kingdom,
+                                                                                                                percentage_cutoff,
+                                                                                                                biodb,
+                                                                                                                biodb)
+                print(sql)
+                interpro_accession2n_groups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
                 interpro2taxon2count = {}
                 interpro_list = ['TOTAL']
                 taxon2total = {}
                 interpro_id_description = []
                 for row in data_counts:
-                    interpro_des = "%s: %s" % (row[1], interpro2description[row[1]])
+                    try:
+                        interpro_des = "%s: %s (%s groups)" % (row[1], interpro2description[row[1]], interpro_accession2n_groups[row[1]])
+                    except:
+                        interpro_des = "%s: %s (? groups)" % (row[1], interpro2description[row[1]])
                     if interpro_des not in interpro_list:
                         interpro_list.append(interpro_des)
                         #print interpro_des, interpro_des.split(':')
@@ -7950,6 +8126,39 @@ def module2fasta():
           ' inner join module2ko_v1 as t2 on t1.module_id=t2.module_id inner join locus2ko_%s as t3 ' \
           ' on t2.ko_id=t3.ko_id inner join biosqldb.orthology_detail_%s as t4 ' \
           ' on t3.locus_tag=t4.locus_tag where t4.taxon_id in (64);'
+
+
+def pfam2fasta(request, pfam_id):
+    biodb = settings.BIODB
+    from io import StringIO
+    from Bio.Seq import Seq
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'select protein_id,product,translation from interpro.interpro_%s t1 ' \
+          ' inner join interpro.signature t2 on t1.signature_id=t2.signature_id ' \
+          ' inner join annotation.seqfeature_id2CDS_annotation_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+          ' where signature_accession="%s";' % (biodb, biodb, pfam_id)
+
+    data = server.adaptor.execute_and_fetchall(sql,)
+    fasta = []
+    for i in data:
+        biorecord = SeqRecord(Seq(i[2]),
+                              id=i[0],
+                              name=i[0],
+                              description=i[1])
+        fasta.append(biorecord)
+
+    strio = StringIO()
+    SeqIO.write(fasta, strio, 'fasta')
+
+    response = HttpResponse(content_type='text/plain')
+    name = 'attachment; filename="pfam_%s.fa"' % pfam_id
+
+    response['Content-Disposition'] = name
+    response.write(strio.getvalue())
+    return response
+
 
 def ko2fasta(request, ko_id, include_orthologs=False):
     biodb = settings.BIODB

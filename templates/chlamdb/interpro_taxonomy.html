@@ -69,33 +69,57 @@
 
                  <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_url|safe}}'">download fasta</button>
 
-                <table>
+                <div>
+                    Overview
+                    <table class="sortable">
+                        <tr>
+                            <th>Product</th>
+                            <th>Count</th>
+                        </tr>
+                        {% for key, value in product2count.items %}
+                        <tr>
+                            <td>{{key}}</td>
+                            <td>{{value}}</td>
+                        <tr>
 
-                    <tr>
-                        <th>Organism</th>
-                        <th>Orthogroup</th>
-                        <th>Locus</th>
-                        <th>Gene</th>
-                        <th>Product</th>
-                        <th>N genomes</th>
-                        <th>TM</th>
-                        <th>SP</th>
-                    </tr>
-                {% for row in data_locus %}
-                    <tr>
-                        <td>{{row.11}}</td>
-                        <td>{{row.0}}</td>
-                        <td><a href="{% url 'locusx' row.3 True %}" target="_top">{{row.3}}</a></td>
-                        <td>{{row.8}}</td>
-                        <td>{{row.9}}</td>
+                        {%endfor%}
+                    </table>
 
-                        <td>{{row.13}}</td>
-                        <td>{{row.14}}</td>
-                        <td>{{row.15}}</td>
-                    </tr>
-                {% endfor %}
 
-                </table>
+                </div>
+
+                <div>
+
+
+
+                    <table class="sortable">
+
+                        <tr>
+                            <th>Organism</th>
+                            <th>Orthogroup</th>
+                            <th>Locus</th>
+                            <th>Gene</th>
+                            <th>Product</th>
+                            <th>N genomes</th>
+                            <th>TM</th>
+                            <th>SP</th>
+                        </tr>
+                        {% for row in data_locus %}
+                            <tr>
+                                <td>{{row.11}}</td>
+                                <td>{{row.0}}</td>
+                                <td><a href="{% url 'locusx' row.3 True %}" target="_top">{{row.3}}</a></td>
+                                <td>{{row.8}}</td>
+                                <td>{{row.9}}</td>
+
+                                <td>{{row.13}}</td>
+                                <td>{{row.14}}</td>
+                                <td>{{row.15}}</td>
+                            </tr>
+                        {% endfor %}
+
+                    </table>
+                </div>
 
             </div>
         </div>

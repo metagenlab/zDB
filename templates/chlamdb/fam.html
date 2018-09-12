@@ -47,7 +47,10 @@
                                                                 onclick="location.href='{% url 'ko2fasta' fam %}'">ko fasta</button>
                                                         <button type="button" class="btn btn-primary btn-xs"
                                                                 onclick="location.href='{% url 'ko2fasta' fam "T" %}'"> ko fasta + homologs</button>
-                                       {%endif%}
+                                  {% elif type == 'pfam' %}
+                                                        <button type="button" class="btn btn-primary btn-xs"
+                                                                onclick="location.href='{% url 'pfam2fasta' fam %}'">Pfam fasta</button>
+                                  {% endif %}
                    </h3>
                     <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                         <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>

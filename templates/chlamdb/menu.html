@@ -86,8 +86,12 @@
                 </ul>
             <li class="rollmenu"><a href="">Effectors</a>
                 <ul>
-                    <li class="item5"><a href="{% url 'interpro_taxonomy' %}">Euk. domains</a>
+                    <li class="item5"><a href="{% url 'interpro_taxonomy' %}">Euk. domains (IP)</a>
                     </li>
+
+                    <li class="item5"><a href="{% url 'interpro_taxonomy' %}">Euk. domains (pfam)</a>
+                    </li>
+
                     <li class="item5"><a href="{% url 'blastnr_euk' %}">Euk. RefSeq hits</a>
                     </li>
                     {% if biodb == 'chlamydia_04_16'%}
