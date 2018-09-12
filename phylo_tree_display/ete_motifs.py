@@ -23,7 +23,7 @@ def _get_colors(num_colors):
 
 
 
-def get_taxon2name2count(biodb, id_list, type="COG"):
+def get_taxon2name2count(biodb, id_list, type="COG", taxon_filter=False):
 
     '''
     get presence/absence of pfam domain(s) in all organisms of database "biodb"
@@ -39,14 +39,25 @@ def get_taxon2name2count(biodb, id_list, type="COG"):
     server, db =manipulate_biosqldb.load_db(biodb)
 
     ortho_sql = '"' + '","'.join(id_list) + '"'
+
     if type !='orthogroup':
-        sql = 'show columns from comparative_tables.%s_%s' % (type, biodb)
-        ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
-        sql = 'select * from comparative_tables.%s_%s where id in (%s)' % (type, biodb, ortho_sql)
+        if taxon_filter:
+            col_filter = 'id,`' + '`,`'.join(taxon_filter) + '`'
+            ordered_taxons = taxon_filter
+        else:
+            col_filter = '*'
+            sql = 'show columns from comparative_tables.%s_%s' % (type, biodb)
+            ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
+        sql = 'select %s from comparative_tables.%s_%s where id in (%s)' % (col_filter, type, biodb, ortho_sql)
     else:
-        sql = 'show columns from comparative_tables.orthology_%s' % (biodb)
-        ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
-        sql = 'select * from comparative_tables.orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
+        if taxon_filter:
+            col_filter = 'orthogroup,`' + '`,`'.join(taxon_filter) + '`'
+            ordered_taxons = taxon_filter
+        else:
+            col_filter = '*'
+            sql = 'show columns from comparative_tables.orthology_%s' % (biodb)
+            ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
+        sql = 'select %s from comparative_tables.orthology_%s where orthogroup in (%s)' % (col_filter, biodb, ortho_sql)
     #print sql
     profile_tuples = list(server.adaptor.execute_and_fetchall(sql,))
 
@@ -208,7 +219,8 @@ def combined_profiles_heatmap(biodb,
                               column_labels,
                               taxon2group2count,
                               taxon2motif2count,
-                              ec2orthogroups):
+                              ec2orthogroups,
+                              rotate=False):
 
     '''
     motives (or EC or cogs) are sometimes missed by the annotation. One possibility is to
@@ -224,7 +236,7 @@ def combined_profiles_heatmap(biodb,
     '''
 
     #print ec2orthogroups
-
+    from ete3 import TreeStyle
     import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -232,7 +244,7 @@ def combined_profiles_heatmap(biodb,
     sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
     tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
-    #print tree
+
     t1 = Tree(tree)
 
     R = t1.get_midpoint_outgroup()
@@ -240,6 +252,8 @@ def combined_profiles_heatmap(biodb,
     t1.ladderize()
 
     taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+
+    tss=TreeStyle()
 
     head = True
     for lf in t1.iter_leaves():
@@ -250,23 +264,27 @@ def combined_profiles_heatmap(biodb,
                 #'first row, print gene names'
                 #print 'ok!'
                 n = TextFace(' %s ' % str(value))
-                n.rotation= 270
+                n.vt_align = 2
+                n.hz_align = 2
+                n.rotation = 270
                 n.margin_top = 2
                 n.margin_right = 2
                 n.margin_left = 2
-                n.margin_bottom = 2
+                n.margin_bottom = 6
 
                 n.inner_background.color = "white"
                 n.opacity = 1.
-                lf.add_face(n, col, position="aligned")
+                if rotate:
+                    n.rotation = 270
+                tss.aligned_header.add_face(n, col)
             try:
                 n = TextFace(' %s ' % str(taxon2motif2count[value][lf.name]))
             except:
                  n = TextFace(' - ')
-            n.margin_top = 2
-            n.margin_right = 2
-            n.margin_left = 2
-            n.margin_bottom = 2
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 1
+            n.margin_bottom = 1
             # if motif + ==> red
             try:
                 count = taxon2motif2count[value][lf.name]
@@ -292,14 +310,14 @@ def combined_profiles_heatmap(biodb,
                 # if no orthologue ==> white
                 else:
                     n.inner_background.color = 'white'
-
+            if rotate:
+               n.rotation= 270
             lf.add_face(n, col, position="aligned")
         lf.name = taxon_id2organism_name[lf.name]
 
         head=False
 
-    return t1
-
+    return t1, tss
 
 
 def reverse_colourmap(cmap, name = 'my_cmap_r'):
@@ -1294,6 +1312,8 @@ def multiple_profiles_heatmap_nobiodb(column_labels,
                             else:
                                 n.inner_background.color = 'white'
                 else:
+                    # taxon2group2value set
+                    # use it to color background
                     try:
                         n = TextFace(' %s ' % str(group2taxon2count[value][lf.name]))
                     except:
