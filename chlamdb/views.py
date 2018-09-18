@@ -2954,6 +2954,7 @@ def COG_phylo_heatmap(request, frequency):
 
     return render(request, 'chlamdb/COG_phylo_heatmap.html', locals())
 
+@login_required
 def venn_candidate_effectors(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -3133,7 +3134,7 @@ def venn_candidate_effectors(request):
     envoi_venn = True
     return render(request, 'chlamdb/venn_euk_domains.html', locals())
 
-
+@login_required
 def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
 
 
@@ -3365,7 +3366,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
 
     return render(request, 'chlamdb/interpro_taxonomy_homologs.html', locals())
 
-
+@login_required
 def interpro_taxonomy_with_homologs(request, domain, percentage):
 
 
@@ -7664,7 +7665,7 @@ def effector_pred(request):
     return render(request, 'chlamdb/effector_pred.html', locals())
 
 
-
+@login_required
 def interpro_taxonomy(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
