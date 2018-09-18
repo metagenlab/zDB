@@ -1292,7 +1292,7 @@ def extract_EC(request):
 
 
                 labels = match_groups
-                tree2 = ete_motifs.combined_profiles_heatmap(biodb,
+                tree2, style2 = ete_motifs.combined_profiles_heatmap(biodb,
                                                              labels,
                                                              taxon2orthogroup2count,
                                                              taxon2enzyme2count,
@@ -1316,7 +1316,7 @@ def extract_EC(request):
                     path2 = settings.BASE_DIR + '/assets/temp/profil_tree.svg'
                     asset_path = '/temp/profil_tree.svg'
 
-                    tree2.render(path2, dpi=800, h=600)
+                    tree2.render(path2, dpi=800, h=600, tree_style=style2)
 
 
 
@@ -2954,8 +2954,187 @@ def COG_phylo_heatmap(request, frequency):
 
     return render(request, 'chlamdb/COG_phylo_heatmap.html', locals())
 
+def venn_candidate_effectors(request):
+    biodb = settings.BIODB
+    server, db = manipulate_biosqldb.load_db(biodb)
 
-def interpro_taxonom_with_homologs(request, domain, percentage):
+    print('venn_candidate_effectors')
+
+    taxid_list = [1279839,1279496,1035343,314,886707,804807,48,283,55,1279822,46,1279815,49,87925,52,1137444,67,1172028,1069693,1172027,307,59,60,313,1069694,62,1143376,293,1279767,1279497,1279774,64,66]
+    taxid_list = [str(i) for i in taxid_list]
+
+    '''
+    taxid_list = ['67',
+'1279774',
+'1279496',
+'1280030',
+'1280034',
+'1279969',
+'48',
+'46',
+'55',
+'87925',
+'1279815',
+'1280079',
+'1279822',
+'66',
+'1280085',
+'52',
+'49',
+'64',
+'60',
+'804807',
+'886707',
+'283',
+'314',
+'1069693',
+'1280091',
+'1137444',
+'1280044',
+'288',
+'290',
+'1172027',
+'1172028',
+'1035343',
+'315',
+'293',
+'1117985',
+'1280098',
+'1280035',
+'1280065',
+'1280069',
+'1280073',
+'1279839',
+'1279972',
+'1279975',
+'1279978',
+'1279981',
+'1279984',
+'1279987',
+'1279990',
+'1279993',
+'1279996',
+'1279999',
+'1280002',
+'1280005',
+'1280008',
+'1280011',
+'1280014',
+'1280017',
+'1280020',
+'1279497']
+    '''
+
+    pfam_bacteria_freq_cutoff = '0.01'
+    pfam_eukaryota_freq_cutoff = '0'
+    interpro_euk_cutoff='95'
+
+    sql_locus_tag_pfam = 'select distinct t5.locus_tag from interpro.interpro_signature2pfam_id_%s t1  ' \
+                         ' inner join interpro.interpro_%s t2 on t1.signature_id=t2.signature_id ' \
+                         ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id ' \
+                         ' inner join interpro.signature t4 on t1.signature_id=t4.signature_id ' \
+                         ' inner join annotation.seqfeature_id2locus_%s t5 on t2.seqfeature_id=t5.seqfeature_id' \
+                         ' where bacteria_freq<=%s and eukaryota_freq>%s and taxon_id in (%s);' % (biodb,
+                                                                                                   biodb,
+                                                                                                   biodb,
+                                                                                                   pfam_bacteria_freq_cutoff,
+                                                                                                   pfam_eukaryota_freq_cutoff,
+                                                                                                   ','.join(taxid_list))
+
+    locus_tag_list_pfam = [i[0] for i in server.adaptor.execute_and_fetchall(sql_locus_tag_pfam,)]
+
+
+    sql_locus_tag_interpro = 'select distinct locus_tag from interpro.interpro_%s t1 ' \
+                             ' inner join interpro.signature t2 on t1.signature_id=t2.signature_id ' \
+                             ' inner join interpro.interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id ' \
+                             ' inner join annotation.seqfeature_id2locus_%s t5 on t1.seqfeature_id=t5.seqfeature_id ' \
+                             ' where p_eukaryote>%s and taxon_id in (%s);' % (biodb,
+                                                                              biodb,
+                                                                              interpro_euk_cutoff,
+                                                                              ','.join(taxid_list))
+
+    locus_tag_list_interpro = [i[0] for i in server.adaptor.execute_and_fetchall(sql_locus_tag_interpro, )]
+
+
+
+    sql_locus_tag_blast_refseq = 'select distinct locus_tag from blastnr.blastnr_best_non_self_phylum_%s t1' \
+                      ' inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                      ' where superkingdom="Eukaryota" and t1.query_taxon_id in (%s);' % (biodb,
+                                                                                    biodb,
+                                                                                    ','.join(taxid_list))
+
+    locus_tag_list_blastnr = [i[0] for i in server.adaptor.execute_and_fetchall(sql_locus_tag_blast_refseq, )]
+
+    sql_locus_tag_effectiveT3 = 'select distinct t2.locus_tag from effectors.predicted_effectiveT3_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    locus_tag_list_effective_T3 = [i[0] for i in server.adaptor.execute_and_fetchall(sql_locus_tag_effectiveT3, )]
+
+    sql_locus_tag_T3MM = 'select distinct t2.locus_tag from effectors.predicted_T3MM_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s) and probability >0.5;' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    locus_tag_list_effective_T3MM = [i[0] for i in server.adaptor.execute_and_fetchall(sql_locus_tag_T3MM, )]
+
+    sql_locus_tag_BPBAac = 'select distinct t2.locus_tag from effectors.predicted_BPBAac_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    locus_tag_list_effective_BPBAac = [i[0] for i in server.adaptor.execute_and_fetchall(sql_locus_tag_BPBAac, )]
+
+    sql_locus_tag_ELD = 'select distinct t2.locus_tag from effectors.predicted_ELD_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s) and score >=10;' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    locus_tag_list_effective_ELD = [i[0] for i in server.adaptor.execute_and_fetchall(sql_locus_tag_ELD, )]
+
+
+    interpro_or_pfam_not_in_blastnr = []
+    for locus in locus_tag_list_interpro:
+        if locus not in locus_tag_list_blastnr and locus not in interpro_or_pfam_not_in_blastnr:
+            interpro_or_pfam_not_in_blastnr.append(locus)
+    for locus in locus_tag_list_pfam:
+        if locus not in locus_tag_list_blastnr and locus not in interpro_or_pfam_not_in_blastnr:
+            interpro_or_pfam_not_in_blastnr.append(locus)
+
+    sql = 'select species, count(*) as n from (' \
+          ' select t1.locus_tag,t2.subject_taxon_id from annotation.seqfeature_id2locus_%s t1 ' \
+          ' left join blastnr.blastnr_best_non_self_phylum_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+          ' where locus_tag in (%s)) A left join blastnr.blastnr_taxonomy B on  A.subject_taxon_id=taxon_id ' \
+          ' group by family order by n DESC;' % (biodb, biodb,
+                                                 '"'+'","'.join(interpro_or_pfam_not_in_blastnr)+'"')
+
+    data = server.adaptor.execute_and_fetchall(sql, )
+    for row in data:
+        print('%s\t%s' % (row[0], row[1]))
+    serie_pfam = '{name: "pfam", data: %s}' % locus_tag_list_pfam
+    serie_interpro = '{name: "interpro", data: %s}' % locus_tag_list_interpro
+    serie_blastnr = '{name: "blastnr", data: %s}' % locus_tag_list_blastnr
+    serie_effective_T3 = '{name: "effectiveT3", data: %s}' % locus_tag_list_effective_T3
+    serie_effective_T3MM = '{name: "T3MM", data: %s}' % locus_tag_list_effective_T3MM
+    serie_effective_BPBAac = '{name: "BPBAac", data: %s}' % locus_tag_list_effective_BPBAac
+    serie_effective_ELD = '{name: "ELD", data: %s}' % locus_tag_list_effective_ELD
+
+    #series = [serie_pfam, serie_interpro, serie_blastnr, serie_effective_ELD] # serie_effective_T3, serie_effective_T3MM
+
+    series = [serie_effective_T3, serie_effective_T3MM, serie_effective_BPBAac]
+    series = [serie_pfam, serie_interpro,serie_blastnr]
+    series_string = '[%s]' % ','.join(series)
+    pfam2description = {}
+    envoi_venn = True
+    return render(request, 'chlamdb/venn_euk_domains.html', locals())
+
+
+def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
 
 
     from ete3 import TreeStyle
@@ -2967,20 +3146,89 @@ def interpro_taxonom_with_homologs(request, domain, percentage):
         server, db = manipulate_biosqldb.load_db(biodb)
 
         taxid_list = ['1279839', '1279496', '1035343', '314', '886707', '804807', '48', '283', '55', '1279822', '46', '1279815', '49', '87925', '52', '1137444', '67', '1172028', '1069693', '1172027', '307', '59', '60', '313', '1069694', '62', '1143376', '293', '1279767', '1279497', '1279774', '64', '66']
+        taxid_list = ['314', '886707', '804807', '48', '283', '55', '1279822', '46', '1279815', '49', '87925', '52']
 
-        sql = 'select * from (select distinct interpro_accession from biosqldb.interpro_%s where ' \
-              ' interpro_accession!="0" and taxon_id in (%s))A inner join interpro.entry B on A.interpro_accession=B.name ' \
-              ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where %s>=%s;' % (biodb,
-                                                                                                              ','.join(
-                                                                                                                  taxid_list),
-                                                                                                              domain,
-                                                                                                              percentage)
+        '''
+        taxid_list = ['67',
+                      '1279774',
+                      '1279496',
+                      '1280030',
+                      '1280034',
+                      '1279969',
+                      '48',
+                      '46',
+                      '55',
+                      '87925',
+                      '1279815',
+                      '1280079',
+                      '1279822',
+                      '66',
+                      '1280085',
+                      '52',
+                      '49',
+                      '64',
+                      '60',
+                      '804807',
+                      '886707',
+                      '283',
+                      '314',
+                      '1069693',
+                      '1280091',
+                      '1137444',
+                      '1280044',
+                      '288',
+                      '290',
+                      '1172027',
+                      '1172028',
+                      '1035343',
+                      '315',
+                      '293',
+                      '1117985',
+                      '1280098',
+                      '1280035',
+                      '1280065',
+                      '1280069',
+                      '1280073',
+                      '1279839',
+                      '1279972',
+                      '1279975',
+                      '1279978',
+                      '1279981',
+                      '1279984',
+                      '1279987',
+                      '1279990',
+                      '1279993',
+                      '1279996',
+                      '1279999',
+                      '1280002',
+                      '1280005',
+                      '1280008',
+                      '1280011',
+                      '1280014',
+                      '1280017',
+                      '1280020',
+                      '1279497']
+        '''
+        sql = 'select distinct signature_accession,signature_description from ' \
+              ' (select t4.*,t5.* from interpro.interpro_signature2pfam_id_%s t1 ' \
+              ' inner join interpro.interpro_%s t2 on t1.signature_id=t2.signature_id ' \
+              ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id ' \
+              ' inner join interpro.signature t4 on t1.signature_id=t4.signature_id ' \
+              ' inner join annotation.seqfeature_id2locus_%s t5 on t2.seqfeature_id=t5.seqfeature_id ' \
+              ' where bacteria_freq<=%s and eukaryota_freq>=%s and taxon_id in (%s)) A;' % (biodb,
+                                                                                            biodb,
+                                                                                            biodb,
+                                                                                            bacteria_freq,
+                                                                                            eukaryote_freq,
+                                                                                            ','.join(
+                                                                                                taxid_list))
 
         data = server.adaptor.execute_and_fetchall(sql, )
-        interpro2description = {}
+        pfam2description = {}
         for row in data:
-            interpro2description[row[0]] = row[3]
+            pfam2description[row[0]] = row[1]
 
+        '''
         # number of groups with identified signature domains
         sql = 'select name,n from (select AA.interpro_id, count(*) as n from ' \
               ' (select distinct A.interpro_id, B.orthogroup_id from ' \
@@ -2994,10 +3242,232 @@ def interpro_taxonom_with_homologs(request, domain, percentage):
                                                                                                                percentage,
                                                                                                                biodb,
                                                                                                                biodb)
-        print(sql)
-        interpro_accession2n_groups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql, ))
+        '''
 
 
+        # get list of all orthogroups with corresponding interpro entry
+        sql = 'select signature_accession, t7.orthogroup_name from interpro.interpro_signature2pfam_id_%s t1 ' \
+              ' inner join interpro.interpro_%s t2 on t1.signature_id=t2.signature_id ' \
+              ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id ' \
+              ' inner join interpro.signature t4 on t1.signature_id=t4.signature_id ' \
+              ' inner join annotation.seqfeature_id2locus_%s t5 on t2.seqfeature_id=t5.seqfeature_id' \
+              ' inner join orthology.seqfeature_id2orthogroup_%s t6 on t2.seqfeature_id=t6.seqfeature_id ' \
+              ' inner join orthology.orthogroup_%s t7 on t6.orthogroup_id=t7.orthogroup_id' \
+              ' where bacteria_freq<=%s and eukaryota_freq>%s and taxon_id in (%s) ' \
+              ' group by signature_description, t7.orthogroup_name;' % (biodb,
+                                                                        biodb,
+                                                                        biodb,
+                                                                        biodb, 
+                                                                        biodb,
+                                                                        bacteria_freq,
+                                                                        eukaryote_freq,
+                                                                        ','.join(
+                                                                        taxid_list))
+
+
+
+        print (sql)
+        orthogroup_data = server.adaptor.execute_and_fetchall(sql, )
+        # print orthogroup_data
+        pfam2orthogroups = {}
+        orthogroup_list = []
+        for i in orthogroup_data:
+            if i[0] not in pfam2orthogroups:
+                pfam2orthogroups[i[0]] = [i[1]]
+            else:
+                pfam2orthogroups[i[0]].append(i[1])
+            orthogroup_list.append(i[1])
+
+        pfam_accession2n_groups = {}
+        for pfam in pfam2orthogroups:
+            pfam_accession2n_groups[pfam] = len(pfam2orthogroups[pfam])
+
+
+        pfam_list = list(set(pfam2orthogroups.keys()))
+
+        taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, orthogroup_list, type="orthogroup", taxon_filter=taxid_list)
+
+        taxon2pfam2count = ete_motifs.get_taxon2name2count(biodb, pfam_list, type="Pfam", taxon_filter=taxid_list)
+
+        # get total euk domain per taxon_id
+        taxon_id2total = {}
+        for taxon_id in taxid_list:
+            taxon_id2total[taxon_id] = 0
+        for accession in taxon2pfam2count:
+            for taxon_id in taxid_list:
+                if int(taxon2pfam2count[accession][taxon_id]) > 0 :
+                    taxon_id2total[taxon_id]+=1
+
+        taxon2pfam2count['TOTAL'] = {}
+        for taxon in taxon_id2total:
+            taxon2pfam2count['TOTAL'][taxon] = taxon_id2total[taxon]
+
+        # rename interpro accession
+        label_list = []
+        for pfam_accession in list(taxon2pfam2count.keys()):
+            if pfam_accession == 'TOTAL':
+                continue
+            try:
+                pfam_des = "%s: %s (%s groups)" % (
+                    pfam_accession,
+                    pfam2description[pfam_accession],
+                    pfam_accession2n_groups[pfam_accession])
+            except:
+                interpro_des = "%s: %s (? groups)" % (pfam_accession,
+                                                      taxon2pfam2count[pfam_accession])
+            taxon2pfam2count[pfam_des] = taxon2pfam2count[pfam_accession]
+            pfam2orthogroups[pfam_des] = pfam2orthogroups[pfam_accession]
+            if pfam_des not in label_list:
+                label_list.append(pfam_des)
+
+        # reporter interpro_accessions based on their frequency
+        accession2count =  {}
+        for i in label_list:
+            accession2count[i] = sum([taxon2pfam2count[i][n] for n in taxon2pfam2count[i]])
+        import pandas
+        freq_table =  pandas.DataFrame.from_dict(accession2count, orient='index')
+        sort = freq_table.sort_values(freq_table.columns[0], ascending=False)
+
+        label_list = ['TOTAL'] + list(sort.index)
+
+        tree, style = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                           label_list,
+                                                           taxon2pfam2count,
+                                                           rotate=True, column_scale=True)
+        style.rotation=90
+
+
+
+        tree2, tss = ete_motifs.combined_profiles_heatmap(biodb,
+                                                     label_list,
+                                                     taxon2orthogroup2count,
+                                                     taxon2pfam2count,
+                                                     pfam2orthogroups,
+                                                     rotate=True,
+                                                          column_scale=True)
+
+
+        module_name = "taxonomy"
+
+        big = False
+        path = settings.BASE_DIR + '/assets/temp/pfam_tree_%s.svg' % module_name
+        asset_path = '/temp/pfam_tree_%s.svg' % module_name
+        tree.render(path, dpi=800, w=600, tree_style=style)
+
+        path2 = settings.BASE_DIR + '/assets/temp/pfam_tree_%s_complete.svg' % module_name
+        asset_path2 = '/temp/pfam_tree_%s_complete.svg' % module_name
+
+        tree2.render(path2, dpi=800, w=600, tree_style=tss)
+
+        envoi = True
+        menu = True
+        valid_id = True
+
+    return render(request, 'chlamdb/interpro_taxonomy_homologs.html', locals())
+
+
+def interpro_taxonomy_with_homologs(request, domain, percentage):
+
+
+    from ete3 import TreeStyle
+
+    biodb = settings.BIODB
+
+    if request.method == 'GET':  # S'il s'agit d'une requête POST
+        import ete_motifs
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+        taxid_list = ['1279839', '1279496', '1035343', '314', '886707', '804807', '48', '283', '55', '1279822', '46', '1279815', '49', '87925', '52', '1137444', '67', '1172028', '1069693', '1172027', '307', '59', '60', '313', '1069694', '62', '1143376', '293', '1279767', '1279497', '1279774', '64', '66']
+        #taxid_list = ['314', '886707', '804807', '48', '283', '55', '1279822', '46', '1279815', '49', '87925', '52']
+        '''
+        taxid_list = ['67',
+                      '1279774',
+                      '1279496',
+                      '1280030',
+                      '1280034',
+                      '1279969',
+                      '48',
+                      '46',
+                      '55',
+                      '87925',
+                      '1279815',
+                      '1280079',
+                      '1279822',
+                      '66',
+                      '1280085',
+                      '52',
+                      '49',
+                      '64',
+                      '60',
+                      '804807',
+                      '886707',
+                      '283',
+                      '314',
+                      '1069693',
+                      '1280091',
+                      '1137444',
+                      '1280044',
+                      '288',
+                      '290',
+                      '1172027',
+                      '1172028',
+                      '1035343',
+                      '315',
+                      '293',
+                      '1117985',
+                      '1280098',
+                      '1280035',
+                      '1280065',
+                      '1280069',
+                      '1280073',
+                      '1279839',
+                      '1279972',
+                      '1279975',
+                      '1279978',
+                      '1279981',
+                      '1279984',
+                      '1279987',
+                      '1279990',
+                      '1279993',
+                      '1279996',
+                      '1279999',
+                      '1280002',
+                      '1280005',
+                      '1280008',
+                      '1280011',
+                      '1280014',
+                      '1280017',
+                      '1280020',
+                      '1279497']
+        '''
+        sql = 'select * from (select distinct interpro_accession from biosqldb.interpro_%s where ' \
+              ' interpro_accession!="0" and taxon_id in (%s))A inner join interpro.entry B on A.interpro_accession=B.name ' \
+              ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where %s>=%s;' % (biodb,
+                                                                                                              ','.join(
+                                                                                                                  taxid_list),
+                                                                                                              domain,
+                                                                                                              percentage)
+
+        data = server.adaptor.execute_and_fetchall(sql, )
+        interpro2description = {}
+        for row in data:
+            interpro2description[row[0]] = row[3]
+
+        '''
+        # number of groups with identified signature domains
+        sql = 'select name,n from (select AA.interpro_id, count(*) as n from ' \
+              ' (select distinct A.interpro_id, B.orthogroup_id from ' \
+              ' (select distinct seqfeature_id,t2.interpro_id from interpro.interpro_%s t1 ' \
+              ' inner join interpro.signature t2 on t1.signature_id=t2.signature_id ' \
+              ' inner join interpro.interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
+              ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
+              ' inner join orthology.orthogroup_%s C on B.orthogroup_id=C.orthogroup_id) AA ' \
+              ' group by AA.interpro_id) BB inner join interpro.entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
+                                                                                                               domain,
+                                                                                                               percentage,
+                                                                                                               biodb,
+                                                                                                               biodb)
+        '''
 
 
         # get list of all orthogroups with corresponding interpro entry
@@ -3028,15 +3498,34 @@ def interpro_taxonom_with_homologs(request, domain, percentage):
                 interpro2orthogroups[i[0]].append(i[1])
             orthogroup_list.append(i[1])
 
+        interpro_accession2n_groups = {}
+        for interpro in interpro2orthogroups:
+            interpro_accession2n_groups[interpro] = len(interpro2orthogroups[interpro])
+
+
         interpro_list = list(set(interpro2orthogroups.keys()))
 
         taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, orthogroup_list, type="orthogroup", taxon_filter=taxid_list)
 
         taxon2interpro2count = ete_motifs.get_taxon2name2count(biodb, interpro_list, type="interpro", taxon_filter=taxid_list)
 
+        # get total euk domain per taxon_id
+        taxon_id2total = {}
+        for taxon_id in taxid_list:
+            taxon_id2total[taxon_id] = 0
+        for accession in taxon2interpro2count:
+            for taxon_id in taxid_list:
+                if int(taxon2interpro2count[accession][taxon_id]) > 0 :
+                    taxon_id2total[taxon_id]+=1
+        taxon2interpro2count['TOTAL'] = {}
+        for taxon in taxon_id2total:
+            taxon2interpro2count['TOTAL'][taxon] = taxon_id2total[taxon]
+
         # rename interpro accession
         label_list = []
         for interpro_accession in list(taxon2interpro2count.keys()):
+            if interpro_accession == 'TOTAL':
+                continue
             try:
                 interpro_des = "%s: %s (%s groups)" % (
                     interpro_accession,
@@ -3049,6 +3538,11 @@ def interpro_taxonom_with_homologs(request, domain, percentage):
             interpro2orthogroups[interpro_des] = interpro2orthogroups[interpro_accession]
             if interpro_des not in label_list:
                 label_list.append(interpro_des)
+
+
+
+
+
         # reporter interpro_accessions based on their frequency
         accession2count =  {}
         for i in label_list:
@@ -3057,12 +3551,12 @@ def interpro_taxonom_with_homologs(request, domain, percentage):
         freq_table =  pandas.DataFrame.from_dict(accession2count, orient='index')
         sort = freq_table.sort_values(freq_table.columns[0], ascending=False)
 
-        label_list = list(sort.index)
+        label_list = ['TOTAL']+list(sort.index)
 
         tree, style = ete_motifs.multiple_profiles_heatmap(biodb,
                                                            label_list,
                                                            taxon2interpro2count,
-                                                           rotate=True)
+                                                           rotate=True, column_scale=True)
         style.rotation=90
 
 
@@ -3072,13 +3566,10 @@ def interpro_taxonom_with_homologs(request, domain, percentage):
                                                      taxon2orthogroup2count,
                                                      taxon2interpro2count,
                                                      interpro2orthogroups,
-                                                     rotate=True)
+                                                     rotate=True,
+                                                          column_scale=True)
 
-        tss.show_branch_support = False
-        tss.draw_guiding_lines = True
-        tss.guiding_lines_color = "gray"
-        tss.show_leaf_name = True
-        tss.rotation = 90
+
         module_name = "taxonomy"
 
         big = False
@@ -3096,7 +3587,7 @@ def interpro_taxonom_with_homologs(request, domain, percentage):
         menu = True
         valid_id = True
 
-    return render(request, 'chlamdb/KEGG_module_map.html', locals())
+    return render(request, 'chlamdb/interpro_taxonomy_homologs.html', locals())
 
 
 
@@ -3148,7 +3639,7 @@ def KEGG_module_map(request, module_name):
         labels = ko_list
         tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2ko2count)
 
-        tree2 = ete_motifs.combined_profiles_heatmap(biodb,
+        tree2, style2 = ete_motifs.combined_profiles_heatmap(biodb,
                                                      labels,
                                                      taxon2orthogroup2count,
                                                      taxon2ko2count,
@@ -3172,7 +3663,7 @@ def KEGG_module_map(request, module_name):
             path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % module_name
             asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % module_name
 
-            tree2.render(path2, dpi=800, h=600)
+            tree2.render(path2, dpi=800, h=600, tree_style=style2)
 
 
         ko_url = '+' + '+'.join(ko_list)
@@ -3282,7 +3773,7 @@ def KEGG_mapp_ko(request, map_name):
         labels = ko_list_found_in_db
         tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2ko2count)
 
-        tree2 = ete_motifs.combined_profiles_heatmap(biodb,
+        tree2, style2 = ete_motifs.combined_profiles_heatmap(biodb,
                                                      labels,
                                                      taxon2orthogroup2count,
                                                      taxon2ko2count,
@@ -3299,7 +3790,7 @@ def KEGG_mapp_ko(request, map_name):
             path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.png' % map_name
             asset_path2 = '/temp/KEGG_tree_%s_complete.png' % map_name
             print (path2)
-            tree2.render(path2, dpi=800, h=600)
+            tree2.render(path2, dpi=800, h=600, tree_style=style2)
 
         else:
             big = False
@@ -3310,7 +3801,7 @@ def KEGG_mapp_ko(request, map_name):
             path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
             asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % map_name
             print (path2)
-            tree2.render(path2, dpi=800, h=600)
+            tree2.render(path2, dpi=800, h=600, tree_style=style2)
         envoi = True
         menu = True
         valid_id = True
@@ -3383,7 +3874,7 @@ def KEGG_mapp_ko_organism(request, map_name, taxon_id):
         labels = ko_list_found_in_db
         tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2ko2count)
 
-        tree2 = ete_motifs.combined_profiles_heatmap(biodb,
+        tree2, style2 = ete_motifs.combined_profiles_heatmap(biodb,
                                                      labels,
                                                      taxon2orthogroup2count,
                                                      taxon2ko2count,
@@ -3405,7 +3896,7 @@ def KEGG_mapp_ko_organism(request, map_name, taxon_id):
             path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
             asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % map_name
 
-            tree2.render(path2, dpi=800, h=600)
+            tree2.render(path2, dpi=800, h=600, tree_style=style2)
         envoi = True
         menu = True
         valid_id = True
@@ -3492,7 +3983,7 @@ def KEGG_mapp(request, map_name):
         labels = enzyme_list_found_in_db
         tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2enzyme2count)
 
-        tree2 = ete_motifs.combined_profiles_heatmap(biodb,
+        tree2, style2 = ete_motifs.combined_profiles_heatmap(biodb,
                                                      labels,
                                                      taxon2orthogroup2count,
                                                      taxon2enzyme2count,
@@ -3518,7 +4009,7 @@ def KEGG_mapp(request, map_name):
             path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
             asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % map_name
 
-            tree2.render(path2, dpi=800, h=600)
+            tree2.render(path2, dpi=800, h=600, tree_style=style2)
         envoi = True
         menu = True
         valid_id = True
@@ -6147,6 +6638,7 @@ def blastnr_euk(request):
                       ' from blastnr.blastnr_%s t1 inner join blastnr.blastnr_taxonomy t2 on t1.subject_taxid=t2.taxon_id ' \
                       ' where t2.superkingdom = "Eukaryota" group by t1.query_taxon_id, t1.seqfeature_id) A ' \
                       ' group by A.query_taxon_id;' % biodb
+
     #print 'taxon_id2best_hit_euks...'
     #taxon_id2n_best_hits_euk = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_best_hit_euk,))
 
@@ -6789,7 +7281,7 @@ def blastnr_top_non_phylum(request):
 
             if selection == 'all':
                 sql = 'select t4.locus_tag,t5.product,t5.gene,t1.hit_number,t1.percent_identity,t3.kingdom,t3.class,' \
-                      ' t3.subclass,t3.order,t3.family,t3.species,t1.subject_accession,t1.subject_title from blastnr.blastnr_best_non_self_phylum_%s t1' \
+                      ' t3.order,t3.family,t3.species,t1.subject_accession,t1.subject_title from blastnr.blastnr_best_non_self_phylum_%s t1' \
                       ' inner join blastnr.blastnr_taxonomy t3 on t1.subject_taxon_id=t3.taxon_id ' \
                       ' inner join custom_tables.locus2seqfeature_id_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
                       ' inner join biosqldb.orthology_detail_%s t5 on t4.locus_tag=t5.locus_tag  ' \
@@ -6801,7 +7293,7 @@ def blastnr_top_non_phylum(request):
 
             if selection == 'specific':
                 sql = 'select t4.locus_tag,t5.product,t5.gene,t1.hit_number,t1.percent_identity,t3.kingdom,t3.class,' \
-                      ' t3.subclass,t3.order,t3.family,t3.species,t1.subject_accession,t1.subject_title from blastnr.blastnr_best_non_self_phylum_%s t1 ' \
+                      't3.order,t3.family,t3.species,t1.subject_accession,t1.subject_title from blastnr.blastnr_best_non_self_phylum_%s t1 ' \
                       ' inner join custom_tables.seqfeature_id2n_species_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                       ' inner join blastnr.blastnr_taxonomy t3 on t1.subject_taxon_id=t3.taxon_id ' \
                       ' inner join custom_tables.locus2seqfeature_id_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
