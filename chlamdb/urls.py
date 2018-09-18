@@ -1,8 +1,27 @@
 from django.conf.urls import url
 from . import views
 from django.contrib.auth import logout
+from django.contrib.sitemaps.views import sitemap
+
+from django.urls import reverse
+from django.contrib.sitemaps import Sitemap
+
+
+class ViewSitemap(Sitemap):
+    """Reverse 'static' views for XML sitemap."""
+
+    def items(self):
+        # Return list of url names for views to include in sitemap
+        return ['home', 'about']
+
+    def location(self, item):
+        return reverse(item)
+
+
+sitemaps = {'views': ViewSitemap}
 
 urlpatterns = [
+                       url(r'^sitemap.xml$', sitemap, {'sitemaps': sitemaps}),
                        url(r'^home/$', views.home, name="home"),
                        url(r'^blastnr_euk/$', views.blastnr_euk, name="blastnr_euk"),
                        url(r'^cog_barchart/$', views.cog_barchart, name="cog_barchart"),
