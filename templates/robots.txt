@@ -9,6 +9,7 @@ Disallow: /KEGG_module_map/*
 Disallow: /*.jpg$
 Disallow: /*.png$
 Disallow: /*.gif$
+Disallow: /*.svg$
 Allow: /
 
 Sitemap : http://www.chlamdb.ch/sitemap
