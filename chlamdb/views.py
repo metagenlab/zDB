@@ -6577,7 +6577,7 @@ def pairwiseCDS_length(request):
 
 
 
-
+@login_required
 def blastnr_euk(request):
     biodb = settings.BIODB
 
@@ -7449,7 +7449,7 @@ def blastnr_barchart(request):
     return render(request, 'chlamdb/blastnr_best_barplot.html', locals())
 
 
-
+@login_required
 def effector_pred(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
