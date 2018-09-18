@@ -10,6 +10,31 @@ Disallow: /*.jpg$
 Disallow: /*.png$
 Disallow: /*.gif$
 Disallow: /*.svg$
+Disallow: /extract_orthogroup/*
+Disallow: /extract_cog/*
+Disallow: /extract_pfam/*
+Disallow: /extract_interpro/*
+Disallow: /extract_EC/*
+Disallow: /extract_ko/*
+Disallow: /pairwiseid/*
+Disallow: /pairwiseCDS_length/*
+Disallow: /transporters/*
+Disallow: /plot_region/*
+Disallow: /circos/*
+Disallow: /priam_kegg/*
+Disallow: /metabo_overview/*
+Disallow: /kegg_module/*
+Disallow: /blastnr_barchart/*
+Disallow: /interpro_taxonomy/*
+Disallow: /blastnr_euk/*
+Disallow: /interpro_taxonomy/*
+Disallow: /effector_pred/*
+Disallow: /locus_int/*
+Disallow: /add_locus_int/*
+Disallow: /effector_pred/*
+Disallow: /orthogroup_annotation/*
+Disallow: /extract_region/*
+
 Allow: /
 
 Sitemap : http://www.chlamdb.ch/sitemap
