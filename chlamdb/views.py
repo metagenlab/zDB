@@ -8545,6 +8545,23 @@ def orthogroups(request):
 
     return render(request, 'chlamdb/orthogroups.html', locals())
 
+
+def sitemap(request):
+    from io import StringIO
+    map = '''<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>http://chlamdb.ch/</loc></url><url><loc>http://chlamdb.ch/about</loc></url>
+</urlset>'''
+
+    strio = StringIO()
+    strio.write(map)
+    response = HttpResponse(content_type='text/xml')
+    #response.content_type = "text/xml"
+    #response['Content-Disposition'] = 'attachment; filename="sitemap.xml"'
+    response.write(strio.getvalue())
+    return response
+
+
 def get_orthogroup_fasta(request, orthogroup, seqtype):
     biodb = settings.BIODB
     from io import StringIO

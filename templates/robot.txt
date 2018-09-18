@@ -1,0 +1,22 @@
+User-agent : Googlebot
+Disallow : /nongooglebot/
+
+User-agent: *
+Disallow: /*?
+
+User-agent: *
+Disallow: /query?kw=*
+
+User-agent: *
+Disallow: /locusx/*
+
+User-agent: *
+Disallow: /fam/*
+
+User-agent: *
+Disallow: /KEGG_mapp/*
+
+User-agent: *
+Disallow: /KEGG_module_map/*
+
+Sitemap : http://www.chlamdb.ch/sitemap
