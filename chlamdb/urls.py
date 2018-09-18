@@ -24,7 +24,7 @@ sitemaps = {'views': ViewSitemap}
 
 # url(r'^sitemap.xml$', sitemap, {'sitemaps': sitemaps}),
 
-urlpatterns = [        url('^robot.txt$', TemplateView.as_view(template_name='robot.txt', content_type='text/plain')),
+urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
                        url(r'^sitemap$', views.sitemap, name="sitemap"),
                        url(r'^home/$', views.home, name="home"),
                        url(r'^blastnr_euk/$', views.blastnr_euk, name="blastnr_euk"),
