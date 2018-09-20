@@ -34,7 +34,17 @@ Disallow: /add_locus_int/*
 Disallow: /effector_pred/*
 Disallow: /orthogroup_annotation/*
 Disallow: /extract_region/*
+Disallow: /KEGG_mapp_ko/*
+Disallow: /genome_annotation/*
+Disallow: /venn_orthogroup
+Disallow: /orthogroup_comparison
+Disallow: /hmm2circos
+Disallow: /blast_sets
+Disallow: /metabo_comparison_ko
+Disallow: /metabo_comparison_ko
+Disallow: /
 
-Allow: /
+Allow: /about
+Allow: /index
 
 Sitemap : http://www.chlamdb.ch/sitemap
