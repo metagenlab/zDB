@@ -157,7 +157,7 @@ def plot_tree_stacked_barplot(tree_file,
 
             if header_list2:
                 for col, header in enumerate(header_list2):
-                    n = TextFace('%s %s' % (header, col+col_add))
+                    n = TextFace('%s' % (header))
                     n.margin_top = 1
                     n.margin_right = 1
                     n.margin_left = 20

@@ -220,7 +220,8 @@ def combined_profiles_heatmap(biodb,
                               taxon2group2count,
                               taxon2motif2count,
                               ec2orthogroups,
-                              rotate=False):
+                              rotate=False,
+                              column_scale=False):
 
     '''
     motives (or EC or cogs) are sometimes missed by the annotation. One possibility is to
@@ -238,6 +239,7 @@ def combined_profiles_heatmap(biodb,
     #print ec2orthogroups
     from ete3 import TreeStyle
     import manipulate_biosqldb
+    from matplotlib.colors import rgb2hex
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -254,6 +256,31 @@ def combined_profiles_heatmap(biodb,
     taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
     tss=TreeStyle()
+    tss.show_branch_support = False
+    tss.draw_guiding_lines = True
+    tss.guiding_lines_color = "gray"
+    tss.show_leaf_name = False
+    if rotate:
+        tss.rotation = 90
+
+    if column_scale:
+        import matplotlib.cm as cm
+        from matplotlib.colors import rgb2hex
+        import matplotlib as mpl
+        column2scale = {}
+        column2max = {}
+        for column in column_labels:
+            values = [float(i) for i in taxon2motif2count[column].values()]
+            #print values, column
+            norm = mpl.colors.Normalize(vmin=min(values), vmax=max(values))
+
+            cmap = cm.OrRd
+            m = cm.ScalarMappable(norm=norm, cmap=cmap)
+            column2scale[column] = m
+            if min(values) == max(values):
+                column2max[column] = max(values)*2
+            else:
+                column2max[column] = max(values)
 
     head = True
     for lf in t1.iter_leaves():
@@ -278,21 +305,37 @@ def combined_profiles_heatmap(biodb,
                     n.rotation = 270
                 tss.aligned_header.add_face(n, col)
             try:
-                n = TextFace(' %s ' % str(taxon2motif2count[value][lf.name]))
+                if rotate:
+                    if int(taxon2motif2count[value][lf.name]) < 10:
+                        n = TextFace('  %s  ' % str(taxon2motif2count[value][lf.name]))
+                    elif int(taxon2motif2count[value][lf.name]) < 100:
+                        n = TextFace(' %s ' % str(taxon2motif2count[value][lf.name]))
+                    else:
+                        n = TextFace('%s ' % str(taxon2motif2count[value][lf.name]))
+                else:
+                    n = TextFace(' %s ' % str(taxon2motif2count[value][lf.name]))
+                if column_scale:
+                    if float(taxon2motif2count[value][lf.name]) >= 0.6*column2max[value]:
+                        n.fgcolor = 'white'
             except:
                  n = TextFace(' - ')
-            n.margin_top = 1
-            n.margin_right = 1
-            n.margin_left = 1
-            n.margin_bottom = 1
+            n.margin_top = 2
+            n.margin_right = 2
+            n.margin_left = 2
+            n.margin_bottom = 2
             # if motif + ==> red
             try:
                 count = taxon2motif2count[value][lf.name]
             except:
                 count = 0
             if count >0:
+                # red
                 #n.inner_background.color = "#FA5858"
-                n.inner_background.color = "#58ACFA"
+                # blue
+                if not column_scale:
+                    n.inner_background.color = "#58ACFA"
+                else:
+                    n.inner_background.color = rgb2hex(column2scale[value].to_rgba(float(count)))
 
             else:
                 orthologue = False
@@ -313,9 +356,27 @@ def combined_profiles_heatmap(biodb,
             if rotate:
                n.rotation= 270
             lf.add_face(n, col, position="aligned")
-        lf.name = taxon_id2organism_name[lf.name]
+        n = TextFace(taxon_id2organism_name[lf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
+        lf.add_face(n, 0)
 
         head=False
+    for n in t1.traverse():
+       from ete3 import NodeStyle
+       nstyle = NodeStyle()
+       if n.support > 1:
+           limit = 100
+       else:
+           limit = 1
+
+       if n.support < limit:
+           nstyle["fgcolor"] = "black"
+           nstyle["size"] = 4
+           n.set_style(nstyle)
+       else:
+           nstyle["fgcolor"] = "red"
+           nstyle["size"] = 0
+           n.set_style(nstyle)
+
 
     return t1, tss
 
@@ -794,6 +855,7 @@ def multiple_profiles_heatmap(biodb,
         from matplotlib.colors import rgb2hex
         import matplotlib as mpl
         column2scale = {}
+        column2max = {}
         for column in column_labels:
             values = [float(i) for i in group2taxon2count[column].values()]
             #print values, column
@@ -801,6 +863,10 @@ def multiple_profiles_heatmap(biodb,
             cmap = cm.OrRd
             m = cm.ScalarMappable(norm=norm, cmap=cmap)
             column2scale[column] = m
+            if min(values) == max(values):
+                column2max[column] = max(values)*2
+            else:
+                column2max[column] = max(values)
 
     server, db = manipulate_biosqldb.load_db(biodb, sqlite=sqlite3)
     if not tree:
@@ -898,6 +964,7 @@ def multiple_profiles_heatmap(biodb,
                                         local_label = "%.2f" % group2taxon2count[value][lf.name]
                                     else:
                                         try:
+                                            print('ok!')
                                             local_label = "%s" % int(group2taxon2count[value][lf.name])
                                         except:
                                             local_label = "%s" % group2taxon2count[value][lf.name]
@@ -913,18 +980,23 @@ def multiple_profiles_heatmap(biodb,
                                         else:
                                             local_label = "%s" % group2taxon2count[value][lf.name]
                                 if show_labels:
-                                    #print 'show label!'
                                     try:
                                         if round(group2taxon2count[value][lf.name], 2) < 100 and column_scale:
                                             if round(group2taxon2count[value][lf.name], 2) < 10:
+                                                #print('less than 10: %s' % group2taxon2count[value][lf.name])
                                                 n = TextFace('  %s  ' % local_label)
                                             else:
+                                                print('Beteen 10 and 100: %s' % group2taxon2count[value][lf.name])
                                                 n = TextFace(' %s ' % local_label)
                                         else:
+                                            print('more than 100: %s' % group2taxon2count[value][lf.name])
                                             n = TextFace('%s' % local_label)
-
+                                        if column_scale:
+                                            if float(group2taxon2count[value][lf.name]) >= 0.6 * column2max[value]:
+                                                n.fgcolor = 'white'
                                     # labels are not floats
                                     except TypeError:
+                                        print("not float")
                                         n = TextFace(' %s ' % group2taxon2count[value][lf.name])
                                 else:
                                     n = TextFace(' - ')
@@ -1041,6 +1113,7 @@ def multiple_profiles_heatmap(biodb,
                         n.inner_background.color = 'white'
             if rotate:
                n.rotation= 270
+            #print ('margin left: %s' % n.margin_left)
             lf.add_face(n, col, position="aligned")
 
         #lf.name = taxon_id2organism_name[lf.name]
