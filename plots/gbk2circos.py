@@ -6,9 +6,6 @@ from Bio import SeqIO
 from optparse import OptionParser
 import re
 from Bio import SeqUtils
-import manipulate_biosqldb
-import mysqldb_load_mcl_output
-
 
 def circos_fasta_draft(fasta_file_name):
     from Bio import SeqIO

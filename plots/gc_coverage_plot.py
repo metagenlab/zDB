@@ -18,9 +18,9 @@ def gc_coverage_plot(samtool_depth_file, contigs_file, blast_file=False, column1
 
     out, err, code = shell_command.shell_command("infoseq -auto -only -Name -length -pgc %s > /tmp/gc.tab" % contigs_file)
 
-    print out
-    print err
-    print code
+    print (out)
+    print (err)
+    print (code)
 
 
     if highlight:
@@ -48,7 +48,7 @@ def gc_coverage_plot(samtool_depth_file, contigs_file, blast_file=False, column1
         highlight_code = ''
         highlight_code2 = ''
 
-    print 'high', highlight
+    print ('high', highlight)
 
     if not blast_file:
         robjects.r("""

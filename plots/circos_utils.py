@@ -54,7 +54,7 @@ def get_karyotype_from_gbk_or_fasta_single_ref(reference_records,
                 raise('invalid contig name:\n%s\n' % current_name)
             if current_name in filter_list:
                 continue
-            print '#### contig ####', current_name
+            print ('#### contig ####', current_name)
             # cumulated length if not link plot and not filter_ref (TODO, put it as an argument?)
             if concatenated_coordinates:
                 contig_start = contig_end+1
@@ -101,7 +101,7 @@ def chunks(l, n):
 
 def parse_smatools_depth(samtools_depth_file):
     import pandas
-    print 'reading samtools depth file...'
+    print ('reading samtools depth file...')
     with open(samtools_depth_file, 'r') as f:
         table = pandas.read_csv(f, sep='\t', header=None, index_col=0)
     return table
@@ -114,7 +114,6 @@ def get_median_contig_coverage(contig_name_list, samtools_depth_file):
         subset_table = table.loc[index]
         contig2median_cov[index] = numpy.median(subset_table.iloc[:,1])
     contig2median_cov['assembly'] = numpy.median(table.iloc[:,1])
-    print 'ok'
     return contig2median_cov
 
 
@@ -140,20 +139,16 @@ def macsyfinder_table2circos(macsyfinder_table, gbk_record, contigs_add, outfile
 
     locus2location = {}
     if type(gbk_record) == list:
-        print 'list!'
         for record in gbk_record:
-            print record
             for feature in record.features:
                 if feature.type == 'CDS':
-                    print 'CDS'
                     locus2location[feature.qualifiers['locus_tag'][0]] = [feature.location, record.name]
     elif isinstance(gbk_record, SeqRecord):
         for feature in gbk_record.features:
             if feature.type == 'CDS':
                 locus2location[feature.qualifiers['locus_tag'][0]] = [feature.location, gbk_record.name]
     else:
-        print 'wrong input format'
-    print locus2location
+        print ('wrong input format')
 
     all_systems = []
     all_labels=[]
@@ -166,7 +161,6 @@ def macsyfinder_table2circos(macsyfinder_table, gbk_record, contigs_add, outfile
             else:
 
                 data = line.rstrip().split()
-                print len(data)
                 if len(data) == 16:
                     shift=1
                 else:
