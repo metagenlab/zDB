@@ -155,5 +155,5 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    #create_pfam_interpro_signature2pfam_id('chlamdia_04_16', args.pfam_db_version)
-    get_pfam_freq(args.pfam_db_version)
+    create_pfam_interpro_signature2pfam_id('2017_06_29b_motile_chlamydiae', args.pfam_db_version)
+    #get_pfam_freq(args.pfam_db_version)

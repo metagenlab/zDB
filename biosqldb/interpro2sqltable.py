@@ -33,7 +33,7 @@ def get_interpro_entry_tables(interpro_release= '60.0'):
     cursor.execute(sql,)
     conn.commit()
     link = 'ftp://ftp.ebi.ac.uk/pub/databases/interpro/%s/entry.list' % interpro_release
-    print link
+    print (link)
     req = urllib2.Request(link)
     entry_list = urllib2.urlopen(req)
     for line in entry_list:
@@ -99,7 +99,7 @@ def get_interpro2go_table():
             conn.commit()
         except:
             echec+=1
-    print echec, i
+    print (echec, i)
 
 
     # InterPro:IPR000003 Retinoid X receptor/HNF4 > GO:DNA binding ; GO:0003677
@@ -158,7 +158,7 @@ def interpro2biosqlV2(server,
     except:
         pass
     for one_interpro_file in input_files:
-        print one_interpro_file
+        print (one_interpro_file)
         from pandas import read_csv
         with open(one_interpro_file, 'r') as f:
             tsvin = read_csv(f, sep='\t', error_bad_lines=False, names=["accession",
@@ -233,8 +233,8 @@ def interpro2biosqlV2(server,
                     server.adaptor.execute(sql)
                     server.adaptor.commit()
                 except:
-                    print sql
-                    print data
+                    print (sql)
+                    print (data)
                     import sys
                     sys.exit()
 
@@ -311,7 +311,7 @@ def interpro2biosql(server,
     interpro_entry2interpro_entry_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     for one_interpro_file in input_files:
-        print one_interpro_file
+        print (one_interpro_file)
         from pandas import read_csv
         with open(one_interpro_file, 'r') as f:
             tsvin = read_csv(f, sep='\t', error_bad_lines=False, names=["accession",
@@ -351,7 +351,7 @@ def interpro2biosql(server,
                 try:
                     analysis_id = analysis2analysis_id[analysis]
                 except KeyError:
-                    print 'New analysis:', analysis
+                    print ('New analysis:', analysis)
                     sql = 'insert into interpro.analysis (analysis_name) values ("%s")' % analysis
                     server.adaptor.execute(sql)
                     server.adaptor.commit()
@@ -365,21 +365,21 @@ def interpro2biosql(server,
                 try:
                     signature_id = signature2signature_id[signature_accession]#server.adaptor.execute_and_fetchall(sql,)[0][0]
                 except KeyError:
-                    print 'New signature', signature_accession, signature_description
+                    print ('New signature', signature_accession, signature_description)
                     #sql1 = 'select interpro_id from interpro.entry where name="%s"' % (interpro_accession)
 
                     try:
                         interpro_id = interpro_entry2interpro_entry_id[interpro_accession]#server.adaptor.execute_and_fetchall(sql1,)[0][0]
                     except KeyError:
                         if interpro_accession == 0:
-                            print 'No interpro-accession for ', signature_accession, signature_description
+                            print ('No interpro-accession for ', signature_accession, signature_description)
                             interpro_id="NULL"
                         else:
-                            print 'New Interpro entry', interpro_accession, interpro_description
+                            print ('New Interpro entry', interpro_accession, interpro_description)
 
                             sql1b = 'insert into interpro.entry(name, description) values("%s","%s")' % (interpro_accession,
                                                                                                          interpro_description)
-                            print sql1b
+                            print (sql1b)
                             server.adaptor.execute(sql1b,)
                             server.adaptor.commit()
                             sql1 = 'select interpro_id from interpro.entry where name="%s"' % (interpro_accession)
@@ -428,8 +428,8 @@ def interpro2biosql(server,
                     server.adaptor.execute(sql)
 
                 except:
-                    print sql
-                    print data
+                    print (sql)
+                    print (data)
                     import sys
                     sys.exit()
             server.adaptor.commit()
