@@ -21,10 +21,10 @@ def gi2taxon_id(gi_list, database="protein"):
         handle = Entrez.esummary(db=database, id=','.join(gi_list), retmax=len(gi_list))
     except SocketError as e:
         if e.errno != errno.ECONNRESET:
-            print 'error connexion with %s' % ','.join(gi_list)
+            print ('error connexion with %s' % ','.join(gi_list))
         else:
             import time
-            print 'connexion error, trying again...'
+            print ('connexion error, trying again...')
             time.sleep(60)
             gi2taxon_id(gi_list, database=database)
     record = Entrez.parse(handle, validate=False)
@@ -56,18 +56,17 @@ def accession2taxon_id(ncbi_id_list, db="protein"):
     handle = Entrez.elink(dbfrom=db, db="taxonomy", id=','.join(gi_list))
     record = Entrez.read(handle)
 
-    print 'len record', len(record)
 
     try:
         # if no result, return None
         #print 'record length:', len(record)
         refseq_ids = [i['LinkSetDb'][0]['Link'][0]['Id'] for i in record]
         #print "taxon_ids", refseq_ids
-        print 'n taxons:', len(ncbi_id_list), 'n gi:', len(gi_list), 'n taxon ids', len(refseq_ids)
+        #print 'n taxons:', len(ncbi_id_list), 'n gi:', len(gi_list), 'n taxon ids', len(refseq_ids)
         if len(ncbi_id_list) != len(refseq_ids):
-            print ncbi_id_list
-            print gi_list
-            print refseq_ids
+            print (ncbi_id_list)
+            print (gi_list)
+            print (refseq_ids)
             import sys
             sys.exit()
         dico = dict(zip(ncbi_id_list, refseq_ids))
@@ -93,12 +92,11 @@ def gi2description(ncbi_gi_list, db="protein"):
             records = [i for i in SeqIO.parse(handle, "genbank")]
             match = True
         except IncompleteRead:
-            print 'problem trying to fetch data for list:'
-            print ','.join(ncbi_gi_list)
+            print ('problem trying to fetch data for list:')
+            print (','.join(ncbi_gi_list))
         
     res_list = []
 
-    print len(records)
     for record in records:
         #print record
         #print dir(record)
@@ -121,9 +119,9 @@ def accession2description(ncbi_id_list, db="protein"):
     from Bio import SeqIO
     import re
 
-    print "ncbi_id_list", ncbi_id_list
+    print ("ncbi_id_list", ncbi_id_list)
     gi_list = gi(','.join(ncbi_id_list), db)
-    print "gi_list", ','.join(gi_list)
+    print ("gi_list", ','.join(gi_list))
     # get link from genbank 2 refseq
     handle = Entrez.efetch(db=db, id=gi_list, rettype="gb", retmode="text")
 
@@ -131,7 +129,7 @@ def accession2description(ncbi_id_list, db="protein"):
 
     res_list = []
 
-    print len(records)
+    #print len(records)
     for record in records:
         tmp = {}
         #accession2description[record.id]
@@ -224,11 +222,11 @@ if __name__ == '__main__':
                 except:
                     species = "-"
 
-                print "%s\t%s\t%s\t%s\t%s\t%s\t%s" % (superkingdom, phylum, class_, order, family, genus, species)
+                print ("%s\t%s\t%s\t%s\t%s\t%s\t%s" % (superkingdom, phylum, class_, order, family, genus, species))
         else:
-            print args.seq_id_genbank
+            print (args.seq_id_genbank)
     elif args.description:
         accession2description(args.seq_id_genbank, args.ncbi_database)
 
     else:
-        print accession2taxon_id(args.seq_id_genbank, args.ncbi_database)
+        print (accession2taxon_id(args.seq_id_genbank, args.ncbi_database))

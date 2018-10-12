@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from Bio import Entrez
-import urllib2
+import urllib.request
 
 Entrez.email = "trestan.pillonel@unil.ch"
 
@@ -9,8 +9,8 @@ def old_taxon_id2new_taxon_id(old_taxon_id):
     #handle = Entrez.esearch(db="taxonomy", term="%s[uid]" % old_taxon_id)
     handle = Entrez.esummary(db="taxonomy", id=old_taxon_id)
     record1 = Entrez.read(handle)
-    print 'record1', record1
-    print record1[0]['AkaTaxId']
+    print ('record1', record1)
+    print (record1[0]['AkaTaxId'])
     try:
         if record1[0]['Status'] == 'merged':
             ncbi_id = record1[0]['AkaTaxId']
@@ -43,25 +43,25 @@ def gi2taxon_id(gi_list, database="protein"):
     from socket import error as SocketError
     import errno
 
-    print 'babababa'
+    print ('babababa')
     try:
         handle = Entrez.esummary(db=database, id=','.join(gi_list), retmax=len(gi_list))
     except SocketError as e:
         if e.errno != errno.ECONNRESET:
-            print 'error connexion with %s' % ','.join(gi_list)
+            print ('error connexion with %s' % ','.join(gi_list))
         else:
             import time
-            print 'connexion error, trying again...'
+            print ('connexion error, trying again...')
             time.sleep(60)
             gi2taxon_id(gi_list, database=database)
 
     gi2taxon = {}
-    print 'ok'
-    print isinstance(gi_list, list)
-    print len(gi_list)
+    print ('ok')
+    print (isinstance(gi_list, list))
+    print (len(gi_list))
     if isinstance(gi_list, list) and len(gi_list) == 1:
         record = Entrez.read(handle, validate=False)
-        print record
+        print (record)
         gi2taxon[record['AccessionVersion']]  = record['TaxId']
         return gi2taxon
     else:
@@ -69,7 +69,7 @@ def gi2taxon_id(gi_list, database="protein"):
         try:
 
             for i in record:
-                print 'gg', i
+                print ('gg', i)
                 # i['Gi']
                 #print i
                 gi2taxon[i['AccessionVersion']] = i['TaxId']
@@ -87,15 +87,15 @@ def gi2protein_accession(gi, database="nuccore"):
             handle = Entrez.elink(dbfrom=database, id=gi, db='protein')
         except SocketError as e:
             if e.errno != errno.ECONNRESET:
-                print 'error connexion with %s' % ','.join(gi)
+                print ('error connexion with %s' % ','.join(gi))
             else:
                 import time
-                print 'connexion error, trying again...'
+                print ('connexion error, trying again...')
                 time.sleep(60)
                 gi2protein_accession(gi, database=database)
         try:
             record = Entrez.read(handle, validate=False)
-            print 'record', record
+            print ('record', record)
             try:
                 gi_prot = record[0]['LinkSetDb'][0]['Link'][0]['Id']
             except IndexError:
@@ -117,14 +117,14 @@ def accession2gbk(accession, db='protein'):
     try:
         handle = Entrez.esearch(db=db, term="%s" % (accession), retmax=1)
         record = Entrez.read(handle)
-    except urllib2.HTTPError:
+    except urllib.request.HTTPError:
         import time
         time.sleep(5)
         return accession2gbk(accession, db=db)
     try:
         gi_id = record['IdList'][0]
     except KeyError:
-        print 'try again!'
+        print ('try again!')
         return locus_tag2protein_accession(locus_tag)
     if db == 'gene':
         handle3 = Entrez.efetch(db="gene", id=gi_id, rettype="xml")
@@ -147,11 +147,11 @@ def locus_tag2protein_accession(locus_tag, db='protein'):
     #print 'locus', locus_tag
     handle = Entrez.esearch(db=db, term="%s" % (locus_tag), retmax=1)
     record = Entrez.read(handle)
-    print record
+    print (record)
     try:
         gi_id = record['IdList'][0]
     except KeyError:
-        print 'try again!'
+        print ('try again!')
         return locus_tag2protein_accession(locus_tag)
     if db == 'gene':
         handle3 = Entrez.efetch(db="gene", id=gi_id, rettype="xml")
@@ -162,7 +162,7 @@ def locus_tag2protein_accession(locus_tag, db='protein'):
 
     try:
         record = Entrez.read(handle2, validate=False)
-        print record
+        print (record)
 
         if record[0]['Status'] == 'dead':
             if 'ReplacedBy' in record[0]:
@@ -175,7 +175,7 @@ def locus_tag2protein_accession(locus_tag, db='protein'):
         else:
             return [record[0]['AccessionVersion'], record[0]['TaxId']]
     except RuntimeError:
-        print 'try again!'
+        print ('try again!')
         return locus_tag2protein_accession(locus_tag)
 
 def accession2taxon_id(ncbi_id_list, db="protein"):
@@ -204,10 +204,10 @@ def accession2taxon_id(ncbi_id_list, db="protein"):
         #print "taxon_ids", refseq_ids
         #print 'n taxons:', len(ncbi_id_list), 'n gi:', len(gi_list), 'n taxon ids', len(refseq_ids)
         if len(ncbi_id_list) != len(refseq_ids):
-            print 'multiple matches for %s' % ncbi_id_list
-            print ncbi_id_list
-            print gi_list
-            print refseq_ids
+            print ('multiple matches for %s' % ncbi_id_list)
+            print (ncbi_id_list)
+            print (gi_list)
+            print (refseq_ids)
             import sys
             sys.exit()
         dico = dict(zip(ncbi_id_list, refseq_ids))
@@ -234,8 +234,8 @@ def gi2description(ncbi_gi_list, db="protein"):
             records = [i for i in SeqIO.parse(handle, "genbank")]
             match = True
         except IncompleteRead:
-            print 'problem trying to fetch data for list:'
-            print ','.join(ncbi_gi_list)
+            print ('problem trying to fetch data for list:')
+            print (','.join(ncbi_gi_list))
         
     res_list = []
 
@@ -262,9 +262,9 @@ def accession2description(ncbi_id_list, db="protein"):
     from Bio import SeqIO
     import re
 
-    print "ncbi_id_list", ncbi_id_list
+    print ("ncbi_id_list", ncbi_id_list)
     gi_list = gi(','.join(ncbi_id_list), db)
-    print "gi_list", ','.join(gi_list)
+    print ("gi_list", ','.join(gi_list))
     # get link from genbank 2 refseq
     handle = Entrez.efetch(db=db, id=gi_list, rettype="gb", retmode="text")
 
@@ -299,7 +299,7 @@ def accession2description(ncbi_id_list, db="protein"):
 
 def accession2full_taxonomic_path(accession_list, database="nucleotide"):
     import sequence_id2scientific_classification
-    print 'baba'
+    print ('baba')
     accession2taxon = accession2taxon_id(accession_list, database)
     taxon_id_list = accession2taxon.values()
 
@@ -328,9 +328,9 @@ if __name__ == '__main__':
 
 
     if args.full_path:
-        print 'full path!'
+        print ('full path!')
         taxon2path, accession2taxon = accession2full_taxonomic_path(args.seq_id_genbank, args.ncbi_database)
-        print 'ok'
+        print ('ok')
         # {'superkingdom': 'Bacteria',
         # 'no rank': 'Chlamydia/Chlamydophila group',
         # 'phylum': 'Chlamydiae',
@@ -372,7 +372,7 @@ if __name__ == '__main__':
                     species = data["species"]
                 except:
                     species = "-"
-                print "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (accession2taxon.keys()[accession2taxon.values().index(accession)],
+                print ("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (accession2taxon.keys()[accession2taxon.values().index(accession)],
                                                               accession,
                                                               superkingdom,
                                                               phylum,
@@ -380,9 +380,9 @@ if __name__ == '__main__':
                                                               order,
                                                               family,
                                                               genus,
-                                                              species)
+                                                              species))
         else:
-            print args.seq_id_genbank
+            print (args.seq_id_genbank)
     elif args.description:
         #print 'description!'
         accession2description(args.seq_id_genbank, args.ncbi_database)
@@ -390,9 +390,9 @@ if __name__ == '__main__':
     else:
 
         if args.gi2protein_accesson:
-            print 'ok', gi2protein_accession(args.seq_id_genbank, args.ncbi_database)
+            print ('ok', gi2protein_accession(args.seq_id_genbank, args.ncbi_database))
         else:
             #print 'normal!'
             dico = accession2taxon_id(args.seq_id_genbank, args.ncbi_database)
             for accession in dico:
-                print '%s\t%s' % (accession, dico[accession])
+                print ('%s\t%s' % (accession, dico[accession]))

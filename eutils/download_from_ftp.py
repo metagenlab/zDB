@@ -21,24 +21,24 @@ def download_one_file(ftp, path, destination, file_name):
     except OSError:
         pass
     except ftplib.error_perm:
-         print "error: could not change to "+path
+         print ("error: could not change to "+path)
          sys.exit("ending session")
 
     ftp.retrbinary("RETR "+file_name, open(os.path.join(destination,file_name),"wb").write)
-    print file_name + " downloaded"
+    print (file_name + " downloaded")
 
 
 
 def download_whole_directory(ftp, path, destination, recursive=False):
-    print path
+    #print path
     #print 'recursive:', recursive
     try:
         ftp.cwd(path)
         os.chdir(destination)
     except OSError:
-        print 'could not reach directory: %s' % path
+        print ('could not reach directory: %s' % path)
     except ftplib.error_perm:
-        print "error: could not change to "+path
+        print ("error: could not change to "+path)
         sys.exit("ending session") 
 
     filelist=ftp.nlst()
@@ -64,9 +64,9 @@ def download_whole_directory(ftp, path, destination, recursive=False):
                     ftp.retrbinary("RETR "+file, open(file, "wb").write)
                     #print file + " downloaded"
                 except ftplib.error_perm:
-                    print ftp.nlst()
-                    print ftp.pwd()
-                    print 'could not download file/dir: %s' % file
+                    print (ftp.nlst())
+                    print (ftp.pwd())
+                    print ('could not download file/dir: %s' % file)
         else:
                 #print "downloading", file
                 os.chdir(destination)
@@ -74,6 +74,6 @@ def download_whole_directory(ftp, path, destination, recursive=False):
                     ftp.retrbinary("RETR "+file, open(file, "wb").write)
                     #print file + " downloaded"
                 except ftplib.error_perm:
-                    print ftp.nlst()
-                    print ftp.pwd()
-                    print 'could not download file/dir: %s' % file
+                    print (ftp.nlst())
+                    print (ftp.pwd())
+                    print ('could not download file/dir: %s' % file)
