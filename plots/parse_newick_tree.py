@@ -14,13 +14,13 @@ def get_accssion2ST(infile):
 
 def convert_terminal_node_names(tree_newick_name, dictionnary, tree_format = 'phyloxml', write_corresp_table=True):
     #from Bio import Phylo
-    from ete2 import Tree
+    from ete3 import Tree
 
     if write_corresp_table:
         f =  open('corresp_table.tab', 'w')
 
-    print 'format', tree_format
-    print 'tree', tree_newick_name
+    print ('format', tree_format)
+    print ('tree', tree_newick_name)
     try:
         tree = Tree(tree_newick_name, tree_format)
         leaf_names = {}
@@ -31,7 +31,7 @@ def convert_terminal_node_names(tree_newick_name, dictionnary, tree_format = 'ph
 
             #accession = manipulate_biosqldb.taxon_id2accessions(server, str(species.name), "saureus_01_15")[0]
             try:
-                print "%s --> %s" % (leaf.name, dictionnary[str(leaf.name)])
+                print ("%s --> %s" % (leaf.name, dictionnary[str(leaf.name)]))
                 if write_corresp_table:
                     f.write("%s\t%s\n" % (leaf.name, dictionnary[str(leaf.name)]))
                 if dictionnary[str(leaf.name)] not in leaf_names:
@@ -41,7 +41,7 @@ def convert_terminal_node_names(tree_newick_name, dictionnary, tree_format = 'ph
                     leaf_names[dictionnary[str(leaf.name)]] += 1
                     leaf.name = dictionnary[str(leaf.name)] + '%s' % leaf_names[dictionnary[str(leaf.name)]]#+ ' (%s)' % my_accession2st[accession]
             except:
-                print "%s --> ?" % (leaf.name)
+                print ("%s --> ?" % (leaf.name))
                 if write_corresp_table:
                     f.write("%s\t?\n" % (leaf.name))
                 pass
@@ -52,14 +52,14 @@ def convert_terminal_node_names(tree_newick_name, dictionnary, tree_format = 'ph
         leaves = tree.get_terminals()
 
         leaf_names = {}
-        print dictionnary
+        print (dictionnary)
         for leaf in leaves:
 
             try:
-                print "%s --> %s" % (leaf.name, dictionnary[str(leaf.name)])
+                print ("%s --> %s" % (leaf.name, dictionnary[str(leaf.name)]))
                 if write_corresp_table:
                     f.write("%s\t%s\n" % (leaf.name, dictionnary[str(leaf.name)]))
-                print "%s --> %s" % (leaf.name, dictionnary[str(leaf.name)])
+                print ("%s --> %s" % (leaf.name, dictionnary[str(leaf.name)]))
                 if dictionnary[str(leaf.name)] not in leaf_names:
                     leaf_names[dictionnary[str(leaf.name)]] = 1
                     leaf.name = dictionnary[str(leaf.name)] #+ ' (%s)' % my_accession2st[accession]
@@ -67,10 +67,10 @@ def convert_terminal_node_names(tree_newick_name, dictionnary, tree_format = 'ph
                     leaf_names[dictionnary[str(leaf.name)]] += 1
                     leaf.name = dictionnary[str(leaf.name)] + '%s' % leaf_names[dictionnary[str(leaf.name)]]#+ ' (%s)' % my_accession2st[accession]
             except:
-                print "%s --> ?" % (leaf.name)
+                print ("%s --> ?" % (leaf.name))
                 if write_corresp_table:
                     f.write("%s\t?\n" % (leaf.name))
-                print "%s --> ?" % (leaf.name)
+                print ("%s --> ?" % (leaf.name))
                 pass
             #species.name = dictionnary[str(species.name)] + ' (%s)' % 8
     return tree

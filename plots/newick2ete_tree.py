@@ -10,7 +10,7 @@ def plot_phylo(nw_tree,
 
 
 
-    from ete2 import Tree, AttrFace,TreeStyle,NodeStyle, TextFace
+    from ete3 import Tree, AttrFace,TreeStyle,NodeStyle, TextFace
     import orthogroup2phylogeny_best_refseq_uniprot_hity
 
     ete2_tree = Tree(nw_tree, format=0)
@@ -18,16 +18,17 @@ def plot_phylo(nw_tree,
         R = ete2_tree.get_midpoint_outgroup()
         # and set it as tree outgroup
         ete2_tree.set_outgroup(R)
-        ete2_tree.ladderize()
+    ete2_tree.set_outgroup('Bacillus subtilis')
+    ete2_tree.ladderize()
 
     if parenthesis_classif:
-        print 'parenthesis_classif!'
+        print ('parenthesis_classif!')
         name2classif = {}
         for lf in ete2_tree.iter_leaves():
-            print lf
+            print (lf)
             try:
                 classif = lf.name.split('_')[-2][0:-1]
-                print 'classif', classif
+                print ('classif', classif)
                 #lf.name = lf.name.split('(')[0]
                 name2classif[lf.name] = classif
             except:
@@ -59,11 +60,13 @@ def plot_phylo(nw_tree,
         lf.add_face(ff, column=0)
 
         if not show_support:
+            print('support')
             for n in ete2_tree.traverse():
+               print (n.support)
                nstyle = NodeStyle()
-               if n.support < 1:
+               if float(n.support) < 1:
                    nstyle["fgcolor"] = "red"
-                   nstyle["size"] = 2
+                   nstyle["size"] = 4
                    n.set_style(nstyle)
                else:
                    nstyle["fgcolor"] = "red"
@@ -94,7 +97,7 @@ def plot_phylo(nw_tree,
         '''
         #n = TextFace(lf.name, fgcolor = "black", fsize = 12, fstyle = 'italic')
         #lf.add_face(n, 0)
-
+    '''
     for n in ete2_tree.traverse():
        nstyle = NodeStyle()
        if n.support < 90:
@@ -105,7 +108,7 @@ def plot_phylo(nw_tree,
            nstyle["fgcolor"] = "red"
            nstyle["size"] = 0
            n.set_style(nstyle)
-           
+    '''
     ts = TreeStyle()
     ts.show_leaf_name = False
     #ts.scale=2000
@@ -116,9 +119,9 @@ def plot_phylo(nw_tree,
         ts.mode = "c"
         ts.arc_start = -90
         ts.arc_span = 360
-    
+    ts.tree_width = 370
     ts.complete_branch_lines_when_necessary = True
-    ete2_tree.render(out_name, tree_style=ts)
+    ete2_tree.render(out_name, tree_style=ts, w=900)
 
 if __name__ == '__main__':
     import argparse
@@ -126,14 +129,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--input_tree', type=str, help="input newick tree")
     parser.add_argument("-s", '--support', action="store_true", help="show support")
+    parser.add_argument("-rm", '--root_midpoint', action="store_true", help="Root the tree at midpoint")
     parser.add_argument("-r", '--radial', action="store_true", help="radial display")
-    parser.add_argument("-c", '--color', type=str, help="color based on taxon: taxon2color table")
-    parser.add_argument("-c2", '--color2', type=str, help="color based on parenthesis content")
+    parser.add_argument("-c", '--color', action="store_true", help="color based on taxon: taxon2color table")
+    parser.add_argument("-c2", '--color2', action="store_true", help="color based on parenthesis content")
 
     args = parser.parse_args()
 
     plot_phylo(args.input_tree, 'test.svg',
-               parenthesis_classif=False,
+               parenthesis_classif=args.color2,
                show_support=args.support,
                radial_mode=args.radial,
-               root=True)
+               root=args.root_midpoint)

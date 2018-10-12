@@ -6,6 +6,28 @@ import re
 import parse_newick_tree
 from Bio import Phylo
 
+def get_corresp_organism(input_gbk_list):
+    name2description = {}
+    import os
+    print gbk_file_list
+
+    for file in gbk_file_list:
+
+        records = [i for i in SeqIO.parse(file, "genbank")]
+        for i, record in enumerate(records):
+            print i, record.name, record.description
+            if not use_gbk_file_names:
+                name = record.name
+            else:
+                name = os.path.basename(file).split('.')[0]
+            try:
+                name2description[name] = "%s | %s (%s)" % (record.id,
+                                                           record.annotations['organism'],
+                                                           record.annotations['taxonomy'][1])
+            except:
+                name2description[name] = "%s | -" % (record.id)
+
+    return name2description
 
 def get_coressp(gbk_file_list, molis_table=None, use_gbk_file_names=False):
     name2description = {}
