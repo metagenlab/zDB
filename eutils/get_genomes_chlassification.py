@@ -21,13 +21,23 @@ def download_refseq_assemblies(id_list, complete=True):
         print ('download %s out of %s: %s ...' % (n+1, len(id_list), id))
         taxid2genomes.get_complete_genomes_data(id, complete=True)
 
+
+
+
 def make_random_genome_selection(taxon_id2classification,
                                  rank_name,
                                  n_representative=1,
                                  exclude_unclassified=True):
+    import taxid2genomes
+
     '''
     randomly chose n representative taxon for each clade of a defined rank
     i.e: get one representative genome of each Archae Order
+    Selection is random but priority is given to
+    1. complete genomes
+    2. reference genomes
+    3. representative genomes
+    4. if none of the previsously mentionned label can be found, a random assembly is selected
 
     :param taxon_id2classification:
     :param rank_name:
@@ -37,81 +47,113 @@ def make_random_genome_selection(taxon_id2classification,
     import random
     clade2taxons = {}
     # for each clade of the rank, get list of taxons
-    print('numnber of taxons: %s' % (len(taxon_id2classification)))
+    print('number of unique taxons taxons: %s' % (len(taxon_id2classification)))
     unclassified_count=1
     for taxon in taxon_id2classification:
         # skip unclassified
         if exclude_unclassified:
             if 'unclassified' in taxon_id2classification[taxon]['no rank'][0]:
-                print('unclassified, skipping!')
+                print('Incomplete classification, skipping: %s' % taxon_id2classification[taxon]['no rank'][0])
                 continue
+            elif ' sp. ' in taxon_id2classification[taxon][rank_name][0]:
+                print('Incomplete classification, skipping: %s' % taxon_id2classification[taxon][rank_name][0])
+                continue
+
+        # get all assemblies associated to each taxon_id
         # unnamed ranks
         if not rank_name in taxon_id2classification[taxon]:
             print ('not %s for %s!-----' % (rank_name, taxon_id2classification[taxon]))
-            clade2taxons["unkown_%s" % unclassified_count] = [taxon]
+            clade2taxons["unkown_%s" % unclassified_count] = taxid2genomes.get_taxi2assembly_accession(taxon)
             unclassified_count+=1
 
         else:
-            ## named ranks
+            # named ranks
             if taxon_id2classification[taxon][rank_name][0] not in clade2taxons:
-                clade2taxons[taxon_id2classification[taxon][rank_name][0]] = [taxon]
+                clade2taxons[taxon_id2classification[taxon][rank_name][0]] = taxid2genomes.get_taxi2assembly_accession(taxon)
             else:
-                clade2taxons[taxon_id2classification[taxon][rank_name][0]].append(taxon)
+                clade2taxons[taxon_id2classification[taxon][rank_name][0]] += taxid2genomes.get_taxi2assembly_accession(taxon)
+
+    # from assembly list
+    # keep first complete genomes
+
     keep = []
     for clade in clade2taxons:
         #print 'initial', clade2taxons[clade]
-        random.shuffle(clade2taxons[clade])
+        #random.shuffle(clade2taxons[clade])
         #print 'ranomized', clade2taxons[clade]
-        keep.append([clade, clade2taxons[clade][0:n_representative]])
+        #keep.append([clade, clade2taxons[clade][0:n_representative]])
+        assembly_list = clade2taxons[clade]
+        sorted_assemblies = taxid2genomes.sort_assembly_list(assembly_list)
+        keep.append([clade, sorted_assemblies[0:n_representative]])
+    o = open("out.tab", 'w')
     print('number after random selection: %s' % len(keep))
-    print('clade\tclade_taxid\tn_genomes_available\ttaxid_selected\tno_rank\tsuperkingdom\tphylum\tclass\torder\tfamily\tgenus\tspecies')
-    for clade, taxons in keep:
 
-        for taxon in taxons:
+    o.write('target_rank\trank_taxid\trepresentative_species\ttaxid_representative_species\tassembly_name\tRefSeq\tGenbank\tcontig_count\tstatus\trepres\tlength\tclade\tn_subtaxid_available\tno_rank\tsuperkingdom\tphylum\tclass\torder\tfamily\tgenus\n')
+
+    for clade, assemblies in keep:
+        for assembly in assemblies:
+
+            ncbi_taxon = assembly[0]
+            AssemblyName = assembly[1]
+            RefSeq = assembly[2]
+            Genbank = assembly[3]
+            contig_count = assembly[4]
+            status = assembly[5]
+            repres = assembly[6]
+            length = assembly[7]
+
+
             try:
-                species = taxon_id2classification[taxon]['species'][0]
+                species = taxon_id2classification[ncbi_taxon]['species'][0]
             except:
                 species = '-'
             try:
-                genus = taxon_id2classification[taxon]['genus'][0]
+                genus = taxon_id2classification[ncbi_taxon]['genus'][0]
             except:
                 genus = '-'
             try:
-                family = taxon_id2classification[taxon]['family'][0]
+                family = taxon_id2classification[ncbi_taxon]['family'][0]
             except:
                 family = '-'
             try:
-                order = taxon_id2classification[taxon]['order'][0]
+                order = taxon_id2classification[ncbi_taxon]['order'][0]
             except:
                 order = '-'
             try:
-                tclass = taxon_id2classification[taxon]['class'][0]
+                tclass = taxon_id2classification[ncbi_taxon]['class'][0]
             except:
                 tclass = '-'
             try:
-                phylum = taxon_id2classification[taxon]['phylum'][0]
+                phylum = taxon_id2classification[ncbi_taxon]['phylum'][0]
             except:
                 phylum = '-'
-            if clade =='[Clostridium] clostridioforme':
-                print (clade2taxons[clade])
-            if rank_name in taxon_id2classification[taxon]:
-                rank_taxid = taxon_id2classification[taxon][rank_name][1]
+            if rank_name in taxon_id2classification[ncbi_taxon]:
+                rank_taxid = taxon_id2classification[ncbi_taxon][rank_name][1]
             else:
                 rank_taxid = '-'
-            print ('%s (%s)\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' % (
-                                                      clade,
-                                                      rank_name,
-                                                      rank_taxid,
-                                                      len(clade2taxons[clade]),
-                                                      taxon,
-                                                      taxon_id2classification[taxon]['no rank'][0],
-                                                      taxon_id2classification[taxon]['superkingdom'][0],
-                                                      phylum,
-                                                      tclass,
-                                                      order,
-                                                      family,
-                                                      genus,
-                                                      species))
+            no_rank = taxon_id2classification[ncbi_taxon]['no rank'][0]
+            superkingdom = taxon_id2classification[ncbi_taxon]['superkingdom'][0]
+
+            o.write('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (rank_name,
+                                                                                                           rank_taxid,
+                                                                                                           species,
+                                                                                                           ncbi_taxon,
+                                                                                                           AssemblyName,
+                                                                                                           Genbank,
+                                                                                                           RefSeq,
+                                                                                                           contig_count,
+                                                                                                           status,
+                                                                                                           repres,
+                                                                                                           length ,
+                                                                                                           clade,
+                                                                                                           len(clade2taxons[clade]),
+                                                                                                           no_rank,
+                                                                                                           superkingdom,
+                                                                                                           phylum,
+                                                                                                           tclass,
+                                                                                                           order,
+                                                                                                           family,
+                                                                                                           genus))
     return keep
 
 
@@ -136,13 +178,14 @@ def get_complete_genomes_taxonmy(ncbi_taxon,
         seach_term+='AND ("reference genome"[filter]) '
     if exclude_metagenome_derived:
         seach_term+='AND (all[filter] NOT "derived from metagenome"[filter]) '
-    print (seach_term)
+    print ("search term for the NCBI assembly database:", seach_term % ncbi_taxon)
     handle = Entrez.esearch(db="assembly", term=seach_term % ncbi_taxon, retmax=100000)
     #handle = Entrez.esearch(db="assembly", term='txid%s[Organism:exp] AND ("representative genome"[filter] OR "reference genome"[filter])' % ncbi_taxon, retmax=100000)
     #handle = Entrez.esearch(db="assembly", term='txid%s[Organism:exp] AND ("reference genome"[filter])' % ncbi_taxon, retmax=100000)
 
     record = Entrez.read(handle)
     id_list = record['IdList']
+    print('Number of assemblies: %s' % len(id_list))
     #print 'id_list', id_list[0:10]
 
     id_lists = _chunks(id_list, 300)
@@ -172,32 +215,35 @@ def taxon2genome_subset(ncbi_taxon,
                                                  reference=reference,
                                                  representative=representative,
                                                  exclude_metagenome_derived=exclude_metagenome_derived)
-
     if print_only:
-        print('print only')
+        #print('print only')
         if not show_all:
-            print('not show all')
+            #print('not show all')
             make_random_genome_selection(taxonomy_dico, taxon_rank)
         else:
-            print('taxo_data')
+            #print('taxo_data')
             print_taxo_data(taxonomy_dico,
                             exclude_unclassified=exclude_unclassified)
     else:
-        print('not print only')
+        #print('not print only')
         if not download_all:
+            print('Performing random selection at the %s level...' % taxon_rank)
             dw_taxonomy = make_random_genome_selection(taxonomy_dico,
                                                        taxon_rank,
                                                        exclude_unclassified=exclude_unclassified)
-            taxon_list = []
+            #taxon_list = []
             # get all_taxon_list
-            for i in dw_taxonomy:
-                taxon_list+=i[1]
+            #for i in dw_taxonomy:
+            #    taxon_list+=i[1]
             # download
-            print ('downloading %s taxon...' % (len(taxon_list)))
-            download_refseq_assembliesdownload_refseq_assemblies(taxon_list)
+            #print ('downloading %s taxon...' % (len(taxon_list)))
+            #download_refseq_assembliesdownload_refseq_assemblies(taxon_list)
         else:
-            print ('downloading %s taxon...' % (len(taxonomy_dico.keys())))
-            download_refseq_assemblies(taxonomy_dico.keys())
+            print ('Get complete genome table...')
+
+
+
+            #download_refseq_assemblies(taxonomy_dico.keys())
 
 def print_taxo_data(taxo_data, exclude_unclassified=True):
         # {'superkingdom': 'Archaea', 'no rank': 'cellular organisms', 'family': 'Natrialbaceae', 'order': 'Natrialbales', 'phylum': 'Euryarchaeota', 'species': 'Halobiforma lacisalsi', 'genus': 'Halobiforma', 'class': 'Halobacteria'}
@@ -248,7 +294,6 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-t",'--taxon_id',type=str,help="taxon_idd")
-
     parser.add_argument("-c", '--complete', action='store_true', help="keep complete genomes")
     parser.add_argument("-rf", '--reference', action='store_true', help="keep reference genomes")
     parser.add_argument("-rp", '--representative', action='store_true', help="keep representative genomes")
@@ -256,6 +301,7 @@ if __name__ == '__main__':
     parser.add_argument("-r", '--download_representative', action='store_true', help="download representative hit assemblies")
     parser.add_argument("-ra", '--rank', default='order', help="download one prepresentative/clade of specified taxonomic <rank>")
     parser.add_argument("-p", '--print_only', action='store_false', help="only print data, no download (default=True)")
+    parser.add_argument("-e", '--exclude_unclassified', action='store_false', help='exclude species labelled as "unclassified xxx" or as "xxxx sp. yyy" (e.g. Blautia sp. TF11-31AT) (default=True)')
 
     args = parser.parse_args()
     #get_complete_genomes_list(args.taxon_id)
@@ -266,4 +312,5 @@ if __name__ == '__main__':
                         args.reference,
                         args.representative,
                         print_only=args.print_only,
-                        download_all=args.download_all)
+                        download_all=args.download_all,
+                        exclude_unclassified=args.exclude_unclassified)
