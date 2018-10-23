@@ -41,6 +41,7 @@ def sort_assembly_list(sort_assembly_list):
     reference_list = []
     representative_list = []
     other_list = []
+
     for assembly in sort_assembly_list:
         status = assembly[5]
         repres = assembly[6]
@@ -59,23 +60,24 @@ def sort_assembly_list(sort_assembly_list):
 
 
 def get_taxi2assembly_accession(ncbi_taxon,
-                              complete = False,
-                              representative =False,
-                              refseq_only=False,
-                              genbank=False):
-    s_term = 'txid%s[Organism:exp] (AND all[filter] NOT anomalous[filter]) '
-    if complete:
-        s_term+=' AND "complete genome"[filter]'
-    if representative:
-        s_term+=' AND "representative genome"[filter]'
-    if refseq_only:
-        s_term+=' AND "latest refseq"[filter]'
-    else:
-        s_term+= ' AND latest[filter]'
-    handle = Entrez.esearch(db="assembly", term=s_term % ncbi_taxon, retmax=100000)
-    record = Entrez.read(handle)
+                               complete = False,
+                               representative =False,
+                               reference=False,
+                               exclude_metagenome_derived=False,
+                               refseq=True,
+                               genbank=True):
+
+    import get_genomes_chlassification
+
+    assembly_id_list = get_genomes_chlassification.search_assembly_database(ncbi_taxon=ncbi_taxon,
+                                                         complete=complete,
+                                                         representative=representative,
+                                                         reference=reference,
+                                                         exclude_metagenome_derived=exclude_metagenome_derived,
+                                                         refseq=refseq,
+                                                         genbank=genbank)
     assembly_list = []
-    for i, one_assembly in enumerate(record['IdList']):
+    for i, one_assembly in enumerate(assembly_id_list):
         try:
             handle_assembly = Entrez.esummary(db="assembly", id=one_assembly)
         except urllib2.URLError:
@@ -625,11 +627,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.taxon_id:
         if args.taxid2assembly_accession:
-            assembly_lit = get_taxi2assembly_accession(ncbi_taxon=args.taxon_id,
+            assembly_list = get_taxi2assembly_accession(ncbi_taxon=args.taxon_id,
                                         complete=args.complete,
                                         representative=args.representative,
                                         genbank=args.genbank)
-            for i in assembly_lit:
+            for i in assembly_list:
                 ncbi_taxon = i[0]
                 AssemblyName = i[1]
                 RefSeq = i[2]
