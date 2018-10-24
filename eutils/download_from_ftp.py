@@ -29,7 +29,11 @@ def download_one_file(ftp, path, destination, file_name):
 
 
 
-def download_whole_directory(ftp, path, destination, recursive=False):
+def download_whole_directory(ftp, path,
+                             destination,
+                             recursive=False,
+                             only_gbk=False,
+                             only_fna=False):
     #print path
     #print 'recursive:', recursive
     try:
@@ -42,6 +46,15 @@ def download_whole_directory(ftp, path, destination, recursive=False):
         sys.exit("ending session") 
 
     filelist=ftp.nlst()
+
+    if only_fna and only_gbk:
+        raise('choose either gbk or fna')
+
+    if only_gbk:
+        filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
+    if only_fna:
+        filelist = [i for i in filelist if 'genomic.fna.gz' in i]
+
     #print "files:"
     #print filelist
 

@@ -17,11 +17,16 @@ import download_from_ftp
 
 Entrez.email = "trestan.pillonel@unil.ch"
 
-def get_ncbi_genome(path, destination):
+def get_ncbi_genome(path, destination,
+                    only_gbk=False,
+                    only_fna=False):
     ftp=FTP('ftp.ncbi.nih.gov')
     ftp.login("anonymous","trestan.pillonel@unil.ch")
     
-    return download_from_ftp.download_whole_directory(ftp, path, destination, recursive=False)
+    return download_from_ftp.download_whole_directory(ftp, path, destination,
+                                                      recursive=False,
+                                                      only_gbk=only_gbk,
+                                                      only_fna=only_fna)
 
 def sort_assembly_list(sort_assembly_list):
     '''
@@ -310,79 +315,6 @@ def get_sample_data(accession):
         print ("%s\t%s" % (i, record['DocumentSummarySet']['DocumentSummary'][0][i]))
 
 
-def assembly_accession2assembly(accession):
-    handle1 = Entrez.esearch(db="assembly", term=accession)
-    record1 = Entrez.read(handle1)
-
-
-    ncbi_id = record1['IdList'][-1]
-
-    local_dir = os.getcwd()
-    try:
-        handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
-    except:
-
-        print ('link to assembly could not be found, trying to get it strating from taxon_id...')
-
-        handle_assembly = Entrez.esummary(db="nucleotide",id=ncbi_id)
-        record1 = Entrez.read(handle_assembly)
-        taxon_id = record1[0]['TaxId']
-        term = "txid%s[Organism:noexp]" % taxon_id
-        handle1 = Entrez.esearch(db="assembly", term=term)
-        record1 = Entrez.read(handle1)
-        assembly_id = record1['IdList'][0]
-        handle_assembly = Entrez.esummary(db="assembly",id=assembly_id)
-
-
-    assembly_record = Entrez.read(handle_assembly, validate=False)
-
-    LastMajorReleaseAccession = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['LastMajorReleaseAccession']
-    Taxid = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Taxid']
-    Organism = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Organism']
-    AssemblyStatus = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['AssemblyStatus']
-    try:
-        NCBIReleaseDate = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['NCBIReleaseDate']
-    except KeyError:
-        NCBIReleaseDate = '-'
-    SpeciesName = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['SpeciesName']
-    SubmitterOrganization = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['SubmitterOrganization']
-    AssemblyName = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['AssemblyName']
-    RefSeq = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Synonym']['RefSeq']
-    Genbank = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Synonym']['Genbank']
-    Similarity = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Synonym']['Similarity']
-    PartialGenomeRepresentation = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PartialGenomeRepresentation']
-    Coverage = assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Coverage']
-
-    out_dir = local_dir+'/%s' % LastMajorReleaseAccession
-    os.mkdir(out_dir)
-
-    # get ftp link in meta data string
-    if 'latest' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
-        print (assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])
-        ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
-
-        get_ncbi_genome(ftp_path, out_dir)
-
-    elif 'replaced' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]['PropertyList']:
-
-        i = int(LastMajorReleaseAccession.split('.')[1]) + 1
-        success = False
-        while not success:
-            if i < 5:
-                try:
-                    ftp_path = '/genomes/all/%s_%s' % (LastMajorReleaseAccession.split('.')[0] + '.%s' % i,
-                                                       AssemblyName)
-                    print (ftp_path)
-                    get_ncbi_genome(ftp_path, out_dir)
-
-                    success = True
-                except:
-                    i+=i
-            else:
-                print ('could not download assembly %s' % LastMajorReleaseAccession)
-                break
-    else:
-        'Unkown status for %s, not downloading' % LastMajorReleaseAccession
 
 
 def accession2assembly(accession):
@@ -614,14 +546,13 @@ def bioproject2assemblies(accession, complete=False):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("-t",'--taxon_id',type=str,help="get wgs link from taxonomic id")
-    parser.add_argument("-a",'--accession',type=str,help="get assembly of a specific genbank/refseq accession")
+    parser.add_argument("-t",'--taxon_id',type=str,help="Get wgs link from taxonomic id")
+    parser.add_argument("-a",'--accession',type=str,help="Get assembly of a specific genbank/refseq accession")
     parser.add_argument("-c", '--complete', action="store_true", help="complete genome only (default = False)")
-    parser.add_argument("-s",'--sample',type=str,help="get sample data from accession id")
-    parser.add_argument("-b",'--bioproject',type=str,help="get all assemblies from bioproject")
+    parser.add_argument("-s",'--sample',type=str,help="Get sample data from accession id")
+    parser.add_argument("-b",'--bioproject',type=str,help="Get all assemblies from bioproject")
     parser.add_argument("-r",'--representative',action="store_true", help="download only representative genomes")
     parser.add_argument("-g", '--genbank', action="store_true", help="Download only Genbank record if the assembly is not in RefSeq")
-    parser.add_argument("-aa", '--assembly_accession', type=str, help="Download based on assembly accession")
     parser.add_argument("-ta", '--taxid2assembly_accession', action="store_true", help="get correspondance table from taxid2accession")
 
     args = parser.parse_args()
@@ -660,6 +591,5 @@ if __name__ == '__main__':
         get_sample_data(accession=args.sample)
     if args.bioproject:
         bioproject2assemblies(accession=args.bioproject)
-    if args.assembly_accession:
-        assembly_accession2assembly(args.assembly_accession)
+
 
