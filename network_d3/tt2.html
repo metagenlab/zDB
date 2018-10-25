@@ -1,0 +1,119 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta charset=utf-8 />
+  <title>Visual style</title>
+  <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.18/cytoscape.min.js"></script>
+
+ <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.js"></script>
+<link href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-qtip@2.7.1/cytoscape-qtip.min.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/4.10.3/css/bootstrap-slider.min.css">
+    <link href="style_cytoscape.css" rel="stylesheet" />
+</head>
+
+<body>
+  <div id="cy"></div>
+</body>
+<script>
+
+$(function(){ // on dom ready
+
+var cy = cytoscape({
+  container: document.getElementById('cy'),
+  boxSelectionEnabled: false,
+  autounselectify: true,
+
+  elements: {"nodes": [{"data": {"id": "1505151028", "label": "1505151028"}}, {"data": {"id": "1505223187", "label": "1505223187"}}, {"data": {"id": "1505261142", "label": "1505261142"}}, {"data": {"id": "cgMLST", "label": "cgMLST"}}], "edges": [{"data": {"id": "1505151028cgMLST", "strength": 8616, "source": "1505151028", "target": "cgMLST"}}, {"data": {"id": "15051510281505261142", "strength": 8882, "source": "1505151028", "target": "1505261142"}}, {"data": {"id": "15052231871505261142", "strength": 29004, "source": "1505223187", "target": "1505261142"}}]},
+
+
+  /*ready: function(){
+    window.cy = this;
+
+    // giddy up
+  }*/
+});
+
+cy.$('node').on('click', function(e){
+  var ele = e.cyTarget;
+  console.log('clicked ' + ele.id());
+});
+
+  cy.nodes().forEach(function(n){
+    var g = n.data('name');
+
+    n.qtip({
+      content: [
+        {
+          name: 'NCBI COGS',
+          url: 'http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid=' + g
+        },
+        {
+          name: 'eggnog',
+          url: 'http://eggnogdb.embl.de/#/app/results?target_nogs='+ g
+        },
+        {
+          name: 'STRING',
+          url: 'http://string.embl.de/newstring_cgi/show_network_section.pl?all_channels_on=1&interactive=yes&network_flavor=evidence&targetmode=cogs&identifier=' + g
+        }
+      ].map(function( link ){
+        return '<a target="_blank" href="' + link.url + '">' + link.name + '</a>';
+      }).join('<br />\n'),
+      position: {
+        my: 'bottom left',
+        at: 'top right'
+      },
+      style: {
+
+        classes: 'qtip-bootstrap',
+        width: 180,
+        height: 130,
+        lineHeight: 5.5,
+        tip: {
+          width: 22,
+          height: 22,
+        }
+      }
+    });
+  });
+  cy.edges().forEach(function(n){
+    var g = n.data('n_comp');
+    var h = n.data('n_links');
+    n.qtip({
+      content: [
+        {
+          name: 'Num:' + g + " / " + h
+        },
+
+      ].map(function( link ){
+        return '<a target="_blank" href="' + link.url + '">' + link.name + '</a>';
+      }).join('<br />\n'),
+      position: {
+        my: 'bottom left',
+        at: 'top right'
+      },
+      style: {
+        style: {classes: "MyQtip"},
+      }
+    });
+  });
+}); // on dom ready
+
+
+
+</script>
+
+
+</html>
+
+
+
+    
