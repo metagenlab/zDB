@@ -1,28 +1,17 @@
 #!/usr/bin/env python
 
-import itertools
-
-
-mat = '/home/tpillone/work/projets/2018_10_MYCOST/2018_07_4_strains/typing/freebayes_joint_genotyping/cgMLST/bwa/distances_in_snp.tsv'
+#mat = '/home/tpillone/work/projets/2018_10_MYCOST/2018_07_4_strains/typing/freebayes_joint_genotyping/cgMLST/bwa/distances_in_snp.tsv'
 # /home/tpillone/work/projets/2018_10_MYCOST/2018_07_4_strains/typing/freebayes_joint_genotyping/cgMLST/bwa
+
 import numpy
 import networkx
 import pandas
 import json
+import itertools
 import matplotlib.pyplot as plt
 
-m = pandas.read_csv(mat, delimiter='\t', header=0, index_col=0)
 
 
-nodes = list(m.index)
-
-
-missing = []
-
-
-A = m.values
-
-G = networkx.from_pandas_adjacency(m)#networkx.from_numpy_matrix(A)
 
 
 def find_clusters(G, node_list):
@@ -72,15 +61,6 @@ def merge_group_nodes(G, groups, node_list):
             G['\n'.join(group)][i]['weight'] = median_dico[i]
     return G
 
-groups = find_clusters(G, nodes)
-print("groups", groups)
-G = merge_group_nodes(G, groups, nodes)
-
-T=networkx.minimum_spanning_tree(G)
-#print(sorted(T.edges(data=True)))
-
-#networkx.draw(T)
-#plt.show()$
 
 # this function is used to convert networkx to Cytoscape.js JSON format
 # returns string of JSON
@@ -107,4 +87,19 @@ def convert2cytoscapeJSON(G):
         final["edges"].append(nx)
     return json.dumps(final)
 
-print(convert2cytoscapeJSON(T))
+
+def get_MN_tree(dist_matrix):
+
+    m = pandas.read_csv(dist_matrix, delimiter='\t', header=0, index_col=0)
+
+    nodes = list(m.index)
+
+    G = networkx.from_pandas_adjacency(m)  # networkx.from_numpy_matrix(A)
+
+    groups = find_clusters(G, nodes)
+
+    G = merge_group_nodes(G, groups, nodes)
+
+    T=networkx.minimum_spanning_tree(G)
+
+    return T
