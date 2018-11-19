@@ -16,12 +16,14 @@ params.databases_dir = "$PWD/databases"
 params.blast_cog = true
 params.orthofinder = true
 params.genome_faa_folder = "$PWD/faa"
+params.executor = 'local'
+
 log.info "====================================="
 log.info "input                  : ${params.input}"
 log.info "Blast COG              : ${params.blast_cog}"
 log.info "Orthofinder            : ${params.orthofinder}"
 log.info "Orthofinder path       : ${params.genome_faa_folder}"
-
+log.info "Executor               : ${params.executor}"
 
   Channel
     .fromPath(params.input)
