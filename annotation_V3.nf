@@ -141,6 +141,9 @@ process orthogroups2fasta {
   """
 }
 
+/*rthogroups_fasta.flatten().collate( 2 ).set {chunks}
+*/
+
 process align_with_mafft {
 
   echo true
@@ -149,19 +152,21 @@ process align_with_mafft {
   publishDir 'orthology/orthogroups_alignments', mode: 'copy', overwrite: false
 
   input:
-  each file(og) from orthogroups_fasta
+  file og from orthogroups_fasta.flatten().collate( 20 )
 
   output:
-  file "${og.getBaseName()}_mafft.faa" into mafft_alignments
+  file "*_mafft.faa" into mafft_alignments
 
   script:
   """
-  mafft ${og} > ${og.getBaseName()}_mafft.faa
+  for faa in ${og}; do
+  mafft \$faa > \${faa/.faa/_mafft.faa}
+  done
   """
 }
 
 /* Get only alignments with more than than two sequences */
-mafft_alignments.map { it }.filter { (it.text =~ /(>)/).size() > 2 }.set { large_alignments }
+mafft_alignments.collect().flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.set { large_alignments }
 
 /*
 process orthogroups_phylogeny_with_raxml {
