@@ -124,16 +124,16 @@ def about(request):
         Sophie S Abby, Jean Cury, Julien Guglielmini, Bertrand Néron, Marie Touchon, and Eduardo PC
         Rocha. Identification of protein secretion systems in bacterial genomes. Scientific reports, 6, 2016.
         53, 57, 61, 164
-    
+
         Peter JA Cock, Tiago  Antao, Jeffrey T Chang, Brad
         Biopython: freely    available    python    tools    for computational molecular biology and bioinformatics.Bioinformatics, 25(11):1422–1423, 2009.
-    
+
         {'publisher': 'Oxford University Press', 'year': '2009', 'pages': '1422--1423', 'number': '11', 'volume': '25',
          'journal': 'Bioinformatics',
          'author': 'Cock, Peter JA and Antao, Tiago and Chang, Jeffrey T and Chapman, Brad A and Cox, Cymon J and Dalke, Andrew and Friedberg, Iddo and Hamelryck, Thomas and Kauff, Frank and Wilczynski, Bartek and others',
          'title': 'Biopython: freely available Python tools for computational molecular biology and bioinformatics',
          'ENTRYTYPE': 'article', 'ID': 'cock2009biopython'}
-    
+
         """
         string = ("%s. <b>%s</b> %s, %s(%s):%s, %s" % (  entry["author"],
                                             re.sub('[{}]','', entry["title"]),
@@ -599,7 +599,8 @@ def orthogroup_annotation(request, display_form):
 
     return render(request, 'chlamdb/orthogroup_annotation.html', locals())
 
-
+def test():
+    import plot_genomic_feature
 
 def locus_annotation(request, display_form):
     biodb = settings.BIODB
@@ -1881,7 +1882,7 @@ def venn_cog(request, accessions=False):
             sql = 'select COG_name, t3.code,t3.description,A.description from COG.cog_names_2014 A ' \
                   ' inner join COG.cog_id2cog_category t2 on A.COG_id=t2.COG_id ' \
                   ' inner join COG.code2category t3 on t2.category_id=t3.category_id;'
-            
+
             data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
             for i in data:
                 if i in all_cog_list:
@@ -2057,23 +2058,6 @@ def locusx(request, locus=None, menu=True):
 
         except IndexError:
 
-
-            '''
-            sql1 =   'SELECT' \
-                     ' CASE' \
-                     '   WHEN locus_tag = "%s" THEN "locus_tag"' \
-                     '   WHEN protein_id = "%s" THEN "protein_id"' \
-                     '   WHEN orthogroup = "%s" THEN "orthogroup"'\
-                     ' END AS "which_column"'\
-                     ' FROM' \
-                     ' orthology_detail_%s where locus_tag="%s" or protein_id like "%%%%%s%%%%" or orthogroup="%s"' % (locus,
-                                                                                                                       locus,
-                                                                                                                       locus,
-                                                                                                                       biodb,
-                                                                                                                       locus,
-                                                                                                                       locus,
-                                                                                                                       locus)
-            '''
             sql1 = 'select orthogroup from orthology_detail_%s where orthogroup="%s"' % (biodb, locus)
             try:
                 locus = server.adaptor.execute_and_fetchall(sql1, )[0][0]
@@ -2116,7 +2100,7 @@ def locusx(request, locus=None, menu=True):
                    ' inner join enzyme.ko_annotation t3 on t2.ko_id=t3.ko_id where t1.locus_tag="%s";' % (biodb,
                                                                                                      biodb,
                                                                                                      locus)
-            
+
             sql6 = 'select uniprot_id from locus_tag2uniprot_hit_%s where locus_tag="%s";' % (biodb, locus)
 
             sql7 = 'select A.ko_id,pathway_name,pathway_category,description from (select ko_id from enzyme.locus2ko_%s' \
@@ -3258,7 +3242,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
               ' group by signature_description, t7.orthogroup_name;' % (biodb,
                                                                         biodb,
                                                                         biodb,
-                                                                        biodb, 
+                                                                        biodb,
                                                                         biodb,
                                                                         bacteria_freq,
                                                                         eukaryote_freq,
@@ -3622,7 +3606,7 @@ def KEGG_module_map(request, module_name):
               ' where t1.module_name="%s";' % (biodb,
                                                biodb,
                                                module_name)
-        
+
         orthogroup_data = server.adaptor.execute_and_fetchall(sql,)
         #print orthogroup_data
         ko2orthogroups = {}
@@ -3918,7 +3902,7 @@ def KEGG_mapp_ko_organism(request, map_name, taxon_id):
               ' inner join biosqldb.orthology_detail_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
               ' inner join enzyme.ko_annotation t5 on t1.ko_id=t5.ko_id' \
               ' where taxon_id=%s and pathway_name="%s";' % (biodb,
-                                                             biodb, 
+                                                             biodb,
                                                              taxon_id,
                                                              map_name)
 
@@ -8494,7 +8478,7 @@ def plot_region(request):
 
 def plot_region(request, biodb):
     plot_form_class = make_plot_form(biodb)
-    
+
     print "cache", cache
     server = manipulate_biosqldb.load_db()
 
@@ -8805,9 +8789,9 @@ def get_record(request, accession, seqtype):
 
     if seqtype == 'gbk':
         SeqIO.write(record, strio, 'genbank')
-    
+
         response = HttpResponse(content_type='text/plain')
-    
+
         response['Content-Disposition'] = 'attachment; filename="%s.gbk"' % (accession)
     else:
         pass
@@ -11677,11 +11661,9 @@ def TM_tree(request, orthogroup):
     alignment_fasta = "../assets/%s_fasta/%s.fa" % (biodb, orthogroup)
     alignment_path = os.path.join(home_dir, alignment_fasta)
     if os.path.exists(alignment_path):
-        locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False)
+        locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False, signal_peptide=True)
     else:
-        locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False)
-
-    #locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup)
+        locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False, signal_peptide=True)
 
     sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
     tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
