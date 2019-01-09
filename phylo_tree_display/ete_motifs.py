@@ -136,7 +136,7 @@ def get_locus2taxon2identity(biodb, locus_tag_list):
     '''
     #print 'getting dico'
     sql = 'select seqfeature_id,locus_tag from custom_tables.locus2seqfeature_id_%s' % biodb
-    
+
     seqfeature_id2locus = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     #print 'ok'
     all_id = []
@@ -1941,7 +1941,11 @@ def get_pfam_data(orthogroup, biodb, aa_alignment=False):
                 locus2data[one_locus[0]].append(list(one_locus[1:len(one_locus)]))
     return locus2data
 
-def get_TM_data(biodb, orthogroup=False, aa_alignment=False):
+
+def get_TM_data(biodb,
+                orthogroup=False,
+                aa_alignment=False,
+                signal_peptide=False):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     if orthogroup:
@@ -1949,13 +1953,28 @@ def get_TM_data(biodb, orthogroup=False, aa_alignment=False):
 
         sql = 'select locus_tag, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where orthogroup="%s" and analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (biodb, orthogroup)
+
         sql2 = 'select locus_tag, char_length(translation), organism from orthology_detail_%s where orthogroup="%s";' % (biodb, orthogroup)
+
+        sql_signalp = 'select locus_tag, t2.start, t2.stop, t6.description, sequence_length, signature_accession, signature_description' \
+               ' from annotation.seqfeature_id2locus_chlamydia_04_16 t1' \
+               ' inner join interpro.interpro_chlamydia_04_16 t2 on t1.seqfeature_id=t2.seqfeature_id' \
+               ' inner join interpro.signature t3 on t2.signature_id=t3.signature_id' \
+               ' inner join orthology.seqfeature_id2orthogroup_chlamydia_04_16 t4 on t1.seqfeature_id=t4.seqfeature_id' \
+               ' inner join orthology.orthogroup_chlamydia_04_16 t5 on t4.orthogroup_id=t5.orthogroup_id' \
+               ' inner join biosqldb.bioentry t6 on t1.bioentry_id=t6.bioentry_id' \
+               ' where t5.orthogroup_name="group_810" and signature_description="Signal peptide region";'
+
         locus2seq_length = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
     else:
         sql = 'select locus_tag, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (biodb)
 
     data = server.adaptor.execute_and_fetchall(sql,)
+
+    if signal_peptide:
+        data2 = server.adaptor.execute_and_fetchall(sql_signalp,)
+        data += data2
 
     locus2aa_seq = {}
     # getting aa alignment
@@ -2166,13 +2185,13 @@ def draw_pfam_tree(tree_name, locus2data,
         # check if alignment is available or not
         if len(data[0]) == 8:
             #print 'tata', len(data[0][-1])
-            seqFace = SeqMotifFace(data[0][-1], 
+            seqFace = SeqMotifFace(data[0][-1],
                                    motifs=seq_motifs,
                                    width=10,
                                    height=12,
                                    gap_format='-',
                                    seq_format='-',
-                                   gapcolor='white') #seq, seq_motifs, scale_factor=1, intermotif_format=None) #intermotif_format="seq", seqtail_format=None, seqtype='aa') 
+                                   gapcolor='white') #seq, seq_motifs, scale_factor=1, intermotif_format=None) #intermotif_format="seq", seqtail_format=None, seqtype='aa')
                                    # seqtail_format="-",
         else:
             # no alignment available
@@ -2255,7 +2274,11 @@ def draw_TM_tree(tree_name, locus2data):
         # case in which we have more than seq length
         if len(data) != 2:
             for motif in data:
-                seq_motifs.append([motif[0], motif[1], "()", None, 10, "black", "PaleGreen", "arial|8|red|"])
+                print(motif[-1])
+                if motif[-2] != "SIGNAL_PEPTIDE":
+                    seq_motifs.append([motif[0], motif[1], "()", None, 10, "black", "PaleGreen", "arial|8|red|"])
+                else:
+                    seq_motifs.append([motif[0], motif[1], "[]", None, 10, "black", "red", "arial|8|red|"])
 
         #print data
         if isinstance(data[0], int):
