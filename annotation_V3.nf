@@ -170,7 +170,10 @@ process align_with_mafft {
 }
 
 /* Get only alignments with more than than two sequences */
-mafft_alignments.collect().flatten().map { it }.filter { (it.text =~ /(>)/).size() > 3 }.set { large_alignments }
+mafft_alignments.collect().into {all_alignments_1
+                                 all_alignments2}
+
+all_alignments_1.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 3 }.set { large_alignments }
 
 /*
 process orthogroups_phylogeny_with_raxml {
@@ -228,6 +231,7 @@ process get_core_orthogroups {
   input:
   file 'Orthogroups.txt' from orthogroups
   file genome_list from faa_genomes3.collect()
+  file fasta_files from all_alignments2.collect()
 
   output:
   file '*_taxon_ids.faa' into core_orthogroups
@@ -298,7 +302,7 @@ process get_core_orthogroups {
                                                                                               int(${params.core_missing}),
                                                                                               False)
   sequence_data = {}
-  for fasta_file in "${genome_list}".split(" "):
+  for fasta_file in "${fasta_files}".split(" "):
       sequence_data.update(SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta")))
 
   for one_group in core_groups:
@@ -318,7 +322,74 @@ process get_core_orthogroups {
   """
 }
 
+process concatenate_core_orthogroups {
 
+  conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
+
+  publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: false
+
+  input:
+  file core_groups from core_orthogroups.collect()
+
+  output:
+  file 'msa.faa' into core_msa
+
+  script:
+
+  """
+  #!/usr/bin/env python
+
+  fasta_files = "${core_groups}".split(" ")
+  print(fasta_files)
+  out_name = 'msa.faa'
+
+  from Bio import AlignIO
+  from Bio.SeqRecord import SeqRecord
+  from Bio.Seq import Seq
+  from Bio.Align import MultipleSeqAlignment
+  # identification of all distinct fasta headers id (all unique taxons ids) in all fasta
+  # storing records in all_seq_data (dico)
+  taxons = []
+  all_seq_data = {}
+  for one_fasta in fasta_files:
+      all_seq_data[one_fasta] = {}
+      with open(one_fasta) as f:
+          alignment = AlignIO.read(f, "fasta")
+      for record in alignment:
+          if record.id not in taxons:
+              taxons.append(record.id)
+          all_seq_data[one_fasta][record.id] = record
+
+
+  # building dictionnary of the form: dico[one_fasta][one_taxon] = sequence
+  concat_data = {}
+
+  start_stop_list = []
+  start = 0
+  stop = 0
+
+  for one_fasta in fasta_files:
+      start = stop + 1
+      stop = start + len(all_seq_data[one_fasta][list(all_seq_data[one_fasta].keys())[0]]) - 1
+      start_stop_list.append([start, stop])
+      print(len(taxons))
+      for taxon in taxons:
+          # check if the considered taxon is present in the record
+          if taxon not in all_seq_data[one_fasta]:
+              # if taxon absent, create SeqRecord object "-"*len(alignments): gap of the size of the alignment
+              seq = Seq("-"*len(all_seq_data[one_fasta][list(all_seq_data[one_fasta].keys())[0]]))
+              all_seq_data[one_fasta][taxon] = SeqRecord(seq, id=taxon)
+          if taxon not in concat_data:
+              concat_data[taxon] = all_seq_data[one_fasta][taxon]
+          else:
+              concat_data[taxon] += all_seq_data[one_fasta][taxon]
+
+  # concatenating the alignments, writing to fasta file
+  MSA = MultipleSeqAlignment([concat_data[i] for i in concat_data])
+  with open(out_name, "w") as handle:
+      AlignIO.write(MSA, handle, "fasta")
+  """
+}
 
 workflow.onComplete {
   // Display complete message
