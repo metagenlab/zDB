@@ -24,3 +24,5 @@
 - [ ] execute eggnog-mapper
 - [ ] get mapping to uniparc
 - [ ] execute blast vs COG for chunks of 1000 sequences
+
+- BLAST vs PLAST vs mmseq2 vs diamond?
