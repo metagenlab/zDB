@@ -1,0 +1,16 @@
+<system inter_gene_max_space="5" min_mandatory_genes_required="4" min_genes_required="4" multi_loci="0"> 
+<gene name="YmcA" presence="mandatory"/>       
+<gene name="YmcB" presence="mandatory"/>
+    <gene name="YmcC" presence="mandatory"/>
+    <gene name="YmcD" presence="mandatory"/>
+    <gene name="Wzb" presence="mandatory" />
+    <gene name="Etk" presence="mandatory"/>
+    <gene name="YccZ" presence="mandatory"/>
+       	
+       	<gene name="Wzy.select2" presence="accessory"/>
+		<gene name="Wzz" presence="accessory"/>   
+	 	
+    		<gene name="Wzx" presence="forbidden" />		
+    		<gene name="KpsM" presence="forbidden" />       
+			<gene name="KpsT" presence="forbidden" />
+</system>

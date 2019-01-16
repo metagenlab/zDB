@@ -1,0 +1,8 @@
+<system inter_gene_max_space="5" min_mandatory_genes_required="2" min_genes_required="2" multi_loci="1"> 
+<gene name="CapB" presence="mandatory"/>
+<gene name="CapC" presence="mandatory"/>    
+	<gene name="CapA" presence="accessory"/>       
+	<gene name="CapD" presence="accessory" loner="1"/>
+	<gene name="CapE2" presence="accessory"/>
+	<gene name="PgsS" presence="forbidden" loner="1"/>
+   </system>

@@ -1,0 +1,31 @@
+language: python
+python:
+  - "2.7"
+# Apply only on main branches
+branches:
+  except:
+       - /^feature.*$/
+       
+# command to install Ubuntu dependencies
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install ncbi-blast+
+  - wget  http://eddylab.org/software/hmmer3/3.1b2/hmmer-3.1b2.tar.gz
+  - tar -xf hmmer-3.1b2.tar.gz
+  - cd hmmer-3.1b2 && ./configure && make && sudo make install
+  - cd -
+
+
+# command to install python dependencies
+install: 
+- "pip install coverage"
+- "pip install python-coveralls"
+
+# command to run tests
+script:
+- python setup.py build
+- python setup.py install --no-viewer 
+- python tests.py -vv
+
+after_success:
+  - coveralls

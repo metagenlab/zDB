@@ -1,0 +1,18 @@
+<system inter_gene_max_space="30" min_mandatory_genes_required="3" min_genes_required="6">  
+	<gene name="virb4" presence="mandatory" system_ref="CONJ"/>
+    <gene name="t4cp1" presence="mandatory" system_ref="CONJ"/>
+    <gene name="MOBB" presence="mandatory" system_ref="CONJ"/>
+
+    <gene name="B_traE" presence="accessory" />
+    <gene name="B_traF" presence="accessory" />
+    <gene name="B_traH" presence="accessory" />
+    <gene name="B_traI" presence="accessory" />
+    <gene name="B_traJ" presence="accessory" />
+    <gene name="B_traK" presence="accessory" />
+    <gene name="B_traL" presence="accessory" />
+    <gene name="B_traM" presence="accessory" />
+    <gene name="B_traN" presence="accessory" />
+    <gene name="B_traO" presence="accessory" />
+    <gene name="B_traP" presence="accessory" />
+    <gene name="B_traQ" presence="accessory" />
+</system>
