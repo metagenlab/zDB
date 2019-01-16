@@ -1,0 +1,26 @@
+
+
+* DONE
+
+- [X] orthofinder
+- [X] alignments of each orthogroup with mafft
+- [X] reconstruction of a phylogeny for orthogroups with more than 3 sequences with iq-tree
+- [X]
+
+* TODO
+
+- [ ] identify single copy orthogroups (accept missing data)
+- [ ] write core orthogroups with accessions as headers
+- [ ] concatenate core orthogroups
+- [ ] build phylogeny with fasttree
+- [ ] execute interproscan for each faa
+- [ ] execute blast vs SwissProt for chunks of 1000 sequences
+- [ ] execute plast/mmseq2 vs RefSeq for chunks of 1000 sequences
+- [ ] execure gblast vs TCDB for chunks of 1000 sequences
+- [ ] execute PRIAM for each genome
+- [ ] execute macsyfinder for crispr
+- [ ] execute macsyfinder for capsule
+- [ ] execute macsyfinder for secretion systems
+- [ ] execute eggnog-mapper
+- [ ] get mapping to uniparc
+- [ ] execute blast vs COG for chunks of 1000 sequences

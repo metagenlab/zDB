@@ -101,6 +101,9 @@ process orthofinder_main {
 }
 
 process orthogroups2fasta {
+  '''
+  Get fasta file of each orthogroup
+  '''
 
   echo true
   conda 'bioconda::biopython=1.70'
@@ -214,6 +217,10 @@ process orthogroups_phylogeny_with_iqtree {
   iqtree -nt 2 -s ${og} -alrt 1000 -bb 1000 -pre ${og.getBaseName()}
   """
 }
+
+
+
+
 
 workflow.onComplete {
   // Display complete message
