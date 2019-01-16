@@ -391,6 +391,24 @@ process concatenate_core_orthogroups {
   """
 }
 
+process build_core_phylogeny_with_fasttree {
+
+  conda 'bioconda::fasttree=2.1.10'
+
+  publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: false
+
+  input:
+  file 'msa.faa' from core_msa
+
+  output:
+  file 'core_genome_phylogeny.nwk'
+
+  script:
+  '''
+  FastTree -gamma -spr 4 -mlacc 2 -slownni msa.faa > core_genome_phylogeny.nwk
+  '''
+}
+
 workflow.onComplete {
   // Display complete message
   log.info "Completed at: " + workflow.complete
