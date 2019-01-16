@@ -27,12 +27,19 @@ log.info "Orthofinder path       : ${params.genome_faa_folder}"
 log.info "Core missing           : ${params.core_missing}"
 log.info "Executor               : ${params.executor}"
 
-  Channel
+Channel
+  .fromPath(params.input)
+  .ifEmpty { error "Cannot find any input sequence files matching: ${params.input}" }
+  .into { faa_genomes1
+          faa_genomes2
+          faa_genomes3 }
+
+Channel
     .fromPath(params.input)
     .ifEmpty { error "Cannot find any input sequence files matching: ${params.input}" }
-    .into { faa_genomes1
-            faa_genomes2
-            faa_genomes3 }
+    .splitFasta( by: 1000 )
+    .into { faa_chunks1
+            faa_chunks2 }
 
 process prepare_orthofinder {
 
@@ -408,6 +415,29 @@ process build_core_phylogeny_with_fasttree {
   FastTree -gamma -spr 4 -mlacc 2 -slownni msa.faa > core_genome_phylogeny.nwk
   '''
 }
+
+
+process blast_COG {
+
+  conda 'bioconda::blast=2.7.1'
+
+  when:
+  params.blast_cog == true
+
+  input:
+  file 'seq' from faa_chunks1
+
+  output:
+  file 'blast_result' into blast_result
+
+  script:
+  n = seq.name
+  """
+  blastp -db $params.databases_dir/COG/prot2003-2014_test.fa -query seq -outfmt 6 > blast_result
+  """
+}
+
+blast_result.collectFile(name: 'annotation/blast_COG.tab')
 
 workflow.onComplete {
   // Display complete message
