@@ -15,6 +15,7 @@ log.info params.input
 params.databases_dir = "$PWD/databases"
 params.blast_cog = true
 params.orthofinder = true
+params.core_missing = 0
 params.genome_faa_folder = "$PWD/faa"
 params.executor = 'local'
 
@@ -23,6 +24,7 @@ log.info "input                  : ${params.input}"
 log.info "Blast COG              : ${params.blast_cog}"
 log.info "Orthofinder            : ${params.orthofinder}"
 log.info "Orthofinder path       : ${params.genome_faa_folder}"
+log.info "Core missing           : ${params.core_missing}"
 log.info "Executor               : ${params.executor}"
 
   Channel
@@ -293,7 +295,7 @@ process get_core_orthogroups {
 
   orthology_table, core_groups, orthogroup2locus_list, locus2genome = orthofinder2core_groups("${genome_list}".split(" "),
                                                                                               'Orthogroups.txt',
-                                                                                              0,
+                                                                                              int(${params.core_missing}),
                                                                                               False)
   sequence_data = {}
   for fasta_file in "${genome_list}".split(" "):
