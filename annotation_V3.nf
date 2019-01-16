@@ -28,12 +28,9 @@ log.info "Executor               : ${params.executor}"
   Channel
     .fromPath(params.input)
     .ifEmpty { error "Cannot find any input sequence files matching: ${params.input}" }
-    .set { faa_genomes1 }
-
-    Channel
-      .fromPath(params.input)
-      .ifEmpty { error "Cannot find any input sequence files matching: ${params.input}" }
-      .set { faa_genomes2 }
+    .into { faa_genomes1
+            faa_genomes2
+            faa_genomes3 }
 
 process prepare_orthofinder {
 
@@ -162,14 +159,16 @@ process align_with_mafft {
 
   script:
   """
+  unset MAFFT_BINARIES
   for faa in ${og}; do
+  echo mafft \$faa  \${faa/.faa/_mafft.faa};
   mafft \$faa > \${faa/.faa/_mafft.faa}
   done
   """
 }
 
 /* Get only alignments with more than than two sequences */
-mafft_alignments.collect().flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.set { large_alignments }
+mafft_alignments.collect().flatten().map { it }.filter { (it.text =~ /(>)/).size() > 3 }.set { large_alignments }
 
 /*
 process orthogroups_phylogeny_with_raxml {
@@ -218,7 +217,104 @@ process orthogroups_phylogeny_with_iqtree {
   """
 }
 
+process get_core_orthogroups {
 
+  conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
+
+  publishDir 'orthology/core_groups', mode: 'copy', overwrite: false
+
+  input:
+  file 'Orthogroups.txt' from orthogroups
+  file genome_list from faa_genomes3.collect()
+
+  output:
+  file '*_taxon_ids.faa' into core_orthogroups
+
+  script:
+
+  """
+  #!/usr/bin/env python
+
+  from Bio import SeqIO
+  import os
+  import pandas as pd
+
+  def orthofinder2core_groups(fasta_list, mcl_file, n_missing=0,orthomcl=False):
+    n_missing = 0
+
+    orthogroup2locus_list = {}
+
+    with open(mcl_file, 'r') as f:
+        all_grp = [i for i in f]
+        for n, line in enumerate(all_grp):
+            if orthomcl:
+                groups = line.rstrip().split('\t')
+                groups = [i.split('|')[1] for i in groups]
+            else:
+                groups = line.rstrip().split(' ')
+                groups = groups[1:len(groups)]
+            orthogroup2locus_list["group_%s" % n] = groups
+
+    locus2genome = {}
+
+    for fasta in fasta_list:
+        genome = os.path.basename(fasta).split('.')[0]
+        for seq in SeqIO.parse(fasta, "fasta"):
+            locus2genome[seq.name] = genome
+
+    df = pd.DataFrame(index=orthogroup2locus_list.keys(), columns=set(locus2genome.values()))
+    df = df.fillna(0)
+
+    for group in orthogroup2locus_list:
+        genome2count = {}
+        for locus in orthogroup2locus_list[group]:
+            if locus2genome[locus] not in genome2count:
+                genome2count[locus2genome[locus]] = 1
+            else:
+                genome2count[locus2genome[locus]] += 1
+
+        for genome in genome2count:
+            df.loc[group, genome] = genome2count[genome]
+    df =df.apply(pd.to_numeric, args=('coerce',))
+
+    n_genomes = len(set(locus2genome.values()))
+    n_minimum_genomes = n_genomes-n_missing
+    freq_missing = (n_genomes-float(n_missing))/n_genomes
+    limit = freq_missing*n_genomes
+    print ('limit', limit)
+
+    groups_with_paralogs = df[(df > 1).sum(axis=1) > 0].index
+    df = df.drop(groups_with_paralogs)
+
+    core_groups = df[(df == 1).sum(axis=1) >= limit].index.tolist()
+
+    return df, core_groups, orthogroup2locus_list, locus2genome
+
+
+  orthology_table, core_groups, orthogroup2locus_list, locus2genome = orthofinder2core_groups("${genome_list}".split(" "),
+                                                                                              'Orthogroups.txt',
+                                                                                              0,
+                                                                                              False)
+  sequence_data = {}
+  for fasta_file in "${genome_list}".split(" "):
+      sequence_data.update(SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta")))
+
+  for one_group in core_groups:
+    dest = '%s_taxon_ids.faa' % one_group
+    new_fasta = []
+    for locus in orthogroup2locus_list[one_group]:
+        tmp_seq = sequence_data[locus]
+        tmp_seq.name = locus2genome[locus]
+        tmp_seq.id = locus2genome[locus]
+        tmp_seq.description = locus2genome[locus]
+        new_fasta.append(tmp_seq)
+
+    out_handle = open(dest, 'w')
+    SeqIO.write(new_fasta, out_handle, "fasta")
+    out_handle.close()
+
+  """
+}
 
 
 
