@@ -119,20 +119,6 @@ P.blocktext {
     padding-left: 30px;
 }
 
-table {
-   text-align: left;
-   word-wrap: break-word;
-}
-
-th, tr, td {
- text-align: left;
- border:1px solid black;
- width: auto;
- padding: 2px;
- margin: 2px;
- word-break: break-all;
- word-wrap: break-word;
- }
 
 #entete_search{
  border:1px solid black;
@@ -553,8 +539,8 @@ body {
 	/*background:#3B3B3B;*/
     background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
 	color: #444;
-	font: 100%/30px 'Helvetica Neue', helvetica, arial, sans-serif;
-    top: 35px;
+	font-size: 8px;
+    top: 32px;
     height: 100%;
 }
 
@@ -584,78 +570,8 @@ a.button {
     color: initial;
 }
 
-table.table_genomes {
-    display: block;
-    width: auto;
-    height: auto;
-    margin: 0;
-    padding: 0;
-    border: none;
-    border-collapse: inherit;
-    border-spacing: 0;
-    border-color: inherit;
-    vertical-align: inherit;
-    text-align: left;
-    font-weight: inherit;
-    -webkit-border-horizontal-spacing: 0;
-    -webkit-border-vertical-spacing: 0;
 
 
-}
-
-
-table.table_genomes tr {
-    display: block;
-    width: auto;
-    height: auto;
-    margin: 0;
-    padding: 0;
-    border: none;
-    border-collapse: inherit;
-    border-spacing: 0;
-    border-color: inherit;
-    vertical-align: inherit;
-    text-align: left;
-    font-weight: inherit;
-    -webkit-border-horizontal-spacing: 0;
-    -webkit-border-vertical-spacing: 0;
-
-
-}
-
-.dropdown-menu{
-z-index:1051;
-}
-
-table.table_genomes td {
-    display: block;
-    width: auto;
-    height: auto;
-    margin: 0;
-    padding: 0;
-    border: none;
-    border-collapse: inherit;
-    border-spacing: 0;
-    border-color: inherit;
-    vertical-align: inherit;
-    text-align: left;
-    font-weight: inherit;
-    -webkit-border-horizontal-spacing: 0;
-    -webkit-border-vertical-spacing: 0;
-
-
-}
-
-table {
-	background: #f5f5f5;
-	border-collapse: separate;
-	box-shadow: inset 0 1px 0 #fff;
-	font-size: 10px;
-	line-height: 12px;
-	margin: 30px auto;
-	text-align: left;
-	width: 98%;
-}
 
 #adress {
 	background: #f5f5f5;
@@ -678,165 +594,14 @@ table {
     margin: 15px;
 }
 
-th {
-	background: url(http://jackrugile.com/images/misc/noise-diagonal.png), linear-gradient(#777, #444);
-	border-left: 1px solid #555;
-	border-right: 1px solid #777;
-	border-top: 1px solid #555;
-	border-bottom: 1px solid #333;
-	box-shadow: inset 0 1px 0 #999;
-	color: #fff;
-    font-weight: bold;
-	padding: 5px 5px;
-	position: relative;
-	text-shadow: 0 1px 0 #000;
-    text-align: left;
-}
 
-th:after {
-	background: linear-gradient(rgba(255,255,255,0), rgba(255,255,255,.08));
-	content: '';
-	display: block;
-	height: 25%;
-	left: 0;
-	margin: 1px 0 0 0;
-	position: absolute;
-	top: 25%;
-	width: 100%;
-    text-align: left;
-}
-
-th:first-child {
-	border-left: 1px solid #777;
-	box-shadow: inset 1px 1px 0 #999;
-}
-
-
-td {
-	border-right: 1px solid #fff;
-	border-left: 1px solid #e8e8e8;
-	border-top: 1px solid #fff;
-	border-bottom: 1px solid #e8e8e8;
-	padding: 5px 5px;
-	position: relative;
-	transition: all 300ms;
-}
-
-
-tr:nth-child(odd) td {
-	background: #f1f1f1 url(http://jackrugile.com/images/misc/noise-diagonal.png);
-}
-
-ul,
-ul ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-#wrapper {
-    text-align: left;
-    left:0;
-    width: 100%;
-    font-size: 12px;
-    padding: 0 0 0 0;
-}
-.menu {
-
-    list-style: none;
-    padding: 0 0 0 0;
-
-    -webkit-box-shadow: 0px 1px 3px 0px rgba(0,0,0,.73), 0px 0px 18px 0px rgba(0,0,0,.13);
-    -moz-box-shadow: 0px 1px 3px 0px rgba(0,0,0,.73), 0px 0px 18px 0px rgba(0,0,0,.13);
-    box-shadow: 0px 1px 3px 0px rgba(0,0,0,.73), 0px 0px 18px 0px rgba(0,0,0,.13);
-}
-.menu > li > a {
-
-    background-color: #616975;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(114, 122, 134)),to(rgb(80, 88, 100)));
-    background-image: -webkit-linear-gradient(top, rgb(114, 122, 134), rgb(80, 88, 100));
-    background-image: -moz-linear-gradient(top, rgb(114, 122, 134), rgb(80, 88, 100));
-    background-image: -o-linear-gradient(top, rgb(114, 122, 134), rgb(80, 88, 100));
-    background-image: -ms-linear-gradient(top, rgb(114, 122, 134), rgb(80, 88, 100));
-    background-image: linear-gradient(top, rgb(114, 122, 134), rgb(80, 88, 100));
-    filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,StartColorStr='#727a86', EndColorStr='#505864');
-    border-bottom: 1px solid #33373d;
-    -webkit-box-shadow: inset 0px 1px 0px 0px #878e98;
-    -moz-box-shadow: inset 0px 1px 0px 0px #878e98;
-    box-shadow: inset 0px 1px 0px 0px #878e98;
-
-    height: 1.60em;
-    line-height: 1.60em;
-    text-indent: 1.6em;
-    display: block;
-
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-weight: 600;
-    color: #fff;
-    text-shadow: 0 1px 0 rgba(0,0,0,.5);
-}
-
-.menu ul li a {
-    background: #fff;
-    border-bottom: 1px solid #efeff0;
-    width: 100%;
-    height: 1.85em;
-    line-height: 1.85em;
-    text-indent: 1.85em;
-    display: block;
-    position: relative;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 0.923em;
-    font-weight: 400;
-    color: #878d95;
-}
-.menu ul li:last-child a {
-    border-bottom: 1px solid #33373d;
-}
-
-.menu > li > a:hover,
-.menu > li > a.active {
-    background-color: #35afe3;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(69, 199, 235)),to(rgb(38, 152, 219)));
-    background-image: -webkit-linear-gradient(top, rgb(69, 199, 235), rgb(38, 152, 219));
-    background-image: -moz-linear-gradient(top, rgb(69, 199, 235), rgb(38, 152, 219));
-    background-image: -o-linear-gradient(top, rgb(69, 199, 235), rgb(38, 152, 219));
-    background-image: -ms-linear-gradient(top, rgb(69, 199, 235), rgb(38, 152, 219));
-    background-image: linear-gradient(top, rgb(69, 199, 235), rgb(38, 152, 219));
-    filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,StartColorStr='#45c7eb', EndColorStr='#2698db');
-    border-bottom: 1px solid #103c56;
-    -webkit-box-shadow: inset 0px 1px 0px 0px #6ad2ef;
-    -moz-box-shadow: inset 0px 1px 0px 0px #6ad2ef;
-    box-shadow: inset 0px 1px 0px 0px #6ad2ef;
-}
-.menu > li > a.active {
-    border-bottom: 1px solid #1a638f;
-}
-
-
-.menu > li > ul li a:before {
-    content: '▶';
-    font-size: 8px;
-    color: #bcbcbf;
-    position: absolute;
-    width: 1em;
-    height: 1em;
-    top: 0;
-    left: -1.7em;
-}
-
-.menu > li > ul li:hover a,
-.menu > li > ul li:hover a span,
-.menu > li > ul li:hover a:before {
-    color: #32373D;
-}
 
 #head_section
 {
     background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
     top:2px;
 	color: #444;
-    margin-left: 146px;
+    margin-left: 1px;
     border: 0px solid blue;
     padding: 2px;
 
@@ -878,11 +643,7 @@ A{text-decoration:none}
     line-height: 10pt;
 }
 
-/*supprime les marges en bordure de page */
-html{
-  position:relative;
-  min-height: 100vh;
-}
+
 /*Normalize html and body elements,this style is just good to have*/
 html,body{
   margin:0 0 0 0;
@@ -897,9 +658,10 @@ html,body{
     margin-bottom:0;
 
     position:relative;
-    padding:10px 0 0 135px;
+    padding:0px 0 0 0px;
     background-color: #FAFAF5;
 }
+
 #container_no_margin {
     height: 100%;
     min-height: 100vh;
@@ -911,13 +673,8 @@ html,body{
 iframe {
     border:none;
 }
-#sidebar {
-    position:absolute;
-    top:45px; bottom:0; left:0;
-    width:130px;
-    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
-    height:100%;
-}
+
+
 
 #header {
     border:0px solid #000;
@@ -926,12 +683,6 @@ iframe {
     margin:0 0 5px 0;
 }
 
-#content {
-    border:0px solid #000;
-    width:100%;
-    min-height:100px;
-    margin:0 0 0 0;
-}
 
 #footer {
     background-color: orange;
@@ -943,29 +694,9 @@ iframe {
 
     overflow:hidden;
 }
-.navbar {
-width: 100%;
-}
-.navbar-nav > li > a, .navbar-brand {
-    padding-top:2px !important;
-    padding-bottom:0 !important;
-    height: 22px;
-}
-.navbar {min-height:22px !important;}
 
 #list_strains { margin: 2px; padding: 8px; height: 15px; left: 15px;}
 
-ol {
-  list-style-position: inside;
-  padding-left: 40px;
-  list-style-type: square;
-    font-size: 12px;
-}
-ul {
-  list-style-position: inside;
-  padding-left: 40px;
-  list-style-type: decimal
-}
 
 .rotate {
              filter:  progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083);  /* IE6,IE7 */
