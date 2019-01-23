@@ -5250,11 +5250,13 @@ def locus_tag2cog_series(biodb, locus_tag_list, reference_taxon=None):
           ' inner join orthology_detail_%s as B on A.locus_tag=B.locus_tag;' % (biodb,
                                                                               '"' + '","'.join(locus_tag_list) + '"',
                                                                               biodb)
+
     sql = 'select locus_tag, taxon_id from COG.seqfeature_id2best_COG_hit_%s t1 ' \
           ' inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' where locus_tag in (%s) group by locus_tag;' % (biodb,
                                          biodb,
                                          '"' + '","'.join(locus_tag_list) + '"')
+
     print (sql)
     data = server.adaptor.execute_and_fetchall(sql,)
     # non redundant list of locus with associated COG
@@ -5278,6 +5280,8 @@ def locus_tag2cog_series(biodb, locus_tag_list, reference_taxon=None):
         else:
             cog_category2count[row[1]] += 1
 
+    print(cog_category2count)
+
     # calculating COG categories as percentages of total COG
     total = sum([cog_category2count[i] for i in cog_category2count])
     #print "total", total
@@ -5290,9 +5294,19 @@ def locus_tag2cog_series(biodb, locus_tag_list, reference_taxon=None):
           ' inner join COG.cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,function;' % (biodb,
                                                                                                       reference_taxon,
                                                                                                       biodb)
-    print(sql)
+    # attention!!!! Pourquoi group by orthogroup ci-dessus???????!!!!!!!
+    sql = 'select A.locus_tag,code, count(*) as n from (select * from biosqldb.orthology_detail_%s as t1 where taxon_id=%s) A ' \
+          ' left join COG.seqfeature_id2best_COG_hit_%s as B on A.seqfeature_id=B.seqfeature_id ' \
+          ' inner join COG.cog_names_2014 as C on B.hit_cog_id=C.COG_id ' \
+          ' inner join COG.cog_id2cog_category D on C.COG_id=D.COG_id ' \
+          ' inner join COG.code2category E on D.category_id=E.category_id group by locus_tag,code;' % (biodb,
+                                                                                                      reference_taxon,
+                                                                                                      biodb)
+
+
+
+
     data_all = server.adaptor.execute_and_fetchall(sql,)
-    #print data_all
     # counting COG categories for the whole genome
     cog_category2count_all = {}
     for row in data_all:
@@ -5719,7 +5733,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
     #print 'biodb', biodb
     if counttype == 'Majority':
         sql = 'select B.locus_tag, A.%s ,A.n from (select seqfeature_id,%s, count(*) as n from blastnr.blastnr_%s A ' \
-              ' inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id where hit_number<=%s and query_bioentry_id=%s' \
+              ' inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id where hit_number<=%s and query_bioentry_id=%s and superkingdom="Bacteria" ' \
               ' group by seqfeature_id, %s order by seqfeature_id,n DESC) A ' \
               ' inner join custom_tables.locus2seqfeature_id_%s B on A.seqfeature_id=B.seqfeature_id' % (rank,
                                                                                                          rank,
@@ -5783,6 +5797,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
 
     locus_tag2blastnr_BBH = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
+    '''
     series, \
     labels, \
     serie_all_counts, \
@@ -5793,6 +5808,8 @@ def blastnr_cat_info(request, accession, rank, taxon):
     category_map, \
     n_missing_cog, \
     missing_cog_list = locus_tag2cog_series(biodb, locus_list, reference_taxon=None)
+    '''
+
 
     return render(request, 'chlamdb/blastnr_info.html', locals())
 
@@ -7399,7 +7416,8 @@ def blastnr_barchart(request):
                             category2count[category] += int(taxon2category2count[taxon][category])
                     except:
                         pass
-            print (category2count)
+            for key in category2count:
+                print("%s\t%s" % (key, category2count[key]))
             data = pd.DataFrame({'category': list(category2count.keys()),
                     'count': list(category2count.values()) })
             data_sort = data.sort_values("count", ascending=0)
@@ -12462,7 +12480,8 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
                                                                        taxid2n,
                                                                        taxid2identity= taxon2identity_closest,
                                                                        taxid2locus = taxon2locus_tag_closest,
-                                                                       reference_taxon=taxon_id)
+                                                                       reference_taxon=taxon_id,
+                                                                       n_paralogs_barplot=True)
     shell_command.shell_command('rm %s' % path)
 
     t1.render(path, dpi=800, h=leaf_number*12)

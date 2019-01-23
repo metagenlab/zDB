@@ -195,11 +195,11 @@
         function drill(d, i) {
             var taxon = data.series[d3.select(this.parentNode).attr("taxon_id")].label; //data object
             var category = data.labels[d3.select(this.parentNode).attr("category_id")]; //data object
-            window.open("/chlamdb/blastnr_cat_info/{{biodb}}/" + taxon + "/" + "{{rank}}" + "/" + category + "{{circos_url|safe}}");
+            window.open("/chlamdb/blastnr_cat_info/" + taxon + "/" + "{{rank}}" + "/" + category + "{{circos_url|safe}}");
         }
         function drill2(d,j) {
                 var category = data.labels[d3.select(this.parentNode).attr("category_id")]; //data object
-                window.open("/chlamdb/cog_venn_subset/{{biodb}}/" + category + "{{circos_url|safe}}") };
+                window.open("/chlamdb/cog_venn_subset/" + category + "{{circos_url|safe}}") };
 
         //bar.on("click", drill);
 
