@@ -26,43 +26,33 @@ function clearBox(elementID)
     document.getElementById(elementID).innerHTML = "";
 }
 </script>
+
+{% include "chlamdb/header.html" %}
+
 </head>
 
-<body id="locus_body">
+
+
 
 {% if not menu %}
-    <div id="container_no_margin" height="100%">
-
-
+    <div class="container-fluid" id="container_no_margin" height="100%">
 
 {% else %}
-    <div id="container" height="100%">
-        <div id="content">
-        <div id="sidebar">
-            {% include "chlamdb/menu.html" %}
-        </div>
-        <div id="header">
-            {% include "chlamdb/user.html" %}
-        </div>
-
+<div class="container-fluid" id="main_container">
 {% endif %}
+  <div class="row">
+    <div id="wrapper">
+      <div id="page-content-wrapper">
+        <div class="row">
+          <div class="col-lg-12">
 
-
-        {% if not valid_id %}
-            {% if menu %}
-            <div id="content">
-            <div id="sidebar">
-                {% include "chlamdb/menu.html" %}
-            </div>
-            <div id="header">
-                {% include "chlamdb/user.html" %}
-            </div>
-            {% endif %}
-            <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
-            <p>
-
-
-       {% else %}
+          {% if menu %}
+              {% include "chlamdb/menu.html" %}
+          {% endif %}
+          {% if not valid_id %}
+              <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
+              <p>
+         {% else %}
 
             <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
 
@@ -115,96 +105,102 @@ function clearBox(elementID)
             {% if input_type != 'orthogroup' %}
 
 
-                <div class="tab-pane active" id="tab1">
+                <div class="tab-pane active" id="tab1" style="padding-left: 15px;padding-top:20px">
 
                     <!--<div class="row">-->
-                        <div class="col-md-4" style="padding-left: 15px">
+                        <div class="col-md-4">
+                          <div class="container-fluid">
                             <div class="row">
-                                <h3>General</h3>
-                                <div style="width: 100%;padding-left:20px">
 
-
-
-                                    <table style="width: 100%">
-
-                                        <tr>
-                                            <td id="description_field">Organism</td>
-                                            <td>{{ data.12 }}</td>
-                                        </tr>
-
-
-
-                                        <tr>
-                                            <td id="description_field">locus_tag</td>
-                                            <td>{{ data.1 }}</td>
-                                        </tr>
-                                        {% if old_locus_tag %}
-                                            <tr>
-                                                <td id="description_field">old locus_tag</td>
-                                                <td>{{ old_locus_tag }}</td>
-                                            </tr>
-                                        {% endif %}
-                                        <td  id="description_field">gene</td>
-                                            <td>{{ data.6 }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>protein_id</td>
-                                            <td>{{ data.2 }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Location</td>
-                                            <td>{{ data.3 }} - {{ data.4 }} (strand: {{ data.5 }})</td>
-                                        </tr>
-
-                                        <tr>
-                                            <td>Length</td>
-                                            <td>{{ nucl_length }} (nucleotides) / {{aa_length}} (amino acids)</td>
-                                        </tr>
-
-
-
-                                    </table>
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">General</h3>
                                 </div>
+                                  <table class="table-striped" style="width: 100%">
+
+                                      <tr>
+                                          <th id="description_field">Organism</th>
+                                          <td>{{ data.12 }}</td>
+                                      </tr>
+                                      <tr>
+                                          <th id="description_field">locus_tag</th>
+                                          <td>{{ data.1 }}</td>
+                                      </tr>
+                                      {% if old_locus_tag %}
+                                          <tr>
+                                              <th id="description_field">old locus_tag</th>
+                                              <td>{{ old_locus_tag }}</td>
+                                          </tr>
+                                      {% endif %}
+                                      <th  id="description_field">gene</th>
+                                          <td>{{ data.6 }}</td>
+                                      </tr>
+                                      <tr>
+                                          <th>protein_id</th>
+                                          <td>{{ data.2 }}</td>
+                                      </tr>
+                                      <tr>
+                                          <th>Location</th>
+                                          <td>{{ data.3 }} - {{ data.4 }} (strand: {{ data.5 }})</td>
+                                      </tr>
+
+                                      <tr>
+                                          <th>Length</th>
+                                          <td>{{ nucl_length }} (nucleotides) / {{aa_length}} (amino acids)</td>
+                                      </tr>
+                                  </table>
+                              </div>
                             </div>
-                            <h3>Download</h3>
-                            <div style="width: 100%;padding-left:20px">
-                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' data.0 "aa"%}'">fasta aa</button>
-                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' data.0 "nucl"%}'">fasta nucl</button>
-                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_newick_tree' data.0 %}'">newick tree</button>
-                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% static alignment_fasta %}'">MSA</button>
-                            </div>
+                            <div class="row">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">Download</h3>
+                                </div>
+                                <div class="panel-body">
+                                  <div style="width: 100%;padding-left:20px">
+                                      <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' data.0 "aa"%}'">fasta aa</button>
+                                      <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' data.0 "nucl"%}'">fasta nucl</button>
+                                      <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_newick_tree' data.0 %}'">newick tree</button>
+                                      <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% static alignment_fasta %}'">MSA</button>
+                                  </div>
+                                </div>
+                              </div>
+                           </div>
+                           <div class="row">
+                             <div class="panel panel-default">
+                               <div class="panel-heading">
+                                 <h3 class="panel-title">Orthology</h3>
+                               </div>
 
-                            <h3>Orthology</h3>
-                            <div style="width: 100%;padding-left:20px">
-                                <table>
+                                 <table class="table-striped" style="width: 100%">
+                                   <tr>
+                                       <td id="description_field">orthogroup</td>
+                                       <td>{{ data.0 }}</td>
+                                   </tr>
+                                   <td id="description_field">orthogroup size</td>
+                                       <td>{{ data.7 }}</td>
+                                   </tr>
 
-                                    <tr>
-                                        <td id="description_field">orthogroup</td>
-                                        <td>{{ data.0 }}</td>
-                                    </tr>
-                                    <td id="description_field">orthogroup size</td>
-                                        <td>{{ data.7 }}</td>
-                                    </tr>
-
-                                    <td id="description_field">n genomes</td>
-                                        <td>{{ data.8 }}</td>
-                                    </tr>
-                                    {%if cog_data %}
-                                        <tr>
-                                        <td id="description_field"><a href="{% url 'fam' cog_data.0 'cog' %}" target="_top">COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></td>
-                                        <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}"  target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
-                                        </tr>
-                                    {% endif %}
-                                    {%if ko_data %}
-                                        <tr>
-                                        <td id="description_field"><a href="{% url 'fam' ko_data.0 'ko' %}" target="_top">KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></td>
-                                        <td><a href="http://www.genome.jp/dbget-bin/www_bget?ko:{{ko_data.0}}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
-                                        </tr>
-                                    {% endif %}
-
-
+                                   <td id="description_field">n genomes</td>
+                                       <td>{{ data.8 }}</td>
+                                   </tr>
+                                   {%if cog_data %}
+                                       <tr>
+                                       <td id="description_field"><a href="{% url 'fam' cog_data.0 'cog' %}" target="_top">COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></td>
+                                       <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}"  target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
+                                       </tr>
+                                   {% endif %}
+                                   {%if ko_data %}
+                                       <tr>
+                                       <td id="description_field"><a href="{% url 'fam' ko_data.0 'ko' %}" target="_top">KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></td>
+                                       <td><a href="http://www.genome.jp/dbget-bin/www_bget?ko:{{ko_data.0}}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
+                                       </tr>
+                                   {% endif %}
                                 </table>
-                            </div>
+
+                             </div>
+                           </div>
+
                             {% if protparams_data %}
                             <h3>ProtParams</h3>
                             <div style="width: 100%;padding-left:20px">
@@ -322,21 +318,24 @@ function clearBox(elementID)
                             {% endif %}
 
                         </div>
+                      </div> <!-- fluid conmtainer -->
                         <div class="col-md-8">
                             <div class="row" style="height:100px">
                                 <object width="95%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
                             </div>
                             <div class="row">
-                            <h3>Product</h3>
-                            <table>
-                                <tr>
-                                    <td id="description_field">Product</td>
-                                    <td>{{ data.11 }}</td>
-                                </tr>
+                              <h3>Product</h3>
+                              <table>
+                                  <tr>
+                                      <td id="description_field">Product</td>
+                                      <td>{{ data.11 }}</td>
+                                  </tr>
 
-                            </table>
+                              </table>
                             </div>
+
                             {% if uniprot_annotation%}
+                              <div class="row">
                                 <table>
                                         <tr>
                                             <td id="description_field">Uniprot status</td>
@@ -386,10 +385,8 @@ function clearBox(elementID)
                                             <td>{{ uniprot_annotation.8 }}</td>
                                         </tr>
                                     {% endif %}
-
-
-
                                 </table>
+                              </div>
                             {%endif%}
                             {% if transporter_data%}
                             <h3>Transporter</h3>
@@ -744,16 +741,35 @@ function clearBox(elementID)
                 </div>
                 <div class="tab-pane" id="tab3" width="100%" height="100%">
 
-                    <table>
-                        <tr id="description_field">
-                            <th style="width: 110px">Translation</th>
-                            <td>{{ data.13 }}</td>
-                        </tr>
-                        <tr id="description_field">
-                            <th>Sequence <br> +/- flanking 50bp</th>
-                            <td>{{ seq|safe }}</td>
-                        </tr>
-                    </table>
+
+                  <div class="row" style="padding-top:15px;">
+                    <div class="col-lg-6">
+
+                      <div class="row">
+                        <div class="panel panel-default">
+                          <div class="panel-heading">
+                            <h3 class="panel-title">Protein Sequence</h3>
+                          </div>
+                          <div class="panel-body">
+                            <p style="word-wrap: break-word;" class="text-justify">{{ data.13 }}</p>
+                          </div>
+                        </div>
+
+                      </div>
+                      <div class="row">
+
+                        <div class="panel panel-default">
+                          <div class="panel-heading">
+                            <h3 class="panel-title">Flanking regions ( +/- flanking 50bp)</h3>
+                          </div>
+                          <div class="panel-body">
+                            <p style="word-wrap: break-word;" class="text-justify">{{ seq|safe }}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
 
                 </div>
                 <div class="tab-pane" id="tab2" width="100%" height="100%">
@@ -843,10 +859,17 @@ function clearBox(elementID)
                 <h2>Homologs</h2>
                 No homologs
             {% else %}
-                <h2>Homologs</h2>
-                <ol>
-                    <li>{{homologues|length}} homologs</li>
-                </ol>
+              <div style="padding-top:20px">
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h3 class="panel-title">Homologs</h3>
+                  </div>
+                  <div class="panel-body">
+                    {{homologues|length}} homologs were identified in {{ data.8 }} genomes with OrthoFinder (REF).
+                  </div>
+                </div>
+              </div>
+
             {% endif %}
 
                         <div id="export_bouttons">
@@ -855,22 +878,20 @@ function clearBox(elementID)
                         <br/>
                         </div>
 
-                       <table class="display dataTable" id="homologues_table" style="width:100%"> <!--  class="sortable" -->
+                       <table class="display dataTable table-striped" id="homologues_table" style="width:95%"> <!--  class="sortable" -->
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th style="width:130px">Locus tag</th>
-                                    <th style="width:50px">ID(%)</th>
-                                    <th id="entete_locus">Uniprot Status</th>
-                                    <th id="entete_locus">Annot. score</th>
-                                    <th id="entete_gene">Gene (uniprot/refseq)</th>
-                                    <th id="entete_n">nH</th>
-                                    <th id="entete_n">nG</th>
-                                    <th id="entete_n">TM</th>
-                                    <th id="entete_n">SP</th>
-                                    <th id="entete_organism">Organism</th>
-                                    <th id="entete_product">Product (uniprot/refseq)</th>
-                                    <th id="entete_translation">Function</th>
+                                    <th>Locus tag</th>
+                                    <th>ID(%)</th>
+                                    <th>Uniprot Status</th>
+                                    <th>Annot. score</th>
+                                    <th>Gene (uniprot/refseq)</th>
+                                    <th>TM</th>
+                                    <th>SP</th>
+                                    <th>Organism</th>
+                                    <th>Product (uniprot/refseq)</th>
+                                    <th>Function</th>
 
                                 </tr>
                             </thead>
@@ -893,8 +914,6 @@ function clearBox(elementID)
 
 
                                         <td>{{values.2}} <br> {{values.10}}</td> <!-- gene -->
-                                        <td>{{values.5}}</td> <!-- ortho size -->
-                                        <td>{{values.6}}</td> <!-- n genomes -->
                                         <td>{{values.7}}</td> <!-- tm -->
                                         <td>{{values.8}}</td> <!-- sp -->
                                         <td>{{values.4}}</td> <!-- organism -->
@@ -1103,7 +1122,7 @@ $(document).ready(function() {
                 columns: ':not(.noVis)'
             }
         ],
-        "pageLength": 250
+        "pageLength": 10
     } );
 } );
 
@@ -1150,5 +1169,5 @@ window.onload = function() {
 
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 </script>
-
+{% include "chlamdb/style_menu.html" %}
 </html>
