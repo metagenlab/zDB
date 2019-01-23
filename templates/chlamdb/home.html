@@ -25,7 +25,7 @@
 
 <body>
 
-    <div class="container-fluid">
+    <div class="container-fluid" id="main_container">
       <div class="row">
         <div id="wrapper">
           {% include "chlamdb/menu.html" %}
@@ -55,107 +55,135 @@
                             <a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a>
 
                             </div>
-
-
-                              <div class="panel panel-default">
-                                <div class="panel-heading">
-                                  <h3 class="panel-title">General searches</h3>
+                            <div class="row">
+                              <div class="col-lg-6">
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    <h3 class="panel-title">General searches</h3>
+                                  </div>
+                                  <div class="panel-body">
+                                    First, gene names, gene products, locus tags, protein domains (InterPro or PFAM),
+                                      Clusters of orthologous genes (COGs), Kegg Orthology numbers (KO) or EC numbers can be queried using the search function at the top of the page.
+                                      [[https://chlamdb.ch/search][Searches]]
+                                      The locus page
+                                  </div>
                                 </div>
-                                <div class="panel-body">
-                                  First, gene names, gene products, locus tags, protein domains (InterPro or PFAM),
-                                    Clusters of orthologous genes (COGs), Kegg Orthology numbers (KO) or EC numbers can be queried using the search function at the top of the page.
-                                    [[https://chlamdb.ch/search][Searches]]
-                                    The locus page
+                              </div>
+                              <div class="col-lg-6">
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    <h3 class="panel-title">Comparative analyses</h3>
+                                  </div>
+                                  <div class="panel-body">
+                                    Several comparisons are available:
+                                    <ul>
+                                      <li> [[./orthogroups.txt][Orthologous groups comparisons]] </li>
+
+                                      <li> [[./cog.txt][Cluster of orthologous genes (COGs) comparisons]] </li>
+
+                                      <li> [[./pfam.txt][Pfam domains]] </li>
+
+                                      <li> [[./interpro.txt][InterPro entries]] </li>
+
+                                      <li> [[./ec.txt][EC numbers]] </li>
+
+                                      <li> [[./kegg.txt][Kegg Orthologs]] </li>
+
+                                      <li> [[./pairwise.txt][Pairwise identity]] </li>
+
+                                      <li> [[./cds_length.txt][Coding Sequences lengths]] </li>
+
+                                      <li> [[./transporters.txt][Transporters]] </li>
+                                    </ul>
+                                  </div>
                                 </div>
                               </div>
 
-                              <div class="panel panel-default">
-                                <div class="panel-heading">
-                                  <h3 class="panel-title">Comparative analyses</h3>
+                              <div class="row">
+                                <div class="col-lg-6">
+                                  <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">Genome alignments </h3>
+                                    </div>
+                                    <div class="panel-body">
+                                      Genome alignments of specific regions or of whole genomes can be performed:
+
+                                        - Genomic Region <br>
+
+                                        - Whole-genome alignments <br>
+                                    </div>
+                                  </div>
                                 </div>
-                                <div class="panel-body">
-                                  Several comparisons are available:
-                                  <ul>
-                                    <li> [[./orthogroups.txt][Orthologous groups comparisons]] </li>
-
-                                    <li> [[./cog.txt][Cluster of orthologous genes (COGs) comparisons]] </li>
-
-                                    <li> [[./pfam.txt][Pfam domains]] </li>
-
-                                    <li> [[./interpro.txt][InterPro entries]] </li>
-
-                                    <li> [[./ec.txt][EC numbers]] </li>
-
-                                    <li> [[./kegg.txt][Kegg Orthologs]] </li>
-
-                                    <li> [[./pairwise.txt][Pairwise identity]] </li>
-
-                                    <li> [[./cds_length.txt][Coding Sequences lengths]] </li>
-
-                                    <li> [[./transporters.txt][Transporters]] </li>
-                                  </ul>
-                                </div>
-                              </div>
-
-                              <div class="panel panel-default">
-                                <div class="panel-heading">
-                                  <h3 class="panel-title">Genome alignments </h3>
-                                </div>
-                                <div class="panel-body">
-                                  Genome alignments of specific regions or of whole genomes can be performed:
-
-                                    - Genomic Region <br>
-
-                                    - Whole-genome alignments <br>
+                                <div class="col-lg-6">
+                                  <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">Metabolism comparisons</h3>
+                                    </div>
+                                    <div class="panel-body">
+                                      Panel content
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
 
-                              <div class="panel panel-default">
-                                <div class="panel-heading">
-                                  <h3 class="panel-title">Metabolism comparisons</h3>
+                              <div class="row">
+                                <div class="col-lg-6">
+                                  <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">Secretion system effectors</h3>
+                                    </div>
+                                    <div class="panel-body">
+                                      The proteins secreted by the type-III secretion play a major role in the host-bacterial interaction. These are call effectors and tend to exhibit eukariotic proteins domains allowing the interaction with host proteins.
+
+                                    </div>
+                                  </div>
                                 </div>
-                                <div class="panel-body">
-                                  Panel content
+                                <div class="col-lg-6">
+                                  <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">Transporters</h3>
+                                    </div>
+                                    <div class="panel-body">
+                                      Transporters were annotated using XXX
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
 
-                              <div class="panel panel-default">
-                                <div class="panel-heading">
-                                  <h3 class="panel-title">Secretion system effectors</h3>
-                                </div>
-                                <div class="panel-body">
-                                  The proteins secreted by the type-III secretion play a major role in the host-bacterial interaction. These are call effectors and tend to exhibit eukariotic proteins domains allowing the interaction with host proteins.
+                              <div class="row">
+                                <div class="col-lg-6">
+                                  <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">Genome statistics</h3>
+                                    </div>
+                                    <div class="panel-body">
+                                      <ul>
 
+                                        <li> General genomic features </li>
+
+                                        <li> Maximum-likelihood core-genome phylogeny </li>
+
+                                        <li> Pairwise identities comparisons </li>
+
+                                        <li> Coding Sequence lengths comparisons </li>
+                                      </ul>
+
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="col-lg-6">
+                                  <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">BlastNR</h3>
+                                    </div>
+                                    <div class="panel-body">
+                                      Each coding sequence was BLASTed (using BLASTP) against the nun-redundant protein database of the National Center for Biotechnology Information.
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
 
-                            <h2> </h2>
-
-
-                            <h2> Transporters</h2>
-
-                            Transporters were annotated using XXX <br>
-
-                            <h2> Genome statistics</h2>
-                            <ul>
-
-                              <li> General genomic features </li>
-
-                              <li> Maximum-likelihood core-genome phylogeny </li>
-
-                              <li> Pairwise identities comparisons </li>
-
-                              <li> Coding Sequence lengths comparisons </li>
-                            </ul>
-                            <h2> BlastNR </h2>
-
-                            Each coding sequence was BLASTed (using BLASTP) against the nun-redundant protein database of the National Center for Biotechnology Information.
-
-
-
-
-
-
+                            </div>
 
 
                         </div>
@@ -262,200 +290,205 @@
 
     <style>
 
-    #wrapper {
-        margin-top: 55px;
-        padding-left: 0;
-        -webkit-transition: all 0.6s ease;
-        -moz-transition: all 0.6s ease;
-        -o-transition: all 0.6s ease;
-        transition: all 0.6s ease;
-    }
-
-    #wrapper.toggled {
-        padding-left: 200px;
-    }
-
-    #sidebar-wrapper {
-        z-index: 1000;
-        position: fixed;
-        left: 250px;
-
-        width: 0;
-        height: 100%;
-        margin-left: -250px;
-        overflow-y: auto;
-        background-color: #333244; /*#32373D !Important;*/
-
-        -webkit-transition: all 0.5s ease;
-        -moz-transition: all 0.5s ease;
-        -o-transition: all 0.5s ease;
-        transition: all 0.5s ease;
-        margin-top:2px;
-    }
-
-    #wrapper.toggled #sidebar-wrapper {
-        width: 0;
-    }
-
-    #page-content-wrapper {
-        width: 100%;
-        position: absolute;
-        padding: 10px;
-    }
-
-    #wrapper.toggled #page-content-wrapper {
-        position: absolute;
-        #margin-left:-250px;
-    }
-
-    /* Sidebar Styles */
-
-    .sidebar-nav {
-        position: absolute;
-        top: 0;
-        right:15px;
-        width: 200px;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
-
-    .sidebar-nav li {
-        text-indent: 10px;
-        line-height: 22px;
-    }
-
-    .sidebar-nav li a {
-        display: block;
-        text-decoration: none;
-        color: #999999;
-        padding-left: 2px;
-    }
-
-    #separator {
-        display: block;
-        text-decoration: none;
-        line-height: 32px;
-        color: #FBFBEF;
-        padding-left:2px;
-        background: #2A2938 /* #15729A; */
-
-    }
-
-    .item {
-        padding-left:20px;
-    }
-
-    .sidebar-nav li a:hover {
-        text-decoration: none;
-        color: #fff;
-        background: #FE9A2E;
-    }
-
-    .sidebar-nav li a:active,
-    .sidebar-nav li a:focus {
-        text-decoration: none;
-    }
-
-    .sidebar-nav > .sidebar-brand {
-        height: 65px;
-        font-size: 18px;
-        line-height: 60px;
-    }
-
-    .sidebar-nav > .sidebar-brand a {
-        color: #999999;
-    }
-
-    .sidebar-nav > .sidebar-brand a:hover {
-        color: #fff;
-        background: none;
-    }
-
-    @media(min-width:950px) {
-        #wrapper {
-            padding-left: 220px;
-        }
-
-        #wrapper.toggled {
-            padding-left: 0;
-        }
-
-        #sidebar-wrapper {
-            width: 200px;
-        }
-
-        #wrapper.toggled #sidebar-wrapper {
-            width: 40px;
-
-
-        }
-      #wrapper.toggled i #toggle_button {
-     float:right;
-     }
-
-      #page-content-wrapper {
-            padding: 20px;
-            position: relative;
-        }
-
-        #wrapper.toggled #page-content-wrapper {
-            position: relative;
-            margin-right: 0;
-        }
-    }
-
-
-    @media(max-width:950px) {
       #wrapper {
-          padding-left: 280px;
+          margin-top: 55px;
+          padding-left: 0;
+          -webkit-transition: all 0.6s ease;
+          -moz-transition: all 0.6s ease;
+          -o-transition: all 0.6s ease;
+          transition: all 0.6s ease;
       }
 
-    #wrapper.toggled #page-content-wrapper {
-        position: absolute;
-        margin-right:60px;
-    }
+      #wrapper.toggled {
+          padding-left: 200px;
+      }
 
-    #wrapper.toggled {
-        padding-right: 60px;
-    }
+      #main_container {
+          padding-left: 30px;
+      }
 
-     #wrapper {
-            padding-left: 20px;
-        }
 
-        #wrapper.toggled {
-            padding-left: 0;
-        }
+      #sidebar-wrapper {
+          z-index: 1000;
+          position: fixed;
+          left: 250px;
 
-        #sidebar-wrapper {
-            width: 50px;
-        }
+          width: 0;
+          height: 100%;
+          margin-left: -250px;
+          overflow-y: auto;
+          background-color: #333244; /*#32373D !Important;*/
 
-        #wrapper.toggled #sidebar-wrapper {
-            width: 220px;
+          -webkit-transition: all 0.5s ease;
+          -moz-transition: all 0.5s ease;
+          -o-transition: all 0.5s ease;
+          transition: all 0.5s ease;
+          margin-top:2px;
+      }
 
-        }
+      #wrapper.toggled #sidebar-wrapper {
+          width: 0;
+      }
 
-        #wrapper.toggled span {
-            visibility:visible;
-            position:relative;
-            left:70px;
-            bottom:13px;
+      #page-content-wrapper {
+          width: 100%;
+          position: absolute;
+          padding: 10px;
+      }
 
-        }
+      #wrapper.toggled #page-content-wrapper {
+          position: absolute;
+          #margin-left:-250px;
+      }
 
+      /* Sidebar Styles */
+
+      .sidebar-nav {
+          position: absolute;
+          top: 0;
+          right:15px;
+          width: 200px;
+          margin: 0;
+          padding: 0;
+          list-style: none;
+      }
+
+      .sidebar-nav li {
+          text-indent: 10px;
+          line-height: 22px;
+      }
+
+      .sidebar-nav li a {
+          display: block;
+          text-decoration: none;
+          color: #999999;
+          padding-left: 2px;
+      }
+
+      #separator {
+          display: block;
+          text-decoration: none;
+          line-height: 32px;
+          color: #FBFBEF;
+          padding-left:2px;
+          background: #2A2938 /* #15729A; */
+
+      }
+
+      .item {
+          padding-left:20px;
+      }
+
+      .sidebar-nav li a:hover {
+          text-decoration: none;
+          color: #fff;
+          background: #FE9A2E;
+      }
+
+      .sidebar-nav li a:active,
+      .sidebar-nav li a:focus {
+          text-decoration: none;
+      }
+
+      .sidebar-nav > .sidebar-brand {
+          height: 65px;
+          font-size: 18px;
+          line-height: 60px;
+      }
+
+      .sidebar-nav > .sidebar-brand a {
+          color: #999999;
+      }
+
+      .sidebar-nav > .sidebar-brand a:hover {
+          color: #fff;
+          background: none;
+      }
+
+      @media(min-width:950px) {
+          #wrapper {
+              padding-left: 220px;
+          }
+
+          #wrapper.toggled {
+              padding-left: 0;
+          }
+
+          #sidebar-wrapper {
+              width: 200px;
+          }
+
+          #wrapper.toggled #sidebar-wrapper {
+              width: 40px;
+
+
+          }
+        #wrapper.toggled i #toggle_button {
+       float:right;
+       }
 
         #page-content-wrapper {
-            padding: 5px;
-            position: relative;
+              padding: 20px;
+              position: relative;
+          }
+
+          #wrapper.toggled #page-content-wrapper {
+              position: relative;
+              margin-right: 0;
+          }
+      }
+
+
+      @media(max-width:950px) {
+        #wrapper {
+            padding-left: 280px;
         }
 
-        #wrapper.toggled #page-content-wrapper {
-            position: relative;
-            margin-right: 0;
-        }
-    }
+      #wrapper.toggled #page-content-wrapper {
+          position: absolute;
+          margin-right:60px;
+      }
+
+      #wrapper.toggled {
+          padding-right: 60px;
+      }
+
+       #wrapper {
+              padding-left: 20px;
+          }
+
+          #wrapper.toggled {
+              padding-left: 0;
+          }
+
+          #sidebar-wrapper {
+              width: 50px;
+          }
+
+          #wrapper.toggled #sidebar-wrapper {
+              width: 220px;
+
+          }
+
+          #wrapper.toggled span {
+              visibility:visible;
+              position:relative;
+              left:70px;
+              bottom:13px;
+
+          }
+
+
+          #page-content-wrapper {
+              padding: 5px;
+              position: relative;
+          }
+
+          #wrapper.toggled #page-content-wrapper {
+              position: relative;
+              margin-right: 0;
+          }
+      }
 
     /*!
      *  Font Awesome 4.6.3 by @davegandy - http://fontawesome.io - @fontawesome
