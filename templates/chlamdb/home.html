@@ -172,7 +172,7 @@
                                     </div>
                                   </div>
                                 </div>
-                                <div class="col-lg-6">
+                                <div class="col-lg-6 col-md-8 col-sm-8">
                                   <div class="panel panel-default">
                                     <div class="panel-heading">
                                       <h3 class="panel-title">BlastNR</h3>
@@ -189,7 +189,8 @@
 
                         </div>
                         <div class="tab-pane" id="tab0">
-
+                          <div class="col-lg-12 col-md-12 col-sm-12">
+                           <div class="row">
                             <div id="export_bouttons">
                                 <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'genomes_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
@@ -197,7 +198,7 @@
                                 <br/>
                             </div>
 
-                            <table id="genomes_table" class="display" style="width:100%">
+                            <table id="genomes_table" class="dataTable">
                                 <thead>
 
 
@@ -265,6 +266,8 @@
 
                                 </tbody>
                             </table>
+                        </div><!- row -->
+                      </div> <!- col -->
                         </div> <!- tab0 -->
                         <div class="tab-pane" id="tab1">
                             <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree" style="width:1000px"></object>

@@ -106,12 +106,9 @@ function clearBox(elementID)
 
 
                 <div class="tab-pane active" id="tab1" style="padding-left: 15px;padding-top:20px">
-
-                    <!--<div class="row">-->
                         <div class="col-md-4">
                           <div class="container-fluid">
                             <div class="row">
-
                               <div class="panel panel-default">
                                 <div class="panel-heading">
                                   <h3 class="panel-title">General</h3>
@@ -151,6 +148,7 @@ function clearBox(elementID)
                                   </table>
                               </div>
                             </div>
+
                             <div class="row">
                               <div class="panel panel-default">
                                 <div class="panel-heading">
@@ -202,62 +200,57 @@ function clearBox(elementID)
                            </div>
 
                             {% if protparams_data %}
-                            <h3>ProtParams</h3>
-                            <div style="width: 100%;padding-left:20px">
-                                <table>
-                                    <tr>
-                                        <td id="description_field">Molecular Weight</td>
-                                        <td>{{protparams_data.0}}</td>
-                                    </tr>
-                                    <tr>
-                                        <td id="description_field">Isoelectric Point</td>
-                                        <td>{{protparams_data.1}}</td>
-                                    </tr>
-                                    <tr>
-                                        <td id="description_field">Aromaticity</td>
-                                        <td>{{protparams_data.2}}</td>
-                                    </tr>
-                                    <tr>
-                                        <td id="description_field">Instability Index</td>
-                                        <td>{{protparams_data.3}}</td>
-                                    </tr>
-                                    <tr>
-                                        <td id="description_field">Fractions helix/turn/sheet</td>
-                                        <td>{{protparams_data.4}}/{{protparams_data.5}}/{{protparams_data.6}}</td>
-                                    </tr>
+                            <div class="row">
+                              <h3>ProtParams</h3>
+                              <div style="width: 100%;padding-left:20px">
+                                  <table>
+                                      <tr>
+                                          <td id="description_field">Molecular Weight</td>
+                                          <td>{{protparams_data.0}}</td>
+                                      </tr>
+                                      <tr>
+                                          <td id="description_field">Isoelectric Point</td>
+                                          <td>{{protparams_data.1}}</td>
+                                      </tr>
+                                      <tr>
+                                          <td id="description_field">Aromaticity</td>
+                                          <td>{{protparams_data.2}}</td>
+                                      </tr>
+                                      <tr>
+                                          <td id="description_field">Instability Index</td>
+                                          <td>{{protparams_data.3}}</td>
+                                      </tr>
+                                      <tr>
+                                          <td id="description_field">Fractions helix/turn/sheet</td>
+                                          <td>{{protparams_data.4}}/{{protparams_data.5}}/{{protparams_data.6}}</td>
+                                      </tr>
 
-                                </table>
+                                  </table>
+                              </div>
                             </div>
                             {% endif %}
+                            <div class="row">
+                              <h3>Orthogroup {{ data.0 }} Annotation</h3>
+                              <div style="width: 100%;padding-left:20px">
+                                  <table>
+                                      <tr>
+                                      <td id="description_field">Comment orthogroup   <a href="{% url 'add_comment' data.1 %}">  edit</a></td>
+                                      <td>
+                                          {% for values in cmt_format%}
+                                              {{values.0}}: {{values.1|safe}} </br>
+                                          {% endfor %}
+                                       </td>
+                                      </tr>
 
-                            <h3>Orthogroup {{ data.0 }} Annotation</h3>
-                            <div style="width: 100%;padding-left:20px">
-                                <table>
-                                    <tr>
-                                    <td id="description_field">Comment orthogroup   <a href="{% url 'add_comment' data.1 %}">  edit</a></td>
-                                    <td>
-                                        {% for values in cmt_format%}
-                                            {{values.0}}: {{values.1|safe}} </br>
-                                        {% endfor %}
-                                     </td>
-                                    </tr>
-
-                                </table>
+                                  </table>
+                              </div>
                             </div>
 
-                            {%if uniprot_id %}
-                                <div style="width: 100%;padding-left:20px">
-                                    <h3>Annotation evidence</h3>
-                                        <table>
-                                            <tr>
-                                            <td>BLast VS Uniprot</td>
-                                            <td><a href="http://www.uniprot.org/uniprot/{{uniprot_id}}"  target="_top">{{uniprot_id}}</a></td>
-                                            </tr>
-                                        </table>
-                                </div>
-                            {% endif %}
+
+
 
                             {%if dbxref_uniprot_data %}
+                              <div class="row">
                                 <h3>References</h3>
                                 <div style="width: 100%;padding-left:20px">
 
@@ -315,208 +308,240 @@ function clearBox(elementID)
 
                                         </table>
                                 </div>
+                              </div>
                             {% endif %}
 
-                        </div>
-                      </div> <!-- fluid conmtainer -->
-                        <div class="col-md-8">
+                        </div> <!-- fluid container -->
+                      </div> <!-- column -->
+                      <div class="col-md-8">
                             <div class="row" style="height:100px">
                                 <object width="95%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
                             </div>
-                            <div class="row">
-                              <h3>Product</h3>
-                              <table>
-                                  <tr>
-                                      <td id="description_field">Product</td>
-                                      <td>{{ data.11 }}</td>
-                                  </tr>
+                            <div style="padding-top:40px;">
+                              <div class="row">
+                                    <div class="panel panel-default">
+                                      <div class="panel-heading">
+                                        <h3 class="panel-title">Product</h3>
+                                      </div>
+                                      <table class="table-striped" style="width: 100%">
+                                          <tr>
+                                              <td id="description_field">Product</td>
+                                              <td>{{ data.11 }}</td>
 
-                              </table>
+                                              {%if uniprot_id %}
+                                              <tr>
+                                                <td>Annotation evidence</td>
+                                                <td><a href="http://www.uniprot.org/uniprot/{{uniprot_id}}" target="_top">BLast VS Uniprot: {{uniprot_id}}</a></td>
+                                              </tr>
+                                              {% endif %}
+
+
+                                          </tr>
+                                      </table>
+                                    </div>
+                              </div>
                             </div>
-
                             {% if uniprot_annotation%}
                               <div class="row">
-                                <table>
-                                        <tr>
-                                            <td id="description_field">Uniprot status</td>
-                                            <td><strong>{{ uniprot_annotation.0 }} / Score: {{ uniprot_annotation.1 }}</strong></td>
-                                        </tr>
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    <h3 class="panel-title">Uniprot Annotation</h3>
+                                  </div>
+                                  <table class="table-striped" style="width: 100%">
+                                          <tr>
+                                              <td id="description_field">Uniprot status</td>
+                                              <td><strong>{{ uniprot_annotation.0 }} / Score: {{ uniprot_annotation.1 }}</strong></td>
+                                          </tr>
 
-                                    {%if uniprot_annotation.2 != '-'%}
-                                        <tr>
-                                            <td id="description_field">gene</td>
-                                            <td>{{ uniprot_annotation.2 }}</td>
-                                        </tr>
-                                    {% endif %}
-                                    {%if uniprot_annotation.3 != '-'%}
-                                        <tr>
-                                            <td id="description_field">product</td>
-                                            <td>{{ uniprot_annotation.3 }}</td>
-                                        </tr>
-                                    {% endif %}
-                                    {%if uniprot_annotation.4 != '-'%}
-                                        <tr>
-                                            <td id="description_field">function</td>
-                                            <td>{{ uniprot_annotation.4 }}</td>
-                                        </tr>
-                                    {% endif %}
-                                    {%if uniprot_annotation.5 != '-'%}
-                                        <tr>
-                                            <td id="description_field">ec_number</td>
-                                            <td>{{ uniprot_annotation.5 }}</td>
-                                        </tr>
-                                    {% endif %}
+                                      {%if uniprot_annotation.2 != '-'%}
+                                          <tr>
+                                              <td id="description_field">gene</td>
+                                              <td>{{ uniprot_annotation.2 }}</td>
+                                          </tr>
+                                      {% endif %}
+                                      {%if uniprot_annotation.3 != '-'%}
+                                          <tr>
+                                              <td id="description_field">product</td>
+                                              <td>{{ uniprot_annotation.3 }}</td>
+                                          </tr>
+                                      {% endif %}
+                                      {%if uniprot_annotation.4 != '-'%}
+                                          <tr>
+                                              <td id="description_field">function</td>
+                                              <td>{{ uniprot_annotation.4 }}</td>
+                                          </tr>
+                                      {% endif %}
+                                      {%if uniprot_annotation.5 != '-'%}
+                                          <tr>
+                                              <td id="description_field">ec_number</td>
+                                              <td>{{ uniprot_annotation.5 }}</td>
+                                          </tr>
+                                      {% endif %}
 
-                                    {%if uniprot_annotation.6 != '-'%}
-                                        <tr>
-                                            <td id="description_field">similarity</td>
-                                            <td>{{ uniprot_annotation.6 }}</td>
-                                        </tr>
-                                    {% endif %}
-                                    {%if uniprot_annotation.7 != '-'%}
-                                        <tr>
-                                            <td id="description_field">subunit</td>
-                                            <td>{{ uniprot_annotation.7 }}</td>
-                                        </tr>
-                                    {% endif %}
-                                    {%if uniprot_annotation.8 != '-'%}
-                                        <tr>
-                                            <td id="description_field">catalytic activity</td>
-                                            <td>{{ uniprot_annotation.8 }}</td>
-                                        </tr>
-                                    {% endif %}
-                                </table>
+                                      {%if uniprot_annotation.6 != '-'%}
+                                          <tr>
+                                              <td id="description_field">similarity</td>
+                                              <td>{{ uniprot_annotation.6 }}</td>
+                                          </tr>
+                                      {% endif %}
+                                      {%if uniprot_annotation.7 != '-'%}
+                                          <tr>
+                                              <td id="description_field">subunit</td>
+                                              <td>{{ uniprot_annotation.7 }}</td>
+                                          </tr>
+                                      {% endif %}
+                                      {%if uniprot_annotation.8 != '-'%}
+                                          <tr>
+                                              <td id="description_field">catalytic activity</td>
+                                              <td>{{ uniprot_annotation.8 }}</td>
+                                          </tr>
+                                      {% endif %}
+                                  </table>
+                                </div>
                               </div>
                             {%endif%}
                             {% if transporter_data%}
-                            <h3>Transporter</h3>
+                            <div class="row">
+                              <h3>Transporter</h3>
 
-                            <table>
-                                <tr>
-                                    <th>Hit</th>
-                                    <th>Evalue</th>
-                                    <th>Score</th>
-                                    <th>Identity</th>
-                                    <th>TM_query</th>
-                                    <th>TM_hit</th>
-                                    <th>query_cov</th>
-                                    <th>hit_cov</th>
-                                </tr>
-                                <tr>
-                                    <td>{{transporter_data.0}}</td>
-                                    <td>{{transporter_data.1}}</td>
-                                    <td>{{transporter_data.2}}</td>
-                                    <td>{{transporter_data.3}}</td>
-                                    <td>{{transporter_data.4}}</td>
-                                    <td>{{transporter_data.5}}</td>
-                                    <td>{{transporter_data.6}}</td>
-                                    <td>{{transporter_data.7}}</td>
-                                </tr>
+                              <table class="table-striped" style="width: 100%">
+                                  <tr>
+                                      <th>Hit</th>
+                                      <th>Evalue</th>
+                                      <th>Score</th>
+                                      <th>Identity</th>
+                                      <th>TM_query</th>
+                                      <th>TM_hit</th>
+                                      <th>query_cov</th>
+                                      <th>hit_cov</th>
+                                  </tr>
+                                  <tr>
+                                      <td>{{transporter_data.0}}</td>
+                                      <td>{{transporter_data.1}}</td>
+                                      <td>{{transporter_data.2}}</td>
+                                      <td>{{transporter_data.3}}</td>
+                                      <td>{{transporter_data.4}}</td>
+                                      <td>{{transporter_data.5}}</td>
+                                      <td>{{transporter_data.6}}</td>
+                                      <td>{{transporter_data.7}}</td>
+                                  </tr>
 
-                            </table>
-                            <table>
+                              </table>
+                              <table class="table-striped" style="width: 100%">
 
-                                <tr>
-                                    <th style="width:80px">SuperFamily</th>
-                                    <td style="width:70px"><a href="http://tcdb.org/search/result.php?tc={{transporter_data.10}}">{{transporter_data.10}}</a></td><td>{{transporter_data.11}}</td>
-                                </tr>
-                                <tr>
-                                    <th>Family</th>
-                                    <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.12}}">{{transporter_data.12}}</a></td><td>{{transporter_data.13}}</td>
-                                </tr>
-                                <tr>
-                                    <th>Subfamily</th>
-                                    <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.14}}">{{transporter_data.14}}</a></td><td>{{transporter_data.15}}</td>
-                                </tr>
-                                <tr>
-                                    <th>Transporter</th>
-                                    <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.14}}#{{transporter_data.8}}">{{transporter_data.8}}</a></td><td>{{transporter_data.9}}</td>
-                                </tr>
-                            </table>
-
+                                  <tr>
+                                      <th style="width:80px">SuperFamily</th>
+                                      <td style="width:70px"><a href="http://tcdb.org/search/result.php?tc={{transporter_data.10}}">{{transporter_data.10}}</a></td><td>{{transporter_data.11}}</td>
+                                  </tr>
+                                  <tr>
+                                      <th>Family</th>
+                                      <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.12}}">{{transporter_data.12}}</a></td><td>{{transporter_data.13}}</td>
+                                  </tr>
+                                  <tr>
+                                      <th>Subfamily</th>
+                                      <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.14}}">{{transporter_data.14}}</a></td><td>{{transporter_data.15}}</td>
+                                  </tr>
+                                  <tr>
+                                      <th>Transporter</th>
+                                      <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.14}}#{{transporter_data.8}}">{{transporter_data.8}}</a></td><td>{{transporter_data.9}}</td>
+                                  </tr>
+                              </table>
+                            </div>
                             {% endif %}
-                            <h3>Domains</h3>
+                            <div class="row">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">Domains</h3>
+                                </div>
+                                <div>
+                                  <div id="div_features" style="margin-top: 1px; width: 800px"></div>
 
+                                  <table class="table-striped" style="width: 100%">
+                                      {%if interpro_data %}
+                                         <tr>
+                                              <td style="width:70px"></td>
+                                              <td style="width:300px"></td>
+                                              <td style="width:90px">Bacteria <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of bacterial sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                              <td style="width:80px">Euk. <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of eukaryotic sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                              <td style="width:80px">Archae <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of archaeal sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                              <td style="width:80px">Virus <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of virus sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                          </tr>
+                                      {% endif %}
+                                      {%if pfam_data %}
+                                          {% for values in pfam_data %}
+                                              <tr>
+                                                  <td id="description_field"><a href="{% url 'fam' values.0 'pfam' %}" target="_top">Pf: {{values.0}}</a></td>
+                                                  <td>{{values.1}}</td>
+                                              </tr>
 
-                            <div id="div_features" style="margin-top: 1px; width: 800px"></div>
+                                          {% endfor %}
+                                      {% endif %}
 
+                                      {%if interpro_data %}
+                                          {% for values in interpro_data %}
+                                              {% with interpro2taxononmy|keyvalue:values.0 as taxo %}
+                                              <tr>
+                                                  <td id="description_field"><a href="{% url 'fam' values.0 'interpro' %}" target="_top">IP: {{values.0}}</a></td>
+                                                  <td>{{values.1}} </td>
+                                                  {% if taxo.4 > taxo.5 %}
+                                                      <td style="color:blue;">{{taxo.4}} ({{taxo.0}}%)</td>
+                                                      <td>{{taxo.5}} ({{taxo.1}}%)</td>
+                                                  {% else %}
+                                                      <td>{{taxo.4}} ({{taxo.0}}%)</td>
+                                                      <td style="color:red;">{{taxo.5}} ({{taxo.1}}%)</td>
+                                                  {% endif %}
+                                                  <td>{{taxo.6}} ({{taxo.2}}%)</td>
+                                                  <td>{{taxo.7}} ({{taxo.3}}%)</td>
+                                              </tr>
+                                              {% endwith %}
+                                          {% endfor %}
+                                      {% endif %}
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
 
-                            <table>
-                                {%if interpro_data %}
-                                   <tr>
-                                        <td style="width:70px"></td>
-                                        <td style="width:300px"></td>
-                                        <td style="width:90px">Bacteria <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of bacterial sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                        <td style="width:80px">Euk. <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of eukaryotic sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                        <td style="width:80px">Archae <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of archaeal sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                        <td style="width:80px">Virus <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of virus sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                    </tr>
-                                {% endif %}
-                                {%if pfam_data %}
-                                    {% for values in pfam_data %}
-                                        <tr>
-                                            <td id="description_field"><a href="{% url 'fam' values.0 'pfam' %}" target="_top">Pf: {{values.0}}</a></td>
-                                            <td>{{values.1}}</td>
-                                        </tr>
-
-                                    {% endfor %}
-                                {% endif %}
-
-                                {%if interpro_data %}
-                                    {% for values in interpro_data %}
-                                        {% with interpro2taxononmy|keyvalue:values.0 as taxo %}
-                                        <tr>
-                                            <td id="description_field"><a href="{% url 'fam' values.0 'interpro' %}" target="_top">IP: {{values.0}}</a></td>
-                                            <td>{{values.1}} </td>
-                                            {% if taxo.4 > taxo.5 %}
-                                                <td style="color:blue;">{{taxo.4}} ({{taxo.0}}%)</td>
-                                                <td>{{taxo.5}} ({{taxo.1}}%)</td>
-                                            {% else %}
-                                                <td>{{taxo.4}} ({{taxo.0}}%)</td>
-                                                <td style="color:red;">{{taxo.5}} ({{taxo.1}}%)</td>
-                                            {% endif %}
-                                            <td>{{taxo.6}} ({{taxo.2}}%)</td>
-                                            <td>{{taxo.7}} ({{taxo.3}}%)</td>
-                                        </tr>
-                                        {% endwith %}
-                                    {% endfor %}
-                                {% endif %}
-
-                            </table>
                             {%if ko_pathway_data or ko_module_data %}
-                                <h3>Pathways/Modules <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and GhostKOALA"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
-                                <table>
+                              <div class="row">
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    <h3 class="panel-title">Pathways/Modules <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and GhostKOALA"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
+                                  </div>
+                                  <table class="table-striped" style="width: 100%">
 
-                                    {%if ko_pathway_data %}
+                                      {%if ko_pathway_data %}
 
-                                        {% for pathway in ko_pathway_data %}
-                                            <tr>
-                                                <td>Pathway: {{pathway.1}} <a href="{% url 'KEGG_mapp_ko' pathway.1 %}" target="_top">ko</a> /
-                                                    <a href="{% url 'KEGG_mapp' pathway.1 %}" target="_top">priam_ec</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                                <td>{{pathway.2}}</td>
-                                                <td>{{pathway.3}}</td>
-                                            </tr>
-                                        {% endfor %}
-
-
-                                    {% endif %}
-                                    {%if ko_module_data %}
-
-                                        {% for module in ko_module_data %}
-                                            <tr>
-                                                <td>Module: <a href="{% url 'KEGG_module_map' module.0 %}" target="_top">{{module.0}} (ko_based) </a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
-                                                <td>{{module.1}}</td>
-                                                <td>{{module.2}}</td>
-                                            </tr>
-                                        {% endfor %}
+                                          {% for pathway in ko_pathway_data %}
+                                              <tr>
+                                                  <td>Pathway: {{pathway.1}} <a href="{% url 'KEGG_mapp_ko' pathway.1 %}" target="_top">ko</a> /
+                                                      <a href="{% url 'KEGG_mapp' pathway.1 %}" target="_top">priam_ec</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                                  <td>{{pathway.2}}</td>
+                                                  <td>{{pathway.3}}</td>
+                                              </tr>
+                                          {% endfor %}
 
 
-                                    {% endif %}
+                                      {% endif %}
+                                      {%if ko_module_data %}
+
+                                          {% for module in ko_module_data %}
+                                              <tr>
+                                                  <td>Module: <a href="{% url 'KEGG_module_map' module.0 %}" target="_top">{{module.0}} (ko_based) </a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
+                                                  <td>{{module.1}}</td>
+                                                  <td>{{module.2}}</td>
+                                              </tr>
+                                          {% endfor %}
+                                      {% endif %}
+                                  </table>
+                                </div>
+                              </div>
+
                             {% endif %}
-                            </table>
+
                             {%if operon %}
+                              <div class="row">
                                 <h3>Operon <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data from the Door2 database"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
-                                <table>
+                                <table class="table-striped" style="width: 100%">
                                     <tr>
                                         <th>DOOR2 id</th>
                                         <th>locus</th>
@@ -543,8 +568,10 @@ function clearBox(elementID)
                                     </tr>
                                     {% endfor %}
                                 </table>
+                              </div>
                             {% endif %}
                             {%if operon_ofs %}
+                              <div class="row">
                                 <h3>Operon <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data predicted based on the method from Westover et al, 2004"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
                                 <table id="cog_table" class="sortable">
                                     <thead>
@@ -609,11 +636,11 @@ function clearBox(elementID)
                                         {%endfor%}
                                     </tbody>
                                 </table>
+                              </div>
                             {% endif %}
 
-
-
                             {% if uniprot_go_terms or interpro_go_terms%}
+                              <div class="row">
                                 <h3>Gene Ontology</h3>
                                 <table class="sortable">
                                     <tr>
@@ -636,9 +663,10 @@ function clearBox(elementID)
                                         </tr>
                                     {% endfor%}
                                 </table>
-
+                              </div>
                             {% endif %}
                             {% if rnaseq_data%}
+                              <div class="row">
                                 <h3>RNAseq data</h3>
                                 <table class="sortable">
                                     <tr>
@@ -691,10 +719,11 @@ function clearBox(elementID)
                                         <td>{{rnaseq_data.15}}</td>
                                     </tr>
                                 </table>
+                              </div>
                             {%endif%}
 
 
-                        </div>
+                    </div> <!-- column -->
                     <!--</div>-->
 
 
@@ -855,6 +884,8 @@ function clearBox(elementID)
             <div class="tab-pane active" id="tab33">
         {% endif %}
 
+        <div class="container-fluid">
+          <div class="col-lg-12">
             {% if not orthologs %}
                 <h2>Homologs</h2>
                 No homologs
@@ -871,14 +902,14 @@ function clearBox(elementID)
               </div>
 
             {% endif %}
-
+                <div class="row">
                         <div id="export_bouttons">
                             <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'homologues_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
                             <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'homologues_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
                         <br/>
                         </div>
 
-                       <table class="display dataTable table-striped" id="homologues_table" style="width:95%"> <!--  class="sortable" -->
+                       <table class="display dataTable" id="homologues_table"> <!--  class="sortable" -->
                             <thead>
                                 <tr>
                                     <th></th>
@@ -924,6 +955,10 @@ function clearBox(elementID)
                                 {% endfor %}
                             </tbody>
                         </table>
+                      </div>
+                    </div>
+            </div>
+          </div>
         </div>
 
             {% if align_path %}
@@ -1105,15 +1140,15 @@ $(document).ready(function() {
         columnDefs: [
             {
                 targets: 6,
-                visible: false
+                visible: true
             },
             {
                 targets: 8,
-                visible: false
+                visible: true
             },
             {
                 targets: 9,
-                visible: false
+                visible: true
             }
         ],
         buttons: [
