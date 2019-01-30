@@ -238,20 +238,28 @@ function clearBox(elementID)
 
                             {% endif %}
                             <div class="row">
-                              <h3>Orthogroup {{ data.0 }} Annotation</h3>
-                              <div style="width: 100%;padding-left:20px">
-                                  <table>
-                                      <tr>
-                                      <td id="description_field">Comment orthogroup   <a href="{% url 'add_comment' data.1 %}">  edit</a></td>
-                                      <td>
-                                          {% for values in cmt_format%}
-                                              {{values.0}}: {{values.1|safe}} </br>
-                                          {% endfor %}
-                                       </td>
-                                      </tr>
 
-                                  </table>
+
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">Orthogroup {{ data.0 }} Annotation</h3>
+                                </div>
+                                <div style="width: 100%;padding-left:20px">
+                                    <table>
+                                        <tr>
+                                        <td id="description_field">Comment orthogroup   <a href="{% url 'add_comment' data.1 %}">  edit</a></td>
+                                        <td>
+                                            {% for values in cmt_format%}
+                                                {{values.0}}: {{values.1|safe}} </br>
+                                            {% endfor %}
+                                         </td>
+                                        </tr>
+
+                                    </table>
+                                </div>
                               </div>
+
+
                             </div>
 
 
@@ -323,7 +331,7 @@ function clearBox(elementID)
                       </div> <!-- column -->
                       <div class="col-md-12 col-lg-8">
                             <div class="row" style="height:100px">
-                                <object width="95%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
+                                <object width="95%"  type="image/svg+xml" style="margin-left: -30px; margin-top: 10px" data="{% static name %}" id="genomic_region"></object>
                             </div>
 
                             <div class="row">
@@ -550,39 +558,47 @@ function clearBox(elementID)
 
                             {%if operon %}
                               <div class="row">
-                                <h3>Operon <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data from the Door2 database"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
-                                <table class="table-striped" style="width: 100%">
-                                    <tr>
-                                        <th>DOOR2 id</th>
-                                        <th>locus</th>
-                                        <th>old_locus</th>
-                                        <th>COG </th>
-                                        <th>Product</th>
-                                    </tr>
-                                    {% for locus in operon %}
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    <h3 class="panel-title">Operon <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data from the Door2 database"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
+                                  </div>
+                                  <table class="table-striped" style="width: 100%">
+                                      <tr>
+                                          <th>DOOR2 id</th>
+                                          <th>locus</th>
+                                          <th>old_locus</th>
+                                          <th>COG </th>
+                                          <th>Product</th>
+                                      </tr>
+                                      {% for locus in operon %}
 
-                                    <tr>
-                                        <td><a href="http://csbl.bmb.uga.edu/DOOR/operon.php?id={{locus.0}}#basic">{{locus.0}}</a></td>
-                                        {%if locus.2 != '-'%}
-                                            <td><a href="{% url 'locusx' locus.2 True %}" target="_top">{{locus.2}}</a></td>
-                                        {% else %}
-                                            <td>{{locus.2}}</td>
-                                        {% endif %}
-                                        {%if locus.3 != '-'%}
-                                            <td><a href="{% url 'locusx' locus.3 True %}" target="_top">{{locus.3}}</a></td>
-                                        {% else %}
-                                            <td>{{locus.3}}</td>
-                                        {% endif %}
-                                        <td>{{locus.4}}</td>
-                                        <td>{{locus.5}}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </table>
+                                      <tr>
+                                          <td><a href="http://csbl.bmb.uga.edu/DOOR/operon.php?id={{locus.0}}#basic">{{locus.0}}</a></td>
+                                          {%if locus.2 != '-'%}
+                                              <td><a href="{% url 'locusx' locus.2 True %}" target="_top">{{locus.2}}</a></td>
+                                          {% else %}
+                                              <td>{{locus.2}}</td>
+                                          {% endif %}
+                                          {%if locus.3 != '-'%}
+                                              <td><a href="{% url 'locusx' locus.3 True %}" target="_top">{{locus.3}}</a></td>
+                                          {% else %}
+                                              <td>{{locus.3}}</td>
+                                          {% endif %}
+                                          <td>{{locus.4}}</td>
+                                          <td>{{locus.5}}</td>
+                                      </tr>
+                                      {% endfor %}
+                                  </table>
+                                </div>
                               </div>
                             {% endif %}
+
                             {%if operon_ofs %}
-                              <div class="row">
-                                <h3>Operon <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data predicted based on the method from Westover et al, 2004"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
+                            <div class="row">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">Operon <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data predicted based on the method from Westover et al, 2004"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
+                                </div>
                                 <table id="cog_table" class="sortable">
                                     <thead>
                                         <tr>
@@ -647,37 +663,44 @@ function clearBox(elementID)
                                     </tbody>
                                 </table>
                               </div>
+                            </div>
                             {% endif %}
 
                             {% if uniprot_go_terms or interpro_go_terms%}
                               <div class="row">
-                                <h3>Gene Ontology</h3>
-                                <table class="sortable">
-                                    <tr>
-                                        <th>Accession</th>
-                                        <th>Type</th>
-                                        <th>Description</th>
-                                    </tr>
-                                    {% for go in uniprot_go_terms%}
-                                        <tr>
-                                            <td><a href="" target="_top">{{go.0}}</a> (source: uniprot)</td>
-                                            <td>{{go.1}}</td>
-                                            <td>{{go.2}}</td>
-                                        </tr>
-                                    {% endfor%}
-                                    {% for go in interpro_go_terms%}
-                                        <tr>
-                                            <td><a href="" target="_top">{{go.0}}</a> (source: interpro)</td>
-                                            <td>{{go.1}}</td>
-                                            <td>{{go.2}}</td>
-                                        </tr>
-                                    {% endfor%}
-                                </table>
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    <h3 class="panel-title">Gene Ontology</h3>
+                                  </div>
+                                  <table class="sortable">
+                                      <tr>
+                                          <th>Accession</th>
+                                          <th>Type</th>
+                                          <th>Description</th>
+                                      </tr>
+                                      {% for go in uniprot_go_terms%}
+                                          <tr>
+                                              <td><a href="" target="_top">{{go.0}}</a> (source: uniprot)</td>
+                                              <td>{{go.1}}</td>
+                                              <td>{{go.2}}</td>
+                                          </tr>
+                                      {% endfor%}
+                                      {% for go in interpro_go_terms%}
+                                          <tr>
+                                              <td><a href="" target="_top">{{go.0}}</a> (source: interpro)</td>
+                                              <td>{{go.1}}</td>
+                                              <td>{{go.2}}</td>
+                                          </tr>
+                                      {% endfor%}
+                                  </table>
+                                </div>
                               </div>
                             {% endif %}
-                            {% if rnaseq_data%}
-                              <div class="row">
-                                <h3>RNAseq data</h3>
+                            {% if rnaseq_data %}
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">RNAseq data</h3>
+                                </div>
                                 <table class="sortable">
                                     <tr>
                                         <th>temporal_class</th>
@@ -687,17 +710,13 @@ function clearBox(elementID)
 
 
                                     </tr>
-
-
                                     <tr>
                                         <td><a href="{% url 'rnaseq_class' rnaseq_data.0 taxon_id %}" target="_top">{{rnaseq_data.0}}</a></td>
                                         <td>{{rnaseq_data.1}}</td>
                                         <td>{{rnaseq_data.2}}</td>
                                         <td>{{rnaseq_data.3}}</td>
                                     </tr>
-
                                 </table>
-
                                 <table>
                                     <tr>
                                         <th>2_1</th>
@@ -730,45 +749,60 @@ function clearBox(elementID)
                                     </tr>
                                 </table>
                               </div>
+
+                              <div class="row">
+
+
+                              </div>
                             {%endif%}
                             <div class="row">
-                              <table>
-                                  {%if pathway_data %}
-                                  {% for key, values in all_path.items %}
-                                      {% for v in values %}
-                                          {% if key == 'KEGG' %}
-                                              <tr>
-                                              <td>{{key}} (IP based)</td>
-                                              <td><a href="http://www.genome.jp/kegg-bin/show_pathway?ec{{v}}">{{v}}</a></td>
-                                              </tr>
-                                          {% elif key == 'UniPathway' %}
-                                              <tr>
-                                              <td>{{key}} (IP based)</td>
-                                              <td><a href="http://www.unipathway.org//upa?upid={{v}}">{{v}}</a></td>
-                                              </tr>
-                                          {% elif key == 'Reactome' %}
-                                              <tr>
-                                              <td>{{key}} (IP based)</td>
-                                              <td><a href="http://www.reactome.org/content/detail/{{v}}">{{v}}</a></td>
-                                              </tr>
-                                          {% elif key == 'MetaCyc' %}
-                                              <tr>
-                                              <td>{{key}} (IP based)</td>
-                                              <td><a href="http://metacyc.org/META/NEW-IMAGE?type=NIL&object={{v}}">{{v}}</a></td>
-                                              </tr>
-                                          {% else %}
-                                              <tr>
-                                              <td>{{key}} (IP based)</td>
-                                              <td>{{v}}</td>
-                                              </tr>
-                                          {% endif %}
-
-                                      {% endfor %}
-                                  {% endfor %}
-                                  {% endif %}
 
 
-                              </table>
+
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">Pathway data (interpro)</h3>
+                                </div>
+                                <table>
+                                    {%if pathway_data %}
+                                    {% for key, values in all_path.items %}
+                                        {% for v in values %}
+                                            {% if key == 'KEGG' %}
+                                                <tr>
+                                                <td>{{key}} (IP based)</td>
+                                                <td><a href="http://www.genome.jp/kegg-bin/show_pathway?ec{{v}}">{{v}}</a></td>
+                                                </tr>
+                                            {% elif key == 'UniPathway' %}
+                                                <tr>
+                                                <td>{{key}} (IP based)</td>
+                                                <td><a href="http://www.unipathway.org//upa?upid={{v}}">{{v}}</a></td>
+                                                </tr>
+                                            {% elif key == 'Reactome' %}
+                                                <tr>
+                                                <td>{{key}} (IP based)</td>
+                                                <td><a href="http://www.reactome.org/content/detail/{{v}}">{{v}}</a></td>
+                                                </tr>
+                                            {% elif key == 'MetaCyc' %}
+                                                <tr>
+                                                <td>{{key}} (IP based)</td>
+                                                <td><a href="http://metacyc.org/META/NEW-IMAGE?type=NIL&object={{v}}">{{v}}</a></td>
+                                                </tr>
+                                            {% else %}
+                                                <tr>
+                                                <td>{{key}} (IP based)</td>
+                                                <td>{{v}}</td>
+                                                </tr>
+                                            {% endif %}
+
+                                        {% endfor %}
+                                    {% endfor %}
+                                    {% endif %}
+
+
+                                </table>
+                              </div>
+
+
                             </div>
 
                     </div> <!-- column -->
