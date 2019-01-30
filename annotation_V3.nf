@@ -15,6 +15,7 @@ log.info params.input
 params.databases_dir = "$PWD/databases"
 params.blast_cog = true
 params.orthofinder = true
+params.interproscan = true
 params.core_missing = 0
 params.genome_faa_folder = "$PWD/faa"
 params.executor = 'local'
@@ -37,7 +38,8 @@ Channel
 Channel
     .fromPath(params.input)
     .ifEmpty { error "Cannot find any input sequence files matching: ${params.input}" }
-    .splitFasta( by: 1000 )
+    .collectFile(name: 'merged.faa', newLine: true)
+    .splitFasta( by: 1000, file: "chunk_" )
     .into { faa_chunks1
             faa_chunks2 }
 
@@ -101,7 +103,6 @@ process orthofinder_main {
 
   script:
   """
-  echo orthofinder -og -a 8 -b ./Results*/WorkingDirectory
   orthofinder -og -a 8 -b ./Results*/WorkingDirectory/ > of_grouping.txt
   """
 }
@@ -170,7 +171,6 @@ process align_with_mafft {
   """
   unset MAFFT_BINARIES
   for faa in ${og}; do
-  echo mafft \$faa  \${faa/.faa/_mafft.faa};
   mafft \$faa > \${faa/.faa/_mafft.faa}
   done
   """
@@ -437,7 +437,37 @@ process blast_COG {
   """
 }
 
-blast_result.collectFile(name: 'annotation/blast_COG.tab')
+blast_result.collectFile(name: 'annotation/COG/blast_COG.tab')
+
+process execute_interproscan {
+
+  publishDir 'annotation/interproscan', mode: 'copy', overwrite: false
+
+  when:
+  params.interproscan == true
+
+  input:
+  file(seq) from faa_chunks2
+
+  output:
+  file '*gff3' into interpro_gff3
+  file '*html.tar.gz' into interpro_html
+  file '*svg.tar.gz' into interpro_svg
+  file '*tsv' into interpro_tsv
+  file '*xml' into interpro_xml
+
+  script:
+  n = seq.name
+  """
+  interproscan.sh -appl ProDom,HAMAP,TIGRFAM,SUPERFAMILY,PRINTS,PIRSF,COILS,ProSiteProfiles,PfamA,SMART,Phobius,SMART,SignalP_GRAM_NEGATIVE -goterms -pa -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup
+  """
+}
+
+
+
+
+
+
 
 workflow.onComplete {
   // Display complete message
