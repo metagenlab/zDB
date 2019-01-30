@@ -24,6 +24,7 @@
 - [ ] execute macsyfinder for secretion systems
 - [ ] execute eggnog-mapper
 - [ ] get mapping to uniparc
-
+- [ ] exact match to eggnog? /home/tpillone/work/dev/bio_databases/tri/sqlite/seq_db_eg.db
+- [ ] uniclust
 
 - BLAST vs PLAST vs mmseq2 vs diamond?

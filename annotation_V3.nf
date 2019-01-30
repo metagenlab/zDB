@@ -68,6 +68,8 @@ process blast_orthofinder {
 
   echo true
 
+  cpus 2
+
   input:
   file complete_dir from result_dir
   each seq from species_fasta
@@ -84,7 +86,7 @@ process blast_orthofinder {
   species_2 =  (blastdb_name =~ /BlastDBSpecies(\d+)/)[0][1]
 
   """
-  blastp -outfmt 6 -evalue 0.001 -query $seq -db $blastdb_path/$blastdb_name > ${complete_dir}/WorkingDirectory/Blast${species_1}_${species_2}.txt
+  blastp -outfmt 6 -evalue 0.001 -query $seq -db $blastdb_path/$blastdb_name -num_threads ${task.cpus} > ${complete_dir}/WorkingDirectory/Blast${species_1}_${species_2}.txt
   """
 
 }
@@ -423,6 +425,8 @@ process blast_COG {
 
   conda 'bioconda::blast=2.7.1'
 
+  cpus 4
+
   when:
   params.blast_cog == true
 
@@ -435,7 +439,7 @@ process blast_COG {
   script:
   n = seq.name
   """
-  blastp -db $params.databases_dir/COG/prot2003-2014_test.fa -query seq -outfmt 6 > blast_result
+  blastp -db $params.databases_dir/COG/prot2003-2014_test.fa -query seq -outfmt 6 -num_threads ${task.cpus} > blast_result
   """
 }
 
@@ -446,6 +450,8 @@ process blast_swissprot {
   conda 'bioconda::blast=2.7.1'
 
   publishDir 'annotation/blast_swissprot', mode: 'copy', overwrite: false
+
+  cpus 4
 
   when:
   params.blast_swissprot == true
@@ -461,7 +467,7 @@ process blast_swissprot {
   n = seq.name
   """
   # chunk_.6
-  blastp -db $params.databases_dir/uniprot/swissprot/uniprot_sprot.fasta -query ${n} -outfmt 6 > ${n}.tab
+  blastp -db $params.databases_dir/uniprot/swissprot/uniprot_sprot.fasta -query ${n} -outfmt 6 -num_threads ${task.cpus} > ${n}.tab
   """
 }
 
