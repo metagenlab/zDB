@@ -26,5 +26,6 @@
 - [ ] get mapping to uniparc
 - [ ] exact match to eggnog? /home/tpillone/work/dev/bio_databases/tri/sqlite/seq_db_eg.db
 - [ ] uniclust
+- [ ] extract best swissprot and refseq hits for each sequence (from database), build phylogeny with non-redundant set of BBH (3 refseq + 3 swissprot?) 
 
 - BLAST vs PLAST vs mmseq2 vs diamond?

@@ -182,10 +182,11 @@ process align_with_mafft {
 
 /* Get only alignments with more than than two sequences */
 mafft_alignments.collect().into {all_alignments_1
-                                 all_alignments2}
+                                 all_alignments_2
+                                 all_alignments_3}
 
 all_alignments_1.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 3 }.set { large_alignments }
-
+all_alignments_1.flatten().map { it }.filter { (it.text =~ /(>)/).size() == 3 }.set { small_alignments }
 /*
 process orthogroups_phylogeny_with_raxml {
 
@@ -233,6 +234,30 @@ process orthogroups_phylogeny_with_iqtree {
   """
 }
 
+process orthogroups_phylogeny_with_iqtree_no_boostrap {
+
+  conda 'bioconda::iqtree=1.6.8'
+  cpus 2
+  publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: false
+
+  input:
+  each file(og) from large_alignments
+
+  output:
+    file "${og.getBaseName()}.iqtree"
+    file "${og.getBaseName()}.treefile"
+    file "${og.getBaseName()}.log"
+    file "${og.getBaseName()}.bionj"
+    file "${og.getBaseName()}.ckp.gz"
+    file "${og.getBaseName()}.mldist"
+    file "${og.getBaseName()}.model.gz"
+
+  script:
+  """
+  iqtree -nt 2 -s ${og} -pre ${og.getBaseName()}
+  """
+}
+
 process get_core_orthogroups {
 
   conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
@@ -242,7 +267,7 @@ process get_core_orthogroups {
   input:
   file 'Orthogroups.txt' from orthogroups
   file genome_list from faa_genomes3.collect()
-  file fasta_files from all_alignments2.collect()
+  file fasta_files from all_alignments_2.collect()
 
   output:
   file '*_taxon_ids.faa' into core_orthogroups
