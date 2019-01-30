@@ -13,8 +13,9 @@
 - [X] write core orthogroups with accessions as headers
 - [X] concatenate core orthogroups
 - [X] build phylogeny with fasttree
-- [ ] execute interproscan for each faa
-- [ ] execute blast vs SwissProt for chunks of 1000 sequences
+- [X] execute interproscan for each faa
+- [X] execute blast vs SwissProt for chunks of 1000 sequences
+- [X] execute blast vs COG for chunks of 1000 sequences
 - [ ] execute plast/mmseq2 vs RefSeq for chunks of 1000 sequences
 - [ ] execure gblast vs TCDB for chunks of 1000 sequences
 - [ ] execute PRIAM for each genome
@@ -23,6 +24,6 @@
 - [ ] execute macsyfinder for secretion systems
 - [ ] execute eggnog-mapper
 - [ ] get mapping to uniparc
-- [ ] execute blast vs COG for chunks of 1000 sequences
+
 
 - BLAST vs PLAST vs mmseq2 vs diamond?

@@ -16,6 +16,7 @@ params.databases_dir = "$PWD/databases"
 params.blast_cog = true
 params.orthofinder = true
 params.interproscan = true
+params.blast_swissprot = true
 params.core_missing = 0
 params.genome_faa_folder = "$PWD/faa"
 params.executor = 'local'
@@ -41,7 +42,8 @@ Channel
     .collectFile(name: 'merged.faa', newLine: true)
     .splitFasta( by: 1000, file: "chunk_" )
     .into { faa_chunks1
-            faa_chunks2 }
+            faa_chunks2
+            faa_chunks3}
 
 process prepare_orthofinder {
 
@@ -438,6 +440,30 @@ process blast_COG {
 }
 
 blast_result.collectFile(name: 'annotation/COG/blast_COG.tab')
+
+process blast_swissprot {
+
+  conda 'bioconda::blast=2.7.1'
+
+  publishDir 'annotation/blast_swissprot', mode: 'copy', overwrite: false
+
+  when:
+  params.blast_swissprot == true
+
+  input:
+  file(seq) from faa_chunks3
+
+  output:
+  file '*tab' into swissprot_blast
+
+  script:
+
+  n = seq.name
+  """
+  # chunk_.6
+  blastp -db $params.databases_dir/uniprot/swissprot/uniprot_sprot.fasta -query ${n} -outfmt 6 > ${n}.tab
+  """
+}
 
 process execute_interproscan {
 
