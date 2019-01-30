@@ -104,16 +104,15 @@ function clearBox(elementID)
             <div id="my-tab-content" class="tab-content">
             {% if input_type != 'orthogroup' %}
 
-
                 <div class="tab-pane active" id="tab1" style="padding-left: 15px;padding-top:20px">
-                        <div class="col-md-4">
+                        <div class="col-md-12 col-lg-4">
                           <div class="container-fluid">
                             <div class="row">
                               <div class="panel panel-default">
                                 <div class="panel-heading">
                                   <h3 class="panel-title">General</h3>
                                 </div>
-                                  <table class="table-striped" style="width: 100%">
+                                  <table id="panel_table" class="table-striped" style="width: 100%">
 
                                       <tr>
                                           <th id="description_field">Organism</th>
@@ -200,9 +199,14 @@ function clearBox(elementID)
                            </div>
 
                             {% if protparams_data %}
+
+
                             <div class="row">
-                              <h3>ProtParams</h3>
-                              <div style="width: 100%;padding-left:20px">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">ProtParams</h3>
+                                </div>
+                                <div class="panel-body">
                                   <table>
                                       <tr>
                                           <td id="description_field">Molecular Weight</td>
@@ -226,8 +230,12 @@ function clearBox(elementID)
                                       </tr>
 
                                   </table>
+                                </div>
                               </div>
                             </div>
+
+
+
                             {% endif %}
                             <div class="row">
                               <h3>Orthogroup {{ data.0 }} Annotation</h3>
@@ -313,43 +321,45 @@ function clearBox(elementID)
 
                         </div> <!-- fluid container -->
                       </div> <!-- column -->
-                      <div class="col-md-8">
+                      <div class="col-md-12 col-lg-8">
                             <div class="row" style="height:100px">
                                 <object width="95%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
                             </div>
-                            <div style="padding-top:40px;">
-                              <div class="row">
-                                    <div class="panel panel-default">
-                                      <div class="panel-heading">
-                                        <h3 class="panel-title">Product</h3>
-                                      </div>
-                                      <table class="table-striped" style="width: 100%">
-                                          <tr>
-                                              <td id="description_field">Product</td>
-                                              <td>{{ data.11 }}</td>
 
-                                              {%if uniprot_id %}
-                                              <tr>
-                                                <td>Annotation evidence</td>
-                                                <td><a href="http://www.uniprot.org/uniprot/{{uniprot_id}}" target="_top">BLast VS Uniprot: {{uniprot_id}}</a></td>
-                                              </tr>
-                                              {% endif %}
-
-
-                                          </tr>
-                                      </table>
+                            <div class="row">
+                              <div style="padding-top:40px;">
+                                  <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">Product</h3>
                                     </div>
+                                    <table class="table-striped" style="width: 100%">
+                                        <tr>
+                                            <td id="description_field">Product</td>
+                                            <td>{{ data.11 }}</td>
+
+                                            {%if uniprot_id %}
+                                            <tr>
+                                              <td>Annotation evidence</td>
+                                              <td><a href="http://www.uniprot.org/uniprot/{{uniprot_id}}" target="_top">BLast VS Uniprot: {{uniprot_id}}</a></td>
+                                            </tr>
+                                            {% endif %}
+
+
+                                        </tr>
+                                    </table>
+                                  </div>
                               </div>
                             </div>
+
                             {% if uniprot_annotation%}
                               <div class="row">
                                 <div class="panel panel-default">
                                   <div class="panel-heading">
                                     <h3 class="panel-title">Uniprot Annotation</h3>
                                   </div>
-                                  <table class="table-striped" style="width: 100%">
+                                  <table id="panel_table" class="table-striped" style="width: 100%">
                                           <tr>
-                                              <td id="description_field">Uniprot status</td>
+                                              <th id="description_field">Uniprot status</th>
                                               <td><strong>{{ uniprot_annotation.0 }} / Score: {{ uniprot_annotation.1 }}</strong></td>
                                           </tr>
 
@@ -454,9 +464,9 @@ function clearBox(elementID)
                                   <h3 class="panel-title">Domains</h3>
                                 </div>
                                 <div>
-                                  <div id="div_features" style="margin-top: 1px; width: 800px"></div>
+                                  <div id="div_features" style="margin-top: 1px; width: 800px; margin-left: 20px;"></div>
 
-                                  <table class="table-striped" style="width: 100%">
+                                  <table id="panel_table" class="table-striped" style="width: 100%">
                                       {%if interpro_data %}
                                          <tr>
                                               <td style="width:70px"></td>
@@ -470,7 +480,7 @@ function clearBox(elementID)
                                       {%if pfam_data %}
                                           {% for values in pfam_data %}
                                               <tr>
-                                                  <td id="description_field"><a href="{% url 'fam' values.0 'pfam' %}" target="_top">Pf: {{values.0}}</a></td>
+                                                  <th id="description_field"><a href="{% url 'fam' values.0 'pfam' %}" target="_top">Pf: {{values.0}}</a></th>
                                                   <td>{{values.1}}</td>
                                               </tr>
 
@@ -481,7 +491,7 @@ function clearBox(elementID)
                                           {% for values in interpro_data %}
                                               {% with interpro2taxononmy|keyvalue:values.0 as taxo %}
                                               <tr>
-                                                  <td id="description_field"><a href="{% url 'fam' values.0 'interpro' %}" target="_top">IP: {{values.0}}</a></td>
+                                                  <th id="description_field"><a href="{% url 'fam' values.0 'interpro' %}" target="_top">IP: {{values.0}}</a></th>
                                                   <td>{{values.1}} </td>
                                                   {% if taxo.4 > taxo.5 %}
                                                       <td style="color:blue;">{{taxo.4}} ({{taxo.0}}%)</td>
@@ -721,53 +731,49 @@ function clearBox(elementID)
                                 </table>
                               </div>
                             {%endif%}
+                            <div class="row">
+                              <table>
+                                  {%if pathway_data %}
+                                  {% for key, values in all_path.items %}
+                                      {% for v in values %}
+                                          {% if key == 'KEGG' %}
+                                              <tr>
+                                              <td>{{key}} (IP based)</td>
+                                              <td><a href="http://www.genome.jp/kegg-bin/show_pathway?ec{{v}}">{{v}}</a></td>
+                                              </tr>
+                                          {% elif key == 'UniPathway' %}
+                                              <tr>
+                                              <td>{{key}} (IP based)</td>
+                                              <td><a href="http://www.unipathway.org//upa?upid={{v}}">{{v}}</a></td>
+                                              </tr>
+                                          {% elif key == 'Reactome' %}
+                                              <tr>
+                                              <td>{{key}} (IP based)</td>
+                                              <td><a href="http://www.reactome.org/content/detail/{{v}}">{{v}}</a></td>
+                                              </tr>
+                                          {% elif key == 'MetaCyc' %}
+                                              <tr>
+                                              <td>{{key}} (IP based)</td>
+                                              <td><a href="http://metacyc.org/META/NEW-IMAGE?type=NIL&object={{v}}">{{v}}</a></td>
+                                              </tr>
+                                          {% else %}
+                                              <tr>
+                                              <td>{{key}} (IP based)</td>
+                                              <td>{{v}}</td>
+                                              </tr>
+                                          {% endif %}
 
+                                      {% endfor %}
+                                  {% endfor %}
+                                  {% endif %}
+
+
+                              </table>
+                            </div>
 
                     </div> <!-- column -->
-                    <!--</div>-->
 
-
-
-                    <table>
-
-
-
-                        {%if pathway_data %}
-                        {% for key, values in all_path.items %}
-                            {% for v in values %}
-                                {% if key == 'KEGG' %}
-                                    <tr>
-                                    <td>{{key}} (IP based)</td>
-                                    <td><a href="http://www.genome.jp/kegg-bin/show_pathway?ec{{v}}">{{v}}</a></td>
-                                    </tr>
-                                {% elif key == 'UniPathway' %}
-                                    <tr>
-                                    <td>{{key}} (IP based)</td>
-                                    <td><a href="http://www.unipathway.org//upa?upid={{v}}">{{v}}</a></td>
-                                    </tr>
-                                {% elif key == 'Reactome' %}
-                                    <tr>
-                                    <td>{{key}} (IP based)</td>
-                                    <td><a href="http://www.reactome.org/content/detail/{{v}}">{{v}}</a></td>
-                                    </tr>
-                                {% elif key == 'MetaCyc' %}
-                                    <tr>
-                                    <td>{{key}} (IP based)</td>
-                                    <td><a href="http://metacyc.org/META/NEW-IMAGE?type=NIL&object={{v}}">{{v}}</a></td>
-                                    </tr>
-                                {% else %}
-                                    <tr>
-                                    <td>{{key}} (IP based)</td>
-                                    <td>{{v}}</td>
-                                    </tr>
-                                {% endif %}
-
-                            {% endfor %}
-                        {% endfor %}
-                        {% endif %}
-
-                    </table>
-                </div>
+                </div> <!-- first tab -->
                 <div class="tab-pane" id="tab3" width="100%" height="100%">
 
 
@@ -904,8 +910,8 @@ function clearBox(elementID)
             {% endif %}
                 <div class="row">
                         <div id="export_bouttons">
-                            <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'homologues_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-                            <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'homologues_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                            <a download="biodb_search.xls" href="#" onclick='return ExcellentExport.excel(this, "homologues_table", "search");' style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+                            <a download="biodb_search.csv" href="#" onclick='return ExcellentExport.csv(this, "homologues_table");' style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to CSV</a>
                         <br/>
                         </div>
 
@@ -959,9 +965,11 @@ function clearBox(elementID)
                     </div>
             </div>
           </div>
-        </div>
+
 
             {% if align_path %}
+
+
             <div class="tab-pane" id="tab55">
                             <h3>Multiple Sequence Alignment</h3>
                             <table>
@@ -1064,8 +1072,9 @@ function clearBox(elementID)
                             </table>
             </div>
             {% endif %}
+
             <div class="tab-pane" id="tab66" style="height:2px;" >
-            <iframe name="orthoIDframe" id="theFrame" style="height:8000px;overflow:hidden;" width="500px" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+              <iframe name="orthoIDframe" id="theFrame" style="height:8000px;overflow:hidden;" width="500px" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
             </div>
             {% if pubmed_data  %}
                 <div class="tab-pane" id="tab22" style="height:2px;" >
@@ -1099,9 +1108,12 @@ function clearBox(elementID)
 
     </div>
 </div>
+</div>
 
+</div>
+</div>
 
-
+</div>
 
 
 <!--

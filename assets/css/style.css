@@ -500,7 +500,9 @@ background: #81F7F3;
     border: 0;
 }
 
-
+#panel_table th {
+  padding-left: 10px;
+}
 
 
 
