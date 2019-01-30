@@ -267,63 +267,71 @@ function clearBox(elementID)
 
                             {%if dbxref_uniprot_data %}
                               <div class="row">
-                                <h3>References</h3>
-                                <div style="width: 100%;padding-left:20px">
 
-                                        <table>
-                                            {% for xref in dbxref_uniprot_data%}
-                                            <tr>
-                                                <td>{{xref.0}}</td>
-                                                {% if xref.0 == 'Swiss-Prot'%}
-                                                <td><a href="http://www.uniprot.org/uniprot/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'KEGG'%}
-                                                <td><a href="http://www.genome.jp/dbget-bin/www_bget?{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'PATRIC'%}
-                                                <td><a href="http://patricbrc.org/portal/portal/patric/Feature?cType=feature&cId={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'STRING'%}
-                                                <td><a href="http://string-db.org/newstring_cgi/show_network_section.pl?identifier={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'OrthoDB'%}
-                                                <td><a href="http://www.orthodb.org/?query={{uniprot_accession}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'eggNOG'%}
-                                                <td><a href="http://eggnogdb.embl.de/#/app/results?seqid={{uniprot_accession}}&target_nogs={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'CDD'%}
-                                                <td><a href="https://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'HAMAP'%}
-                                                <td><a href="http://hamap.expasy.org/profile/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'EMBL'%}
-                                                <td><a href="https://www.ncbi.nlm.nih.gov/protein/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'ProteinModelPortal'%}
-                                                <td><a href="http://www.proteinmodelportal.org/query/uniprot/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'PROSITE'%}
-                                                <td><a href="http://prosite.expasy.org/doc/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'OMA'%}
-                                                <td><a href="http://omabrowser.org/cgi-bin/gateway.pl?f=DisplayGroup&p1={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'NCBI Taxonomy'%}
-                                                <td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?lvl=0&id={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'EnsemblBacteria'%}
-                                                <td><a href="http://ensemblgenomes.org/id/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'HOGENOM'%}
-                                                <td><a href="http://pbil.univ-lyon1.fr/cgi-bin/acnuc-ac2tree?query={{uniprot_accession}}&db=HOGENOM"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'PubMed'%}
-                                                <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'Proteomes'%}
-                                                <td><a href="http://www.uniprot.org/proteomes/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'SUPFAM'%}
-                                                <td><a href="http://supfam.org/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'TIGRFAMs'%}
-                                                <td><a href="http://www.jcvi.org/cgi-bin/tigrfams/HmmReportPage.cgi?acc={{xref.1}}"  target="_top">{{xref.1}}</a></td>
-                                                {% elif xref.0 == 'RefSeq'%}
-                                                <td><a href="https://www.ncbi.nlm.nih.gov/protein/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    <h3 class="panel-title">Cross References</h3>
+                                  </div>
+                                  <div style="width: 100%;padding-left:20px">
+
+                                          <table>
+                                              {% for xref in dbxref_uniprot_data%}
+                                              <tr>
+                                                  <td>{{xref.0}}</td>
+                                                  {% if xref.0 == 'Swiss-Prot'%}
+                                                  <td><a href="http://www.uniprot.org/uniprot/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'KEGG'%}
+                                                  <td><a href="http://www.genome.jp/dbget-bin/www_bget?{{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'PATRIC'%}
+                                                  <td><a href="http://patricbrc.org/portal/portal/patric/Feature?cType=feature&cId={{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'STRING'%}
+                                                  <td><a href="http://string-db.org/newstring_cgi/show_network_section.pl?identifier={{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'OrthoDB'%}
+                                                  <td><a href="http://www.orthodb.org/?query={{uniprot_accession}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'eggNOG'%}
+                                                  <td><a href="http://eggnogdb.embl.de/#/app/results?seqid={{uniprot_accession}}&target_nogs={{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'CDD'%}
+                                                  <td><a href="https://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'HAMAP'%}
+                                                  <td><a href="http://hamap.expasy.org/profile/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'EMBL'%}
+                                                  <td><a href="https://www.ncbi.nlm.nih.gov/protein/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'ProteinModelPortal'%}
+                                                  <td><a href="http://www.proteinmodelportal.org/query/uniprot/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'PROSITE'%}
+                                                  <td><a href="http://prosite.expasy.org/doc/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'OMA'%}
+                                                  <td><a href="http://omabrowser.org/cgi-bin/gateway.pl?f=DisplayGroup&p1={{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'NCBI Taxonomy'%}
+                                                  <td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?lvl=0&id={{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'EnsemblBacteria'%}
+                                                  <td><a href="http://ensemblgenomes.org/id/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'HOGENOM'%}
+                                                  <td><a href="http://pbil.univ-lyon1.fr/cgi-bin/acnuc-ac2tree?query={{uniprot_accession}}&db=HOGENOM"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'PubMed'%}
+                                                  <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'Proteomes'%}
+                                                  <td><a href="http://www.uniprot.org/proteomes/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'SUPFAM'%}
+                                                  <td><a href="http://supfam.org/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'TIGRFAMs'%}
+                                                  <td><a href="http://www.jcvi.org/cgi-bin/tigrfams/HmmReportPage.cgi?acc={{xref.1}}"  target="_top">{{xref.1}}</a></td>
+                                                  {% elif xref.0 == 'RefSeq'%}
+                                                  <td><a href="https://www.ncbi.nlm.nih.gov/protein/{{xref.1}}"  target="_top">{{xref.1}}</a></td>
 
 
-                                                {% else %}
-                                                <td>{{xref.1}}</td>
-                                                {% endif %}
-                                            </tr>
-                                            {% endfor %}
+                                                  {% else %}
+                                                  <td>{{xref.1}}</td>
+                                                  {% endif %}
+                                              </tr>
+                                              {% endfor %}
 
-                                        </table>
+                                          </table>
+                                  </div>
                                 </div>
+
+
+
                               </div>
                             {% endif %}
 
