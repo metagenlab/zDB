@@ -27,6 +27,7 @@
 - [ ] exact match to eggnog? /home/tpillone/work/dev/bio_databases/tri/sqlite/seq_db_eg.db
 - [ ] exact match to oma
 - [ ] exact match to COG betfore doing BLASTs? => do not blast sequence that are in the COGdb (assign it directly)
+- [ ] integrate genome properties (https://genome-properties.readthedocs.io/en/latest/index.html, https://www.ebi.ac.uk/interpro/genomeproperties/)
 
 * Notes
 

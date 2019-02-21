@@ -40,7 +40,7 @@ process download_reference_genomes {
     each assembly from representative_and_reference_genomes
 
   output:
-    file "${assembly.assembly_accession}.faa.gz" into assembly_faa
+    file "${assembly.assembly_accession}.faa.gz" into assembly_faa_gz
 
   script:
   def asm_name = "${assembly.asm_name}".replace(" ", "_")
@@ -52,23 +52,40 @@ process download_reference_genomes {
   """
 }
 
-process execute_interproscan {
+process extract_gz {
 
-  publishDir 'annotation/interproscan', mode: 'copy', overwrite: false
+  publishDir 'databases/refseq/genomes', mode: 'copy', overwrite: false
 
   input:
-  file(seq) from assembly_faa
+    file assembly_faa_gz
 
   output:
-  file '*gff3' into interpro_gff3
-  file '*html.tar.gz' into interpro_html
-  file '*svg.tar.gz' into interpro_svg
+    file "${assembly_faa_gz.baseName}" into assembly_faa
+
+  script:
+  """
+  zcat ${assembly_faa_gz} > ${assembly_faa_gz.baseName}
+  """
+}
+
+
+assembly_faa.flatten().map { it }.filter { (it.text =~ /(>)/).size() < 1000 }.set { small_genomes }
+
+process execute_interproscan {
+
+  publishDir 'annotation/interproscan_results', mode: 'copy', overwrite: false
+
+  cpus 4
+
+  input:
+  each file(seq) from small_genomes
+
+  output:
   file '*tsv' into interpro_tsv
-  file '*xml' into interpro_xml
 
   script:
   n = seq.name
   """
-  interproscan.sh -appl ProDom,HAMAP,TIGRFAM,SUPERFAMILY,PRINTS,PIRSF,COILS,ProSiteProfiles,PfamA,SMART,Phobius,SMART,SignalP_GRAM_NEGATIVE -goterms -pa -f TSV -i ${n} -d . -T . -iprlookup
+  interproscan.sh -cpu 4 -appl ProDom,SFLD,HAMAP,TIGRFAM,SUPERFAMILY,PRINTS,PIRSF,ProSiteProfiles,PfamA,SMART,CDD -f TSV -i ${n} -d . -T . -iprlookup
   """
 }
