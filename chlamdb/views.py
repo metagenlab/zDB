@@ -631,12 +631,16 @@ def locus_annotation(request, display_form):
             # inner join orthology_detail_
             # left join COG on seqfeature_id
             sql = 'select t1.locus_tag, t2.accession, t2.start, t2.stop, t2.gene, t2.product, t2.n_genomes, t2.orthogroup, ' \
-                  ' CHAR_LENGTH(t2.translation), t4.COG_id,t4.function,t4.description, t2.taxon_id ' \
+                  ' CHAR_LENGTH(t2.translation), t4.COG_name,t6.code,t4.description, t2.taxon_id ' \
                   ' from custom_tables.locus2seqfeature_id_%s t1 ' \
                   ' inner join biosqldb.orthology_detail_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
                   ' left join COG.seqfeature_id2best_COG_hit_%s t3 on t1.seqfeature_id=t3.seqfeature_id' \
                   ' left join COG.cog_names_2014 t4 on t3.hit_COG_id=t4.COG_id' \
+                  ' left join COG.cog_id2cog_category t5 on t4.COG_id=t5.COG_id' \
+                  ' left join COG.code2category t6 on t5.category_id=t6.category_id' \
                   ' where t1.locus_tag in (%s)' % (biodb, biodb, biodb, filter)
+
+            print(sql)
 
             locus_annot = [list(i) for i in server.adaptor.execute_and_fetchall(sql,)]
             locus2taxon = {}
@@ -7346,10 +7350,12 @@ def blastnr_barchart(request):
                                                                                          accession,
                                                                                          top_n,
                                                                                          rank)
+                    print(sql)
                     data = server.adaptor.execute_and_fetchall(sql,)
                     category2count = {}
                     query_locus_list = []
-                    for i in data:
+                    for n, i in enumerate(data):
+                        #print(i)
                         # KEEP ONY the first match (highest count ordered with mysql)
                         if i[0] not in query_locus_list:
                             if i[1] not in category2count:
@@ -7357,6 +7363,12 @@ def blastnr_barchart(request):
                             else:
                                 category2count[i[1]] += 1
                             query_locus_list.append(i[0])
+                            try:
+                                if data[n+1][0] == data[n][0]:
+                                    if data[n+1][2] == data[n][2]:
+                                        print("Idem!:",data[n+1], data[n])
+                            except:
+                                pass
                     data = zip(category2count.keys(), category2count.values())
                     #print "data",data
                 elif counttype == 'BBH':
@@ -7366,7 +7378,7 @@ def blastnr_barchart(request):
                                              biodb,
                                              accession,
                                              rank)
-
+                    print (sql)
                     data = server.adaptor.execute_and_fetchall(sql,)
                 else:
                     raise 'invalide type'

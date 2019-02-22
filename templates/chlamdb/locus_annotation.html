@@ -15,24 +15,19 @@
         </script>
     {% load staticfiles %}
     {% load static %}
+    {% include "chlamdb/header.html" %}
     </head>
 
+  <body>
+    <div class="container-fluid" id="main_container">
+      <div class="row">
+        <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                {% include "chlamdb/menu.html" %}
 
-    <div id="container">
-
-
-        <div id="sidebar">
-            {% include "chlamdb/menu.html" %}
-        </div>
-
-        <div id="header">
-            {% include "chlamdb/user.html" %}
-        </div>
-
-        <div id="content">
-
-
-                    {% if display_form == "True" %}
+                  {% if display_form == "True" %}
 
                      <div id="extract_form">
 
@@ -50,9 +45,9 @@
                          <input type="submit" name="annot" value="Get annotation"/>
                          </form>
                     </div>
-                    {% endif %}
+                  {% endif %}
 
-            {% if envoi_annot %}
+                  {% if envoi_annot %}
 
 
                     <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
@@ -72,7 +67,7 @@
                                 <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
 
                                 <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_url|safe}}'">fasta aa</button>
-                                <a download="biodb_extract.csv" href="/chlamdb/locus_list2circos/{{biodb}}{{show_on_circos_url|safe}}'" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circos</a>
+                                <a download="biodb_extract.csv" href="/chlamdb/locus_list2circos/{{biodb}}{{show_on_circos_url|safe}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circos</a>
                                 <br/>
                             </div>
 
@@ -142,15 +137,13 @@
 
                         </div>
                     </div>
-            {% endif %}
-        </div>
-    </div>
-
-
-
-    <div id="footer">
-
-    </div>
-
+                  {% endif %}
+                </div>
+              </div>
+            </div> <!-- page-content-wrapper -->
+          </div> <!-- wrapper -->
+        </div>  <!-- row -->
+      </div>  <!-- container-fluid -->
     </body>
+    {% include "chlamdb/style_menu.html" %}
 </html>
