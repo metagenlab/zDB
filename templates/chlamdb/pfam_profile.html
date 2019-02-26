@@ -22,9 +22,13 @@
                     <li><a href="{% url 'fam' pfam_domain 'pfam' %}#tab1">General</a></li>
                     <li><a href="{% url 'fam' pfam_domain 'pfam' %}#tab2">Details</a></li>
                     <li><a href="{% url 'fam' pfam_domain 'pfam' %}#tab3">Profile</a></li>
-                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://pfam.xfam.org/family/{{ pfam_domain }}', 'orthoIDframe2'); return false">Informations</a></li>
-                    <li class="active"><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_profile' pfam_domain 'phylum' %}', 'orthoIDframe2'); return false">Taxonomic profile (phylum)</a></li>
-                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_profile' pfam_domain 'order' %}', 'orthoIDframe2'); return false">Taxonomic profile (order)</a></li>
+                    {% if rank == 'phylum'%}
+                    <li class="active"><a href="{% url 'pfam_profile' pfam_domain 'phylum' %}">Taxonomic profile (phylum)</a></li>
+                    <li><a href="{% url 'pfam_profile' pfam_domain 'order' %}">Taxonomic profile (order)</a></li>
+                    {% else %}
+                    <li><a href="{% url 'pfam_profile' pfam_domain 'phylum' %}">Taxonomic profile (phylum)</a></li>
+                    <li class="active"><a href="{% url 'pfam_profile' pfam_domain 'order' %}">Taxonomic profile (order)</a></li>
+                    {% endif %}
                 </ul>
 
                 <h2>Taxonomic profile of domain {{pfam_domain}}</h2>
