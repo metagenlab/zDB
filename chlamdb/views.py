@@ -1653,7 +1653,7 @@ def extract_cog(request):
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
 
-    extract_form_class = make_extract_form(biodb, plasmid=True)
+    extract_form_class = make_extract_form(biodb, plasmid=True, label="COG")
 
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 

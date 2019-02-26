@@ -137,25 +137,25 @@
                                           <br/>
                                       </div>
 
-                                      <table id="search_table" class="sortable">
+                                      <table id="search_table" class="table">
                                           <h3>Detail</h3>
                                           <thead>
                                               <tr>
                                               <th></th>
-                                              <th id="entete_locus">Orthogroup</th>
-                                              <th id="entete_locus">Locus</th>
-                                              <th id="entete_locus">Protein id</th>
-                                              <th id="entete_gene">Start</th>
-                                              <th id="entete_gene">Stop</th>
-                                              <th id="entete_strand">S.</th>
-                                              <th id="entete_gene">Gene</th>
-                                              <th id="entete_n">nH</th>
-                                              <th id="entete_n">nG</th>
-                                              <th id="entete_n">TM</th>
-                                              <th id="entete_n">SP</th>
-                                              <th id="entete_product">Product</th>
-                                              <th id="entete_organism">Organism</th>
-                                              <th id="entete_translation">Translation</th>
+                                              <th>Orthogroup</th>
+                                              <th>Locus</th>
+                                              <th>Protein id</th>
+                                              <th>Start</th>
+                                              <th>Stop</th>
+                                              <th>S.</th>
+                                              <th>Gene</th>
+                                              <th>nH</th>
+                                              <th>nG</th>
+                                              <th>TM</th>
+                                              <th>SP</th>
+                                              <th>Product</th>
+                                              <th>Organism</th>
+                                              <th>Translation</th>
 
                                               </tr>
                                           </thead>
@@ -235,5 +235,25 @@ if (url.match('#')) {
 $('.nav-tabs a').on('shown.bs.tab', function (e) {
     window.location.hash = e.target.hash;
 })
+
+$(document).ready(function() {
+  $('#search_table').DataTable( {
+      "columnDefs": [
+      { className: "wrapcol", "targets": [ 14 ] }
+    ],
+    "paging":   true,
+    "ordering": true,
+    "info":     false
+  } );
+} );
 </script>
+
+<style>
+
+table td.wrapcol {
+word-break: break-all;
+word-wrap: break-word;
+width: auto;
+}
+
 </html>

@@ -261,7 +261,7 @@ def make_kegg_form(database_name):
     return KeggForm
 
 
-def make_extract_form(database_name, plasmid=False):
+def make_extract_form(database_name, plasmid=False, label="Orthologs"):
 
     if not plasmid:
         accession_choices = get_accessions(database_name)
@@ -272,10 +272,10 @@ def make_extract_form(database_name, plasmid=False):
         FREQ_CHOICES = ((0, 0),(1, 1), (2,2), (3,3), (4,4), (5,5), (6,6), (7,7), (8,8), (9,9), (10,10))
 
         checkbox_accessions = forms.BooleanField(required = False, label="Distinguish plasmids from chromosomes")
-        checkbox_single_copy = forms.BooleanField(required = False, label="Only consider single copy orthologs")
+        checkbox_single_copy = forms.BooleanField(required = False, label="Only consider single copy %s" % label)
 
-        orthologs_in = forms.MultipleChoiceField(label='Orthologs present in', choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker", "data-live-search":"true"}), required = False)
-        no_orthologs_in = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker remove-example", "data-live-search":"true"}), required = False, label="Ortholgs absent from")
+        orthologs_in = forms.MultipleChoiceField(label='%s conserved in' % label, choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker", "data-live-search":"true"}), required = False)
+        no_orthologs_in = forms.MultipleChoiceField(label="%s absent from (optional)" % label, choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker remove-example", "data-live-search":"true"}), required = False)
 
         new_choices = [['None', 'None']] + accession_choices
         frequency = forms.ChoiceField(choices=FREQ_CHOICES, label='Missing data (optional)', required = False)
@@ -296,7 +296,7 @@ def make_extract_form(database_name, plasmid=False):
                                                     Column("no_orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12')),
                                                 Column(Row('frequency'),
                                                 Row('reference'),
-                                                Submit('submit', 'Compare orthogroups'), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                                                Submit('submit', 'Compare %s' % label), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
                                                 css_class="col-lg-8 col-md-8 col-sm-12")
                                                 )
                                         )
