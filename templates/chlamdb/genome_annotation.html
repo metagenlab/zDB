@@ -6,215 +6,218 @@
 {% load staticfiles %}
     {% load custom_tags %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+{% include "chlamdb/header.html" %}
 </head>
 <body>
 
-<div id="container">
-    <div id="sidebar">
-        {% include "chlamdb/menu.html" %}
-    </div>
-
-    <div id="header">
-        {% include "chlamdb/user.html" %}
-    </div>
-
-    <div id="content">
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
 
 
-        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-            <div class="panel-heading" style="width:100%">
-                <h3 class="panel-title">Help</h3>
-            </div>
-            <p style="margin: 10px 10px 10px 10px">Create circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. Click on the circos plot to open a new windows with clickable version of the plot.<br>
-            rRNA are colored in blue, tRNA in red.
-            </p>
+
+                  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                          <h3 class="panel-title">Help</h3>
+                      </div>
+                      <p style="margin: 10px 10px 10px 10px">Create circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. Click on the circos plot to open a new windows with clickable version of the plot.<br>
+                      rRNA are colored in blue, tRNA in red.
+                      </p>
+                  </div>
+
+                  <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                      <li class="active"><a href="#tab0" data-toggle="tab">List</a></li>
+                      <li><a href="#tab1" data-toggle="tab">Cog categories</a></li>
+                      <li><a href="#tab2" data-toggle="tab">cog counts</a></li>
+                  </ul>
+                  <div id="my-tab-content" class="tab-content">
+                      <div class="tab-pane active" id="tab0">
+                          <h3> Locus annotation </h3>
+                          <div id="export_bouttons_groups">
+                              <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" class="btn btn-success">Export to Excel</a>
+
+                              <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" class="btn btn-success">Export to CSV</a>
+
+                              <br/>
+                          </div>
+                                  <table class="display dataTable" id="genome_table">
+                                      <thead>
+                                          <tr>
+
+
+                                              <th style="width:80px">Locus</th>
+                                              <th style="width:60px">start</th>
+                                              <th style="width:60px">end</th>
+                                              <th style="width:10px">C</th>
+                                              <th style="width:55px">KO</th>
+                                              <th style="width:160px">Pathways</th>
+                                              <th style="width:230px">Modules</th>
+                                              <th style="width:230px">Interpro</th>
+                                              <th id="entete_gene">Gene</th>
+                                              <th id="entete_n">nH</th>
+                                              <th id="entete_n">nG</th>
+                                              <th id="entete_n">TM</th>
+                                              <th id="entete_n">SP</th>
+                                              <th id="entete_product">Product</th>
+
+
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+
+                                          {%for data in ordered_data%}
+                                          {%if data.4 == "assembly_gap"%}
+                                          <tr bgcolor="red">
+
+                                              <td bgcolor="red">GAP</td>
+                                              <td bgcolor="red">{{data.2}}</td>
+                                              <td bgcolor="red">{{data.3}}</td>
+                                              <td bgcolor="red"></td>
+                                              <td bgcolor="red"></td>
+                                              <td bgcolor="red"></td>
+                                              <td bgcolor="red"></td>
+                                              <td bgcolor="red"></td>
+                                              <td bgcolor="red"></td>
+                                              <td bgcolor="red"></td>
+                                              <td bgcolor="red"></td>
+                                              <td bgcolor="red"></td>
+                                              <td bgcolor="red"></td>
+                                              <td bgcolor="red"></td>
+                                          <tr>
+                                          {% elif data.4 == "rRNA"%}
+                                          <tr bgcolor="red">
+
+                                              <td bgcolor="yellow">{{data.1}}</td>
+                                              <td bgcolor="yellow">{{data.2}}</td>
+                                              <td bgcolor="yellow">{{data.3}}</td>
+                                              <td bgcolor="yellow"></td>
+                                              <td bgcolor="yellow"></td>
+                                              <td bgcolor="yellow"></td>
+                                              <td bgcolor="yellow"></td>
+                                              <td bgcolor="yellow"></td>
+                                              <td bgcolor="yellow"></td>
+                                              <td bgcolor="yellow"></td>
+                                              <td bgcolor="yellow"></td>
+                                              <td bgcolor="yellow"></td>
+                                              <td bgcolor="yellow"></td>
+                                              <td bgcolor="yellow">{{data.5}}</td>
+                                          <tr>
+
+                                          {% elif data.4 == "tRNA"%}
+                                          <tr bgcolor="red">
+
+                                              <td bgcolor="orange">{{data.1}}</td>
+                                              <td bgcolor="orange">{{data.2}}</td>
+                                              <td bgcolor="orange">{{data.3}}</td>
+                                              <td bgcolor="orange"></td>
+                                              <td bgcolor="orange"></td>
+                                              <td bgcolor="orange"></td>
+                                              <td bgcolor="orange"></td>
+                                              <td bgcolor="orange"></td>
+                                              <td bgcolor="orange"></td>
+                                              <td bgcolor="orange"></td>
+                                              <td bgcolor="orange"></td>
+                                              <td bgcolor="orange"></td>
+                                              <td bgcolor="orange"></td>
+                                              <td bgcolor="orange">{{data.5}}</td>
+                                          <tr>
+
+                                          {% elif data.4 == "CDS"%}
+
+                                          {% with locus2annot_dico|keyvalue:data.1 as values %}
+
+                                          <tr>
+
+
+                                              <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
+                                              <td>{{data.2}}</td>
+                                              <td>{{data.3}}</td>
+                                              {% with locus_tag2cog_name|keyvalue:values.2 as name %}
+
+                                                  {% if name == '-' %}
+                                                      <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
+                                                  {% else %}
+                                                      <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
+
+                                                  {% endif %}
+                                              {%endwith%}
+                                              {% with locus_tag2ko|keyvalue:values.2 as oneko %}
+                                                  {% if oneko == '-' %}
+                                                      <td>{{locus_tag2ko|keyvalue:values.2}}</td>
+                                                      <td>-</td>
+                                                      <td>-</td>
+                                                  {% else %}
+                                                      <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
+                                                      {% with ko2ko_pathways|keyvalue:oneko as name %}
+                                                          {% if name == '-' %}
+                                                              <td>-</td>
+                                                          {% else %}
+                                                              <td>{{name|safe}}</td>
+                                                          {% endif %}
+                                                      {%endwith%}
+                                                      {% with ko2ko_modules|keyvalue:oneko as name %}
+                                                          {% if name == '-' %}
+                                                              <td>-</td>
+                                                          {% else %}
+                                                              <td>{{name|safe}}</td>
+                                                          {% endif %}
+                                                      {%endwith%}
+                                                  {% endif %}
+
+
+                                              {%endwith%}
+                                              {% with locus2interpro|keyvalue:values.2 as interpro_data %}
+                                              <td>
+                                                  {% for one_interpro in interpro_data %}
+                                                  {% if one_interpro.0 != '-' %}
+                                                      <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                                  {%else%}
+                                                      {{one_interpro.0}}
+                                                  {%endif%}
+                                                      {{one_interpro.1}} </br>
+                                                  {% endfor %}
+                                                  {%endwith%}
+                                              </td>
+                                              <td>{{values.7}}</td>
+                                              <td>{{values.8}}</td>
+                                              <td>{{values.9}}</td>
+                                              <td>{{values.10}}</td>
+                                              <td>{{values.11}}</td>
+                                              <td>{{values.12}}</td>
+
+                                          </tr>
+                                          {%endwith%}
+                                          {%endif%}
+                                          {%endfor%}
+
+                                      </tbody>
+                                  </table>
+
+                  </div>
+                      <div class="tab-pane" id="tab1">
+
+                          <div id="mydiv" style="float: left"></div>
+                          <svg class="chart"></svg>
+                      </div>
+
+                      <div class="tab-pane" id="tab2">
+                          <div id="mydiv2" style="float: left"></div>
+                          <svg class="chart2"></svg>
+                      </div>
+
+                  </div>
+
+
+              </div>
+          </div>
         </div>
-
-        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-            <li class="active"><a href="#tab0" data-toggle="tab">List</a></li>
-            <li><a href="#tab1" data-toggle="tab">Cog categories</a></li>
-            <li><a href="#tab2" data-toggle="tab">cog counts</a></li>
-        </ul>
-        <div id="my-tab-content" class="tab-content">
-            <div class="tab-pane active" id="tab0">
-                <h3> Locus annotation </h3>
-                <div id="export_bouttons_groups">
-                    <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-
-                    <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-
-                    <br/>
-                </div>
-                        <table class="display dataTable" id="genome_table">
-                            <thead>
-                                <tr>
-
-
-                                    <th style="width:80px">Locus</th>
-                                    <th style="width:60px">start</th>
-                                    <th style="width:60px">end</th>
-                                    <th style="width:10px">C</th>
-                                    <th style="width:55px">KO</th>
-                                    <th style="width:160px">Pathways</th>
-                                    <th style="width:230px">Modules</th>
-                                    <th style="width:230px">Interpro</th>
-                                    <th id="entete_gene">Gene</th>
-                                    <th id="entete_n">nH</th>
-                                    <th id="entete_n">nG</th>
-                                    <th id="entete_n">TM</th>
-                                    <th id="entete_n">SP</th>
-                                    <th id="entete_product">Product</th>
-
-
-                                </tr>
-                            </thead>
-                            <tbody>
-
-                                {%for data in ordered_data%}
-                                {%if data.4 == "assembly_gap"%}
-                                <tr bgcolor="red">
-
-                                    <td bgcolor="red">GAP</td>
-                                    <td bgcolor="red">{{data.2}}</td>
-                                    <td bgcolor="red">{{data.3}}</td>
-                                    <td bgcolor="red"></td>
-                                    <td bgcolor="red"></td>
-                                    <td bgcolor="red"></td>
-                                    <td bgcolor="red"></td>
-                                    <td bgcolor="red"></td>
-                                    <td bgcolor="red"></td>
-                                    <td bgcolor="red"></td>
-                                    <td bgcolor="red"></td>
-                                    <td bgcolor="red"></td>
-                                    <td bgcolor="red"></td>
-                                    <td bgcolor="red"></td>
-                                <tr>
-                                {% elif data.4 == "rRNA"%}
-                                <tr bgcolor="red">
-
-                                    <td bgcolor="yellow">{{data.1}}</td>
-                                    <td bgcolor="yellow">{{data.2}}</td>
-                                    <td bgcolor="yellow">{{data.3}}</td>
-                                    <td bgcolor="yellow"></td>
-                                    <td bgcolor="yellow"></td>
-                                    <td bgcolor="yellow"></td>
-                                    <td bgcolor="yellow"></td>
-                                    <td bgcolor="yellow"></td>
-                                    <td bgcolor="yellow"></td>
-                                    <td bgcolor="yellow"></td>
-                                    <td bgcolor="yellow"></td>
-                                    <td bgcolor="yellow"></td>
-                                    <td bgcolor="yellow"></td>
-                                    <td bgcolor="yellow">{{data.5}}</td>
-                                <tr>
-
-                                {% elif data.4 == "tRNA"%}
-                                <tr bgcolor="red">
-
-                                    <td bgcolor="orange">{{data.1}}</td>
-                                    <td bgcolor="orange">{{data.2}}</td>
-                                    <td bgcolor="orange">{{data.3}}</td>
-                                    <td bgcolor="orange"></td>
-                                    <td bgcolor="orange"></td>
-                                    <td bgcolor="orange"></td>
-                                    <td bgcolor="orange"></td>
-                                    <td bgcolor="orange"></td>
-                                    <td bgcolor="orange"></td>
-                                    <td bgcolor="orange"></td>
-                                    <td bgcolor="orange"></td>
-                                    <td bgcolor="orange"></td>
-                                    <td bgcolor="orange"></td>
-                                    <td bgcolor="orange">{{data.5}}</td>
-                                <tr>
-
-                                {% elif data.4 == "CDS"%}
-
-                                {% with locus2annot_dico|keyvalue:data.1 as values %}
-
-                                <tr>
-
-
-                                    <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
-                                    <td>{{data.2}}</td>
-                                    <td>{{data.3}}</td>
-                                    {% with locus_tag2cog_name|keyvalue:values.2 as name %}
-
-                                        {% if name == '-' %}
-                                            <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
-                                        {% else %}
-                                            <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
-
-                                        {% endif %}
-                                    {%endwith%}
-                                    {% with locus_tag2ko|keyvalue:values.2 as oneko %}
-                                        {% if oneko == '-' %}
-                                            <td>{{locus_tag2ko|keyvalue:values.2}}</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                        {% else %}
-                                            <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
-                                            {% with ko2ko_pathways|keyvalue:oneko as name %}
-                                                {% if name == '-' %}
-                                                    <td>-</td>
-                                                {% else %}
-                                                    <td>{{name|safe}}</td>
-                                                {% endif %}
-                                            {%endwith%}
-                                            {% with ko2ko_modules|keyvalue:oneko as name %}
-                                                {% if name == '-' %}
-                                                    <td>-</td>
-                                                {% else %}
-                                                    <td>{{name|safe}}</td>
-                                                {% endif %}
-                                            {%endwith%}
-                                        {% endif %}
-
-
-                                    {%endwith%}
-                                    {% with locus2interpro|keyvalue:values.2 as interpro_data %}
-                                    <td>
-                                        {% for one_interpro in interpro_data %}
-                                        {% if one_interpro.0 != '-' %}
-                                            <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
-                                        {%else%}
-                                            {{one_interpro.0}}
-                                        {%endif%}
-                                            {{one_interpro.1}} </br>
-                                        {% endfor %}
-                                        {%endwith%}
-                                    </td>
-                                    <td>{{values.7}}</td>
-                                    <td>{{values.8}}</td>
-                                    <td>{{values.9}}</td>
-                                    <td>{{values.10}}</td>
-                                    <td>{{values.11}}</td>
-                                    <td>{{values.12}}</td>
-
-                                </tr>
-                                {%endwith%}
-                                {%endif%}
-                                {%endfor%}
-
-                            </tbody>
-                        </table>
-
-        </div>
-            <div class="tab-pane" id="tab1">
-
-                <div id="mydiv" style="float: left"></div>
-                <svg class="chart"></svg>
-            </div>
-
-            <div class="tab-pane" id="tab2">
-                <div id="mydiv2" style="float: left"></div>
-                <svg class="chart2"></svg>
-            </div>
-
-        </div>
-
-
+      </div>
     </div>
-</div>
+  </div>
 
 
         <script>
@@ -617,4 +620,5 @@
 
 
 </body>
+{% include "chlamdb/style_menu.html" %}
 </html>
