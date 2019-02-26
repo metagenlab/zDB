@@ -10,117 +10,109 @@
     {% load static %}
     {% get_static_prefix as STATIC_PREFIX %}
     {% load custom_tags %}
-
-
-
-
-
+    {% include "chlamdb/header.html" %}
 </head>
 
 
+<body>
 
-<body height="5000px">
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
+                  <nav>
+                      <ul id="tabs_main" class="nav nav-tabs">
+                          <li><a href="{% url 'extract_orthogroup'  %}">Detailed comparison</a></li>
+                          <li><a href="{% url 'venn_orthogroup'  %}">Venn diagram</a></li>
+                          <li class="active"><a href="{% url 'orthogroup_comparison'  %}">Compare Orthogroups size</a></li>
+                          <li><a href="{% url 'plot_heatmap'  'orthology' %}">Whole proteomes heatmaps</a></li>
+                          <li><a href="{% url 'pan_genome'  'orthology' %}">Pan/Core genome plots</a></li>
 
-    <div id="container">
+                      </ul>
+                  </nav>
+
+                      <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                          <div class="panel-heading" style="width:100%">
+                              <h3 class="panel-title">Help</h3>
+                          </div>
+                          <p style="margin: 10px 10px 10px 10px; line-height: 160%">Compare orthogroup presenting more than one homolog in one of the selected genomes.</p>
+                      </p>
+                      </div>
 
 
-        <div id="sidebar">
-            {% include "chlamdb/menu.html" %}
+
+                      <form action='{% url "orthogroup_comparison"  %}' method="post">
+                          {% csrf_token %}
+                          {{ form.as_p }}
+                          <input type="submit" value="Submit" />
+
+                      </form>
+
+                      {% if envoi_comp %}
+
+                      <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                          <div class="panel-heading" style="width:100%">
+                              <h3 class="panel-title">Help</h3>
+                          </div>
+                          <p style="margin: 10px 10px 10px 10px; line-height: 160%">Homolog counts can be reordrered by clicking on column headers.<br>
+                          <strong>Total count:</strong> number of homologs in the whole database </p>
+                      </p>
+                      </div>
+
+                              Number of orthogroups exhiniting > 1 copy in at least 1/{{taxon_list|length}} genome: {{orthogroups2counts|length}}
+
+                              <table class="sortable" id="mytable">
+                                  <style>
+                                  table {
+                                  width:100%;
+                                  table-layout:fixed;
+                                  }
+                                  td {
+                                  overflow: hidden;
+                                  white-space: nowrap;
+                                  }
+                                  </style>
+                                  <tr>
+                                      <th id="entete_meta" >Orthogroup</th>
+                                      <th id="entete_meta3">Total count</th>
+                                      {% for taxon in taxon_list %}
+                                          <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
+                                      {% endfor %}
+                                      <th id="entete_meta3">Annot</th>
+                                  <tr>
+                                  {% for key, values in orthogroups2counts.items %}
+                                      <tr> <td><a href="{% url 'locusx'  key True%}">{{key}}</a></td>
+                                          <td>{{orthogroups2total_count|keyvalue:key}}</td>
+                                          {% for taxon_count in values%}
+                                                {%if taxon_count != 0 %}
+                                                <td data-hist="{{taxon_count}}">{{taxon_count}}</td>
+                                                {% else %}
+                                                 <td>{{taxon_count}}</td>
+                                                {% endif %}
+                                          {% endfor %}
+                                          <td>
+                                          {% for values in group2annot|keyvalue:key %}
+                                              {{values.0}}({{values.1}})<br/>
+                                          {%endfor%}
+                                          </td>
+                                      </tr>
+                              {% endfor %}
+                              </table>
+
+
+
+                      {% endif %}
+              </div>
+          </div>
         </div>
-
-        <div id="header">
-            {% include "chlamdb/user.html" %}
-        </div>
-
-        <div id="content">
-            <nav>
-                <ul id="tabs_main" class="nav nav-tabs">
-                    <li><a href="{% url 'extract_orthogroup'  %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_orthogroup'  %}">Venn diagram</a></li>
-                    <li class="active"><a href="{% url 'orthogroup_comparison'  %}">Compare Orthogroups size</a></li>
-                    <li><a href="{% url 'plot_heatmap'  'orthology' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome'  'orthology' %}">Pan/Core genome plots</a></li>
-
-                </ul>
-            </nav>
-
-                <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                    <div class="panel-heading" style="width:100%">
-                        <h3 class="panel-title">Help</h3>
-                    </div>
-                    <p style="margin: 10px 10px 10px 10px; line-height: 160%">Compare orthogroup presenting more than one homolog in one of the selected genomes.</p>
-                </p>
-                </div>
-
-
-
-                <form action='{% url "orthogroup_comparison"  %}' method="post">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <input type="submit" value="Submit" />
-
-                </form>
-
-                {% if envoi_comp %}
-
-                <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                    <div class="panel-heading" style="width:100%">
-                        <h3 class="panel-title">Help</h3>
-                    </div>
-                    <p style="margin: 10px 10px 10px 10px; line-height: 160%">Homolog counts can be reordrered by clicking on column headers.<br>
-                    <strong>Total count:</strong> number of homologs in the whole database </p>
-                </p>
-                </div>
-
-                        Number of orthogroups exhiniting > 1 copy in at least 1/{{taxon_list|length}} genome: {{orthogroups2counts|length}}
-
-                        <table class="sortable" id="mytable">
-                            <style>
-                            table {
-                            width:100%;
-                            table-layout:fixed;
-                            }
-                            td {
-                            overflow: hidden;
-                            white-space: nowrap;
-                            }
-                            </style>
-                            <tr>
-                                <th id="entete_meta" >Orthogroup</th>
-                                <th id="entete_meta3">Total count</th>
-                                {% for taxon in taxon_list %}
-                                    <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
-                                {% endfor %}
-                                <th id="entete_meta3">Annot</th>
-                            <tr>
-                            {% for key, values in orthogroups2counts.items %}
-                                <tr> <td><a href="{% url 'locusx'  key True%}">{{key}}</a></td>
-                                    <td>{{orthogroups2total_count|keyvalue:key}}</td>
-                                    {% for taxon_count in values%}
-                                          {%if taxon_count != 0 %}
-                                          <td data-hist="{{taxon_count}}">{{taxon_count}}</td>
-                                          {% else %}
-                                           <td>{{taxon_count}}</td>
-                                          {% endif %}
-                                    {% endfor %}
-                                    <td>
-                                    {% for values in group2annot|keyvalue:key %}
-                                        {{values.0}}({{values.1}})<br/>
-                                    {%endfor%}
-                                    </td>
-                                </tr>
-                        {% endfor %}
-                        </table>
-
-
-
-                {% endif %}
-
-        </div>
+      </div>
     </div>
-
-
+  </div>
 </body>
+{% include "chlamdb/style_menu.html" %}
 <script src="{% static 'js/jquery.hottie.js' %}"></script>
                         <script>
                         $(function(){
@@ -140,4 +132,3 @@
                         </script>
 
 </html>
-
