@@ -14,171 +14,154 @@
     });
 </script>
 
+{% include "chlamdb/header.html" %}
 
 </head>
 
 <body>
 
-<div id="container">
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
 
 
-    <div id="sidebar">
-        {% include "chlamdb/menu.html" %}
-    </div>
+                  <div class="panel panel-warning" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                          <h3 class="panel-title">Help</h3>
+                      </div>
+                      <p style="margin: 0px 0px 0px 10px">Plot genomic features in the neighborhood of a target locus. Coloured links reflect sequence identity:
+                          dark blue features are highly conserved, grey features present less than 50% identity</p>
+                      <p style="margin: 0px 0px 0px 10px">INPUT: locus tag or protein ID.</p>
+                  </div>
 
-    <div id="header">
-        {% include "chlamdb/user.html" %}
-    </div>
 
-    <div id="content">
+                  <div style="width: 100%;">
+                      <div  class="col-md-9" style="padding-left: 15px">
+                          <form action="{% url "plot_region" %}" method="post">
+                          {% csrf_token %}
+                          {{ form.as_p }}
+                          <input type="submit" value="Submit" />
+
+                          </form>
+                      </div>
+                      <div  class="col-md-9" style="padding-left: 15px">
+                          <div id="example"><a onclick="window.open('{% url 'plot_region_direct' 'group_706' %}?t=55&t=314&t=66', 'orthoIDframe'); return false">Example: alignment of C. trachomatis and C. avium and W. chondrophila centered on "CT_559" (YscJ, 18000bp window)</a>
+                          </div>
+                      </div>
 
 
-        <div class="panel panel-warning" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-            <div class="panel-heading" style="width:100%">
-                <h3 class="panel-title">Help</h3>
-            </div>
-            <p style="margin: 0px 0px 0px 10px">Plot genomic features in the neighborhood of a target locus. Coloured links reflect sequence identity:
-                dark blue features are highly conserved, grey features present less than 50% identity</p>
-            <p style="margin: 0px 0px 0px 10px">INPUT: locus tag or protein ID.</p>
+                      <div  class="col-md-9" style="padding-left: 15px">
+
+                              {% if envoi %}
+                                  <h2>Region</h2>
+
+                                  {% load static %}
+
+                                  <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                                      <li class="active"><a href="#red" data-toggle="tab">Plot</a></li>
+                                      <li><a href="#orange" data-toggle="tab">Annotation detail</a></li>
+                                  </ul>
+
+
+                                  <div id="my-tab-content" class="tab-content">
+                                      <div class="tab-pane active" id="red">
+
+                                          <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                                              <div class="panel-heading" style="width:100%">
+                                                  <h3 class="panel-title">Help</h3>
+                                              </div>
+                                              <p style="margin: 0px 0px 0px 10px">Click on ORFs to get annotations and lists of homologs </p>
+                                          </div>
+
+                                          <div id="export_bouttons">
+                                              <a download="region.svg" href="{% static name %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to SVG</a>
+                                              <a download="region.png" href="{% static name_png %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to PNG</a>
+
+                                              <br/>
+                                          <img src="{% static "/scales/scale_blues_20_100.png" %}" id="circos_legend"  width="160" style="position: relative; top: 0; left: 0;">
+                                          </div>
+                                          <div>
+
+
+                                              <a href="#">
+                                              <object type="image/svg+xml" data="{% static name %}" id="genomic_region"></object>
+                                              </a>
+                                          </div>
+                                      </div>
+
+                                      <div class="tab-pane" id="orange">
+
+                                          <div id="export_bouttons">
+                                              <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" class="btn btn-success">Export to Excel</a>
+
+                                              <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" class="btn btn-success">Export to CSV</a>
+                                              <br/>
+                                          </div>
+                                          <table id="plot_table" class="sortable">
+                                              <thead>
+                                                  <tr>
+                                                      <th></th>
+                                                      <th id="entete_locus">Orthogroup</th>
+                                                      <th id="entete_locus">Locus</th>
+                                                      <th id="entete_locus">Protein id</th>
+                                                      <th id="entete_gene">Start</th>
+                                                      <th id="entete_gene">Stop</th>
+                                                      <th id="entete_strand">S.</th>
+                                                      <th id="entete_gene">Gene</th>
+                                                      <th id="entete_n">nH</th>
+                                                      <th id="entete_n">nG</th>
+                                                      <th id="entete_n">TM</th>
+                                                      <th id="entete_n">SP</th>
+                                                      <th id="entete_product">Product</th>
+                                                      <th id="entete_organism">Organism</th>
+                                                      <th id="entete_translation">Translation</th>
+                                                  </tr>
+                                              </thead>
+                                              <tbody>
+                                              {% for values in search_result %}
+                                                  <tr>
+                                                  <td>{{values.0}}</td>
+                                                  <td>{{values.1}}</td>
+                                                  <td>{{values.2}}</td>
+                                                  <td>{{values.3}}</td>
+                                                  <td>{{values.4}}</td>
+                                                  <td>{{values.5}}</td>
+                                                  <td>{{values.6}}</td>
+                                                  <td>{{values.7}}</td>
+                                                  <td>{{values.8}}</td>
+                                                  <td>{{values.9}}</td>
+                                                  <td>{{values.10}}</td>
+                                                  <td>{{values.11}}</td>
+                                                  <td>{{values.12}}</td>
+                                                  <td>{{values.13}}</td>
+                                                  <td>{{values.14}}</td>
+                                                  </tr>
+                                              {% endfor %}
+                                              </tbody>
+                                          </table>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      {% else %}
+                     <iframe name="orthoIDframe" id="theFrame" style="height:8000px;overflow:hidden;" width="500px" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+
+                      {% endif %}
+              </div>
+          </div>
         </div>
-
-
-
-
-
-        <div style="width: 100%;">
-            <div  class="col-md-9" style="padding-left: 15px">
-                <form action="{% url "plot_region" %}" method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <input type="submit" value="Submit" />
-
-                </form>
-            </div>
-            <div  class="col-md-9" style="padding-left: 15px">
-                <div id="example"><a onclick="window.open('{% url 'plot_region_direct' 'group_706' %}?t=55&t=314&t=66', 'orthoIDframe'); return false">Example: alignment of C. trachomatis and C. avium and W. chondrophila centered on "CT_559" (YscJ, 18000bp window)</a>
-                </div>
-            </div>
-
-
-            <div  class="col-md-9" style="padding-left: 15px">
-
-
-
-                    {% if envoi %}
-                        <h2>Region</h2>
-
-
-
-
-
-
-                        {% load static %}
-
-                        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                            <li class="active"><a href="#red" data-toggle="tab">Plot</a></li>
-                            <li><a href="#orange" data-toggle="tab">Annotation detail</a></li>
-                        </ul>
-
-
-                        <div id="my-tab-content" class="tab-content">
-                            <div class="tab-pane active" id="red">
-
-                                <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                                    <div class="panel-heading" style="width:100%">
-                                        <h3 class="panel-title">Help</h3>
-                                    </div>
-                                    <p style="margin: 0px 0px 0px 10px">Click on ORFs to get annotations and lists of homologs </p>
-                                </div>
-
-                                <div id="export_bouttons">
-                                    <a download="region.svg" href="{% static name %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to SVG</a>
-                                    <a download="region.png" href="{% static name_png %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to PNG</a>
-
-                                    <br/>
-                                <img src="{% static "/scales/scale_blues_20_100.png" %}" id="circos_legend"  width="160" style="position: relative; top: 0; left: 0;">
-                                </div>
-                                <div>
-
-
-                                    <a href="#">
-                                    <object type="image/svg+xml" data="{% static name %}" id="genomic_region"></object>
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div class="tab-pane" id="orange">
-
-                                <div id="export_bouttons">
-                                    <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-
-                                    <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                                    <br/>
-                                </div>
-                                <table id="plot_table" class="sortable">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th id="entete_locus">Orthogroup</th>
-                                            <th id="entete_locus">Locus</th>
-                                            <th id="entete_locus">Protein id</th>
-                                            <th id="entete_gene">Start</th>
-                                            <th id="entete_gene">Stop</th>
-                                            <th id="entete_strand">S.</th>
-                                            <th id="entete_gene">Gene</th>
-                                            <th id="entete_n">nH</th>
-                                            <th id="entete_n">nG</th>
-                                            <th id="entete_n">TM</th>
-                                            <th id="entete_n">SP</th>
-                                            <th id="entete_product">Product</th>
-                                            <th id="entete_organism">Organism</th>
-                                            <th id="entete_translation">Translation</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for values in search_result %}
-                                        <tr>
-                                        <td>{{values.0}}</td>
-                                        <td>{{values.1}}</td>
-                                        <td>{{values.2}}</td>
-                                        <td>{{values.3}}</td>
-                                        <td>{{values.4}}</td>
-                                        <td>{{values.5}}</td>
-                                        <td>{{values.6}}</td>
-                                        <td>{{values.7}}</td>
-                                        <td>{{values.8}}</td>
-                                        <td>{{values.9}}</td>
-                                        <td>{{values.10}}</td>
-                                        <td>{{values.11}}</td>
-                                        <td>{{values.12}}</td>
-                                        <td>{{values.13}}</td>
-                                        <td>{{values.14}}</td>
-                                        </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% else %}
-           <iframe name="orthoIDframe" id="theFrame" style="height:8000px;overflow:hidden;" width="500px" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-
-            {% endif %}
-
+      </div>
     </div>
-</div>
-
-
-
-
+  </div>
 
 <iframe name="theFrame" id="theFrame"></iframe>
 
 </body>
-
-
-
+{% include "chlamdb/style_menu.html" %}
 
 <script>
   var update_fields = function () {
