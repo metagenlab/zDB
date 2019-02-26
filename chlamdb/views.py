@@ -328,7 +328,7 @@ def circos_homology(request):
 
 
 def extract_orthogroup(request):
-
+    print("extract OG")
     biodb = settings.BIODB
 
     '''
@@ -339,24 +339,22 @@ def extract_orthogroup(request):
     :return:
     '''
 
-
     server = manipulate_biosqldb.load_db()
     #print "extract orthogroup %s" % biodb
     extract_form_class = make_extract_form(biodb, plasmid=True)
-
+    print(request.method)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
 
-        if 'comparison' in request.POST and form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+
             import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
 
-
-
-
             exclude = form.cleaned_data['no_orthologs_in']
+
             reference_taxon = form.cleaned_data['reference']
 
             if len(include) == 1:
@@ -5737,7 +5735,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
     #print 'biodb', biodb
     if counttype == 'Majority':
         sql = 'select B.locus_tag, A.%s ,A.n from (select seqfeature_id,%s, count(*) as n from blastnr.blastnr_%s A ' \
-              ' inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id where hit_number<=%s and query_bioentry_id=%s and superkingdom="Bacteria" ' \
+              ' inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id where hit_number<=%s and query_bioentry_id=%s ' \
               ' group by seqfeature_id, %s order by seqfeature_id,n DESC) A ' \
               ' inner join custom_tables.locus2seqfeature_id_%s B on A.seqfeature_id=B.seqfeature_id' % (rank,
                                                                                                          rank,
@@ -5746,7 +5744,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
                                                                                                          accession,
                                                                                                          rank,
                                                                                                          biodb)
-        #print sql
+        print (sql)
         data = server.adaptor.execute_and_fetchall(sql,)
         category2count = {}
         all_query_locus_list = []
@@ -7350,12 +7348,11 @@ def blastnr_barchart(request):
                                                                                          accession,
                                                                                          top_n,
                                                                                          rank)
-                    print(sql)
+
                     data = server.adaptor.execute_and_fetchall(sql,)
                     category2count = {}
                     query_locus_list = []
                     for n, i in enumerate(data):
-                        #print(i)
                         # KEEP ONY the first match (highest count ordered with mysql)
                         if i[0] not in query_locus_list:
                             if i[1] not in category2count:
@@ -7369,6 +7366,7 @@ def blastnr_barchart(request):
                                         print("Idem!:",data[n+1], data[n])
                             except:
                                 pass
+
                     data = zip(category2count.keys(), category2count.values())
                     #print "data",data
                 elif counttype == 'BBH':
@@ -7378,7 +7376,7 @@ def blastnr_barchart(request):
                                              biodb,
                                              accession,
                                              rank)
-                    print (sql)
+                    print(sql)
                     data = server.adaptor.execute_and_fetchall(sql,)
                 else:
                     raise 'invalide type'
@@ -7386,14 +7384,10 @@ def blastnr_barchart(request):
                 for i in data:
                     data_all_accessions.append((accession,) + i)
 
-
-            #print data_all_accessions
-
             taxon_map = 'var taxon2description = {'
             for i in taxon2description:
-                taxon_map+='"%s":"%s",' % (i, taxon2description[i])
+                taxon_map += '"%s":"%s",' % (i, taxon2description[i])
             taxon_map = taxon_map[0:-1] + '};'
-
 
             taxon2category2count = {}
             all_categories = []

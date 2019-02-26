@@ -19,19 +19,20 @@
                             $("#id_orthologs_in").children("option[value^='" + y.options[i].value + "']").show()
                         }
                     }
+
                     /* only show selected genomes as possible references */
                     $("#id_orthologs_in").change(function() {
+                        console.log("change!");
                         document.getElementById("id_reference").selectedIndex=0;
                         var x=document.getElementById("id_orthologs_in");
                         for (var i = 0; i < x.options.length; i++) {
-
                             if(x.options[i].selected == true){
                                 $("#id_reference").children("option[value^='" + x.options[i].value + "']").show();
                                 $("#id_no_orthologs_in").children("option[value^='" + x.options[i].value + "']").hide()
                             }else{
                                 $("#id_reference").children("option[value^='" + x.options[i].value + "']").hide();
                                 if (x.options[i].text.includes('plasmid')) {
-                                    if (document.getElementById('checkbox_accessions').checked) {
+                                    if (document.getElementById('id_checkbox_accessions').checked) {
                                         $("#id_no_orthologs_in").children("option[value^='" + x.options[i].value + "']").show()
                                     } else {
                                         $("#id_no_orthologs_in").children("option[value^='" + x.options[i].value + "']").hide()
@@ -41,16 +42,34 @@
                                 }
 
                             }
-                        }
+                        };
+                        var x=document.getElementById("id_no_orthologs_in");
+                        for (var i = 0; i < x.options.length; i++) {
+                            if(x.options[i].selected == true){
+                                $("#id_orthologs_in").children("option[value^='" + x.options[i].value + "']").hide()
+                            };
+                        };
+                        $("#id_no_orthologs_in").selectpicker('refresh');
+                        $("#id_orthologs_in").selectpicker('refresh');
+                    });
+
+                    $("#id_no_orthologs_in").change(function() {
+                      var x=document.getElementById("id_no_orthologs_in");
+                      for (var i = 0; i < x.options.length; i++) {
+                          if(x.options[i].selected == true){
+                              $("#id_orthologs_in").children("option[value^='" + x.options[i].value + "']").hide()
+                          };
+                      };
+                      $("#id_orthologs_in").selectpicker('refresh');
                     });
 
                     /* only show plasmids if checkbox for accessions is checked*/
-                    $("#checkbox_accessions").change(function() {
+                    $("#id_checkbox_accessions").change(function() {
                             var x = document.getElementById("id_orthologs_in");
                             for (var i = 0; i < x.options.length; i++) {
 
                                 if (y.options[i].text.includes('plasmid')) {
-                                    if (document.getElementById('checkbox_accessions').checked) {
+                                    if (document.getElementById('id_checkbox_accessions').checked) {
                                         $("#id_orthologs_in").children("option[value^=" + y.options[i].value + "]").show()
                                         $("#id_no_orthologs_in").children("option[value^=" + y.options[i].value + "]").show()
                                     } else {
@@ -61,6 +80,8 @@
                                     $("#id_orthologs_in").children("option[value^=" + y.options[i].value + "]").show()
                                 }
                             }
+                            $("#id_orthologs_in").selectpicker('refresh');
+                            $("#id_no_orthologs_in").selectpicker('refresh');
                     })
                 })
           </script>

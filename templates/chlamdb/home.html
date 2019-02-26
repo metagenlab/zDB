@@ -15,7 +15,6 @@
   gtag('config', 'UA-125948409-1');
 </script>
 
-
     {% load staticfiles %}
     {% load static %}
 
@@ -24,15 +23,13 @@
 </head>
 
 <body>
-
     <div class="container-fluid" id="main_container">
       <div class="row">
         <div id="wrapper">
-          {% include "chlamdb/menu.html" %}
-
             <div id="page-content-wrapper">
               <div class="row">
                 <div class="col-lg-12">
+                   {% include "chlamdb/menu.html" %}
                     <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                         <li class="active"><a href="#tab2" data-toggle="tab">Home</a></li>
                         <li><a href="#tab0" data-toggle="tab">Genomes</a></li>

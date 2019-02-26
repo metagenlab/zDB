@@ -6,7 +6,9 @@ from manipulate_biosqldb import load_db, get_biodatabase_list
 #from models import GenDB
 #from models import Genome
 from django.forms import ModelForm
-
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Submit, Row, Column, MultiField, Div, Fieldset
+from crispy_forms.bootstrap import AppendedText
 server = load_db()
 
 sql ="select accession from bioentry where biodatabase_id = 22"
@@ -218,13 +220,13 @@ def make_priam_form(database_name):
 def make_circos_form(database_name):
 
     accession_choices = get_accessions(database_name)
-    
+
     class CircosForm(forms.Form):
         circos_reference = forms.ChoiceField(choices=accession_choices)
         targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'20'}), required = False)
         #get_region = forms.NullBooleanField(widget=forms.CheckboxInput())
         #region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = False)
-        
+
         def save(self):
             self.reference = self.cleaned_data["reference"]
             self.get_region = self.cleaned_data["get_region"]
@@ -269,13 +271,37 @@ def make_extract_form(database_name, plasmid=False):
     class ExtractForm(forms.Form):
         FREQ_CHOICES = ((0, 0),(1, 1), (2,2), (3,3), (4,4), (5,5), (6,6), (7,7), (8,8), (9,9), (10,10))
 
+        checkbox_accessions = forms.BooleanField(required = False, label="Distinguish plasmids from chromosomes")
+        checkbox_single_copy = forms.BooleanField(required = False, label="Only consider single copy orthologs")
 
-        orthologs_in = forms.MultipleChoiceField(label='', choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17" }), required = False)
-        no_orthologs_in = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17" }), required = False, label="")
+        orthologs_in = forms.MultipleChoiceField(label='Orthologs present in', choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker", "data-live-search":"true"}), required = False)
+        no_orthologs_in = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker remove-example", "data-live-search":"true"}), required = False, label="Ortholgs absent from")
 
         new_choices = [['None', 'None']] + accession_choices
-        frequency = forms.ChoiceField(choices=FREQ_CHOICES, label='')
-        reference = forms.ChoiceField(choices=new_choices,label="")
+        frequency = forms.ChoiceField(choices=FREQ_CHOICES, label='Missing data (optional)', required = False)
+        reference = forms.ChoiceField(choices=new_choices,label="Reference genome (optional)", required = False)
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
+            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset("Compare genomes",
+                                                Column(
+                                                    Row('checkbox_accessions'),
+                                                    Row('checkbox_single_copy'),
+                                                Row(Column("orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12'),
+                                                    Column("no_orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12')),
+                                                Column(Row('frequency'),
+                                                Row('reference'),
+                                                Submit('submit', 'Compare orthogroups'), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                                                css_class="col-lg-8 col-md-8 col-sm-12")
+                                                )
+                                        )
+
+            super(ExtractForm, self).__init__(*args, **kwargs)
 
     return ExtractForm
 
@@ -532,13 +558,31 @@ def make_blastnr_form(biodb):
         rank_choices.append((rank, rank))
 
     class Blastnr_top(forms.Form):
-        accession = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" }), required = False)
+        accession = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" , 'class':"selectpicker", "data-width":"200px"}), required = False)
         rank = forms.ChoiceField(choices=rank_choices)
         CHOICES=[('BBH','BBH'),
          ('Majority','Majority Rule')]
         type = forms.ChoiceField(choices=CHOICES)
         top_number = forms.CharField(max_length=3, label="Majority over top n hits", initial = max_nr_hits, required = False)
 
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
+            self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset(
+                                                Row("BLAST taxonomy"),
+                                                Row('accession'),
+                                                Row('rank'),
+                                                Row('type'),
+                                                Row('top_number'),
+                                                Submit('submit', 'Submit'),
+                                                css_class="col-lg-5 col-md-6 col-sm-6")
+                                        )
+
+            super(Blastnr_top, self).__init__(*args, **kwargs)
     return Blastnr_top
 
 def make_interpro_taxonomy(biodb):
@@ -626,7 +670,7 @@ def get_LocusAnnotForm(database_name):
 
     class LocusAnnotForm(forms.Form):
         locus_list = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
-        circos_target = forms.ChoiceField(choices=accession_choices)
+        circos_target = forms.ChoiceField(choices=accession_choices, label='Reference genome')
     return LocusAnnotForm
 
 def make_motif_form(database_name):
@@ -669,7 +713,7 @@ def make_circos2genomes_form(database_name):
     accession_choices = get_accessions(database_name)
 
     class Circos2genomesForm(forms.Form):
-        
+
         locus_list = forms.CharField(max_length=1000, required = False)
         reference_genome = forms.ChoiceField(choices=accession_choices)
         query_genome = forms.ChoiceField(choices=accession_choices)
@@ -733,4 +777,3 @@ class DBForm(ModelForm):
         model=GenDB
         fields = ["ref_genome", "query_genome"]
     '''
-

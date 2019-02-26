@@ -15,6 +15,7 @@
         </script>
     {% load staticfiles %}
     {% load static %}
+    {% load crispy_forms_tags %}
     {% include "chlamdb/header.html" %}
     </head>
 
@@ -31,7 +32,7 @@
 
                      <div id="extract_form">
 
-                        <form action="{% url "locus_annotation" True %}" method="post">
+
 
                         <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                             <div class="panel-heading" style="width:100%">
@@ -39,11 +40,23 @@
                             </div>
                             <p style="margin: 10px 10px 10px 10px">Get annotations from a list of locus list (tab sep)</p>
                         </div>
+                        {% block content %}
+                        <form action="{% url "locus_annotation" True %}" method="post">
+                          {% csrf_token %}
+                          <div class="row">
+                            <div class="col-lg-3">
+                              {{ form.locus_list|as_crispy_field }}
+                            </div>
 
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                         <input type="submit" name="annot" value="Get annotation"/>
+                          </div>
+                          <div class="row">
+                          <div class="col-lg-6">
+                            {{ form.circos_target|as_crispy_field }}
+                          </div>
+                        </div>
+                           <input type="submit" name="annot" value="Get annotation"/>
                          </form>
+                         {% endblock %}
                     </div>
                   {% endif %}
 

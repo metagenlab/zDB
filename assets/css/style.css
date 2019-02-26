@@ -291,7 +291,7 @@ text-align: left;
 }
 
 
-
+form {background:#e6f2ff;}
 
 #venn_button{
    position:absolute;
@@ -301,35 +301,6 @@ text-align: left;
    padding-right: 20px;
 }
 
-
-
-#extract_panel_A{
-   position:relative;
-   top:5px;
-   left:15px;
-   font-size: 20px;
-   margin-left: 30px;
-   padding-right: 20px;
-}
-
-#id_frequency{
-   position:relative;
-    float:left;
-   top:10%;
-   left:35%;
-    font-size: 20px;
-   margin-left: 30px;
-   padding-right: 20px;
-}
-
-#id_reference{
-   position:relative;
-   float:left;
-   left:35%;
-   font-size: 20px;
-   margin-left: 30px;
-   padding-right: 20px;
-}
 
 
 
@@ -356,16 +327,6 @@ text-align: left;
    line-height: 100%;
    font-size: 20px;
 }
-
-input[type='radio'],label{
-    float: left;
-    clear: left;
-    width: 2px;
-    line-height: 25px;
- }
-
-
-
 
 #checkbox_extract_single_copy{
    position:absolute;
