@@ -2,129 +2,126 @@
 
 
 <html>
-<div id="container">
+<head>
+  {% load staticfiles %}
+  {% include "chlamdb/header.html" %}
+</head>
 
-    {% load static %}
+<div class="container-fluid" id="main_container">
+  <div class="row">
+    <div id="wrapper">
+        <div id="page-content-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
+               {% include "chlamdb/menu.html" %}
 
-    <div id="sidebar">
-        {% include "chlamdb/menu.html" %}
-    </div>
+                <nav>
+                    <ul id="tabs_main" class="nav nav-tabs">
+                    {% if type == 'Pfam' %}
 
-    <div id="header">
-        {% include "chlamdb/user.html" %}
+                        <li><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
+                        <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
+                        <li><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
+                        <li class="active"><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
+                        <li><a href="{% url 'pan_genome' 'Pfam' %}">Pan/Core genome plots</a></li>
 
-    </div>
+                    {% elif type == 'COG' %}
+                        <li><a href="{% url 'extract_cog' %}">Detailed comparison</a></li>
+                        <li><a href="{% url 'venn_cog' %}">Venn diagram</a></li>
+                        <li><a href="{% url 'cog_barchart' %}">COG categories barchart</a></li>
+                        <li><a href="{% url 'COG_phylo_heatmap' True %}">COG heatmap freq.</a></li>
+                        <li><a href="{% url 'COG_phylo_heatmap' False %}">COG heatmap counts</a></li>
+                        <li class="active"><a href="{% url 'plot_heatmap' 'COG' %}">Whole proteomes heatmaps</a></li>
+                        <li><a href="{% url 'pan_genome' 'COG' %}">Pan/Core genome plots</a></li>
+                    {% elif type == 'interpro'%}
+                        <li><a href="{% url 'extract_interpro' %}">Detailed comparison</a></li>
+                        <li><a href="{% url 'venn_interpro' %}">Venn diagram</a></li>
+                        <li class="active"><a href="{% url 'plot_heatmap' 'interpro' %}">Whole proteomes heatmaps</a></li>
+                        <li><a href="{% url 'pan_genome' 'interpro' %}">Pan/Core genome plots</a></li>
+                    {% elif type == 'EC' %}
 
-    <div id="content">
+                        <li><a href="{% url 'extract_EC' %}">Detailed comparison</a></li>
+                        <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
+                        <li class="active"><a href="{% url 'plot_heatmap' 'EC' %}">Whole proteomes heatmaps</a></li>
+                        <li><a href="{% url 'pan_genome' 'EC' %}">Pan/Core genome plots</a></li>
+                    {% elif type == 'ko' %}
+                        <li><a href="{% url 'extract_ko' %}">Detailed comparison</a></li>
+                        <li><a href="{% url 'ko_comparison' %}">Compare KO counts</a></li>
+                        <li><a href="{% url 'module_barchart' %}">KO categories barchart</a></li>
+                        <li><a href="{% url 'venn_ko' %}">Venn KO</a></li>
+                        <li class="active"><a href="{% url 'plot_heatmap' 'ko' %}">Whole proteomes heatmaps</a></li>
+                        <li><a href="{% url 'pan_genome' 'ko' %}">Pan/Core genome plots</a></li>
+                    {% elif type == 'orthology' %}
+                        <li><a href="{% url 'extract_orthogroup' %}">Detailed comparison</a></li>
+                        <li><a href="{% url 'venn_orthogroup' %}">Venn diagram</a></li>
+                        <li><a href="{% url 'orthogroup_comparison' %}">Compare Orthogroups size</a></li>
+                        <li class="active"><a href="{% url 'plot_heatmap' 'orthology' %}">Whole proteomes heatmaps</a></li>
+                        <li><a href="{% url 'pan_genome' 'orthology' %}">Pan/Core genome plots</a></li>
+                    {% endif %}
+                    </ul>
+                </nav>
 
-            <nav>
-                <ul id="tabs_main" class="nav nav-tabs">
-                {% if type == 'Pfam' %}
+            <div id="extract_form">
+                <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                          <h3 class="panel-title">Help</h3>
+                      </div>
+                    <p style="margin: 10px 10px 10px 10px">Heatmap showing presence/absence of
 
-                    <li><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
-                    <li><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
-                    <li class="active"><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' 'Pfam' %}">Pan/Core genome plots</a></li>
-
-                {% elif type == 'COG' %}
-                    <li><a href="{% url 'extract_cog' %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_cog' %}">Venn diagram</a></li>
-                    <li><a href="{% url 'cog_barchart' %}">COG categories barchart</a></li>
-                    <li><a href="{% url 'COG_phylo_heatmap' True %}">COG heatmap freq.</a></li>
-                    <li><a href="{% url 'COG_phylo_heatmap' False %}">COG heatmap counts</a></li>
-                    <li class="active"><a href="{% url 'plot_heatmap' 'COG' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' 'COG' %}">Pan/Core genome plots</a></li>
-                {% elif type == 'interpro'%}
-                    <li><a href="{% url 'extract_interpro' %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_interpro' %}">Venn diagram</a></li>
-                    <li class="active"><a href="{% url 'plot_heatmap' 'interpro' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' 'interpro' %}">Pan/Core genome plots</a></li>
-                {% elif type == 'EC' %}
-
-                    <li><a href="{% url 'extract_EC' %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
-                    <li class="active"><a href="{% url 'plot_heatmap' 'EC' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' 'EC' %}">Pan/Core genome plots</a></li>
-                {% elif type == 'ko' %}
-                    <li><a href="{% url 'extract_ko' %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'ko_comparison' %}">Compare KO counts</a></li>
-                    <li><a href="{% url 'module_barchart' %}">KO categories barchart</a></li>
-                    <li><a href="{% url 'venn_ko' %}">Venn KO</a></li>
-                    <li class="active"><a href="{% url 'plot_heatmap' 'ko' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' 'ko' %}">Pan/Core genome plots</a></li>
-                {% elif type == 'orthology' %}
-                    <li><a href="{% url 'extract_orthogroup' %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_orthogroup' %}">Venn diagram</a></li>
-                    <li><a href="{% url 'orthogroup_comparison' %}">Compare Orthogroups size</a></li>
-                    <li class="active"><a href="{% url 'plot_heatmap' 'orthology' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' 'orthology' %}">Pan/Core genome plots</a></li>
-                {% endif %}
-                </ul>
-            </nav>
-
-        <div id="extract_form">
-            <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                  <div class="panel-heading" style="width:100%">
-                      <h3 class="panel-title">Help</h3>
-                  </div>
-                <p style="margin: 10px 10px 10px 10px">Heatmap showing presence/absence of
-
-                {% if type == 'Pfam' %}
-                    Pfam domains.
-                {% elif type == 'COG' %}
-                    COG IDs.
-                {% elif type == 'interpro'%}
-                    Interpro Entries.
-
-                {% elif type == 'EC' %}
-                    EC numbers. Based on PRIAM data. Partial EC are not considered.
-                {% elif type == 'ko' %}
-                    Kegg orthologous groups (KO).
-                {% elif type == 'orthology' %}
-                    orthologous groups.
-                {% endif %}
+                    {% if type == 'Pfam' %}
+                        Pfam domains.
+                    {% elif type == 'COG' %}
+                        COG IDs.
+                    {% elif type == 'interpro'%}
+                        Interpro Entries.
+                    {% elif type == 'EC' %}
+                        EC numbers. Based on PRIAM data. Partial EC are not considered.
+                    {% elif type == 'ko' %}
+                        Kegg orthologous groups (KO).
+                    {% elif type == 'orthology' %}
+                        orthologous groups.
+                    {% endif %}
 
 
-
-                </p>
-            </div>
-
-
-            <form action="{% url "plot_heatmap" type %}" method="post">
-
-                <div class="form-inline">
-                    <div class="form-group">
-                         <div class="col-md-11" style="width: 100%;">
-                              <label style="width:380px;text-align:left;" >
-                                  <input type="checkbox" id="id_checkbox_accessions" name="checkbox_accessions">
-                                  Distinguish plasmids from chromosomes
-                              </label>
-                        </div>
-                    </div>
+                    </p>
                 </div>
 
 
-                {% csrf_token %}
-                {{ form_venn.as_p }}
-                <input type="submit" name="venn" value="Show" id="venn_button" />
+                <form action="{% url "plot_heatmap" type %}" method="post">
 
-            </form>
-
-        </div>
-
-     {% if envoi %}
-
-        <img type="image/svg+xml" src="{% static asset_path %}" alt="heatmap" style="width:90%;">
-
-    {% endif %}
-
+                    <div class="form-inline">
+                        <div class="form-group">
+                             <div class="col-md-11" style="width: 100%;">
+                                  <label style="width:380px;text-align:left;" >
+                                      <input type="checkbox" id="id_checkbox_accessions" name="checkbox_accessions">
+                                      Distinguish plasmids from chromosomes
+                                  </label>
+                            </div>
+                        </div>
+                    </div>
 
 
+                    {% csrf_token %}
+                    {{ form_venn.as_p }}
+                    <input type="submit" name="venn" value="Show" id="venn_button" />
+
+                </form>
+
+            </div>
+
+           {% if envoi %}
+
+              <img type="image/svg+xml" src="{% static asset_path %}" alt="heatmap" style="width:90%;">
+
+           {% endif %}
+
+         </div>
+       </div>
+      </div>
     </div>
-
+  </div>
 </div>
-<div id="footer"></div>
+
 <!--
 <script type="text/javascript">$(document).ready( function(){ $("#jqtest").html("JQuery installed successfully!"); } ); </script>
 
@@ -162,9 +159,8 @@
 
 </script>
 
-
-
 <p id="jqtest"></p>
 
 </body>
+{% include "chlamdb/style_menu.html" %}
 </html>
