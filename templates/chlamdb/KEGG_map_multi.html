@@ -10,23 +10,19 @@
 {% load static %}
 {% load custom_tags %}
 {% get_static_prefix as STATIC_PREFIX %}
-
+{% include "chlamdb/header.html" %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 
 </head>
 
-<body id="locus_body">
-<div id="container">
-
-           <div id="content">
-
-
-                <div id="sidebar">
-                    {% include "chlamdb/menu.html" %}
-                </div>
-                <div id="header">
-                    {% include "chlamdb/user.html" %}
-                </div>
+<body>
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
 
 
                <h3> Multiple KO associated with {{map_name}} node {{node_id}}</h3>
@@ -51,14 +47,17 @@
                     </tr>
                 {% endfor %}
                 </table>
-
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
 
 
 </body>
+{% include "chlamdb/style_menu.html" %}
 <script>
 $(document).ready(function(){
     $('#ko_table').DataTable({
