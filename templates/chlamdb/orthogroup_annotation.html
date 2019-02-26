@@ -15,21 +15,16 @@
         </script>
     {% load staticfiles %}
     {% load static %}
+    {% include "chlamdb/header.html" %}
     </head>
 
-
-    <div id="container">
-
-
-        <div id="sidebar">
-            {% include "chlamdb/menu.html" %}
-        </div>
-
-        <div id="header">
-            {% include "chlamdb/user.html" %}
-        </div>
-
-        <div id="content">
+    <div class="container-fluid" id="main_container">
+      <div class="row">
+        <div id="wrapper">
+            <div id="page-content-wrapper">
+              <div class="row">
+                <div class="col-lg-12">
+                   {% include "chlamdb/menu.html" %}
 
 
                     {% if display_form == "True" %}
@@ -52,69 +47,68 @@
                     </div>
                     {% endif %}
 
-            {% if envoi_annot %}
+                    {% if envoi_annot %}
 
 
-                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                        <li class="active"><a href="#tab1" data-toggle="tab">Annotation</a></li>
-                        <li><a href="#tab2" data-toggle="tab">Profile</a></li>
-                    </ul>
+                            <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                                <li class="active"><a href="#tab1" data-toggle="tab">Annotation</a></li>
+                                <li><a href="#tab2" data-toggle="tab">Profile</a></li>
+                            </ul>
 
 
-                    <div id="my-tab-content" class="tab-content">
-                        <div class="tab-pane active" id="tab1">
+                            <div id="my-tab-content" class="tab-content">
+                                <div class="tab-pane active" id="tab1">
 
 
-                            <div id="export_bouttons_groups">
-                                <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+                                    <div id="export_bouttons_groups">
+                                        <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" class="btn btn-success">Export to Excel</a>
+                                        <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" class="btn btn-success">Export to CSV</a>
+                                        <br/>
+                                    </div>
 
-                                <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                                <br/>
+                                    <p>Number of orthogroups: {{ sum_group }} </p>
+
+                                    <table class="sortable" id="table_groups">
+
+                                        <thead>
+                                            <tr>
+                                            <th></th>
+                                            <th id="entete_locus">Orthogroup</th>
+                                            <th>Genes</th>
+                                            <th>Products</th>
+                                            <th>Cogs</th>
+                                            <th>Pfam</th>
+                                            </tr>
+                                        </thead>
+
+                                        {% for value in match_groups_data %}
+                                            <tr>
+                                                <td>{{value.0}}</td>
+                                                <td><a href="{% url 'locusx' value.1 True%}">{{value.1}}</a></td>
+                                                <td>{{value.2|safe}}</td>
+                                                <td>{{value.3|safe}}</td>
+                                                <td>{{value.4|safe}}</td>
+                                                <td>{{value.5|safe}}</td>
+
+                                            </tr>
+                                        {% endfor %}
+                                    </table>
+                                </div>
+                                <div class="tab-pane" id="tab2">
+
+                                    <object width="90%" align="left" style="margin-left: 0px" type="image/svg+xml" data="{% static asset_path %}" id="orthogroup_tree"></object>
+
+                                </div>
                             </div>
-
-                            <p>Number of orthogroups: {{ sum_group }} </p>
-
-                            <table class="sortable" id="table_groups">
-
-                                <thead>
-                                    <tr>
-                                    <th></th>
-                                    <th id="entete_locus">Orthogroup</th>
-                                    <th>Genes</th>
-                                    <th>Products</th>
-                                    <th>Cogs</th>
-                                    <th>Pfam</th>
-                                    </tr>
-                                </thead>
-
-                                {% for value in match_groups_data %}
-                                    <tr>
-                                        <td>{{value.0}}</td>
-                                        <td><a href="{% url 'locusx' value.1 True%}">{{value.1}}</a></td>
-                                        <td>{{value.2|safe}}</td>
-                                        <td>{{value.3|safe}}</td>
-                                        <td>{{value.4|safe}}</td>
-                                        <td>{{value.5|safe}}</td>
-
-                                    </tr>
-                                {% endfor %}
-                            </table>
-                        </div>
-                        <div class="tab-pane" id="tab2">
-
-                            <object width="90%" align="left" style="margin-left: 0px" type="image/svg+xml" data="{% static asset_path %}" id="orthogroup_tree"></object>
-
-                        </div>
-                    </div>
-            {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
-
-
-    <div id="footer">
-
-    </div>
 
     </body>
+    {% include "chlamdb/style_menu.html" %}
 </html>
