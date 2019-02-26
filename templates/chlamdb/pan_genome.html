@@ -5,192 +5,183 @@
 <head>
 {% load staticfiles %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+{% include "chlamdb/header.html" %}
 </head>
 <body>
 
-<div id="container">
-    <div id="sidebar">
-        {% include "chlamdb/menu.html" %}
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
+                  <nav>
+                  <ul id="tabs" class="nav nav-tabs">
+                          {% if type == 'Pfam' %}
+
+                              <li><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
+                              <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
+                              <li><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
+                              <li class="active"><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
+
+
+                          {% elif type == 'COG' %}
+                              <li><a href="{% url 'extract_cog' %}">Detailed comparison</a></li>
+                              <li><a href="{% url 'venn_cog' %}">Venn diagram</a></li>
+                              <li><a href="{% url 'cog_barchart' %}">COG categories barchart</a></li>
+                              <li><a href="{% url 'COG_phylo_heatmap' True %}">COG heatmap freq.</a></li>
+                              <li><a href="{% url 'COG_phylo_heatmap' False %}">COG heatmap counts</a></li>
+                              <li><a href="{% url 'plot_heatmap' 'COG' %}">Whole proteomes heatmaps</a></li>
+                              <li class="active"><a href="{% url 'pan_genome' 'COG' %}">Pan/Core genome plots</a></li>
+                          {% elif type == 'interpro'%}
+                              <li><a href="{% url 'extract_interpro' %}">Detailed comparison</a></li>
+                              <li><a href="{% url 'venn_interpro' %}">Venn diagram</a></li>
+                              <li><a href="{% url 'plot_heatmap' 'interpro' %}">Whole proteomes heatmaps</a></li>
+                              <li class="active"><a href="{% url 'pan_genome' 'interpro' %}">Pan/Core genome plots</a></li>
+                          {% elif type == 'EC' %}
+
+                              <li><a href="{% url 'extract_EC' %}">Detailed comparison</a></li>
+                              <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
+                              <li><a href="{% url 'plot_heatmap' 'EC' %}">Whole proteomes heatmaps</a></li>
+                              <li class="active"><a href="{% url 'pan_genome' 'EC' %}">Pan/Core genome plots</a></li>
+                          {% elif type == 'ko' %}
+                              <li><a href="{% url 'extract_ko' %}">Detailed comparison</a></li>
+                              <li><a href="{% url 'ko_comparison' %}">Compare KO counts</a></li>
+                              <li><a href="{% url 'module_barchart' %}">KO categories barchart</a></li>
+                              <li><a href="{% url 'venn_ko' %}">Venn KO</a></li>
+                              <li><a href="{% url 'plot_heatmap' 'ko' %}">Whole proteomes heatmaps</a></li>
+                              <li class="active"><a href="{% url 'pan_genome' 'ko' %}">Pan/Core genome plots</a></li>
+                          {% elif type == 'orthology' %}
+                              <li><a href="{% url 'extract_orthogroup' %}">Detailed comparison</a></li>
+                              <li><a href="{% url 'venn_orthogroup' %}">Venn diagram</a></li>
+                              <li><a href="{% url 'orthogroup_comparison' %}">Compare Orthogroups size</a></li>
+                              <li><a href="{% url 'plot_heatmap' 'orthology' %}">Whole proteomes heatmaps</a></li>
+                              <li class="active"><a href="{% url 'pan_genome' 'orthology' %}">Pan/Core genome plots</a></li>
+                          {% endif %}
+                  </ul>
+                  </nav>
+
+
+                  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                          <h3 class="panel-title">Help</h3>
+                      </div>
+                      <p style="margin: 10px 10px 10px 10px">Accumulation/rarefaction plot of
+
+                          {% if type == 'Pfam' %}
+                              Pfam domains
+                          {% elif type == 'COG' %}
+                              COG
+                          {% elif type == 'interpro'%}
+                              Interpro entries
+                          {% elif type == 'EC' %}
+                              PRIAM predicted EC
+                          {% elif type == 'ko' %}
+                              Kegg orthologs
+                          {% elif type == 'orthology' %}
+                              Orthologous grooups (pan/core genome plots)
+                          {% endif %}
+
+
+                          <br>
+                      </p>
+                  </div>
+
+              <form action='{% url "pan_genome" type %}' method="post">
+                  {% csrf_token %}
+                  {{ form.as_p }}
+                  <input type="submit" value="Submit" />
+
+              </form>
+
+            {% if envoi %}
+                  <ul id="tabs2" class="nav nav-tabs" data-tabs="tabs">
+                      <li class="active"><a href="#tab1" data-toggle="tab">Plot</a></li>
+                      <li><a href="#tab2" data-toggle="tab">Barplot</a></li>
+                  </ul>
+
+                  <div id="my-tab-content" class="tab-content">
+                      <div class="tab-pane active" id="tab1">
+
+                        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                            <div class="panel-heading" style="width:100%">
+                                <h3 class="panel-title">Help</h3>
+                            </div>
+                            <p style="margin: 10px 10px 10px 10px">
+                                {% if type == 'Pfam' %}
+                                    Show the relationship between the total number of Pfam domains and the number of genomes considered (blue). <br>
+                                    Show the relationship between the number of pfam domains conserved in all compared genomes and the number of compared genomes (red).
+                                {% elif type == 'COG' %}
+                                    Show the relationship between the total number of Pfam domains and the number of genomes considered (blue). <br>
+                                    Show the relationship between the number of pfam domains conserved in all compared genomes and the number of compared genomes (red).
+
+                                {% elif type == 'interpro'%}
+                                    Show the relationship between the total number of interpro entries and the number of genomes considered (blue). <br>
+                                    Show the relationship between the number of interpro entries conserved in all compared genomes and the number of compared genomes (red).
+
+                                {% elif type == 'EC' %}
+                                    Show the relationship between the total number of EC and the number of genomes considered (blue). <br>
+                                    Show the relationship between the number of EC conserved in all compared genomes and the number of compared genomes (red).
+
+                                {% elif type == 'ko' %}
+                                    Show the relationship between the total number of KO and the number of genomes considered (blue). <br>
+                                    Show the relationship between the number of KO conserved in all compared genomes and the number of compared genomes (red).
+
+                                {% elif type == 'orthology' %}
+                                    Orthologous groups (pan/core genome plots)
+                                {% endif %}
+
+
+                                <br>
+                            </p>
+                        </div>
+
+                        <table style="width:190px; float: left;">
+                            <tr>
+                                <th style="width:90px">TOTAL</th>
+                                <td>{{total}}</td>
+                            </tr>
+                            <tr>
+                                <th>CORE</th>
+                                <td>{{core}}</td>
+                            </tr>
+                            <tr>
+                                <th>CORE - 1</th>
+                                <td>{{core_minus1}}</td>
+                            </tr>
+                        </table>
+
+                        <embed src="{% static asset_path %}"
+                               width="600px" height="600px"
+                               type="image/svg+xml"
+                               pluginspage="http://www.adobe.com/svg/viewer/install/" />
+
+
+                      </div> <!-- tab -->
+                      <div class="tab-pane" id="tab2">
+                          <table style="width:190px; float: left;">
+
+                              {% for n, count in genome_count_list%}
+
+                                  <tr>
+                                      <th style="width:90px">{{n}}</th>
+                                      <td>{{count}}</td>
+                                  </tr>
+
+
+                              {% endfor %}
+                          </table>
+                          <object type="image/svg+xml" data="{% static asset_path2 %}" id="plot" width="50%"></object>
+                      </div>
+                    </div> <!-- tab-content -->
+           {% endif %}
+         </div>
+       </div>
+      </div>
     </div>
-
-    <div id="header">
-        {% include "chlamdb/user.html" %}
-    </div>
-
-    <div id="content">
-
-        <nav>
-        <ul id="tabs" class="nav nav-tabs">
-                {% if type == 'Pfam' %}
-
-                    <li><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
-                    <li><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
-                    <li class="active"><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
-
-
-                {% elif type == 'COG' %}
-                    <li><a href="{% url 'extract_cog' %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_cog' %}">Venn diagram</a></li>
-                    <li><a href="{% url 'cog_barchart' %}">COG categories barchart</a></li>
-                    <li><a href="{% url 'COG_phylo_heatmap' True %}">COG heatmap freq.</a></li>
-                    <li><a href="{% url 'COG_phylo_heatmap' False %}">COG heatmap counts</a></li>
-                    <li><a href="{% url 'plot_heatmap' 'COG' %}">Whole proteomes heatmaps</a></li>
-                    <li class="active"><a href="{% url 'pan_genome' 'COG' %}">Pan/Core genome plots</a></li>
-                {% elif type == 'interpro'%}
-                    <li><a href="{% url 'extract_interpro' %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_interpro' %}">Venn diagram</a></li>
-                    <li><a href="{% url 'plot_heatmap' 'interpro' %}">Whole proteomes heatmaps</a></li>
-                    <li class="active"><a href="{% url 'pan_genome' 'interpro' %}">Pan/Core genome plots</a></li>
-                {% elif type == 'EC' %}
-
-                    <li><a href="{% url 'extract_EC' %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
-                    <li><a href="{% url 'plot_heatmap' 'EC' %}">Whole proteomes heatmaps</a></li>
-                    <li class="active"><a href="{% url 'pan_genome' 'EC' %}">Pan/Core genome plots</a></li>
-                {% elif type == 'ko' %}
-                    <li><a href="{% url 'extract_ko' %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'ko_comparison' %}">Compare KO counts</a></li>
-                    <li><a href="{% url 'module_barchart' %}">KO categories barchart</a></li>
-                    <li><a href="{% url 'venn_ko' %}">Venn KO</a></li>
-                    <li><a href="{% url 'plot_heatmap' 'ko' %}">Whole proteomes heatmaps</a></li>
-                    <li class="active"><a href="{% url 'pan_genome' 'ko' %}">Pan/Core genome plots</a></li>
-                {% elif type == 'orthology' %}
-                    <li><a href="{% url 'extract_orthogroup' %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_orthogroup' %}">Venn diagram</a></li>
-                    <li><a href="{% url 'orthogroup_comparison' %}">Compare Orthogroups size</a></li>
-                    <li><a href="{% url 'plot_heatmap' 'orthology' %}">Whole proteomes heatmaps</a></li>
-                    <li class="active"><a href="{% url 'pan_genome' 'orthology' %}">Pan/Core genome plots</a></li>
-                {% endif %}
-        </ul>
-        </nav>
-
-
-        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-            <div class="panel-heading" style="width:100%">
-                <h3 class="panel-title">Help</h3>
-            </div>
-            <p style="margin: 10px 10px 10px 10px">Accumulation/rarefaction plot of
-
-                {% if type == 'Pfam' %}
-                    Pfam domains
-                {% elif type == 'COG' %}
-                    COG
-                {% elif type == 'interpro'%}
-                    Interpro entries
-                {% elif type == 'EC' %}
-                    PRIAM predicted EC
-                {% elif type == 'ko' %}
-                    Kegg orthologs
-                {% elif type == 'orthology' %}
-                    Orthologous grooups (pan/core genome plots)
-                {% endif %}
-
-
-                <br>
-            </p>
-        </div>
-
-    <form action='{% url "pan_genome" type %}' method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Submit" />
-
-    </form>
-
-    {% if envoi %}
-        <ul id="tabs2" class="nav nav-tabs" data-tabs="tabs">
-            <li class="active"><a href="#tab1" data-toggle="tab">Plot</a></li>
-            <li><a href="#tab2" data-toggle="tab">Barplot</a></li>
-        </ul>
-
-        <div id="my-tab-content" class="tab-content">
-            <div class="tab-pane active" id="tab1">
-
-        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-            <div class="panel-heading" style="width:100%">
-                <h3 class="panel-title">Help</h3>
-            </div>
-            <p style="margin: 10px 10px 10px 10px">
-                {% if type == 'Pfam' %}
-                    Show the relationship between the total number of Pfam domains and the number of genomes considered (blue). <br>
-                    Show the relationship between the number of pfam domains conserved in all compared genomes and the number of compared genomes (red).
-                {% elif type == 'COG' %}
-                    Show the relationship between the total number of Pfam domains and the number of genomes considered (blue). <br>
-                    Show the relationship between the number of pfam domains conserved in all compared genomes and the number of compared genomes (red).
-
-                {% elif type == 'interpro'%}
-                    Show the relationship between the total number of interpro entries and the number of genomes considered (blue). <br>
-                    Show the relationship between the number of interpro entries conserved in all compared genomes and the number of compared genomes (red).
-
-                {% elif type == 'EC' %}
-                    Show the relationship between the total number of EC and the number of genomes considered (blue). <br>
-                    Show the relationship between the number of EC conserved in all compared genomes and the number of compared genomes (red).
-
-                {% elif type == 'ko' %}
-                    Show the relationship between the total number of KO and the number of genomes considered (blue). <br>
-                    Show the relationship between the number of KO conserved in all compared genomes and the number of compared genomes (red).
-
-                {% elif type == 'orthology' %}
-                    Orthologous groups (pan/core genome plots)
-                {% endif %}
-
-
-                <br>
-            </p>
-        </div>
-
-                <table style="width:190px; float: left;">
-                    <tr>
-                        <th style="width:90px">TOTAL</th>
-                        <td>{{total}}</td>
-                    </tr>
-                    <tr>
-                        <th>CORE</th>
-                        <td>{{core}}</td>
-                    </tr>
-                    <tr>
-                        <th>CORE - 1</th>
-                        <td>{{core_minus1}}</td>
-                    </tr>
-                </table>
-
-<embed src="{% static asset_path %}"
-       width="600px" height="600px"
-       type="image/svg+xml"
-       pluginspage="http://www.adobe.com/svg/viewer/install/" />
-
-
-            </div>
-
-
-
-
-
-
-            <div class="tab-pane" id="tab2">
-                <table style="width:190px; float: left;">
-
-                    {% for n, count in genome_count_list%}
-
-                        <tr>
-                            <th style="width:90px">{{n}}</th>
-                            <td>{{count}}</td>
-                        </tr>
-
-
-                    {% endfor %}
-                </table>
-
-                <object type="image/svg+xml" data="{% static asset_path2 %}" id="plot" width="50%"></object>
-
-
-
-            </div>
-        </div>
-    {% endif %}
-
-    </div>
+  </div>
 </div>
 </body>
+{% include "chlamdb/style_menu.html" %}
 </html>
