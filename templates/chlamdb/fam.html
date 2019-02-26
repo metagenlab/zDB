@@ -48,7 +48,7 @@
                                       <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'eggnog_profile' fam 'order' %}', 'orthoIDframe2'); return false">Taxonomic profile (order)</a></li>
                                   {% elif type == 'pfam' %}
                                       <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://pfam.xfam.org/family/{{ fam }}', 'orthoIDframe2'); return false">Informations</a></li>
-                                      <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_profile' fam 'phylum' %}', 'orthoIDframe2'); return false">Taxonomic profile (phylum)</a></li>
+                                      <li><a href="{% url 'pfam_profile' fam 'phylum' %}">Taxonomic profile (phylum)</a></li>
                                       <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_profile' fam 'order' %}', 'orthoIDframe2'); return false">Taxonomic profile (order)</a></li>
                                   {% elif type == 'interpro' %}
                                       <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.ebi.ac.uk/interpro/entry/{{ fam }}', 'orthoIDframe2'); return false">Informations</a></li>
@@ -226,4 +226,16 @@
 
 </body>
 {% include "chlamdb/style_menu.html" %}
+<script>
+// Javascript to enable link to tab
+var url = document.location.toString();
+if (url.match('#')) {
+    $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
+}
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown.bs.tab', function (e) {
+    window.location.hash = e.target.hash;
+})
+</script>
 </html>

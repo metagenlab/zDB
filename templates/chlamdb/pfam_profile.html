@@ -14,6 +14,19 @@
             <div class="row">
               <div class="col-lg-12">
                 {% include "chlamdb/menu.html" %}
+
+                <h3>{{ pfam_domain }} <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'pfam2fasta' pfam_domain %}'">Pfam fasta</button>
+                </h3>
+
+                <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                    <li><a href="{% url 'fam' pfam_domain 'pfam' %}#tab1">General</a></li>
+                    <li><a href="{% url 'fam' pfam_domain 'pfam' %}#tab2">Details</a></li>
+                    <li><a href="{% url 'fam' pfam_domain 'pfam' %}#tab3">Profile</a></li>
+                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://pfam.xfam.org/family/{{ pfam_domain }}', 'orthoIDframe2'); return false">Informations</a></li>
+                    <li class="active"><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_profile' pfam_domain 'phylum' %}', 'orthoIDframe2'); return false">Taxonomic profile (phylum)</a></li>
+                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_profile' pfam_domain 'order' %}', 'orthoIDframe2'); return false">Taxonomic profile (order)</a></li>
+                </ul>
+
                 <h2>Taxonomic profile of domain {{pfam_domain}}</h2>
                 <a type="button" href="{% url 'get_pfam_taxon_table' pfam_domain %}" class="btn btn-success">get detailed table</a>
 
