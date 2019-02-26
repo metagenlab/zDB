@@ -265,46 +265,46 @@
                                 </tr>
 
                                 {%endfor%}
-                            </tbody>
-                        </table>
-
-
-
-                    </div>
-
-                </div>
-            {% endif %}
+                              </tbody>
+                          </table>
+                        </div>
+                      </div>
+                  {% endif %}
+              </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 
 
-              <script type="text/javascript" id="js2">
-                $(document).ready(function() {
+<script type="text/javascript" id="js2">
+  $(document).ready(function() {
 
-                    var x=document.getElementById("id_reference");
-                    for (var i = 0; i < x.options.length; i++) {
-                        $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
-                    }
+      var x=document.getElementById("id_reference");
+      for (var i = 0; i < x.options.length; i++) {
+          $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
+      }
 
-                    $("#id_orthologs_in").change(function() {
-                        document.getElementById("id_reference").selectedIndex=0;
-                        var x=document.getElementById("id_orthologs_in");
-                        for (var i = 0; i < x.options.length; i++) {
-                            if(x.options[i].selected ==true){
+      $("#id_orthologs_in").change(function() {
+          document.getElementById("id_reference").selectedIndex=0;
+          var x=document.getElementById("id_orthologs_in");
+          for (var i = 0; i < x.options.length; i++) {
+              if(x.options[i].selected ==true){
 
-                            $("#id_reference").children("option[value^=" + x.options[i].value + "]").show()
-                            }else{
-                            $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
+              $("#id_reference").children("option[value^=" + x.options[i].value + "]").show()
+              }else{
+              $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
 
-                            }
-                            }
-                    })
+              }
+              }
+      })
 
-                })
-          </script>
+  })
+</script>
 
 
 
-    </body>
-    {% include "chlamdb/style_menu.html" %}
+</body>
+{% include "chlamdb/style_menu.html" %}
 </html>
