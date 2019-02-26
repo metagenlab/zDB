@@ -100,13 +100,13 @@
                     <div class="tab-pane active" id="red">
                       <div style="padding-top:10px;">
                           <div id="export_bouttons_groups">
-                              <button type="button" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');"  class="btn btn-success">Export to Excel</button>
+                              <a href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');"  class="btn btn-success">Export to Excel</a>
 
-                              <button type="button" href="{% url 'get_fasta' %}{{fasta_url_noref}}" class="btn btn-success">Download fasta</button>
+                              <a href="{% url 'get_fasta' %}{{fasta_url_noref}}" class="btn btn-success">Download fasta</a>
 
-                              <button type="button" href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</button>
+                              <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</a>
 
-                              <button type="button" href="{% url 'orthogroup_list_cog_barchart' accessions%}{{circos_url}}" class="btn btn-success">Show cog categories of orthogroup subset vs all orthogroups</button>
+                              <a href="{% url 'orthogroup_list_cog_barchart' accessions%}{{circos_url}}" class="btn btn-success">Show cog categories of orthogroup subset vs all orthogroups</a>
 
                               <br/>
                           </div>
@@ -320,6 +320,7 @@
 {% include "chlamdb/style_menu.html" %}
 {% include "chlamdb/show_hide_plasmid_accessions.html" %}
 </body>
+
 <script>
 
 $(document).ready(function() {
@@ -339,4 +340,5 @@ $('#cog_table').DataTable( {
 } );
 
 </script>
+
 </html>
