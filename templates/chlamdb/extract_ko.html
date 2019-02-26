@@ -8,7 +8,7 @@
 
         {% load static %}
         {% load custom_tags %}
-
+        {% load crispy_forms_tags %}
         <script type="text/javascript" id="js">
             $(document).ready(function() {
             // call the tablesorter plugin
@@ -55,8 +55,6 @@
                     </nav>
 
                      <div id="extract_form">
-                        <form action="{% url "extract_ko" %}" method="post">
-
 
                         <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
                             <div class="panel-heading" style="width:100%">
@@ -68,17 +66,12 @@
                             </p>
                         </div>
 
-                        <div style="width: 100%; overflow: hidden;">
-                            <div style="width: 20%; float: left;margin-left: 5%;"> A </div>
-                            <div style="margin-left: 5%;float:left;"> B </div>
-                        </div>
-
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                         <label style="position:absolute;margin-left:1%;width:20%;margin-top: 8px;">Missing data (optional)</label>
-                         <label style="position:absolute;margin-left:1%;width:20%;margin-top: 50px">Reference genome (optional)</label>
-                         <input type="submit" name="comparison" value="Compare Kegg Orthologs" id="extract_button" />
-                         </form>
+                        {% block content %}
+                        <form action="{% url "extract_ko" %}" method="post">
+                            {% csrf_token %}
+                            {% crispy form %}
+                        </form>
+                        {% endblock %}
                     </div>
 
 
@@ -107,10 +100,8 @@
 
                 <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                     <li class="active"><a href="#red" data-toggle="tab">KO list</a></li>
-                    <li><a data-toggle="tab" href="#tab66" onclick="window.open('{% url 'ko_subset_barchart' mm %}{{taxons_in_url|safe}}{{taxon_out_url|safe}}', 'orthoIDframe2'); return false"
->KO modules</a></li>
-                    <li><a data-toggle="tab" href="#tab66" onclick="window.open('{% url 'ko_subset_barchart' pp %}{{taxons_in_url|safe}}{{taxon_out_url|safe}}', 'orthoIDframe2'); return false"
->KO pathways</a></li>
+                    <li><a data-toggle="tab" href="#tab66" onclick="window.open('{% url 'ko_subset_barchart' mm %}{{taxons_in_url|safe}}{{taxon_out_url|safe}}', 'orthoIDframe2'); return false">KO modules</a></li>
+                    <li><a data-toggle="tab" href="#tab66" onclick="window.open('{% url 'ko_subset_barchart' pp %}{{taxons_in_url|safe}}{{taxon_out_url|safe}}', 'orthoIDframe2'); return false">KO pathways</a></li>
                     <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
 
                 </ul>
@@ -129,9 +120,9 @@
                             <br/>
                         </div>
 
-                        <p>Number of EC: {{ sum_group }} </p>
+                        <h3>Number of Kegg Orthologs: {{ sum_group }} </h3>
 
-                        <table class="sortable" id="table_groups">
+                        <table class="display" id="extract_ko">
 
                             <thead>
                                 <tr>
@@ -181,7 +172,7 @@
 
                             <br/>
                         </div>
-                        <table id="cog_table" class="sortable">
+                        <table id="reference_ko" class="display">
                             <thead>
                                 <tr>
                                     <th></th>
@@ -301,10 +292,34 @@
       })
 
   })
+
+    $(document).ready(function() {
+    $('#extract_ko').DataTable( {
+    "paging":   true,
+    "ordering": true,
+    "info":     false
+    } );
+    } );
+  $('.dropdown-toggle').dropdown()
+
+    $(document).ready(function() {
+    $('#reference_ko').DataTable( {
+    "paging":   true,
+    "ordering": true,
+    "info":     false
+    } );
+    } );
+  $('.dropdown-toggle').dropdown()
+
 </script>
 
 
 
 </body>
 {% include "chlamdb/style_menu.html" %}
+<style>
+#div_id_checkbox_single_copy{
+  display: none;
+}
+</style>
 </html>

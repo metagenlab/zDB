@@ -887,13 +887,13 @@ def extract_pfam(request, classification="taxon_id"):
     #print "loading db..."
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
-    extract_form_class = make_extract_form(biodb)
+    extract_form_class = make_extract_form(biodb, label="PFAM domains")
 
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
 
-        if 'comparison' in request.POST and form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             import biosql_own_sql_tables
             #print request.POST
             #print form.cleaned_data.keys()
@@ -1017,13 +1017,13 @@ def extract_ko(request):
     #print "loading db..."
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
-    extract_form_class = make_extract_form(biodb)
+    extract_form_class = make_extract_form(biodb, label="Kegg Orthologs")
 
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
 
-        if 'comparison' in request.POST and form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
@@ -1179,13 +1179,13 @@ def extract_EC(request):
     #print "loading db..."
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
-    extract_form_class = make_extract_form(biodb)
+    extract_form_class = make_extract_form(biodb, label="EC numbers")
 
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
 
-        if 'comparison' in request.POST and form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
@@ -1482,14 +1482,14 @@ def extract_interpro(request, classification="taxon_id"):
     #print "loading db..."
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
-    extract_form_class = make_extract_form(biodb)
+    extract_form_class = make_extract_form(biodb, label="Interpro entries")
 
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
 
         #form2 = ContactForm(request.POST)
-        if 'comparison' in request.POST and form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']

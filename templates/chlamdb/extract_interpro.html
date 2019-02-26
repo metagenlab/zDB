@@ -4,6 +4,7 @@
 <html>
     <head>
         {% load custom_tags %}
+        {% load crispy_forms_tags %}
         <script type="text/javascript" id="js">
             $(document).ready(function() {
             // call the tablesorter plugin
@@ -48,9 +49,6 @@
                     </nav>
 
                      <div id="extract_form">
-                        <form action="{% url "extract_interpro" %}" method="post">
-
-
                         <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
                             <div class="panel-heading" style="width:100%">
                                 <h3 class="panel-title">Help</h3>
@@ -61,17 +59,12 @@
                         </div>
 
 
-                        <div style="width: 100%; overflow: hidden;">
-                            <div style="width: 20%; float: left;margin-left: 5%;"> A </div>
-                            <div style="margin-left: 5%;float:left;"> B </div>
-                        </div>
-
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                         <label style="position:absolute;margin-left:1%;width:20%;margin-top: 8px;">Missing data (optional)</label>
-                         <label style="position:absolute;margin-left:1%;width:20%;margin-top: 50px">Reference genome (optional)</label>
-                         <input type="submit" name="comparison" value="Compare Interpro Accessions" id="extract_button" />
-                         </form>
+                        {% block content %}
+                        <form action="{% url "extract_interpro" %}" method="post">
+                            {% csrf_token %}
+                            {% crispy form %}
+                        </form>
+                        {% endblock %}
                     </div>
 
                     {% if wrong_n_missing%}
@@ -284,5 +277,10 @@
       })
     </script>
     </body>
+    <style>
+    #div_id_checkbox_single_copy{
+      display: none;
+    }
+    </style>
     {% include "chlamdb/style_menu.html" %}
 </html>
