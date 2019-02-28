@@ -153,9 +153,39 @@ def make_metabo_from(database_name, add_box=False):
     accession_choices = get_accessions(database_name)
 
     class MetaboForm(forms.Form):
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (20) }), required = False)
+        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (20), "class":"selectpicker", "data-live-search":"true"}), required = False)
         if add_box:
             input_box = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            self.helper.label_class = 'col-lg-1 col-md-6 col-sm-6'
+            self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
+            if not add_box:
+                self.helper.layout = Layout(
+                                            Fieldset("Compare genomes",
+                                                     Column(
+                                                           Row('targets'),
+                                                           Submit('submit', 'Submit'),
+                                                           css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                                                    )
+                                            )
+
+            else:
+                self.helper.layout = Layout(
+                                            Fieldset("Compare genomes",
+                                                     Column(
+                                                           Row('targets'),
+                                                           Row('input_box'),
+                                                           Submit('submit', 'Submit'),
+                                                           css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                                                    )
+                                            )
+            super(MetaboForm, self).__init__(*args, **kwargs)
+
+
     return MetaboForm
 
 
