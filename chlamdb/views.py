@@ -799,7 +799,7 @@ def venn_orthogroup(request):
 
         form_venn = venn_form_class(request.POST)
         print("check", 'venn' in request.POST )
-        if form_venn.is_valid():
+        if  form_venn.is_valid():
             targets = form_venn.cleaned_data['targets']
 
             try:
@@ -1359,7 +1359,7 @@ def venn_pfam(request):
     venn_form_class = make_venn_from(biodb)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
-        form_venn = venn_form_class(request.POST)
+        form_venn = venn_form_class(request.POST, limit=6)
         #form2 = ContactForm(request.POST)
         if 'venn' in request.POST and form_venn.is_valid():
             targets = form_venn.cleaned_data['targets']
@@ -1408,7 +1408,7 @@ def venn_EC(request):
     #print "loading db..."
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
-    venn_form_class = make_venn_from(biodb)
+    venn_form_class = make_venn_from(biodb, limit=6)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form_venn = venn_form_class(request.POST)
@@ -1605,7 +1605,7 @@ def venn_interpro(request):
     #print "loading db..."
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
-    venn_form_class = make_venn_from(biodb)
+    venn_form_class = make_venn_from(biodb, limit=6)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form_venn = venn_form_class(request.POST)
@@ -1790,7 +1790,7 @@ def venn_ko(request):
     display_form = True
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
-        form_venn = venn_form_class(request.POST)  # Nous reprenons les données
+        form_venn = venn_form_class(request.POST, limit=6)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
         if form_venn.is_valid():  # Nous vérifions que les données envoyées sont valides
 
@@ -1841,7 +1841,7 @@ def venn_cog(request, accessions=False):
     #print "loading db..."
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
-    venn_form_class = make_venn_from(biodb, plasmid=accessions, label="COGs")
+    venn_form_class = make_venn_from(biodb, plasmid=accessions, limit=6)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form_venn = venn_form_class(request.POST)  # Nous reprenons les données

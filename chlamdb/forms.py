@@ -159,13 +159,16 @@ def make_metabo_from(database_name, add_box=False):
     return MetaboForm
 
 
-def make_venn_from(database_name, plasmid=False, label="Orthologs"):
+def make_venn_from(database_name, plasmid=False, label="Orthologs", limit=None):
 
     accession_choices = get_accessions(database_name, plasmid=plasmid)
 
     class VennForm(forms.Form):
         # orthologs_in = forms.MultipleChoiceField(label='%s conserved in' % label, choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker", "data-live-search":"true"}), required = False)
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"6"}), required = True)
+        if limit is None:
+            targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true"}), required = True)
+        else:
+            targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"%s" % limit}), required = True)
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
