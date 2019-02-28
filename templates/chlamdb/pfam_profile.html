@@ -34,7 +34,7 @@
                 </ul>
 
                 <h2>Taxonomic profile of domain {{pfam_domain}}</h2>
-                <a type="button" href="{% url 'get_pfam_taxon_table' pfam_domain %}" class="btn btn-success">get detailed table</a>
+                <a type="button" href="{% url 'get_pfam_taxon_table' pfam_domain %}" class="btn btn-success">get detailed table <i class="fa fa-download"></i></a>
                 <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
                 <a onclick="exportPNG();" class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
 
