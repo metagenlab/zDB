@@ -790,15 +790,16 @@ def locus_annotation(request, display_form):
 def venn_orthogroup(request):
     biodb = settings.BIODB
 
-    #print "loading db..."
+    print ("loading db...")
     server = manipulate_biosqldb.load_db()
-    #print "db loaded..."
+    print("db loaded...")
     venn_form_class = make_venn_from(biodb, plasmid=True)
+    print("method", request.method)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form_venn = venn_form_class(request.POST)
-
-        if 'venn' in request.POST and form_venn.is_valid():
+        print("check", 'venn' in request.POST )
+        if form_venn.is_valid():
             targets = form_venn.cleaned_data['targets']
 
             try:
@@ -866,6 +867,7 @@ def venn_orthogroup(request):
                 else:
                     continue
             ##print series
+            print("data", series)
             envoi_venn = True
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
         form_venn = venn_form_class()
@@ -1792,8 +1794,6 @@ def venn_ko(request):
         #form2 = ContactForm(request.POST)
         if form_venn.is_valid():  # Nous vérifions que les données envoyées sont valides
 
-
-
             targets = form_venn.cleaned_data['targets']
 
             server, db = manipulate_biosqldb.load_db(biodb)
@@ -1810,9 +1810,6 @@ def venn_ko(request):
                 data = '"' + '","'.join(cogs) + '"'
                 series+=template_serie % (taxon_id2genome[target], cogs) + ','
             series = series[0:-1] + ']'
-
-
-            #h['Marilyn Monroe'] = 1;
 
             cog2description = []
             sql = 'select * from enzyme.ko_annotation_v1'
@@ -1844,7 +1841,7 @@ def venn_cog(request, accessions=False):
     #print "loading db..."
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
-    venn_form_class = make_venn_from(biodb, plasmid=accessions)
+    venn_form_class = make_venn_from(biodb, plasmid=accessions, label="COGs")
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form_venn = venn_form_class(request.POST)  # Nous reprenons les données

@@ -293,50 +293,8 @@ text-align: left;
 
 form {background:#e6f2ff;}
 
-#venn_button{
-   position:absolute;
-   top:420px;
-   left:20px;
-    margin-left: 130px;
-   padding-right: 20px;
-}
 
 
-
-
-#extract_button{
-   position:relative;
-   float:left;
-   left:35%;
-   font-size: 20px;
-   margin-left: 30px;
-   padding-right: 20px;
-}
-
-#extract_number_missing_tol{
-   position:absolute;
-   top:430px;
-   left:135px;
-    font-size: 20px;
-   margin-left: 130px;
-   padding-right: 20px;
-}
-
-#extract_panel_B{
-   position:relative;
-   line-height: 100%;
-   font-size: 20px;
-}
-
-#checkbox_extract_single_copy{
-   position:absolute;
-   top:140px;
-   left:828px;
-   margin-left: 174px;
-   padding-right: 20px;
-   	font-size: 10px;
-	line-height: 12px;
-}
 
 #checkbox_show_groups{
    	font-size: 10px;
@@ -358,17 +316,6 @@ font-size: 15px;
 #inter_tblastn {
 height: 20px;
 background: #81F7F3;
-}
-
-#extract_form{
-    background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
-    margin-top:0px;
-	color: #444;
-    margin-left: 0px;
-    border: 0px solid blue;
-    padding: 1px;
-    width: 90%;
-    height:70vh;
 }
 
 #id_blast_input {

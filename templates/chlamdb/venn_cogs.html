@@ -23,6 +23,7 @@
         });
     </script>
 {% include "chlamdb/header.html" %}
+{% load crispy_forms_tags %}
 <head>
 
   <div class="container-fluid" id="main_container">
@@ -54,14 +55,12 @@
                               <p style="margin: 10px 10px 10px 10px">Venn diagramm: draw a diagramm based on the presence/absence of COGs in selected genomes. Max 6 genomes.</p>
                               </div>
 
-
-
-                              <form action="{% url "venn_cog" accessions %}" method="post">
+                              {% block content %}
+                              <form action="{% url "venn_cog" %}" method="post">
                                   {% csrf_token %}
-                                  {{ form_venn.as_p }}
-                                  <input type="submit" name="venn" value="Compare COGs" id="venn_button" />
-
+                                  {% crispy form_venn %}
                               </form>
+                              {% endblock %}
 
                           </div>
               {% endif %}

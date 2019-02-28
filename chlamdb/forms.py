@@ -159,18 +159,37 @@ def make_metabo_from(database_name, add_box=False):
     return MetaboForm
 
 
-def make_venn_from(database_name, plasmid=False):
+def make_venn_from(database_name, plasmid=False, label="Orthologs"):
 
     accession_choices = get_accessions(database_name, plasmid=plasmid)
 
     class VennForm(forms.Form):
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'20' }), required = False)
+        # orthologs_in = forms.MultipleChoiceField(label='%s conserved in' % label, choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker", "data-live-search":"true"}), required = False)
+        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"6"}), required = True)
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            self.helper.label_class = 'col-lg-1 col-md-6 col-sm-6'
+            self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset("Compare genomes",
+                                                 Column(
+                                                       Row('targets'),
+                                                       Submit('submit', 'Compare %s' % label),
+                                                       css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                                                )
+                                        )
+
+            super(VennForm, self).__init__(*args, **kwargs)
 
         def clean_venn(self):
             value = self.cleaned_data['targets']
             if len(value) > 6:
                 raise forms.ValidationError("You can't select more than 6 items.")
             return value
+
     return VennForm
 
 
