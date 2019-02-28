@@ -9140,7 +9140,7 @@ def pfam_profile(request, pfam_domain, rank):
 
     tree, style = pfam_phylogenetic_profile.plot_phylum_counts(pf_id,rank)
 
-    tree.render(path, h=600, tree_style=style) # dpi=800,
+    tree.render(path, tree_style=style, dpi=800)
     return render(request, 'chlamdb/pfam_profile.html', locals())
 
 def eggnog_profile(request, eggnog_id, rank):
