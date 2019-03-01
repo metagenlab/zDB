@@ -5722,7 +5722,7 @@ def genome_annotation(request, accession):
 def blastnr_cat_info(request, accession, rank, taxon):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
-
+    print("request get:", request.GET)
     target_accessions = [i for i in request.GET.getlist('h')]
     counttype = request.GET.getlist('t')[0]
     top_n = request.GET.getlist('n')[0]
@@ -5761,10 +5761,35 @@ def blastnr_cat_info(request, accession, rank, taxon):
               ' inner join blastnr.blastnr_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where hit_number=1) A inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id ' \
               ' where %s="%s"  and query_bioentry_id=%s;' % (biodb, biodb, rank, taxon, accession)
-
+        print(sql)
         locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
     else:
         raise 'invalide type'
+
+    # get number of hits for each kingdom
+    sql_superkingdom = 'select locus_tag,superkingdom, count(*) as n from' \
+    ' (select t2.*,t1.locus_tag from custom_tables.locus2seqfeature_id_%s t1 ' \
+    ' inner join blastnr.blastnr_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
+    ' where locus_tag in ("%s")) A' \
+    ' inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id  group by locus_tag,superkingdom;' % (biodb, biodb, '","'.join(locus_list))
+
+    superkingdom_data = server.adaptor.execute_and_fetchall(sql_superkingdom,)
+    locus2superkingdom_counts = {}
+    for row in superkingdom_data:
+        if row[0] not in locus2superkingdom_counts:
+            locus2superkingdom_counts[row[0]] = {}
+            locus2superkingdom_counts[row[0]][row[1]] = row[2]
+        else:
+            locus2superkingdom_counts[row[0]][row[1]] = row[2]
+    # calculate sum of hits
+    for locus_tag in locus2superkingdom_counts:
+        total = sum([int(i) for i in locus2superkingdom_counts[locus_tag].values()])
+        lst = []
+        for superkingdom in locus2superkingdom_counts[locus_tag]:
+            lst.append(["%s_percent" % superkingdom, round(float(locus2superkingdom_counts[locus_tag][superkingdom])/total, 2)])
+        for kd in lst:
+            locus2superkingdom_counts[locus_tag][kd[0]] = kd[1]
+        locus2superkingdom_counts[locus_tag]["TOTAL"] = total
 
 
     locus2annot, \

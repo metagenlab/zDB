@@ -40,36 +40,42 @@
                         <div class="tab-pane active" id="tab0">
                             <h3> Locus annotation </h3>
                             <div id="export_bouttons_groups">
-                                <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+                                <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'blastnr_info', 'search');" class="btn btn-success">Export to Excel</a>
 
-                                <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                                <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'blastnr_info');" class="btn btn-success">Export to CSV</a>
                                 <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
 
                                 <br/>
                             </div>
-                                    <table id="cog_table" class="sortable">
+                                    <table id="blastnr_info" class="display">
                                         <thead>
                                             <tr>
                                                 <th></th>
 
-                                                <th id="entete_locus">Locus</th>
-                                                <th style="width:10px">C</th>
-                                                <th style="width:70px">COGn</th>
-                                                <th style="width:55px">KO</th>
-                                                <th style="width:260px">Pathways</th>
-                                                <th style="width:230px">Modules</th>
-                                                <th style="width:230px">Interpro</th>
-                                                <th id="entete_gene">Gene</th>
-                                                <th id="entete_n">nH</th>
-                                                <th id="entete_n">nG</th>
-                                                <th id="entete_n">TM</th>
-                                                <th id="entete_n">SP</th>
-                                                <th id="entete_product">Product</th>
-                                                <th id="entete_locus">Hit</th>
-                                                <th id="entete_n">KD</th>
-                                                <th id="entete_locus">Organism</th>
-                                                <th id="entete_gene">Identity</th>
-                                                <th id="entete_gene">E-value</th>
+                                                <th>Locus</th>
+                                                <th>C</th>
+                                                <th>COGn</th>
+                                                <th>KO</th>
+                                                <th>Pathways</th>
+                                                <th>Modules</th>
+                                                <th>Interpro</th>
+                                                <th>Gene</th>
+                                                <th>nH</th>
+                                                <th>nG</th>
+                                                <th>TM</th>
+                                                <th>SP</th>
+                                                <th>Product</th>
+                                                <t>Hit</th>
+                                                <th>KD</th>
+                                                <th>KD</th>
+                                                <th>Organism</th>
+                                                <th>Identity</th>
+                                                <th>E-value</th>
+                                                <th>Bacteria</th>
+                                                <th>Eukaryota</th>
+                                                <th>Archae</th>
+                                                <th>Viruses</th>
+                                                <th>TOTAL</th>
 
 
                                             </tr>
@@ -137,6 +143,13 @@
                                                 <td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{blastnr_data.3}}" target="_top">{{blastnr_data.2}}</a></td>
                                                 <td>{{blastnr_data.5}}</td>
                                                 <td>{{blastnr_data.4}}</td>
+                                                {% endwith %}
+                                                {% with locus2superkingdom_counts|keyvalue:values.2 as kingdom %}
+                                                <td>{{kingdom|keyvalue:"Bacteria"}}</td>
+                                                <td>{{kingdom|keyvalue:"Eukaryota"}}</td>
+                                                <td>{{kingdom|keyvalue:"Archaea"}}</td>
+                                                <td>{{kingdom|keyvalue:"Viruses"}}</td>
+                                                <td>{{kingdom|keyvalue:"TOTAL"}}</td>
                                                 {% endwith %}
 
                                             </tr>
@@ -557,4 +570,14 @@
 
 </body>
 {% include "chlamdb/style_menu.html" %}
+<script>
+
+  $(document).ready(function() {
+  $('#blastnr_info').DataTable( {
+  "paging":   true,
+  "ordering": true,
+  "info":     false
+  } );
+  } );
+</script>
 </html>
