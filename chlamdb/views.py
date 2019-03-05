@@ -9192,6 +9192,8 @@ def annotation_overview(request):
     import phylo_tree_bar
     import pairwiseid_plots
 
+    print("annot overview")
+
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'select * from genomes_info_%s' % biodb
@@ -9334,7 +9336,7 @@ def annotation_overview(request):
         proportions.append(["Hits SwissProt",float(taxon_id2n_swiss_hits[taxon])/float(taxon_id2n_CDS[taxon]), int(taxon_id2n_CDS[taxon])])
         proportions.append(["COG",float(taxon_id2CDS_with_COG[taxon])/float(taxon_id2n_CDS[taxon]), int(taxon_id2n_CDS[taxon])])
 
-    pairwiseid_plots.plot_multiseries_points(proportions,output_path="/home/trestan/ko2size.svg")
+    pairwiseid_plots.plot_multiseries_points(proportions,output_path="/home/tpillone/ko2size.svg")
 
     tree1.render(path, dpi=800, h=600, tree_style=style1)
     return render(request, 'chlamdb/species_specific.html', locals())
@@ -9362,7 +9364,7 @@ def orthogroup_KO_COG(request):
 
     group2n_KO = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    pairwiseid_plots.basic_plot(group2n_KO.values(),output_path="/home/trestan/test2.svg")
+    pairwiseid_plots.basic_plot(group2n_KO.values(),output_path="/home/tpillone/test2.svg")
 
     return render(request, 'chlamdb/species_specific.html', locals())
 

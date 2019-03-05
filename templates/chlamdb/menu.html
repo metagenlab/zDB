@@ -99,23 +99,23 @@
                           <li class="item"><a href="{% url 'extract_interpro' %}">Interpro entries</a>
                           </li>
                           <li class="item"><a href="{% url 'extract_EC' %}">EC numbers</a>
-                          </li>
+
+                                </li>
                           <li class="item"><a href="{% url 'extract_ko' %}">Kegg Orthologs</a>
                           </li>
                       </ul>
                     </div>
                 </li>
 		<!-- if biodb in 'chlamydia_04_16,2017_06_29b_motile_chlamydiae'|slice:','  -->
-        <li class="sidebar-dropdown">
-            <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-4" aria-expanded="false">
-                <i class="fa fa-list"></i>
-                <span> Transporters</span><span class="right-caret expand_caret"></span>
-            </a>
-        <div class="sidebar-submenu" style="display:block;">
-          <ul id="submenu-4" class="panel-collapse collapse panel-switch" role="menu">
-                    <li class="item"><a href="{% url 'transporters' %}">TCDB annotation</a>
-                    </li>
-                  </ul>
+            <li class="sidebar-dropdown">
+                <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-4" aria-expanded="false">
+                    <i class="fa fa-list"></i>
+                    <span> Transporters</span><span class="right-caret expand_caret"></span>
+                </a>
+                <div class="sidebar-submenu" style="display:block;">
+                    <ul id="submenu-4" class="panel-collapse collapse panel-switch" role="menu">
+                      <li class="item"><a href="{% url 'transporters' %}">TCDB annotation</a></li>
+                    </ul>
                 </div>
             </li>
 
@@ -124,12 +124,10 @@
                     <i class="fa fa-list"></i>
                     <span> Genome statistics</span><span class="right-caret expand_caret"></span>
                 </a>
-            <div class="sidebar-submenu" style="display:block;">
-              <ul id="submenu-5" class="panel-collapse collapse panel-switch" role="menu">
-                    <li class="item"><a href="{% url 'pairwiseid' %}">Pairwise Identity</a>
-                    </li>
-                    <li class="item"><a href="{% url 'pairwiseCDS_length' %}">CDS lengths</a>
-                    </li>
+                <div class="sidebar-submenu" style="display:block;">
+                  <ul id="submenu-5" class="panel-collapse collapse panel-switch" role="menu">
+                    <li cl ss="item"><a href="{% url 'pairwiseid' %}">Pairwise Identity</a></li>
+                    <li class="item"><a href="{% url 'pairwiseCDS_length' %}">CDS lengths</a></li>
                   </ul>
                 </div>
             </li>
@@ -139,83 +137,96 @@
                     <i class="fa fa-list"></i>
                     <span> Genome alignments</span><span class="right-caret expand_caret"></span>
                 </a>
-            <div class="sidebar-submenu" style="display:block;">
-              <ul id="submenu-6" class="panel-collapse collapse panel-switch" role="menu">
+                <div class="sidebar-submenu" style="display:block;">
+                  <ul id="submenu-6" class="panel-collapse collapse panel-switch" role="menu">
 
-                    <li class="item"><a href="{% url 'plot_region' %}">Plot region</a>
-                    </li>
-                    <li class="item"><a href="{% url 'circos' %}">Circos</a>
-                    </li>
+                    <li class="item"><a href="{% url 'plot_region' %}">Plot region</a></li>
+                    <li class="item"><a href="{% url 'circos' %}">Circos</a></li>
                     <!--<li class="item6"><a href="{% url 'circos2genomes' %}">Circos 2 genomes</a>-->
-                    </li>
                     <!--<li class="item5"><a href="{% url 'circos_homology' %}">Homologues location</a>-->
                     <!--</li>-->
                     <!--<li class="item5"><a href="{% url 'mummer' %}">Dot plots</a>-->
-                    </li>
                   </ul>
                 </div>
             </li>
 
-            <li id="separator"><i class="fa fa-list"></i> <span>Metabolism <span class="caret"></span></span></li>
-
-                    <li class="item"><a href="{% url 'priam_kegg' %}">Kegg maps</a>
-                    </li>
-                    <li class="item"><a href="{% url 'metabo_overview' %}">Metabo comparisons</a>
-                    </li>
-                    <li class="item"><a href="{% url 'kegg_module' %}">Kegg modules</a>
-                    </li>
+            <li class="sidebar-dropdown">
+                <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-7" aria-expanded="false">
+                    <i class="fa fa-list"></i>
+                    <span> Metabolism</span><span class="right-caret expand_caret"></span>
+                </a>
+                <div class="sidebar-submenu" style="display:block;">
+                  <ul id="submenu-7" class="panel-collapse collapse panel-switch" role="menu">
+                    <li class="item"><a href="{% url 'priam_kegg' %}">Kegg maps</a></li>
+                    <li class="item"><a href="{% url 'metabo_overview' %}">Metabo comparisons</a></li>
+                    <li class="item"><a href="{% url 'kegg_module' %}">Kegg modules</a></li>
+                  </ul>
+                </div>
+            </li>
 
 
 	    {% if biodb in 'chlamydia_04_16,2017_06_29b_motile_chlamydiae,2017_06_29_parilichlamydiae'|slice:',' %}
-            <li id="separator"><i class="fa fa-list"></i> <span>Blast RefSeq <span class="caret"></span></span></li>
 
-                    <li class="item"><a href="{% url 'blastnr_barchart' %}">BlastNR hits</a>
-                    </li>
-
+      <li class="sidebar-dropdown">
+          <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-8" aria-expanded="false">
+              <i class="fa fa-list"></i>
+              <span> Blast RefSeq</span><span class="right-caret expand_caret"></span>
+          </a>
+          <div class="sidebar-submenu" style="display:block;">
+            <ul id="submenu-8" class="panel-collapse collapse panel-switch" role="menu">
+              <li class="item"><a href="{% url 'blastnr_barchart' %}">BlastNR hits</a></li>
+            </ul>
+          </div>
+      </li>
 
             {% if user.is_authenticated %}
-            <li id="separator"><i class="fa fa-list"></i> <span>Effectors <span class="caret"></span></span></li>
-                    <li class="item"><a href="{% url 'interpro_taxonomy' %}">Euk. domains (IP)</a>
-                    </li>
 
-                    <li class="item"><a href="{% url 'interpro_taxonomy' %}">Euk. domains (pfam)</a>
-                    </li>
+                <li class="sidebar-dropdown">
+                    <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-9" aria-expanded="false">
+                        <i class="fa fa-list"></i>
+                        <span> Effectors</span><span class="right-caret expand_caret"></span>
+                    </a>
+                    <div class="sidebar-submenu" style="display:block;">
+                      <ul id="submenu-9" class="panel-collapse collapse panel-switch" role="menu">
+                        <li class="item"><a href="{% url 'interpro_taxonomy' %}">Euk. domains (IP)</a></li>
+                        <li class="item"><a href="{% url 'interpro_taxonomy' %}">Euk. domains (pfam)</a>  </li>
+                        <li class="item"><a href="{% url 'blastnr_euk' %}">Euk. RefSeq hits</a>  </li>
+                        {% if biodb == 'chlamydia_04_16'%}
+                            <li class="item"><a href="{% url 'effector_pred' %}">Predictions</a></li>
+                        {% endif %}
+                      </ul>
+                    </div>
+                </li>
 
-                    <li class="item"><a href="{% url 'blastnr_euk' %}">Euk. RefSeq hits</a>
-                    </li>
-                    {% if biodb == 'chlamydia_04_16'%}
-                    <li class="item"><a href="{% url 'effector_pred' %}">Predictions</a>
-                    </li>
-                    {% endif %}
             {% endif %}
 	    {% endif %}
 
             {% if debug %}
 
-            <li id="separator"><i class="fa fa-list"></i> <span>Dev <span class="caret"></span></span></li>
 
-                    <li class="item"><a href="{% url 'locus_int' %}">Locus Int</a>
-                    </li>
-                    <li class="item"><a href="{% url 'add_locus_int' %}">ADD Locus Int</a>
-                    </li>
-                    <li class="item"><a href="{% url 'orthogroup_annotation' True%}">Orthog. annot.</a>
-                    </li>
-                    </li>
-                    <li class="item"><a href="{% url 'locus_annotation' True%}">Locus annot.</a>
-                    </li>
-                    <li class="item"><a href="{% url 'locus_list2orthogroups' %}">locus2group</a>
-                    </li>
-                    </li>
-                    <li class="item"><a href="{% url 'blast_profile' %}">blast2profile</a>
-                    </li>
-                    <li class="item"><a href="{% url 'hmm2circos' %}">hmm2circos</a>
-                    </li>
-                    <li class="item"><a href="{% url 'hmm' %}">hmm sets</a>
-                    </li>
-                    <li class="item"><a href="{% url 'blast_sets' %}">blast sets</a>
-                    </li>
-                    <li class="item"><a href="{% url 'interactions_genome' %}">locus2network</a>
-                    </li>
+            <li class="sidebar-dropdown">
+                <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-10" aria-expanded="false">
+                    <i class="fa fa-list"></i>
+                    <span> Dev</span><span class="right-caret expand_caret"></span>
+                </a>
+                <div class="sidebar-submenu" style="display:block;">
+                  <ul id="submenu-10" class="panel-collapse collapse panel-switch" role="menu">
+                    <li class="item"><a href="{% url 'locus_int' %}">Locus Int</a></li>
+                    <li class="item"><a href="{% url 'add_locus_int' %}">ADD Locus Int</a></li>
+                    <li class="item"><a href="{% url 'orthogroup_annotation' True%}">Orthog. annot.</a></li>
+                    <li class="item"><a href="{% url 'locus_annotation' True%}">Locus annot.</a></li>
+                    <li class="item"><a href="{% url 'locus_list2orthogroups' %}">locus2group</a></li>
+                    <li class="item"><a href="{% url 'blast_profile' %}">blast2profile</a></li>
+                    <li class="item"><a href="{% url 'hmm2circos' %}">hmm2circos</a></li>
+                    <li class="item"><a href="{% url 'hmm' %}">hmm sets</a></li>
+                    <li class="item"><a href="{% url 'blast_sets' %}">blast sets</a></li>
+                    <li class="item"><a href="{% url 'interactions_genome' %}">locus2network</a></li>
+                  </ul>
+                </div>
+            </li>
+
+
+
       </ul>
     </div> <!-- /.container-fluid -->
   </div> <!-- /#sidebar-wrapper -->

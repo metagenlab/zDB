@@ -132,6 +132,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^extract_cog/([a-zA-Z0-9_]+)$$', views.extract_cog, name="extract_cog"),
                        url(r'^genome_annotation/([a-zA-Z0-9_\.\-]+)$$', views.genome_annotation, name="genome_annotation"),
                        url(r'^extract_cog/$', views.extract_cog, name="extract_cog"),
+                       url(r'^annotation_overview/$', views.annotation_overview, name="annotation_overview"),
                        url(r'^venn_cog/$', views.venn_cog, name="venn_cog"),
                        url(r'^interpro_taxonomy/$', views.interpro_taxonomy, name="interpro_taxonomy"),
                        url(r'^venn_cog/([a-zA-Z0-9_]+)$$', views.venn_cog, name="venn_cog"),
@@ -188,4 +189,3 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^.*$', views.home, name="home"),
 
 ]
-
