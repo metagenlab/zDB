@@ -102,6 +102,21 @@
 
   $(document).ready(function() {
   $('#blast_nr_table').DataTable( {
+    dom: 'lBfrtip',
+    buttons: [
+        {
+            extend: 'colvis',
+            columns: ':not(.noVis)',
+        },
+        {
+            extend: 'excel',
+            title: 'blast_swissprot'
+        },
+        {
+            extend: 'csv',
+            title: 'blast_swissprot'
+        }
+    ],
   "paging":   true,
   "ordering": true,
   "info":     false

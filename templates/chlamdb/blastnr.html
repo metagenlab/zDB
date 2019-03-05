@@ -105,9 +105,6 @@
   $(document).ready(function() {
     $('#blast_nr_table').DataTable( {
       dom: 'lBfrtip',
-      "paging":   true,
-      "ordering": true,
-      "info":     false,
       buttons: [
           {
               extend: 'colvis',
@@ -115,13 +112,16 @@
           },
           {
               extend: 'excel',
-              title: 'homologs'
+              title: 'plast_refseq'
           },
           {
               extend: 'csv',
-              title: 'homologs'
+              title: 'plast_refseq'
           }
       ],
+      "paging":   true,
+      "ordering": true,
+      "info":     false,
       } );
   } );
 $('.dropdown-toggle').dropdown()
