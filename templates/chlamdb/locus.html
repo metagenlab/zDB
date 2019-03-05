@@ -1184,7 +1184,16 @@ $(document).ready(function() {
             {
                 extend: 'colvis',
                 columns: ':not(.noVis)',
+            },
+            {
+                extend: 'excel',
+                title: 'homologs'
+            },
+            {
+                extend: 'csv',
+                title: 'homologs'
             }
+
         ],
         "pageLength": 10
     } );
@@ -1193,7 +1202,6 @@ $(document).ready(function() {
 $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip();
 });
-
 
 
 //var FeatureViewer = require("feature-viewer");
