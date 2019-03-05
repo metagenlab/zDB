@@ -103,11 +103,26 @@
 <script>
 
   $(document).ready(function() {
-  $('#blast_nr_table').DataTable( {
-  "paging":   true,
-  "ordering": true,
-  "info":     false
-  } );
+    $('#blast_nr_table').DataTable( {
+      dom: 'lBfrtip',
+      "paging":   true,
+      "ordering": true,
+      "info":     false,
+      buttons: [
+          {
+              extend: 'colvis',
+              columns: ':not(.noVis)',
+          },
+          {
+              extend: 'excel',
+              title: 'homologs'
+          },
+          {
+              extend: 'csv',
+              title: 'homologs'
+          }
+      ],
+      } );
   } );
 $('.dropdown-toggle').dropdown()
 </script>
