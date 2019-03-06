@@ -112,6 +112,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^multipleGC/$', views.multipleGC, name="multipleGC"),
                        url(r'^multiple_codon_usage/$', views.multiple_codon_usage, name="multiple_codon_usage"),
                        url(r'^circos/$', views.circos, name="circos"),
+                       url(r'^circos_blastnr/$', views.circos_blastnr, name="circos_blastnr"),
                        url(r'^circos_main/$', views.circos_main, name="circos_main"),
                        url(r'^orthogroup_list_cog_barchart/$', views.orthogroup_list_cog_barchart, name="orthogroup_list_cog_barchart"),
                        url(r'^orthogroup_list_cog_barchart/([a-zA-Z0-9_]+)/$', views.orthogroup_list_cog_barchart, name="orthogroup_list_cog_barchart"),

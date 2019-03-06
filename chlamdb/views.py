@@ -9928,8 +9928,99 @@ def circos_main(request):
     return render(request, 'chlamdb/circos.html', locals())
 
 
+def circos_blastnr(request):
+    biodb = settings.BIODB
+    import gbk2circos
+    circos_form_class = make_circos_form(biodb)
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    if request.method == 'POST':
+
+        form = circos_form_class(request.POST)
+
+        if form.is_valid():
+
+            reference_taxon = form.cleaned_data['circos_reference']
+
+            description2accession_dict = manipulate_biosqldb.description2accession_dict(server, biodb)
+
+            reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb)
+
+            #print "reference_accessions", reference_accessions
+            record_list = []
+            for accession in reference_accessions:
+
+                #print "reference accession", accession
+                biorecord = cache.get(biodb + "_" + accession)
+
+                if not biorecord:
+                    #print biodb + "_" + accession, "NOT in memory"
+                    new_record = db.lookup(accession=accession)
+                    biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
+                                                             id=new_record.id, name=new_record.name,
+                                                             description=new_record.description,
+                                                             dbxrefs =new_record.dbxrefs,
+                                                             features=new_record.features,
+                                                             annotations=new_record.annotations)
+                    record_id = biorecord.id.split(".")[0]
+                    cache.set(biodb + "_" + record_id, biorecord)
+                    record_list.append(biorecord)
+                else:
+                    #print biodb + "_" + accession, "IN memory"
+                    record_list.append(biorecord)
 
 
+            ref_name = ''
+            for i in reference_accessions:
+                ref_name += i
+            circos_file = "circos/%s.svg" % ref_name
+            import circos
+            import shell_command
+            import ete3
+
+
+
+            outtput_dir = settings.BASE_DIR + "/assets/circos/"
+
+            myplot = circos.CircosAccession2blastnr_plot(server,
+                                                         biodb,
+                                                         record_list,
+                                                         outtput_dir,
+                                                         taxon_list=[],
+                                                         highlight_BBH=True)
+
+            original_map_file = settings.BASE_DIR + "/assets/circos/%s.html" % ref_name
+
+            with open(original_map_file, "r") as f:
+                map_string = ''.join([line for line in f.readlines()])
+
+            circos_html = '<!DOCTYPE html>\n' \
+                          ' <html>\n' \
+                          ' <body>\n' \
+                          ' %s\n' \
+                          ' <img src="%s.svg" usemap="#%s">' \
+                          ' </body>\n' \
+                          ' </html>\n' % (map_string, ref_name, ref_name)
+
+            circos_new_file = '/assets/circos/circos_clic.html'
+
+            with open(settings.BASE_DIR + circos_new_file, "w") as f:
+                f.write(circos_html)
+
+            #target_map_file = settings.BASE_DIR + "/templates/circos/%s.html" % ref_name
+            original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % ref_name
+            #target_map_file_svg = settings.BASE_DIR + "/templates/circos/%s.svg" % ref_name
+            map_file = "circos/%s.html" % ref_name
+            svg_file = "circos/%s.svg" % ref_name
+            #a, b, c = shell_command.shell_command("mv %s %s" % (original_map_file, target_map_file))
+            #a, b, c = shell_command.shell_command("cp %s %s" % (original_map_file_svg, target_map_file_svg))
+            #print a,b,c
+            map_name = ref_name
+            envoi_circos = True
+            envoi_region = True
+    else:
+        form = circos_form_class()
+    return render(request, 'chlamdb/circos_blastnr.html', locals())
 
 def circos(request):
     biodb = settings.BIODB

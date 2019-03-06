@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+{% include "chlamdb/header.html" %}
+</head>
+<body>
+
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
+
+
+                  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                          <h3 class="panel-title">Help</h3>
+                      </div>
+                      <p style="margin: 10px 10px 10px 10px">Create circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. Click on the circos plot to open a new windows with clickable version of the plot.<br>
+                      rRNA are colored in blue, tRNA in red. Click on the figure to access the interactive plot.
+                      </p>
+                  </div>
+
+                  <form action="{% url "circos_blastnr" %}" method="post">{% csrf_token %}
+
+                  <table>
+                  <tr>
+                    <td>{{ form.as_p }}</td>
+                  </tr>
+
+                  <tr>
+                    <td><input type="submit" name="submit_circos" value="get circos plot" id="id_submit_circos" /> <input type="submit" name="submit_region" value="Get region" id="id_submit_region" /></td>
+                  </tr>
+                  </table>
+
+
+
+
+                  {% block extrahead %}
+                  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+                  <script>
+                    var update_fields = function () {
+                      if ($("#id_get_region").is(":checked")) {
+
+                          $('#id_region').prop('disabled', false);
+                          $('#id_submit_region').show();
+                          $('#id_submit_circos').hide();
+                      }
+                      else {
+
+                         $('#id_region').prop('disabled', 'disabled');
+                         $('#id_submit_region').hide();
+                         $('#id_submit_circos').show();
+                      }
+                    };
+                    $(update_fields);
+                    $("#id_get_region").change(update_fields);
+
+                  </script>
+
+
+                  {% endblock %}
+
+
+
+
+
+
+                  {% if envoi_circos %}
+
+                      {% load static %}
+
+                      <!--<object type="image/svg+xml" data="{{circos_new_file}}" id="pfam_tree" width="100%" height="1000px"></object>-->
+                      <div style="position: relative; left: 0; top: 0;">
+                              <a href="{{ circos_new_file }}"><img src="{% static ""%}{{circos_file}}" id="circos_plot" style="position: absolute; top: 00px; left: 00px;"></a>
+
+                              <img src="{% static "/scales/circos_legend.png" %}" id="circos_legend"  width="160" style="position: relative; top: 0; left: 0;">
+
+                      </div>
+                  {% endif %}
+
+
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+{% include "chlamdb/style_menu.html" %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+function hide_submenus(hidden_menu) {
+
+    var menu_ul = $('.' + hidden_menu +'> ul'),
+        menu_a  = $('.' + hidden_menu +'> a');
+
+    menu_ul.hide();
+
+    menu_a.click(function(e) {
+        e.preventDefault();
+        if(!$(this).hasClass('active')) {
+            menu_a.removeClass('active');
+            menu_ul.filter(':visible').slideUp('normal');
+            $(this).addClass('active').next().stop(true,true).slideDown('normal');
+        } else {
+            $(this).removeClass('active');
+            $(this).next().stop(true,true).slideUp('normal');
+        }
+    });
+
+};
+
+$(hide_submenus("rollmenu1"))
+
+</script>
+
+</html>
