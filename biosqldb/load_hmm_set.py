@@ -74,7 +74,6 @@ def plot_profile(biodb, database_name, table_name):
                                                            taxon2description=False,
                                                            rotate=True)
 
-
     path = '/home/trestan/hmm_tree.svg'
     style.rotation = 90
     tree.render(path, dpi=800, h=600, tree_style=style)

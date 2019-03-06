@@ -15,7 +15,6 @@ class CircosAccession2biplot():
         import os
         import shell_command
 
-
         reference_accessions = []
         for record in reference_records:
             reference_accessions.append(record.id.split(".")[0])
@@ -23,10 +22,12 @@ class CircosAccession2biplot():
         for record in query_records:
             query_accessions.append(record.id.split(".")[0])
 
-        #reference_record = gbk2circos.Record(reference_record)
-        #query_record = gbk2circos.Record(query_record)
+        # reference_record = gbk2circos.Record(reference_record)
+        # query_record = gbk2circos.Record(query_record)
 
-        reference_taxon_id = manipulate_biosqldb.bioentry_id2taxon_id(server, biodatabase_name, reference_accessions[0])
+        reference_taxon_id = manipulate_biosqldb.bioentry_id2taxon_id(server,
+                                                                      biodatabase_name,
+                                                                      reference_accessions[0])
         query_taxon_id = manipulate_biosqldb.bioentry_id2taxon_id(server, biodatabase_name, query_accessions[0])
 
 
@@ -40,8 +41,8 @@ class CircosAccession2biplot():
                                                                    biodatabase_name,
                                                                    out_directory,
                                                                    locus_highlight,
-                                                                   taxon_list = [reference_taxon_id,
-                                                                                 query_taxon_id],
+                                                                   taxon_list=[reference_taxon_id,
+                                                                               query_taxon_id],
                                                                    query_taxon_id=query_taxon_id,
                                                                    color_missing=False)
 
@@ -52,19 +53,19 @@ class CircosAccession2biplot():
                                                                out_directory,
                                                                locus_highlight,
                                                                taxon_list=[query_taxon_id,
-                                                                          reference_taxon_id],
+                                                                           reference_taxon_id],
                                                                query_taxon_id=reference_taxon_id,
                                                                color_missing=False)
 
         chr_spacing_list_ref = []
         if len(reference_records) > 0:
-            for i in range(0, len(reference_records)-1):
-                chr_spacing_list_ref.append([reference_records[i].id, reference_records[i+1].id])
+            for i in range(0, len(reference_records) - 1):
+                chr_spacing_list_ref.append([reference_records[i].id, reference_records[i + 1].id])
             chr_spacing_list_ref.append([reference_records[-1].id, reference_records[0].id])
 
         chr_spacing_list_query = []
         if len(query_records) > 0:
-            for i in range(0, len(query_records)-1):
+            for i in range(0, len(query_records) - 1):
                 chr_spacing_list_query.append([query_records[i].id, query_records[i+1].id])
             chr_spacing_list_query.append([query_records[-1].id, query_records[0].id])
 
@@ -72,8 +73,8 @@ class CircosAccession2biplot():
         circos_reference = gbk2circos.Circos_config(circos_files_reference["contigs"],chr_spacing_list_ref)
         circos_query = gbk2circos.Circos_config(circos_files_query["contigs"], chr_spacing_list_query)
 
-        #corcos.add_plot(circos_files["GC"], type="line", r0="1.01r", r1="1.1r", color="green", fill_color="vlgreen", thickness = "2p", z = 1, rules ="")
-        #corcos.add_plot(circos_files["orthogroups"], type="line", r0="1.12r", r1= "1.22r", color="black", fill_color="red", thickness = "2p", z = 1, rules ="")
+        # corcos.add_plot(circos_files["GC"], type="line", r0="1.01r", r1="1.1r", color="green", fill_color="vlgreen", thickness = "2p", z = 1, rules ="")
+        # corcos.add_plot(circos_files["orthogroups"], type="line", r0="1.12r", r1= "1.22r", color="black", fill_color="red", thickness = "2p", z = 1, rules ="")
 
         # add plus minus genes
         circos_reference.add_highlight(circos_files_reference["plus"], fill_color="grey_a1", r1="0.98r", r0="0.95r")
@@ -92,8 +93,8 @@ class CircosAccession2biplot():
                                                                         out_directory)
 
 
-        
-        
+
+
 
         self.reference_circos = "%s.svg" % accessions_name_reference
         self.query_circos = "%s.svg" % accessions_name_query
@@ -943,7 +944,7 @@ class CircosAccession2multiplot():
         #locus_highlight = []#chlamydia_core_29_33
         #for i in locus_superantigens:
         #    locus_superantigens2.append(manipulate_biosqldb.locus_tag2orthogroup_id(server, i, biodatabase_name))
-            
+
         conserved_chlamydiae = ["RhT_00337",
 "RhT_01198",
 "RhT_00618",
@@ -1990,7 +1991,7 @@ class CircosAccession2blastnr_plot():
             for i in range(0, len(reference_records)-1):
                 chr_spacing_list.append([reference_records[i].id, reference_records[i+1].id])
             chr_spacing_list.append([reference_records[-1].id, reference_records[0].id])
-        
+
         #print reference_records[-1].name
         #print draft_fasta[0][-1][0]
         elif len(reference_records) == 2 and draft_fasta is not False:
@@ -2003,7 +2004,7 @@ class CircosAccession2blastnr_plot():
                     chr_spacing_list.append([draft_fasta[0][0][0], reference_records[-1].name])
                 except:
                     chr_spacing_list.append([draft_fasta[1][-1][0], reference_records[0].id])
-                    chr_spacing_list.append([draft_fasta[1][0][0], reference_records[0].id])                    
+                    chr_spacing_list.append([draft_fasta[1][0][0], reference_records[0].id])
         # get circos config object
         col_file = os.path.join(out_directory, 'colors.conf')
         circos_reference = gbk2circos.Circos_config(circos_files_reference["contigs"],
