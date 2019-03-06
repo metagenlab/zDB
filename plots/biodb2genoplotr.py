@@ -195,4 +195,3 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     accession_list2plot(['NZ_LN879502','NC_005861', 'NC_015702', 'NC_014225', 'NC_015713'],'2017_06_29b_motile_chlamydiae')
-

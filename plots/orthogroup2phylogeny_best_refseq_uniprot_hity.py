@@ -286,8 +286,10 @@ def plot_tree(ete3_tree,
             #nameFace.border.width = 1
         except:
             col = 'red'
-            lf.name = '%s| %s' % (lf.name, locus2organism[lf.name])
-
+            try:
+                lf.name = '%s| %s' % (lf.name, locus2organism[lf.name])
+            except:
+                lf.name = '%s| ??' % (lf.name)
             ff = AttrFace("name", fsize=12)
             #ff.background.color = 'red'
             ff.fgcolor = col

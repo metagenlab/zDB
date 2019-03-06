@@ -863,7 +863,7 @@ def orthology_circos_files(server,
     import biosql_own_sql_tables
     import os
     import orthogroup_identity_db
-
+    import manipulate_biosqldb
 
     #print "orthology_circos_files"
     #print "draft_data", draft_data
