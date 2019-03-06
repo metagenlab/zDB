@@ -27,7 +27,7 @@
               <div class="input-group">
                   <input type="text" class="form-control" style="width:500px;" placeholder="Gene, product, orthogroup, COG, interpro ID, KEGG id, ..." name="accession">
                   <div class="input-group-btn">
-                      <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+                      <button class="btn btn-default" type="submit"></button>
                   </div>
               </div>
               </form>
@@ -61,48 +61,35 @@
 
               </li>
               <li>
-                  <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-2" aria-expanded="false">
-                      <span class="sidebar-icon"><i class="fa fa-list"></i></span>
-                      <span class="sidebar-title"> Search</span>
-                      <b class="right-caret expand_caret"></b>
-                  </a>
-                  <ul id="submenu-2" class="panel-collapse collapse panel-switch" role="menu">
-                    <li class="item"><a href="{% url 'search' %}">Keyword Search</a>
-                    </li>
-                    <li class="item"><a href="{% url 'blast' %}">Blast</a>
-                    </li>
-                    <!--<li class="item6"><a href="{% url 'motif_search' %}">Motif search</a>-->
-                    <!--</li>-->
-                    <!--<li class="item6"><a href="{% url 'interpro' %}">Interpro search</a>-->
-                    </li>
-                    <li class="item"><a href="{% url 'extract_region' %}">Retrieve sequence</a>
-                    </li>
-                  </ul>
+                    <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-2" aria-expanded="false">
+                        <span class="sidebar-icon"><i class="fa fa-list"></i></span>
+                        <span class="sidebar-title"> Search</span>
+                    </a>
+                    <ul id="submenu-2" class="panel-collapse collapse panel-switch" role="menu">
+                        <li class="item"><a href="{% url 'search' %}">Keyword Search</a></li>
+                        <li class="item"><a href="{% url 'blast' %}">Blast</a></li>
+                        <!--<li class="item6"><a href="{% url 'motif_search' %}">Motif search</a>-->
+                        <!--</li>-->
+                        <!--<li class="item6"><a href="{% url 'interpro' %}">Interpro search</a>-->
+                        <li class="item"><a href="{% url 'extract_region' %}">Retrieve sequence</a></li>
+                    </ul>
               </li>
                 <!--<li class="item6"><a href="{% url 'primer_search' %}">Primer search</a>->
                 <!--</li>-->
 
                 <li class="sidebar-dropdown" id="comp">
-                    <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-3" aria-expanded="false">
+                    <a id="separator" class="accordion-toggle toggle-switch" data-toggle="collapse" href="#submenu-3" aria-expanded="false">
                         <i class="fa fa-list"></i>
-                        <span> Comparisons</span><span class="right-caret expand_caret"></span>
+                        <span> Comparisons</span>
                     </a>
                     <div class="sidebar-submenu" style="display:block;">
-                      <ul id="submenu-3" class="panel-collapse collapse panel-switch" role="menu">
-
-                          <li class="item"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a>
-                          </li>
-                          <li class="item"><a href="{% url 'extract_cog' %}">COGs</a>
-                          </li>
-                          <li class="item"><a href="{% url 'extract_pfam' %}">Pfam domains</a>
-                          </li>
-                          <li class="item"><a href="{% url 'extract_interpro' %}">Interpro entries</a>
-                          </li>
-                          <li class="item"><a href="{% url 'extract_EC' %}">EC numbers</a>
-
-                                </li>
-                          <li class="item"><a href="{% url 'extract_ko' %}">Kegg Orthologs</a>
-                          </li>
+                      <ul id="submenu-3" class="panel-collapse collapse panel-switch in" role="menu">
+                          <li class="item"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a></li>
+                          <li class="item"><a href="{% url 'extract_cog' %}">COGs</a></li>
+                          <li class="item"><a href="{% url 'extract_pfam' %}">Pfam domains</a></li>
+                          <li class="item"><a href="{% url 'extract_interpro' %}">Interpro entries</a></li>
+                          <li class="item"><a href="{% url 'extract_EC' %}">EC numbers</a></li>
+                          <li class="item"><a href="{% url 'extract_ko' %}">Kegg Orthologs</a></li>
                       </ul>
                     </div>
                 </li>
@@ -110,7 +97,7 @@
             <li class="sidebar-dropdown">
                 <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-4" aria-expanded="false">
                     <i class="fa fa-list"></i>
-                    <span> Transporters</span><span class="right-caret expand_caret"></span>
+                    <span> Transporters</span>
                 </a>
                 <div class="sidebar-submenu" style="display:block;">
                     <ul id="submenu-4" class="panel-collapse collapse panel-switch" role="menu">
@@ -122,7 +109,7 @@
             <li class="sidebar-dropdown">
                 <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-5" aria-expanded="false">
                     <i class="fa fa-list"></i>
-                    <span> Genome statistics</span><span class="right-caret expand_caret"></span>
+                    <span> Genome statistics</span>
                 </a>
                 <div class="sidebar-submenu" style="display:block;">
                   <ul id="submenu-5" class="panel-collapse collapse panel-switch" role="menu">
@@ -135,7 +122,7 @@
             <li class="sidebar-dropdown">
                 <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-6" aria-expanded="false">
                     <i class="fa fa-list"></i>
-                    <span> Genome alignments</span><span class="right-caret expand_caret"></span>
+                    <span> Genome alignments</span>
                 </a>
                 <div class="sidebar-submenu" style="display:block;">
                   <ul id="submenu-6" class="panel-collapse collapse panel-switch" role="menu">
@@ -153,7 +140,7 @@
             <li class="sidebar-dropdown">
                 <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-7" aria-expanded="false">
                     <i class="fa fa-list"></i>
-                    <span> Metabolism</span><span class="right-caret expand_caret"></span>
+                    <span> Metabolism</span>
                 </a>
                 <div class="sidebar-submenu" style="display:block;">
                   <ul id="submenu-7" class="panel-collapse collapse panel-switch" role="menu">
@@ -170,7 +157,7 @@
       <li class="sidebar-dropdown">
           <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-8" aria-expanded="false">
               <i class="fa fa-list"></i>
-              <span> Blast RefSeq</span><span class="right-caret expand_caret"></span>
+              <span> Blast RefSeq</span>
           </a>
           <div class="sidebar-submenu" style="display:block;">
             <ul id="submenu-8" class="panel-collapse collapse panel-switch" role="menu">
@@ -184,7 +171,7 @@
                 <li class="sidebar-dropdown">
                     <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-9" aria-expanded="false">
                         <i class="fa fa-list"></i>
-                        <span> Effectors</span><span class="right-caret expand_caret"></span>
+                        <span> Effectors</span>
                     </a>
                     <div class="sidebar-submenu" style="display:block;">
                       <ul id="submenu-9" class="panel-collapse collapse panel-switch" role="menu">
@@ -207,7 +194,7 @@
             <li class="sidebar-dropdown">
                 <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-10" aria-expanded="false">
                     <i class="fa fa-list"></i>
-                    <span> Dev</span><span class="right-caret expand_caret"></span>
+                    <span> Dev</span>
                 </a>
                 <div class="sidebar-submenu" style="display:block;">
                   <ul id="submenu-10" class="panel-collapse collapse panel-switch" role="menu">
@@ -321,22 +308,34 @@ $(function(){
     opacity: 1;
     width: 0;
 }
+.bottom-caret {
+    border-bottom: 4px solid transparent;
+    border-top: 4px solid #FAFAFA;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    display: inline-block;
+    height: 0;
+    opacity: 1;
+    width: 0;
+}
 ul{
   list-style-type: none;
   padding-left: 5px;
 }
 
-.expand_caret {
-    transform: scale(1.6);
-    margin-left: 8px;
-    margin-top: 4px;
-}
-a[aria-expanded='false'] > .expand_caret {
-    transform: scale(1.6) rotate(-90deg);
-    margin-top: 1px;
+.accordion-toggle:after {
+    /* symbol for "opening" panels */
+    font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
+    content: "\e114";    /* adjust as needed, taken from bootstrap.css */
+    float: right;        /* adjust as needed */
+    padding-right: 20px;
+    color: grey;         /* adjust as needed */
 }
 
-
+.accordion-toggle.collapsed:after {
+    /* symbol for "collapsed" panels */
+    content: "\e080";    /* adjust as needed, taken from bootstrap.css */
+}
 
 
 </style>
