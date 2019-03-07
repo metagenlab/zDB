@@ -10215,6 +10215,8 @@ def circos(request):
                     f.write(circos_html)
 
                 #target_map_file = settings.BASE_DIR + "/templates/circos/%s.html" % ref_name
+                circos_svg_file = "circos/%s.svg" % ref_name
+                circos_png_file = "circos/%s.png" % ref_name
                 original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % ref_name
                 #target_map_file_svg = settings.BASE_DIR + "/templates/circos/%s.svg" % ref_name
                 map_file = "circos/%s.html" % ref_name

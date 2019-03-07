@@ -63,3 +63,75 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/js/i18n/defaults-*.min.js"></script>
 
 <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
+
+<script>
+
+var exportPNG = function(id, prefix) {
+    /*
+    Based off  gustavohenke's svg2png.js
+    https://gist.github.com/gustavohenke/9073132
+    */
+
+var a = document.getElementById(id);
+console.log(prefix)
+// Get the SVG document inside the Object tag
+var svgDoc = a.contentDocument;
+    var svgData = new XMLSerializer().serializeToString( svgDoc );
+
+    var canvas = document.createElement( "canvas" );
+    var ctx = canvas.getContext( "2d" );
+    var dataUri = '';
+    try {
+        dataUri = 'data:image/svg+xml;base64,' + btoa(svgData);
+    } catch (ex) {
+
+        // For browsers that don't have a btoa() method, send the text off to a webservice for encoding
+        /* Uncomment if needed
+        $.ajax({
+            url: "http://www.mysite.com/webservice/encodeString",
+            data: { svg: svgData },
+            type: "POST",
+            async: false,
+            success: function(encodedSVG) {
+                dataUri = 'data:image/svg+xml;base64,' + encodedSVG;
+            }
+        })
+        */
+
+    }
+
+    var img = document.createElement( "img" );
+
+    img.onload = function() {
+        ctx.canvas.width  = img.naturalWidth;
+        ctx.canvas.height = img.naturalHeight;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage( img, 0, 0 );
+
+
+        try {
+
+            // Try to initiate a download of the image
+            var a = document.createElement("a");
+            a.download = prefix + ".png";
+            a.href = canvas.toDataURL("image/png");
+            document.querySelector("body").appendChild(a);
+            a.click();
+            document.querySelector("body").removeChild(a);
+
+        } catch (ex) {
+
+            // If downloading not possible (as in IE due to canvas.toDataURL() security issue)
+            // then display image for saving via right-click
+
+            var imgPreview = document.createElement("div");
+            imgPreview.appendChild(img);
+            document.querySelector("body").appendChild(imgPreview);
+
+        }
+    };
+    img.src = dataUri;
+
+};
+</script>
