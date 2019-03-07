@@ -254,7 +254,7 @@
                                         </td>
 
                                         <td nowrap>
-                                            <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'gbk' %}"">
+                                            <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'gbk' %}">
                                             <span style="background-color:#DCFFF0;color:black;padding:1px;">TAB</span></a>
 
                                     </tr>
@@ -263,11 +263,21 @@
 
                                 </tbody>
                             </table>
-                        </div><!- row -->
-                      </div> <!- col -->
-                        </div> <!- tab0 -->
+                        </div><!-- row -->
+                      </div> <!-- col -->
+                    </div> <!-- tab0 -->
                         <div class="tab-pane" id="tab1">
-                            <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree" style="width:1000px"></object>
+                          <div class="row">
+                            <div class="col-lg-12">
+                              <div class="row">
+                                <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+                                <a onclick="exportPNG();" class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+                              </div>
+                              <div>
+                                <object type="image/svg+xml" data="{% static asset_path %}" id="pyhlogeny" style="width:1000px"></object>
+                              </div>
+                            </div>
+                          </div>
                         </div> <!- tab1 -->
                     </div>  <!--tab content -->
                     <!--<img src="{% static 'chlam_tree.png' %}" width="80%"-->
@@ -281,9 +291,20 @@
     <script>
       $(document).ready(function() {
       $('#genomes_table').DataTable( {
+      dom: 'Bfrtip',  
       "paging":   true,
       "ordering": true,
-      "info":     false
+      "info":     false,
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'interaction_table'
+        },
+        {
+            extend: 'csv',
+            title: 'interaction_table'
+        }
+      ],
       } );
       } );
     $('.dropdown-toggle').dropdown()
@@ -292,4 +313,80 @@
 
 </body>
 {% include "chlamdb/style_menu.html" %}
+
+<script>
+
+var exportPNG = function() {
+
+    /*
+    Based off  gustavohenke's svg2png.js
+    https://gist.github.com/gustavohenke/9073132
+    */
+
+var a = document.getElementById("pyhlogeny");
+console.log(a)
+// Get the SVG document inside the Object tag
+var svgDoc = a.contentDocument;
+    var svgData = new XMLSerializer().serializeToString( svgDoc );
+
+    var canvas = document.createElement( "canvas" );
+    var ctx = canvas.getContext( "2d" );
+    var dataUri = '';
+    try {
+        dataUri = 'data:image/svg+xml;base64,' + btoa(svgData);
+    } catch (ex) {
+
+        // For browsers that don't have a btoa() method, send the text off to a webservice for encoding
+        /* Uncomment if needed
+        $.ajax({
+            url: "http://www.mysite.com/webservice/encodeString",
+            data: { svg: svgData },
+            type: "POST",
+            async: false,
+            success: function(encodedSVG) {
+                dataUri = 'data:image/svg+xml;base64,' + encodedSVG;
+            }
+        })
+        */
+
+    }
+
+    var img = document.createElement( "img" );
+
+    img.onload = function() {
+        ctx.canvas.width  = img.naturalWidth;
+        ctx.canvas.height = img.naturalHeight;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage( img, 0, 0 );
+
+
+        try {
+
+            // Try to initiate a download of the image
+            var a = document.createElement("a");
+            a.download = "phylogeny.png";
+            a.href = canvas.toDataURL("image/png");
+            document.querySelector("body").appendChild(a);
+            a.click();
+            document.querySelector("body").removeChild(a);
+
+        } catch (ex) {
+
+            // If downloading not possible (as in IE due to canvas.toDataURL() security issue)
+            // then display image for saving via right-click
+
+            var imgPreview = document.createElement("div");
+            imgPreview.appendChild(img);
+            document.querySelector("body").appendChild(imgPreview);
+
+        }
+    };
+    img.src = dataUri;
+
+}
+
+
+</script>
+
 </html>
