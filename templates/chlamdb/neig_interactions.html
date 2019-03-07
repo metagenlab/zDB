@@ -14,33 +14,12 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-chained/1.0.1/jquery.chained.js"></script>
     <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-1.12.3.min.js"></script>
     <!--<script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>-->
-    <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
 
-    <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
-
-    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
-
-    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
-
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
 
-    <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
     <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
-
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-
-
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.js"></script>
-    <link href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/4.10.3/css/bootstrap-slider.min.css">
-
 
     <script src="{% static 'js/cola.min.js' %}"></script>
 
@@ -51,7 +30,8 @@
 
     <!--<script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>-->
 
-
+    {% include "chlamdb/header.html" %}
+    
 {{script|safe}}
 
 </head>
@@ -85,35 +65,24 @@
         <div id="my-tab-content" class="tab-content">
             <div class="tab-pane active" id="tab1">
 
-
-                        <div id="export_bouttons_groups">
-                            <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-                            <a href="{% url 'get_fasta'  %}{{fasta_url_ref}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Download fasta</a>
-                            <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                            <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
-
-                            <br/>
-                        </div>
-                        <table id="cog_table" class="sortable">
+                        <table id="interaction_table" class="table">
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th id="entete_locus">Orthogroup</th>
-                                    <th id="entete_locus">Locus</th>
-                                    <th style="width:10px">C</th>
-                                    <th style="width:70px">COGn</th>
-                                    <th style="width:55px">KO</th>
-                                    <th style="width:260px">Pathways</th>
-                                    <th style="width:230px">Modules</th>
-                                    <th style="width:230px">Interpro</th>
-                                    <th id="entete_gene">Gene</th>
-                                    <th id="entete_n">nH</th>
-                                    <th id="entete_n">nG</th>
-                                    <th id="entete_n">TM</th>
-                                    <th id="entete_n">SP</th>
-                                    <th id="entete_product">Product</th>
-
-
+                                    <th>Orthogroup</th>
+                                    <th>Locus</th>
+                                    <th>C</th>
+                                    <th>COGn</th>
+                                    <th>KO</th>
+                                    <th>Pathways</th>
+                                    <th>Modules</th>
+                                    <th>Interpro</th>
+                                    <th>Gene</th>
+                                    <th>nH</th>
+                                    <th>nG</th>
+                                    <th>TM</th>
+                                    <th>SP</th>
+                                    <th>Product</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -200,5 +169,26 @@
 
 
 </body>
+<script>
+$(document).ready(function() {
+  $('#interaction_table').DataTable( {
+    dom: 'Bfrtip',
+    buttons: [
+      {
+          extend: 'excel',
+          title: 'interaction_table'
+      },
+      {
+          extend: 'csv',
+          title: 'interaction_table'
+      }
+    ],
+  "paging":   true,
+  "ordering": true,
+  "info":     false,
+  colReorder: true,
+  } );
+} );
+</script>
 
 </html>
