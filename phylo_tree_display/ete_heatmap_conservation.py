@@ -3,7 +3,7 @@
 import sys
 from random import sample
 from random import randint
-from ete3 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace
+from ete3 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace, StackedBarFace
 
 
 import numpy as np
@@ -343,8 +343,9 @@ def plot_heatmap_tree_locus(biodb,
                             tree_file,
                             taxid2count,
                             taxid2identity=False,
-                            taxid2locus =False,
-                            reference_taxon=False):
+                            taxid2locus=False,
+                            reference_taxon=False,
+                            n_paralogs_barplot=False):
 
     '''
 
@@ -370,19 +371,27 @@ def plot_heatmap_tree_locus(biodb,
     t1.set_outgroup(R)
 
     leaf_number = 0
+    print(taxid2count)
+    for lf in t1.iter_leaves():
+
+        if str(lf.name) not in taxid2count:
+            taxid2count[str(lf.name)] = 0
+
+    max_count = max([taxid2count[str(lf.name)] for lf in t1.iter_leaves()])
+
     for lf in t1.iter_leaves():
         leaf_number+=1
         #print lf
         lf.branch_vertical_margin = 0
-        try:
-            data = [taxid2count[str(lf.name)]]
-        except:
-            data=[0]
+        print(taxid2count[str(lf.name)])
+        data = [taxid2count[str(lf.name)]]
+
         #print 'taxon', int(lf.name)
 
-
+        print(data)
         # possibility to add one or more columns
         for col, value in enumerate(data):
+            col_index = col
             if value > 0:
                 n = TextFace(' %s ' % str(value))
                 n.margin_top = 2
@@ -393,7 +402,7 @@ def plot_heatmap_tree_locus(biodb,
                 else:
                     n.margin_left = 2
                 n.margin_bottom = 2
-                n.inner_background.color = "#81BEF7"
+                n.inner_background.color = "white" # #81BEF7
                 n.opacity = 1.
                 lf.add_face(n, col, position="aligned")
 
@@ -409,6 +418,20 @@ def plot_heatmap_tree_locus(biodb,
                 n.inner_background.color = "white"
                 n.opacity = 1.
                 lf.add_face(n, col, position="aligned")
+        # optionally indicate number of paralogs as a barplot
+        if n_paralogs_barplot:
+            col_index += 1
+
+            print("max!!!", float(value), max_count)
+            percent = (float(value)/max_count)*100
+            n = StackedBarFace([percent, 100-percent], width=150, height=18, colors=['#6699ff', 'white'], line_color='white')
+            n.rotation= 0
+            n.inner_border.color = "white"
+            n.inner_border.width = 0
+            n.margin_right = 15
+            n.margin_left = 0
+            lf.add_face(n, col+1, position="aligned")
+
         # optionally add additionnal column with identity
         if taxid2identity:
             import matplotlib.cm as cm
@@ -441,7 +464,7 @@ def plot_heatmap_tree_locus(biodb,
             if str(lf.name) == str(reference_taxon):
                 n.inner_background.color = '#800000'
 
-            lf.add_face(n, col+1, position="aligned")
+            lf.add_face(n, col_index+1, position="aligned")
         # optionaly add column with locus name
         if taxid2locus:
             try:
@@ -459,7 +482,7 @@ def plot_heatmap_tree_locus(biodb,
                 n.fgcolor = '#ff0000'
                 n.inner_background.color = "white"
             n.opacity = 1.
-            lf.add_face(n, col+2, position="aligned")
+            lf.add_face(n, col_index+2, position="aligned")
         lf.name = taxid2organism[str(lf.name)]
 
     return t1, leaf_number
