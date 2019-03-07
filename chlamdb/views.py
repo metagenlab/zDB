@@ -10002,12 +10002,14 @@ def circos_blastnr(request):
                           ' </body>\n' \
                           ' </html>\n' % (map_string, ref_name, ref_name)
 
-            circos_new_file = '/assets/circos/circos_clic.html'
+            circos_new_file = '/assets/circos/circos_clic_%s.html' % ref_name
 
             with open(settings.BASE_DIR + circos_new_file, "w") as f:
                 f.write(circos_html)
 
             #target_map_file = settings.BASE_DIR + "/templates/circos/%s.html" % ref_name
+            circos_svg_file = "circos/%s.svg" % ref_name
+            circos_png_file = "circos/%s.png" % ref_name
             original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % ref_name
             #target_map_file_svg = settings.BASE_DIR + "/templates/circos/%s.svg" % ref_name
             map_file = "circos/%s.html" % ref_name
