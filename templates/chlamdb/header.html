@@ -72,10 +72,10 @@ var exportPNG = function(id, prefix) {
     https://gist.github.com/gustavohenke/9073132
     */
 
-var a = document.getElementById(id);
-console.log(prefix)
-// Get the SVG document inside the Object tag
-var svgDoc = a.contentDocument;
+    var a = document.getElementById(id);
+    console.log(prefix)
+    // Get the SVG document inside the Object tag
+    var svgDoc = a.contentDocument;
     var svgData = new XMLSerializer().serializeToString( svgDoc );
 
     var canvas = document.createElement( "canvas" );

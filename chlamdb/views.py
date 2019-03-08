@@ -12575,6 +12575,8 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
         taxon2locus_tag_closest[str(taxon_id)] = orthogroup_or_locus
         taxon2identity_closest[str(taxon_id)] = 100
 
+    locus_list = list(taxon2locus_tag_closest.values())
+
     asset_path = '/temp/phylo.svg'
     path = settings.BASE_DIR + '/assets/' + asset_path
     #print 'path', path

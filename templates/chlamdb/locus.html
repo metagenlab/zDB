@@ -338,6 +338,9 @@ function clearBox(elementID)
                         </div> <!-- fluid container -->
                       </div> <!-- first column -->
                       <div class="col-md-12 col-lg-8">
+                          <a download="genomic_region.svg" class="btn" href="{% static name %}"><i class="fa fa-download"></i> Download SVG</a>
+                          <a onclick='exportPNG("genomic_region", "genomic_region");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+
                             <div class="row" style="height:150px">
                                 <object width="105%" height="230px"  type="image/svg+xml" style="margin-left: 3px; margin-top: 10px; padding-bottom: -100px;" data="{% static name %}" id="genomic_region"></object>
                             </div>
@@ -480,6 +483,7 @@ function clearBox(elementID)
                                   <h3 class="panel-title">Domains</h3>
                                 </div>
                                 <div>
+                                  <a onclick='exportPNG("div_features", "div_features");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
                                   <div id="div_features" style="margin-top: 1px; width: 800px; margin-left: 20px;"></div>
 
                                   <table id="panel_table" class="table-striped" style="width: 100%">
