@@ -202,6 +202,13 @@ width: 230px;
   height: 800px;
 }
 
+.locusFrame{
+  padding-top: 18px;
+  padding-left: 0;
+  width: 100%;
+  height: 800px;
+}
+
 #string_complete{
   width: 100%;
   height: 1800px;

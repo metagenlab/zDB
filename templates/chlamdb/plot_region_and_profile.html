@@ -45,11 +45,10 @@
                 <br/>
             </div>
 
-                <object width="95%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
 
                 <div class="row">
 
-                    <div class="col-xs-3" style="padding-left: 15px">
+                    <div class="col-xs-3 col-lg-2 col-md-3" style="padding-left: 15px">
 
                         <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
                             <div class="panel-heading" style="width:100%">
@@ -61,8 +60,15 @@
                         </div>
 
                     </div>
-                    <div class="col-xs-6" style="padding-left: 15px">
+                    <div class="col-xs-6 col-lg-10 col-md-9" style="padding-left: 15px">
+
+                      <div class="row">
+                          <object width="105%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
+                      </div>
+
+                      <div class="row">
                         <object width="100%" height="80%" align="left" style="margin-left: 0px" type="image/svg+xml" data="{% static asset_path %}" id="orthogroup_tree"></object>
+                      </div>  
                     </div>
                 </div>
 

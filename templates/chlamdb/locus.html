@@ -66,35 +66,35 @@ function clearBox(elementID)
                 {% endif %}
 
                 {% if input_type == 'locus_tag'%}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' locus %}', 'orthoIDframe'); return false">Phylogenetic distribution</a></li>
+                <li><a href="#1" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' locus %}', 'frame1'); return false">Phylogenetic distribution</a></li>
                 {%else%}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' data.0 %}', 'orthoIDframe'); return false">Phylogenetic distribution</a></li>
+                <li><a href="#1" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' data.0 %}', 'frame1'); return false">Phylogenetic distribution</a></li>
                 {%endif%}
 
                 {% if align_path %}
                 <li><a href="#tab55" data-toggle="tab">MSA</a></li>
                 {% endif %}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' data.0 True %}', 'orthoIDframe'); return false">Orthogroup conservation</a></li>
+                <li><a href="#2" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' data.0 True %}', 'frame2'); return false">Orthogroup conservation</a></li>
                 {% if homologues|length > 3%}
-                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' data.0 %}', 'orthoIDframe'); return false">Pfam tree</a></li>
+                    <li><a href="#3" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' data.0 %}', 'frame3'); return false">Pfam tree</a></li>
                 {% endif %}
                 {% if show_tm_tree %}
-                    <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'TM_tree' data.0 %}', 'orthoIDframe'); return false">TM tree</a></li>
+                    <li><a href="#4" data-toggle="tab" onclick="window.open('{% url 'TM_tree' data.0 %}', 'frame4'); return false">TM tree</a></li>
                 {% endif %}
 
                 <!--{% if cog_data %}
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'string_page' cog_data.0 genome_accession %}', 'orthoIDframe'); return false">string interactions</a></li>
                 {% endif %}-->
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' data.1 %}', 'orthoIDframe'); return false">Region</a></li>
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastnr' data.1 %}', 'orthoIDframe'); return false">Blast RS <span class="badge">{{n_blastnr_hits}}</span></a></li>
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' data.1 %}', 'orthoIDframe'); return false">Blast SP <span class="badge">{{n_swissprot_hits}}</span></a></li>
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'interactions' data.1 %}', 'orthoIDframe'); return false">Interactions</a></li>
+                <li><a href="#5" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' data.1 %}', 'frame5'); return false">Region</a></li>
+                <li><a href="#6" data-toggle="tab" onclick="window.open('{% url 'blastnr' data.1 %}', 'frame6'); return false">Blast RS <span class="badge">{{n_blastnr_hits}}</span></a></li>
+                <li><a href="#7" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' data.1 %}', 'frame7'); return false">Blast SP <span class="badge">{{n_swissprot_hits}}</span></a></li>
+                <li><a href="#8" data-toggle="tab" onclick="window.open('{% url 'interactions' data.1 %}', 'frame8'); return false">Interactions</a></li>
                 {%if closest_phylo%}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' data.0 %}', 'orthoIDframe'); return false">BBH phylogeny</a></li>
+                <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' data.0 %}', 'frame9'); return false">BBH phylogeny</a></li>
                 {%endif %}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'hydropathy' data.1 %}', 'orthoIDframe'); return false">Hydropathy plot</a></li>
+                <li><a href="#10" data-toggle="tab" onclick="window.open('{% url 'hydropathy' data.1 %}', 'frame10'); return false">Hydropathy plot</a></li>
                 <!--<li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'aa_comp_locus' data.1 %}', 'orthoIDframe'); return false">AA composition PCA</a></li>-->
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'gc_locus' data.1 %}', 'orthoIDframe'); return false">GC</a></li>
+                <li><a href="#11" data-toggle="tab" onclick="window.open('{% url 'gc_locus' data.1 %}', 'frame11'); return false">GC</a></li>
                 {% if pubmed_data  %}
                 <li><a href="#tab22" data-toggle="tab">Pubmed  <span class="badge">{{pubmed_data|length}}</span></a></li>
                 {%endif %}
@@ -1096,14 +1096,50 @@ function clearBox(elementID)
                   </div>
                   {% endif %}
 
-                  <div class="tab-pane" id="tab66" style="height:2px;" >
-                    <iframe name="orthoIDframe" id="theFrame" style="height:8000px;overflow:hidden;" width="500px" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                  <div class="tab-pane" id="1" style="height:2px;" >
+                    <div class="col-lg-12">
+                      <div class="row ">
+                        <iframe class="locusFrame" name="frame1" id="frame1" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <div class="tab-pane" id="2" style="height:2px;" >
+                    <iframe class="locusFrame" name="frame2" id="frame2" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                  </div>
+                  <div class="tab-pane" id="3" style="height:2px;" >
+                    <iframe class="locusFrame" name="frame3" id="frame3" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                  </div>
+                  <div class="tab-pane" id="4" style="height:2px;" >
+                    <iframe class="locusFrame" name="frame4" id="frame4" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                  </div>
+                  <div class="tab-pane" id="5" style="height:2px;" >
+                    <iframe class="locusFrame" name="frame5" id="frame5" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                  </div>
+                  <div class="tab-pane" id="6" style="height:2px;" >
+                    <iframe class="locusFrame" name="frame6" id="frame6" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                  </div>
+                  <div class="tab-pane" id="7" style="height:2px;" >
+                    <iframe class="locusFrame" name="frame7" id="frame7" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                  </div>
+                  <div class="tab-pane" id="8" style="height:2px;" >
+                    <iframe class="locusFrame" name="frame8" id="frame8" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                  </div>
+                  <div class="tab-pane" id="9" style="height:2px;" >
+                    <iframe class="locusFrame" name="frame9" id="frame9" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                  </div>
+                  <div class="tab-pane" id="10" style="height:2px;" >
+                    <iframe class="locusFrame" name="frame10" id="frame10" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                  </div>
+                  <div class="tab-pane" id="11" style="height:2px;" >
+                    <iframe class="locusFrame" name="frame11" id="frame11" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                   </div>
 
                   {% if pubmed_data  %}
                       <div class="tab-pane" id="tab22" style="height:2px;" >
 
-                          <table>
+                          <table class="table">
 
                               {% for row in pubmed_data%}
                                   <tr>
