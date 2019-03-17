@@ -183,14 +183,14 @@ function clearBox(elementID)
                                    </tr>
                                    {%if cog_data %}
                                        <tr>
-                                       <td id="description_field"><a href="{% url 'fam' cog_data.0 'cog' %}" target="_top">COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></td>
-                                       <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{cog_data.0}}"  target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
+                                       <td id="description_field">COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                       <td><a <a href="{% url 'fam' cog_data.0 'cog' %}" target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
                                        </tr>
                                    {% endif %}
                                    {%if ko_data %}
                                        <tr>
-                                       <td id="description_field"><a href="{% url 'fam' ko_data.0 'ko' %}" target="_top">KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></td>
-                                       <td><a href="http://www.genome.jp/dbget-bin/www_bget?ko:{{ko_data.0}}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
+                                       <td id="description_field">KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                       <td><a href="{% url 'fam' ko_data.0 'ko' %}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
                                        </tr>
                                    {% endif %}
                                 </table>
@@ -940,14 +940,13 @@ function clearBox(elementID)
                           <h3 class="panel-title">Homologs</h3>
                         </div>
                         <div class="panel-body">
-                          {{homologues|length}} homologs were identified in {{ data.8 }} genomes with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>).
+                          {{homologues|length}} homologs were identified in {{ data.8 }} genomes with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>.
                         </div>
                       </div>
                     </div>
 
                   {% endif %}
                       <div class="row">
-                              </div>
 
                              <table class="display" id="homologues_table"> <!--  class="sortable" -->
                                   <thead>
