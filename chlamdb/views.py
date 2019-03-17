@@ -1356,10 +1356,10 @@ def venn_pfam(request):
     #print "loading db..."
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
-    venn_form_class = make_venn_from(biodb)
+    venn_form_class = make_venn_from(biodb, limit=6)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
-        form_venn = venn_form_class(request.POST, limit=6)
+        form_venn = venn_form_class(request.POST)
         #form2 = ContactForm(request.POST)
         if 'venn' in request.POST and form_venn.is_valid():
             targets = form_venn.cleaned_data['targets']
@@ -1786,11 +1786,11 @@ def venn_ko(request):
     #print "loading db..."
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
-    venn_form_class = make_venn_from(biodb)
+    venn_form_class = make_venn_from(biodb, limit=6)
     display_form = True
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
-        form_venn = venn_form_class(request.POST, limit=6)  # Nous reprenons les données
+        form_venn = venn_form_class(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
         if form_venn.is_valid():  # Nous vérifions que les données envoyées sont valides
 
@@ -2025,10 +2025,16 @@ def locusx(request, locus=None, menu=True):
         import re
 
         server, db = manipulate_biosqldb.load_db(biodb)
-
         if locus == None:
             menu = True
             locus = request.GET.get('accession').strip()
+            print(locus)
+            m = re.match("CT([0-9]+)", locus)
+            if m:
+                locus = "CT_%s" % (m.group(1))
+                print("updated_search", locus)
+
+
             try:
                 locus = int(locus)
                 sql = 'select locus_tag from custom_tables.locus2seqfeature_id_%s where seqfeature_id=%s' % (biodb,
@@ -10627,6 +10633,8 @@ def search(request):
         server, db = manipulate_biosqldb.load_db(biodb)
         search_term = search_term.strip()
 
+
+
         if not search_type:
             import re
             if len(search_term) == len("PF04093") and search_term[0:2] == 'PF':
@@ -10727,7 +10735,8 @@ def search(request):
             envoi = True
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        search_term = request.GET.get('accession')
+        search_term = request.GET.get('accession').strip()
+
         if search_term:
 
             import re

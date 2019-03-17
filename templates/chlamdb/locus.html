@@ -940,17 +940,13 @@ function clearBox(elementID)
                           <h3 class="panel-title">Homologs</h3>
                         </div>
                         <div class="panel-body">
-                          {{homologues|length}} homologs were identified in {{ data.8 }} genomes with OrthoFinder (REF).
+                          {{homologues|length}} homologs were identified in {{ data.8 }} genomes with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>).
                         </div>
                       </div>
                     </div>
 
                   {% endif %}
                       <div class="row">
-                              <div id="export_bouttons">
-                                  <a download="biodb_search.xls" href="#" onclick='return ExcellentExport.excel(this, "homologues_table", "search");' style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-                                  <a download="biodb_search.csv" href="#" onclick='return ExcellentExport.csv(this, "homologues_table");' style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to CSV</a>
-                              <br/>
                               </div>
 
                              <table class="display" id="homologues_table"> <!--  class="sortable" -->
