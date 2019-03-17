@@ -22,7 +22,7 @@
 
                 <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                     <li><a href="{% url 'fam' pfam_domain 'pfam' %}#tab1">General</a></li>
-                    <li><a href="{% url 'fam' pfam_domain 'pfam' %}#tab2">Details</a></li>>
+                    <li><a href="{% url 'fam' pfam_domain 'pfam' %}#tab2">Details</a></li>
                     <li><a href="{% url 'fam' pfam_domain 'pfam' %}#tab3">Profile</a></li>
                     {% if rank == 'phylum'%}
                     <li class="active"><a href="{% url 'pfam_profile' pfam_domain 'phylum' %}">Taxonomic profile (phylum)</a></li>
