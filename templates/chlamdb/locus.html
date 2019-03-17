@@ -900,7 +900,7 @@ function clearBox(elementID)
 
                             {% if values.6 != '0' %}
 
-                               <td><a href="http://www.ebi.ac.uk/interpro/entry/{{values.6}}">{{values.6}}</a></td>
+                               <td><a href="{% url 'fam' values.6 'interpro' %}">{{values.6}}</a></td>
                                <td>{{values.7}}</td>
                             {% else %}
                                <td>-</td>
