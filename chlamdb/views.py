@@ -2093,8 +2093,7 @@ def locusx(request, locus=None, menu=True):
             sql4 = 'select accession from orthology_detail_%s where locus_tag="%s" limit 1' % (biodb, locus)
             genome_accession = server.adaptor.execute_and_fetchall(sql4,)[0][0]
 
-            sql3 = 'select t2.COG_id,t2.function,t2.name from COG.locus_tag2gi_hit_%s ' \
-                   ' as t1 inner join COG.cog_names_2014 as t2 on t1.COG_id=t2.COG_id where locus_tag="%s"' % (biodb, locus)
+            sql3 = 'select COG_name,code,t2.description from COG.seqfeature_id2best_COG_hit_%s t1 inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.COG_id inner join COG.cog_id2cog_category t3 on t2.COG_id=t3.COG_id inner join COG.code2category t4 on t3.category_id=t4.category_id inner join annotation.seqfeature_id2locus_%s t6 on t1.seqfeature_id=t6.seqfeature_id where locus_tag="%s";' % (biodb, biodb, locus)
 
             sql4 = 'select analysis,signature_accession,signature_description,start,stop,score,interpro_accession,interpro_description ' \
                    ' from interpro_%s where locus_tag="%s";' % (biodb, locus)
@@ -2335,7 +2334,7 @@ def locusx(request, locus=None, menu=True):
 
 
             try:
-                cog_data = [] # TODO server.adaptor.execute_and_fetchall(sql3, )[0]
+                cog_data = server.adaptor.execute_and_fetchall(sql3, )[0]
 
             except IndexError:
 
