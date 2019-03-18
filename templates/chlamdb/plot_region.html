@@ -47,7 +47,8 @@
 
 
                   <div style="width: 100%;">
-                      <div  class="col-md-9" style="padding-left: 15px">
+                    <div class="row">
+                      <div  class="col-md-12" style="padding-left: 15px">
                         {% block content %}
                         <form action="{% url "plot_region" %}" method="post">
                             {% csrf_token %}
@@ -55,15 +56,15 @@
                         </form>
                         {% endblock %}
                       </div>
-
-
+                    </div>
+                    <div class="row">
                       <div  class="col-md-9" style="padding-left: 15px; padding-top:20px;">
                           <div id="example"><a onclick="window.open('{% url 'plot_region_direct' 'group_706' %}?t=55&t=314&t=66', 'orthoIDframe'); return false">Example: alignment of C. trachomatis and C. avium and W. chondrophila centered on "CT_559" (YscJ, 18000bp window)</a>
                           </div>
                       </div>
-
-
-                      <div  class="col-md-9" style="padding-left: 15px">
+                    </div>
+                    <div class="row">
+                      <div  class="col-md-12 col-lg-12" style="padding-left: 15px">
 
                               {% if envoi %}
                                   <h2>Region</h2>
@@ -150,9 +151,10 @@
                                       </div>
                                   </div>
                               </div>
+                            </div>
                           </div>
                       {% else %}
-                     <iframe name="orthoIDframe" id="theFrame" style="height:8000px;overflow:hidden;" width="500px" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                     <iframe name="orthoIDframe" id="theFrame" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
 
                       {% endif %}
               </div>
