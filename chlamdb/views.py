@@ -10034,11 +10034,12 @@ def circos(request):
     import gbk2circos
     circos_form_class = make_circos_form(biodb)
     server, db = manipulate_biosqldb.load_db(biodb)
-
+    print("request", request.method)
     if request.method == 'POST':
 
         form = circos_form_class(request.POST)
 
+        print("valid form", form.is_valid())
         if form.is_valid():
             reference_taxon = form.cleaned_data['circos_reference']
 

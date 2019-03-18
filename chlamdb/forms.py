@@ -295,14 +295,33 @@ def make_circos_form(database_name):
 
     class CircosForm(forms.Form):
         circos_reference = forms.ChoiceField(choices=accession_choices)
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'20'}), required = False)
+        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"8"}), required=False)
         #get_region = forms.NullBooleanField(widget=forms.CheckboxInput())
         #region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = False)
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
+            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset(
+                                                Row("Circos"),
+                                                Row('circos_reference'),
+                                                Row('targets'),
+                                                Submit('submit_circos', 'Submit'),
+                                                css_class="col-lg-5 col-md-6 col-sm-6")
+                                        )
+
+            super(CircosForm, self).__init__(*args, **kwargs)
 
         def save(self):
             self.reference = self.cleaned_data["reference"]
             self.get_region = self.cleaned_data["get_region"]
             self.region = self.cleaned_data["region"]
+
+
     return CircosForm
 
 
