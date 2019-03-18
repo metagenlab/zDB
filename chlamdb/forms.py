@@ -103,12 +103,32 @@ def make_plot_form(database_name):
 
     class PlotForm(forms.Form):
         choices = (("yes","yes"),("no", "best hit only"))
-        accession = forms.CharField(max_length=100)
+        accession = forms.CharField(max_length=100, label="Protein accession (e.g. CT_015)")
         #location_start = forms.CharField(max_length=9, label="sart (bp)", required=False)
         #location_stop = forms.CharField(max_length=9, label="end (bp)", required=False)
         region_size = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
-        genomes = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" }), required = False)
-        all_homologs = forms.ChoiceField(choices=choices, widget=forms.RadioSelect, initial="no")
+        genomes = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"8"}), required = False)
+        all_homologs = forms.ChoiceField(choices=choices, initial="no")
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
+            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset("Compare genomes",
+                                                Column(
+                                                Row(Column("accession", css_class='form-group col-lg-6 col-md-6 col-sm-12'),
+                                                    Column("region_size", css_class='form-group col-lg-6 col-md-6 col-sm-12')),
+                                                    Row('genomes', style="padding-left: 15px"),
+                                                Column(Row('all_homologs'),
+                                                Submit('submit', 'Compare'), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                                                css_class="col-lg-8 col-md-8 col-sm-12")
+                                                )
+                                        )
+
+            super(PlotForm, self).__init__(*args, **kwargs)
 
     return PlotForm
 
@@ -342,8 +362,8 @@ def make_extract_form(database_name, plasmid=False, label="Orthologs"):
             self.helper.layout = Layout(
                                         Fieldset("Compare genomes",
                                                 Column(
-                                                    Row('checkbox_accessions'),
-                                                    Row('checkbox_single_copy'),
+                                                    Row('checkbox_accessions', style="padding-left:15px"),
+                                                    Row('checkbox_single_copy', style="padding-left:15px"),
                                                 Row(Column("orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12'),
                                                     Column("no_orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12')),
                                                 Column(Row('frequency'),

@@ -7,7 +7,7 @@
 
 <head>
 {% load staticfiles %}
-
+{% load crispy_forms_tags %}
 <script type="text/javascript">
     jQuery(document).ready(function ($) {
         $('#tabs').tab();
@@ -39,16 +39,25 @@
                   </div>
 
 
+                      <div class="alert alert-info fade in" style="width:80%;  margin: 10px 10px 10px 10px">
+                          <a href="#" class="close" data-dismiss="alert">&times;</a>
+                          <strong>Note!</strong> If the target locus has no homolog in the selected genome(s), the plot cannot be drown (it will only display the reference locus region).
+                      </div>
+
+
+
                   <div style="width: 100%;">
                       <div  class="col-md-9" style="padding-left: 15px">
-                          <form action="{% url "plot_region" %}" method="post">
-                          {% csrf_token %}
-                          {{ form.as_p }}
-                          <input type="submit" value="Submit" />
-
-                          </form>
+                        {% block content %}
+                        <form action="{% url "plot_region" %}" method="post">
+                            {% csrf_token %}
+                            {% crispy form %}
+                        </form>
+                        {% endblock %}
                       </div>
-                      <div  class="col-md-9" style="padding-left: 15px">
+
+
+                      <div  class="col-md-9" style="padding-left: 15px; padding-top:20px;">
                           <div id="example"><a onclick="window.open('{% url 'plot_region_direct' 'group_706' %}?t=55&t=314&t=66', 'orthoIDframe'); return false">Example: alignment of C. trachomatis and C. avium and W. chondrophila centered on "CT_559" (YscJ, 18000bp window)</a>
                           </div>
                       </div>
