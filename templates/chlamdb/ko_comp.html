@@ -58,15 +58,18 @@
                                   white-space: nowrap;
                                   }
                                   </style>
-                                  <tr>
-                                      <th id="entete_meta" >Orthogroup</th>
-                                      <th id="entete_meta3">Total count</th>
-                                      {% for taxon in taxon_list %}
-                                          <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
-                                      {% endfor %}
-                                      <th id="entete_meta3">Annot</th>
-                                  <tr>
-                                  {% for key, values in ko2counts.items %}
+                                  <thead>
+                                    <tr style="height:200px;">
+                                        <th valign="bottom">Orthogroup</th>
+                                        <th valign="bottom">Total count</th>
+                                        {% for taxon in taxon_list %}
+                                            <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
+                                        {% endfor %}
+                                        <th valign="bottom">Annot</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {% for key, values in ko2counts.items %}
                                       <tr> <td><a href="{% url 'fam' key 'ko' %}" target="_top">{{key}}</a></td>
                                           <td>{{ko2total_count|keyvalue:key}}</td>
                                           {% for taxon_count in values%}
@@ -78,7 +81,8 @@
                                           {% endfor %}
                                           <td>{{ ko2annot|keyvalue:key }}</td>
                                       </tr>
-                              {% endfor %}
+                                    {% endfor %}
+                                  </tbody>
                               </table>
 
 
@@ -111,6 +115,31 @@
                         });
 
                         });
+
+                        $(document).ready(function() {
+                          $('#mytable').DataTable( {
+                            dom: 'lBfrtip',
+                            buttons: [
+                                {
+                                    extend: 'colvis',
+                                    columns: ':not(.noVis)',
+                                },
+                                {
+                                    extend: 'excel',
+                                    title: 'plast_refseq'
+                                },
+                                {
+                                    extend: 'csv',
+                                    title: 'plast_refseq'
+                                }
+                            ],
+                            "paging":   false,
+                            "ordering": true,
+                            "info":     false,
+                            } );
+                        } );
+
+
                         </script>
 
 </html>
