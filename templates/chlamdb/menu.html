@@ -38,7 +38,7 @@
           </div>
 
           <ul class="nav navbar-nav navbar-right" style="padding-right:20px;">
-            <button id="help_button" class="btn btn-success navbar-btn">Help</button>
+            <a id="help_button" class="btn btn-success navbar-btn" href="{% url 'help' %}" target="_top">Help</a>
             <li><a href="{% url 'chlamdb_login' %}">Login</a></li>
             <li><a href="{% url 'about' %}">About</a></li>
           </ul>

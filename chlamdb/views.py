@@ -109,6 +109,10 @@ def choose_db(request):
 
     return render(request, 'chlamdb/choose_db.html', locals())
 
+def help(request):
+
+    return render(request, 'chlamdb/help.html', locals())
+
 
 def about(request):
     import re

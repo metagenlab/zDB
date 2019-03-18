@@ -186,6 +186,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^locus_annotation/([a-zA-Z0-9_]+)$', views.locus_annotation, name="locus_annotation"),
                        url(r'^logout/$', logout, {'next_page': '/'},),
                        url(r'^about$', views.about, name="about"),
+                       url(r'^help', views.help, name="help"),
                        url(r'^get_record/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', views.get_record, name="get_record"),
                        url(r'^.*$', views.home, name="home"),
 
