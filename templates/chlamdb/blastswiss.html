@@ -29,10 +29,10 @@
 
 
 
-            <h3> SwissProt hits for: {{locus_tag}}</h3>
+            <h3> SwissProt hits for: {{locus_tag}} (homology search computed with BLAST)</h3>
             <ul>
              <li><A HREF={% url 'locusx' locus_tag True%}>{{ locus_tag }}</A></li>
-              <li>N. SwisProt hits: {{ blast_data|length }}</li>
+              <li>Number of SwisProt hits: {{ blast_data|length }}</li>
 
 
             </ul>

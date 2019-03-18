@@ -38,10 +38,10 @@
 
 
 
-            <h3> RefSeq hit </h3>
+            <h3> RefSeq homologs (homology search computed with <a href="https://plast.inria.fr/">PLAST</a>) </h3>
             <ul>
              <li><A HREF={% url 'locusx' locus_tag True%}>{{ locus_tag }} ({{ organism }})</A></li>
-              <li>N. NCBI nr hits: {{ blast_data|length }}</li>
+              <li>Number of RefSeq hits (max 100): {{ blast_data|length }} </li>
 
 
             </ul>
