@@ -43,143 +43,190 @@
 
                             <div style="padding-top:20px;">
                                 <div class="jumbotron">
-                                <h1> Welcome to the Chlamydiae database ! </h1>
-                                <p>
-                                Representative genomes of each species (n=XX) of the Planctomycetes-Verrucomycrobia-Chlamydiae superphylum were included in this database (created on the XX-XX-XXXX).
+                                <h1>Chlamydiae Database </h1>
+                                <center>
+                                  <p>
+                                  A comparative genomics database of the phylum <i>Chlamydiae</i>
+                                  </p>
+                                </center>
 
-                                A manuscript is currently being prepared (T. pillonel et al.). Before publishing data acquired from our database, please check again if the manuscript is available (the link for the publication will be displayed here).
-                              </p>
+
                                 <a id="learn_more" class="btn btn-success btn-lg" href="#" role="button">Learn more</a>
 
                                 </div>
                               </div>
                             <div class="row">
-                              <div class="col-lg-6">
+                              <div class="col-lg-12">
                                 <div class="panel panel-default">
                                   <div class="panel-heading">
-                                    <h3 class="panel-title">General searches</h3>
+                                    <h3 class="panel-title">Content of the database & main features</h3>
                                   </div>
-                                  <div class="panel-body">
-                                    First, gene names, gene products, locus tags, protein domains (InterPro or PFAM),
-                                      Clusters of orthologous genes (COGs), Kegg Orthology numbers (KO) or EC numbers can be queried using the search function at the top of the page.
-                                      [[https://chlamdb.ch/search][Searches]]
-                                      The locus page
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col-lg-6">
-                                <div class="panel panel-default">
-                                  <div class="panel-heading">
-                                    <h3 class="panel-title">Comparative analyses</h3>
-                                  </div>
-                                  <div class="panel-body">
-                                    Several comparisons are available:
-                                    <ul>
-                                      <li> [[./orthogroups.txt][Orthologous groups comparisons]] </li>
+                                  <div class="panel-body" style="margin: 10px 10px 10px 10px">
 
-                                      <li> [[./cog.txt][Cluster of orthologous genes (COGs) comparisons]] </li>
+                                    <font size="3">
+                                    <ul style="list-style-type:square;">
+                                       <li><a href="#tab0" data-toggle="tab">32 <i>Chlamydiae</i> genomes from 26 different species</a> (see the <a href="#tab1" data-toggle="tab">phylogeny</a>)</li>
+                                       <li>Orthologous proteins identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a></li>
+                                       <li>Detailed annotation of proteins based on</li>
+                                           <ul style="list-style-type:circle; padding-left:20px;">
+                                             <li><a href="https://www.genome.jp/kegg/">KEGG</a> (Kegg orthologs)</li>
+                                             <li><a href="https://www.ncbi.nlm.nih.gov/COG/">COG</a> (clusters of orthologous groups)</li>
+                                             <li><a href="https://string-db.org/">STRING</a> (protein-protein interactions)</li>
+                                             <li><a href="http://priam.prabi.fr/">PRIAM</a> (enzymes)</li>
+                                             <li><a href="http://www.tcdb.org/">TCDB</a> (curated transporters annotation)</li>
+                                             <li><a href="https://www.uniprot.org/">SwissProt</a> (manually annotated proteins)</li>
+                                             <li><a href="https://www.ebi.ac.uk/interpro/">InterproScan</a> (domains and signatures)</li>
+                                             <li><a href="http://csbl.bmb.uga.edu/DOOR/">DOOR</a> (operons)</li>
+                                           </ul>
+                                        <li>Precomputed homology searches with <a href="">RefSeq</a> and <a href="">SwissProt</a> databases for each protein</li>
+                                        <li>Precomputed phylogenetic reconstructions of orthologous groups including the closest RefSeq and Swissprot homologs</li>
+                                        <li>Pfam and COG phylogenetic profiles allowing to identify chlamydial domains/proteins rarely found in other prokaryotes (see for example <a href="{% url 'fam' "PF01823" "pfam" %}">PF01823</a>)</li>
+                                        <li>Identification of conserved gene neighborhood among distantly related <i>Chlamydiae</i> and PVC (see for example the paper from <a href="https://www.ncbi.nlm.nih.gov/pubmed/9787636">Dandekar et al.</a> for the rationale behind this)</li>
+                                        <li>Multiple tools allowing comparative analyses of <i>Chlamydiae</i> genomes</li>
 
-                                      <li> [[./pfam.txt][Pfam domains]] </li>
+                                      </font>
 
-                                      <li> [[./interpro.txt][InterPro entries]] </li>
-
-                                      <li> [[./ec.txt][EC numbers]] </li>
-
-                                      <li> [[./kegg.txt][Kegg Orthologs]] </li>
-
-                                      <li> [[./pairwise.txt][Pairwise identity]] </li>
-
-                                      <li> [[./cds_length.txt][Coding Sequences lengths]] </li>
-
-                                      <li> [[./transporters.txt][Transporters]] </li>
                                     </ul>
                                   </div>
                                 </div>
+
+
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    <h3 class="panel-title">Examples of comparative genomic data vizualisation available from this website</h3>
+                                  </div>
+                                  <div class="panel-body" style="margin: 10px 10px 10px 10px">
+
+                                  <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-sm-12">
+
+                                      <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                          <h3 class="panel-title">Venn diagram: orthologs (interactive plot)</h3>
+                                        </div>
+                                        <div class="panel-body" style="margin: 10px 10px 10px 10px">
+
+                                          <object type="image/svg+xml" data="{% static "homepage/jVenn_chart.svg" %}" id="venn" style="width:100%"></object>
+
+
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-12">
+
+                                      <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                          <h3 class="panel-title">Homologs of ADP/ATP carrier protein CT_495 in other <i>Chlamydiae</i> genomes</h3>
+                                        </div>
+                                        <div class="panel-body" style="margin: 10px 10px 10px 10px">
+
+                                          <object type="image/svg+xml" data="{% static "homepage/phylo_profile.svg" %}" id="venn" style="width:100%"></object>
+
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+
+
+                                  <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-sm-12">
+
+                                      <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                          <h3 class="panel-title">Circos comparative plot (interactive plot)</h3>
+                                        </div>
+                                        <div class="panel-body" style="margin: 10px 10px 10px 10px">
+
+                                          <img width = "100%" src = "{% static "homepage/circos.png" %}" alt = "circos" />
+
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-12">
+
+                                      <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                          <h3 class="panel-title">ADP/ATP carrier protein TM domains organization</h3>
+                                        </div>
+                                        <div class="panel-body" style="margin: 10px 10px 10px 10px">
+
+                                          <object type="image/svg+xml" data="{% static "homepage/TM_tree.svg" %}" id="venn" style="width:100%"></object>
+
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+
+                                  <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-sm-12">
+
+                                      <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                          <h3 class="panel-title">Conservation of specific genomic regions (reference in blue)</h3>
+                                        </div>
+                                        <div class="panel-body" style="margin: 10px 10px 10px 10px">
+
+                                          <object type="image/svg+xml" data="{% static "homepage/region.svg" %}" id="venn" style="width:100%"></object>
+
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-12">
+
+                                      <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                          <h3 class="panel-title">Genome aligments based on identified orthologs (interactive plot)</h3>
+                                        </div>
+                                        <div class="panel-body" style="margin: 10px 10px 10px 10px">
+
+                                          <object type="image/svg+xml" data="{% static "homepage/region_align.svg" %}" id="venn" style="width:100%"></object>
+
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+
+
+                                  <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-sm-12">
+
+                                      <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                          <h3 class="panel-title">Conservation of metabolic pathways (interactive plot)</h3>
+                                        </div>
+                                        <div class="panel-body" style="margin: 10px 10px 10px 10px">
+
+                                          <object type="image/svg+xml" data="{% static "homepage/TCA.svg" %}" id="venn" style="width:100%"></object>
+
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-12">
+
+                                      <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                          <h3 class="panel-title">Pan-genome & Core-genome plot</h3>
+                                        </div>
+                                        <div class="panel-body" style="margin: 10px 10px 10px 10px">
+
+                                          <object type="image/svg+xml" data="{% static "homepage/pangenome.svg" %}" id="venn" style="width:100%"></object>
+
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+
+
+                                  </div>
+                                </div>
+
+
                               </div>
 
-                              <div class="row">
-                                <div class="col-lg-6">
-                                  <div class="panel panel-default">
-                                    <div class="panel-heading">
-                                      <h3 class="panel-title">Genome alignments </h3>
-                                    </div>
-                                    <div class="panel-body">
-                                      Genome alignments of specific regions or of whole genomes can be performed:
-
-                                        - Genomic Region <br>
-
-                                        - Whole-genome alignments <br>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="col-lg-6">
-                                  <div class="panel panel-default">
-                                    <div class="panel-heading">
-                                      <h3 class="panel-title">Metabolism comparisons</h3>
-                                    </div>
-                                    <div class="panel-body">
-                                      Panel content
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div class="row">
-                                <div class="col-lg-6">
-                                  <div class="panel panel-default">
-                                    <div class="panel-heading">
-                                      <h3 class="panel-title">Secretion system effectors</h3>
-                                    </div>
-                                    <div class="panel-body">
-                                      The proteins secreted by the type-III secretion play a major role in the host-bacterial interaction. These are call effectors and tend to exhibit eukariotic proteins domains allowing the interaction with host proteins.
-
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="col-lg-6">
-                                  <div class="panel panel-default">
-                                    <div class="panel-heading">
-                                      <h3 class="panel-title">Transporters</h3>
-                                    </div>
-                                    <div class="panel-body">
-                                      Transporters were annotated using XXX
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div class="row">
-                                <div class="col-lg-6">
-                                  <div class="panel panel-default">
-                                    <div class="panel-heading">
-                                      <h3 class="panel-title">Genome statistics</h3>
-                                    </div>
-                                    <div class="panel-body">
-                                      <ul>
-
-                                        <li> General genomic features </li>
-
-                                        <li> Maximum-likelihood core-genome phylogeny </li>
-
-                                        <li> Pairwise identities comparisons </li>
-
-                                        <li> Coding Sequence lengths comparisons </li>
-                                      </ul>
-
-                                    </div>
-                                  </div>
-                                </div>
-                                <div class="col-lg-6 col-md-8 col-sm-8">
-                                  <div class="panel panel-default">
-                                    <div class="panel-heading">
-                                      <h3 class="panel-title">BlastNR</h3>
-                                    </div>
-                                    <div class="panel-body">
-                                      Each coding sequence was BLASTed (using BLASTP) against the nun-redundant protein database of the National Center for Biotechnology Information.
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
 
                             </div>
 

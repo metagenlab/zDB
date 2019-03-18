@@ -33,11 +33,12 @@
               </form>
           </div>
 
-            <div id="help_button" class="col-sm-1 col-md-1">
-              <button class="btn btn-success navbar-btn">Help</button>
-            </div>
+          <div class="col-sm-2 col-md-2" style="margin: 15px 5px 5px 5px">
+            <font color="white">examples: <a style="color:#FF0000;" href="{% url 'locusx' "CT_015" True %}">CT_015</a> or <a style="color:#FF0000;" href="{% url 'fam' "K00024" "ko" %}">K00024</a></font>
+          </div>
 
           <ul class="nav navbar-nav navbar-right" style="padding-right:20px;">
+            <button id="help_button" class="btn btn-success navbar-btn">Help</button>
             <li><a href="{% url 'chlamdb_login' %}">Login</a></li>
             <li><a href="{% url 'about' %}">About</a></li>
           </ul>
