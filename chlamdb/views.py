@@ -43,6 +43,7 @@ from chlamdb.forms import AnnotForm
 from chlamdb.forms import hmm_sets_form
 from chlamdb.forms import hmm_sets_form_circos
 from chlamdb.forms import make_blastnr_form
+from chlamdb.forms import make_genome_selection_form
 from chlamdb.forms import make_comment_from
 from chlamdb.forms import locus_int_form
 from chlamdb.forms import LocusInt
@@ -9936,7 +9937,7 @@ def circos_main(request):
 def circos_blastnr(request):
     biodb = settings.BIODB
     import gbk2circos
-    circos_form_class = make_circos_form(biodb)
+    circos_form_class = make_genome_selection_form(biodb)
     server, db = manipulate_biosqldb.load_db(biodb)
 
     if request.method == 'POST':
@@ -9945,7 +9946,7 @@ def circos_blastnr(request):
 
         if form.is_valid():
 
-            reference_taxon = form.cleaned_data['circos_reference']
+            reference_taxon = form.cleaned_data['genome']
 
             description2accession_dict = manipulate_biosqldb.description2accession_dict(server, biodb)
 

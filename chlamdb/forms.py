@@ -325,6 +325,31 @@ def make_circos_form(database_name):
     return CircosForm
 
 
+def make_genome_selection_form(database_name):
+
+    accession_choices = get_accessions(database_name)
+
+    class GenomeForm(forms.Form):
+        genome = forms.ChoiceField(choices=accession_choices)
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
+            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset(
+                                                Row("Genome"),
+                                                Row('genome'),
+                                                Submit('submit', 'Submit'),
+                                                css_class="col-lg-5 col-md-6 col-sm-6")
+                                        )
+
+            super(GenomeForm, self).__init__(*args, **kwargs)
+
+    return GenomeForm
+
 
 def make_kegg_form(database_name):
     import manipulate_biosqldb

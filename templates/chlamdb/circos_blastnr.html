@@ -22,10 +22,11 @@
                       <div class="panel-heading" style="width:100%">
                           <h3 class="panel-title">Help</h3>
                       </div>
-                      <p style="margin: 10px 10px 10px 10px">Create circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. Click on the circos plot to open a new windows with clickable version of the plot.<br>
-                      rRNA are colored in blue, tRNA in red. Click on the figure to access the interactive plot.
+                      <p style="margin: 10px 10px 10px 10px">Create circos plots with summary of PLAST versus RefSeq.
                       </p>
                   </div>
+
+
 
                   <div class="row">
                     <form action="{% url "circos_blastnr" %}" method="post">{% csrf_token %}
@@ -36,19 +37,18 @@
                     </tr>
 
                     <tr>
-                      <td><input type="submit" name="submit_circos" value="get circos plot" id="id_submit_circos" /> <input type="submit" name="submit_region" value="Get region" id="id_submit_region" /></td>
+                      <td><input type="submit" name="submit_circos" value="get circos plot" id="id_submit_circos" /> </td>
                     </tr>
                     </table>
 
                   </div>
 
-
-
-
-
-
-
                   {% if envoi_circos %}
+
+                  <div class="alert alert-info fade in" style="width:80%;  margin: 10px 10px 10px 10px">
+                      <a href="#" class="close" data-dismiss="alert">&times;</a>
+                      <strong>Note:</strong> Click on the image to access the interactive plot.
+                  </div>
 
                       {% load static %}
                       <div class="row">
