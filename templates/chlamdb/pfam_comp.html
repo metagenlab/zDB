@@ -50,6 +50,18 @@
 
                       </ul>
                   </nav>
+
+                  <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                          <h3 class="panel-title">Help</h3>
+                      </div>
+                      <p style="margin: 10px 10px 10px 10px; line-height: 160%">
+                      Compare Pfam domain found in selected genomes (return detailed table)<br></p>
+                  </p>
+                  </div>
+
+
+
                       <form action='{% url "pfam_comparison" %}' method="post">
                           {% csrf_token %}
                           {{ form.as_p }}
@@ -59,37 +71,58 @@
 
                       {% if envoi_comp %}
 
-                              <h3>Number of domains: {{pfam2data|length}} (at least present 1 time in one of the selected genomes).</h3>
+                      <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                          <div class="panel-heading" style="width:100%">
+                              <h3 class="panel-title">Help</h3>
+                          </div>
+                          <div style="margin: 10px 10px 10px 20px;">
+                            <ul style="list-style-type:square;">
+                              <li>
+                                Number of domains at least present 1 time in 1 of the {{taxon_list|length}} selected genomes: <strong>{{pfam2data|length}}</strong> . <br>
+                              </li>
+                              <li>
+                                Click on Pfam accession to get detailed phylogenetic profile of the corresponding Pfam entry. <br>
+                              </li>
+                              <li>
+                                nDomain: total number of occurence of this domain in the complete database <br>
+                              </li>
+                            </ul>
 
+                        </div>
+                      </div>
 
                               <table class="sortable table" id="table_pfam">
-                                      <style>
-                          table {
-                              width:100%;
-                              table-layout:fixed;
-                          }
-                          td {
-                              overflow: hidden;
-                              white-space: nowrap;
-                          }
-                      </style>
-                              <tr style="height:200px;">
-                                  <th>Domain ID</th>
-                                  <th>Description</th>
-                                  <th>nDomain</th>
-                                  {% for taxon in taxon_list %}
-                                      <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
-                                  {% endfor %}
-                              <tr>
-                              {% for key, values in pfam2data.items %}
-                                  <tr>
-                                      <td><a href="{% url 'fam' values.0 'pfam' %}" target="_top">{{values.0}}</a></td><td>{{values.1}}</td><td>{{values.2}}</td>
-                                      {%for taxon_dico in taxon_dicos %}
-                                          <td data-hist="{{taxon_dico|keyvalue:values.0}}">{{taxon_dico|keyvalue:values.0}}</td>
-                                      {% endfor %}
-
+                                  <style>
+                                    table {
+                                        width:100%;
+                                        table-layout:fixed;
+                                    }
+                                    td {
+                                        overflow: hidden;
+                                        white-space: nowrap;
+                                    }
+                                    </style>
+                                  <thead>
+                                  <tr style="height:200px;">
+                                    <th>Domain ID</th>
+                                    <th>Description</th>
+                                    <th>nDomain</th>
+                                    {% for taxon in taxon_list %}
+                                        <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
+                                    {% endfor %}
                                   </tr>
-                              {% endfor %}
+                                </thead>
+                                <tbody>
+                                  {% for key, values in pfam2data.items %}
+                                      <tr>
+                                          <td><a href="{% url 'fam' values.0 'pfam' %}" target="_top">{{values.0}}</a></td><td>{{values.1}}</td><td>{{values.2}}</td>
+                                          {%for taxon_dico in taxon_dicos %}
+                                              <td data-hist="{{taxon_dico|keyvalue:values.0}}">{{taxon_dico|keyvalue:values.0}}</td>
+                                          {% endfor %}
+
+                                      </tr>
+                                  {% endfor %}
+                                </tbody>
                               </table>
                       {% endif %}
                   </div>
@@ -118,6 +151,32 @@
         });
 
       });
+
+      $(document).ready(function() {
+        $('#table_pfam').DataTable( {
+          dom: 'lBfrtip',
+          buttons: [
+              {
+                  extend: 'colvis',
+                  columns: ':not(.noVis)',
+              },
+              {
+                  extend: 'excel',
+                  title: 'plast_refseq'
+              },
+              {
+                  extend: 'csv',
+                  title: 'plast_refseq'
+              }
+          ],
+          "paging":   false,
+          "ordering": true,
+          "info":     false,
+          } );
+      } );
+
+
+
     </script>
 </body>
 {% include "chlamdb/style_menu.html" %}
