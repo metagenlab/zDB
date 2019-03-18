@@ -6859,7 +6859,7 @@ def prot_length_barchart(request):
                 len_more_600+=1
             else:
                 pass
-        taxon_id2CDS_length_counts[taxon] = [[len_100_199, len_200_299, len_300_399, len_400_499, len_500_599, len_more_600]]
+        taxon_id2CDS_length_counts[taxon] = [[len_50_99, len_100_199, len_200_299, len_300_399, len_400_499, len_500_599, len_more_600]]
 
     header_list = ['size']
 
