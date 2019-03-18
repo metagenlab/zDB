@@ -77,12 +77,15 @@
                                               <p style="margin: 0px 0px 0px 10px">Click on ORFs to get annotations and lists of homologs </p>
                                           </div>
 
-                                          <div id="export_bouttons">
-                                              <a download="region.svg" href="{% static name %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to SVG</a>
-                                              <a download="region.png" href="{% static name_png %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to PNG</a>
+                                          <div class="row">
+                                            <div class="col-lg-6 col-md-12">
+                                              <a download="region.svg" href="{% static name %}" class="btn" id="png_button"><i class="fa fa-download"></i> Export to SVG</a>
+                                              <a download="region.png" href="{% static name_png %}" class="btn" id="png_button"><i class="fa fa-download"></i> Export to PNG</a>
 
-                                              <br/>
-                                          <img src="{% static "/scales/scale_blues_20_100.png" %}" id="circos_legend"  width="160" style="position: relative; top: 0; left: 0;">
+                                            </div>
+                                            <div class="col-lg-6 col-md-12">
+                                              <img src="{% static "/scales/scale_blues_20_100.png" %}" id="circos_legend"  width="160" style="position: relative; top: 0; left: 0;">
+                                            </div>
                                           </div>
                                           <div>
 
@@ -95,38 +98,31 @@
 
                                       <div class="tab-pane" id="orange">
 
-                                          <div id="export_bouttons">
-                                              <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" class="btn btn-success">Export to Excel</a>
-
-                                              <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" class="btn btn-success">Export to CSV</a>
-                                              <br/>
-                                          </div>
-                                          <table id="plot_table" class="sortable">
+                                          <table id="plot_table" class="table">
                                               <thead>
                                                   <tr>
                                                       <th></th>
-                                                      <th id="entete_locus">Orthogroup</th>
-                                                      <th id="entete_locus">Locus</th>
-                                                      <th id="entete_locus">Protein id</th>
-                                                      <th id="entete_gene">Start</th>
-                                                      <th id="entete_gene">Stop</th>
-                                                      <th id="entete_strand">S.</th>
-                                                      <th id="entete_gene">Gene</th>
-                                                      <th id="entete_n">nH</th>
-                                                      <th id="entete_n">nG</th>
-                                                      <th id="entete_n">TM</th>
-                                                      <th id="entete_n">SP</th>
-                                                      <th id="entete_product">Product</th>
-                                                      <th id="entete_organism">Organism</th>
-                                                      <th id="entete_translation">Translation</th>
+                                                      <th>Orthogroup</th>
+                                                      <th>Locus</th>
+                                                      <th>Protein id</th>
+                                                      <th>Start</th>
+                                                      <th>Stop</th>
+                                                      <th>S.</th>
+                                                      <th>Gene</th>
+                                                      <th>nH</th>
+                                                      <th>nG</th>
+                                                      <th>TM</th>
+                                                      <th>SP</th>
+                                                      <th>Product</th>
+                                                      <th>Organism</th>
                                                   </tr>
                                               </thead>
                                               <tbody>
                                               {% for values in search_result %}
                                                   <tr>
                                                   <td>{{values.0}}</td>
-                                                  <td>{{values.1}}</td>
-                                                  <td>{{values.2}}</td>
+                                                  <td><a href="{% url 'locusx' values.1 True%}"  target="_top">{{values.1}}</a></td>
+                                                  <td><a href="{% url 'locusx' values.3 True%}"  target="_top">{{values.2}}</a></td>
                                                   <td>{{values.3}}</td>
                                                   <td>{{values.4}}</td>
                                                   <td>{{values.5}}</td>
@@ -138,7 +134,6 @@
                                                   <td>{{values.11}}</td>
                                                   <td>{{values.12}}</td>
                                                   <td>{{values.13}}</td>
-                                                  <td>{{values.14}}</td>
                                                   </tr>
                                               {% endfor %}
                                               </tbody>
@@ -184,10 +179,35 @@
   $(update_fields);
   $("#id_get_annotation").change(update_fields);
 
+  $(document).ready(function() {
+    $('#plot_table').DataTable( {
+      dom: 'lBfrtip',
+      buttons: [
+          {
+              extend: 'colvis',
+              columns: ':not(.noVis)',
+          },
+          {
+              extend: 'excel',
+              title: 'plast_refseq'
+          },
+          {
+              extend: 'csv',
+              title: 'plast_refseq'
+          }
+      ],
+      "paging":   false,
+      "ordering": true,
+      "info":     false,
+      } );
+  } );
 
 
 
 </script>
+
+
+
 
 <style>
 
