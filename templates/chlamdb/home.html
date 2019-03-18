@@ -33,13 +33,96 @@
 
 
             <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                <li class="active"><a href="#tab0" data-toggle="tab">Genomes</a></li>
+                <li class="active"><a href="#tab2" data-toggle="tab">Home</a></li>
+                <li><a href="#tab0" data-toggle="tab">Genomes</a></li>
                 <li><a href="#tab1" data-toggle="tab">Phylogeny</a></li>
             </ul>
 
 
             <div id="my-tab-content" class="tab-content">
-                <div class="tab-pane active" id="tab0">
+                <div class="tab-pane active" id="tab2">
+
+
+
+
+                    <h1> Welcome to the Chlamydiae database ! </h1>
+
+                    Representative genomes of each species (n=XX) of the Planctomycetes-Verrucomycrobia-Chlamydiae superphylum were included in this database (created on the XX-XX-XXXX).
+
+                    A manuscript is currently being prepared (T. pillonel et al.). Before publishing data acquired from our database, please check again if the manuscript is available (the link for the publication will be displayed here).
+
+                    <h2>  General searches </h2>
+
+                    First, gene names, gene products, locus tags, protein domains (InterPro or PFAM), Clusters of orthologous genes (COGs), Kegg Orthology numbers (KO) or EC numbers can be queried using the search function at the top of the page.
+
+                    [[https://chlamdb.ch/search][Searches]]
+
+                    The locus page
+
+                    <h2> Comparative analyses </h2>
+
+                    Several comparisons are available:
+                    <ul>
+                      <li> [[./orthogroups.txt][Orthologous groups comparisons]] </li>
+
+                      <li> [[./cog.txt][Cluster of orthologous genes (COGs) comparisons]] </li>
+
+                      <li> [[./pfam.txt][Pfam domains]] </li>
+
+                      <li> [[./interpro.txt][InterPro entries]] </li>
+
+                      <li> [[./ec.txt][EC numbers]] </li>
+
+                      <li> [[./kegg.txt][Kegg Orthologs]] </li>
+
+                      <li> [[./pairwise.txt][Pairwise identity]] </li>
+
+                      <li> [[./cds_length.txt][Coding Sequences lengths]] </li>
+
+                      <li> [[./transporters.txt][Transporters]] </li>
+                    </ul>
+                    <h2> Genome alignments </h2>
+
+                    Genome alignments of specific regions or of whole genomes can be performed:
+
+                      - Genomic Region <br>
+
+                      - Whole-genome alignments <br>
+
+                    <h2> Metabolism comparisons </h2>
+
+                    <h2> Secretion system effectors</h2>
+
+                    The proteins secreted by the type-III secretion play a major role in the host-bacterial interaction. These are call effectors and tend to exhibit eukariotic proteins domains allowing the interaction with host proteins.
+
+                    <h2> Transporters</h2>
+
+                    Transporters were annotated using XXX <br>
+
+                    <h2> Genome statistics</h2>
+                    <ul>
+
+                      <li> General genomic features </li>
+
+                      <li> Maximum-likelihood core-genome phylogeny </li>
+
+                      <li> Pairwise identities comparisons </li>
+
+                      <li> Coding Sequence lengths comparisons </li>
+                    </ul>
+                    <h2> BlastNR </h2>
+
+                    Each coding sequence was BLASTed (using BLASTP) against the nun-redundant protein database of the National Center for Biotechnology Information.
+
+
+
+
+
+
+
+
+                </div>
+                <div class="tab-pane" id="tab0">
 
                     <div id="export_bouttons">
                         <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'genomes_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>

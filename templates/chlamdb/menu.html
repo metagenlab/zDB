@@ -8,6 +8,8 @@
 
             <li class="rollmenu"><a href="">Search</a>
                  <ul>
+                    <li class="item5"><a href="{% url 'search' %}">Keyword Search</a>
+                </li>
                 <li class="item5"><a href="{% url 'blast' %}">Blast</a>
                 </li>
                 <!--<li class="item6"><a href="{% url 'motif_search' %}">Motif search</a>-->
@@ -26,34 +28,41 @@
             </li>
 
             <li class="rollmenu"><a href="">Comparisons</a>
-
                  <ul>
+                    <li class="item6"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a>
+                    </li>
+                    <li class="item6"><a href="{% url 'extract_cog' %}">COGs</a>
+                    </li>
+                    <li class="item6"><a href="{% url 'extract_pfam' %}">Pfam domains</a>
+                    </li>
+                    <li class="item6"><a href="{% url 'extract_interpro' %}">Interpro entries</a>
+                    </li>
+                    <li class="item6"><a href="{% url 'extract_EC' %}">EC numbers</a>
+                    </li>
+                    <li class="item6"><a href="{% url 'extract_ko' %}">Kegg Orthologs</a>
+                    </li>
 
-                <li class="item6"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a>
-                </li>
-                <li class="item6"><a href="{% url 'extract_cog' %}">COGs</a>
-                </li>
-                <li class="item6"><a href="{% url 'extract_pfam' %}">Pfam domains</a>
-                </li>
-                <li class="item6"><a href="{% url 'extract_interpro' %}">Interpro entries</a>
-                </li>
-                <li class="item6"><a href="{% url 'extract_EC' %}">EC numbers</a>
-                </li>
-                <li class="item6"><a href="{% url 'extract_ko' %}">Kegg Orthologs</a>
-                </li>
-                <li class="item6"><a href="{% url 'pairwiseid' %}">PairwiseID</a>
-                </li>
-                <li class="item5"><a href="{% url 'pairwiseCDS_length' %}">CDS length</a>
-                </li>
-		{% if biodb in 'chlamydia_04_16,2017_06_29b_motile_chlamydiae'|slice:',' %}
-                <li class="item5"><a href="{% url 'transporters' %}">transporters</a>
-                </li>
-		{% endif %}
-		
                 </ul>
             </li>
 
-            <li class="rollmenu"><a href="">Plots</a>
+		<!-- if biodb in 'chlamydia_04_16,2017_06_29b_motile_chlamydiae'|slice:','  -->
+            <li class="rollmenu"><a href="">Transporters</a>
+                <ul>
+                    <li class="item5"><a href="{% url 'transporters' %}">TCDB annotation</a>
+                    </li>
+                </ul>
+            </li>
+		
+            <li class="rollmenu"><a href="">Genome statistics</a>
+                <ul>
+                    <li class="item6"><a href="{% url 'pairwiseid' %}">Pairwise Identity</a>
+                    </li>
+                    <li class="item5"><a href="{% url 'pairwiseCDS_length' %}">CDS lengths</a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="rollmenu"><a href="">Genome align.</a>
 
                  <ul>
                     <li class="item5"><a href="{% url 'plot_region' %}">Plot region</a>
@@ -84,6 +93,8 @@
                     <li class="item5"><a href="{% url 'blastnr_barchart' %}">BlastNR hits</a>
                     </li>
                 </ul>
+
+            {% if user.is_authenticated %}
             <li class="rollmenu"><a href="">Effectors</a>
                 <ul>
                     <li class="item5"><a href="{% url 'interpro_taxonomy' %}">Euk. domains (IP)</a>
@@ -99,6 +110,7 @@
                     </li>
                     {% endif %}
                 </ul>
+            {% endif %}
 	    {% endif %}	
             <li class="rollmenu"><a href="{% url 'about' %}">About</a>
 
