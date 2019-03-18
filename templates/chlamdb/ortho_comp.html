@@ -62,7 +62,7 @@
                       </p>
                       </div>
 
-                              Number of orthogroups exhiniting > 1 copy in at least 1/{{taxon_list|length}} genome: {{orthogroups2counts|length}}
+                              Number of orthogroups exhiniting > 1 copy (in one ore multiple genomes) in at least 1 out of {{taxon_list|length}} selected genomes: {{orthogroups2counts|length}}
 
                               <table class="sortable" id="mytable">
                                   <style>
@@ -75,14 +75,19 @@
                                   white-space: nowrap;
                                   }
                                   </style>
-                                  <tr>
-                                      <th id="entete_meta" >Orthogroup</th>
-                                      <th id="entete_meta3">Total count</th>
-                                      {% for taxon in taxon_list %}
-                                          <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
-                                      {% endfor %}
-                                      <th id="entete_meta3">Annot</th>
-                                  <tr>
+                                  <thead>
+
+
+                                    <tr style="height:200px;">
+                                        <th valign="bottom">Orthogroup</th>
+                                        <th valign="bottom">Total count</th>
+                                        {% for taxon in taxon_list %}
+                                            <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
+                                        {% endfor %}
+                                        <th valign="bottom">Annot</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
                                   {% for key, values in orthogroups2counts.items %}
                                       <tr> <td><a href="{% url 'locusx'  key True%}">{{key}}</a></td>
                                           <td>{{orthogroups2total_count|keyvalue:key}}</td>
@@ -100,6 +105,7 @@
                                           </td>
                                       </tr>
                               {% endfor %}
+                              </tbody>
                               </table>
 
 
@@ -112,23 +118,52 @@
     </div>
   </div>
 </body>
-{% include "chlamdb/style_menu.html" %}
+
 <script src="{% static 'js/jquery.hottie.js' %}"></script>
-                        <script>
-                        $(function(){
-                        $("#mytable td").hottie({
-                        readValue : function(e) {
-                        return $(e).attr("data-hist");
-                        },
-                        colorArray : [
-                        "#5858FA",
-                        "#FBEFEF",
-                        "#FA5858"
-                        ]
+<script>
+$(function(){
+$("#mytable td").hottie({
+readValue : function(e) {
+return $(e).attr("data-hist");
+},
+colorArray : [
+"#5858FA",
+"#FBEFEF",
+"#FA5858"
+]
 
-                        });
+});
 
-                        });
-                        </script>
+});
+</script>
 
+
+<script>
+
+$(document).ready(function() {
+  $('#mytable').DataTable( {
+    dom: 'lBfrtip',
+    buttons: [
+        {
+            extend: 'colvis',
+            columns: ':not(.noVis)',
+        },
+        {
+            extend: 'excel',
+            title: 'plast_refseq'
+        },
+        {
+            extend: 'csv',
+            title: 'plast_refseq'
+        }
+    ],
+    "paging":   false,
+    "ordering": true,
+    "info":     false,
+    } );
+} );
+
+</script>
+
+{% include "chlamdb/style_menu.html" %}
 </html>
