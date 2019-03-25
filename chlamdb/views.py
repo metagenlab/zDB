@@ -199,9 +199,7 @@ def home(request):
     import phylo_tree_bar
     from ete3 import Tree
     biodb = settings.BIODB
-    print ('biodb', biodb)
     server, db = manipulate_biosqldb.load_db(biodb)
-    print('ok')
     sql = 'select * from genomes_info_%s' % biodb
 
     genomes_data = server.adaptor.execute_and_fetchall(sql,)

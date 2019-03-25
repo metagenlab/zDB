@@ -3,6 +3,8 @@
 
 <html>
 <head>
+  {% include "chlamdb/header.html" %}
+  
     <script type="text/javascript" id="js">
         $(document).ready(function() {
         // call the tablesorter plugin
@@ -22,7 +24,7 @@
             $('#tabs1').tab();
         });
     </script>
-{% include "chlamdb/header.html" %}
+
 {% load crispy_forms_tags %}
 <head>
 
