@@ -70,6 +70,8 @@ $(document).ready(function() {
                 if (locus_list.includes(el.innerHTML.trim())) {
                 console.log(el.innerHTML);
                 el.style = "cursor: pointer;";
+                el.setAttribute( "onmouseover", "this.style.fill='blue';this.style['font-weight']='600';this.style['font-size']='12pt';")
+                el.setAttribute( "onmouseout", "this.style.fill='black';this.style['font-weight']='400';this.style['font-size']='11pt'")
                 $(el).click(function(evt){window.open("/chlamdb/locusx/" + el.innerHTML.trim() + "/True", "_top");});
 
               }

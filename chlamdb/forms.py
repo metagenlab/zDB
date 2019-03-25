@@ -348,6 +348,7 @@ def make_genome_selection_form(database_name):
 
             super(GenomeForm, self).__init__(*args, **kwargs)
 
+
     return GenomeForm
 
 
