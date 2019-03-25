@@ -151,8 +151,10 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
                           <tr><td>ffn </td><td> CDS nucleotide sequences</td></tr>
                           <tr><td>fna</td><td>genome sequence(s) </td></tr>
                           <tr><td>faa</td><td>protein sequences </td></tr>
-                          <tr><td>blastx</td><td>translated dna sequence vs protein sequences </td></tr>
-                          <tr><td>blastx</td><td>protein sequence vs translated genome sequences</td></tr>
+                          <tr><td>blastn</td><td>dna sequence vs dna sequences database</td></tr>
+                          <tr><td>blastp</td><td>protein sequence vs protein sequences database</td></tr>
+                          <tr><td>blastx</td><td>translated dna sequence vs protein sequences database </td></tr>
+                          <tr><td>tblastn</td><td>protein sequence vs translated nucleotide sequences database</td></tr>
                       </table>
 
                       </p>
@@ -164,6 +166,24 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
                   </form>
 
 
+                  {% if wrong_format %}
+
+                  <div class="panel panel-danger" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                          <h3 class="panel-title">Wrong format combination</h3>
+                      </div>
+                      The format combination is incorrect: check BLAST version and database.
+                      </p>
+                      </p>
+                  </div>
+
+                  {% endif %}
+
+                  {% if unknown_format %}
+
+                  Unkonwn format!
+
+                  {% endif %}
 
                   {% if envoi %}
                       &nbsp
@@ -195,6 +215,17 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
 
                   {% if all_data %}
                       <h2>Best hit region </h2>
+
+                      <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                          <div class="panel-heading" style="width:100%">
+                              <h3 class="panel-title">Help</h3>
+                          </div>
+                          The tBLASTn hit is indicated in purple.
+                          </p>
+                          </p>
+                      </div>
+
+
                       <div style="height:100px;">
                           <object width="70%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
                       </div>
@@ -271,6 +302,7 @@ var blasterjs = require("biojs-vis-blasterjs");
 $(document).ready(function(){
     $.get( "{{asset_blast_path}}", function(text, status, xhr) {
         var tmp = String(text);
+        console.log(text)
         var instance = new blasterjs({
              string: tmp,
              multipleAlignments: "blast-multiple-alignments",
