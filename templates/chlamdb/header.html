@@ -5,129 +5,21 @@
 
 <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/calipho-sib/feature-viewer/v1.0.0/dist/feature-viewer.min.css">
 <script src="https://cdn.rawgit.com/calipho-sib/feature-viewer/v1.0.0/dist/feature-viewer.bundle.js"></script>
-
-<!--<script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>-->
-<!--<script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>-->
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-
-<script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
-<link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
 <script type="text/javascript" src="{% static 'js/downloadSVG.js' %}"></script>
-
-<!--<script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>-->
-<script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
-
-<!--<script src="https://wzrd.in/bundle/feature-viewer@0.1.44"></script>-->
-
-
+<script type="text/javascript" src="{% static 'js/sorttable.min.js' %}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-
-<script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
-<link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
-
-
-<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
-
-<!-- Latest compiled and minified CSS -->
+<script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
-<!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-
-<!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.18/b-1.5.4/b-colvis-1.5.4/b-flash-1.5.4/b-html5-1.5.4/b-print-1.5.4/cr-1.5.0/fc-3.2.5/fh-3.1.4/rg-1.1.0/rr-1.2.4/datatables.min.css"/>
-
 <script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.18/b-1.5.4/b-colvis-1.5.4/b-flash-1.5.4/b-html5-1.5.4/b-print-1.5.4/cr-1.5.0/fc-3.2.5/fh-3.1.4/rg-1.1.0/rr-1.2.4/datatables.min.js"></script>
-<!------ Include the above in your HEAD tag ---------->
-
 <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-autohidingnavbar/4.0.0/jquery.bootstrap-autohidingnavbar.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-autohidingnavbar/4.0.0/jquery.bootstrap-autohidingnavbar.min.js"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css?v=1' %}" />
-
-<!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/css/bootstrap-select.min.css">
-
-<!-- Latest compiled and minified JavaScript -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/js/bootstrap-select.min.js"></script>
-
-<!-- (Optional) Latest compiled and minified JavaScript translation files -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/js/i18n/defaults-*.min.js"></script>
-
 <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
-
-<script>
-
-var exportPNG = function(id, prefix) {
-    /*
-    Based off  gustavohenke's svg2png.js
-    https://gist.github.com/gustavohenke/9073132
-    */
-
-    var a = document.getElementById(id);
-    console.log(prefix)
-    // Get the SVG document inside the Object tag
-    var svgDoc = a.contentDocument;
-    var svgData = new XMLSerializer().serializeToString( svgDoc );
-
-    var canvas = document.createElement( "canvas" );
-    var ctx = canvas.getContext( "2d" );
-    var dataUri = '';
-    try {
-        dataUri = 'data:image/svg+xml;base64,' + btoa(svgData);
-    } catch (ex) {
-
-        // For browsers that don't have a btoa() method, send the text off to a webservice for encoding
-        /* Uncomment if needed
-        $.ajax({
-            url: "http://www.mysite.com/webservice/encodeString",
-            data: { svg: svgData },
-            type: "POST",
-            async: false,
-            success: function(encodedSVG) {
-                dataUri = 'data:image/svg+xml;base64,' + encodedSVG;
-            }
-        })
-        */
-
-    }
-
-    var img = document.createElement( "img" );
-
-    img.onload = function() {
-        ctx.canvas.width  = img.naturalWidth;
-        ctx.canvas.height = img.naturalHeight;
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage( img, 0, 0 );
-
-
-        try {
-
-            // Try to initiate a download of the image
-            var a = document.createElement("a");
-            a.download = prefix + ".png";
-            a.href = canvas.toDataURL("image/png");
-            document.querySelector("body").appendChild(a);
-            a.click();
-            document.querySelector("body").removeChild(a);
-
-        } catch (ex) {
-
-            // If downloading not possible (as in IE due to canvas.toDataURL() security issue)
-            // then display image for saving via right-click
-
-            var imgPreview = document.createElement("div");
-            imgPreview.appendChild(img);
-            document.querySelector("body").appendChild(imgPreview);
-
-        }
-    };
-    img.src = dataUri;
-
-};
-</script>
+<script src="{% static 'js/exportsvg.min.js' %}"></script>
