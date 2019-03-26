@@ -10,18 +10,17 @@
 {% load static %}
 {% get_static_prefix as STATIC_PREFIX %}
 {% include "chlamdb/header.html" %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 
 </head>
 
-<body id="locus_body">
+<body>
   <div class="container-fluid" id="main_container">
     <div class="row">
       <div id="wrapper">
           <div id="page-content-wrapper">
             <div class="row">
               <div class="col-lg-12">
-                 {% include "chlamdb/menu.html" %}
+
 
 
                 {% if not valid_id %}
@@ -32,12 +31,8 @@
 
                    {%  if menu %}
 
-                        <div id="sidebar">
-                            {% include "chlamdb/menu.html" %}
-                        </div>
-                        <div id="header">
-                            {% include "chlamdb/user.html" %}
-                        </div>
+                   {% include "chlamdb/menu.html" %}
+                   
                    {% endif %}
 
                        <h3> {% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %} </h3>
