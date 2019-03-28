@@ -94,7 +94,7 @@ function clearBox(elementID)
                 <li><a href="#7" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' data.1 %}', 'frame7'); return false">SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span></a></li>
                 <li><a href="#8" data-toggle="tab" onclick="window.open('{% url 'interactions' data.1 %}', 'frame8'); return false">Interactions</a></li>
                 {%if closest_phylo%}
-                <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' data.0 %}', 'frame9'); return false">BBH phylogeny</a></li>
+                <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' data.0 %}', 'frame9'); return false">Phylogeny</a></li>
                 {%endif %}
                 <li><a href="#10" data-toggle="tab" onclick="window.open('{% url 'hydropathy' data.1 %}', 'frame10'); return false">Hydropathy plot</a></li>
                 <!--<li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'aa_comp_locus' data.1 %}', 'orthoIDframe'); return false">AA composition PCA</a></li>-->
