@@ -3694,7 +3694,7 @@ def kegg_multi(request, map_name, ko_name):
         sql = 'select node_id from enzyme.pathway2ortholog_associations t1 ' \
               ' inner join enzyme.kegg_pathway  t2 on t1.pathway_id=t2.pathway_id ' \
               ' where pathway_name="%s" and ko_id="%s";' % (map_name, ko_name)
-
+        print(sql)
         node_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
 
         sql2 = 'select ko_id from enzyme.pathway2ortholog_associations t1 ' \
