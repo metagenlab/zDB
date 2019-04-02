@@ -9,7 +9,6 @@
     {% load staticfiles %}
     {% load static %}
     {% get_static_prefix as STATIC_PREFIX %}
-
     {% include "chlamdb/header.html" %}
 
 </head>
@@ -17,6 +16,10 @@
 <body>
     {% if not no_tree %}
     <h3>Phylogeny:</h3>
+
+    <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+    <a onclick='exportPNG("pfam_tree", "pfam_tree");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+
     <div id="pfam_tree_div">
         <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width:90%"></object>
     </div>

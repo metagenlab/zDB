@@ -9,27 +9,7 @@
 {% load staticfiles %}
 {% load static %}
 {% get_static_prefix as STATIC_PREFIX %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-    <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
-    <!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
-    <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
-
-    <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
-
-
+{% include "chlamdb/header.html" %}
 </head>
 
 
@@ -38,12 +18,7 @@
 
 
 
-            <div id="export_bouttons">
-                <a download="region.svg" href="{% static name %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to SVG</a>
-                <a download="region.png" href="{% static name_png %}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to PNG</a>
 
-                <br/>
-            </div>
 
 
                 <div class="row">
@@ -63,12 +38,18 @@
                     <div class="col-xs-6 col-lg-10 col-md-9" style="padding-left: 15px">
 
                       <div class="row">
+                        <a download="genomic_region.svg" class="btn" href="{% static name %}"><i class="fa fa-download"></i> Download SVG</a>
+                        <a onclick='exportPNG("genomic_region", "genomic_region");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+
                           <object width="105%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
                       </div>
 
                       <div class="row">
-                        <object width="100%" height="80%" align="left" style="margin-left: 0px" type="image/svg+xml" data="{% static asset_path %}" id="orthogroup_tree"></object>
-                      </div>  
+                        <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+                        <a onclick='exportPNG("profile", "profile");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+
+                        <object width="100%" height="80%" align="left" style="margin-left: 0px" type="image/svg+xml" data="{% static asset_path %}" id="profile"></object>
+                      </div>
                     </div>
                 </div>
 
