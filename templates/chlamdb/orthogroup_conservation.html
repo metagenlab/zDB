@@ -67,6 +67,7 @@ $(document).ready(function() {
         [].forEach.call(
             svg.querySelectorAll('svg text'),
             function (el) {
+                console.log(el.innerHTML.trim())
                 if (locus_list.includes(el.innerHTML.trim())) {
                 console.log(el.innerHTML);
                 el.style = "cursor: pointer;";
