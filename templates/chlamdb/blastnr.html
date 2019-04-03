@@ -10,24 +10,7 @@
 {% load static %}
 {% get_static_prefix as STATIC_PREFIX %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-<script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
-<!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
-<script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
-
-<script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
-<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-
-<script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
-<link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
+{% include "chlamdb/header.html" %}
 
 </head>
 
@@ -55,68 +38,89 @@
 
 
 
-            <h3> RefSeq hit </h3>
+            <h3> RefSeq homologs (homology search computed with <a href="https://plast.inria.fr/">PLAST</a>) </h3>
             <ul>
              <li><A HREF={% url 'locusx' locus_tag True%}>{{ locus_tag }} ({{ organism }})</A></li>
-              <li>N. NCBI nr hits: {{ blast_data|length }}</li>
+              <li>Number of RefSeq hits (max 100): {{ blast_data|length }} </li>
 
 
             </ul>
 
 
-            <div id="export_bouttons">
-            <a download="blast_nr_{{ locus_tag }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'blast_nr_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-            <a download="blast_nr_{{ locus_tag }}.csv" href="#" onclick="return ExcellentExport.csv(this, 'blast_nr_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-            <br/>
-            </div>
 
 
-                <table id="blast_nr_table" class="sortable">
-                <thead>
-                <tr>
-                <th>n</th>
-                <th>Subject</th>
-                <th>Kingdom</th>
-                <th>Phylum</th>
-                <th>Order</th>
-                <th>Family</th>
-                <th>eval.</th>
-                <th>score</th>
-                <th>ID(%)</th>
-                <th>N gaps</th>
-                <th>Len.</th>
-                <th id=blast_subject_title>Description</th>
-                <th id=blast_taxonomy>Taxonomy</th>
-                </tr>
-                </thead>
-                <tbody>
+                <table id="blast_nr_table" class="table">
+                  <thead>
+                    <tr>
+                      <th>n</th>
+                      <th>Subject</th>
+                      <th>Kingdom</th>
+                      <th>Phylum</th>
+                      <th>Order</th>
+                      <th>Family</th>
+                      <th>eval.</th>
+                      <th>score</th>
+                      <th>ID(%)</th>
+                      <th>N gaps</th>
+                      <th>Len.</th>
+                      <th id=blast_subject_title>Description</th>
+                      <th id=blast_taxonomy>Taxonomy</th>
+                    </tr>
+                  </thead>
+                  <tbody>
 
-            <!-- hit_number, subject_accession, subject_kingdom -->
-            <!-- subject_scientific_name, subject_taxid, subject_title, evalue, bit_score, percent_identity, gaps, length -->
-            {% for values in blast_data %}
-                <tr>
-                    <td>{{ values.0 }}</td>
-                    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{ values.1 }}">{{ values.1 }}<a></td>
-                    <td>{{ values.2 }}</td>
-                    <td>{{ values.11 }}</td>
-                    <td>{{ values.12 }}</td>
-                    <td>{{ values.13 }}</td>
-                    <td>{{ values.6 }}</td>
-                    <td>{{ values.7 }}</td>
-                    <td>{{ values.8 }}</td>
-                    <td>{{ values.9 }}</td>
-                    <td>{{ values.10 }}</td>
-                    <td>{{ values.5 }}</td>
-                    <td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{values.4}}" target="_top">{{ values.3}}</a></td>
-
-                </tr>
-            {%  endfor %}
-            </tbody>
+                  <!-- hit_number, subject_accession, subject_kingdom -->
+                  <!-- subject_scientific_name, subject_taxid, subject_title, evalue, bit_score, percent_identity, gaps, length -->
+                  {% for values in blast_data %}
+                  <tr>
+                      <td>{{ values.0 }}</td>
+                      <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{ values.1 }}">{{ values.1 }}<a></td>
+                      <td>{{ values.2 }}</td>
+                      <td>{{ values.11 }}</td>
+                      <td>{{ values.12 }}</td>
+                      <td>{{ values.13 }}</td>
+                      <td>{{ values.6 }}</td>
+                      <td>{{ values.7 }}</td>
+                      <td>{{ values.8 }}</td>
+                      <td>{{ values.9 }}</td>
+                      <td>{{ values.10 }}</td>
+                      <td>{{ values.5 }}</td>
+                      <td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{values.4}}" target="_top">{{ values.3}}</a></td>
+                  </tr>
+              {%  endfor %}
+              </tbody>
             </table>
 
         {% endif %}
 
     </div>
 </div>
+<script>
+
+  $(document).ready(function() {
+    $('#blast_nr_table').DataTable( {
+      dom: 'lBfrtip',
+      buttons: [
+          {
+              extend: 'colvis',
+              columns: ':not(.noVis)',
+          },
+          {
+              extend: 'excel',
+              title: 'plast_refseq'
+          },
+          {
+              extend: 'csv',
+              title: 'plast_refseq'
+          }
+      ],
+      "paging":   true,
+      "ordering": true,
+      "info":     false,
+      } );
+  } );
+$('.dropdown-toggle').dropdown()
+</script>
+
 </body>
 </html>

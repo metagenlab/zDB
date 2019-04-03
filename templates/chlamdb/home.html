@@ -5,221 +5,213 @@
 
 <head>
 
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-125948409-1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-125948409-1');
-</script>
-
-
     {% load staticfiles %}
     {% load static %}
+
+{% include "chlamdb/header.html" %}
 
 </head>
 
 <body>
-    <div id="container">
-        <div id="sidebar">
-            {% include "chlamdb/menu.html" %}
-        </div>
-        <div id="header">
-            {% include "chlamdb/user.html" %}
-        </div>
-        <div id="content">
-
-
-            <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                <li class="active"><a href="#tab2" data-toggle="tab">Home</a></li>
-                <li><a href="#tab0" data-toggle="tab">Genomes</a></li>
-                <li><a href="#tab1" data-toggle="tab">Phylogeny</a></li>
-            </ul>
-
-
-            <div id="my-tab-content" class="tab-content">
-                <div class="tab-pane active" id="tab2">
-
-
-
-
-                    <h1> Welcome to the Chlamydiae database ! </h1>
-
-                    Representative genomes of each species (n=XX) of the Planctomycetes-Verrucomycrobia-Chlamydiae superphylum were included in this database (created on the XX-XX-XXXX).
-
-                    A manuscript is currently being prepared (T. pillonel et al.). Before publishing data acquired from our database, please check again if the manuscript is available (the link for the publication will be displayed here).
-
-                    <h2>  General searches </h2>
-
-                    First, gene names, gene products, locus tags, protein domains (InterPro or PFAM), Clusters of orthologous genes (COGs), Kegg Orthology numbers (KO) or EC numbers can be queried using the search function at the top of the page.
-
-                    [[https://chlamdb.ch/search][Searches]]
-
-                    The locus page
-
-                    <h2> Comparative analyses </h2>
-
-                    Several comparisons are available:
-                    <ul>
-                      <li> [[./orthogroups.txt][Orthologous groups comparisons]] </li>
-
-                      <li> [[./cog.txt][Cluster of orthologous genes (COGs) comparisons]] </li>
-
-                      <li> [[./pfam.txt][Pfam domains]] </li>
-
-                      <li> [[./interpro.txt][InterPro entries]] </li>
-
-                      <li> [[./ec.txt][EC numbers]] </li>
-
-                      <li> [[./kegg.txt][Kegg Orthologs]] </li>
-
-                      <li> [[./pairwise.txt][Pairwise identity]] </li>
-
-                      <li> [[./cds_length.txt][Coding Sequences lengths]] </li>
-
-                      <li> [[./transporters.txt][Transporters]] </li>
+    <div class="container-fluid" id="main_container">
+      <div class="row">
+        <div id="wrapper">
+            <div id="page-content-wrapper">
+              <div class="row">
+                <div class="col-lg-12">
+                   {% include "chlamdb/menu.html" %}
+                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                        <li class="active"><a href="#tab2" data-toggle="tab">Home</a></li>
+                        <li><a href="#tab0" data-toggle="tab">Genomes</a></li>
+                        <li><a href="#tab1" data-toggle="tab">Phylogeny</a></li>
                     </ul>
-                    <h2> Genome alignments </h2>
-
-                    Genome alignments of specific regions or of whole genomes can be performed:
-
-                      - Genomic Region <br>
-
-                      - Whole-genome alignments <br>
-
-                    <h2> Metabolism comparisons </h2>
-
-                    <h2> Secretion system effectors</h2>
-
-                    The proteins secreted by the type-III secretion play a major role in the host-bacterial interaction. These are call effectors and tend to exhibit eukariotic proteins domains allowing the interaction with host proteins.
-
-                    <h2> Transporters</h2>
-
-                    Transporters were annotated using XXX <br>
-
-                    <h2> Genome statistics</h2>
-                    <ul>
-
-                      <li> General genomic features </li>
-
-                      <li> Maximum-likelihood core-genome phylogeny </li>
-
-                      <li> Pairwise identities comparisons </li>
-
-                      <li> Coding Sequence lengths comparisons </li>
-                    </ul>
-                    <h2> BlastNR </h2>
-
-                    Each coding sequence was BLASTed (using BLASTP) against the nun-redundant protein database of the National Center for Biotechnology Information.
 
 
+                    <div id="my-tab-content" class="tab-content">
+                        <div class="tab-pane active" id="tab2">
 
 
+                            <div style="padding-top:20px;">
+                                <div class="jumbotron">
+                                <h1>Chlamydiae Database </h1>
+                                <center>
+                                  <p>
+                                  A comparative genomics database of the phylum <i>Chlamydiae</i>
+                                  </p>
+                                </center>
 
 
+                                <a id="learn_more" class="btn btn-success btn-lg" href="{% url 'help' %}" role="button">Learn more</a>
 
+                                </div>
+                              </div>
+                            <div class="row">
+                              <div class="col-lg-12">
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    <h3 class="panel-title">Content of the database & main features</h3>
+                                  </div>
+                                  <div class="panel-body" style="margin: 10px 10px 10px 10px">
 
-                </div>
-                <div class="tab-pane" id="tab0">
+                                    <font size="3">
+                                    <ul style="list-style-type:square;">
+                                       <li><a href="#tab0" data-toggle="tab">32 <i>Chlamydiae</i> genomes from 26 different species</a> (see the <a href="#tab1" data-toggle="tab">phylogeny</a>)</li>
+                                       <li>Orthologous proteins identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a></li>
+                                       <li>Detailed annotation of proteins based on</li>
+                                           <ul style="list-style-type:circle; padding-left:20px;">
+                                             <li><a href="https://www.genome.jp/kegg/">KEGG</a> (Kegg orthologs)</li>
+                                             <li><a href="https://www.ncbi.nlm.nih.gov/COG/">COG</a> (clusters of orthologous groups)</li>
+                                             <li><a href="https://string-db.org/">STRING</a> (protein-protein interactions)</li>
+                                             <li><a href="http://priam.prabi.fr/">PRIAM</a> (enzymes)</li>
+                                             <li><a href="http://www.tcdb.org/">TCDB</a> (curated transporters annotation)</li>
+                                             <li><a href="https://www.uniprot.org/">SwissProt</a> (manually annotated proteins)</li>
+                                             <li><a href="https://www.ebi.ac.uk/interpro/">InterproScan</a> (domains and signatures)</li>
+                                             <li><a href="http://csbl.bmb.uga.edu/DOOR/">DOOR</a> (operons)</li>
+                                           </ul>
+                                        <li>Precomputed homology searches with <a href="">RefSeq</a> and <a href="">SwissProt</a> databases for each protein</li>
+                                        <li>Precomputed phylogenetic reconstructions of orthologous groups including the closest RefSeq and Swissprot homologs</li>
+                                        <li>Pfam and COG phylogenetic profiles allowing to identify chlamydial domains/proteins rarely found in other prokaryotes (see for example <a href="{% url 'fam' "PF01823" "pfam" %}">PF01823</a>)</li>
+                                        <li>Identification of conserved gene neighborhood among distantly related <i>Chlamydiae</i> and PVC (see for example the paper from <a href="https://www.ncbi.nlm.nih.gov/pubmed/9787636">Dandekar et al.</a> for the rationale behind this)</li>
+                                        <li>Multiple tools allowing comparative analyses of <i>Chlamydiae</i> genomes</li>
 
-                    <div id="export_bouttons">
-                        <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'genomes_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+                                      </font>
 
-                        <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'genomes_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                        <br/>
-                    </div>
-
-                    <table  class="sortable table table-striped" cellspacing="0" border="0" id="genomes_table"> <!-- class="sortable" cellspacing="0" border="0" id="genomes_table" -->
-                        <thead>
-
-
-                            <tr>
-                                <th>Accession</th>
-                                <th>GC</th>
-                                <th>N proteins</th>
-                                <th>N contigs</th>
-                                <th>Size</th>
-                                <!--<th>N tRNA</th>-->
-                                <!--<th>N 16S</th>-->
-                                <!--<th>N 23S</th>-->
-                                <!--<th>N 5S</th>-->
-                                <th>Percent non coding</th>
-                                <th>Organism</th>
-                                <th>Browse Online</th>
-                                <th colspan="5">Download</th>
-
-                            </tr>
-                         </thead>
-                         <tbody>
-                         {% for values in genomes_data %}
-
-                            <tr>
-                                <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/{{values.0}}">{{values.0}}</a></td>
-                                <td>{{values.1}}</td>
-                                <td>{{values.2}}</td>
-                                <td>{{values.3}}</td>
-                                <td>{{values.4}}</td>
-                                <!--<td>{{values.5}}</td>-->
-                                <!--<td>{{values.6}}</td>-->
-                                <!--<td>{{values.7}}</td>-->
-                                <!--<td>{{values.8}}</td>-->
-                                <td>{{values.9}}</td>
-                                <td>{{values.13}}</td>
-                                <td><a href="{% url 'genome_annotation' values.0 %}">{{values.0}}</a></td>
-
-                                <td style="vertical-align:top" nowrap>
-                                    <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'gbk' %}">
-                                    <span style="background-color:#DCFFF0;color:black;padding:1px;">GBK</span></a>
-                                </td>
-
-                                <td nowrap>
-                                    <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'faa' %}"">
-                                    <span style="background-color:#DCFFF0;color:black;padding:1px;">FAA</span></a>
-                                </td>
-
-                                <td nowrap>
-                                    <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'fna' %}"">
-                                    <span style="background-color:#DCFFF0;color:black;padding:1px;">FNA</span></a>
-                                </td>
-
-                                <td nowrap>
-                                    <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'ffn' %}"">
-                                    <span style="background-color:#DCFFF0;color:black;padding:1px;">FFN</span></a>
-                                </td>
-
-                                <td nowrap>
-                                    <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'gbk' %}"">
-                                    <span style="background-color:#DCFFF0;color:black;padding:1px;">TAB</span></a>
-
-                            </tr>
-
-                         {% endfor %}
-
-                        </tbody>
-                    </table>
-
-
-                </div>
-                <div class="tab-pane" id="tab1">
-                    <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree" style="width:1000px"></object>
-                </div>
-            </div>
-            <!--<img src="{% static 'chlam_tree.png' %}" width="80%"-->
+                                    </ul>
+                                  </div>
+                                </div>
 
 
 
-        </div>
-        <div id="footer"></div>
-    </div>
+
+                              </div>
+
+
+                            </div>
+
+
+                        </div>
+                        <div class="tab-pane" id="tab0">
+                          <div class="col-lg-12 col-md-12 col-sm-12">
+                           <div class="row">
+
+                            <table class="display" id="genomes_table">
+                                <thead>
+
+
+                                    <tr>
+                                        <th>Accession</th>
+                                        <th>GC</th>
+                                        <th>N proteins</th>
+                                        <th>N contigs</th>
+                                        <th>Size</th>
+                                        <th>Percent non coding</th>
+                                        <th>Organism</th>
+                                        <th>Browse Online</th>
+                                        <th>gbk</th>
+                                        <th>faa</th>
+                                        <th>fna</th>
+                                        <th>ffn</th>
+                                        <th>tab</th>
+
+                                    </tr>
+                                 </thead>
+                                 <tbody>
+                                 {% for values in genomes_data %}
+
+                                    <tr>
+                                        <td><a href="http://www.ncbi.nlm.nih.gov/nuccore/{{values.0}}">{{values.0}}</a></td>
+                                        <td>{{values.1}}</td>
+                                        <td>{{values.2}}</td>
+                                        <td>{{values.3}}</td>
+                                        <td>{{values.4}}</td>
+                                        <!--<td>{{values.5}}</td>-->
+                                        <!--<td>{{values.6}}</td>-->
+                                        <!--<td>{{values.7}}</td>-->
+                                        <!--<td>{{values.8}}</td>-->
+                                        <td>{{values.9}}</td>
+                                        <td>{{values.13}}</td>
+                                        <td><a href="{% url 'genome_annotation' values.0 %}">{{values.0}}</a></td>
+
+                                        <td style="vertical-align:top" nowrap>
+                                            <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'gbk' %}">
+                                            <span style="background-color:#DCFFF0;color:black;padding:1px;">GBK</span></a>
+                                        </td>
+
+                                        <td nowrap>
+                                            <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'faa' %}"">
+                                            <span style="background-color:#DCFFF0;color:black;padding:1px;">FAA</span></a>
+                                        </td>
+
+                                        <td nowrap>
+                                            <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'fna' %}"">
+                                            <span style="background-color:#DCFFF0;color:black;padding:1px;">FNA</span></a>
+                                        </td>
+
+                                        <td nowrap>
+                                            <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'ffn' %}">
+                                            <span style="background-color:#DCFFF0;color:black;padding:1px;">FFN</span></a>
+                                        </td>
+
+                                        <td nowrap>
+                                            <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'gbk' %}">
+                                            <span style="background-color:#DCFFF0;color:black;padding:1px;">TAB</span></a>
+
+                                    </tr>
+
+                                 {% endfor %}
+
+                                </tbody>
+                            </table>
+                        </div><!-- row -->
+                      </div> <!-- col -->
+                    </div> <!-- tab0 -->
+                        <div class="tab-pane" id="tab1">
+                          <div class="row">
+                            <div class="col-lg-12">
+                              <div class="row">
+                                <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+                                <a onclick='exportPNG("pyhlogeny", "phylogeny");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+                              </div>
+                              <div>
+                                <object type="image/svg+xml" data="{% static asset_path %}" id="pyhlogeny" style="width:1000px"></object>
+                              </div>
+                            </div>
+                          </div>
+                        </div> <!- tab1 -->
+                    </div>  <!--tab content -->
+                    <!--<img src="{% static 'chlam_tree.png' %}" width="80%"-->
+                </div> <!--col -->
+              </div> <!--row -->
+            </div> <!--page-content-wrapper -->
+        </div> <!--wrapper -->
+      </div> <!--container -->
+    </div> <!--container -->
 
     <script>
-
+      $(document).ready(function() {
+      $('#genomes_table').DataTable( {
+      dom: 'Bfrtip',
+      "paging":   true,
+      "ordering": true,
+      "info":     false,
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'interaction_table'
+        },
+        {
+            extend: 'csv',
+            title: 'interaction_table'
+        }
+      ],
+      } );
+      } );
     $('.dropdown-toggle').dropdown()
-
     </script>
-<!--<script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>-->
-</body>
-</html>
 
+
+</body>
+{% include "chlamdb/style_menu.html" %}
+
+
+</html>

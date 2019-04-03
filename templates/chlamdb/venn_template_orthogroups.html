@@ -24,8 +24,8 @@
 		displayStat: true,
 		fnClickCallback: function() {
 			var value = `<div id="export_bouttons_groups">
-                         <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'orthogroup_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-                         <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'orthogroup_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                         <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'orthogroup_table', 'search');" class="btn btn-primary btn-xs">Export to Excel</a>
+                         <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'orthogroup_table');" class="btn btn-primary btn-xs">Export to CSV</a>
                         <br/>
                         </div>`;
 			if (this.listnames.length == 1) {
@@ -36,7 +36,7 @@
 			for (name in this.listnames) {
 				value += '<li id="list_strains">' +this.listnames[name] + "</li>";
 			}
-			value += '</ul>\n<table id="orthogroup_table" class="sortable"><tr><th>Orthogroup</th><th>gene(s)</th><th>description(s)</th></tr>';
+			value += '</ul>\n<table id="orthogroup_table" class="table"><tr><th>Orthogroup</th><th>gene(s)</th><th>description(s)</th></tr>';
 
 			for (val in this.list) {
                 <!-- h[this.list[val]] -->
@@ -57,7 +57,8 @@
 
 
 	</script>
-		<div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+
+		<div class="panel panel-success">
 			<div class="panel-heading" style="width:100%">
 				<h5 class="panel-title">Help</h5>
 			</div>
@@ -74,6 +75,3 @@
 
 			</div>
 		</div>
-
-
-

@@ -1,98 +1,69 @@
 <!DOCTYPE html>
-
-
 <html>
-    <head>
-        {% load custom_tags %}
+  <head>
+      {% load custom_tags %}
+      {% load staticfiles %}
+      {% load static %}
+      {% load crispy_forms_tags %}
+      {% include "chlamdb/header.html" %}
+  </head>
 
-    </head>
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+        <div id="page-content-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
+              {% include "chlamdb/menu.html" %}
 
+              <nav>
+                  <ul id="tabs_main" class="nav nav-tabs">
+                      <li class="active"><a href="{% url 'extract_orthogroup' %}">Detailed comparison</a></li>
+                      <li><a href="{% url 'venn_orthogroup' %}">Venn diagram</a></li>
+                      <li><a href="{% url 'orthogroup_comparison' %}">Compare Orthogroups size</a></li>
+                      <li><a href="{% url 'plot_heatmap' 'orthology' %}">Whole proteomes heatmaps</a></li>
+                      <li><a href="{% url 'pan_genome' 'orthology' %}">Pan/Core genome plots</a></li>
+                  </ul>
+              </nav>
 
-    <div id="container">
-
-
-        <div id="sidebar">
-            {% include "chlamdb/menu.html" %}
-        </div>
-
-        <div id="header">
-            {% include "chlamdb/user.html" %}
-        </div>
-
-        <div id="content">
-
-
-
-            <nav>
-                <ul id="tabs_main" class="nav nav-tabs">
-                    <li class="active"><a href="{% url 'extract_orthogroup' %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_orthogroup' %}">Venn diagram</a></li>
-                    <li><a href="{% url 'orthogroup_comparison' %}">Compare Orthogroups size</a></li>
-                    <li><a href="{% url 'plot_heatmap' 'orthology' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' 'orthology' %}">Pan/Core genome plots</a></li>
-                </ul>
-            </nav>
-
-                     <div id="extract_form">
-                        <form action="{% url "extract_orthogroup" %}" method="post">
+             <div id="form" class="col-lg-10 col-md-12 col-sm-12">
 
 
-                        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-                            <div class="panel-heading" style="width:100%">
-                                <h3 class="panel-title">Help</h3>
-                            </div>
-                            <p style="margin: 10px 10px 10px 10px; line-height: 180%">Get list of proteins shared between genomes selected in panel A and absent in genomes of panel B. Clustering based on BLAST usting orthoFinder.
-                            Reference: one of the genome in panel A can be chosen as reference for display the result orthogroup list on a circular map of the genome. Click on "show on circular map" to generate the circos map. Corresponding locus are highlighted in pink. <br>
-                            Missing data: if more than one panel A genome (include) is selected, possibility to tolerate missing data in 1 up to 10 genomes (in order to get orthogroup present in at least x out of the y genomes selected in panel A).</p>
-</p>
-                        </div>
-                        <!--
-                        <div style="position: absolute;margin-top:10%; margin-left: 33%;">
-                            <div style="height:40px;margin-left: 180px;width:280px;border: 2px solid #8AC007; border-radius: 15px;">
-                                <div style="width: 100%; float: left; margin-left: 10px;margin-top:3px">
-                                    <p>Consider single copy groups only</p>
-                                </div >
-
-                                <div style="height: 40px; margin-left: 180px;margin-top:3px;">
-                                    <label class="switch-light well" onclick="" style="margin: 5px 0px 0px 0px; padding: 0 0 0 0; position: absolute">
-                                        <input type="checkbox" style="padding: 0 0px 0 0" id="button_single_copy" name="button_single_copy">
-                                        <span>
-                                        <span>Off</span>
-                                        <span>On</span>
-                                        </span>
-                                        <a class="btn btn-success btn-xs"></a>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        -->
-                        <div class="form-inline">
-                            <div class="form-group">
-                                 <div class="col-md-11" style="width: 100%;">
-                                      <label style="width:380px;text-align:left;" >
-                                          <input type="checkbox" id="checkbox_accessions" name="checkbox_accessions">
-                                          Distinguish plasmids from chromosomes
-                                      </label>
-
-                                      <label style="width:380px;text-align:left;">
-                                          <input id="checkbox_single_copy" value="checkbox_single_copy" name="checkbox_single_copy" type="checkbox">
-                                          Single copy orthogroups only
-                                      </label>
-                                </div>
-                            </div>
-                        </div>
-                        <div style="width: 100%; overflow: hidden;">
-                            <div style="width: 20%; float: left;margin-left: 5%;"> A </div>
-                            <div style="margin-left: 5%;float:left;"> B </div>
-                        </div>
-                        {% csrf_token %}
-                        {{ form.as_p }}
-
-                         <label style="position:absolute;margin-left:1%;width:20%;margin-top: 8px;">Missing data (optional)</label>
-                         <label style="position:absolute;margin-left:1%;width:20%;margin-top: 50px">Reference genome (optional)</label>
-                         <input type="submit" name="comparison" value="Compare orthogroups" id="extract_button" />
-                         </form>
+                <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
+                    <div class="panel-heading" style="width:100%">
+                        <h3 class="panel-title">Help</h3>
                     </div>
+                    <p style="margin: 10px 10px 10px 10px; line-height: 180%">Get list of proteins shared between genomes selected in panel A and absent in genomes of panel B. Clustering based on BLAST usting orthoFinder.
+                    Reference: one of the genome in panel A can be chosen as reference for display the result orthogroup list on a circular map of the genome. Click on "show on circular map" to generate the circos map. Corresponding locus are highlighted in pink. <br>
+                    Missing data: if more than one panel A genome (include) is selected, possibility to tolerate missing data in 1 up to 10 genomes (in order to get orthogroup present in at least x out of the y genomes selected in panel A).</p>
+                </div>
+                <!--
+                <div style="position: absolute;margin-top:10%; margin-left: 33%;">
+                    <div style="height:40px;margin-left: 180px;width:280px;border: 2px solid #8AC007; border-radius: 15px;">
+                        <div style="width: 100%; float: left; margin-left: 10px;margin-top:3px">
+                            <p>Consider single copy groups only</p>
+                        </div >
+
+                        <div style="height: 40px; margin-left: 180px;margin-top:3px;">
+                            <label class="switch-light well" onclick="" style="margin: 5px 0px 0px 0px; padding: 0 0 0 0; position: absolute">
+                                <input type="checkbox" style="padding: 0 0px 0 0" id="button_single_copy" name="button_single_copy">
+                                <span>
+                                <span>Off</span>
+                                <span>On</span>
+                                </span>
+                                <a class="btn btn-success btn-xs"></a>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                -->
+                {% block content %}
+                <form action="{% url "extract_orthogroup" %}" method="post">
+                    {% csrf_token %}
+                    {% crispy form %}
+                </form>
+                {% endblock %}
+            </div>
 
             {% if wrong_n_missing%}
 
@@ -115,7 +86,8 @@
             {% endif %}
 
             {% if envoi_extract %}
-
+            <div class="row" style="padding-top:20px">
+              <div class="col-lg-12">
                 <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                     <li class="active"><a href="#red" data-toggle="tab">Orthogroups</a></li>
                     <li><a href="#orange" data-toggle="tab">Table detail</a></li>
@@ -125,55 +97,53 @@
                 </ul>
 
                 <div id="my-tab-content" class="tab-content">
-
                     <div class="tab-pane active" id="red">
+                      <div style="padding-top:10px;">
+                          <div id="export_bouttons_groups">
+                              <a href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');"  class="btn btn-success">Export to Excel</a>
+
+                              <a href="{% url 'get_fasta' %}{{fasta_url_noref}}" class="btn btn-success">Download fasta</a>
+
+                              <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</a>
+
+                              <a href="{% url 'orthogroup_list_cog_barchart' accessions%}{{circos_url}}" class="btn btn-success">Show cog categories of orthogroup subset vs all orthogroups</a>
+
+                              <br/>
+                          </div>
+
+                          <h3>Number of orthogroups: {{ sum_group }} </h3>
+
+                          <table class="display" id="table_groups">
+
+                              <thead>
+                                  <tr>
+                                  <th></th>
+                                  <th id="entete_locus">Orthogroup</th>
+                                  <th>Genes</th>
+                                  <th>Products</th>
+                                  <th>Cogs</th>
+                                  <th>Pfam</th>
+                                  <th>present in (/{{include|length}})</th>
+                                  <th>freq complete database {{max_n}}</th>
+                                  </tr>
+                              </thead>
+
+                              {% for value in match_groups_data %}
+                                  <tr>
+                                      <td>{{value.0}}</td>
+                                      <td><a href="{% url 'locusx' value.1 True%}">{{value.1}}</a></td>
+                                      <td>{{value.2|safe}}</td>
+                                      <td>{{value.3|safe}}</td>
+                                      <td>{{value.4|safe}}</td>
+                                      <td>{{value.5|safe}}</td>
+                                      <td>{{orthogroup2count|keyvalue:value.1}}</td>
+                                      <td>{{orthogroup2count_all|keyvalue:value.1}}</td>
+                                  </tr>
+                              {% endfor %}
 
 
-                        <div id="export_bouttons_groups">
-                            <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-
-                            <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                            <a href="{% url 'get_fasta' %}{{fasta_url_noref}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Download fasta</a>
-                            <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
-                            <a href="{% url 'orthogroup_list_cog_barchart' accessions%}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show cog categories of orthogroup subset vs all orthogroups</a>
-
-                            <br/>
-                        </div>
-
-                        <p>Number of orthogroups: {{ sum_group }} </p>
-
-                        <table class="sortable" id="table_groups">
-
-                            <thead>
-                                <tr>
-                                <th></th>
-                                <th id="entete_locus">Orthogroup</th>
-                                <th>Genes</th>
-                                <th>Products</th>
-                                <th>Cogs</th>
-                                <th>Pfam</th>
-                                <th>present in (/{{include|length}})</th>
-                                <th>freq complete database {{max_n}}</th>
-                                </tr>
-                            </thead>
-
-                            {% for value in match_groups_data %}
-                                <tr>
-                                    <td>{{value.0}}</td>
-                                    <td><a href="{% url 'locusx' value.1 True%}">{{value.1}}</a></td>
-                                    <td>{{value.2|safe}}</td>
-                                    <td>{{value.3|safe}}</td>
-                                    <td>{{value.4|safe}}</td>
-                                    <td>{{value.5|safe}}</td>
-                                    <td>{{orthogroup2count|keyvalue:value.1}}</td>
-                                    <td>{{orthogroup2count_all|keyvalue:value.1}}</td>
-                                </tr>
-                            {% endfor %}
-
-
-                        </table>
-
-
+                          </table>
+                      </div>
                     </div>
                     <div class="tab-pane" id="orange">
                             <div id="export_bouttons_groups">
@@ -190,28 +160,27 @@
 
                             <p>Number of orthogroups: {{ sum_group }} </p>
 
-                            <table class="sortable" id="datatable">
+                            <table class="display" id="cog_table">
                                 <thead>
                                     <tr>
                                         <th></th>
-                                        <th id="entete_locus">Orthogroup</th>
-                                        <th id="entete_locus" >Locus</th>
-                                        <th id="entete_locus" >Protein id</th>
-                                        <th id="entete_gene" >Start</th>
-                                        <th id="entete_gene" >Stop</th>
-                                        <th id="entete_strand" >S.</th>
-                                        <th id="entete_gene" >Gene</th>
-                                        <th id="entete_n" >nH</th>
-                                        <th id="entete_n" >nG</th>
-                                        <th id="entete_n" >TM</th>
-                                        <th id="entete_n" >SP</th>
-                                        <th id="entete_product" >Product</th>
-                                        <th id="entete_organism" >Organism</th>
-                                        <th id="entete_translation" >Translation</th>
+                                        <th>Orthogroup</th>
+                                        <th>Locus</th>
+                                        <th>Protein id</th>
+                                        <th>Start</th>
+                                        <th>Stop</th>
+                                        <th>S.</th>
+                                        <th>Gene</th>
+                                        <th>nH</th>
+                                        <th>nG</th>
+                                        <th>TM</th>
+                                        <th>SP</th>
+                                        <th>Product</th>
+                                        <th>Organism</th>
+                                        <th>Translation</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-
 
                                     {% for values in extract_result %}
                                         <tr>
@@ -246,7 +215,7 @@
 
                             <br/>
                         </div>
-                        <table id="cog_table" class="sortable">
+                        <table id="cog_table" class="display">
                             <thead>
                                 <tr>
                                     <th></th>
@@ -338,17 +307,40 @@
                     </div>
 
                 </div>
+              </div>
+            </div>
             {% else %}
                 </div>
             {% endif %}
-        </div>
-    </div>
+        </div> <!-- row -->
+      </div> <!-- page-content-wrapper -->
+    </div> <!-- wrapper -->
+  </div>  <!-- row -->
+</div>  <!-- container-fluid -->
+{% include "chlamdb/style_menu.html" %}
+{% include "chlamdb/show_hide_plasmid_accessions.html" %}
+</body>
+
+<script>
+
+$(document).ready(function() {
+$('#table_groups').DataTable( {
+"paging":   true,
+"ordering": true,
+"info":     false
+} );
+} );
+
+$(document).ready(function() {
+$('#cog_table').DataTable( {
+"paging":   true,
+"ordering": true,
+"info":     false
+} );
+} );
 
 
 
-    <div id="footer">
+</script>
 
-    </div>
-    {% include "chlamdb/show_hide_plasmid_accessions.html" %}
-    </body>
 </html>

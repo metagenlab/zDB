@@ -9,24 +9,7 @@
     {% load staticfiles %}
     {% load static %}
     {% get_static_prefix as STATIC_PREFIX %}
-
-    <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
-    <!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
-    <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
-
-    <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
+    {% include "chlamdb/header.html" %}
 
 </head>
 
@@ -44,9 +27,12 @@
         <div id="my-tab-content" class="tab-content">
             <div class="tab-pane active" id="tab1">
 
+              <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+              <a onclick='exportPNG("pfam_tree", "pfam_tree");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
 
                <div>
-                    <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree"></object>
+                    <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree">
+                    </object>
                    <img src="{% static "/scales/scale_identity_red.png" %}" id="circos_legend"  width="160" style="position: absolute; top: 100px; left: 600px;">
                </div>
             </div>
@@ -55,4 +41,52 @@
                 </div>
         </div>
 </body>
+
+<script>
+
+
+
+$(document).ready(function() {
+
+  var locus_list = {{locus_list|safe}}
+
+  var checkExist = setInterval(function() {
+     if ($('#pfam_tree').length) {
+        console.log("Exists!");
+        var a = document.getElementById("pfam_tree");
+        console.log(a)
+
+        // Get the SVG document inside the Object tag
+        var svgDoc = a.contentDocument;
+        console.log(svgDoc);
+        var svg = svgDoc.querySelector("svg");
+
+        var test_match = svg.querySelectorAll('svg text')
+        console.log(test_match);
+
+        [].forEach.call(
+            svg.querySelectorAll('svg text'),
+            function (el) {
+                console.log(el.innerHTML.trim())
+                if (locus_list.includes(el.innerHTML.trim())) {
+                console.log(el.innerHTML);
+                el.style = "cursor: pointer;";
+                el.setAttribute( "onmouseover", "this.style.fill='blue';this.style['font-weight']='600';this.style['font-size']='12pt';")
+                el.setAttribute( "onmouseout", "this.style.fill='black';this.style['font-weight']='400';this.style['font-size']='11pt'")
+                $(el).click(function(evt){window.open("/chlamdb/locusx/" + el.innerHTML.trim() + "/True", "_top");});
+
+              }
+            }
+        );
+
+
+
+        clearInterval(checkExist);
+     }
+  }, 100);
+
+});
+
+</script>
+
 </html>

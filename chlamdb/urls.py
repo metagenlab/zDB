@@ -112,6 +112,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^multipleGC/$', views.multipleGC, name="multipleGC"),
                        url(r'^multiple_codon_usage/$', views.multiple_codon_usage, name="multiple_codon_usage"),
                        url(r'^circos/$', views.circos, name="circos"),
+                       url(r'^circos_blastnr/$', views.circos_blastnr, name="circos_blastnr"),
                        url(r'^circos_main/$', views.circos_main, name="circos_main"),
                        url(r'^orthogroup_list_cog_barchart/$', views.orthogroup_list_cog_barchart, name="orthogroup_list_cog_barchart"),
                        url(r'^orthogroup_list_cog_barchart/([a-zA-Z0-9_]+)/$', views.orthogroup_list_cog_barchart, name="orthogroup_list_cog_barchart"),
@@ -132,6 +133,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^extract_cog/([a-zA-Z0-9_]+)$$', views.extract_cog, name="extract_cog"),
                        url(r'^genome_annotation/([a-zA-Z0-9_\.\-]+)$$', views.genome_annotation, name="genome_annotation"),
                        url(r'^extract_cog/$', views.extract_cog, name="extract_cog"),
+                       url(r'^annotation_overview/$', views.annotation_overview, name="annotation_overview"),
                        url(r'^venn_cog/$', views.venn_cog, name="venn_cog"),
                        url(r'^interpro_taxonomy/$', views.interpro_taxonomy, name="interpro_taxonomy"),
                        url(r'^venn_cog/([a-zA-Z0-9_]+)$$', views.venn_cog, name="venn_cog"),
@@ -184,8 +186,8 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^locus_annotation/([a-zA-Z0-9_]+)$', views.locus_annotation, name="locus_annotation"),
                        url(r'^logout/$', logout, {'next_page': '/'},),
                        url(r'^about$', views.about, name="about"),
+                       url(r'^help', views.help, name="help"),
                        url(r'^get_record/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', views.get_record, name="get_record"),
                        url(r'^.*$', views.home, name="home"),
 
 ]
-

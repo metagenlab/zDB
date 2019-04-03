@@ -22,66 +22,58 @@
             $('#tabs1').tab();
         });
     </script>
-
+    {% include "chlamdb/header.html" %}
 <head>
 
 
-<div id="container">
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
 
+                  <nav>
+                  <ul id="tabs" class="nav nav-tabs">
+                      <li ><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
+                      <li class="active"><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
+                      <li><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
+                      <li><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
+                      <li><a href="{% url 'pan_genome' 'Pfam' %}">Pan/Core genome plots</a></li>
+                  </ul>
+                  </nav>
 
-    <div id="sidebar">
-        {% include "chlamdb/menu.html" %}
+                  <div id="extract_form">
+                      <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                            <div class="panel-heading" style="width:100%">
+                              <h3 class="panel-title">Help</h3>
+                              </div>
+                      <p style="margin: 10px 10px 10px 10px">Venn diagramm of Pfam domains, max 6 genomes</p>
+                      </div>
+
+                      <form action="{% url "venn_pfam" %}" method="post">
+                          {% csrf_token %}
+                          {{ form_venn.as_p }}
+                          <input type="submit" name="venn" value="Compare Pfam" id="venn_button" />
+
+                      </form>
+
+                  </div>
+
+               {% if envoi_venn %}
+
+                  {% include "chlamdb/venn_template_Pfam.html" with series=series description_dico=pfam2description %}
+
+              {% endif %}
+
+              </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <div id="header">
-        {% include "chlamdb/user.html" %}
-
-    </div>
-
-    <div id="content">
-
-        <nav>
-        <ul id="tabs" class="nav nav-tabs">
-            <li ><a href="{% url 'extract_pfam' %}">Detailed comparison</a></li>
-            <li class="active"><a href="{% url 'venn_pfam' %}">Venn diagram</a></li>
-            <li><a href="{% url 'pfam_comparison' %}">Compare Pfam Domains</a></li>
-            <li><a href="{% url 'plot_heatmap' 'Pfam' %}">Whole proteomes heatmaps</a></li>
-            <li><a href="{% url 'pan_genome' 'Pfam' %}">Pan/Core genome plots</a></li>
-        </ul>
-        </nav>
-
-
-                <div id="extract_form">
-                    <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                          <div class="panel-heading" style="width:100%">
-                            <h3 class="panel-title">Help</h3>
-                            </div>
-                    <p style="margin: 10px 10px 10px 10px">Venn diagramm of Pfam domains, max 6 genomes</p>
-                    </div>
-
-
-
-                    <form action="{% url "venn_pfam" %}" method="post">
-                        {% csrf_token %}
-                        {{ form_venn.as_p }}
-                        <input type="submit" name="venn" value="Compare Pfam" id="venn_button" />
-
-                    </form>
-
-                </div>
-
-     {% if envoi_venn %}
-
-        {% include "chlamdb/venn_template_Pfam.html" with series=series description_dico=pfam2description %}
-
-    {% endif %}
-
-
-
-    </div>
-
-</div>
-<div id="footer"></div>
 <!--
 <script type="text/javascript">$(document).ready( function(){ $("#jqtest").html("JQuery installed successfully!"); } ); </script>
 
@@ -120,4 +112,5 @@
 <p id="jqtest"></p>
 
 </body>
+{% include "chlamdb/style_menu.html" %}
 </html>

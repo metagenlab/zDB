@@ -2,298 +2,293 @@
 <html>
 <head>
     {% load staticfiles %}
+    {% include "chlamdb/header.html" %}
     <script type="text/javascript" src="{% static 'js/mark.min.js' %}"></script>
 </head>
+
 <body>
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                  {% include "chlamdb/menu.html" %}
 
+                  {% if display_from == 'yes' %}
+                      <div id="search_form">
+                          <form action="{% url "search" %}" method="post">{% csrf_token %}
+                              {{ form.as_p }}
+                              <input type="submit" value="Submit" />
+                          </form>
+                      </div>
+                  {% endif %}
 
+                  {% if envoi %}
+                      {% if search_echec %} <!-- no matches, display tips -->
+                          <div class="panel panel-warning" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                              <div class="panel-heading" style="width:100%">
+                                  <h3 class="panel-title">No match!</h3>
+                              </div>
+                              <p style="margin: 0px 0px 0px 10px">For now, search is performed based on exact matches only. Use either locus targs, refseq protein accession or gene names to perform searches. <br>
+                              Accession from the KEGG orthology database (<a href="{% url 'fam' 'K00844' 'ko' %}">K00844</a>), the COG database (<a href="{% url 'fam' 'COG0333' 'cog' %}">COG0333</a>) and from PFAM (<a href="{% url 'fam' 'PF06723' 'pfam' %}">PF06723</a>) and interpro databases (<a href="{% url 'fam' 'IPR004753' 'interpro' %}">IPR004753</a>) are also recognized if present in the database (if identified in at least one genome).
+                              KEGG modules (<a href="{% url 'KEGG_module_map' 'M00023' %}">M00023</a>) and pathways (<a href="{% url 'KEGG_mapp_ko' 'map00400' %}">map00400</a>) are also recognized. <br>
+                              Alternatively, you can browse genomes overview tables from links listed in the <a href="{% url 'home' %}">home page</a> table (column: Browse online) or <a href="{% url 'blast' %}">BLAST</a> a refserence sequence.</p>.
+                           </div>
 
-<div id="container">
-    <div id="sidebar">
-        {% include "chlamdb/menu.html" %}
-    </div>
-    <div id="header">
-        {% include "chlamdb/user.html" %}
-    </div>
+                      {% else %}
+                          <h3>Search term: {{search_term}}. Search limited to 100 hits/Category.</h3>
 
-    <div id="content">
+                          {% if search_type == "no_exact_accession"%}
 
-        {% if display_from == 'yes' %}
-            <div id="search_form">
-                <form action="{% url "search" %}" method="post">{% csrf_token %}
-                    {{ form.as_p }}
-                    <input type="submit" value="Submit" />
-                </form>
-            </div>
-        {% endif %}
+                              <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                                  {% if search_result %}
+                                  <li class="active"><a href="#tab0" data-toggle="tab">Locus</a></li>
+                                  {% endif %}
+                                  {% if raw_data_EC %}
+                                  <li><a href="#tab1" data-toggle="tab">EC</a></li>
+                                  {% endif %}
+                                  {% if raw_data_ko %}
+                                  <li><a href="#tab2" data-toggle="tab">KO</a></li>
+                                  {% endif %}
+                                  {% if raw_data_cog %}
+                                  <li><a href="#tab3" data-toggle="tab">COG</a></li>
+                                  {% endif %}
+                                  {% if raw_data_interpro %}
+                                  <li><a href="#tab4" data-toggle="tab">Interpro</a></li>
+                                  {% endif %}
+                                  {% if raw_data_module %}
+                                  <li><a href="#tab5" data-toggle="tab">Modules</a></li>
+                                  {% endif %}
+                                  {% if raw_data_pathway %}
+                                  <li><a href="#tab6" data-toggle="tab">Pathways</a></li>
+                                  {% endif %}
+                              </ul>
 
-        {% if envoi %}
-            {% if search_echec %}
-        <div class="panel panel-warning" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-            <div class="panel-heading" style="width:100%">
-                <h3 class="panel-title">No match!</h3>
-            </div>
-            <p style="margin: 0px 0px 0px 10px">For now, search is performed based on exact matches only. Use either locus targs, refseq protein accession or gene names to perform searches. <br>
-                Accession from the KEGG orthology database (<a href="{% url 'fam' 'K00844' 'ko' %}">K00844</a>), the COG database (<a href="{% url 'fam' 'COG0333' 'cog' %}">COG0333</a>) and from PFAM (<a href="{% url 'fam' 'PF06723' 'pfam' %}">PF06723</a>) and interpro databases (<a href="{% url 'fam' 'IPR004753' 'interpro' %}">IPR004753</a>) are also recognized if present in the database (if identified in at least one genome).
-                KEGG modules (<a href="{% url 'KEGG_module_map' 'M00023' %}">M00023</a>) and pathways (<a href="{% url 'KEGG_mapp_ko' 'map00400' %}">map00400</a>) are also recognized. <br>
-                Alternatively, you can browse genomes overview tables from links listed in the <a href="{% url 'home' %}">home page</a> table (column: Browse online) or <a href="{% url 'blast' %}">BLAST</a> a refserence sequence.</p>.
-        </div>
-            {% else %}
+                              <div id="my-tab-content" class="tab-content">
 
-                <h3>Search term: {{search_term}}. Search limited to 100 hits/Category.</h3>
+                      {% endif %}
+                      {% if search_result %}
 
+                          {% if search_type == "no_exact_accession" %}
+                              <div class="tab-pane active" id="tab0">
+                          {% endif %}
 
+                          <h2>CDS</h2>
+                          <div id="help_text">
 
-                {% if search_type == "no_exact_accession"%}
-                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                        {% if search_result %}
-                        <li class="active"><a href="#tab0" data-toggle="tab">Locus</a></li>
-                        {% endif %}
-                        {% if raw_data_EC %}
-                        <li><a href="#tab1" data-toggle="tab">EC</a></li>
-                        {% endif %}
-                        {% if raw_data_ko %}
-                        <li><a href="#tab2" data-toggle="tab">KO</a></li>
-                        {% endif %}
-                        {% if raw_data_cog %}
-                        <li><a href="#tab3" data-toggle="tab">COG</a></li>
-                        {% endif %}
-                        {% if raw_data_interpro %}
-                        <li><a href="#tab4" data-toggle="tab">Interpro</a></li>
-                        {% endif %}
-                        {% if raw_data_module %}
-                        <li><a href="#tab5" data-toggle="tab">Modules</a></li>
-                        {% endif %}
-                        {% if raw_data_pathway %}
-                        <li><a href="#tab6" data-toggle="tab">Pathways</a></li>
-                        {% endif %}
-                    </ul>
-
-
-
-                <div id="my-tab-content" class="tab-content">
-
-                    {% endif %}
-
-                    {% if search_result %}
-                        <!-- tab -->
-                    {% if search_type == "no_exact_accession" %}
-                        <div class="tab-pane active" id="tab0">
-                    {% endif %}
-                        <h2>CDS</h2>
-                        <div id=help_text>
-                            <table>
-                               <tr><td>S</td> <td> strand</td> </tr>
-                               <tr><td>nH</td> <td> total number of homologues</td> </tr>
-                               <tr><td>nG</td> <td> number of genomes in which at least one homologous protein is present</td> </tr>
-                               <tr><td>TM</td> <td> Transmmembrane domains</td> </tr>
-                               <tr><td>SP</td> <td> Signl peptide</td> </tr>
-                            </table>
-                        </div>
-
-                        <div id="export_bouttons">
-                            <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-
-                            <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                            <br>
-                        </div>
-
-                        <table class="sortable" id="search_table">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th id="entete_group">Orthogroup</th>
-                                    <th id="entete_locus">Locus</th>
-                                    <th id="entete_gene">Start</th>
-                                    <th id="entete_gene">Stop</th>
-                                    <th id="entete_strand">S.</th>
-                                    <th id="entete_gene">Gene</th>
-                                    <th id="entete_n">nH</th>
-                                    <th id="entete_n">nG</th>
-                                    <th id="entete_n">TM</th>
-                                    <th id="entete_n">SP</th>
-                                    <th id="entete_product">Product</th>
-                                    <th id="entete_organism">Organism</th>
-                                    <th id="entete_translation">Translation</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% load staticfiles %}
-                                {% for values in search_result %}
-                                <tr>
-                                    <td>{{values.0}}</td>
-                                    <td><a href="{% url 'locusx' values.1 True%}"  target="_top">{{values.1}}</a></td>
-                                    <td><a href="{% url 'locusx' values.2 True%}"  target="_top">{{values.2}}</a></td>
-                                    <td>{{values.4}}</td>
-                                    <td>{{values.5}}</td>
-                                    <td>{{values.6}}</td>
-                                    <td>{{values.7}}</td>
-                                    <td>{{values.8}}</td>
-                                    <td>{{values.9}}</td>
-                                    <td>{{values.10}}</td>
-                                    <td>{{values.11}}</td>
-                                    <td>{{values.12}}</td>
-                                    <td>{{values.13}}</td>
-                                    <td>{{values.14}}</td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-
-                    {% if search_type == "no_exact_accession" %}
-                        <!-- closing the tab-->
-                        </div>
-                    {% endif %}
-
-                    {% endif %}
-                    {% if search_type == "no_exact_accession"%}
-
-                        {% if raw_data_EC %}
-                            <div class="tab-pane" id="tab1">
-                                <h2>Enzymes</h2>
-                                <table id="search_table" class="sortable">
-                                <thead>
-                                    <tr>
-                                        <th id="entete_locus">EC</th>
-                                        <th id="entete_locus">Description</th>
-                                    </tr>
-                                </thead>
-                                {% for values in raw_data_EC %}
-                                    <tr>
-                                        <td><a href="{% url 'fam' values.0 'EC' %}"  target="_top">{{values.0}}</a></td>
-                                        <td>{{values.1}}</td>
-                                    </tr>
-                                {% endfor %}
+                            <div class="panel panel-warning" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                                <div class="panel-heading" style="width:100%">
+                                    <h3 class="panel-title">Acronyms</h3>
+                                </div>
+                                <table class="table">
+                                   <tr><td>S</td> <td> strand</td> </tr>
+                                   <tr><td>nH</td> <td> total number of homologues</td> </tr>
+                                   <tr><td>nG</td> <td> number of genomes in which at least one homologous protein is present</td> </tr>
+                                   <tr><td>TM</td> <td> Transmmembrane domains</td> </tr>
+                                   <tr><td>SP</td> <td> Signl peptide</td> </tr>
                                 </table>
-                            </div>
-                        {% endif %}
-                        {% if raw_data_ko %}
-                            <div class="tab-pane" id="tab2">
-                                <h2>Kegg Orthologs</h2>
-                                <table id="search_table" class="sortable">
-                                <thead>
-                                    <tr>
-                                        <th id="entete_locus">KO id</th>
-                                        <th id="entete_locus">name</th>
-                                        <th id="entete_locus">description</th>
-                                    </tr>
-                                </thead>
-                                {% for values in raw_data_ko %}
-                                    <tr>
-                                        <td><a href="{% url 'fam' values.0 'ko' %}"  target="_top">{{values.0}}</a></td>
-                                        <td>{{values.1}}</td>
-                                        <td>{{values.2}}</td>
-                                    </tr>
-                                {% endfor %}
-                                </table>
-                            </div>
-                        {% endif %}
-                        {% if raw_data_cog %}
-                            <div class="tab-pane" id="tab3">
-                                <h2>COGs</h2>
-                                <table id="search_table" class="sortable">
-                                <thead>
-                                    <tr>
-                                        <th id="entete_locus">COG id</th>
-                                        <th id="entete_locus">Category</th>
-                                        <th id="entete_locus">Description</th>
-                                    </tr>
-                                </thead>
-                                {% for values in raw_data_cog %}
-                                    <tr>
-                                        <td><a href="{% url 'fam' values.0 'cog' %}"  target="_top">{{values.0}}</a></td>
-                                        <td>{{values.1}} / {{values.2}}</td>
-                                        <td>{{values.3}}</td>
-                                    </tr>
-                                {% endfor %}
-                                </table>
-                            </div>
-                        {% endif %}
-                        {% if raw_data_interpro %}
-                            <div class="tab-pane" id="tab4">
-                                <h2>Interpro entries</h2>
-                                <table id="search_table" class="sortable">
-                                <thead>
-                                    <tr>
-                                        <th id="entete_locus">Interpro</th>
-                                        <th id="entete_locus">Analysis</th>
-                                        <th id="entete_locus">Accession</th>
-                                        <th id="entete_locus">Description</th>
-                                        <th id="entete_locus">Description</th>
+                             </div>
 
 
+                          </div>
+
+                          <div style="width:95%">
+                            <table class="display" id="search_table" name="search">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Orthogroup</th>
+                                        <th>Locus</th>
+                                        <th>Start</th>
+                                        <th>Stop</th>
+                                        <th>S.</th>
+                                        <th>Gene</th>
+                                        <th>nH</th>
+                                        <th>nG</th>
+                                        <th>TM</th>
+                                        <th>SP</th>
+                                        <th>Product</th>
+                                        <th>Organism</th>
                                     </tr>
                                 </thead>
-                                {% for values in raw_data_interpro %}
+                                <tbody>
+                                    {% load staticfiles %}
+                                    {% for values in search_result %}
                                     <tr>
-                                        <td><a href="{% url 'fam' values.3 'interpro' %}"  target="_top">{{values.3}}</a></td>
                                         <td>{{values.0}}</td>
-                                        <td>{{values.1}}</td>
-                                        <td>{{values.2}}</td>
+                                        <td><a href="{% url 'locusx' values.1 True%}"  target="_top">{{values.1}}</a></td>
+                                        <td><a href="{% url 'locusx' values.2 True%}"  target="_top">{{values.2}}</a></td>
                                         <td>{{values.4}}</td>
-
-
+                                        <td>{{values.5}}</td>
+                                        <td>{{values.6}}</td>
+                                        <td>{{values.7}}</td>
+                                        <td>{{values.8}}</td>
+                                        <td>{{values.9}}</td>
+                                        <td>{{values.10}}</td>
+                                        <td>{{values.11}}</td>
+                                        <td>{{values.12}}</td>
+                                        <td>{{values.13}}</td>
                                     </tr>
                                 {% endfor %}
-                                </table>
-                            </div>
-                        {% endif %}
-                        {% if raw_data_module %}
-                            <div class="tab-pane" id="tab5">
-                                <h2>Kegg Modules</h2>
-                                <table id="search_table" class="sortable">
-                                <thead>
-                                    <tr>
-                                        <th id="entete_locus">Name</th>
-                                        <th id="entete_locus">Category</th>
-                                        <th id="entete_locus">Sub category</th>
-                                        <th id="entete_locus">Description</th>
+                                </tbody>
+                            </table>
+                          </div> <!-- table container -->
+                          {% if search_type == "no_exact_accession" %}
+                              </div> <!-- closing the tab-->
+                          {% endif %}
+                      {% endif %} <!-- search results -->
+                          {% if search_type == "no_exact_accession"%}
+                              {% if raw_data_EC %}
+                                  <div class="tab-pane" id="tab1">
+                                      <h2>Enzymes</h2>
+                                      <table id="search_table" class="table">
+                                      <thead>
+                                          <tr>
+                                              <th id="entete_locus">EC</th>
+                                              <th id="entete_locus">Description</th>
+                                          </tr>
+                                      </thead>
+                                      {% for values in raw_data_EC %}
+                                          <tr>
+                                              <td><a href="{% url 'fam' values.0 'EC' %}"  target="_top">{{values.0}}</a></td>
+                                              <td>{{values.1}}</td>
+                                          </tr>
+                                      {% endfor %}
+                                      </table>
+                                  </div>
+                              {% endif %}
+                              {% if raw_data_ko %}
+                                  <div class="tab-pane" id="tab2">
+                                      <h2>Kegg Orthologs</h2>
+                                      <table id="search_table" class="table">
+                                      <thead>
+                                          <tr>
+                                              <th id="entete_locus">KO id</th>
+                                              <th id="entete_locus">name</th>
+                                              <th id="entete_locus">description</th>
+                                          </tr>
+                                      </thead>
+                                      {% for values in raw_data_ko %}
+                                          <tr>
+                                              <td><a href="{% url 'fam' values.0 'ko' %}"  target="_top">{{values.0}}</a></td>
+                                              <td>{{values.1}}</td>
+                                              <td>{{values.2}}</td>
+                                          </tr>
+                                      {% endfor %}
+                                      </table>
+                                  </div>
+                              {% endif %}
+                              {% if raw_data_cog %}
+                                  <div class="tab-pane" id="tab3">
+                                      <h2>COGs</h2>
+                                      <table id="search_table" class="table">
+                                      <thead>
+                                          <tr>
+                                              <th id="entete_locus">COG id</th>
+                                              <th id="entete_locus">Category</th>
+                                              <th id="entete_locus">Description</th>
+                                          </tr>
+                                      </thead>
+                                      {% for values in raw_data_cog %}
+                                          <tr>
+                                              <td><a href="{% url 'fam' values.0 'cog' %}"  target="_top">{{values.0}}</a></td>
+                                              <td>{{values.1}} / {{values.2}}</td>
+                                              <td>{{values.3}}</td>
+                                          </tr>
+                                      {% endfor %}
+                                      </table>
+                                  </div>
+                              {% endif %}
+                              {% if raw_data_interpro %}
+                                  <div class="tab-pane" id="tab4">
+                                      <h2>Interpro entries</h2>
+                                      <table id="search_table" class="table">
+                                      <thead>
+                                          <tr>
+                                              <th id="entete_locus">Interpro</th>
+                                              <th id="entete_locus">Analysis</th>
+                                              <th id="entete_locus">Accession</th>
+                                              <th id="entete_locus">Description</th>
+                                              <th id="entete_locus">Description</th>
 
-                                    </tr>
-                                </thead>
-                                {% for values in raw_data_module %}
-                                    <tr>
-                                        <td><a href="{% url 'KEGG_module_map' values.0 %}"  target="_top">{{values.0}}</a></td>
-                                        <td>{{values.1}}</td>
-                                        <td>{{values.2}}</td>
-                                        <td>{{values.3}}</td>
-                                    </tr>
-                                {% endfor %}
-                                </table>
-                            </div>
-                        {% endif %}
-                        {% if raw_data_pathway %}
-                            <div class="tab-pane" id="tab6">
-                                <h2>Kegg Modules</h2>
-                                <table id="search_table" class="sortable">
-                                <thead>
-                                    <tr>
-                                        <th id="entete_locus">Name</th>
-                                        <th id="entete_locus">Category</th>
-                                        <th id="entete_locus">Description</th>
 
-                                    </tr>
-                                </thead>
-                                {% for values in raw_data_pathway %}
-                                    <tr>
-                                        <td><a href="{% url 'KEGG_mapp' values.0 %}"  target="_top">{{values.0}}</a></td>
-                                        <td>{{values.1}}</td>
-                                        <td>{{values.2}}</td>
-                                    </tr>
+                                          </tr>
+                                      </thead>
+                                      {% for values in raw_data_interpro %}
+                                          <tr>
+                                              <td><a href="{% url 'fam' values.3 'interpro' %}"  target="_top">{{values.3}}</a></td>
+                                              <td>{{values.0}}</td>
+                                              <td>{{values.1}}</td>
+                                              <td>{{values.2}}</td>
+                                              <td>{{values.4}}</td>
 
-                                {% endfor %}
-                                </table>
-                            </div>
-                        {% endif %}
-                {% endif %}
-            {% endif %}
+
+                                          </tr>
+                                      {% endfor %}
+                                      </table>
+                                  </div>
+                              {% endif %}
+                              {% if raw_data_module %}
+                                  <div class="tab-pane" id="tab5">
+                                      <h2>Kegg Modules</h2>
+                                      <table id="search_table" class="table">
+                                      <thead>
+                                          <tr>
+                                              <th id="entete_locus">Name</th>
+                                              <th id="entete_locus">Category</th>
+                                              <th id="entete_locus">Sub category</th>
+                                              <th id="entete_locus">Description</th>
+
+                                          </tr>
+                                      </thead>
+                                      {% for values in raw_data_module %}
+                                          <tr>
+                                              <td><a href="{% url 'KEGG_module_map' values.0 %}"  target="_top">{{values.0}}</a></td>
+                                              <td>{{values.1}}</td>
+                                              <td>{{values.2}}</td>
+                                              <td>{{values.3}}</td>
+                                          </tr>
+                                      {% endfor %}
+                                      </table>
+                                  </div>
+                              {% endif %}
+                              {% if raw_data_pathway %}
+                                  <div class="tab-pane" id="tab6">
+                                      <h2>Kegg Modules</h2>
+                                      <table id="search_table" class="table">
+                                      <thead>
+                                          <tr>
+                                              <th id="entete_locus">Name</th>
+                                              <th id="entete_locus">Category</th>
+                                              <th id="entete_locus">Description</th>
+
+                                          </tr>
+                                      </thead>
+                                      {% for values in raw_data_pathway %}
+                                          <tr>
+                                              <td><a href="{% url 'KEGG_mapp' values.0 %}"  target="_top">{{values.0}}</a></td>
+                                              <td>{{values.1}}</td>
+                                              <td>{{values.2}}</td>
+                                          </tr>
+
+                                      {% endfor %}
+                                      </table>
+                                  </div>
+                              {% endif %}
+                          {% endif %} <!-- no_exact_accession -->
+                        </div>
+                      {% endif %} <!-- search_echec/success -->
+                  {% endif %} <!-- envoi -->
+                </div> <!-- tab pane -->
+              </div>
+            </div>
+          </div>
         </div>
-        {% endif %}
+      </div>
     </div>
-
-</div>
 </body>
-</html>
+{% include "chlamdb/style_menu.html" %}
 <style>
 mark{
     background: orange;
@@ -301,16 +296,51 @@ mark{
 }
 </style>
 <script>
-    var options = {
-        "ignoreJoiners": true,
-        "exclude": [
-            "h3",
-            ".byline *",
-            "th"
-        ]
-    };
-    var docu = document.getElementById("content");
-    var instance = new Mark(docu);
-    instance.mark("{{search_term}}", options);
+  var options = {
+      "ignoreJoiners": true,
+      "exclude": [
+          "h3",
+          ".byline *",
+          "th"
+      ]
+  };
+  var docu = document.getElementById("content");
+  var instance = new Mark(docu);
+  instance.mark("{{search_term}}", options);
 
+  $(document).ready(function() {
+    $('#search_table').DataTable( {
+      dom: 'Bfrtip',
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'search'
+        },
+        {
+            extend: 'csv',
+            title: 'search'
+        }
+      ],
+      "columnDefs": [
+      { className: "wrapcol", "targets": [ 13 ] }
+    ],
+    "paging":   true,
+    "ordering": true,
+    "info":     false,
+    colReorder: true,
+    fixedHeader: true
+    } );
+  } );
 </script>
+
+<style>
+
+table td.wrapcol {
+  word-break: break-all;
+  word-wrap: break-word;
+  width: auto;
+}
+
+</style>
+
+</html>

@@ -2,20 +2,130 @@
 
 
 <html>
-
+<head>
 {% load staticfiles %}
-<body height="4000px">
+{% include "chlamdb/header.html" %}
+</head>
+<body>
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                {% include "chlamdb/menu.html" %}
 
-                <h3><a href="{% url 'get_pfam_taxon_table' pfam_domain %}">==> get detailed table</a></h3>
+                <h3>{{ pfam_domain }}
+                   <a type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'pfam2fasta' pfam_domain %}'">Pfam fasta</a>
 
+                </h3>
+
+                <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                    <li><a href="{% url 'fam' pfam_domain 'pfam' %}#tab1">General</a></li>
+                    <li><a href="{% url 'fam' pfam_domain 'pfam' %}#tab2">Details</a></li>
+                    <li><a href="{% url 'fam' pfam_domain 'pfam' %}#tab3">Profile</a></li>
+                    {% if rank == 'phylum'%}
+                    <li class="active"><a href="{% url 'pfam_profile' pfam_domain 'phylum' %}">Taxonomic profile (phylum)</a></li>
+                    <li><a href="{% url 'pfam_profile' pfam_domain 'order' %}">Taxonomic profile (order)</a></li>
+                    {% else %}
+                    <li><a href="{% url 'pfam_profile' pfam_domain 'phylum' %}">Taxonomic profile (phylum)</a></li>
+                    <li class="active"><a href="{% url 'pfam_profile' pfam_domain 'order' %}">Taxonomic profile (order)</a></li>
+                    {% endif %}
+                </ul>
+
+                <h2>Taxonomic profile of domain {{pfam_domain}}</h2>
+                <a type="button" href="{% url 'get_pfam_taxon_table' pfam_domain %}" class="btn btn-success">get detailed table <i class="fa fa-download"></i></a>
+                <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+                <a onclick="exportPNG();" class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
 
                <div>
                    {% if rank == 'phylum'%}
                     <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width: 800px"></object>
                    {%else %}
-<object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width: 1200px"></object>
+                   <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width: 1200px"></object>
 
                    {%endif%}
                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
+{% include "chlamdb/style_menu.html" %}
+<script>
+
+var exportPNG = function() {
+
+    /*
+    Based off  gustavohenke's svg2png.js
+    https://gist.github.com/gustavohenke/9073132
+    */
+
+var a = document.getElementById("pfam_tree");
+console.log(a)
+// Get the SVG document inside the Object tag
+var svgDoc = a.contentDocument;
+    var svgData = new XMLSerializer().serializeToString( svgDoc );
+
+    var canvas = document.createElement( "canvas" );
+    var ctx = canvas.getContext( "2d" );
+    var dataUri = '';
+    try {
+        dataUri = 'data:image/svg+xml;base64,' + btoa(svgData);
+    } catch (ex) {
+
+        // For browsers that don't have a btoa() method, send the text off to a webservice for encoding
+        /* Uncomment if needed
+        $.ajax({
+            url: "http://www.mysite.com/webservice/encodeString",
+            data: { svg: svgData },
+            type: "POST",
+            async: false,
+            success: function(encodedSVG) {
+                dataUri = 'data:image/svg+xml;base64,' + encodedSVG;
+            }
+        })
+        */
+
+    }
+
+    var img = document.createElement( "img" );
+
+    img.onload = function() {
+        ctx.canvas.width  = img.naturalWidth;
+        ctx.canvas.height = img.naturalHeight;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage( img, 0, 0 );
+
+
+        try {
+
+            // Try to initiate a download of the image
+            var a = document.createElement("a");
+            a.download = "{{ pfam_domain }}_profile.png";
+            a.href = canvas.toDataURL("image/png");
+            document.querySelector("body").appendChild(a);
+            a.click();
+            document.querySelector("body").removeChild(a);
+
+        } catch (ex) {
+
+            // If downloading not possible (as in IE due to canvas.toDataURL() security issue)
+            // then display image for saving via right-click
+
+            var imgPreview = document.createElement("div");
+            imgPreview.appendChild(img);
+            document.querySelector("body").appendChild(imgPreview);
+
+        }
+    };
+    img.src = dataUri;
+
+}
+
+
+</script>
 </html>

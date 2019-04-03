@@ -24,8 +24,8 @@
 		displayStat: true,
 		fnClickCallback: function() {
 			var value = `<div id="export_bouttons_groups">
-                         <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-                         <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
+                         <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" class="btn btn-primary btn-xs">Export to Excel</a>
+                         <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" class="btn btn-primary btn-xs">Export to CSV</a>
                         <br/>
                         </div>`;
 			if (this.listnames.length == 1) {
@@ -36,7 +36,7 @@
 			for (name in this.listnames) {
 				value += '<li id="list_strains">' +this.listnames[name] + "</li>";
 			}
-			value += '</ul>\n<table id="cog_table" class="sortable"><tr><th>ID</th><th>Category</th><th>Description</th><th>Link</th></tr>';
+			value += '</ul>\n<table id="cog_table" class="table"><tr><th>ID</th><th>Category</th><th>Description</th><th>Link</th></tr>';
 			for (val in this.list) {
                 <!-- h[this.list[val]] -->
 				value += '<tr><td><a href="/chlamdb/fam/' + this.list[val] + '/cog"'+
@@ -72,6 +72,3 @@
 
 			</div>
 		</div>
-
-
-

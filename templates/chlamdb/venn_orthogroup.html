@@ -2,74 +2,63 @@
 
 
 <html>
-<div id="container">
+<head>
+{% include "chlamdb/header.html" %}
+{% load crispy_forms_tags %}
+</head>
 
+<div class="container-fluid" id="main_container">
+  <div class="row">
+    <div id="wrapper">
+        <div id="page-content-wrapper">
+          <div class="row">
+            <div class="col-lg-12">
+               {% include "chlamdb/menu.html" %}
 
-    <div id="sidebar">
-        {% include "chlamdb/menu.html" %}
-    </div>
+                <nav>
+                    <ul id="tabs" class="nav nav-tabs">
+                                <li><a href="{% url 'extract_orthogroup' %}">Detailed comparison</a></li>
+                                <li class="active"><a href="{% url 'venn_orthogroup' %}">Venn diagram</a></li>
+                                <li><a href="{% url 'orthogroup_comparison' %}">Compare Orthogroups size</a></li>
+                                <li><a href="{% url 'plot_heatmap' 'orthology' %}">Whole proteomes heatmaps</a></li>
+                                <li><a href="{% url 'pan_genome' 'orthology' %}">Pan/Core genome plots</a></li>
 
-    <div id="header">
-        {% include "chlamdb/user.html" %}
+                    </ul>
+                </nav>
 
-    </div>
-
-    <div id="content">
-
-        <nav>
-            <ul id="tabs" class="nav nav-tabs">
-                        <li><a href="{% url 'extract_orthogroup' %}">Detailed comparison</a></li>
-                        <li class="active"><a href="{% url 'venn_orthogroup' %}">Venn diagram</a></li>
-                        <li><a href="{% url 'orthogroup_comparison' %}">Compare Orthogroups size</a></li>
-                        <li><a href="{% url 'plot_heatmap' 'orthology' %}">Whole proteomes heatmaps</a></li>
-                        <li><a href="{% url 'pan_genome' 'orthology' %}">Pan/Core genome plots</a></li>
-
-            </ul>
-        </nav>
-
-        <div id="extract_form">
-            <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                  <div class="panel-heading" style="width:100%">
-                      <h3 class="panel-title">Help</h3>
-                  </div>
-                <p style="margin: 10px 10px 10px 10px">Venn diagramm of orthologous groups constructed based on BLAST using orthoMCL, max 6 genomes</p>
-            </div>
-
-
-            <form action="{% url "venn_orthogroup" %}" method="post">
-
-                <div class="form-inline">
-                    <div class="form-group">
-                         <div class="col-md-11" style="width: 100%;">
-                              <label style="width:380px;text-align:left;" >
-                                  <input type="checkbox" id="id_checkbox_accessions" name="checkbox_accessions">
-                                  Distinguish plasmids from chromosomes
-                              </label>
-                        </div>
+                <div id="extract_form">
+                    <div class="panel panel-success" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                          <div class="panel-heading" style="width:100%">
+                              <h3 class="panel-title">Help</h3>
+                          </div>
+                        <p style="margin: 10px 10px 10px 10px">Venn diagramm of orthologous groups constructed based on BLAST using OrthoFinder, max 6 genomes</p>
                     </div>
+
+                        {% block content %}
+                        <form action="{% url "venn_orthogroup" %}" method="post">
+                            {% csrf_token %}
+                            {% crispy form_venn %}
+                        </form>
+                        {% endblock %}
+
+                    </form>
+
                 </div>
 
-
-                {% csrf_token %}
-                {{ form_venn.as_p }}
-                <input type="submit" name="venn" value="extract homologues" id="venn_button" />
-
-            </form>
-
+             {% if envoi_venn %}
+                <div class="row" style="padding-top:30px">
+                   <div class="col-lg-8">
+                    {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=orthogroup2description %}
+                    </div>
+                </div>
+            {% endif %}
+            </div>
         </div>
-
-     {% if envoi_venn %}
-
-        {% include "chlamdb/venn_template_orthogroups.html" with series=series description_dico=orthogroup2description %}
-
-    {% endif %}
-
-
-
+      </div>
     </div>
-
+  </div>
 </div>
-<div id="footer"></div>
+
 <!--
 <script type="text/javascript">$(document).ready( function(){ $("#jqtest").html("JQuery installed successfully!"); } ); </script>
 
@@ -107,9 +96,8 @@
 
 </script>
 
-
-
 <p id="jqtest"></p>
 
 </body>
+{% include "chlamdb/style_menu.html" %}
 </html>

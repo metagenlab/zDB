@@ -9,30 +9,17 @@
     {% load staticfiles %}
     {% load static %}
     {% get_static_prefix as STATIC_PREFIX %}
-
-    <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
-    <!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
-    <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
-
-    <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
+    {% include "chlamdb/header.html" %}
 
 </head>
 
 <body>
     {% if not no_tree %}
     <h3>Phylogeny:</h3>
+
+    <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+    <a onclick='exportPNG("pfam_tree", "pfam_tree");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+
     <div id="pfam_tree_div">
         <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width:90%"></object>
     </div>
@@ -40,7 +27,7 @@
         <h3>Motifs:</h3>
 
 
-        <table class="sortable">
+        <table class="table">
             <thead>
             <tr>
                 <th>Pfam domain</th>
@@ -51,7 +38,7 @@
             <tbody>
             {% for key, values in motif_count.items %}
             <tr>
-                <td><a href="http://pfam.xfam.org/family/{{key}}" target="_top">{{key}}</a></td>
+                <td><a href="{% url 'fam' key "pfam" %}" target="_top">{{key}}</a></td>
                 <td>{{values.0}}</td>
                 <td>{{values.1}}</td>
             </tr>

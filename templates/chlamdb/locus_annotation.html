@@ -15,28 +15,24 @@
         </script>
     {% load staticfiles %}
     {% load static %}
+    {% load crispy_forms_tags %}
+    {% include "chlamdb/header.html" %}
     </head>
 
+  <body>
+    <div class="container-fluid" id="main_container">
+      <div class="row">
+        <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                {% include "chlamdb/menu.html" %}
 
-    <div id="container">
-
-
-        <div id="sidebar">
-            {% include "chlamdb/menu.html" %}
-        </div>
-
-        <div id="header">
-            {% include "chlamdb/user.html" %}
-        </div>
-
-        <div id="content">
-
-
-                    {% if display_form == "True" %}
+                  {% if display_form == "True" %}
 
                      <div id="extract_form">
 
-                        <form action="{% url "locus_annotation" True %}" method="post">
+
 
                         <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                             <div class="panel-heading" style="width:100%">
@@ -44,15 +40,27 @@
                             </div>
                             <p style="margin: 10px 10px 10px 10px">Get annotations from a list of locus list (tab sep)</p>
                         </div>
+                        {% block content %}
+                        <form action="{% url "locus_annotation" True %}" method="post">
+                          {% csrf_token %}
+                          <div class="row">
+                            <div class="col-lg-3">
+                              {{ form.locus_list|as_crispy_field }}
+                            </div>
 
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                         <input type="submit" name="annot" value="Get annotation"/>
+                          </div>
+                          <div class="row">
+                          <div class="col-lg-6">
+                            {{ form.circos_target|as_crispy_field }}
+                          </div>
+                        </div>
+                           <input type="submit" name="annot" value="Get annotation"/>
                          </form>
+                         {% endblock %}
                     </div>
-                    {% endif %}
+                  {% endif %}
 
-            {% if envoi_annot %}
+                  {% if envoi_annot %}
 
 
                     <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
@@ -72,7 +80,7 @@
                                 <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
 
                                 <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_url|safe}}'">fasta aa</button>
-                                <a download="biodb_extract.csv" href="/chlamdb/locus_list2circos/{{biodb}}{{show_on_circos_url|safe}}'" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circos</a>
+                                <a download="biodb_extract.csv" href="/chlamdb/locus_list2circos/{{biodb}}{{show_on_circos_url|safe}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circos</a>
                                 <br/>
                             </div>
 
@@ -142,15 +150,13 @@
 
                         </div>
                     </div>
-            {% endif %}
-        </div>
-    </div>
-
-
-
-    <div id="footer">
-
-    </div>
-
+                  {% endif %}
+                </div>
+              </div>
+            </div> <!-- page-content-wrapper -->
+          </div> <!-- wrapper -->
+        </div>  <!-- row -->
+      </div>  <!-- container-fluid -->
     </body>
+    {% include "chlamdb/style_menu.html" %}
 </html>

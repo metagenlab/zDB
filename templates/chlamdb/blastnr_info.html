@@ -6,162 +6,180 @@
 {% load staticfiles %}
     {% load custom_tags %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+{% include "chlamdb/header.html" %}
+{% load crispy_forms_tags %}
 </head>
 <body>
 
-<div id="container">
-    <div id="sidebar">
-        {% include "chlamdb/menu.html" %}
-    </div>
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            {% include "chlamdb/menu.html" %}
+            <div class="row">
+              <div class="col-lg-12">
 
-    <div id="header">
-        {% include "chlamdb/user.html" %}
-    </div>
-
-    <div id="content">
+                <div id="content">
 
 
-        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-            <div class="panel-heading" style="width:100%">
-                <h3 class="panel-title">Help</h3>
-            </div>
-            <p style="margin: 10px 10px 10px 10px">Create circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. Click on the circos plot to open a new windows with clickable version of the plot.<br>
-            rRNA are colored in blue, tRNA in red.
-            </p>
-        </div>
+                    <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                        <div class="panel-heading" style="width:100%">
+                            <h3 class="panel-title">Help</h3>
+                        </div>
+                        <p style="margin: 10px 10px 10px 10px">Create circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. Click on the circos plot to open a new windows with clickable version of the plot.<br>
+                        rRNA are colored in blue, tRNA in red.
+                        </p>
+                    </div>
 
-        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-            <li class="active"><a href="#tab0" data-toggle="tab">List</a></li>
-            <li><a href="#tab1" data-toggle="tab">Cog categories</a></li>
-            <li><a href="#tab2" data-toggle="tab">cog counts</a></li>
-        </ul>
-        <div id="my-tab-content" class="tab-content">
-            <div class="tab-pane active" id="tab0">
-                <h3> Locus annotation </h3>
-                <div id="export_bouttons_groups">
-                    <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
+                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                        <li class="active"><a href="#tab0" data-toggle="tab">List</a></li>
+                        <li><a href="#tab1" data-toggle="tab">Cog categories</a></li>
+                        <li><a href="#tab2" data-toggle="tab">cog counts</a></li>
+                    </ul>
+                    <div id="my-tab-content" class="tab-content">
+                        <div class="tab-pane active" id="tab0">
+                            <h3> Locus annotation </h3>
+                            <div id="export_bouttons_groups">
+                                <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'blastnr_info', 'search');" class="btn btn-success">Export to Excel</a>
 
-                    <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                    <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
+                                <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'blastnr_info');" class="btn btn-success">Export to CSV</a>
+                                <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
 
-                    <br/>
+                                <br/>
+                            </div>
+                                    <table id="blastnr_info" class="display">
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+
+                                                <th>Locus</th>
+                                                <th>C</th>
+                                                <th>COGn</th>
+                                                <th>KO</th>
+                                                <th>Pathways</th>
+                                                <th>Modules</th>
+                                                <th>Interpro</th>
+                                                <th>Gene</th>
+                                                <th>nH</th>
+                                                <th>nG</th>
+                                                <th>TM</th>
+                                                <th>SP</th>
+                                                <th>Product</th>
+                                                <t>Hit</th>
+                                                <th>KD</th>
+                                                <th>KD</th>
+                                                <th>Organism</th>
+                                                <th>Identity</th>
+                                                <th>E-value</th>
+                                                <th>Bacteria</th>
+                                                <th>Eukaryota</th>
+                                                <th>Archae</th>
+                                                <th>Viruses</th>
+                                                <th>TOTAL</th>
+
+
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            {%for values in locus2annot%}
+                                            <tr>
+                                                <td>{{values.0}}</td>
+                                                <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
+                                                <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
+                                                {% with locus_tag2cog_name|keyvalue:values.2 as name %}
+                                                    {% if name == '-' %}
+                                                        <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
+                                                    {% else %}
+                                                        <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
+                                                    {% endif %}
+                                                {%endwith%}
+                                                {% with locus_tag2ko|keyvalue:values.2 as oneko %}
+                                                    {% if oneko == '-' %}
+                                                        <td>{{locus_tag2ko|keyvalue:values.2}}</td>
+                                                        <td>-</td>
+                                                        <td>-</td>
+                                                    {% else %}
+                                                        <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
+                                                        {% with ko2ko_pathways|keyvalue:oneko as name %}
+                                                            {% if name == '-' %}
+                                                                <td>-</td>
+                                                            {% else %}
+                                                                <td>{{name|safe}}</td>
+                                                            {% endif %}
+                                                        {%endwith%}
+                                                        {% with ko2ko_modules|keyvalue:oneko as name %}
+                                                            {% if name == '-' %}
+                                                                <td>-</td>
+                                                            {% else %}
+                                                                <td>{{name|safe}}</td>
+                                                            {% endif %}
+                                                        {%endwith%}
+                                                    {% endif %}
+
+
+                                                {%endwith%}
+                                                {% with locus2interpro|keyvalue:values.2 as interpro_data %}
+                                                <td>
+                                                    {% for one_interpro in interpro_data %}
+                                                    {% if one_interpro.0 != '-' %}
+                                                        <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                                    {%else%}
+                                                        {{one_interpro.0}}
+                                                    {%endif%}
+                                                        {{one_interpro.1}} </br>
+                                                    {% endfor %}
+                                                    {%endwith%}
+                                                </td>
+                                                <td>{{values.7}}</td>
+                                                <td>{{values.8}}</td>
+                                                <td>{{values.9}}</td>
+                                                <td>{{values.10}}</td>
+                                                <td>{{values.11}}</td>
+                                                <td>{{values.12}}</td>
+                                                {% with locus_tag2blastnr_BBH|keyvalue:values.2 as blastnr_data %}
+                                                <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{blastnr_data.0}}">{{blastnr_data.0}}</a></td>
+                                                <td>{{blastnr_data.1|first}}</td>
+                                                <td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{blastnr_data.3}}" target="_top">{{blastnr_data.2}}</a></td>
+                                                <td>{{blastnr_data.5}}</td>
+                                                <td>{{blastnr_data.4}}</td>
+                                                {% endwith %}
+                                                {% with locus2superkingdom_counts|keyvalue:values.2 as kingdom %}
+                                                <td>{{kingdom|keyvalue:"Bacteria"}}</td>
+                                                <td>{{kingdom|keyvalue:"Eukaryota"}}</td>
+                                                <td>{{kingdom|keyvalue:"Archaea"}}</td>
+                                                <td>{{kingdom|keyvalue:"Viruses"}}</td>
+                                                <td>{{kingdom|keyvalue:"TOTAL"}}</td>
+                                                {% endwith %}
+
+                                            </tr>
+
+                                            {%endfor%}
+                                        </tbody>
+                                    </table>
+
+                    </div>
+                        <div class="tab-pane" id="tab1">
+
+                            <div id="mydiv" style="float: left"></div>
+                            <svg class="chart"></svg>
+                        </div>
+
+                        <div class="tab-pane" id="tab2">
+                            <div id="mydiv2" style="float: left"></div>
+                            <svg class="chart2"></svg>
+                        </div>
+
+                    </div>
+
+
                 </div>
-                        <table id="cog_table" class="sortable">
-                            <thead>
-                                <tr>
-                                    <th></th>
-
-                                    <th id="entete_locus">Locus</th>
-                                    <th style="width:10px">C</th>
-                                    <th style="width:70px">COGn</th>
-                                    <th style="width:55px">KO</th>
-                                    <th style="width:260px">Pathways</th>
-                                    <th style="width:230px">Modules</th>
-                                    <th style="width:230px">Interpro</th>
-                                    <th id="entete_gene">Gene</th>
-                                    <th id="entete_n">nH</th>
-                                    <th id="entete_n">nG</th>
-                                    <th id="entete_n">TM</th>
-                                    <th id="entete_n">SP</th>
-                                    <th id="entete_product">Product</th>
-                                    <th id="entete_locus">Hit</th>
-                                    <th id="entete_n">KD</th>
-                                    <th id="entete_locus">Organism</th>
-                                    <th id="entete_gene">Identity</th>
-                                    <th id="entete_gene">E-value</th>
-
-
-                                </tr>
-                            </thead>
-                            <tbody>
-
-                                {%for values in locus2annot%}
-                                <tr>
-                                    <td>{{values.0}}</td>
-                                    <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
-                                    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
-                                    {% with locus_tag2cog_name|keyvalue:values.2 as name %}
-                                        {% if name == '-' %}
-                                            <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
-                                        {% else %}
-                                            <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
-                                        {% endif %}
-                                    {%endwith%}
-                                    {% with locus_tag2ko|keyvalue:values.2 as oneko %}
-                                        {% if oneko == '-' %}
-                                            <td>{{locus_tag2ko|keyvalue:values.2}}</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                        {% else %}
-                                            <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
-                                            {% with ko2ko_pathways|keyvalue:oneko as name %}
-                                                {% if name == '-' %}
-                                                    <td>-</td>
-                                                {% else %}
-                                                    <td>{{name|safe}}</td>
-                                                {% endif %}
-                                            {%endwith%}
-                                            {% with ko2ko_modules|keyvalue:oneko as name %}
-                                                {% if name == '-' %}
-                                                    <td>-</td>
-                                                {% else %}
-                                                    <td>{{name|safe}}</td>
-                                                {% endif %}
-                                            {%endwith%}
-                                        {% endif %}
-
-
-                                    {%endwith%}
-                                    {% with locus2interpro|keyvalue:values.2 as interpro_data %}
-                                    <td>
-                                        {% for one_interpro in interpro_data %}
-                                        {% if one_interpro.0 != '-' %}
-                                            <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
-                                        {%else%}
-                                            {{one_interpro.0}}
-                                        {%endif%}
-                                            {{one_interpro.1}} </br>
-                                        {% endfor %}
-                                        {%endwith%}
-                                    </td>
-                                    <td>{{values.7}}</td>
-                                    <td>{{values.8}}</td>
-                                    <td>{{values.9}}</td>
-                                    <td>{{values.10}}</td>
-                                    <td>{{values.11}}</td>
-                                    <td>{{values.12}}</td>
-                                    {% with locus_tag2blastnr_BBH|keyvalue:values.2 as blastnr_data %}
-                                    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{blastnr_data.0}}">{{blastnr_data.0}}</a></td>
-                                    <td>{{blastnr_data.1|first}}</td>
-                                    <td><a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={{blastnr_data.3}}" target="_top">{{blastnr_data.2}}</a></td>
-                                    <td>{{blastnr_data.5}}</td>
-                                    <td>{{blastnr_data.4}}</td>
-                                    {% endwith %}
-
-                                </tr>
-
-                                {%endfor%}
-                            </tbody>
-                        </table>
-
-        </div>
-            <div class="tab-pane" id="tab1">
-
-                <div id="mydiv" style="float: left"></div>
-                <svg class="chart"></svg>
+              </div>
             </div>
-
-            <div class="tab-pane" id="tab2">
-                <div id="mydiv2" style="float: left"></div>
-                <svg class="chart2"></svg>
-            </div>
-
+          </div>
         </div>
-
-
+      </div>
     </div>
-</div>
-
 
         <script>
 
@@ -551,4 +569,15 @@
         </script>
 
 </body>
+{% include "chlamdb/style_menu.html" %}
+<script>
+
+  $(document).ready(function() {
+  $('#blastnr_info').DataTable( {
+  "paging":   true,
+  "ordering": true,
+  "info":     false
+  } );
+  } );
+</script>
 </html>

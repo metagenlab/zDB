@@ -70,6 +70,7 @@
             exporting: true,
             displayMode: 'classic',
             displayStat: false,
+            displaySwitch: true,
             shortNumber: true,
             searchInput: null,
             searchStatus: null,
@@ -570,7 +571,7 @@
 				else { ytext = ymargin + h + 15; }
 				__context.fillStyle = "#000";
 				__context.textAlign = 'center';
-				__context.fillText($("#label"+(i+1)).html(), (xmargin + i*barwidth + i*xspacer) + barwidth/2, ytext, 200);
+				__context.fillText($("#"+cpref+"-label"+(i+1)).html(), (xmargin + i*barwidth + i*xspacer) + barwidth/2, ytext, 200);
 				__context.strokeStyle = axiscolor;
 				__context.lineWidth = 0.4;
 				drawAxis(__context, (xmargin + i*barwidth + i*xspacer) + barwidth/2, ymargin + h, (xmargin + i*barwidth + i*xspacer) + barwidth/2, ymargin + h+5);
@@ -689,968 +690,968 @@
 			var	grey = "rgba(0,0,0,0.1)";
 						
 			if (vennSize == 6) {
-				drawTriangle(0,11,    254,160, 174,235, changeOpacity(opts.colors[0], $("#label1").css('opacity')));
-				drawTriangle(188,0,   134,242, 236,202, changeOpacity(opts.colors[1], $("#label2").css('opacity')));
-				drawTriangle(338,52,  135,123, 191,242, changeOpacity(opts.colors[2], $("#label3").css('opacity')));
-				drawTriangle(500,260, 163,117, 134,219, changeOpacity(opts.colors[3], $("#label4").css('opacity')));
-				drawTriangle(250,415, 133,150, 203,67,  changeOpacity(opts.colors[4], $("#label5").css('opacity')));
-				drawTriangle(11,307,  263,81,  214,220, changeOpacity(opts.colors[5], $("#label6").css('opacity')));
+				drawTriangle(0,11,    254,160, 174,235, changeOpacity(opts.colors[0], $("#"+cpref+"-label1").css('opacity')));
+				drawTriangle(188,0,   134,242, 236,202, changeOpacity(opts.colors[1], $("#"+cpref+"-label2").css('opacity')));
+				drawTriangle(338,52,  135,123, 191,242, changeOpacity(opts.colors[2], $("#"+cpref+"-label3").css('opacity')));
+				drawTriangle(500,260, 163,117, 134,219, changeOpacity(opts.colors[3], $("#"+cpref+"-label4").css('opacity')));
+				drawTriangle(250,415, 133,150, 203,67,  changeOpacity(opts.colors[4], $("#"+cpref+"-label5").css('opacity')));
+				drawTriangle(11,307,  263,81,  214,220, changeOpacity(opts.colors[5], $("#"+cpref+"-label6").css('opacity')));
 				
-				$("#label1").css("left",  35).css("top",  10).css("color", opts.colors[0]);
-				$("#label2").css("left", 200).css("top",   5).css("color", opts.colors[1]);
-				$("#label3").css("left", 335).css("top",  60).css("color", opts.colors[2]);
-				$("#label4").css("left", 410).css("top", 200).css("color", opts.colors[3]);
-				$("#label5").css("left", 255).css("top", 385).css("color", opts.colors[4]);
-				$("#label6").css("left",  30).css("top", 300).css("color", opts.colors[5]);
-				placeNumber($("#resultC100000"),  98,  90, 6);
-				placeNumber($("#resultC010000"), 187,  50, 4);
-				placeNumber($("#resultC001000"), 280,  80, 6);
-				placeNumber($("#resultC000100"), 320, 205, 6);
-				placeNumber($("#resultC000010"), 212, 272, 5);
-				placeNumber($("#resultC000001"), 100, 240, 6);
-				placeNumber($("#resultC111111"), 185, 170, 6);
+				$("#"+cpref+"-label1").css("left",  35).css("top",  10).css("color", opts.colors[0]);
+				$("#"+cpref+"-label2").css("left", 200).css("top",   5).css("color", opts.colors[1]);
+				$("#"+cpref+"-label3").css("left", 335).css("top",  60).css("color", opts.colors[2]);
+				$("#"+cpref+"-label4").css("left", 410).css("top", 200).css("color", opts.colors[3]);
+				$("#"+cpref+"-label5").css("left", 255).css("top", 385).css("color", opts.colors[4]);
+				$("#"+cpref+"-label6").css("left",  30).css("top", 300).css("color", opts.colors[5]);
+				placeNumber($("#"+cpref+"-resultC100000"),  98,  90, 6);
+				placeNumber($("#"+cpref+"-resultC010000"), 187,  50, 4);
+				placeNumber($("#"+cpref+"-resultC001000"), 280,  80, 6);
+				placeNumber($("#"+cpref+"-resultC000100"), 320, 205, 6);
+				placeNumber($("#"+cpref+"-resultC000010"), 212, 272, 5);
+				placeNumber($("#"+cpref+"-resultC000001"), 100, 240, 6);
+				placeNumber($("#"+cpref+"-resultC111111"), 185, 170, 6);
 				drawLine(140, 80, 166,110, grey);
-				placeNumber($("#resultC110000"), 132,  60, 6);
-				placeNumber($("#resultC101000"), 142, 116, 2);
+				placeNumber($("#"+cpref+"-resultC110000"), 132,  60, 6);
+				placeNumber($("#"+cpref+"-resultC101000"), 142, 116, 2);
 				drawLine( 75,180, 145,185, grey);
 				drawLine( 75,180,  65,175, grey);
-				placeNumber($("#resultC100100"),  55, 157, 6);
-				placeNumber($("#resultC100010"), 140, 145, 2);
+				placeNumber($("#"+cpref+"-resultC100100"),  55, 157, 6);
+				placeNumber($("#"+cpref+"-resultC100010"), 140, 145, 2);
 				drawLine( 75,200, 142,190, grey);
 				drawLine( 75,200,  65,195, grey);
-				placeNumber($("#resultC100001"),  55, 177, 6);
+				placeNumber($("#"+cpref+"-resultC100001"),  55, 177, 6);
 				drawLine(230, 80, 212,115, grey);
-				placeNumber($("#resultC011000"), 230,  60, 6);
-				placeNumber($("#resultC010100"), 225, 190, 1);
-				placeNumber($("#resultC010010"), 193,  82, 3);
-				placeNumber($("#resultC010001"), 145, 218, 2);
+				placeNumber($("#"+cpref+"-resultC011000"), 230,  60, 6);
+				placeNumber($("#"+cpref+"-resultC010100"), 225, 190, 1);
+				placeNumber($("#"+cpref+"-resultC010010"), 193,  82, 3);
+				placeNumber($("#"+cpref+"-resultC010001"), 145, 218, 2);
 				drawLine(295,145, 235,180, grey);
-				placeNumber($("#resultC001100"), 302, 132, 6);
+				placeNumber($("#"+cpref+"-resultC001100"), 302, 132, 6);
 				drawLine(275,270, 193,233, grey);
-				placeNumber($("#resultC001010"), 275, 268, 6);
-				placeNumber($("#resultC001001"), 232, 113, 4);
-				placeNumber($("#resultC000110"), 216, 211, 1);
+				placeNumber($("#"+cpref+"-resultC001010"), 275, 268, 6);
+				placeNumber($("#"+cpref+"-resultC001001"), 232, 113, 4);
+				placeNumber($("#"+cpref+"-resultC000110"), 216, 211, 1);
 				drawLine( 75,220, 140,205, grey);
 				drawLine( 75,220,  65,215, grey);
-				placeNumber($("#resultC000101"),  55, 197, 6);
+				placeNumber($("#"+cpref+"-resultC000101"),  55, 197, 6);
 				drawLine(150,270, 183,230, grey);
-				placeNumber($("#resultC000011"), 145, 268, 6);
+				placeNumber($("#"+cpref+"-resultC000011"), 145, 268, 6);
 				
-				placeNumber($("#resultC111110"), 170, 130, 6);
-				$("#resultC111110").hide();
-				placeNumber($("#resultC111101"), 218, 155, 6);
-				$("#resultC111101").hide();
-				placeNumber($("#resultC111011"), 205, 125, 6);
-				$("#resultC111011").hide();
-				placeNumber($("#resultC110111"), 160, 190, 6);
-				$("#resultC110111").hide();
-				placeNumber($("#resultC101111"), 180, 212, 6);
-				$("#resultC101111").hide();
-				placeNumber($("#resultC011111"), 208, 197, 6);
-				$("#resultC011111").hide();
+				placeNumber($("#"+cpref+"-resultC111110"), 170, 130, 6);
+				$("#"+cpref+"-resultC111110").hide();
+				placeNumber($("#"+cpref+"-resultC111101"), 218, 155, 6);
+				$("#"+cpref+"-resultC111101").hide();
+				placeNumber($("#"+cpref+"-resultC111011"), 205, 125, 6);
+				$("#"+cpref+"-resultC111011").hide();
+				placeNumber($("#"+cpref+"-resultC110111"), 160, 190, 6);
+				$("#"+cpref+"-resultC110111").hide();
+				placeNumber($("#"+cpref+"-resultC101111"), 180, 212, 6);
+				$("#"+cpref+"-resultC101111").hide();
+				placeNumber($("#"+cpref+"-resultC011111"), 208, 197, 6);
+				$("#"+cpref+"-resultC011111").hide();
 				
-				placeNumber($("#resultC111100"), 225, 170, 6);
-				$("#resultC111100").hide();
-				placeNumber($("#resultC111010"), 182, 113, 6);
-				$("#resultC111010").hide();
-				placeNumber($("#resultC110110"), 149, 163, 6);
-				$("#resultC110110").hide();
-				placeNumber($("#resultC101110"), 152, 140, 6);
-				$("#resultC101110").hide();
-				placeNumber($("#resultC011110"), 215, 195, 6);
-				$("#resultC011110").hide();
-				placeNumber($("#resultC111001"), 212, 128, 6);
-				$("#resultC111001").hide();
-				placeNumber($("#resultC110101"), 150, 194, 6);
-				$("#resultC110101").hide();
-				placeNumber($("#resultC110011"), 168, 216, 6);
-				$("#resultC110011").hide();
-				placeNumber($("#resultC101101"), 226, 145, 6);
-				$("#resultC101101").hide();
-				placeNumber($("#resultC101011"), 178, 216, 6);
-				$("#resultC101011").hide();
-				placeNumber($("#resultC100111"), 178, 214, 6);
-				$("#resultC100111").hide();
-				placeNumber($("#resultC011101"), 218, 180, 6);
-				$("#resultC011101").hide();
-				placeNumber($("#resultC011011"), 206, 122, 6);
-				$("#resultC011011").hide();
-				placeNumber($("#resultC010111"), 215, 198, 6);
-				$("#resultC010111").hide();
-				placeNumber($("#resultC001111"), 200, 208, 6);
-				$("#resultC001111").hide();
+				placeNumber($("#"+cpref+"-resultC111100"), 225, 170, 6);
+				$("#"+cpref+"-resultC111100").hide();
+				placeNumber($("#"+cpref+"-resultC111010"), 182, 113, 6);
+				$("#"+cpref+"-resultC111010").hide();
+				placeNumber($("#"+cpref+"-resultC110110"), 149, 163, 6);
+				$("#"+cpref+"-resultC110110").hide();
+				placeNumber($("#"+cpref+"-resultC101110"), 152, 140, 6);
+				$("#"+cpref+"-resultC101110").hide();
+				placeNumber($("#"+cpref+"-resultC011110"), 215, 195, 6);
+				$("#"+cpref+"-resultC011110").hide();
+				placeNumber($("#"+cpref+"-resultC111001"), 212, 128, 6);
+				$("#"+cpref+"-resultC111001").hide();
+				placeNumber($("#"+cpref+"-resultC110101"), 150, 194, 6);
+				$("#"+cpref+"-resultC110101").hide();
+				placeNumber($("#"+cpref+"-resultC110011"), 168, 216, 6);
+				$("#"+cpref+"-resultC110011").hide();
+				placeNumber($("#"+cpref+"-resultC101101"), 226, 145, 6);
+				$("#"+cpref+"-resultC101101").hide();
+				placeNumber($("#"+cpref+"-resultC101011"), 178, 216, 6);
+				$("#"+cpref+"-resultC101011").hide();
+				placeNumber($("#"+cpref+"-resultC100111"), 178, 214, 6);
+				$("#"+cpref+"-resultC100111").hide();
+				placeNumber($("#"+cpref+"-resultC011101"), 218, 180, 6);
+				$("#"+cpref+"-resultC011101").hide();
+				placeNumber($("#"+cpref+"-resultC011011"), 206, 122, 6);
+				$("#"+cpref+"-resultC011011").hide();
+				placeNumber($("#"+cpref+"-resultC010111"), 215, 198, 6);
+				$("#"+cpref+"-resultC010111").hide();
+				placeNumber($("#"+cpref+"-resultC001111"), 200, 208, 6);
+				$("#"+cpref+"-resultC001111").hide();
 				
-				placeNumber($("#resultC111000"), 156, 105, 6);
-				$("#resultC111000").hide();
-				placeNumber($("#resultC110100"), 145, 174, 6);
-				$("#resultC110100").hide();
-				placeNumber($("#resultC110010"), 163, 100, 6);
-				$("#resultC110010").hide();
-				placeNumber($("#resultC101100"), 238, 152, 6);
-				$("#resultC101100").hide();
-				placeNumber($("#resultC101010"), 148, 128, 6);
-				$("#resultC101010").hide();
-				placeNumber($("#resultC100110"), 145, 158, 6);
-				$("#resultC100110").hide();
-				placeNumber($("#resultC011100"), 226, 178, 6);
-				$("#resultC011100").hide();
-				placeNumber($("#resultC011010"), 195, 105, 6);
-				$("#resultC011010").hide();
-				placeNumber($("#resultC010110"), 218, 198, 6);
-				$("#resultC010110").hide();
-				placeNumber($("#resultC001110"), 202, 216, 6);
-				$("#resultC001110").hide();
-				placeNumber($("#resultC110001"), 160, 213, 6);
-				$("#resultC110001").hide();
-				placeNumber($("#resultC101001"), 220, 132, 6);
-				$("#resultC101001").hide();
-				placeNumber($("#resultC100101"), 139, 182, 6);
-				$("#resultC100101").hide();
-				placeNumber($("#resultC100011"), 170, 220, 6);
-				$("#resultC100011").hide();
-				placeNumber($("#resultC011001"), 212, 122, 6);
-				$("#resultC011001").hide();
-				placeNumber($("#resultC010101"), 146, 203, 6);
-				$("#resultC010101").hide();
-				placeNumber($("#resultC010011"), 164, 220, 6);
-				$("#resultC010011").hide();
-				placeNumber($("#resultC001101"), 233, 138, 6);
-				$("#resultC001101").hide();
-				placeNumber($("#resultC001011"), 185, 218, 6);
-				$("#resultC001011").hide();
-				placeNumber($("#resultC000111"), 209, 207, 6);
-				$("#resultC000111").hide();
+				placeNumber($("#"+cpref+"-resultC111000"), 156, 105, 6);
+				$("#"+cpref+"-resultC111000").hide();
+				placeNumber($("#"+cpref+"-resultC110100"), 145, 174, 6);
+				$("#"+cpref+"-resultC110100").hide();
+				placeNumber($("#"+cpref+"-resultC110010"), 163, 100, 6);
+				$("#"+cpref+"-resultC110010").hide();
+				placeNumber($("#"+cpref+"-resultC101100"), 238, 152, 6);
+				$("#"+cpref+"-resultC101100").hide();
+				placeNumber($("#"+cpref+"-resultC101010"), 148, 128, 6);
+				$("#"+cpref+"-resultC101010").hide();
+				placeNumber($("#"+cpref+"-resultC100110"), 145, 158, 6);
+				$("#"+cpref+"-resultC100110").hide();
+				placeNumber($("#"+cpref+"-resultC011100"), 226, 178, 6);
+				$("#"+cpref+"-resultC011100").hide();
+				placeNumber($("#"+cpref+"-resultC011010"), 195, 105, 6);
+				$("#"+cpref+"-resultC011010").hide();
+				placeNumber($("#"+cpref+"-resultC010110"), 218, 198, 6);
+				$("#"+cpref+"-resultC010110").hide();
+				placeNumber($("#"+cpref+"-resultC001110"), 202, 216, 6);
+				$("#"+cpref+"-resultC001110").hide();
+				placeNumber($("#"+cpref+"-resultC110001"), 160, 213, 6);
+				$("#"+cpref+"-resultC110001").hide();
+				placeNumber($("#"+cpref+"-resultC101001"), 220, 132, 6);
+				$("#"+cpref+"-resultC101001").hide();
+				placeNumber($("#"+cpref+"-resultC100101"), 139, 182, 6);
+				$("#"+cpref+"-resultC100101").hide();
+				placeNumber($("#"+cpref+"-resultC100011"), 170, 220, 6);
+				$("#"+cpref+"-resultC100011").hide();
+				placeNumber($("#"+cpref+"-resultC011001"), 212, 122, 6);
+				$("#"+cpref+"-resultC011001").hide();
+				placeNumber($("#"+cpref+"-resultC010101"), 146, 203, 6);
+				$("#"+cpref+"-resultC010101").hide();
+				placeNumber($("#"+cpref+"-resultC010011"), 164, 220, 6);
+				$("#"+cpref+"-resultC010011").hide();
+				placeNumber($("#"+cpref+"-resultC001101"), 233, 138, 6);
+				$("#"+cpref+"-resultC001101").hide();
+				placeNumber($("#"+cpref+"-resultC001011"), 185, 218, 6);
+				$("#"+cpref+"-resultC001011").hide();
+				placeNumber($("#"+cpref+"-resultC000111"), 209, 207, 6);
+				$("#"+cpref+"-resultC000111").hide();
 				
 			} else if (vennSize == 5) {
-				drawEllipse(214,230,10,18.6,9.5,25,  changeOpacity(opts.colors[0], $("#label1").css('opacity')));
-				drawEllipse(232,187,10,18.6,9.5,98,  changeOpacity(opts.colors[1], $("#label2").css('opacity')));
-				drawEllipse(273,196,10,18.6,9.5,170, changeOpacity(opts.colors[2], $("#label3").css('opacity')));
-				drawEllipse(282,238,10,18.6,9.5,62,  changeOpacity(opts.colors[3], $("#label4").css('opacity')));
-				drawEllipse(242,260,10,18.6,9.5,134, changeOpacity(opts.colors[4], $("#label5").css('opacity')));
+				drawEllipse(214,230,10,18.6,9.5,25,  changeOpacity(opts.colors[0], $("#"+cpref+"-label1").css('opacity')));
+				drawEllipse(232,187,10,18.6,9.5,98,  changeOpacity(opts.colors[1], $("#"+cpref+"-label2").css('opacity')));
+				drawEllipse(273,196,10,18.6,9.5,170, changeOpacity(opts.colors[2], $("#"+cpref+"-label3").css('opacity')));
+				drawEllipse(282,238,10,18.6,9.5,62,  changeOpacity(opts.colors[3], $("#"+cpref+"-label4").css('opacity')));
+				drawEllipse(242,260,10,18.6,9.5,134, changeOpacity(opts.colors[4], $("#"+cpref+"-label5").css('opacity')));
 				
-				$("#label1").css("left",   0).css("top", 100).css("color",   opts.colors[0]);
-				$("#label2").css("left", 310).css("top",  15).css("color",  opts.colors[1]);
-				$("#label3").css("left", 450).css("top", 120).css("color", opts.colors[2]);
-				$("#label4").css("left", 387).css("top", 400).css("color", opts.colors[3]);
-				$("#label5").css("left",  40).css("top", 400).css("color",  opts.colors[4]);
-				$("#label6").css("left", -1000).css("top", -2200);
-				placeNumber($("#resultC100000"),  75, 150, 6);
-				placeNumber($("#resultC010000"), 245,  30, 6);
-				placeNumber($("#resultC001000"), 415, 162, 6);
-				placeNumber($("#resultC000100"), 350, 370, 6);
-				placeNumber($("#resultC000010"), 132, 370, 6);
-				placeNumber($("#resultC110000"), 152, 118, 2);
-				placeNumber($("#resultC101000"), 110, 200, 6);
-				placeNumber($("#resultC100100"), 350, 295, 6);
-				placeNumber($("#resultC100010"), 125, 273, 2);
-				placeNumber($("#resultC011000"), 309,  94, 3);
-				placeNumber($("#resultC010100"), 215,  82, 6);
-				placeNumber($("#resultC010010"), 195, 340, 6);
-				placeNumber($("#resultC001100"), 378, 232, 2);
-				placeNumber($("#resultC001010"), 360, 140, 5);
-				placeNumber($("#resultC000110"), 261, 347, 2);
-				placeNumber($("#resultC111000"), 148, 180, 4);
-				placeNumber($("#resultC110100"), 168, 113, 2);
-				placeNumber($("#resultC110010"), 176, 295, 6);
-				placeNumber($("#resultC101100"), 367, 248, 2);
-				placeNumber($("#resultC101010"), 127, 256, 2);
-				placeNumber($("#resultC100110"), 305, 300, 4);
-				placeNumber($("#resultC011100"), 240, 110, 6);
-				placeNumber($("#resultC011010"), 317, 108, 2);
-				placeNumber($("#resultC010110"), 248, 338, 2);
-				placeNumber($("#resultC001110"), 345, 180, 4);
-				placeNumber($("#resultC111100"), 185, 140, 6);
-				placeNumber($("#resultC111010"), 158, 245, 6);
-				placeNumber($("#resultC110110"), 250, 310, 6);
-				placeNumber($("#resultC101110"), 330, 240, 6);
-				placeNumber($("#resultC011110"), 290, 133, 6);
-				placeNumber($("#resultC111110"), 245, 210, 6);				
-				$("#resultC000001").css("left", -1000).css("top", -2200);
-				$("#resultC100001").css("left", -1000).css("top", -2200);
-				$("#resultC010001").css("left", -1000).css("top", -2200);
-				$("#resultC001001").css("left", -1000).css("top", -2200);
-				$("#resultC000101").css("left", -1000).css("top", -2200);
-				$("#resultC000011").css("left", -1000).css("top", -2200);
-				$("#resultC110001").css("left", -1000).css("top", -2200);
-				$("#resultC101001").css("left", -1000).css("top", -2200);
-				$("#resultC100101").css("left", -1000).css("top", -2200);
-				$("#resultC100011").css("left", -1000).css("top", -2200);
-				$("#resultC011001").css("left", -1000).css("top", -2200);
-				$("#resultC010101").css("left", -1000).css("top", -2200);
-				$("#resultC010011").css("left", -1000).css("top", -2200);
-				$("#resultC001101").css("left", -1000).css("top", -2200);
-				$("#resultC001011").css("left", -1000).css("top", -2200);
-				$("#resultC000111").css("left", -1000).css("top", -2200);
-				$("#resultC111001").css("left", -1000).css("top", -2200);
-				$("#resultC110101").css("left", -1000).css("top", -2200);
-				$("#resultC110011").css("left", -1000).css("top", -2200);
-				$("#resultC101101").css("left", -1000).css("top", -2200);
-				$("#resultC101011").css("left", -1000).css("top", -2200);
-				$("#resultC100111").css("left", -1000).css("top", -2200);
-				$("#resultC011101").css("left", -1000).css("top", -2200);
-				$("#resultC011011").css("left", -1000).css("top", -2200);
-				$("#resultC010111").css("left", -1000).css("top", -2200);
-				$("#resultC001111").css("left", -1000).css("top", -2200);
-				$("#resultC111101").css("left", -1000).css("top", -2200);
-				$("#resultC111011").css("left", -1000).css("top", -2200);
-				$("#resultC110111").css("left", -1000).css("top", -2200);
-				$("#resultC101111").css("left", -1000).css("top", -2200);
-				$("#resultC011111").css("left", -1000).css("top", -2200);
-				$("#resultC111111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label1").css("left",   0).css("top", 100).css("color",   opts.colors[0]);
+				$("#"+cpref+"-label2").css("left", 310).css("top",  15).css("color",  opts.colors[1]);
+				$("#"+cpref+"-label3").css("left", 450).css("top", 120).css("color", opts.colors[2]);
+				$("#"+cpref+"-label4").css("left", 387).css("top", 400).css("color", opts.colors[3]);
+				$("#"+cpref+"-label5").css("left",  40).css("top", 400).css("color",  opts.colors[4]);
+				$("#"+cpref+"-label6").css("left", -1000).css("top", -2200);
+				placeNumber($("#"+cpref+"-resultC100000"),  75, 150, 6);
+				placeNumber($("#"+cpref+"-resultC010000"), 245,  30, 6);
+				placeNumber($("#"+cpref+"-resultC001000"), 415, 162, 6);
+				placeNumber($("#"+cpref+"-resultC000100"), 350, 370, 6);
+				placeNumber($("#"+cpref+"-resultC000010"), 132, 370, 6);
+				placeNumber($("#"+cpref+"-resultC110000"), 152, 118, 2);
+				placeNumber($("#"+cpref+"-resultC101000"), 110, 200, 6);
+				placeNumber($("#"+cpref+"-resultC100100"), 350, 295, 6);
+				placeNumber($("#"+cpref+"-resultC100010"), 125, 273, 2);
+				placeNumber($("#"+cpref+"-resultC011000"), 309,  94, 3);
+				placeNumber($("#"+cpref+"-resultC010100"), 215,  82, 6);
+				placeNumber($("#"+cpref+"-resultC010010"), 195, 340, 6);
+				placeNumber($("#"+cpref+"-resultC001100"), 378, 232, 2);
+				placeNumber($("#"+cpref+"-resultC001010"), 360, 140, 5);
+				placeNumber($("#"+cpref+"-resultC000110"), 261, 347, 2);
+				placeNumber($("#"+cpref+"-resultC111000"), 148, 180, 4);
+				placeNumber($("#"+cpref+"-resultC110100"), 168, 113, 2);
+				placeNumber($("#"+cpref+"-resultC110010"), 176, 295, 6);
+				placeNumber($("#"+cpref+"-resultC101100"), 367, 248, 2);
+				placeNumber($("#"+cpref+"-resultC101010"), 127, 256, 2);
+				placeNumber($("#"+cpref+"-resultC100110"), 305, 300, 4);
+				placeNumber($("#"+cpref+"-resultC011100"), 240, 110, 6);
+				placeNumber($("#"+cpref+"-resultC011010"), 317, 108, 2);
+				placeNumber($("#"+cpref+"-resultC010110"), 248, 338, 2);
+				placeNumber($("#"+cpref+"-resultC001110"), 345, 180, 4);
+				placeNumber($("#"+cpref+"-resultC111100"), 185, 140, 6);
+				placeNumber($("#"+cpref+"-resultC111010"), 158, 245, 6);
+				placeNumber($("#"+cpref+"-resultC110110"), 250, 310, 6);
+				placeNumber($("#"+cpref+"-resultC101110"), 330, 240, 6);
+				placeNumber($("#"+cpref+"-resultC011110"), 290, 133, 6);
+				placeNumber($("#"+cpref+"-resultC111110"), 245, 210, 6);				
+				$("#"+cpref+"-resultC000001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111111").css("left", -1000).css("top", -2200);
 
 			} else if (vennSize == 4) {	
-				drawEllipse(181,238,10,18.5,11.5,40,  changeOpacity(opts.colors[0], $("#label1").css('opacity')));
-				drawEllipse(242,177,10,18.5,11.5,40,  changeOpacity(opts.colors[1], $("#label2").css('opacity')));
-				drawEllipse(259,177,10,18.5,11.5,140, changeOpacity(opts.colors[2], $("#label3").css('opacity')));
-				drawEllipse(320,238,10,18.5,11.5,140, changeOpacity(opts.colors[3], $("#label4").css('opacity')));
+				drawEllipse(181,238,10,18.5,11.5,40,  changeOpacity(opts.colors[0], $("#"+cpref+"-label1").css('opacity')));
+				drawEllipse(242,177,10,18.5,11.5,40,  changeOpacity(opts.colors[1], $("#"+cpref+"-label2").css('opacity')));
+				drawEllipse(259,177,10,18.5,11.5,140, changeOpacity(opts.colors[2], $("#"+cpref+"-label3").css('opacity')));
+				drawEllipse(320,238,10,18.5,11.5,140, changeOpacity(opts.colors[3], $("#"+cpref+"-label4").css('opacity')));
 				
-				$("#label1").css("left", 5).css("top", 70).css("color",   opts.colors[0]);
-				$("#label2").css("left", 85).css("top", 5).css("color",   opts.colors[1]);
-				$("#label3").css("left", 350).css("top", 5).css("color",  opts.colors[2]);
-				$("#label4").css("left", 428).css("top", 70).css("color", opts.colors[3]);
-				$("#label5").css("left", -1000).css("top", -2200);
-				$("#label6").css("left", -1000).css("top", -2200);
-				placeNumber($("#resultC100000"),  55, 190, 6);
-				placeNumber($("#resultC010000"), 140,  60, 6);
-				placeNumber($("#resultC001000"), 335,  60, 6);
-				placeNumber($("#resultC000100"), 430, 190, 6);
-				placeNumber($("#resultC110000"), 105, 120, 6);
-				placeNumber($("#resultC101000"), 130, 260, 6);
-				placeNumber($("#resultC100100"), 245, 340, 6);
-				placeNumber($("#resultC011000"), 245,  90, 6);
-				placeNumber($("#resultC010100"), 365, 260, 6);
-				placeNumber($("#resultC001100"), 385, 120, 6);
-				placeNumber($("#resultC111000"), 160, 170, 6);
-				placeNumber($("#resultC110100"), 310, 290, 6);
-				placeNumber($("#resultC101100"), 180, 290, 6);
-				placeNumber($("#resultC011100"), 330, 170, 6);
-				placeNumber($("#resultC111100"), 245, 220, 6);
-				$("#resultC000010").css("left", -1000).css("top", -2200);
-				$("#resultC100010").css("left", -1000).css("top", -2200);
-				$("#resultC010010").css("left", -1000).css("top", -2200);
-				$("#resultC001010").css("left", -1000).css("top", -2200);
-				$("#resultC000110").css("left", -1000).css("top", -2200);
-				$("#resultC110010").css("left", -1000).css("top", -2200);
-				$("#resultC101010").css("left", -1000).css("top", -2200);
-				$("#resultC100110").css("left", -1000).css("top", -2200);
-				$("#resultC011010").css("left", -1000).css("top", -2200);
-				$("#resultC010110").css("left", -1000).css("top", -2200);
-				$("#resultC001110").css("left", -1000).css("top", -2200);
-				$("#resultC111010").css("left", -1000).css("top", -2200);
-				$("#resultC110110").css("left", -1000).css("top", -2200);
-				$("#resultC101110").css("left", -1000).css("top", -2200);
-				$("#resultC011110").css("left", -1000).css("top", -2200);
-				$("#resultC111110").css("left", -1000).css("top", -2200);
-				$("#resultC000001").css("left", -1000).css("top", -2200);
-				$("#resultC100001").css("left", -1000).css("top", -2200);
-				$("#resultC010001").css("left", -1000).css("top", -2200);
-				$("#resultC001001").css("left", -1000).css("top", -2200);
-				$("#resultC000101").css("left", -1000).css("top", -2200);
-				$("#resultC000011").css("left", -1000).css("top", -2200);
-				$("#resultC110001").css("left", -1000).css("top", -2200);
-				$("#resultC101001").css("left", -1000).css("top", -2200);
-				$("#resultC100101").css("left", -1000).css("top", -2200);
-				$("#resultC100011").css("left", -1000).css("top", -2200);
-				$("#resultC011001").css("left", -1000).css("top", -2200);
-				$("#resultC010101").css("left", -1000).css("top", -2200);
-				$("#resultC010011").css("left", -1000).css("top", -2200);
-				$("#resultC001101").css("left", -1000).css("top", -2200);
-				$("#resultC001011").css("left", -1000).css("top", -2200);
-				$("#resultC000111").css("left", -1000).css("top", -2200);
-				$("#resultC111001").css("left", -1000).css("top", -2200);
-				$("#resultC110101").css("left", -1000).css("top", -2200);
-				$("#resultC110011").css("left", -1000).css("top", -2200);
-				$("#resultC101101").css("left", -1000).css("top", -2200);
-				$("#resultC101011").css("left", -1000).css("top", -2200);
-				$("#resultC100111").css("left", -1000).css("top", -2200);
-				$("#resultC011101").css("left", -1000).css("top", -2200);
-				$("#resultC011011").css("left", -1000).css("top", -2200);
-				$("#resultC010111").css("left", -1000).css("top", -2200);
-				$("#resultC001111").css("left", -1000).css("top", -2200);
-				$("#resultC111101").css("left", -1000).css("top", -2200);
-				$("#resultC111011").css("left", -1000).css("top", -2200);
-				$("#resultC110111").css("left", -1000).css("top", -2200);
-				$("#resultC101111").css("left", -1000).css("top", -2200);
-				$("#resultC011111").css("left", -1000).css("top", -2200);
-				$("#resultC111111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label1").css("left", 5).css("top", 70).css("color",   opts.colors[0]);
+				$("#"+cpref+"-label2").css("left", 85).css("top", 5).css("color",   opts.colors[1]);
+				$("#"+cpref+"-label3").css("left", 350).css("top", 5).css("color",  opts.colors[2]);
+				$("#"+cpref+"-label4").css("left", 428).css("top", 70).css("color", opts.colors[3]);
+				$("#"+cpref+"-label5").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label6").css("left", -1000).css("top", -2200);
+				placeNumber($("#"+cpref+"-resultC100000"),  55, 190, 6);
+				placeNumber($("#"+cpref+"-resultC010000"), 140,  60, 6);
+				placeNumber($("#"+cpref+"-resultC001000"), 335,  60, 6);
+				placeNumber($("#"+cpref+"-resultC000100"), 430, 190, 6);
+				placeNumber($("#"+cpref+"-resultC110000"), 105, 120, 6);
+				placeNumber($("#"+cpref+"-resultC101000"), 130, 260, 6);
+				placeNumber($("#"+cpref+"-resultC100100"), 245, 340, 6);
+				placeNumber($("#"+cpref+"-resultC011000"), 245,  90, 6);
+				placeNumber($("#"+cpref+"-resultC010100"), 365, 260, 6);
+				placeNumber($("#"+cpref+"-resultC001100"), 385, 120, 6);
+				placeNumber($("#"+cpref+"-resultC111000"), 160, 170, 6);
+				placeNumber($("#"+cpref+"-resultC110100"), 310, 290, 6);
+				placeNumber($("#"+cpref+"-resultC101100"), 180, 290, 6);
+				placeNumber($("#"+cpref+"-resultC011100"), 330, 170, 6);
+				placeNumber($("#"+cpref+"-resultC111100"), 245, 220, 6);
+				$("#"+cpref+"-resultC000010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111111").css("left", -1000).css("top", -2200);
 			
 			} else if (vennSize == 3) {
-				drawEllipse(171,142,120,1,1,0, changeOpacity(opts.colors[0], $("#label1").css('opacity')));
-				drawEllipse(327,142,120,1,1,0, changeOpacity(opts.colors[1], $("#label2").css('opacity')));
-				drawEllipse(249,271,120,1,1,0, changeOpacity(opts.colors[2], $("#label3").css('opacity')));
+				drawEllipse(171,142,120,1,1,0, changeOpacity(opts.colors[0], $("#"+cpref+"-label1").css('opacity')));
+				drawEllipse(327,142,120,1,1,0, changeOpacity(opts.colors[1], $("#"+cpref+"-label2").css('opacity')));
+				drawEllipse(249,271,120,1,1,0, changeOpacity(opts.colors[2], $("#"+cpref+"-label3").css('opacity')));
 				
-				$("#label1").css("left", 55).css("top", 5).css("color",    opts.colors[0]);
-				$("#label2").css("left", 380).css("top", 5).css("color",   opts.colors[1]);
-				$("#label3").css("left", 220).css("top", 400).css("color", opts.colors[2]);
-				$("#label4").css("left", -1000).css("top", -2200);
-				$("#label5").css("left", -1000).css("top", -2200);
-				$("#label6").css("left", -1000).css("top", -2200);
-				placeNumber($("#resultC100000"), 120, 100, 8);
-				placeNumber($("#resultC010000"), 360, 100, 8);
-				placeNumber($("#resultC001000"), 245, 330, 8);
-				placeNumber($("#resultC110000"), 245, 100, 8);
-				placeNumber($("#resultC101000"), 170, 220, 8);
-				placeNumber($("#resultC011000"), 320, 220, 8);
-				placeNumber($("#resultC111000"), 245, 175, 8);
-				$("#resultC000100").css("left", -1000).css("top", -2200);
-				$("#resultC000010").css("left", -1000).css("top", -2200);
-				$("#resultC100100").css("left", -1000).css("top", -2200);
-				$("#resultC100010").css("left", -1000).css("top", -2200);
-				$("#resultC010100").css("left", -1000).css("top", -2200);
-				$("#resultC010010").css("left", -1000).css("top", -2200);
-				$("#resultC001100").css("left", -1000).css("top", -2200);
-				$("#resultC001010").css("left", -1000).css("top", -2200);
-				$("#resultC000110").css("left", -1000).css("top", -2200);
-				$("#resultC110100").css("left", -1000).css("top", -2200);
-				$("#resultC110010").css("left", -1000).css("top", -2200);
-				$("#resultC101100").css("left", -1000).css("top", -2200);
-				$("#resultC101010").css("left", -1000).css("top", -2200);
-				$("#resultC100110").css("left", -1000).css("top", -2200);
-				$("#resultC011100").css("left", -1000).css("top", -2200);
-				$("#resultC011010").css("left", -1000).css("top", -2200);
-				$("#resultC010110").css("left", -1000).css("top", -2200);
-				$("#resultC001110").css("left", -1000).css("top", -2200);
-				$("#resultC111100").css("left", -1000).css("top", -2200);
-				$("#resultC111010").css("left", -1000).css("top", -2200);
-				$("#resultC110110").css("left", -1000).css("top", -2200);
-				$("#resultC101110").css("left", -1000).css("top", -2200);
-				$("#resultC011110").css("left", -1000).css("top", -2200);
-				$("#resultC111110").css("left", -1000).css("top", -2200);
-				$("#resultC000001").css("left", -1000).css("top", -2200);
-				$("#resultC100001").css("left", -1000).css("top", -2200);
-				$("#resultC010001").css("left", -1000).css("top", -2200);
-				$("#resultC001001").css("left", -1000).css("top", -2200);
-				$("#resultC000101").css("left", -1000).css("top", -2200);
-				$("#resultC000011").css("left", -1000).css("top", -2200);
-				$("#resultC110001").css("left", -1000).css("top", -2200);
-				$("#resultC101001").css("left", -1000).css("top", -2200);
-				$("#resultC100101").css("left", -1000).css("top", -2200);
-				$("#resultC100011").css("left", -1000).css("top", -2200);
-				$("#resultC011001").css("left", -1000).css("top", -2200);
-				$("#resultC010101").css("left", -1000).css("top", -2200);
-				$("#resultC010011").css("left", -1000).css("top", -2200);
-				$("#resultC001101").css("left", -1000).css("top", -2200);
-				$("#resultC001011").css("left", -1000).css("top", -2200);
-				$("#resultC000111").css("left", -1000).css("top", -2200);
-				$("#resultC111001").css("left", -1000).css("top", -2200);
-				$("#resultC110101").css("left", -1000).css("top", -2200);
-				$("#resultC110011").css("left", -1000).css("top", -2200);
-				$("#resultC101101").css("left", -1000).css("top", -2200);
-				$("#resultC101011").css("left", -1000).css("top", -2200);
-				$("#resultC100111").css("left", -1000).css("top", -2200);
-				$("#resultC011101").css("left", -1000).css("top", -2200);
-				$("#resultC011011").css("left", -1000).css("top", -2200);
-				$("#resultC010111").css("left", -1000).css("top", -2200);
-				$("#resultC001111").css("left", -1000).css("top", -2200);
-				$("#resultC111101").css("left", -1000).css("top", -2200);
-				$("#resultC111011").css("left", -1000).css("top", -2200);
-				$("#resultC110111").css("left", -1000).css("top", -2200);
-				$("#resultC101111").css("left", -1000).css("top", -2200);
-				$("#resultC011111").css("left", -1000).css("top", -2200);
-				$("#resultC111111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label1").css("left", 55).css("top", 5).css("color",    opts.colors[0]);
+				$("#"+cpref+"-label2").css("left", 380).css("top", 5).css("color",   opts.colors[1]);
+				$("#"+cpref+"-label3").css("left", 220).css("top", 400).css("color", opts.colors[2]);
+				$("#"+cpref+"-label4").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label5").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label6").css("left", -1000).css("top", -2200);
+				placeNumber($("#"+cpref+"-resultC100000"), 120, 100, 8);
+				placeNumber($("#"+cpref+"-resultC010000"), 360, 100, 8);
+				placeNumber($("#"+cpref+"-resultC001000"), 245, 330, 8);
+				placeNumber($("#"+cpref+"-resultC110000"), 245, 100, 8);
+				placeNumber($("#"+cpref+"-resultC101000"), 170, 220, 8);
+				placeNumber($("#"+cpref+"-resultC011000"), 320, 220, 8);
+				placeNumber($("#"+cpref+"-resultC111000"), 245, 175, 8);
+				$("#"+cpref+"-resultC000100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111111").css("left", -1000).css("top", -2200);
 			
 			} else if (vennSize == 2) {	
-				drawEllipse(171,206,140,1,1,0, changeOpacity(opts.colors[0], $("#label1").css('opacity')));
-				drawEllipse(327,206,140,1,1,0, changeOpacity(opts.colors[1], $("#label2").css('opacity')));
+				drawEllipse(171,206,140,1,1,0, changeOpacity(opts.colors[0], $("#"+cpref+"-label1").css('opacity')));
+				drawEllipse(327,206,140,1,1,0, changeOpacity(opts.colors[1], $("#"+cpref+"-label2").css('opacity')));
 				
-				$("#label1").css("left", 95).css("top", 40).css("color",  opts.colors[0]);
-				$("#label2").css("left", 360).css("top", 40).css("color", opts.colors[1]);
-				$("#label3").css("left", -1000).css("top", -2200);
-				$("#label4").css("left", -1000).css("top", -2200);
-				$("#label5").css("left", -1000).css("top", -2200);
-				$("#label6").css("left", -1000).css("top", -2200);
-				placeNumber($("#resultC100000"), 120, 195, 10);
-				placeNumber($("#resultC010000"), 360, 195, 10);
-				placeNumber($("#resultC110000"), 250, 195, 10);
-				$("#resultC001000").css("left", -1000).css("top", -2200);
-				$("#resultC000100").css("left", -1000).css("top", -2200);
-				$("#resultC000010").css("left", -1000).css("top", -2200);
-				$("#resultC101000").css("left", -1000).css("top", -2200);
-				$("#resultC100100").css("left", -1000).css("top", -2200);
-				$("#resultC100010").css("left", -1000).css("top", -2200);
-				$("#resultC011000").css("left", -1000).css("top", -2200);
-				$("#resultC010100").css("left", -1000).css("top", -2200);
-				$("#resultC010010").css("left", -1000).css("top", -2200);
-				$("#resultC001100").css("left", -1000).css("top", -2200);
-				$("#resultC001010").css("left", -1000).css("top", -2200);
-				$("#resultC000110").css("left", -1000).css("top", -2200);
-				$("#resultC111000").css("left", -1000).css("top", -2200);
-				$("#resultC110100").css("left", -1000).css("top", -2200);
-				$("#resultC110010").css("left", -1000).css("top", -2200);
-				$("#resultC101100").css("left", -1000).css("top", -2200);
-				$("#resultC101010").css("left", -1000).css("top", -2200);
-				$("#resultC100110").css("left", -1000).css("top", -2200);
-				$("#resultC011100").css("left", -1000).css("top", -2200);
-				$("#resultC011010").css("left", -1000).css("top", -2200);
-				$("#resultC010110").css("left", -1000).css("top", -2200);
-				$("#resultC001110").css("left", -1000).css("top", -2200);
-				$("#resultC111100").css("left", -1000).css("top", -2200);
-				$("#resultC111010").css("left", -1000).css("top", -2200);
-				$("#resultC110110").css("left", -1000).css("top", -2200);
-				$("#resultC101110").css("left", -1000).css("top", -2200);
-				$("#resultC011110").css("left", -1000).css("top", -2200);
-				$("#resultC111110").css("left", -1000).css("top", -2200);
-				$("#resultC000001").css("left", -1000).css("top", -2200);
-				$("#resultC100001").css("left", -1000).css("top", -2200);
-				$("#resultC010001").css("left", -1000).css("top", -2200);
-				$("#resultC001001").css("left", -1000).css("top", -2200);
-				$("#resultC000101").css("left", -1000).css("top", -2200);
-				$("#resultC000011").css("left", -1000).css("top", -2200);
-				$("#resultC110001").css("left", -1000).css("top", -2200);
-				$("#resultC101001").css("left", -1000).css("top", -2200);
-				$("#resultC100101").css("left", -1000).css("top", -2200);
-				$("#resultC100011").css("left", -1000).css("top", -2200);
-				$("#resultC011001").css("left", -1000).css("top", -2200);
-				$("#resultC010101").css("left", -1000).css("top", -2200);
-				$("#resultC010011").css("left", -1000).css("top", -2200);
-				$("#resultC001101").css("left", -1000).css("top", -2200);
-				$("#resultC001011").css("left", -1000).css("top", -2200);
-				$("#resultC000111").css("left", -1000).css("top", -2200);
-				$("#resultC111001").css("left", -1000).css("top", -2200);
-				$("#resultC110101").css("left", -1000).css("top", -2200);
-				$("#resultC110011").css("left", -1000).css("top", -2200);
-				$("#resultC101101").css("left", -1000).css("top", -2200);
-				$("#resultC101011").css("left", -1000).css("top", -2200);
-				$("#resultC100111").css("left", -1000).css("top", -2200);
-				$("#resultC011101").css("left", -1000).css("top", -2200);
-				$("#resultC011011").css("left", -1000).css("top", -2200);
-				$("#resultC010111").css("left", -1000).css("top", -2200);
-				$("#resultC001111").css("left", -1000).css("top", -2200);
-				$("#resultC111101").css("left", -1000).css("top", -2200);
-				$("#resultC111011").css("left", -1000).css("top", -2200);
-				$("#resultC110111").css("left", -1000).css("top", -2200);
-				$("#resultC101111").css("left", -1000).css("top", -2200);
-				$("#resultC011111").css("left", -1000).css("top", -2200);
-				$("#resultC111111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label1").css("left", 95).css("top", 40).css("color",  opts.colors[0]);
+				$("#"+cpref+"-label2").css("left", 360).css("top", 40).css("color", opts.colors[1]);
+				$("#"+cpref+"-label3").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label4").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label5").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label6").css("left", -1000).css("top", -2200);
+				placeNumber($("#"+cpref+"-resultC100000"), 120, 195, 10);
+				placeNumber($("#"+cpref+"-resultC010000"), 360, 195, 10);
+				placeNumber($("#"+cpref+"-resultC110000"), 250, 195, 10);
+				$("#"+cpref+"-resultC001000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111111").css("left", -1000).css("top", -2200);
 			
 			} else {
-				drawEllipse(246,210,140,1,1,0, changeOpacity(opts.colors[0], $("#label1").css('opacity')));
+				drawEllipse(246,210,140,1,1,0, changeOpacity(opts.colors[0], $("#"+cpref+"-label1").css('opacity')));
 				
-				$("#label1").css("left", 225).css("top", 30).css("color", opts.colors[0]);
-				$("#label2").css("left", -1000).css("top", -2200);
-				$("#label3").css("left", -1000).css("top", -2200);
-				$("#label4").css("left", -1000).css("top", -2200);
-				$("#label5").css("left", -1000).css("top", -2200);
-				$("#label6").css("left", -1000).css("top", -2200);
-				placeNumber($("#resultC100000"), 245, 200, 10);
-				$("#resultC010000").css("left", -1000).css("top", -2200);
-				$("#resultC001000").css("left", -1000).css("top", -2200);
-				$("#resultC000100").css("left", -1000).css("top", -2200);
-				$("#resultC000010").css("left", -1000).css("top", -2200);
-				$("#resultC110000").css("left", -1000).css("top", -2200);
-				$("#resultC101000").css("left", -1000).css("top", -2200);
-				$("#resultC100100").css("left", -1000).css("top", -2200);
-				$("#resultC100010").css("left", -1000).css("top", -2200);
-				$("#resultC011000").css("left", -1000).css("top", -2200);
-				$("#resultC010100").css("left", -1000).css("top", -2200);
-				$("#resultC010010").css("left", -1000).css("top", -2200);
-				$("#resultC001100").css("left", -1000).css("top", -2200);
-				$("#resultC001010").css("left", -1000).css("top", -2200);
-				$("#resultC000110").css("left", -1000).css("top", -2200);
-				$("#resultC111000").css("left", -1000).css("top", -2200);
-				$("#resultC110100").css("left", -1000).css("top", -2200);
-				$("#resultC110010").css("left", -1000).css("top", -2200);
-				$("#resultC101100").css("left", -1000).css("top", -2200);
-				$("#resultC101010").css("left", -1000).css("top", -2200);
-				$("#resultC100110").css("left", -1000).css("top", -2200);
-				$("#resultC011100").css("left", -1000).css("top", -2200);
-				$("#resultC011010").css("left", -1000).css("top", -2200);
-				$("#resultC010110").css("left", -1000).css("top", -2200);
-				$("#resultC001110").css("left", -1000).css("top", -2200);
-				$("#resultC111100").css("left", -1000).css("top", -2200);
-				$("#resultC111010").css("left", -1000).css("top", -2200);
-				$("#resultC110110").css("left", -1000).css("top", -2200);
-				$("#resultC101110").css("left", -1000).css("top", -2200);
-				$("#resultC011110").css("left", -1000).css("top", -2200);
-				$("#resultC111110").css("left", -1000).css("top", -2200);
-				$("#resultC000001").css("left", -1000).css("top", -2200);
-				$("#resultC100001").css("left", -1000).css("top", -2200);
-				$("#resultC010001").css("left", -1000).css("top", -2200);
-				$("#resultC001001").css("left", -1000).css("top", -2200);
-				$("#resultC000101").css("left", -1000).css("top", -2200);
-				$("#resultC000011").css("left", -1000).css("top", -2200);
-				$("#resultC110001").css("left", -1000).css("top", -2200);
-				$("#resultC101001").css("left", -1000).css("top", -2200);
-				$("#resultC100101").css("left", -1000).css("top", -2200);
-				$("#resultC100011").css("left", -1000).css("top", -2200);
-				$("#resultC011001").css("left", -1000).css("top", -2200);
-				$("#resultC010101").css("left", -1000).css("top", -2200);
-				$("#resultC010011").css("left", -1000).css("top", -2200);
-				$("#resultC001101").css("left", -1000).css("top", -2200);
-				$("#resultC001011").css("left", -1000).css("top", -2200);
-				$("#resultC000111").css("left", -1000).css("top", -2200);
-				$("#resultC111001").css("left", -1000).css("top", -2200);
-				$("#resultC110101").css("left", -1000).css("top", -2200);
-				$("#resultC110011").css("left", -1000).css("top", -2200);
-				$("#resultC101101").css("left", -1000).css("top", -2200);
-				$("#resultC101011").css("left", -1000).css("top", -2200);
-				$("#resultC100111").css("left", -1000).css("top", -2200);
-				$("#resultC011101").css("left", -1000).css("top", -2200);
-				$("#resultC011011").css("left", -1000).css("top", -2200);
-				$("#resultC010111").css("left", -1000).css("top", -2200);
-				$("#resultC001111").css("left", -1000).css("top", -2200);
-				$("#resultC111101").css("left", -1000).css("top", -2200);
-				$("#resultC111011").css("left", -1000).css("top", -2200);
-				$("#resultC110111").css("left", -1000).css("top", -2200);
-				$("#resultC101111").css("left", -1000).css("top", -2200);
-				$("#resultC011111").css("left", -1000).css("top", -2200);
-				$("#resultC111111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label1").css("left", 225).css("top", 30).css("color", opts.colors[0]);
+				$("#"+cpref+"-label2").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label3").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label4").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label5").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label6").css("left", -1000).css("top", -2200);
+				placeNumber($("#"+cpref+"-resultC100000"), 245, 200, 10);
+				$("#"+cpref+"-resultC010000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111111").css("left", -1000).css("top", -2200);
 			}
 		}
 		
 		function placeEdwardsVenn(vennSize) {
 			if (vennSize == 6) {
-				drawCircle(246,206,90,1,1,0, changeOpacity(opts.colors[0], $("#label1").css('opacity')));
-				drawRoundRect(245,25,250,365,changeOpacity(opts.colors[1], $("#label2").css('opacity')));
-				drawRoundRect(5,205,490,185,changeOpacity(opts.colors[2], $("#label3").css('opacity')));
-				drawDoubleCircle(changeOpacity(opts.colors[3], $("#label4").css('opacity')));
-				drawCross(changeOpacity(opts.colors[4], $("#label5").css('opacity')));
-				drawCross2(changeOpacity(opts.colors[5], $("#label6").css('opacity')));
+				drawCircle(246,206,90,1,1,0, changeOpacity(opts.colors[0], $("#"+cpref+"-label1").css('opacity')));
+				drawRoundRect(245,25,250,365,changeOpacity(opts.colors[1], $("#"+cpref+"-label2").css('opacity')));
+				drawRoundRect(5,205,490,185,changeOpacity(opts.colors[2], $("#"+cpref+"-label3").css('opacity')));
+				drawDoubleCircle(changeOpacity(opts.colors[3], $("#"+cpref+"-label4").css('opacity')));
+				drawCross(changeOpacity(opts.colors[4], $("#"+cpref+"-label5").css('opacity')));
+				drawCross2(changeOpacity(opts.colors[5], $("#"+cpref+"-label6").css('opacity')));
 				
-				$("#label1").css("left", 297).css("top", 90).css("color", opts.colors[0]);
-				$("#label2").css("left", 267).css("top",  0).css("color", opts.colors[1]);
-				$("#label3").css("left",  27).css("top",400).css("color", opts.colors[2]);
-				$("#label4").css("left",  55).css("top", 90).css("color", opts.colors[3]);
-				$("#label5").css("left", 282).css("top", 45).css("color", opts.colors[4]);
-				$("#label6").css("left", 297).css("top",302).css("color", opts.colors[5]);
-				placeNumber($("#resultC100000"), 204, 122, 1);
-				placeNumber($("#resultC010000"), 390,  70, 6);
-				placeNumber($("#resultC001000"),  85, 330, 6);
-				placeNumber($("#resultC000100"),  85, 150, 6);
-				placeNumber($("#resultC000010"), 225,  70, 3);
-				placeNumber($("#resultC110000"), 280, 122, 1);
-				placeNumber($("#resultC101000"), 204, 269, 1);
-				placeNumber($("#resultC100100"), 172, 155, 1);
-				placeNumber($("#resultC100010"), 218, 118, 1);
-				placeNumber($("#resultC011000"), 390, 330, 6);
-				placeNumber($("#resultC010100"), 390, 150, 6);
-				placeNumber($("#resultC010010"), 258,  70, 3);
-				placeNumber($("#resultC001100"),  85, 240, 6);
-				placeNumber($("#resultC001010"), 225, 320, 3);
-				placeNumber($("#resultC000110"), 120, 178, 2);
-				placeNumber($("#resultC111000"), 280, 269, 1);
-				placeNumber($("#resultC110100"), 314, 155, 1);
-				placeNumber($("#resultC110010"), 266, 118, 1);
-				placeNumber($("#resultC101100"), 172, 235, 1);
-				placeNumber($("#resultC101010"), 219, 274, 1);
-				placeNumber($("#resultC100110"), 167, 171, 1);
-				placeNumber($("#resultC011100"), 390, 240, 6);
-				placeNumber($("#resultC011010"), 258, 320, 3);
-				placeNumber($("#resultC010110"), 365, 178, 2);
-				placeNumber($("#resultC001110"), 120, 212, 2);
-				placeNumber($("#resultC111100"), 315, 235, 1);
-				placeNumber($("#resultC111010"), 266, 274, 1);
-				placeNumber($("#resultC110110"), 320, 171, 1);
-				placeNumber($("#resultC101110"), 166, 218, 1);
-				placeNumber($("#resultC011110"), 365, 212, 2);
-				placeNumber($("#resultC111110"), 320, 218, 1);
-				placeNumber($("#resultC000001"), 180, 120, 1);
-				placeNumber($("#resultC100001"), 199, 134, 1);
-				placeNumber($("#resultC010001"), 304, 120, 1);
-				placeNumber($("#resultC001001"), 179, 271, 1);
-				placeNumber($("#resultC000101"), 169, 132, 1);
-				placeNumber($("#resultC000011"), 234,  95, 1);
-				placeNumber($("#resultC110001"), 286, 134, 1);
-				placeNumber($("#resultC101001"), 199, 256, 1);
-				placeNumber($("#resultC100101"), 190, 149, 1);
-				placeNumber($("#resultC100011"), 228, 135, 3);
-				placeNumber($("#resultC011001"), 306, 272, 1);
-				placeNumber($("#resultC010101"), 317, 132, 1);
-				placeNumber($("#resultC010011"), 250,  95, 1);
-				placeNumber($("#resultC001101"), 167, 260, 1);
-				placeNumber($("#resultC001011"), 233, 296, 1);
-				placeNumber($("#resultC000111"), 143, 187, 1);
-				placeNumber($("#resultC111001"), 285, 256, 1);
-				placeNumber($("#resultC110101"), 295, 149, 1);
-				placeNumber($("#resultC110011"), 255, 135, 3);
-				placeNumber($("#resultC101101"), 190, 242, 1);
-				placeNumber($("#resultC101011"), 227, 255, 3);
-				placeNumber($("#resultC100111"), 213, 178, 6);
-				placeNumber($("#resultC011101"), 318, 259, 1);
-				placeNumber($("#resultC011011"), 250, 296, 1);
-				placeNumber($("#resultC010111"), 342, 187, 1);
-				placeNumber($("#resultC001111"), 143, 203, 1);
-				placeNumber($("#resultC111101"), 295, 240, 1);
-				placeNumber($("#resultC111011"), 256, 255, 3);
-				placeNumber($("#resultC110111"), 270, 178, 6);
-				placeNumber($("#resultC101111"), 213, 212, 6);
-				placeNumber($("#resultC011111"), 342, 203, 1);
-				placeNumber($("#resultC111111"), 270, 212, 6);
+				$("#"+cpref+"-label1").css("left", 297).css("top", 90).css("color", opts.colors[0]);
+				$("#"+cpref+"-label2").css("left", 267).css("top",  0).css("color", opts.colors[1]);
+				$("#"+cpref+"-label3").css("left",  27).css("top",400).css("color", opts.colors[2]);
+				$("#"+cpref+"-label4").css("left",  55).css("top", 90).css("color", opts.colors[3]);
+				$("#"+cpref+"-label5").css("left", 282).css("top", 45).css("color", opts.colors[4]);
+				$("#"+cpref+"-label6").css("left", 297).css("top",302).css("color", opts.colors[5]);
+				placeNumber($("#"+cpref+"-resultC100000"), 204, 122, 1);
+				placeNumber($("#"+cpref+"-resultC010000"), 390,  70, 6);
+				placeNumber($("#"+cpref+"-resultC001000"),  85, 330, 6);
+				placeNumber($("#"+cpref+"-resultC000100"),  85, 150, 6);
+				placeNumber($("#"+cpref+"-resultC000010"), 225,  70, 3);
+				placeNumber($("#"+cpref+"-resultC110000"), 280, 122, 1);
+				placeNumber($("#"+cpref+"-resultC101000"), 204, 269, 1);
+				placeNumber($("#"+cpref+"-resultC100100"), 172, 155, 1);
+				placeNumber($("#"+cpref+"-resultC100010"), 218, 118, 1);
+				placeNumber($("#"+cpref+"-resultC011000"), 390, 330, 6);
+				placeNumber($("#"+cpref+"-resultC010100"), 390, 150, 6);
+				placeNumber($("#"+cpref+"-resultC010010"), 258,  70, 3);
+				placeNumber($("#"+cpref+"-resultC001100"),  85, 240, 6);
+				placeNumber($("#"+cpref+"-resultC001010"), 225, 320, 3);
+				placeNumber($("#"+cpref+"-resultC000110"), 120, 178, 2);
+				placeNumber($("#"+cpref+"-resultC111000"), 280, 269, 1);
+				placeNumber($("#"+cpref+"-resultC110100"), 314, 155, 1);
+				placeNumber($("#"+cpref+"-resultC110010"), 266, 118, 1);
+				placeNumber($("#"+cpref+"-resultC101100"), 172, 235, 1);
+				placeNumber($("#"+cpref+"-resultC101010"), 219, 274, 1);
+				placeNumber($("#"+cpref+"-resultC100110"), 167, 171, 1);
+				placeNumber($("#"+cpref+"-resultC011100"), 390, 240, 6);
+				placeNumber($("#"+cpref+"-resultC011010"), 258, 320, 3);
+				placeNumber($("#"+cpref+"-resultC010110"), 365, 178, 2);
+				placeNumber($("#"+cpref+"-resultC001110"), 120, 212, 2);
+				placeNumber($("#"+cpref+"-resultC111100"), 315, 235, 1);
+				placeNumber($("#"+cpref+"-resultC111010"), 266, 274, 1);
+				placeNumber($("#"+cpref+"-resultC110110"), 320, 171, 1);
+				placeNumber($("#"+cpref+"-resultC101110"), 166, 218, 1);
+				placeNumber($("#"+cpref+"-resultC011110"), 365, 212, 2);
+				placeNumber($("#"+cpref+"-resultC111110"), 320, 218, 1);
+				placeNumber($("#"+cpref+"-resultC000001"), 180, 120, 1);
+				placeNumber($("#"+cpref+"-resultC100001"), 199, 134, 1);
+				placeNumber($("#"+cpref+"-resultC010001"), 304, 120, 1);
+				placeNumber($("#"+cpref+"-resultC001001"), 179, 271, 1);
+				placeNumber($("#"+cpref+"-resultC000101"), 169, 132, 1);
+				placeNumber($("#"+cpref+"-resultC000011"), 234,  95, 1);
+				placeNumber($("#"+cpref+"-resultC110001"), 286, 134, 1);
+				placeNumber($("#"+cpref+"-resultC101001"), 199, 256, 1);
+				placeNumber($("#"+cpref+"-resultC100101"), 190, 149, 1);
+				placeNumber($("#"+cpref+"-resultC100011"), 228, 135, 3);
+				placeNumber($("#"+cpref+"-resultC011001"), 306, 272, 1);
+				placeNumber($("#"+cpref+"-resultC010101"), 317, 132, 1);
+				placeNumber($("#"+cpref+"-resultC010011"), 250,  95, 1);
+				placeNumber($("#"+cpref+"-resultC001101"), 167, 260, 1);
+				placeNumber($("#"+cpref+"-resultC001011"), 233, 296, 1);
+				placeNumber($("#"+cpref+"-resultC000111"), 143, 187, 1);
+				placeNumber($("#"+cpref+"-resultC111001"), 285, 256, 1);
+				placeNumber($("#"+cpref+"-resultC110101"), 295, 149, 1);
+				placeNumber($("#"+cpref+"-resultC110011"), 255, 135, 3);
+				placeNumber($("#"+cpref+"-resultC101101"), 190, 242, 1);
+				placeNumber($("#"+cpref+"-resultC101011"), 227, 255, 3);
+				placeNumber($("#"+cpref+"-resultC100111"), 213, 178, 6);
+				placeNumber($("#"+cpref+"-resultC011101"), 318, 259, 1);
+				placeNumber($("#"+cpref+"-resultC011011"), 250, 296, 1);
+				placeNumber($("#"+cpref+"-resultC010111"), 342, 187, 1);
+				placeNumber($("#"+cpref+"-resultC001111"), 143, 203, 1);
+				placeNumber($("#"+cpref+"-resultC111101"), 295, 240, 1);
+				placeNumber($("#"+cpref+"-resultC111011"), 256, 255, 3);
+				placeNumber($("#"+cpref+"-resultC110111"), 270, 178, 6);
+				placeNumber($("#"+cpref+"-resultC101111"), 213, 212, 6);
+				placeNumber($("#"+cpref+"-resultC011111"), 342, 203, 1);
+				placeNumber($("#"+cpref+"-resultC111111"), 270, 212, 6);
 				
 			} else if (vennSize == 5) {
-				drawCircle(246,206,90,1,1,0, changeOpacity(opts.colors[0], $("#label1").css('opacity')));
-				drawRoundRect(245,25,250,365,changeOpacity(opts.colors[1], $("#label2").css('opacity')));
-				drawRoundRect(5,205,490,185, changeOpacity(opts.colors[2], $("#label3").css('opacity')));
-				drawDoubleCircle(changeOpacity(opts.colors[3], $("#label4").css('opacity')));
-				drawCross(changeOpacity(opts.colors[4], $("#label5").css('opacity')));
+				drawCircle(246,206,90,1,1,0, changeOpacity(opts.colors[0], $("#"+cpref+"-label1").css('opacity')));
+				drawRoundRect(245,25,250,365,changeOpacity(opts.colors[1], $("#"+cpref+"-label2").css('opacity')));
+				drawRoundRect(5,205,490,185, changeOpacity(opts.colors[2], $("#"+cpref+"-label3").css('opacity')));
+				drawDoubleCircle(changeOpacity(opts.colors[3], $("#"+cpref+"-label4").css('opacity')));
+				drawCross(changeOpacity(opts.colors[4], $("#"+cpref+"-label5").css('opacity')));
 			
-				$("#label1").css("left", 297).css("top", 90).css("color", opts.colors[0]);
-				$("#label2").css("left", 267).css("top",  0).css("color", opts.colors[1]);
-				$("#label3").css("left",  27).css("top",400).css("color", opts.colors[2]);
-				$("#label4").css("left",  55).css("top", 90).css("color", opts.colors[3]);
-				$("#label5").css("left", 282).css("top", 45).css("color", opts.colors[4]);
-				$("#label6").css("left", -1000).css("top", -2200);
-				placeNumber($("#resultC100000"), 200, 130, 3);
-				placeNumber($("#resultC010000"), 390,  70, 6);
-				placeNumber($("#resultC001000"),  85, 330, 6);
-				placeNumber($("#resultC000100"),  85, 150, 6);
-				placeNumber($("#resultC000010"), 225,  80, 4);
-				placeNumber($("#resultC110000"), 284, 130, 3);
-				placeNumber($("#resultC101000"), 200, 260, 3);
-				placeNumber($("#resultC100100"), 185, 150, 4);
-				placeNumber($("#resultC100010"), 228, 130, 3);
-				placeNumber($("#resultC011000"), 390, 330, 6);
-				placeNumber($("#resultC010100"), 390, 150, 6);
-				placeNumber($("#resultC010010"), 258,  80, 4);
-				placeNumber($("#resultC001100"),  85, 240, 6);
-				placeNumber($("#resultC001010"), 225, 310, 4);
-				placeNumber($("#resultC000110"), 133, 178, 6);
-				placeNumber($("#resultC111000"), 284, 260, 3);
-				placeNumber($("#resultC110100"), 300, 150, 4);
-				placeNumber($("#resultC110010"), 255, 130, 3);
-				placeNumber($("#resultC101100"), 185, 240, 4);
-				placeNumber($("#resultC101010"), 228, 260, 3);
-				placeNumber($("#resultC100110"), 213, 178, 6);
-				placeNumber($("#resultC011100"), 390, 240, 6);
-				placeNumber($("#resultC011010"), 258, 310, 4);
-				placeNumber($("#resultC010110"), 355, 178, 6);
-				placeNumber($("#resultC001110"), 133, 212, 6);
-				placeNumber($("#resultC111100"), 300, 240, 4);
-				placeNumber($("#resultC111010"), 256, 260, 3);
-				placeNumber($("#resultC110110"), 270, 178, 6);
-				placeNumber($("#resultC101110"), 213, 212, 6);
-				placeNumber($("#resultC011110"), 355, 212, 6);
-				placeNumber($("#resultC111110"), 270, 212, 6);
-				$("#resultC000001").css("left", -1000).css("top", -2200);
-				$("#resultC100001").css("left", -1000).css("top", -2200);
-				$("#resultC010001").css("left", -1000).css("top", -2200);
-				$("#resultC001001").css("left", -1000).css("top", -2200);
-				$("#resultC000101").css("left", -1000).css("top", -2200);
-				$("#resultC000011").css("left", -1000).css("top", -2200);
-				$("#resultC110001").css("left", -1000).css("top", -2200);
-				$("#resultC101001").css("left", -1000).css("top", -2200);
-				$("#resultC100101").css("left", -1000).css("top", -2200);
-				$("#resultC100011").css("left", -1000).css("top", -2200);
-				$("#resultC011001").css("left", -1000).css("top", -2200);
-				$("#resultC010101").css("left", -1000).css("top", -2200);
-				$("#resultC010011").css("left", -1000).css("top", -2200);
-				$("#resultC001101").css("left", -1000).css("top", -2200);
-				$("#resultC001011").css("left", -1000).css("top", -2200);
-				$("#resultC000111").css("left", -1000).css("top", -2200);
-				$("#resultC111001").css("left", -1000).css("top", -2200);
-				$("#resultC110101").css("left", -1000).css("top", -2200);
-				$("#resultC110011").css("left", -1000).css("top", -2200);
-				$("#resultC101101").css("left", -1000).css("top", -2200);
-				$("#resultC101011").css("left", -1000).css("top", -2200);
-				$("#resultC100111").css("left", -1000).css("top", -2200);
-				$("#resultC011101").css("left", -1000).css("top", -2200);
-				$("#resultC011011").css("left", -1000).css("top", -2200);
-				$("#resultC010111").css("left", -1000).css("top", -2200);
-				$("#resultC001111").css("left", -1000).css("top", -2200);
-				$("#resultC111101").css("left", -1000).css("top", -2200);
-				$("#resultC111011").css("left", -1000).css("top", -2200);
-				$("#resultC110111").css("left", -1000).css("top", -2200);
-				$("#resultC101111").css("left", -1000).css("top", -2200);
-				$("#resultC011111").css("left", -1000).css("top", -2200);
-				$("#resultC111111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label1").css("left", 297).css("top", 90).css("color", opts.colors[0]);
+				$("#"+cpref+"-label2").css("left", 267).css("top",  0).css("color", opts.colors[1]);
+				$("#"+cpref+"-label3").css("left",  27).css("top",400).css("color", opts.colors[2]);
+				$("#"+cpref+"-label4").css("left",  55).css("top", 90).css("color", opts.colors[3]);
+				$("#"+cpref+"-label5").css("left", 282).css("top", 45).css("color", opts.colors[4]);
+				$("#"+cpref+"-label6").css("left", -1000).css("top", -2200);
+				placeNumber($("#"+cpref+"-resultC100000"), 200, 130, 3);
+				placeNumber($("#"+cpref+"-resultC010000"), 390,  70, 6);
+				placeNumber($("#"+cpref+"-resultC001000"),  85, 330, 6);
+				placeNumber($("#"+cpref+"-resultC000100"),  85, 150, 6);
+				placeNumber($("#"+cpref+"-resultC000010"), 225,  80, 4);
+				placeNumber($("#"+cpref+"-resultC110000"), 284, 130, 3);
+				placeNumber($("#"+cpref+"-resultC101000"), 200, 260, 3);
+				placeNumber($("#"+cpref+"-resultC100100"), 185, 150, 4);
+				placeNumber($("#"+cpref+"-resultC100010"), 228, 130, 3);
+				placeNumber($("#"+cpref+"-resultC011000"), 390, 330, 6);
+				placeNumber($("#"+cpref+"-resultC010100"), 390, 150, 6);
+				placeNumber($("#"+cpref+"-resultC010010"), 258,  80, 4);
+				placeNumber($("#"+cpref+"-resultC001100"),  85, 240, 6);
+				placeNumber($("#"+cpref+"-resultC001010"), 225, 310, 4);
+				placeNumber($("#"+cpref+"-resultC000110"), 133, 178, 6);
+				placeNumber($("#"+cpref+"-resultC111000"), 284, 260, 3);
+				placeNumber($("#"+cpref+"-resultC110100"), 300, 150, 4);
+				placeNumber($("#"+cpref+"-resultC110010"), 255, 130, 3);
+				placeNumber($("#"+cpref+"-resultC101100"), 185, 240, 4);
+				placeNumber($("#"+cpref+"-resultC101010"), 228, 260, 3);
+				placeNumber($("#"+cpref+"-resultC100110"), 213, 178, 6);
+				placeNumber($("#"+cpref+"-resultC011100"), 390, 240, 6);
+				placeNumber($("#"+cpref+"-resultC011010"), 258, 310, 4);
+				placeNumber($("#"+cpref+"-resultC010110"), 355, 178, 6);
+				placeNumber($("#"+cpref+"-resultC001110"), 133, 212, 6);
+				placeNumber($("#"+cpref+"-resultC111100"), 300, 240, 4);
+				placeNumber($("#"+cpref+"-resultC111010"), 256, 260, 3);
+				placeNumber($("#"+cpref+"-resultC110110"), 270, 178, 6);
+				placeNumber($("#"+cpref+"-resultC101110"), 213, 212, 6);
+				placeNumber($("#"+cpref+"-resultC011110"), 355, 212, 6);
+				placeNumber($("#"+cpref+"-resultC111110"), 270, 212, 6);
+				$("#"+cpref+"-resultC000001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111111").css("left", -1000).css("top", -2200);
 				
 			} else if (vennSize == 4) {
-				drawCircle(246,206,90,1,1,0,  changeOpacity(opts.colors[0], $("#label1").css('opacity')));
-				drawRoundRect(245,25,250,365, changeOpacity(opts.colors[1], $("#label2").css('opacity')));
-				drawRoundRect(5,205,490,185,  changeOpacity(opts.colors[2], $("#label3").css('opacity')));
-				drawDoubleCircle(changeOpacity(opts.colors[3], $("#label4").css('opacity')));
+				drawCircle(246,206,90,1,1,0,  changeOpacity(opts.colors[0], $("#"+cpref+"-label1").css('opacity')));
+				drawRoundRect(245,25,250,365, changeOpacity(opts.colors[1], $("#"+cpref+"-label2").css('opacity')));
+				drawRoundRect(5,205,490,185,  changeOpacity(opts.colors[2], $("#"+cpref+"-label3").css('opacity')));
+				drawDoubleCircle(changeOpacity(opts.colors[3], $("#"+cpref+"-label4").css('opacity')));
 
-				$("#label1").css("left", 267).css("top", 90).css("color", opts.colors[0]);
-				$("#label2").css("left", 267).css("top",  0).css("color", opts.colors[1]);
-				$("#label3").css("left",  27).css("top",400).css("color", opts.colors[2]);
-				$("#label4").css("left",  27).css("top", 90).css("color", opts.colors[3]);
-				$("#label5").css("left", -1000).css("top", -2200);
-				$("#label6").css("left", -1000).css("top", -2200);
-				placeNumber($("#resultC100000"), 215, 130, 6);
-				placeNumber($("#resultC010000"), 390,  70, 6);
-				placeNumber($("#resultC001000"),  85, 330, 6);
-				placeNumber($("#resultC000100"),  85, 150, 6);
-				placeNumber($("#resultC110000"), 265, 130, 6);
-				placeNumber($("#resultC101000"), 215, 260, 6);
-				placeNumber($("#resultC100100"), 200, 170, 6);
-				placeNumber($("#resultC011000"), 390, 330, 6);
-				placeNumber($("#resultC010100"), 390, 150, 6);
-				placeNumber($("#resultC001100"),  85, 240, 6);
-				placeNumber($("#resultC111000"), 265, 260, 6);
-				placeNumber($("#resultC110100"), 280, 170, 6);
-				placeNumber($("#resultC101100"), 200, 220, 6);
-				placeNumber($("#resultC011100"), 390, 240, 6);
-				placeNumber($("#resultC111100"), 280, 220, 6);
-				$("#resultC000010").css("left", -1000).css("top", -2200);
-				$("#resultC100010").css("left", -1000).css("top", -2200);			
-				$("#resultC010010").css("left", -1000).css("top", -2200);
-				$("#resultC001010").css("left", -1000).css("top", -2200);
-				$("#resultC000110").css("left", -1000).css("top", -2200);
-				$("#resultC110010").css("left", -1000).css("top", -2200);
-				$("#resultC101010").css("left", -1000).css("top", -2200);
-				$("#resultC100110").css("left", -1000).css("top", -2200);
-				$("#resultC011010").css("left", -1000).css("top", -2200);
-				$("#resultC010110").css("left", -1000).css("top", -2200);
-				$("#resultC001110").css("left", -1000).css("top", -2200);
-				$("#resultC111010").css("left", -1000).css("top", -2200);
-				$("#resultC110110").css("left", -1000).css("top", -2200);
-				$("#resultC101110").css("left", -1000).css("top", -2200);
-				$("#resultC011110").css("left", -1000).css("top", -2200);
-				$("#resultC111110").css("left", -1000).css("top", -2200);
-				$("#resultC000001").css("left", -1000).css("top", -2200);
-				$("#resultC100001").css("left", -1000).css("top", -2200);
-				$("#resultC010001").css("left", -1000).css("top", -2200);
-				$("#resultC001001").css("left", -1000).css("top", -2200);
-				$("#resultC000101").css("left", -1000).css("top", -2200);
-				$("#resultC000011").css("left", -1000).css("top", -2200);
-				$("#resultC110001").css("left", -1000).css("top", -2200);
-				$("#resultC101001").css("left", -1000).css("top", -2200);
-				$("#resultC100101").css("left", -1000).css("top", -2200);
-				$("#resultC100011").css("left", -1000).css("top", -2200);
-				$("#resultC011001").css("left", -1000).css("top", -2200);
-				$("#resultC010101").css("left", -1000).css("top", -2200);
-				$("#resultC010011").css("left", -1000).css("top", -2200);
-				$("#resultC001101").css("left", -1000).css("top", -2200);
-				$("#resultC001011").css("left", -1000).css("top", -2200);
-				$("#resultC000111").css("left", -1000).css("top", -2200);
-				$("#resultC111001").css("left", -1000).css("top", -2200);
-				$("#resultC110101").css("left", -1000).css("top", -2200);
-				$("#resultC110011").css("left", -1000).css("top", -2200);
-				$("#resultC101101").css("left", -1000).css("top", -2200);
-				$("#resultC101011").css("left", -1000).css("top", -2200);
-				$("#resultC100111").css("left", -1000).css("top", -2200);
-				$("#resultC011101").css("left", -1000).css("top", -2200);
-				$("#resultC011011").css("left", -1000).css("top", -2200);
-				$("#resultC010111").css("left", -1000).css("top", -2200);
-				$("#resultC001111").css("left", -1000).css("top", -2200);
-				$("#resultC111101").css("left", -1000).css("top", -2200);
-				$("#resultC111011").css("left", -1000).css("top", -2200);
-				$("#resultC110111").css("left", -1000).css("top", -2200);
-				$("#resultC101111").css("left", -1000).css("top", -2200);
-				$("#resultC011111").css("left", -1000).css("top", -2200);
-				$("#resultC111111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label1").css("left", 267).css("top", 90).css("color", opts.colors[0]);
+				$("#"+cpref+"-label2").css("left", 267).css("top",  0).css("color", opts.colors[1]);
+				$("#"+cpref+"-label3").css("left",  27).css("top",400).css("color", opts.colors[2]);
+				$("#"+cpref+"-label4").css("left",  27).css("top", 90).css("color", opts.colors[3]);
+				$("#"+cpref+"-label5").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label6").css("left", -1000).css("top", -2200);
+				placeNumber($("#"+cpref+"-resultC100000"), 215, 130, 6);
+				placeNumber($("#"+cpref+"-resultC010000"), 390,  70, 6);
+				placeNumber($("#"+cpref+"-resultC001000"),  85, 330, 6);
+				placeNumber($("#"+cpref+"-resultC000100"),  85, 150, 6);
+				placeNumber($("#"+cpref+"-resultC110000"), 265, 130, 6);
+				placeNumber($("#"+cpref+"-resultC101000"), 215, 260, 6);
+				placeNumber($("#"+cpref+"-resultC100100"), 200, 170, 6);
+				placeNumber($("#"+cpref+"-resultC011000"), 390, 330, 6);
+				placeNumber($("#"+cpref+"-resultC010100"), 390, 150, 6);
+				placeNumber($("#"+cpref+"-resultC001100"),  85, 240, 6);
+				placeNumber($("#"+cpref+"-resultC111000"), 265, 260, 6);
+				placeNumber($("#"+cpref+"-resultC110100"), 280, 170, 6);
+				placeNumber($("#"+cpref+"-resultC101100"), 200, 220, 6);
+				placeNumber($("#"+cpref+"-resultC011100"), 390, 240, 6);
+				placeNumber($("#"+cpref+"-resultC111100"), 280, 220, 6);
+				$("#"+cpref+"-resultC000010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100010").css("left", -1000).css("top", -2200);			
+				$("#"+cpref+"-resultC010010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111111").css("left", -1000).css("top", -2200);
 			
 			} else if (vennSize == 3) {
-				drawCircle(246,206,110,1,1,0, changeOpacity(opts.colors[0], $("#label1").css('opacity')));
-				drawRoundRect(245,25,250,365, changeOpacity(opts.colors[1], $("#label2").css('opacity')));
-				drawRoundRect(5,205,490,185,  changeOpacity(opts.colors[2], $("#label3").css('opacity')));
+				drawCircle(246,206,110,1,1,0, changeOpacity(opts.colors[0], $("#"+cpref+"-label1").css('opacity')));
+				drawRoundRect(245,25,250,365, changeOpacity(opts.colors[1], $("#"+cpref+"-label2").css('opacity')));
+				drawRoundRect(5,205,490,185,  changeOpacity(opts.colors[2], $("#"+cpref+"-label3").css('opacity')));
 				
-				$("#label1").css("left", 95).css("top", 75).css("color",  opts.colors[0]);
-				$("#label2").css("left", 267).css("top",  0).css("color", opts.colors[1]);
-				$("#label3").css("left",  27).css("top",400).css("color", opts.colors[2]);
-				$("#label4").css("left", -1000).css("top", -2200);
-				$("#label5").css("left", -1000).css("top", -2200);
-				$("#label6").css("left", -1000).css("top", -2200);
-				placeNumber($("#resultC100000"), 190, 150, 8);
-				placeNumber($("#resultC010000"), 390,  70, 8);
-				placeNumber($("#resultC001000"),  85, 330, 8);
-				placeNumber($("#resultC110000"), 290, 150, 8);
-				placeNumber($("#resultC101000"), 190, 240, 8);
-				placeNumber($("#resultC011000"), 390, 330, 8);
-				placeNumber($("#resultC111000"), 290, 240, 8);
-				$("#resultC000100").css("left", -1000).css("top", -2200);
-				$("#resultC000010").css("left", -1000).css("top", -2200);
-				$("#resultC100100").css("left", -1000).css("top", -2200);
-				$("#resultC100010").css("left", -1000).css("top", -2200);
-				$("#resultC010100").css("left", -1000).css("top", -2200);
-				$("#resultC010010").css("left", -1000).css("top", -2200);
-				$("#resultC001100").css("left", -1000).css("top", -2200);
-				$("#resultC001010").css("left", -1000).css("top", -2200);
-				$("#resultC000110").css("left", -1000).css("top", -2200);
-				$("#resultC110100").css("left", -1000).css("top", -2200);
-				$("#resultC110010").css("left", -1000).css("top", -2200);
-				$("#resultC101100").css("left", -1000).css("top", -2200);
-				$("#resultC101010").css("left", -1000).css("top", -2200);
-				$("#resultC100110").css("left", -1000).css("top", -2200);
-				$("#resultC011100").css("left", -1000).css("top", -2200);
-				$("#resultC011010").css("left", -1000).css("top", -2200);
-				$("#resultC010110").css("left", -1000).css("top", -2200);
-				$("#resultC001110").css("left", -1000).css("top", -2200);
-				$("#resultC111100").css("left", -1000).css("top", -2200);
-				$("#resultC111010").css("left", -1000).css("top", -2200);
-				$("#resultC110110").css("left", -1000).css("top", -2200);
-				$("#resultC101110").css("left", -1000).css("top", -2200);
-				$("#resultC011110").css("left", -1000).css("top", -2200);
-				$("#resultC111110").css("left", -1000).css("top", -2200);
-				$("#resultC000001").css("left", -1000).css("top", -2200);
-				$("#resultC100001").css("left", -1000).css("top", -2200);
-				$("#resultC010001").css("left", -1000).css("top", -2200);
-				$("#resultC001001").css("left", -1000).css("top", -2200);
-				$("#resultC000101").css("left", -1000).css("top", -2200);
-				$("#resultC000011").css("left", -1000).css("top", -2200);
-				$("#resultC110001").css("left", -1000).css("top", -2200);
-				$("#resultC101001").css("left", -1000).css("top", -2200);
-				$("#resultC100101").css("left", -1000).css("top", -2200);
-				$("#resultC100011").css("left", -1000).css("top", -2200);
-				$("#resultC011001").css("left", -1000).css("top", -2200);
-				$("#resultC010101").css("left", -1000).css("top", -2200);
-				$("#resultC010011").css("left", -1000).css("top", -2200);
-				$("#resultC001101").css("left", -1000).css("top", -2200);
-				$("#resultC001011").css("left", -1000).css("top", -2200);
-				$("#resultC000111").css("left", -1000).css("top", -2200);
-				$("#resultC111001").css("left", -1000).css("top", -2200);
-				$("#resultC110101").css("left", -1000).css("top", -2200);
-				$("#resultC110011").css("left", -1000).css("top", -2200);
-				$("#resultC101101").css("left", -1000).css("top", -2200);
-				$("#resultC101011").css("left", -1000).css("top", -2200);
-				$("#resultC100111").css("left", -1000).css("top", -2200);
-				$("#resultC011101").css("left", -1000).css("top", -2200);
-				$("#resultC011011").css("left", -1000).css("top", -2200);
-				$("#resultC010111").css("left", -1000).css("top", -2200);
-				$("#resultC001111").css("left", -1000).css("top", -2200);
-				$("#resultC111101").css("left", -1000).css("top", -2200);
-				$("#resultC111011").css("left", -1000).css("top", -2200);
-				$("#resultC110111").css("left", -1000).css("top", -2200);
-				$("#resultC101111").css("left", -1000).css("top", -2200);
-				$("#resultC011111").css("left", -1000).css("top", -2200);
-				$("#resultC111111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label1").css("left", 95).css("top", 75).css("color",  opts.colors[0]);
+				$("#"+cpref+"-label2").css("left", 267).css("top",  0).css("color", opts.colors[1]);
+				$("#"+cpref+"-label3").css("left",  27).css("top",400).css("color", opts.colors[2]);
+				$("#"+cpref+"-label4").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label5").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label6").css("left", -1000).css("top", -2200);
+				placeNumber($("#"+cpref+"-resultC100000"), 190, 150, 8);
+				placeNumber($("#"+cpref+"-resultC010000"), 390,  70, 8);
+				placeNumber($("#"+cpref+"-resultC001000"),  85, 330, 8);
+				placeNumber($("#"+cpref+"-resultC110000"), 290, 150, 8);
+				placeNumber($("#"+cpref+"-resultC101000"), 190, 240, 8);
+				placeNumber($("#"+cpref+"-resultC011000"), 390, 330, 8);
+				placeNumber($("#"+cpref+"-resultC111000"), 290, 240, 8);
+				$("#"+cpref+"-resultC000100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111111").css("left", -1000).css("top", -2200);
 			
 			} else if (vennSize == 2) {
-				drawCircle(246,206,110,1,1,0, changeOpacity(opts.colors[0], $("#label1").css('opacity')));
-				drawRoundRect(245,25,250,365, changeOpacity(opts.colors[1], $("#label2").css('opacity')));
+				drawCircle(246,206,110,1,1,0, changeOpacity(opts.colors[0], $("#"+cpref+"-label1").css('opacity')));
+				drawRoundRect(245,25,250,365, changeOpacity(opts.colors[1], $("#"+cpref+"-label2").css('opacity')));
 				
-				$("#label1").css("left", 95).css("top", 75).css("color",  opts.colors[0]);
-				$("#label2").css("left", 267).css("top",  0).css("color", opts.colors[1]);
-				$("#label3").css("left", -1000).css("top", -2200);
-				$("#label4").css("left", -1000).css("top", -2200);
-				$("#label5").css("left", -1000).css("top", -2200);
-				$("#label6").css("left", -1000).css("top", -2200);
-				placeNumber($("#resultC100000"), 180, 195, 10);
-				placeNumber($("#resultC010000"), 420, 195, 10);
-				placeNumber($("#resultC110000"), 290, 195, 10);
-				$("#resultC001000").css("left", -1000).css("top", -2200);
-				$("#resultC000100").css("left", -1000).css("top", -2200);
-				$("#resultC000010").css("left", -1000).css("top", -2200);
-				$("#resultC101000").css("left", -1000).css("top", -2200);
-				$("#resultC100100").css("left", -1000).css("top", -2200);
-				$("#resultC100010").css("left", -1000).css("top", -2200);
-				$("#resultC011000").css("left", -1000).css("top", -2200);
-				$("#resultC010100").css("left", -1000).css("top", -2200);
-				$("#resultC010010").css("left", -1000).css("top", -2200);
-				$("#resultC001100").css("left", -1000).css("top", -2200);
-				$("#resultC001010").css("left", -1000).css("top", -2200);
-				$("#resultC000110").css("left", -1000).css("top", -2200);
-				$("#resultC111000").css("left", -1000).css("top", -2200);
-				$("#resultC110100").css("left", -1000).css("top", -2200);
-				$("#resultC110010").css("left", -1000).css("top", -2200);
-				$("#resultC101100").css("left", -1000).css("top", -2200);
-				$("#resultC101010").css("left", -1000).css("top", -2200);
-				$("#resultC100110").css("left", -1000).css("top", -2200);
-				$("#resultC011100").css("left", -1000).css("top", -2200);
-				$("#resultC011010").css("left", -1000).css("top", -2200);
-				$("#resultC010110").css("left", -1000).css("top", -2200);
-				$("#resultC001110").css("left", -1000).css("top", -2200);
-				$("#resultC111100").css("left", -1000).css("top", -2200);
-				$("#resultC111010").css("left", -1000).css("top", -2200);
-				$("#resultC110110").css("left", -1000).css("top", -2200);
-				$("#resultC101110").css("left", -1000).css("top", -2200);
-				$("#resultC011110").css("left", -1000).css("top", -2200);
-				$("#resultC111110").css("left", -1000).css("top", -2200);
-				$("#resultC000001").css("left", -1000).css("top", -2200);
-				$("#resultC100001").css("left", -1000).css("top", -2200);
-				$("#resultC010001").css("left", -1000).css("top", -2200);
-				$("#resultC001001").css("left", -1000).css("top", -2200);
-				$("#resultC000101").css("left", -1000).css("top", -2200);
-				$("#resultC000011").css("left", -1000).css("top", -2200);
-				$("#resultC110001").css("left", -1000).css("top", -2200);
-				$("#resultC101001").css("left", -1000).css("top", -2200);
-				$("#resultC100101").css("left", -1000).css("top", -2200);
-				$("#resultC100011").css("left", -1000).css("top", -2200);
-				$("#resultC011001").css("left", -1000).css("top", -2200);
-				$("#resultC010101").css("left", -1000).css("top", -2200);
-				$("#resultC010011").css("left", -1000).css("top", -2200);
-				$("#resultC001101").css("left", -1000).css("top", -2200);
-				$("#resultC001011").css("left", -1000).css("top", -2200);
-				$("#resultC000111").css("left", -1000).css("top", -2200);
-				$("#resultC111001").css("left", -1000).css("top", -2200);
-				$("#resultC110101").css("left", -1000).css("top", -2200);
-				$("#resultC110011").css("left", -1000).css("top", -2200);
-				$("#resultC101101").css("left", -1000).css("top", -2200);
-				$("#resultC101011").css("left", -1000).css("top", -2200);
-				$("#resultC100111").css("left", -1000).css("top", -2200);
-				$("#resultC011101").css("left", -1000).css("top", -2200);
-				$("#resultC011011").css("left", -1000).css("top", -2200);
-				$("#resultC010111").css("left", -1000).css("top", -2200);
-				$("#resultC001111").css("left", -1000).css("top", -2200);
-				$("#resultC111101").css("left", -1000).css("top", -2200);
-				$("#resultC111011").css("left", -1000).css("top", -2200);
-				$("#resultC110111").css("left", -1000).css("top", -2200);
-				$("#resultC101111").css("left", -1000).css("top", -2200);
-				$("#resultC011111").css("left", -1000).css("top", -2200);
-				$("#resultC111111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label1").css("left", 95).css("top", 75).css("color",  opts.colors[0]);
+				$("#"+cpref+"-label2").css("left", 267).css("top",  0).css("color", opts.colors[1]);
+				$("#"+cpref+"-label3").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label4").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label5").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label6").css("left", -1000).css("top", -2200);
+				placeNumber($("#"+cpref+"-resultC100000"), 180, 195, 10);
+				placeNumber($("#"+cpref+"-resultC010000"), 420, 195, 10);
+				placeNumber($("#"+cpref+"-resultC110000"), 290, 195, 10);
+				$("#"+cpref+"-resultC001000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111111").css("left", -1000).css("top", -2200);
 			
 			} else {
-				drawCircle(246,210,140,1,1,0, changeOpacity(opts.colors[0], $("#label1").css('opacity')));
+				drawCircle(246,210,140,1,1,0, changeOpacity(opts.colors[0], $("#"+cpref+"-label1").css('opacity')));
 				
-				$("#label1").css("left", 225).css("top", 30).css("color", opts.colors[0]);
-				$("#label2").css("left", -1000).css("top", -2200);
-				$("#label3").css("left", -1000).css("top", -2200);
-				$("#label4").css("left", -1000).css("top", -2200);
-				$("#label5").css("left", -1000).css("top", -2200);
-				$("#label6").css("left", -1000).css("top", -2200);
-				placeNumber($("#resultC100000"), 245, 200, 10);
-				$("#resultC010000").css("left", -1000).css("top", -2200);
-				$("#resultC001000").css("left", -1000).css("top", -2200);
-				$("#resultC000100").css("left", -1000).css("top", -2200);
-				$("#resultC000010").css("left", -1000).css("top", -2200);
-				$("#resultC110000").css("left", -1000).css("top", -2200);
-				$("#resultC101000").css("left", -1000).css("top", -2200);
-				$("#resultC100100").css("left", -1000).css("top", -2200);
-				$("#resultC100010").css("left", -1000).css("top", -2200);
-				$("#resultC011000").css("left", -1000).css("top", -2200);
-				$("#resultC010100").css("left", -1000).css("top", -2200);
-				$("#resultC010010").css("left", -1000).css("top", -2200);
-				$("#resultC001100").css("left", -1000).css("top", -2200);
-				$("#resultC001010").css("left", -1000).css("top", -2200);
-				$("#resultC000110").css("left", -1000).css("top", -2200);
-				$("#resultC111000").css("left", -1000).css("top", -2200);
-				$("#resultC110100").css("left", -1000).css("top", -2200);
-				$("#resultC110010").css("left", -1000).css("top", -2200);
-				$("#resultC101100").css("left", -1000).css("top", -2200);
-				$("#resultC101010").css("left", -1000).css("top", -2200);
-				$("#resultC100110").css("left", -1000).css("top", -2200);
-				$("#resultC011100").css("left", -1000).css("top", -2200);
-				$("#resultC011010").css("left", -1000).css("top", -2200);
-				$("#resultC010110").css("left", -1000).css("top", -2200);
-				$("#resultC001110").css("left", -1000).css("top", -2200);
-				$("#resultC111100").css("left", -1000).css("top", -2200);
-				$("#resultC111010").css("left", -1000).css("top", -2200);
-				$("#resultC110110").css("left", -1000).css("top", -2200);
-				$("#resultC101110").css("left", -1000).css("top", -2200);
-				$("#resultC011110").css("left", -1000).css("top", -2200);
-				$("#resultC111110").css("left", -1000).css("top", -2200);
-				$("#resultC000001").css("left", -1000).css("top", -2200);
-				$("#resultC100001").css("left", -1000).css("top", -2200);
-				$("#resultC010001").css("left", -1000).css("top", -2200);
-				$("#resultC001001").css("left", -1000).css("top", -2200);
-				$("#resultC000101").css("left", -1000).css("top", -2200);
-				$("#resultC000011").css("left", -1000).css("top", -2200);
-				$("#resultC110001").css("left", -1000).css("top", -2200);
-				$("#resultC101001").css("left", -1000).css("top", -2200);
-				$("#resultC100101").css("left", -1000).css("top", -2200);
-				$("#resultC100011").css("left", -1000).css("top", -2200);
-				$("#resultC011001").css("left", -1000).css("top", -2200);
-				$("#resultC010101").css("left", -1000).css("top", -2200);
-				$("#resultC010011").css("left", -1000).css("top", -2200);
-				$("#resultC001101").css("left", -1000).css("top", -2200);
-				$("#resultC001011").css("left", -1000).css("top", -2200);
-				$("#resultC000111").css("left", -1000).css("top", -2200);
-				$("#resultC111001").css("left", -1000).css("top", -2200);
-				$("#resultC110101").css("left", -1000).css("top", -2200);
-				$("#resultC110011").css("left", -1000).css("top", -2200);
-				$("#resultC101101").css("left", -1000).css("top", -2200);
-				$("#resultC101011").css("left", -1000).css("top", -2200);
-				$("#resultC100111").css("left", -1000).css("top", -2200);
-				$("#resultC011101").css("left", -1000).css("top", -2200);
-				$("#resultC011011").css("left", -1000).css("top", -2200);
-				$("#resultC010111").css("left", -1000).css("top", -2200);
-				$("#resultC001111").css("left", -1000).css("top", -2200);
-				$("#resultC111101").css("left", -1000).css("top", -2200);
-				$("#resultC111011").css("left", -1000).css("top", -2200);
-				$("#resultC110111").css("left", -1000).css("top", -2200);
-				$("#resultC101111").css("left", -1000).css("top", -2200);
-				$("#resultC011111").css("left", -1000).css("top", -2200);
-				$("#resultC111111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label1").css("left", 225).css("top", 30).css("color", opts.colors[0]);
+				$("#"+cpref+"-label2").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label3").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label4").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label5").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-label6").css("left", -1000).css("top", -2200);
+				placeNumber($("#"+cpref+"-resultC100000"), 245, 200, 10);
+				$("#"+cpref+"-resultC010000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111000").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111100").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111010").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111110").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC000111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111001").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC100111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC010111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC001111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111101").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111011").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC110111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC101111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC011111").css("left", -1000).css("top", -2200);
+				$("#"+cpref+"-resultC111111").css("left", -1000).css("top", -2200);
 			}
 		}
 		
@@ -1659,8 +1660,8 @@
 			var i=1;
 			var hide = "";
 			var div_legend = '<div class="module-legend">';
-			$("*[id^=label]").each(function(){
-				div_legend += '<div id="item-'+i+'" name="' + $(this).text() + '" class="leg-items" style="opacity:0.5; background-color:' + $(this).css("color") + hide + '">';
+			$("*[id^="+cpref+"-label]").each(function(){
+				div_legend += '<div id="'+cpref+'-item-'+i+'" name="' + $(this).text() + '" class="leg-items" style="opacity:0.5; background-color:' + $(this).css("color") + hide + '">';
 				div_legend += '<span style="background-color:white; margin-left:0px; padding:0px 2px 0px 2px; transition: margin-left .3s ease-in-out;">off</span></div>';
 				i += 1;
 				if(i>vennSize) {
@@ -1670,7 +1671,7 @@
 			div_legend += '</div>';
 			$t.append(div_legend);
 			
-			$("*[id^=item]").hover(function(){
+			$("*[id^="+cpref+"-item]").hover(function(){
 		        $(this).css('opacity', 0.75);
 		        $(this).css('box-shadow',  '0px 0px 8px 1px lightgrey');
 		    },function(){
@@ -1679,7 +1680,7 @@
 		    	}
 				$(this).css('box-shadow',  'none');
 		    });
-			$("*[id^=item]").click(function(){
+			$("*[id^="+cpref+"-item]").click(function(){
 				var visible_id = null ;
 				if ($(this).children("span").text() === 'off') {
 					visible_id = select( $(this).attr('name') );
@@ -1704,8 +1705,8 @@
             	if (opts.displayStat) {
             		placeStat(vennSize);
                 }
-            	if (visible_id != "resultC000000") { 
-            		$("#" + visible_id).show();
+            	if (visible_id != cpref+"-resultC000000") { 
+            		$("#"+cpref+"-" + visible_id).show();
             	}
 			});
 		}
@@ -1748,7 +1749,7 @@
 				}
 			}
 			for (cl in classified) {
-				var value = parseInt($("#result"+classified[cl]).html());
+				var value = parseInt($("#"+cpref+"-result"+classified[cl]).html());
 				if (opts.useValues) {
 					for (var m=0;m<opts.series.length;m++) {
 						// Is the value in the list
@@ -1760,62 +1761,62 @@
 				} else {
 					value += 1;
 				}
-				$("#result"+classified[cl]).html(value);
-				$("#result"+classified[cl]).removeClass("number-empty");
+				$("#"+cpref+"-result"+classified[cl]).html(value);
+				$("#"+cpref+"-result"+classified[cl]).removeClass("number-empty");
 			}
 			
 			// Update the labels
 			if (opts.series.length == 6) {
-				$("#label1").html(opts.series[0].name);
-				$("#label2").html(opts.series[1].name);
-				$("#label3").html(opts.series[2].name);
-				$("#label4").html(opts.series[3].name);
-				$("#label5").html(opts.series[4].name);
-				$("#label6").html(opts.series[5].name);
+				$("#"+cpref+"-label1").html(opts.series[0].name);
+				$("#"+cpref+"-label2").html(opts.series[1].name);
+				$("#"+cpref+"-label3").html(opts.series[2].name);
+				$("#"+cpref+"-label4").html(opts.series[3].name);
+				$("#"+cpref+"-label5").html(opts.series[4].name);
+				$("#"+cpref+"-label6").html(opts.series[5].name);
 			} else if (opts.series.length == 5) {
-				$("#label1").html(opts.series[0].name);
-				$("#label2").html(opts.series[1].name);
-				$("#label3").html(opts.series[2].name);
-				$("#label4").html(opts.series[3].name);
-				$("#label5").html(opts.series[4].name);
+				$("#"+cpref+"-label1").html(opts.series[0].name);
+				$("#"+cpref+"-label2").html(opts.series[1].name);
+				$("#"+cpref+"-label3").html(opts.series[2].name);
+				$("#"+cpref+"-label4").html(opts.series[3].name);
+				$("#"+cpref+"-label5").html(opts.series[4].name);
 			} else if (opts.series.length == 4) {
-				$("#label1").html(opts.series[0].name);
-				$("#label2").html(opts.series[1].name);
-				$("#label3").html(opts.series[2].name);
-				$("#label4").html(opts.series[3].name);
+				$("#"+cpref+"-label1").html(opts.series[0].name);
+				$("#"+cpref+"-label2").html(opts.series[1].name);
+				$("#"+cpref+"-label3").html(opts.series[2].name);
+				$("#"+cpref+"-label4").html(opts.series[3].name);
 			} else if (opts.series.length == 3) {
-				$("#label1").html(opts.series[0].name);
-				$("#label2").html(opts.series[1].name);
-				$("#label3").html(opts.series[2].name);
+				$("#"+cpref+"-label1").html(opts.series[0].name);
+				$("#"+cpref+"-label2").html(opts.series[1].name);
+				$("#"+cpref+"-label3").html(opts.series[2].name);
 			} else if (opts.series.length == 2) {
-				$("#label1").html(opts.series[0].name);
-				$("#label2").html(opts.series[1].name);
+				$("#"+cpref+"-label1").html(opts.series[0].name);
+				$("#"+cpref+"-label2").html(opts.series[1].name);
 			} else if (opts.series.length == 1) {
-				$("#label1").html(opts.series[0].name);
+				$("#"+cpref+"-label1").html(opts.series[0].name);
 			}
 			
 			if (!opts.disableClick) {
 				// Add some eventlistener
-				$("*[id^=resultC]").mouseover(function(){
+				$("*[id^="+cpref+"-resultC]").mouseover(function(){
 	            	$(this).addClass("number-over");
 	            });
-	            $("*[id^=resultC]").mouseout(function(){
+	            $("*[id^="+cpref+"-resultC]").mouseout(function(){
 	            	$(this).removeClass("number-over");
 	            }); 
-	            $("*[id^=resultC]").click(opts.fnClickCallback);
+	            $("*[id^="+cpref+"-resultC]").click(opts.fnClickCallback);
 			}
             
             // Add info to the number
-            $("*[id^=resultC]").each(function(){
+            $("*[id^="+cpref+"-resultC]").each(function(){
             	this.listnames = new Array();
-            	for (var i=6; i<$(this).attr("id").length; i++) {
+            	for (var i=cpref.length+7; i<$(this).attr("id").length; i++) {
             		if ($(this).attr("id").substring(i+1,i+2) == "1") {
-            			try { this.listnames.push(opts.series[i-6].name); } catch(err) { }
+            			try { this.listnames.push(opts.series[i-(cpref.length+7)].name); } catch(err) { }
             		}
             	}
             	this.empty = true;
 				this.list = new Array();
-				var cvalue = $(this).attr("id").substring(6,13);
+				var cvalue = $(this).attr("id").substring(cpref.length+7,cpref.length+14);
 				for (cl in classified) {
 					if (classified[cl]==cvalue) {
 						this.list.push(cl);
@@ -1828,9 +1829,9 @@
 		// Return an Array with number of common and specific element (x in 1 class, y in 2 class...) 
 		function countByNbClass() {
 			var data = new Array(0,0,0,0,0,0);
-			$("*[id^=resultC]").each(function(){
+			$("*[id^="+cpref+"-resultC]").each(function(){
 				var n = 0;
-				for (var i=6; i<$(this).attr("id").length; i++) {
+				for (var i=cpref.length+7; i<$(this).attr("id").length; i++) {
 					n += $(this).attr("id").substring(i+1,i+2) == "1";
 				}
 				var val = $(this).text();
@@ -1845,15 +1846,15 @@
 		// Return an Array with size of each class 
 		function sizeOfClass() {
 			var data = new Array(0,0,0,0,0,0);
-			$("*[id^=resultC]").each(function(){
-				for (var i=6; i<$(this).attr("id").length; i++) {
+			$("*[id^="+cpref+"-resultC]").each(function(){
+				for (var i=cpref.length+7; i<$(this).attr("id").length; i++) {
 					if ($(this).attr("id").substring(i+1,i+2) == "1") {
 						
 						var val = $(this).text();
 						if(val == '?') {
 							val = $(this).children("span").attr('title');
 						}
-						data[i-6] += parseInt(val);
+						data[i-(cpref.length+7)] += parseInt(val);
 					}
 				}
 			});
@@ -1861,80 +1862,80 @@
 		}
 		
 		function setValuesforFillCountVenn (values) {
-			if (values.A) { $("#resultC100000").html(values.A); }
-			if (values.B) { $("#resultC010000").html(values.B); }
-			if (values.C) { $("#resultC001000").html(values.C); }
-			if (values.D) { $("#resultC000100").html(values.D); }
-			if (values.E) { $("#resultC000010").html(values.E); }
-			if (values.F) { $("#resultC000001").html(values.F); }
-			if (values.AB) { $("#resultC110000").html(values.AB); }
-			if (values.AC) { $("#resultC101000").html(values.AC); }
-			if (values.AD) { $("#resultC100100").html(values.AD); }
-			if (values.AE) { $("#resultC100010").html(values.AE); }
-			if (values.AF) { $("#resultC100001").html(values.AF); }
-			if (values.BC) { $("#resultC011000").html(values.BC); }
-			if (values.BD) { $("#resultC010100").html(values.BD); }
-			if (values.BE) { $("#resultC010010").html(values.BE); }
-			if (values.BF) { $("#resultC010001").html(values.BF); }
-			if (values.CD) { $("#resultC001100").html(values.CD); }
-			if (values.CE) { $("#resultC001010").html(values.CE); }
-			if (values.CF) { $("#resultC001001").html(values.CF); }
-			if (values.DE) { $("#resultC000110").html(values.DE); }
-			if (values.DF) { $("#resultC000101").html(values.DF); }
-			if (values.EF) { $("#resultC000011").html(values.EF); }
-			if (values.ABC) { $("#resultC111000").html(values.ABC); }
-			if (values.ABD) { $("#resultC110100").html(values.ABD); }
-			if (values.ABE) { $("#resultC110010").html(values.ABE); }
-			if (values.ABF) { $("#resultC110001").html(values.ABF); }
-			if (values.ACD) { $("#resultC101100").html(values.ACD); }
-			if (values.ACE) { $("#resultC101010").html(values.ACE); }
-			if (values.ACF) { $("#resultC101001").html(values.ACF); }
-			if (values.ADE) { $("#resultC100110").html(values.ADE); }
-			if (values.ADF) { $("#resultC100101").html(values.ADF); }
-			if (values.AEF) { $("#resultC100011").html(values.AEF); }
-			if (values.BCD) { $("#resultC011100").html(values.BCD); }
-			if (values.BCE) { $("#resultC011010").html(values.BCE); }
-			if (values.BCF) { $("#resultC011001").html(values.BCF); }
-			if (values.BDE) { $("#resultC010110").html(values.BDE); }
-			if (values.BDF) { $("#resultC010101").html(values.BDF); }
-			if (values.BEF) { $("#resultC010011").html(values.BEF); }
-			if (values.CDE) { $("#resultC001110").html(values.CDE); }
-			if (values.CDF) { $("#resultC001101").html(values.CDF); }
-			if (values.CEF) { $("#resultC001011").html(values.CEF); }
-			if (values.DEF) { $("#resultC000111").html(values.DEF); }
-			if (values.ABCD) { $("#resultC111100").html(values.ABCD); }
-			if (values.ABCE) { $("#resultC111010").html(values.ABCE); }
-			if (values.ABCF) { $("#resultC111001").html(values.ABCF); }
-			if (values.ABDE) { $("#resultC110110").html(values.ABDE); }
-			if (values.ABDF) { $("#resultC110101").html(values.ABDF); }
-			if (values.ACDE) { $("#resultC101110").html(values.ACDE); }
-			if (values.ACDF) { $("#resultC101101").html(values.ACDF); }
-			if (values.BCDE) { $("#resultC011110").html(values.BCDE); }
-			if (values.BCDF) { $("#resultC011101").html(values.BCDF); }
-			if (values.CDEF) { $("#resultC001111").html(values.CDEF); }
-			if (values.BDEF) { $("#resultC010111").html(values.BDEF); }
-			if (values.BCEF) { $("#resultC011011").html(values.BCEF); }
-			if (values.ADEF) { $("#resultC100111").html(values.ADEF); }
-			if (values.ACEF) { $("#resultC101011").html(values.ACEF); }
-			if (values.ABEF) { $("#resultC110011").html(values.ABEF); }
-			if (values.ABCDE) { $("#resultC111110").html(values.ABCDE); }
-			if (values.ABCDF) { $("#resultC111101").html(values.ABCDF); }
-			if (values.ABCEF) { $("#resultC111011").html(values.ABCEF); }
-			if (values.ABDEF) { $("#resultC110111").html(values.ABDEF); }
-			if (values.ACDEF) { $("#resultC101111").html(values.ACDEF); }
-			if (values.BCDEF) { $("#resultC011111").html(values.BCDEF); }
-			if (values.ABCDEF) { $("#resultC111111").html(values.ABCDEF); }
+			if (values.A) { $("#"+cpref+"-resultC100000").html(values.A); }
+			if (values.B) { $("#"+cpref+"-resultC010000").html(values.B); }
+			if (values.C) { $("#"+cpref+"-resultC001000").html(values.C); }
+			if (values.D) { $("#"+cpref+"-resultC000100").html(values.D); }
+			if (values.E) { $("#"+cpref+"-resultC000010").html(values.E); }
+			if (values.F) { $("#"+cpref+"-resultC000001").html(values.F); }
+			if (values.AB) { $("#"+cpref+"-resultC110000").html(values.AB); }
+			if (values.AC) { $("#"+cpref+"-resultC101000").html(values.AC); }
+			if (values.AD) { $("#"+cpref+"-resultC100100").html(values.AD); }
+			if (values.AE) { $("#"+cpref+"-resultC100010").html(values.AE); }
+			if (values.AF) { $("#"+cpref+"-resultC100001").html(values.AF); }
+			if (values.BC) { $("#"+cpref+"-resultC011000").html(values.BC); }
+			if (values.BD) { $("#"+cpref+"-resultC010100").html(values.BD); }
+			if (values.BE) { $("#"+cpref+"-resultC010010").html(values.BE); }
+			if (values.BF) { $("#"+cpref+"-resultC010001").html(values.BF); }
+			if (values.CD) { $("#"+cpref+"-resultC001100").html(values.CD); }
+			if (values.CE) { $("#"+cpref+"-resultC001010").html(values.CE); }
+			if (values.CF) { $("#"+cpref+"-resultC001001").html(values.CF); }
+			if (values.DE) { $("#"+cpref+"-resultC000110").html(values.DE); }
+			if (values.DF) { $("#"+cpref+"-resultC000101").html(values.DF); }
+			if (values.EF) { $("#"+cpref+"-resultC000011").html(values.EF); }
+			if (values.ABC) { $("#"+cpref+"-resultC111000").html(values.ABC); }
+			if (values.ABD) { $("#"+cpref+"-resultC110100").html(values.ABD); }
+			if (values.ABE) { $("#"+cpref+"-resultC110010").html(values.ABE); }
+			if (values.ABF) { $("#"+cpref+"-resultC110001").html(values.ABF); }
+			if (values.ACD) { $("#"+cpref+"-resultC101100").html(values.ACD); }
+			if (values.ACE) { $("#"+cpref+"-resultC101010").html(values.ACE); }
+			if (values.ACF) { $("#"+cpref+"-resultC101001").html(values.ACF); }
+			if (values.ADE) { $("#"+cpref+"-resultC100110").html(values.ADE); }
+			if (values.ADF) { $("#"+cpref+"-resultC100101").html(values.ADF); }
+			if (values.AEF) { $("#"+cpref+"-resultC100011").html(values.AEF); }
+			if (values.BCD) { $("#"+cpref+"-resultC011100").html(values.BCD); }
+			if (values.BCE) { $("#"+cpref+"-resultC011010").html(values.BCE); }
+			if (values.BCF) { $("#"+cpref+"-resultC011001").html(values.BCF); }
+			if (values.BDE) { $("#"+cpref+"-resultC010110").html(values.BDE); }
+			if (values.BDF) { $("#"+cpref+"-resultC010101").html(values.BDF); }
+			if (values.BEF) { $("#"+cpref+"-resultC010011").html(values.BEF); }
+			if (values.CDE) { $("#"+cpref+"-resultC001110").html(values.CDE); }
+			if (values.CDF) { $("#"+cpref+"-resultC001101").html(values.CDF); }
+			if (values.CEF) { $("#"+cpref+"-resultC001011").html(values.CEF); }
+			if (values.DEF) { $("#"+cpref+"-resultC000111").html(values.DEF); }
+			if (values.ABCD) { $("#"+cpref+"-resultC111100").html(values.ABCD); }
+			if (values.ABCE) { $("#"+cpref+"-resultC111010").html(values.ABCE); }
+			if (values.ABCF) { $("#"+cpref+"-resultC111001").html(values.ABCF); }
+			if (values.ABDE) { $("#"+cpref+"-resultC110110").html(values.ABDE); }
+			if (values.ABDF) { $("#"+cpref+"-resultC110101").html(values.ABDF); }
+			if (values.ACDE) { $("#"+cpref+"-resultC101110").html(values.ACDE); }
+			if (values.ACDF) { $("#"+cpref+"-resultC101101").html(values.ACDF); }
+			if (values.BCDE) { $("#"+cpref+"-resultC011110").html(values.BCDE); }
+			if (values.BCDF) { $("#"+cpref+"-resultC011101").html(values.BCDF); }
+			if (values.CDEF) { $("#"+cpref+"-resultC001111").html(values.CDEF); }
+			if (values.BDEF) { $("#"+cpref+"-resultC010111").html(values.BDEF); }
+			if (values.BCEF) { $("#"+cpref+"-resultC011011").html(values.BCEF); }
+			if (values.ADEF) { $("#"+cpref+"-resultC100111").html(values.ADEF); }
+			if (values.ACEF) { $("#"+cpref+"-resultC101011").html(values.ACEF); }
+			if (values.ABEF) { $("#"+cpref+"-resultC110011").html(values.ABEF); }
+			if (values.ABCDE) { $("#"+cpref+"-resultC111110").html(values.ABCDE); }
+			if (values.ABCDF) { $("#"+cpref+"-resultC111101").html(values.ABCDF); }
+			if (values.ABCEF) { $("#"+cpref+"-resultC111011").html(values.ABCEF); }
+			if (values.ABDEF) { $("#"+cpref+"-resultC110111").html(values.ABDEF); }
+			if (values.ACDEF) { $("#"+cpref+"-resultC101111").html(values.ACDEF); }
+			if (values.BCDEF) { $("#"+cpref+"-resultC011111").html(values.BCDEF); }
+			if (values.ABCDEF) { $("#"+cpref+"-resultC111111").html(values.ABCDEF); }
 		}
 
 		function fillCountVenn() {
 			
 			// Update the labels
-			if (opts.series[0].name.A) { $("#label1").html(opts.series[0].name.A); }
-			if (opts.series[0].name.B) { $("#label2").html(opts.series[0].name.B); }
-			if (opts.series[0].name.C) { $("#label3").html(opts.series[0].name.C); }
-			if (opts.series[0].name.D) { $("#label4").html(opts.series[0].name.D); }
-			if (opts.series[0].name.E) { $("#label5").html(opts.series[0].name.E); }
-			if (opts.series[0].name.F) { $("#label6").html(opts.series[0].name.F); }
+			if (opts.series[0].name.A) { $("#"+cpref+"-label1").html(opts.series[0].name.A); }
+			if (opts.series[0].name.B) { $("#"+cpref+"-label2").html(opts.series[0].name.B); }
+			if (opts.series[0].name.C) { $("#"+cpref+"-label3").html(opts.series[0].name.C); }
+			if (opts.series[0].name.D) { $("#"+cpref+"-label4").html(opts.series[0].name.D); }
+			if (opts.series[0].name.E) { $("#"+cpref+"-label5").html(opts.series[0].name.E); }
+			if (opts.series[0].name.F) { $("#"+cpref+"-label6").html(opts.series[0].name.F); }
 			
 			// if values and data are given
 			if (opts.series[0].hasOwnProperty("values") && opts.series[0].hasOwnProperty("data")) {
@@ -1952,17 +1953,17 @@
 			}
 
 			// Add info to the number
-            $("*[id^=resultC]").each(function(){
+            $("*[id^="+cpref+"-resultC]").each(function(){
             	this.listnames = new Array();
-            	for (var i=6; i<$(this).attr("id").length; i++) {
+            	for (var i=cpref.length+7; i<$(this).attr("id").length; i++) {
             		if ($(this).attr("id").substring(i+1,i+2) == "1") {
             			try {
-            				if(i-6 == 0)		{ this.listnames.push(opts.series[0].name.A); }
-            				else if(i-6 == 1)	{ this.listnames.push(opts.series[0].name.B); } 
-            				else if(i-6 == 2)	{ this.listnames.push(opts.series[0].name.C); }
-            				else if(i-6 == 3)	{ this.listnames.push(opts.series[0].name.D); }
-            				else if(i-6 == 4)	{ this.listnames.push(opts.series[0].name.E); }
-            				else if(i-6 == 5)	{ this.listnames.push(opts.series[0].name.F); }
+            				if(i-(cpref.length+7) == 0)		{ this.listnames.push(opts.series[0].name.A); }
+            				else if(i-(cpref.length+7) == 1)	{ this.listnames.push(opts.series[0].name.B); } 
+            				else if(i-(cpref.length+7) == 2)	{ this.listnames.push(opts.series[0].name.C); }
+            				else if(i-(cpref.length+7) == 3)	{ this.listnames.push(opts.series[0].name.D); }
+            				else if(i-(cpref.length+7) == 4)	{ this.listnames.push(opts.series[0].name.E); }
+            				else if(i-(cpref.length+7) == 5)	{ this.listnames.push(opts.series[0].name.F); }
             				}
             			catch(err) { }
             		}
@@ -1970,14 +1971,14 @@
             	// if data are provided
             	if (opts.series[0].hasOwnProperty("data")) {
             		var cvalue = "";
-    				for (var i=6; i<$(this).attr("id").length; i++) {
+    				for (var i=cpref.length+7; i<$(this).attr("id").length; i++) {
     					if ($(this).attr("id").substring(i+1,i+2) == "1") {
-    						if (i == 6) {cvalue += "A";}
-    						else if (i == 7) {cvalue += "B";}
-    						else if (i == 8) {cvalue += "C";}
-    						else if (i == 9) {cvalue += "D";}
-    						else if (i == 10) {cvalue += "E";}
-    						else if (i == 11) {cvalue += "F";}
+    						if (i == (cpref.length+7)) {cvalue += "A";}
+    						else if (i == (cpref.length+8)) {cvalue += "B";}
+    						else if (i == (cpref.length+9)) {cvalue += "C";}
+    						else if (i == (cpref.length+10)) {cvalue += "D";}
+    						else if (i == (cpref.length+11)) {cvalue += "E";}
+    						else if (i == (cpref.length+12)) {cvalue += "F";}
     					}
     				}
     				this.list = opts.series[0].data[cvalue];
@@ -2029,15 +2030,15 @@
 		function addExportModule(div, extraheight, type){
 			$t = div;
 			
-			var div_export = '<div id="module-export" style="position: relative; left:475px; top: -'+(418+extraheight)+'px; width: 25px; height: 20px;">';
-			div_export += '<a id="data-export" href="" download="" style="display:none;"></a>';
-			div_export += '<canvas id="canvasExport" style="border:1px solid white" width="25" height="20"></canvas>';
-        	div_export += '<div id="export-menu" style="position: relative;width:150px; height:30px; display:none; right:123px; top:-4px;">';
+			var div_export = '<div id="'+cpref+'-module-export" style="position: relative; left:475px; top: -'+(418+extraheight)+'px; width: 25px; height: 20px;">';
+			div_export += '<a id="'+cpref+'-data-export" href="" download="" style="display:none;"></a>';
+			div_export += '<canvas id="'+cpref+'-canvasExport" style="border:1px solid white" width="25" height="20"></canvas>';
+        	div_export += '<div id="'+cpref+'-export-menu" style="position: relative;width:150px; height:30px; display:none; right:123px; top:-4px;">';
         	div_export += '<div style="box-shadow: 3px 3px 10px rgb(136, 136, 136); border: 1px solid rgb(160, 160, 160); background: none repeat scroll 0% 0% rgb(255, 255, 255);padding: 5px 0px;">';
-        	div_export += '<div id="format-png" style="padding: 0px 10px; background: none repeat scroll 0% 0% transparent; color: rgb(48, 48, 48); font-size: 12px;">Download PNG image</div>';
-        	div_export += '<div id="format-svg" style="padding: 0px 10px; background: none repeat scroll 0% 0% transparent; color: rgb(48, 48, 48); font-size: 12px;">Download SVG image</div>';
+        	div_export += '<div id="'+cpref+'-format-png" style="padding: 0px 10px; background: none repeat scroll 0% 0% transparent; color: rgb(48, 48, 48); font-size: 12px;">Download PNG image</div>';
+        	div_export += '<div id="'+cpref+'-format-svg" style="padding: 0px 10px; background: none repeat scroll 0% 0% transparent; color: rgb(48, 48, 48); font-size: 12px;">Download SVG image</div>';
         	if (type == "list") {
-        		div_export += '<div id="format-csv" style="padding: 0px 10px; background: none repeat scroll 0% 0% transparent; color: rgb(48, 48, 48); font-size: 12px;">Download CSV lists</div>';
+        		div_export += '<div id="'+cpref+'-format-csv" style="padding: 0px 10px; background: none repeat scroll 0% 0% transparent; color: rgb(48, 48, 48); font-size: 12px;">Download CSV lists</div>';
         	}
         	div_export += '</div>';
 			div_export += '</div>';
@@ -2045,7 +2046,7 @@
 			$t.append(div_export);
 			
 			//draw canvas button
-			var ecanvas = $("#canvasExport")[0],
+			var ecanvas = $("#"+cpref+"-canvasExport")[0],
 				econtext = ecanvas.getContext("2d");
 			for (i=0;i<3;i++){
 				econtext.lineWidth = 3;
@@ -2057,12 +2058,12 @@
 				econtext.stroke();
 			}
 			
-			var select_form = $("#export-menu");
-			var ceColorOri = $("#canvasExport").css('background');
-			$("#format-png").click(function(event) {
-				$("#canvasExport").css('background', ceColorOri);
-				$("#canvasExport").css('border-color', "white");
-				$("#canvasExport").hover(function() {
+			var select_form = $("#"+cpref+"-export-menu");
+			var ceColorOri = $("#"+cpref+"-canvasExport").css('background');
+			$("#"+cpref+"-format-png").click(function(event) {
+				$("#"+cpref+"-canvasExport").css('background', ceColorOri);
+				$("#"+cpref+"-canvasExport").css('border-color', "white");
+				$("#"+cpref+"-canvasExport").hover(function() {
 					$(this).css('background', 'linear-gradient(to bottom, white, #AECEFF) repeat scroll 0 0 transparent');
 					$(this).css('border', '1px solid #6688AA');
 					$(this).css('border-radius', '3px');
@@ -2079,7 +2080,7 @@
 					$expDiv = $("<div></div>");
 				$expDiv.append(__context.getSerializedSvg(true));
 				
-				$("[id^=resultC]").each(function(){					
+				$("[id^="+cpref+"-resultC]").each(function(){					
 					if($(this).css("display") != "none") {
 						if ($(this).html().indexOf("<span") === 0) {
 							value = "?";
@@ -2093,7 +2094,7 @@
 							$(this).css("font-weight"), false));
 					}
 				});
-				$("[id^=label]").each(function(){
+				$("[id^="+cpref+"-label]").each(function(){
 					$expDiv.children("svg").children("g").append(addSVGText($(this).html(), 
 							$(this).css("left"),  $(this).css("top"), 
 							$(this).css("color"), $(this).css("opacity"),
@@ -2107,15 +2108,15 @@
 				img.onload = function() {
 					export_ctx.drawImage( img, 0, 0 );
 					var export_img = export_canvas.toDataURL("image/png");
-					$('#data-export').attr("href", export_img);
-					$('#data-export').attr("download", "jVenn_chart.png");
-					$('#data-export')[0].click();
+					$('#'+cpref+'-data-export').attr("href", export_img);
+					$('#'+cpref+'-data-export').attr("download", "jVenn_chart.png");
+					$('#'+cpref+'-data-export')[0].click();
 				};
 			});
-			$("#format-svg").click(function(event) {
-				$("#canvasExport").css('background', ceColorOri);
-				$("#canvasExport").css('border-color', "white");
-				$("#canvasExport").hover(function() {
+			$("#"+cpref+"-format-svg").click(function(event) {
+				$("#"+cpref+"-canvasExport").css('background', ceColorOri);
+				$("#"+cpref+"-canvasExport").css('border-color', "white");
+				$("#"+cpref+"-canvasExport").hover(function() {
 					$(this).css('background', 'linear-gradient(to bottom, white, #AECEFF) repeat scroll 0 0 transparent');
 					$(this).css('border', '1px solid #6688AA');
 					$(this).css('border-radius', '3px');
@@ -2128,7 +2129,7 @@
 				var $expDiv = $("<div></div>");
 				$expDiv.append(__context.getSerializedSvg(true));
 				
-				$("[id^=resultC]").each(function(){					
+				$("[id^="+cpref+"-resultC]").each(function(){					
 					if($(this).css("display") != "none") {
 						if ($(this).html().indexOf("<span") === 0) {
 							value = "?";
@@ -2142,7 +2143,7 @@
 							$(this).css("font-weight"), false));
 					}
 				});
-				$("[id^=label]").each(function(){
+				$("[id^="+cpref+"-label]").each(function(){
 					$expDiv.children("svg").children("g").append(addSVGText($(this).html(), 
 							$(this).css("left"),  $(this).css("top"), 
 							$(this).css("color"), $(this).css("opacity"),
@@ -2152,15 +2153,15 @@
 				
 				var svgContent = "data:image/svg+xml;base64," + window.btoa($expDiv.html()),
 					encodedUri = encodeURI(svgContent);
-				$('#data-export').attr("href", encodedUri);
-				$('#data-export').attr("download", "jVenn_chart.svg");
-				$('#data-export')[0].click();
+				$('#'+cpref+'-data-export').attr("href", encodedUri);
+				$('#'+cpref+'-data-export').attr("download", "jVenn_chart.svg");
+				$('#'+cpref+'-data-export')[0].click();
 				
 			});
-			$("#format-csv").click(function(event) {
-				$("#canvasExport").css('background', ceColorOri);
-				$("#canvasExport").css('border-color', "white");
-				$("#canvasExport").hover(function() {
+			$("#"+cpref+"-format-csv").click(function(event) {
+				$("#"+cpref+"-canvasExport").css('background', ceColorOri);
+				$("#"+cpref+"-canvasExport").css('border-color', "white");
+				$("#"+cpref+"-canvasExport").hover(function() {
 					$(this).css('background', 'linear-gradient(to bottom, white, #AECEFF) repeat scroll 0 0 transparent');
 					$(this).css('border', '1px solid #6688AA');
 					$(this).css('border-radius', '3px');
@@ -2171,7 +2172,7 @@
 				select_form.hide();
 				var	rawData = new Array(),
 					comma = false;
-				$("*[id^=resultC]").each(function(){
+				$("*[id^="+cpref+"-resultC]").each(function(){
 					if (!this.empty) {
 						var	currentRow = new Array(),
 							tmpline = this.listnames.join("|");
@@ -2201,21 +2202,21 @@
 					csvContent += infoArray.join(",") + "\n";
 				});
 				var encodedUri = encodeURI(csvContent);
-				$('#data-export').attr("href", encodedUri);
-				$('#data-export').attr("download", "jVenn.csv");
-				$('#data-export')[0].click();
+				$('#'+cpref+'-data-export').attr("href", encodedUri);
+				$('#'+cpref+'-data-export').attr("download", "jVenn.csv");
+				$('#'+cpref+'-data-export')[0].click();
 			});
-			$("#canvasExport").click(function (event) {
+			$("#"+cpref+"-canvasExport").click(function (event) {
 				$(this).css('background', 'linear-gradient(to bottom, #AECEFF, white) repeat scroll 0 0 transparent');
 				$(this).css('border', '1px solid #6688AA');
-				$('#canvasExport').unbind('mouseenter mouseleave');
+				$('#'+cpref+'-canvasExport').unbind('mouseenter mouseleave');
 				select_form.show();
 				if (select_form.is(":visible")){
 					$(document).mouseup(function (event){
 						if (select_form.has(event.target).length === 0){
-							$("#canvasExport").css('background', ceColorOri);
-							$("#canvasExport").css('border-color', "white");
-							$("#canvasExport").hover(function() {
+							$("#"+cpref+"-canvasExport").css('background', ceColorOri);
+							$("#"+cpref+"-canvasExport").css('border-color', "white");
+							$("#"+cpref+"-canvasExport").hover(function() {
 								$(this).css('background', 'linear-gradient(to bottom, white, #AECEFF) repeat scroll 0 0 transparent');
 								$(this).css('border', '1px solid #6688AA');
 								$(this).css('border-radius', '3px');
@@ -2227,8 +2228,8 @@
 						}
 					});
 				}
-				var colorOrig=$("div[id^=format-]").css('background');
-				$("div[id^=format-]").hover(function() {
+				var colorOrig=$("div[id^="+cpref+"-format-]").css('background');
+				$("div[id^="+cpref+"-format-]").hover(function() {
 					$(this).css('background', 'rgba(69,114,165,0.75)');
 					$(this).css('color', 'white');
 				}, function() {
@@ -2236,7 +2237,7 @@
 					$(this).css('color', '');
 				});
 			});
-			$("#canvasExport").hover(function() {
+			$("#"+cpref+"-canvasExport").hover(function() {
 				$(this).css('background', 'linear-gradient(to bottom, white, #AECEFF) repeat scroll 0 0 transparent');
 				$(this).css('border', '1px solid #6688AA');
 				$(this).css('border-radius', '3px');
@@ -2250,7 +2251,7 @@
 			var init = (init == null ? true : init);
 			var unselected_idx = null ;
 			// Find group index
-			$("*[id^=label]").each(function(){
+			$("*[id^="+cpref+"-label]").each(function(){
 				if( $(this).html() == unselected_name ) {
 					$(this).css('opacity', 0.1);
 					$(this).removeClass("is-selected");
@@ -2259,26 +2260,26 @@
 				}
 			});
 			// Change legend button
-			legend_button = $("#item-" + unselected_idx) ;
+			legend_button = $("#"+cpref+"-item-" + unselected_idx) ;
 			legend_button.children("span").css('margin-left', '0px');
 			legend_button.css('opacity', 0.5);
 			legend_button.children("span").text('off');
 			// Change visibility
-			var visible_id = "resultC000000";
+			var visible_id = cpref+"-resultC000000";
 			$(".is-selected").each(function(){
 				var id = $(this).attr('id');
-				var replace_pos = 6 + parseInt(id.charAt(id.length-1));
+				var replace_pos = cpref.length+7 + parseInt(id.charAt(id.length-1));
 				visible_id = visible_id.substr(0, replace_pos) + 1 + visible_id.substr(replace_pos+1);
 			});
-			if (visible_id == "resultC000000" && init) { // 0 selected element and init
-				$(".number-black").each(function(){
+			if (visible_id == cpref+"-resultC000000" && init) { // 0 selected element and init
+				$("*[id^="+cpref+"-resultC]").each(function(){
 					$(this).css('opacity', 1);
 				});
-				$("*[id^=label]").each(function(){
+				$("*[id^="+cpref+"-label]").each(function(){
 					$(this).css('opacity', 0.6);
 				});
 			} else { // At least one selected element or non-init
-				$(".number-black").each(function(){
+				$("*[id^="+cpref+"-resultC]").each(function(){
 					if( $(this).attr('id') == visible_id ) {
 						$(this).css('opacity', 1);
 					} else {
@@ -2292,7 +2293,7 @@
 		function select( selected_name ) {
 			var selected_idx = null ;
 			// Find group index and show label
-			$("*[id^=label]").each(function(){
+			$("*[id^="+cpref+"-label]").each(function(){
 				if( $(this).html() == selected_name ) {
 					$(this).css('opacity', 0.6);
 					$(this).addClass("is-selected");
@@ -2303,19 +2304,19 @@
 				}
 			});
 			// Change legend button
-			legend_button = $("#item-" + selected_idx);
+			legend_button = $("#"+cpref+"-item-" + selected_idx);
 			legend_button.children("span").css('margin-left', '13px');
 			legend_button.css('opacity', 0.75);
 			legend_button.css('color', 'black');
 			legend_button.children("span").text('on');
 			// Change count visibility
-			var visible_idx = "resultC000000";
+			var visible_idx = cpref+"-resultC000000";
 			$(".is-selected").each(function(){
 				var id = $(this).attr('id');
-				var replace_pos = 6 + parseInt(id.charAt(id.length-1));
+				var replace_pos = cpref.length+7 + parseInt(id.charAt(id.length-1));
 				visible_idx = visible_idx.substr(0, replace_pos) + 1 + visible_idx.substr(replace_pos+1);
 			});
-			$(".number-black").each(function(){
+			$("*[id^="+cpref+"-resultC]").each(function(){
 				if( $(this).attr('id') == visible_idx ) {
 					$(this).css('opacity', 1);
 				} else {
@@ -2328,9 +2329,9 @@
 		function search( val, min_size ) {
 			var min_size = (min_size == null ? 1 : min_size)
 			var groups_status = new Array();
-			var visible_id = "resultC000000";
+			var visible_id = cpref+"-resultC000000";
 			var nb_find = 0;
-			$("*[id^=label]").each( function() {
+			$("*[id^="+cpref+"-label]").each( function() {
 				if ($(this).html() != "") {
 					groups_status[$(this).html()] = 'unselected';
 				}
@@ -2344,7 +2345,7 @@
 				// Find selected
 				var listnames = null ;
 				var perfect_match = false;
-				$(".number-black:not(.number-empty)").each( function() {
+				$("*[id^="+cpref+"-resultC]:not(.number-empty)").each( function() {
 					for (var idx = 0 ; idx < this.list.length && !perfect_match ; idx++) {
 						if (this.list[idx].indexOf(val) != -1) {
 							if (this.list[idx] == val) {
@@ -2400,12 +2401,15 @@
         	if (opts.displayStat) {
         		placeStat( getVennType()[1] );
             }
-        	if (visible_id != "resultC000000") { 
+        	if (visible_id != cpref+"-resultC000000") { 
         		$("#" + visible_id).show();
         	}
 		}
 		
-        this.each(function() {
+		// Container prefix need for multiple jvenn on the same page
+		var cpref = $(this).attr('id');
+        
+		this.each(function() {
             var $t = $(this);
             var extraheight = 0;
             if (opts.displayStat) {
@@ -2424,77 +2428,77 @@
             $('<style>.module-legend{border:1px solid lightgrey;border-radius:5px;position:relative;left:'+legleft+'px;top:-'+(legtop+extraheight)+'px;width:35px;padding-bottom:3px}</style>').appendTo('body');
             $('<style>.leg-items{padding-top:1px;margin:3px 3px 0px 3px;cursor:pointer;border: 1px solid grey;border-radius:2px;width:27px;height:11px;font-size:0.65em;line-height:10px;opacity:0.75}</style>').appendTo('body');
             
-            var div_content = '<div id="frame" style="position: relative; left: 0pt; top: 5pt; width: 500px; height: "'+(445+extraheight)+'px;">';
-			div_content += '<div id="canvasEllipse" width="500px" height="'+(415+extraheight)+'px;"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC100000"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC010000"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC001000"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC000100"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC000010"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC110000"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC101000"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC100100"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC100010"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC011000"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC010100"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC010010"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC001100"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC001010"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC000110"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC111000"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC110100"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC110010"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC101100"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC101010"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC100110"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC011100"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC011010"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC010110"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC001110"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC111100"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC111010"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC110110"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC101110"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC011110"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC111110"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC000001"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC000011"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC000101"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC000111"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC001001"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC001011"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC001101"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC001111"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC010001"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC010011"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC010101"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC010111"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC011001"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC011011"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC011101"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC011111"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC100001"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC100011"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC100101"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC100111"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC101001"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC101011"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC101101"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC101111"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC110001"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC110011"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC110101"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC110111"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC111001"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC111011"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC111101"></div>';
-			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="resultC111111"></div>';
-			div_content += '<div style="position: absolute; left: -1000px; top: -1000px; opacity:0.5;" id="label1"></div>';
-			div_content += '<div style="position: absolute; left: -1000px; top: -1000px; opacity:0.5;" id="label2"></div>';
-			div_content += '<div style="position: absolute; left: -1000px; top: -1000px; opacity:0.5;" id="label3"></div>';
-			div_content += '<div style="position: absolute; left: -1000px; top: -1000px; opacity:0.5;" id="label4"></div>';
-			div_content += '<div style="position: absolute; left: -1000px; top: -1000px; opacity:0.5;" id="label5"></div>';
-			div_content += '<div style="position: absolute; left: -1000px; top: -1000px; opacity:0.5;" id="label6"></div>';
+            var div_content = '<div id="'+cpref+'-frame" style="position: relative; left: 0pt; top: 5pt; width: 500px; height: "'+(445+extraheight)+'px;">';
+			div_content += '<div id="'+cpref+'-canvasEllipse" width="500px" height="'+(415+extraheight)+'px;"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC100000"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC010000"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC001000"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC000100"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC000010"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC110000"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC101000"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC100100"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC100010"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC011000"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC010100"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC010010"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC001100"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC001010"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC000110"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC111000"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC110100"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC110010"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC101100"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC101010"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC100110"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC011100"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC011010"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC010110"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC001110"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC111100"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC111010"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC110110"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC101110"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC011110"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC111110"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC000001"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC000011"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC000101"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC000111"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC001001"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC001011"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC001101"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC001111"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC010001"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC010011"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC010101"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC010111"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC011001"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC011011"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC011101"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC011111"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC100001"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC100011"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC100101"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC100111"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC101001"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC101011"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC101101"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC101111"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC110001"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC110011"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC110101"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC110111"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC111001"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC111011"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC111101"></div>';
+			div_content += '<div class="number-black" style="position: absolute; left: -1000px; top: -2200px;" id="'+cpref+'-resultC111111"></div>';
+			div_content += '<div style="position: absolute; left: -1000px; top: -1000px; opacity:0.5;" id="'+cpref+'-label1"></div>';
+			div_content += '<div style="position: absolute; left: -1000px; top: -1000px; opacity:0.5;" id="'+cpref+'-label2"></div>';
+			div_content += '<div style="position: absolute; left: -1000px; top: -1000px; opacity:0.5;" id="'+cpref+'-label3"></div>';
+			div_content += '<div style="position: absolute; left: -1000px; top: -1000px; opacity:0.5;" id="'+cpref+'-label4"></div>';
+			div_content += '<div style="position: absolute; left: -1000px; top: -1000px; opacity:0.5;" id="'+cpref+'-label5"></div>';
+			div_content += '<div style="position: absolute; left: -1000px; top: -1000px; opacity:0.5;" id="'+cpref+'-label6"></div>';
 			div_content += '</div>';
             $t.html(div_content);
            
@@ -2502,13 +2506,13 @@
             __context = new C2S(__canvasWidth,__canvasHeight);
 			
             // init with 0
-            $("*[id^=resultC]").each(function(){
+            $("*[id^="+cpref+"-resultC]").each(function(){
 				$(this).html(0);
 				$(this).addClass("number-empty");
 				$(this).css("font-size", opts.fontSize);
 				$(this).css("font-family", opts.fontFamily);
 			});
-            $("*[id^=label]").each(function(){
+            $("*[id^="+cpref+"-label]").each(function(){
 				$(this).css("font-family", opts.fontFamily);
             });
             var type = getVennType(); 
@@ -2536,12 +2540,12 @@
             // if the exporting modul is requested
             if (opts.exporting === true){ addExportModule($t, extraheight, type[0]); }
             // if min 4 classes diagram is requested add legend
-            if (type[1] >= 4) { addLegend($t, type[1]); }
+            if (opts.displaySwitch === true && type[1] >= 4) { addLegend($t, type[1]); }
             // number hover action
-            $(".number-black").hover(
+            $("*[id^="+cpref+"-resultC]").hover(
             	function(){
             		var activeleg = false;
-            		$("*[id^=item]").each(function(){
+            		$("*[id^="+cpref+"-item]").each(function(){
             			if($(this).children("span").text() === 'on') { activeleg = true; }
             		});
             		var activesearch = false;
@@ -2549,14 +2553,14 @@
             		if(!activeleg && !activesearch &&  $(this).text() !== "") {
 		            	var labels  = this.listnames;
 		            	var current = this;
-	            		$("*[id^=label]").each(function(){
+	            		$("*[id^="+cpref+"-label]").each(function(){
 	            			if (labels.indexOf($(this).text()) < 0) {
 	            				$(this).css('opacity', 0.1);
 	            			} else {
 	            				$(this).css('opacity', 0.6);
 	            			}
 	            		});
-		            	$(".number-black").each(function(){
+	            		$("*[id^="+cpref+"-resultC]").each(function(){
 	                		if(this != current) {
 	                			$(this).css('opacity', 0.1);
 	                		}
@@ -2574,17 +2578,17 @@
             	},
             	function(){
             		var activeleg = false;
-            		$("*[id^=item]").each(function(){
+            		$("*[id^="+cpref+"-item]").each(function(){
             			if($(this).children("span").text() === 'on') { activeleg = true; }
             		});
             		var activesearch = false;
-            		if(opts.searchInput.val() != '') { activesearch= true; }
+            		if(opts.searchInput != null && opts.searchInput.val() != '') { activesearch= true; }
             		if(!activeleg && !activesearch && $(this).text() !== "") {
 	            		var labels = this.listnames;
-	                	$("*[id^=label]").each(function(){
+	                	$("*[id^="+cpref+"-label]").each(function(){
 	            			$(this).css('opacity', 0.5);
 	                	});
-	                	$(".number-black").each(function(){
+	                	$("*[id^="+cpref+"-resultC]").each(function(){
 	                		$(this).css('opacity', 1);
 	                	});
 	                	clearCanvas();
@@ -2599,7 +2603,7 @@
             		}
             	}
             );
-            $("#canvasEllipse").html(__context.getSvg());
+            $("#"+cpref+"-canvasEllipse").html(__context.getSvg());
         });
         return this;
 	};

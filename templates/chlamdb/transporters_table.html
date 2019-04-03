@@ -8,119 +8,132 @@
 {% load staticfiles %}
 {% load static %}
 {% get_static_prefix as STATIC_PREFIX %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+{% include "chlamdb/header.html" %}
 
 </head>
 
-<body id="locus_body">
-    <div id="container">
-        <div id="content">
-            <div id="sidebar">
-                {% include "chlamdb/menu.html" %}
+<body>
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              {% include "chlamdb/menu.html" %}
+              <div class="col-lg-12">
+                <div class="row">
+
+
+
+
+                <nav>
+                  <ul id="tabs" class="nav nav-tabs">
+                      <li><a href="{% url 'transporters' %}">Transporters superfamilies</a></li>
+                      <li class="active"><a href="{% url 'transporters_list' %}">Transporters lists</a></li>
+
+                  </ul>
+                </nav>
+
+                <form action='{% url "transporters_list" %}' method="post">
+                    {% csrf_token %}
+                        {{ form.as_p }}
+
+                <input type="submit" value="Submit" />
+                </form>
+
+
+                {% if envoi %}
+
+                  <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                      <li class="active"><a href="#tab1" data-toggle="tab">Counts</a></li>
+                  </ul>
+
+
+                  <div id="my-tab-content" class="tab-content">
+                      <div class="tab-pane active" id="tab1">
+                          <table class="display dataTable" id="transporters">
+                              <thead>
+                                  <tr>
+                                      <th>Locus</th>
+                                      <th style="width:40px">Category</th>
+                                      <th style="width:260px">Description</th>
+                                      <th style="width:260px">SubCategory</th>
+                                      <th style="width:260px">Transporter</th>
+                                      <th>hsps</th>
+                                      <th>evalue</th>
+                                      <th>bitscore</th>
+                                      <th>Identity</th>
+                                      <th id="entete_n">TMq</th>
+                                      <th id="entete_n">TMh</th>
+                                      <th>qCOV</th>
+                                      <th>hCOV</th>
+                                      <th>Uniprot</th>
+                                      <th style="width:260px">Substrate</th>
+                                      <th id="entete_product">Description</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+
+                                  {% for values in data %}
+                                      <tr>
+                                          <td><a href="{% url 'locusx' values.0 True %}" target="_top">{{values.0}}</a></td>
+                                          <td><a href="{% url 'transporters_family' values.15 %}" target="_top">{{values.15}}</a></td>
+                                          <td>{{values.1}}</td>
+
+                                          <td>{{values.13}}</td>
+                                          <td>{{values.14}}</td>
+                                          <td>{{values.2}}</td>
+                                          <td>{{values.3}}</td>
+                                          <td>{{values.4}}</td>
+                                          <td>{{values.5}}</td>
+                                          <td>{{values.6}}</td>
+                                          <td>{{values.7}}</td>
+                                          <td>{{values.8}}</td>
+                                          <td>{{values.9}}</td>
+                                          <td><a href="http://www.uniprot.org/uniprot/{{values.10}}" target="_top">{{values.10}}</a></td>
+                                          <td>{{values.11}}</td>
+                                          <td>{{values.12}}</td>
+
+                                      </tr>
+                                  {% endfor %}
+                              </tbody>
+                          </table>
+                      </div>
+                  </div>
+
+                {% endif %}
+              </div>
             </div>
-            <div id="header">
-                {% include "chlamdb/user.html" %}
-            </div>
-
-            <nav>
-            <ul id="tabs" class="nav nav-tabs">
-                <li><a href="{% url 'transporters' %}">Transporters superfamilies</a></li>
-                <li class="active"><a href="{% url 'transporters_list' %}">Transporters lists</a></li>
-
-            </ul>
-            </nav>
-
-
-            <form action='{% url "transporters_list" %}' method="post">
-                {% csrf_token %}
-                    {{ form.as_p }}
-
-            <input type="submit" value="Submit" />
-            </form>
-
-
-            {% if envoi %}
-
-                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                        <li class="active"><a href="#tab1" data-toggle="tab">Counts</a></li>
-                    </ul>
-
-
-                    <div id="my-tab-content" class="tab-content">
-                        <div class="tab-pane active" id="tab1">
-                            <table class="display dataTable" id="homologues_table">
-                                <thead>
-                                    <tr>
-                                        <th>Locus</th>
-                                        <th style="width:40px">Category</th>
-                                        <th style="width:260px">Description</th>
-                                        <th style="width:260px">SubCategory</th>
-                                        <th style="width:260px">Transporter</th>
-                                        <th>hsps</th>
-                                        <th>evalue</th>
-                                        <th>bitscore</th>
-                                        <th>Identity</th>
-                                        <th id="entete_n">TMq</th>
-                                        <th id="entete_n">TMh</th>
-                                        <th>qCOV</th>
-                                        <th>hCOV</th>
-                                        <th>Uniprot</th>
-                                        <th style="width:260px">Substrate</th>
-                                        <th id="entete_product">Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-
-                                    {% for values in data %}
-                                        <tr>
-                                            <td><a href="{% url 'locusx' values.0 True %}" target="_top">{{values.0}}</a></td>
-                                            <td><a href="{% url 'transporters_family' values.15 %}" target="_top">{{values.15}}</a></td>
-                                            <td>{{values.1}}</td>
-
-                                            <td>{{values.13}}</td>
-                                            <td>{{values.14}}</td>
-                                            <td>{{values.2}}</td>
-                                            <td>{{values.3}}</td>
-                                            <td>{{values.4}}</td>
-                                            <td>{{values.5}}</td>
-                                            <td>{{values.6}}</td>
-                                            <td>{{values.7}}</td>
-                                            <td>{{values.8}}</td>
-                                            <td>{{values.9}}</td>
-                                            <td><a href="http://www.uniprot.org/uniprot/{{values.10}}" target="_top">{{values.10}}</a></td>
-                                            <td>{{values.11}}</td>
-                                            <td>{{values.12}}</td>
-
-                                        </tr>
-                                    {% endfor %}
-
-                        </div>
-                    </div>
-
-            {% endif %}
         </div>
+      </div>
     </div>
-
+  </div>
+</div>
 </body>
-<style>
-#id_category{
-    width:280px;
-    text-align:left;
-    left:600px;
-
-}
 
 
-</style>
+
 <script>
 $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip();
 });
 
 $(document).ready(function() {
-    $('#homologues_table').DataTable( {
-        dom: 'Bfrtip',
+    $('#transporters').DataTable( {
+      dom: 'lBfrtip',
+      buttons: [
+          {
+              extend: 'colvis',
+              columns: ':not(.noVis)',
+          },
+          {
+              extend: 'excel',
+              title: 'blast_swissprot'
+          },
+          {
+              extend: 'csv',
+              title: 'blast_swissprot'
+          }
+      ],
         columnDefs: [
             {
                 targets: 4,
@@ -155,15 +168,10 @@ $(document).ready(function() {
                 visible: false
             }
         ],
-        buttons: [
-            {
-                extend: 'colvis',
-                columns: ':not(.noVis)'
-            }
-        ],
-        "pageLength": 250
+        "pageLength": 10
     } );
 } );
 
 </script>
+{% include "chlamdb/style_menu.html" %}
 </html>

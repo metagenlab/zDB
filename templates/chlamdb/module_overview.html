@@ -12,22 +12,17 @@
 {% load custom_tags %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-
+{% include "chlamdb/header.html" %}
 </head>
 
-<body style="margin:0px;padding:0px;overflow:hidden">
-<div id="container">
-
-
-           <div id="content">
-
-
-                <div id="sidebar">
-                    {% include "chlamdb/menu.html" %}
-                </div>
-                <div id="header">
-                    {% include "chlamdb/user.html" %}
-                </div>
+<body>
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
 
                    <nav>
                         <ul id="tabs_main" class="nav nav-tabs">
@@ -93,10 +88,15 @@
                         </div>
                     {%endif%}
 
+                  </div>
+              </div>
+          </div>
         </div>
+      </div>
     </div>
-</div>
+  </div>
 
 
 </body>
+{% include "chlamdb/style_menu.html" %}
 </html>

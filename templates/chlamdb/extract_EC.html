@@ -6,7 +6,7 @@
 
         {% load static %}
         {% load custom_tags %}
-
+        {% load crispy_forms_tags %}
         <script type="text/javascript" id="js">
             $(document).ready(function() {
             // call the tablesorter plugin
@@ -28,40 +28,29 @@
         </script>
 
 
-
+        {% include "chlamdb/header.html" %}
 
     </head>
 
 
-    <div id="container">
+    <div class="container-fluid" id="main_container">
+      <div class="row">
+        <div id="wrapper">
+            <div id="page-content-wrapper">
+              <div class="row">
+                <div class="col-lg-12">
+                   {% include "chlamdb/menu.html" %}
 
-
-        <div id="sidebar">
-            {% include "chlamdb/menu.html" %}
-        </div>
-
-        <div id="header">
-            {% include "chlamdb/user.html" %}
-        </div>
-
-        <div id="content">
-
-
-
-
-
-            <nav>
-                <ul id="tabs_main" class="nav nav-tabs">
-                    <li class="active"><a href="{% url 'extract_EC' %}">Detailed comparison</a></li>
-                    <li><a href="{% url 'venn_EC' %}">Venn diagram</a></li>
-                    <li><a href="{% url 'plot_heatmap' 'EC' %}">Whole proteomes heatmaps</a></li>
-                    <li><a href="{% url 'pan_genome' 'EC' %}">Pan/Core genome plots</a></li>
-                </ul>
-            </nav>
+                    <nav>
+                        <ul id="tabs_main" class="nav nav-tabs">
+                            <li class="active"><a href="{% url 'extract_EC' %}">Detailed comparison</a></li>
+                            <li><a href="{% url 'venn_EC' %}">Venn diagram</a></li>
+                            <li><a href="{% url 'plot_heatmap' 'EC' %}">Whole proteomes heatmaps</a></li>
+                            <li><a href="{% url 'pan_genome' 'EC' %}">Pan/Core genome plots</a></li>
+                        </ul>
+                    </nav>
 
                      <div id="extract_form">
-                        <form action="{% url "extract_EC" %}" method="post">
-
 
                         <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
                             <div class="panel-heading" style="width:100%">
@@ -72,216 +61,213 @@
                             Missing data: if more than one panel A genome (include) is selected, possibility to tolerate missing data in 1 up to 10 genomes (in order to get EC present in at least x out of the y genomes selected in panel A).</p>
                         </div>
 
-                        <div style="width: 100%; overflow: hidden;">
-                            <div style="width: 20%; float: left;margin-left: 5%;"> A </div>
-                            <div style="margin-left: 5%;float:left;"> B </div>
-                        </div>
+                        <form action="{% url "extract_EC" %}" method="post">
+                            {% csrf_token %}
+                            {% crispy form %}
+                        </form>
 
-                        {% csrf_token %}
-                        {{ form.as_p }}
-                         <label style="position:absolute;margin-left:1%;width:20%;margin-top: 8px;">Missing data (optional)</label>
-                         <label style="position:absolute;margin-left:1%;width:20%;margin-top: 50px">Reference genome (optional)</label>
-                         <input type="submit" name="comparison" value="Compare EC numbers" id="extract_button" />
-                         </form>
                     </div>
 
 
 
-            {% if wrong_n_missing%}
+                    {% if wrong_n_missing%}
 
-            <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                <div class="panel-heading" style="width:100%">
-                    <h3 class="panel-title">Help</h3>
-                </div>
-                <p style="margin: 10px 10px 10px 10px">You cannot set a number of missing data bigger than the number of included genomes</p>
-            </div>
-
-            {% elif no_match%}
-
-            <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                <div class="panel-heading" style="width:100%">
-                    <h3 class="panel-title"></h3>
-                </div>
-                <p style="margin: 10px 10px 10px 10px">No match</p>
-            </div>
-
-            {% endif %}
-
-            {% if envoi_extract %}
-
-                <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                    <li class="active"><a href="#red" data-toggle="tab">EC list</a></li>
-                    <li><a href="#orange" data-toggle="tab">Phylogenetic profile</a></li>
-                    <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
-                </ul>
-
-                <div id="my-tab-content" class="tab-content">
-
-                    <div class="tab-pane active" id="red">
-
-
-                        <div id="export_bouttons_groups">
-                            <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-
-                            <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                            <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
-
-                            <br/>
+                    <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                        <div class="panel-heading" style="width:100%">
+                            <h3 class="panel-title">Help</h3>
                         </div>
+                        <p style="margin: 10px 10px 10px 10px">You cannot set a number of missing data bigger than the number of included genomes</p>
+                    </div>
 
-                        <p>Number of EC: {{ sum_group }} </p>
+                    {% elif no_match%}
 
-                        <table class="sortable" id="table_groups">
+                    <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+                        <div class="panel-heading" style="width:100%">
+                            <h3 class="panel-title"></h3>
+                        </div>
+                        <p style="margin: 10px 10px 10px 10px">No match</p>
+                    </div>
 
-                            <thead>
-                                <tr>
-                                <th></th>
-                                <th id="entete_locus">EC number</th>
-                                <th>Description</th>
-                                    <th>KEGG Map</th>
-                                    <th>Pathway Category</th>
-                                    <th>Pathway description</th>
-                                    <th>present in (/{{include|length}} included genomes)</th>
-                                    <th>freq complete database (/{{max_n}} genomes)</th>
-                                </tr>
-                            </thead>
+                    {% endif %}
 
-                            {% for value in match_groups_data %}
-                                <tr>
-                                    <td>{{value.0}}</td>
-                                    <td><a href="{% url 'fam' value.1 'EC' %}">{{value.1}}</a></td>
-                                    {% for value_2 in value.2 %}
-                                    <td>{{value_2}}</td>
+                    {% if envoi_extract %}
+
+                        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                            <li class="active"><a href="#red" data-toggle="tab">EC list</a></li>
+                            <li><a href="#orange" data-toggle="tab">Phylogenetic profile</a></li>
+                            <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
+                        </ul>
+
+                        <div id="my-tab-content" class="tab-content">
+
+                            <div class="tab-pane active" id="red">
+
+
+                                <div id="export_bouttons_groups">
+                                    <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" class="btn btn-success">Export to Excel</a>
+
+                                    <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" class="btn btn-success">Export to CSV</a>
+                                    <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</a>
+
+                                    <br/>
+                                </div>
+
+                                <p>Number of EC: {{ sum_group }} </p>
+
+                                <table class="sortable" id="table_groups">
+
+                                    <thead>
+                                        <tr>
+                                        <th></th>
+                                        <th id="entete_locus">EC number</th>
+                                        <th>Description</th>
+                                            <th>KEGG Map</th>
+                                            <th>Pathway Category</th>
+                                            <th>Pathway description</th>
+                                            <th>present in (/{{include|length}} included genomes)</th>
+                                            <th>freq complete database (/{{max_n}} genomes)</th>
+                                        </tr>
+                                    </thead>
+
+                                    {% for value in match_groups_data %}
+                                        <tr>
+                                            <td>{{value.0}}</td>
+                                            <td><a href="{% url 'fam' value.1 'EC' %}">{{value.1}}</a></td>
+                                            {% for value_2 in value.2 %}
+                                            <td>{{value_2}}</td>
+                                            {% endfor %}
+                                            <td>{{value.3}}</td>
+                                            <td>{{value.4}}</td>
+                                        </tr>
                                     {% endfor %}
-                                    <td>{{value.3}}</td>
-                                    <td>{{value.4}}</td>
-                                </tr>
-                            {% endfor %}
 
-                        </table>
+                                </table>
 
 
-                    </div>
-                    <div class="tab-pane" id="orange">
-                        <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
-                    </div>
+                            </div>
+                            <div class="tab-pane" id="orange">
+                                <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
+                            </div>
 
 
 
-                    <div class="tab-pane" id="tab2">
+                            <div class="tab-pane" id="tab2">
 
-                        <h3> Locus annotation </h3>
-                        <div id="export_bouttons_groups">
-                            <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-                            <a href="{% url 'get_fasta' %}{{fasta_url_ref}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Download fasta</a>
-                            <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                            <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
+                                <h3> Locus annotation </h3>
+                                <div id="export_bouttons_groups">
+                                    <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" class="btn btn-success">Export to Excel</a>
+                                    <a href="{% url 'get_fasta' %}{{fasta_url_ref}}" class="btn btn-success">Download fasta</a>
+                                    <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" class="btn btn-success">Export to CSV</a>
+                                    <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</a>
 
-                            <br/>
+                                    <br/>
+                                </div>
+                                <table id="cog_table" class="sortable">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th id="entete_locus">Orthogroup</th>
+                                            <th id="entete_locus">Locus</th>
+                                            <th style="width:10px">C</th>
+                                            <th style="width:70px">COGn</th>
+                                            <th style="width:55px">KO</th>
+                                            <th style="width:260px">Pathways</th>
+                                            <th style="width:230px">Modules</th>
+                                            <th style="width:230px">Interpro</th>
+                                            <th id="entete_gene">Gene</th>
+                                            <th id="entete_n">nH</th>
+                                            <th id="entete_n">nG</th>
+                                            <th id="entete_n">TM</th>
+                                            <th id="entete_n">SP</th>
+                                            <th id="entete_product">Product</th>
+
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+                                        {%for values in locus2annot%}
+                                        <tr>
+                                            <td>{{values.0}}</td>
+                                            <td>{{values.1}}</td>
+                                            <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
+                                            <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
+                                            {% with locus_tag2cog_name|keyvalue:values.2 as name %}
+                                                {% if name == '-' %}
+                                                    <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
+                                                {% else %}
+                                                    <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
+                                                {% endif %}
+                                            {%endwith%}
+                                            {% with locus_tag2ko|keyvalue:values.2 as oneko %}
+                                                {% if oneko == '-' %}
+                                                    <td>{{locus_tag2ko|keyvalue:values.2}}</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                {% else %}
+                                                    <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
+                                                    {% with ko2ko_pathways|keyvalue:oneko as name %}
+                                                        {% if name == '-' %}
+                                                            <td>-</td>
+                                                        {% else %}
+                                                            <td>{{name|safe}}</td>
+                                                        {% endif %}
+                                                    {%endwith%}
+                                                    {% with ko2ko_modules|keyvalue:oneko as name %}
+                                                        {% if name == '-' %}
+                                                            <td>-</td>
+                                                        {% else %}
+                                                            <td>{{name|safe}}</td>
+                                                        {% endif %}
+                                                    {%endwith%}
+                                                {% endif %}
+
+
+                                            {%endwith%}
+                                            {% with locus2interpro|keyvalue:values.2 as interpro_data %}
+                                            <td>
+                                                {% for one_interpro in interpro_data %}
+                                                {% if one_interpro.0 != '-' %}
+                                                    <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                                {%else%}
+                                                    {{one_interpro.0}}
+                                                {%endif%}
+                                                    {{one_interpro.1}} </br>
+                                                {% endfor %}
+                                                {%endwith%}
+                                            </td>
+                                            <td>{{values.7}}</td>
+                                            <td>{{values.8}}</td>
+                                            <td>{{values.9}}</td>
+                                            <td>{{values.10}}</td>
+                                            <td>{{values.11}}</td>
+                                            <td>{{values.12}}</td>
+
+                                        </tr>
+
+                                        {%endfor%}
+                                    </tbody>
+                                </table>
+
+
+
+                            </div>
+
+
+
+
+
+
+
+
                         </div>
-                        <table id="cog_table" class="sortable">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th id="entete_locus">Orthogroup</th>
-                                    <th id="entete_locus">Locus</th>
-                                    <th style="width:10px">C</th>
-                                    <th style="width:70px">COGn</th>
-                                    <th style="width:55px">KO</th>
-                                    <th style="width:260px">Pathways</th>
-                                    <th style="width:230px">Modules</th>
-                                    <th style="width:230px">Interpro</th>
-                                    <th id="entete_gene">Gene</th>
-                                    <th id="entete_n">nH</th>
-                                    <th id="entete_n">nG</th>
-                                    <th id="entete_n">TM</th>
-                                    <th id="entete_n">SP</th>
-                                    <th id="entete_product">Product</th>
-
-
-                                </tr>
-                            </thead>
-                            <tbody>
-
-                                {%for values in locus2annot%}
-                                <tr>
-                                    <td>{{values.0}}</td>
-                                    <td>{{values.1}}</td>
-                                    <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
-                                    <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
-                                    {% with locus_tag2cog_name|keyvalue:values.2 as name %}
-                                        {% if name == '-' %}
-                                            <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
-                                        {% else %}
-                                            <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
-                                        {% endif %}
-                                    {%endwith%}
-                                    {% with locus_tag2ko|keyvalue:values.2 as oneko %}
-                                        {% if oneko == '-' %}
-                                            <td>{{locus_tag2ko|keyvalue:values.2}}</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                        {% else %}
-                                            <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
-                                            {% with ko2ko_pathways|keyvalue:oneko as name %}
-                                                {% if name == '-' %}
-                                                    <td>-</td>
-                                                {% else %}
-                                                    <td>{{name|safe}}</td>
-                                                {% endif %}
-                                            {%endwith%}
-                                            {% with ko2ko_modules|keyvalue:oneko as name %}
-                                                {% if name == '-' %}
-                                                    <td>-</td>
-                                                {% else %}
-                                                    <td>{{name|safe}}</td>
-                                                {% endif %}
-                                            {%endwith%}
-                                        {% endif %}
-
-
-                                    {%endwith%}
-                                    {% with locus2interpro|keyvalue:values.2 as interpro_data %}
-                                    <td>
-                                        {% for one_interpro in interpro_data %}
-                                        {% if one_interpro.0 != '-' %}
-                                            <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
-                                        {%else%}
-                                            {{one_interpro.0}}
-                                        {%endif%}
-                                            {{one_interpro.1}} </br>
-                                        {% endfor %}
-                                        {%endwith%}
-                                    </td>
-                                    <td>{{values.7}}</td>
-                                    <td>{{values.8}}</td>
-                                    <td>{{values.9}}</td>
-                                    <td>{{values.10}}</td>
-                                    <td>{{values.11}}</td>
-                                    <td>{{values.12}}</td>
-
-                                </tr>
-
-                                {%endfor%}
-                            </tbody>
-                        </table>
-
-
-
-                    </div>
-
-
-
-
-
-
-
-
+                    {% endif %}
                 </div>
-            {% endif %}
+            </div>
+          </div>
         </div>
+      </div>
     </div>
-
 
 
     <div id="footer">
@@ -316,4 +302,10 @@
 
 
     </body>
+    {% include "chlamdb/style_menu.html" %}
+    <style>
+
+    #div_id_checkbox_single_copy{
+      display: none;
+    }
 </html>

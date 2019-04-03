@@ -6,7 +6,9 @@ from manipulate_biosqldb import load_db, get_biodatabase_list
 #from models import GenDB
 #from models import Genome
 from django.forms import ModelForm
-
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Submit, Row, Column, MultiField, Div, Fieldset
+from crispy_forms.bootstrap import AppendedText
 server = load_db()
 
 sql ="select accession from bioentry where biodatabase_id = 22"
@@ -101,12 +103,32 @@ def make_plot_form(database_name):
 
     class PlotForm(forms.Form):
         choices = (("yes","yes"),("no", "best hit only"))
-        accession = forms.CharField(max_length=100)
+        accession = forms.CharField(max_length=100, label="Protein accession (e.g. CT_015)")
         #location_start = forms.CharField(max_length=9, label="sart (bp)", required=False)
         #location_stop = forms.CharField(max_length=9, label="end (bp)", required=False)
         region_size = forms.CharField(max_length=5, label="Region size (bp)", initial = 8000, required = False)
-        genomes = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" }), required = False)
-        all_homologs = forms.ChoiceField(choices=choices, widget=forms.RadioSelect, initial="no")
+        genomes = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"8"}), required = False)
+        all_homologs = forms.ChoiceField(choices=choices, initial="no")
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
+            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset("Compare genomes",
+                                                Column(
+                                                Row(Column("accession", css_class='form-group col-lg-6 col-md-6 col-sm-12'),
+                                                    Column("region_size", css_class='form-group col-lg-6 col-md-6 col-sm-12')),
+                                                    Row('genomes', style="padding-left: 15px"),
+                                                Column(Row('all_homologs'),
+                                                Submit('submit', 'Compare'), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                                                css_class="col-lg-8 col-md-8 col-sm-12")
+                                                )
+                                        )
+
+            super(PlotForm, self).__init__(*args, **kwargs)
 
     return PlotForm
 
@@ -151,24 +173,76 @@ def make_metabo_from(database_name, add_box=False):
     accession_choices = get_accessions(database_name)
 
     class MetaboForm(forms.Form):
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (20) }), required = False)
+        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (20), "class":"selectpicker", "data-live-search":"true"}), required = False)
         if add_box:
             input_box = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            self.helper.label_class = 'col-lg-1 col-md-6 col-sm-6'
+            self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
+            if not add_box:
+                self.helper.layout = Layout(
+                                            Fieldset("Compare genomes",
+                                                     Column(
+                                                           Row('targets'),
+                                                           Submit('submit', 'Submit'),
+                                                           css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                                                    )
+                                            )
+
+            else:
+                self.helper.layout = Layout(
+                                            Fieldset("Compare genomes",
+                                                     Column(
+                                                           Row('targets'),
+                                                           Row('input_box'),
+                                                           Submit('submit', 'Submit'),
+                                                           css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                                                    )
+                                            )
+            super(MetaboForm, self).__init__(*args, **kwargs)
+
+
     return MetaboForm
 
 
-def make_venn_from(database_name, plasmid=False):
+def make_venn_from(database_name, plasmid=False, label="Orthologs", limit=None):
 
     accession_choices = get_accessions(database_name, plasmid=plasmid)
 
     class VennForm(forms.Form):
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'20' }), required = False)
+        # orthologs_in = forms.MultipleChoiceField(label='%s conserved in' % label, choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker", "data-live-search":"true"}), required = False)
+        if limit is None:
+            targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true"}), required = True)
+        else:
+            targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"%s" % limit}), required = True)
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            self.helper.label_class = 'col-lg-1 col-md-6 col-sm-6'
+            self.helper.field_class = 'col-lg-4 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset("Compare genomes",
+                                                 Column(
+                                                       Row('targets'),
+                                                       Submit('submit', 'Compare %s' % label),
+                                                       css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                                                )
+                                        )
+
+            super(VennForm, self).__init__(*args, **kwargs)
 
         def clean_venn(self):
             value = self.cleaned_data['targets']
             if len(value) > 6:
                 raise forms.ValidationError("You can't select more than 6 items.")
             return value
+
     return VennForm
 
 
@@ -218,19 +292,64 @@ def make_priam_form(database_name):
 def make_circos_form(database_name):
 
     accession_choices = get_accessions(database_name)
-    
+
     class CircosForm(forms.Form):
         circos_reference = forms.ChoiceField(choices=accession_choices)
-        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'20'}), required = False)
+        targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'1', "class":"selectpicker", "data-live-search":"true", "multiple data-max-options":"8"}), required=False)
         #get_region = forms.NullBooleanField(widget=forms.CheckboxInput())
         #region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = False)
-        
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
+            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset(
+                                                Row("Circos"),
+                                                Row('circos_reference'),
+                                                Row('targets'),
+                                                Submit('submit_circos', 'Submit'),
+                                                css_class="col-lg-5 col-md-6 col-sm-6")
+                                        )
+
+            super(CircosForm, self).__init__(*args, **kwargs)
+
         def save(self):
             self.reference = self.cleaned_data["reference"]
             self.get_region = self.cleaned_data["get_region"]
             self.region = self.cleaned_data["region"]
+
+
     return CircosForm
 
+
+def make_genome_selection_form(database_name):
+
+    accession_choices = get_accessions(database_name)
+
+    class GenomeForm(forms.Form):
+        genome = forms.ChoiceField(choices=accession_choices)
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
+            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset(
+                                                Row("Genome"),
+                                                Row('genome'),
+                                                Submit('submit', 'Submit'),
+                                                css_class="col-lg-5 col-md-6 col-sm-6")
+                                        )
+
+            super(GenomeForm, self).__init__(*args, **kwargs)
+
+
+    return GenomeForm
 
 
 def make_kegg_form(database_name):
@@ -259,7 +378,7 @@ def make_kegg_form(database_name):
     return KeggForm
 
 
-def make_extract_form(database_name, plasmid=False):
+def make_extract_form(database_name, plasmid=False, label="Orthologs"):
 
     if not plasmid:
         accession_choices = get_accessions(database_name)
@@ -269,13 +388,37 @@ def make_extract_form(database_name, plasmid=False):
     class ExtractForm(forms.Form):
         FREQ_CHOICES = ((0, 0),(1, 1), (2,2), (3,3), (4,4), (5,5), (6,6), (7,7), (8,8), (9,9), (10,10))
 
+        checkbox_accessions = forms.BooleanField(required = False, label="Distinguish plasmids from chromosomes")
+        checkbox_single_copy = forms.BooleanField(required = False, label="Only consider single copy %s" % label)
 
-        orthologs_in = forms.MultipleChoiceField(label='', choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17" }), required = False)
-        no_orthologs_in = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17" }), required = False, label="")
+        orthologs_in = forms.MultipleChoiceField(label='%s conserved in' % label, choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker", "data-live-search":"true"}), required = False)
+        no_orthologs_in = forms.MultipleChoiceField(label="%s absent from (optional)" % label, choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker remove-example", "data-live-search":"true"}), required = False)
 
         new_choices = [['None', 'None']] + accession_choices
-        frequency = forms.ChoiceField(choices=FREQ_CHOICES, label='')
-        reference = forms.ChoiceField(choices=new_choices,label="")
+        frequency = forms.ChoiceField(choices=FREQ_CHOICES, label='Missing data (optional)', required = False)
+        reference = forms.ChoiceField(choices=new_choices,label="Reference genome (optional)", required = False)
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
+            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset("Compare genomes",
+                                                Column(
+                                                    Row('checkbox_accessions', style="padding-left:15px"),
+                                                    Row('checkbox_single_copy', style="padding-left:15px"),
+                                                Row(Column("orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12'),
+                                                    Column("no_orthologs_in", css_class='form-group col-lg-6 col-md-6 col-sm-12')),
+                                                Column(Row('frequency'),
+                                                Row('reference'),
+                                                Submit('submit', 'Compare %s' % label), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                                                css_class="col-lg-8 col-md-8 col-sm-12")
+                                                )
+                                        )
+
+            super(ExtractForm, self).__init__(*args, **kwargs)
 
     return ExtractForm
 
@@ -532,13 +675,31 @@ def make_blastnr_form(biodb):
         rank_choices.append((rank, rank))
 
     class Blastnr_top(forms.Form):
-        accession = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" }), required = False)
+        accession = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "15" , 'class':"selectpicker", "data-width":"200px"}), required = False)
         rank = forms.ChoiceField(choices=rank_choices)
         CHOICES=[('BBH','BBH'),
          ('Majority','Majority Rule')]
         type = forms.ChoiceField(choices=CHOICES)
         top_number = forms.CharField(max_length=3, label="Majority over top n hits", initial = max_nr_hits, required = False)
 
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
+            self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset(
+                                                Row("BLAST taxonomy"),
+                                                Row('accession'),
+                                                Row('rank'),
+                                                Row('type'),
+                                                Row('top_number'),
+                                                Submit('submit', 'Submit'),
+                                                css_class="col-lg-5 col-md-6 col-sm-6")
+                                        )
+
+            super(Blastnr_top, self).__init__(*args, **kwargs)
     return Blastnr_top
 
 def make_interpro_taxonomy(biodb):
@@ -626,7 +787,7 @@ def get_LocusAnnotForm(database_name):
 
     class LocusAnnotForm(forms.Form):
         locus_list = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 10}))
-        circos_target = forms.ChoiceField(choices=accession_choices)
+        circos_target = forms.ChoiceField(choices=accession_choices, label='Reference genome')
     return LocusAnnotForm
 
 def make_motif_form(database_name):
@@ -669,7 +830,7 @@ def make_circos2genomes_form(database_name):
     accession_choices = get_accessions(database_name)
 
     class Circos2genomesForm(forms.Form):
-        
+
         locus_list = forms.CharField(max_length=1000, required = False)
         reference_genome = forms.ChoiceField(choices=accession_choices)
         query_genome = forms.ChoiceField(choices=accession_choices)
@@ -733,4 +894,3 @@ class DBForm(ModelForm):
         model=GenDB
         fields = ["ref_genome", "query_genome"]
     '''
-

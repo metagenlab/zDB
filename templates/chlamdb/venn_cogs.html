@@ -3,6 +3,8 @@
 
 <html>
 <head>
+  {% include "chlamdb/header.html" %}
+  
     <script type="text/javascript" id="js">
         $(document).ready(function() {
         // call the tablesorter plugin
@@ -23,66 +25,58 @@
         });
     </script>
 
+{% load crispy_forms_tags %}
 <head>
 
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
+                  {% if display_form %}
+                  <nav>
+                  <ul id="tabs" class="nav nav-tabs">
+                      <li><a href="{% url 'extract_cog'  %}">Detailed comparison</a></li>
+                      <li class="active"><a href="{% url 'venn_cog'  %}">Venn diagram</a></li>
+                      <li><a href="{% url 'cog_barchart' %}">COG categories barchart</a></li>
+                      <li><a href="{% url 'COG_phylo_heatmap' True %}">COG heatmap freq.</a></li>
+                      <li><a href="{% url 'COG_phylo_heatmap' False %}">COG heatmap counts</a></li>
+                      <li><a href="{% url 'plot_heatmap' 'COG' %}">Whole proteomes heatmaps</a></li>
+                      <li><a href="{% url 'pan_genome' 'COG' %}">Pan/Core genome plots</a></li>
+                  </ul>
+                  </nav>
 
-<div id="container">
 
+                          <div id="extract_form">
+                              <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                                    <div class="panel-heading" style="width:100%">
+                                      <h3 class="panel-title">Help</h3>
+                                      </div>
+                              <p style="margin: 10px 10px 10px 10px">Venn diagramm: draw a diagramm based on the presence/absence of COGs in selected genomes. Max 6 genomes.</p>
+                              </div>
 
-    <div id="sidebar">
-        {% include "chlamdb/menu.html" %}
+                              {% block content %}
+                              <form action="{% url "venn_cog" %}" method="post">
+                                  {% csrf_token %}
+                                  {% crispy form_venn %}
+                              </form>
+                              {% endblock %}
+
+                          </div>
+              {% endif %}
+               {% if envoi_venn %}
+                  {% include "chlamdb/venn_template_COGs.html" with series=series description_dico=cog2description %}
+
+              {% endif %}
+              </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <div id="header">
-        {% include "chlamdb/user.html" %}
-
-    </div>
-
-    <div id="content">
-        {% if display_form %}
-        <nav>
-        <ul id="tabs" class="nav nav-tabs">
-            <li><a href="{% url 'extract_cog'  %}">Detailed comparison</a></li>
-            <li class="active"><a href="{% url 'venn_cog'  %}">Venn diagram</a></li>
-            <li><a href="{% url 'cog_barchart' %}">COG categories barchart</a></li>
-            <li><a href="{% url 'COG_phylo_heatmap' True %}">COG heatmap freq.</a></li>
-            <li><a href="{% url 'COG_phylo_heatmap' False %}">COG heatmap counts</a></li>
-            <li><a href="{% url 'plot_heatmap' 'COG' %}">Whole proteomes heatmaps</a></li>
-            <li><a href="{% url 'pan_genome' 'COG' %}">Pan/Core genome plots</a></li>
-        </ul>
-        </nav>
-
-
-                <div id="extract_form">
-                    <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
-                          <div class="panel-heading" style="width:100%">
-                            <h3 class="panel-title">Help</h3>
-                            </div>
-                    <p style="margin: 10px 10px 10px 10px">Venn diagramm: draw a diagramm based on the presence/absence of COGs in selected genomes. Max 6 genomes.</p>
-                    </div>
-
-
-
-                    <form action="{% url "venn_cog" accessions %}" method="post">
-                        {% csrf_token %}
-                        {{ form_venn.as_p }}
-                        <input type="submit" name="venn" value="Compare COGs" id="venn_button" />
-
-                    </form>
-
-                </div>
-    {% endif %}
-     {% if envoi_venn %}
-        {% include "chlamdb/venn_template_COGs.html" with series=series description_dico=cog2description %}
-
-    {% endif %}
-
-
-
-    </div>
-
-</div>
-<div id="footer"></div>
 <!--
 <script type="text/javascript">$(document).ready( function(){ $("#jqtest").html("JQuery installed successfully!"); } ); </script>
 
@@ -121,4 +115,5 @@
 <p id="jqtest"></p>
 
 </body>
+{% include "chlamdb/style_menu.html" %}
 </html>

@@ -28,112 +28,116 @@
 
     <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
-
+{% include "chlamdb/header.html" %}
 </head>
 
 
-<body height="5000px">
+<body>
 
-<div id="container">
-   <div id="content">
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                 {% include "chlamdb/menu.html" %}
 
 
-        <div id="sidebar">
-            {% include "chlamdb/menu.html" %}
+                  <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                      <li><a href='{% url "metabo_overview" %}'>Map list</a></li>
+                      <!--<li><a href="#tab2" data-toggle="tab">Profile</a></li>-->
+                      <li><a href="{% url 'kegg_pathway_heatmap' %}">Category profiles</a></li>
+                      <li><a href='{% url "metabo_comparison" %}'>Compare strains (EC)</a></li>
+                      <li class="active"><a href='{% url "metabo_comparison_ko" %}'>Compare strains (KO)</a></li>
+                  </ul>
+
+                  <div>
+                       <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                          <div class="panel-heading" style="width:100%">
+                              <h3 class="panel-title">Help</h3>
+                          </div>
+                          <p style="margin: 10px 10px 10px 10px; line-height: 180%">
+                              Compare counts of Kegg Orthologs associated with each pathway in all selected genomes. Based on Kegg annotation with Ghost-KOALA. <br>
+                          </p>
+                      </div>
+
+
+                      <form action='{% url "metabo_comparison_ko" %}' method="post">
+                          {% csrf_token %}
+                          {{ form.as_p }}
+                          <input type="submit" value="Submit" />
+
+                      </form>
+
+                      {% if envoi_comp %}
+                       <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                          <div class="panel-heading" style="width:100%">
+                              <h3 class="panel-title">Help</h3>
+                          </div>
+                          <p style="margin: 10px 10px 10px 10px; line-height: 180%">
+                              Table of Kegg maps. <br>
+                              <strong>nEC:</strong> number of Enzymatic reaction in the considered map.<br>
+                              <strong>nEC+:</strong> number of Enzymatic found in the whole database.<br>
+                              <strong>%:</strong> percentage of the complete EC list associated to the kegg pathway present in the database.<br>
+                              Clinking on a map ID allow to get detailed informations about the given pathway.
+                          </p>
+                      </div>
+
+                              <div id="export_bouttons">
+                                  <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'metabo_kegg_overview', 'search');" class="btn btn-success">Export to Excel</a>
+                                  <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'metabo_kegg_overview');" class="btn btn-success">Export to CSV</a>
+                              <br/>
+
+                              <table class="sortable" id="table_path">
+                                      <style>
+                                          table {
+                                              width:100%;
+                                              table-layout:fixed;
+                                          }
+                                          td {
+                                              overflow: hidden;
+                                              white-space: nowrap;
+                                          }
+                                      </style>
+                              <tr>
+                                  <th height="170px" id="entete_meta">Category</th>
+                                  <th id="entete_meta2" >Map</th>
+                                  <th id="entete_meta3">Description</th>
+                                  <th id="entete_meta4">nEC</th>
+                                  <th id="entete_meta4">nEC+</th>
+                                  <th id="entete_meta4">%</th>
+                                  {% for taxon in taxon_list %}
+                                      <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
+                                  {% endfor %}
+                              <tr>
+                              {% for category, values in category2maps.items %}
+                                  {% for value0, value1 in values %}
+                                  <tr>
+
+                                      <td>{{category}}</td> <td><a href="{% url 'KEGG_mapp_ko' value0 %}" target="_top">{{value0}}</a></td><td>{{value1}}</td>
+                                      {% for value in map2count|keyvalue:value0 %}
+                                          <td>{{value}}</td>
+                                      {% endfor %}
+                                      {%for map_dico in taxon_maps %}
+                                          <td data-hist="{{map_dico|keyvalue:value0}}">{{map_dico|keyvalue:value0}}</td>
+                                      {% endfor %}
+
+                                  </tr>
+                                  {% endfor %}
+                              {% endfor %}
+                              </table>
+                      {% endif %}
+                  </div>
+             </div>
+          </div>
         </div>
-        <div id="header">
-            {% include "chlamdb/user.html" %}
-        </div>
-
-        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-            <li><a href='{% url "metabo_overview" %}'>Map list</a></li>
-            <!--<li><a href="#tab2" data-toggle="tab">Profile</a></li>-->
-            <li><a href="{% url 'kegg_pathway_heatmap' %}">Category profiles</a></li>
-            <li><a href='{% url "metabo_comparison" %}'>Compare strains (EC)</a></li>
-            <li class="active"><a href='{% url "metabo_comparison_ko" %}'>Compare strains (KO)</a></li>
-        </ul>
-
-        <div>
-             <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-                <div class="panel-heading" style="width:100%">
-                    <h3 class="panel-title">Help</h3>
-                </div>
-                <p style="margin: 10px 10px 10px 10px; line-height: 180%">
-                    Compare counts of Kegg Orthologs associated with each pathway in all selected genomes. Based on Kegg annotation with Ghost-KOALA. <br>
-                </p>
-            </div>
-
-
-            <form action='{% url "metabo_comparison_ko" %}' method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <input type="submit" value="Submit" />
-
-            </form>
-
-            {% if envoi_comp %}
-             <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-                <div class="panel-heading" style="width:100%">
-                    <h3 class="panel-title">Help</h3>
-                </div>
-                <p style="margin: 10px 10px 10px 10px; line-height: 180%">
-                    Table of Kegg maps. <br>
-                    <strong>nEC:</strong> number of Enzymatic reaction in the considered map.<br>
-                    <strong>nEC+:</strong> number of Enzymatic found in the whole database.<br>
-                    <strong>%:</strong> percentage of the complete EC list associated to the kegg pathway present in the database.<br>
-                    Clinking on a map ID allow to get detailed informations about the given pathway.
-                </p>
-            </div>
-
-                    <div id="export_bouttons">
-                        <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'metabo_kegg_overview', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-                        <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'metabo_kegg_overview');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                    <br/>
-
-                    <table class="sortable" id="table_path">
-                            <style>
-                                table {
-                                    width:100%;
-                                    table-layout:fixed;
-                                }
-                                td {
-                                    overflow: hidden;
-                                    white-space: nowrap;
-                                }
-                            </style>
-                    <tr>
-                        <th height="170px" id="entete_meta">Category</th>
-                        <th id="entete_meta2" >Map</th>
-                        <th id="entete_meta3">Description</th>
-                        <th id="entete_meta4">nEC</th>
-                        <th id="entete_meta4">nEC+</th>
-                        <th id="entete_meta4">%</th>
-                        {% for taxon in taxon_list %}
-                            <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
-                        {% endfor %}
-                    <tr>
-                    {% for category, values in category2maps.items %}
-                        {% for value0, value1 in values %}
-                        <tr>
-
-                            <td>{{category}}</td> <td><a href="{% url 'KEGG_mapp_ko' value0 %}" target="_top">{{value0}}</a></td><td>{{value1}}</td>
-                            {% for value in map2count|keyvalue:value0 %}
-                                <td>{{value}}</td>
-                            {% endfor %}
-                            {%for map_dico in taxon_maps %}
-                                <td data-hist="{{map_dico|keyvalue:value0}}">{{map_dico|keyvalue:value0}}</td>
-                            {% endfor %}
-
-                        </tr>
-                        {% endfor %}
-                    {% endfor %}
-                    </table>
-            {% endif %}
-        </div>
-   </div>
-   </div>
+      </div>
+    </div>
+  </div>
 </div>
+
 </body>
+{% include "chlamdb/style_menu.html" %}
 <script src="{% static 'js/jquery.hottie.js' %}"></script>
 <script>
   $(function(){
