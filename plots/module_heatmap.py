@@ -2,7 +2,7 @@
 
 def module_list2profile_dico(biodb, module_list, taxon_id_list=[]):
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 

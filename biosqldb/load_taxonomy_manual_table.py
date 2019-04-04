@@ -2,7 +2,7 @@
 
 
 def import_taxonomy(annot_file, biodb):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     '''
     import manually established taxonomy

@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 def import_rnaseq(rnaseq_table, biodb, taxon_id):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
     import re

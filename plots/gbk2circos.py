@@ -43,7 +43,7 @@ def find_index(pattern, seq):
       return seq.index(item)
 
 #locus_superantigens = ["saureusC1_00457","saureusC1_00483","saureusC1_00484","saureusC1_00485","saureusC1_00486","saureusC1_00487","saureusC1_00488","saureusC1_00489","saureusC1_00490","saureusC1_00491","saureusC1_00492","saureusC1_00495","saureusC1_01141","saureusC1_01142","saureusC1_01143","saureusC1_01644","saureusC1_02008","saureusC1_02688","saureusC1_02690","saureusC1_02691"]
-      
+
 
 locus_superantigens = ["CHUV02684",
 "CHUV02004",
@@ -72,17 +72,17 @@ locus_superantigens = ["CHUV02684",
 """
 class Feature:
     def __init__(self):
-        
-        self.contig = "-" 
+
+        self.contig = "-"
         self.feature_type = "-"
-        self.start = "-" 
-        self.stop = "-" 
-        self.length = "-" 
-        self.GC = "-" 
-        self.sequence = "-" 
-        self.strand = "-" 
-        self.gene = "-" 
-        self.function = "-" 
+        self.start = "-"
+        self.stop = "-"
+        self.length = "-"
+        self.GC = "-"
+        self.sequence = "-"
+        self.strand = "-"
+        self.gene = "-"
+        self.function = "-"
         self.gi = "-"
         self.locus = "-"
         self.protein_id = "-"
@@ -92,9 +92,9 @@ class Feature:
         self.id = "-"
         self.product = "-"
         self.orthogroup = "-"
-        
 
-        
+
+
 class Record:
     def __init__(self, record):
         self.seq = record.seq
@@ -105,14 +105,14 @@ class Record:
         self.features = self.get_one_record_features(record)
 
     def get_one_record_features(self, one_record):
-            
+
         feature_list = [None] * len(one_record.features)
         for i in range(0,len(one_record.features)):
             #print one_record.features[i]
             if one_record.features[i].type == "misc_feature":
                 feature_list[i] = Feature()
                 continue
-            feature_list[i] = Feature() 
+            feature_list[i] = Feature()
             #print  one_record.features[i]
 
             feature_list[i].feature_type = one_record.features[i].type
@@ -130,13 +130,13 @@ class Record:
                 feature_list[i].gi = one_record.features[i].qualifiers['db_xref'][gi_position][3:]
             except:
                 pass
-         
+
             #geneID= one_record.features[i].qualifiers['db_xref'][1][7:]
             try:
                 feature_list[i].locus = one_record.features[i].qualifiers['locus_tag'][0]
             except:
                 pass
-            
+
             try:
 
                 feature_list[i].orthogroup = one_record.features[i].qualifiers['orthogroup'][0]
@@ -152,7 +152,7 @@ class Record:
             except:
                 pass
             try:
-              
+
               feature_list[i].inference = one_record.features[i].qualifiers['inference']
             except:
               pass
@@ -161,9 +161,9 @@ class Record:
             except:
                 pass
             feature_list[i].seq = one_record.features[i].extract(self.seq)
-          
+
             feature_list[i].GC = SeqUtils.GC(feature_list[i].seq)
-            
+
 
         return feature_list
 """
@@ -274,7 +274,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                            locus_highlight2=[]):
 
     #print "highlight:", locus_highlight
-    
+
     import numpy
 
     if strand == "1":
@@ -556,7 +556,7 @@ def print_circos_gene_file(record_list, feature_type="CDS", strand ="1",
                     f.write('%s %s %s fill_color=pred\n ' % (contig,
                                                             start,
                                                             end))
-                    
+
 
     f.close()
 """
@@ -626,7 +626,7 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
     '''
     import numpy
     import pandas
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -636,7 +636,7 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
     for record in record_list:
         accessions.append(record.id.split('.')[0])
 
-    import biosql_own_sql_tables as bsql
+    from biosqldb import biosql_own_sql_tables as bsql
 
     #print '-------------- taxon list ------------'
     #print taxon_list
@@ -843,7 +843,7 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
 
 
 
-  
+
 def orthology_circos_files(server,
                            record_list,
                            reference_taxon_id,
@@ -860,10 +860,10 @@ def orthology_circos_files(server,
                            get_orthogroup_counts=False,
                            locus_highlight2=[]):
 
-    import biosql_own_sql_tables
+    from biosqldb import biosql_own_sql_tables
     import os
-    import orthogroup_identity_db
-    import manipulate_biosqldb
+    from biosqldb import orthogroup_identity_db
+    from biosqldb import manipulate_biosqldb
 
     #print "orthology_circos_files"
     #print "draft_data", draft_data
@@ -1085,7 +1085,7 @@ def orthology_circos_files(server,
                             pass #taxon_file.write("%s %s %s\n" % (contig, feature.start, feature.stop))
         y += 1
     return all_file_names
-        
+
   #print manipulate_biosqldb.get_taxon_id_list(server, biodatabase_name)
 
 
@@ -1104,7 +1104,7 @@ class Circos_config:
     self.plots = ""
     self.links = ""
     self.highlights = ""
-    
+
     self.template_caryotype= "karyotype = %s\n" \
                              " chromosomes_units           = 10000\n" \
                              " chromosomes_display_default = yes\n" % caryotype_file
@@ -1238,7 +1238,7 @@ class Circos_config:
                ' spacing = 2u\n' \
                '</pairwise>\n' % (chr1, chr2)
     return template
-    
+
   def _template_plot(self, file, type="line", r0=1,
                      r1=1.05, color=False, fill_color="red", thickness = "0.8p", z = 1, rules ="", backgrounds="", url="", min=False, max=False):
 
@@ -1347,7 +1347,7 @@ class Circos_config:
           for pair in chr_pair_list:
               all_spacing += self._template_spacing(pair[0], pair[1])
           return all_spacing
-    
+
   def get_file(self):
     return self.complete_file % (self.plots, self.highlights, self.links)
 
@@ -1387,7 +1387,7 @@ def get_circos_GC_config_files(biodatabase_name, accession_list):
 
 
 if __name__ == '__main__':
-    
+
     import shell_command
     parser = OptionParser()
 
@@ -1400,11 +1400,11 @@ if __name__ == '__main__':
     gb_file = options.input_file
     # get list of all records present in the gbk file
     record_list=[]
-   
+
     record_list = list(SeqIO.parse(open(gb_file,"r"), "genbank"))
         #print gb_record
 
-    
+
 
     # format output tab delimited table
     #print "contig\ttype\tstart\tstop\tlength\tGC\tstrand\tgene\tfunction\tinference\tgi\tlocus\ttranslation\tsequence"
@@ -1417,7 +1417,7 @@ if __name__ == '__main__':
           #print "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t \t " % (feature.contig, feature.type, feature.start, feature.stop, feature.length, feature.GC, feature.strand, feature.gene, feature.product, feature.inference, feature.gi, feature.locus)
     #    else:
     #      print "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (feature.contig, feature.type, feature.start, feature.stop, feature.length, feature.GC, feature.strand, feature.gene, feature.product, feature.inference, feature.gi, feature.locus, feature.translation, feature.seq)
-        
+
     print_circos_record_file(record_list, 'circos_contigs.txt')
     print_circos_gene_file(record_list, strand="-1", out_name = 'circos_minus.txt')
     print_circos_gene_file(record_list, strand="1", out_name = 'circos_plus.txt')

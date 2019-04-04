@@ -16,7 +16,7 @@ def parse_a3m(a3m_file):
 
 if __name__ == '__main__':
     import argparse
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import sys
     import json
 

@@ -34,7 +34,7 @@ def get_taxon2name2count(biodb, id_list, type="COG", taxon_filter=False):
     :return:
     '''
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db =manipulate_biosqldb.load_db(biodb)
 
@@ -81,7 +81,7 @@ def get_taxon2orthogroup2count(biodb, orthogroup_id_list):
     :return:
     '''
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db =manipulate_biosqldb.load_db(biodb)
 
@@ -117,7 +117,7 @@ def get_locus2taxon2identity(biodb, locus_tag_list):
     :return:
     '''
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db =manipulate_biosqldb.load_db(biodb)
 
@@ -182,7 +182,7 @@ def get_locus2taxon2n_paralogs(biodb, locus_tag_list):
     :return:
     '''
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db =manipulate_biosqldb.load_db(biodb)
 
@@ -238,7 +238,7 @@ def combined_profiles_heatmap(biodb,
 
     #print ec2orthogroups
     from ete3 import TreeStyle
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     from matplotlib.colors import rgb2hex
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -435,7 +435,7 @@ def pathways_heatmap(biodb,
     :return:
     '''
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
     import matplotlib as mpl
@@ -607,7 +607,7 @@ def pathways_heatmapV2(biodb,
     :return:
     '''
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
     import matplotlib as mpl
@@ -839,7 +839,7 @@ def multiple_profiles_heatmap(biodb,
         reference_taxon_dico = False
 
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     if identity_scale:
         import matplotlib.cm as cm
@@ -1176,7 +1176,7 @@ def multiple_profiles_heatmap_nobiodb(column_labels,
         reference_taxon_dico = False
 
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     if identity_scale:
         import matplotlib.cm as cm
@@ -1478,7 +1478,7 @@ def multiple_profiles_heatmap_nobiodb(column_labels,
         reference_taxon_dico = False
 
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     if identity_scale:
         import matplotlib.cm as cm
@@ -1744,7 +1744,7 @@ def multiple_profiles_heatmap_nobiodb(column_labels,
 
 def multiple_orthogroup_heatmap(biodb, reference_orthogroup, max_distance=2.2):
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import pandas
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
@@ -1904,7 +1904,7 @@ def get_pfam_data(orthogroup, biodb, aa_alignment=False):
              function "draw_pfam_tree"
     '''
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'select A.locus_tag, B.start, B.stop, A.organism, A.sequence_length, B.signature_accession, B.signature_description, A.taxon_id ' \
@@ -1946,7 +1946,7 @@ def get_TM_data(biodb,
                 orthogroup=False,
                 aa_alignment=False,
                 signal_peptide=False):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     if orthogroup:
 

@@ -2,7 +2,7 @@
 
 
 def import_checkm(checkm_file, biodb):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import re
 
     server, db = manipulate_biosqldb.load_db(biodb)

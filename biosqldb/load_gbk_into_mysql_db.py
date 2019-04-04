@@ -60,7 +60,7 @@ def create_cds_tables(one_gbk, biodb_name):
     :param one_gbk:
     :return:
     '''
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import re
     server, db = manipulate_biosqldb.load_db(biodb_name)
 

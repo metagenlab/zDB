@@ -151,7 +151,7 @@ locus_list = [
 "KPN_RS25455"
 ]
 
-import manipulate_biosqldb
+from biosqldb import manipulate_biosqldb
 
 server, db = manipulate_biosqldb.load_db("2017_03_30_kcosson")
 

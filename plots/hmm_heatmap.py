@@ -10,7 +10,7 @@ def get_single_set_data(biodb, set_name,column="bitscore", bitscore_cutoff=0, qu
     :param score: should one of those:  bitscore, bias, evalue, query_coverage
     :return:
     '''
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'select  from hmm_sets t1 inner join hmm_sets_entry t2 on t1.set_id=t2.set_id ' \
@@ -53,7 +53,7 @@ def get_set_data(biodb,
                  six_frame_translation=False,
                  return_lists=False,
                  score_cutoff=0):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     '''
 
     :param biodb:
@@ -131,7 +131,7 @@ def get_set_data(biodb,
 
 
 def plot_hmm_heatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, six_frame_translation=False):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import ete_motifs
 
     code2taxon2count, set_list = get_set_data(biodb)
@@ -188,7 +188,7 @@ if __name__ == '__main__':
 
 
     biodb = args.biodb #'chlamydia_04_16'
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     from ete2 import Tree
     import ete_motifs
     import cog_heatmap

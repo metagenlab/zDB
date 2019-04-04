@@ -104,7 +104,7 @@ def map2highlighted_map(map_id, ko_list, ko2freq, biodb, outpath = 'test.pdf', t
 
 def edit_svg_map(map_path, keep_ko_list, biodb_name, map_name,taxon_id=False):
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import re
 
     server, db = manipulate_biosqldb.load_db(biodb_name)

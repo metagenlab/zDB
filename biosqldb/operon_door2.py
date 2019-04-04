@@ -4,7 +4,7 @@
 
 def create_DOOR_operon_table(biodb):
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -39,7 +39,7 @@ def door_accession2door_operon_table(accession):
 
 def accession2operon_table(biodb):
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import re
 
     server, db = manipulate_biosqldb.load_db(biodb)

@@ -2,7 +2,7 @@
 
 
 def import_16S_identity(identity_table, biodb, sqlite3=False):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb, sqlite=sqlite3)
 

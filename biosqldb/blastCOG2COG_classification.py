@@ -104,7 +104,7 @@ def gi2COG(*protein_gi):
 def load_locus2cog_into_sqldb(input_blast_files, biodb):
     import MySQLdb
     import os
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     mysql_host = 'localhost'
     mysql_user = 'root'
     mysql_pwd = os.environ['SQLPSW']
@@ -245,7 +245,7 @@ def locus2function(input_blast_files, display_print=False,):
 
 
 def investiguate_core_COGs(db_name, locus2function):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import biosql_own_sql_tables
     server, db = manipulate_biosqldb.load_db(db_name)
     sql = 'select taxon_id from bioentry' \

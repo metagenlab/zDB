@@ -176,7 +176,7 @@ def taxon_id2accessions(server, taxon_id, biodatabase_name):
     return [i[0] for i in result]
 
 def taxon_id2accession_chromosome(server, biodatabase_name):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     sql = 'select t1.taxon_id,t1.accession from bioentry as t1 ' \
           'inner join biodatabase as t2 on t1.biodatabase_id = t2.biodatabase_id ' \

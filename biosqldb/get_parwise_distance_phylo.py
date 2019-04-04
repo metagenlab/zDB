@@ -5,7 +5,7 @@
 def biodb2pairwise_dist_phylogenies(biodb):
 
     from ete2 import Tree
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -55,7 +55,7 @@ def biodb2pairwise_dist_phylogenies(biodb):
 
 def get_normalized_pairwise_dist(biodb, sub=False):
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import numpy
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -135,7 +135,7 @@ def get_normalized_pairwise_dist(biodb, sub=False):
 
 
 def get_orthogroup_median_dist(biodb):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import numpy
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -649,7 +649,7 @@ def get_most_conserved(biodb):
 "group_242",
 "group_241",
 "group_248"]
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     filter = '"'+'","'.join(grp_list)+'"'

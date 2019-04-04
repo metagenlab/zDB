@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import manipulate_biosqldb
+from biosqldb import manipulate_biosqldb
 def get_n_cds(server, biodb_name, bioentry_id):
     sql = 'select count(t1.value) from biosqldb.seqfeature_qualifier_value as t1' \
           ' inner join seqfeature as t2 on t1.seqfeature_id = t2.seqfeature_id'\

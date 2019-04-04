@@ -12295,7 +12295,7 @@ def interactions(request, locus_tag):
 def plot_heatmap(request, type):
     biodb = settings.BIODB
     from biosqldb import biosql_own_sql_tables
-    from network_d3 import heatmap
+    from plots import heatmap
     import numpy as np
 
     server, db = manipulate_biosqldb.load_db(biodb)

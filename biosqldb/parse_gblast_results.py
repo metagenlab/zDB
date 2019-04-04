@@ -4,7 +4,7 @@
 
 
 def add_one_tc_id(biodb, tc_id):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import tcdb_utils
     import MySQLdb
     import re
@@ -36,7 +36,7 @@ def add_one_tc_id(biodb, tc_id):
         return tc_db_id
 
 def insert_new_tc_path(biodb, tc_name):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -71,7 +71,7 @@ def insert_new_tc_path(biodb, tc_name):
         return id_complete
 
 def check_if_tc_accession_already_in_db(biodb, tc_name):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -94,7 +94,7 @@ def check_if_tc_accession_already_in_db(biodb, tc_name):
         return False
 
 def insert_uniprot_in_db(biodb, uniprot_accession, tc_id):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import blastswiss2sqltable
     import tcdb_utils
     import accession2taxon_id
@@ -186,7 +186,7 @@ def insert_uniprot_in_db(biodb, uniprot_accession, tc_id):
 
 
 def import_annot(gblast_file, biodb, fasta_file_query, fasta_file_db, xml_dir):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     from Bio import SeqIO
     from bs4 import BeautifulSoup
     import tcdb_utils

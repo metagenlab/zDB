@@ -76,7 +76,7 @@ def load_cog_tables(cognames_2014, cog_2014):
     import MySQLdb
     import os
     import re
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username

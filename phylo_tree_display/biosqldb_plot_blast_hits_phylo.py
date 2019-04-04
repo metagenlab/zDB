@@ -12,7 +12,7 @@ def plot_BBH_phylo(query_fasta_record, biodb, blast_type='blastp'):
     '''
 
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import biosql_own_sql_tables
     import blast_utils
     import ete_motifs

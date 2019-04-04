@@ -13,7 +13,7 @@ import pandas.rpy.common as com
 
 
 def accession2dna_seg_genome(accession, biodb):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import numpy
     import pandas
 
@@ -28,7 +28,7 @@ def accession2dna_seg_genome(accession, biodb):
 
 def get_genome_seg(accession, biodb):
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import pandas
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -44,7 +44,7 @@ def get_genome_seg(accession, biodb):
 
 
 def get_pairwise_connexions(accession_1, accession_2, biodb):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import numpy
     import pandas
 

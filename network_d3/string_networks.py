@@ -9,7 +9,7 @@
 
 def find_links_recusrsive(biodb, all_connected_seqfeatures, ratio_cutoff=0.5, n_comp_cutoff=1):
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     if biodb == 'chlamydia_04_16':
@@ -45,7 +45,7 @@ def find_profile_links_recusrsive(biodb, all_connected_groups, max_euclidian_dis
         return all_connected_groups
     else:
         max_iterations+=1
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     filter = '"' + '","'.join(all_connected_groups) + '"'
@@ -246,7 +246,7 @@ def generate_network(biodb,
                      height=70,
                      interpro=False,
                      annot=False):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import re
 
 
@@ -487,7 +487,7 @@ def generate_network_string(biodb,
                      height=70,
                      interpro=False,
                      annot=False):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import re
 
 
@@ -742,7 +742,7 @@ def generate_network_profile(biodb,
                              scale_link=True,
                              interpro=False,
                              annot=False):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     filter = '"' + '","'.join(group_list) + '"'
     # group_1     | group_2     | euclidian_dist
@@ -971,7 +971,7 @@ layout: {
 def get_subgraph(biodb, locus_tag_list, ratio_limit, target_locus):
 
     import networkx as nx
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
     myfilter = '"' + '","'.join(locus_tag_list) + '"'

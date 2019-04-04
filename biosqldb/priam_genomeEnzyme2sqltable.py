@@ -283,7 +283,7 @@ def locus2ko_table(locus_tag2ko_dico,
                    biodatabase,
                    ko_accession2ko_id):
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodatabase)
 
     sql2 = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % biodatabase
@@ -717,7 +717,7 @@ def get_ec2get_pathway_table():
     import MySQLdb
     import urllib2
     import sys
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import os
     sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
@@ -953,7 +953,7 @@ def load_enzyme_nomenclature_table():
 
 def locus2ec_table(locus_tag2ec_dico, biodatabase):
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import biosql_own_sql_tables
 
     server, db = manipulate_biosqldb.load_db(biodatabase)
@@ -1045,7 +1045,7 @@ def get_microbial_metabolism_in_diverse_environments_kegg01120():
 
 if __name__ == '__main__':
     import argparse
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import parse_priam_EC
 
     parser = argparse.ArgumentParser()

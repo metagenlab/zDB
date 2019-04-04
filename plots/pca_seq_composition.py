@@ -70,6 +70,6 @@ def multiple_aa_composition_pca(numpy_matrix, path):
         ''' % (path))
 
 import numpy
-import manipulate_biosqldb
+from biosqldb import manipulate_biosqldb
 
 

@@ -6,7 +6,7 @@
 
 def contruct_graph():
     '''
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import igraph
 
     server, db = manipulate_biosqldb.load_db('chlamydia_04_16')
@@ -46,7 +46,7 @@ def contruct_graph():
     '''
 
     import networkx as nx
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import igraph
     import matplotlib.pyplot as plt
 

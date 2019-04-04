@@ -312,7 +312,7 @@ def identity_tables2dico(reference_accession, table_list):
 
 if __name__ == '__main__':
     import argparse
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     parser = argparse.ArgumentParser()
     parser.add_argument("-t",'--tree',
                         type=str,

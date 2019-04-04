@@ -89,7 +89,7 @@ def plot_heat_tree_V1(taxid2n, tree_file, genes, taxid2st=False, leaf_label_conv
             st = False
             '''
             if "taxon2accession_list" not in locals():
-                import manipulate_biosqldb
+                from biosqldb import manipulate_biosqldb
                 server, db = manipulate_biosqldb.load_db("k_cosson_05_16")
                 sql = 'select taxon_id, accession from bioentry where biodatabase_id=104'
                 data_tax = server.adaptor.execute_and_fetchall(sql,)
@@ -293,7 +293,7 @@ def plot_heat_tree(biodb, taxid2n, tree_file):
         for you to exit the browser before continuing.
     '''
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     taxid2organism = manipulate_biosqldb.taxon_id2genome_description(server, biodb, True)
@@ -357,7 +357,7 @@ def plot_heatmap_tree_locus(biodb,
     '''
 
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -490,7 +490,7 @@ def plot_heatmap_tree_locus(biodb,
 
 if __name__ == '__main__':
     import argparse
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     parser = argparse.ArgumentParser()
     parser.add_argument("-t",'--tree',type=str,help="newick tree")
     parser.add_argument("-m",'--matrix',type=str,help="matrix (tab file)")

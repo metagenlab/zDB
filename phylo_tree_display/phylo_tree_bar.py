@@ -36,7 +36,7 @@ def plot_tree_stacked_barplot(tree_file,
 
 
     if biodb:
-        import manipulate_biosqldb
+        from biosqldb import manipulate_biosqldb
         server, db = manipulate_biosqldb.load_db(biodb)
 
         taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb, filter_names=True)
@@ -381,7 +381,7 @@ def plot_tree_barplot(tree_file,
     :return:
     '''
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
     import matplotlib as mpl
@@ -608,7 +608,7 @@ def plot_tree_barplot(tree_file,
     return t1, tss
 
 def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, bw_scale=True):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
     import matplotlib as mpl
@@ -667,7 +667,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         excluded = str(list(t1.iter_leaves())[0].name)
         my_taxons.pop(my_taxons.index(excluded))
 
-        
+
     genome_sizes = [float(taxon2genome_size[i]) for i in my_taxons]
     gc_list = [float(taxon2gc[i]) for i in my_taxons]
     fraction_list = [float(taxon2coding_density[i]) for i in my_taxons]
@@ -736,7 +736,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
             lf.name = taxon2description[lf.name]
             #print '#######################'
             continue
-        
+
         n = TextFace('  %s ' % str(round(taxon2genome_size[lf.name]/float(1000000),2)))
         n.margin_top = 1
         n.margin_right = 1
@@ -845,20 +845,20 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
 
 if __name__ == '__main__':
     import argparse
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     parser = argparse.ArgumentParser()
     parser.add_argument("-t",'--tree',type=str,help="newick tree")
     parser.add_argument("-m",'--matrix',type=str,help="matrix (tab file)")
     parser.add_argument("-s",'--mlst',type=str,help="mlst file")
     parser.add_argument("-d",'--biodb',type=str,help="biodatabase name")
     parser.add_argument("-e",'--exclude_outgroup',action="store_true",help="exclude outroup from annotation")
-    parser.add_argument("-w",'--bw_scale',action="store_true",help="use black and white color scale") 
+    parser.add_argument("-w",'--bw_scale',action="store_true",help="use black and white color scale")
     parser.add_argument("-a",'--accession2description',default=False, type=str,help="tab file with accessions and corresponding descriptions for leaf labels")
 
     args = parser.parse_args()
 
     if not args.tree:
-        import manipulate_biosqldb
+        from biosqldb import manipulate_biosqldb
         sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
                    ' where t2.name="%s";' % args.biodb
         server, db = manipulate_biosqldb.load_db(args.biodb)

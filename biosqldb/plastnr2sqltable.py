@@ -777,7 +777,7 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
     import MySQLdb
     import time
     import accession2taxon_id
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
                                 user=mysql_user, # your username
@@ -949,7 +949,7 @@ def del_blastnr_table_content(db_name):
 
 if __name__ == '__main__':
     import argparse
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import sys
     import os
     import json

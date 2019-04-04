@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import biosql_own_sql_tables
-import manipulate_biosqldb
+from biosqldb import manipulate_biosqldb
 
 
 

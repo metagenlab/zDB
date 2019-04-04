@@ -5,7 +5,7 @@
 
 
 def pathway_list2profile_dico(biodb, pathway_list, taxon_id_list=[], group_by_KO=True):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
@@ -71,7 +71,7 @@ def plot_module_and_pathway_combinaison_heatmap(biodb,
                                                 taxon_id_list=[],
                                                 group_by_KO=True,
                                                 rotate=False):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import ete_motifs
     import module_heatmap
 
@@ -97,7 +97,7 @@ def plot_module_and_pathway_combinaison_heatmap(biodb,
 
 
 def plot_pathway_heatmap(biodb, ref_tree, pathway_list, taxon_id_list=[], rotate=False, group_by_KO=True):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import ete_motifs
 
     pathway_list, code2taxon2count = pathway_list2profile_dico(biodb, pathway_list, taxon_id_list=taxon_id_list, group_by_KO=group_by_KO)
@@ -180,7 +180,7 @@ aa_sythesis = [
 "map00400"
 ]
 '''
-import manipulate_biosqldb
+from biosqldb import manipulate_biosqldb
 from ete3 import Tree
 server, db = manipulate_biosqldb.load_db('chlamydia_04_16')
 

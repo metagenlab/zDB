@@ -251,7 +251,7 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
 
 if __name__ == '__main__':
     import argparse
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import gbk2accessiontodefinition
     parser = argparse.ArgumentParser()
     parser.add_argument("-t",'--tree',type=str,help="newick tree")

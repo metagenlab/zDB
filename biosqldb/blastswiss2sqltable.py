@@ -125,7 +125,7 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
 
     import plastnr2sqltable
     import MySQLdb
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import time
 
     n_file = 0
@@ -472,7 +472,7 @@ def blastswiss2biosql( locus_tag2seqfeature_id,
 
 if __name__ == '__main__':
     import argparse
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import sys
     import os
 

@@ -2,7 +2,7 @@
 
 
 def biodb2aa_usage(biodb):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     from Bio.SeqUtils.ProtParam import ProteinAnalysis
     from Bio.SeqUtils import CodonUsage
     import biosql_own_sql_tables

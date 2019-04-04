@@ -3,7 +3,7 @@
 def get_pathway_ko_association_table():
     import os
     import MySQLdb
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import urllib2
     from Bio.KEGG.KGML import KGML_parser
     import re

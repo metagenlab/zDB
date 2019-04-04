@@ -2,7 +2,7 @@
 
 #import heatmap
 import numpy as np
-import manipulate_biosqldb
+from biosqldb import manipulate_biosqldb
 import parse_newick_tree
 from Bio import Phylo
 

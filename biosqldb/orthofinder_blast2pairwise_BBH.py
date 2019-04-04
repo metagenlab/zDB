@@ -18,7 +18,7 @@ def parse_orthofinder_blast_files(biodb,
                                   identity_cutoff=0,
                                   sqlite3=False):
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     if not sqlite3:
         server, db = manipulate_biosqldb.load_db(biodb)
     else:
@@ -70,7 +70,7 @@ def parse_orthofinder_blast_files(biodb,
 
 def get_parwise_genome_median_identity_table(biodb, sqlite3=False):
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import numpy
     import rpy2.robjects.numpy2ri
 
@@ -128,7 +128,7 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
 
     # taxon_id, taxon_2, seqfeature_id_1, seqfeature_id_2, blast_identity_a_vs_b, blast_identity_b_vs_a, mean_blast_identity, msa_identity, orthogroup
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import numpy
     from datetime import datetime
 
@@ -306,7 +306,7 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
 
 def median_RBBH2species(biodb):
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'create table if not exists species_%s (taxon_id INT, species_id INT)' % biodb
@@ -353,7 +353,7 @@ def median_RBBH2species(biodb):
 
 
 def seqfeature_id2n_species_chlamydiae_only(biodb, chlamydiae_taxon_list):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -398,7 +398,7 @@ def seqfeature_id2n_species_chlamydiae_only(biodb, chlamydiae_taxon_list):
         server.commit()
 
 def seqfeature_id2n_species(biodb):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 

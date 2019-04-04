@@ -4,7 +4,7 @@
 
 
 from parse_mclOtput import parse_orthomcl_output
-import manipulate_biosqldb
+from biosqldb import manipulate_biosqldb
 import os
 import shell_command
 import numpy as np
@@ -455,7 +455,7 @@ def get_one_group_data(group_list, biodatabase_name, out_dir):#, out_q):
 
 def get_all_orthogroup_protein_fasta(server, biodatabase_name, out_dir):
 
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodatabase_name)
     sql = 'select orthogroup from orthology_detail_%s group by orthogroup' % biodatabase_name
 

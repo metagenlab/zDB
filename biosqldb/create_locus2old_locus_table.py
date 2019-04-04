@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 def create_locus2old_locus_table(biodb):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
     sql = 'create table custom_tables.seqfeature_id2old_locus_tag_%s (seqfeature_id INT, old_locus_tag varchar(300), index seqfeature_id(seqfeature_id))' % biodb

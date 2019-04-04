@@ -2,7 +2,7 @@
 
 
 def index_silix_families(family_list, biodb, silix_cutoff):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     sql = 'create table comparative_tables.silix_families_%s_%s (silix_id INT primary key, silix_name)' % (biodb, silix_cutoff)
 
@@ -10,7 +10,7 @@ def index_silix_families(family_list, biodb, silix_cutoff):
 
 
 def import_silix(silix_output, biodb, silix_cutoff):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
     import re

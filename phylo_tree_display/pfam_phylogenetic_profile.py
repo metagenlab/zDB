@@ -294,7 +294,7 @@ def plot_phylum_counts(domain_id, rank='phylum',
 
     import MySQLdb
     import os
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     from ete3 import NCBITaxa, Tree, TextFace,TreeStyle, StackedBarFace
     ncbi = NCBITaxa()
 
@@ -454,7 +454,7 @@ def plot_phylum_counts(domain_id, rank='phylum',
 
 def load_pfam_result_into_database(pfam_tab_file, pfam_version=31):
     import re
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     import MySQLdb
     import os
     sqlpsw = os.environ['SQLPSW']
@@ -529,7 +529,7 @@ def load_pfam_result_into_database(pfam_tab_file, pfam_version=31):
 
 if __name__ == '__main__':
     import argparse
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", '--table',type=str,help="RefSeq table")
     parser.add_argument("-p", '--plot', action='store_true', help="plot")
