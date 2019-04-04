@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-import manipulate_biosqldb
-import gbk2circos
+from biosqldb import manipulate_biosqldb
+from plots import gbk2circos
 
 def locus_tag2orthogroup_size(db_name):
 
@@ -255,7 +255,7 @@ def circos_locus2taxon_highest_identity(biodb, reference_taxon_id, use_identity_
     :param reference_accession: reference taxon_id
     :return:
     '''
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -313,7 +313,7 @@ def circos_locus2taxon_highest_identity(biodb, reference_taxon_id, use_identity_
 
 def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="./"):
 
-    import mysqldb_load_mcl_output
+    from biosqldb import mysqldb_load_mcl_output
     import sys
     from Bio import SeqIO
     import os
@@ -389,8 +389,8 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
 
 def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter=False, accessions=False):
 
-    import manipulate_biosqldb
-    import biosql_own_sql_tables
+    from biosqldb import manipulate_biosqldb
+    from biosqldb import biosql_own_sql_tables
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -479,7 +479,7 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
     return match_groups_data, extract_result
 
 def accession2coding_density(biodb, sqlite=False):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     from Bio.SeqUtils import GC123
 
     server, db = manipulate_biosqldb.load_db(biodb, sqlite=sqlite)
@@ -1350,7 +1350,7 @@ def locus_tag2presence_in_n_genomes(db_name):
     return a dictionnary of all locus tag and the number of genomes in which they have one or multiple homolog(s)
     '''
 
-    import mysqldb_load_mcl_output
+    from biosqldb import mysqldb_load_mcl_output
     server, db = manipulate_biosqldb.load_db(db_name)
     orthogroup2family_size = mysqldb_load_mcl_output.get_family_size(server, db_name)
     locus_tag2orthogroup_dico = locus_tag2orthogroup(db_name)
@@ -1692,7 +1692,7 @@ def get_cooccurring_groups(db_name, accession1, accession2, windows_size=10, min
     return conserved_regions
 
 def locus_list2nucleotide_fasta(biodb,locus_list):
-    import manipulate_biosqldb
+    from biosqldb import manipulate_biosqldb
     from Bio import SeqRecord
     from Bio.Seq import Seq
     from Bio import SeqIO
@@ -1828,10 +1828,10 @@ def add_orthogroup_to_interpro_table(biodb_name):
         if t % 100 == 0:
             print ("%s / %s" % (t, len(interpro_data)))
         i+=1
-        
+
         orthogroup = locus2ortho[one_row[1]]
-        
-            
+
+
         sql = 'INSERT INTO interpro_%s(accession, locus_tag, organism, taxon_id,' \
               ' sequence_length, analysis, signature_accession, signature_description, start, ' \
               ' stop, score, interpro_accession, interpro_description, GO_terms, pathways, orthogroup) ' \
@@ -1944,7 +1944,7 @@ def add_orthogroup_to_interpro_table(biodb_name):
                     row_string += '-\t'
         print row_string
 '''
-    
+
 if __name__ == '__main__':
     #print taxonomical_form('chlamydia_03_15')
     #locus_tag2best_hit_n_taxon_ids('chlamydia_03_15', 'Rhab')
@@ -1964,7 +1964,7 @@ if __name__ == '__main__':
     print len(test)
     for i in test:
         print i
-    
+
     wcw_syntheny = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'CP001928',3,3)
     simkania_syntheny = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'NC_015713',3,3)
     trachomatis_syntheny = get_cooccurring_groups('chlamydia_03_15', 'Rhab', 'AE001273',3,3)
@@ -2035,4 +2035,3 @@ if __name__ == '__main__':
                 except KeyError:
                     row_string += '-\t'
         print (row_string)
-    

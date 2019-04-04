@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 from django import forms
 #import models
-from manipulate_biosqldb import load_db, get_biodatabase_list
+from biosqldb.manipulate_biosqldb import load_db, get_biodatabase_list
 #from blah import *
 #from models import GenDB
 #from models import Genome

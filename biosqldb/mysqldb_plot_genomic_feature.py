@@ -11,11 +11,11 @@ import json
 import pickle
 import os
 from time import time
-import manipulate_biosqldb
+from biosqldb import manipulate_biosqldb
 from multiprocessing import Process, Queue, JoinableQueue
 import math
 from Bio.Seq import Seq
-import orthogroup_identity_db
+from biosqldb import orthogroup_identity_db
 
 def get_feature_neighborhood(feature_start, feature_end, contig_or_genome_record, neighborhood_size_bp, record_name):
 
@@ -47,8 +47,8 @@ def plot_multiple_regions_crosslink2(target_protein_list, region_record_list, pl
     max_len = 0
     records = dict((rec.name, rec) for rec in region_record_list)
     n_records = len(region_record_list)
-    
-    record_length = [len(record) for record in region_record_list] 
+
+    record_length = [len(record) for record in region_record_list]
 
     for i, record in enumerate(region_record_list):
         max_len = max(max_len, len(record))
@@ -63,7 +63,7 @@ def plot_multiple_regions_crosslink2(target_protein_list, region_record_list, pl
            print ("already in feature_sets!")
            print (record)
            quit
-        
+
     for x in range(0,len(region_record_list)-1):
         #print "x", x
         features_X = region_record_list[x].features
@@ -158,7 +158,7 @@ def plot_multiple_regions_crosslink2(target_protein_list, region_record_list, pl
     else:
             gd_diagram.draw(format="linear", pagesize=(hauteur,largeur), orientation='landscape', fragments=1,start=0, end=max_len)
     #print "writing diagram", out_name
-    
+
     gd_diagram.write(out_name, "SVG")
 
 
@@ -240,8 +240,8 @@ def plot_multiple_regions_crosslink(target_protein_list,
     records = dict((rec.name, rec) for rec in region_record_list)
 
     n_records = len(region_record_list)
-    
-    record_length = [len(record) for record in region_record_list] 
+
+    record_length = [len(record) for record in region_record_list]
 
 
 
@@ -546,7 +546,7 @@ def plot_simple_region(region_record, out_name):
 
 
 
-    
+
 def chunks(l, n):
     "return sublists of l of minimum length n (work subdivision for the subprocesing module"
     return [l[i:i+n] for i in range(0, len(l), n)]
@@ -575,17 +575,17 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
     #n_cpu = 8
     #n_poc_per_list = math.ceil(len(bioentry_id_list)/float(n_cpu))
     #query_lists = chunks(range(0, len(bioentry_id_list)), int(n_poc_per_list))
-    
+
     #procs = []
     #for one_list in query_lists:
     #    bioentry_list = [bioentry_id_list[i] for i in one_list]
-        
+
         #print len(comb_list)
     #    proc = Process(target=reformat_record_list, args=(biodb_name, bioentry_list, out_q))
     #    procs.append(proc)
     #    proc.start()
 
-    
+
     # format: list of tuples: (seq1, seq2, identity)
     #out_q.join()
     #print "getting results"
@@ -593,9 +593,9 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
     #for i in range(len(procs)):
     #    reformat_records += out_q.get()
     #print reformat_records
-    
+
 #[SeqRecord(temp_record.seq, id=temp_record.id, name=temp_record.name, description=temp_record.description, dbxrefs =temp_record.dbxrefs, features=temp_record.features, annotations=temp_record.annotations) for temp_record in records]
-    
+
     #import time
     #time.sleep(5)
 
@@ -640,7 +640,7 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
     #reformat_records = reformat_records + loaded_bioentry
 
     #print "all_record :", cache
-    
+
     #print "creating seqfeature_id2seqfeature..."
     #seqfeature_id2seqfeature = manipulate_biosqldb.seqfeature_id2seqfeature_object_dict(*all_records)
     #print "done"
@@ -694,7 +694,7 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
                                                         biodb_name,
                                                         color_locus_list=color_locus_list)
     return region_locus_list, orthogroup_list
-    
+
 def location2plot(biodb,
                   biodb_name,
                   accession,
@@ -772,31 +772,31 @@ def location2simpleplot(biodb, biodb_name, bioentry, location_start, location_st
 def proteins_id2sub_record_list(server, biodb, biodb_name, locus_tag_list, region_size_bp):
     plasmid_list = []
     sub_record_list = []
-    
+
     bioentry_id_list, seqfeature_id_list = manipulate_biosqldb.get_bioentry_and_seqfeature_id_from_locus_tag_list(server, locus_tag_list, biodb_name)
     #print "bioentry_id_list", bioentry_id_list
     #print "seqfeature_id_list", seqfeature_id_list
     #print "getting records..."
     all_records = [biodb.lookup(accession=one_bioentry) for one_bioentry in bioentry_id_list]
     #print "formatting records..."
-    
+
     reformat_records = [SeqRecord(Seq(temp_record.seq.data, temp_record.seq.alphabet), id=temp_record.id, name=temp_record.name, description=temp_record.description, dbxrefs =temp_record.dbxrefs, features=temp_record.features, annotations=temp_record.annotations) for temp_record in all_records]
     #print "creating seqfeature_id2seqfeature..."
     #seqfeature_id2seqfeature = manipulate_biosqldb.seqfeature_id2seqfeature_object_dict(*all_records)
     #print reformat_records, reformat_records
-   
+
     for seqfeature_id, record in zip(seqfeature_id_list, reformat_records):
         #print "seqfeature_id", seqfeature_id
         #print "record", record
 
-        
+
         #target = seqfeature_id2seqfeature[seqfeature_id]
-        
+
         target_feature_start,  target_feature_end, strand = manipulate_biosqldb.seqfeature_id2feature_location(server, seqfeature_id)
 
         #print "target_feature_start,  target_feature_end, strand:", target_feature_start,  target_feature_end, strand
 
-        
+
         try:
             plasmid = record.features[0].qualifiers["plasmid"]
             plasmid_list.append(True)
@@ -809,6 +809,5 @@ def proteins_id2sub_record_list(server, biodb, biodb_name, locus_tag_list, regio
         else:
             sub_record = get_feature_neighborhood(target_feature_start, target_feature_end, record, region_size_bp, "rec")
             sub_record_list.append(sub_record)
-            
-    return sub_record_list
 
+    return sub_record_list

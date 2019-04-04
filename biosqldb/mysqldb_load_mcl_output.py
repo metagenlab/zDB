@@ -3,8 +3,8 @@
 
 
 
-from parse_mclOtput import parse_orthomcl_output
-import manipulate_biosqldb
+from orthomcl.parse_mclOtput import parse_orthomcl_output
+from biosqldb import manipulate_biosqldb
 import os
 import shell_command
 import numpy as np
@@ -16,7 +16,7 @@ import MySQLdb
 
 
 def add_orthogroup_term(server):
-    # => ajouter orthogroup à la liste des term_id si n'existe pas
+    # => ajouter orthogroup ï¿½ la liste des term_id si n'existe pas
     # | term_id | name                   | definition | identifier | is_obsolete | ontology_id |
     # |      21 | CDS                    | NULL       | NULL       | NULL        |           2 |
 

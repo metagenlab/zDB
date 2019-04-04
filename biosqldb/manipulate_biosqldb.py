@@ -5,7 +5,7 @@ from Bio import Entrez
 from Bio import SeqIO
 from BioSQL import BioSeqDatabase
 import sys
-import mysqldb_load_mcl_output
+from biosqldb import mysqldb_load_mcl_output
 
 # A faire
 # add arthogroup to db_xref, chose an orthogroup prefix (chlam_x)
@@ -146,7 +146,7 @@ def get_bioentry_and_seqfeature_id_from_locus_tag_list(server, locus_tag_list, b
                                                           biodatabase_name,
                                                           filter)
 
-    
+
     #sql = sql % (query_locus_tag, biodatabase_name)
     #print sql
     b = server.adaptor.execute_and_fetchall(sql, )
@@ -156,7 +156,7 @@ def get_bioentry_and_seqfeature_id_from_locus_tag_list(server, locus_tag_list, b
 
 
 def get_bioentry_id_from_locus_tag(server, locus_tag, biodatabase_name):
-    
+
     sql_specific_locus_tag = "select bioentry.accession from seqfeature_qualifier_value" \
           " inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = %s and value = %s" \
           " inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id" \
@@ -286,7 +286,7 @@ def description2accession_dict(server, biodatabase_name):
 
 
 def locus_tag2bioentry_id_dict(server, biodatabase_name):
-    
+
     sql_locus_tag_bioentry_id_table = "select value, bioentry.accession from seqfeature_qualifier_value" \
           " inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = %s" \
           " inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id" \
@@ -295,11 +295,11 @@ def locus_tag2bioentry_id_dict(server, biodatabase_name):
 
     result = server.adaptor.execute_and_fetchall(sql_locus_tag_bioentry_id_table, ("locus_tag", biodatabase_name))
 
-    
-    
+
+
     locus_tag2bioentry_id = {}
     for protein in result:
-       locus_tag2bioentry_id[protein[0]] = protein[1] 
+       locus_tag2bioentry_id[protein[0]] = protein[1]
     return locus_tag2bioentry_id
 
 
@@ -448,12 +448,12 @@ def protein_id2seqfeature_id_dict(server, biodatabase_name):
     " inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id" \
     " inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id" \
     " inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = %s"
-    
+
     result = server.adaptor.execute_and_fetchall(sql_protein_id2_seqfeature_id_table, ("protein_id", biodatabase_name))
     protein_id2seqfeature_id = {}
     for protein in result:
        ##print "protein", protein
-       #seqfeature_id = locus_tag2CDS_seqfeature_id(server, protein[0], biodatabase_name) 
+       #seqfeature_id = locus_tag2CDS_seqfeature_id(server, protein[0], biodatabase_name)
        protein_id2seqfeature_id[protein[0]] = protein[1]
     return protein_id2seqfeature_id
 
@@ -463,7 +463,7 @@ def protein_id2seqfeature_id_dict(server, biodatabase_name):
 #    " inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id" \
 #    " inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id" \
 #    " inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = %s"
-    
+
 #    result = server.adaptor.execute_and_fetchall(sql_locus_tag_seqfeature_id_table, ("locus_tag", locus_tag, biodatabase_name))
 #    return result[0][0]
 
@@ -472,22 +472,22 @@ def bioentry_id2genome_name_dict(server, biodatabase_name):
 
     sql_bioentry_id2genome_name = "select bioentry.accession, bioentry.description from bioentry" \
                                      " join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name =%s;"
-    
+
     result = server.adaptor.execute_and_fetchall(sql_bioentry_id2genome_name, (biodatabase_name))
     bioentry_id2genome_name = {}
     for protein in result:
-       bioentry_id2genome_name[protein[0]] = protein[1] 
+       bioentry_id2genome_name[protein[0]] = protein[1]
     return bioentry_id2genome_name
 
 
 def locus_tag2bioentry_accession_and_description(server, locus_tag, biodatabase_name):
-    
+
     sql ="select bioentry.accession, bioentry.description from seqfeature_qualifier_value" \
     " inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = %s and value = %s" \
     " inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id" \
     " inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id" \
     " inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = %s" \
-    
+
     result = server.adaptor.execute_and_fetchall(sql, ("locus_tag", locus_tag, biodatabase_name))
 
     return [i for i in result[0]]
@@ -518,18 +518,18 @@ def bioentry_id2taxon_id_dict(server, biodatabase_name):
 
 
 def seqfeature_id2seqfeature_qualifier_values(server, seqfeature_id, biodatabase_name):
-    
+
     sql ="select term.name,  seqfeature_qualifier_value.value  from seqfeature_qualifier_value" \
     " inner join term on seqfeature_qualifier_value.term_id = term.term_id and seqfeature_id = %s" \
     " inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id" \
     " inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id" \
-    " inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = %s" 
+    " inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = %s"
 
     sql2 = 'select bioentry.description from seqfeature' \
            ' inner join bioentry on bioentry.bioentry_id = seqfeature.bioentry_id and seqfeature_id = %s' % seqfeature_id
 
 
-    
+
     description = server.adaptor.execute_and_fetchall(sql2, )[0][0]
 
     result = server.adaptor.execute_and_fetchall(sql, (seqfeature_id, biodatabase_name))
@@ -548,7 +548,7 @@ def seqfeature_id2seqfeature_qualifier_values(server, seqfeature_id, biodatabase
 def locus_tag2seqfeature_qualifier_values(server, locus_tag, biodatabase_name):
 
     seqfeature_id = locus_tag2CDS_seqfeature_id(server, locus_tag, biodatabase_name)
-    
+
     return seqfeature_id2seqfeature_qualifier_values(server, seqfeature_id, biodatabase_name)
 
 
@@ -573,7 +573,7 @@ def get_genome_description_list(server, biodatabase_name):
     """
 
     sql = "select bioentry.description from bioentry" \
-    " inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = %s" 
+    " inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = %s"
     result = server.adaptor.execute_and_fetchall(sql, (biodatabase_name))
     return [i[0] for i in result]
 
@@ -673,7 +673,7 @@ def seqfeature_id2protein_id_dico(server, biodatabase_name):
           ' inner join biodatabase on t5.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' % biodatabase_name
     result = server.adaptor.execute_and_fetchall(sql,)
     return _to_dict(result)
-    
+
 def orthogroup_id2locus_tag_list(server, orthogroup_id, biodatabase_name):
 
     #print "orthogroup_id", orthogroup_id
@@ -698,13 +698,13 @@ def orthogroup_id2locus_tag_list(server, orthogroup_id, biodatabase_name):
     ' group by seqfeature_qualifier_value.seqfeature_id' % (query_seqfeature_id, biodatabase_name)
 
     ##print sql_seqfeature_id2locus_tag
-    
+
     result = server.adaptor.execute_and_fetchall(sql_seqfeature_id2locus_tag,)
     return result
 
 
 def protein_id2seqfeature_id(server, protein_id, biodatabase_name):
-    
+
     sql = 'select seqfeature_qualifier_value.seqfeature_id from seqfeature_qualifier_value' \
           ' inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id and value = "%s"' \
           ' inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id' \
@@ -723,12 +723,12 @@ def protein_id2locus_tag(server, protein_id, biodatabase_name):
           ' inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id' \
           ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' % (seqfeature_id, biodatabase_name)
     result = server.adaptor.execute_and_fetchall(sql,)
-    return result[0][0]  
+    return result[0][0]
 
 
 
 
-def locus_tag2seqfeature_ids(server, locus_tag, biodatabase_name): 
+def locus_tag2seqfeature_ids(server, locus_tag, biodatabase_name):
     sql_locus_tag_seqfeature_id = 'select seqfeature_qualifier_value.seqfeature_id from seqfeature_qualifier_value' \
     ' inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = "locus_tag" and value = %s' \
     ' inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id' \
@@ -1273,13 +1273,13 @@ inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id a
 
 
 """
-# retourne le nombre de contigs par génome
+# retourne le nombre de contigs par gï¿½nome
 select COUNT(*), description from bioentry
 GROUP BY taxon_id;
 """
 
 """
-# retourne le nombre de contigs par génome
+# retourne le nombre de contigs par gï¿½nome
 select * from bioentry where name = "FR872592"
 GROUP BY description;
 """
@@ -1288,11 +1288,11 @@ GROUP BY description;
 
 
 """
-# return group_1 accession and description 
+# return group_1 accession and description
 select bioentry.accession, bioentry.description, seqfeature_qualifier_value.value, bioentry.taxon_id  from seqfeature_qualifier_value
 inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = "orthogroup" and value = "group_1777"
 inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id
-inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id 
+inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id
 inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "chlamydiales"
 """
 
@@ -1302,10 +1302,10 @@ inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id a
 
 """
 # return group_1 accession and description
-select * from seqfeature_qualifier_value as ortho_table 
-inner join term on ortho_table.term_id = term.term_id and name = "orthogroup" 
+select * from seqfeature_qualifier_value as ortho_table
+inner join term on ortho_table.term_id = term.term_id and name = "orthogroup"
 inner join seqfeature on ortho_table.seqfeature_id = seqfeature.seqfeature_id
-inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id 
+inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id
 inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "Chlamydiales_subgroup_no_estrella"
 where taxon_id = 64
 group by ortho_table.value
@@ -1314,20 +1314,20 @@ group by ortho_table.value
 
 """
 # get group size
-select count(*) from seqfeature_qualifier_value as ortho_table 
+select count(*) from seqfeature_qualifier_value as ortho_table
 inner join term on ortho_table.term_id = term.term_id and name = "orthogroup" and value = "group_76"
 inner join seqfeature on ortho_table.seqfeature_id = seqfeature.seqfeature_id
-inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id 
+inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id
 inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "chlamydiales"
 """
 
 
 """
 # get number of proteins for each orthogroup of taxon_id 4
-select value, count(value) from seqfeature_qualifier_value as ortho_table 
-inner join term on ortho_table.term_id = term.term_id and name = "orthogroup" 
+select value, count(value) from seqfeature_qualifier_value as ortho_table
+inner join term on ortho_table.term_id = term.term_id and name = "orthogroup"
 inner join seqfeature on ortho_table.seqfeature_id = seqfeature.seqfeature_id
-inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id 
+inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id
 inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "Chlamydiales_subgroup_no_estrella"
 where bioentry.name = "WchW"
 group by value
@@ -1335,10 +1335,10 @@ group by value
 
 """
 # get number of proteins for each orthogroup => pour faire distrib taille des groupes
-select value, count(value) from seqfeature_qualifier_value as ortho_table 
-inner join term on ortho_table.term_id = term.term_id and name = "orthogroup" 
+select value, count(value) from seqfeature_qualifier_value as ortho_table
+inner join term on ortho_table.term_id = term.term_id and name = "orthogroup"
 inner join seqfeature on ortho_table.seqfeature_id = seqfeature.seqfeature_id
-inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id 
+inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id
 inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "Chlamydiales_subgroup_no_estrella"
 group by value
 """
@@ -1352,4 +1352,3 @@ inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id
 inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "chlamydiales"
 group by seqfeature_qualifier_value.seqfeature_id;
 """
-

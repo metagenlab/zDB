@@ -10,7 +10,7 @@ import time
 from multiprocessing import cpu_count
 import os
 import MySQLdb
-import manipulate_biosqldb
+from biosqldb import manipulate_biosqldb
 
 class Orthogroup_Identity_DB:
     def __init__(self, database_name):
