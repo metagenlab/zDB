@@ -9,6 +9,7 @@
 - identify core single copy orthogroups
 - concatenate core orthogroup alignments & build a reference phylogeny with FastTree
 - BLASTp to COG database ==> TODO: should switch to CDD PSSMs profiles search
+- BLASTp to swissprot database 
 - execute interproscan  
 
 # refseq reference/representative genomes
