@@ -8,9 +8,11 @@
 - build phylogenies with iq-tree
 - identify core single copy orthogroups
 - concatenate core orthogroup alignments & build a reference phylogeny with FastTree
-- BLASTp to COG database ==> TODO: should switch to CDD PSSMs profiles search
+- rps-BLAST to COG database (cdd PSSM)
 - BLASTp to swissprot database
-- execute interproscan  
+- execute interproscan TODO: use exact match to uniparc to get precomputed annotations, only execute interproscan for unannotated proteins
+- mapping to string, oma, pdb, tcdb databases (exact matches)
+- PDB id mapping from string
 
 # refseq reference/representative genomes
 
@@ -29,19 +31,20 @@
 - [X] execute interproscan for each faa
 - [X] execute blast vs SwissProt for chunks of 1000 sequences
 - [X] execute blast vs COG for chunks of 1000 sequences
-
-# TODO
-
-
 - [X] execute profile COG search with CDD database
 - [X] get mapping to uniparc
 - [X] exact match to eggnog/string /home/tpillone/work/dev/bio_databases/tri/sqlite/seq_db_eg.db
 - [X] exact match to oma
+- [X] exact match to PDB
 - [X] get PMID associations from string database
 
-- [ ] exact match to COG betfore doing BLASTs? => do not blast sequence that are in the COGdb (assign it directly)
+# TODO
+
+- [ ] exact match to COG betfore doing BLAST to reduce computations? => do not blast sequence that are in the COGdb (assign it directly)
 
 - [ ] interproscan annotation 1) from uniparc annotations 2) from local interproscan analysis for unmapped sequences
+
+- [ ] retrieve swissprot annotation score
 
 - [ ] get DOORS operons
 - [ ] predict operons when not in doors? operon-mapper?
