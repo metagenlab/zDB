@@ -37,23 +37,17 @@
 - [X] exact match to oma
 - [X] exact match to PDB
 - [X] get PMID associations from string database
+- [X] execute plast RefSeq for chunks of 1000 sequences
+- [X] execute diamond RefSeq for chunks of 1000 sequences
+- [X] run interproscan for chunks of 100 sequences
+- [X] remove reducancy before annotation (use sequence hash as seqid)
 
 # TODO
 
-- [ ] remove reducancy before annotation (use sequence hash as seqid)
+- [ ] retrieve swissprot annotation score for swissprot hits & uniprokb exact matches
 
-- [ ] exact match to COG betfore doing BLAST to reduce computations? => do not blast sequence that are in the COGdb (assign it directly)
-
-- [ ] interproscan annotation 1) from uniparc annotations 2) from local interproscan analysis for unmapped sequences
-
-- [ ] retrieve swissprot annotation score
-
-- [ ] get DOORS operons
-- [ ] predict operons when not in doors? operon-mapper?
-
-- [ ] (execute plast/mmseq2/diamond vs RefSeq for chunks of 1000 sequences)
 - [ ] extract best swissprot and refseq hits for each sequence (from database), build phylogeny with non-redundant set of BBH (3 refseq + 3 swissprot?)
-- [ ] execute plast/mmseq2/diamond vs UNIREF90 for chunks of 1000 sequences?
+
 - [ ] execure gblast vs TCDB for chunks of 1000 sequences (python 2.7)
 - [ ] execute T3 effector prediction (3 tools)
 - [ ] execute PRIAM for each genome or hmmsearch with PRIAM database?
@@ -61,11 +55,20 @@
 - [ ] execute macsyfinder for capsule
 - [ ] execute macsyfinder for secretion systems
 
-- [ ] integrate genome properties (https://genome-properties.readthedocs.io/en/latest/index.html, https://www.ebi.ac.uk/interpro/genomeproperties/)
+- [ ] get DOORS operons
+- [ ] predict operons when not in doors? operon-mapper?
+
+- [ ] run genome properties with interprocsn tsv files (https://genome-properties.readthedocs.io/en/latest/index.html, https://www.ebi.ac.uk/interpro/genomeproperties/)
 - [ ] http://csbl.bmb.uga.edu/dbCAN/ ==> based on interproscan results
-- [ ] metacyc?
-- [ ] KO annotation: compare GHOSTKOALA with eggnog/uniprot annotations
+
 - [ ] PSORTb version 3.00
+
+* Ideas
+
+- [ ] KO annotation: compare GHOSTKOALA with eggnog/uniprot annotations
+- [ ] execute plast/mmseq2/diamond vs UNIREF90 for chunks of 1000 sequences?
+- [ ] metacyc?
+- [ ] exact match to COG betfore doing BLAST to reduce computations? => do not blast sequence that are in the COGdb (assign it directly)
 
 * Notes
 

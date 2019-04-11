@@ -15,10 +15,12 @@ log.info params.input
 params.databases_dir = "$PWD/databases"
 params.cog = true
 params.orthofinder = true
-params.interproscan = true
+params.interproscan = false
 params.uniparc = true
 params.tcdb = true
 params.blast_swissprot = false
+params.plast_refseq = false
+params.diamond_refseq = true
 params.string = true
 params.pdb = true
 params.oma = true
@@ -45,23 +47,72 @@ Channel
     .fromPath(params.input)
     .ifEmpty { error "Cannot find any input sequence files matching: ${params.input}" }
     .collectFile(name: 'merged.faa', newLine: true)
-    .splitFasta( by: 1000, file: "chunk_" )
-    .into { faa_chunks1
-            faa_chunks2
-            faa_chunks3
-            faa_chunks4}
-
-Channel
-    .fromPath(params.input)
-    .ifEmpty { error "Cannot find any input sequence files matching: ${params.input}" }
-    .collectFile(name: 'merged.faa', newLine: true)
-    .into { merged_faa1
-            merged_faa2
-            merged_faa3
-            merged_faa4
-            merged_faa5 }
+    .into { merged_faa0 }
 
 
+process get_nr_sequences {
+
+  conda 'bioconda::biopython=1.68'
+
+  publishDir 'data/', mode: 'copy', overwrite: true
+
+  input:
+  file(seq) from merged_faa0
+
+  output:
+
+  file 'nr.faa' into nr_seqs
+  file 'nr_mapping.tab' into nr_mapping
+
+  script:
+  fasta_file = seq.name
+  """
+#!/usr/bin/env python
+
+from Bio import SeqIO
+from Bio.SeqUtils import CheckSum
+
+fasta_file = "${fasta_file}"
+
+nr_fasta = open('nr.faa', 'w')
+nr_mapping = open('nr_mapping.tab', 'w')
+
+checksum_nr_list = []
+
+records = SeqIO.parse(fasta_file, "fasta")
+updated_records = []
+
+for record in records:
+
+    checksum = CheckSum.seguid(record.seq)
+    nr_mapping.write("%s\\t%s\\n" % (record.id,
+                                   checksum))
+    if checksum not in checksum_nr_list:
+      checksum_nr_list.append(checksum)
+      record.id = checksum
+      record.name = ""
+      updated_records.append(record)
+
+SeqIO.write(updated_records, nr_fasta, "fasta")
+
+  """
+}
+
+nr_seqs.collectFile(name: 'merged_nr.faa', newLine: true)
+.into { merged_faa_chunks
+        merged_faa1
+        merged_faa2
+        merged_faa3
+        merged_faa4
+        merged_faa5 }
+
+merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
+.into { faa_chunks1
+        faa_chunks2
+        faa_chunks3
+        faa_chunks4
+        faa_chunks5
+        faa_chunks6 }
 
 process prepare_orthofinder {
 
@@ -113,7 +164,7 @@ process orthofinder_main {
   echo true
   conda 'bioconda::orthofinder=2.2.7'
 
-  publishDir 'orthology', mode: 'copy', overwrite: false
+  publishDir 'orthology', mode: 'copy', overwrite: true
 
   input:
   file complete_dir from result_dir
@@ -137,7 +188,7 @@ process orthogroups2fasta {
   echo true
   conda 'bioconda::biopython=1.70'
 
-  publishDir 'orthology/orthogroups_fasta', mode: 'copy', overwrite: false
+  publishDir 'orthology/orthogroups_fasta', mode: 'copy', overwrite: true
 
   input:
   file 'Orthogroups.txt' from orthogroups
@@ -181,7 +232,7 @@ process align_with_mafft {
   echo true
   conda 'bioconda::mafft=7.407'
 
-  publishDir 'orthology/orthogroups_alignments', mode: 'copy', overwrite: false
+  publishDir 'orthology/orthogroups_alignments', mode: 'copy', overwrite: true
 
   input:
   file og from orthogroups_fasta.flatten().collate( 20 )
@@ -231,7 +282,7 @@ process orthogroups_phylogeny_with_iqtree {
 
   conda 'bioconda::iqtree=1.6.8'
   cpus 2
-  publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: false
+  publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: true
 
   input:
   each file(og) from large_alignments
@@ -256,7 +307,7 @@ process orthogroups_phylogeny_with_iqtree_no_boostrap {
 
   conda 'bioconda::iqtree=1.6.8'
   cpus 2
-  publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: false
+  publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: true
 
   input:
   each file(og) from large_alignments
@@ -280,7 +331,7 @@ process get_core_orthogroups {
 
   conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
 
-  publishDir 'orthology/core_groups', mode: 'copy', overwrite: false
+  publishDir 'orthology/core_groups', mode: 'copy', overwrite: true
 
   input:
   file 'Orthogroups.txt' from orthogroups
@@ -380,7 +431,7 @@ process concatenate_core_orthogroups {
 
   conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
 
-  publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: false
+  publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
 
   input:
   file core_groups from core_orthogroups.collect()
@@ -449,7 +500,7 @@ process build_core_phylogeny_with_fasttree {
 
   conda 'bioconda::fasttree=2.1.10'
 
-  publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: false
+  publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
 
   input:
   file 'msa.faa' from core_msa
@@ -492,7 +543,7 @@ process blast_swissprot {
 
   conda 'bioconda::blast=2.7.1'
 
-  publishDir 'annotation/blast_swissprot', mode: 'copy', overwrite: false
+  publishDir 'annotation/blast_swissprot', mode: 'copy', overwrite: true
 
   cpus 4
 
@@ -511,6 +562,54 @@ process blast_swissprot {
   """
   # chunk_.6
   blastp -db $params.databases_dir/uniprot/swissprot/uniprot_sprot.fasta -query ${n} -outfmt 6 -num_threads ${task.cpus} > ${n}.tab
+  """
+}
+
+
+process plast_refseq {
+
+  publishDir 'annotation/plast_refseq', mode: 'copy', overwrite: true
+
+  cpus 4
+
+  when:
+  params.plast_refseq == true
+
+  input:
+  file(seq) from faa_chunks5
+
+  output:
+  file '*tab' into refseq_plast
+
+  script:
+
+  n = seq.name
+  """
+  /home/tpillone/work/dev/annotation_pipeline_nextflow/bin/plast -p plastp -a ${task.cpus} -d $params.databases_dir/refseq/merged.faa.pal -i ${n} -M BLOSUM62 -s 45 -seeds-use-ratio 60 -max-database-size 10000000 -e 1e-5 -G 11 -E 1 -o ${n}.tab -F F -bargraph -verbose -force-query-order 1000 -max-hit-per-query 100 -max-hsp-per-hit 1;
+  """
+}
+
+process diamond_refseq {
+
+  publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: false
+
+  cpus 4
+  conda 'bioconda::diamond=0.9.24'
+
+  when:
+  params.diamond_refseq == true
+
+  input:
+  file(seq) from faa_chunks6
+
+  output:
+  file '*tab' into refseq_diamond
+
+  script:
+
+  n = seq.name
+  """
+  diamond blastp -p ${task.cpus} -d $params.databases_dir/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab
   """
 }
 
@@ -814,7 +913,7 @@ process get_oma_mapping {
 
   conda 'bioconda::biopython=1.68'
 
-  publishDir 'annotation/oma_mapping/', mode: 'copy', overwrite: false
+  publishDir 'annotation/oma_mapping/', mode: 'copy', overwrite: true
 
   when:
   params.oma == true
@@ -831,6 +930,7 @@ process get_oma_mapping {
   fasta_file = seq.name
   """
 #!/usr/bin/env python
+
 
 from Bio import SeqIO
 import sqlite3
@@ -891,12 +991,6 @@ process execute_interproscan {
   interproscan.sh -appl ProDom,HAMAP,TIGRFAM,SUPERFAMILY,PRINTS,PIRSF,COILS,ProSiteProfiles,PfamA,SMART,Phobius,SMART,SignalP_GRAM_NEGATIVE -goterms -pa -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} > interpro.log
   """
 }
-
-
-
-
-
-
 
 workflow.onComplete {
   // Display complete message
