@@ -40,6 +40,8 @@
 
 # TODO
 
+- [ ] remove reducancy before annotation (use sequence hash as seqid)
+
 - [ ] exact match to COG betfore doing BLAST to reduce computations? => do not blast sequence that are in the COGdb (assign it directly)
 
 - [ ] interproscan annotation 1) from uniparc annotations 2) from local interproscan analysis for unmapped sequences

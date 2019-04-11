@@ -586,8 +586,6 @@ SeqIO.write(no_mapping_uniparc_records, no_uniparc_mapping, "fasta")
   """
 }
 
-no_uniparc_mapping.splitFasta( by: 1000, file: "chunk_" )
-.into { faa_no_uniparc_chunks1 }
 
 
 process get_string_mapping {
@@ -871,13 +869,13 @@ process execute_interproscan {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: false
 
-  cpus 8
+  cpus 4
 
   when:
   params.interproscan == true
 
   input:
-  file(seq) from faa_no_uniparc_chunks1
+  file(seq) from faa_chunks2
 
   output:
   file '*gff3' into interpro_gff3
@@ -885,13 +883,20 @@ process execute_interproscan {
   file '*svg.tar.gz' into interpro_svg
   file '*tsv' into interpro_tsv
   file '*xml' into interpro_xml
+  file '*log' into interpro_log
 
   script:
   n = seq.name
   """
-  interproscan.sh -appl ProDom,HAMAP,TIGRFAM,SUPERFAMILY,PRINTS,PIRSF,COILS,ProSiteProfiles,PfamA,SMART,Phobius,SMART,SignalP_GRAM_NEGATIVE -goterms -pa -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus}
+  interproscan.sh -appl ProDom,HAMAP,TIGRFAM,SUPERFAMILY,PRINTS,PIRSF,COILS,ProSiteProfiles,PfamA,SMART,Phobius,SMART,SignalP_GRAM_NEGATIVE -goterms -pa -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} > interpro.log
   """
 }
+
+
+
+
+
+
 
 workflow.onComplete {
   // Display complete message
