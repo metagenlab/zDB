@@ -17,6 +17,7 @@ params.blast_cog = false
 params.orthofinder = true
 params.interproscan = false
 params.uniparc = true
+params.tcdb = true
 params.blast_swissprot = false
 params.string = true
 params.core_missing = 0
@@ -53,7 +54,8 @@ Channel
     .ifEmpty { error "Cannot find any input sequence files matching: ${params.input}" }
     .collectFile(name: 'merged.faa', newLine: true)
     .into { merged_faa1
-            merged_faa2 }
+            merged_faa2
+            merged_faa3 }
 
 
 
@@ -631,6 +633,61 @@ for record in records:
 
 
 SeqIO.write(no_mapping_string_records, no_string_mapping, "fasta")
+
+  """
+}
+
+process get_tcdb_mapping {
+
+  conda 'bioconda::biopython=1.68'
+
+  publishDir 'annotation/tcdb_mapping/', mode: 'copy', overwrite: false
+
+  when:
+  params.tcdb == true
+
+  input:
+  file(seq) from merged_faa3
+
+
+  output:
+  file 'tcdb_mapping.tab' into tcdb_mapping
+  file 'no_tcdb_mapping.faa' into no_tcdb_mapping
+
+  script:
+  fasta_file = seq.name
+  """
+#!/usr/bin/env python
+
+from Bio import SeqIO
+import sqlite3
+from Bio.SeqUtils import CheckSum
+
+conn = sqlite3.connect("${params.databases_dir}/TCDB/tcdb.db")
+cursor = conn.cursor()
+
+fasta_file = "${fasta_file}"
+
+tcdb_map = open('tcdb_mapping.tab', 'w')
+no_tcdb_mapping = open('no_tcdb_mapping.faa', 'w')
+
+tcdb_map.write("locus_tag\\ttcdb_id\\n")
+
+records = SeqIO.parse(fasta_file, "fasta")
+no_tcdb_mapping_records = []
+for record in records:
+    sql = 'select accession from hash_table where sequence_hash=?'
+    cursor.execute(sql, (CheckSum.seguid(record.seq),))
+    hits = cursor.fetchall()
+    if len(hits) == 0:
+        no_tcdb_mapping_records.append(record)
+    else:
+        for hit in hits:
+          tcdb_map.write("%s\\t%s\\n" % (record.id,
+                                              hit[0]))
+
+
+SeqIO.write(no_tcdb_mapping_records, no_tcdb_mapping, "fasta")
 
   """
 }
