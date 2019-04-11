@@ -18,6 +18,7 @@ params.orthofinder = true
 params.interproscan = false
 params.uniparc = true
 params.blast_swissprot = false
+params.string = true
 params.core_missing = 0
 params.genome_faa_folder = "$PWD/faa"
 params.executor = 'local'
@@ -51,7 +52,8 @@ Channel
     .fromPath(params.input)
     .ifEmpty { error "Cannot find any input sequence files matching: ${params.input}" }
     .collectFile(name: 'merged.faa', newLine: true)
-    .into { merged_faa1 }
+    .into { merged_faa1
+            merged_faa2 }
 
 
 
@@ -577,6 +579,62 @@ SeqIO.write(no_mapping_uniprot_records, no_uniprot_mapping, "fasta")
 SeqIO.write(no_mapping_uniparc_records, no_uniparc_mapping, "fasta")
   """
 }
+
+process get_string_mapping {
+
+  conda 'bioconda::biopython=1.68'
+
+  publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: false
+
+  when:
+  params.string == true
+
+  input:
+  file(seq) from merged_faa2
+
+
+  output:
+  file 'string_mapping.tab' into string_mapping
+  file 'no_string_mapping.faa' into no_string_mapping
+
+  script:
+  fasta_file = seq.name
+  """
+#!/usr/bin/env python
+
+from Bio import SeqIO
+import sqlite3
+from Bio.SeqUtils import CheckSum
+
+conn = sqlite3.connect("${params.databases_dir}/string/string_proteins.db")
+cursor = conn.cursor()
+
+fasta_file = "${fasta_file}"
+
+string_map = open('string_mapping.tab', 'w')
+no_string_mapping = open('no_string_mapping.faa', 'w')
+
+string_map.write("locus_tag\\tstring_id\\n")
+
+records = SeqIO.parse(fasta_file, "fasta")
+no_mapping_string_records = []
+for record in records:
+    sql = 'select accession from hash_table where sequence_hash=?'
+    cursor.execute(sql, (CheckSum.seguid(record.seq),))
+    hits = cursor.fetchall()
+    if len(hits) == 0:
+        no_mapping_string_records.append(record)
+    else:
+        for hit in hits:
+          string_map.write("%s\\t%s\\n" % (record.id,
+                                              hit[0]))
+
+
+SeqIO.write(no_mapping_string_records, no_string_mapping, "fasta")
+
+  """
+}
+
 
 process execute_interproscan {
 
