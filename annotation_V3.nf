@@ -20,6 +20,7 @@ params.uniparc = true
 params.tcdb = true
 params.blast_swissprot = false
 params.string = true
+params.pdb = true
 params.core_missing = 0
 params.genome_faa_folder = "$PWD/faa"
 params.executor = 'local'
@@ -55,7 +56,9 @@ Channel
     .collectFile(name: 'merged.faa', newLine: true)
     .into { merged_faa1
             merged_faa2
-            merged_faa3 }
+            merged_faa3
+            merged_faa4
+            merged_faa5 }
 
 
 
@@ -688,6 +691,61 @@ for record in records:
 
 
 SeqIO.write(no_tcdb_mapping_records, no_tcdb_mapping, "fasta")
+
+  """
+}
+
+process get_pdb_mapping {
+
+  conda 'bioconda::biopython=1.68'
+
+  publishDir 'annotation/pdb_mapping/', mode: 'copy', overwrite: false
+
+  when:
+  params.pdb == true
+
+  input:
+  file(seq) from merged_faa4
+
+
+  output:
+  file 'pdb_mapping.tab' into pdb_mapping
+  file 'no_pdb_mapping.faa' into no_pdb_mapping
+
+  script:
+  fasta_file = seq.name
+  """
+#!/usr/bin/env python
+
+from Bio import SeqIO
+import sqlite3
+from Bio.SeqUtils import CheckSum
+
+conn = sqlite3.connect("${params.databases_dir}/pdb/pdb.db")
+cursor = conn.cursor()
+
+fasta_file = "${fasta_file}"
+
+pdb_map = open('pdb_mapping.tab', 'w')
+no_pdb_mapping = open('no_pdb_mapping.faa', 'w')
+
+pdb_map.write("locus_tag\\tpdb_id\\n")
+
+records = SeqIO.parse(fasta_file, "fasta")
+no_pdb_mapping_records = []
+for record in records:
+    sql = 'select accession from hash_table where sequence_hash=?'
+    cursor.execute(sql, (CheckSum.seguid(record.seq),))
+    hits = cursor.fetchall()
+    if len(hits) == 0:
+        no_pdb_mapping_records.append(record)
+    else:
+        for hit in hits:
+          pdb_map.write("%s\\t%s\\n" % (record.id,
+                                              hit[0]))
+
+
+SeqIO.write(no_pdb_mapping_records, no_pdb_mapping, "fasta")
 
   """
 }
