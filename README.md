@@ -37,10 +37,12 @@
 - [X] get mapping to uniparc
 - [X] exact match to eggnog/string /home/tpillone/work/dev/bio_databases/tri/sqlite/seq_db_eg.db
 - [X] exact match to oma
+- [X] get PMID associations from string database
 
 - [ ] exact match to COG betfore doing BLASTs? => do not blast sequence that are in the COGdb (assign it directly)
 
-- [ ] get PMID associations from string database
+- [ ] interproscan annotation 1) from uniparc annotations 2) from local interproscan analysis for unmapped sequences
+
 - [ ] get DOORS operons
 - [ ] predict operons when not in doors? operon-mapper?
 
