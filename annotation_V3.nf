@@ -21,6 +21,7 @@ params.tcdb = true
 params.blast_swissprot = false
 params.string = true
 params.pdb = true
+params.oma = true
 params.core_missing = 0
 params.genome_faa_folder = "$PWD/faa"
 params.executor = 'local'
@@ -640,6 +641,63 @@ SeqIO.write(no_mapping_string_records, no_string_mapping, "fasta")
   """
 }
 
+process get_string_PMID_mapping {
+
+  conda 'bioconda::biopython=1.68'
+
+  publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: false
+
+  when:
+  params.string == true
+
+  input:
+  file(string_map) from string_mapping
+
+
+  output:
+  file 'string_mapping_PMID.tab' into string_mapping_BMID
+
+  script:
+
+  """
+#!/usr/bin/env python
+
+import urllib2
+
+def string_id2pubmed_id_list(accession):
+
+    link = 'http://string-db.org/api/tsv/abstractsList?identifiers=%s' % accession
+    print link
+    try:
+        data = urllib2.urlopen(link).read().rstrip().decode('utf-8').split('\\n')[1:]
+    except urllib2.URLError:
+        print 'echec', link
+        return False
+    pid_list = [row.split(':')[1] for row in data]
+    print 'list', pid_list
+    return pid_list
+
+o = open("string_mapping_PMID.tab", "w")
+
+string_mapping = "${string_map}"
+
+with open(string_mapping, 'r') as f:
+    for n, row in enumerate(f):
+        if n == 0:
+            continue
+        else:
+            data = row.rstrip().split("\t")
+            pmid_list = string_id2pubmed_id_list(data[1])
+            if pmid_list:
+                for id in pmid_list:
+                    o.write("%s\\t%s\\n" % (data[0], id))
+            else:
+                o.write("%s\\tNone\\n" % (data[0]))
+
+  """
+}
+
+
 process get_tcdb_mapping {
 
   conda 'bioconda::biopython=1.68'
@@ -750,6 +808,60 @@ SeqIO.write(no_pdb_mapping_records, no_pdb_mapping, "fasta")
   """
 }
 
+process get_oma_mapping {
+
+  conda 'bioconda::biopython=1.68'
+
+  publishDir 'annotation/oma_mapping/', mode: 'copy', overwrite: false
+
+  when:
+  params.oma == true
+
+  input:
+  file(seq) from merged_faa5
+
+
+  output:
+  file 'oma_mapping.tab' into oma_mapping
+  file 'no_oma_mapping.faa' into no_oma_mapping
+
+  script:
+  fasta_file = seq.name
+  """
+#!/usr/bin/env python
+
+from Bio import SeqIO
+import sqlite3
+from Bio.SeqUtils import CheckSum
+
+conn = sqlite3.connect("${params.databases_dir}/oma/oma.db")
+cursor = conn.cursor()
+
+fasta_file = "${fasta_file}"
+
+oma_map = open('oma_mapping.tab', 'w')
+no_oma_mapping = open('no_oma_mapping.faa', 'w')
+
+oma_map.write("locus_tag\\toma_id\\n")
+
+records = SeqIO.parse(fasta_file, "fasta")
+no_oma_mapping_records = []
+for record in records:
+    sql = 'select accession from hash_table where sequence_hash=?'
+    cursor.execute(sql, (CheckSum.seguid(record.seq),))
+    hits = cursor.fetchall()
+    if len(hits) == 0:
+        no_oma_mapping_records.append(record)
+    else:
+        for hit in hits:
+          oma_map.write("%s\\t%s\\n" % (record.id,
+                                              hit[0]))
+
+
+SeqIO.write(no_oma_mapping_records, no_oma_mapping, "fasta")
+
+  """
+}
 
 process execute_interproscan {
 

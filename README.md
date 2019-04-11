@@ -9,7 +9,7 @@
 - identify core single copy orthogroups
 - concatenate core orthogroup alignments & build a reference phylogeny with FastTree
 - BLASTp to COG database ==> TODO: should switch to CDD PSSMs profiles search
-- BLASTp to swissprot database 
+- BLASTp to swissprot database
 - execute interproscan  
 
 # refseq reference/representative genomes
@@ -33,7 +33,13 @@
 # TODO
 
 
-- [ ] execute profile COG search with CDD database
+- [X] execute profile COG search with CDD database
+- [X] get mapping to uniparc
+- [X] exact match to eggnog/string /home/tpillone/work/dev/bio_databases/tri/sqlite/seq_db_eg.db
+- [X] exact match to oma
+
+- [ ] exact match to COG betfore doing BLASTs? => do not blast sequence that are in the COGdb (assign it directly)
+
 - [ ] get PMID associations from string database
 - [ ] get DOORS operons
 - [ ] predict operons when not in doors? operon-mapper?
@@ -47,10 +53,7 @@
 - [ ] execute macsyfinder for crispr
 - [ ] execute macsyfinder for capsule
 - [ ] execute macsyfinder for secretion systems
-- [ ] get mapping to uniparc
-- [ ] exact match to eggnog/eggnog-mapper /home/tpillone/work/dev/bio_databases/tri/sqlite/seq_db_eg.db
-- [ ] exact match to oma
-- [ ] exact match to COG betfore doing BLASTs? => do not blast sequence that are in the COGdb (assign it directly)
+
 - [ ] integrate genome properties (https://genome-properties.readthedocs.io/en/latest/index.html, https://www.ebi.ac.uk/interpro/genomeproperties/)
 - [ ] http://csbl.bmb.uga.edu/dbCAN/ ==> based on interproscan results
 - [ ] metacyc?
