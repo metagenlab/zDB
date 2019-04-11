@@ -63,6 +63,7 @@
 - [ ] http://csbl.bmb.uga.edu/dbCAN/ ==> based on interproscan results
 - [ ] metacyc?
 - [ ] KO annotation: compare GHOSTKOALA with eggnog/uniprot annotations
+- [ ] PSORTb version 3.00
 
 * Notes
 

@@ -15,7 +15,7 @@ log.info params.input
 params.databases_dir = "$PWD/databases"
 params.cog = true
 params.orthofinder = true
-params.interproscan = false
+params.interproscan = true
 params.uniparc = true
 params.tcdb = true
 params.blast_swissprot = false
@@ -586,6 +586,10 @@ SeqIO.write(no_mapping_uniparc_records, no_uniparc_mapping, "fasta")
   """
 }
 
+no_uniparc_mapping.splitFasta( by: 1000, file: "chunk_" )
+.into { faa_no_uniparc_chunks1 }
+
+
 process get_string_mapping {
 
   conda 'bioconda::biopython=1.68'
@@ -867,11 +871,13 @@ process execute_interproscan {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: false
 
+  cpus 8
+
   when:
   params.interproscan == true
 
   input:
-  file(seq) from faa_chunks2
+  file(seq) from faa_no_uniparc_chunks1
 
   output:
   file '*gff3' into interpro_gff3
@@ -883,15 +889,9 @@ process execute_interproscan {
   script:
   n = seq.name
   """
-  interproscan.sh -appl ProDom,HAMAP,TIGRFAM,SUPERFAMILY,PRINTS,PIRSF,COILS,ProSiteProfiles,PfamA,SMART,Phobius,SMART,SignalP_GRAM_NEGATIVE -goterms -pa -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup
+  interproscan.sh -appl ProDom,HAMAP,TIGRFAM,SUPERFAMILY,PRINTS,PIRSF,COILS,ProSiteProfiles,PfamA,SMART,Phobius,SMART,SignalP_GRAM_NEGATIVE -goterms -pa -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus}
   """
 }
-
-
-
-
-
-
 
 workflow.onComplete {
   // Display complete message
