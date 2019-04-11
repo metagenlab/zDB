@@ -13,7 +13,7 @@
 params.input = "faa/*.faa" 	// input sequences
 log.info params.input
 params.databases_dir = "$PWD/databases"
-params.blast_cog = false
+params.cog = true
 params.orthofinder = true
 params.interproscan = false
 params.uniparc = true
@@ -26,7 +26,7 @@ params.executor = 'local'
 
 log.info "====================================="
 log.info "input                  : ${params.input}"
-log.info "Blast COG              : ${params.blast_cog}"
+log.info "COG                    : ${params.cog}"
 log.info "Orthofinder            : ${params.orthofinder}"
 log.info "Orthofinder path       : ${params.genome_faa_folder}"
 log.info "Core missing           : ${params.core_missing}"
@@ -460,14 +460,14 @@ process build_core_phylogeny_with_fasttree {
 }
 
 
-process blast_COG {
+process rpsblast_COG {
 
   conda 'bioconda::blast=2.7.1'
 
   cpus 4
 
   when:
-  params.blast_cog == true
+  params.cog == true
 
   input:
   file 'seq' from faa_chunks1
@@ -478,7 +478,7 @@ process blast_COG {
   script:
   n = seq.name
   """
-  blastp -db $params.databases_dir/COG/prot2003-2014_test.fa -query seq -outfmt 6 -num_threads ${task.cpus} > blast_result
+  rpsblast -db $params.databases_dir/cdd/Cog -query seq -outfmt 6 -num_threads ${task.cpus} > blast_result
   """
 }
 
