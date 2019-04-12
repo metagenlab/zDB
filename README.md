@@ -45,7 +45,9 @@
 # TODO
 
 - [ ] extract best swissprot and refseq hits for each sequence (from database), build phylogeny with non-redundant set of BBH (3 refseq + 3 swissprot?)
-- [ ] retrieve swissprot annotation score for swissprot hits & uniprotkb exact matches
+- [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match)
+- [ ] retrieve uniprot annotation from uniprotKB (exact match or best diamond/plast hit if no exact match)
+- [ ] retrieve uniprot annotation score for matched uniprotkb entries
 - [ ] execure gblast vs TCDB for chunks of 1000 sequences (python 2.7)
 - [ ] execute T3 effector prediction (3 tools)
 - [ ] execute PRIAM for each genome or hmmsearch with PRIAM database?
@@ -67,6 +69,6 @@
 
 ## Notes
 
-- BLAST vs PLAST vs mmseq2 vs diamond?
+- BLAST vs PLAST vs mmseq2 vs diamond: statisics and best hits comparisons
 - install eggnog-mapper?
 - execute eggnog-mapper and ghostkoala online?
