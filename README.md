@@ -21,6 +21,8 @@
 
 # DONE
 
+
+- [X] parallelized BLASTp for orthofinder
 - [X] orthofinder
 - [X] alignments of each orthogroup with mafft
 - [X] reconstruction of a phylogeny for orthogroups with more than 3 sequences with iq-tree
