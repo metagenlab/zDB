@@ -15,12 +15,12 @@ log.info params.input
 params.databases_dir = "$PWD/databases"
 params.cog = true
 params.orthofinder = true
-params.interproscan = false
+params.interproscan = true
 params.uniparc = true
 params.tcdb = true
 params.blast_swissprot = false
 params.plast_refseq = false
-params.diamond_refseq = true
+params.diamond_refseq = false
 params.string = true
 params.pdb = true
 params.oma = true
@@ -580,12 +580,16 @@ process plast_refseq {
 
   output:
   file '*tab' into refseq_plast
+  file '*log' into refseq_plast_log
 
   script:
 
   n = seq.name
   """
-  /home/tpillone/work/dev/annotation_pipeline_nextflow/bin/plast -p plastp -a ${task.cpus} -d $params.databases_dir/refseq/merged.faa.pal -i ${n} -M BLOSUM62 -s 45 -seeds-use-ratio 60 -max-database-size 10000000 -e 1e-5 -G 11 -E 1 -o ${n}.tab -F F -bargraph -verbose -force-query-order 1000 -max-hit-per-query 100 -max-hsp-per-hit 1;
+  # 15'000'000 vs 10'000'000
+  # 100'000'000 max
+  # -s 45
+  /home/tpillone/work/dev/annotation_pipeline_nextflow/bin/plast -p plastp -a ${task.cpus} -d $params.databases_dir/refseq/merged.faa.pal -i ${n} -M BLOSUM62 -s 75 -seeds-use-ratio 20 -max-database-size 50000000 -e 1e-5 -G 11 -E 1 -o ${n}.tab -F F -bargraph -verbose -force-query-order 1000 -max-hit-per-query 100 -max-hsp-per-hit 1 > ${n}.log;
   """
 }
 
@@ -609,7 +613,7 @@ process diamond_refseq {
 
   n = seq.name
   """
-  diamond blastp -p ${task.cpus} -d $params.databases_dir/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab
+  diamond blastp -p ${task.cpus} -d $params.databases_dir/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab --max-target-seqs 100 -e 0.01 --single-domain
   """
 }
 
@@ -617,14 +621,13 @@ process get_uniparc_mapping {
 
   conda 'bioconda::biopython=1.68'
 
-  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: false
+  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
 
   when:
   params.uniparc == true
 
   input:
   file(seq) from merged_faa1
-
 
   output:
   file 'uniparc_mapping.tab' into uniparc_mapping
@@ -651,7 +654,7 @@ uniprot_map = open('uniprot_mapping.tab', 'w')
 no_uniprot_mapping = open('no_uniprot_mapping.faa', 'w')
 no_uniparc_mapping = open('no_uniparc_mapping.faa', 'w')
 
-uniparc_map.write("locus_tag\\tuniparc_id\\tuniparc_accession\\n")
+uniparc_map.write("locus_tag\\tuniparc_id\\tuniparc_accession\\tstatus\\n")
 uniprot_map.write("locus_tag\\tuniprot_accession\\ttaxon_id\\tdescription\\n")
 
 records = SeqIO.parse(fasta_file, "fasta")
@@ -659,24 +662,30 @@ no_mapping_uniprot_records = []
 no_mapping_uniparc_records = []
 for record in records:
     match = False
-    sql = 'select t1.uniparc_id,uniparc_accession,accession,taxon_id,description, db_name from uniparc_accession t1 inner join uniparc_cross_references t2 on t1.uniparc_id=t2.uniparc_id inner join crossref_databases t3 on t2.db_id=t3.db_id where sequence_hash=? and status=1'
+    sql = 'select t1.uniparc_id,uniparc_accession,accession,taxon_id,description, db_name, status from uniparc_accession t1 inner join uniparc_cross_references t2 on t1.uniparc_id=t2.uniparc_id inner join crossref_databases t3 on t2.db_id=t3.db_id where sequence_hash=?'
     cursor.execute(sql, (CheckSum.seguid(record.seq),))
     hits = cursor.fetchall()
     if len(hits) == 0:
         no_mapping_uniparc_records.append(record)
         no_mapping_uniprot_records.append(record)
     else:
-        uniparc_map.write("%s\\t%s\\t%s\\n" % (record.id,
-                                            hits[0][0],
-                                            hits[0][1]))
+        all_status = [i[6] for i in hits]
+        if 1 in all_status:
+            status = 'active'
+        else:
+            status = 'dead'
+        uniparc_map.write("%s\\t%s\\t%s\\t%s\\n" % (record.id,
+                                               hits[0][0],
+                                               hits[0][1],
+                                               status))
         for uniprot_hit in hits:
-            if uniprot_hit[5] in ["UniProtKB/Swiss-Prot", "UniProtKB/TrEMBL"]:
+            if uniprot_hit[5] in ["UniProtKB/Swiss-Prot", "UniProtKB/TrEMBL"] and uniprot_hit[6] == 1:
                 match = True
                 uniprot_map.write("%s\\t%s\\t%s\\t%s\\t%s\\n" % (record.id,
-                                                          uniprot_hit[2],
-                                                          uniprot_hit[3],
-                                                          uniprot_hit[4],
-                                                          uniprot_hit[5]))
+                                                                 uniprot_hit[2],
+                                                                 uniprot_hit[3],
+                                                                 uniprot_hit[4],
+                                                                 uniprot_hit[5]))
         if not match:
             no_mapping_uniprot_records.append(record)
 
@@ -691,7 +700,7 @@ process get_string_mapping {
 
   conda 'bioconda::biopython=1.68'
 
-  publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: false
+  publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
 
   when:
   params.string == true
@@ -746,7 +755,7 @@ process get_string_PMID_mapping {
 
   conda 'bioconda::biopython=1.68'
 
-  publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: false
+  publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
 
   when:
   params.string == true
@@ -803,7 +812,7 @@ process get_tcdb_mapping {
 
   conda 'bioconda::biopython=1.68'
 
-  publishDir 'annotation/tcdb_mapping/', mode: 'copy', overwrite: false
+  publishDir 'annotation/tcdb_mapping/', mode: 'copy', overwrite: true
 
   when:
   params.tcdb == true
@@ -858,7 +867,7 @@ process get_pdb_mapping {
 
   conda 'bioconda::biopython=1.68'
 
-  publishDir 'annotation/pdb_mapping/', mode: 'copy', overwrite: false
+  publishDir 'annotation/pdb_mapping/', mode: 'copy', overwrite: true
 
   when:
   params.pdb == true
@@ -967,9 +976,10 @@ SeqIO.write(no_oma_mapping_records, no_oma_mapping, "fasta")
 
 process execute_interproscan {
 
-  publishDir 'annotation/interproscan', mode: 'copy', overwrite: false
+  publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
 
-  cpus 4
+  cpus 8
+  memory '8 GB'
 
   when:
   params.interproscan == true
@@ -988,7 +998,8 @@ process execute_interproscan {
   script:
   n = seq.name
   """
-  interproscan.sh -appl ProDom,HAMAP,TIGRFAM,SUPERFAMILY,PRINTS,PIRSF,COILS,ProSiteProfiles,PfamA,SMART,Phobius,SMART,SignalP_GRAM_NEGATIVE -goterms -pa -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} > interpro.log
+  echo interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} > ${n}.log
+  bash interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} >> ${n}.log
   """
 }
 
