@@ -42,33 +42,28 @@
 
 # TODO
 
-
 - [ ] extract best swissprot and refseq hits for each sequence (from database), build phylogeny with non-redundant set of BBH (3 refseq + 3 swissprot?)
 - [ ] retrieve swissprot annotation score for swissprot hits & uniprotkb exact matches
-
 - [ ] execure gblast vs TCDB for chunks of 1000 sequences (python 2.7)
 - [ ] execute T3 effector prediction (3 tools)
 - [ ] execute PRIAM for each genome or hmmsearch with PRIAM database?
 - [ ] execute macsyfinder for crispr
 - [ ] execute macsyfinder for capsule
 - [ ] execute macsyfinder for secretion systems
-
 - [ ] retrieve DOORS2 operons
-- [ ] predict operons when not in doors?
-
+- [ ] run PSORTb version 3.00
 - [ ] run genome properties with interprocsn tsv files (https://genome-properties.readthedocs.io/en/latest/index.html, https://www.ebi.ac.uk/interpro/genomeproperties/)
 - [ ] http://csbl.bmb.uga.edu/dbCAN/ ==> based on interproscan results
 
-- [ ] run PSORTb version 3.00
-
-* Ideas
+## Ideas
 
 - [ ] KO annotation: compare GHOSTKOALA with eggnog/uniprot annotations
 - [ ] execute plast/mmseq2/diamond vs UNIREF90 for chunks of 1000 sequences?
 - [ ] metacyc?
 - [ ] exact match to COG betfore doing BLAST to reduce computations? => do not blast sequence that are in the COGdb (assign it directly)
+- [ ] predict operons when not in doors?
 
-* Notes
+## Notes
 
 - BLAST vs PLAST vs mmseq2 vs diamond?
 - install eggnog-mapper?
