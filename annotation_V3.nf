@@ -1030,7 +1030,7 @@ process execute_interproscan {
   script:
   n = seq.name
   """
-  export PATH="$PATH:/home/tpillone/work/projets/dev/2018_11_annotation_pipeline/databases/interproscan/interproscan-5.33-72.0"
+  export PATH="$PATH:/home/tpillone/work/projets/dev/2018_11_annotation_pipeline/databases/interproscan/interproscan-5.34-73.0"
   echo interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} > ${n}.log
   bash interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} >> ${n}.log
   """

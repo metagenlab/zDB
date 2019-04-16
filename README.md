@@ -48,10 +48,14 @@
 - [ ] retrieve swissprot annotation score for swissprot hits & uniprokb exact matches
 - [ ] extract best swissprot and refseq hits for each sequence (from database), build phylogeny with non-redundant set of BBH (3 refseq + 3 swissprot?)
 
-- [ ] execute T3 effector prediction (3 tools)
+- [ ] execute T3 effector prediction: BPBAac
+- [ ] execute T3 effector prediction: T3_MM
+- [ ] execute T3 effector prediction: effective
+
 - [ ] execute macsyfinder for crispr
 - [ ] execute macsyfinder for capsule
 - [ ] execute macsyfinder for secretion systems
+
 - [ ] execute PRIAM for each genome or hmmsearch with PRIAM database?
 
 - [ ] get DOORS operons
@@ -62,14 +66,20 @@
 
 - [ ] PSORTb version 3.00
 
+- [ ] get kegg annotation from eggnog, unpiprotKB extact or best match, eggnog
+
 * Ideas
 
 - [ ] KO annotation: compare GHOSTKOALA with eggnog/uniprot annotations
 - [ ] execute plast/mmseq2/diamond vs UNIREF90 for chunks of 1000 sequences?
 - [ ] metacyc?
 - [ ] exact match to COG betfore doing BLAST to reduce computations? => do not blast sequence that are in the COGdb (assign it directly)
+- [ ] IS annotation with https://github.com/xiezhq/ISEScan (https://github.com/emrobe/SfB-course/blob/master/Deployment_wrapper.sh) or https://github.com/thanhleviet/ISfinder-sequences
+
 
 * Notes
 
+- ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/docs/bacsu.txt
+- ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/docs/dbxref.txt
 - BLAST vs PLAST vs mmseq2 vs diamond?
 - execute eggnog-mapper and ghostkoala online?
