@@ -41,19 +41,18 @@
 - [X] execute diamond RefSeq for chunks of 1000 sequences
 - [X] run interproscan for chunks of 100 sequences
 - [X] remove reducancy before annotation (use sequence hash as seqid)
+- [X] execure gblast vs TCDB for chunks of 1000 sequences (only unmapped sequences): todo: solve dependancies/env variables
 
 # TODO
 
 - [ ] retrieve swissprot annotation score for swissprot hits & uniprokb exact matches
-
 - [ ] extract best swissprot and refseq hits for each sequence (from database), build phylogeny with non-redundant set of BBH (3 refseq + 3 swissprot?)
 
-- [ ] execure gblast vs TCDB for chunks of 1000 sequences (python 2.7)
 - [ ] execute T3 effector prediction (3 tools)
-- [ ] execute PRIAM for each genome or hmmsearch with PRIAM database?
 - [ ] execute macsyfinder for crispr
 - [ ] execute macsyfinder for capsule
 - [ ] execute macsyfinder for secretion systems
+- [ ] execute PRIAM for each genome or hmmsearch with PRIAM database?
 
 - [ ] get DOORS operons
 - [ ] predict operons when not in doors? operon-mapper?

@@ -24,6 +24,7 @@ params.diamond_refseq = false
 params.string = true
 params.pdb = true
 params.oma = true
+params.tcdb_gblast = true
 params.core_missing = 0
 params.genome_faa_folder = "$PWD/faa"
 params.executor = 'local'
@@ -84,7 +85,7 @@ updated_records = []
 
 for record in records:
 
-    checksum = CheckSum.seguid(record.seq)
+    checksum = CheckSum.crc64(record.seq)
     nr_mapping.write("%s\\t%s\\n" % (record.id,
                                    checksum))
     if checksum not in checksum_nr_list:
@@ -863,6 +864,37 @@ SeqIO.write(no_tcdb_mapping_records, no_tcdb_mapping, "fasta")
   """
 }
 
+no_tcdb_mapping.splitFasta( by: 1000, file: "chunk" )
+.into { faa_tcdb_chunks }
+
+process tcdb_gblast3 {
+
+  publishDir 'annotation/tcdb_mapping', mode: 'copy', overwrite: true
+
+  cpus 1
+  conda 'anaconda::biopython=1.67=np111py27_0 conda-forge::matplotlib=2.2.3 biobuilds::fasta'
+
+  when:
+  params.tcdb_gblast == true
+
+  input:
+  file(seq) from faa_tcdb_chunks
+
+  output:
+  file 'TCDB_RESULTS_*' into tcdb_results
+
+  script:
+
+  n = seq.name
+  """
+  export PATH="$PATH:/home/tpillone/work/dev/annotation_pipeline_nextflow/bin/hmmtop_2.1"
+  export PATH="$PATH:/home/tpillone/work/dev/annotation_pipeline_nextflow/bin/BioVx/scripts"
+  export HMMTOP_ARCH=/home/tpillone/work/dev/annotation_pipeline_nextflow/bin/hmmtop_2.1/hmmtop.arch
+  export HMMTOP_PSV=/home/tpillone/work/dev/annotation_pipeline_nextflow/bin/hmmtop_2.1/hmmtop.psv
+  gblast3.py -i ${seq} -o TCDB_RESULTS_${seq}
+  """
+}
+
 process get_pdb_mapping {
 
   conda 'bioconda::biopython=1.68'
@@ -998,6 +1030,7 @@ process execute_interproscan {
   script:
   n = seq.name
   """
+  export PATH="$PATH:/home/tpillone/work/projets/dev/2018_11_annotation_pipeline/databases/interproscan/interproscan-5.33-72.0"
   echo interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} > ${n}.log
   bash interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} >> ${n}.log
   """
