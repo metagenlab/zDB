@@ -78,6 +78,7 @@
 - [ ] metacyc?
 - [ ] exact match to COG betfore doing BLAST to reduce computations? => do not blast sequence that are in the COGdb (assign it directly)
 - [ ] predict operons when not in doors?
+- [ ] orthoDB
 
 ## Notes
 
@@ -87,3 +88,4 @@
 - BLAST vs PLAST vs mmseq2 vs diamond: statisics and best hits comparisons
 - install eggnog-mapper?
 - execute eggnog-mapper and ghostkoala online?
+- HHBLITS
