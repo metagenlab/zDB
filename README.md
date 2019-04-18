@@ -65,7 +65,7 @@
 - [ ] predict operons when not in doors? operon-mapper?
 
 - [ ] run genome properties with interprocsn tsv files (https://genome-properties.readthedocs.io/en/latest/index.html, https://www.ebi.ac.uk/interpro/genomeproperties/)
-- [ ] http://csbl.bmb.uga.edu/dbCAN/ ==> based on interproscan results
+- [ ] Carbohydrate-Active Enzyme database: http://csbl.bmb.uga.edu/dbCAN/
 
 - [ ] PSORTb version 3.00
 
@@ -80,6 +80,10 @@
 - [ ] exact match to COG betfore doing BLAST to reduce computations? => do not blast sequence that are in the COGdb (assign it directly)
 - [ ] predict operons when not in doors?
 - [ ] orthoDB
+- [ ] ICEberg
+- [ ] viruses: vFam (http://derisilab.ucsf.edu/software/vFam/)
+- [ ] VirSorter (http://merenlab.org/2018/02/08/importing-virsorter-annotations/)
+- [ ] https://www.genome.jp/tools/kofamkoala/
 
 ## Notes
 

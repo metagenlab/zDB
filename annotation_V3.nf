@@ -534,7 +534,7 @@ process rpsblast_COG {
   script:
   n = seq.name
   """
-  rpsblast -db $params.databases_dir/cdd/Cog -query seq -outfmt 6 -num_threads ${task.cpus} > blast_result
+  rpsblast -db $params.databases_dir/cdd/Cog -query seq -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > blast_result
   """
 }
 
@@ -562,7 +562,7 @@ process blast_swissprot {
   n = seq.name
   """
   # chunk_.6
-  blastp -db $params.databases_dir/uniprot/swissprot/uniprot_sprot.fasta -query ${n} -outfmt 6 -num_threads ${task.cpus} > ${n}.tab
+  blastp -db $params.databases_dir/uniprot/swissprot/uniprot_sprot.fasta -query ${n} -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > ${n}.tab
   """
 }
 
