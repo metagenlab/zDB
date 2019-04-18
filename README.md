@@ -53,6 +53,7 @@
 - [ ] execute T3 effector prediction: BPBAac
 - [ ] execute T3 effector prediction: T3_MM
 - [ ] execute T3 effector prediction: effective
+- [ ] Resfams annotation
 
 - [ ] execute macsyfinder for crispr
 - [ ] execute macsyfinder for capsule
