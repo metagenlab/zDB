@@ -561,8 +561,7 @@ process blast_swissprot {
 
   n = seq.name
   """
-  # chunk_.6
-  blastp -db $params.databases_dir/uniprot/swissprot/uniprot_sprot.fasta -query ${n} -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > ${n}.tab
+  blastp -db $params.databases_dir/uniprot/swissprot/uniprot_sprot.fasta -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}.tab
   """
 }
 
