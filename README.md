@@ -73,6 +73,7 @@
 
 ## Ideas
 
+- [ ] https://www.uniprot.org/help/api_idmapping
 - [ ] IS annotation with https://github.com/xiezhq/ISEScan (https://github.com/emrobe/SfB-course/blob/master/Deployment_wrapper.sh) or https://github.com/thanhleviet/ISfinder-sequences
 - [ ] KO annotation: compare GHOSTKOALA with eggnog/uniprot annotations
 - [ ] execute plast/mmseq2/diamond vs UNIREF90 for chunks of 1000 sequences?
@@ -84,6 +85,7 @@
 - [ ] viruses: vFam (http://derisilab.ucsf.edu/software/vFam/)
 - [ ] VirSorter (http://merenlab.org/2018/02/08/importing-virsorter-annotations/)
 - [ ] https://www.genome.jp/tools/kofamkoala/
+- [ ] https://widdowquinn.github.io/2018-03-06-ibioic/02-sequence_databases/09-KEGG_programming.html
 
 ## Notes
 
