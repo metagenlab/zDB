@@ -13,17 +13,18 @@
 params.input = "faa/*.faa" 	// input sequences
 log.info params.input
 params.databases_dir = "$PWD/databases"
-params.cog = true
+params.cog = false
 params.orthofinder = true
-params.interproscan = true
+params.interproscan = false
 params.uniparc = true
-params.tcdb = true
+params.tcdb = false
 params.blast_swissprot = false
 params.plast_refseq = false
-params.diamond_refseq = false
+params.diamond_refseq = true
 params.string = true
 params.pdb = true
 params.oma = true
+params.ko = true
 params.tcdb_gblast = true
 params.core_missing = 0
 params.genome_faa_folder = "$PWD/faa"
@@ -113,7 +114,8 @@ merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
         faa_chunks3
         faa_chunks4
         faa_chunks5
-        faa_chunks6 }
+        faa_chunks6
+        faa_chunks7 }
 
 process prepare_orthofinder {
 
@@ -595,7 +597,7 @@ process plast_refseq {
 
 process diamond_refseq {
 
-  publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: false
+  publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
 
   cpus 4
   conda 'bioconda::diamond=0.9.24'
@@ -1034,6 +1036,33 @@ process execute_interproscan {
   bash interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} >> ${n}.log
   """
 }
+
+
+process execute_kofamscan {
+
+  publishDir 'annotation/KO', mode: 'copy', overwrite: true
+
+  cpus 4
+  memory '8 GB'
+
+  when:
+  params.ko == true
+
+  input:
+  file(seq) from faa_chunks7
+
+  output:
+  file '*tab'
+
+  script:
+  n = seq.name
+  """
+  export PATH="$PATH:/home/tpillone/work/dev/annotation_pipeline_nextflow/bin/KofamScan/"
+  exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
+  """
+}
+
+
 
 workflow.onComplete {
   // Display complete message
