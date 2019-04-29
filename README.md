@@ -59,7 +59,12 @@
 - [ ] execute T3 effector prediction: T3_MM
 - [ ] execute T3 effector prediction: effective
 
+- [ ] VF annotation with all databases
+
 - [ ] retrieve DOORS2 operons
+
+- [ ] mapping to uniprot proteomes: https://www.ebi.ac.uk/proteins/api/doc/#!/proteomes/search
+  - curl -X GET --header 'Accept:application/json' 'https://www.ebi.ac.uk/proteins/api/proteomes?offset=0&size=100&xref=GCA_000068525.2'
 
 ## development
 
@@ -82,6 +87,8 @@
 - [ ] PSORTb version 3.00
 
 - [ ] get kegg annotation from eggnog, unpiprotKB extact or best match, eggnog
+
+- [ ]  PMID mapping with ppaperBLAST http://papers.genomics.lbl.gov/cgi-bin/litSearch.cgi
 
 # Web Interface
 
