@@ -48,12 +48,16 @@
 
 # TODO
 
-## priority
+## priority 1
 
 - [ ] extract best swissprot and refseq hits for each sequence (from database), build phylogeny with non-redundant set of BBH (x top seqs refseq + y top seqs swissprot as parameters)
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
 - [ ] retrieve uniprot annotation from uniprotKB (exact match or best diamond/plast hit if no exact match?)
 - [ ] retrieve uniprot annotation score for matched uniprotkb entries
+- [ ] input samples table: genbank assembly accession
+- [ ] input samples table: local faa files
+
+## priority 2
 
 - [ ] execute T3 effector prediction: BPBAac
 - [ ] execute T3 effector prediction: T3_MM
@@ -64,7 +68,10 @@
 - [ ] retrieve DOORS2 operons
 
 - [ ] mapping to uniprot proteomes: https://www.ebi.ac.uk/proteins/api/doc/#!/proteomes/search
-  - curl -X GET --header 'Accept:application/json' 'https://www.ebi.ac.uk/proteins/api/proteomes?offset=0&size=100&xref=GCA_000068525.2'
+- [ ] curl -X GET --header 'Accept:application/json' 'https://www.ebi.ac.uk/proteins/api/proteomes?offset=0&size=100&xref=GCA_000068525.2'
+
+- [ ] match to uniparc: use https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getBySequence
+- [ ] get entire proteomes: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
 
 ## development
 

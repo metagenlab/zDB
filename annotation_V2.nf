@@ -16,126 +16,189 @@ params.databases_dir = "$PWD/databases"
 params.blast_cog = true
 params.orthofinder = true
 params.genome_faa_folder = "$PWD/faa"
+
+params.local_sample_sheet = "local_assemblies.tab"
+params.ncbi_sample_sheet = "ncbi_assemblies.tab"
+
+
 log.info "====================================="
 log.info "input                  : ${params.input}"
 log.info "Blast COG              : ${params.blast_cog}"
 log.info "Orthofinder            : ${params.orthofinder}"
 log.info "Orthofinder path       : ${params.genome_faa_folder}"
 
-Channel
-  .fromPath(params.input)
-  .ifEmpty { error "Cannot find any input sequence files matching: ${params.input}" }
-  .splitFasta( by: 1000 )
-  .set { faa_chunks }
+//assembly_accession_list = ""
 
-genome_folder = Channel
-              .from(params.genome_faa_folder)
-
-process blast_COG {
-
-  conda 'bioconda::blast=2.7.1'
-
-  when:
-  params.blast_cog == true
-
-  input:
-  file 'seq' from faa_chunks
-
-  output:
-  set file('blast_result') into merged_blasts
-
-  script:
-  """
-  blastp -db $params.databases_dir/COG/prot2003-2014.fa -query seq -outfmt 6 > blast_result
-  """
+// Each Sample
+if (params.ncbi_sample_sheet != false){
+  Channel.fromPath( file(params.ncbi_sample_sheet) )
+                      .splitCsv(header: true, sep: '\t')
+                      .map{row ->
+                          // get the list of accessions
+                          def assembly_accession = row."Genbank"
+                          return "${assembly_accession}"
+                      }
+                      .into{
+                          assembly_accession_list
+                      }
+}
+if (params.local_sample_sheet != false){
+  Channel.fromPath( file(params.local_sample_sheet) )
+                      .splitCsv(header: true, sep: '\t')
+                      .map{row ->
+                          // get the list of accessions
+                          def gbk_path = row."gbk_path"
+                          return gbk_path
+                      }
+                      .map { file(it) }
+                      .set { local_gbk_list }
 }
 
+// only define process if nedded
+if (params.local_sample_sheet != false){
+  process copy_local_assemblies {
 
-process orthofinder_preparation {
+    publishDir 'data/gbk_local', mode: 'copy', overwrite: true
 
-  conda 'bioconda::orthofinder=2.2.7'
+    cpus 1
 
-  input:
-  val faa_folder from genome_folder
-
-  output:
-  file 'of_prep.tab' into orthofinder_prep_output
-
-  when:
-  params.orthofinder == true
-
-  script:
-  myDir = file("${params.genome_faa_folder}/Results*/WorkingDirectory/*")
-
-  if (myDir.size() > 0){
-    log.info "removing existing dir..."
-    """
-    rm -rf  ${params.genome_faa_folder}/Results*
-    orthofinder -op -a 8 -f ${params.genome_faa_folder} > of_prep.tab
-    """
-  }
-  else{
-    log.info "first attempt..."
-    """
-    orthofinder -op -a 8 -f ${params.genome_faa_folder} > of_prep.tab
-    """
-  }
-}
-
-/*
-process parse_orthofinder_blast {
-    echo true
+    when:
+    params.local_sample_sheet != false
 
     input:
-    file 'of_prep.tab' from orthofinder_prep_output2
+    file(local_gbk) from local_gbk_list
 
     output:
-    val blast_cmd
-
-    println 'executing script'
-    """
-    #!/usr/bin/env python3
-    import sys
-    print('ok')
-    x = 0
-    for line in open("of_prep.tab", 'r'):
-        if 'blastp -outfmt ' in line:
-          blast_cmd = line.rstrip()
-          x+=1
-    print(x)
-    """
-
-
-    for( line in x.readLines() ) {
-        if ('blast' in line){println line}
-    }
-
-
-}
-
-.splitText()
-                       .subscribe { print it }
-
-
-*/
-
-
-orthofinder_prep_output.collectFile().splitText().set { blast_cmds }
-
-process print_cmds {
-    echo true
-
-    input:
-    val blast_cmd from blast_cmds
-
-    println "line:"
-    println blast_cmd.class
+    file "${local_gbk.name}.gz" into raw_local_gbffs
 
     script:
+
     """
-    echo "aaa ${blast_cmd} bbb"
+    gzip -f ${local_gbk.name}
     """
+  }
 }
+
+// only define process if nedded
+if (params.ncbi_sample_sheet != false){
+  process download_assembly {
+
+    conda 'bioconda::biopython=1.68'
+
+    publishDir 'data/gbk_ncbi', mode: 'copy', overwrite: true
+
+    when:
+    params.ncbi_sample_sheet != false
+
+    input:
+    val assembly_accession_list from assembly_accession_list.collect()
+
+    cpus 1
+
+    output:
+    file '*.gbff.gz' into raw_ncbi_gbffs
+
+    script:
+    //accession = assembly_accession[0]
+    """
+  #!/usr/bin/env python
+
+  import re
+  from ftplib import FTP
+  from Bio import Entrez, SeqIO
+  Entrez.email = "trestan.pillonel@chuv.ch"
+  Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
+
+  accession_list = "${assembly_accession_list}".split(' ')
+  for accession in accession_list:
+    handle1 = Entrez.esearch(db="assembly", term="%s" % accession)
+    record1 = Entrez.read(handle1)
+
+    ncbi_id = record1['IdList'][-1]
+    print(ncbi_id)
+    handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
+    assembly_record = Entrez.read(handle_assembly, validate=False)
+    ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+    print(ftp_path)
+    ftp=FTP('ftp.ncbi.nih.gov')
+    ftp.login("anonymous","trestan.pillonel@unil.ch")
+    ftp.cwd(ftp_path)
+    filelist=ftp.nlst()
+    filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
+    print(filelist)
+    for file in filelist:
+      ftp.retrbinary("RETR "+file, open(file, "wb").write)
+    """
+  }
+}
+
+// merge local and ncbi gbk into a single channel
+if (params.ncbi_sample_sheet != false && params.local_sample_sheet == false) {
+println "ncbi"
+raw_ncbi_gbffs.collect().into{all_raw_gbff}
+}
+else if(params.ncbi_sample_sheet == false && params.local_sample_sheet != false) {
+println "local"
+raw_local_gbffs.collect().into{all_raw_gbff}
+}
+else {
+println "both"
+raw_ncbi_gbffs.mix(raw_local_gbffs).into{all_raw_gbff}
+}
+
+process gbk_check {
+
+  publishDir 'data/gbk_edited', mode: 'copy', overwrite: true
+
+  conda 'bioconda::biopython=1.68'
+
+  cpus 2
+
+  input:
+  file(all_gbff) from all_raw_gbff.collect()
+
+  output:
+  file "*merged.gbk" into edited_gbks
+
+  script:
+  println all_gbff
+  """
+  gbff_check.py -i ${all_gbff} -l 1000
+  """
+}
+
+process convert_gbk_to_faa {
+
+  publishDir 'data/faa_locus', mode: 'copy', overwrite: true
+
+  conda 'bioconda::biopython=1.68'
+
+  cpus 2
+
+  input:
+  each file(edited_gbk) from edited_gbks
+
+  output:
+  file "*.faa" into faa_files
+
+  script:
+  """
+#!/usr/bin/env python
+print("${edited_gbk}")
+from Bio import Entrez, SeqIO
+
+records = SeqIO.parse("${edited_gbk}", 'genbank')
+edited_records = open("${edited_gbk.baseName}.faa", 'w')
+for record in records:
+  for feature in record.features:
+      if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers:
+          feature.name = feature.qualifiers["locus_tag"]
+          edited_records.write(">%s %s\\n%s\\n" % (feature.qualifiers["locus_tag"][0],
+                                                   record.description,
+                                                   feature.qualifiers['translation'][0]))
+  """
+}
+
 
 
 workflow.onComplete {
