@@ -15,7 +15,7 @@ log.info params.input
 params.databases_dir = "$PWD/databases"
 params.cog = true
 params.orthofinder = true
-params.interproscan = true
+params.interproscan = false
 params.uniparc = true
 params.tcdb = true
 params.blast_swissprot = true

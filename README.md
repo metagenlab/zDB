@@ -50,7 +50,9 @@
 
 ## priority 1
 
+- [ ] interproscan: analyse separately uniparc matches from non matched entries (allocate more ressources to the later): no match: more ram (12go), and cores (8), no lookup service
 - [ ] extract best swissprot and refseq hits for each sequence (from database), build phylogeny with non-redundant set of BBH (x top seqs refseq + y top seqs swissprot as parameters)
+  - [ ] get taxonomy of hits => exclude Chlamydiae hits (need for linear taxonomy)
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
 - [ ] retrieve uniprot annotation from uniprotKB (exact match or best diamond/plast hit if no exact match?)
 - [ ] retrieve uniprot annotation score for matched uniprotkb entries
