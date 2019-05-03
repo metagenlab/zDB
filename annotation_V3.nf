@@ -13,12 +13,12 @@
 params.input = "faa/*.faa" 	// input sequences
 log.info params.input
 params.databases_dir = "$PWD/databases"
-params.cog = false
+params.cog = true
 params.orthofinder = true
-params.interproscan = false
+params.interproscan = true
 params.uniparc = true
-params.tcdb = false
-params.blast_swissprot = false
+params.tcdb = true
+params.blast_swissprot = true
 params.plast_refseq = false
 params.diamond_refseq = true
 params.string = true
@@ -788,7 +788,7 @@ process diamond_refseq {
 
   n = seq.name
   """
-  diamond blastp -p ${task.cpus} -d $params.databases_dir/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab --max-target-seqs 100 -e 0.01 --max-hsps
+  diamond blastp -p ${task.cpus} -d $params.databases_dir/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab --max-target-seqs 100 -e 0.01 --max-hsps 1
   """
 }
 
@@ -1039,7 +1039,7 @@ SeqIO.write(no_tcdb_mapping_records, no_tcdb_mapping, "fasta")
 }
 
 no_tcdb_mapping.splitFasta( by: 1000, file: "chunk" )
-.into { faa_tcdb_chunks }
+.set { faa_tcdb_chunks }
 
 process tcdb_gblast3 {
 
@@ -1047,6 +1047,8 @@ process tcdb_gblast3 {
 
   cpus 1
   conda 'anaconda::biopython=1.67=np111py27_0 conda-forge::matplotlib=2.2.3 biobuilds::fasta'
+
+  beforeScript 'export PATH="$PATH:$GBLAST3_PATH"'
 
   when:
   params.tcdb_gblast == true
@@ -1061,10 +1063,6 @@ process tcdb_gblast3 {
 
   n = seq.name
   """
-  export PATH="$PATH:/home/tpillone/work/dev/annotation_pipeline_nextflow/bin/hmmtop_2.1"
-  export PATH="$PATH:/home/tpillone/work/dev/annotation_pipeline_nextflow/bin/BioVx/scripts"
-  export HMMTOP_ARCH=/home/tpillone/work/dev/annotation_pipeline_nextflow/bin/hmmtop_2.1/hmmtop.arch
-  export HMMTOP_PSV=/home/tpillone/work/dev/annotation_pipeline_nextflow/bin/hmmtop_2.1/hmmtop.psv
   gblast3.py -i ${seq} -o TCDB_RESULTS_${seq}
   """
 }
@@ -1186,6 +1184,7 @@ process execute_interproscan {
 
   cpus 8
   memory '8 GB'
+  conda 'anaconda::openjdk=8.0.152'
 
   when:
   params.interproscan == true
@@ -1204,9 +1203,8 @@ process execute_interproscan {
   script:
   n = seq.name
   """
-  export PATH="$PATH:/home/tpillone/work/projets/dev/2018_11_annotation_pipeline/databases/interproscan/interproscan-5.34-73.0"
-  echo interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} > ${n}.log
-  bash interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} >> ${n}.log
+  echo $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} > ${n}.log
+  bash $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} >> ${n}.log
   """
 }
 
