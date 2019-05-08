@@ -26,6 +26,8 @@ params.pdb = true
 params.oma = true
 params.ko = true
 params.tcdb_gblast = true
+params.orthogroups_phylogeny_with_iqtree = false
+params.orthogroups_phylogeny_with_fasttree = true
 params.core_missing = 0
 params.genome_faa_folder = "$PWD/faa"
 params.executor = 'local'
@@ -400,8 +402,6 @@ process orthogroups2fasta {
   """
 }
 
-/*rthogroups_fasta.flatten().collate( 2 ).set {chunks}
-*/
 
 process align_with_mafft {
 
@@ -428,10 +428,12 @@ process align_with_mafft {
 /* Get only alignments with more than than two sequences */
 mafft_alignments.collect().into {all_alignments_1
                                  all_alignments_2
-                                 all_alignments_3}
+                                 all_alignments_3
+                                 all_alignments_4}
 
 all_alignments_1.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 3 }.set { large_alignments }
-all_alignments_1.flatten().map { it }.filter { (it.text =~ /(>)/).size() == 3 }.set { small_alignments }
+all_alignments_2.flatten().map { it }.filter { (it.text =~ /(>)/).size() == 3 }.set { small_alignments }
+
 /*
 process orthogroups_phylogeny_with_raxml {
 
@@ -454,11 +456,37 @@ process orthogroups_phylogeny_with_raxml {
 }
 */
 
+process orthogroups_phylogeny_with_fasttree {
+
+  echo true
+  conda 'bioconda::fasttree=2.1.10'
+  cpus 4
+  publishDir 'orthology/orthogroups_phylogenies_fasttree', mode: 'copy', overwrite: true
+
+  when:
+  params.orthogroups_phylogeny_with_fasttree == true
+
+  input:
+  each file(og) from all_alignments_4
+
+  output:
+    file "${og.baseName}.nwk"
+
+  script:
+  """
+  FastTree ${og} > ${og.baseName}.nwk
+  """
+}
+
+
 process orthogroups_phylogeny_with_iqtree {
 
   conda 'bioconda::iqtree=1.6.8'
   cpus 2
   publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: true
+
+  when:
+  params.orthogroups_phylogeny_with_iqtree == true
 
   input:
   each file(og) from large_alignments
@@ -484,6 +512,9 @@ process orthogroups_phylogeny_with_iqtree_no_boostrap {
   conda 'bioconda::iqtree=1.6.8'
   cpus 2
   publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: true
+
+  when:
+  params.orthogroups_phylogeny_with_iqtree == true
 
   input:
   each file(og) from large_alignments
@@ -512,7 +543,7 @@ process get_core_orthogroups {
   input:
   file 'Orthogroups.txt' from orthogroups
   file genome_list from faa_genomes3.collect()
-  file fasta_files from all_alignments_2.collect()
+  file fasta_files from all_alignments_3.collect()
 
   output:
   file '*_taxon_ids.faa' into core_orthogroups
