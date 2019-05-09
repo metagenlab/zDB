@@ -17,10 +17,16 @@
 
 # refseq reference/representative genomes
 
-- download from RefSeq database
-- annotate each genome with InterproScan: TODO: use exact match to uniparc to get precomputed annotations, only execute interproscan for unannotated proteins
+- [X] download representative/reference genomes from RefSeq database
+- [ ] annotate each genome with InterproScan: TODO: use exact match to uniparc to get precomputed annotations, only execute interproscan for unannotated proteins OR simply annotate them separately (speed of iprlookup?)
 - alternative option: work with uniprotkb proteomes 1) exclude anomalous proteomes based on refseq data 2) get species taxid for each proteome 3) remove redudancy (keep one prepresentative per species taxid) 4) retrieve interpro annotation from interproscan uniparc annotations
-- make stats from ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_genbank.txt: superkingdom, annotated genomes,...
+- [ ]make stats from ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_genbank.txt: superkingdom, annotated genomes,...
+- [ ] annotate representative genomes with kofamscan => phylogenetic profile of KO, modules, pathways,...
+- [ ] use GTDB rather than NCBI taxonomy? ==> does not include eukaryotes
+  - [ ] see http://annotree.uwaterloo.ca/app/#/?qtype=pfam&qstring=PF00617&eval=0.00001
+  - [ ] get leaf2phylum & leaf2order & leaf2class
+  - [ ] extract subset of their reference phylogeny
+  - [ ] get phylum tree & order tree & class tree (keep only lineages containing representative/reference genomes) (see how many different phylum, class, orders)
 
 # DONE
 
