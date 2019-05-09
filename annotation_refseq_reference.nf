@@ -35,6 +35,9 @@ refseq_table.splitCsv(sep: '\t', header: true).filter { (it.refseq_category ==~ 
 
 process download_reference_genomes {
 
+  maxForks 2
+  maxRetries 3
+
   input:
     each assembly from representative_and_reference_genomes
 
@@ -48,7 +51,7 @@ process download_reference_genomes {
   echo LAST ${asm_last}
   echo ${assembly.ftp_path}/${asm_last}_protein.faa.gz -o ${assembly.assembly_accession}.faa.gz
   curl  ${assembly.ftp_path}/${asm_last}_protein.faa.gz -o ${assembly.assembly_accession}.faa.gz
-  sleep 1
+  sleep 0.5
   """
 }
 
@@ -56,6 +59,7 @@ process download_reference_genomes {
 process extract_gz {
 
   publishDir 'refseq_annotation/refseq_faa', mode: 'link', overwrite: false
+  maxForks 1
 
   input:
     file assembly_faa_gz
@@ -73,8 +77,8 @@ process extract_gz {
 
 //assembly_faa.flatten().map { it }.filter { (it.text =~ /(>)/).size() < 1000 }.set { small_genomes }
 
-assembly_faa.flatten().into {faa_list_1
-                            faa_list_2}
+assembly_faa.into {faa_list_1
+                   faa_list_2}
 
 /*
 assembly_faa.collectFile(name: 'merged.faa', newLine: true)
