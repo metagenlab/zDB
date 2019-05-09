@@ -295,7 +295,6 @@ merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
 
 process prepare_orthofinder {
 
-  echo true
   conda 'bioconda::orthofinder=2.2.7'
 
   input:
@@ -313,8 +312,6 @@ process prepare_orthofinder {
 }
 
 process blast_orthofinder {
-
-  echo true
 
   cpus 2
 
@@ -339,7 +336,7 @@ process blast_orthofinder {
 }
 
 process orthofinder_main {
-  echo true
+
   conda 'bioconda::orthofinder=2.2.7'
 
   publishDir 'orthology', mode: 'copy', overwrite: true
@@ -363,7 +360,6 @@ process orthogroups2fasta {
   Get fasta file of each orthogroup
   '''
 
-  echo true
   conda 'bioconda::biopython=1.70'
 
   publishDir 'orthology/orthogroups_fasta', mode: 'copy', overwrite: true
@@ -405,7 +401,6 @@ process orthogroups2fasta {
 
 process align_with_mafft {
 
-  echo true
   conda 'bioconda::mafft=7.407'
 
   publishDir 'orthology/orthogroups_alignments', mode: 'copy', overwrite: true
@@ -431,8 +426,9 @@ mafft_alignments.collect().into {all_alignments_1
                                  all_alignments_3
                                  all_alignments_4}
 
-all_alignments_1.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 3 }.set { large_alignments }
-all_alignments_2.flatten().map { it }.filter { (it.text =~ /(>)/).size() == 3 }.set { small_alignments }
+all_alignments_1.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 3 }.set { alignments_larget_tah_3_seqs }
+all_alignments_2.flatten().map { it }.filter { (it.text =~ /(>)/).size() == 3 }.set { alignments_3_seqs }
+all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.set { alignement_larger_than_2_seqs }
 
 /*
 process orthogroups_phylogeny_with_raxml {
@@ -456,9 +452,8 @@ process orthogroups_phylogeny_with_raxml {
 }
 */
 
-process orthogroups_phylogeny_with_fasttree {
+process orthogroups_phylogeny_with_fasttree3 {
 
-  echo true
   conda 'bioconda::fasttree=2.1.10'
   cpus 4
   publishDir 'orthology/orthogroups_phylogenies_fasttree', mode: 'copy', overwrite: true
@@ -467,7 +462,7 @@ process orthogroups_phylogeny_with_fasttree {
   params.orthogroups_phylogeny_with_fasttree == true
 
   input:
-  each file(og) from all_alignments_4
+  each file(og) from alignement_larger_than_2_seqs
 
   output:
     file "${og.baseName}.nwk"
@@ -489,7 +484,7 @@ process orthogroups_phylogeny_with_iqtree {
   params.orthogroups_phylogeny_with_iqtree == true
 
   input:
-  each file(og) from large_alignments
+  each file(og) from alignments_larget_tah_3_seqs
 
   output:
     file "${og.getBaseName()}.iqtree"
@@ -517,7 +512,7 @@ process orthogroups_phylogeny_with_iqtree_no_boostrap {
   params.orthogroups_phylogeny_with_iqtree == true
 
   input:
-  each file(og) from large_alignments
+  each file(og) from alignments_3_seqs
 
   output:
     file "${og.getBaseName()}.iqtree"
@@ -987,10 +982,10 @@ def string_id2pubmed_id_list(accession):
     try:
         data = urllib2.urlopen(link).read().rstrip().decode('utf-8').split('\\n')[1:]
     except urllib2.URLError:
-        print 'echec', link
+        print ('echec', link)
         return False
     pid_list = [row.split(':')[1] for row in data]
-    print 'list', pid_list
+    print ('list', pid_list)
     return pid_list
 
 o = open("string_mapping_PMID.tab", "w")
