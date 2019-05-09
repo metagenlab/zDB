@@ -15,7 +15,7 @@ log.info params.input
 params.databases_dir = "$PWD/databases"
 params.cog = true
 params.orthofinder = true
-params.interproscan = false
+params.interproscan = true
 params.uniparc = true
 params.tcdb = true
 params.blast_swissprot = true
@@ -818,6 +818,105 @@ process diamond_refseq {
   """
 }
 
+refseq_diamond.collectFile()
+.splitCsv(header: false, sep: '\t')
+.map{row ->
+    def protein_accession = row[1]
+    return "${protein_accession}"
+}
+.unique()
+.collectFile(name: 'nr_refseq_hits.tab', newLine: true)
+.set {refseq_diamond_nr}
+
+//.collate( 300 )
+//.set {
+//    nr_refseq_hits_chunks
+//}
+
+process get_refseq_hits_taxonomy {
+
+  conda 'bioconda::biopython=1.68'
+
+  publishDir 'annotation/diamond_refseq/', mode: 'copy', overwrite: true
+
+  echo true
+
+  when:
+  params.diamond_refseq == true
+
+  input:
+  file refseq_hit_table from refseq_diamond_nr
+
+  output:
+  file 'refseq_taxonomy.db' into refseq_hit_taxid_mapping_db
+
+  script:
+
+  """
+#!/usr/bin/env python
+
+from Bio import SeqIO
+import sqlite3
+conn = sqlite3.connect("refseq_taxonomy.db")
+cursor = conn.cursor()
+from Bio.SeqUtils import CheckSum
+from Bio import Entrez
+Entrez.email = "trestan.pillonel@chuv.ch"
+Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
+
+
+sql = 'create table refseq_hits (accession varchar(200), taxid INTEGER, description TEXT, length INTEGER)'
+cursor.execute(sql,)
+conn.commit()
+
+def chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
+
+f = open("${refseq_hit_table}", 'r')
+hit_list = [i.rstrip() for i in f]
+
+accession_lists = chunks(hit_list, 300)
+
+def accession2taxon(gi_list, database="protein"):
+    from socket import error as SocketError
+    import errno
+
+    hit_annotation = []
+
+    try:
+        handle = Entrez.esummary(db=database, id=','.join(gi_list), retmax=len(gi_list))
+    except SocketError as e:
+        if e.errno != errno.ECONNRESET:
+            raise('error connexion with %s' % ','.join(gi_list))
+        else:
+            import time
+            print ('connexion error, trying again...')
+            time.sleep(60)
+            accession2taxon(gi_list, database=database)
+
+    if isinstance(gi_list, list) and len(gi_list) == 1:
+        record = Entrez.read(handle, validate=False)
+        hit_annotation.append([record['AccessionVersion'], record['TaxId'],record['Title'], record['Length']])
+        return hit_annotation
+    else:
+        record = Entrez.parse(handle, validate=False)
+        try:
+            for i in record:
+                hit_annotation.append([i['AccessionVersion'], i['TaxId'],i['Title'], i['Length']])
+        except RuntimeError:
+            accession2taxon(gi_list, database=database)
+        return hit_annotation
+
+for n, one_list in enumerate(accession_lists):
+  data = accession2taxon(one_list)
+  sql_template = 'insert into refseq_hits values (?,?,?,?)'
+  cursor.executemany(sql_template, data)
+  conn.commit()
+  """
+}
+
+
 process get_uniparc_mapping {
 
   conda 'bioconda::biopython=1.68'
@@ -831,10 +930,11 @@ process get_uniparc_mapping {
   file(seq) from merged_faa1
 
   output:
-  file 'uniparc_mapping.tab' into uniparc_mapping
-  file 'uniprot_mapping.tab' into uniprot_mapping
-  file 'no_uniprot_mapping.faa' into no_uniprot_mapping
-  file 'no_uniparc_mapping.faa' into no_uniparc_mapping
+  file 'uniparc_mapping.tab' into uniparc_mapping_tab
+  file 'uniprot_mapping.tab' into uniprot_mapping_tab
+  file 'no_uniprot_mapping.faa' into no_uniprot_mapping_faa
+  file 'no_uniparc_mapping.faa' into no_uniparc_mapping_faa
+  file 'uniparc_mapping.faa' into uniparc_mapping_faa
 
   script:
   fasta_file = seq.name
@@ -854,6 +954,7 @@ uniparc_map = open('uniparc_mapping.tab', 'w')
 uniprot_map = open('uniprot_mapping.tab', 'w')
 no_uniprot_mapping = open('no_uniprot_mapping.faa', 'w')
 no_uniparc_mapping = open('no_uniparc_mapping.faa', 'w')
+uniparc_mapping_faa = open('uniparc_mapping.faa', 'w')
 
 uniparc_map.write("locus_tag\\tuniparc_id\\tuniparc_accession\\tstatus\\n")
 uniprot_map.write("locus_tag\\tuniprot_accession\\ttaxon_id\\tdescription\\n")
@@ -861,6 +962,8 @@ uniprot_map.write("locus_tag\\tuniprot_accession\\ttaxon_id\\tdescription\\n")
 records = SeqIO.parse(fasta_file, "fasta")
 no_mapping_uniprot_records = []
 no_mapping_uniparc_records = []
+mapping_uniparc_records = []
+
 for record in records:
     match = False
     sql = 'select t1.uniparc_id,uniparc_accession,accession,taxon_id,description, db_name, status from uniparc_accession t1 inner join uniparc_cross_references t2 on t1.uniparc_id=t2.uniparc_id inner join crossref_databases t3 on t2.db_id=t3.db_id where sequence_hash=?'
@@ -870,6 +973,7 @@ for record in records:
         no_mapping_uniparc_records.append(record)
         no_mapping_uniprot_records.append(record)
     else:
+        mapping_uniparc_records.append(record)
         all_status = [i[6] for i in hits]
         if 1 in all_status:
             status = 'active'
@@ -892,6 +996,7 @@ for record in records:
 
 SeqIO.write(no_mapping_uniprot_records, no_uniprot_mapping, "fasta")
 SeqIO.write(no_mapping_uniparc_records, no_uniparc_mapping, "fasta")
+SeqIO.write(mapping_uniparc_records, uniparc_mapping_faa, "fasta")
   """
 }
 
@@ -1204,7 +1309,38 @@ SeqIO.write(no_oma_mapping_records, no_oma_mapping, "fasta")
   """
 }
 
-process execute_interproscan {
+process execute_interproscan_no_uniparc_matches {
+
+  publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
+
+  cpus 8
+  memory '16 GB'
+  conda 'anaconda::openjdk=8.0.152'
+
+  when:
+  params.interproscan == true
+
+  input:
+  file(seq) from no_uniparc_mapping_faa.splitFasta( by: 300, file: "no_uniparc_match_chunk_" )
+
+  output:
+  file '*gff3' into interpro_gff3_no_uniparc
+  file '*html.tar.gz' into interpro_html_no_uniparc
+  file '*svg.tar.gz' into interpro_svg_no_uniparc
+  file '*tsv' into interpro_tsv_no_uniparc
+  file '*xml' into interpro_xml_no_uniparc
+  file '*log' into interpro_log_no_uniparc
+
+  script:
+  n = seq.name
+  """
+  echo $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus}
+  bash $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus} >> ${n}.log
+  """
+}
+
+
+process execute_interproscan_uniparc_matches {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
 
@@ -1216,20 +1352,20 @@ process execute_interproscan {
   params.interproscan == true
 
   input:
-  file(seq) from faa_chunks2
+  file(seq) from uniparc_mapping_faa.splitFasta( by: 1000, file: "uniparc_match_chunk_" )
 
   output:
-  file '*gff3' into interpro_gff3
-  file '*html.tar.gz' into interpro_html
-  file '*svg.tar.gz' into interpro_svg
-  file '*tsv' into interpro_tsv
-  file '*xml' into interpro_xml
-  file '*log' into interpro_log
+  file '*gff3' into interpro_gff3_uniparc
+  file '*html.tar.gz' into interpro_html_uniparc
+  file '*svg.tar.gz' into interpro_svg_uniparc
+  file '*tsv' into interpro_tsv_uniparc
+  file '*xml' into interpro_xml_uniparc
+  file '*log' into interpro_log_uniparc
 
   script:
   n = seq.name
   """
-  echo $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} > ${n}.log
+  echo $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus}
   bash $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} >> ${n}.log
   """
 }
