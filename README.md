@@ -24,6 +24,8 @@
 
 # DONE
 
+- [X] input samples table1: genbank assembly accession
+- [X] input samples table2: path to local faa files
 - [X] parallelized BLASTp for orthofinder
 - [X] orthofinder
 - [X] alignments of each orthogroup with mafft
@@ -45,19 +47,19 @@
 - [X] get exact match to PDB
 - [X] get PMID associations from string database for mapped seqs
 - [X] execute gblast vs TCDB for chunks of 1000 sequences (only for unmapped sequences): todo: solve dependancies/env variables
+- [X] interproscan: analyse separately uniparc matches from non matched entries (allocate more ressources to the later): no match: more ram (16go), and cores (8), no lookup service
 
 # TODO
 
 ## priority 1
 
-- [ ] interproscan: analyse separately uniparc matches from non matched entries (allocate more ressources to the later): no match: more ram (12go), and cores (8), no lookup service
+
 - [ ] extract best swissprot and refseq hits for each sequence (from database), build phylogeny with non-redundant set of BBH (x top seqs refseq + y top seqs swissprot as parameters)
-  - [ ] get taxonomy of hits => exclude Chlamydiae hits (need for linear taxonomy)
+  - [X] get taxonomy of hits
+  - [ ] filter Chlamydiae hits (need for linear taxonomy)
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
-- [ ] retrieve uniprot annotation from uniprotKB (exact match or best diamond/plast hit if no exact match?)
+- [ ] (retrieve uniprot annotation from uniprotKB (exact match or best diamond/plast hit if no exact match?))
 - [ ] retrieve uniprot annotation score for matched uniprotkb entries
-- [ ] input samples table: genbank assembly accession
-- [ ] input samples table: local faa files
 
 ## priority 2
 
