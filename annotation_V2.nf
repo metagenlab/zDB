@@ -200,6 +200,51 @@ for record in records:
 }
 
 
+// sort uniparc sequences from non-uniparc sequences
+
+//assembly_faa.flatten().map { it }.filter { (it.text =~ /(>)/).size() < 1000 }.set { small_genomes }
+
+/*
+assembly_faa.collectFile(name: 'merged.faa', newLine: true)
+    .into { faa_list_1
+            faa_list_2 }
+*/
+
+
+
+/*
+process interproscan_annotation_uniparc_matches {
+
+  publishDir 'refseq_annotation/interproscan', mode: 'link', overwrite: true
+
+  cpus 8
+  memory '8 GB'
+  conda 'anaconda::openjdk=8.0.152'
+
+  when:
+  params.interproscan == true
+
+  input:
+  file(seq) from uniparc_mapping_faa.splitFasta( by: 1000, file: "uniparc_match_chunk_" )
+
+  output:
+  file '*gff3' into interpro_gff3_uniparc
+  file '*html.tar.gz' into interpro_html_uniparc
+  file '*svg.tar.gz' into interpro_svg_uniparc
+  file '*tsv' into interpro_tsv_uniparc
+  file '*xml' into interpro_xml_uniparc
+  file '*log' into interpro_log_uniparc
+
+  script:
+  n = seq.name
+  """
+  echo $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus}
+  bash $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} >> ${n}.log
+  """
+}
+*/
+
+
 
 workflow.onComplete {
   // Display complete message

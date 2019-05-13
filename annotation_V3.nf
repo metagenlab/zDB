@@ -864,8 +864,13 @@ from Bio import Entrez
 Entrez.email = "trestan.pillonel@chuv.ch"
 Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
 
+sql = 'attach ${params.databases_dir}/databases/ncbi-taxonomy/linear_taxonomy.db as taxonomy_db'
+cursor.execute(sql,)
+sql = 'select tax_id, phylum from taxonomy_db.ncbi_taxonomy'
+cursor.execute(sql,)
+taxid2phylum = dict(cursor.fetchall())
 
-sql = 'create table refseq_hits (accession varchar(200), taxid INTEGER, description TEXT, length INTEGER)'
+sql = 'create table refseq_hits (accession varchar(200), taxid INTEGER, description TEXT, length INTEGER, phylum varchar(400))'
 cursor.execute(sql,)
 conn.commit()
 
@@ -878,7 +883,7 @@ hit_list = [i.rstrip() for i in f]
 
 accession_lists = chunks(hit_list, 300)
 
-def accession2taxon(gi_list, database="protein"):
+def accession2taxon(gi_list, database="protein",taxid2phylum=False):
     from socket import error as SocketError
     import errno
 
@@ -897,20 +902,20 @@ def accession2taxon(gi_list, database="protein"):
 
     if isinstance(gi_list, list) and len(gi_list) == 1:
         record = Entrez.read(handle, validate=False)
-        hit_annotation.append([record['AccessionVersion'], record['TaxId'],record['Title'], record['Length']])
+        hit_annotation.append([record['AccessionVersion'], record['TaxId'],record['Title'], record['Length'], taxid2phylum[record['TaxId']]])
         return hit_annotation
     else:
         record = Entrez.parse(handle, validate=False)
         try:
             for i in record:
-                hit_annotation.append([i['AccessionVersion'], i['TaxId'],i['Title'], i['Length']])
+                hit_annotation.append([i['AccessionVersion'], i['TaxId'],i['Title'], i['Length'], taxid2phylum[record['TaxId']]])
         except RuntimeError:
             accession2taxon(gi_list, database=database)
         return hit_annotation
 
 for n, one_list in enumerate(accession_lists):
   data = accession2taxon(one_list)
-  sql_template = 'insert into refseq_hits values (?,?,?,?)'
+  sql_template = 'insert into refseq_hits values (?,?,?,?, ?)'
   cursor.executemany(sql_template, data)
   conn.commit()
   """
@@ -1177,9 +1182,9 @@ process tcdb_gblast3 {
   publishDir 'annotation/tcdb_mapping', mode: 'copy', overwrite: true
 
   cpus 1
+  maxForks 1
   conda 'anaconda::biopython=1.67=np111py27_0 conda-forge::matplotlib=2.2.3 biobuilds::fasta'
-
-  beforeScript 'export PATH="$PATH:$GBLAST3_PATH"'
+  echo false
 
   when:
   params.tcdb_gblast == true
@@ -1194,6 +1199,7 @@ process tcdb_gblast3 {
 
   n = seq.name
   """
+  export "PATH=\$HMMTOP_PATH:\$GBLAST3_PATH:\$PATH"
   gblast3.py -i ${seq} -o TCDB_RESULTS_${seq}
   """
 }

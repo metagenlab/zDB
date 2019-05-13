@@ -2,6 +2,8 @@
 
 log.info params.input
 params.databases_dir = "$PWD/databases"
+params.kofamscan = false
+params.mapping_uniparc = true
 
 log.info "====================================="
 log.info "Database folder        : ${params.databases_dir}"
@@ -37,6 +39,7 @@ process download_reference_genomes {
 
   maxForks 2
   maxRetries 3
+  errorStrategy 'ignore'
 
   input:
     each assembly from representative_and_reference_genomes
@@ -73,35 +76,30 @@ process extract_gz {
   """
 }
 
-// sort uniparc sequences from non-uniparc sequences
 
-//assembly_faa.flatten().map { it }.filter { (it.text =~ /(>)/).size() < 1000 }.set { small_genomes }
 
 assembly_faa.into {faa_list_1
                    faa_list_2}
 
-/*
-assembly_faa.collectFile(name: 'merged.faa', newLine: true)
-    .into { faa_list_1
-            faa_list_2 }
-*/
 
 process get_uniparc_mapping {
 
   conda 'bioconda::biopython=1.68'
 
   publishDir 'refseq_annotation/uniparc_mapping/', mode: 'link', overwrite: true
+  cpus 1
+
+  echo = true
 
   when:
-  params.uniparc == true
+  params.mapping_uniparc == true
 
   input:
-  file "${x}.faa" from faa_list_1
+  file "*" from faa_list_1
 
   output:
-  file "${x}_uniparc_mapping.tab" into uniparc_mapping_tab
-  file "${x}_no_uniparc_mapping.faa" into no_uniparc_mapping_faa
-  file "${x}_uniparc_mapping.faa" into uniparc_mapping_faa
+  file "*_uniparc_mapping_interpro.tab" into uniparc_mapping_tab
+  file "*_no_uniparc_mapping.faa" into no_uniparc_mapping_faa
 
   script:
 
@@ -111,39 +109,51 @@ process get_uniparc_mapping {
 from Bio import SeqIO
 import sqlite3
 from Bio.SeqUtils import CheckSum
+import glob
+import re
 
-conn = sqlite3.connect("${params.databases_dir}/uniprot/uniparc/uniparc.db")
+conn = sqlite3.connect("${params.databases_dir}/interproscan/annotated_uniparc/uniparc_match.db")
 cursor = conn.cursor()
 
-fasta_file = "${x}.faa"
+sql = 'attach "${params.databases_dir}/uniprot/uniparc/uniparc.db" as uniparc'
+cursor.execute(sql,)
 
-uniparc_map = open('uniparc_mapping.tab', 'w')
-no_uniparc_mapping = open('no_uniparc_mapping.faa', 'a')
-uniparc_mapping_faa = open('uniparc_mapping.faa', 'a')
+fasta_file = glob.glob("*.faa")[0]
 
-uniparc_map.write("locus_tag\\tuniparc_id\\tuniparc_accession\\tstatus\\n")
-uniprot_map.write("locus_tag\\tuniprot_accession\\ttaxon_id\\tdescription\\n")
+basename = re.sub(".faa", "", fasta_file)
+
+uniparc_map = open('%s_uniparc_mapping_interpro.tab' % basename, 'w')
+no_uniparc_mapping = open('%s_no_uniparc_mapping.faa' % basename, 'a')
+
+uniparc_map.write("locus_tag\\tuniparc_accession\\tuniparc_id\\tentry_accession\\tentry_name\\taccession\\tdescription\\tevidence_name\\tdb_name\\tname\\tstart\\tend\\tscore\\n")
 
 records = SeqIO.parse(fasta_file, "fasta")
 no_mapping_uniprot_records = []
 no_mapping_uniparc_records = []
-mapping_uniparc_records = []
 
 for record in records:
-    sql = 'select uniparc_id,uniparc_accession where sequence_hash=?'
+    sql = 'select uniparc_accession,t0.uniparc_id,entry_accession,entry_name,accession,description,evidence_name,db_name,name,start,end,score from uniparc.uniparc_accession t0 inner join uniparc_match t1 on t0.uniparc_id=t1.uniparc_id inner join match_entry t2 on t1.entry_id=t2.entry_id inner join interpro_entry t3 on t1.interpro_id=t3.interpro_id inner join evidence t4 on t1.evidence_id=t4.evidence_id inner join database t5 on t2.db_id=t5.db_id inner join interpro_type t6 on t3.type_id=t6.type_id where t0.sequence_hash=?'
     cursor.execute(sql, (CheckSum.seguid(record.seq),))
     hits = cursor.fetchall()
     if len(hits) == 0:
         no_mapping_uniparc_records.append(record)
         no_mapping_uniprot_records.append(record)
     else:
-        mapping_uniparc_records.append(record)
-        uniparc_map.write("%s\\t%s\\t%s\\t%s\\n" % (record.id,
-                                                    hits[0][0],
-                                                    hits[0][1]))
+        uniparc_map.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t\\n" % (record.id,
+                                                                                             hits[0][0],
+                                                                                             hits[0][1],
+                                                                                             hits[0][2],
+                                                                                             hits[0][3],
+                                                                                             hits[0][4],
+                                                                                             hits[0][5],
+                                                                                             hits[0][6],
+                                                                                             hits[0][7],
+                                                                                             hits[0][8],
+                                                                                             hits[0][9],
+                                                                                             hits[0][10],
+                                                                                             hits[0][11]))
 
 SeqIO.write(no_mapping_uniparc_records, no_uniparc_mapping, "fasta")
-SeqIO.write(mapping_uniparc_records, uniparc_mapping_faa, "fasta")
   """
 }
 
@@ -157,9 +167,6 @@ process execute_interproscan_no_uniparc_matches {
   cpus 8
   memory '16 GB'
   conda 'anaconda::openjdk=8.0.152'
-
-  when:
-  params.interproscan == true
 
   input:
   file(seq) from merged_no_uniparc_faa.splitFasta( by: 500, file: "no_uniparc_match_chunk_" )
@@ -180,38 +187,6 @@ process execute_interproscan_no_uniparc_matches {
   """
 }
 
-/*
-process interproscan_annotation_uniparc_matches {
-
-  publishDir 'refseq_annotation/interproscan', mode: 'link', overwrite: true
-
-  cpus 8
-  memory '8 GB'
-  conda 'anaconda::openjdk=8.0.152'
-
-  when:
-  params.interproscan == true
-
-  input:
-  file(seq) from uniparc_mapping_faa.splitFasta( by: 1000, file: "uniparc_match_chunk_" )
-
-  output:
-  file '*gff3' into interpro_gff3_uniparc
-  file '*html.tar.gz' into interpro_html_uniparc
-  file '*svg.tar.gz' into interpro_svg_uniparc
-  file '*tsv' into interpro_tsv_uniparc
-  file '*xml' into interpro_xml_uniparc
-  file '*log' into interpro_log_uniparc
-
-  script:
-  n = seq.name
-  """
-  echo $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus}
-  bash $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . -iprlookup -cpu ${task.cpus} >> ${n}.log
-  """
-}
-*/
-
 process execute_kofamscan {
 
   publishDir 'refseq_annotation/KO', mode: 'link', overwrite: true
@@ -220,18 +195,20 @@ process execute_kofamscan {
   memory '8 GB'
 
   when:
-  params.ko == true
+  params.kofamscan == true
 
   input:
-  file "${x}.faa" from faa_list_2
+  file "*" from faa_list_2
 
   output:
   file '*tab'
 
   script:
-  n = seq.name
   """
   export PATH="$PATH:/home/tpillone/work/dev/annotation_pipeline_nextflow/bin/KofamScan/"
-  exec_annotation ${x}.faa -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${x}.tab
+  input_file=`ls *faa`
+  echo \$input_file
+  echo exec_annotation \${input_file} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o \${input_file/faa/tab}
+  exec_annotation \${input_file} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o \${input_file/faa/tab}
   """
 }
