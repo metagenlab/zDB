@@ -61,11 +61,16 @@
 
 
 - [ ] extract best swissprot and refseq hits for each sequence (from database), build phylogeny with non-redundant set of BBH (x top seqs refseq + y top seqs swissprot as parameters)
-  - [X] get taxonomy of hits
-  - [ ] filter Chlamydiae hits (need for linear taxonomy)
+  - [X] get taxid of hits => make protein_accession2phylum sqlite db
+  - [ ] load blast results into the sqlite db
+  - [ ] filter out Chlamydiae/Planctomycetes,... hits (attach linear taxonomy), keep X hits
+  - [ ] retrieve aa sequences
+  - [ ] generate fasta files
+  - [ ] align with mafft
+  - [ ] build phylogeny
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
-- [ ] (retrieve uniprot annotation from uniprotKB (exact match or best diamond/plast hit if no exact match?))
 - [ ] retrieve uniprot annotation score for matched uniprotkb entries
+- [ ] execute checkM
 
 ## priority 2
 
@@ -84,6 +89,8 @@
 - [ ] get entire proteomes: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
 
 ## development
+
+- [ ] (retrieve uniprot annotation from uniprotKB (exact match or best diamond/plast hit if no exact match?))
 
 - [ ] Resfams annotation
 
@@ -137,6 +144,7 @@
 - [ ] phylogenetic profiling for pfam/interpro profiles with RefSeq data
 - [ ] MCL BLAST graph vizualisation
 - [ ] standardize annotation within orthogroups: if sufficient reciprocal seq coverage (BLAST align), expand KO, COG and EC annotations   
+- [ ] curated blast db: https://msystems.asm.org/content/4/2/e00072-19
 
 ## Notes
 
