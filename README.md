@@ -62,10 +62,12 @@
 
 - [ ] extract best swissprot and refseq hits for each sequence (from database), build phylogeny with non-redundant set of BBH (x top seqs refseq + y top seqs swissprot as parameters)
   - [X] get taxid of hits => make protein_accession2phylum sqlite db
-  - [ ] load blast results into the sqlite db
-  - [ ] filter out Chlamydiae/Planctomycetes,... hits (attach linear taxonomy), keep X hits
+  - [ ] load blast results into sqlite db
+  - [ ] load locus tag 2 hash table
+  - [ ] load orthology data into sqlite db (locus2orthogroup)
+  - [ ] keep X hits/sequence filter out Chlamydiae/Planctomycetes,... hits (attach linear taxonomy)
   - [ ] retrieve aa sequences
-  - [ ] generate fasta files
+  - [ ] generate one fasta files/orthogroup
   - [ ] align with mafft
   - [ ] build phylogeny
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
