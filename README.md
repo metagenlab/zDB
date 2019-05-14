@@ -120,6 +120,7 @@
 
 - [ ] add tcdb classification to "fam" (annotation, phylogenetic profile,...). Include all classification levels (superfamilies,...)
 - [ ] idem with EC classification system
+- [ ] integrate interpro hierarchy 
 - [ ] add explanations for hydropathy plot
 - [ ] add download page (download KO mapping, interpro mapping, all phylogenies, orthology table,...)
 - [ ] search bar: add option to search for TCDB accessions

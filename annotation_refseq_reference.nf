@@ -89,8 +89,6 @@ process get_uniparc_mapping {
   publishDir 'refseq_annotation/uniparc_mapping/', mode: 'link', overwrite: true
   cpus 1
 
-  echo = true
-
   when:
   params.mapping_uniparc == true
 
