@@ -126,30 +126,41 @@ no_uniparc_mapping = open('%s_no_uniparc_mapping.faa' % basename, 'a')
 uniparc_map.write("locus_tag\\tuniparc_accession\\tuniparc_id\\tentry_accession\\tentry_name\\taccession\\tdescription\\tevidence_name\\tdb_name\\tname\\tstart\\tend\\tscore\\n")
 
 records = SeqIO.parse(fasta_file, "fasta")
-no_mapping_uniprot_records = []
 no_mapping_uniparc_records = []
 
 for record in records:
-    sql = 'select uniparc_accession,t0.uniparc_id,entry_accession,entry_name,accession,description,evidence_name,db_name,name,start,end,score from uniparc.uniparc_accession t0 inner join uniparc_match t1 on t0.uniparc_id=t1.uniparc_id inner join match_entry t2 on t1.entry_id=t2.entry_id inner join interpro_entry t3 on t1.interpro_id=t3.interpro_id inner join evidence t4 on t1.evidence_id=t4.evidence_id inner join database t5 on t2.db_id=t5.db_id inner join interpro_type t6 on t3.type_id=t6.type_id where t0.sequence_hash=?'
-    cursor.execute(sql, (CheckSum.seguid(record.seq),))
+
+    checksum = CheckSum.seguid(record.seq)
+    print(checksum)
+    sql1 = 'select uniparc_accession from uniparc.uniparc_accession where sequence_hash=?'
+    cursor.execute(sql1, (checksum,))
     hits = cursor.fetchall()
+
+    # check if uniparc match
     if len(hits) == 0:
         no_mapping_uniparc_records.append(record)
-        no_mapping_uniprot_records.append(record)
     else:
-        uniparc_map.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t\\n" % (record.id,
-                                                                                             hits[0][0],
-                                                                                             hits[0][1],
-                                                                                             hits[0][2],
-                                                                                             hits[0][3],
-                                                                                             hits[0][4],
-                                                                                             hits[0][5],
-                                                                                             hits[0][6],
-                                                                                             hits[0][7],
-                                                                                             hits[0][8],
-                                                                                             hits[0][9],
-                                                                                             hits[0][10],
-                                                                                             hits[0][11]))
+        # fetch interpro annotation
+        sql = 'select uniparc_accession,t0.uniparc_id,entry_accession,entry_name,accession,description,evidence_name,db_name,name,start,end,score from uniparc.uniparc_accession t0 inner join uniparc_match t1 on t0.uniparc_id=t1.uniparc_id inner join match_entry t2 on t1.entry_id=t2.entry_id inner join interpro_entry t3 on t1.interpro_id=t3.interpro_id inner join evidence t4 on t1.evidence_id=t4.evidence_id inner join database t5 on t2.db_id=t5.db_id inner join interpro_type t6 on t3.type_id=t6.type_id where t0.sequence_hash=? and t5.db_name!="MOBIDBLT"'
+        cursor.execute(sql, (checksum,))
+        hits = cursor.fetchall()
+
+        # some uniparc entries wont have any interpro annotation
+        if len(hits) != 0:
+          for hit in hits:
+            uniparc_map.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t\\n" % (record.id,
+                                                                                                        hit[0],
+                                                                                                        hit[1],
+                                                                                                        hit[2],
+                                                                                                        hit[3],
+                                                                                                        hit[4],
+                                                                                                        hit[5],
+                                                                                                        hit[6],
+                                                                                                        hit[7],
+                                                                                                        hit[8],
+                                                                                                        hit[9],
+                                                                                                        hit[10],
+                                                                                                        hit[11]))
 
 SeqIO.write(no_mapping_uniparc_records, no_uniparc_mapping, "fasta")
   """
