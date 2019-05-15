@@ -62,9 +62,10 @@
 
 - [ ] extract best swissprot and refseq hits for each sequence (from database), build phylogeny with non-redundant set of BBH (x top seqs refseq + y top seqs swissprot as parameters)
   - [X] get taxid of hits => make protein_accession2phylum sqlite db
-  - [ ] load blast results into sqlite db
-  - [ ] load locus tag 2 hash table
-  - [ ] load orthology data into sqlite db (locus2orthogroup)
+  - [ ] setup db (single process)
+    - [X] load blast results into sqlite db
+    - [ ] load locus tag 2 hash table
+    - [ ] load orthology data into sqlite db (locus2orthogroup)
   - [ ] keep X hits/sequence filter out Chlamydiae/Planctomycetes,... hits (attach linear taxonomy)
   - [ ] retrieve aa sequences
   - [ ] generate one fasta files/orthogroup
@@ -120,7 +121,7 @@
 
 - [ ] add tcdb classification to "fam" (annotation, phylogenetic profile,...). Include all classification levels (superfamilies,...)
 - [ ] idem with EC classification system
-- [ ] integrate interpro hierarchy 
+- [ ] integrate interpro hierarchy
 - [ ] add explanations for hydropathy plot
 - [ ] add download page (download KO mapping, interpro mapping, all phylogenies, orthology table,...)
 - [ ] search bar: add option to search for TCDB accessions

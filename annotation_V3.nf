@@ -21,6 +21,8 @@ params.tcdb = true
 params.blast_swissprot = true
 params.plast_refseq = false
 params.diamond_refseq = true
+params.diamond_refseq_taxonomy = false
+params.refseq_diamond_BBH_phylogeny = true
 params.string = true
 params.pdb = true
 params.oma = true
@@ -355,6 +357,10 @@ process orthofinder_main {
   """
 }
 
+orthogroups
+.into { orthogroups_1
+        orthogroups_2}
+
 process orthogroups2fasta {
   '''
   Get fasta file of each orthogroup
@@ -365,7 +371,7 @@ process orthogroups2fasta {
   publishDir 'orthology/orthogroups_fasta', mode: 'copy', overwrite: true
 
   input:
-  file 'Orthogroups.txt' from orthogroups
+  file 'Orthogroups.txt' from orthogroups_1
   file genome_list from faa_genomes2.collect()
 
   output:
@@ -819,6 +825,10 @@ process diamond_refseq {
 }
 
 refseq_diamond.collectFile()
+.into { refseq_diamond_results_taxid_mapping
+        refseq_diamond_results_sqlitedb }
+
+refseq_diamond_results_taxid_mapping
 .splitCsv(header: false, sep: '\t')
 .map{row ->
     def protein_accession = row[1]
@@ -842,7 +852,7 @@ process get_refseq_hits_taxonomy {
   echo true
 
   when:
-  params.diamond_refseq == true
+  params.diamond_refseq_taxonomy == true
 
   input:
   file refseq_hit_table from refseq_diamond_nr
@@ -1410,6 +1420,102 @@ process execute_kofamscan {
   """
 }
 
+
+process setup_orthology_db {
+  /*
+  - [ ] load locus_tag2hash table
+  - [ ] load locus2orthogroup data into sqlite db (locus2orthogroup)
+  */
+
+  conda 'biopython=1.73=py36h7b6447c_0'
+  publishDir 'orthology/', mode: 'link', overwrite: true
+
+  cpus 4
+  memory '8 GB'
+
+  when:
+  params.refseq_diamond_BBH_phylogeny == false
+
+  input:
+  file nr_mapping_file from nr_mapping
+  file orthogroup from orthogroups_2
+
+  output:
+  file 'orthology.db'
+
+  script:
+  """
+  #!/usr/bin/env python
+
+
+  from Bio import SeqIO
+  import sqlite3
+  from Bio.SeqUtils import CheckSum
+
+  conn = sqlite3.connect("diamond_refseq.db")
+  cursor = conn.cursor()
+
+  print("${nr_mapping_file}")
+  print("${orthogroup}")
+
+  """
+}
+
+
+process setup_diamond_refseq_db {
+  /*
+  - [ ] load blast results into sqlite db
+  */
+
+  conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
+  publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
+  echo true
+  cpus 4
+  memory '8 GB'
+
+  when:
+  params.refseq_diamond_BBH_phylogeny == true
+
+  input:
+  file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
+
+  output:
+  file 'diamond_refseq.db'
+
+  script:
+  """
+#!/usr/bin/env python
+
+from Bio import SeqIO
+import sqlite3
+from Bio.SeqUtils import CheckSum
+import pandas
+
+conn = sqlite3.connect("diamond_refseq.db")
+cursor = conn.cursor()
+sql1 = 'create table diamond_refseq(hit_count INTEGER, qseqid varchar(200), sseqid varchar(200), pident FLOAT, length INTEGER, mismatch INTEGER, gapopen INTEGER, qstart INTEGER, qend INTEGER, sstart INTEGER, send INTEGER, evalue FLOAT, bitscore FLOAT)'
+cursor.execute(sql1,)
+conn.commit()
+
+sql = 'insert into diamond_refseq values (?,?,?,?,?,?,?,?,?,?,?,?,?)'
+
+diamond_file_list = "${diamond_tsv_list}".split(' ')
+for one_file in diamond_file_list:
+    diamond_table = pandas.read_csv(one_file, sep="\\t")
+    accession = ''
+    count = ''
+    # add hit count as first column
+    for index, row in diamond_table.iterrows():
+        # if new protein, reinitialise the count
+        if row[0] != accession:
+            accession = row[0]
+            count = 1
+        else:
+            count+=1
+        cursor.execute(sql, [count] + row.tolist())
+    conn.commit()
+  """
+}
 
 
 workflow.onComplete {
