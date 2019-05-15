@@ -875,7 +875,7 @@ def chunks(l, n):
 f = open("${refseq_hit_table}", 'r')
 hit_list = [i.rstrip() for i in f]
 
-accession_lists = chunks(hit_list, 500)
+accession_lists = chunks(hit_list, 300)
 
 def accession2taxon(gi_list, database):
     from socket import error as SocketError
@@ -915,6 +915,10 @@ def accession2taxon(gi_list, database):
                                        i['Length']
                                        ])
         except RuntimeError:
+            print ('RuntimeError error, trying again...')
+            accession2taxon(gi_list, database=database)
+        except http.client.IncompleteRead:
+            print ('IncompleteRead error, trying again...')
             accession2taxon(gi_list, database=database)
         return hit_annotation
 
