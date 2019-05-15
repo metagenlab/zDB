@@ -128,6 +128,7 @@ uniparc_map.write("locus_tag\\tuniparc_accession\\tuniparc_id\\tentry_accession\
 records = SeqIO.parse(fasta_file, "fasta")
 no_mapping_uniparc_records = []
 
+lines = []
 for record in records:
 
     checksum = CheckSum.seguid(record.seq)
@@ -137,6 +138,7 @@ for record in records:
     hits = cursor.fetchall()
 
     # check if uniparc match
+
     if len(hits) == 0:
         no_mapping_uniparc_records.append(record)
     else:
@@ -148,7 +150,7 @@ for record in records:
         # some uniparc entries wont have any interpro annotation
         if len(hits) != 0:
           for hit in hits:
-            uniparc_map.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t\\n" % (record.id,
+            lines.append("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t\\n" % (record.id,
                                                                                                         hit[0],
                                                                                                         hit[1],
                                                                                                         hit[2],
@@ -161,6 +163,7 @@ for record in records:
                                                                                                         hit[9],
                                                                                                         hit[10],
                                                                                                         hit[11]))
+uniparc_map.writelines(lines)
 
 SeqIO.write(no_mapping_uniparc_records, no_uniparc_mapping, "fasta")
   """
