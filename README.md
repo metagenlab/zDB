@@ -64,8 +64,8 @@
   - [X] get taxid of hits => make protein_accession2phylum sqlite db
   - [ ] setup db (single process)
     - [X] load blast results into sqlite db
-    - [ ] load locus tag 2 hash table
-    - [ ] load orthology data into sqlite db (locus2orthogroup)
+    - [X] load locus tag 2 hash table
+    - [X] load orthology data into sqlite db (locus2orthogroup)
   - [ ] keep X hits/sequence filter out Chlamydiae/Planctomycetes,... hits (attach linear taxonomy)
   - [ ] retrieve aa sequences
   - [ ] generate one fasta files/orthogroup

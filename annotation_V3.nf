@@ -284,7 +284,8 @@ nr_seqs.collectFile(name: 'merged_nr.faa', newLine: true)
         merged_faa2
         merged_faa3
         merged_faa4
-        merged_faa5 }
+        merged_faa5
+        merged_faa6 }
 
 merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
 .into { faa_chunks1
@@ -937,6 +938,15 @@ for n, one_list in enumerate(accession_lists):
   sql_template = 'insert into refseq_hits values (?,?,?,?)'
   cursor.executemany(sql_template, data)
   conn.commit()
+
+# index accession and taxid columns
+sql_index_1 = 'create index acc on refseq_hits (accession);'
+sql_index_2 = 'create index taxid on refseq_hits (taxid);'
+
+cursor.execute(sql_index_1)
+cursor.execute(sql_index_2)
+conn.commit()
+
   """
 }
 
@@ -1434,11 +1444,12 @@ process setup_orthology_db {
   memory '8 GB'
 
   when:
-  params.refseq_diamond_BBH_phylogeny == false
+  params.refseq_diamond_BBH_phylogeny == true
 
   input:
   file nr_mapping_file from nr_mapping
   file orthogroup from orthogroups_2
+  file nr_fasta from merged_faa6
 
   output:
   file 'orthology.db'
@@ -1452,12 +1463,53 @@ process setup_orthology_db {
   import sqlite3
   from Bio.SeqUtils import CheckSum
 
-  conn = sqlite3.connect("diamond_refseq.db")
+  fasta_dict = SeqIO.to_dict(SeqIO.parse("${nr_fasta}", "fasta"))
+
+  conn = sqlite3.connect("orthology.db")
   cursor = conn.cursor()
 
-  print("${nr_mapping_file}")
-  print("${orthogroup}")
+  # sequence table
+  sql0 = 'create table sequence_hash2aa_sequence (sequence_hash binary, sequence TEXT )'
+  cursor.execute(sql0,)
+  sql = 'insert into  sequence_hash2aa_sequence values (?, ?)'
+  for hash in fasta_dict:
+    cursor.execute(sql, (hash, str(fasta_dict[hash].seq)))
 
+  # hash mapping table
+  sql1 = 'create table locus_tag2sequence_hash (locus_tag varchar(200), sequence_hash binary)'
+  cursor.execute(sql1,)
+
+  sql = 'insert into locus_tag2sequence_hash values (?, ?)'
+  with open("${nr_mapping_file}", 'r') as f:
+      for row in f:
+          data = row.rstrip().split("\\t")
+          cursor.execute(sql, data)
+  conn.commit()
+
+  # orthogroup table
+  sql2 = 'create table locus_tag2orthogroup (locus_tag varchar(200), orthogroup varchar(200))'
+  cursor.execute(sql2,)
+  sql = 'insert into locus_tag2orthogroup values (?, ?)'
+  with open("${orthogroup}", 'r') as f:
+      for row in f:
+          data = row.rstrip().split(" ")
+          for locus in data[1:]:
+            cursor.execute(sql,(data[0][0:-1], locus))
+  conn.commit()
+
+  # index hash, locus and orthogroup columns
+  sql_index_1 = 'create index hash1 on sequence_hash2aa_sequence (sequence_hash);'
+  sql_index_2 = 'create index hash2 on locus_tag2sequence_hash (sequence_hash);'
+  sql_index_3 = 'create index locus1 on locus_tag2sequence_hash (locus_tag);'
+  sql_index_4 = 'create index locus2 on locus_tag2orthogroup (locus_tag);'
+  sql_index_5 = 'create index og on locus_tag2orthogroup (orthogroup);'
+
+  cursor.execute(sql_index_1)
+  cursor.execute(sql_index_2)
+  cursor.execute(sql_index_3)
+  cursor.execute(sql_index_4)
+  cursor.execute(sql_index_5)
+  conn.commit()
   """
 }
 
@@ -1514,6 +1566,15 @@ for one_file in diamond_file_list:
             count+=1
         cursor.execute(sql, [count] + row.tolist())
     conn.commit()
+
+# index query accession (hash) + hit number
+sql_index_1 = 'create index hitc on diamond_refseq (hit_count);'
+sql_index_2 = 'create index acc on diamond_refseq (qseqid);'
+
+cursor.execute(sql_index_1)
+cursor.execute(sql_index_2)
+conn.commit()
+
   """
 }
 
