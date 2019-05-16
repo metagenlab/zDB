@@ -60,14 +60,14 @@
 ## priority 1
 
 
-- [ ] extract best swissprot and refseq hits for each sequence (from database), build phylogeny with non-redundant set of BBH (x top seqs refseq + y top seqs swissprot as parameters)
+- [ ] extract best refseq (and swissprot?) hits for each sequence (from database), build phylogeny with non-redundant set of BBH (x top seqs refseq + y top seqs swissprot as parameters)
   - [X] get taxid of hits => make protein_accession2phylum sqlite db
-  - [ ] setup db (single process)
+  - [X] setup db (single process)
     - [X] load blast results into sqlite db
     - [X] load locus tag 2 hash table
     - [X] load orthology data into sqlite db (locus2orthogroup)
   - [ ] keep X hits/sequence filter out Chlamydiae/Planctomycetes,... hits (attach linear taxonomy)
-  - [ ] retrieve aa sequences
+  - [ ] retrieve refseq hits aa sequences
   - [ ] generate one fasta files/orthogroup
   - [ ] align with mafft
   - [ ] build phylogeny
