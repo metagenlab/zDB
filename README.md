@@ -1,37 +1,30 @@
 
 # annotation pipeline (chlamdb-type database)
 
+- automatic download from GenBank (input: assembly table)
+- check gbk format for biosqldb setup (concatenate draft genomes if necessary)
 - blast each pairs of proteomes
 - run orthoFinder
 - extract orthogroups fasta
 - align each orthogroup with mafft
-- build phylogenies with iq-tree
+- build phylogenies with iq-tree or fasttree
 - identify core single copy orthogroups
 - concatenate core orthogroup alignments & build a reference phylogeny with FastTree
 - rps-BLAST to COG database (cdd PSSM)
 - BLASTp to swissprot database
-- execute interproscan
+- diamond or plast to RefSEq (top 100 hits)
+- annotate with interproscan
+- execute gBLAST for TCDB annotation (transporters)
 - execute KofamScan to get KO annotation
 - mapping to string, oma, pdb, tcdb databases (exact matches)
 - get PMID mapping from string
 
-# refseq reference/representative genomes
-
-- [X] download representative/reference genomes from RefSeq database
-- [ ] annotate each genome with InterproScan: TODO: use exact match to uniparc to get precomputed annotations, only execute interproscan for unannotated proteins OR simply annotate them separately (speed of iprlookup?)
-- alternative option: work with uniprotkb proteomes 1) exclude anomalous proteomes based on refseq data 2) get species taxid for each proteome 3) remove redudancy (keep one prepresentative per species taxid) 4) retrieve interpro annotation from interproscan uniparc annotations
-- [ ]make stats from ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_genbank.txt: superkingdom, annotated genomes,...
-- [ ] annotate representative genomes with kofamscan => phylogenetic profile of KO, modules, pathways,...
-- [ ] use GTDB rather than NCBI taxonomy? ==> does not include eukaryotes
-  - [ ] see http://annotree.uwaterloo.ca/app/#/?qtype=pfam&qstring=PF00617&eval=0.00001
-  - [ ] get leaf2phylum & leaf2order & leaf2class
-  - [ ] extract subset of their reference phylogeny
-  - [ ] get phylum tree & order tree & class tree (keep only lineages containing representative/reference genomes) (see how many different phylum, class, orders)
 
 # DONE
 
 - [X] input samples table1: genbank assembly accession
-- [X] input samples table2: path to local faa files
+- [X] input samples table2: path to local gbk files
+- [X] gbk_check (add unique taxid for each genome, concatenate contigs)
 - [X] parallelized BLASTp for orthofinder
 - [X] orthofinder
 - [X] alignments of each orthogroup with mafft
@@ -81,6 +74,8 @@
 - [ ] execute T3 effector prediction: T3_MM
 - [ ] execute T3 effector prediction: effective
 
+- [ ] Inc prediction based on bi-lobbed hydrophobic domains
+
 - [ ] VF annotation with all databases
 
 - [ ] retrieve DOORS2 operons
@@ -100,8 +95,6 @@
 - [ ] execute macsyfinder for crispr
 - [ ] execute macsyfinder for capsular genes
 - [ ] execute macsyfinder for secretion systems
-
-- [ ] Inc prediction based on bi-lobbed hydrophobic domains
 
 - [ ] execute PRIAM for each genome or hmmsearch with PRIAM database?
 
@@ -157,5 +150,20 @@
 
 - BLAST vs PLAST vs mmseq2 vs diamond: statisics and best hits comparisons
 - install eggnog-mapper?
-- execute eggnog-mapper and ghostkoala online?
 - HHBLITS
+
+# refseq reference/representative genomes
+
+- [X] download representative/reference genomes from RefSeq database
+- [X] annotate each genome with InterproScan: use exact match to uniparc to get precomputed annotations
+- [X] annotate representative genomes with kofamscan => phylogenetic profile of KO, modules, pathways,...
+- [ ] execute local interproscan for unannotated proteins
+- alternative option: work with uniprotkb proteomes 1) exclude anomalous proteomes based on refseq data 2) get species taxid for each proteome 3) remove redudancy (keep one prepresentative per species taxid) 4) retrieve interpro annotation from interproscan uniparc annotations
+- [ ]make stats from ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_genbank.txt: superkingdom, annotated genomes,...
+- [ ] use GTDB rather than NCBI taxonomy? ==> does not include eukaryotes
+  - [ ] see http://annotree.uwaterloo.ca/app/#/?qtype=pfam&qstring=PF00617&eval=0.00001
+  - [ ] get leaf2phylum & leaf2order & leaf2class
+  - [ ] extract subset of their reference phylogeny
+  - [ ] get phylum tree & order tree & class tree (keep only lineages containing representative/reference genomes) (see how many different phylum, class, orders)
+
+
