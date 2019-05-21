@@ -18,6 +18,11 @@ accession_choices = []
 for i in accession_list:
     accession_choices.append((i,i))
 
+class GenerateRandomUserForm(forms.Form):
+    total_user = forms.IntegerField(
+        label='Number of users',
+        required=True,
+    )
 
 def get_accessions(database_name, all=False, plasmid=False):
 

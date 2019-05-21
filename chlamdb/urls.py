@@ -188,6 +188,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^about$', views.about, name="about"),
                        url(r'^help', views.help, name="help"),
                        url(r'^get_record/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', views.get_record, name="get_record"),
+                       url(r'^generate-user/', views.generate_random_user),
+                       url(r'^get-task-info/', views.get_task_info),
                        url(r'^.*$', views.home, name="home"),
-
 ]
