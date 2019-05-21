@@ -626,7 +626,7 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
     '''
     import numpy
     import pandas
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -636,7 +636,7 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
     for record in record_list:
         accessions.append(record.id.split('.')[0])
 
-    from biosqldb import biosql_own_sql_tables as bsql
+    from chlamdb.biosqldb import biosql_own_sql_tables as bsql
 
     #print '-------------- taxon list ------------'
     #print taxon_list
@@ -860,10 +860,10 @@ def orthology_circos_files(server,
                            get_orthogroup_counts=False,
                            locus_highlight2=[]):
 
-    from biosqldb import biosql_own_sql_tables
+    from chlamdb.biosqldb import biosql_own_sql_tables
     import os
-    from biosqldb import orthogroup_identity_db
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import orthogroup_identity_db
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     #print "orthology_circos_files"
     #print "draft_data", draft_data

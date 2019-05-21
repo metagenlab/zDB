@@ -10,10 +10,10 @@ class CircosAccession2biplot():
                  locus_highlight,
                  out_directory):
 
-        from biosqldb import manipulate_biosqldb
-        from plots import gbk2circos
+        from chlamdb.biosqldb import manipulate_biosqldb
+        from chlamdb.plots import gbk2circos
         import os
-        from biosqldb import shell_command
+        from chlamdb.biosqldb import shell_command
 
         reference_accessions = []
         for record in reference_records:
@@ -161,10 +161,10 @@ class CircosAccession2multiplot():
                  radius=0.75,
                  locus_highlight2=[]):
 
-        from biosqldb import manipulate_biosqldb
-        from plots import gbk2circos
+        from chlamdb.biosqldb import manipulate_biosqldb
+        from chlamdb.plots import gbk2circos
         import os
-        from biosqldb import shell_command
+        from chlamdb.biosqldb import shell_command
 
         reference_accessions = []
         for reference_record in reference_records:
@@ -1728,10 +1728,10 @@ class CircosAccession2nested_plots1():
                  out_directory,
                  draft_fasta):
 
-        from biosqldb import manipulate_biosqldb
-        from plots import gbk2circos
+        from chlamdb.biosqldb import manipulate_biosqldb
+        from chlamdb.plots import gbk2circos
         import os
-        from biosqldb import shell_command
+        from chlamdb.biosqldb import shell_command
 
 
 
@@ -1823,10 +1823,10 @@ class CircosAccession2nested_plot2():
                  locus_highlight,
                  out_directory):
 
-        from biosqldb import manipulate_biosqldb
-        from plots import gbk2circos
+        from chlamdb.biosqldb import manipulate_biosqldb
+        from chlamdb.plots import gbk2circos
         import os
-        from biosqldb import shell_command
+        from chlamdb.biosqldb import shell_command
 
         reference_taxon_id = manipulate_biosqldb.bioentry_id2taxon_id(server, biodatabase_name, reference_accession)
         query_taxon_id = manipulate_biosqldb.bioentry_id2taxon_id(server, biodatabase_name, query_accession)
@@ -1922,10 +1922,10 @@ class CircosAccession2blastnr_plot():
                  taxon_list=False,
                  highlight_BBH=False):
 
-        from biosqldb import manipulate_biosqldb
-        from plots import gbk2circos
+        from chlamdb.biosqldb import manipulate_biosqldb
+        from chlamdb.plots import gbk2circos
         import os
-        from biosqldb import shell_command
+        from chlamdb.biosqldb import shell_command
 
         reference_accessions = []
         #print reference_records
@@ -2244,7 +2244,7 @@ euk = 255,131,250
 
 if __name__ == '__main__':
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
 
     #refernce = db.lookup(accession="AE001273") trachomatis

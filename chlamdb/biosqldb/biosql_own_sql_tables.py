@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-from biosqldb import manipulate_biosqldb
-from plots import gbk2circos
+from chlamdb.biosqldb import manipulate_biosqldb
+from chlamdb.plots import gbk2circos
 
 def locus_tag2orthogroup_size(db_name):
 
@@ -255,7 +255,7 @@ def circos_locus2taxon_highest_identity(biodb, reference_taxon_id, use_identity_
     :param reference_accession: reference taxon_id
     :return:
     '''
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -313,7 +313,7 @@ def circos_locus2taxon_highest_identity(biodb, reference_taxon_id, use_identity_
 
 def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="./"):
 
-    from biosqldb import mysqldb_load_mcl_output
+    from chlamdb.biosqldb import mysqldb_load_mcl_output
     import sys
     from Bio import SeqIO
     import os
@@ -389,8 +389,8 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
 
 def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter=False, accessions=False):
 
-    from biosqldb import manipulate_biosqldb
-    from biosqldb import biosql_own_sql_tables
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import biosql_own_sql_tables
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -479,7 +479,7 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
     return match_groups_data, extract_result
 
 def accession2coding_density(biodb, sqlite=False):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     from Bio.SeqUtils import GC123
 
     server, db = manipulate_biosqldb.load_db(biodb, sqlite=sqlite)
@@ -1350,7 +1350,7 @@ def locus_tag2presence_in_n_genomes(db_name):
     return a dictionnary of all locus tag and the number of genomes in which they have one or multiple homolog(s)
     '''
 
-    from biosqldb import mysqldb_load_mcl_output
+    from chlamdb.biosqldb import mysqldb_load_mcl_output
     server, db = manipulate_biosqldb.load_db(db_name)
     orthogroup2family_size = mysqldb_load_mcl_output.get_family_size(server, db_name)
     locus_tag2orthogroup_dico = locus_tag2orthogroup(db_name)
@@ -1692,7 +1692,7 @@ def get_cooccurring_groups(db_name, accession1, accession2, windows_size=10, min
     return conserved_regions
 
 def locus_list2nucleotide_fasta(biodb,locus_list):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     from Bio import SeqRecord
     from Bio.Seq import Seq
     from Bio import SeqIO
