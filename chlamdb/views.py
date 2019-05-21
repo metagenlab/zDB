@@ -11,7 +11,7 @@
 from django.shortcuts import render
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
-from plots import circos_orthology
+import chlamdb.plots
 # from django.core.cache import cache
 #import pylibmc
 #from django.core.cache import cache
@@ -67,13 +67,13 @@ from chlamdb.forms import make_blastnr_best_non_top_phylum_form
 
 
 
-from biosqldb import manipulate_biosqldb
-from biosqldb import mysqldb_plot_genomic_feature
+from chlamdb.biosqldb import manipulate_biosqldb
+from chlamdb.biosqldb import mysqldb_plot_genomic_feature
 #from django.core.cache import caches
 from django.core.cache import cache
 from tempfile import NamedTemporaryFile
 from Bio import SeqIO
-from biosqldb.gbk2table import Record
+from chlamdb.biosqldb.gbk2table import Record
 import chlamdb.models
 import simplejson
 import string
@@ -196,7 +196,7 @@ def logout_view(request):
 
 def home(request):
     from ete3 import TreeStyle
-    from phylo_tree_display import phylo_tree_bar
+    from chlamdb.phylo_tree_display import phylo_tree_bar
     from ete3 import Tree
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -320,7 +320,7 @@ def circos_homology(request):
 
             path = settings.BASE_DIR + "/assets/circos"
 
-            circos_orthology.circos_orthology(record_list, ref_record[1:], target_records, location = path)
+            chlamdb.plots.circos_orthology.circos_orthology(record_list, ref_record[1:], target_records, location=path)
             circos_file = "circos/circos_ortho.svg"
             envoi_circos = True
 
@@ -505,8 +505,8 @@ def locus_list2orthogroups(request):
 
         #form2 = ContactForm(request.POST)
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
-            from biosqldb import biosql_own_sql_tables
-            from phylo_tree_display import ete_motifs
+            from chlamdb.biosqldb import biosql_own_sql_tables
+            from chlamdb.phylo_tree_display import ete_motifs
             server, db = manipulate_biosqldb.load_db(biodb)
 
             match_locus = [i.rstrip() for i in form.cleaned_data['orthogroups'].rstrip().split('\n')]
@@ -548,8 +548,8 @@ def orthogroup_annotation(request, display_form):
 
         #form2 = ContactForm(request.POST)
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
-            from biosqldb import biosql_own_sql_tables
-            from phylo_tree_display import ete_motifs
+            from chlamdb.biosqldb import biosql_own_sql_tables
+            from chlamdb.phylo_tree_display import ete_motifs
             server, db = manipulate_biosqldb.load_db(biodb)
 
             match_groups = [i.rstrip() for i in form.cleaned_data['orthogroups'].rstrip().split('\n')]
@@ -575,8 +575,8 @@ def orthogroup_annotation(request, display_form):
             form = AnnotForm()
         else:
 
-            from phylo_tree_display import ete_motifs
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.phylo_tree_display import ete_motifs
+            from chlamdb.biosqldb import biosql_own_sql_tables
 
 
             server, db = manipulate_biosqldb.load_db(biodb)
@@ -601,7 +601,7 @@ def orthogroup_annotation(request, display_form):
     return render(request, 'chlamdb/orthogroup_annotation.html', locals())
 
 def test():
-    from plots import plot_genomic_feature
+    from chlamdb.plots import plot_genomic_feature
 
 def locus_annotation(request, display_form):
     biodb = settings.BIODB
@@ -618,8 +618,8 @@ def locus_annotation(request, display_form):
 
         #form2 = ContactForm(request.POST)
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
-            from biosqldb import biosql_own_sql_tables
-            from phylo_tree_display import ete_motifs
+            from chlamdb.biosqldb import biosql_own_sql_tables
+            from chlamdb.phylo_tree_display import ete_motifs
             from ete3 import Tree
             import copy
 
@@ -763,8 +763,8 @@ def locus_annotation(request, display_form):
             form = form_class()
         else:
 
-            from phylo_tree_display import ete_motifs
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.phylo_tree_display import ete_motifs
+            from chlamdb.biosqldb import biosql_own_sql_tables
 
 
             server, db = manipulate_biosqldb.load_db(biodb)
@@ -899,7 +899,7 @@ def extract_pfam(request, classification="taxon_id"):
         form = extract_form_class(request.POST)  # Nous reprenons les données
 
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.biosqldb import biosql_own_sql_tables
             #print request.POST
             #print form.cleaned_data.keys()
             include = form.cleaned_data['orthologs_in']
@@ -931,7 +931,7 @@ def extract_pfam(request, classification="taxon_id"):
                 if len(match_groups) == 0:
                     no_match = True
                 else:
-                    from biosqldb import biosql_own_sql_tables
+                    from chlamdb.biosqldb import biosql_own_sql_tables
                     # get count in subgroup
                     pfam2count = dict((mat > 0).sum(axis=1))
                     # get count in complete database
@@ -1029,7 +1029,7 @@ def extract_ko(request):
         form = extract_form_class(request.POST)  # Nous reprenons les données
 
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.biosqldb import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
             exclude = form.cleaned_data['no_orthologs_in']
@@ -1191,7 +1191,7 @@ def extract_EC(request):
         form = extract_form_class(request.POST)  # Nous reprenons les données
 
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.biosqldb import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
             exclude = form.cleaned_data['no_orthologs_in']
@@ -1281,7 +1281,7 @@ def extract_EC(request):
 
             # get phylogenetic profile of match if not too big
             if len(match_groups) < 50:
-                from phylo_tree_display import ete_motifs
+                from chlamdb.phylo_tree_display import ete_motifs
                 sql = 'select distinct ec,orthogroup from enzyme.locus2ec_%s as t1 ' \
                       ' inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id where ec in (%s);' % (biodb,
                                                                   '"' + '","'.join(match_groups) + '"')
@@ -1495,7 +1495,7 @@ def extract_interpro(request, classification="taxon_id"):
 
         #form2 = ContactForm(request.POST)
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.biosqldb import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
             exclude = form.cleaned_data['no_orthologs_in']
@@ -1666,7 +1666,7 @@ def extract_cog(request):
 
         #form2 = ContactForm(request.POST)
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.biosqldb import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
             exclude = form.cleaned_data['no_orthologs_in']
@@ -2089,7 +2089,7 @@ def locusx(request, locus=None, menu=True):
 
 
         if input_type == 'locus_tag':
-            from plots import uniprot_feature_viewer
+            from chlamdb.plots import uniprot_feature_viewer
 
 
 
@@ -2393,7 +2393,7 @@ def locusx(request, locus=None, menu=True):
                            ' from interpro_%s where locus_tag="%s" ' \
                            ' and analysis="Pfam";' % (biodb, locus)
                 pfam_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_pfam, )]
-                from plots import uniprot_feature_viewer
+                from chlamdb.plots import uniprot_feature_viewer
                 features_js = uniprot_feature_viewer.intero_data2features_string(pfam_data)
 
             except:
@@ -2500,7 +2500,7 @@ def locusx(request, locus=None, menu=True):
             orthologs = True
         else:
             orthologs = False
-        from biosqldb import orthogroup_identity_db
+        from chlamdb.biosqldb import orthogroup_identity_db
         if len(homologues) > 1:
             orthogroup2identity_dico = orthogroup_identity_db.orthogroup2identity_dico(biodb, orthogroup)
 
@@ -2543,7 +2543,7 @@ def hydropathy(request, locus):
     biodb = settings.BIODB
     print ('hydropathy -- %s --%s' % (biodb, locus))
 
-    from plots import hydrophobicity_plots
+    from chlamdb.plots import hydrophobicity_plots
 
     fig = hydrophobicity_plots.locus2hydrophobicity_plot(biodb, locus)
 
@@ -2557,7 +2557,7 @@ def hydropathy(request, locus):
 
 def aa_comp_locus(request, locus_tag):
     biodb = settings.BIODB
-    from plots import pca_seq_composition
+    from chlamdb.plots import pca_seq_composition
     import numpy
     server, db = manipulate_biosqldb.load_db("%s" % biodb)
 
@@ -2603,7 +2603,7 @@ def rnaseq_class(request, temporal_class, taxon_id):
 
 def gc_locus(request, locus_tag):
     biodb = settings.BIODB
-    from plots import pairwiseid_plots
+    from chlamdb.plots import pairwiseid_plots
     import numpy
 
     print ('gc locus -- %s -- %s' % (biodb, locus_tag))
@@ -2781,7 +2781,7 @@ def fam(request, fam, type):
                     group_count.append(all_locus_raw_data[i][0])
         envoi = True
         menu = True
-        from phylo_tree_display import ete_motifs
+        from chlamdb.phylo_tree_display import ete_motifs
         if type =='pfam':
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
                                                                               [fam],
@@ -2897,8 +2897,8 @@ def COG_phylo_heatmap(request, frequency):
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
         from ete3 import Tree
-        from phylo_tree_display import ete_motifs
-        from plots import cog_heatmap
+        from chlamdb.phylo_tree_display import ete_motifs
+        from chlamdb.plots import cog_heatmap
         server, db = manipulate_biosqldb.load_db(biodb)
 
         if frequency == 'True':
@@ -3675,8 +3675,8 @@ def kegg_multi(request, map_name, ko_name):
     #cache.clear()
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
-        from phylo_tree_display import ete_motifs
-        from plots import kegg_maps
+        from chlamdb.phylo_tree_display import ete_motifs
+        from chlamdb.plots import kegg_maps
 
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -3717,8 +3717,8 @@ def KEGG_mapp_ko(request, map_name):
     #cache.clear()
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
-        from phylo_tree_display import ete_motifs
-        from plots import kegg_maps
+        from chlamdb.phylo_tree_display import ete_motifs
+        from chlamdb.plots import kegg_maps
 
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -3826,8 +3826,8 @@ def KEGG_mapp_ko_organism(request, map_name, taxon_id):
     #cache.clear()
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
-        from phylo_tree_display import ete_motifs
-        from plots import kegg_maps
+        from chlamdb.phylo_tree_display import ete_motifs
+        from chlamdb.plots import kegg_maps
 
         print ('kegg mapp organism %s -- %s -- %s' % (biodb, map_name, taxon_id))
 
@@ -3934,7 +3934,7 @@ def KEGG_mapp_ko_organism(request, map_name, taxon_id):
 def KEGG_mapp(request, map_name):
     biodb = settings.BIODB
     if request.method == 'GET':  # S'il s'agit d'une requête POST
-        from phylo_tree_display import ete_motifs
+        from chlamdb.phylo_tree_display import ete_motifs
         server, db = manipulate_biosqldb.load_db(biodb)
 
         sql = 'select pathway_name,pathway_category,description,ec,value from ' \
@@ -4174,7 +4174,7 @@ def get_cog_multiple(request, category, accessions=False):
     - one or multiple explude taxons
     return the list of match COGs with their annotations
     '''
-    from biosqldb import biosql_own_sql_tables
+    from chlamdb.biosqldb import biosql_own_sql_tables
 
     #print accessions
 
@@ -4225,7 +4225,7 @@ def get_orthogroup_multiple_cog(request, category):
     - one or multiple explude taxons
     return the list of match COGs with their annotations
     '''
-    from biosqldb import biosql_own_sql_tables
+    from chlamdb.biosqldb import biosql_own_sql_tables
 
     server, db = manipulate_biosqldb.load_db(biodb)
     match_groups_subset = [i for i in request.GET.getlist('h')]
@@ -4297,7 +4297,7 @@ def get_ko_multiple(request, type, category):
     - one or multiple explude taxons
     return the list of match ko with their annotations
     '''
-    from biosqldb import biosql_own_sql_tables
+    from chlamdb.biosqldb import biosql_own_sql_tables
     import re
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -4726,7 +4726,7 @@ def ko_subset_barchart(request, type):
     :return:
     '''
 
-    from biosqldb import biosql_own_sql_tables
+    from chlamdb.biosqldb import biosql_own_sql_tables
     server, db = manipulate_biosqldb.load_db(biodb)
 
     include = [i for i in request.GET.getlist('i')]
@@ -4861,7 +4861,7 @@ def cog_subset_barchart(request, accessions=False):
     :return:
     '''
 
-    from biosqldb import biosql_own_sql_tables
+    from chlamdb.biosqldb import biosql_own_sql_tables
     server, db = manipulate_biosqldb.load_db(biodb)
 
     include = [i for i in request.GET.getlist('i')]
@@ -5555,8 +5555,8 @@ def get_locus_annotations(biodb, locus_list):
 
     '''
 
-    from biosqldb import manipulate_biosqldb
-    from biosqldb import biosql_own_sql_tables
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import biosql_own_sql_tables
     import re
     from string import digits
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -5848,7 +5848,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
 def identity_heatmap(request):
     biodb = settings.BIODB
     import numpy as np
-    from plots import pairwiseid_plots
+    from chlamdb.plots import pairwiseid_plots
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -6012,11 +6012,11 @@ def core_genome_missing(request, type):
     if request.method == 'POST':
         form = venn_form_class(request.POST)
         if form.is_valid():
-            from plots import core_pan_genome_plots
+            from chlamdb.plots import core_pan_genome_plots
             import numpy
             import pandas
-            from phylo_tree_display import ete_motifs
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.phylo_tree_display import ete_motifs
+            from chlamdb.biosqldb import biosql_own_sql_tables
 
 
             taxon_list = form.cleaned_data['targets']
@@ -6142,9 +6142,9 @@ def pairwiseid(request):
     pairwiseid_form_class = make_pairwiseid_form(biodb)
 
     if request.method == 'POST':
-        from plots import pairwiseid_plots
-        from biosqldb import biosql_own_sql_tables
-        from phylo_tree_display import ete_motifs
+        from chlamdb.plots import pairwiseid_plots
+        from chlamdb.biosqldb import biosql_own_sql_tables
+        from chlamdb.phylo_tree_display import ete_motifs
 
         form = pairwiseid_form_class(request.POST)
 
@@ -6331,9 +6331,9 @@ def multiple_codon_usage(request):
     pairwiseCDS_length_form_class = make_pairwiseCDS_length_form(biodb)
 
     if request.method == 'POST':
-        from plots import pairwiseid_plots
-        from biosqldb import biosql_own_sql_tables
-        from phylo_tree_display import ete_motifs
+        from chlamdb.plots import pairwiseid_plots
+        from chlamdb.biosqldb import biosql_own_sql_tables
+        from chlamdb.phylo_tree_display import ete_motifs
         import numpy
 
         form = pairwiseCDS_length_form_class(request.POST)
@@ -6341,7 +6341,7 @@ def multiple_codon_usage(request):
         genome_median_cds_length = []
 
         if form.is_valid():
-            from plots import pca_seq_composition
+            from chlamdb.plots import pca_seq_composition
 
             genome_1 = form.cleaned_data['genome_1']
             genome_2 = form.cleaned_data['genome_2']
@@ -6467,9 +6467,9 @@ def multipleGC(request):
     pairwiseCDS_length_form_class = make_pairwiseCDS_length_form(biodb)
 
     if request.method == 'POST':
-        from plots import pairwiseid_plots
-        from biosqldb import biosql_own_sql_tables
-        from phylo_tree_display import ete_motifs
+        from chlamdb.plots import pairwiseid_plots
+        from chlamdb.biosqldb import biosql_own_sql_tables
+        from chlamdb.phylo_tree_display import ete_motifs
         import numpy
 
         form = pairwiseCDS_length_form_class(request.POST)
@@ -6477,7 +6477,7 @@ def multipleGC(request):
         genome_median_cds_length = []
 
         if form.is_valid():
-            from plots import pca_seq_composition
+            from chlamdb.plots import pca_seq_composition
 
             genome_1 = form.cleaned_data['genome_1']
             genome_2 = form.cleaned_data['genome_2']
@@ -6521,9 +6521,9 @@ def pairwiseCDS_length(request):
     pairwiseCDS_length_form_class = make_pairwiseCDS_length_form(biodb)
 
     if request.method == 'POST':
-        from plots import pairwiseid_plots
-        from biosqldb import biosql_own_sql_tables
-        from phylo_tree_display import ete_motifs
+        from chlamdb.plots import pairwiseid_plots
+        from chlamdb.biosqldb import biosql_own_sql_tables
+        from chlamdb.phylo_tree_display import ete_motifs
         import numpy
 
         form = pairwiseCDS_length_form_class(request.POST)
@@ -6614,8 +6614,8 @@ def pairwiseCDS_length(request):
 def blastnr_euk(request):
     biodb = settings.BIODB
 
-    from phylo_tree_display import phylo_tree_bar
-    from plots import pairwiseid_plots
+    from chlamdb.phylo_tree_display import phylo_tree_bar
+    from chlamdb.plots import pairwiseid_plots
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -6815,7 +6815,7 @@ def prot_length_barchart(request):
 
     tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
 
-    from phylo_tree_display import phylo_tree_bar
+    from chlamdb.phylo_tree_display import phylo_tree_bar
 
 
     sql = 'select taxon_id, CHAR_LENGTH(translation) from orthology_detail_%s;' % biodb
@@ -6891,10 +6891,10 @@ def blastnr_overview(request):
 
     header_list2 = ['effectiveT3',  'BPBAac', 'T3MM', 'T4SEpre_bpbAac', 'T4SEpre_psAac', 'chaperones', 'intesect']
 
-    from phylo_tree_display import phylo_tree_bar
-    from plots import hmm_heatmap
-    from plots import pathway_heatmap
-    from plots import module_heatmap
+    from chlamdb.phylo_tree_display import phylo_tree_bar
+    from chlamdb.plots import hmm_heatmap
+    from chlamdb.plots import pathway_heatmap
+    from chlamdb.plots import module_heatmap
 
     set2taxon2value = {} #, column_names = hmm_heatmap.get_set_data(biodb, score_cutoff=20)
 
@@ -7493,10 +7493,10 @@ def effector_pred(request):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     from ete3 import Tree
-    from phylo_tree_display import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
 
-    from phylo_tree_display import phylo_tree_bar
-    from plots import hmm_heatmap
+    from chlamdb.phylo_tree_display import phylo_tree_bar
+    from chlamdb.plots import hmm_heatmap
 
     sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
@@ -7715,7 +7715,7 @@ def interpro_taxonomy(request):
 
         if form.is_valid():
             from ete3 import Tree
-            from phylo_tree_display import ete_motifs
+            from chlamdb.phylo_tree_display import ete_motifs
 
             target_taxons = form.cleaned_data['target_taxons']
             kingdom = form.cleaned_data['kingdom']
@@ -7724,8 +7724,8 @@ def interpro_taxonomy(request):
             print(target_taxons)
 
             if target_taxons[0] == 'all':
-                from phylo_tree_display import phylo_tree_bar
-                from plots import hmm_heatmap
+                from chlamdb.phylo_tree_display import phylo_tree_bar
+                from chlamdb.plots import hmm_heatmap
 
                 # counts eukaryotic domains
                 sql = 'select taxon_id, eukaryote_count from interpro.taxonomy_summary_50_%s ;' % (biodb)
@@ -7885,7 +7885,7 @@ def interpro_taxonomy(request):
                     if int(group2n_organisms[group]) > 50:
                         print (group2n_organisms[group], group)
                     genome_count_list.append(group2n_organisms[group])
-                from plots import pairwiseid_plots
+                from chlamdb.plots import pairwiseid_plots
                 pairwiseid_plots.basic_plot(genome_count_list)
 
 
@@ -8158,7 +8158,7 @@ def blastnr(request, locus_tag):
 
 def homology(request):
     biodb = settings.BIODB
-    from biosqldb import shell_command
+    from chlamdb.biosqldb import shell_command
 
     #print "cache", cache
     #cache.clear()
@@ -8326,7 +8326,7 @@ def plot_neighborhood(request, target_locus, region_size=23000):
                                                                               cache, operon_locus)
     #print "orthogroup_list", orthogroup_list
     envoi = True
-    from phylo_tree_display import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
     taxon2orthogroup2count_all = ete_motifs.get_taxon2orthogroup2count(biodb, orthogroup_list)
 
     labels = orthogroup_list
@@ -8381,7 +8381,7 @@ def plot_neighborhood(request, target_locus, region_size=23000):
 
 def plot_region_generic(biodb, orthogroup, taxon_list, region_size):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -8856,7 +8856,7 @@ def get_record(request, accession, seqtype):
 def get_fasta(request):
     biodb = settings.BIODB
     from django.http import FileResponse
-    from biosqldb import shell_command
+    from chlamdb.biosqldb import shell_command
     import tarfile
     '''
     get fasta from a corresponding to extract_orthogroup_request
@@ -8866,7 +8866,7 @@ def get_fasta(request):
     :return: fasta file
     '''
 
-    from biosqldb import biosql_own_sql_tables
+    from chlamdb.biosqldb import biosql_own_sql_tables
     server, db = manipulate_biosqldb.load_db(biodb)
 
     if request.GET.getlist('ref')[0] == 'False' or request.GET.getlist('ref')[0] == 'F':
@@ -8970,7 +8970,7 @@ def get_fasta_all(request):
     :return: fasta file
     '''
 
-    from biosqldb import biosql_own_sql_tables
+    from chlamdb.biosqldb import biosql_own_sql_tables
     server, db = manipulate_biosqldb.load_db(biodb)
 
     if request.GET.getlist('ref')[0] == 'False' or request.GET.getlist('ref')[0] == 'F':
@@ -9163,8 +9163,8 @@ def get_pfam_taxon_table(request, pfam_domain):
 def pfam_profile(request, pfam_domain, rank):
     biodb = settings.BIODB
     from ete3 import Tree,TreeStyle
-    from biosqldb import manipulate_biosqldb
-    from phylo_tree_display import pfam_phylogenetic_profile
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.phylo_tree_display import pfam_phylogenetic_profile
     server, db = manipulate_biosqldb.load_db(biodb)
     path = settings.BASE_DIR + '/assets/temp/tree.svg'
     asset_path = '/temp/tree.svg'
@@ -9180,8 +9180,8 @@ def eggnog_profile(request, eggnog_id, rank):
     biodb = settings.BIODB
 
     from ete3 import Tree,TreeStyle
-    from biosqldb import manipulate_biosqldb
-    from biosqldb import eggnog_data
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import eggnog_data
     server, db = manipulate_biosqldb.load_db(biodb)
     path = settings.BASE_DIR + '/assets/temp/tree.svg'
     asset_path = '/temp/tree.svg'
@@ -9195,10 +9195,10 @@ def eggnog_profile(request, eggnog_id, rank):
 def annotation_overview(request):
     biodb = settings.BIODB
     from ete3 import Tree,TreeStyle
-    from biosqldb import manipulate_biosqldb
-    from biosqldb import biosql_own_sql_tables
-    from phylo_tree_display import phylo_tree_bar
-    from plots import pairwiseid_plots
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import biosql_own_sql_tables
+    from chlamdb.phylo_tree_display import phylo_tree_bar
+    from chlamdb.plots import pairwiseid_plots
 
     print("annot overview")
 
@@ -9351,7 +9351,7 @@ def annotation_overview(request):
 
 def orthogroup_KO_COG(request):
     biodb = settings.BIODB
-    from plots import pairwiseid_plots
+    from chlamdb.plots import pairwiseid_plots
 
     sql = 'select orthogroup,count(*) as n from (select orthogroup,COG_id from ' \
           ' COG.locus_tag2gi_hit_%s t1 ' \
@@ -9380,9 +9380,9 @@ def paralogs(request):
     biodb = settings.BIODB
 
     from ete3 import Tree,TreeStyle
-    from biosqldb import manipulate_biosqldb
-    from biosqldb import biosql_own_sql_tables
-    from plots import phylo_tree_bar
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import biosql_own_sql_tables
+    from chlamdb.plots import phylo_tree_bar
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -9460,9 +9460,9 @@ def species_specific_groups(request):
     biodb = settings.BIODB
 
     from ete3 import Tree,TreeStyle
-    from biosqldb import manipulate_biosqldb
-    from biosqldb import biosql_own_sql_tables
-    from plots import phylo_tree_bar
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import biosql_own_sql_tables
+    from chlamdb.plots import phylo_tree_bar
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -9564,7 +9564,7 @@ def species_specific_groups(request):
 
 def api_vs_16S_identity(request):
     biodb = settings.BIODB
-    from plots import pairwiseid_plots
+    from chlamdb.plots import pairwiseid_plots
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -9781,8 +9781,8 @@ def api_vs_16S_identity(request):
 
 def circos_main(request):
     biodb = settings.BIODB
-    from plots import gbk2circos
-    from biosqldb import circos
+    from chlamdb.plots import gbk2circos
+    from chlamdb.biosqldb import circos
 
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -9938,7 +9938,7 @@ def circos_main(request):
 
 def circos_blastnr(request):
     biodb = settings.BIODB
-    from plots import gbk2circos
+    from chlamdb.plots import gbk2circos
     circos_form_class = make_genome_selection_form(biodb)
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -9982,8 +9982,8 @@ def circos_blastnr(request):
             for i in reference_accessions:
                 ref_name += i
             circos_file = "circos/%s.svg" % ref_name
-            from biosqldb import circos
-            from biosqldb import shell_command
+            from chlamdb.biosqldb import circos
+            from chlamdb.biosqldb import shell_command
             import ete3
 
 
@@ -10034,7 +10034,7 @@ def circos_blastnr(request):
 
 def circos(request):
     biodb = settings.BIODB
-    from plots import gbk2circos
+    from chlamdb.plots import gbk2circos
     circos_form_class = make_circos_form(biodb)
     server, db = manipulate_biosqldb.load_db(biodb)
     print("request", request.method)
@@ -10080,8 +10080,8 @@ def circos(request):
                 for i in reference_accessions:
                     ref_name += i
                 circos_file = "circos/%s.svg" % ref_name
-                from biosqldb import circos
-                from biosqldb import shell_command
+                from chlamdb.biosqldb import circos
+                from chlamdb.biosqldb import shell_command
                 import ete3
 
 
@@ -10880,7 +10880,7 @@ def primer_search(request):
 
             from Bio.Alphabet import IUPAC
             import os
-            from biosqldb import shell_command
+            from chlamdb.biosqldb import shell_command
             import re
             def ExtractAlphanumeric(InputString):
                 from string import ascii_letters, digits
@@ -10932,7 +10932,7 @@ def primer_search(request):
 
 def motif_search(request):
     biodb = settings.BIODB
-    from biosqldb import shell_command
+    from chlamdb.biosqldb import shell_command
     import os
     server = manipulate_biosqldb.load_db()
 
@@ -11004,8 +11004,8 @@ def blast_profile(request):
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             from tempfile import NamedTemporaryFile
             from io import StringIO
-            from phylo_tree_display import biosqldb_plot_blast_hits_phylo
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.phylo_tree_display import biosqldb_plot_blast_hits_phylo
+            from chlamdb.biosqldb import biosql_own_sql_tables
             from ete3 import Tree, TreeStyle
 
             fasta_file = request.FILES['fasta_file']
@@ -11100,7 +11100,7 @@ def blast(request):
             from Bio.Alphabet import IUPAC
             from Bio.Alphabet import _verify_alphabet
             import os
-            from biosqldb import shell_command
+            from chlamdb.chlamdb.biosqldb import shell_command
             import re
 
 
@@ -11360,7 +11360,7 @@ def mummer(request):
 
             #print cmd1
 
-            from biosqldb.shell_command import shell_command
+            from chlamdb.biosqldb.shell_command import shell_command
 
             out, err, log = shell_command(cmd1)
             out, err, log = shell_command(cmd2)
@@ -11384,8 +11384,8 @@ def mummer(request):
 
 def circos2genomes(request):
     biodb = settings.BIODB
-    from biosqldb import circos
-    from biosqldb import shell_command
+    from chlamdb.biosqldb import circos
+    from chlamdb.biosqldb import shell_command
     server = manipulate_biosqldb.load_db()
     circos2genomes_form_class = make_circos2genomes_form(biodb)
 
@@ -11466,7 +11466,7 @@ def circos2genomes(request):
                 #print reference_name, query_name
 
 
-                from biosqldb import circos
+                from chlamdb.biosqldb import circos
 
                 path = settings.BASE_DIR + "/assets/circos"
 
@@ -11683,7 +11683,7 @@ def string_page(request, cog_id, genome_accession):
 def multiple_COGs_heatmap(request):
     biodb = settings.BIODB
     from ete3 import Tree, TextFace
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -11776,8 +11776,8 @@ def multiple_COGs_heatmap(request):
 
 def pfam_tree(request, orthogroup):
     biodb = settings.BIODB
-    from phylo_tree_display import ete_motifs
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.phylo_tree_display import ete_motifs
+    from chlamdb.biosqldb import manipulate_biosqldb
     print ('pfam tree %s -- %s' % (biodb, orthogroup))
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -11834,8 +11834,8 @@ def pfam_tree(request, orthogroup):
 
 def TM_tree(request, orthogroup):
     biodb = settings.BIODB
-    from biosqldb import manipulate_biosqldb
-    from phylo_tree_display import ete_motifs
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.phylo_tree_display import ete_motifs
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -11862,10 +11862,10 @@ def TM_tree(request, orthogroup):
 
 def refseq_swissprot_tree(request, orthogroup):
     biodb = settings.BIODB
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     from ete3 import Tree
     import os
-    from plots import orthogroup2phylogeny_best_refseq_uniprot_hity
+    from chlamdb.plots import orthogroup2phylogeny_best_refseq_uniprot_hity
 
     sqlpsw = os.environ['SQLPSW']
 
@@ -11900,8 +11900,8 @@ def multiple_orthogroup_heatmap(request, reference_orthogroup, max_distance=2.2)
     :return:
     '''
 
-    from biosqldb import manipulate_biosqldb
-    from biosqldb import biosql_own_sql_tables
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import biosql_own_sql_tables
     import pandas
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
@@ -12051,8 +12051,8 @@ def locus2locus(request):
 
         if form.is_valid():
 
-            from biosqldb import manipulate_biosqldb
-            from network_d3 import string_networks
+            from chlamdb.biosqldb import manipulate_biosqldb
+            from chlamdb.network_d3 import string_networks
 
             server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -12102,8 +12102,8 @@ def interactions_genome(request):
 
         if form.is_valid():
 
-            from biosqldb import manipulate_biosqldb
-            from network_d3 import string_networks
+            from chlamdb.biosqldb import manipulate_biosqldb
+            from chlamdb.network_d3 import string_networks
 
             server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -12175,8 +12175,8 @@ def interactions_genome_string(request):
 
         if form.is_valid():
 
-            from biosqldb import manipulate_biosqldb
-            from network_d3 import string_networks
+            from chlamdb.biosqldb import manipulate_biosqldb
+            from chlamdb.network_d3 import string_networks
 
             server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -12241,8 +12241,8 @@ def interactions_genome_string(request):
 
 def interactions(request, locus_tag):
     biodb = settings.BIODB
-    from biosqldb import manipulate_biosqldb
-    from network_d3 import string_networks
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.network_d3 import string_networks
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -12294,8 +12294,8 @@ def interactions(request, locus_tag):
 
 def plot_heatmap(request, type):
     biodb = settings.BIODB
-    from biosqldb import biosql_own_sql_tables
-    from plots import heatmap
+    from chlamdb.biosqldb import biosql_own_sql_tables
+    from chlamdb.plots import heatmap
     import numpy as np
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -12377,9 +12377,9 @@ def plot_heatmap(request, type):
 
 def profile_interactions(request, orthogroup):
     biodb = settings.BIODB
-    from biosqldb import manipulate_biosqldb
-    from network_d3 import string_networks
-    from biosqldb import biosql_own_sql_tables
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.network_d3 import string_networks
+    from chlamdb.biosqldb import biosql_own_sql_tables
 
 
 
@@ -12421,7 +12421,7 @@ def profile_interactions(request, orthogroup):
 
     else:
         #print 'get grp data'
-        from phylo_tree_display import ete_motifs
+        from chlamdb.phylo_tree_display import ete_motifs
         match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(all_groups_profile, biodb)
         match = True
         #print 'get script'
@@ -12451,9 +12451,9 @@ def profile_interactions(request, orthogroup):
 
 def neig_interactions(request, locus_tag):
     biodb = settings.BIODB
-    from biosqldb import manipulate_biosqldb
-    from network_d3 import string_networks
-    from biosqldb import biosql_own_sql_tables
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.network_d3 import string_networks
+    from chlamdb.biosqldb import biosql_own_sql_tables
 
 
 
@@ -12471,7 +12471,7 @@ def neig_interactions(request, locus_tag):
     if len(locus_tag_list) == 0:
         match = False
     else:
-        from phylo_tree_display import ete_motifs
+        from chlamdb.phylo_tree_display import ete_motifs
 
         if biodb != 'chlamydia_04_16':
             locus_tag_list = [str(i) for i in locus_tag_list]
@@ -12562,9 +12562,9 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
     '''
 
 
-    from biosqldb import manipulate_biosqldb
-    from phylo_tree_display import ete_heatmap_conservation
-    from biosqldb import shell_command
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.phylo_tree_display import ete_heatmap_conservation
+    from chlamdb.biosqldb import shell_command
 
     server, db = manipulate_biosqldb.load_db(biodb)
     #print 'plot phylo profile -- %s' % orthogroup_or_locus
@@ -12705,8 +12705,8 @@ def priam_kegg(request):
 
 def locus_list2circos(request, target_taxon):
     biodb = settings.BIODB
-    from plots import gbk2circos
-    from biosqldb import circos
+    from chlamdb.plots import gbk2circos
+    from chlamdb.biosqldb import circos
     import re
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -12829,7 +12829,7 @@ def locus_list2circos(request, target_taxon):
 
 
 def hmm2circos(request):
-    from phylo_tree_display import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
     hmm_form = hmm_sets_form_circos(biodb)
@@ -12837,9 +12837,9 @@ def hmm2circos(request):
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         form = hmm_form(request.POST)
         if form.is_valid():
-            from plots import hmm_heatmap
-            from plots import gbk2circos
-            from biosqldb import circos
+            from chlamdb.plots import hmm_heatmap
+            from chlamdb.plots import gbk2circos
+            from chlamdb.biosqldb import circos
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
@@ -12977,7 +12977,7 @@ def hmm2circos(request):
 
 
 def transporters_list(request):
-    from phylo_tree_display import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
     transporters_form = transporters_superfam_form(biodb, True)
@@ -12985,7 +12985,7 @@ def transporters_list(request):
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         form = transporters_form(request.POST)
         if form.is_valid():
-            from plots import blast_heatmap
+            from chlamdb.plots import blast_heatmap
             #if request.method == 'POST':  # S'il s'agit d'une requête POST
             genome = form.cleaned_data['genome']
             transporter_superfamily = form.cleaned_data['transporter_superfamily'][0]
@@ -13066,12 +13066,12 @@ def transporters_list(request):
 
 def transporters_family(request, family):
     biodb = settings.BIODB
-    from phylo_tree_display import ete_motifs
-    from plots import transporters_heatmap
+    from chlamdb.phylo_tree_display import ete_motifs
+    from chlamdb.plots import transporters_heatmap
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    from plots import blast_heatmap
+    from chlamdb.plots import blast_heatmap
     #if request.method == 'POST':  # S'il s'agit d'une requête POST
 
 
@@ -13250,7 +13250,7 @@ def transporters_family(request, family):
 
 
 def transporters(request):
-    from phylo_tree_display import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
     transporters_form = transporters_superfam_form(biodb)
@@ -13258,7 +13258,7 @@ def transporters(request):
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         form = transporters_form(request.POST)
         if form.is_valid():
-            from plots import blast_heatmap
+            from chlamdb.plots import blast_heatmap
             #if request.method == 'POST':  # S'il s'agit d'une requête POST
 
             transporter_superfamily = form.cleaned_data['transporter_superfamily'][0]
@@ -13293,7 +13293,7 @@ def transporters(request):
 
                 #print 'all---------------'
 
-                from plots import transporters_heatmap
+                from chlamdb.plots import transporters_heatmap
 
                 superfam_list, taxon2code2count = transporters_heatmap.transporter_all_superfamily_heatmap(biodb,
                                                                                                        evalue_cutoff,
@@ -13319,7 +13319,7 @@ def transporters(request):
             else:
                 #print 'NOT all---------------'
 
-                from plots import transporters_heatmap
+                from chlamdb.plots import transporters_heatmap
 
                 superfam_list, taxon2code2count = transporters_heatmap.transporter_superfamily_heatmap(biodb,
                                                                                                   transporter_superfamily,
@@ -13357,7 +13357,7 @@ def transporters(request):
 
 def blast_sets(request):
     biodb = settings.BIODB
-    from phylo_tree_display import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
 
     server, db = manipulate_biosqldb.load_db(biodb)
     sets_form = blast_sets_form(biodb)
@@ -13365,7 +13365,7 @@ def blast_sets(request):
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         form = sets_form(request.POST)
         if form.is_valid():
-            from plots import blast_heatmap
+            from chlamdb.plots import blast_heatmap
             #if request.method == 'POST':  # S'il s'agit d'une requête POST
 
             hmm_sets = form.cleaned_data['blast_set']
@@ -13544,7 +13544,7 @@ def blast_sets(request):
 
 def hmm(request):
     biodb = settings.BIODB
-    from phylo_tree_display import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
 
     server, db = manipulate_biosqldb.load_db(biodb)
     hmm_form = hmm_sets_form(biodb)
@@ -13552,7 +13552,7 @@ def hmm(request):
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         form = hmm_form(request.POST)
         if form.is_valid():
-            from plots import hmm_heatmap
+            from chlamdb.plots import hmm_heatmap
             #if request.method == 'POST':  # S'il s'agit d'une requête POST
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
@@ -13642,7 +13642,7 @@ def hmm(request):
 
 def locus_int(request):
     biodb = settings.BIODB
-    from phylo_tree_display import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
     #print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
     module_int_form = locus_int_form(biodb)
@@ -13758,7 +13758,7 @@ def locus_int(request):
 
 def kegg_pathway_heatmap(request):
     biodb = settings.BIODB
-    from phylo_tree_display import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
     #print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
     pathway_form = make_pathway_overview_form(biodb)#get_locus_annotations_form(biodb)
@@ -13766,7 +13766,7 @@ def kegg_pathway_heatmap(request):
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         form = pathway_form(request.POST)
         if form.is_valid():
-            from plots import pathway_heatmap
+            from chlamdb.plots import pathway_heatmap
             from ete3 import Tree
             #if request.method == 'POST':  # S'il s'agit d'une requête POST
 
@@ -13825,7 +13825,7 @@ def kegg_pathway_heatmap(request):
 
 def kegg_module_subcat(request):
     biodb = settings.BIODB
-    from phylo_tree_display import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
     #print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
     module_overview_form = make_module_overview_form(biodb, sub_sub_cat=True)#get_locus_annotations_form(biodb)
@@ -13833,7 +13833,7 @@ def kegg_module_subcat(request):
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         form = module_overview_form(request.POST)
         if form.is_valid():
-            from plots import module_heatmap
+            from chlamdb.plots import module_heatmap
             #if request.method == 'POST':  # S'il s'agit d'une requête POST
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
@@ -13884,7 +13884,7 @@ def kegg_module_subcat(request):
 
 def kegg_module(request):
     biodb = settings.BIODB
-    from phylo_tree_display import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
     #print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
     module_overview_form = make_module_overview_form(biodb)#get_locus_annotations_form(biodb)
@@ -13892,7 +13892,7 @@ def kegg_module(request):
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         form = module_overview_form(request.POST)
         if form.is_valid():
-            from plots import module_heatmap
+            from chlamdb.plots import module_heatmap
             #if request.method == 'POST':  # S'il s'agit d'une requête POST
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
@@ -13990,9 +13990,9 @@ def module2heatmap(request):
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
         if form.is_valid():
-            from plots import pathway_heatmap
-            from biosqldb import biosql_own_sql_tables
-            from phylo_tree_display import ete_motifs
+            from chlamdb.plots import pathway_heatmap
+            from chlamdb.biosqldb import biosql_own_sql_tables
+            from chlamdb.phylo_tree_display import ete_motifs
             from ete3 import Tree
 
             pathway_category = form.cleaned_data['pathway_choice']
@@ -14105,7 +14105,7 @@ def module_comparison(request):
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
         if form.is_valid():
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.biosqldb import biosql_own_sql_tables
             taxon_list = form.cleaned_data['targets']
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
@@ -14169,7 +14169,7 @@ def module_comparison(request):
 
 def metabo_overview(request):
     biodb = settings.BIODB
-    from phylo_tree_display import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
     #print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -14273,7 +14273,7 @@ def metabo_comparison(request):
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
         if form.is_valid():
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.biosqldb import biosql_own_sql_tables
             taxon_list = form.cleaned_data['targets']
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
@@ -14353,7 +14353,7 @@ def metabo_comparison_ko(request):
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
         if form.is_valid():
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.biosqldb import biosql_own_sql_tables
             taxon_list = form.cleaned_data['targets']
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
@@ -14431,7 +14431,7 @@ def pfam_comparison(request):
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
         if form.is_valid():
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.biosqldb import biosql_own_sql_tables
             taxon_list = form.cleaned_data['targets']
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
@@ -14496,7 +14496,7 @@ def orthogroup_comparison(request):
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
         if form.is_valid():
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.biosqldb import biosql_own_sql_tables
             taxon_list = form.cleaned_data['targets']
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
@@ -14555,7 +14555,7 @@ def ko_comparison(request):
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
         if form.is_valid():
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.biosqldb import biosql_own_sql_tables
             taxon_list = form.cleaned_data['targets']
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb

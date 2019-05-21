@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 from django import forms
 #import models
-from biosqldb.manipulate_biosqldb import load_db, get_biodatabase_list
+from chlamdb.biosqldb.manipulate_biosqldb import load_db, get_biodatabase_list
 #from blah import *
 #from models import GenDB
 #from models import Genome
@@ -21,7 +21,7 @@ for i in accession_list:
 
 def get_accessions(database_name, all=False, plasmid=False):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server = manipulate_biosqldb.load_db()
     if not plasmid:
         #print "no plasmid"
@@ -353,7 +353,7 @@ def make_genome_selection_form(database_name):
 
 
 def make_kegg_form(database_name):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
 
     sql_pathways = 'select description,description from enzyme.locus2ko_%s t1 ' \
@@ -423,7 +423,7 @@ def make_extract_form(database_name, plasmid=False, label="Orthologs"):
     return ExtractForm
 
 def locus_int_form(database_name):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
 
     sql = 'select distinct category from custom_tables.annot_table_%s;' % database_name
@@ -445,7 +445,7 @@ def locus_int_form(database_name):
 
 
 def hmm_sets_form_circos(database_name):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
 
     sql = 'select distinct name from hmm.hmm_sets;' #% database_name
@@ -466,7 +466,7 @@ def hmm_sets_form_circos(database_name):
 
 
 def hmm_sets_form(database_name):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
 
     sql = 'select distinct name from hmm.hmm_sets;' #% database_name
@@ -485,7 +485,7 @@ def hmm_sets_form(database_name):
 
 def transporters_superfam_form(database_name, show_taxon=False):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
 
     sql = 'select distinct description from transporters.transporter_table t1 ' \
@@ -512,7 +512,7 @@ def transporters_superfam_form(database_name, show_taxon=False):
 
 
 def blast_sets_form(database_name):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
 
     sql = 'select distinct name from blast.blast_sets;' #% database_name
@@ -584,7 +584,7 @@ def heatmap_form(database_name):
     return Heatmap
 
 def make_module_overview_form(database_name, sub_sub_cat=False):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
     if not sub_sub_cat:
         sql = 'select distinct module_sub_cat from enzyme.kegg_module;'
@@ -599,7 +599,7 @@ def make_module_overview_form(database_name, sub_sub_cat=False):
     return ModuleCatChoice
 
 def make_pathway_overview_form(database_name):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
     sql = 'select distinct pathway_category from enzyme.kegg_pathway where pathway_category_short not in ("drug","disease","organismal") ' \
           ' order by pathway_category;'
@@ -632,7 +632,7 @@ def make_circos_orthology_form(biodb):
 
 
 def make_blastnr_best_non_top_phylum_form(biodb):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     accession_choices = get_accessions(biodb, all=False)
@@ -647,7 +647,7 @@ def make_blastnr_best_non_top_phylum_form(biodb):
 
 
 def make_blastnr_form(biodb):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
 
@@ -703,7 +703,7 @@ def make_blastnr_form(biodb):
     return Blastnr_top
 
 def make_interpro_taxonomy(biodb):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     accession_choices = get_accessions(biodb,all=True)
@@ -750,7 +750,7 @@ def make_blast_form(biodb):
     return BlastForm
 
 def make_comment_from(biodb, locus_tag):
-    import manipulate_biosqldb
+    import chlamdb.manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'select * from manual_annotation where locus_tag="%s"' % locus_tag

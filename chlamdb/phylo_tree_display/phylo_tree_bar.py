@@ -36,7 +36,7 @@ def plot_tree_stacked_barplot(tree_file,
 
 
     if biodb:
-        from biosqldb import manipulate_biosqldb
+        from chlamdb.biosqldb import manipulate_biosqldb
         server, db = manipulate_biosqldb.load_db(biodb)
 
         taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb, filter_names=True)
@@ -381,7 +381,7 @@ def plot_tree_barplot(tree_file,
     :return:
     '''
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
     import matplotlib as mpl
@@ -608,7 +608,7 @@ def plot_tree_barplot(tree_file,
     return t1, tss
 
 def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, bw_scale=True):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
     import matplotlib as mpl
@@ -845,7 +845,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
 
 if __name__ == '__main__':
     import argparse
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     parser = argparse.ArgumentParser()
     parser.add_argument("-t",'--tree',type=str,help="newick tree")
     parser.add_argument("-m",'--matrix',type=str,help="matrix (tab file)")
