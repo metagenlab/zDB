@@ -1724,6 +1724,28 @@ for group in orthogroup2locus2top_hits:
   """
 }
 
+process align_refseq_BBH_with_mafft {
+
+  conda 'bioconda::mafft=7.407'
+
+  publishDir 'orthology/orthogroups_alignments', mode: 'copy', overwrite: true
+
+  input:
+  file og from diamond_refseq_hits_fasta.flatten().collate( 20 )
+
+  output:
+  file "*_mafft.faa" into mafft_alignments_refseq_BBH
+
+  script:
+  """
+  unset MAFFT_BINARIES
+  for faa in ${og}; do
+  mafft \$faa > \${faa/.faa/_mafft.faa}
+  done
+  """
+}
+
+
 workflow.onComplete {
   // Display complete message
   log.info "Completed at: " + workflow.complete
