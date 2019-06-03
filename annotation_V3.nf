@@ -23,6 +23,8 @@ params.plast_refseq = false
 params.diamond_refseq = true
 params.diamond_refseq_taxonomy = true
 params.refseq_diamond_BBH_phylogeny = true
+params.refseq_diamond_BBH_phylogeny_top_n_hits = 4
+params.refseq_diamond_BBH_phylogeny_phylum_filter = '["Chlamydiae"]'
 params.string = true
 params.pdb = true
 params.oma = true
@@ -867,6 +869,7 @@ process get_refseq_hits_taxonomy {
 #!/usr/bin/env python
 
 from Bio import SeqIO
+import http.client
 import sqlite3
 conn = sqlite3.connect("refseq_taxonomy.db")
 cursor = conn.cursor()
@@ -926,10 +929,10 @@ def accession2taxon(gi_list, database):
                                        i['Length']
                                        ])
         except RuntimeError:
-            print ('RuntimeError error, trying again...')
+            print ('RuntimeError error, trying again... %s' % gi_list)
             accession2taxon(gi_list, database=database)
         except http.client.IncompleteRead:
-            print ('IncompleteRead error, trying again...')
+            print ('IncompleteRead error, trying again...%s' % gi_list)
             accession2taxon(gi_list, database=database)
         return hit_annotation
 
@@ -1452,7 +1455,7 @@ process setup_orthology_db {
   file nr_fasta from merged_faa6
 
   output:
-  file 'orthology.db'
+  file 'orthology.db' into orthology_db
 
   script:
   """
@@ -1479,7 +1482,7 @@ process setup_orthology_db {
   sql1 = 'create table locus_tag2sequence_hash (locus_tag varchar(200), sequence_hash binary)'
   cursor.execute(sql1,)
 
-  sql = 'insert into locus_tag2sequence_hash values (?, ?)'
+  sql = 'insert into locus_tag2sequence_hash values (?,?)'
   with open("${nr_mapping_file}", 'r') as f:
       for row in f:
           data = row.rstrip().split("\\t")
@@ -1494,7 +1497,7 @@ process setup_orthology_db {
       for row in f:
           data = row.rstrip().split(" ")
           for locus in data[1:]:
-            cursor.execute(sql,(data[0][0:-1], locus))
+            cursor.execute(sql,(locus, data[0][0:-1]))
   conn.commit()
 
   # index hash, locus and orthogroup columns
@@ -1532,7 +1535,7 @@ process setup_diamond_refseq_db {
   file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
 
   output:
-  file 'diamond_refseq.db'
+  file 'diamond_refseq.db' into diamond_refseq_db
 
   script:
   """
@@ -1545,11 +1548,12 @@ import pandas
 
 conn = sqlite3.connect("diamond_refseq.db")
 cursor = conn.cursor()
+
 sql1 = 'create table diamond_refseq(hit_count INTEGER, qseqid varchar(200), sseqid varchar(200), pident FLOAT, length INTEGER, mismatch INTEGER, gapopen INTEGER, qstart INTEGER, qend INTEGER, sstart INTEGER, send INTEGER, evalue FLOAT, bitscore FLOAT)'
 cursor.execute(sql1,)
 conn.commit()
 
-sql = 'insert into diamond_refseq values (?,?,?,?,?,?,?,?,?,?,?,?,?)'
+sql = 'insert into diamond_refseq values (?,?, ?,?,?,?,?,?,?,?,?,?,?)'
 
 diamond_file_list = "${diamond_tsv_list}".split(' ')
 for one_file in diamond_file_list:
@@ -1578,6 +1582,147 @@ conn.commit()
   """
 }
 
+process get_diamond_refseq_top_hits {
+  /*
+  - [ ] load blast results into sqlite db
+  */
+
+  conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
+  publishDir 'annotation/diamond_refseq_BBH_phylogenies', mode: 'copy', overwrite: true
+  echo true
+  cpus 4
+  memory '8 GB'
+
+  when:
+  params.refseq_diamond_BBH_phylogeny == true
+
+  input:
+  file 'orthology.db' from orthology_db
+  file 'refseq_taxonomy.db' from refseq_hit_taxid_mapping_db
+  file 'diamond_refseq.db' from diamond_refseq_db
+
+  output:
+  file '*_nr_hits.faa' into diamond_refseq_hits_fasta
+
+  script:
+  """
+#!/usr/bin/env python
+
+from Bio import SeqIO
+import sqlite3
+from Bio.SeqUtils import CheckSum
+import pandas
+from collections import Iterable
+
+def chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
+
+def refseq_accession2fasta(accession_list):
+    from Bio import Entrez
+    from Bio import SeqIO
+    import urllib2
+
+    Entrez.email = "trestan.pillonel@unil.ch"
+    try:
+        handle = Entrez.efetch(db='protein', id=','.join(accession_list), rettype="fasta", retmode="text")
+    except urllib2.HTTPError as e:
+        print (e)
+        print (accession_list)
+        print ('connexion problem, waiting 60s. and trying again...')
+        # run again if connexion error
+        import time
+        time.sleep(60)
+        return refseq_accession2fasta(accession_list)
+    except urllib2.URLError:
+        print (e)
+        print (accession_list)
+        print ('connexion problem, waiting 60s. and trying again...')
+        # run again if connexion error
+        import time
+        time.sleep(60)
+        return refseq_accession2fasta(accession_list)
+
+    records = [i for i in SeqIO.parse(handle, "fasta")]
+
+    return records
+
+    from collections import Iterable
+
+
+def flatten(items):
+    # flatten list of lists
+    merged_list = []
+    for x in items:
+        merged_list+=x
+    return merged_list
+
+conn = sqlite3.connect("orthology.db")
+cursor = conn.cursor()
+#sql1 = 'create table diamond_top_%s_nr_hits(orthogroup varchar, hit_accession, hit_sequence)' % ${params.refseq_diamond_BBH_phylogeny_top_n_hits}
+
+sql2 = 'attach "${params.databases_dir}/ncbi-taxonomy/linear_taxonomy.db" as linear_taxonomy'
+sql3 = 'attach "refseq_taxonomy.db" as refseq_taxonomy'
+sql4 = 'attach "diamond_refseq.db" as diamond_refseq'
+
+#cursor.execute(sql1,)
+cursor.execute(sql2,)
+cursor.execute(sql3,)
+cursor.execute(sql4,)
+conn.commit()
+
+#sql_template = 'insert into diamond_top_%s_nr_hits values (?,?,?)' % ${params.refseq_diamond_BBH_phylogeny_top_n_hits}
+
+sql_filtered_hits = 'select t1.orthogroup,t1.locus_tag,t3.sseqid,t3.hit_count from locus_tag2orthogroup t1 inner join locus_tag2sequence_hash t2 on t1.locus_tag=t2.locus_tag inner join diamond_refseq.diamond_refseq t3 on t2.sequence_hash=t3.qseqid inner join refseq_taxonomy.refseq_hits t4 on t3.sseqid=t4.accession inner join linear_taxonomy.ncbi_taxonomy t5 on t4.taxid=t5.tax_id where t5.phylum not in ("%s") order by t1.orthogroup,t1.locus_tag,t3.hit_count;'  % '","'.join(${params.refseq_diamond_BBH_phylogeny_phylum_filter})
+print(len(sql_filtered_hits))
+filtered_hits = cursor.execute(sql_filtered_hits,).fetchall()
+
+# retrieve top hits excluding phylum of choice
+orthogroup2locus2top_hits = {}
+for row in filtered_hits:
+    orthogroup = row[0]
+    locus_tag = row[1]
+    hit_id = row[2]
+    if orthogroup not in orthogroup2locus2top_hits:
+        orthogroup2locus2top_hits[orthogroup] = {}
+    if locus_tag not in orthogroup2locus2top_hits[orthogroup]:
+        orthogroup2locus2top_hits[orthogroup][locus_tag] = []
+    if len(orthogroup2locus2top_hits[orthogroup][locus_tag]) < int(${params.refseq_diamond_BBH_phylogeny_top_n_hits}):
+        orthogroup2locus2top_hits[orthogroup][locus_tag].append(hit_id)
+
+# retrieve aa sequences
+sql = 'select orthogroup,t1.locus_tag,sequence from locus_tag2orthogroup t1 inner join locus_tag2sequence_hash t2 on t1.locus_tag=t2.locus_tag inner join sequence_hash2aa_sequence t3 on t2.sequence_hash=t3.sequence_hash '
+orthogroup_sequences = cursor.execute(sql,).fetchall()
+orthogroup2locus_and_sequence = {}
+for row in orthogroup_sequences:
+    orthogroup = row[0]
+    locus_tag = row[1]
+    sequence = row[2]
+    if orthogroup not in orthogroup2locus_and_sequence:
+        orthogroup2locus_and_sequence[orthogroup] = []
+    orthogroup2locus_and_sequence[orthogroup].append([locus_tag, sequence])
+
+
+# for each group, retrieve aa sequence from NCBI
+# write it to fasta file with orthogroup sequences
+for group in orthogroup2locus2top_hits:
+    ortho_sequences = orthogroup2locus_and_sequence[group]
+    refseq_sequence_records = []
+    top_hits = [orthogroup2locus2top_hits[group][i] for i in orthogroup2locus2top_hits[group]]
+    nr_top_hit = list(set(flatten(top_hits)))
+    split_lists = chunks(nr_top_hit, 50)
+    for one_list in split_lists:
+        refseq_sequence_records += refseq_accession2fasta(one_list)
+
+    if len(refseq_sequence_records) > 0:
+        with open("%s_nr_hits.faa" % group, 'w') as f:
+            for one_ortholog in ortho_sequences:
+                f.write(">%s\\n%s\\n" % (one_ortholog[0], one_ortholog[1]))
+            for record in refseq_sequence_records:
+                name = record.name
+                f.write(">%s\\n%s\\n" % (name, str(record.seq)))
+  """
+}
 
 workflow.onComplete {
   // Display complete message

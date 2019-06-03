@@ -86,6 +86,22 @@
 - [ ] match to uniparc: use https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getBySequence
 - [ ] get entire proteomes: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
 
+## database setup
+
+- [ ] KEGG tables
+  - [ ] download ko definition
+  - [ ] download ko2module
+  - [ ] download ko2pathway
+- [ ] COG table
+- [ ] blastnr taxonomy table
+- [ ] DOOR2
+    - [ ] accession table
+- [ ] TCDB
+    - [ ] tc_table
+    - [ ] transporter_table
+    - [ ] uniprot_table
+- [ ] enzyme data
+
 ## development
 
 - [ ] (retrieve uniprot annotation from uniprotKB (exact match or best diamond/plast hit if no exact match?))
@@ -165,5 +181,3 @@
   - [ ] get leaf2phylum & leaf2order & leaf2class
   - [ ] extract subset of their reference phylogeny
   - [ ] get phylum tree & order tree & class tree (keep only lineages containing representative/reference genomes) (see how many different phylum, class, orders)
-
-
