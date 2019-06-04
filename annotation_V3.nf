@@ -1728,7 +1728,10 @@ process align_refseq_BBH_with_mafft {
 
   conda 'bioconda::mafft=7.407'
 
-  publishDir 'orthology/orthogroups_alignments', mode: 'copy', overwrite: true
+  publishDir 'orthology/orthogroups_refseq_diamond_BBH_alignments', mode: 'copy', overwrite: true
+
+  when:
+  params.refseq_diamond_BBH_phylogeny == true
 
   input:
   file og from diamond_refseq_hits_fasta.flatten().collate( 20 )
@@ -1745,6 +1748,28 @@ process align_refseq_BBH_with_mafft {
   """
 }
 
+mafft_alignments_refseq_BBH.flatten().set{ diamond_BBH_alignments }
+
+process orthogroup_refseq_BBH_phylogeny_with_fasttree {
+
+  conda 'bioconda::fasttree=2.1.10'
+  cpus 4
+  publishDir 'orthology/orthogroups_refseq_diamond_BBH_phylogenies', mode: 'copy', overwrite: true
+
+  when:
+  params.refseq_diamond_BBH_phylogeny == true
+
+  input:
+  each file(og) from diamond_BBH_alignments
+
+  output:
+    file "${og.baseName}.nwk"
+
+  script:
+  """
+  FastTree ${og} > ${og.baseName}.nwk
+  """
+}
 
 workflow.onComplete {
   // Display complete message
