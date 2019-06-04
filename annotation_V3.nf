@@ -1038,6 +1038,182 @@ SeqIO.write(mapping_uniparc_records, uniparc_mapping_faa, "fasta")
 }
 
 
+process get_uniprot_data {
+
+  conda 'biopython=1.73=py36h7b6447c_0'
+
+  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
+  echo true
+
+  when:
+  params.uniparc == true
+
+  input:
+  file(table) from uniprot_mapping_tab
+
+  output:
+  file 'uniprot_data.tab' into uniprot_data
+
+  script:
+
+  """
+#!/usr/bin/env python3.6
+
+from Bio import SeqIO
+import sqlite3
+from Bio.SeqUtils import CheckSum
+
+def uniprot_record2annotations(record):
+
+    data2info = {}
+    if 'recommendedName_ecNumber' in record.annotations:
+        data2info['ec_number'] = record.annotations['recommendedName_ecNumber'][0]
+    else:
+        data2info['ec_number'] = '-'
+    if 'gene_name_primary' in record.annotations:
+        data2info['gene'] = record.annotations['gene_name_primary']
+    else:
+        data2info['gene'] = '-'
+    if 'comment_catalyticactivity' in record.annotations:
+        data2info['comment_catalyticactivity'] =  record.annotations['comment_catalyticactivity'][0]
+    else:
+        data2info['comment_catalyticactivity'] = '-'
+    if 'comment_subunit' in record.annotations:
+        data2info['comment_subunit'] =  record.annotations['comment_subunit'][0]
+    else:
+        data2info['comment_subunit'] = '-'
+    if 'comment_function' in record.annotations:
+        data2info['comment_function'] =  record.annotations['comment_function'][0]
+    else:
+        data2info['comment_function'] = '-'
+    if 'recommendedName_fullName' in record.annotations:
+        data2info['recommendedName_fullName'] =  record.annotations['recommendedName_fullName'][0]
+    else:
+        data2info['recommendedName_fullName'] = '-'
+    if 'comment_similarity' in record.annotations:
+        data2info['comment_similarity'] =  record.annotations['comment_similarity'][0]
+    else:
+        data2info['comment_similarity'] = '-'
+    if 'proteinExistence' in record.annotations:
+        data2info['proteinExistence'] =  record.annotations['proteinExistence'][0]
+    else:
+        data2info['proteinExistence'] = '-'
+    if 'keywords' in record.annotations:
+        data2info['keywords'] =  ';'.join(record.annotations['keywords'])
+    else:
+        data2info['keywords'] = '-'
+    if 'comment_pathway' in record.annotations:
+        data2info['comment_pathway'] = record.annotations['comment_pathway'][0]
+    else:
+        data2info['comment_pathway'] = '-'
+    if 'comment_developmentalstage' in record.annotations:
+        data2info['developmentalstage'] = record.annotations['comment_developmentalstage'][0]
+    else:
+        data2info['developmentalstage'] = '-'
+    data2info['proteome'] = '-'
+    for ref in record.dbxrefs:
+        if "Proteomes" in ref:
+            data2info['proteome'] = ref.split(":")[1]
+
+    return data2info
+
+def uniprot_accession2go_and_status(uniprot_accession):
+
+    import urllib.request
+    from urllib.error import URLError
+
+    uniprot_accession = uniprot_accession.split(".")[0]
+
+    link = "http://www.uniprot.org/uniprot/?query=%s&columns=annotation%%20score,reviewed&format=tab" % (uniprot_accession)
+
+    try:
+        page = urllib.request.urlopen(link)
+        data = page.read().decode('utf-8').split('\\n')
+        rows = [i.rstrip().split('\\t') for i in data]
+    except URLError:
+        success = False
+        while not success:
+            import time
+            print ('connection problem, trying again...')
+            time.sleep(10)
+            try:
+                page = urllib.request.urlopen(req)
+                data = page.read().decode('utf-8').split('\\n')
+                rows = [i.rstrip().split('\\t') for i in data]
+                success=True
+            except:
+                success = False
+    print(uniprot_accession, rows)
+    return (rows[1][0][0], rows[1][1])
+
+def uniprot_id2record(uniprot_accession, n_trial=0):
+    link = "http://www.uniprot.org/uniprot/%s.xml" % (uniprot_accession)
+    from io import StringIO
+    from Bio import SeqIO
+    from urllib.error import URLError
+    import urllib.request
+    try:
+        data = urllib.request.urlopen(link).read().decode('utf-8')
+    except URLError:
+        print ('echec', link)
+        return False
+    rec = StringIO(data)
+    try:
+        record = SeqIO.read(rec, 'uniprot-xml')
+    except:
+        import time
+        print ('problem with %s, trying again, %s th trial' % (uniprot_accession, n_trial))
+        time.sleep(50)
+        n_trial+=1
+        if n_trial < 5:
+            record = uniprot_id2record(uniprot_accession, n_trial=n_trial)
+        else:
+            return False
+    return record
+
+
+
+conn = sqlite3.connect("${params.databases_dir}/uniprot/uniparc/uniparc.db")
+cursor = conn.cursor()
+
+uniprot_table = open("${table}", 'r')
+uniprot_data = open('uniprot_data.tab', 'w')
+
+uniprot_data.write("uniprot_accession\\tuniprot_score\\tuniprot_status\\tproteome\\tcomment_function\\tec_number\\tcomment_subunit\\tgene\\trecommendedName_fullName\\tproteinExistence\\tdevelopmentalstage\\tcomment_similarity\\tcomment_catalyticactivity\\tcomment_pathway\\tkeywords\\n")
+
+for row in uniprot_table:
+    data = row.rstrip().split("\\t")
+    uniprot_accession = data[1]
+    if uniprot_accession == 'uniprot_accession':
+        continue
+    uniprot_accession = uniprot_accession.split(".")[0]
+    print("uniprot_accession",uniprot_accession)
+    uniprot_score, uniprot_status = uniprot_accession2go_and_status(uniprot_accession)
+
+    uniprot_record = uniprot_id2record(uniprot_accession)
+    annotation = uniprot_record2annotations(uniprot_record)
+
+
+    uniprot_data.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n" % ( uniprot_accession,
+                                                                                                         uniprot_score,
+                                                                                                         uniprot_status,
+                                                                                                         annotation["proteome"],
+                                                                                                         annotation["comment_function"],
+                                                                                                         annotation["ec_number"],
+                                                                                                         annotation["comment_subunit"],
+                                                                                                         annotation["gene"],
+                                                                                                         annotation["recommendedName_fullName"],
+                                                                                                         annotation["proteinExistence"],
+                                                                                                         annotation["developmentalstage"],
+                                                                                                         annotation["comment_similarity"],
+                                                                                                         annotation["comment_catalyticactivity"],
+                                                                                                         annotation["comment_pathway"],
+                                                                                                         annotation["keywords"])
+                                                                                                        )
+  """
+}
+
+
 
 process get_string_mapping {
 

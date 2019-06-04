@@ -47,26 +47,29 @@
 - [X] get PMID associations from string database for mapped seqs
 - [X] execute gblast vs TCDB for chunks of 1000 sequences (only for unmapped sequences): todo: solve dependancies/env variables
 - [X] interproscan: analyse separately uniparc matches from non matched entries (allocate more ressources to the later): no match: more ram (16go), and cores (8), no lookup service
-
-# TODO
-
-## priority 1
-
-
-- [ ] extract best refseq (and swissprot?) hits for each sequence (from database), build phylogeny with non-redundant set of BBH (x top seqs refseq + y top seqs swissprot as parameters)
+- [X] extract best refseq (and swissprot?) hits for each sequence (from database), build phylogeny with non-redundant set of BBH (x top seqs refseq + y top seqs swissprot as parameters)
   - [X] get taxid of hits => make protein_accession2phylum sqlite db
   - [X] setup db (single process)
     - [X] load blast results into sqlite db
     - [X] load locus tag 2 hash table
     - [X] load orthology data into sqlite db (locus2orthogroup)
-  - [ ] keep X hits/sequence filter out Chlamydiae/Planctomycetes,... hits (attach linear taxonomy)
-  - [ ] retrieve refseq hits aa sequences
-  - [ ] generate one fasta files/orthogroup
-  - [ ] align with mafft
-  - [ ] build phylogeny
+  - [X] keep X hits/sequence filter out Chlamydiae/Planctomycetes,... hits (attach linear taxonomy)
+  - [X] retrieve refseq hits aa sequences
+  - [X] generate one fasta files/orthogroup
+  - [X] align with mafft
+  - [X] build phylogeny
+
+# TODO
+
+## priority 1
+
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
-- [ ] retrieve uniprot annotation score for matched uniprotkb entries
+- [X] retrieve uniprot annotation score for matched uniprotkb entries
+- [ ] get cross-references from uniprot IdMapping
+  - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
+  - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
 - [ ] execute checkM
+- [ ] get proteome match
 
 ## priority 2
 
