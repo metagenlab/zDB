@@ -65,6 +65,10 @@
 ## CHLAMDB setup
 
 ## priority 1
+
+### setup
+
+- [ ] setup biosqldb schema
 - [ ] setup kegg tables (ENZYME database)
   - [X] move to separate script (not in load script anymore)
   - [ ] ko2annotation table: high redundancy with ko2module and ko2pathway, can be simplified and accelerated
@@ -73,6 +77,7 @@
 - [ ] setup enzyme tables
 - [ ] setup TCDB tables
 
+### annotation results
 - [ ] lead genomes
 - [ ] load interproscan results
 - [ ] load COG hits
@@ -85,6 +90,9 @@
 - [ ] load orthogroup phylogenies
 - [ ] load orthogroup BBH phylogenies
 - [ ] load reference phylogeny
+- [ ] load blast swissprot results
+- [ ] load blast refseq results
+
 
 ## priority 2
 
