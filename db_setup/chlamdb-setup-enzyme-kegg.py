@@ -45,13 +45,10 @@ def get_complete_ko_table():
     url = 'http://rest.kegg.jp/list/ko'
     data = urllib.request.urlopen(url).read().decode('utf-8').split('\n')
 
-    sql = 'select ko_accession from enzyme.ko_annotation'
+    sql = 'select ko_accession from ko_annotation;'
+    cursor.execute(sql,)
 
-    try:
-        ko_already_in_db = [i[0] for i in cursor.execute(sql,).fetchall()]
-    # no ko annotation in DB
-    except AttributeError:
-        ko_already_in_db = []
+    ko_already_in_db = [i[0] for i in cursor.fetchall()]
 
     print('Already into DB:', ko_already_in_db[0:10])
 
@@ -112,7 +109,6 @@ def get_complete_ko_table():
                                                                 modules,
                                                                 refs_str)
 
-        print (sql)
         cursor.execute(sql,)
         conn.commit()
 
@@ -373,7 +369,8 @@ def get_pathway2ko(ko_accession2ko_id):
     conn.commit()
 
     sql = 'select pathway_name, pathway_id from enzyme.kegg_pathway'
-    pathway_name2pathway_id = manipulate_biosqldb.to_dict(cursor.execute(sql,).fetchall())
+    cursor.execute(sql,)
+    pathway_name2pathway_id = manipulate_biosqldb.to_dict(cursor.fetchall())
 
     pathway_file = 'http://rest.kegg.jp/list/pathway'
     data = urllib.request.urlopen(pathway_file).read().decode('utf-8').split("\n")
@@ -828,7 +825,8 @@ def get_ko2ec():
 
             try:
                 sql_ec_id = 'select enzyme_id from enzyme.enzymes where ec="%s";' % ec_name
-                ec_id = cursor.execute(sql_ec_id,).fetchall()[0][0]
+                cursor.execute(sql_ec_id,)
+                ec_id = cursor.fetchall()[0][0]
 
                 sql = 'INSERT INTO enzyme.ko2ec(ko_id, enzyme_id) VALUES ("%s",%s);' % (one_ec[0][3:], ec_id)
                 #print sql
@@ -946,7 +944,8 @@ if __name__ == '__main__':
     print('load_enzyme_nomenclature_table map2category...')
     load_enzyme_nomenclature_table()
     sql = 'select ko_accession, ko_id from enzyme.ko_annotation'
-    ko_accession2ko_id = manipulate_biosqldb.to_dict(cursor.execute(sql,).fetchall())
+    cursor.execute(sql,)
+    ko_accession2ko_id = manipulate_biosqldb.to_dict(cursor.fetchall())
     print('getting map2category...')
     map2category = get_kegg_pathway_classification()
     print('getting pathway table...')
