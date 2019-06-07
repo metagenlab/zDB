@@ -78,6 +78,7 @@
 - [ ] setup TCDB tables
 
 ### annotation results
+
 - [ ] lead genomes
 - [ ] load interproscan results
 - [ ] load COG hits
@@ -92,13 +93,16 @@
 - [ ] load reference phylogeny
 - [ ] load blast swissprot results
 - [ ] load blast refseq results
-
+- [ ] load refseq taxonomy table
 
 ## priority 2
 
 - [ ] setup NOG_table_v451 and NOG_members_v451
 - [ ] setup interpro master table
 - [ ] setup pfam master table
+- [ ] load DOOR2 data
+    - [ ] accession table
+    - [ ] operons data
 
 ## Annotation pipeline
 
@@ -129,22 +133,6 @@
 
 - [ ] match to uniparc: use https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getBySequence
 - [ ] get entire proteomes: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
-
-## database setup
-
-- [ ] KEGG tables
-  - [ ] download ko definition
-  - [ ] download ko2module
-  - [ ] download ko2pathway
-- [ ] COG table
-- [ ] blastnr taxonomy table
-- [ ] DOOR2
-    - [ ] accession table
-- [ ] TCDB
-    - [ ] tc_table
-    - [ ] transporter_table
-    - [ ] uniprot_table
-- [ ] enzyme data
 
 ## development
 
