@@ -5,137 +5,67 @@
  *
  */
 
-
-/*
- * Pipeline input params
- */
-
-params.input = "faa/*.faa" 	// input sequences
 log.info params.input
 params.databases_dir = "$PWD/databases"
-params.blast_cog = true
-params.orthofinder = true
-params.genome_faa_folder = "$PWD/faa"
+params.setup_COG = true
+
 log.info "====================================="
 log.info "input                  : ${params.input}"
-log.info "Blast COG              : ${params.blast_cog}"
-log.info "Orthofinder            : ${params.orthofinder}"
-log.info "Orthofinder path       : ${params.genome_faa_folder}"
 
-Channel
-  .fromPath(params.input)
-  .ifEmpty { error "Cannot find any input sequence files matching: ${params.input}" }
-  .splitFasta( by: 1000 )
-  .set { faa_chunks }
 
-genome_folder = Channel
-              .from(params.genome_faa_folder)
 
-process blast_COG {
+Channel.from([["cognames2003-2014.tab", "ftp://ftp.ncbi.nih.gov/pub/COG/COG2014/data/cognames2003-2014.tab"],
+              ["cog2003-2014.csv","ftp://ftp.ncbi.nih.gov/pub/COG/COG2014/data/cog2003-2014.csv"],
+              ["fun2003-2014.tab", "ftp://ftp.ncbi.nih.gov/pub/COG/COG2014/data/fun2003-2014.tab"]])
+              .set { cog_urls }
 
-  conda 'bioconda::blast=2.7.1'
+Channel.fromPath("${params.databases_dir}/annotation/COG/blast_COG.tab")
+              .into { cog_results }
+
+
+process download_COG {
+
+  publishDir 'chlamdb_setup/COG_tables', mode: 'copy', overwrite: true
+  echo true
 
   when:
-  params.blast_cog == true
+  params.setup_COG == true
 
   input:
-  file 'seq' from faa_chunks
+  set val (table_name), val (table_url)  from cog_urls
 
   output:
-  set file('blast_result') into merged_blasts
+  file("${table_name}") into cog_tables
 
   script:
   """
-  blastp -db $params.databases_dir/COG/prot2003-2014.fa -query seq -outfmt 6 > blast_result
+  echo ${table_url}
+  curl -L ${table_url} > ${table_name}
   """
 }
 
+process mysql_setup_COG_tables {
 
-process orthofinder_preparation {
-
-  conda 'bioconda::orthofinder=2.2.7'
-
-  input:
-  val faa_folder from genome_folder
-
-  output:
-  file 'of_prep.tab' into orthofinder_prep_output
+  publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
+  echo true
+  conda 'mysqlclient=1.3.10 biopython=1.73'
 
   when:
-  params.orthofinder == true
+  params.setup_COG == true
+
+  input:
+  file cog_tables from cog_tables.collect()
+
+  output:
+  file("mysql_COG_setup.log}") into mysql_COG_setup
 
   script:
-  myDir = file("${params.genome_faa_folder}/Results*/WorkingDirectory/*")
-
-  if (myDir.size() > 0){
-    log.info "removing existing dir..."
-    """
-    rm -rf  ${params.genome_faa_folder}/Results*
-    orthofinder -op -a 8 -f ${params.genome_faa_folder} > of_prep.tab
-    """
-  }
-  else{
-    log.info "first attempt..."
-    """
-    orthofinder -op -a 8 -f ${params.genome_faa_folder} > of_prep.tab
-    """
-  }
+  """
+  echo ${cog_tables}
+  chlamdb-setup-COG.py -i cognames2003-2014.tab -c cog2003-2014.csv -f fun2003-2014.tab > mysql_COG_setup.log
+  """
 }
 
-/*
-process parse_orthofinder_blast {
-    echo true
-
-    input:
-    file 'of_prep.tab' from orthofinder_prep_output2
-
-    output:
-    val blast_cmd
-
-    println 'executing script'
-    """
-    #!/usr/bin/env python3
-    import sys
-    print('ok')
-    x = 0
-    for line in open("of_prep.tab", 'r'):
-        if 'blastp -outfmt ' in line:
-          blast_cmd = line.rstrip()
-          x+=1
-    print(x)
-    """
-
-
-    for( line in x.readLines() ) {
-        if ('blast' in line){println line}
-    }
-
-
-}
-
-.splitText()
-                       .subscribe { print it }
-
-
-*/
-
-
-orthofinder_prep_output.collectFile().splitText().set { blast_cmds }
-
-process print_cmds {
-    echo true
-
-    input:
-    val blast_cmd from blast_cmds
-
-    println "line:"
-    println blast_cmd.class
-
-    script:
-    """
-    echo "aaa ${blast_cmd} bbb"
-    """
-}
 
 
 workflow.onComplete {
