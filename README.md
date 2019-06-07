@@ -59,20 +59,40 @@
   - [X] align with mafft
   - [X] build phylogeny
 
+
 # TODO
 
-# CHLAMDB setup
+## CHLAMDB setup
 
+## priority 1
 - [ ] setup kegg tables (ENZYME database)
   - [X] move to separate script (not in load script anymore)
   - [ ] ko2annotation table: high redundancy with ko2module and ko2pathway, can be simplified and accelerated
 - [X] setup COG tables (COG database)
 - [ ] setup linear taxonomy (with taxid for each rank see virulence db setup)
-- [ ] setup NOG_table_v451 and NOG_members_v451
 - [ ] setup enzyme tables
 - [ ] setup TCDB tables
+
+- [ ] lead genomes
+- [ ] load interproscan results
+- [ ] load COG hits
+- [ ] load KO hits
+- [ ] load PMID mapping
+- [ ] load cross-references
+- [ ] load uniprot annotations
+- [ ] load orthofinder results
+- [ ] lead orthogroup alignments(identity matrices)
+- [ ] load orthogroup phylogenies
+- [ ] load orthogroup BBH phylogenies
+- [ ] load reference phylogeny
+
+## priority 2
+
+- [ ] setup NOG_table_v451 and NOG_members_v451
 - [ ] setup interpro master table
 - [ ] setup pfam master table
+
+## Annotation pipeline
 
 ## priority 1
 
