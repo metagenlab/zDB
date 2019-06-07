@@ -8,6 +8,7 @@
 log.info params.input
 params.databases_dir = "$PWD/databases"
 params.setup_COG = true
+params.setup_enzyme = true
 
 log.info "====================================="
 log.info "input                  : ${params.input}"
@@ -66,6 +67,24 @@ process mysql_setup_COG_tables {
   """
 }
 
+
+process mysql_setup_enzyme_KEGG_tables {
+
+  publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
+  echo true
+  conda 'mysqlclient=1.3.10 biopython=1.73'
+
+  when:
+  params.setup_enzyme == true
+
+  output:
+  file("mysql_enzyme_setup.log") into mysql_enzyme_setup
+
+  script:
+  """
+  chlamdb-setup-enzyme-kegg.py -u > mysql_enzyme_setup.log
+  """
+}
 
 
 workflow.onComplete {
