@@ -6,10 +6,16 @@ def create_COG_tables():
     import os
     sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="COG") # name of the data base
+                           user="root", # your username
+                           passwd=sqlpsw) # name of the data base
     cursor = conn.cursor()
+
+    sql_db = 'CREATE DATABASE IF NOT EXISTS COG;'
+
+    cursor.execute(sql_db,)
+    conn.commit()
+
+    cursor.execute("use COG;",)
 
     sql1 = 'CREATE TABLE cog_2014 (domain_id varchar(100),' \
                             ' genome_name varchar(200),' \
@@ -33,17 +39,15 @@ def create_COG_tables():
                                  ' index category_id(category_id))'
 
 
-    sql4 = 'alter table COG.code2category add column `category_id` INT unsigned primary KEY AUTO_INCREMENT;'
+    sql4 = 'create table COG.code2category (code varchar(5),' \
+                                           ' description TEXT,' \
+                                           ' category_id INT unsigned primary KEY AUTO_INCREMENT);'
 
     cursor.execute(sql1,)
     cursor.execute(sql2,)
     cursor.execute(sql3,)
-    try:
-        cursor.execute(sql4,)
-    except:
-        pass
+    cursor.execute(sql4,)
     conn.commit()
-
 
 def COG_id2cog_data_from_website(GOG_id):
     import urllib2
@@ -58,7 +62,7 @@ def COG_id2cog_data_from_website(GOG_id):
     category = title.text.split('[')[1].split(']')[0]
     return [description, category]
 
-def load_cog_tables(cognames_2014, cog_2014):
+def load_cog_tables(cognames_2014, cog_2014, cog_categories):
     '''
 
     COG names
@@ -76,13 +80,26 @@ def load_cog_tables(cognames_2014, cog_2014):
     import MySQLdb
     import os
     import re
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
                                 passwd=sqlpsw, # your password
                                 db="COG") # name of the data base
     cursor = conn.cursor()
+    conn.set_character_set('utf8')
+    cursor.execute('SET NAMES utf8;')
+    cursor.execute('SET CHARACTER SET utf8;')
+    cursor.execute('SET character_set_connection=utf8;')
+
+    with open(cog_categories, 'r') as f:
+        sql = 'insert into code2category (code, description) values (%s, %s)'
+        for row in f:
+            if row[0] == '#':
+                continue
+            data = row.rstrip().split('\t')
+            cursor.execute(sql, (data[0], data[1]))
+    conn.commit()
 
     sql2 = 'select code, category_id from COG.code2category'
     cursor.execute(sql2,)
@@ -92,8 +109,14 @@ def load_cog_tables(cognames_2014, cog_2014):
     cursor.execute(sql3,)
     cog_description2cog_category_id = manipulate_biosqldb.to_dict(cursor.fetchall())
 
+    with open(cog_categories, 'r') as f:
+        for row in f:
+            if row[0] == '#':
+                continue
+            data = row.rstrip().split('\t')
+            sql = 'insert into code2categories'
     n=0
-    with open(cognames_2014, 'r') as f:
+    with open(cognames_2014, 'rU', encoding='windows-1252') as f:
         for row in f:
             data = row.rstrip().split('\t')
             if data[0][0] == '#':
@@ -205,7 +228,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--cognames_2014', type=str, help="cognames2003-2014.tab")
     parser.add_argument("-c", '--cog_2014', type=str, help="cog2003-2014.csv")
+    parser.add_argument("-f", '--functions_2014', type=str, help="fun2003-2014.tab")
 
     args = parser.parse_args()
     create_COG_tables()
-    load_cog_tables(args.cognames_2014, args.cog_2014)
+    load_cog_tables(args.cognames_2014, args.cog_2014, args.functions_2014)
