@@ -123,7 +123,7 @@ def load_cog_tables(cognames_2014, cog_2014):
         f = [i for i in f]
         for n, row in enumerate(f):
             if n%100 ==0:
-                print '%s / %s' % (n, len(f))
+                print ('%s / %s' % (n, len(f)))
             data = row.rstrip().split(',')
             if data[0][0] == '#':
                 continue
@@ -149,7 +149,8 @@ def load_cog_tables(cognames_2014, cog_2014):
             except:
                 # cog missing from the cognames table
                 # fetch data from the NCBI website and insert new COG name entry
-                print 'problem with COG id %s' % data[6]
+                # mail to Yuri Wolf, should not happen again (they cleaned tables from "old" removed COGs)
+                print ('problem with COG id %s' % data[6])
                 cog_web_data = COG_id2cog_data_from_website(data[6])
                 description = cog_web_data[0]
                 categories = cog_web_data[1]
@@ -161,7 +162,7 @@ def load_cog_tables(cognames_2014, cog_2014):
                 cog_name2cog_id[data[6]] = COG_id
                 for cat in cog_description2cog_category_id:
                     if cat in categories:
-                        print 'category present!', cat
+                        print ('category present!', cat)
                         category_id = cog_description2cog_category_id[cat]
                         sql = 'insert into COG.cog_id2cog_category values (%s, %s)' % (COG_id,
                                                                                        category_id)
@@ -195,7 +196,9 @@ def load_cog_tables(cognames_2014, cog_2014):
 
                 cursor.execute(sql,)
     conn.commit()
-    print 'number of problems:', len(problem)
+    print ('number of problems:', len(problem))
+
+
 if __name__ == '__main__':
     import argparse
     from Bio import SeqIO
@@ -203,8 +206,6 @@ if __name__ == '__main__':
     parser.add_argument("-i", '--cognames_2014', type=str, help="cognames2003-2014.tab")
     parser.add_argument("-c", '--cog_2014', type=str, help="cog2003-2014.csv")
 
-
     args = parser.parse_args()
     create_COG_tables()
     load_cog_tables(args.cognames_2014, args.cog_2014)
-    #print COG_id2cog_data_from_website("COG0252")
