@@ -57,7 +57,7 @@ process mysql_setup_COG_tables {
   file cog_tables from cog_tables.collect()
 
   output:
-  file("mysql_COG_setup.log}") into mysql_COG_setup
+  file("mysql_COG_setup.log") into mysql_COG_setup
 
   script:
   """
