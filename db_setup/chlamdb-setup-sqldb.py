@@ -19,7 +19,7 @@ page = urllib.request.urlopen(request)
 
 sys.stdout.write("Creating mysql database...\n")
 
-sql_db = 'CREATE DATABASE IF NOT EXISTS biosqldb;
+sql_db = 'CREATE DATABASE IF NOT EXISTS biosqldb;'
 cursor.execute(sql_db,)
 conn.commit()
 cursor.execute("use biosqldb;",)
