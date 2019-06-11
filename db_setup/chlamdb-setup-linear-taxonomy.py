@@ -56,8 +56,8 @@ if __name__ == '__main__':
     from chlamdb.biosqldb import manipulate_biosqldb
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i, '--linear_taxonomy_file', type=str, help="Linear taxonomy file")
-    parser.add_argument("-d, '--db_name', type=str, help="DB name", default="blastnr")
+    parser.add_argument('-i', '--linear_taxonomy_file', type=str, help='Linear taxonomy file')
+    parser.add_argument('-d', '--db_name', type=str, help='DB name', default='blastnr')
 
     args = parser.parse_args()
 
