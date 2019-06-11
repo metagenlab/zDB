@@ -74,7 +74,7 @@
   - [ ] ko2annotation table: high redundancy with ko2module and ko2pathway, can be simplified and accelerated
   - [ ] setup enzyme tables
 - [X] setup COG tables (COG database)
-- [ ] setup linear taxonomy (with taxid for each rank see virulence db setup)
+- [X] setup linear taxonomy (with taxid for each rank see virulence db setup)
 - [ ] setup TCDB tables
 
 ### annotation results

@@ -106,6 +106,25 @@ process mysql_setup_biosql_db {
 }
 
 
+process mysql_setup_linear_taxonomy {
+
+  publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
+  echo true
+  conda 'mysqlclient=1.3.10 biopython=1.73'
+
+  when:
+  params.setup_linear_taxonomy == true
+
+  output:
+  file("mysql_linear_taxonomy_setup.log") into mysql_linear_taxonomy_setup
+
+  script:
+  """
+  chlamdb-setup-linear-taxonomy.py -u > mysql_linear_taxonomy_setup.log
+  """
+}
+
+
 workflow.onComplete {
   // Display complete message
   log.info "Completed at: " + workflow.complete
