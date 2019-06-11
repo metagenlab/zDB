@@ -25,6 +25,14 @@ conn.commit()
 cursor.execute("use biosqldb;",)
 
 sys.stdout.write("Importing Biosql schema...\n")
-conn.executescript(page.read().decode('unicode-escape'))
+
+
+for line in page.read().decode('unicode-escape').split('\n'):
+    print("line", line)
+    if line == '':
+        continue
+    if line[0] == '-':
+        continue
+    cursor.execute("%s\n" % line)
 
 conn.commit()

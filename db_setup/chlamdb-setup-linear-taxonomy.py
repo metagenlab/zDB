@@ -28,7 +28,7 @@ class SQLiteDB():
                 field = re.sub(' ', '_', field)
                 fieldlist += '`%s`,' % field
                 if ("taxid" in field or "tax_id" in field):
-                    fieldlist_header += ('%s INTEGER,' % field)
+                    fieldlist_header += ('taxon_id INTEGER,')
                 elif (field == "order"):
                     fieldlist_header += ('`%s` TEXT,' % field)
                 else:
