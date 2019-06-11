@@ -86,6 +86,55 @@ process mysql_setup_enzyme_KEGG_tables {
   """
 }
 
+process mysql_setup_biosql_db {
+
+  publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
+  echo true
+  conda 'mysqlclient=1.3.10 biopython=1.73'
+
+  when:
+  params.setup_biosql == true
+
+  output:
+  file("mysql_biosql_setup.log") into mysql_biosql_setup
+
+  script:
+  """
+  #!/usr/bin/env python
+
+  import urllib.request
+  import sys
+  import MySQLdb
+  import os
+
+  log = open("mysql_biosql_setup.log", "w")
+
+  url_mysql_biosql_scheme = 'https://raw.githubusercontent.com/biosql/biosql/master/sql/biosqldb-mysql.sql'
+
+  log.write('Downloading Biosql scheme from %s ...\n' % url_mysql_biosql_scheme)
+  request = urllib.request.Request(url_mysql_biosql_scheme)
+  page = urllib.request.urlopen(request)
+
+  log.write("Creating mysql database...\n")
+
+  sqlpsw = os.environ['SQLPSW']
+  conn = MySQLdb.connect(host="localhost", # your host, usually localhost
+                         user="root", # your username
+                         passwd=sqlpsw) # name of the data base
+  cursor = conn.cursor()
+  sql_db = 'CREATE DATABASE IF NOT EXISTS biosqldb;
+  cursor.execute(sql_db,)
+  conn.commit()
+  cursor.execute("use biosqldb;",)
+
+  log.write("Importing Biosql schema...\n")
+  conn.executescript(page.read().decode('unicode-escape'))
+
+  conn.commit()
+  log.close()
+  """
+}
+
 
 workflow.onComplete {
   // Display complete message
