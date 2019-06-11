@@ -9,6 +9,7 @@ log.info params.input
 params.databases_dir = "$PWD/databases"
 params.setup_COG = true
 params.setup_enzyme = true
+params.setup_biosql = true
 
 log.info "====================================="
 log.info "input                  : ${params.input}"
@@ -100,38 +101,7 @@ process mysql_setup_biosql_db {
 
   script:
   """
-  #!/usr/bin/env python
-
-  import urllib.request
-  import sys
-  import MySQLdb
-  import os
-
-  log = open("mysql_biosql_setup.log", "w")
-
-  url_mysql_biosql_scheme = 'https://raw.githubusercontent.com/biosql/biosql/master/sql/biosqldb-mysql.sql'
-
-  log.write('Downloading Biosql scheme from %s ...\n' % url_mysql_biosql_scheme)
-  request = urllib.request.Request(url_mysql_biosql_scheme)
-  page = urllib.request.urlopen(request)
-
-  log.write("Creating mysql database...\n")
-
-  sqlpsw = os.environ['SQLPSW']
-  conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                         user="root", # your username
-                         passwd=sqlpsw) # name of the data base
-  cursor = conn.cursor()
-  sql_db = 'CREATE DATABASE IF NOT EXISTS biosqldb;
-  cursor.execute(sql_db,)
-  conn.commit()
-  cursor.execute("use biosqldb;",)
-
-  log.write("Importing Biosql schema...\n")
-  conn.executescript(page.read().decode('unicode-escape'))
-
-  conn.commit()
-  log.close()
+  chlamdb-setup-sqldb.py -u > mysql_biosql_setup.log
   """
 }
 

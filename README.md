@@ -68,13 +68,13 @@
 
 ### setup
 
-- [ ] setup biosqldb schema
+- [X] setup biosqldb schema
 - [ ] setup kegg tables (ENZYME database)
   - [X] move to separate script (not in load script anymore)
   - [ ] ko2annotation table: high redundancy with ko2module and ko2pathway, can be simplified and accelerated
+  - [ ] setup enzyme tables
 - [X] setup COG tables (COG database)
 - [ ] setup linear taxonomy (with taxid for each rank see virulence db setup)
-- [ ] setup enzyme tables
 - [ ] setup TCDB tables
 
 ### annotation results
