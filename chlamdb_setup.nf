@@ -8,8 +8,10 @@
 log.info params.input
 params.databases_dir = "$PWD/databases"
 params.setup_COG = true
-params.setup_enzyme = true
+params.setup_enzyme = false
 params.setup_biosql = true
+params.setup_linear_taxonomy = false
+
 
 log.info "====================================="
 log.info "input                  : ${params.input}"
@@ -101,7 +103,9 @@ process mysql_setup_biosql_db {
 
   script:
   """
-  chlamdb-setup-sqldb.py -u > mysql_biosql_setup.log
+  mysql -uroot -p$SQLPSW --execute="create database if not exists biosqldb" >> mysql_biosql_setup.log
+  wget https://raw.githubusercontent.com/biosql/biosql/master/sql/biosqldb-mysql.sql
+  mysql -uroot -p$SQLPSW biosqldb < biosqldb-mysql.sql >> mysql_biosql_setup.log
   """
 }
 
@@ -120,7 +124,7 @@ process mysql_setup_linear_taxonomy {
 
   script:
   """
-  chlamdb-setup-linear-taxonomy.py -u > mysql_linear_taxonomy_setup.log
+  chlamdb-setup-linear-taxonomy.py -i ${params.databases_dir}/ncbi-taxnomy/COG/blast_COG.tab -d blastnr > mysql_linear_taxonomy_setup.log
   """
 }
 
