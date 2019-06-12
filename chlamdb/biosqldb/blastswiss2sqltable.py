@@ -81,14 +81,14 @@ def _chunks(l, n):
 
 def get_swissprot_annotation(accession_list):
 
-    import urllib2
-    from urllib2 import URLError
+    import urllib
+    from urllib.error import URLError
 
-    link = "http://www.uniprot.org/uniprot/?query=%s&columns=id,taxon,annotation score,protein names,genes,organism&format=tab" % (','.join(accession_list))
+    link = "http://www.uniprot.org/uniprot/?query=id:%s&columns=id,taxon,annotation score,protein names,genes,organism&format=tab" % (','.join(accession_list))
     link = link.replace(' ', '%20')
-    req = urllib2.Request(link)
+    req = urllib.request.Request(link)
     try:
-        page = urllib2.urlopen(req)
+        page = urllib.request.urlopen(req)
         data = page.read().decode('utf-8').split('\n')
         rows = [i.rstrip().split('\t') for i in data]
         accession2data = {}
@@ -100,10 +100,10 @@ def get_swissprot_annotation(accession_list):
             else:
                 accession2data[row[0]] = row[1:]
         return accession2data
-    except URLError, err:
-        print 'echec'
-        print link
-        return False
+    except URLError:
+        print ('echec')
+        print (link)
+        return (False)
 
 
 
@@ -139,36 +139,36 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
 
 
         with open(one_blast_file, 'r') as f:
-            print 'Loading', n_file, one_blast_file, '...'
+            print ('Loading', n_file, one_blast_file, '...')
             input_file = [i.rstrip().split('\t') for i in f]
             # sp|P0ADG4|SUHB_ECOLI
             sp_accessions = [i[1].split('|')[1] for i in input_file]
 
             hit_lists = _chunks(sp_accessions, 300)
 
-            print 'getting annotation'
+            print ('getting annotation')
             accession2annotation = {}
             for n, one_list in enumerate(hit_lists):
                 if n % 100 == 0:
-                    print '%s lists/ %s' % (n, len(hit_lists))
+                    print ('%s lists/ %s' % (n, len(hit_lists)))
                 temp_dico = get_swissprot_annotation(one_list)
                 if temp_dico:
                     accession2annotation.update(temp_dico)
                 else:
-                    print 'waiting 20 sec...'
+                    print ('waiting 20 sec...')
                     time.sleep(20)
                     temp_dico = get_swissprot_annotation(one_list)
                     if temp_dico:
                         accession2annotation.update(temp_dico)
                     else:
-                        print '1-waiting another 60 sec...'
+                        print ('1-waiting another 60 sec...')
                         time.sleep(60)
                         temp_dico = get_swissprot_annotation(one_list)
                         if temp_dico:
                             accession2annotation.update(temp_dico)
                         else:
-                            print '2-waiting another 60 sec...'
-                            print one_list
+                            print ('2-waiting another 60 sec...')
+                            print (one_list)
                             time.sleep(60)
                             temp_dico = get_swissprot_annotation(one_list)                            
                         
@@ -181,20 +181,20 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
             taxid_in_db = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
             missing_taxons = list(set(all_taxid)-set(taxid_in_db))
 
-            print 'downloading taxonomy data for %s taxons...' % len(missing_taxons)
+            print ('downloading taxonomy data for %s taxons...' % len(missing_taxons))
             plastnr2sqltable.insert_taxons_into_sqldb(missing_taxons, mysql_pwd=mysql_pwd)
 
-            print "getting taxid2superkingdom"
+            print ("getting taxid2superkingdom")
             sql = 'select taxon_id,superkingdom from blastnr.blastnr_taxonomy'
             cursor.execute(sql,)
             taxon_id2superkingdom = manipulate_biosqldb.to_dict(cursor.fetchall())
 
-            print "getting locus2protein_length"
+            print ("getting locus2protein_length")
             sql = 'select locus_tag,char_length(translation) from biosqldb.orthology_detail_%s' % biodb
             cursor.execute(sql,)
             locus_tag2protein_length = manipulate_biosqldb.to_dict(cursor.fetchall())
 
-            print 'loading blast results into database...'
+            print ('loading blast results into database...')
             for n, line in enumerate(input_file):
 
                 sp_accession = line[1].split('|')[1]
@@ -288,8 +288,8 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
                     cursor.execute(sql,)
                     conn.commit()
                 except:
-                    print 'problem with sql query'
-                    print sql
+                    print ('problem with sql query')
+                    print (sql)
 
 def create_sql_blast_swissprot_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_db='blastnr'):
     import MySQLdb
@@ -354,11 +354,11 @@ def create_sql_blast_swissprot_tables(db_name, mysql_host, mysql_user, mysql_pwd
     try:
 
         cursor.execute(sql_plast)
-        print 'sql hits ok'
+        print ('sql hits ok')
         conn.commit()
     except:
-        print sql_plast
-        print 'not created'
+        print (sql_plast)
+        print ('not created')
 
 
     sql_taxonomy1 = 'CREATE TABLE IF NOT EXISTS blastnr_taxonomy (taxon_id int unique PRIMARY KEY, ' \
@@ -414,7 +414,7 @@ def blastswiss2biosql( locus_tag2seqfeature_id,
     n_cpu = n_procs
     n_poc_per_list = int(numpy.ceil(len(input_blast_files)/float(n_cpu)))
     query_lists = _chunks(input_blast_files, n_poc_per_list)
-    print 'n lists: %s' % len(query_lists)
+    print ('n lists: %s' % len(query_lists))
 
 
 
@@ -422,10 +422,10 @@ def blastswiss2biosql( locus_tag2seqfeature_id,
           ' taxonomy TEXT, source TEXT);'
     server.adaptor.execute(sql,)
 
-    print 'get locus2taxon_id'
+    print ('get locus2taxon_id')
     sql = 'select locus_tag, taxon_id from orthology_detail_%s' % db_name
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    print 'get locus2bioentry'
+    print ('get locus2bioentry')
     sql2 = 'select locus_tag,bioentry_id from biodatabase t1 ' \
            ' inner join bioentry as t2 on t1.biodatabase_id=t2.biodatabase_id' \
            ' inner join orthology_detail_%s t3 on t2.accession=t3.accession where t1.name="%s"' % (db_name,db_name)
@@ -453,7 +453,7 @@ def blastswiss2biosql( locus_tag2seqfeature_id,
         for proc in procs:
             proc.join()
     else:
-        print 'Only %s input blast file(s) for %s cpus, not working in paralell mode' % (len(input_blast_files),n_poc_per_list)
+        print ('Only %s input blast file(s) for %s cpus, not working in paralell mode' % (len(input_blast_files),n_poc_per_list))
         load_blastswissprot_file_into_db(locus_tag2taxon_id,
                                 locus_tag2seqfeature_id,
                                 locus_tag2bioentry_id,

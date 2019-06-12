@@ -94,8 +94,8 @@ def check_if_tc_accession_already_in_db(biodb, tc_name):
         return False
 
 def insert_uniprot_in_db(biodb, uniprot_accession, tc_id):
-    from biosqldb import manipulate_biosqldb
-    import blastswiss2sqltable
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import blastswiss2sqltable
     import tcdb_utils
     import accession2taxon_id
     import MySQLdb

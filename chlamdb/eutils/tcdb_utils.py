@@ -1,25 +1,25 @@
 #!/usr/bin/env python
 
 from Bio import Entrez
-
+import urllib.request
+from bs4 import BeautifulSoup
+import re
+from urllib.error import URLError
 
 Entrez.email = "trestan.pillonel@unil.ch"
 
 def accession2family(family_id):
-    import urllib2
-    from bs4 import BeautifulSoup
-    import re
-    from urllib2 import URLError
+
 
     link = "http://www.tcdb.org/search/result.php?tc=%s" % (family_id)
-    req = urllib2.Request(link)
+    req =  urllib.request.Request(link)
     try:
-        page = urllib2.urlopen(req)
+        page = urllib.request.urlopen(req)
         #data = page.read().decode('utf-8').split('\n')
         soup = BeautifulSoup(page, 'html.parser')
     except:
         import time
-        print 'connexion problem, trying again...'
+        print ('connexion problem, trying again...')
         time.sleep(60)
     if len(family_id.split('.'))<=2:
         family_title = soup.find("div", {"class": "title"})
@@ -56,21 +56,17 @@ def accession2family(family_id):
             return project_description.span.text
     '''
 def accession2substrate(accession, tc):
-    import urllib2
-    from bs4 import BeautifulSoup
-    import re
-    from urllib2 import URLError
 
     link = "http://www.tcdb.org/search/result.php?acc=%s&tc=%s" % (accession, tc)
     #print link
-    req = urllib2.Request(link)
+    req = urllib.request.Request(link)
     try:
-        page = urllib2.urlopen(req)
+        page = urllib.request.urlopen(req)
         #data = page.read().decode('utf-8').split('\n')
         soup = BeautifulSoup(page, 'html.parser')
     except:
         import time
-        print 'connexion problem, trying again...'
+        print ('connexion problem, trying again...')
         time.sleep(60)
     table = soup.find('table', attrs={'class':'proteins'})
 
@@ -86,21 +82,17 @@ def accession2substrate(accession, tc):
 
 
 def accession2species_and_product(accession, tc):
-    import urllib2
-    from bs4 import BeautifulSoup
-    import re
-    from urllib2 import URLError
 
     link = "http://www.tcdb.org/search/result.php?acc=%s&tc=%s" % (accession, tc)
     #print link
-    req = urllib2.Request(link)
+    req = urllib.request.Request(link)
     try:
-        page = urllib2.urlopen(req)
+        page = urllib.request.urlopen(req)
         #data = page.read().decode('utf-8').split('\n')
         soup = BeautifulSoup(page, 'html.parser')
     except:
         import time
-        print 'connexion problem, trying again...'
+        print ('connexion problem, trying again...')
         time.sleep(60)
     table = soup.find('table', attrs={'class':'proteins'})
 
@@ -148,7 +140,7 @@ if __name__ == '__main__':
     #print accession2family("2.A")
     #print accession2family("2")
 
-    print accession2species_and_product("P71997","2.A.53.4.2")
+    print (accession2species_and_product("P71997","2.A.53.4.2"))
 
     '''
     print "%s\t%s" % (accession2family("2.A.1"), accession2substrate("Q9Z7N9","2.A.1.4.6"))
