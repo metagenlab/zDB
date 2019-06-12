@@ -397,7 +397,7 @@ def extract_orthogroup(request):
 
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
 
-            from biosqldb import biosql_own_sql_tables
+            from chlamdb.biosqldb import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
 
