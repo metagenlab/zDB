@@ -805,6 +805,8 @@ def get_ko2ec():
     total = len(data)
     #data = ["ko:K00512"]
     for n, ko_data in enumerate(data):
+        if len(ko_data) == 0:
+            continue
         print ("%s / %s" % (n, total))
 
         ko_id = ko_data.split('\t')[0][3:]
