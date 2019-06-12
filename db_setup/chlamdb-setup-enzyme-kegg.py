@@ -374,6 +374,9 @@ def get_pathway2ko(ko_accession2ko_id):
     pathway_file = 'http://rest.kegg.jp/list/pathway'
     data = urllib.request.urlopen(pathway_file).read().decode('utf-8').split("\n")
     for line in data:
+        # handle empty line(s)
+        if len(line) == 0:
+            continue
         raw = line.rstrip().split("\t")
         pathway = raw[0][5:]
         description = raw[1]
@@ -939,16 +942,16 @@ if __name__ == '__main__':
     conn, cursor = connect_db()
 
     print('getting complete_ko_table...')
-    get_complete_ko_table()
+    #get_complete_ko_table()
     print('load_enzyme_nomenclature_table map2category...')
-    load_enzyme_nomenclature_table()
+    #load_enzyme_nomenclature_table()
     sql = 'select ko_accession, ko_id from enzyme.ko_annotation'
     cursor.execute(sql,)
     ko_accession2ko_id = manipulate_biosqldb.to_dict(cursor.fetchall())
     print('getting map2category...')
-    map2category = get_kegg_pathway_classification()
+    #map2category = get_kegg_pathway_classification()
     print('getting pathway table...')
-    get_pathay_table(map2category)
+    #get_pathay_table(map2category)
     print('getting ko2pathway...')
     get_pathway2ko(ko_accession2ko_id)
     print('getting module2ko...')
