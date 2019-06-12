@@ -248,7 +248,9 @@ def get_locus2plasmid_or_not(biodb):
 
 
 
-def circos_locus2taxon_highest_identity(biodb, reference_taxon_id, use_identity_closest_homolog2_table=False):
+def circos_locus2taxon_highest_identity(biodb,
+                                        reference_taxon_id,
+                                        use_identity_closest_homolog2_table=False):
     '''
     Given one reference taxon, get a dictionnary of the highest identity of homolog(s) in other taxons
 
@@ -260,13 +262,13 @@ def circos_locus2taxon_highest_identity(biodb, reference_taxon_id, use_identity_
     server, db = manipulate_biosqldb.load_db(biodb)
 
     if not use_identity_closest_homolog2_table:
-        sql = 'select locus_tag, orthogroup from orthology_detail_%s where taxon_id = %s' % (biodb,reference_taxon_id)
+        sql = 'select locus_tag, orthogroup from orthology_detail_%s where taxon_id = %s' % (biodb,
+                                                                                             reference_taxon_id)
         sql2 = 'select locus_tag, taxon_id from orthology_detail_%s' % (biodb)
 
         # get all locus tags and orthogroups from reference genome
         reference_orthogroup2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
         locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
-
         locus2locus_identity = {}
         i = 0
         # for each locus tag, get highest identity in each other taxons
