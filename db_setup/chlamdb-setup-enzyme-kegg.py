@@ -632,6 +632,8 @@ def get_ec2get_pathway_table():
         ec_data = urllib.request.urlopen(ec_numbers_link).read().decode('utf-8').split("\n")
 
         for line in ec_data:
+            if len(line) == 0:
+                continue
             try:
                 ec = line.rstrip().split("\t")[1]
             except:
@@ -641,12 +643,12 @@ def get_ec2get_pathway_table():
                 continue
             else:
                 ec = ec[3:]
-                sql_ec = 'select enzyme_id from enzymes where ec = "%s"' % ec
-                #print sql_ec
+                sql_ec = 'select enzyme_id from enzymes where ec="%s"' % ec
                 cursor.execute(sql_ec, )
                 try:
                     ec_id = cursor.fetchall()[0][0]
-                except:
+                except IndexError:
+                    print("problem:", sql_ec)
                     sys.stdout.write("trying to get enzyme data from IUBMB: %s...\n" % ec)
                     try:
                         ec_id = int(get_ec_data_from_IUBMB(ec))
@@ -694,17 +696,16 @@ def get_module2ko_data(cursor, ko_data, module_id, ko_accession2ko_id):
 
 
 def get_ec_data_from_IUBMB(ec):
-    import BeautifulSoup
     import urllib.request
     import re
     import MySQLdb
     from bs4 import BeautifulSoup
     import os
     sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="enzyme") # name of the data base
+    conn = MySQLdb.connect(host="localhost",
+                                user="root",
+                                passwd=sqlpsw,
+                                db="enzyme")
     cursor = conn.cursor()
 
     name_m = re.compile(u".*Accepted name.*")
@@ -718,21 +719,17 @@ def get_ec_data_from_IUBMB(ec):
     cursor.execute('SET character_set_connection=utf8;')
 
     ec_sep = ec.split('.')
-    import requests
 
-    adress = "http://www.chem.qmul.ac.uk/iubmb/enzyme/EC%s/%s/%s/%s.html" % (ec_sep[0], ec_sep[1], ec_sep[2], ec_sep[3])
-    #print adress
-    #data = requests.get(adress).text
-    #print data
-    #request = urllib2.Request('http://www.somesite.com')
-    html = urllib.request.urlopen(adress).read().decode('utf-8').split("\n")
+    adress = "https://www.qmul.ac.uk/sbcs/iubmb/enzyme/EC%s/%s/%s/%s.html" % (ec_sep[0], ec_sep[1], ec_sep[2], ec_sep[3])
+
+    html = urllib.request.urlopen(adress).read().decode('utf-8')
 
     #html = urllib2.urlopen(adress).read()
-    html = re.sub("\&\#","-",html)
+    html = re.sub("\&\#", "-", html)
     soup = BeautifulSoup(html, "lxml")
-    html = soup.encode('utf-8')#.encode('latin-1') #encode('utf-8') # prettify()
+    html = str(soup.encode('utf-8'))#.encode('latin-1') #encode('utf-8') # prettify()
 
-    #print html
+    print(html)
     #all_data = soup.find_all("p")#[i.get_text() for i in soup.find_all("p")]
 
     for i, data in enumerate(list(html.split('<p>'))):
@@ -954,12 +951,12 @@ if __name__ == '__main__':
     print('getting ko2pathway...')
     #get_pathway2ko(ko_accession2ko_id)
     print('getting module2ko...')
-    module_hierarchy = get_kegg_module_hierarchy()
-    get_module_table(module_hierarchy, ko_accession2ko_id)
-    print('getting get_ec2get_pathway_table...')
-    get_ec2get_pathway_table()
-    print('getting get_microbial_metabolism_in_diverse_environments_kegg01120...')
-    get_microbial_metabolism_in_diverse_environments_kegg01120()
+    #module_hierarchy = get_kegg_module_hierarchy()
+    #get_module_table(module_hierarchy, ko_accession2ko_id)
+    #print('getting get_ec2get_pathway_table...')
+    #get_ec2get_pathway_table()
+    #print('getting get_microbial_metabolism_in_diverse_environments_kegg01120...')
+    #get_microbial_metabolism_in_diverse_environments_kegg01120()
     print('getting get_ko2ec...')
     get_ko2ec()
 
