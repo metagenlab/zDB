@@ -91,12 +91,17 @@
   - [X] setup features table
   - [X] setup seqfeature_id2locus_table
 - [X] load orthofinder results  
-- [ ] load interproscan results
+- [X] load interproscan results
+  - [ ] add TM and SP columns to orthology_detail legacy table
+- [X] load orthogroup alignments
+- [X] get identity closest homolog table
+- [X] get average identity table
+- [X] setup genome statistics table
 - [ ] load COG hits
 - [ ] load KO hits
 - [ ] load PMID mapping
-- [ ] load cross-references
 - [ ] load uniprot annotations
+- [ ] load cross-references
 - [ ] setup pairwise BBH
 - [ ] lead orthogroup alignments(identity matrices)
 - [ ] load orthogroup phylogenies
@@ -108,9 +113,9 @@
 - [ ] get genome table (homepage)
 - [ ] get phylo profile
 - [ ] get conserved neighborhood
-- [ ] get identity closest homolog table
 
-- [ ] add indexes
+
+- [ ] check indexes
 
 ## priority 2
 
