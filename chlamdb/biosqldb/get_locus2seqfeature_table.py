@@ -4,7 +4,7 @@
 
 def create_locus_tag2seqfeature_table(biodb, locus2seqfeature_id=False, locus2taxon_id=False):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
 
 
