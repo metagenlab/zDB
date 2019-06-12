@@ -418,7 +418,8 @@ def get_pathway2ko(ko_accession2ko_id):
         conn.commit()
 
 
-def get_module_table(module2category,ko_accession2ko_id):
+def get_module_table(module2category,
+                     ko_accession2ko_id):
     '''
     1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme.kegg_module table
     2. get all KO associated for each module => create enzyme.module2ko table
@@ -479,6 +480,8 @@ def get_module_table(module2category,ko_accession2ko_id):
     module_file_file = 'http://rest.kegg.jp/list/module'
     data = urllib.request.urlopen(module_file_file).read().decode('utf-8').split("\n")
     for line in data:
+        if len(line) == 0:
+            continue
         pathway = line.rstrip().split("\t")
         module = pathway[0][3:]
         description = pathway[1]
@@ -518,7 +521,6 @@ def get_module_table(module2category,ko_accession2ko_id):
         ko_numbers_link = "http://rest.kegg.jp/link/ko/%s" % module
         ko_data = urllib.request.urlopen(ko_numbers_link).read().decode('utf-8').split("\n")
 
-        print( len(ko_data))
         if ko_data[0] == '\n':
             print ('MODULE MADE OF SUBMODULES----------')
             module_link = "http://rest.kegg.jp/get/%s" % module
@@ -526,13 +528,16 @@ def get_module_table(module2category,ko_accession2ko_id):
             definition = ko2definition(module_data)
             module_list = definition2module_list(definition)
             print ('modules:', module_list)
-            for n,m in enumerate(module_list):
+            for n, m in enumerate(module_list):
                 print (n, m)
                 ko_numbers_link2 = "http://rest.kegg.jp/link/ko/%s" % m
                 ko_data2 = urllib.request.urlopen(ko_numbers_link2).read().decode('utf-8').split("\n")
                 get_module2ko_data(cursor, ko_data2, module_id, ko_accession2ko_id)
         else:
-            get_module2ko_data(cursor,ko_data,module_id, ko_accession2ko_id)
+            get_module2ko_data(cursor,
+                               ko_data,
+                               module_id,
+                               ko_accession2ko_id)
 
         conn.commit()
 
@@ -543,12 +548,9 @@ def get_kegg_module_hierarchy():
     get kegg module broad classification from we page
     :return: table
     """
-
     import urllib.request
     import re
-
     url = "http://www.genome.jp/kegg-bin/download_htext?htext=ko00002.keg&format=htext&filedir="
-
     data = urllib.request.urlopen(url).read().decode('utf-8').split("\n")
     m = re.compile("A<b>([A-Za-z ]*)</b>.*")
     m2 = re.compile("B  <b>([A-Za-z ]*)</b>.*")
@@ -559,9 +561,7 @@ def get_kegg_module_hierarchy():
     module = re.compile("D      (M.*)")
     module2category = {}
     for line in data:
-
          if re.match(main_category, line.strip()):
-
              main_cat = m.match(line).group(1)
          elif re.match(sub_category, line):
              try:
@@ -572,13 +572,10 @@ def get_kegg_module_hierarchy():
             sub_sub_cat = m3.match(line).group(1)
          elif re.match(module, line):
             #print main_cat, sub_cat, line.rstrip()
-
             mod = module.match(line).group(1).split(' ')[0]
             description = module.match(line).group(1).split('  ')[-1]
-            print (description)
             #print main_cat, sub_cat, sub_sub_cat, mod
             module2category[mod] = [main_cat, sub_cat, sub_sub_cat, description]
-
          else:
              pass
     return module2category
@@ -672,6 +669,8 @@ def get_module2ko_data(cursor, ko_data, module_id, ko_accession2ko_id):
         import re
 
         for line in ko_data:
+            if len(line) == 0:
+                continue
             try:
                 ko = line.rstrip().split("\t")[1][3:]
             except:
@@ -953,9 +952,10 @@ if __name__ == '__main__':
     print('getting pathway table...')
     #get_pathay_table(map2category)
     print('getting ko2pathway...')
-    get_pathway2ko(ko_accession2ko_id)
+    #get_pathway2ko(ko_accession2ko_id)
     print('getting module2ko...')
-    get_module_table(get_kegg_module_hierarchy(), ko_accession2ko_id)
+    module_hierarchy = get_kegg_module_hierarchy()
+    get_module_table(module_hierarchy, ko_accession2ko_id)
     print('getting get_ec2get_pathway_table...')
     get_ec2get_pathway_table()
     print('getting get_microbial_metabolism_in_diverse_environments_kegg01120...')
