@@ -75,17 +75,17 @@ process mysql_setup_enzyme_KEGG_tables {
 
   publishDir 'chlamdb_setup/logs', mode: 'copy', overwrite: true
   echo true
-  conda 'mysqlclient=1.3.10 biopython=1.73'
+  conda 'mysqlclient=1.3.10 biopython=1.73 beautifulsoup4=4.7.1 lxml=4.3.3'
 
   when:
   params.setup_enzyme == true
 
   output:
-  file("mysql_enzyme_setup.log") into mysql_enzyme_setup
+  file("mysql_enzyme_setup.log2") into mysql_enzyme_setup
 
   script:
   """
-  chlamdb-setup-enzyme-kegg.py -u > mysql_enzyme_setup.log
+  chlamdb-setup-enzyme-kegg.py -u > mysql_enzyme_setup.log2
   """
 }
 

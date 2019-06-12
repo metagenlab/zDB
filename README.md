@@ -60,7 +60,6 @@
   - [X] build phylogeny
 
 
-
 # TODO
 
 ## CHLAMDB setup
@@ -78,24 +77,27 @@
   - [X] setup enzyme_dat and enzyme tables
   - [X] setup pathway table
   - [X] setup ko2pathway
-  - [ ] setup module table
-  - [ ] setup ko2module
+  - [X] setup module table
+  - [X] setup ko2module
 - [X] setup COG tables (COG database)
 - [X] setup linear taxonomy (with taxid for each rank see virulence db setup)
 - [ ] setup TCDB tables
-  - [ ] download faa: setup_transporter table, tc_table and uniprot_table (TODO: rename table)
+  - [X] download faa: setup_transporter table, tc_table and uniprot_table (TODO: rename table)
   - [ ] update table organization (dev), not all entries have uniprot accessions
 
 ### annotation results
 
-- [ ] lead genomes
+- [X] load genomes
+  - [X] setup features table
+  - [X] setup seqfeature_id2locus_table
+- [X] load orthofinder results  
 - [ ] load interproscan results
 - [ ] load COG hits
 - [ ] load KO hits
 - [ ] load PMID mapping
 - [ ] load cross-references
 - [ ] load uniprot annotations
-- [ ] load orthofinder results
+- [ ] setup pairwise BBH
 - [ ] lead orthogroup alignments(identity matrices)
 - [ ] load orthogroup phylogenies
 - [ ] load orthogroup BBH phylogenies
@@ -103,9 +105,12 @@
 - [ ] load blast swissprot results
 - [ ] load blast refseq results
 - [ ] load refseq taxonomy table
+- [ ] get genome table (homepage)
 - [ ] get phylo profile
 - [ ] get conserved neighborhood
 - [ ] get identity closest homolog table
+
+- [ ] add indexes
 
 ## priority 2
 
@@ -120,12 +125,12 @@
 
 ## priority 1
 
+- [ ] execute checkM
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
 - [X] retrieve uniprot annotation score for matched uniprotkb entries
 - [ ] get cross-references from uniprot IdMapping
   - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
   - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
-- [ ] execute checkM
 - [ ] get proteome match
 
 ## priority 2
