@@ -55,7 +55,9 @@ def get_complete_ko_table():
     total = len(data)
     for n, line in enumerate(data):
         print("%s / %s" % (n, total))
-        print(line)
+        # manage empty row(s)
+        if len(line) == 0:
+            continue
         ko = line.rstrip().split('\t')[0][3:]
         print (ko)
         if ko in ko_already_in_db:
@@ -130,6 +132,7 @@ def load_enzyme_nomenclature_table():
     import MySQLdb
     import urllib.request
     import os
+    from io import StringIO
     sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
@@ -156,8 +159,7 @@ def load_enzyme_nomenclature_table():
 
     enzyme_file = 'ftp://ftp.expasy.org/databases/enzyme/enzyme.dat'
 
-    data = urllib.request.urlopen(enzyme_file).read().decode('utf-8').split("\n")
-
+    data = urllib.request.urlopen(enzyme_file).read().decode('utf-8')
 
     sql1 = 'CREATE TABLE IF NOT EXISTS enzymes (enzyme_id INT AUTO_INCREMENT PRIMARY KEY,' \
           ' ec VARCHAR(200));'
@@ -176,17 +178,13 @@ def load_enzyme_nomenclature_table():
     print (sql2)
     cursor.execute(sql2)
 
-    for data in Enzyme.parse(data):
-
+    for n, data in enumerate(Enzyme.parse(StringIO(data))):
         enzyme = data['ID']
-
-
-        print (data)
-
         # insert enzyme id into primary TABLE
         sql = 'INSERT into enzymes (ec) values ("%s");' % enzyme
 
-        print (sql)
+        print(n, sql)
+
         cursor.execute(sql,)
         conn.commit()
 
@@ -194,8 +192,6 @@ def load_enzyme_nomenclature_table():
 
         cursor.execute(sql, )
         id = cursor.fetchall()[0][0]
-
-        #print id
 
         # description
         sql = 'INSERT into enzymes_dat (enzyme_dat_id, line, value) values (%s, "description", "%s");' % (id, data['DE'])
