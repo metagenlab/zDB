@@ -310,6 +310,9 @@ def get_pathay_table(map2category):
 
     print ('iter pathway list...')
     for line in data:
+        # manage empty line(s)
+        if len(line) == 0:
+            continue
         pathway = line.rstrip().split("\t")
         print (pathway)
         map = pathway[0][5:]
