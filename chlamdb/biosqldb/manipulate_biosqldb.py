@@ -83,8 +83,8 @@ def load_db(db_name=False, sqlite=False):
 def _to_dict(tuple_list):
     temp_dict = {}
     for i in tuple_list:
-        if len(i[1:]) >1:
-            temp_dict[i[0]] = i[1:]
+        if len(i[1:]) > 1:
+            temp_dict[str(i[0])] = i[1:]
         else:
             temp_dict[str(i[0])] = i[1]
     return temp_dict
@@ -93,7 +93,7 @@ def to_dict(tuple_list):
     temp_dict = {}
     for i in tuple_list:
         if len(i[1:]) >1:
-            temp_dict[i[0]] = i[1:]
+            temp_dict[str(i[0])] = i[1:]
         else:
             temp_dict[str(i[0])] = i[1]
     return temp_dict
