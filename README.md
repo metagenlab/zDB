@@ -60,6 +60,7 @@
   - [X] build phylogeny
 
 
+
 # TODO
 
 ## CHLAMDB setup
@@ -70,12 +71,20 @@
 
 - [X] setup biosqldb schema
 - [ ] setup kegg tables (ENZYME database)
+  - [ ] separate script into multiple scripts and deal with incomplete tables
   - [X] move to separate script (not in load script anymore)
-  - [ ] ko2annotation table: high redundancy with ko2module and ko2pathway, can be simplified and accelerated
-  - [ ] setup enzyme tables
+  - [X] ko2annotation table
+    - [ ] redundancy with ko2module and ko2pathway, can be simplified and accelerated
+  - [X] setup enzyme_dat and enzyme tables
+  - [X] setup pathway table
+  - [X] setup ko2pathway
+  - [ ] setup module table
+  - [ ] setup ko2module
 - [X] setup COG tables (COG database)
 - [X] setup linear taxonomy (with taxid for each rank see virulence db setup)
 - [ ] setup TCDB tables
+  - [ ] download faa: setup_transporter table, tc_table and uniprot_table (TODO: rename table)
+  - [ ] update table organization (dev), not all entries have uniprot accessions
 
 ### annotation results
 
@@ -94,6 +103,9 @@
 - [ ] load blast swissprot results
 - [ ] load blast refseq results
 - [ ] load refseq taxonomy table
+- [ ] get phylo profile
+- [ ] get conserved neighborhood
+- [ ] get identity closest homolog table
 
 ## priority 2
 

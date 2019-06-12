@@ -8,7 +8,7 @@
 log.info params.input
 params.databases_dir = "$PWD/databases"
 params.setup_COG = true
-params.setup_enzyme = false
+params.setup_enzyme = true
 params.setup_biosql = true
 params.setup_linear_taxonomy = false
 
@@ -88,6 +88,7 @@ process mysql_setup_enzyme_KEGG_tables {
   chlamdb-setup-enzyme-kegg.py -u > mysql_enzyme_setup.log
   """
 }
+
 
 process mysql_setup_biosql_db {
 
