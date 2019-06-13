@@ -1342,7 +1342,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
 def locus_tag2orthogroup(db_name):
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql = 'select locus_tag, orthogroup from orthology_detail_%s group by locus_tag' % db_name
+    sql = 'select locus_tag, orthogroup from orthology_detail_%s group by locus_tag, orthogroup' % db_name
 
     return manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
