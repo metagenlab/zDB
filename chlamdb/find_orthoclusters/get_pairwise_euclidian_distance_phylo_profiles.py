@@ -14,9 +14,6 @@ def chunks(l, n):
     "return sublists of l of minimum length n (work subdivision for the subprocesing module"
     return [l[i:i+n] for i in range(0, len(l), n)]
 
-def check_proximity(profile, cutofff):
-    pass
-
 
 def sql_euclidian_dist_orthogroups(biodb, one_list, orthogroup2profile):
     from scipy.spatial.distance import euclidean
@@ -35,7 +32,6 @@ def sql_euclidian_dist_orthogroups(biodb, one_list, orthogroup2profile):
             server.adaptor.commit()
 
 
-
 def merge_dataframe_columns(dataframe, columns_clusters_dict):
     import pandas
 
@@ -47,6 +43,7 @@ def merge_dataframe_columns(dataframe, columns_clusters_dict):
         new_data_frame[cluster] = dataframe[columns_clusters_dict[cluster]].sum(axis=1)
 
     return new_data_frame
+
 
 def euclidian_dist_orthogroups(biodb, merge_taxons=False):
 
