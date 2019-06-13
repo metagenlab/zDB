@@ -14,7 +14,7 @@
 # 01.09.16 changed identity cutoff from 25 to 30
 # 21.12.16 changed identity cutoff from 25 to 20 and coverage from 60 to 50
 def blast2COG(blast_file,
-              hash2locus_tag,
+              hash2locus_tag_list,
               cdd_id2cog_id,
               cog_id2length,
               locus_tag2protein_length,
@@ -40,7 +40,7 @@ def blast2COG(blast_file,
         '''
         for line in f:
             data = line.rstrip().split('\t')
-            locus_tag = hash2locus_tag[data[0]]
+            locus_tag_list = hash2locus_tag_list[data[0]]
             hit_cdd_id = data[1].split(":")[1]
             cog_id = cdd_id2cog_id[hit_cdd_id]
             identity = float(data[2])
@@ -57,27 +57,29 @@ def blast2COG(blast_file,
             hit_align_length = (hit_end-hit_start) + 1
 
             # locus aa sequence
-            query_coverage = round((int(query_align_length)/int(locus_tag2protein_length[locus_tag])) * 100, 2)
+            query_coverage = round((int(query_align_length)/int(locus_tag2protein_length[locus_tag_list[0]])) * 100, 2)
 
             # COG profile
             hit_coverage = round((int(hit_align_length)/int(cog_id2length[cog_id])) * 100, 2)
 
             if identity >= identity_cutoff and query_coverage >= coverage_cutoff and hit_coverage >= coverage_cutoff:
-                if locus_tag not in locus2data:
-                    locus2data[locus_tag] = {}
-                    locus2data[locus_tag]["hit_cdd_id"] = hit_cdd_id
-                    locus2data[locus_tag]["cog_id"] = cog_id
-                    locus2data[locus_tag]["cdd_id"] = hit_cdd_id
-                    locus2data[locus_tag]["identity"] = identity
-                    locus2data[locus_tag]["evalue"] = evalue
-                    locus2data[locus_tag]["bitscore"] = bitscore
-                    locus2data[locus_tag]["query_start"] = query_start
-                    locus2data[locus_tag]["query_end"] = query_end
-                    locus2data[locus_tag]["hit_start"] = hit_start
-                    locus2data[locus_tag]["hit_start"] = hit_start
-                    locus2data[locus_tag]["hit_end"] = hit_end
-                    locus2data[locus_tag]["query_coverage"] = query_coverage
-                    locus2data[locus_tag]["hit_coverage"] = hit_coverage
+                # iter the list of locus corresponding to the same hash
+                for locus_tag in locus_tag_list:
+                    if locus_tag not in locus2data:
+                        locus2data[locus_tag] = {}
+                        locus2data[locus_tag]["hit_cdd_id"] = hit_cdd_id
+                        locus2data[locus_tag]["cog_id"] = cog_id
+                        locus2data[locus_tag]["cdd_id"] = hit_cdd_id
+                        locus2data[locus_tag]["identity"] = identity
+                        locus2data[locus_tag]["evalue"] = evalue
+                        locus2data[locus_tag]["bitscore"] = bitscore
+                        locus2data[locus_tag]["query_start"] = query_start
+                        locus2data[locus_tag]["query_end"] = query_end
+                        locus2data[locus_tag]["hit_start"] = hit_start
+                        locus2data[locus_tag]["hit_start"] = hit_start
+                        locus2data[locus_tag]["hit_end"] = hit_end
+                        locus2data[locus_tag]["query_coverage"] = query_coverage
+                        locus2data[locus_tag]["hit_coverage"] = hit_coverage
 
         return locus2data
 
@@ -115,7 +117,7 @@ def gi2COG(*protein_gi):
 
 def load_locus2cog_into_sqldb(input_blast_files,
                               biodb,
-                              hash2locus_tag,
+                              hash2locus_tag_list,
                               cdd_id2cog_id,
                               cog_id2length):
     import MySQLdb
@@ -185,7 +187,7 @@ def load_locus2cog_into_sqldb(input_blast_files,
     for input_blast in input_blast_files:
         print ('file', input_blast)
         locus2data = blast2COG(input_blast,
-                               hash2locus_tag,
+                               hash2locus_tag_list,
                                cdd_id2cog_id,
                                cog_id2length,
                                locus_tag2protein_length)
@@ -248,10 +250,10 @@ if __name__ == '__main__':
             data = row.rstrip().split("\t")
             cog_id2length[data[0]] = data[1]
 
-    hash2locus = chlamdb_setup_utils.get_hash2locus(args.hash2locus_tag)
+    get_hash2locus_list = chlamdb_setup_utils.get_hash2locus_list(args.hash2locus_tag)
 
     load_locus2cog_into_sqldb(args.input_blast,
                               args.database_name,
-                              hash2locus,
+                              get_hash2locus_list,
                               cdd_id2cog_id,
                               cog_id2length)

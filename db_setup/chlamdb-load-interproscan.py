@@ -3,7 +3,7 @@
 
 
 def interpro2biosqlV2(server,
-                      hash2locus,
+                      hash2locus_list,
                       interpro_accession2interpro_id,
                       seqfeature_id2locus_tag,
                       locus_tag2genome_taxon_id,
@@ -84,7 +84,7 @@ def interpro2biosqlV2(server,
                     if type(item) == str:
                         data[index] = item.replace('\"','')
 
-                accession = hash2locus[data[0]]
+                locus_tag_list = hash2locus_list[data[0]]
 
                 sequence_length = data[2]
                 analysis = data[3]
@@ -100,42 +100,37 @@ def interpro2biosqlV2(server,
                 GO_terms = data[13]
                 pathways = data[14]
 
-                try:
-                    taxon_id = protein_id2genome_taxon_id[accession]
-                    seqfeature_id = protein_id2seqfeature_id[accession]
-                except KeyError:
-                    taxon_id = locus_tag2genome_taxon_id[accession]
-                    seqfeature_id = locus_tag2seqfeature_id[accession]
-                organism = seqfeature_id2organism[str(seqfeature_id)]
-                #print organism
-                locus_tag = seqfeature_id2locus_tag[str(seqfeature_id)]
+                for locus_tag in locus_tag_list:
+                    taxon_id = locus_tag2genome_taxon_id[locus_tag]
+                    seqfeature_id = locus_tag2seqfeature_id[locus_tag]
+                    organism = seqfeature_id2organism[str(seqfeature_id)]
 
-                sql = 'INSERT INTO interpro.interpro_%s(accession, locus_tag, organism, taxon_id,' \
-                      ' sequence_length, analysis, signature_accession, signature_description, start, ' \
-                      ' stop, score, interpro_accession, interpro_description, GO_terms, pathways) ' \
-                      ' values ("%s", "%s", "%s", %s, %s, "%s", "%s", "%s", %s, %s, "%s", "%s", "%s", "%s", "%s");' % (db_name,
-                                                                                                                        accession,
-                                                                                                                        seqfeature_id,
-                                                                                                                        organism,
-                                                                                                                        taxon_id,
-                                                                                                                        sequence_length,
-                                                                                                                        analysis,
-                                                                                                                        signature_accession,
-                                                                                                                        signature_description,
-                                                                                                                        int(start),
-                                                                                                                        int(stop),
-                                                                                                                        str(score),
-                                                                                                                        interpro_id,
-                                                                                                                        GO_terms,
-                                                                                                                        pathways)
-                try:
-                    server.adaptor.execute(sql)
-                    server.adaptor.commit()
-                except:
-                    print(sql)
-                    print(data)
-                    import sys
-                    sys.exit()
+                    sql = 'INSERT INTO interpro.interpro_%s(accession, locus_tag, organism, taxon_id,' \
+                          ' sequence_length, analysis, signature_accession, signature_description, start, ' \
+                          ' stop, score, interpro_accession, interpro_description, GO_terms, pathways) ' \
+                          ' values ("%s", "%s", "%s", %s, %s, "%s", "%s", "%s", %s, %s, "%s", "%s", "%s", "%s", "%s");' % (db_name,
+                                                                                                                            locus_tag,
+                                                                                                                            seqfeature_id,
+                                                                                                                            organism,
+                                                                                                                            taxon_id,
+                                                                                                                            sequence_length,
+                                                                                                                            analysis,
+                                                                                                                            signature_accession,
+                                                                                                                            signature_description,
+                                                                                                                            int(start),
+                                                                                                                            int(stop),
+                                                                                                                            str(score),
+                                                                                                                            interpro_id,
+                                                                                                                            GO_terms,
+                                                                                                                            pathways)
+                    try:
+                        server.adaptor.execute(sql)
+                        server.adaptor.commit()
+                    except:
+                        print(sql)
+                        print(data)
+                        import sys
+                        sys.exit()
 
 
 def update_analysis_dico(server):
@@ -239,7 +234,7 @@ def interpro2biosql(server,
                     if type(item) == str:
                         data[index] = item.replace('\"','')
 
-                accession = hash2locus[data[0]]
+                locus_tag_list = hash2locus_list[data[0]]
 
                 sequence_length = data[2]
                 analysis = data[3]
@@ -310,28 +305,29 @@ def interpro2biosql(server,
                 if analysis in ['Phobius', 'Coils', 'SignalP-TM', 'SignalP_EUK', 'ProSitePatterns', 'SignalP_GRAM_NEGATIVE', 'SignalP_GRAM_POSITIVE']:
                     score = "NULL"
 
-                seqfeature_id = locus_tag2seqfeature_id[accession]
+                for locus_tag in locus_tag_list:
+                    seqfeature_id = locus_tag2seqfeature_id[locus_tag]
 
-                sql = 'INSERT INTO interpro.interpro_%s(seqfeature_id,' \
-                      ' signature_id,' \
-                      ' sequence_length, ' \
-                      ' start, ' \
-                      ' stop, ' \
-                      ' score) ' \
-                      ' values (%s, %s, %s, %s, %s, "%s");' % (db_name,
-                                                               seqfeature_id,
-                                                               signature_id,
-                                                               sequence_length,
-                                                               int(start),
-                                                               int(stop),
-                                                               score)
-                try:
-                    server.adaptor.execute(sql)
-                except:
-                    print(sql)
-                    print(data)
-                    import sys
-                    sys.exit()
+                    sql = 'INSERT INTO interpro.interpro_%s(seqfeature_id,' \
+                          ' signature_id,' \
+                          ' sequence_length, ' \
+                          ' start, ' \
+                          ' stop, ' \
+                          ' score) ' \
+                          ' values (%s, %s, %s, %s, %s, "%s");' % (db_name,
+                                                                   seqfeature_id,
+                                                                   signature_id,
+                                                                   sequence_length,
+                                                                   int(start),
+                                                                   int(stop),
+                                                                   score)
+                    try:
+                        server.adaptor.execute(sql)
+                    except:
+                        print(sql)
+                        print(data)
+                        import sys
+                        sys.exit()
             server.adaptor.commit()
 
 
@@ -376,7 +372,7 @@ if __name__ == '__main__':
 
     if args.hash2locus_tag:
         import chlamdb_setup_utils
-        hash2locus = chlamdb_setup_utils.get_hash2locus(args.hash2locus_tag)
+        hash2locus_list = chlamdb_setup_utils.get_hash2locus_list(args.hash2locus_tag)
 
     if args.input_interpro:
         if not args.v2_table:
@@ -385,7 +381,7 @@ if __name__ == '__main__':
             locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
             print("make table v1")
             interpro2biosql(server,
-                            hash2locus,
+                            hash2locus_list,
                             locus_tag2seqfeature_id,
                             biodb, *args.input_interpro)
 
