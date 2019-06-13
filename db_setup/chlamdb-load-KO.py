@@ -50,6 +50,44 @@ def locus2ko_table(hash2ko_dico,
     server.commit()
 
 
+def locus2ko_table(biodatabase, hash2ko, hash2locus_list):
+    # create legacy table locus2ko
+    # TODO: remove all depenancies to this table
+    # content:
+
+    '''
+    taxon_id, locus_tag, orthogroup, ko_id (not numerical id but KO*)
+    '''
+
+    from chlamdb.biosqldb import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodatabase)
+
+    sql = 'select locus_tag, taxon_id from orthology_detail_%s' % biodatabase
+    sql2 = 'select locus_tag, orthogroup from orthology_detail_%s' % biodatabase
+
+    locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
+    locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
+
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme.locus2ko_%s (taxon_id INT,'\
+           ' locus_tag VARCHAR(20),' \
+           ' orthogroup varchar(20),' \
+           ' ko_id VARCHAR(20), index taxon_id (taxon_id), index ko_id (ko_id));' % (biodatabase)
+
+    server.adaptor.execute_and_fetchall(sql2,)
+    for hash in hash2ko:
+        for locus in hash2locus_list[hash]:
+            ko = hash2ko[hash]["KO"]
+
+            sql = 'insert into enzyme.locus2ko_%s (taxon_id, locus_tag, orthogroup, ko_id) values ("%s", "%s", "%s", "%s")' % (biodatabase,
+                                                                                                                               locus2taxon_id[locus],
+                                                                                                                               locus,
+                                                                                                                               locus2orthogroup[locus],
+                                                                                                                               ko)
+
+            server.adaptor.execute(sql,)
+        server.commit()
+
+
 def parse_kofamscan_output(result_file_list):
     hash2ko = {}
     for result_file in result_file_list:
@@ -88,7 +126,9 @@ if __name__ == '__main__':
 
     hash2ko = parse_kofamscan_output(args.ko_table_list)
 
-    locus2ko_table(hash2ko,
-                   args.database_name,
-                   ko_accession2ko_id,
-                   hash2locus_list)
+    #locus2ko_table(hash2ko,
+    #               args.database_name,
+    #               ko_accession2ko_id,
+    #               hash2locus_list)
+
+    locus2ko_table(args.database_name, hash2ko, hash2locus_list)
