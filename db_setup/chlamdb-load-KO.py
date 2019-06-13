@@ -115,6 +115,7 @@ if __name__ == '__main__':
     parser.add_argument("-k", '--ko_table_list', type=str, help="input blastGhost file", nargs='+')
     parser.add_argument("-d", '--database_name', type=str, help="database name")
     parser.add_argument("-c", '--corresp_table', type=str, help="hash to locus correspondance table")
+    parser.add_argument("-l", '--legacy', type=str, help="Create legacy table(s)")
 
     args = parser.parse_args()
 
@@ -126,9 +127,10 @@ if __name__ == '__main__':
 
     hash2ko = parse_kofamscan_output(args.ko_table_list)
 
-    #locus2ko_table(hash2ko,
-    #               args.database_name,
-    #               ko_accession2ko_id,
-    #               hash2locus_list)
+    locus2ko_table(hash2ko,
+                   args.database_name,
+                   ko_accession2ko_id,
+                   hash2locus_list)
 
-    locus2ko_table(args.database_name, hash2ko, hash2locus_list)
+    if args.legacy:
+        locus2ko_table(args.database_name, hash2ko, hash2locus_list)
