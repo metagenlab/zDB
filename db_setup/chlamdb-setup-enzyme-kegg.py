@@ -928,40 +928,366 @@ def ko2definition(ko_record):
             return definition
 
 
+
+def get_module_table_legacy(module2category):
+    '''
+    1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme.kegg_module table
+    2. get all KO associated for each module => create enzyme.module2ko table
+    todo: remove existing tables for uptade if rerun
+
+    :return: nothing
+    '''
+
+
+    import MySQLdb
+    import urllib.request
+    import re
+    import sys
+
+    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
+                                user="root", # your username
+                                passwd="estrella3", # your password
+                                db="enzyme") # name of the data base
+    cursor = conn.cursor()
+
+    sql1 = 'CREATE TABLE IF NOT EXISTS kegg_module_v1 (module_id INT AUTO_INCREMENT PRIMARY KEY,' \
+           ' module_name VARCHAR(200),' \
+           ' module_cat VARCHAR(200),' \
+           ' module_sub_cat VARCHAR(200),' \
+           ' module_sub_sub_cat VARCHAR(200),' \
+           ' description LONG);'
+
+    print (sql1)
+    cursor.execute(sql1,)
+
+    sql2 = 'CREATE TABLE IF NOT EXISTS module2ko_v1 (module_id INT,' \
+           ' ko_id VARCHAR(200),' \
+           ' ko_description TEXT);'
+
+
+    sql3 = ' CONSTRAINT fk_pathway_id' \
+           ' FOREIGN KEY(pathway_id) REFERENCES kegg_pathway_v1(id)' \
+           ' ON DELETE CASCADE,' \
+           ' CONSTRAINT fk_ec_id' \
+           ' FOREIGN KEY(ec_id) REFERENCES enzymes(id)' \
+           ' ON DELETE CASCADE);'
+
+    print (sql2)
+    cursor.execute(sql2,)
+
+
+
+    module_file_file = 'http://rest.kegg.jp/list/module'
+    data = urllib.request.urlopen(module_file_file).read().decode('utf-8').split('\n')
+    for line in data:
+        if len(line) == 0:
+            continue
+        pathway = line.rstrip().split("\t")
+        module = pathway[0][3:]
+        description = pathway[1]
+        try:
+            cat = module2category[module][0]
+            sub_cat = module2category[module][1]
+            sub_sub_cat = module2category[module][2]
+            description = module2category[module][3]
+        except:
+            cat = 'uncategorized'
+            cat_short = 'uncategorized'
+            print ('------------------------------------------------')
+        sql = 'INSERT into kegg_module_v1 (module_name, module_cat,module_sub_cat, module_sub_sub_cat, description) ' \
+              'values ("%s", "%s", "%s", "%s", "%s");' % (module,
+                                                          cat,
+                                                          sub_cat,
+                                                          sub_sub_cat,
+                                                          description)
+
+        print (sql)
+        cursor.execute(sql,)
+        conn.commit()
+
+        sql = 'SELECT LAST_INSERT_ID();'
+
+        cursor.execute(sql, )
+        try:
+            module_id = cursor.fetchall()[0][0]
+        except:
+            pass
+
+
+        ko_numbers_link = "http://rest.kegg.jp/link/ko/%s" % module
+        ko_data = urllib.request.urlopen(ko_numbers_link).read().decode('utf-8').split('\n')
+
+        for line in ko_data:
+            if len(line) == 0:
+                continue
+            ko = line.rstrip().split("\t")[1][3:]
+            try:
+                ko_url = "http://rest.kegg.jp/get/%s" % ko
+                ko_data = urllib.request.urlopen(ko_url).read().decode('utf-8').split('\n')
+                definition = ko2definition(ko_data)
+                sql = 'INSERT into module2ko_v1 (module_id, ko_id, ko_description) values ("%s","%s", "%s");' % (module_id,
+                                                                                                              ko,
+                                                                                                              re.sub('"',
+                                                                                                              '',
+                                                                                                              definition))
+                print (sql)
+                cursor.execute(sql,)
+            except:
+                print (line)
+                import sys
+                sys.exit()
+        conn.commit()
+
+
+def get_pathway2ko_legacy():
+    '''
+    1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme.kegg_module table
+    2. get all KO associated for each pathway => create enzyme.pathway2ko table
+    todo: remove existing tables for uptade if rerun
+
+    :return: nothing
+    '''
+
+
+    import MySQLdb
+    import urllib
+    import re
+    import sys
+
+    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
+                                user="root", # your username
+                                passwd="estrella3", # your password
+                                db="enzyme") # name of the data base
+    cursor = conn.cursor()
+
+
+
+    sql2 = 'CREATE TABLE IF NOT EXISTS pathway2ko_v1 (pathway_id INT,' \
+           ' ko_id VARCHAR(200),' \
+           ' index pathway_id(pathway_id),' \
+           ' index ko_id(ko_id));'
+
+
+
+    print (sql2)
+    cursor.execute(sql2,)
+
+
+
+    pathway_file = 'http://rest.kegg.jp/list/pathway'
+    data = urllib.request.urlopen(pathway_file).read().decode('utf-8').split('\n')
+    for line in data:
+        if len(line) == 0:
+            continue
+        raw = line.rstrip().split("\t")
+        pathway = raw[0][5:]
+        description = raw[1]
+        print ('pathway', pathway)
+        sql = 'select pathway_id from kegg_pathway_v1 where pathway_name="%s";' % pathway
+        print (sql)
+
+        cursor.execute(sql)
+
+        try:
+            pathway_id = cursor.fetchall()[0][0]
+            print ('path id', pathway_id)
+        except:
+            print ('no pathway id for: %s, incomplete pathway table?' %  pathway)
+
+
+        ko_numbers_link = "http://rest.kegg.jp/link/ko/%s" % pathway
+        ko_data = urllib.request.urlopen(ko_numbers_link).read().decode('utf-8').split('\n')
+
+
+        for line in ko_data:
+            if len(line) == 0:
+                continue
+            try:
+                ko = line.rstrip().split("\t")[1][3:]
+            except IndexError:
+                print ('No Ko for pathway %s?' % pathway)
+                continue
+            try:
+                sql = 'INSERT into pathway2ko_v1 (pathway_id, ko_id) values (%s,"%s");' % (pathway_id,
+                                                                                       ko)
+                cursor.execute(sql,)
+            except:
+                print (line)
+                import sys
+                sys.exit()
+        conn.commit()
+
+
+def get_pathay_table_legacy(map2category):
+    import MySQLdb
+    import urllib
+    import sys
+
+    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
+                                user="root", # your username
+                                passwd="estrella3", # your password
+                                db="enzyme") # name of the data base
+    cursor = conn.cursor()
+
+    sql1 = 'CREATE TABLE IF NOT EXISTS kegg_pathway_v1 (pathway_id INT AUTO_INCREMENT PRIMARY KEY,' \
+           ' pathway_name VARCHAR(200),' \
+           ' pathway_category_short VARCHAR(200),' \
+           ' pathway_category VARCHAR(200),' \
+           ' description LONG);'
+
+    print (sql1)
+    cursor.execute(sql1,)
+
+
+
+    pathway_file_file = 'http://rest.kegg.jp/list/pathway'
+    data = urllib.request.urlopen(pathway_file_file).read().decode('utf-8').split('\n')
+    for line in data:
+        if len(line) == 0:
+            continue
+        pathway = line.rstrip().split("\t")
+        map = pathway[0][5:]
+        description = pathway[1]
+
+        try:
+            cat = map2category[map][1]
+            cat_short = map2category[map][0]
+        except:
+            cat = 'uncategorized'
+            cat_short = 'uncategorized'
+        sql = 'INSERT into kegg_pathway_v1 (pathway_name, description,pathway_category_short, pathway_category) values ("%s", "%s", "%s", "%s");' % (map,
+                                                                                                                                                  description,
+                                                                                                                                                  cat_short,
+                                                                                                                                                  cat)
+
+        print (sql)
+        cursor.execute(sql,)
+        conn.commit()
+
+
+def get_complete_ko_table_legacy(biodb):
+    import urllib
+    import re
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'CREATE TABLE IF NOT EXISTS enzyme.ko_annotation_v1 (ko_id VARCHAR(20),' \
+           ' name varchar(40),' \
+           ' definition TEXT,' \
+           ' EC TEXT,' \
+           ' pathways TEXT,' \
+           ' modules TEXT, ' \
+           ' dbxrefs TEXT, index ko_id (ko_id));'
+    server.adaptor.execute_and_fetchall(sql)
+
+    sql = 'select ko_id from enzyme.ko_annotation_v1'
+
+    ko_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql)]
+    print(ko_list)
+    url = 'http://rest.kegg.jp/list/ko'
+    data = urllib.request.urlopen(url).read().decode('utf-8').split('\n')
+
+    total = len(data)
+    for n, line in enumerate(data):
+        print ("%s / %s" % (n, total))
+        ko = line.rstrip().split('\t')[0][3:]
+        print (ko)
+        if ko in ko_list:
+            continue
+        url_ko = 'http://rest.kegg.jp/get/%s' % ko
+
+        ko_data = urllib.request.urlopen(url_ko).read().decode('utf-8').split('\n')
+
+        refs = ko2dbxrefs(ko_data)
+        if refs:
+            refs_str = ''
+            for database in refs:
+                if database != 'RN':
+                    refs_str+='%s:%s,' % (database, refs[database])
+            refs_str=refs_str[0:-1]
+        else:
+            refs_str = '-'
+        definition = ko2definition(ko_data)
+
+        if definition:
+            definition = re.sub('"','', definition)
+            if '[EC:' in definition:
+                ec = definition.split('[EC:')[1][0:-1]
+            else:
+                ec = '-'
+        else:
+            definition = '-'
+            ec = '-'
+        modules = ko2MODULE(ko_data)
+        if modules:
+            modules = ','.join(modules)
+        else:
+            modules = '-'
+        name = ko2name(ko_data)
+        if name:
+            name = ','.join(name)
+
+        pathways = ko2PATHWAY(ko_data)
+        if pathways:
+            pathways = ','.join(pathways)
+        else:
+            pathways = '-'
+
+        sql = 'insert into enzyme.ko_annotation_v1 (ko_id, name, definition, EC, pathways, modules, dbxrefs)' \
+              ' values ("%s", "%s", "%s","%s", "%s", "%s", "%s")' % (ko,
+                                                                name,
+                                                                definition,
+                                                                ec,
+                                                                pathways,
+                                                                modules,
+                                                                refs_str)
+
+        print (sql)
+        server.adaptor.execute(sql,)
+        server.commit()
+
+
 if __name__ == '__main__':
     import argparse
     from chlamdb.biosqldb import manipulate_biosqldb
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-u", '--update_database', action="store_true", help="update enzyme and KEGG data from online Databases")
+    parser.add_argument("-u", '--updated', action="store_true", help="Setup updated tables")
+    parser.add_argument("-l", '--legacy', action="store_true", help="Setup legacy tables")
 
     args = parser.parse_args()
 
     conn, cursor = connect_db()
 
-    print('getting complete_ko_table...')
-    #get_complete_ko_table()
-    print('load_enzyme_nomenclature_table map2category...')
-    #load_enzyme_nomenclature_table()
-    sql = 'select ko_accession, ko_id from enzyme.ko_annotation'
-    cursor.execute(sql,)
-    ko_accession2ko_id = manipulate_biosqldb.to_dict(cursor.fetchall())
     print('getting map2category...')
-    #map2category = get_kegg_pathway_classification()
-    print('getting pathway table...')
-    #get_pathay_table(map2category)
-    print('getting ko2pathway...')
-    #get_pathway2ko(ko_accession2ko_id)
-    print('getting module2ko...')
-    #module_hierarchy = get_kegg_module_hierarchy()
-    #get_module_table(module_hierarchy, ko_accession2ko_id)
-    #print('getting get_ec2get_pathway_table...')
-    #get_ec2get_pathway_table()
-    #print('getting get_microbial_metabolism_in_diverse_environments_kegg01120...')
-    #get_microbial_metabolism_in_diverse_environments_kegg01120()
-    print('getting get_ko2ec...')
-    get_ko2ec()
+    map2category = get_kegg_pathway_classification()
 
-    #get_ec_data_from_IUBMB("3.2.1.196")
-    #get_ec_data_from_IUBMB("1.14.13.217")
-    #get_ec_data_from_IUBMB("1.1.1.1")
+    if args.updated:
+        print('getting complete_ko_table...')
+        #get_complete_ko_table()
+        print('load_enzyme_nomenclature_table map2category...')
+        #load_enzyme_nomenclature_table()
+        sql = 'select ko_accession, ko_id from enzyme.ko_annotation'
+        cursor.execute(sql,)
+        ko_accession2ko_id = manipulate_biosqldb.to_dict(cursor.fetchall())
+        print('getting pathway table...')
+        #get_pathay_table(map2category)
+        print('getting ko2pathway...')
+        #get_pathway2ko(ko_accession2ko_id)
+        print('getting module2ko...')
+        #module_hierarchy = get_kegg_module_hierarchy()
+        #get_module_table(module_hierarchy, ko_accession2ko_id)
+        #print('getting get_ec2get_pathway_table...')
+        #get_ec2get_pathway_table()
+        #print('getting get_microbial_metabolism_in_diverse_environments_kegg01120...')
+        #get_microbial_metabolism_in_diverse_environments_kegg01120()
+        print('getting get_ko2ec...')
+        get_ko2ec()
+
+        #get_ec_data_from_IUBMB("3.2.1.196")
+        #get_ec_data_from_IUBMB("1.14.13.217")
+        #get_ec_data_from_IUBMB("1.1.1.1")
+    if args.legacy:
+        get_complete_ko_table_legacy("2019_06_chlamydia")
+        get_pathay_table_legacy(map2category)
+        get_pathway2ko_legacy()
+        get_module_table_legacy(get_kegg_module_hierarchy())
