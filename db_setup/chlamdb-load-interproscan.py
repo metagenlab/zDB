@@ -375,13 +375,8 @@ if __name__ == '__main__':
     server, db = manipulate_biosqldb.load_db(biodb)
 
     if args.hash2locus_tag:
-        print("parsing hash2locus_tag")
-        hash2locus = {}
-        with open(args.hash2locus_tag, 'r') as f:
-            for row in f:
-                locus, hash = row.rstrip().split('\t')
-                hash2locus[hash] = locus
-        print(hash2locus['CRC-CB388B490E669DF0'])
+        import chlamdb_setup_utils
+        hash2locus = chlamdb_setup_utils.get_hash2locus(args.hash2locus_tag)
 
     if args.input_interpro:
         if not args.v2_table:
