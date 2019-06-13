@@ -92,33 +92,37 @@
   - [X] setup seqfeature_id2locus_table
 - [X] load orthofinder results  
 - [X] load interproscan results
-  - [ ] add TM and SP columns to orthology_detail legacy table
+  - [X] add TM and SP columns to orthology_detail legacy table
 - [X] load orthogroup alignments
 - [X] get identity closest homolog table
 - [X] get average identity table
 - [X] setup genome statistics table
-- [ ] load COG hits
-- [ ] load KO hits
+- [X] load COG hits
+- [X] load KO hits
+  - [ ] load legacy tables
 - [ ] load PMID mapping
 - [ ] load uniprot annotations
 - [ ] load cross-references
-- [ ] setup pairwise BBH
-- [ ] lead orthogroup alignments(identity matrices)
-- [ ] load orthogroup phylogenies
-- [ ] load orthogroup BBH phylogenies
-- [ ] load reference phylogeny
+- [X] setup pairwise BBH identity tables
+- [X] lead orthogroup alignments(identity matrices)
+- [X] load orthogroup phylogenies
+- [X] load orthogroup BBH phylogenies
+- [X] load reference phylogeny
 - [ ] load blast swissprot results
 - [ ] load blast refseq results
 - [ ] load refseq taxonomy table
-- [ ] get genome table (homepage)
+- [X] get genome table (homepage)
 - [ ] get phylo profile
-- [ ] get conserved neighborhood
+  - [ ] setup core_orthogroups_identity_msa_
+- [X] get conserved neighborhood
 
 
 - [ ] check indexes
 
 ## priority 2
 
+- [ ] switch to new COG tables
+- [ ] switch to new KEGG tables
 - [ ] setup NOG_table_v451 and NOG_members_v451
 - [ ] setup interpro master table
 - [ ] setup pfam master table
