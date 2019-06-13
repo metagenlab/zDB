@@ -943,10 +943,13 @@ def get_module_table_legacy(module2category):
     import urllib.request
     import re
     import sys
+    import os
+
+    sqlpsw = os.environ['SQLPSW']
 
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
-                                passwd="estrella3", # your password
+                                passwd=sqlpsw, # your password
                                 db="enzyme") # name of the data base
     cursor = conn.cursor()
 
