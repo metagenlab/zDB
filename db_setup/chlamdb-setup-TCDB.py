@@ -205,7 +205,7 @@ class TCDB():
         handle = urllib.request.urlopen("http://www.tcdb.org/public/tcdb")
         fasta_st = StringIO(handle.read().decode("UTF-8"))
         db_accession2record = SeqIO.to_dict(SeqIO.parse(fasta_st, 'fasta'))
-
+        uniprot_nr_list = []
         for accession in db_accession2record:
             # gnl|TC-DB|1001796365|4.F.1.1.5
             header_data = accession.split("|")
@@ -215,6 +215,11 @@ class TCDB():
                 # malformed header, search accession in description
                 hit_tcid = re.findall("[0-9]+\.[A-Z]\.[0-9]+\.[0-9]+\.[0-9]+", db_accession2record[accession].description)[0]
             hit_uniprot_accession = header_data[2]
+            if hit_uniprot_accession == "B8CYZ1":
+                continue
+
+            if hit_uniprot_accession not in uniprot_nr_list:
+                uniprot_nr_list.append(hit_uniprot_accession)
 
             transporter_id = self.insert_new_tc_path(hit_tcid)
             uniprot_id = self.check_if_uniprot_accession_already_in_db(hit_uniprot_accession)
@@ -222,6 +227,7 @@ class TCDB():
                 uniprot_id = self.insert_uniprot_in_db(hit_uniprot_accession, hit_tcid, db_accession2record[accession].description)
 
         self.conn.commit()
+        print("number of nr uniprot accessions:", len(uniprot_nr_list))
 
 if __name__ == '__main__':
     import argparse

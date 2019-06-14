@@ -24,7 +24,7 @@ def sql_euclidian_dist_orthogroups(biodb, one_list, orthogroup2profile):
         print ("%s/%s" % (i,n))
         dist = euclidean(orthogroup2profile[one_pair[0]], orthogroup2profile[one_pair[1]])
         if dist <= 2.5:
-            sql = 'insert into comparative_tables.phylogenetic_profiles_euclidian_distance2_%s values ("%s", "%s", %s);' % (biodb,
+            sql = 'insert into comparative_tables.phylo_profiles_eucl_dist2_%s values ("%s", "%s", %s);' % (biodb,
                                                                                                         one_pair[0],
                                                                                                         one_pair[1],
                                                                                                         dist)
@@ -61,7 +61,7 @@ def euclidian_dist_orthogroups(biodb, merge_taxons=False):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql_profiles_table = 'CREATE TABLE IF NOT EXISTS comparative_tables.phylogenetic_profiles_euclidian_distance2_%s (group_1 varchar(100), ' \
+    sql_profiles_table = 'CREATE TABLE IF NOT EXISTS comparative_tables.phylo_profiles_eucl_dist2_%s (group_1 varchar(100), ' \
                          ' group_2 varchar(100), euclidian_dist FLOAT, INDEX group_1 (group_1), INDEX group_2 (group_2))' % (biodb)
     try:
         print (sql_profiles_table)
@@ -112,12 +112,13 @@ def euclidian_dist_orthogroups(biodb, merge_taxons=False):
              user="root", password="%s",
              dbname="comparative_tables", host="localhost")
 
-    rs1 <- dbSendQuery(con, 'select * from core_orthogroups_identity_msa_%s;')
+    rs1 <- dbSendQuery(con, 'select taxon_1,taxon_2, median_identity from shared_og_av_id_%s;')
     pairwise_identity<- dbFetch(rs1, n=-1)
     rs2 <- dbSendQuery(con, 'select taxon_id,description from biosqldb.bioentry where biodatabase_id=%s and description not like "%%plasmid%%";')
     taxon2description<- dbFetch(rs2, n=-1)
 
     pairwise_identity_matrix <- dcast(pairwise_identity, taxon_1~taxon_2)
+    print(dim(pairwise_identity))
     rownames(pairwise_identity_matrix) <- pairwise_identity_matrix$taxon_1
 
     pairwise_identity_matrix<-pairwise_identity_matrix[,2:length(pairwise_identity_matrix)]

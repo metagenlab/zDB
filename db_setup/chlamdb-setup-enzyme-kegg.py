@@ -1174,7 +1174,7 @@ def get_complete_ko_table_legacy(biodb):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'CREATE TABLE IF NOT EXISTS enzyme.ko_annotation_v1 (ko_id VARCHAR(20),' \
-           ' name varchar(40),' \
+           ' name varchar(200),' \
            ' definition TEXT,' \
            ' EC TEXT,' \
            ' pathways TEXT,' \
@@ -1191,6 +1191,8 @@ def get_complete_ko_table_legacy(biodb):
 
     total = len(data)
     for n, line in enumerate(data):
+        if len(line) == 0:
+            continue
         print ("%s / %s" % (n, total))
         ko = line.rstrip().split('\t')[0][3:]
         print (ko)
