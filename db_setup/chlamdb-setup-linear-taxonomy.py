@@ -6,18 +6,18 @@ import gzip
 import re
 
 
-class SQLiteDB():
+class MySQLDB():
     def __init__(self, dbname='blastnr'):
 
         sqlpsw = os.environ['SQLPSW']
-        conn = MySQLdb.connect(host="localhost",
+        self.mysql_conn = MySQLdb.connect(host="localhost",
                                user="root",
                                passwd=sqlpsw)
-        cursor = conn.cursor()
+        self.mysql_cursor = self.mysql_conn.cursor()
         sql_db = 'CREATE DATABASE IF NOT EXISTS %s;' % dbname
-        cursor.execute(sql_db,)
-        conn.commit()
-        cursor.execute("use %s;" % dbname,)
+        self.mysql_cursor.execute(sql_db,)
+        self.mysql_conn.commit()
+        self.mysql_cursor.execute("use %s;" % dbname,)
 
     def importFromCSV(self, csvfilename, tablename, separator=","):
         with gzip.open(csvfilename, 'rt') as fh:
@@ -51,16 +51,77 @@ class SQLiteDB():
         self.db.commit()
 
 
+    def import_from_sqlite3(self, sqlite_db_path, table_name):
+
+        import sqlite3
+
+        sqlite_conn = sqlite3.connect(sqlite_db_path)
+        sqlite_cursor = sqlite_conn.cursor()
+
+        sql_header = 'PRAGMA table_info(ncbi_taxonomy);'
+        sqlite_cursor.execute(sql_header)
+        columns = sqlite_cursor.fetchall()
+        column_index = []
+        columns_def = []
+        for n, col in enumerate(columns):
+            col = list(col)
+            if col[1] in ['cohort', 'cohort_taxid', 'parvorder_taxid', 'parvorder', 'infraorder', 'infraorder_taxid', 'forma_taxid', 'forma', 'infraclass', 'infraclass_taxid', 'series', 'series_taxid', 'species_group', 'species_group_taxid', 'species1', 'species1_taxid', 'species_subgroup', 'species_subgroup_taxid', 'subclass', 'subclass_taxid', 'subcohort', 'subcohort_taxid', 'subfamily', 'subfamily_taxid', 'subgenus', 'subgenus_taxid', 'subkingdom', 'subkingdom_taxid', 'suborder', 'suborder_taxid', 'subphylum', 'subphylum_taxid', 'subsection', 'subsection_taxid', 'subspecies', 'subspecies_taxid', 'subtribe', 'subtribe_taxid', 'superclass', 'superclass_taxid', 'tribe', 'tribe_taxid', 'varietas', 'varietas_taxid', 'section', 'section_taxid', 'superphamily', 'superfamily_taxid', 'superorder', 'superorder_taxid']:
+                continue
+            else:
+                column_index.append("`%s`" % col[1])
+                if n == 0:
+                    if col[1] != 'taxon_id':
+                        col[1] = 'taxon_id'
+                columns_def.append("`%s` %s" % (col[1], col[2]))
+
+        sql = 'select %s from ncbi_taxonomy' % ','.join(column_index)
+
+        sqlite_cursor.execute(sql)
+        taxonomy_data = sqlite_cursor.fetchall()
+
+        column_index[0] = 'taxon_id'
+
+        sql_header_crate = 'create table if not exists blastnr.blastnr_taxonomy (%s)' % ','.join(columns_def)
+        print(sql_header_crate)
+        self.mysql_cursor.execute(sql_header_crate)
+
+        sql = 'insert into blastnr.blastnr_taxonomy (%s) values (' % ','.join(column_index)
+        sql += ','.join(["%s"]*len(column_index))
+        sql += ')'
+        for row in taxonomy_data:
+            row = list(row)
+            print(row)
+            row = [i if (i != '') else None for i in row]
+            self.mysql_cursor.execute(sql, row)
+        sqlf.mysql_conn.commit()
+        sql1 = 'CREATE INDEX taxid ON blastnr.blastnr_taxonomy(`taxon_id`);'
+        sql2 = 'CREATE INDEX phylum ON blastnr.blastnr_taxonomy(`phylum`);'
+        sql3 = 'CREATE INDEX phylumid ON blastnr.blastnr_taxonomy(`phylum_taxid`);'
+
+        self.mysql_cursor.execute(sql1)
+        self.mysql_cursor.execute(sql2)
+        self.mysql_cursor.execute(sql3)
+        sqlf.mysql_conn.commit()
+
+
+
 if __name__ == '__main__':
     import argparse
     from chlamdb.biosqldb import manipulate_biosqldb
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--linear_taxonomy_file', type=str, help='Linear taxonomy file')
+    parser.add_argument('-s', '--linear_taxonomy_sqlite', type=str, help='Linear taxonomy sqlite3 file')
     parser.add_argument('-d', '--db_name', type=str, help='DB name', default='blastnr')
 
     args = parser.parse_args()
 
-    db = SQLiteDB(args.db_name)
 
-    db.importFromCSV(args.linear_taxonomy, args.db_name)
+
+
+    if args.linear_taxonomy_file:
+        db = MySQLDB(args.db_name)
+        db.importFromCSV(args.linear_taxonomy, args.db_name)
+    if args.linear_taxonomy_sqlite:
+        db = MySQLDB(args.db_name)
+        db.import_from_sqlite3(args.linear_taxonomy_sqlite, args.db_name)
