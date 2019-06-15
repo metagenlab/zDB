@@ -107,7 +107,7 @@ def refseq_accession2fasta(accession_list):
 
 def orthogroup2locus_and_sequences(biodb,orthogroup):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -210,7 +210,7 @@ def plot_tree(ete3_tree,
               mysql_db="blastnr"):
 
     import MySQLdb
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     from ete3 import Tree, TreeStyle, faces, AttrFace
 
     conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost

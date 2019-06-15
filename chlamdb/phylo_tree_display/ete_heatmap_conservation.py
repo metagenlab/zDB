@@ -293,7 +293,7 @@ def plot_heat_tree(biodb, taxid2n, tree_file):
         for you to exit the browser before continuing.
     '''
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     taxid2organism = manipulate_biosqldb.taxon_id2genome_description(server, biodb, True)
@@ -357,7 +357,7 @@ def plot_heatmap_tree_locus(biodb,
     '''
 
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -490,7 +490,7 @@ def plot_heatmap_tree_locus(biodb,
 
 if __name__ == '__main__':
     import argparse
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     parser = argparse.ArgumentParser()
     parser.add_argument("-t",'--tree',type=str,help="newick tree")
     parser.add_argument("-m",'--matrix',type=str,help="matrix (tab file)")
