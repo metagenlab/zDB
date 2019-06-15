@@ -2,7 +2,7 @@
 
 
 def biodb2cds_gc(biodb):
-    import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     from Bio.SeqUtils import GC123
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -25,19 +25,16 @@ def biodb2cds_gc(biodb):
 
     count_all=0
     for accession in accession_list:
-        print accession
+        print (accession)
         record = db.lookup(accession=accession)
         seq = record.seq
         for n, feature in enumerate(record.features):
             if feature.type == 'CDS' and not 'pseudo' in feature.qualifiers:
                 count_all+=1
-                print count_all
                 dna_sequence = feature.extract(seq)
-                print 'ok, count'
                 locus = feature.qualifiers['locus_tag'][0]
 
                 gc, gc1, gc2, gc3 = GC123(str(dna_sequence))
-                print 'ok, insert'
                 sql = 'insert into  custom_tables.gc_content_%s values (%s, %s, %s, %s, %s, %s, %s);' % (biodb,
                                                                                                           locus2taxon_id[locus],
                                                                                                           locus2seqfeature_id[locus],
@@ -46,7 +43,6 @@ def biodb2cds_gc(biodb):
                                                                                                           round(gc1),
                                                                                                           round(gc2),
                                                                                                           round(gc3))
-                print sql
                 server.adaptor.execute(sql,)
         server.commit()
 
