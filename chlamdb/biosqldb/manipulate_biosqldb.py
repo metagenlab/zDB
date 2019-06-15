@@ -146,9 +146,6 @@ def get_bioentry_and_seqfeature_id_from_locus_tag_list(server, locus_tag_list, b
                                                           biodatabase_name,
                                                           filter)
 
-
-    #sql = sql % (query_locus_tag, biodatabase_name)
-    #print sql
     b = server.adaptor.execute_and_fetchall(sql, )
     bioentry_id_list = [i[0] for i in b]
     seqfeature_id_list = [i[1] for i in b]

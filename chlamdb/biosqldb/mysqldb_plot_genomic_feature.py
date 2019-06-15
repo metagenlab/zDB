@@ -569,9 +569,9 @@ out_q = Queue()
 def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, region_size_bp, cache, color_locus_list = []):
     plasmid_list = []
     sub_record_list = []
-
+    print(server, biodb, biodb_name, locus_tag_list, out_name, region_size_bp)
     bioentry_id_list, seqfeature_id_list = manipulate_biosqldb.get_bioentry_and_seqfeature_id_from_locus_tag_list(server, locus_tag_list, biodb_name)
-
+    print(bioentry_id_list, seqfeature_id_list)
     #n_cpu = 8
     #n_poc_per_list = math.ceil(len(bioentry_id_list)/float(n_cpu))
     #query_lists = chunks(range(0, len(bioentry_id_list)), int(n_poc_per_list))

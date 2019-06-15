@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: iso-8859-15 -*-  
+# -*- coding: iso-8859-15 -*-
 
 
 # Author: Trestan Pillonel (trestan.pillonel[]gmail.com)
@@ -9,7 +9,7 @@
 
 def find_links_recusrsive(biodb, all_connected_seqfeatures, ratio_cutoff=0.5, n_comp_cutoff=1):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     if biodb == 'chlamydia_04_16':
@@ -45,7 +45,7 @@ def find_profile_links_recusrsive(biodb, all_connected_groups, max_euclidian_dis
         return all_connected_groups
     else:
         max_iterations+=1
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     filter = '"' + '","'.join(all_connected_groups) + '"'
@@ -87,9 +87,9 @@ class orthogroup2network:
                                db=mysql_db) # name of the data base
         self.cursor = conn.cursor()
         self.reference_link_data = self.get_reference_link_data(orthogroup, threshold)
-        
+
         #print self.link_data
-        
+
     def get_reference_link_data(self, orthogroup, threshold):
         sql = 'select * from detailed_cog_links_v10 where group1="%s" and combined_score >%s' % (orthogroup, threshold)
         self.cursor.execute(sql)
@@ -236,7 +236,7 @@ class orthogroup2network:
             return ','.join(node_list)
 
 
-    
+
 def generate_network(biodb,
                      locus_tag_list,
                      target_locus_list,
@@ -246,7 +246,7 @@ def generate_network(biodb,
                      height=70,
                      interpro=False,
                      annot=False):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import re
 
 
@@ -487,7 +487,7 @@ def generate_network_string(biodb,
                      height=70,
                      interpro=False,
                      annot=False):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import re
 
 
@@ -742,7 +742,7 @@ def generate_network_profile(biodb,
                              scale_link=True,
                              interpro=False,
                              annot=False):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     filter = '"' + '","'.join(group_list) + '"'
     # group_1     | group_2     | euclidian_dist
@@ -971,7 +971,7 @@ layout: {
 def get_subgraph(biodb, locus_tag_list, ratio_limit, target_locus):
 
     import networkx as nx
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
     myfilter = '"' + '","'.join(locus_tag_list) + '"'
@@ -1021,7 +1021,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     #print 'bonjour'
     #n = orthogroup2network("COG0593")
-    
+
     #all_groups = find_links_recusrsive('chlamydia_07_16_austr', ["group_1808"], 0.5)
     #print generate_network('chlamydia_07_16_austr', all_groups, "group_1808")
     #print all_groups

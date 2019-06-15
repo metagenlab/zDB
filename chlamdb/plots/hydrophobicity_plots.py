@@ -5,7 +5,7 @@
 def locus2hydrophobicity_plot(biodb, locus):
 
     import pylab
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     # Kyte & Doolittle index of hydrophobicity
     kd = { 'A': 1.8,'R':-4.5,'N':-3.5,'D':-3.5,'C': 2.5,

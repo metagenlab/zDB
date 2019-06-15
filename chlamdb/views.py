@@ -2094,9 +2094,8 @@ def locusx(request, locus=None, menu=True):
         valid_id = True
 
         sql0 = 'select locus_tag from custom_tables.seqfeature_id2old_locus_tag_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where old_locus_tag="%s" ' % (biodb, biodb, locus)
-        print(sql0)
-        try:
 
+        try:
             data = server.adaptor.execute_and_fetchall(sql0, )[0][0]
             old_locus_tag = locus
             locus = data
@@ -2108,7 +2107,6 @@ def locusx(request, locus=None, menu=True):
         try:
             locus = server.adaptor.execute_and_fetchall(sql0, )[0][0]
             input_type = 'locus_tag'
-
         except IndexError:
 
             sql1 = 'select orthogroup from orthology_detail_%s where orthogroup="%s"' % (biodb, locus)
@@ -2132,6 +2130,7 @@ def locusx(request, locus=None, menu=True):
         except:
             pass
 
+        print(locus, input_type)
 
         if input_type == 'locus_tag':
             from chlamdb.plots import uniprot_feature_viewer
@@ -2402,6 +2401,7 @@ def locusx(request, locus=None, menu=True):
             except IndexError:
                 ko_pathway_data = False
             try:
+                print(sql8)
                 ko_module_data = server.adaptor.execute_and_fetchall(sql8, )
             except:
                 ko_module_data = False
@@ -2532,7 +2532,7 @@ def locusx(request, locus=None, menu=True):
         # check if one of the homolog has TM(s) domains
         tm_count = 0
         for i in homologues:
-            if i[7] != '-':
+            if i[7] is not None:
                 tm_count += int(i[7])
         if tm_count > 0:
             show_tm_tree = True
