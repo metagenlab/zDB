@@ -82,7 +82,7 @@ def create_protein_accession2taxon_id_table():
     sql = 'CREATE TABLE ncbi_nr.protein_id2taxon_id (' \
     ' protein_id VARCHAR(60) UNIQUE,' \
     ' taxon_id INT);'
-    print sql
+    print (sql)
 
 def insert_hit(conn,
                cursor,
@@ -195,14 +195,14 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
         values = ''
 
         with open(one_blast_file, 'r') as f:
-            print 'Loading', n_file, one_blast_file, '...'
+            print ('Loading', n_file, one_blast_file, '...')
             input_file = [i.rstrip().split('\t') for i in f]
 
             input_file_hit_gi = [i[1].split('|')[1] for i in input_file]
 
             
 
-            print 'getting protein 2 taxon id for %s proteins' % len(input_file_hit_gi)
+            print ('getting protein 2 taxon id for %s proteins' % len(input_file_hit_gi))
             gi2taxon_id = {}
             gi2descriptions = {}
 
@@ -210,19 +210,19 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
             for i, one_list in enumerate(id_lists):
                 #print i, "/", len(id_lists)
                 if i % 100 == 0:
-                    print i, " lists /", len(id_lists)
+                    print (i, " lists /", len(id_lists))
                     time.sleep(60)
                 gi2taxon_id.update(accession2taxon_id.gi2taxon_id(one_list, "protein"))
                 gi2descriptions.update(accession2taxon_id.gi2description(one_list, "protein"))
             #print gi2descriptions.keys()
             #print 'getting protein 2 description dir %s proteins' % len(input_file_hit_accessions)
 
-            print 'loading blast results into database...'
+            print ('loading blast results into database...')
             for n, line in enumerate(input_file):
                 #print n, line[0]
                 # qgi qacc sgi sacc sscinames sskingdoms staxids evalue nident pident positive gaps length qstart qend qcovs sstart send sstrand stitle
                 if n%1000 == 0:
-                    print time.ctime() + ': ' + str(round((float(n)/len(input_file))*100,2)) + '%...'
+                    print (time.ctime() + ': ' + str(round((float(n)/len(input_file))*100,2)) + '%...')
 
                 query_accession = line[0]
 
@@ -251,7 +251,7 @@ def _load_blastnr_file_into_db(seqfeature_id2locus_tag,
                                 conn.commit()
                                 values = ''
                             except:
-                                print sql_hsps
+                                print (sql_hsps)
                     #else:
                     #    
                     #    print 'previous loocus accession: %s --- new locus: %s' % (locus_tag2accession[locus_tag_previous_line], locus_tag2accession[locus_tag])
@@ -456,7 +456,7 @@ def _load_taxonomic_data(biodb, mysql_host, mysql_user, mysql_pwd, mysql_db, acc
 
     
     for accession in accession_list:
-        print 'Loading...', accession
+        print ('Loading...', accession)
 
         sql1 = 'select nr_hit_id, subject_taxid from blastnr_hits_%s_%s' % (biodb, accession)
         cursor.execute(sql1)
@@ -472,8 +472,8 @@ def _load_taxonomic_data(biodb, mysql_host, mysql_user, mysql_pwd, mysql_db, acc
                                                                       nr_hit,
                                                                       taxon)
                     except ProgrammingError:
-                        print 'PROBLEM WITH:'
-                        print sql
+                        print ('PROBLEM WITH:')
+                        print (sql)
                 #try:
                     cursor.execute(sql)
                     conn.commit()
@@ -481,7 +481,7 @@ def _load_taxonomic_data(biodb, mysql_host, mysql_user, mysql_pwd, mysql_db, acc
                 #    print "problem with"
                 #    print sql
                 else:
-                    print 'N/A taxon for hit %s' % nr_hit
+                    print ('N/A taxon for hit %s' % nr_hit)
 
 
 def blastnr2biodb_taxonomic_table(db_name,
@@ -594,34 +594,34 @@ def create_sql_blastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
             try:
 
                 cursor.execute(sql_blast_hits)
-                print 'sql hits ok'
+                print ('sql hits ok')
                 conn.commit()
             except:
-                print sql_blast_hits
-                print 'not created'
+                print (sql_blast_hits)
+                print ('not created')
 
             try:
 
                 cursor.execute(sql_blast_hsps)
                 conn.commit()
-                print 'sql hsps1 ok'
+                print ('sql hsps1 ok')
                 cursor.execute(sql_blast_hsps2)
-                print 'sql hsps2 ok'
+                print ('sql hsps2 ok')
                 conn.commit()
             except:
-                print sql_blast_hsps
-                print 'not created'
+                print (sql_blast_hsps)
+                print ('not created')
 
             try:
 
                 cursor.execute(sql_blast_taxonomy)
                 conn.commit()
                 cursor.execute(sql_blast_taxonomy2)
-                print "sql_taxonomy ok "
+                print ("sql_taxonomy ok ")
                 conn.commit()
             except:
-                print sql_blast_taxonomy
-                print 'not created'
+                print (sql_blast_taxonomy)
+                print ('not created')
 
     sql_taxonomy1 = 'CREATE TABLE IF NOT EXISTS blastnr_taxonomy (taxon_id int unique PRIMARY KEY, ' \
                     ' no_rank VARCHAR(200) default "-", ' \
@@ -697,14 +697,14 @@ def insert_taxons_into_sqldb(taxon_id_list,
 
     id_lists = _chunks(taxon_id_list, chunk_size)
     for i, one_list in enumerate(id_lists):
-        print i, "/", len(id_lists)
+        print (i, "/", len(id_lists))
         if i % 100 == 0 and i != 0:
             time.sleep(60)
         taxid2classification.update(sequence_id2scientific_classification.taxon_id2scientific_classification(one_list))
 
-    print 'Number of taxon id retrieved:', len(taxid2classification.keys())
+    print ('Number of taxon id retrieved:', len(taxid2classification.keys()))
 
-    print 'Updating blastnr_taxonomy table with %s new taxons' % str(len(taxon_id_list))
+    print ('Updating blastnr_taxonomy table with %s new taxons' % str(len(taxon_id_list)))
     for taxon_id in taxon_id_list:
             if taxon_id == 'N/A':
                 continue
@@ -715,7 +715,7 @@ def insert_taxons_into_sqldb(taxon_id_list,
                 cursor.execute(sql)
                 conn.commit()
             except MySQLdb.IntegrityError:
-                print 'Taxon %s already in database' % str(taxon_id)
+                print ('Taxon %s already in database' % str(taxon_id))
                 continue
             try:
                 for rank in taxid2classification[taxon_id].keys():
@@ -729,9 +729,9 @@ def insert_taxons_into_sqldb(taxon_id_list,
                         cursor.execute(sql)
                         conn.commit()
                     except:
-                        print 'could not insert rank', sql
+                        print ('could not insert rank', sql)
             except KeyError:
-                print 'Could not add the following taxon: %s, trying again to get the data...' % taxon_id
+                print ('Could not add the following taxon: %s, trying again to get the data...' % taxon_id)
                 temp_dico = sequence_id2scientific_classification.taxon_id2scientific_classification([taxon_id])
 
                 try:
@@ -744,10 +744,10 @@ def insert_taxons_into_sqldb(taxon_id_list,
 
                         cursor.execute(sql)
                         conn.commit()
-                    print 'sucess!'
+                    print ('sucess!')
                 except KeyError:
-                    print 'Could not add %s' % taxon_id
-                    print "temp_dico", temp_dico
+                    print ('Could not add %s' % taxon_id)
+                    print ("temp_dico", temp_dico)
 
 
 def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *input_blast_files):
@@ -793,13 +793,13 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
     cursor.execute(sql,)
     database_taxon_ids = [str(i[0]) for i in cursor.fetchall()]
 
-    print "Number of taxons into database: ", len(database_taxon_ids)
+    print ("Number of taxons into database: ", len(database_taxon_ids))
 
     protein_gi_list = []
     
     for one_blast_file in input_blast_files:
 
-                print 'blast file %s' % one_blast_file
+                print ('blast file %s' % one_blast_file)
                 with open(one_blast_file, 'r') as f:
 
                     #hit_column =
@@ -817,14 +817,14 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
                 gi_def_list.append(gi)
         except KeyError:
             gi_def_list.append(gi)
-    print 'getting gi 2 taxon id for %s proteins' % len(gi_def_list)
+    print ('getting gi 2 taxon id for %s proteins' % len(gi_def_list))
     gi2taxon_id = {}
 
     id_lists = _chunks(gi_def_list, 300)
     for i, one_list in enumerate(id_lists):
         #print i, "/", len(id_lists)
         if i % 100 == 0:
-            print i, "lists ok / %s lists" % len(id_lists), strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            print (i, "lists ok / %s lists" % len(id_lists), strftime("%Y-%m-%d %H:%M:%S", gmtime()))
             time.sleep(60)
             gi2taxon_id.update(accession2taxon_id.gi2taxon_id(one_list, "protein"))
             #print "protein_accession2taxon_id", protein_accession2taxon_id
@@ -840,11 +840,11 @@ def update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *in
         cursor.execute(sql,)
     conn.commit()
                     
-    print 'Number of new taxons:', len(all_taxon_ids)
-    print 'i.e: ', all_taxon_ids[1:10]
+    print ('Number of new taxons:', len(all_taxon_ids))
+    print ('i.e: ', all_taxon_ids[1:10])
     time.sleep(60)
 
-    print 'Fetching ncbi taxonomy... for %s taxons' % str(len(all_taxon_ids))
+    print ('Fetching ncbi taxonomy... for %s taxons' % str(len(all_taxon_ids)))
 
     # subdivide the taxon list in smaller lists, otherwise NCBI will limit the results to? 10000 (observed once only)
     insert_taxons_into_sqldb(all_taxon_ids, 300, mysql_pwd=mysql_pwd)
@@ -867,17 +867,17 @@ def blastnr2biosql(seqfeature_id2locus_tag,
     import numpy
     from multiprocessing import Process
     import biosql_own_sql_tables
-    print 'host1', mysql_host
-    print 'user1', mysql_user
+    print ('host1', mysql_host)
+    print ('user1', mysql_user)
 
-    print "add eventual new taxons to the main blastnr taxonomy table"
+    print ("add eventual new taxons to the main blastnr taxonomy table")
     #update2biosql_blastnr_table(mysql_host, mysql_user, mysql_pwd, mysql_db, *input_blast_files)
 
     # load blast data into blastnr_ db_name table
     n_cpu = n_procs
     n_poc_per_list = int(numpy.ceil(len(input_blast_files)/float(n_cpu)))
     query_lists = _chunks(input_blast_files, n_poc_per_list)
-    print 'n lists: %s' % len(query_lists)
+    print ('n lists: %s' % len(query_lists))
     
 
     if len(input_blast_files)>n_poc_per_list:
@@ -901,7 +901,7 @@ def blastnr2biosql(seqfeature_id2locus_tag,
         for proc in procs:
             proc.join()
     else:
-        print 'Only %s input blast file(s), not working in paralell mode' % (len(input_blast_files))
+        print ('Only %s input blast file(s), not working in paralell mode' % (len(input_blast_files)))
         _load_blastnr_file_into_db(seqfeature_id2locus_tag,
                                 locus_tag2seqfeature_id,
                                 protein_id2seqfeature_id,
@@ -931,16 +931,16 @@ def del_blastnr_table_content(db_name):
         sql4 = 'DROP TABLE IF EXISTS blastnr.blastnr_hits_taxonomy_filtered_%s_%s' % (db_name, accession)
 
 
-        print sql1
+        print (sql1)
         server.adaptor.execute(sql1)
         server.adaptor.commit()
-        print sql3
+        print (sql3)
         server.adaptor.execute(sql3)
         server.adaptor.commit()
-        print sql4
+        print (sql4)
         server.adaptor.execute(sql4)
         server.adaptor.commit()
-        print sql2
+        print (sql2)
         server.adaptor.execute(sql2)
         server.adaptor.commit()
 
@@ -1000,7 +1000,7 @@ if __name__ == '__main__':
     if args.filter_n_hits:
         for i in args.input_blast:
             outname = i.split('.')[0] + '_filtered_100.tab'
-            print outname
+            print (outname)
             filter_blast_number(i,outname,100)
 
 

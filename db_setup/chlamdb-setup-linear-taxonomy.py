@@ -88,21 +88,22 @@ class MySQLDB():
         sql = 'insert into blastnr.blastnr_taxonomy (%s) values (' % ','.join(column_index)
         sql += ','.join(["%s"]*len(column_index))
         sql += ')'
-        for row in taxonomy_data:
+        for n, row in enumerate(taxonomy_data):
+            if n % 10000 == 0:
+                print(n)
             row = list(row)
-            print(row)
             row = [i if (i != '') else None for i in row]
             self.mysql_cursor.execute(sql, row)
-        sqlf.mysql_conn.commit()
+        self.mysql_conn.commit()
         sql1 = 'CREATE INDEX taxid ON blastnr.blastnr_taxonomy(`taxon_id`);'
+        # _mysql_exceptions.OperationalError: (1170, "BLOB/TEXT column 'phylum' used in key specification without a key length")
         sql2 = 'CREATE INDEX phylum ON blastnr.blastnr_taxonomy(`phylum`);'
         sql3 = 'CREATE INDEX phylumid ON blastnr.blastnr_taxonomy(`phylum_taxid`);'
 
         self.mysql_cursor.execute(sql1)
         self.mysql_cursor.execute(sql2)
         self.mysql_cursor.execute(sql3)
-        sqlf.mysql_conn.commit()
-
+        self.mysql_conn.commit()
 
 
 if __name__ == '__main__':
