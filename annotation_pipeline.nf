@@ -199,7 +199,7 @@ process convert_gbk_to_faa {
 
   conda 'bioconda::biopython=1.68'
 
-  cpus 2
+  cpus 1
 
   input:
   each file(edited_gbk) from edited_gbks
@@ -218,7 +218,10 @@ edited_records = open("${edited_gbk.baseName}.faa", 'w')
 for record in records:
   for feature in record.features:
       if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers:
-          feature.name = feature.qualifiers["locus_tag"]
+          try:
+            feature.name = feature.qualifiers["locus_tag"]
+          except KeyError:
+            feature.name = feature.qualifiers["gene"]
           edited_records.write(">%s %s\\n%s\\n" % (feature.qualifiers["locus_tag"][0],
                                                    record.description,
                                                    feature.qualifiers['translation'][0]))
