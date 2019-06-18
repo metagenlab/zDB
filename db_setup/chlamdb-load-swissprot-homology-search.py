@@ -107,25 +107,31 @@ def get_swissprot_annotation(accession_list):
         print (link)
         return (False)
 
-def get_swissprot_annotation2(accession_list):
+def deleted_uniprot2new_identical_sequence(accession_list):
     import requests, sys
-    from Bio import SeqIO
-    from io import StringIO
+    import json
+    requestURL = "https://www.ebi.ac.uk/proteins/api/uniparc/accession/O84147"
 
-    # id,taxon,annotation score,protein names,genes,organism
-    requestURL = "https://www.ebi.ac.uk/proteins/api/proteins?offset=0&size=100&accession=%s" % (' '.join(accession_list))
-    requestURL = requestURL.replace(' ', '%2C')
-    print(requestURL)
-    r = requests.get(requestURL, headers={ "Accept" : "application/xml"})
-    print("ok")
+    r = requests.get(requestURL, headers={ "Accept" : "application/json"})
+
     if not r.ok:
       r.raise_for_status()
       sys.exit()
 
     responseBody = r.text
-    records = [i for i in SeqIO.parse(StringIO(responseBody), 'uniprot-xml')]
-    print(records[0])
-
+    data = json.loads(responseBody)
+    active_entries = [i for i in data["dbReference"] if (i['active'] == 'Y')]
+    inactive_entries = [i  for i in data["dbReference"] if (i['active'] != 'Y')]
+    if len(active_entries) > 0:
+        uniprot_trembl = [i for i in active_entries if (i['type'] == 'UniProtKB/TrEMBL')]
+        uniprot_swissprot = [i for i in active_entries if (i['type'] == 'UniProtKB/Swiss-Prot')]
+        if len(uniprot_swissprot) > 0:
+            return uniprot_swissprot[0]['id']
+        elif len(uniprot_trembl) > 0:
+            return uniprot_trembl[0]['id']
+        else:
+            return False
+    return False
 
 
 
@@ -220,12 +226,27 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
                 # organism
 
                 query_accession = line[0]
-                annot = accession2annotation[sp_accession]
-                subject_taxon_id = annot[0]
-                subject_annot_score = annot[1].split(' ')[0]
-                subject_description = annot[2]
-                subject_genes = annot[3]
-                subject_organism = annot[4]
+                try:
+                    annot = accession2annotation[sp_accession]
+                    subject_taxon_id = annot[0]
+                    subject_annot_score = annot[1].split(' ')[0]
+                    subject_description = annot[2]
+                    subject_genes = annot[3]
+                    subject_organism = annot[4]
+                except KeyError:
+                    print("Deleted entry!----- %s" % sp_accession)
+                    sp_accession = deleted_uniprot2new_identical_sequence(sp_accession)
+                    if sp_accession:
+                        temp_accession2annotation = get_swissprot_annotation([sp_accession])
+                        annot = temp_accession2annotation[sp_accession]
+                    else:
+                        # set to unknown
+                        subject_taxon_id = '32644'
+                        subject_annot_score = '0'
+                        subject_description = '-'
+                        subject_genes = '-'
+                        subject_organism = 'unknown'
+
                 subject_kingdom = taxon_id2superkingdom[subject_taxon_id]
 
                 evalue = line[10]
