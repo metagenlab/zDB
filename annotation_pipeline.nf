@@ -221,9 +221,11 @@ for record in records:
   for feature in record.features:
       if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers:
           try:
-            locus_tag = feature.qualifiers["locus_tag"]
+            locus_tag = feature.qualifiers["locus_tag"][0]
           except KeyError:
-            locus_tag = feature.qualifiers["gene"]
+            locus_tag = feature.qualifiers["gene"][0]
+          if locus_tag == 'dnaB':
+            locus_tag = feature.qualifiers["note"][0]
           try:
             edited_records.write(">%s %s\\n%s\\n" % (locus_tag,
                                                      record.description,
