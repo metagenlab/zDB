@@ -199,6 +199,8 @@ process convert_gbk_to_faa {
 
   conda 'bioconda::biopython=1.68'
 
+  echo true
+
   cpus 1
 
   input:
@@ -218,6 +220,7 @@ edited_records = open("${edited_gbk.baseName}.faa", 'w')
 for record in records:
   for feature in record.features:
       if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers:
+          print(feature)
           try:
             locus_tag = feature.qualifiers["locus_tag"]
           except KeyError:
