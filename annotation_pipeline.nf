@@ -218,23 +218,25 @@ from Bio import Entrez, SeqIO
 records = SeqIO.parse("${edited_gbk}", 'genbank')
 edited_records = open("${edited_gbk.baseName}.faa", 'w')
 for record in records:
+  protein2count = {}
   for feature in record.features:
       if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers:
           try:
             locus_tag = feature.qualifiers["locus_tag"][0]
           except KeyError:
-            locus_tag = feature.qualifiers["gene"][0]
-          if locus_tag == 'dnaB':
-            print(feature)
-            locus_tag = feature.qualifiers["note"][0]
+            protein_id = feature.qualifiers["protein_id"][0].split(".")[0]
+            if protein_id not in protein2count:
+                protein2count[protein_id] = 1
+                locus_tag = protein_id
+            else:
+                protein2count[protein_id] += 1
+                locus_tag = "%s_%s" % (protein_id, protein2count[protein_id])
           try:
             edited_records.write(">%s %s\\n%s\\n" % (locus_tag,
                                                      record.description,
                                                      feature.qualifiers['translation'][0]))
           except KeyError:
-              print(feature)
-              import sys
-              sys.exit()
+              print("problem with feature: \n ", feature)
   """
 }
 
