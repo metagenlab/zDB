@@ -1627,7 +1627,7 @@ process execute_kofamscan {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
-  conda 'hmmer=3.2.1 parallel ruby'
+  conda 'hmmer=3.2.1 parallel ruby=2.4.5'
 
   cpus 4
   memory '8 GB'
