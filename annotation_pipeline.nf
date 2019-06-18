@@ -138,7 +138,13 @@ if (params.ncbi_sample_sheet != false){
     print(ncbi_id)
     handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
     assembly_record = Entrez.read(handle_assembly, validate=False)
-    ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+
+    if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
+        ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+    elif 'refseq_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
+        ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+    else:
+      raise("%s assembly not annotated! --- exit ---" % accession)
     print(ftp_path)
     ftp=FTP('ftp.ncbi.nih.gov')
     ftp.login("anonymous","trestan.pillonel@unil.ch")
