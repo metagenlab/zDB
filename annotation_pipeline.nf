@@ -24,7 +24,7 @@ params.diamond_refseq = true
 params.diamond_refseq_taxonomy = true
 params.refseq_diamond_BBH_phylogeny = true
 params.refseq_diamond_BBH_phylogeny_top_n_hits = 4
-params.refseq_diamond_BBH_phylogeny_phylum_filter = '["Chlamydiae"]'
+params.refseq_diamond_BBH_phylogeny_phylum_filter = '["Chlamydiae", "Verrucomicrobia", "Planctomycetes", "Kiritimatiellaeota", "Lentisphaerae"]'
 params.string = true
 params.pdb = true
 params.oma = true
@@ -32,7 +32,7 @@ params.ko = true
 params.tcdb_gblast = true
 params.orthogroups_phylogeny_with_iqtree = false
 params.orthogroups_phylogeny_with_fasttree = true
-params.core_missing = 0
+params.core_missing = 6
 params.genome_faa_folder = "$PWD/faa"
 params.executor = 'local'
 
