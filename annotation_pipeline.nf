@@ -199,7 +199,7 @@ process convert_gbk_to_faa {
 
   conda 'bioconda::biopython=1.68'
 
-  echo true
+  echo false
 
   cpus 1
 
@@ -465,7 +465,7 @@ all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.s
 /*
 process orthogroups_phylogeny_with_raxml {
 
-  echo true
+  echo false
   conda 'bioconda::raxml=8.2.9'
   cpus 4
   publishDir 'orthology/orthogroups_phylogenies', mode: 'copy', overwrite: false
@@ -1627,7 +1627,7 @@ process execute_kofamscan {
   script:
   n = seq.name
   """
-  export PATH="$PATH:/home/tpillone/work/dev/annotation_pipeline_nextflow/bin/KofamScan/"
+  export "PATH=\$KOFAMSCAN_HOME:\$PATH"
   exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
   """
 }
