@@ -199,7 +199,7 @@ process convert_gbk_to_faa {
 
   conda 'bioconda::biopython=1.68'
 
-  echo false
+  echo true
 
   cpus 1
 
@@ -225,6 +225,7 @@ for record in records:
           except KeyError:
             locus_tag = feature.qualifiers["gene"][0]
           if locus_tag == 'dnaB':
+            print(feature)
             locus_tag = feature.qualifiers["note"][0]
           try:
             edited_records.write(">%s %s\\n%s\\n" % (locus_tag,
