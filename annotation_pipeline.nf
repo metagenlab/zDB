@@ -219,7 +219,7 @@ records = SeqIO.parse("${edited_gbk}", 'genbank')
 edited_records = open("${edited_gbk.baseName}.faa", 'w')
 for record in records:
   for feature in record.features:
-      if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers:
+      if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers:
           try:
             locus_tag = feature.qualifiers["locus_tag"]
           except KeyError:
