@@ -1,0 +1,42 @@
+name: chlamdb
+channels:
+ - r
+ - etetoolkit
+ - bioconda
+ - conda-forge
+ - defaults
+dependencies:
+ - python=3.6.7
+ - django=2.1.1
+ - celery
+ - pip
+ - django-extensions
+ - bibtexparser
+ - cairo
+ - r-cairo
+ - r-vegan
+ - r-gplots
+ - r-gdtools
+ - r-svglite
+ - pandas
+ - qtconsole
+ - ete3
+ - ete_toolchain
+ - pyqt=4.11.4
+ - matplotlib
+ - scipy
+ - pylibmc
+ - simplejson
+ - dill
+ - gunicorn
+ - numpy
+ - pyqt
+ - lxml
+ - conda-build
+ - reportlab
+ - biopython
+ - django-crispy-forms
+ - mysqlclient
+ - pip:
+   - cython
+   - django-citations
