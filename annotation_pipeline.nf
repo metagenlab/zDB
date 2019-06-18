@@ -17,6 +17,7 @@ params.cog = true
 params.orthofinder = true
 params.interproscan = true
 params.uniparc = true
+params.uniprot_data = false
 params.tcdb = true
 params.blast_swissprot = true
 params.plast_refseq = false
@@ -1069,7 +1070,7 @@ process get_uniprot_data {
   echo false
 
   when:
-  params.uniparc == true
+  params.uniprot_data == true
 
   input:
   file(table) from uniprot_mapping_tab
