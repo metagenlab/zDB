@@ -220,14 +220,18 @@ edited_records = open("${edited_gbk.baseName}.faa", 'w')
 for record in records:
   for feature in record.features:
       if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers:
-          print(feature)
           try:
             locus_tag = feature.qualifiers["locus_tag"]
           except KeyError:
             locus_tag = feature.qualifiers["gene"]
-          edited_records.write(">%s %s\\n%s\\n" % (locus_tag,
-                                                   record.description,
-                                                   feature.qualifiers['translation'][0]))
+          try:
+            edited_records.write(">%s %s\\n%s\\n" % (locus_tag,
+                                                     record.description,
+                                                     feature.qualifiers['translation'][0]))
+          except KeyError:
+              print(feature)
+              import sys
+              sys.exit()
   """
 }
 
