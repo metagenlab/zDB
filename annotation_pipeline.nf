@@ -24,7 +24,7 @@ params.diamond_refseq = true
 params.diamond_refseq_taxonomy = true
 params.refseq_diamond_BBH_phylogeny = true
 params.refseq_diamond_BBH_phylogeny_top_n_hits = 4
-params.refseq_diamond_BBH_phylogeny_phylum_filter = '["Chlamydiae"]'
+params.refseq_diamond_BBH_phylogeny_phylum_filter = '["Chlamydiae", "Verrucomicrobia", "Planctomycetes", "Kiritimatiellaeota", "Lentisphaerae"]'
 params.string = true
 params.pdb = true
 params.oma = true
@@ -32,11 +32,11 @@ params.ko = true
 params.tcdb_gblast = true
 params.orthogroups_phylogeny_with_iqtree = false
 params.orthogroups_phylogeny_with_fasttree = true
-params.core_missing = 0
+params.core_missing = 6
 params.genome_faa_folder = "$PWD/faa"
 params.executor = 'local'
 
-params.local_sample_sheet = "local_assemblies.tab"
+params.local_sample_sheet = false //"local_assemblies.tab"
 params.ncbi_sample_sheet = "ncbi_assemblies.tab"
 
 log.info "====================================="
@@ -138,7 +138,13 @@ if (params.ncbi_sample_sheet != false){
     print(ncbi_id)
     handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
     assembly_record = Entrez.read(handle_assembly, validate=False)
-    ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+
+    if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
+        ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+    elif 'refseq_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
+        ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+    else:
+      raise("%s assembly not annotated! --- exit ---" % accession)
     print(ftp_path)
     ftp=FTP('ftp.ncbi.nih.gov')
     ftp.login("anonymous","trestan.pillonel@unil.ch")
@@ -193,7 +199,9 @@ process convert_gbk_to_faa {
 
   conda 'bioconda::biopython=1.68'
 
-  cpus 2
+  echo false
+
+  cpus 1
 
   input:
   each file(edited_gbk) from edited_gbks
@@ -210,12 +218,25 @@ from Bio import Entrez, SeqIO
 records = SeqIO.parse("${edited_gbk}", 'genbank')
 edited_records = open("${edited_gbk.baseName}.faa", 'w')
 for record in records:
+  protein2count = {}
   for feature in record.features:
-      if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers:
-          feature.name = feature.qualifiers["locus_tag"]
-          edited_records.write(">%s %s\\n%s\\n" % (feature.qualifiers["locus_tag"][0],
-                                                   record.description,
-                                                   feature.qualifiers['translation'][0]))
+      if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers:
+          try:
+            locus_tag = feature.qualifiers["locus_tag"][0]
+          except KeyError:
+            protein_id = feature.qualifiers["protein_id"][0].split(".")[0]
+            if protein_id not in protein2count:
+                protein2count[protein_id] = 1
+                locus_tag = protein_id
+            else:
+                protein2count[protein_id] += 1
+                locus_tag = "%s_%s" % (protein_id, protein2count[protein_id])
+          try:
+            edited_records.write(">%s %s\\n%s\\n" % (locus_tag,
+                                                     record.description,
+                                                     feature.qualifiers['translation'][0]))
+          except KeyError:
+              print("problem with feature:", feature)
   """
 }
 
@@ -317,6 +338,8 @@ process prepare_orthofinder {
 }
 
 process blast_orthofinder {
+
+  conda 'bioconda::blast=2.7.1'
 
   cpus 2
 
@@ -442,7 +465,7 @@ all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.s
 /*
 process orthogroups_phylogeny_with_raxml {
 
-  echo true
+  echo false
   conda 'bioconda::raxml=8.2.9'
   cpus 4
   publishDir 'orthology/orthogroups_phylogenies', mode: 'copy', overwrite: false
@@ -852,7 +875,7 @@ process get_refseq_hits_taxonomy {
 
   publishDir 'annotation/diamond_refseq/', mode: 'copy', overwrite: true
 
-  echo true
+  echo false
 
   when:
   params.diamond_refseq_taxonomy == true
@@ -1043,7 +1066,7 @@ process get_uniprot_data {
   conda 'biopython=1.73=py36h7b6447c_0'
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
-  echo true
+  echo false
 
   when:
   params.uniparc == true
@@ -1604,7 +1627,7 @@ process execute_kofamscan {
   script:
   n = seq.name
   """
-  export PATH="$PATH:/home/tpillone/work/dev/annotation_pipeline_nextflow/bin/KofamScan/"
+  export "PATH=\$KOFAMSCAN_HOME:\$PATH"
   exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
   """
 }
@@ -1700,7 +1723,7 @@ process setup_diamond_refseq_db {
 
   conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
   publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
-  echo true
+  echo false
   cpus 4
   memory '8 GB'
 
@@ -1765,7 +1788,7 @@ process get_diamond_refseq_top_hits {
 
   conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
   publishDir 'annotation/diamond_refseq_BBH_phylogenies', mode: 'copy', overwrite: true
-  echo true
+  echo false
   cpus 4
   memory '8 GB'
 
