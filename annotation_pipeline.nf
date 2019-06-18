@@ -199,7 +199,7 @@ process convert_gbk_to_faa {
 
   conda 'bioconda::biopython=1.68'
 
-  echo true
+  echo false
 
   cpus 1
 
@@ -333,6 +333,8 @@ process prepare_orthofinder {
 }
 
 process blast_orthofinder {
+
+  conda 'bioconda::blast=2.7.1'
 
   cpus 2
 
@@ -868,7 +870,7 @@ process get_refseq_hits_taxonomy {
 
   publishDir 'annotation/diamond_refseq/', mode: 'copy', overwrite: true
 
-  echo true
+  echo false
 
   when:
   params.diamond_refseq_taxonomy == true
@@ -1059,7 +1061,7 @@ process get_uniprot_data {
   conda 'biopython=1.73=py36h7b6447c_0'
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
-  echo true
+  echo false
 
   when:
   params.uniparc == true
@@ -1716,7 +1718,7 @@ process setup_diamond_refseq_db {
 
   conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
   publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
-  echo true
+  echo false
   cpus 4
   memory '8 GB'
 
@@ -1781,7 +1783,7 @@ process get_diamond_refseq_top_hits {
 
   conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
   publishDir 'annotation/diamond_refseq_BBH_phylogenies', mode: 'copy', overwrite: true
-  echo true
+  echo false
   cpus 4
   memory '8 GB'
 
