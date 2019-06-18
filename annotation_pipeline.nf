@@ -36,8 +36,8 @@ params.core_missing = 6
 params.genome_faa_folder = "$PWD/faa"
 params.executor = 'local'
 
-params.local_sample_sheet = "local_assemblies.tab"
-params.ncbi_sample_sheet = false//"ncbi_assemblies.tab"
+params.local_sample_sheet = false //"local_assemblies.tab"
+params.ncbi_sample_sheet = "ncbi_assemblies.tab"
 
 log.info "====================================="
 log.info "input                  : ${params.input}"
