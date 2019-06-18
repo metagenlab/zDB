@@ -1215,7 +1215,7 @@ for row in uniprot_table:
         uniprot_score, uniprot_status = uniprot_accession2go_and_status(uniprot_accession)
         uniprot_record = uniprot_id2record(uniprot_accession)
         annotation = uniprot_record2annotations(uniprot_record)
-    # deal with eventual removed entries 
+    # deal with eventual removed entries
     except IndexError:
         uniprot_score = 0
         uniprot_status = 'Removed'
@@ -1626,6 +1626,8 @@ process execute_interproscan_uniparc_matches {
 process execute_kofamscan {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
+
+  conda 'hmmer=3.2.1 parallel ruby'
 
   cpus 4
   memory '8 GB'
