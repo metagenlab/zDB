@@ -1211,11 +1211,26 @@ for row in uniprot_table:
         continue
     uniprot_accession = uniprot_accession.split(".")[0]
     print("uniprot_accession",uniprot_accession)
-    uniprot_score, uniprot_status = uniprot_accession2go_and_status(uniprot_accession)
-
-    uniprot_record = uniprot_id2record(uniprot_accession)
-    annotation = uniprot_record2annotations(uniprot_record)
-
+    try:
+        uniprot_score, uniprot_status = uniprot_accession2go_and_status(uniprot_accession)
+        uniprot_record = uniprot_id2record(uniprot_accession)
+        annotation = uniprot_record2annotations(uniprot_record)
+    # deal with eventual removed entries 
+    except IndexError:
+        uniprot_score = 0
+        uniprot_status = 'Removed'
+        annotation["proteome"] = '-'
+        annotation["comment_function"] = '-'
+        annotation["ec_number"] = '-'
+        annotation["comment_subunit"] = '-'
+        annotation["gene"] = '-'
+        annotation["recommendedName_fullName"] = '-'
+        annotation["proteinExistence"] = '-'
+        annotation["developmentalstage"] = '-'
+        annotation["comment_similarity"] = '-'
+        annotation["comment_catalyticactivity"] = '-'
+        annotation["comment_pathway"] = '-'
+        annotation["keywords"] = '-'
 
     uniprot_data.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n" % ( uniprot_accession,
                                                                                                          uniprot_score,

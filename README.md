@@ -107,11 +107,11 @@
 - [X] load reference phylogeny
 - [X] get genome table (homepage)
 - [X] get conserved neighborhood
-- [ ] load uniprot annotations
+- [X] load uniprot annotations
 - [ ] load blast swissprot results
   - [ ] download taxonomy-description information(s)
 - [ ] load blast refseq results
-    - [ ] load refseq taxonomy table
+    - [X] load refseq taxonomy table
 - [ ] load PMID mapping
 - [ ] load cross-references
 - [ ] get phylo profile
@@ -161,6 +161,8 @@
 - [ ] get entire proteomes: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
 
 ## development
+
+- [ ] integration of swissprot keywords (possibility to click on it and get complete list of prot, decsription,...)
 
 - [ ] (retrieve uniprot annotation from uniprotKB (exact match or best diamond/plast hit if no exact match?))
 
