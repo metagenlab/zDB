@@ -236,7 +236,7 @@ for record in records:
                                                      record.description,
                                                      feature.qualifiers['translation'][0]))
           except KeyError:
-              print("problem with feature: \n ", feature)
+              print("problem with feature:", feature)
   """
 }
 
