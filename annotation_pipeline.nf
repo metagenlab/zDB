@@ -565,7 +565,6 @@ process get_core_orthogroups {
   import pandas as pd
 
   def orthofinder2core_groups(fasta_list, mcl_file, n_missing=0,orthomcl=False):
-    n_missing = 0
 
     orthogroup2locus_list = {}
 
