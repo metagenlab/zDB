@@ -347,7 +347,7 @@ process orthofinder_main {
 
   input:
   file complete_dir from result_dir
-  file blast_results from blast_results.collect()
+  val blast_results from blast_results.collect()
 
   output:
   file 'Results_*/WorkingDirectory/Orthogroups.txt' into orthogroups
@@ -356,6 +356,7 @@ process orthofinder_main {
   script:
   """
   echo "${complete_dir.baseName}"
+  ls
   orthofinder -og -a 8 -b ./Results*/WorkingDirectory/ > of_grouping.txt
   """
 }
