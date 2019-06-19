@@ -368,6 +368,7 @@ process orthofinder_main {
   conda 'bioconda::orthofinder=2.2.7'
 
   publishDir 'orthology', mode: 'copy', overwrite: true
+  echo true
 
   input:
   file complete_dir from result_dir
@@ -379,6 +380,7 @@ process orthofinder_main {
 
   script:
   """
+  echo $complete_dir
   orthofinder -og -a 8 -b ./Results*/WorkingDirectory/ > of_grouping.txt
   """
 }
@@ -1629,6 +1631,31 @@ process execute_kofamscan {
   """
   export "PATH=\$KOFAMSCAN_HOME:\$PATH"
   exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
+  """
+}
+
+
+process execute_PRIAM {
+
+  publishDir 'annotation/KO', mode: 'copy', overwrite: true
+
+  cpus 4
+  memory '8 GB'
+
+  when:
+  params.ko == true
+
+  input:
+  file(seq) from faa_chunks7
+
+  output:
+  file '*tab'
+
+  script:
+  n = seq.name
+  """
+  export "PATH=\$KOFAMSCAN_HOME:\$PATH"
+  java -jar  databases/PRIAM/PRIAM_search.jar -i group_333.faa -o test -p databases/PRIAM/PRIAM_JAN18
   """
 }
 
