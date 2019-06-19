@@ -544,7 +544,8 @@ process orthogroups_phylogeny_with_iqtree_no_boostrap {
 process get_core_orthogroups {
 
   conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
-
+  cpus 1
+  memory '16 GB'
   publishDir 'orthology/core_groups', mode: 'copy', overwrite: true
 
   input:
