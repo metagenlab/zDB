@@ -345,7 +345,7 @@ process orthofinder_main {
   publishDir 'orthology', mode: 'copy', overwrite: true
   echo true
 
-  cpus 16
+  cpus 8
 
   input:
   file complete_dir from result_dir
@@ -564,10 +564,15 @@ process get_core_orthogroups {
   import os
   import pandas as pd
 
-  def orthofinder2core_groups(fasta_list, mcl_file, n_missing=0,orthomcl=False):
+  log = open('core_groups.log', 'w')
+
+  def orthofinder2core_groups(fasta_list,
+                              mcl_file,
+                              n_missing=0,
+                              orthomcl=False):
 
     orthogroup2locus_list = {}
-
+    log.write('Reading MCL file...\\n')
     with open(mcl_file, 'r') as f:
         all_grp = [i for i in f]
         for n, line in enumerate(all_grp):
@@ -580,8 +585,9 @@ process get_core_orthogroups {
             orthogroup2locus_list["group_%s" % n] = groups
 
     locus2genome = {}
-
+    log.write('Reading fasta files...\\n')
     for fasta in fasta_list:
+        log.write('%s\\n' % fasta)
         genome = os.path.basename(fasta).split('.')[0]
         for seq in SeqIO.parse(fasta, "fasta"):
             locus2genome[seq.name] = genome
@@ -589,6 +595,7 @@ process get_core_orthogroups {
     df = pd.DataFrame(index=orthogroup2locus_list.keys(), columns=set(locus2genome.values()))
     df = df.fillna(0)
 
+    log.write('Getting genome2count...\\n')
     for group in orthogroup2locus_list:
         genome2count = {}
         for locus in orthogroup2locus_list[group]:
@@ -601,15 +608,18 @@ process get_core_orthogroups {
             df.loc[group, genome] = genome2count[genome]
     df =df.apply(pd.to_numeric, args=('coerce',))
 
+    log.write('Calculate fraction limit...\\n')
     n_genomes = len(set(locus2genome.values()))
     n_minimum_genomes = n_genomes-n_missing
     freq_missing = (n_genomes-float(n_missing))/n_genomes
     limit = freq_missing*n_genomes
     print ('limit', limit)
 
+    log.write('Remove paralogs...\\n')
     groups_with_paralogs = df[(df > 1).sum(axis=1) > 0].index
     df = df.drop(groups_with_paralogs)
 
+    log.write('Extract core groups...\\n')
     core_groups = df[(df == 1).sum(axis=1) >= limit].index.tolist()
 
     return df, core_groups, orthogroup2locus_list, locus2genome
@@ -619,11 +629,11 @@ process get_core_orthogroups {
                                                                                               'Orthogroups.txt',
                                                                                               int(${params.core_missing}),
                                                                                               False)
-  sequence_data = {}
-  for fasta_file in "${fasta_files}".split(" "):
-      sequence_data.update(SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta")))
 
+
+  log.write('Iter core groups and write core groups fasta files...\\n')
   for one_group in core_groups:
+    sequence_data = SeqIO.to_dict(SeqIO.parse("OG{0:07d}_mafft.faa".format(int(one_group.split('_')[1])), "fasta"))
     dest = '%s_taxon_ids.faa' % one_group
     new_fasta = []
     for locus in orthogroup2locus_list[one_group]:
@@ -637,6 +647,7 @@ process get_core_orthogroups {
     SeqIO.write(new_fasta, out_handle, "fasta")
     out_handle.close()
 
+  log.close()
   """
 }
 
