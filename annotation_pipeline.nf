@@ -608,13 +608,9 @@ process get_core_orthogroups {
             logging.debug("%s / %s" % (n, len(orthogroup2locus_list)))
         genome2count = {}
         for locus in orthogroup2locus_list[group]:
-            if locus2genome[locus] not in genome2count:
-                genome2count[locus2genome[locus]] = 1
-            else:
-                genome2count[locus2genome[locus]] += 1
+            genome = locus2genome[locus]
+            df.loc[group, genome] += 1
 
-        for genome in genome2count:
-            df.loc[group, genome] = genome2count[genome]
     df =df.apply(pd.to_numeric, args=('coerce',))
 
     logging.debug('Calculate fraction limit...\\n')
@@ -655,7 +651,6 @@ process get_core_orthogroups {
     SeqIO.write(new_fasta, out_handle, "fasta")
     out_handle.close()
 
-  log.close()
   """
 }
 
