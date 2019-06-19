@@ -2,6 +2,14 @@
 # -*- coding: iso-8859-15 -*-
 
 
+import random
+import string
+def randomString(stringLength=10):
+    """Generate a random string of fixed length """
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(stringLength))
+
+
 def create_comparative_tables(db_name, table_name):
 
     # create id column + one_column per taxon_id
@@ -16,6 +24,12 @@ def create_comparative_tables(db_name, table_name):
         sql+=" ,`%s` INT" % i
     sql+=")"
     server.adaptor.execute(sql)
+
+    sql_index = 'CREATE index %s on comparative_tables.%s_%s(id)' % (randomString(5),
+                                                                     table_name,
+                                                                     db_name)
+    server.adaptor.execute(sql_index)
+
 
 def get_all_accessions(db_name):
     from chlamdb.biosqldb import manipulate_biosqldb
@@ -49,6 +63,11 @@ def create_comparative_tables_accession(db_name, table_name):
     #    sql+=" ,index %s(%s)" % (i, i)
     sql+=")"
     server.adaptor.execute(sql)
+
+    sql_index = 'CREATE index %s on comparative_tables.%s_accessions_%s(id)' % (randomString(5),
+                                                                                table_name,
+                                                                                db_name)
+    server.adaptor.execute(sql_index)
 
 
 def collect_pfam(db_name):
@@ -232,6 +251,7 @@ def collect_COGs_accession(db_name):
         server.adaptor.commit()
         #sys.exit()
 
+
 def collect_interpro(db_name):
 
     from chlamdb.biosqldb import manipulate_biosqldb
@@ -278,6 +298,7 @@ def collect_interpro(db_name):
         server.adaptor.commit()
         #sys.exit()
 
+
 def collect_interpro_accession(db_name):
 
     from chlamdb.biosqldb import manipulate_biosqldb
@@ -320,6 +341,7 @@ def collect_interpro_accession(db_name):
         server.adaptor.execute(sql_temp,)
         server.adaptor.commit()
         #sys.exit()
+
 
 def collect_ko(db_name):
 
@@ -364,6 +386,7 @@ def collect_ko(db_name):
 
         server.adaptor.execute(sql_temp,)
         server.adaptor.commit()
+
 
 def collect_ko_accession(db_name):
 
@@ -415,8 +438,6 @@ def collect_EC(db_name):
 
     from chlamdb.biosqldb import manipulate_biosqldb
 
-
-
     server, db = manipulate_biosqldb.load_db(db_name)
 
     sql_db_id = 'select biodatabase_id from biodatabase where name="%s"' % db_name
@@ -431,18 +452,16 @@ def collect_EC(db_name):
         sql_head += '`%s`,' % taxon
     sql_head = sql_head[0:-1] + ') values ('
 
-    all_EC_ids_sql = 'select distinct ec from enzyme.locus2ec_%s as t1 inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id;' % (db_name)
+    all_EC_ids_sql = 'select distinct ec from enzyme.seqfeature_id2ec_%s t1 inner join  enzyme.enzymes t2 on t1.ec_id=t2.enzyme_id;' % (db_name)
 
     all_ec_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_EC_ids_sql,)]
 
     i = 0
     for accession in all_ec_ids:
         print (i,'/', len(all_ec_ids), accession)
-        i+=1
+        i += 1
 
-        sql = 'select taxon_id, count(*) from (select taxon_id, t1.accession, ec_id from enzyme.locus2ec_%s as t1 ' \
-                     ' inner join biosqldb.bioentry as t2 on t1.accession=t2.accession where biodatabase_id=%s) A ' \
-                     ' inner join enzyme.enzymes as B on A.ec_id=B.enzyme_id where ec="%s" group by taxon_id;' % (db_name, biodb_id, accession)
+        sql = 'select taxon_id,count(*) as n from enzyme.seqfeature_id2ec_%s t1 inner join enzyme.enzymes t2 on t1.ec_id=t2.enzyme_id inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id where ec="%s" group by taxon_id,ec;' % (db_name, db_name, accession)
 
         data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
         sql_temp = sql_head + '"%s",' % accession
@@ -456,6 +475,7 @@ def collect_EC(db_name):
 
         server.adaptor.execute(sql_temp,)
         server.adaptor.commit()
+
 
 def collect_EC_accession(db_name):
 
@@ -471,7 +491,7 @@ def collect_EC_accession(db_name):
         sql_head += '%s,' % accession
     sql_head = sql_head[0:-1] + ') values ('
 
-    all_EC_ids_sql = 'select distinct ec from enzyme.locus2ec_%s as t1 inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id;' % (db_name)
+    all_EC_ids_sql = 'select distinct ec from enzyme.seqfeature_id2ec_%s t1 inner join  enzyme.enzymes t2 on t1.ec_id=t2.enzyme_id;' % (db_name)
 
     all_ec_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_EC_ids_sql,)]
 
@@ -480,8 +500,7 @@ def collect_EC_accession(db_name):
         print (i,'/', len(all_ec_ids), accession)
         i+=1
 
-        sql = 'select t1.accession, count(*) as n from enzyme.locus2ec_%s as t1 inner join enzyme.enzymes as t2 ' \
-              ' on t1.ec_id=t2.enzyme_id where ec="%s" group by accession;' % (db_name, accession)
+        sql = 'select accession,n from (select bioentry_id,count(*) as n from enzyme.seqfeature_id2ec_%s t1 inner join enzyme.enzymes t2 on t1.ec_id=t2.enzyme_id inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id where ec="%s" group by bioentry_id,ec) A inner join biosqldb.bioentry B on A.bioentry_id=B.bioentry_id inner join biosqldb.biodatabase C on B.biodatabase_id=C.biodatabase_id where C.name="%s" ;' % (db_name,db_name, accession, db_name)
 
         data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
         sql_temp = sql_head + '"%s",' % accession
