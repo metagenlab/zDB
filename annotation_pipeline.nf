@@ -596,9 +596,11 @@ process get_core_orthogroups {
         print(fasta)
         genome = os.path.basename(fasta).split('.')[0]
         log.write('%s\\n' % genome)
+        print('%s' % genome)
         for seq in SeqIO.parse(fasta, "fasta"):
             locus2genome[seq.name] = genome
-        print("ok")
+        log.write('OK\\n')
+        print("OK")
     df = pd.DataFrame(index=orthogroup2locus_list.keys(), columns=set(locus2genome.values()))
     df = df.fillna(0)
 
