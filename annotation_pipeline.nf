@@ -1631,7 +1631,7 @@ process execute_PRIAM {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
-  conda 'openjdk=8.0.152'
+  conda 'openjdk=8.0.152 blast-legacy=2.2.26'
 
   cpus 2
   memory '4 GB'
@@ -1648,7 +1648,7 @@ process execute_PRIAM {
   script:
   n = seq.name
   """
-  java -jar  databases/PRIAM/PRIAM_search.jar -i ${n} -o results -p databases/PRIAM/PRIAM_JAN18 --num_proc ${task.cpus}
+  java -jar  $params.databases_dir/PRIAM/PRIAM_search.jar -i ${n} -o results -p $params.databases_dir/PRIAM/PRIAM_JAN18 --num_proc ${task.cpus}
   """
 }
 
