@@ -31,6 +31,7 @@ params.pdb = true
 params.oma = true
 params.ko = true
 params.tcdb_gblast = false
+params.PRIAM = false
 params.orthogroups_phylogeny_with_iqtree = false
 params.orthogroups_phylogeny_with_fasttree = true
 params.core_missing = 6
@@ -318,7 +319,8 @@ merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
         faa_chunks4
         faa_chunks5
         faa_chunks6
-        faa_chunks7 }
+        faa_chunks7
+        faa_chunks8 }
 
 process prepare_orthofinder {
 
@@ -1661,10 +1663,10 @@ process execute_PRIAM {
   memory '8 GB'
 
   when:
-  params.ko == true
+  params.PRIAM == true
 
   input:
-  file(seq) from faa_chunks7
+  file(seq) from faa_chunks8
 
   output:
   file '*tab'
