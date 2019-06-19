@@ -345,6 +345,8 @@ process orthofinder_main {
   publishDir 'orthology', mode: 'copy', overwrite: true
   echo true
 
+  cpus 16
+
   input:
   file complete_dir from result_dir
   val blast_results from blast_results.collect()
@@ -357,7 +359,7 @@ process orthofinder_main {
   """
   echo "${complete_dir.baseName}"
   ls
-  orthofinder -og -a 8 -b ./Results*/WorkingDirectory/ > of_grouping.txt
+  orthofinder -og -t ${task.cpus} -a ${task.cpus} -b ./Results*/WorkingDirectory/ > of_grouping.txt
   """
 }
 
