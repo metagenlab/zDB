@@ -1420,7 +1420,7 @@ process tcdb_gblast3 {
 
   cpus 1
   maxForks 1
-  conda 'anaconda::biopython=1.67=np111py27_0 conda-forge::matplotlib=2.2.3 biobuilds::fasta blast-legacy=2.2.26'
+  conda 'anaconda::biopython=1.67=np111py27_0 conda-forge::matplotlib=2.2.3 biobuilds::fasta bioconda::blast=2.7.1'
   echo false
 
   when:
