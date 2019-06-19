@@ -566,8 +566,9 @@ process get_core_orthogroups {
   import os
   import pandas as pd
   import sys
+  import logging
 
-  log = open('core_groups.log', 'w')
+  logging.basicConfig(filename='core_groups.log',level=logging.DEBUG)
 
   def orthofinder2core_groups(fasta_list,
                               mcl_file,
@@ -575,7 +576,7 @@ process get_core_orthogroups {
                               orthomcl=False):
 
     orthogroup2locus_list = {}
-    sys.stdout.write('Reading MCL file...\\n')
+    logging.debug('Reading MCL file...\\n')
     print('Reading MCL file...')
     with open(mcl_file, 'r') as f:
         all_grp = [i for i in f]
@@ -589,22 +590,22 @@ process get_core_orthogroups {
             orthogroup2locus_list["group_%s" % n] = groups
 
     locus2genome = {}
-    log.write('Reading fasta files...\\n')
+    logging.debug('Reading fasta files...\\n')
     print('Reading fasta files...')
     for fasta in fasta_list:
-        log.write('%s\\n' % fasta)
+        logging.debug('%s\\n' % fasta)
         print(fasta)
         genome = os.path.basename(fasta).split('.')[0]
-        log.write('%s\\n' % genome)
+        logging.debug('%s\\n' % genome)
         print('%s' % genome)
         for seq in SeqIO.parse(fasta, "fasta"):
             locus2genome[seq.name] = genome
-        log.write('OK\\n')
+        logging.debug('OK\\n')
         print("OK")
     df = pd.DataFrame(index=orthogroup2locus_list.keys(), columns=set(locus2genome.values()))
     df = df.fillna(0)
 
-    log.write('Getting genome2count...\\n')
+    logging.debug('Getting genome2count...\\n')
     print('Getting genome2count...')
     for group in orthogroup2locus_list:
         genome2count = {}
@@ -618,7 +619,7 @@ process get_core_orthogroups {
             df.loc[group, genome] = genome2count[genome]
     df =df.apply(pd.to_numeric, args=('coerce',))
 
-    log.write('Calculate fraction limit...\\n')
+    logging.debug('Calculate fraction limit...\\n')
     print('Calculate fraction limit...')
     n_genomes = len(set(locus2genome.values()))
     n_minimum_genomes = n_genomes-n_missing
@@ -626,12 +627,12 @@ process get_core_orthogroups {
     limit = freq_missing*n_genomes
     print ('limit', limit)
 
-    log.write('Remove paralogs...\\n')
+    logging.debug('Remove paralogs...\\n')
     print('Remove paralogs....')
     groups_with_paralogs = df[(df > 1).sum(axis=1) > 0].index
     df = df.drop(groups_with_paralogs)
 
-    log.write('Extract core groups...\\n')
+    logging.debug('Extract core groups...\\n')
     print('Extract core groups...')
     core_groups = df[(df == 1).sum(axis=1) >= limit].index.tolist()
 
@@ -644,7 +645,7 @@ process get_core_orthogroups {
                                                                                               False)
 
 
-  log.write('Iter core groups and write core groups fasta files...\\n')
+  logging.debug('Iter core groups and write core groups fasta files...\\n')
   print('Iter core groups and write core groups fasta files...')
   for one_group in core_groups:
     sequence_data = SeqIO.to_dict(SeqIO.parse("OG{0:07d}_mafft.faa".format(int(one_group.split('_')[1])), "fasta"))
