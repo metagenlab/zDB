@@ -108,14 +108,18 @@
 - [X] get genome table (homepage)
 - [X] get conserved neighborhood
 - [X] load uniprot annotations
-- [ ] load blast swissprot results
-  - [ ] download taxonomy-description information(s)
+- [X] load blast swissprot results
+  - [X] download taxonomy-description information(s)
 - [ ] load blast refseq results
     - [X] load refseq taxonomy table
 - [ ] load PMID mapping
 - [ ] load cross-references
 - [ ] get phylo profile
   - [ ] setup core_orthogroups_identity_msa_
+- [ ] legacy COG table
+- [ ] legacy PFAM table
+- [ ] setup blast databases
+
 
 - [ ] check indexes
 
@@ -134,6 +138,7 @@
 
 ## priority 1
 
+- [ ] refseq taxonomy: use downloaded accession2taxonomy + indexed refseq fasta instead of web queries
 - [ ] execute checkM
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
 - [X] retrieve uniprot annotation score for matched uniprotkb entries
