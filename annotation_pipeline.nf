@@ -1421,7 +1421,7 @@ process tcdb_gblast3 {
   publishDir 'annotation/tcdb_mapping', mode: 'copy', overwrite: true
 
   cpus 1
-  maxForks 5
+  maxForks 20
   conda 'anaconda::biopython=1.67=np111py27_0 conda-forge::matplotlib=2.2.3 biobuilds::fasta bioconda::blast=2.7.1'
   echo false
 
