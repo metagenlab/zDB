@@ -383,7 +383,7 @@ process orthofinder_main {
 
   script:
   """
-  echo $complete_dir
+  echo "${complete_dir.baseName}"
   orthofinder -og -a 8 -b ./Results*/WorkingDirectory/ > of_grouping.txt
   """
 }
@@ -1566,6 +1566,11 @@ SeqIO.write(no_oma_mapping_records, no_oma_mapping, "fasta")
   """
 }
 
+no_uniparc_mapping_faa.splitFasta( by: 300, file: "no_uniparc_match_chunk_" )
+.set { no_uniparc_match_chunks }
+uniparc_mapping_faa.splitFasta( by: 1000, file: "uniparc_match_chunk_" )
+.set { uniparc_match_chunks }
+
 process execute_interproscan_no_uniparc_matches {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
@@ -1578,7 +1583,7 @@ process execute_interproscan_no_uniparc_matches {
   params.interproscan == true
 
   input:
-  file(seq) from no_uniparc_mapping_faa.splitFasta( by: 300, file: "no_uniparc_match_chunk_" )
+  file(seq) from no_uniparc_match_chunks
 
   output:
   file '*gff3' into interpro_gff3_no_uniparc
@@ -1609,7 +1614,7 @@ process execute_interproscan_uniparc_matches {
   params.interproscan == true
 
   input:
-  file(seq) from uniparc_mapping_faa.splitFasta( by: 1000, file: "uniparc_match_chunk_" )
+  file(seq) from uniparc_match_chunks
 
   output:
   file '*gff3' into interpro_gff3_uniparc
