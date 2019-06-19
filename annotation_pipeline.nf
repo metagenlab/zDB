@@ -10,36 +10,8 @@
  * Pipeline input params
  */
 
-params.input = "faa/*.faa" 	// input sequences
-log.info params.input
-params.databases_dir = "$PWD/databases"
-params.cog = true
-params.orthofinder = true
-params.interproscan = true
-params.uniparc = true
-params.uniprot_data = false
-params.tcdb = true
-params.blast_swissprot = true
-params.plast_refseq = false
-params.diamond_refseq = true
-params.diamond_refseq_taxonomy = true
-params.refseq_diamond_BBH_phylogeny = true
-params.refseq_diamond_BBH_phylogeny_top_n_hits = 4
-params.refseq_diamond_BBH_phylogeny_phylum_filter = '["Chlamydiae", "Verrucomicrobia", "Planctomycetes", "Kiritimatiellaeota", "Lentisphaerae"]'
-params.string = true
-params.pdb = true
-params.oma = true
-params.ko = true
-params.tcdb_gblast = false
-params.PRIAM = false
-params.orthogroups_phylogeny_with_iqtree = false
-params.orthogroups_phylogeny_with_fasttree = true
-params.core_missing = 6
-params.genome_faa_folder = "$PWD/faa"
-params.executor = 'local'
 
-params.local_sample_sheet = false //"local_assemblies.tab"
-params.ncbi_sample_sheet = "ncbi_assemblies.tab"
+log.info params.input
 
 log.info "====================================="
 log.info "input                  : ${params.input}"
@@ -1566,11 +1538,6 @@ SeqIO.write(no_oma_mapping_records, no_oma_mapping, "fasta")
   """
 }
 
-no_uniparc_mapping_faa.splitFasta( by: 300, file: "no_uniparc_match_chunk_" )
-.set { no_uniparc_match_chunks }
-uniparc_mapping_faa.splitFasta( by: 1000, file: "uniparc_match_chunk_" )
-.set { uniparc_match_chunks }
-
 process execute_interproscan_no_uniparc_matches {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
@@ -1583,7 +1550,7 @@ process execute_interproscan_no_uniparc_matches {
   params.interproscan == true
 
   input:
-  file(seq) from no_uniparc_match_chunks
+  file(seq) from no_uniparc_mapping_faa.splitFasta( by: 300, file: "no_uniparc_match_chunk_" )
 
   output:
   file '*gff3' into interpro_gff3_no_uniparc
@@ -1614,7 +1581,7 @@ process execute_interproscan_uniparc_matches {
   params.interproscan == true
 
   input:
-  file(seq) from uniparc_match_chunks
+  file(seq) from uniparc_mapping_faa.splitFasta( by: 1000, file: "uniparc_match_chunk_" )
 
   output:
   file '*gff3' into interpro_gff3_uniparc
@@ -1664,8 +1631,10 @@ process execute_PRIAM {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
-  cpus 4
-  memory '8 GB'
+  conda 'openjdk=8.0.152'
+
+  cpus 2
+  memory '4 GB'
 
   when:
   params.PRIAM == true
@@ -1674,15 +1643,17 @@ process execute_PRIAM {
   file(seq) from faa_chunks8
 
   output:
-  file '*tab'
+  file 'results/PRIAM_*/ANNOTATION/sequenceECs.txt' into PRIAM_results
 
   script:
   n = seq.name
   """
-  export "PATH=\$KOFAMSCAN_HOME:\$PATH"
-  java -jar  databases/PRIAM/PRIAM_search.jar -i group_333.faa -o test -p databases/PRIAM/PRIAM_JAN18
+  java -jar  databases/PRIAM/PRIAM_search.jar -i ${n} -o results -p databases/PRIAM/PRIAM_JAN18 --num_proc ${task.cpus}
   """
 }
+
+
+PRIAM_results.collectFile(name: 'annotation/PRIAM/sequenceECs.txt')
 
 
 process setup_orthology_db {
