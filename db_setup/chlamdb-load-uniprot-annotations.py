@@ -64,7 +64,7 @@ class Uniprot_annot():
                ' comment_subunit TEXT, gene TEXT, recommendedName_fullName TEXT, proteinExistence TEXT, ' \
                ' developmentalstage TEXT, index seqfeature_id(seqfeature_id))' % self.biodb
 
-        sql6 = 'CREATE TABLE IF NOT EXISTS uniprot_keywords_%s (seqfeature_id INT, uniprot_accession varchar(200), keyword TEXT)' %self.biodb
+        sql6 = 'CREATE TABLE IF NOT EXISTS uniprot_keywords_%s (seqfeature_id INT, uniprot_accession varchar(200), keyword TEXT)' % self.biodb
 
         cursor.execute(sql1, )
         #cursor.execute(sql2, )

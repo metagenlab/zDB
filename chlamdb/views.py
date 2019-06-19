@@ -2197,8 +2197,8 @@ def locusx(request, locus=None, menu=True):
 
             sql16 = 'select count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
               ' inner join blastnr.blast_swissprot_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
-              ' where locus_tag="%s";' % (biodb, biodb,locus)
-
+              ' where locus_tag="%s";' % (biodb, biodb, locus)
+            print(sql16)
             sql17 = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s"' % (biodb, data[0])
 
             sql18 = 'select signature_accession,start,stop from interpro_%s where analysis="Phobius" and locus_tag="%s" ' \
@@ -11674,9 +11674,9 @@ def pfam_tree(request, orthogroup):
         return render(request, 'chlamdb/pfam_tree.html', locals())
 
 
-    sql = 'select taxon_id, family from genomes_classification;'
+    #sql = 'select taxon_id, family from genomes_classification;'
 
-    taxon_id2family = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    #taxon_id2family = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     t, ts, leaf_number = ete_motifs.draw_pfam_tree(tree, locus2pfam_data, False, taxon_id2family=False)
     path = settings.BASE_DIR + '/assets/temp/pfam_tree.svg'

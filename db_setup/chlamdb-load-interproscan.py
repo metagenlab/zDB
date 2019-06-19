@@ -354,6 +354,152 @@ def add_TM_and_SP_columns(db_name):
 
     server.commit()
 
+
+def interpro2biosql_legacy(server,
+                           seqfeature_id2locus_tag,
+                           locus_tag2genome_taxon_id,
+                           protein_id2genome_taxon_id,
+                           locus_tag2seqfeature_id,
+                           protein_id2seqfeature_id,
+                           seqfeature_id2organism,
+                           db_name,
+                           seqfeature_id2orthogroup,
+                           hash2locus_list,
+                           *input_files):
+    import re
+    '''
+    1. Protein Accession (e.g. P51587)
+    2. Sequence MD5 digest (e.g. 14086411a2cdf1c4cba63020e1622579)
+    3.. equence Length (e.g. 3418)
+    4. Analysis (e.g. Pfam / PRINTS / Gene3D)
+    5. Signature Accession (e.g. PF09103 / G3DSA:2.40.50.140)
+    6. Signature Description (e.g. BRCA2 repeat profile)
+    7. Start location
+    8. Stop location
+    9. Score - is the e-value of the match reported by member database method (e.g. 3.1E-52)
+    10. Status - is the status of the match (T: true)
+    11. Date - is the date of the run
+    12. (InterPro annotations - accession (e.g. IPR002093) - optional column; only displayed if -iprscan option is switched on)
+    13. (InterPro annotations - description (e.g. BRCA2 repeat) - optional column; only displayed if -iprscan option is switched on)
+    14. (GO annotations (e.g. GO:0005515) - optional column; only displayed if --goterms option is switched on)
+    15. (Pathways annotations (e.g. REACT_71) - optional column; only displayed if --pathways option is switched on)
+    :param input_file:
+    :return:
+    '''
+
+    sql = 'CREATE TABLE biosqldb.interpro_%s (accession VARCHAR(100),' \
+          ' locus_tag VARCHAR(200), ' \
+          ' organism VARCHAR(400),  ' \
+          ' taxon_id INT,' \
+          ' sequence_length INT, ' \
+          ' analysis VARCHAR(100) NOT NULL, ' \
+          ' signature_accession VARCHAR(100), ' \
+          ' signature_description TEXT, ' \
+          ' start INT, ' \
+          ' stop INT, ' \
+          ' score VARCHAR(20) NOT NULL, ' \
+          ' interpro_accession varchar(400) NOT NULL, ' \
+          ' interpro_description TEXT,' \
+          ' GO_terms TEXT,' \
+          ' pathways TEXT,' \
+          ' orthogroup varchar(400),' \
+          ' seqfeature_id INT,' \
+          ' INDEX loc (locus_tag),' \
+          ' INDEX ana (analysis),' \
+          ' INDEX tid (taxon_id),' \
+          ' INDEX og (organism),' \
+          ' INDEX acc (accession),' \
+          ' INDEX sid (seqfeature_id),' \
+          ' INDEX ia (interpro_accession))' % db_name
+    print(sql)
+    server.adaptor.execute(sql)
+    for one_interpro_file in input_files:
+        print (one_interpro_file)
+        from pandas import read_csv
+        with open(one_interpro_file, 'r') as f:
+            tsvin = read_csv(f, sep='\t', error_bad_lines=False, names=["accession",
+                                                                        "MD5",
+                                                                        "sequence_length",
+                                                                        "analysis",
+                                                                        "signature_accession",
+                                                                        "signature_description",
+                                                                        "start",
+                                                                        "stop",
+                                                                        "score",
+                                                                        "status",
+                                                                        "date",
+                                                                        "interpro_accession",
+                                                                        "interpro_description",
+                                                                        "GO_terms",
+                                                                        "pathways"])
+            tsvin = tsvin.fillna(0)
+
+            for i in range(len(tsvin['accession'])):
+
+                data= list(tsvin.loc[i,:])
+                for index, item in enumerate(data):
+                    if type(item) == str:
+                        data[index] = item.replace('\"','')
+
+                accession = data[0]
+
+                sequence_length = data[2]
+                analysis = data[3]
+                signature_accession = data[4]
+                signature_description = data[5]
+                start = data[6]
+                stop = data[7]
+                score = data[8]
+
+
+                interpro_accession = data[11]
+                interpro_description = data[12]
+                GO_terms = data[13]
+                pathways = data[14]
+
+                for locus_tag in hash2locus_list[accession]:
+
+                    try:
+                        taxon_id = protein_id2genome_taxon_id[locus_tag]
+                        seqfeature_id = protein_id2seqfeature_id[locus_tag]
+                    except KeyError:
+                        taxon_id = locus_tag2genome_taxon_id[locus_tag]
+                        seqfeature_id = locus_tag2seqfeature_id[locus_tag]
+                    organism = seqfeature_id2organism[str(seqfeature_id)]
+                    #print organism
+                    locus_tag = seqfeature_id2locus_tag[str(seqfeature_id)]
+                    orthogroup = seqfeature_id2orthogroup[str(seqfeature_id)]
+                    sql = 'INSERT INTO biosqldb.interpro_%s(accession, locus_tag, organism, taxon_id,' \
+                          ' sequence_length, analysis, signature_accession, signature_description, start, ' \
+                          ' stop, score, interpro_accession, interpro_description, GO_terms, pathways, orthogroup, seqfeature_id) ' \
+                          ' values ("%s", "%s", "%s", %s, %s, "%s", "%s", "%s", %s, %s, "%s", "%s", "%s", "%s", "%s", "%s", %s);' % (db_name,
+                                                                                                                                     locus_tag,
+                                                                                                                                     locus_tag,
+                                                                                                                                     organism,
+                                                                                                                                     taxon_id,
+                                                                                                                                     sequence_length,
+                                                                                                                                     analysis,
+                                                                                                                                     signature_accession,
+                                                                                                                                     signature_description,
+                                                                                                                                     int(start),
+                                                                                                                                     int(stop),
+                                                                                                                                     str(score),
+                                                                                                                                     interpro_accession,
+                                                                                                                                     interpro_description,
+                                                                                                                                     GO_terms,
+                                                                                                                                     pathways,
+                                                                                                                                     orthogroup,
+                                                                                                                                     seqfeature_id)
+                    try:
+                        server.adaptor.execute(sql)
+                        server.adaptor.commit()
+                    except:
+                        print (sql)
+                        print (data)
+                        import sys
+                        sys.exit()
+
+
 if __name__ == '__main__':
     import argparse
     from chlamdb.biosqldb import manipulate_biosqldb
@@ -361,9 +507,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--input_interpro', type=str, help="input interpro csv file", nargs='+')
     parser.add_argument("-d", '--database_name', type=str, help="database name")
-    parser.add_argument("-v2", '--v2_table', action="store_true", help="create V2 table")
+    #parser.add_argument("-v2", '--v2_table', action="store_true", help="create V2 table")
     parser.add_argument("-a", '--add_SP_TM', action="store_true", help="Add Ssignal Peptide and TM counts to orthology_detail table")
     parser.add_argument("-u", '--hash2locus_tag', type=str, help="Tab separated file with correspondance between sequence hashes and locus tags")
+    parser.add_argument("-l", '--legacy_table', action="store_true", help="Create legacy table in biosqldb")
 
     args = parser.parse_args()
 
@@ -375,7 +522,7 @@ if __name__ == '__main__':
         hash2locus_list = chlamdb_setup_utils.get_hash2locus_list(args.hash2locus_tag)
 
     if args.input_interpro:
-        if not args.v2_table:
+        if not args.legacy_table:
             print("creating locus_tag2seqfeature_id")
             sql = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % biodb
             locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -407,6 +554,7 @@ if __name__ == '__main__':
             sql = 'select name,interpro_id from interpro.entry'
             interpro_accession2interpro_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
+            '''
             print("make table v2")
             interpro2biosqlV2(server,
                               hash2locus,
@@ -418,5 +566,21 @@ if __name__ == '__main__':
                               protein_id2seqfeature_id,
                               seqfeature_id2organism,
                               biodb, *args.input_interpro)
+            '''
+
+            sql = 'select seqfeature_id,orthogroup_name from orthology.seqfeature_id2orthogroup_%s t1 inner join orthology.orthogroup_%s t2 on t1.orthogroup_id=t2.orthogroup_id' % (biodb, biodb)
+            seqfeature_id2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+            interpro2biosql_legacy(server,
+                                   seqfeature_id2locus_tag,
+                                   locus_tag2genome_taxon_id,
+                                   protein_id2genome_taxon_id,
+                                   locus_tag2seqfeature_id,
+                                   protein_id2seqfeature_id,
+                                   seqfeature_id2organism,
+                                   biodb,
+                                   seqfeature_id2orthogroup,
+                                   hash2locus_list,
+                                   *args.input_interpro)
     if args.add_SP_TM:
         add_TM_and_SP_columns(args.database_name)
