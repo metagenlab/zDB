@@ -99,23 +99,23 @@
 - [X] setup genome statistics table
 - [X] load COG hits
 - [X] load KO hits
-  - [ ] load legacy tables
-- [ ] load PMID mapping
-- [ ] load uniprot annotations
-- [ ] load cross-references
+  - [X] load legacy tables
 - [X] setup pairwise BBH identity tables
 - [X] lead orthogroup alignments(identity matrices)
 - [X] load orthogroup phylogenies
 - [X] load orthogroup BBH phylogenies
 - [X] load reference phylogeny
-- [ ] load blast swissprot results
-- [ ] load blast refseq results
-- [ ] load refseq taxonomy table
 - [X] get genome table (homepage)
+- [X] get conserved neighborhood
+- [X] load uniprot annotations
+- [ ] load blast swissprot results
+  - [ ] download taxonomy-description information(s)
+- [ ] load blast refseq results
+    - [X] load refseq taxonomy table
+- [ ] load PMID mapping
+- [ ] load cross-references
 - [ ] get phylo profile
   - [ ] setup core_orthogroups_identity_msa_
-- [X] get conserved neighborhood
-
 
 - [ ] check indexes
 
@@ -123,7 +123,7 @@
 
 - [ ] switch to new COG tables
 - [ ] switch to new KEGG tables
-- [ ] setup NOG_table_v451 and NOG_members_v451
+- [ ] setup NOG_table_v5 and NOG_members_v5
 - [ ] setup interpro master table
 - [ ] setup pfam master table
 - [ ] load DOOR2 data
@@ -161,6 +161,8 @@
 - [ ] get entire proteomes: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
 
 ## development
+
+- [ ] integration of swissprot keywords (possibility to click on it and get complete list of prot, decsription,...)
 
 - [ ] (retrieve uniprot annotation from uniprotKB (exact match or best diamond/plast hit if no exact match?))
 

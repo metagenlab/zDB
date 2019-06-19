@@ -17,6 +17,7 @@ params.cog = true
 params.orthofinder = true
 params.interproscan = true
 params.uniparc = true
+params.uniprot_data = false
 params.tcdb = true
 params.blast_swissprot = true
 params.plast_refseq = false
@@ -29,7 +30,7 @@ params.string = true
 params.pdb = true
 params.oma = true
 params.ko = true
-params.tcdb_gblast = true
+params.tcdb_gblast = false
 params.orthogroups_phylogeny_with_iqtree = false
 params.orthogroups_phylogeny_with_fasttree = true
 params.core_missing = 6
@@ -1071,7 +1072,7 @@ process get_uniprot_data {
   echo false
 
   when:
-  params.uniparc == true
+  params.uniprot_data == true
 
   input:
   file(table) from uniprot_mapping_tab
@@ -1213,11 +1214,26 @@ for row in uniprot_table:
         continue
     uniprot_accession = uniprot_accession.split(".")[0]
     print("uniprot_accession",uniprot_accession)
-    uniprot_score, uniprot_status = uniprot_accession2go_and_status(uniprot_accession)
-
-    uniprot_record = uniprot_id2record(uniprot_accession)
-    annotation = uniprot_record2annotations(uniprot_record)
-
+    try:
+        uniprot_score, uniprot_status = uniprot_accession2go_and_status(uniprot_accession)
+        uniprot_record = uniprot_id2record(uniprot_accession)
+        annotation = uniprot_record2annotations(uniprot_record)
+    # deal with eventual removed entries
+    except IndexError:
+        uniprot_score = 0
+        uniprot_status = 'Removed'
+        annotation["proteome"] = '-'
+        annotation["comment_function"] = '-'
+        annotation["ec_number"] = '-'
+        annotation["comment_subunit"] = '-'
+        annotation["gene"] = '-'
+        annotation["recommendedName_fullName"] = '-'
+        annotation["proteinExistence"] = '-'
+        annotation["developmentalstage"] = '-'
+        annotation["comment_similarity"] = '-'
+        annotation["comment_catalyticactivity"] = '-'
+        annotation["comment_pathway"] = '-'
+        annotation["keywords"] = '-'
 
     uniprot_data.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n" % ( uniprot_accession,
                                                                                                          uniprot_score,
@@ -1613,6 +1629,8 @@ process execute_interproscan_uniparc_matches {
 process execute_kofamscan {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
+
+  conda 'hmmer=3.2.1 parallel ruby=2.4.5'
 
   cpus 4
   memory '8 GB'
