@@ -1,10 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 def get_pathway_ko_association_table():
     import os
     import MySQLdb
-    from biosqldb import manipulate_biosqldb
-    import urllib2
+    from chlamdb.biosqldb import manipulate_biosqldb
+    import urllib
     from Bio.KEGG.KGML import KGML_parser
     import re
 
@@ -18,8 +18,8 @@ def get_pathway_ko_association_table():
 
     sql = 'create table enzyme.pathway2ortholog_associations (pathway_id INT, node_id INT, ko_id varchar(200), ' \
           ' index pathway_id(pathway_id), index node_id(node_id), index ko_id(ko_id));'
-    #cursor.execute(sql,)
-    #conn.commit()
+    cursor.execute(sql,)
+    conn.commit()
 
     sql2 = 'select pathway_name,pathway_id from enzyme.kegg_pathway'
     cursor.execute(sql2,)
@@ -27,25 +27,22 @@ def get_pathway_ko_association_table():
     pathway2pathway_id = manipulate_biosqldb.to_dict(cursor.fetchall())
 
     for pathway in pathway2pathway_id:
-        print pathway
+        print(pathway)
 
         url_template = 'http://rest.kegg.jp/get/%s/kgml' % re.sub('map', 'ko', pathway)
-        print url_template
+        print(url_template)
         try:
-            f = urllib2.urlopen(url_template)
+            f = urllib.request.urlopen(url_template)
         except:
             continue
         from Bio.Graphics import KGML_vis
 
-
-        pathway_KGML = KGML_parser.read(f.read())
+        pathway_KGML = KGML_parser.read(f.read().decode("UTF-8"))
 
         # Loop over the orthologs in the pathway, and change the
         # background colour
         orthologs = [e for e in pathway_KGML.orthologs]
         for o in orthologs:
-            #print dir(o)
-            #print o.id
             ko_temp_list = list(set([i.rstrip() for i in o.name.split('ko:')]))
             ko_temp_list = filter(None, ko_temp_list)
             for ko in ko_temp_list:

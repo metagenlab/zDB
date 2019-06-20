@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 def transporter_all_superfamily_heatmap(biodb, evalue, bitscore, query_cov, hit_cov, total=False):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -37,7 +37,7 @@ def transporter_all_superfamily_heatmap(biodb, evalue, bitscore, query_cov, hit_
     return transporter_list, code2taxon2count
 
 def transporter_family_heatmap(biodb, family_list,evalue, bitscore, query_cov, hit_cov, total=False):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -80,7 +80,7 @@ def transporter_family_heatmap(biodb, family_list,evalue, bitscore, query_cov, h
 
 
 def transporter_superfamily_heatmap(biodb, family,evalue, bitscore, query_cov, hit_cov):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
