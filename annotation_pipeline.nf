@@ -546,7 +546,7 @@ process get_core_orthogroups {
   conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
   cpus 1
   memory '16 GB'
-  echo true
+  echo false
   publishDir 'orthology/core_groups', mode: 'copy', overwrite: true
 
   input:
@@ -595,7 +595,6 @@ process get_core_orthogroups {
         logging.debug('%s\\n' % fasta)
         genome = os.path.basename(fasta).split('.')[0]
         logging.debug('%s\\n' % genome)
-        print('%s' % genome)
         for seq in SeqIO.parse(fasta, "fasta"):
             locus2genome[seq.name] = genome
         logging.debug('OK\\n')
