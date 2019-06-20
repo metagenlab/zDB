@@ -104,7 +104,7 @@ def map2highlighted_map(map_id, ko_list, ko2freq, biodb, outpath = 'test.pdf', t
 
 def edit_svg_map(map_path, keep_ko_list, biodb_name, map_name,taxon_id=False):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import re
 
     server, db = manipulate_biosqldb.load_db(biodb_name)
@@ -169,4 +169,3 @@ def edit_svg_map(map_path, keep_ko_list, biodb_name, map_name,taxon_id=False):
                     element.set("onmouseover", add4)
                     element.set("onmouseout", add5)
     return tree
-

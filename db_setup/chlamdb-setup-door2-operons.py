@@ -37,6 +37,7 @@ def door_accession2door_operon_table(accession):
         time.sleep(10)
         return door_accession2door_operon_table(accession)
 
+
 def accession2operon_table(biodb):
 
     from chlamdb.biosqldb import manipulate_biosqldb
@@ -55,12 +56,12 @@ def accession2operon_table(biodb):
           ' inner join custom_tables.seqfeature_id2old_locus_tag_%s t2 ' \
           ' on t1.seqfeature_id=t2.seqfeature_id;' % (biodb, biodb)
     print (sql)
-    
+
     try:
         old_locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     except:
         old_locus2seqfeature_id = {}
-    #print old_locus2seqfeature_id
+    print ("old_locus2seqfeature_id", old_locus2seqfeature_id)
     sql = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
 
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -69,11 +70,13 @@ def accession2operon_table(biodb):
     pattern_ctracho = 'CT([0-9]+)'
 
     for accession in accession_list:
+        print("accession", accession)
         door_id_sql = 'select door_id from custom_tables.DOOR2_operon_accessions where accession="%s"' % accession
 
         try:
             door_id = server.adaptor.execute_and_fetchall(door_id_sql,)[0][0]
         except IndexError:
+            print('%s Not in doord database, skipping...' % accession)
             continue
         print (door_id)
         door_data = door_accession2door_operon_table(door_id)
