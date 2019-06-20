@@ -796,7 +796,7 @@ process plast_refseq {
 
   publishDir 'annotation/plast_refseq', mode: 'copy', overwrite: true
 
-  cpus 4
+  cpus 16
 
   when:
   params.plast_refseq == true
