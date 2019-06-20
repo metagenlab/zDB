@@ -4,7 +4,7 @@
 
 def create_DOOR_operon_table(biodb):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -19,7 +19,7 @@ def door_accession2door_operon_table(accession):
     import urllib2
 
     door_link = 'http://csbl.bmb.uga.edu/DOOR/downloadNCoperon.php?NC_id=%s' % accession
-    print door_link
+
     req = urllib2.Request(door_link)
     data = urllib2.urlopen(req)
 
@@ -32,14 +32,14 @@ def door_accession2door_operon_table(accession):
                     operon_table.append(data)
         return operon_table
     except:
-        print 'echec'
+        print ('echec')
         import time
         time.sleep(10)
         return door_accession2door_operon_table(accession)
 
 def accession2operon_table(biodb):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import re
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -54,9 +54,8 @@ def accession2operon_table(biodb):
     sql = 'select old_locus_tag,t1.seqfeature_id from custom_tables.locus2seqfeature_id_%s t1' \
           ' inner join custom_tables.seqfeature_id2old_locus_tag_%s t2 ' \
           ' on t1.seqfeature_id=t2.seqfeature_id;' % (biodb, biodb)
-    print sql
-
-
+    print (sql)
+    
     try:
         old_locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     except:
@@ -76,7 +75,7 @@ def accession2operon_table(biodb):
             door_id = server.adaptor.execute_and_fetchall(door_id_sql,)[0][0]
         except IndexError:
             continue
-        print door_id
+        print (door_id)
         door_data = door_accession2door_operon_table(door_id)
         for door_entry in door_data:
 
@@ -92,15 +91,15 @@ def accession2operon_table(biodb):
                 try:
                     new_locus_seqfeature_id = locus_tag2seqfeature_id[door_entry[2]]
                 except KeyError:
-                    print door_entry[2]
+                    print (door_entry[2])
                     new_locus_seqfeature_id = 0
             sql = 'INSERT INTO custom_tables.DOOR2_operons_%s values (%s, %s, %s, "%s", "%s", "%s")' % (biodb,
-                                                                                     door_entry[0],
-                                                                                     door_entry[1],
-                                                                                     new_locus_seqfeature_id,
-                                                                                     door_entry[2],
-                                                                                     door_entry[7],
-                                                                                     door_entry[8])
+                                                                                                         door_entry[0],
+                                                                                                         door_entry[1],
+                                                                                                         new_locus_seqfeature_id,
+                                                                                                         door_entry[2],
+                                                                                                         door_entry[7],
+                                                                                                         door_entry[8])
 
             server.adaptor.execute(sql,)
             server.commit()
@@ -109,7 +108,6 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", '--input_fasta', type=str, help="input fasta file")
     parser.add_argument("-d", '--biodb', type=str, help="biodatabase name")
 
 

@@ -54,7 +54,7 @@ def load_blastnr_file_into_db(locus_tag2taxon_id,
     sqlite3_cursor.execute(sql1)
     sqlite3_cursor.execute(sql2)
 
-    sql3 = 'select t1.*,t2.*,t3.superkingdom from diamond_refseq t1 inner join refseq_taxonomy.refseq_hits t2 on t1.sseqid=accession inner join linear_taxonomy.ncbi_taxonomy t3 on t2.taxid=t3.tax_id'
+    sql3 = 'select t1.*,t2.*,t3.superkingdom from diamond_refseq t1 inner join refseq_taxonomy.refseq_hits t2 on t1.sseqid=t2.accession inner join linear_taxonomy.ncbi_taxonomy t3 on t2.taxid=t3.tax_id'
 
     n = 0
     for row in sqlite3_cursor.execute(sql3):
@@ -80,10 +80,9 @@ def load_blastnr_file_into_db(locus_tag2taxon_id,
         17 superkingdom
         '''
 
-        if n % 1000 == 0:
+        if n % 10000 == 0:
             print(time.ctime() + ': %s...' % n)
             mysql_conn.commit()
-
 
         hit_n = row[0]
         query_hash = row[1]
@@ -162,7 +161,6 @@ def load_blastnr_file_into_db(locus_tag2taxon_id,
             sql = 'insert into blastnr_%s values %s' % (biodb,
                                                         values)
             mysql_cursor.execute(sql,)
-            mysql_conn.commit()
 
 
 def create_sql_plastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_db='blastnr'):
