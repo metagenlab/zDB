@@ -2200,7 +2200,7 @@ def locusx(request, locus=None, menu=True):
               ' where locus_tag="%s";' % (biodb, biodb, locus)
             print(sql16)
             sql17 = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s"' % (biodb, data[0])
-
+            print(sql17)
             sql18 = 'select signature_accession,start,stop from interpro_%s where analysis="Phobius" and locus_tag="%s" ' \
                     ' and signature_accession in ("TRANSMEMBRANE",' \
                     ' "SIGNAL_PEPTIDE_C_REGION","SIGNAL_PEPTIDE_N_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_H_REGION");' % (biodb, locus)
