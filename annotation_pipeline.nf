@@ -815,7 +815,7 @@ process plast_refseq {
   # 15'000'000 vs 10'000'000
   # 100'000'000 max
   # -s 45
-  /home/tpillone/work/dev/annotation_pipeline_nextflow/bin/plast -p plastp -a ${task.cpus} -d $params.databases_dir/refseq/merged.faa.pal -i ${n} -M BLOSUM62 -s 75 -seeds-use-ratio 20 -max-database-size 50000000 -e 1e-5 -G 11 -E 1 -o ${n}.tab -F F -bargraph -verbose -force-query-order 1000 -max-hit-per-query 100 -max-hsp-per-hit 1 > ${n}.log;
+  /home/tpillone/work/dev/annotation_pipeline_nextflow/bin/plast -p plastp -a ${task.cpus} -d $params.databases_dir/refseq/merged.faa.pal -i ${n} -M BLOSUM62 -s 60 -seeds-use-ratio 45 -max-database-size 50000000 -e 1e-5 -G 11 -E 1 -o ${n}.tab -F F -bargraph -verbose -force-query-order 1000 -max-hit-per-query 100 -max-hsp-per-hit 1 > ${n}.log;
   """
 }
 
@@ -1079,6 +1079,11 @@ from Bio import SeqIO
 import sqlite3
 from Bio.SeqUtils import CheckSum
 
+def chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
+
+
 def uniprot_record2annotations(record):
 
     data2info = {}
@@ -1133,14 +1138,13 @@ def uniprot_record2annotations(record):
 
     return data2info
 
-def uniprot_accession2go_and_status(uniprot_accession):
+def uniprot_accession2go_and_status(uniprot_accession_list):
 
     import urllib.request
     from urllib.error import URLError
 
-    uniprot_accession = uniprot_accession.split(".")[0]
-
-    link = "http://www.uniprot.org/uniprot/?query=%s&columns=annotation%%20score,reviewed&format=tab" % (uniprot_accession)
+    # https://www.uniprot.org/uniprot/?query=id:V8TQN7+OR+id:V8TR74&format=xml
+    link = "http://www.uniprot.org/uniprot/?query=id:%s&columns=annotation%%20score,reviewed&format=tab" % ("+OR+id:".join(uniprot_accession_list))
 
     try:
         page = urllib.request.urlopen(link)
@@ -1159,11 +1163,17 @@ def uniprot_accession2go_and_status(uniprot_accession):
                 success=True
             except:
                 success = False
-    print(uniprot_accession, rows)
-    return (rows[1][0][0], rows[1][1])
+    unirpot2score = {}
+    for row in rows:
+        if row[0] != 'Entry':
+            unirpot2score[row[0]] = row[1:]
 
-def uniprot_id2record(uniprot_accession, n_trial=0):
-    link = "http://www.uniprot.org/uniprot/%s.xml" % (uniprot_accession)
+    return unirpot2score
+
+def uniprot_id2record(uniprot_accession_list, n_trial=0):
+    # https://www.uniprot.org/uniprot/?query=id:V8TQN7+OR+id:V8TR74&format=xml
+    link = "https://www.uniprot.org/uniprot/?query=id:%s&format=xml" % ("+OR+id:".join(uniprot_accession_list))
+    print(link)
     from io import StringIO
     from Bio import SeqIO
     from urllib.error import URLError
@@ -1175,17 +1185,17 @@ def uniprot_id2record(uniprot_accession, n_trial=0):
         return False
     rec = StringIO(data)
     try:
-        record = SeqIO.read(rec, 'uniprot-xml')
+        records = SeqIO.to_dict(SeqIO.parse(rec, 'uniprot-xml'))
     except:
         import time
-        print ('problem with %s, trying again, %s th trial' % (uniprot_accession, n_trial))
+        print ('problem with %s, trying again, %s th trial' % (uniprot_accession_list[0:10], n_trial))
         time.sleep(50)
         n_trial+=1
         if n_trial < 5:
-            record = uniprot_id2record(uniprot_accession, n_trial=n_trial)
+            records = uniprot_id2record(uniprot_accession_list, n_trial=n_trial)
         else:
             return False
-    return record
+    return records
 
 
 
@@ -1197,51 +1207,56 @@ uniprot_data = open('uniprot_data.tab', 'w')
 
 uniprot_data.write("uniprot_accession\\tuniprot_score\\tuniprot_status\\tproteome\\tcomment_function\\tec_number\\tcomment_subunit\\tgene\\trecommendedName_fullName\\tproteinExistence\\tdevelopmentalstage\\tcomment_similarity\\tcomment_catalyticactivity\\tcomment_pathway\\tkeywords\\n")
 
-for row in uniprot_table:
-    data = row.rstrip().split("\\t")
-    uniprot_accession = data[1]
-    if uniprot_accession == 'uniprot_accession':
-        continue
-    uniprot_accession = uniprot_accession.split(".")[0]
-    print("uniprot_accession",uniprot_accession)
-    try:
-        uniprot_score, uniprot_status = uniprot_accession2go_and_status(uniprot_accession)
-        uniprot_record = uniprot_id2record(uniprot_accession)
-        annotation = uniprot_record2annotations(uniprot_record)
-    # deal with eventual removed entries
-    except IndexError:
-        uniprot_score = 0
-        uniprot_status = 'Removed'
-        annotation["proteome"] = '-'
-        annotation["comment_function"] = '-'
-        annotation["ec_number"] = '-'
-        annotation["comment_subunit"] = '-'
-        annotation["gene"] = '-'
-        annotation["recommendedName_fullName"] = '-'
-        annotation["proteinExistence"] = '-'
-        annotation["developmentalstage"] = '-'
-        annotation["comment_similarity"] = '-'
-        annotation["comment_catalyticactivity"] = '-'
-        annotation["comment_pathway"] = '-'
-        annotation["keywords"] = '-'
 
-    uniprot_data.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n" % ( uniprot_accession,
-                                                                                                         uniprot_score,
-                                                                                                         uniprot_status,
-                                                                                                         annotation["proteome"],
-                                                                                                         annotation["comment_function"],
-                                                                                                         annotation["ec_number"],
-                                                                                                         annotation["comment_subunit"],
-                                                                                                         annotation["gene"],
-                                                                                                         annotation["recommendedName_fullName"],
-                                                                                                         annotation["proteinExistence"],
-                                                                                                         annotation["developmentalstage"],
-                                                                                                         annotation["comment_similarity"],
-                                                                                                         annotation["comment_catalyticactivity"],
-                                                                                                         annotation["comment_pathway"],
-                                                                                                         annotation["keywords"])
-                                                                                                        )
-  """
+uniprot_accession_list = [row.rstrip().split("\\t")[1].split(".")[0] for row in uniprot_table if row.rstrip().split("\\t")[1] != 'uniprot_accession']
+uniprot_accession_chunks = chunks(uniprot_accession_list, 500)
+
+for one_chunk in uniprot_accession_chunks:
+
+
+    uniprot2scores = uniprot_accession2go_and_status(one_chunk)
+    uniprot_records = uniprot_id2record(one_chunk)
+
+
+    for one_entry in one_chunk:
+      try:
+          uniprot_score, uniprot_status = uniprot2scores[one_entry]
+          annotation = uniprot_record2annotations(uniprot_records[one_entry])
+
+      # deal with eventual removed entries
+      except IndexError:
+          uniprot_score = 0
+          uniprot_status = 'Removed'
+          annotation["proteome"] = '-'
+          annotation["comment_function"] = '-'
+          annotation["ec_number"] = '-'
+          annotation["comment_subunit"] = '-'
+          annotation["gene"] = '-'
+          annotation["recommendedName_fullName"] = '-'
+          annotation["proteinExistence"] = '-'
+          annotation["developmentalstage"] = '-'
+          annotation["comment_similarity"] = '-'
+          annotation["comment_catalyticactivity"] = '-'
+          annotation["comment_pathway"] = '-'
+          annotation["keywords"] = '-'
+          print('error')
+      uniprot_data.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n" % ( one_entry,
+                                                                                                           uniprot_score,
+                                                                                                           uniprot_status,
+                                                                                                           annotation["proteome"],
+                                                                                                           annotation["comment_function"],
+                                                                                                           annotation["ec_number"],
+                                                                                                           annotation["comment_subunit"],
+                                                                                                           annotation["gene"],
+                                                                                                           annotation["recommendedName_fullName"],
+                                                                                                           annotation["proteinExistence"],
+                                                                                                           annotation["developmentalstage"],
+                                                                                                           annotation["comment_similarity"],
+                                                                                                           annotation["comment_catalyticactivity"],
+                                                                                                           annotation["comment_pathway"],
+                                                                                                           annotation["keywords"])
+                                                                                                          )
+    """
 }
 
 
