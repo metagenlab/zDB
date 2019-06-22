@@ -1949,27 +1949,26 @@ def get_TM_data(biodb,
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     if orthogroup:
-
-
+        print("orthogroup!")
         sql = 'select locus_tag, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where orthogroup="%s" and analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (biodb, orthogroup)
 
         sql2 = 'select locus_tag, char_length(translation), organism from orthology_detail_%s where orthogroup="%s";' % (biodb, orthogroup)
 
         sql_signalp = 'select locus_tag, t2.start, t2.stop, t6.description, sequence_length, signature_accession, signature_description' \
-               ' from annotation.seqfeature_id2locus_chlamydia_04_16 t1' \
-               ' inner join interpro.interpro_chlamydia_04_16 t2 on t1.seqfeature_id=t2.seqfeature_id' \
-               ' inner join interpro.signature t3 on t2.signature_id=t3.signature_id' \
-               ' inner join orthology.seqfeature_id2orthogroup_chlamydia_04_16 t4 on t1.seqfeature_id=t4.seqfeature_id' \
-               ' inner join orthology.orthogroup_chlamydia_04_16 t5 on t4.orthogroup_id=t5.orthogroup_id' \
-               ' inner join biosqldb.bioentry t6 on t1.bioentry_id=t6.bioentry_id' \
-               ' where t5.orthogroup_name="group_810" and signature_description="Signal peptide region";'
+                       ' from annotation.seqfeature_id2locus_%s t1' \
+                       ' inner join interpro.interpro_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
+                       ' inner join interpro.signature t3 on t2.signature_id=t3.signature_id' \
+                       ' inner join orthology.seqfeature_id2orthogroup_%s t4 on t1.seqfeature_id=t4.seqfeature_id' \
+                       ' inner join orthology.orthogroup_%s t5 on t4.orthogroup_id=t5.orthogroup_id' \
+                       ' inner join biosqldb.bioentry t6 on t1.bioentry_id=t6.bioentry_id' \
+                       ' where t5.orthogroup_name="%s" and signature_description="Signal peptide region";' % (biodb,biodb,biodb,biodb,orthogroup)
 
         locus2seq_length = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
     else:
         sql = 'select locus_tag, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (biodb)
-
+    print(sql)
     data = server.adaptor.execute_and_fetchall(sql,)
 
     if signal_peptide:
@@ -2250,13 +2249,14 @@ def draw_TM_tree(tree_name, locus2data):
     # and set it as tree outgroup
     t.set_outgroup(R)
 
-
+    print("draw_TM_tree--------------", locus2data)
     color_dico = organism2color(locus2data)
 
     for leaf_number, l in enumerate(t.iter_leaves()):
         #print 'leaf', leaf_number
         locus_name = str(l)[3:len(str(l))]
         locus_name = locus_name.split('|')[0]
+        print(locus_name, locus_name in locus2data)
         try:
             data = locus2data[locus_name]
             seq_motifs = []
@@ -2264,37 +2264,30 @@ def draw_TM_tree(tree_name, locus2data):
             l.img_style['hz_line_type'] = 0
             l.img_style['size'] = 6
         except:
-            #pass
             seq_motifs = []
             l.img_style['fgcolor'] = color_dico[data[1]]
             l.img_style['hz_line_type'] = 0
             l.img_style['size'] = 6
-
-            #continue
         # case in which we have more than seq length
-        if len(data) != 2:
+        print("len data", len(data), data)
+        if isinstance(data[0], list):
             for motif in data:
                 print(motif[-1])
                 if motif[-2] != "SIGNAL_PEPTIDE":
                     seq_motifs.append([motif[0], motif[1], "()", None, 10, "black", "PaleGreen", "arial|8|red|"])
                 else:
                     seq_motifs.append([motif[0], motif[1], "[]", None, 10, "black", "red", "arial|8|red|"])
-
-        #print data
+            print("motifs:", seq_motifs)
         if isinstance(data[0], int):
-
-            #print 'int!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-
             seqFace = SeqMotifFace(data[0]*'N',
-                                   motifs=[],
-                       width=10,
-                       height=12,
-                                   gap_format='-',
-                       seq_format='-',
-                       gapcolor='white')
+                                    motifs=[],
+                                    width=10,
+                                    height=12,
+                                    gap_format='-',
+                                    seq_format='-',
+                                    gapcolor='white')
         else:
             if isinstance(data[0], int):
-                #print 'baba1', data[0][-1]
                 seqFace = SeqMotifFace(data[0][-1],
                                        motifs=seq_motifs,
                                        width=10,
@@ -2305,7 +2298,6 @@ def draw_TM_tree(tree_name, locus2data):
 
 
             else:
-                #print 'baba', data[0][3]*'N'
                 seqFace = SeqMotifFace(data[0][3]*'N',
                                        motifs=seq_motifs,
                                        width=10,
@@ -2324,7 +2316,6 @@ def draw_TM_tree(tree_name, locus2data):
             l.name = data[0][2]
         except:
             l.name = data[1]
-        #print dir(l), '########################'
         locus.margin_right = 10
         locus.margin_left = 10
         locus.margin_bottom = 0

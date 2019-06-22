@@ -11689,6 +11689,7 @@ def pfam_tree(request, orthogroup):
     return render(request, 'chlamdb/pfam_tree.html', locals())
 
 def TM_tree(request, orthogroup):
+    print("orthogroup", orthogroup)
     biodb = settings.BIODB
     from chlamdb.biosqldb import manipulate_biosqldb
     from chlamdb.phylo_tree_display import ete_motifs
@@ -11702,7 +11703,7 @@ def TM_tree(request, orthogroup):
         locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False, signal_peptide=True)
     else:
         locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False, signal_peptide=True)
-
+    print("locus2TM_data", locus2TM_data)
     sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
     tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
 
