@@ -728,6 +728,9 @@ process build_core_phylogeny_with_fasttree {
 
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
 
+  when:
+  params.core_genome_phylogeny_with_fasttree == true
+
   input:
   file 'msa.faa' from core_msa
 
@@ -868,7 +871,7 @@ process get_refseq_hits_taxonomy {
 
   publishDir 'annotation/diamond_refseq/', mode: 'copy', overwrite: true
 
-  echo false
+  echo true
 
   when:
   params.diamond_refseq_taxonomy == true
@@ -886,78 +889,66 @@ process get_refseq_hits_taxonomy {
 
 from Bio import SeqIO
 import http.client
+import re
 import sqlite3
+import datetime
+import logging
+
+logging.basicConfig(filename='refseq_taxonomy.log',level=logging.DEBUG)
+
 conn = sqlite3.connect("refseq_taxonomy.db")
 cursor = conn.cursor()
-from Bio.SeqUtils import CheckSum
-from Bio import Entrez
-Entrez.email = "trestan.pillonel@chuv.ch"
-Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
 
-sql = 'create table refseq_hits (accession varchar(200), taxid INTEGER, description TEXT, length INTEGER)'
-cursor.execute(sql,)
-conn.commit()
+cursor.execute("PRAGMA synchronous = OFF")
+cursor.execute("BEGIN TRANSACTION")
 
 def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i+n]
 
+conn_refseq = sqlite3.connect("$params.databases_dir/refseq/merged_refseq.db")
+cursor_refseq = conn_refseq.cursor()
+
+conn_taxid = sqlite3.connect("$params.databases_dir/ncbi-taxonomy/prot_accession2taxid.db")
+cursor_taxid = conn_taxid.cursor()
+
+sql = 'create table refseq_hits (accession varchar(200), taxid INTEGER, description TEXT, length INTEGER)'
+cursor.execute(sql,)
+conn.commit()
+
 f = open("${refseq_hit_table}", 'r')
-hit_list = [i.rstrip() for i in f]
+# get list of accessions, remove version number
+hit_list = [i.rstrip().split(".")[0] for i in f]
 
-accession_lists = chunks(hit_list, 300)
+chunk_lists = chunks(hit_list, 5000)
+sql_template = 'insert into refseq_hits values (?,?,?,?)'
+list_of_lists = []
+template_annotation = 'select accession, description, sequence_length from refseq where accession in ("%s")'
+template_taxid = 'select accession, taxid from accession2taxid where accession in ("%s")'
+for n, acc_list in enumerate(chunk_lists):
+    logging.debug("chunk: %s -- %s" % (n, datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+    filter = '","'.join(acc_list)
+    #logging.debug('SQL ------- %s' % (n, datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+    data_annotation = cursor_refseq.execute(template_annotation % filter,).fetchall()
+    data_taxid = cursor_taxid.execute(template_taxid % filter,).fetchall()
+    #logging.debug('SQL-done -- %s' % (n, datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+    # create dictionnary
 
-def accession2taxon(gi_list, database):
-    from socket import error as SocketError
-    import errno
-
-    hit_annotation = []
-
-    try:
-        handle = Entrez.esummary(db=database, id=','.join(gi_list), retmax=len(gi_list))
-    except SocketError as e:
-        if e.errno != errno.ECONNRESET:
-            raise('error connexion with %s' % ','.join(gi_list))
-        else:
-            import time
-            print ('connexion error, trying again...')
-            time.sleep(60)
-            accession2taxon(gi_list, database)
-
-    if isinstance(gi_list, list) and len(gi_list) == 1:
-        record = Entrez.read(handle, validate=False)
-        hit_annotation.append([
-                               record['AccessionVersion'],
-                               record['TaxId'],
-                               record['Title'],
-                               record['Length']
-                               ]
-                               )
-        return hit_annotation
-    else:
-        record = Entrez.parse(handle, validate=False)
-        try:
-            for i in record:
-                hit_annotation.append([
-                                       i['AccessionVersion'],
-                                       i['TaxId'],
-                                       i['Title'],
-                                       i['Length']
-                                       ])
-        except RuntimeError:
-            print ('RuntimeError error, trying again... %s' % gi_list)
-            accession2taxon(gi_list, database=database)
-        except http.client.IncompleteRead:
-            print ('IncompleteRead error, trying again...%s' % gi_list)
-            accession2taxon(gi_list, database=database)
-        return hit_annotation
-
-for n, one_list in enumerate(accession_lists):
-  data = accession2taxon(one_list, "protein")
-  sql_template = 'insert into refseq_hits values (?,?,?,?)'
-  cursor.executemany(sql_template, data)
-  conn.commit()
-
+    accession2taxid = {}
+    for row in data_taxid:
+        accession2taxid[row[0]] = row[1]
+    for annot in data_annotation:
+        # AccessionVersion, TaxId, Title, Length
+        annot[1] = re.sub("%s.[0-9]+ " % annot[0], "", annot[1])
+        list_of_lists.append([annot[0], accession2taxid[annot[0]], annot[1], annot[2]])
+    if n % 10 == 0:
+        logging.debug('insert: %s' % n)
+        cursor.executemany(sql_template, list_of_lists)
+        conn.commit()
+        list_of_lists = []
+logging.debug('LAST insert: %s' % n)
+cursor.executemany(sql_template, list_of_lists)
+conn.commit()
 # index accession and taxid columns
 sql_index_1 = 'create index acc on refseq_hits (accession);'
 sql_index_2 = 'create index taxid on refseq_hits (taxid);'
@@ -1059,7 +1050,7 @@ process get_uniprot_data {
   conda 'biopython=1.73=py36h7b6447c_0'
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
-  echo false
+  echo true
 
   when:
   params.uniprot_data == true
@@ -1078,73 +1069,22 @@ process get_uniprot_data {
 from Bio import SeqIO
 import sqlite3
 from Bio.SeqUtils import CheckSum
+import datetime
+import logging
+
+logging.basicConfig(filename='uniprot_data.log',level=logging.DEBUG)
 
 def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i+n]
 
-
-def uniprot_record2annotations(record):
-
-    data2info = {}
-    if 'recommendedName_ecNumber' in record.annotations:
-        data2info['ec_number'] = record.annotations['recommendedName_ecNumber'][0]
-    else:
-        data2info['ec_number'] = '-'
-    if 'gene_name_primary' in record.annotations:
-        data2info['gene'] = record.annotations['gene_name_primary']
-    else:
-        data2info['gene'] = '-'
-    if 'comment_catalyticactivity' in record.annotations:
-        data2info['comment_catalyticactivity'] =  record.annotations['comment_catalyticactivity'][0]
-    else:
-        data2info['comment_catalyticactivity'] = '-'
-    if 'comment_subunit' in record.annotations:
-        data2info['comment_subunit'] =  record.annotations['comment_subunit'][0]
-    else:
-        data2info['comment_subunit'] = '-'
-    if 'comment_function' in record.annotations:
-        data2info['comment_function'] =  record.annotations['comment_function'][0]
-    else:
-        data2info['comment_function'] = '-'
-    if 'recommendedName_fullName' in record.annotations:
-        data2info['recommendedName_fullName'] =  record.annotations['recommendedName_fullName'][0]
-    else:
-        data2info['recommendedName_fullName'] = '-'
-    if 'comment_similarity' in record.annotations:
-        data2info['comment_similarity'] =  record.annotations['comment_similarity'][0]
-    else:
-        data2info['comment_similarity'] = '-'
-    if 'proteinExistence' in record.annotations:
-        data2info['proteinExistence'] =  record.annotations['proteinExistence'][0]
-    else:
-        data2info['proteinExistence'] = '-'
-    if 'keywords' in record.annotations:
-        data2info['keywords'] =  ';'.join(record.annotations['keywords'])
-    else:
-        data2info['keywords'] = '-'
-    if 'comment_pathway' in record.annotations:
-        data2info['comment_pathway'] = record.annotations['comment_pathway'][0]
-    else:
-        data2info['comment_pathway'] = '-'
-    if 'comment_developmentalstage' in record.annotations:
-        data2info['developmentalstage'] = record.annotations['comment_developmentalstage'][0]
-    else:
-        data2info['developmentalstage'] = '-'
-    data2info['proteome'] = '-'
-    for ref in record.dbxrefs:
-        if "Proteomes" in ref:
-            data2info['proteome'] = ref.split(":")[1]
-
-    return data2info
-
-def uniprot_accession2go_and_status(uniprot_accession_list):
+def uniprot_accession2score(uniprot_accession_list):
 
     import urllib.request
     from urllib.error import URLError
 
     # https://www.uniprot.org/uniprot/?query=id:V8TQN7+OR+id:V8TR74&format=xml
-    link = "http://www.uniprot.org/uniprot/?query=id:%s&columns=annotation%%20score,reviewed&format=tab" % ("+OR+id:".join(uniprot_accession_list))
+    link = "http://www.uniprot.org/uniprot/?query=id:%s&columns=id,annotation%%20score&format=tab" % ("+OR+id:".join(uniprot_accession_list))
 
     try:
         page = urllib.request.urlopen(link)
@@ -1154,7 +1094,8 @@ def uniprot_accession2go_and_status(uniprot_accession_list):
         success = False
         while not success:
             import time
-            print ('connection problem, trying again...')
+            logging.debug('connection problem, trying again...\\n')
+            logging.debug('%s\\n' % link)
             time.sleep(10)
             try:
                 page = urllib.request.urlopen(req)
@@ -1165,41 +1106,13 @@ def uniprot_accession2go_and_status(uniprot_accession_list):
                 success = False
     unirpot2score = {}
     for row in rows:
-        if row[0] != 'Entry':
-            unirpot2score[row[0]] = row[1:]
+        if row[0] not in ['Entry', '']:
+            unirpot2score[row[0]] = row[1]
 
     return unirpot2score
 
-def uniprot_id2record(uniprot_accession_list, n_trial=0):
-    # https://www.uniprot.org/uniprot/?query=id:V8TQN7+OR+id:V8TR74&format=xml
-    link = "https://www.uniprot.org/uniprot/?query=id:%s&format=xml" % ("+OR+id:".join(uniprot_accession_list))
-    print(link)
-    from io import StringIO
-    from Bio import SeqIO
-    from urllib.error import URLError
-    import urllib.request
-    try:
-        data = urllib.request.urlopen(link).read().decode('utf-8')
-    except URLError:
-        print ('echec', link)
-        return False
-    rec = StringIO(data)
-    try:
-        records = SeqIO.to_dict(SeqIO.parse(rec, 'uniprot-xml'))
-    except:
-        import time
-        print ('problem with %s, trying again, %s th trial' % (uniprot_accession_list[0:10], n_trial))
-        time.sleep(50)
-        n_trial+=1
-        if n_trial < 5:
-            records = uniprot_id2record(uniprot_accession_list, n_trial=n_trial)
-        else:
-            return False
-    return records
 
-
-
-conn = sqlite3.connect("${params.databases_dir}/uniprot/uniparc/uniparc.db")
+conn = sqlite3.connect("${params.databases_dir}/uniprot/idmapping/uniprot_sprot_trembl.db")
 cursor = conn.cursor()
 
 uniprot_table = open("${table}", 'r')
@@ -1207,55 +1120,55 @@ uniprot_data = open('uniprot_data.tab', 'w')
 
 uniprot_data.write("uniprot_accession\\tuniprot_score\\tuniprot_status\\tproteome\\tcomment_function\\tec_number\\tcomment_subunit\\tgene\\trecommendedName_fullName\\tproteinExistence\\tdevelopmentalstage\\tcomment_similarity\\tcomment_catalyticactivity\\tcomment_pathway\\tkeywords\\n")
 
-
 uniprot_accession_list = [row.rstrip().split("\\t")[1].split(".")[0] for row in uniprot_table if row.rstrip().split("\\t")[1] != 'uniprot_accession']
-uniprot_accession_chunks = chunks(uniprot_accession_list, 500)
+uniprot_accession_chunks = chunks(uniprot_accession_list, 300)
 
-for one_chunk in uniprot_accession_chunks:
+sql_uniprot_annot = 'select * from uniprot_annotation where uniprot_accession in ("%s");'
 
+for n, one_chunk in enumerate(uniprot_accession_chunks):
+    logging.debug("chunk: %s -- %s\\n" % (n, datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+    uniprot2score = uniprot_accession2score(one_chunk)
+    filter = '","'.join(one_chunk)
+    uniprot_annot_data = cursor.execute(sql_uniprot_annot % filter,).fetchall()
 
-    uniprot2scores = uniprot_accession2go_and_status(one_chunk)
-    uniprot_records = uniprot_id2record(one_chunk)
+    for m, uniprot_annotation in enumerate(uniprot_annot_data):
+        uniprot_accession = uniprot_annotation[0]
+        #print("chunk:", n, "entry", m , uniprot_accession)
+        try:
+            uniprot_score = uniprot2score[uniprot_accession]
+        # deal with eventual removed entries
+        except IndexError:
+            uniprot_score = 0
+        comment_function = uniprot_annotation[1]
+        ec_number = uniprot_annotation[2]
+        comment_similarity = uniprot_annotation[3]
+        comment_catalyticactivity = uniprot_annotation[4]
+        comment_pathway = uniprot_annotation[5]
+        keywords = uniprot_annotation[6]
+        comment_subunit = uniprot_annotation[7]
+        gene = uniprot_annotation[8]
+        recommendedName_fullName = uniprot_annotation[9]
+        proteinExistence = uniprot_annotation[10]
+        developmentalstage = uniprot_annotation[11]
+        proteome = uniprot_annotation[12]
+        reviewed = uniprot_annotation[14]
 
-
-    for one_entry in one_chunk:
-      try:
-          uniprot_score, uniprot_status = uniprot2scores[one_entry]
-          annotation = uniprot_record2annotations(uniprot_records[one_entry])
-
-      # deal with eventual removed entries
-      except IndexError:
-          uniprot_score = 0
-          uniprot_status = 'Removed'
-          annotation["proteome"] = '-'
-          annotation["comment_function"] = '-'
-          annotation["ec_number"] = '-'
-          annotation["comment_subunit"] = '-'
-          annotation["gene"] = '-'
-          annotation["recommendedName_fullName"] = '-'
-          annotation["proteinExistence"] = '-'
-          annotation["developmentalstage"] = '-'
-          annotation["comment_similarity"] = '-'
-          annotation["comment_catalyticactivity"] = '-'
-          annotation["comment_pathway"] = '-'
-          annotation["keywords"] = '-'
-          print('error')
-      uniprot_data.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n" % ( one_entry,
-                                                                                                           uniprot_score,
-                                                                                                           uniprot_status,
-                                                                                                           annotation["proteome"],
-                                                                                                           annotation["comment_function"],
-                                                                                                           annotation["ec_number"],
-                                                                                                           annotation["comment_subunit"],
-                                                                                                           annotation["gene"],
-                                                                                                           annotation["recommendedName_fullName"],
-                                                                                                           annotation["proteinExistence"],
-                                                                                                           annotation["developmentalstage"],
-                                                                                                           annotation["comment_similarity"],
-                                                                                                           annotation["comment_catalyticactivity"],
-                                                                                                           annotation["comment_pathway"],
-                                                                                                           annotation["keywords"])
-                                                                                                          )
+        uniprot_data.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n" % ( uniprot_accession,
+                                                                                                             uniprot_score,
+                                                                                                             reviewed,
+                                                                                                             proteome,
+                                                                                                             comment_function,
+                                                                                                             ec_number,
+                                                                                                             comment_subunit,
+                                                                                                             gene,
+                                                                                                             recommendedName_fullName,
+                                                                                                             proteinExistence,
+                                                                                                             developmentalstage,
+                                                                                                             comment_similarity,
+                                                                                                             comment_catalyticactivity,
+                                                                                                             comment_pathway,
+                                                                                                             keywords)
+                                                                                                            )
     """
 }
 
@@ -1815,6 +1728,8 @@ for one_file in diamond_file_list:
     count = ''
     # add hit count as first column
     for index, row in diamond_table.iterrows():
+        # remove version number from accession
+        row[1] = row[1].split(".")[0]
         # if new protein, reinitialise the count
         if row[0] != accession:
             accession = row[0]
