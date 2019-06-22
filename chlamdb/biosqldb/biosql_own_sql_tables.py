@@ -1420,6 +1420,8 @@ def orthogroup2cog(db_name, accession=False, group_list=False): # group_list,
     if not accession:
         sql =  'select orthogroup_name,COG_name from COG.seqfeature_id2best_COG_hit_%s t1 inner join COG.cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology.seqfeature_id2orthogroup_%s t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology.orthogroup_%s t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
         sql = 'select orthogroup_name,COG_name from COG.seqfeature_id2best_COG_hit_%s t1 inner join COG.cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology.seqfeature_id2orthogroup_%s t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology.orthogroup_%s t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
+        sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join COG.locus_tag2gi_hit_%s ' \
+              'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
     else:
         sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join COG.locus_tag2gi_hit_%s ' \
               'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
