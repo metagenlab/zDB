@@ -224,6 +224,58 @@ def load_locus2cog_into_sqldb(input_blast_files,
     conn.commit()
 
 
+def load_locus2cog_into_sqldb_legacy(input_blast_files,
+                                     biodb,
+                                     cdd_id2cog_id,
+                                     hash2locus_tag_list):
+    import MySQLdb
+    import os
+    from chlamdb.biosqldb import manipulate_biosqldb
+
+    mysql_host = 'localhost'
+    mysql_user = 'root'
+    mysql_pwd = os.environ['SQLPSW']
+    mysql_db = 'COG'
+    conn = MySQLdb.connect(host=mysql_host,
+                           user=mysql_user,
+                           passwd=mysql_pwd,
+                           db=mysql_db)
+    cursor = conn.cursor()
+
+    sql = 'create table COG.locus_tag2gi_hit_%s (accession varchar(100), locus_tag varchar(100), gi INT, COG_id varchar(100),' \
+          'index locus_tag (locus_tag), index accession (accession))' % biodb
+
+    cursor.execute(sql)
+    conn.commit()
+    sql = 'select locus_tag, accession from orthology_detail_%s' % biodb
+    sql3 = 'select protein_id, COG_id from COG.cog_2014;'
+    sql2 = 'select protein_id, locus_tag from orthology_detail_%s' % biodb
+    sql5 = 'select locus_tag,length(translation) from orthology_detail_%s;' % biodb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    locus2genome_accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
+    protein_id2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
+    protein_id2COG = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3))
+    locus_tag2protein_length = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql5))
+    
+    for input_blast in input_blast_files:
+
+        locus2data = blast2COG(input_blast,
+                               hash2locus_tag_list,
+                               cdd_id2cog_id,
+                               cog_id2length,
+                               locus_tag2protein_length)
+
+        for locus in locus2data:
+            sql = 'INSERT into locus_tag2gi_hit_%s (accession, locus_tag, gi, COG_id) VALUES ("%s", "%s", %s, "%s")' % (biodb,
+                                                                                                                        locus2genome_accession[locus],
+                                                                                                                        locus,
+                                                                                                                        0, # no gi anymore
+                                                                                                                        locus2data[locus]["cog_id"])
+            cursor.execute(sql)
+    conn.commit()
+
+
 if __name__ == '__main__':
     import argparse
     import chlamdb_setup_utils
@@ -233,8 +285,9 @@ if __name__ == '__main__':
     parser.add_argument("-i", '--input_blast', type=str, help="blast tab file", nargs='+')
     parser.add_argument("-d", '--database_name', type=str, help="database name", default=False)
     parser.add_argument("-u", '--hash2locus_tag', type=str, help="Tab separated file with correspondance between sequence hashes and locus tags")
-    parser.add_argument("-cc", '--cog2cdd', type=str, help="Tab separated file with correspondance between sequence hashes and locus tags")
-    parser.add_argument("-cl", '--cdd2length', type=str, help="Tab separated file with correspondance between sequence hashes and locus tags")
+    parser.add_argument("-cc", '--cog2cdd', type=str, help="cog2cdd")
+    parser.add_argument("-cl", '--cdd2length', type=str, help="cdd2length")
+    parser.add_argument("-l", '--legacy', action='store_true', help="Setup legacy table")
 
     args = parser.parse_args()
 
@@ -250,10 +303,17 @@ if __name__ == '__main__':
             data = row.rstrip().split("\t")
             cog_id2length[data[0]] = data[1]
 
-    get_hash2locus_list = chlamdb_setup_utils.get_hash2locus_list(args.hash2locus_tag)
+    hash2locus_list = chlamdb_setup_utils.get_hash2locus_list(args.hash2locus_tag)
 
+    '''
     load_locus2cog_into_sqldb(args.input_blast,
                               args.database_name,
-                              get_hash2locus_list,
+                              hash2locus_list,
                               cdd_id2cog_id,
                               cog_id2length)
+    '''
+    if args.legacy:
+        load_locus2cog_into_sqldb_legacy(args.input_blast,
+                                         args.database_name,
+                                         cdd_id2cog_id,
+                                         hash2locus_list)
