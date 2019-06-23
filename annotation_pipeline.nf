@@ -850,6 +850,7 @@ refseq_diamond.collectFile()
 .into { refseq_diamond_results_taxid_mapping
         refseq_diamond_results_sqlitedb }
 
+'''
 refseq_diamond_results_taxid_mapping
 .splitCsv(header: false, sep: '\t')
 .map{row ->
@@ -859,6 +860,7 @@ refseq_diamond_results_taxid_mapping
 .unique()
 .collectFile(name: 'nr_refseq_hits.tab', newLine: true)
 .set {refseq_diamond_nr}
+'''
 
 //.collate( 300 )
 //.set {
@@ -1702,6 +1704,7 @@ process setup_diamond_refseq_db {
 
   output:
   file 'diamond_refseq.db' into diamond_refseq_db
+  file 'nr_refseq_hits.tab' into refseq_diamond_nr
 
   script:
   """
@@ -1741,12 +1744,17 @@ for one_file in diamond_file_list:
 
 # index query accession (hash) + hit number
 sql_index_1 = 'create index hitc on diamond_refseq (hit_count);'
-sql_index_2 = 'create index acc on diamond_refseq (qseqid);'
+sql_index_2 = 'create index qacc on diamond_refseq (qseqid);'
+sql_index_3 = 'create index sacc on diamond_refseq (sseqid);'
 
 cursor.execute(sql_index_1)
 cursor.execute(sql_index_2)
+cursor.execute(sql_index_3)
 conn.commit()
-
+sql = 'select distinct sseqid from diamond_refseq'
+with open("nr_refseq_hits.tab", 'w') as f:
+    for acc in cursor.execute(sql,):
+        f.write("%s\\n" % acc[0])
   """
 }
 
