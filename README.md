@@ -58,6 +58,8 @@
   - [X] generate one fasta files/orthogroup
   - [X] align with mafft
   - [X] build phylogeny
+- [X] refseq taxonomy: use downloaded accession2taxonomy + indexed refseq fasta instead of web queries
+- [X] retrieve uniprot annotation score for matched uniprotkb entries
 
 
 # TODO
@@ -110,16 +112,18 @@
 - [X] load uniprot annotations
 - [X] load blast swissprot results
   - [X] download taxonomy-description information(s)
-- [ ] load blast refseq results
+- [X] load blast refseq results
     - [X] load refseq taxonomy table
 - [ ] load PMID mapping
+- [ ] load TCDB annotations
 - [ ] load cross-references
 - [ ] get phylo profile
   - [ ] setup core_orthogroups_identity_msa_
-- [ ] legacy COG table
+- [X] legacy COG table
 - [ ] legacy PFAM table
 - [ ] setup blast databases
-
+- [ ] load RBBH data (for identity distribution plots)
+- [ ] setup legacy locus2ec table
 
 - [ ] check indexes
 
@@ -138,10 +142,9 @@
 
 ## priority 1
 
-- [ ] refseq taxonomy: use downloaded accession2taxonomy + indexed refseq fasta instead of web queries
+- [ ] get STRING associations if available
 - [ ] execute checkM
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
-- [X] retrieve uniprot annotation score for matched uniprotkb entries
 - [ ] get cross-references from uniprot IdMapping
   - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
   - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
