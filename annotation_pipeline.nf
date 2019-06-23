@@ -847,121 +847,23 @@ process diamond_refseq {
 }
 
 refseq_diamond.collectFile()
-.into { refseq_diamond_results_taxid_mapping
-        refseq_diamond_results_sqlitedb }
+.into { refseq_diamond_results_sqlitedb }
 
-'''
-refseq_diamond_results_taxid_mapping
-.splitCsv(header: false, sep: '\t')
-.map{row ->
-    def protein_accession = row[1]
-    return "${protein_accession}"
-}
-.unique()
-.collectFile(name: 'nr_refseq_hits.tab', newLine: true)
-.set {refseq_diamond_nr}
-'''
+
+//refseq_diamond_results_taxid_mapping
+//.splitCsv(header: false, sep: '\t')
+//.map{row ->
+//    def protein_accession = row[1]
+//    return "${protein_accession}"
+//}
+//.unique()
+//.collectFile(name: 'nr_refseq_hits.tab', newLine: true)
+//.set {refseq_diamond_nr}
 
 //.collate( 300 )
 //.set {
 //    nr_refseq_hits_chunks
 //}
-
-process get_refseq_hits_taxonomy {
-
-  conda 'biopython=1.73=py36h7b6447c_0'
-
-  publishDir 'annotation/diamond_refseq/', mode: 'copy', overwrite: true
-
-  echo true
-
-  when:
-  params.diamond_refseq_taxonomy == true
-
-  input:
-  file refseq_hit_table from refseq_diamond_nr
-
-  output:
-  file 'refseq_taxonomy.db' into refseq_hit_taxid_mapping_db
-
-  script:
-
-  """
-#!/usr/bin/env python
-
-from Bio import SeqIO
-import http.client
-import re
-import sqlite3
-import datetime
-import logging
-
-logging.basicConfig(filename='refseq_taxonomy.log',level=logging.DEBUG)
-
-conn = sqlite3.connect("refseq_taxonomy.db")
-cursor = conn.cursor()
-
-cursor.execute("PRAGMA synchronous = OFF")
-cursor.execute("BEGIN TRANSACTION")
-
-def chunks(l, n):
-    for i in range(0, len(l), n):
-        yield l[i:i+n]
-
-conn_refseq = sqlite3.connect("$params.databases_dir/refseq/merged_refseq.db")
-cursor_refseq = conn_refseq.cursor()
-
-conn_taxid = sqlite3.connect("$params.databases_dir/ncbi-taxonomy/prot_accession2taxid.db")
-cursor_taxid = conn_taxid.cursor()
-
-sql = 'create table refseq_hits (accession varchar(200), taxid INTEGER, description TEXT, length INTEGER)'
-cursor.execute(sql,)
-conn.commit()
-
-f = open("${refseq_hit_table}", 'r')
-# get list of accessions, remove version number
-hit_list = [i.rstrip().split(".")[0] for i in f]
-
-chunk_lists = chunks(hit_list, 5000)
-sql_template = 'insert into refseq_hits values (?,?,?,?)'
-list_of_lists = []
-template_annotation = 'select accession, description, sequence_length from refseq where accession in ("%s")'
-template_taxid = 'select accession, taxid from accession2taxid where accession in ("%s")'
-for n, acc_list in enumerate(chunk_lists):
-    logging.debug("chunk: %s -- %s" % (n, datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
-    filter = '","'.join(acc_list)
-    #logging.debug('SQL ------- %s' % (n, datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
-    data_annotation = cursor_refseq.execute(template_annotation % filter,).fetchall()
-    data_taxid = cursor_taxid.execute(template_taxid % filter,).fetchall()
-    #logging.debug('SQL-done -- %s' % (n, datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
-    # create dictionnary
-
-    accession2taxid = {}
-    for row in data_taxid:
-        accession2taxid[row[0]] = row[1]
-    for annot in data_annotation:
-        # AccessionVersion, TaxId, Title, Length
-        annot[1] = re.sub("%s.[0-9]+ " % annot[0], "", annot[1])
-        list_of_lists.append([annot[0], accession2taxid[annot[0]], annot[1], annot[2]])
-    if n % 10 == 0:
-        logging.debug('insert: %s' % n)
-        cursor.executemany(sql_template, list_of_lists)
-        conn.commit()
-        list_of_lists = []
-logging.debug('LAST insert: %s' % n)
-cursor.executemany(sql_template, list_of_lists)
-conn.commit()
-# index accession and taxid columns
-sql_index_1 = 'create index acc on refseq_hits (accession);'
-sql_index_2 = 'create index taxid on refseq_hits (taxid);'
-
-cursor.execute(sql_index_1)
-cursor.execute(sql_index_2)
-conn.commit()
-
-  """
-}
-
 
 process get_uniparc_mapping {
 
@@ -1757,6 +1659,104 @@ with open("nr_refseq_hits.tab", 'w') as f:
         f.write("%s\\n" % acc[0])
   """
 }
+
+
+process get_refseq_hits_taxonomy {
+
+  conda 'biopython=1.73=py36h7b6447c_0'
+
+  publishDir 'annotation/diamond_refseq/', mode: 'copy', overwrite: true
+
+  echo true
+
+  when:
+  params.diamond_refseq_taxonomy == true
+
+  input:
+  file refseq_hit_table from refseq_diamond_nr
+
+  output:
+  file 'refseq_taxonomy.db' into refseq_hit_taxid_mapping_db
+
+  script:
+
+  """
+#!/usr/bin/env python
+
+from Bio import SeqIO
+import http.client
+import re
+import sqlite3
+import datetime
+import logging
+
+logging.basicConfig(filename='refseq_taxonomy.log',level=logging.DEBUG)
+
+conn = sqlite3.connect("refseq_taxonomy.db")
+cursor = conn.cursor()
+
+cursor.execute("PRAGMA synchronous = OFF")
+cursor.execute("BEGIN TRANSACTION")
+
+def chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
+
+conn_refseq = sqlite3.connect("$params.databases_dir/refseq/merged_refseq.db")
+cursor_refseq = conn_refseq.cursor()
+
+conn_taxid = sqlite3.connect("$params.databases_dir/ncbi-taxonomy/prot_accession2taxid.db")
+cursor_taxid = conn_taxid.cursor()
+
+sql = 'create table refseq_hits (accession varchar(200), taxid INTEGER, description TEXT, length INTEGER)'
+cursor.execute(sql,)
+conn.commit()
+
+f = open("${refseq_hit_table}", 'r')
+# get list of accessions, remove version number
+hit_list = [i.rstrip().split(".")[0] for i in f]
+
+chunk_lists = chunks(hit_list, 5000)
+sql_template = 'insert into refseq_hits values (?,?,?,?)'
+list_of_lists = []
+template_annotation = 'select accession, description, sequence_length from refseq where accession in ("%s")'
+template_taxid = 'select accession, taxid from accession2taxid where accession in ("%s")'
+for n, acc_list in enumerate(chunk_lists):
+    logging.debug("chunk: %s -- %s" % (n, datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+    filter = '","'.join(acc_list)
+    #logging.debug('SQL ------- %s' % (n, datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+    data_annotation = cursor_refseq.execute(template_annotation % filter,).fetchall()
+    data_taxid = cursor_taxid.execute(template_taxid % filter,).fetchall()
+    #logging.debug('SQL-done -- %s' % (n, datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+    # create dictionnary
+
+    accession2taxid = {}
+    for row in data_taxid:
+        accession2taxid[row[0]] = row[1]
+    for annot in data_annotation:
+        annot = list(annot)
+        # AccessionVersion, TaxId, Title, Length
+        annot[1] = re.sub("%s.[0-9]+ " % annot[0], "", annot[1])
+        list_of_lists.append([annot[0], accession2taxid[annot[0]], annot[1], annot[2]])
+    if n % 10 == 0:
+        logging.debug('insert: %s' % n)
+        cursor.executemany(sql_template, list_of_lists)
+        conn.commit()
+        list_of_lists = []
+logging.debug('LAST insert: %s' % n)
+cursor.executemany(sql_template, list_of_lists)
+conn.commit()
+# index accession and taxid columns
+sql_index_1 = 'create index acc on refseq_hits (accession);'
+sql_index_2 = 'create index taxid on refseq_hits (taxid);'
+
+cursor.execute(sql_index_1)
+cursor.execute(sql_index_2)
+conn.commit()
+
+  """
+}
+
 
 process get_diamond_refseq_top_hits {
   /*
