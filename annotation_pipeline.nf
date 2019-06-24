@@ -1269,7 +1269,7 @@ with open("string_mapping_PMID.tab", "r") as f:
             if data[1] not in pmid_nr_list:
                 pmid_nr_list.append(data[1])
         if n % 1000 == 0:
-            print(n, '---- insert ----)
+            print(n, '---- insert ----')
             conn.commit()
 
 pmid_chunks = chunks(pmid_nr_list, 50)
