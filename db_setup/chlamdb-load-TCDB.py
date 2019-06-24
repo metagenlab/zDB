@@ -1,0 +1,189 @@
+#!/usr/bin/env python
+
+
+def import_annot(gblast_file,
+                 biodb,
+                 fasta_file_query,
+                 fasta_file_db,
+                 xml_dir,
+                 hash2locus_list):
+
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from Bio import SeqIO
+    from bs4 import BeautifulSoup
+    import os
+    from Bio.Blast import NCBIXML
+    import re
+
+    '''
+    ajouter:
+    - query length
+    - hit length
+    - query cov
+    - hit cov
+
+    Tables
+    TC avec description, family id, family et substrats
+    TCDB hit (accession)
+    hits_chlamydia_04_16 avec details du hit (score,...)
+
+    '''
+
+    with open(fasta_file_db, 'r') as f:
+        db_accession2record = SeqIO.to_dict(SeqIO.parse(f, 'fasta'))
+    with open(fasta_file_query, 'r') as f:
+        query_accession2record = SeqIO.to_dict(SeqIO.parse(f, 'fasta'))
+    blast_data = {}
+    xml = os.listdir(xml_dir)
+    print ('n xml files', len(xml))
+    for n, one_xml in enumerate(xml):
+        if n % 100 == 0:
+            print (n, len(xml))
+        result_handle = open(os.path.join(xml_dir, one_xml), 'r')
+        blast_records = NCBIXML.parse(result_handle)
+        for record in blast_records:
+            locus = record.query.split(' ')[0]
+            blast_data[locus] = record
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'create table IF NOT EXISTS transporters.transporters_%s (seqfeature_id INT primary key,' \
+          ' taxon_id INT,' \
+          ' hit_uniprot_id INT,' \
+          ' transporter_id INT,' \
+          ' align_length INT,' \
+          ' n_hsps INT,' \
+          ' evalue FLOAT,' \
+          ' bitscore_first_hsp FLOAT,' \
+          ' identity FLOAT,' \
+          ' query_TMS INT,' \
+          ' hit_TMS INT,' \
+          ' TM_overlap_score FLOAT,' \
+          ' query_len INT,' \
+          ' hit_len INT,' \
+          ' query_cov FLOAT,' \
+          ' hit_cov FLOAT,' \
+          ' index transporter_id(transporter_id),' \
+          ' index hit_uniprot_id(hit_uniprot_id));' % biodb
+
+    server.adaptor.execute(sql,)
+    server.commit()
+
+    sql1 = 'select locus_tag, taxon_id from orthology_detail_%s' % biodb
+    sql2 = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+
+    locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql1,))
+    locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+
+    with open(gblast_file, 'r') as f:
+
+        soup = BeautifulSoup(f, 'html.parser')
+        table = soup.find('table')
+
+        rows = table.find_all('tr')
+        for n, one_row in enumerate(rows):
+            cols = one_row.find_all('td')
+            cols = [ele.text.strip() for ele in cols]
+
+            if n == 0:
+                pass
+            else:
+
+                hash = cols[0]
+                hit_uniprot_accession = cols[1]
+                hit_tcid = cols[2]
+                hit_description = re.sub('"', '', cols[3])
+                hit_accession = hit_description.split(' ')[1]
+
+                align_length = int(cols[4])
+                evalue = cols[5]
+                identity = cols[6]
+                query_TMS = cols[7]
+                hit_TMS = cols[8]
+                TM_overlap_score = cols[9]
+                if TM_overlap_score == "None":
+                    print ('none!!!!!!!!!!')
+                    TM_overlap_score = 0
+                family_abrv = cols[10]
+
+                for locus_tag in hash2locus_list[hash]:
+
+                    first_hsp = blast_data[hash].alignments[0].hsps[0]
+
+                    #print blast_data[locus_tag].effective_query_length
+                    #print blast_data[locus_tag].effective_database_length
+                    query_align_length = first_hsp.query_end-first_hsp.query_start
+                    query_length = len(query_accession2record[locus_tag])
+                    hit_length = len(db_accession2record[hit_accession])
+
+                    hit_align_length = first_hsp.sbjct_end-first_hsp.sbjct_start
+                    query_cov = round(query_align_length/float(query_length), 2)
+                    hit_cov = round(hit_align_length/float(hit_length), 2)
+                    n_hsps = len(blast_data[hash].alignments[0].hsps)
+                    bitscore_first_hsp = first_hsp.bits
+
+                    sql = 'select tc_id from transporters.tc_table where tc_name="%s";' % hit_tcid
+                    transporter_id = server.adaptor.execute_and_fetchall(sql)[0][0]
+                    sql = 'select uniprot_id from transporters.uniprot_table where uniprot_accession like "%s%%%%";' % hit_uniprot_accession
+                    hit_uniprot_id = server.adaptor.execute_and_fetchall(sql)[0][0]
+
+                    sql = 'insert into transporters.transporters_%s (seqfeature_id,' \
+                          ' taxon_id,' \
+                          ' hit_uniprot_id,' \
+                          ' transporter_id,' \
+                          ' align_length,' \
+                          ' n_hsps,' \
+                          ' evalue,' \
+                          ' bitscore_first_hsp,' \
+                          ' identity,' \
+                          ' query_TMS,' \
+                          ' hit_TMS,' \
+                          ' TM_overlap_score,' \
+                          ' query_len,' \
+                          ' hit_len,' \
+                          ' query_cov,' \
+                          ' hit_cov) values (%s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % (biodb,
+                                                                                                        locus_tag2seqfeature_id[locus_tag],
+                                                                                                        locus_tag2taxon_id[locus_tag],
+                                                                                                        hit_uniprot_id,
+                                                                                                        transporter_id,
+                                                                                                        align_length,
+                                                                                                        n_hsps,
+                                                                                                        evalue,
+                                                                                                        bitscore_first_hsp,
+                                                                                                        identity,
+                                                                                                        query_TMS,
+                                                                                                        hit_TMS,
+                                                                                                        TM_overlap_score,
+                                                                                                        query_length,
+                                                                                                        hit_length,
+                                                                                                        query_cov,
+                                                                                                        hit_cov)
+
+
+                    server.adaptor.execute(sql,)
+        server.commit()
+        sql = ''
+
+if __name__ == '__main__':
+    import argparse
+    import chlamdb_setup_utils
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t", '--gblast_html', type=str, help="gblast html file")
+    parser.add_argument("-b", '--fasta_database', type=str, help="fasta db (TCDB)")
+    parser.add_argument("-f", '--fasta_query', type=str, help="fasta query")
+    parser.add_argument("-x", '--xml_dir', type=str, help="xml directory (relative path)")
+    parser.add_argument("-d", '--db_name', type=str, help="db name", required=True)
+    parser.add_argument("-c", '--corresp_table', type=str, help="hash to locus correspondance table")
+
+    args = parser.parse_args()
+
+    hash2locus_list = chlamdb_setup_utils.get_hash2locus_list(args.corresp_table)
+
+    import_annot(args.gblast_html,
+                 args.db_name,
+                 args.fasta_query,
+                 args.fasta_database,
+                 args.xml_dir,
+                 hash2locus_list)
