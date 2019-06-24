@@ -1229,7 +1229,7 @@ def pmid2abstract_info(pmid_list):
     pmid_list = [str(i) for i in pmid_list]
 
     try:
-        handle = Entrez.efetch(db="pubmed", id=',',join(pmid_list), rettype="medline", retmode="text")
+        handle = Entrez.efetch(db="pubmed", id=','.join(pmid_list), rettype="medline", retmode="text")
         records = Medline.parse(handle)
     except:
         print("FAIL:", pmid)
