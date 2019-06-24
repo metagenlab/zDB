@@ -426,52 +426,63 @@ function clearBox(elementID)
                               </div>
                             {%endif%}
                             {% if transporter_data%}
+
+
                             <div class="row">
-                              <h3>Transporter</h3>
+                              <div style="padding-top:40px;">
+                                  <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">Transporter</h3>
+                                    </div>
 
-                              <table class="table-striped" style="width: 100%">
-                                  <tr>
-                                      <th>Hit</th>
-                                      <th>Evalue</th>
-                                      <th>Score</th>
-                                      <th>Identity</th>
-                                      <th>TM_query</th>
-                                      <th>TM_hit</th>
-                                      <th>query_cov</th>
-                                      <th>hit_cov</th>
-                                  </tr>
-                                  <tr>
-                                      <td>{{transporter_data.0}}</td>
-                                      <td>{{transporter_data.1}}</td>
-                                      <td>{{transporter_data.2}}</td>
-                                      <td>{{transporter_data.3}}</td>
-                                      <td>{{transporter_data.4}}</td>
-                                      <td>{{transporter_data.5}}</td>
-                                      <td>{{transporter_data.6}}</td>
-                                      <td>{{transporter_data.7}}</td>
-                                  </tr>
+                                    <table class="table-striped" style="width: 100%">
+                                        <tr>
+                                            <th>Hit</th>
+                                            <th>Evalue</th>
+                                            <th>Score</th>
+                                            <th>Identity</th>
+                                            <th>TM_query</th>
+                                            <th>TM_hit</th>
+                                            <th>query_cov</th>
+                                            <th>hit_cov</th>
+                                        </tr>
+                                        <tr>
+                                            <td>{{transporter_data.0}}</td>
+                                            <td>{{transporter_data.1}}</td>
+                                            <td>{{transporter_data.2}}</td>
+                                            <td>{{transporter_data.3}}</td>
+                                            <td>{{transporter_data.4}}</td>
+                                            <td>{{transporter_data.5}}</td>
+                                            <td>{{transporter_data.6}}</td>
+                                            <td>{{transporter_data.7}}</td>
+                                        </tr>
 
-                              </table>
-                              <table class="table-striped" style="width: 100%">
+                                    </table>
+                                    <table class="table-striped" style="width: 100%">
 
-                                  <tr>
-                                      <th style="width:80px">SuperFamily</th>
-                                      <td style="width:70px"><a href="http://tcdb.org/search/result.php?tc={{transporter_data.10}}">{{transporter_data.10}}</a></td><td>{{transporter_data.11}}</td>
-                                  </tr>
-                                  <tr>
-                                      <th>Family</th>
-                                      <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.12}}">{{transporter_data.12}}</a></td><td>{{transporter_data.13}}</td>
-                                  </tr>
-                                  <tr>
-                                      <th>Subfamily</th>
-                                      <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.14}}">{{transporter_data.14}}</a></td><td>{{transporter_data.15}}</td>
-                                  </tr>
-                                  <tr>
-                                      <th>Transporter</th>
-                                      <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.14}}#{{transporter_data.8}}">{{transporter_data.8}}</a></td><td>{{transporter_data.9}}</td>
-                                  </tr>
-                              </table>
+                                        <tr>
+                                            <th style="width:80px">SuperFamily</th>
+                                            <td style="width:70px"><a href="http://tcdb.org/search/result.php?tc={{transporter_data.10}}">{{transporter_data.10}}</a></td><td>{{transporter_data.11}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Family</th>
+                                            <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.12}}">{{transporter_data.12}}</a></td><td>{{transporter_data.13}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Subfamily</th>
+                                            <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.14}}">{{transporter_data.14}}</a></td><td>{{transporter_data.15}}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Transporter</th>
+                                            <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.14}}#{{transporter_data.8}}">{{transporter_data.8}}</a></td><td>{{transporter_data.9}}</td>
+                                        </tr>
+                                    </table>
+
+
+                                  </div>
+                              </div>
                             </div>
+
                             {% endif %}
                             <div class="row">
                               <div class="panel panel-default">
@@ -845,6 +856,14 @@ function clearBox(elementID)
 
                    <h3>Interpro</h3>
 
+                   {% static "" as baseUrl %}
+                   {% if interpro_protein %}
+                       <iframe src="{{ baseUrl }}{{biodb}}/interpro/{{interpro_hash}}.html" width="100%" height="2000px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                   {% else %}
+                       <iframe src="{{ baseUrl }}{{biodb}}/interpro/{{interpro_hash}}.html" width="100%" height="2000px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                   {% endif %}
+
+
                     <table class="table">
                         <tr>
                             <th id="entete">Analysis</th>
@@ -906,12 +925,6 @@ function clearBox(elementID)
                         {% endfor %}
 
                     </table>
-                    {% static "" as baseUrl %}
-                    {% if interpro_protein %}
-                        <iframe src="{{ baseUrl }}/interpro/{{data.2}}.html" width="100%" height="2000px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                    {% else %}
-                        <iframe src="{{ baseUrl }}/interpro/{{data.1}}.html" width="100%" height="2000px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                    {% endif %}
 
                 </div>
 

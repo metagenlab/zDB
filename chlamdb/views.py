@@ -2237,6 +2237,11 @@ def locusx(request, locus=None, menu=True):
 
             sql23 = 'select pmid,authors,title,abstract,source from string.seqfeature_id2string_pmid_%s ' \
                     ' t2 where seqfeature_id=%s;' % (biodb, seqfeature_id)
+
+            sql24 = 'select hash from annotation.hash2seqfeature_id_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where t2.locus_tag="%s";' % (biodb, biodb, locus)
+
+            interpro_hash = server.adaptor.execute_and_fetchall(sql24,)[0][0]
+
             try:
                 pubmed_data = server.adaptor.execute_and_fetchall(sql23,)
             except:
@@ -2248,11 +2253,8 @@ def locusx(request, locus=None, menu=True):
             except:
                 rnaseq_data = False
 
-            #print rnaseq_data
-
             try:
-                transporter_data = [str(i).decode('utf-8','ignore').encode("utf-8") for i in server.adaptor.execute_and_fetchall(sql20, )[0]]
-                #print transporter_data
+                transporter_data = [str(i) for i in server.adaptor.execute_and_fetchall(sql20, )[0]]
             except:
                 transporter_data = False
 
@@ -2261,6 +2263,7 @@ def locusx(request, locus=None, menu=True):
                 superfamily_data =  server.adaptor.execute_and_fetchall(sql19, )
 
                 superfamily_features = uniprot_feature_viewer.superfamily_data2features_string(superfamily_data)
+
 
             except:
 
