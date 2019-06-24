@@ -6,7 +6,7 @@
 from chlamdb.orthomcl.parse_mclOtput import parse_orthomcl_output
 from chlamdb.biosqldb import manipulate_biosqldb
 import os
-import shell_command
+from chlamdb.biosqldb import shell_command
 import numpy as np
 import numpy
 from multiprocessing import Process, Queue
