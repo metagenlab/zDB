@@ -1216,24 +1216,36 @@ import sqlite3
 
 Entrez.email = "trestan.pillonel@chuv.ch"
 
-def pmid2abstract_info(pmid):
+
+def chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
+
+
+def pmid2abstract_info(pmid_list):
     from Bio import Medline
+
+    # make sure that pmid are strings
+    pmid_list = [str(i) for i in pmid_list]
+
     try:
-        handle = Entrez.efetch(db="pubmed", id=pmid, rettype="medline",
-                               retmode="text")
-        record = Medline.read(handle)
+        handle = Entrez.efetch(db="pubmed", id=',',join(pmid_list), rettype="medline", retmode="text")
+        records = Medline.parse(handle)
     except:
         print("FAIL:", pmid)
         return None
 
-    pmid_data = {}
-    pmid_data["title"] = record.get("TI", "?")
-    pmid_data["authors"] = record.get("AU", "?")
-    pmid_data["source"] = record.get("SO", "?")
-    pmid_data["abstract"] = record.get("AB", "?")
-    pmid_data["pmid"] = pmid
+    pmid2data = {}
+    for record in records:
+      pmid = record["PMID"]
+      pmid2data[pmid] = {}
+      pmid_data[pmid]["title"] = record.get("TI", "?")
+      pmid_data[pmid]["authors"] = record.get("AU", "?")
+      pmid_data[pmid]["source"] = record.get("SO", "?")
+      pmid_data[pmid]["abstract"] = record.get("AB", "?")
+      pmid_data[pmid]["pmid"] = pmid
 
-    return pmid_data
+    return pmid2data
 
 conn = sqlite3.connect(database)
 cursor = conn.cursor()
@@ -1244,16 +1256,32 @@ sql = 'create table if not exists hash2pmid (pmid INT, ' \
 sql2 = 'create table if not exists pmid2data (pmid INTEGER, title TEXT, authors TEXT, source TEXT, abstract TEXT)'
 cursor.execute(sql,)
 
+# get PMID nr list and load PMID data into sqldb
+pmid_nr_list = []
+sql_template = 'insert into hash2pmid values (?, ?)'
+with open("string_mapping_PMID.tab", "r") as f:
+    n = 0
+    for row in f:
+        data = row.rstrip().split("\t")
+        if data[1] != 'None':
+            n+=1
+            cursor.execute(sql_template, data)
+            if data[1] not in pmid_nr_list:
+                pmid_nr_list.append(data[1])
+        if n % 1000 == 0:
+            print(n, '---- insert ----)
+            conn.commit()
+
+pmid_chunks = chunks(pmid_nr_list, 50)
+
+# get PMID data and load into sqldb
 sql_template = 'insert into pmid2data values (?, ?, ?, ?, ?)'
-
-pmid_list =
-
-for n, pmid in enumerate(pmid_list_new):
-    print("%s/%s" % (n, len(pmid_list_new)))
-    pmid_data = pmid2abstract_info(pmid)
-    if pmid_data:
+for n, chunk in enumerate(pmid_chunks):
+    print("%s/%s" % n)
+    pmid2data = pmid2abstract_info(chunk)
+    for pmid in pmid2data:
         cursor.execute(sql_template, (pmid, pmid_data["title"], str(pmid_data["authors"]), pmid_data["source"], pmid_data["abstract"]))
-    if n % 100 == 0:
+    if n % 10 == 0:
         conn.commit()
 conn.commit()
   """
@@ -1767,6 +1795,7 @@ cursor = conn.cursor()
 
 cursor.execute("PRAGMA synchronous = OFF")
 cursor.execute("BEGIN TRANSACTION")
+
 
 def chunks(l, n):
     for i in range(0, len(l), n):
