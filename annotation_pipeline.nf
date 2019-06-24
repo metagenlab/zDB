@@ -1239,22 +1239,23 @@ def pmid2abstract_info(pmid_list):
     for record in records:
       pmid = record["PMID"]
       pmid2data[pmid] = {}
-      pmid_data[pmid]["title"] = record.get("TI", "?")
-      pmid_data[pmid]["authors"] = record.get("AU", "?")
-      pmid_data[pmid]["source"] = record.get("SO", "?")
-      pmid_data[pmid]["abstract"] = record.get("AB", "?")
-      pmid_data[pmid]["pmid"] = pmid
+      pmid2data[pmid]["title"] = record.get("TI", "?")
+      pmid2data[pmid]["authors"] = record.get("AU", "?")
+      pmid2data[pmid]["source"] = record.get("SO", "?")
+      pmid2data[pmid]["abstract"] = record.get("AB", "?")
+      pmid2data[pmid]["pmid"] = pmid
 
     return pmid2data
 
-conn = sqlite3.connect(database)
+conn = sqlite3.connect("string_mapping_PMID.db")
 cursor = conn.cursor()
 
-sql = 'create table if not exists hash2pmid (pmid INT, ' \
-      ' hash binary)'
+sql = 'create table if not exists hash2pmid (hash binary, ' \
+      ' pmid INTEGER)'
 
 sql2 = 'create table if not exists pmid2data (pmid INTEGER, title TEXT, authors TEXT, source TEXT, abstract TEXT)'
 cursor.execute(sql,)
+cursor.execute(sql2,)
 
 # get PMID nr list and load PMID data into sqldb
 pmid_nr_list = []
@@ -1277,10 +1278,10 @@ pmid_chunks = chunks(pmid_nr_list, 50)
 # get PMID data and load into sqldb
 sql_template = 'insert into pmid2data values (?, ?, ?, ?, ?)'
 for n, chunk in enumerate(pmid_chunks):
-    print("%s/%s" % n)
+    print("%s" % n)
     pmid2data = pmid2abstract_info(chunk)
     for pmid in pmid2data:
-        cursor.execute(sql_template, (pmid, pmid_data["title"], str(pmid_data["authors"]), pmid_data["source"], pmid_data["abstract"]))
+        cursor.execute(sql_template, (pmid, pmid2data[pmid]["title"], str(pmid2data[pmid]["authors"]), pmid2data[pmid]["source"], pmid2data[pmid]["abstract"]))
     if n % 10 == 0:
         conn.commit()
 conn.commit()
