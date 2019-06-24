@@ -1719,14 +1719,12 @@ def accession2taxid_entrez(accession):
             print ('connexion error, trying again...')
             time.sleep(60)
             accession2taxid_entrez(accession)
-    record = Entrez.read(handle, validate=False)
-
+    record = Entrez.read(handle, validate=False)[0]
     # record['AccessionVersion'],
     # record['TaxId'],
     # record['Title'],
     # record['Length']
-
-    return record['TaxId']
+    return int(record['TaxId'])
 
 conn_refseq = sqlite3.connect("$params.databases_dir/refseq/merged_refseq.db")
 cursor_refseq = conn_refseq.cursor()
