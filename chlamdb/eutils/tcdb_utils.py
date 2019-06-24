@@ -70,15 +70,16 @@ def accession2substrate(accession, tc):
         time.sleep(60)
     table = soup.find('table', attrs={'class':'proteins'})
 
-
     rows = table.find_all('tr')
+    #print("rows", rows)
     for row in rows:
         cols = row.find_all('td')
         cols = [ele.text.strip() for ele in cols]
         ths = row.find_all('th')
         th_text = [ele.text.strip() for ele in ths]
-        if th_text[0] == 'Substrate':
-            return cols[0]
+        if len(th_text) > 0:
+            if th_text[0] == 'Substrate':
+                return cols[0]
 
 
 def accession2species_and_product(accession, tc):

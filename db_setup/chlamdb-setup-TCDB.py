@@ -191,7 +191,8 @@ class TCDB():
 
     def import_annot(self,
                      update=True,
-                     replace=True):
+                     replace=True,
+                     db_fasta=False):
 
         '''
 
@@ -201,12 +202,17 @@ class TCDB():
         hits_chlamydia_04_16 avec details du hit (score,...)
 
         '''
-
-        handle = urllib.request.urlopen("http://www.tcdb.org/public/tcdb")
-        fasta_st = StringIO(handle.read().decode("UTF-8"))
-        db_accession2record = SeqIO.to_dict(SeqIO.parse(fasta_st, 'fasta'))
+        if not db_fasta:
+            print("Download fasta db")
+            handle = urllib.request.urlopen("http://www.tcdb.org/public/tcdb")
+            fasta_st = StringIO(handle.read().decode("UTF-8"))
+            db_accession2record = SeqIO.to_dict(SeqIO.parse(fasta_st, 'fasta'))
+        else:
+            print("Local fasta db")
+            db_accession2record = SeqIO.to_dict(SeqIO.parse(db_fasta, 'fasta'))
         uniprot_nr_list = []
-        for accession in db_accession2record:
+        for n, accession in enumerate(db_accession2record):
+            print(n, accession)
             # gnl|TC-DB|1001796365|4.F.1.1.5
             header_data = accession.split("|")
             if len(header_data) == 4:
@@ -215,8 +221,6 @@ class TCDB():
                 # malformed header, search accession in description
                 hit_tcid = re.findall("[0-9]+\.[A-Z]\.[0-9]+\.[0-9]+\.[0-9]+", db_accession2record[accession].description)[0]
             hit_uniprot_accession = header_data[2]
-            if hit_uniprot_accession == "B8CYZ1":
-                continue
 
             if hit_uniprot_accession not in uniprot_nr_list:
                 uniprot_nr_list.append(hit_uniprot_accession)
@@ -234,8 +238,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-u", '--update', action='store_true', help="update DB (add missing entries)")
     parser.add_argument("-r", '--replace', action='store_true', help="replace existing tables")
+    parser.add_argument("-f", '--fasta_file', help="Fasta file (download from TCDB.org if not provided)")
 
     args = parser.parse_args()
 
     t = TCDB()
-    t.import_annot(update=args.update, replace=args.replace)
+    t.import_annot(update=args.update, replace=args.replace, db_fasta=args.fasta_file)
