@@ -1974,7 +1974,7 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 
   script:
   """
-  FastTree ${og} > ${og.baseName}.nwk
+  FastTree --anysymbol ${og} > ${og.baseName}.nwk
   """
 }
 
