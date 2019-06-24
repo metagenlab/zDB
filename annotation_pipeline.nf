@@ -1704,6 +1704,9 @@ def chunks(l, n):
 
 
 def accession2taxid_entrez(accession):
+    from Bio import Entrez
+    Entrez.email = "trestan.pillonel@chuv.ch"
+    Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
     from socket import error as SocketError
     import errno
     try:
