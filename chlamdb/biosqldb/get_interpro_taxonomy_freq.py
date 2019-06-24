@@ -132,7 +132,7 @@ def create_interpro_taxonomy_table(interpro_version):
 
 def get_whole_db_interpro_taxonomy():
     import MySQLdb
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import os
     sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
@@ -172,7 +172,7 @@ def get_whole_db_interpro_taxonomy():
 
 def get_biodb_summary_statistics(biodb, cutoff=50):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 

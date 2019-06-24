@@ -60,7 +60,7 @@ def get_interpro2go_table():
     '''
     import urllib2
     import MySQLdb
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import os
     sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
@@ -241,7 +241,7 @@ def interpro2biosqlV2(server,
 
 def update_analysis_dico(server):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     sql = 'select analysis_name, analysis_id from interpro.analysis'
 
@@ -437,7 +437,7 @@ def interpro2biosql(server,
 
 if __name__ == '__main__':
     import argparse
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--input_interpro', type=str, help="input interpro csv file", nargs='+')

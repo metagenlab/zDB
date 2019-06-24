@@ -563,7 +563,7 @@ def blastnr2biosql( locus_tag2seqfeature_id,
 
 if __name__ == '__main__':
     import argparse
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import sys
     import os
     import json

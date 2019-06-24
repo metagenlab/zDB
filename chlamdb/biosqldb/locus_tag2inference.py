@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from biosqldb import manipulate_biosqldb
+from chlamdb.biosqldb import manipulate_biosqldb
 
 def locus2inference_table(biodb):
 

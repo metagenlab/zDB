@@ -11476,7 +11476,7 @@ def crossplot(request):
 
 def string_page(request, cog_id, genome_accession):
     biodb = settings.BIODB
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import urllib2
     server, db = manipulate_biosqldb.load_db(biodb)
 

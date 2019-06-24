@@ -14,7 +14,7 @@ def get_multiple_set_profiles(biodb,
     :param score: should one of those:  bitscore, bias, evalue, query_coverage
     :return:
     '''
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     set_filter = '"'+'","'.join(set_list)+'"'
@@ -66,7 +66,7 @@ def get_multiple_set_counts(biodb,
     :param score: should one of those:  bitscore, bias, evalue, query_coverage
     :return:
     '''
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     set_filter = '"'+'","'.join(set_list)+'"'
@@ -108,7 +108,7 @@ def get_set_data(biodb,
                  six_frame_translation=False,
                  return_lists=False,
                  score_cutoff=0):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     '''
 
     :param biodb:
@@ -186,7 +186,7 @@ def get_set_data(biodb,
 
 
 def plot_hmm_heatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, six_frame_translation=False):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import ete_motifs
 
     code2taxon2count, set_list = get_set_data(biodb)
@@ -244,7 +244,7 @@ if __name__ == '__main__':
 
 
     biodb = args.biodb #'chlamydia_04_16'
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     from ete2 import Tree
     import ete_motifs
     import cog_heatmap

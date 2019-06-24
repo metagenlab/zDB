@@ -11,7 +11,7 @@ import json
 import pickle
 import os
 from time import time
-from biosqldb import manipulate_biosqldb
+from chlamdb.biosqldb import manipulate_biosqldb
 from multiprocessing import Process, Queue, JoinableQueue
 import math
 from Bio.Seq import Seq

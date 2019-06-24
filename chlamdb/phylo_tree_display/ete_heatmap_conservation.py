@@ -89,7 +89,7 @@ def plot_heat_tree_V1(taxid2n, tree_file, genes, taxid2st=False, leaf_label_conv
             st = False
             '''
             if "taxon2accession_list" not in locals():
-                from biosqldb import manipulate_biosqldb
+                from chlamdb.biosqldb import manipulate_biosqldb
                 server, db = manipulate_biosqldb.load_db("k_cosson_05_16")
                 sql = 'select taxon_id, accession from bioentry where biodatabase_id=104'
                 data_tax = server.adaptor.execute_and_fetchall(sql,)

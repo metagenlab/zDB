@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from biosqldb import manipulate_biosqldb
+from chlamdb.biosqldb import manipulate_biosqldb
 import pandas as pd
 import numpy
 # DataFrame.tojson(orient="split")

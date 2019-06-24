@@ -15,7 +15,7 @@ def locus2ko_table(locus_tag2ko_dico,
                    biodatabase,
                    ko_accession2ko_id):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodatabase)
 
     sql2 = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % biodatabase
@@ -61,7 +61,7 @@ def parse_blast_koala_output(result_file):
 
 def locus2ec_table(locus_tag2ec_dico, biodatabase):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import biosql_own_sql_tables
 
     server, db = manipulate_biosqldb.load_db(biodatabase)
@@ -153,7 +153,7 @@ def get_microbial_metabolism_in_diverse_environments_kegg01120():
 
 if __name__ == '__main__':
     import argparse
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import parse_priam_EC
 
     parser = argparse.ArgumentParser()

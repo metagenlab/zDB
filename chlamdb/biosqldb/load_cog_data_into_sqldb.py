@@ -10,7 +10,7 @@ def load_cog_names_table(table_file):
     :return:
         '''
     import re
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db('chlamydia_04_16')
     sql = 'CREATE table COG.cog_names_2014 (COG_id varchar(100),' \
                                 'functon varchar(10),' \

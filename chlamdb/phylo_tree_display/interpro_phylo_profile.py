@@ -10,7 +10,7 @@ def interpro2ete_tree(ete2_tree, interproscan_table):
 
 if __name__ == '__main__':
     import argparse
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", '--table',type=str,help="Interproscan table")
     parser.add_argument("-p", '--phylogeny', help="Phylogenetic tree")

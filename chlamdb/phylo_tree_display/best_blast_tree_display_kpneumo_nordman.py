@@ -40,13 +40,13 @@ def parse_mlst_results(mlst_file):
 def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst):
     '''
     Projet Staph aureus PVL avec Laure Jaton
-    Script pour afficher une phylogénie et la conservation de facteurs de firulence côte à côte
-    Nécessite résultats MLST, ensemble des résultats tblastn (facteurs de virulence vs chromosomes),
-    ainsi qu'une correspondance entre les accession des génomes et les noms qu'on veut afficher dans la phylogénie. Icemn
+    Script pour afficher une phylogï¿½nie et la conservation de facteurs de firulence cï¿½te ï¿½ cï¿½te
+    Nï¿½cessite rï¿½sultats MLST, ensemble des rï¿½sultats tblastn (facteurs de virulence vs chromosomes),
+    ainsi qu'une correspondance entre les accession des gï¿½nomes et les noms qu'on veut afficher dans la phylogï¿½nie. Icemn
     pour les identifiants molis des patients, on les remplace par CHUV n.
-    :param tree_file: phylogénie au format newick avec identifiants correspondants à tous les dico utilisés
-    :param blast_result_file_list: résultats tblastn virulence factors vs chromosome (seulement best blast)
-    :param id2description: identifiants génome utiisé dans l'arbre et description correspondante (i.e S aureus Newman)
+    :param tree_file: phylogï¿½nie au format newick avec identifiants correspondants ï¿½ tous les dico utilisï¿½s
+    :param blast_result_file_list: rï¿½sultats tblastn virulence factors vs chromosome (seulement best blast)
+    :param id2description: identifiants gï¿½nome utiisï¿½ dans l'arbre et description correspondante (i.e S aureus Newman)
     :param id2mlst: identitifiants arbre 2 S. aureus ST type
     :return:
     '''
@@ -266,7 +266,7 @@ def plot_blast_result(tree_file, blast_result_file_list, id2description, id2mlst
 
 if __name__ == '__main__':
     import argparse
-     from biosqldb import manipulate_biosqldb
+     from chlamdb.biosqldb import manipulate_biosqldb
     import gbk2accessiontodefinition
     parser = argparse.ArgumentParser()
     parser.add_argument("-t",'--tree',type=str,help="newick tree")

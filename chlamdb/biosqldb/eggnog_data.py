@@ -306,7 +306,7 @@ def plot_phylum_counts(NOG_id,
 
     import MySQLdb
     import os
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     from ete3 import NCBITaxa, Tree, TextFace,TreeStyle, StackedBarFace
     ncbi = NCBITaxa()
 
@@ -470,7 +470,7 @@ def plot_phylum_counts(NOG_id,
 
 if __name__ == '__main__':
     import argparse
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", '--table',type=str,help="eggnog members table")
 

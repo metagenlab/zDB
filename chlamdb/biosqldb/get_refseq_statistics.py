@@ -3,7 +3,7 @@
 
 def get_best_non_top_phylum_hit(biodb):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -106,7 +106,7 @@ def best_blast_hit_majority_species(biodb):
     '''
 
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -160,7 +160,7 @@ def majority_phylum(biodb, n_hits):
     '''
 
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -216,7 +216,7 @@ def majority_phylum(biodb, n_hits):
 
 def count_less_than_n_hits(biodb, cutoff=100):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -269,7 +269,7 @@ def count_majority_phylum(biodb, hit_number=1):
     # n undefined
 
     import biosql_own_sql_tables as bsql
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -400,7 +400,7 @@ def count_majority_excluding_self_species(biodb):
 
 
     import biosql_own_sql_tables as bsql
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -544,7 +544,7 @@ def count_majority_phylum_non_identical(biodb, accession2expluded_taxon_id):
 
     import biosql_own_sql_tables as bsql
     import taxon_id2child
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -709,7 +709,7 @@ def count_majority_phylum_consensus(biodb):
     # n undefined
 
     import biosql_own_sql_tables as bsql
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 

@@ -349,7 +349,7 @@ if __name__ == '__main__':
     import argparse
     import sys
     from Bio import SeqIO
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import os
     sqlpsw = os.environ['SQLPSW']
     parser = argparse.ArgumentParser()

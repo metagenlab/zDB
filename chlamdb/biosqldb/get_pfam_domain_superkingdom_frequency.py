@@ -5,7 +5,7 @@ def get_pfam_freq(db_version):
 
     import MySQLdb
     import os
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     sqlpsw = os.environ['SQLPSW']
 
 
@@ -111,7 +111,7 @@ def create_pfam_interpro_signature2pfam_id(biodb, pfam_db_id):
 
     import MySQLdb
     import os
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     sqlpsw = os.environ['SQLPSW']
 
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost

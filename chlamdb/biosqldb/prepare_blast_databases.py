@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-15 -*-
 
 def accession2coding_density(biodb, static_dir_path):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import gbk2fna
     import gbk2faa
     import gbk2ffn

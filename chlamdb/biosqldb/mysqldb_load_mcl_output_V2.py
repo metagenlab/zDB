@@ -4,7 +4,7 @@
 
 
 from parse_mclOtput import parse_orthomcl_output
-from biosqldb import manipulate_biosqldb
+from chlamdb.biosqldb import manipulate_biosqldb
 import os
 import shell_command
 import numpy as np
@@ -16,7 +16,7 @@ import MySQLdb
 
 
 def add_orthogroup_term(server):
-    # => ajouter orthogroup à la liste des term_id si n'existe pas
+    # => ajouter orthogroup ï¿½ la liste des term_id si n'existe pas
     # | term_id | name                   | definition | identifier | is_obsolete | ontology_id |
     # |      21 | CDS                    | NULL       | NULL       | NULL        |           2 |
 
@@ -455,7 +455,7 @@ def get_one_group_data(group_list, biodatabase_name, out_dir):#, out_q):
 
 def get_all_orthogroup_protein_fasta(server, biodatabase_name, out_dir):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodatabase_name)
     sql = 'select orthogroup from orthology_detail_%s group by orthogroup' % biodatabase_name
 

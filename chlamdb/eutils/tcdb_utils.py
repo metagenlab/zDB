@@ -8,6 +8,28 @@ from urllib.error import URLError
 
 Entrez.email = "trestan.pillonel@unil.ch"
 
+def accession2description(tc_id):
+    separate = tc_id.split('.')
+    link = "http://www.tcdb.org/search/result.php?tc=%s" % ('.'.join(separate[0:4]))
+    #print link
+    req = urllib.request.Request(link)
+    try:
+        page = urllib.request.urlopen(req)
+        #data = page.read().decode('utf-8').split('\n')
+        soup = BeautifulSoup(page, 'html.parser')
+    except:
+        import time
+        print ('connexion problem, trying again...')
+        time.sleep(60)
+    rows = soup.find_all('tr')
+    for row in rows:
+        cols = row.find_all('td')
+        cols = [ele.text.strip() for ele in cols]
+        if len(cols)>0:
+            if (tc_id in cols[0]):
+                return cols[1]
+    return '-'
+
 def accession2family(family_id):
 
 
@@ -31,15 +53,8 @@ def accession2family(family_id):
                 return ' '.join(one_title.text.split(' ')[1:]).lstrip()
         return '-'
     elif len(family_id.split('.'))==5:
-        match_table = soup.find("table")
-        match_rows = match_table.findAll("tr")
-        for one_row in match_rows:
-            if family_id in one_row.text:
-                return ' '.join(one_row.text.split(family_id)[1:]).lstrip()
-        return '-'
-
+        return accession2description(family_id)
     else:
-
         project_description = soup.find("div", {"class": "description"})
         return ' '.join(project_description.p.text.split(' ')[1:]).lstrip()
 

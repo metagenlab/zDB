@@ -5,7 +5,7 @@
 def create_comparative_tables(db_name, table_name):
 
     # create id column + one_column per taxon_id
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -18,7 +18,7 @@ def create_comparative_tables(db_name, table_name):
     server.adaptor.execute(sql)
 
 def get_all_accessions(db_name):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -34,7 +34,7 @@ def create_comparative_tables_accession(db_name, table_name):
     '''
 
     # create id column + one_column per taxon_id
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -53,7 +53,7 @@ def create_comparative_tables_accession(db_name, table_name):
 
 def collect_pfam(db_name):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(db_name)
     taxon_id_list = manipulate_biosqldb.get_taxon_id_list(server, db_name)
     sql_head = 'INSERT INTO comparative_tables.Pfam_%s (id,' % db_name
@@ -101,7 +101,7 @@ def collect_Pfam_accession(db_name):
     :return:
     '''
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(db_name)
 
 
@@ -142,7 +142,7 @@ def collect_Pfam_accession(db_name):
 
 def collect_COGs(db_name):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -194,7 +194,7 @@ def collect_COGs(db_name):
 
 def collect_COGs_accession(db_name):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import sys
 
     server, db = manipulate_biosqldb.load_db(db_name)
@@ -240,7 +240,7 @@ def collect_COGs_accession(db_name):
 
 def collect_interpro(db_name):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -288,7 +288,7 @@ def collect_interpro(db_name):
 
 def collect_interpro_accession(db_name):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -332,7 +332,7 @@ def collect_interpro_accession(db_name):
 
 def collect_ko(db_name):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
 
 
@@ -379,7 +379,7 @@ def collect_ko(db_name):
 
 def collect_ko_accession(db_name):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -429,7 +429,7 @@ def collect_ko_accession(db_name):
 
 def collect_EC(db_name):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
 
 
@@ -482,7 +482,7 @@ def collect_EC(db_name):
 
 def collect_EC_accession(db_name):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -524,7 +524,7 @@ def collect_EC_accession(db_name):
 
 def collect_orthogroup_accession(db_name):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
@@ -598,7 +598,7 @@ def get_mysql_table(db_name, table_name):
 
 def n_shared_orthogroup_table(db_name):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import sys
 
     server, db = manipulate_biosqldb.load_db(db_name)
@@ -622,7 +622,7 @@ def n_shared_orthogroup_table(db_name):
 
 def identity_closest_homolog(db_name):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import biosql_own_sql_tables
     import sys
 
@@ -673,7 +673,7 @@ def identity_closest_homolog(db_name):
 
 def shared_orthogroups_average_identity(db_name):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import biosql_own_sql_tables
     import sys
     import numpy
@@ -710,7 +710,7 @@ def shared_orthogroups_average_identity(db_name):
 
 if __name__ == '__main__':
     import argparse
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", '--database_name', type=str, help="Database name")

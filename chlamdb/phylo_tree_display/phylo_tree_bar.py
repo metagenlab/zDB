@@ -858,7 +858,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if not args.tree:
-        from biosqldb import manipulate_biosqldb
+        from chlamdb.biosqldb import manipulate_biosqldb
         sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
                    ' where t2.name="%s";' % args.biodb
         server, db = manipulate_biosqldb.load_db(args.biodb)

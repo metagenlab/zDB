@@ -18,7 +18,7 @@ from manipulate_biosqldb import query_yes_no
 
 def insert_blast_table(input_file, table_name):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db('chlamydia_12_15')
     # query id, subject id, % identity, alignment length, mismatches, gap opens, q. start, q. end, s. start, s. end, evalue, bit score

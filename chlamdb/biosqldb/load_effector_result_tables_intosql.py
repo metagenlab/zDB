@@ -3,7 +3,7 @@
 
 
 def load_BPBAac_table(table_file, biodb='chlamydia_04_16'):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -42,7 +42,7 @@ def load_BPBAac_table(table_file, biodb='chlamydia_04_16'):
 
 
 def load_T3_MM_table(table_file, biodb='chlamydia_04_16'):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -84,7 +84,7 @@ def load_T3_MM_table(table_file, biodb='chlamydia_04_16'):
 
 
 def load_effectiveT3_table(table_file, biodb='chlamydia_04_16'):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -125,7 +125,7 @@ def load_effectiveT3_table(table_file, biodb='chlamydia_04_16'):
 
 
 def load_T4SEpre_bpbAac_table(table_file, biodb='chlamydia_04_16'):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import re
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -168,7 +168,7 @@ def load_T4SEpre_bpbAac_table(table_file, biodb='chlamydia_04_16'):
 
 
 def load_T4SEpre_psAac_table(table_file, biodb='chlamydia_04_16'):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import re
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -211,7 +211,7 @@ def load_T4SEpre_psAac_table(table_file, biodb='chlamydia_04_16'):
 
 
 def load_chaperones_table(table_file, biodb='chlamydia_04_16'):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import re
 
     '''
@@ -257,7 +257,7 @@ def load_chaperones_table(table_file, biodb='chlamydia_04_16'):
 
 
 def load_ELD_table(table_file, biodb='chlamydia_04_16'):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import re
 
     '''

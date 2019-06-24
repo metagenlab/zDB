@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import heatmap
-from biosqldb import manipulate_biosqldb
+from chlamdb.biosqldb import manipulate_biosqldb
 
 def parse_vcf(vcf_file_name):
     import vcf

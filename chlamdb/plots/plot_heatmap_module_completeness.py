@@ -9,7 +9,7 @@ def get_module_count_all_db(biodb, category=False):
     :return: for each module, return the total count from KEGG, and the total count of KO present in the <biodb>
     '''
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
@@ -51,7 +51,7 @@ def get_module_count_per_genome(biodb, category=False):
 
     '''
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     if category:
@@ -101,7 +101,7 @@ def get_module_count_per_genome(biodb, category=False):
 
 def taxon2module2count(biodb, category=False):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     if category:

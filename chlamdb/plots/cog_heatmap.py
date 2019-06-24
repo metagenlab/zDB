@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by_cog_id=False):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import ete_motifs
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -140,7 +140,7 @@ taxon_list = ["67",
 "1279839",
 "1279497"]
 
-from biosqldb import manipulate_biosqldb
+from chlamdb.biosqldb import manipulate_biosqldb
 from ete3 import Tree
 server, db = manipulate_biosqldb.load_db('chlamydia_04_16')
 

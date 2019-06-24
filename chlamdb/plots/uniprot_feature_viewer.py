@@ -129,7 +129,7 @@ def superfamily_data2features_string(superfamily_data):
 
 
 '''
-from biosqldb import manipulate_biosqldb
+from chlamdb.biosqldb import manipulate_biosqldb
 server, db = manipulate_biosqldb.load_db("chlamydia_04_16")
 sql_pfam = 'select signature_accession, signature_description,start,stop' \
            ' from interpro_%s where locus_tag="%s" ' \

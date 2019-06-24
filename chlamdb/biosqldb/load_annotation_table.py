@@ -2,7 +2,7 @@
 
 
 def import_annot(annot_file, biodb):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     from datetime import datetime
 
     '''

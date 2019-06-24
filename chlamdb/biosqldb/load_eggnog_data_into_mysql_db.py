@@ -10,7 +10,7 @@ from manipulate_biosqldb import load_db
 from manipulate_biosqldb import query_yes_no
 
 def import_eggnog(eggnog_file, biodb):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import biosql_own_sql_tables
     import ete2
     import re

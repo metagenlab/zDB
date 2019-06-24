@@ -4,7 +4,7 @@
 
 def load_hmm_data(biodb, database_name, table_name, hmm_tab_files):
 
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -33,7 +33,7 @@ def load_hmm_data(biodb, database_name, table_name, hmm_tab_files):
         server.adaptor.commit()
 
 def plot_profile(biodb, database_name, table_name):
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import phylo_tree_bar
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -80,7 +80,7 @@ def plot_profile(biodb, database_name, table_name):
 
 if __name__ == '__main__':
     import argparse
-    from biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import parse_priam_EC
 
     parser = argparse.ArgumentParser()
