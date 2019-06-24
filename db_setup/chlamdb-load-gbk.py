@@ -157,8 +157,10 @@ def create_cds_tables(one_gbk,
                     start = re.sub('>|<','', str(feature.location.start))
                     end = re.sub('>|<','', str(feature.location.end))
                     strand = feature.strand
-                    product = feature.qualifiers['product'][0]
-
+                    try:
+                        product = feature.qualifiers['product'][0]
+                    except:
+                        product = '-'
                     sql = 'insert into feature_tables.genomes_rrna_%s (taxon_id, genome_accession, start, end, strand, product) values (' \
                           ' %s, "%s", %s, %s, %s, "%s")' % (biodb_name, taxon_id, accession, start, end, strand, product)
 
