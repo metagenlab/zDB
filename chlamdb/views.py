@@ -3182,7 +3182,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
     biodb = settings.BIODB
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
-        from phylo_tree_display import ete_motifs
+        from chlamdb.phylo_tree_display import ete_motifs
         server, db = manipulate_biosqldb.load_db(biodb)
 
         taxid_list = ['1279839', '1279496', '1035343', '314', '886707', '804807', '48', '283', '55', '1279822', '46', '1279815', '49', '87925', '52', '1137444', '67', '1172028', '1069693', '1172027', '307', '59', '60', '313', '1069694', '62', '1143376', '293', '1279767', '1279497', '1279774', '64', '66']
@@ -3414,7 +3414,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
     biodb = settings.BIODB
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
-        from phylo_tree_display import ete_motifs
+        from chlamdb.phylo_tree_display import ete_motifs
         server, db = manipulate_biosqldb.load_db(biodb)
 
         taxid_list = ['1279839', '1279496', '1035343', '314', '886707', '804807', '48', '283', '55', '1279822', '46', '1279815', '49', '87925', '52', '1137444', '67', '1172028', '1069693', '1172027', '307', '59', '60', '313', '1069694', '62', '1143376', '293', '1279767', '1279497', '1279774', '64', '66']
@@ -3638,7 +3638,7 @@ def KEGG_module_map(request, module_name):
     #cache.clear()
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
-        from phylo_tree_display import ete_motifs
+        from chlamdb.phylo_tree_display import ete_motifs
         server, db = manipulate_biosqldb.load_db(biodb)
 
         sql = 'select module_sub_cat,module_sub_sub_cat,description,t3.ko_accession,t3.definition ' \
@@ -5979,7 +5979,7 @@ def pan_genome(request, type):
     if request.method == 'POST':
         form = venn_form_class(request.POST)
         if form.is_valid():
-            from plots import core_pan_genome_plots
+            from chlamdb.plots import core_pan_genome_plots
             import numpy
             import pandas
 

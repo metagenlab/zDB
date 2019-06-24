@@ -64,7 +64,7 @@ def module_list2profile_dico(biodb, module_list, taxon_id_list=[]):
 
 def plot_module_heatmap(biodb, ref_tree, module_list, taxon_id_list=[], rotate=False):
 
-    import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
 
     module_list, code2taxon2count = module_list2profile_dico(biodb,
                                                              module_list,

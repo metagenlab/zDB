@@ -13,9 +13,9 @@ def plot_BBH_phylo(query_fasta_record, biodb, blast_type='blastp'):
 
 
     from chlamdb.biosqldb import manipulate_biosqldb
-    import biosql_own_sql_tables
+    from chlamdb.biosqldb import biosql_own_sql_tables
     import blast_utils
-    import ete_motifs
+    from chlamdb.plots import ete_motifs
     from Bio import SeqIO
     try:
         label_split = True

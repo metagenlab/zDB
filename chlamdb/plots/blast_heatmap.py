@@ -187,7 +187,7 @@ def get_set_data(biodb,
 
 def plot_hmm_heatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, six_frame_translation=False):
     from chlamdb.biosqldb import manipulate_biosqldb
-    import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
 
     code2taxon2count, set_list = get_set_data(biodb)
     print ("code2taxon2count", code2taxon2count)
