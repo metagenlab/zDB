@@ -1710,10 +1710,10 @@ def accession2taxid_entrez(accession):
     from socket import error as SocketError
     import errno
     try:
-        handle = Entrez.esummary(db="protein", id="%s" % accession, retmax=len(gi_list))
+        handle = Entrez.esummary(db="protein", id="%s" % accession, retmax=1)
     except SocketError as e:
         if e.errno != errno.ECONNRESET:
-            raise('error connexion with %s' % ','.join(gi_list))
+            raise('error connexion with %s' % accession)
         else:
             import time
             print ('connexion error, trying again...')
