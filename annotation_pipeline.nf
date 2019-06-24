@@ -1702,6 +1702,29 @@ def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i+n]
 
+
+def accession2taxid_entrez(accession):
+    from socket import error as SocketError
+    import errno
+    try:
+        handle = Entrez.esummary(db="protein", id="%s" % accession, retmax=len(gi_list))
+    except SocketError as e:
+        if e.errno != errno.ECONNRESET:
+            raise('error connexion with %s' % ','.join(gi_list))
+        else:
+            import time
+            print ('connexion error, trying again...')
+            time.sleep(60)
+            accession2taxid_entrez(accession)
+    record = Entrez.read(handle, validate=False)
+
+    # record['AccessionVersion'],
+    # record['TaxId'],
+    # record['Title'],
+    # record['Length']
+
+    return record['TaxId']
+
 conn_refseq = sqlite3.connect("$params.databases_dir/refseq/merged_refseq.db")
 cursor_refseq = conn_refseq.cursor()
 
@@ -1735,9 +1758,16 @@ for n, acc_list in enumerate(chunk_lists):
         accession2taxid[row[0]] = row[1]
     for annot in data_annotation:
         annot = list(annot)
+        accession = annot[0]
+        seq_length = annot[2]
         # AccessionVersion, TaxId, Title, Length
-        annot[1] = re.sub("%s.[0-9]+ " % annot[0], "", annot[1])
-        list_of_lists.append([annot[0], accession2taxid[annot[0]], annot[1], annot[2]])
+        description = re.sub("%s.[0-9]+ " % annot[0], "", annot[1])
+        try:
+            taxid = accession2taxid[annot[0]]
+        except:
+            logging.debug("Missing taxid:\t%s" % accession)
+            taxid = accession2taxid_entrez(accession)
+        list_of_lists.append([accession, taxid, description, seq_length])
     if n % 10 == 0:
         logging.debug('insert: %s' % n)
         cursor.executemany(sql_template, list_of_lists)
