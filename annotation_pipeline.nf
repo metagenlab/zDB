@@ -1190,6 +1190,76 @@ with open(string_mapping, 'r') as f:
 }
 
 
+process get_PMID_data {
+
+  conda 'bioconda::biopython=1.68'
+
+  publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
+
+  when:
+  params.string == true
+
+  input:
+  file 'string_mapping_PMID.tab' from string_mapping_BMID
+
+
+  output:
+  file 'string_mapping_PMID.db' into PMID_db
+
+  script:
+
+  """
+#!/usr/bin/env python
+
+from Bio import Entrez
+import sqlite3
+
+Entrez.email = "trestan.pillonel@chuv.ch"
+
+def pmid2abstract_info(pmid):
+    from Bio import Medline
+    try:
+        handle = Entrez.efetch(db="pubmed", id=pmid, rettype="medline",
+                               retmode="text")
+        record = Medline.read(handle)
+    except:
+        print("FAIL:", pmid)
+        return None
+
+    pmid_data = {}
+    pmid_data["title"] = record.get("TI", "?")
+    pmid_data["authors"] = record.get("AU", "?")
+    pmid_data["source"] = record.get("SO", "?")
+    pmid_data["abstract"] = record.get("AB", "?")
+    pmid_data["pmid"] = pmid
+
+    return pmid_data
+
+conn = sqlite3.connect(database)
+cursor = conn.cursor()
+
+sql = 'create table if not exists hash2pmid (pmid INT, ' \
+      ' hash binary)'
+
+sql2 = 'create table if not exists pmid2data (pmid INTEGER, title TEXT, authors TEXT, source TEXT, abstract TEXT)'
+cursor.execute(sql,)
+
+sql_template = 'insert into pmid2data values (?, ?, ?, ?, ?)'
+
+pmid_list =
+
+for n, pmid in enumerate(pmid_list_new):
+    print("%s/%s" % (n, len(pmid_list_new)))
+    pmid_data = pmid2abstract_info(pmid)
+    if pmid_data:
+        cursor.execute(sql_template, (pmid, pmid_data["title"], str(pmid_data["authors"]), pmid_data["source"], pmid_data["abstract"]))
+    if n % 100 == 0:
+        conn.commit()
+conn.commit()
+  """
+}
+
+
 process get_tcdb_mapping {
 
   conda 'bioconda::biopython=1.68'
