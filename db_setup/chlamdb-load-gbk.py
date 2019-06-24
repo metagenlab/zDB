@@ -122,9 +122,14 @@ def create_cds_tables(one_gbk,
                     except:
                         old_locus_tag = False
 
-                    protein_id = feature.qualifiers['protein_id'][0]
-                    translation = feature.qualifiers['translation'][0]
-
+                    try:
+                        protein_id = feature.qualifiers['protein_id'][0]
+                    except:
+                        protein_id = '.'
+                    try:
+                        translation = feature.qualifiers['translation'][0]
+                    except:
+                        translation = '-'
 
                     sql1 = 'INSERT INTO feature_tables.genomes_cds_%s(taxon_id, genome_accession, start, end, strand, gene, product, translation) ' \
                            'values(%s, "%s", %s, %s, %s, "%s", "%s", "%s")' % (biodb_name,
