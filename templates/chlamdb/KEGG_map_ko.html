@@ -127,17 +127,26 @@
 </body>
 {% include "chlamdb/style_menu.html" %}
 <script>
-$(document).ready(function(){
-    $('#ko_table').DataTable({
-        "order": [[2, "desc" ]],
-        "pageLength": 250,
-"aoColumns": [
-null,
-null,
-{ "sType": 'numeric' },
-null
-]
-    });
-});
+$(document).ready(function() {
+$('#ko_table').DataTable( {
+dom: 'Bfrtip',
+"order": [[2, "desc" ]],
+"pageLength": 15,
+"paging":   true,
+"ordering": true,
+"info":     false,
+buttons: [
+{
+    extend: 'excel',
+    title: '{% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %}'
+},
+{
+    extend: 'csv',
+    title: '{% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %}'
+}
+],
+} );
+} );
+
 </script>
 </html>
