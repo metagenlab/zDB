@@ -166,15 +166,15 @@ def create_orthogroup_table(server,
         sql = 'insert into annotation.seqfeature_id2locus_%s (seqfeature_id, feature_type_id, taxon_id, ' \
               ' pseudogene, bioentry_id, locus_tag, start, stop, strand) ' \
               ' values (%s, %s, %s, %s, %s, "%s", %s, %s, %s)' % (biodatabase_name,
-                                                                seqfeature_id,
-                                                                seqfeature_type_id,
-                                                                taxon_id,
-                                                                pseudo,
-                                                                bioentry_id,
-                                                                locus_tag,
-                                                                start,
-                                                                end,
-                                                                strand)
+                                                                  seqfeature_id,
+                                                                  seqfeature_type_id,
+                                                                  taxon_id,
+                                                                  pseudo,
+                                                                  bioentry_id,
+                                                                  locus_tag,
+                                                                  start,
+                                                                  end,
+                                                                  strand)
 
 
         server.adaptor.execute(sql,)
@@ -928,20 +928,20 @@ if __name__ == '__main__':
 
         print("creating legacy orthology_detail table")
         create_orthogroup_table_legacy(server,
-                                        args.db_name,
-                                        orthomcl_groups2locus_tag_list,
-                                        locus_tag2seqfeature_id,
-                                        protein_id2seqfeature_id,
-                                        locus_tag2genome_taxon_id,
-                                        protein_id2genome_taxon_id,
-                                        locus_tag2accession,
-                                        protein_id2accession,
-                                        seqfeature_id2locus_tag,
-                                        seqfeature_id2protein_id,
-                                        seqfeature_id2gene,
-                                        seqfeature_id2product,
-                                        seqfeature_id2translation,
-                                        seqfeature_id2organism,
-                                        seqfeature_id2seqfeature_location,
-                                        group2group_size,
-                                        group2family_size)
+                                       args.db_name,
+                                       orthomcl_groups2locus_tag_list,
+                                       locus_tag2seqfeature_id,
+                                       protein_id2seqfeature_id,
+                                       locus_tag2genome_taxon_id,
+                                       protein_id2genome_taxon_id,
+                                       locus_tag2accession,
+                                       protein_id2accession,
+                                       seqfeature_id2locus_tag,
+                                       seqfeature_id2protein_id,
+                                       seqfeature_id2gene,
+                                       seqfeature_id2product,
+                                       seqfeature_id2translation,
+                                       seqfeature_id2organism,
+                                       seqfeature_id2seqfeature_location,
+                                       group2group_size,
+                                       group2family_size)

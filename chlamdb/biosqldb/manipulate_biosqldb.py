@@ -350,7 +350,7 @@ def pseudogene_feature_list(server, biodatabase_name):
 
     sql_locus_tag_seqfeature_id_table = 'select t1.seqfeature_id from seqfeature as t1' \
                                         ' inner join seqfeature_qualifier_value as t2 on t1.seqfeature_id = t2.seqfeature_id' \
-                                        ' inner join term as t3 on t2.term_id = t3.term_id and t3.name = "pseudo"' \
+                                        ' inner join term as t3 on t2.term_id = t3.term_id and t3.name in ("pseudo", "pseudogene")' \
                                         ' inner join bioentry as t6 on t1.bioentry_id = t6.bioentry_id' \
                                         ' inner join biodatabase as t7 on t6.biodatabase_id = t7.biodatabase_id and t7.name = "%s"' % biodatabase_name
 
