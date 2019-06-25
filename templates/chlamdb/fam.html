@@ -131,65 +131,56 @@
                                   </div>
                                   <div class="tab-pane" id="tab2">
 
-                                      <div id="export_bouttons">
-                                          <a download="locus_{{ data.1 }}.xls" href="#" onclick="return ExcellentExport.excel(this, 'search_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-                                          <a download="locus{{ data.1 }}.csv" href="#" onclick="return ExcellentExport.csv(this, 'search_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to CSV</a>
-                                          <br/>
-                                      </div>
+                                    <h3>Detail</h3>
 
-                                      <table id="search_table" class="table">
-                                          <h3>Detail</h3>
-                                          <thead>
-                                              <tr>
-                                              <th></th>
-                                              <th>Orthogroup</th>
-                                              <th>Locus</th>
-                                              <th>Protein id</th>
-                                              <th>Start</th>
-                                              <th>Stop</th>
-                                              <th>S.</th>
-                                              <th>Gene</th>
-                                              <th>nH</th>
-                                              <th>nG</th>
-                                              <th>TM</th>
-                                              <th>SP</th>
-                                              <th>Product</th>
-                                              <th>Organism</th>
-                                              </tr>
-                                          </thead>
-                                          <tbody>
+                                        <table id="fam_table" class="display">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Orthogroup</th>
+                                                    <th>Locus</th>
+                                                    <th>Protein id</th>
+                                                    <th>Start</th>
+                                                    <th>Stop</th>
+                                                    <th>S.</th>
+                                                    <th>Gene</th>
+                                                    <th>nH</th>
+                                                    <th>nG</th>
+                                                    <th>TM</th>
+                                                    <th>SP</th>
+                                                    <th>Product</th>
+                                                    <th>Organism</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% load static %}
+                                                {% get_static_prefix as STATIC_PREFIX %}
 
-                                              {% load static %}
-                                              {% get_static_prefix as STATIC_PREFIX %}
-
-                                              {% for values in all_locus_data %}
-                                                  <tr>
-                                                  <td>{{values.0}}</td>
-
-                                                  <td>{{values.1}}</td>
-                                                  <td><a href='{% url "locusx" values.2 True %}' target="_top">{{values.2}}</a></td>
-                                                  <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</td>
-                                                  <td>{{values.4}}</td>
-                                                  <td>{{values.5}}</td>
-                                                  <td>{{values.6}}</td>
-                                                  <td>{{values.7}}</td>
-                                                  <td>{{values.8}}</td>
-                                                  <td>{{values.9}}</td>
-                                                  <td>{{values.10}}</td>
-                                                  <td>{{values.11}}</td>
-                                                  <td>{{values.12}}</td>
-                                                  <td>{{values.13}}</td>
-                                                  </tr>
-                                              {% endfor %}
-                                              </tbody>
-                                      </table>
+                                                {% for values in all_locus_data %}
+                                                    <tr>
+                                                        <td>{{values.0}}</td>
+                                                        <td>{{values.1}}</td>
+                                                        <td><a href='{% url "locusx" values.2 True %}' target="_top">{{values.2}}</a></td>
+                                                        <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}">{{values.3}}</a></td>
+                                                        <td>{{values.4}}</td>
+                                                        <td>{{values.5}}</td>
+                                                        <td>{{values.6}}</td>
+                                                        <td>{{values.7}}</td>
+                                                        <td>{{values.8}}</td>
+                                                        <td>{{values.9}}</td>
+                                                        <td>{{values.10}}</td>
+                                                        <td>{{values.11}}</td>
+                                                        <td>{{values.12}}</td>
+                                                        <td>{{values.13}}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
                                   </div>
 
                                   <div class="tab-pane" id="tab66" style="height:100%">
                                           <iframe name="orthoIDframe2" id="orthoIDframe2" scrolling="no" width="100%" height="2800px"></iframe>
                                   </div>
-
-
 
                                   <div class="tab-pane" id="tab3">
                                        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
@@ -241,15 +232,29 @@ $('.nav-tabs a').on('shown.bs.tab', function (e) {
 })
 
 $(document).ready(function() {
-  $('#search_table').DataTable( {
-      "columnDefs": [
-      { className: "wrapcol", "targets": [ 14 ] }
-    ],
-    "paging":   true,
-    "ordering": true,
-    "info":     false
-  } );
+$('#fam_table').DataTable( {
+        dom: 'Bfrtip',
+        "order": [[2, "desc" ]],
+        "columnDefs": [
+        { className: "wrapcol", "targets": [ 12 ] }
+        ],
+        "pageLength": 15,
+        "paging":   true,
+        "ordering": true,
+        "info":     false,
+        buttons: [
+        {
+            extend: 'excel',
+            title: '{% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %}'
+        },
+        {
+            extend: 'csv',
+            title: '{% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %}'
+        }
+        ],
+    } );
 } );
+
 </script>
 
 <style>
@@ -259,5 +264,5 @@ word-break: break-all;
 word-wrap: break-word;
 width: auto;
 }
-
+</style>
 </html>
