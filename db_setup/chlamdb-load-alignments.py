@@ -148,7 +148,8 @@ class Orthogroup_Identity_DB:
         #print query_lists
         procs = []
         print("starting... %s cpus" % n_cpu)
-        for one_list in query_lists:
+        for n, one_list in enumerate(query_lists):
+            print("list", n, len(one_list), "elements")
             proc = Process(target=self._group_id, args=(one_list, out_q))
             procs.append(proc)
             proc.start()
