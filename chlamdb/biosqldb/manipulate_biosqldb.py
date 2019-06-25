@@ -406,7 +406,7 @@ def locus_tag2seqfeature_id_dict(server, biodatabase_name, all=True):
     else:
         sql_locus_tag_seqfeature_id_table = 'select t2.value, t1.seqfeature_id from biosqldb.seqfeature as t1' \
                                             ' inner join seqfeature_qualifier_value as t2 on t1.seqfeature_id = t2.seqfeature_id' \
-                                            ' inner join term as t3 on t2.term_id = t3.term_id and t3.name = "locus_tag"' \
+                                            ' inner join term as t3 on t2.term_id = t3.term_id and t3.name="locus_tag" ' \
                                             ' inner join term as t4 on t1.type_term_id = t4.term_id and t4.name="CDS")' \
                                             ' inner join term as t5 on t1.source_term_id = t5.term_id' \
                                             ' inner join bioentry as t6 on t1.bioentry_id = t6.bioentry_id' \
