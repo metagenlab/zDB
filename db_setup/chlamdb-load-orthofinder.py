@@ -796,9 +796,12 @@ if __name__ == '__main__':
 
     print("get locus_tag2seqfeature_id")
     locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, args.db_name)
+    locus_tag2seqfeature_id_CDS = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, args.db_name, all=False)
 
     print("number of groups:", len(orthomcl_groups2locus_tag_list))
-    print("number of locus tags:", len(locus_tag2seqfeature_id))
+    print("number of locus in locus_tag2orthogroup_id:", len(locus_tag2orthogroup_id))
+    print("number of locus in locus_tag2seqfeature_id:", len(locus_tag2seqfeature_id))
+    print("number of locus in locus_tag2seqfeature_id_CDS:", len(locus_tag2seqfeature_id_CDS))
 
     print("adding orthogroup to seqfeature_qualifier_values")
     add_orthogroup_to_seq(server,
