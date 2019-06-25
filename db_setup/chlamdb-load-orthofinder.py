@@ -150,6 +150,7 @@ def create_orthogroup_table(server,
         end = seqfeature2location_dico[seqfeature_id][1]
         strand = seqfeature2location_dico[seqfeature_id][2]
         bioentry_id = seqfeature_id2bioentry_id_dico[str(seqfeature_id)]
+        seqfeature_type_id = seqfeature_id2feature_type_id[seqfeature_id]
 
         if seqfeature_id not in pseudogene_feature_list:
             if term_id2term[str(seqfeature_type_id)] == 'CDS':
@@ -161,8 +162,6 @@ def create_orthogroup_table(server,
                     pseudo = 1
         else:
             pseudo = 1
-
-        seqfeature_type_id = seqfeature_id2feature_type_id[seqfeature_id]
 
         sql = 'insert into annotation.seqfeature_id2locus_%s (seqfeature_id, feature_type_id, taxon_id, ' \
               ' pseudogene, bioentry_id, locus_tag, start, stop, strand) ' \
@@ -186,10 +185,7 @@ def create_orthogroup_table(server,
                 try:
                     protein_id = seqfeature_id2protein_id_dico[str(seqfeature_id)]
                 except KeyError:
-                    #print 'No protein ID for,',  seqfeature_id, "(%s)" % locus_tag
-
                     protein_id = locus_tag
-
                 try:
                     gene = seqfeature_id2gene_dico[str(seqfeature_id)]
                 except KeyError:
