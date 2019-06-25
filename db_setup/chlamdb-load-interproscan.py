@@ -415,10 +415,11 @@ def interpro2biosql_legacy(server,
     print(sql)
     server.adaptor.execute(sql)
 
-    sql_template = 'INSERT INTO biosqldb.interpro_%s(accession, locus_tag, organism, taxon_id,' \
-                   ' sequence_length, analysis, signature_accession, signature_description, start, ' \
-                   ' stop, score, interpro_accession, interpro_description, GO_terms, pathways, orthogroup, seqfeature_id) ' \
-                   ' values ("%s", "%s", "%s", %s, %s, "%s", "%s", "%s", %s, %s, "%s", "%s", "%s", "%s", "%s", "%s", %s);'
+    sql_template = 'INSERT INTO biosqldb.interpro_%s' % db_name
+    sql_template += ' (accession, locus_tag, organism, taxon_id,' \
+                    ' sequence_length, analysis, signature_accession, signature_description, start, ' \
+                    ' stop, score, interpro_accession, interpro_description, GO_terms, pathways, orthogroup, seqfeature_id) ' \
+                    ' values ("%s", "%s", "%s", %s, %s, "%s", "%s", "%s", %s, %s, "%s", "%s", "%s", "%s", "%s", "%s", %s);'
 
     for one_interpro_file in input_files:
         print(one_interpro_file)
@@ -475,8 +476,7 @@ def interpro2biosql_legacy(server,
                     #print organism
                     locus_tag = seqfeature_id2locus_tag[str(seqfeature_id)]
                     orthogroup = seqfeature_id2orthogroup[str(seqfeature_id)]
-                    sql_template % (db_name,
-                                     locus_tag,
+                    sql_template % ( locus_tag,
                                      locus_tag,
                                      organism,
                                      taxon_id,
