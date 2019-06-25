@@ -297,7 +297,7 @@ def get_all_orthogroup_size(server, biodatabase_name):
           ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' \
           ' group by seqfeature_qualifier_value.value' % biodatabase_name
 
-    #print sql
+    print(sql)
 
     result = server.adaptor.execute_and_fetchall(sql,)
 
@@ -576,7 +576,7 @@ def get_orthology_matrix_merging_plasmids_biosqldb(server, biodatabase_name):
 
 
     n_groups = len(all_orthogroups.keys())
-    ##print "ngroups", n_groups
+    print ("ngroups", n_groups)
 
 
     all_taxons = manipulate_biosqldb.get_taxon_id_list(server, biodatabase_name)
