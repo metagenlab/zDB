@@ -20,16 +20,23 @@ chlamdb-load-swissprot-homology-search.py -i chunk_.*.tab -d 2019_06_PVC -t -p 2
 chlamdb-load-COG.py -i blast_COG.tab -d 2019_06_PVC -u ../../data/nr_mapping.tab -cc cog_corresp.tab -cl cog_length.tab
 
 # load interproscan results
-chlamdb-load-interproscan.py -i *tsv -d 2019_06_PVC -u ../../data/nr_mapping.tab
+OK chlamdb-load-interproscan.py -i *tsv -d 2019_06_PVC -u ../../data/nr_mapping.tab
 
 # add legacy table
-chlamdb-load-interproscan.py -i *tsv -d 2019_06_PVC -u ../../data/nr_mapping.tab -l
+OK chlamdb-load-interproscan.py -i *tsv -d 2019_06_PVC -u ../../data/nr_mapping.tab -l
 
 # add add_SP_TM to orthology_ table
-chlamdb-load-interproscan.py -a -d 2019_06_PVC
+OK chlamdb-load-interproscan.py -a -d 2019_06_PVC
 
 chlamdb-load-KO.py -k chunk*.tab -d 2019_06_PVC -c ../../data/nr_mapping.tab
 chlamdb-load-PRIAM.py -i sequenceECs.txt -d 2019_06_PVC -c ../../data/nr_mapping.tab
+
+# comparative tables
+chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -o # orthogroup
+chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -c # COG
+chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -p # pfam
+chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -i # interpro
+chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -k # ko
 
 
 chlamdb-load-uniprot-annotations.py -d 2019_06_PVC -um uniprot_mapping.tab -d uniprot_data.tab -hm ../../data/nr_mapping.tab

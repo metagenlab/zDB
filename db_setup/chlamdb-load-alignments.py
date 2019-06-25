@@ -12,9 +12,10 @@ import MySQLdb
 from chlamdb.biosqldb import manipulate_biosqldb
 
 class Orthogroup_Identity_DB:
-    def __init__(self, database_name):
+    def __init__(self, database_name, ncpus):
         import os
         sqlpsw = os.environ['SQLPSW']
+        self.n_cpus = ncpus
         try:
             self.conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
@@ -42,7 +43,7 @@ class Orthogroup_Identity_DB:
     def import_alignments(self, cursor, alignment_files):
         import sys
         sys.stdout.write("getting orthogroup identity matrix from %s fasta alignments...\n" % (len(alignment_files)))
-        all_matrix = self._get_group_id2identity_matrix(alignment_files)
+        all_matrix = self._get_group_id2identity_matrix(alignment_files, self.n_cpus)
         sys.stdout.write("Creating mysql table to store identity %s matrix...\n" % len(all_matrix))
         for one_matrix in all_matrix.keys():
             #print one_matrix
@@ -137,15 +138,16 @@ class Orthogroup_Identity_DB:
             outdict[group_name] = id_matrix
         out_q.put(outdict)
 
-    def _get_group_id2identity_matrix(self, alignments):
+    def _get_group_id2identity_matrix(self, alignments, n_cpus):
 
         out_q = Queue()
 
-        n_cpu = 8
+        n_cpu = n_cpus
         n_poc_per_list = int(numpy.ceil(len(alignments)/float(n_cpu)))
         query_lists = self._chunks(alignments, n_poc_per_list)
         #print query_lists
         procs = []
+        print("starting... %s cpus" % n_cpu)
         for one_list in query_lists:
             proc = Process(target=self._group_id, args=(one_list, out_q))
             procs.append(proc)
@@ -412,10 +414,11 @@ if __name__ == '__main__':
 
     parser.add_argument("-a",'--align_files', type=str, help="aliphment files", nargs='+')
     parser.add_argument("-d",'--db_name', type=str, help="database_name")
+    parser.add_argument("-c",'--cpus', type=int, help="n cpus")
 
     args = parser.parse_args()
 
-    tata = Orthogroup_Identity_DB(args.db_name)
+    tata = Orthogroup_Identity_DB(args.db_name, args.cpus)
     print("importing alignments...")
     tata.import_alignments(tata.cursor, args.align_files)
     print("add_average_orthogroup_identity")
