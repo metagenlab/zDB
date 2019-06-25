@@ -802,8 +802,16 @@ if __name__ == '__main__':
     protein_id2genome_ortho_mcl_code = parse_orthomcl_output(args.mcl,
                                                              args.orthofinder)
 
+    print("get locus_tag2seqfeature_id")
+    locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, args.db_name)
+
     print("number of groups:", len(orthomcl_groups2locus_tag_list))
-    print("number of proteins:", len(protein_id2genome_ortho_mcl_code))
+    print("number of locus tags:", len(locus_tag2seqfeature_id))
+
+    print("adding orthogroup to seqfeature_qualifier_values")
+    add_orthogroup_to_seq(server,
+                          locus_tag2orthogroup_id,
+                          locus_tag2seqfeature_id)
 
     print("Get orthology matrix merging plasmid")
     orthogroup2detailed_count = get_orthology_matrix_merging_plasmids_biosqldb(server, args.db_name)
@@ -811,10 +819,6 @@ if __name__ == '__main__':
     print("creating orthology table")
     print("number of groups", len(orthogroup2detailed_count))
     create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
-
-
-    print("get locus_tag2seqfeature_id")
-    locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, args.db_name)
 
     print("get locus_tag2taxon_id dictionnary...")
     locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, args.db_name)
@@ -847,11 +851,6 @@ if __name__ == '__main__':
 
     print("getting seqfeature_id2bioentry_id")
     seqfeature_id2bioentry_id = manipulate_biosqldb.seqfeature_id2bioentry_id_dico(server, args.db_name)
-
-    print("adding orthogroup to seqfeature_qualifier_values")
-    add_orthogroup_to_seq(server,
-                          locus_tag2orthogroup_id,
-                          locus_tag2seqfeature_id)
 
     print("getting seqfeature_id2gene")
     seqfeature_id2gene = manipulate_biosqldb.seqfeature_id2gene_dico(server, args.db_name)
