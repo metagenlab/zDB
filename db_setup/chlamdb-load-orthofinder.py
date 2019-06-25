@@ -35,16 +35,13 @@ def add_orthogroup_term(server):
     return server.adaptor.execute_and_fetchall(sql1)[0][0]
 
 
-def add_orthogroup_to_seq(server, protein_id2orthogroup, protein_id2seqfeature_id_dico, locus_tag2seqfeature_id_dico):
+def add_orthogroup_to_seq(server, locus_tag2orthogroup, locus_tag2seqfeature_id_dico):
     #| seqfeature_id | term_id | rank | value   |
     rank = 1
     term_id = add_orthogroup_term(server)
-    for protein_id in protein_id2orthogroup.keys():
-        try:
-            seqfeature_id = protein_id2seqfeature_id_dico[protein_id]
-        except:
-            seqfeature_id = locus_tag2seqfeature_id_dico[protein_id]
-        group = protein_id2orthogroup[protein_id]
+    for locus_tag in locus_tag2orthogroup.keys():
+        seqfeature_id = locus_tag2seqfeature_id_dico[locus_tag]
+        group = locus_tag2orthogroup[locus_tag]
         sql = 'INSERT INTO seqfeature_qualifier_value (seqfeature_id, term_id, rank, value) values (%s, %s, %s, "%s");' % (seqfeature_id,
                                                                                                                            term_id,
                                                                                                                            rank,
@@ -52,22 +49,15 @@ def add_orthogroup_to_seq(server, protein_id2orthogroup, protein_id2seqfeature_i
         try:
             server.adaptor.execute(sql)
         except:
-            #print 'group %s already inserted?' % group
-            #print 'updating...'
-            #try:
             sql2 = 'UPDATE seqfeature_qualifier_value SET seqfeature_qualifier_value.value="%s" where seqfeature_id=%s and term_id=%s' % (group,
                                                                                                                 seqfeature_id,
                                                                                                                 term_id)
-            #print sql2
+
             server.adaptor.execute(sql2)
-            #except:
-            #    #print 'could not insert group %s' % group
 
-
-            #print sql
 
     server.adaptor.commit()
-        #select term_id from term where name = "orthogroup";
+
 
 def create_orthogroup_table(server,
                             biodatabase_name,
@@ -805,6 +795,16 @@ if __name__ == '__main__':
     asset_path = "/home/trestan/work/dev/django/chlamydia/assets"
 
 
+    print("parsing orthofinder file")
+    locus_tag2orthogroup_id, \
+    orthomcl_groups2locus_tag_list, \
+    genome_orthomcl_code2proteins, \
+    protein_id2genome_ortho_mcl_code = parse_orthomcl_output(args.mcl,
+                                                             args.orthofinder)
+
+    print("number of groups:", len(orthomcl_groups2locus_tag_list))
+    print("number of proteins:", len(protein_id2genome_ortho_mcl_code))
+
     print("Get orthology matrix merging plasmid")
     orthogroup2detailed_count = get_orthology_matrix_merging_plasmids_biosqldb(server, args.db_name)
 
@@ -848,12 +848,10 @@ if __name__ == '__main__':
     print("getting seqfeature_id2bioentry_id")
     seqfeature_id2bioentry_id = manipulate_biosqldb.seqfeature_id2bioentry_id_dico(server, args.db_name)
 
-    print("parsing orthofinder file")
-    protein_id2orthogroup_id, \
-    orthomcl_groups2locus_tag_list, \
-    genome_orthomcl_code2proteins, \
-    protein_id2genome_ortho_mcl_code = parse_orthomcl_output(args.mcl,
-                                                             args.orthofinder)
+    print("adding orthogroup to seqfeature_qualifier_values")
+    add_orthogroup_to_seq(server,
+                          locus_tag2orthogroup_id,
+                          locus_tag2seqfeature_id)
 
     print("getting seqfeature_id2gene")
     seqfeature_id2gene = manipulate_biosqldb.seqfeature_id2gene_dico(server, args.db_name)
@@ -884,13 +882,9 @@ if __name__ == '__main__':
     protein_id2signal_peptide = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
     '''
 
-    '''
-    print("adding orthogroup to seqfeature_qualifier_values")
-    add_orthogroup_to_seq(server,
-                          protein_id2orthogroup_id,
-                          protein_id2seqfeature_id,
-                          locus_tag2seqfeature_id)
-    '''
+
+
+
 
     print("get pseudogene feature list")
     pseudogene_feature_list = manipulate_biosqldb.pseudogene_feature_list(server, args.db_name)
