@@ -414,7 +414,7 @@ def interpro2biosql_legacy(server,
                     ' stop, score, interpro_accession, interpro_description, GO_terms, pathways, orthogroup, seqfeature_id) ' \
                     ' values ("%s", "%s", "%s", %s, %s, "%s", "%s", "%s", %s, %s, "%s", "%s", "%s", "%s", "%s", "%s", %s);'
 
-    for one_interpro_file in input_files:
+    for n, one_interpro_file in enumerate(input_files):
         print(one_interpro_file)
         with open(one_interpro_file, 'r') as f:
             tsvin = read_csv(f, sep='\t', error_bad_lines=False, names=["accession",
@@ -492,7 +492,7 @@ def interpro2biosql_legacy(server,
                         print(data)
                         import sys
                         sys.exit()
-        if i % 10 == 0:
+        if n % 10 == 0:
             print("Commit", i)
             server.adaptor.commit()
 
