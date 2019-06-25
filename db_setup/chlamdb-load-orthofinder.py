@@ -322,7 +322,7 @@ def get_family_size(server, biodatabase_name):
     return groupid2family_size
 
 
-def create_orthogroup_table_old(server, biodatabase_name,
+def create_orthogroup_table_legacy(server, biodatabase_name,
                                 orthomcl_groups2locus_tag_list,
                                 locus_tag2seqfeature_id_dico,
                                 protein_id2seqfeature_id_dico,
@@ -796,209 +796,151 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", '--mcl', type=str, help="mcl file")
     parser.add_argument("-d", '--db_name', type=str, help="db name")
-    parser.add_argument("-p", '--asset_path', type=str, help="asset path")
-    parser.add_argument("-s", '--get_sequences', action="store_true", help="Create aa and nucleotide alignment directories in asset path")
     parser.add_argument("-o", '--orthofinder', action="store_true", help="orthofinder input file (and not orthomcl)")
-    parser.add_argument("-c", '--core_groups_path', type=str, help="Path to save core orthogroup fasta. Taxon id as header for concatenation.", default=None)
+    parser.add_argument("-l", '--legacy', action="store_true", help="Create legacy table")
 
     args = parser.parse_args()
 
     server, db = manipulate_biosqldb.load_db(args.db_name)
     asset_path = "/home/trestan/work/dev/django/chlamydia/assets"
 
-    if not args.get_sequences and not args.core_groups_path:
 
-        print("creating locus_tag2seqfeature_id")
-        locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, args.db_name)
+    print("creating locus_tag2seqfeature_id")
+    locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, args.db_name)
 
-        print("creating locus_tag2taxon_id dictionnary...")
-        locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, args.db_name)
+    print("creating locus_tag2taxon_id dictionnary...")
+    locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, args.db_name)
 
-        print('creating locustag2seqfature_id table')
+    '''
+    print('creating locustag2seqfature_id table')
 
-        get_locus2seqfeature_table.create_locus_tag2seqfeature_table(args.db_name,
-                                                                     locus_tag2seqfeature_id,
-                                                                     locus_tag2genome_taxon_id)
+    get_locus2seqfeature_table.create_locus_tag2seqfeature_table(args.db_name,
+                                                                 locus_tag2seqfeature_id,
+                                                                 locus_tag2genome_taxon_id)
+    '''
 
+    print("creating protein_id2seqfeature_id")
+    protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, args.db_name)
 
-        print("creating protein_id2seqfeature_id")
-        protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, args.db_name)
+    print("creating locus_tag2accession dictionnary...")
+    locus_tag2accession = manipulate_biosqldb.locus_tag2accession(server, args.db_name)
 
-        print("creating locus_tag2accession dictionnary...")
-        locus_tag2accession = manipulate_biosqldb.locus_tag2accession(server, args.db_name)
+    print("creating protein_id2accession dictionnary...")
+    protein_id2accession = manipulate_biosqldb.protein_id2accession(server, args.db_name)
 
-        print("creating protein_id2accession dictionnary...")
-        protein_id2accession = manipulate_biosqldb.protein_id2accession(server, args.db_name)
+    print("getting location")
+    seqfeature_id2seqfeature_location = manipulate_biosqldb.seqfeature_id2feature_location_dico(server, args.db_name)
 
-        print("getting location")
-        seqfeature_id2seqfeature_location = manipulate_biosqldb.seqfeature_id2feature_location_dico(server, args.db_name)
+    #print("getting seqfeature_id2locus_tag")
+    #seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, args.db_name)
 
-        #print("getting seqfeature_id2locus_tag")
-        #seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, args.db_name)
+    print("getting seqfeature_id2protein_id")
+    seqfeature_id2protein_id = manipulate_biosqldb.seqfeature_id2protein_id_dico(server, args.db_name)
 
-        print("getting seqfeature_id2protein_id")
-        seqfeature_id2protein_id = manipulate_biosqldb.seqfeature_id2protein_id_dico(server, args.db_name)
+    print("getting seqfeature_id2bioentry_id")
+    seqfeature_id2bioentry_id = manipulate_biosqldb.seqfeature_id2bioentry_id_dico(server, args.db_name)
 
-        print("getting seqfeature_id2bioentry_id")
-        seqfeature_id2bioentry_id = manipulate_biosqldb.seqfeature_id2bioentry_id_dico(server, args.db_name)
+    print("parsing orthofinder file")
+    protein_id2orthogroup_id, \
+    orthomcl_groups2locus_tag_list, \
+    genome_orthomcl_code2proteins, \
+    protein_id2genome_ortho_mcl_code = parse_orthomcl_output(args.mcl,
+                                                             args.orthofinder)
 
-        print("parsing orthofinder file")
-        protein_id2orthogroup_id, \
-        orthomcl_groups2locus_tag_list, \
-        genome_orthomcl_code2proteins, \
-        protein_id2genome_ortho_mcl_code = parse_orthomcl_output(args.mcl,
-                                                                 args.orthofinder)
+    print("getting seqfeature_id2gene")
+    seqfeature_id2gene = manipulate_biosqldb.seqfeature_id2gene_dico(server, args.db_name)
 
-        print("getting seqfeature_id2gene")
-        seqfeature_id2gene = manipulate_biosqldb.seqfeature_id2gene_dico(server, args.db_name)
+    print("getting seqfeature_id2product")
+    seqfeature_id2product = manipulate_biosqldb.seqfeature_id2product_dico(server, args.db_name)
 
-        print("getting seqfeature_id2product")
-        seqfeature_id2product = manipulate_biosqldb.seqfeature_id2product_dico(server, args.db_name)
+    print ("getting seqfeature_id2feature_type_id")
+    seqfeature_id2feature_type_id = manipulate_biosqldb.seqfeature_id2feature_type_id(server, args.db_name)
 
-        print ("getting seqfeature_id2feature_type_id")
-        seqfeature_id2feature_type_id = manipulate_biosqldb.seqfeature_id2feature_type_id(server, args.db_name)
+    print ("getting seqfeature_id2translation")
+    seqfeature_id2translation = manipulate_biosqldb.seqfeature_id2translation_dico(server, args.db_name)
 
-        print ("getting seqfeature_id2translation")
-        seqfeature_id2translation = manipulate_biosqldb.seqfeature_id2translation_dico(server, args.db_name)
+    print ("getting seqfeature_id2organism")
+    seqfeature_id2organism = manipulate_biosqldb.seqfeature_id2organism_dico(server, args.db_name)
 
-        print ("getting seqfeature_id2organism")
-        seqfeature_id2organism = manipulate_biosqldb.seqfeature_id2organism_dico(server, args.db_name)
+    #print ("getting protein_id2TM and protein_id2signal_peptide")
+    #protein_id2phobius = parse_phobius.parse_short_phobius(*args.phobius_files)
 
-        #print ("getting protein_id2TM and protein_id2signal_peptide")
-        #protein_id2phobius = parse_phobius.parse_short_phobius(*args.phobius_files)
+    '''
+    sql = 'select accession,count(*) from interpro_%s ' \
+          ' where analysis="Phobius" and signature_accession="TRANSMEMBRANE" group by locus_tag;' % args.db_name
+    sql2 = 'select accession,count(*) from interpro_%s ' \
+           ' where analysis="Phobius" and signature_accession="SIGNAL_PEPTIDE" group by locus_tag' % args.db_name
 
-        '''
-        sql = 'select accession,count(*) from interpro_%s ' \
-              ' where analysis="Phobius" and signature_accession="TRANSMEMBRANE" group by locus_tag;' % args.db_name
-        sql2 = 'select accession,count(*) from interpro_%s ' \
-               ' where analysis="Phobius" and signature_accession="SIGNAL_PEPTIDE" group by locus_tag' % args.db_name
+    server, db = manipulate_biosqldb.load_db(args.db_name)
+    protein_id2TM = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    protein_id2signal_peptide = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+    '''
 
-        server, db = manipulate_biosqldb.load_db(args.db_name)
-        protein_id2TM = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-        protein_id2signal_peptide = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
-        '''
+    '''
+    print("adding orthogroup to seqfeature_qualifier_values")
+    add_orthogroup_to_seq(server,
+                          protein_id2orthogroup_id,
+                          protein_id2seqfeature_id,
+                          locus_tag2seqfeature_id)
+    '''
 
-        print("adding orthogroup to seqfeature_qualifier_values")
-        add_orthogroup_to_seq(server,
-                              protein_id2orthogroup_id,
-                              protein_id2seqfeature_id,
-                              locus_tag2seqfeature_id)
+    print("get pseudogene feature list")
+    pseudogene_feature_list = manipulate_biosqldb.pseudogene_feature_list(server, args.db_name)
 
-        print("get pseudogene feature list")
-        pseudogene_feature_list = manipulate_biosqldb.pseudogene_feature_list(server, args.db_name)
+    print("Get orthology matrix merging plasmid")
+    orthogroup2detailed_count = get_orthology_matrix_merging_plasmids_biosqldb(server, args.db_name)
 
-        print("creating orthology table merging plasmid")
-        orthogroup2detailed_count = get_orthology_matrix_merging_plasmids_biosqldb(server, args.db_name)
+    print('getting group2group size')
+    group2group_size = get_all_orthogroup_size(server, args.db_name)
 
-        print('getting group2group size')
-        group2group_size = get_all_orthogroup_size(server, args.db_name)
+    print("getting seqfeature_id2locus_tag")
+    seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, args.db_name)
 
-        print('getting group2family size')
-        group2family_size = get_family_size(server, args.db_name)
+    print("creating orthology table")
+    create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
 
-        print("getting seqfeature_id2locus_tag")
-        seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, args.db_name)
+    print('getting group2family size')
+    group2family_size = get_family_size(server, args.db_name)
 
-        '''
+    print("creating orthology table 1")
+    create_orthogroup_table(server,
+                            args.db_name,
+                            orthomcl_groups2locus_tag_list,
+                            locus_tag2seqfeature_id,
+                            locus_tag2genome_taxon_id,
+                            seqfeature_id2protein_id,
+                            seqfeature_id2gene,
+                            seqfeature_id2product,
+                            seqfeature_id2translation,
+                            seqfeature_id2bioentry_id,
+                            seqfeature_id2seqfeature_location,
+                            group2group_size,
+                            group2family_size,
+                            seqfeature_id2feature_type_id,
+                            pseudogene_feature_list)
 
-        print("creating orthology table")
-        create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
-
-        print("creating orthology table 1")
-        create_orthogroup_table(server,
-                                args.db_name,
-                                orthomcl_groups2locus_tag_list,
-                                locus_tag2seqfeature_id,
-                                locus_tag2genome_taxon_id,
-                                seqfeature_id2protein_id,
-                                seqfeature_id2gene,
-                                seqfeature_id2product,
-                                seqfeature_id2translation,
-                                seqfeature_id2bioentry_id,
-                                seqfeature_id2seqfeature_location,
-                                group2group_size,
-                                group2family_size,
-                                seqfeature_id2feature_type_id,
-                                pseudogene_feature_list)
-        '''
+    if args.legacy:
 
         print ("creating protein_id2taxon_id dictionnary...")
         protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, args.db_name)
 
+
         print("creating legacy orthology_detail table")
-        create_orthogroup_table_old(server,
-                                    args.db_name,
-                                    orthomcl_groups2locus_tag_list,
-                                    locus_tag2seqfeature_id,
-                                    protein_id2seqfeature_id,
-                                    locus_tag2genome_taxon_id,
-                                    protein_id2genome_taxon_id,
-                                    locus_tag2accession,
-                                    protein_id2accession,
-                                    seqfeature_id2locus_tag,
-                                    seqfeature_id2protein_id,
-                                    seqfeature_id2gene,
-                                    seqfeature_id2product,
-                                    seqfeature_id2translation,
-                                    seqfeature_id2organism,
-                                    seqfeature_id2seqfeature_location,
-                                    group2group_size,
-                                    group2family_size)
-
-
-        #print 'adding orthogroup to interpro table'
-        #biosql_own_sql_tables.add_orthogroup_to_interpro_table(args.db_name)
-
-        #import biosql_own_sql_tables
-        # '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-        #print 'collecting genome statistics'
-        #biosql_own_sql_tables.collect_genome_statistics(args.db_name)
-
-        ##print "plotting orthogroup_size"
-        #plot_orthogroup_size_distrib(server, args.db_name)
-
-        #print "writing fasta files"
-        #ortho_table = "orthology_%s" % args.db_name
-        #all_taxon_ids = manipulate_biosqldb.get_column_names(server, ortho_table)[1:]
-
-
-    '''
-    if args.get_sequences and not args.core_groups_path:
-
-        if not os.path.exists(os.path.join(asset_path, "%s_fasta/" % args.db_name)):
-            os.makedirs(os.path.join(asset_path, "%s_fasta/" % args.db_name))
-
-        get_all_orthogroup_protein_fasta(server, args.db_name, os.path.join(asset_path, "%s_fasta/" % args.db_name))
-
-        if not os.path.exists(os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name)):
-            os.makedirs(os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name))
-
-        get_all_orthogroup_protein_fasta_by_taxon(server, args.db_name, os.path.join(asset_path, "%s_fasta_by_taxons/" % args.db_name))
-
-        if not os.path.exists(os.path.join(asset_path, "%s_fasta_core/" % args.db_name)):
-            os.makedirs(os.path.join(asset_path, "%s_fasta_core/" % args.db_name))
-
-        print 'getting single copy core groups'
-        core_ortho = get_conserved_core_groups(server, args.db_name)
-        import shutil
-        for group in core_ortho:
-            shutil.copy(os.path.join(asset_path, "%s_fasta_by_taxons/%s.txt" % (args.db_name, group)),
-                    os.path.join(asset_path, "%s_fasta_core/%s.txt" % (args.db_name, group)))
-
-        get_nucleotide_core_fasta(server, db, args.db_name, "./nucl")
-
-    if args.core_groups_path:
-        taxon_ids = manipulate_biosqldb.get_taxon_id_list(server, args.db_name)
-
-        sql_include = ''
-        if len(taxon_ids) > 0:
-            for i in range(0, len(taxon_ids)-1):
-                sql_include += ' `%s` = 1 and ' % taxon_ids[i]
-            sql_include+='`%s` = 1' % taxon_ids[-1]
-        sql ='select orthogroup from comparative_tables.orthology_%s where %s' % (args.db_name, sql_include)
-        print sql
-        group_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-        locus_or_protein_id2taxon_id = manipulate_biosqldb.locus_or_protein_id2taxon_id(server, args.db_name)
-        print 'Number of core groups: %s' % len(group_list)
-        get_one_group_data_taxon(group_list, locus_or_protein_id2taxon_id, args.db_name, args.core_groups_path)
-    '''
+        create_orthogroup_table_legacy(server,
+                                        args.db_name,
+                                        orthomcl_groups2locus_tag_list,
+                                        locus_tag2seqfeature_id,
+                                        protein_id2seqfeature_id,
+                                        locus_tag2genome_taxon_id,
+                                        protein_id2genome_taxon_id,
+                                        locus_tag2accession,
+                                        protein_id2accession,
+                                        seqfeature_id2locus_tag,
+                                        seqfeature_id2protein_id,
+                                        seqfeature_id2gene,
+                                        seqfeature_id2product,
+                                        seqfeature_id2translation,
+                                        seqfeature_id2organism,
+                                        seqfeature_id2seqfeature_location,
+                                        group2group_size,
+                                        group2family_size)
