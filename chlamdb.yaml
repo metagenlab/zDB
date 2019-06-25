@@ -40,3 +40,4 @@ dependencies:
  - pip:
    - cython
    - django-citations
+   - django-celery-results
