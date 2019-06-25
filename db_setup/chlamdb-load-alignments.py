@@ -140,7 +140,7 @@ class Orthogroup_Identity_DB:
 
     def _get_group_id2identity_matrix(self, alignments, n_cpus):
 
-        out_q = Queue()
+        out_q = Queue(n_cpus)
 
         n_cpu = n_cpus
         n_poc_per_list = int(numpy.ceil(len(alignments)/float(n_cpu)))
