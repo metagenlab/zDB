@@ -513,7 +513,7 @@ def accession2coding_density(biodb, sqlite=False):
     accession2n_contigs_without_cds = {}
     accession2n_countigs_without_BBH_chlamydiae = {}
     for n, accession in enumerate(accession_list):
-        #print accession
+        print(n, accession)
 
         # get list of BBH chlamydiae
         sql = 'select locus_tag from blastnr.blastnr_%s t1 ' \
