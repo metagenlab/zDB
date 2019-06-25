@@ -9,10 +9,11 @@ update seqfeature_qualifier_value set value="RB11436b" where seqfeature_id=14765
 OK chlamdb-load-gbk.py -g *gbk -d 2019_06_PVC
 OK chlamdb-load-orthofinder.py -m Orthogroups.txt -d 2019_06_PVC
 OK chlamdb-setup-old_locus-table.py -d 2019_06_PVC
-chlamdb-setup-genomes-statistics.py -d 2019_06_PVC
+OK chlamdb-setup-genomes-statistics.py -d 2019_06_PVC
+
+OK chlamdb-load-reference-phylogeny.py -r core_genome_phylogeny.nwk -d 2019_06_PVC -g ../../data/gbk_edited/*gbk
 
 chlamdb-load-alignments.py -a *faa -d 2019_06_PVC
-chlamdb-load-reference-phylogeny.py -r core_genome_phylogeny.nwk -d 2019_06_PVC -g ../../data/gbk_edited/*gbk
 chlamdb-load-swissprot-homology-search.py -i chunk_.*.tab -d 2019_06_PVC -t -p 2 -l -u ../../data/nr_mapping.tab
 
 
@@ -21,11 +22,11 @@ chlamdb-load-COG.py -i blast_COG.tab -d 2019_06_PVC -u ../../data/nr_mapping.tab
 # load interproscan results
 chlamdb-load-interproscan.py -i *tsv -d 2019_06_PVC -u ../../data/nr_mapping.tab
 
-# add add_SP_TM to orthology_ table
-chlamdb-load-interproscan.py -a
-
 # add legacy table
 chlamdb-load-interproscan.py -i *tsv -d 2019_06_PVC -u ../../data/nr_mapping.tab -l
+
+# add add_SP_TM to orthology_ table
+chlamdb-load-interproscan.py -a -d 2019_06_PVC
 
 chlamdb-load-KO.py -k chunk*.tab -d 2019_06_PVC -c ../../data/nr_mapping.tab
 chlamdb-load-PRIAM.py -i sequenceECs.txt -d 2019_06_PVC -c ../../data/nr_mapping.tab

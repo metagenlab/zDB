@@ -336,9 +336,9 @@ def add_TM_and_SP_columns(db_name):
     server, db = manipulate_biosqldb.load_db(db_name)
 
     sql = 'ALTER TABLE orthology_detail_%s ADD COLUMN SP INT AFTER seqfeature_id;' % db_name
-    #server.adaptor.execute(sql,)
+    server.adaptor.execute(sql,)
     sql = 'ALTER TABLE orthology_detail_%s ADD COLUMN TM BOOLEAN not null default 0 AFTER SP;' % db_name
-    #server.adaptor.execute(sql,)
+    server.adaptor.execute(sql,)
 
     sql = 'select seqfeature_id, count(*) as n from interpro.interpro_%s t1 inner join interpro.signature t2 on t1.signature_id=t2.signature_id inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id where analysis_name="Phobius" and signature_accession="TRANSMEMBRANE" group by seqfeature_id;' % db_name
     sql2 = 'select seqfeature_id, count(*) as n from interpro.interpro_%s t1 inner join interpro.signature t2 on t1.signature_id=t2.signature_id inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id where analysis_name="Phobius" and signature_accession="SIGNAL_PEPTIDE" group by seqfeature_id;' % db_name
@@ -414,7 +414,7 @@ def interpro2biosql_legacy(server,
     print(sql)
     server.adaptor.execute(sql)
     for one_interpro_file in input_files:
-        print (one_interpro_file)
+        print(one_interpro_file)
         from pandas import read_csv
         with open(one_interpro_file, 'r') as f:
             tsvin = read_csv(f, sep='\t', error_bad_lines=False, names=["accession",
@@ -436,7 +436,7 @@ def interpro2biosql_legacy(server,
 
             for i in range(len(tsvin['accession'])):
 
-                data= list(tsvin.loc[i,:])
+                data = list(tsvin.loc[i,:])
                 for index, item in enumerate(data):
                     if type(item) == str:
                         data[index] = item.replace('\"','')
@@ -492,12 +492,12 @@ def interpro2biosql_legacy(server,
                                                                                                                                      seqfeature_id)
                     try:
                         server.adaptor.execute(sql)
-                        server.adaptor.commit()
                     except:
-                        print (sql)
-                        print (data)
+                        print(sql)
+                        print(data)
                         import sys
                         sys.exit()
+        server.adaptor.commit()
 
 
 if __name__ == '__main__':
