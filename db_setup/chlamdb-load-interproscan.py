@@ -466,30 +466,29 @@ def interpro2biosql_legacy(server,
                         taxon_id = locus_tag2genome_taxon_id[locus_tag]
                         seqfeature_id = locus_tag2seqfeature_id[locus_tag]
                     organism = seqfeature_id2organism[str(seqfeature_id)]
-                    #print organism
-                    locus_tag = seqfeature_id2locus_tag[str(seqfeature_id)]
+
                     orthogroup = seqfeature_id2orthogroup[str(seqfeature_id)]
-                    sql_template % ( locus_tag,
-                                     locus_tag,
-                                     organism,
-                                     taxon_id,
-                                     sequence_length,
-                                     analysis,
-                                     signature_accession,
-                                     signature_description,
-                                     int(start),
-                                     int(stop),
-                                     str(score),
-                                     interpro_accession,
-                                     interpro_description,
-                                     GO_terms,
-                                     pathways,
-                                     orthogroup,
-                                     seqfeature_id)
+                    sql = sql_template % (locus_tag,
+                                          locus_tag,
+                                          organism,
+                                          taxon_id,
+                                          sequence_length,
+                                          analysis,
+                                          signature_accession,
+                                          signature_description,
+                                          int(start),
+                                          int(stop),
+                                          str(score),
+                                          interpro_accession,
+                                          interpro_description,
+                                          GO_terms,
+                                          pathways,
+                                          orthogroup,
+                                          seqfeature_id)
                     try:
-                        server.adaptor.execute(sql_template)
+                        server.adaptor.execute(sql)
                     except:
-                        print(sql_template)
+                        print(sql)
                         print(data)
                         import sys
                         sys.exit()
