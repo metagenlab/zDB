@@ -61,15 +61,21 @@
                                         {% with map_data|first as first_doc %}{{ first_doc.2 }}{% endwith %} ::
                                         ({% with map_data|first as first_doc %}{{ first_doc.1 }}{% endwith %})
                                 </ol>
-                                <table>
-
-                                    {% for values in map_data%}
-                                        <tr>
-                                        <td><a href="{% url 'fam'  values.3 'ko' %}" target="_top">{{values.3}}</a></td><td>{{values.4}}</td>
-                                        </tr>
-                                    {% endfor %}
-
-
+                                <table class="display" id="ko_list">
+                                    <thead>
+                                            <tr>
+                                                <th>Id</th>
+                                                <th>Description</th>
+                                            </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for values in map_data%}
+                                            <tr>
+                                                <td><a href="{% url 'fam'  values.3 'ko' %}" target="_top">{{values.3}}</a></td>
+                                                <td>{{values.4}}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
                                 </table>
                             </div>
                             <div class="tab-pane" id="tab66" style="height:100%">
@@ -81,8 +87,6 @@
                             <div class="tab-pane" id="tab3">
                                 <object type="image/svg+xml" data="{% static asset_path2 %}" id="cog_tree2"></object>
                             </div>
-
-
 
                         </div>
 
@@ -96,6 +100,35 @@
   </div>
 
 
+
+
 </body>
+
+
+<script>
+
+$(document).ready(function() {
+$('#ko_list').DataTable( {
+        dom: 'Bfrtip',
+        "pageLength": 15,
+        "paging":   true,
+        "ordering": true,
+        "info":     false,
+        buttons: [
+        {
+            extend: 'excel',
+            title: 'module_KO'
+        },
+        {
+            extend: 'csv',
+            title: 'module_KO'
+        }
+        ],
+    } );
+} );
+
+</script>
+
+
 {% include "chlamdb/style_menu.html" %}
 </html>
