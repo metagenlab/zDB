@@ -152,12 +152,13 @@ def create_orthogroup_table(server,
         bioentry_id = seqfeature_id2bioentry_id_dico[str(seqfeature_id)]
 
         if seqfeature_id not in pseudogene_feature_list:
-            try:
-                translation = seqfeature_id2translation_dico[str(seqfeature_id)]
-                pseudo = 0
-            except KeyError:
-                print("Missing transloation for locus: %s, consider it as pseudogene" % locus_tag)
-                pseudo = 1
+            if term_id2term[str(seqfeature_type_id)] == 'CDS':
+                try:
+                    translation = seqfeature_id2translation_dico[str(seqfeature_id)]
+                    pseudo = 0
+                except KeyError:
+                    print("Missing translation for locus: %s, consider it as pseudogene" % locus_tag)
+                    pseudo = 1
         else:
             pseudo = 1
 
@@ -181,9 +182,7 @@ def create_orthogroup_table(server,
 
         # include rRNA, tRNA
         if pseudo != 1:
-
             if term_id2term[str(seqfeature_type_id)] == 'CDS':
-                translation = seqfeature_id2translation_dico[str(seqfeature_id)]
                 try:
                     protein_id = seqfeature_id2protein_id_dico[str(seqfeature_id)]
                 except KeyError:
