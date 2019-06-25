@@ -94,7 +94,7 @@
                           </div>
 
                           <div style="width:95%">
-                            <table class="display" id="search_table" name="search">
+                            <table class="display" id="search_table1" name="search">
                                 <thead>
                                     <tr>
                                         <th></th>
@@ -142,7 +142,7 @@
                               {% if raw_data_EC %}
                                   <div class="tab-pane" id="tab1">
                                       <h2>Enzymes</h2>
-                                      <table id="search_table" class="table">
+                                      <table id="search_table2" class="table">
                                       <thead>
                                           <tr>
                                               <th id="entete_locus">EC</th>
@@ -161,7 +161,7 @@
                               {% if raw_data_ko %}
                                   <div class="tab-pane" id="tab2">
                                       <h2>Kegg Orthologs</h2>
-                                      <table id="search_table" class="table">
+                                      <table id="search_table3" class="table">
                                       <thead>
                                           <tr>
                                               <th id="entete_locus">KO id</th>
@@ -182,7 +182,7 @@
                               {% if raw_data_cog %}
                                   <div class="tab-pane" id="tab3">
                                       <h2>COGs</h2>
-                                      <table id="search_table" class="table">
+                                      <table id="search_table4" class="table">
                                       <thead>
                                           <tr>
                                               <th id="entete_locus">COG id</th>
@@ -203,7 +203,7 @@
                               {% if raw_data_interpro %}
                                   <div class="tab-pane" id="tab4">
                                       <h2>Interpro entries</h2>
-                                      <table id="search_table" class="table">
+                                      <table id="search_table5" class="table">
                                       <thead>
                                           <tr>
                                               <th id="entete_locus">Interpro</th>
@@ -232,7 +232,7 @@
                               {% if raw_data_module %}
                                   <div class="tab-pane" id="tab5">
                                       <h2>Kegg Modules</h2>
-                                      <table id="search_table" class="table">
+                                      <table id="search_table6" class="table">
                                       <thead>
                                           <tr>
                                               <th id="entete_locus">Name</th>
@@ -256,7 +256,7 @@
                               {% if raw_data_pathway %}
                                   <div class="tab-pane" id="tab6">
                                       <h2>Kegg Modules</h2>
-                                      <table id="search_table" class="table">
+                                      <table id="search_table7" class="display">
                                       <thead>
                                           <tr>
                                               <th id="entete_locus">Name</th>
@@ -304,12 +304,9 @@ mark{
           "th"
       ]
   };
-  var docu = document.getElementById("content");
-  var instance = new Mark(docu);
-  instance.mark("{{search_term}}", options);
 
   $(document).ready(function() {
-    $('#search_table').DataTable( {
+    $('#search_table1').DataTable( {
       dom: 'Bfrtip',
       buttons: [
         {
@@ -321,9 +318,6 @@ mark{
             title: 'search'
         }
       ],
-      "columnDefs": [
-      { className: "wrapcol", "targets": [ 13 ] }
-    ],
     "paging":   true,
     "ordering": true,
     "info":     false,
@@ -331,6 +325,120 @@ mark{
     fixedHeader: true
     } );
   } );
+
+
+  $(document).ready(function() {
+    $('#search_table2').DataTable( {
+      dom: 'Bfrtip',
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'search'
+        },
+        {
+            extend: 'csv',
+            title: 'search'
+        }
+      ],
+    "paging":   true,
+    "ordering": true,
+    "info":     false,
+    colReorder: true,
+    fixedHeader: true
+    } );
+  } );
+
+  $(document).ready(function() {
+    $('#search_table3').DataTable( {
+      dom: 'Bfrtip',
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'search'
+        },
+        {
+            extend: 'csv',
+            title: 'search'
+        }
+      ],
+    "paging":   true,
+    "ordering": true,
+    "info":     false,
+    colReorder: true,
+    fixedHeader: true
+    } );
+  } );
+
+
+  $(document).ready(function() {
+    $('#search_table4').DataTable( {
+      dom: 'Bfrtip',
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'search'
+        },
+        {
+            extend: 'csv',
+            title: 'search'
+        }
+      ],
+    "paging":   true,
+    "ordering": true,
+    "info":     false,
+    colReorder: true,
+    fixedHeader: true
+    } );
+  } );
+
+  $(document).ready(function() {
+    $('#search_table5').DataTable( {
+      dom: 'Bfrtip',
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'search'
+        },
+        {
+            extend: 'csv',
+            title: 'search'
+        }
+      ],
+    "paging":   true,
+    "ordering": true,
+    "info":     false,
+    colReorder: true,
+    fixedHeader: true
+    } );
+  } );
+
+  $(document).ready(function() {
+    $('#search_table6').DataTable( {
+      dom: 'Bfrtip',
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'search'
+        },
+        {
+            extend: 'csv',
+            title: 'search'
+        }
+      ],
+    "paging":   true,
+    "ordering": true,
+    "info":     false,
+    colReorder: true,
+    fixedHeader: true
+    } );
+  } );
+
+  $(document).ready(function() {
+    var docu = document.getElementById("wrapper");
+    var instance = new Mark(docu);
+    instance.mark("{{search_term}}", options);
+  } );
+
 </script>
 
 <style>
