@@ -291,8 +291,6 @@ def get_all_orthogroup_size(server, biodatabase_name):
           ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' \
           ' group by seqfeature_qualifier_value.value' % biodatabase_name
 
-    print(sql)
-
     result = server.adaptor.execute_and_fetchall(sql,)
 
     return manipulate_biosqldb._to_dict(result)
@@ -344,21 +342,22 @@ def create_orthogroup_table_legacy(server, biodatabase_name,
           ' stop INT, ' \
           ' strand INT, ' \
           ' gene VARCHAR(100) NOT NULL, ' \
-          ' product VARCHAR(10000) NOT NULL, ' \
+          ' product TEXT NOT NULL, ' \
           ' translation TEXT NOT NULL, ' \
-          ' organism VARCHAR(1000) NOT NULL, ' \
+          ' organism TEXT NOT NULL, ' \
           ' orthogroup_size INT,' \
           ' n_genomes INT,' \
           ' seqfeature_id INT,' \
           ' INDEX orthogroup(orthogroup),' \
           ' INDEX taxon_id(taxon_id),' \
-          ' INDEX orthogroup(orthogroup_name),' \
           ' INDEX locus_tag(locus_tag),' \
           ' INDEX seqfeature_id(seqfeature_id))' % biodatabase_name
 
     server.adaptor.execute(sql)
 
     for i in range(0, len(orthomcl_groups2locus_tag_list.keys())):
+        if i % 1000 == 0:
+            print("%s / %s" % (i, len(orthomcl_groups2locus_tag_list)))
         group = "group_%s" % i
         try:
             orthogroup_size = group2orthogroup_size[group]
