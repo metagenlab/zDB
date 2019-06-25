@@ -245,11 +245,11 @@ $('#fam_table').DataTable( {
         buttons: [
         {
             extend: 'excel',
-            title: '{% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %}'
+            title: '{{ fam }}'
         },
         {
             extend: 'csv',
-            title: '{% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %}'
+            title: '{{ fam }}'
         }
         ],
     } );
