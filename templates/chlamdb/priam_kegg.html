@@ -6,11 +6,10 @@
 {% load staticfiles %}
 {% load static %}
 {% get_static_prefix as STATIC_PREFIX %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 {% include "chlamdb/header.html" %}
 </head>
-<body>
 
+<body>
   <div class="container-fluid" id="main_container">
     <div class="row">
       <div id="wrapper">
@@ -35,20 +34,23 @@
                       <h3>Kegg map</h3>
                       {% static "" as baseUrl %}
                       <!--<iframe src="{{ baseUrl }}/priam/{{genome}}/PATHWAYS/index.html" width="100%" height="2000px" frameborder="0px" marginwidth="0" marginheight="0" scrolling="no"></iframe>-->
-                      <table>
-                          <tr>
-                             <th>Category</th>
-                             <th>Map</th>
-                             <th>Description</th>
-                          </tr>
-                      {% for row in data%}
-                          <tr>
-                              <td>{{row.1}}</td>
-                              <td><a href="{% url 'KEGG_mapp_ko_organism' row.0 taxon_id %}">{{row.0}}</a></td>
-                              <td>{{row.2}}</td>
-
-                          <tr>
-                      {% endfor %}
+                      <table class="display" id="kegg_maps">
+                          <thead>
+                            <tr>
+                              <th>Category</th>
+                              <th>Map</th>
+                              <th>Description</th>
+                            </tr>
+                          </thead>
+                          <tbody>  
+                            {% for row in data%}
+                              <tr>
+                                  <td>{{row.1}}</td>
+                                  <td><a href="{% url 'KEGG_mapp_ko_organism' row.0 taxon_id %}">{{row.0}}</a></td>
+                                  <td>{{row.2}}</td>
+                              </tr>
+                            {% endfor %}
+                          </tbody> 
                       </table>
 
                   {% endif %}
@@ -59,6 +61,31 @@
     </div>
  </div>
 
+
+
+
+
+<script>
+  $(document).ready(function() {
+  $('#kegg_maps').DataTable( {
+  dom: 'Bfrtip',
+  "paging":   true,
+  "ordering": true,
+  "info":     false,
+  buttons: [
+    {
+        extend: 'excel',
+        title: 'kepp_maps'
+    },
+    {
+        extend: 'csv',
+        title: 'kepp_maps'
+    }
+  ],
+  } );
+  } );
+$('.dropdown-toggle').dropdown()
+</script>
 
 </body>
 {% include "chlamdb/style_menu.html" %}
