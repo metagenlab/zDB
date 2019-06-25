@@ -142,9 +142,9 @@ def create_orthogroup_table(server,
     #print 'seqfeature_id2protein_id_dico', seqfeature_id2protein_id_dico.keys()[0:10]
 
     for n, locus_tag in enumerate(locus_tag2seqfeature_id_dico):
+        if n % 5000 == 0:
+            print("annotation.seqfeature_id2locus: %s / %s" % (n, len(locus_tag2seqfeature_id_dico)))
         seqfeature_id = locus_tag2seqfeature_id_dico[locus_tag]
-        #print '%s / %s --' % (n, len(locus_tag2seqfeature_id_dico)), 'seqfeature', seqfeature_id
-
         taxon_id = locus_tag2taxon_dico[locus_tag]
         start = seqfeature2location_dico[seqfeature_id][0]
         end = seqfeature2location_dico[seqfeature_id][1]
@@ -152,7 +152,12 @@ def create_orthogroup_table(server,
         bioentry_id = seqfeature_id2bioentry_id_dico[str(seqfeature_id)]
 
         if seqfeature_id not in pseudogene_feature_list:
-            pseudo = 0
+            try:
+                translation = seqfeature_id2translation_dico[str(seqfeature_id)]
+                pseudo = 0
+            except KeyError:
+                print("Missing transloation for locus: %s, consider it as pseudogene" % locus_tag)
+                pseudo = 1
         else:
             pseudo = 1
 
@@ -228,7 +233,8 @@ def create_orthogroup_table(server,
     # create orthogroup table
     #print 'Fill orthogroup table'
     for i in range(0, len(orthomcl_groups2locus_tag_list.keys())):
-
+        if i % 1000 == 0:
+            print("orthology.orthogroup: %s/%s groups" % (i, len(orthomcl_groups2locus_tag_list)))
         group = "group_%s" % i
 
         try:
@@ -257,7 +263,8 @@ def create_orthogroup_table(server,
     # fill seqfeature_id2orthogroup
     #print 'fill seqfeature_id2orthogroup'
     for i in range(0, len(orthomcl_groups2locus_tag_list.keys())):
-
+        if i % 1000 == 0:
+            print("orthology.seqfeature_id2orthogroup_: %s/%s groups" % (i, len(orthomcl_groups2locus_tag_list)))
         group = "group_%s" % i
 
         locus_tag_list = orthomcl_groups2locus_tag_list[group]
