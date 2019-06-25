@@ -41,7 +41,7 @@ def add_orthogroup_to_seq(server, locus_tag2orthogroup, locus_tag2seqfeature_id_
     term_id = add_orthogroup_term(server)
     for n, locus_tag in enumerate(locus_tag2orthogroup.keys()):
         if n % 100 == 0:
-            print("%s / %s", n, len(locus_tag2orthogroup.keys()))
+            print("%s / %s" % (n, len(locus_tag2orthogroup.keys())))
         seqfeature_id = locus_tag2seqfeature_id_dico[locus_tag]
         group = locus_tag2orthogroup[locus_tag]
         sql = 'INSERT INTO seqfeature_qualifier_value (seqfeature_id, term_id, rank, value) values (%s, %s, %s, "%s");' % (seqfeature_id,
