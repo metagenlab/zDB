@@ -404,14 +404,7 @@ def interpro2biosql_legacy(server,
           ' GO_terms TEXT,' \
           ' pathways TEXT,' \
           ' orthogroup varchar(400),' \
-          ' seqfeature_id INT,' \
-          ' INDEX loc (locus_tag),' \
-          ' INDEX ana (analysis),' \
-          ' INDEX tid (taxon_id),' \
-          ' INDEX og (organism),' \
-          ' INDEX acc (accession),' \
-          ' INDEX sid (seqfeature_id),' \
-          ' INDEX ia (interpro_accession))' % db_name
+          ' seqfeature_id INT)' % db_name
     print(sql)
     server.adaptor.execute(sql)
 
@@ -494,15 +487,31 @@ def interpro2biosql_legacy(server,
                                      orthogroup,
                                      seqfeature_id)
                     try:
-                        server.adaptor.execute(sql)
+                        server.adaptor.execute(sql_template)
                     except:
-                        print(sql)
+                        print(sql_template)
                         print(data)
                         import sys
                         sys.exit()
         if i % 10 == 0:
             print("Commit", i)
             server.adaptor.commit()
+
+    sql1 = 'create index h1 ON biosqldb.interpro_%s (locus_tag)' % biodb
+    sql2 = 'create index ana ON biosqldb.interpro_%s (analysis)' % biodb
+    sql3 = 'create index og ON biosqldb.interpro_%s (taxon_id)' % biodb
+    sql4 = 'create index acc ON biosqldb.interpro_%s (organism)' % biodb
+    sql5 = 'create index h1 ON biosqldb.interpro_%s (accession)' % biodb
+    sql6 = 'create index sf ON biosqldb.interpro_%s (seqfeature_id)' % biodb
+    sql7 = 'create index ia ON biosqldb.interpro_%s (interpro_accession)' % biodb
+    server.adaptor.execute(sql1)
+    server.adaptor.execute(sql2)
+    server.adaptor.execute(sql3)
+    server.adaptor.execute(sql4)
+    server.adaptor.execute(sql5)
+    server.adaptor.execute(sql6)
+    server.adaptor.execute(sql7)
+    server.adaptor.commit()
 
 
 if __name__ == '__main__':
