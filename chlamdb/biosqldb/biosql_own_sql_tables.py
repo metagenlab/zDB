@@ -604,12 +604,15 @@ def accession2coding_density(biodb, sqlite=False):
                 if feature.type == 'tRNA':
                     trna_count+=1
                 if feature.type == 'rRNA':
-                    if '16S' in feature.qualifiers['product'][0]:
-                        rrna_count_16+=1
-                    if '23S' in feature.qualifiers['product'][0]:
-                        rrna_count_23+=1
-                    if '5S' in feature.qualifiers['product'][0]:
-                        rrna_count_5+=1
+                    if 'product' in feature.qualifiers:
+                        if '16S' in feature.qualifiers['product'][0]:
+                            rrna_count_16+=1
+                        if '23S' in feature.qualifiers['product'][0]:
+                            rrna_count_23+=1
+                        if '5S' in feature.qualifiers['product'][0]:
+                            rrna_count_5+=1
+                    else:
+                        print("Unknown rRNA type:", feature)
         accession2density[accession] = round((len_coding/float(big_contig_length))*100,2)
         accession2n_trna[accession] = trna_count
         accession2n_rrna[accession] = [rrna_count_16, rrna_count_23, rrna_count_5]
