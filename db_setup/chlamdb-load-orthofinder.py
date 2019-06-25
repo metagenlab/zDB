@@ -812,17 +812,21 @@ if __name__ == '__main__':
     print("number of groups:", len(orthomcl_groups2locus_tag_list))
     print("number of locus tags:", len(locus_tag2seqfeature_id))
 
+    '''
     print("adding orthogroup to seqfeature_qualifier_values")
     add_orthogroup_to_seq(server,
                           locus_tag2orthogroup_id,
                           locus_tag2seqfeature_id)
+    '''
 
     print("Get orthology matrix merging plasmid")
     orthogroup2detailed_count = get_orthology_matrix_merging_plasmids_biosqldb(server, args.db_name)
 
+    '''
     print("creating orthology table")
     print("number of groups", len(orthogroup2detailed_count))
     create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
+    '''
 
     print("get locus_tag2taxon_id dictionnary...")
     locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, args.db_name)
@@ -885,10 +889,6 @@ if __name__ == '__main__':
     protein_id2signal_peptide = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
     '''
 
-
-
-
-
     print("get pseudogene feature list")
     pseudogene_feature_list = manipulate_biosqldb.pseudogene_feature_list(server, args.db_name)
 
@@ -903,6 +903,7 @@ if __name__ == '__main__':
     print('getting group2family size')
     group2family_size = get_family_size(server, args.db_name)
 
+    '''
     print("creating orthology table 1")
     create_orthogroup_table(server,
                             args.db_name,
@@ -919,29 +920,26 @@ if __name__ == '__main__':
                             group2family_size,
                             seqfeature_id2feature_type_id,
                             pseudogene_feature_list)
+    '''
 
-    if args.legacy:
+    print ("creating protein_id2taxon_id dictionnary...")
+    protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, args.db_name)
 
-        print ("creating protein_id2taxon_id dictionnary...")
-        protein_id2genome_taxon_id = manipulate_biosqldb.protein_id2genome_taxon_id(server, args.db_name)
-
-
-        print("creating legacy orthology_detail table")
-        create_orthogroup_table_legacy(server,
-                                       args.db_name,
-                                       orthomcl_groups2locus_tag_list,
-                                       locus_tag2seqfeature_id,
-                                       protein_id2seqfeature_id,
-                                       locus_tag2genome_taxon_id,
-                                       protein_id2genome_taxon_id,
-                                       locus_tag2accession,
-                                       protein_id2accession,
-                                       seqfeature_id2locus_tag,
-                                       seqfeature_id2protein_id,
-                                       seqfeature_id2gene,
-                                       seqfeature_id2product,
-                                       seqfeature_id2translation,
-                                       seqfeature_id2organism,
-                                       seqfeature_id2seqfeature_location,
-                                       group2group_size,
-                                       group2family_size)
+    create_orthogroup_table_legacy(server,
+                                   args.db_name,
+                                   orthomcl_groups2locus_tag_list,
+                                   locus_tag2seqfeature_id,
+                                   protein_id2seqfeature_id,
+                                   locus_tag2genome_taxon_id,
+                                   protein_id2genome_taxon_id,
+                                   locus_tag2accession,
+                                   protein_id2accession,
+                                   seqfeature_id2locus_tag,
+                                   seqfeature_id2protein_id,
+                                   seqfeature_id2gene,
+                                   seqfeature_id2product,
+                                   seqfeature_id2translation,
+                                   seqfeature_id2organism,
+                                   seqfeature_id2seqfeature_location,
+                                   group2group_size,
+                                   group2family_size)
