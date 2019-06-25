@@ -70,7 +70,7 @@ function clearBox(elementID)
                 {% if align_path %}
                 <li><a href="#tab55" data-toggle="tab">MSA</a></li>
                 {% endif %}
-                <li><a href="#2" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' data.0 True %}', 'frame2'); return false">Orthogroup conservation</a></li>
+                <!--<li><a href="#2" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' data.0 True %}', 'frame2'); return false">Orthogroup conservation</a></li>-->
                 {% if homologues|length > 3%}
                     <li><a href="#3" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' data.0 %}', 'frame3'); return false">Pfam tree</a></li>
                 {% endif %}
@@ -81,19 +81,23 @@ function clearBox(elementID)
                 <!--{% if cog_data %}
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'string_page' cog_data.0 genome_accession %}', 'orthoIDframe'); return false">string interactions</a></li>
                 {% endif %}-->
-                <li><a href="#5" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' data.1 %}', 'frame5'); return false">Region</a></li>
-                <li><a href="#6" data-toggle="tab" onclick="window.open('{% url 'blastnr' data.1 %}', 'frame6'); return false">RefSeq hoologs <span class="badge">{{n_blastnr_hits}}</span></a></li>
-                <li><a href="#7" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' data.1 %}', 'frame7'); return false">SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span></a></li>
-                <li><a href="#8" data-toggle="tab" onclick="window.open('{% url 'interactions' data.1 %}', 'frame8'); return false">Interactions</a></li>
-                {%if closest_phylo%}
-                <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' data.0 %}', 'frame9'); return false">Phylogeny</a></li>
-                {%endif %}
-                <li><a href="#10" data-toggle="tab" onclick="window.open('{% url 'hydropathy' data.1 %}', 'frame10'); return false">Hydropathy plot</a></li>
-                <!--<li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'aa_comp_locus' data.1 %}', 'orthoIDframe'); return false">AA composition PCA</a></li>-->
-                <li><a href="#11" data-toggle="tab" onclick="window.open('{% url 'gc_locus' data.1 %}', 'frame11'); return false">GC</a></li>
-                {% if pubmed_data  %}
-                <li><a href="#tab22" data-toggle="tab">Pubmed  <span class="badge">{{pubmed_data|length}}</span></a></li>
-                {%endif %}
+                {% if input_type != 'orthogroup' %}
+                    <li><a href="#5" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' data.1 %}', 'frame5'); return false">Region</a></li>
+                    <li><a href="#6" data-toggle="tab" onclick="window.open('{% url 'blastnr' data.1 %}', 'frame6'); return false">RefSeq hoologs <span class="badge">{{n_blastnr_hits}}</span></a></li>
+                    <li><a href="#7" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' data.1 %}', 'frame7'); return false">SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span></a></li>
+                    <li><a href="#8" data-toggle="tab" onclick="window.open('{% url 'interactions' data.1 %}', 'frame8'); return false">Interactions</a></li>
+                {% endif %}
+                {% if closest_phylo %}
+                    <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' data.0 %}', 'frame9'); return false">Phylogeny</a></li>
+                {% endif %}
+                {% if input_type != 'orthogroup' %}
+                    <li><a href="#10" data-toggle="tab" onclick="window.open('{% url 'hydropathy' data.1 %}', 'frame10'); return false">Hydropathy plot</a></li>
+                    <!--<li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'aa_comp_locus' data.1 %}', 'orthoIDframe'); return false">AA composition PCA</a></li>-->
+                    <li><a href="#11" data-toggle="tab" onclick="window.open('{% url 'gc_locus' data.1 %}', 'frame11'); return false">GC</a></li>
+                    {% if pubmed_data  %}
+                        <li><a href="#tab22" data-toggle="tab">Pubmed  <span class="badge">{{pubmed_data|length}}</span></a></li>
+                    {% endif %}
+                {% endif %}
 
 
             </ul>

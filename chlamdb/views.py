@@ -2118,7 +2118,7 @@ def locusx(request, locus=None, menu=True):
                 return search(request)
 
 
-
+        print("input type", input_type)
         columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                   'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
         sql2 = 'select %s from orthology_detail_%s where %s="%s"' % (columns, biodb, input_type, locus)

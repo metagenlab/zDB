@@ -70,7 +70,7 @@
 
 
                                               </table>
-                                              <li><a href="{{ external_link }}">External link</a></li>
+                                              <li><a href="{{ external_link }}"> <i class="fa fa-external-link"></i> External link</a></li>
                                           {% elif type == 'ko'%}
 
                                               <li><strong>Name:</strong> {{ ko_data.1 }}</li>
@@ -118,13 +118,13 @@
                                       {% endif %}
 
                                       {% if type == 'cog' %}
-                                          <li>Extrenal link: <a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{ fam }}">{{ fam }}</a></li>
+                                          <li>External link: <a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{ fam }}"> Extrenal {{ fam }}  <i class="fa fa-external-link"></i></a></li>
                                       {% elif type == 'pfam' %}
-                                          <li>Extrenal link: <a href="http://pfam.xfam.org/family/{{ fam }}">{{ fam }}</a></li>
+                                          <li>External link: <a href="http://pfam.xfam.org/family/{{ fam }}"> {{ fam }}  <i class="fa fa-external-link"></i></a></li>
                                       {% elif type == 'interpro' %}
-                                          <li>Extrenal link: <a href="http://www.ebi.ac.uk/interpro/entry/{{ fam }}">{{ fam }}</a></li>
+                                          <li>External link: <a href="http://www.ebi.ac.uk/interpro/entry/{{ fam }}"> {{ fam }}  <i class="fa fa-external-link"></i></a></li>
                                       {% elif type == 'ko' %}
-                                          <li>Extrenal link: <a href="http://www.genome.jp/dbget-bin/www_bget?{{ fam }}">{{ fam }}</a></li>
+                                          <li>External link: <a href="http://www.genome.jp/dbget-bin/www_bget?{{ fam }}"> {{ fam }}  <i class="fa fa-external-link"></i></a></li>
                                       {% endif %}
 
                                       </ol>
