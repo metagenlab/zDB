@@ -367,6 +367,7 @@ def interpro2biosql_legacy(server,
                            hash2locus_list,
                            *input_files):
     import re
+    from pandas import read_csv
     '''
     1. Protein Accession (e.g. P51587)
     2. Sequence MD5 digest (e.g. 14086411a2cdf1c4cba63020e1622579)
@@ -413,9 +414,14 @@ def interpro2biosql_legacy(server,
           ' INDEX ia (interpro_accession))' % db_name
     print(sql)
     server.adaptor.execute(sql)
+
+    sql_template = 'INSERT INTO biosqldb.interpro_%s(accession, locus_tag, organism, taxon_id,' \
+                   ' sequence_length, analysis, signature_accession, signature_description, start, ' \
+                   ' stop, score, interpro_accession, interpro_description, GO_terms, pathways, orthogroup, seqfeature_id) ' \
+                   ' values ("%s", "%s", "%s", %s, %s, "%s", "%s", "%s", %s, %s, "%s", "%s", "%s", "%s", "%s", "%s", %s);'
+
     for one_interpro_file in input_files:
         print(one_interpro_file)
-        from pandas import read_csv
         with open(one_interpro_file, 'r') as f:
             tsvin = read_csv(f, sep='\t', error_bad_lines=False, names=["accession",
                                                                         "MD5",
@@ -469,27 +475,24 @@ def interpro2biosql_legacy(server,
                     #print organism
                     locus_tag = seqfeature_id2locus_tag[str(seqfeature_id)]
                     orthogroup = seqfeature_id2orthogroup[str(seqfeature_id)]
-                    sql = 'INSERT INTO biosqldb.interpro_%s(accession, locus_tag, organism, taxon_id,' \
-                          ' sequence_length, analysis, signature_accession, signature_description, start, ' \
-                          ' stop, score, interpro_accession, interpro_description, GO_terms, pathways, orthogroup, seqfeature_id) ' \
-                          ' values ("%s", "%s", "%s", %s, %s, "%s", "%s", "%s", %s, %s, "%s", "%s", "%s", "%s", "%s", "%s", %s);' % (db_name,
-                                                                                                                                     locus_tag,
-                                                                                                                                     locus_tag,
-                                                                                                                                     organism,
-                                                                                                                                     taxon_id,
-                                                                                                                                     sequence_length,
-                                                                                                                                     analysis,
-                                                                                                                                     signature_accession,
-                                                                                                                                     signature_description,
-                                                                                                                                     int(start),
-                                                                                                                                     int(stop),
-                                                                                                                                     str(score),
-                                                                                                                                     interpro_accession,
-                                                                                                                                     interpro_description,
-                                                                                                                                     GO_terms,
-                                                                                                                                     pathways,
-                                                                                                                                     orthogroup,
-                                                                                                                                     seqfeature_id)
+                    sql_template % (db_name,
+                                     locus_tag,
+                                     locus_tag,
+                                     organism,
+                                     taxon_id,
+                                     sequence_length,
+                                     analysis,
+                                     signature_accession,
+                                     signature_description,
+                                     int(start),
+                                     int(stop),
+                                     str(score),
+                                     interpro_accession,
+                                     interpro_description,
+                                     GO_terms,
+                                     pathways,
+                                     orthogroup,
+                                     seqfeature_id)
                     try:
                         server.adaptor.execute(sql)
                     except:
@@ -497,7 +500,9 @@ def interpro2biosql_legacy(server,
                         print(data)
                         import sys
                         sys.exit()
-        server.adaptor.commit()
+        if i % 10 == 0:
+            print("Commit", i)
+            server.adaptor.commit()
 
 
 if __name__ == '__main__':
