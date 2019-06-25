@@ -805,10 +805,18 @@ if __name__ == '__main__':
     asset_path = "/home/trestan/work/dev/django/chlamydia/assets"
 
 
-    print("creating locus_tag2seqfeature_id")
+    print("Get orthology matrix merging plasmid")
+    orthogroup2detailed_count = get_orthology_matrix_merging_plasmids_biosqldb(server, args.db_name)
+
+    print("creating orthology table")
+    print("number of groups", len(orthogroup2detailed_count))
+    create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
+
+
+    print("get locus_tag2seqfeature_id")
     locus_tag2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, args.db_name)
 
-    print("creating locus_tag2taxon_id dictionnary...")
+    print("get locus_tag2taxon_id dictionnary...")
     locus_tag2genome_taxon_id = manipulate_biosqldb.locus_tag2genome_taxon_id(server, args.db_name)
 
     '''
@@ -819,13 +827,13 @@ if __name__ == '__main__':
                                                                  locus_tag2genome_taxon_id)
     '''
 
-    print("creating protein_id2seqfeature_id")
+    print("get protein_id2seqfeature_id")
     protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, args.db_name)
 
-    print("creating locus_tag2accession dictionnary...")
+    print("get locus_tag2accession dictionnary...")
     locus_tag2accession = manipulate_biosqldb.locus_tag2accession(server, args.db_name)
 
-    print("creating protein_id2accession dictionnary...")
+    print("get protein_id2accession dictionnary...")
     protein_id2accession = manipulate_biosqldb.protein_id2accession(server, args.db_name)
 
     print("getting location")
@@ -887,17 +895,13 @@ if __name__ == '__main__':
     print("get pseudogene feature list")
     pseudogene_feature_list = manipulate_biosqldb.pseudogene_feature_list(server, args.db_name)
 
-    print("Get orthology matrix merging plasmid")
-    orthogroup2detailed_count = get_orthology_matrix_merging_plasmids_biosqldb(server, args.db_name)
-
     print('getting group2group size')
     group2group_size = get_all_orthogroup_size(server, args.db_name)
 
     print("getting seqfeature_id2locus_tag")
     seqfeature_id2locus_tag = manipulate_biosqldb.seqfeature_id2locus_tag_dico(server, args.db_name)
 
-    print("creating orthology table")
-    create_orthology_mysql_table(server, orthogroup2detailed_count, args.db_name)
+
 
     print('getting group2family size')
     group2family_size = get_family_size(server, args.db_name)
