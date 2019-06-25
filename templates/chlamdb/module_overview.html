@@ -57,22 +57,31 @@
 
 
 
-                                <table class="sortable">
-                                <tr>
-                                    <th>Category</th><th>Map</th><th>Description</th><th>nEC</th><th>nEC+</th><th>%</th>
-                                <tr>
-                                {% for category, values in category2maps.items %}
-                                    {% for value0, value1 in values %}
-                                    <tr>
+                                <table class="display" id="module_category">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Map</th>
+                                            <th>Description</th>
+                                            <th>nEC</th>
+                                            <th>nEC+</th>
+                                            <th>Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for category, values in category2maps.items %}
+                                            {% for value0, value1 in values %}
+                                            <tr>
 
-                                        <td>{{category}}</td> <td><a href="{% url 'KEGG_module_map' value0 %}">{{value0}}</a></td><td>{{value1}}</td>
-                                        {% for value in map2count|keyvalue:value0 %}
-                                            <td>{{value}}</td>
+                                                <td>{{category}}</td> <td><a href="{% url 'KEGG_module_map' value0 %}">{{value0}}</a></td><td>{{value1}}</td>
+                                                {% for value in map2count|keyvalue:value0 %}
+                                                    <td>{{value}}</td>
+                                                {% endfor %}
+
+                                            </tr>
+                                            {% endfor %}
                                         {% endfor %}
-
-                                    </tr>
-                                    {% endfor %}
-                                {% endfor %}
+                                    </tbody>
                                 </table>
                             </div>
 
@@ -98,5 +107,32 @@
 
 
 </body>
+
+
+<script>
+
+$(document).ready(function() {
+$('#module_category').DataTable( {
+        dom: 'Bfrtip',
+        "order": [[2, "desc" ]],
+        "pageLength": 15,
+        "paging":   true,
+        "ordering": true,
+        "info":     false,
+        buttons: [
+        {
+            extend: 'excel',
+            title: 'module_category'
+        },
+        {
+            extend: 'csv',
+            title: 'module_category'
+        }
+        ],
+    } );
+} );
+
+</script>
+
 {% include "chlamdb/style_menu.html" %}
 </html>
