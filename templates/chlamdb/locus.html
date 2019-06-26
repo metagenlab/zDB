@@ -8,9 +8,11 @@
 <head>
 <!-- Global site tag (gtag.js) - Google Analytics -->
 
+{% if input_type != 'orthogroup' %}
+  <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/calipho-sib/feature-viewer/v1.0.0/dist/feature-viewer.min.css">
+  <script src="https://cdn.rawgit.com/calipho-sib/feature-viewer/v1.0.0/dist/feature-viewer.bundle.js"></script>
+{% endif %}
 
-<link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/calipho-sib/feature-viewer/v1.0.0/dist/feature-viewer.min.css">
-<script src="https://cdn.rawgit.com/calipho-sib/feature-viewer/v1.0.0/dist/feature-viewer.bundle.js"></script>
 
 {% load staticfiles %}
 {% load static %}
@@ -1187,41 +1189,40 @@ $(document).ready(function(){
 
 //var FeatureViewer = require("feature-viewer");
 //Create a new Feature Viewer and add some rendering options
-
-window.onload = function() {
-    //Create a new Feature Viewer and add some rendering options
-    var ft2 = new FeatureViewer("{{ data.13 }}","#div_features", {
-        showAxis: true,
-        showSequence: false,
-        brushActive: false,
-        toolbar:false,
-        bubbleHelp:true,
-        zoomMax:1
-                });
-
-
-    //Beside positions of each element, you can also give a specific description, which will appears in the tooltip when mouse hover, and a specific ID, for example to link a click event on the feature with something else in your project.
-
-    {{features_js|safe}}
-
-    {{phobius_features|safe}}
-
-    {{superfamily_features|safe}}
-
-    ft2.on('all',function(name,data){var obj = {name: name, data: data};if(inIframe()){ parent.postMessage(obj, "*") }})
-    ft2.onAll(function(name,data){
-        console.log(arguments);
-    });
+{% if input_type != 'orthogroup' %}
+    window.onload = function() {
+        //Create a new Feature Viewer and add some rendering options
+        var ft2 = new FeatureViewer("{{ data.13 }}","#div_features", {
+            showAxis: true,
+            showSequence: false,
+            brushActive: false,
+            toolbar:false,
+            bubbleHelp:true,
+            zoomMax:1
+                    });
 
 
-};
+        //Beside positions of each element, you can also give a specific description, which will appears in the tooltip when mouse hover, and a specific ID, for example to link a click event on the feature with something else in your project.
+
+        {{features_js|safe}}
+
+        {{phobius_features|safe}}
+
+        {{superfamily_features|safe}}
+
+        ft2.on('all',function(name,data){var obj = {name: name, data: data};if(inIframe()){ parent.postMessage(obj, "*") }})
+        ft2.onAll(function(name,data){
+            console.log(arguments);
+        });
 
 
-
-
+    };
+{% endif %}
 
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
+
 </script>
 
 {% include "chlamdb/style_menu.html" %}
+
 </html>
