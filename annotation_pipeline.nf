@@ -1011,7 +1011,7 @@ def uniprot_accession2score(uniprot_accession_list):
     unirpot2score = {}
     for row in rows:
         print(row)
-        if len(row) > 0:
+        if len(row) > 1:
             if row[0] != 'Entry':
                 unirpot2score[row[0]] = row[1]
 
