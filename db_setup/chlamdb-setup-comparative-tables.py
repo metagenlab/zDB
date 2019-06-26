@@ -654,7 +654,7 @@ def identity_closest_homolog(db_name):
                 except KeyError:
                     # no homologs
                     continue
-            server.adaptor.commit()
+        server.adaptor.commit()
 
 def shared_orthogroups_average_identity(db_name):
 
