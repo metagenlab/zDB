@@ -117,12 +117,13 @@ class Uniprot_annot():
         taxid_and_locus_list = [i for i in self.sqlite_cursor.fetchall()]
 
         for i, row in enumerate(taxid_and_locus_list):
+            if i % 1000 == 0:
+                conn.commit()
             taxid, locus_tag = row
             try:
                 most_common_proteome = self.taxid2most_frequent_proteome[taxid]
             except KeyError:
                 most_common_proteome = False
-            print("most_common_proteome", most_common_proteome)
 
             if most_common_proteome:
                 sql = 'select t4.* from taxid2locus_tag t1 inner join locus_tag2hash t2 on t1.locus_tag=t2.locus_tag inner join hash2uniprot_accession t3 on t2.hash=t3.hash inner join uniprot_data t4 on t3.uniprot_accession=t4.uniprot_accession where t1.locus_tag="%s" and proteome="%s";' % (locus_tag, most_common_proteome)
@@ -183,8 +184,6 @@ class Uniprot_annot():
                                uniprot_status,
                                uniprot_score,
                                str_date)
-)
-            conn.commit()
 
             # add annotation
             sql = 'insert into uniprot_annotation_%s' % self.biodb
@@ -205,7 +204,7 @@ class Uniprot_annot():
                               recommendedName_fullName,
                               proteinExistence,
                               developmentalstage))
-            conn.commit()
+        conn.commit()
 
     def get_most_frequent_proteome(self):
 
