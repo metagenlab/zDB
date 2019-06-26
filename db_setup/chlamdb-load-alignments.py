@@ -134,18 +134,19 @@ class Orthogroup_Identity_DB:
         return identity_matrix
 
 
-    def _group_id(self, group_align_files, out_q, n):
+    def _group_id(self, group_align_files, out_q, list_id):
         outdict = {}
-        for align_file in group_align_files:
+        for i, align_file in enumerate(group_align_files):
             align = AlignIO.read(align_file, "fasta")
             id_matrix = self._get_identity_matrix_from_multiple_alignment(align)
             group_name = self.locus_tag2orthogroup[align[0].id] #os.path.basename(align_file).split(".")[0]
             outdict[group_name] = id_matrix
             self.count += 1
-            #print(align_file, 'done', self.count)
-        pickle.dump(outdict, open("list_%s.p" % n, "wb" ))
-        time.sleep(5)
-        out_q.put("list_%s.p")
+            if i % 20 == 0:
+                print("%s / %s" % (i, len(group_align_files)))
+        pickle.dump(outdict, open("list_%s.p" % list_id, "wb"))
+        time.sleep(2)
+        out_q.put("list_%s.p" % list_id)
 
     def _get_group_id2identity_matrix(self, alignments, n_cpus):
 
