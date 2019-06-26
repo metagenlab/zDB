@@ -1916,9 +1916,9 @@ def get_pfam_data(orthogroup, biodb, aa_alignment=False):
     sql = 'select accession, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where orthogroup="%s" and analysis="Pfam"' % (biodb, orthogroup)
     '''
-    #print sql
+    print(sql)
     data = server.adaptor.execute_and_fetchall(sql,)
-
+    print("OK")
     locus2aa_seq = {}
     # getting aa alignment
     if aa_alignment:
