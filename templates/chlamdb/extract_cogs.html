@@ -104,40 +104,57 @@
 
 
                             <div id="export_bouttons_groups">
-                                <a href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');"  class="btn btn-success">Export to Excel</a>
-                                <a href="#" onclick="return ExcellentExport.csv(this, 'table_groups');"  class="btn btn-success">Export to CSV<</a>
                                 <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</a>
                             </div>
                             <ul style="list-style-type:square">
+                             <div style="padding-top:10px">
 
-                            <li>Number of included genomes: {{ include|length }} </li>
-                            <li>Number of excluded genomes: {{ exclude|length }} </li>
-                            <li>Number of accepted missing data: {{ n_missing }} </li>
-                                <li>Number of COGs identified: {{ sum_group }} </li>
-                            </ul>
-                            <table class="sortable" id="table_groups">
-
-                                <thead>
+                                <table class="table" style="width:600px">
                                     <tr>
-                                        <th>COG</th>
-                                        <th>Category</th>
-                                        <th>Name</th>
-                                        <th>present in (/{{include|length}})</th>
-                                        <th>freq complete database {{max_n}}</th>
+                                        <th>Number of included genomes</th>
+                                        <td> {{ include|length }} </td>
                                     </tr>
-                                </thead>
 
-                                {% for value in cog_data %}
                                     <tr>
-                                        <td><a href="{% url 'fam' value.0 'cog' %}">{{value.0}}</a></td>
-                                        <td>{{value.1}} ({{value.2}})</td>
-                                        <td>{{value.3}}</td>
-                                        <td>{{value.4}}</td>
-                                        <td>{{value.5}}</td>
+                                        <th>Number of excluded genomes</th>
+                                        <td> {{ exclude|length }} </td>
                                     </tr>
-                                {% endfor %}
-                            </table>
 
+                                     <tr>
+                                        <th>Number of accepted missing data</th>
+                                        <td> {{ n_missing }} </td>
+                                    </tr>
+                                      <tr>
+                                        <th>Number of COGs identified</th>
+                                        <td> {{ sum_group }}  </td>
+                                    </tr>
+ 
+                                </table>
+
+
+                                <table class="display" id="cog_table">
+
+                                    <thead>
+                                        <tr>
+                                            <th>COG</th>
+                                            <th>Category</th>
+                                            <th>Name</th>
+                                            <th>present in (/{{include|length}})</th>
+                                            <th>freq complete database {{max_n}}</th>
+                                        </tr>
+                                    </thead>
+
+                                    {% for value in cog_data %}
+                                        <tr>
+                                            <td><a href="{% url 'fam' value.0 'cog' %}">{{value.0}}</a></td>
+                                            <td>{{value.1}} ({{value.2}})</td>
+                                            <td>{{value.3}}</td>
+                                            <td>{{value.4}}</td>
+                                            <td>{{value.5}}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </table>
+                            </div>
 
                         </div>
 
@@ -152,99 +169,96 @@
 
                             <h3> Locus annotation </h3>
                             <div id="export_bouttons_groups">
-                                <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" class="btn btn-success">Export to Excel</a>
                                 <a href="{% url 'get_fasta' %}{{fasta_url_ref}}" class="btn btn-success">Download fasta</a>
-                                <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" class="btn btn-success">Export to CSV</a>
                                 <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</a>
                                 <br/>
                             </div>
-                            <table id="cog_table" class="sortable">
-                                <thead>
-                                    <tr>
-                                        <th id="entete_n"></th>
-                                        <th id="entete_locus">Orthogroup</th>
-                                        <th id="entete_locus">Locus</th>
-                                        <th style="width:10px">C</th>
-                                        <th style="width:70px">COGn</th>
-                                        <th style="width:55px">KO</th>
-                                        <th style="width:260px">Pathways</th>
-                                        <th style="width:230px">Modules</th>
-                                        <th style="width:230px">Interpro</th>
-                                        <th id="entete_gene">Gene</th>
-                                        <th id="entete_n">nH</th>
-                                        <th id="entete_n">nG</th>
-                                        <th id="entete_n">TM</th>
-                                        <th id="entete_n">SP</th>
-                                        <th id="entete_product">Product</th>
+                            <div style="padding-top:20px">
+                                <table id="table_reference_genome" class="display">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Orthogroup</th>
+                                            <th>Locus</th>
+                                            <th>C</th>
+                                            <th>COGn</th>
+                                            <th>KO</th>
+                                            <th>Pathways</th>
+                                            <th>Modules</th>
+                                            <th>Interpro</th>
+                                            <th>Gene</th>
+                                            <th>nH</th>
+                                            <th>nG</th>
+                                            <th>TM</th>
+                                            <th>SP</th>
+                                            <th>Product</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
 
-
-                                    </tr>
-                                </thead>
-                                <tbody>
-
-                                    {%for values in locus2annot%}
-                                    <tr>
-                                        <td>{{values.0}}</td>
-                                        <td>{{values.1}}</td>
-                                        <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
-                                        <td><a href="{% url 'fam' values.2 'cog' %}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
-                                        {% with locus_tag2cog_name|keyvalue:values.2 as name %}
-                                            {% if name == '-' %}
-                                                <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
-                                            {% else %}
-                                                <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
-                                            {% endif %}
-                                        {%endwith%}
-                                        {% with locus_tag2ko|keyvalue:values.2 as oneko %}
-                                            {% if oneko == '-' %}
-                                                <td>{{locus_tag2ko|keyvalue:values.2}}</td>
-                                                <td>-</td>
-                                                <td>-</td>
-                                            {% else %}
-                                                <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
-                                                {% with ko2ko_pathways|keyvalue:oneko as name %}
-                                                    {% if name == '-' %}
-                                                        <td>-</td>
-                                                    {% else %}
-                                                        <td>{{name|safe}}</td>
-                                                    {% endif %}
-                                                {%endwith%}
-                                                {% with ko2ko_modules|keyvalue:oneko as name %}
-                                                    {% if name == '-' %}
-                                                        <td>-</td>
-                                                    {% else %}
-                                                        <td>{{name|safe}}</td>
-                                                    {% endif %}
-                                                {%endwith%}
-                                            {% endif %}
-
-
-                                        {%endwith%}
-                                        {% with locus2interpro|keyvalue:values.2 as interpro_data %}
-                                        <td>
-                                            {% for one_interpro in interpro_data %}
-                                            {% if one_interpro.0 != '-' %}
-                                                <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
-                                            {%else%}
-                                                {{one_interpro.0}}
-                                            {%endif%}
-                                                {{one_interpro.1}} </br>
-                                            {% endfor %}
+                                        {%for values in locus2annot%}
+                                        <tr>
+                                            <td>{{values.0}}</td>
+                                            <td>{{values.1}}</td>
+                                            <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
+                                            <td><a href="{% url 'fam' values.2 'cog' %}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
+                                            {% with locus_tag2cog_name|keyvalue:values.2 as name %}
+                                                {% if name == '-' %}
+                                                    <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
+                                                {% else %}
+                                                    <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
+                                                {% endif %}
                                             {%endwith%}
-                                        </td>
-                                        <td>{{values.7}}</td>
-                                        <td>{{values.8}}</td>
-                                        <td>{{values.9}}</td>
-                                        <td>{{values.10}}</td>
-                                        <td>{{values.11}}</td>
-                                        <td>{{values.12}}</td>
+                                            {% with locus_tag2ko|keyvalue:values.2 as oneko %}
+                                                {% if oneko == '-' %}
+                                                    <td>{{locus_tag2ko|keyvalue:values.2}}</td>
+                                                    <td>-</td>
+                                                    <td>-</td>
+                                                {% else %}
+                                                    <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
+                                                    {% with ko2ko_pathways|keyvalue:oneko as name %}
+                                                        {% if name == '-' %}
+                                                            <td>-</td>
+                                                        {% else %}
+                                                            <td>{{name|safe}}</td>
+                                                        {% endif %}
+                                                    {%endwith%}
+                                                    {% with ko2ko_modules|keyvalue:oneko as name %}
+                                                        {% if name == '-' %}
+                                                            <td>-</td>
+                                                        {% else %}
+                                                            <td>{{name|safe}}</td>
+                                                        {% endif %}
+                                                    {%endwith%}
+                                                {% endif %}
 
-                                    </tr>
 
-                                    {%endfor%}
-                                </tbody>
-                            </table>
+                                            {%endwith%}
+                                            {% with locus2interpro|keyvalue:values.2 as interpro_data %}
+                                            <td>
+                                                {% for one_interpro in interpro_data %}
+                                                {% if one_interpro.0 != '-' %}
+                                                    <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                                {%else%}
+                                                    {{one_interpro.0}}
+                                                {%endif%}
+                                                    {{one_interpro.1}} </br>
+                                                {% endfor %}
+                                                {%endwith%}
+                                            </td>
+                                            <td>{{values.7}}</td>
+                                            <td>{{values.8}}</td>
+                                            <td>{{values.9}}</td>
+                                            <td>{{values.10}}</td>
+                                            <td>{{values.11}}</td>
+                                            <td>{{values.12}}</td>
 
+                                        </tr>
+
+                                        {%endfor%}
+                                    </tbody>
+                                </table>
+                            </div>
 
 
                         </div>
@@ -268,4 +282,46 @@
 }
 </style>
 
+<script>
+$(document).ready(function() {
+$('#cog_table').DataTable( {
+ dom: 'Bfrtip',   
+"paging":   true,
+"ordering": true,
+"info":     false,
+buttons: [
+{
+    extend: 'excel',
+    title: 'cog_table'
+},
+{
+    extend: 'csv',
+    title: 'cog_table'
+}
+],
+} );
+} );
+
+$(document).ready(function() {
+$('#table_reference_genome').DataTable( {
+ dom: 'Bfrtip',   
+"paging":   true,
+"ordering": true,
+"info":     false,
+buttons: [
+{
+    extend: 'excel',
+    title: 'reference_genome_locus_list'
+},
+{
+    extend: 'csv',
+    title: 'reference_genome_locus_list'
+}
+],
+} );
+} );
+
+
+
+</script>
 </html>
