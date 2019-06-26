@@ -8936,7 +8936,6 @@ def get_fasta(request):
     else:
         single_copy = True
 
-
     freq_missing = freq_missing-0.001
     #print 'freq missing-----', freq_missing
     if not accessions:
@@ -8959,7 +8958,6 @@ def get_fasta(request):
                                                                   single_copy=single_copy,
                                                                   accessions=accessions)
     match_groups = mat.index.tolist()
-
     #print 'match', len(match_groups), match_groups
     for n, group in enumerate(match_groups):
         #print n, group
