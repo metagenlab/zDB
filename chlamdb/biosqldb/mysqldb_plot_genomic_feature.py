@@ -476,7 +476,7 @@ def plot_multiple_regions_crosslink(target_protein_list,
 
 
     import io
-    import edit_svg
+    from chlamdb.plots import edit_svg
 
     svg_diagram = io.StringIO()
     gd_diagram.write(svg_diagram, "SVG")
@@ -497,7 +497,7 @@ def plot_multiple_regions_crosslink(target_protein_list,
         cmd = 'chmod 444 %s' % out_name
     except:
         pass
-    import shell_command
+    from chlamdb.biosqldb import shell_command
     #print cmd
     shell_command.shell_command(cmd)
 
