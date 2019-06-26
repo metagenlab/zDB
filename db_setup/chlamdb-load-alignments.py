@@ -11,6 +11,7 @@ import os
 import MySQLdb
 from chlamdb.biosqldb import manipulate_biosqldb
 import pickle
+import time
 
 class Orthogroup_Identity_DB:
     def __init__(self, database_name, ncpus):
@@ -141,8 +142,9 @@ class Orthogroup_Identity_DB:
             group_name = self.locus_tag2orthogroup[align[0].id] #os.path.basename(align_file).split(".")[0]
             outdict[group_name] = id_matrix
             self.count += 1
-            print(align_file, 'done', self.count)
+            #print(align_file, 'done', self.count)
         pickle.dump(outdict, open("list_%s.p" % n, "wb" ))
+        time.sleep(5)
         out_q.put("list_%s.p")
 
     def _get_group_id2identity_matrix(self, alignments, n_cpus):
