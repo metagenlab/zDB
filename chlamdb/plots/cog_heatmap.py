@@ -2,7 +2,7 @@
 
 def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by_cog_id=False):
     from chlamdb.biosqldb import manipulate_biosqldb
-    import ete_motifs
+    from chlamdb.phylo_tree_display import ete_motifs
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
