@@ -591,7 +591,7 @@ def print_circos_GC_file(record_list, feature_type="CDS", out_directory=""):
             contig = feature.contig
         f.write("%s %s %s %s\n" % (contig, feature.start, feature.stop, feature.GC))
     """
-    import GC
+    from chlamdb.plots import GC
     import os
 
     out_var_file = os.path.join(out_directory, 'circos_GC_var_%s.txt' % record_list[0].name)
@@ -1353,7 +1353,7 @@ class Circos_config:
 
 
 def get_circos_GC_config_files(biodatabase_name, accession_list):
-    import GC
+    from chlamdb.plots import GC
     '''
     accessions: in case of several chromosomes or combinations of chromosomes
 
