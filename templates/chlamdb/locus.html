@@ -1081,9 +1081,7 @@ function clearBox(elementID)
                     <iframe class="locusFrame" name="frame11" id="frame11" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                   </div>
                   <div class="tab-pane" id="12" style="height:2px;" >
-                    <div class="loader" id="loading" ></div>
                     <iframe class="locusFrame" name="frame12" id="frame12" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
-                    <div class="loader" id="loading" ></div>
                   </div>
 
                   {% if pubmed_data  %}
@@ -1223,34 +1221,8 @@ $(document).ready(function(){
 
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 
-$('#frame12').load(function () {
-    $('#loading').show();
-});
-
-$('#frame12').ready(function () {
-    $('#loading').hide();
-});
-
-
 </script>
 
 {% include "chlamdb/style_menu.html" %}
-
-<style>
-.loader {
-  border: 16px solid #f3f3f3; /* Light grey */
-  border-top: 16px solid #3498db; /* Blue */
-  border-radius: 50%;
-  width: 120px;
-  height: 120px;
-  animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-</style>
-
 
 </html>
