@@ -10,6 +10,7 @@ from multiprocessing import cpu_count
 import os
 import MySQLdb
 from chlamdb.biosqldb import manipulate_biosqldb
+import pickle
 
 class Orthogroup_Identity_DB:
     def __init__(self, database_name, ncpus):
@@ -33,6 +34,7 @@ class Orthogroup_Identity_DB:
                                 db="orth_%s" % database_name) # name of the data base
             self.cursor = self.conn.cursor()
         self.conn.commit()
+        self.count = 0
 
         sql = 'select locus_tag,orthogroup_name from orthology.seqfeature_id2orthogroup_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology.orthogroup_%s t3 on t1.orthogroup_id=t3.orthogroup_id' % (database_name,database_name,database_name)
         self.cursor.execute(sql,)
@@ -129,14 +131,17 @@ class Orthogroup_Identity_DB:
         return identity_matrix
 
 
-    def _group_id(self, group_align_files, out_q):
+    def _group_id(self, group_align_files, out_q, n):
         outdict = {}
         for align_file in group_align_files:
             align = AlignIO.read(align_file, "fasta")
             id_matrix = self._get_identity_matrix_from_multiple_alignment(align)
             group_name = self.locus_tag2orthogroup[align[0].id] #os.path.basename(align_file).split(".")[0]
             outdict[group_name] = id_matrix
-        out_q.put(outdict)
+            self.count += 1
+            print(align_file, 'done', self.count)
+        pickle.dump(outdict, open("list_%s.p" % n, "wb" ))
+        out_q.put("list_%s.p")
 
     def _get_group_id2identity_matrix(self, alignments, n_cpus):
 
@@ -147,10 +152,10 @@ class Orthogroup_Identity_DB:
         query_lists = self._chunks(alignments, n_poc_per_list)
         #print query_lists
         procs = []
-        print("starting... %s cpus" % n_cpu)
+        print("starting... %s prallel jobs" % n_cpu)
         for n, one_list in enumerate(query_lists):
             print("list", n, len(one_list), "elements")
-            proc = Process(target=self._group_id, args=(one_list, out_q))
+            proc = Process(target=self._group_id, args=(one_list, out_q, n))
             procs.append(proc)
             proc.start()
 
@@ -158,7 +163,7 @@ class Orthogroup_Identity_DB:
         # with results to expect.
         group_id2identity_matrix = {}
         for i in range(n_cpu):
-            group_id2identity_matrix.update(out_q.get())
+            group_id2identity_matrix.update(pickle.load(open(out_q.get(),"rb")))
         #print "join proc"
         #print "n groups:", len(group_id2identity_matrix.keys())
         time.sleep(5)
