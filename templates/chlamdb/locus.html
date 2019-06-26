@@ -1081,7 +1081,9 @@ function clearBox(elementID)
                     <iframe class="locusFrame" name="frame11" id="frame11" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                   </div>
                   <div class="tab-pane" id="12" style="height:2px;" >
-                    <div class="holds-the-iframe"><iframe class="locusFrame" name="frame12" id="frame12" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe></div>
+                    <iframe class="locusFrame" name="frame12" id="frame12" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                    <div id="loadingMessage">Loading...</div>
+
                   </div>
 
                   {% if pubmed_data  %}
@@ -1221,11 +1223,11 @@ $(document).ready(function(){
 
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 
-function loadImage() {
-    $('#loading').show();
-}
-$(document).ready(function() {
-   $('#loading').hide();
+$('#frame12').ready(function () {
+    $('#loadingMessage').css('display', 'none');
+});
+$('#frame12').load(function () {
+    $('#loadingMessage').css('display', 'none');
 });
 
 </script>
@@ -1234,8 +1236,14 @@ $(document).ready(function() {
 
 
 <style>
-.holds-the-iframe {
-  background:url('http://sampsonresume.com/labs/pIkfp.gif') center top no-repeat;
+#loadingMessage {
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background: #ccc;
+    top: 0px;
+    left: 0px;
+    position: absolute;
 }
 </style>
 
