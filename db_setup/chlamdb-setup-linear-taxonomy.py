@@ -30,9 +30,9 @@ class MySQLDB():
                 if ("taxid" in field or "tax_id" in field):
                     fieldlist_header += ('taxon_id INTEGER,')
                 elif (field == "order"):
-                    fieldlist_header += ('`%s` TEXT,' % field)
+                    fieldlist_header += ('`%s` varchar(400),' % field)
                 else:
-                    fieldlist_header += ('%s TEXT,' % field)
+                    fieldlist_header += ('%s varchar(400),' % field)
             fieldlist = fieldlist[0:-1]
 
             ph = ("%s,"*len(dr.fieldnames))[:-1]
@@ -97,8 +97,8 @@ class MySQLDB():
         self.mysql_conn.commit()
         sql1 = 'CREATE INDEX taxid ON blastnr.blastnr_taxonomy(`taxon_id`);'
         # _mysql_exceptions.OperationalError: (1170, "BLOB/TEXT column 'phylum' used in key specification without a key length")
-        sql2 = 'CREATE INDEX phylum ON blastnr.blastnr_taxonomy(`phylum`);'
-        sql3 = 'CREATE INDEX phylumid ON blastnr.blastnr_taxonomy(`phylum_taxid`);'
+        sql2 = 'CREATE INDEX ph ON blastnr.blastnr_taxonomy(`phylum`);'
+        sql3 = 'CREATE INDEX phid ON blastnr.blastnr_taxonomy(`phylum_taxid`);'
 
         self.mysql_cursor.execute(sql1)
         self.mysql_cursor.execute(sql2)
