@@ -221,7 +221,8 @@ faa_files.into{ faa_locus1
 
 faa_locus1.into { faa_genomes1
                  faa_genomes2
-                 faa_genomes3 }
+                 faa_genomes3
+                  faa_genomes4  }
 
 faa_locus2.collectFile(name: 'merged.faa', newLine: true)
     .into { merged_faa0 }
@@ -744,6 +745,27 @@ process build_core_phylogeny_with_fasttree {
 }
 
 
+process checkm_analyse {
+  '''
+  Get fasta file of each orthogroup
+  '''
+
+  conda 'bioconda::checkm-genome=1.0.12'
+
+  publishDir 'data/checkm', mode: 'copy', overwrite: true
+
+  input:
+  file genome_list from faa_genomes4.collect()
+
+  output:
+  file "*faa" into orthogroups_fasta
+
+  """
+  checkm analyze --genes -x faa_gz \$CHECKM_SET_PATH faa output -t 8 --nt
+  """
+}
+
+
 process rpsblast_COG {
 
   conda 'bioconda::blast=2.7.1'
@@ -1010,8 +1032,9 @@ def uniprot_accession2score(uniprot_accession_list):
                 success = False
     unirpot2score = {}
     for row in rows:
-        if row[0] not in ['Entry', '']:
-            unirpot2score[row[0]] = row[1]
+        if len(row) > 0:
+            if row[0] != 'Entry':
+                unirpot2score[row[0]] = row[1]
 
     return unirpot2score
 
