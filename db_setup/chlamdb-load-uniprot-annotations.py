@@ -117,7 +117,8 @@ class Uniprot_annot():
         taxid_and_locus_list = [i for i in self.sqlite_cursor.fetchall()]
 
         for i, row in enumerate(taxid_and_locus_list):
-            if i % 1000 == 0:
+            if i % 10 == 0:
+                print(i)
                 conn.commit()
             taxid, locus_tag = row
             try:
