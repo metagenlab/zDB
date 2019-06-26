@@ -1907,15 +1907,20 @@ def get_pfam_data(orthogroup, biodb, aa_alignment=False):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
+    # inefficient query
+    '''
     sql = 'select A.locus_tag, B.start, B.stop, A.organism, A.sequence_length, B.signature_accession, B.signature_description, A.taxon_id ' \
           ' from (select taxon_id, orthogroup,locus_tag, protein_id, organism, length(translation) as sequence_length from orthology_detail_%s ' \
           ' where orthogroup="%s" ) A ' \
-          ' inner join (select * from interpro_%s where orthogroup="%s" and analysis="Pfam") B ' \
+          ' left join (select * from interpro_%s where orthogroup="%s" and analysis="Pfam") B ' \
           ' on A.locus_tag=B.locus_tag;' % (biodb, orthogroup, biodb, orthogroup)
     '''
-    sql = 'select accession, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
-          ' from interpro_%s as t2 where orthogroup="%s" and analysis="Pfam"' % (biodb, orthogroup)
-    '''
+    # correct with filter on join
+    sql = 'select t1.locus_tag,t2.start,t2.stop,t1.organism,length(t1.translation),t2.signature_accession,t2.signature_description,t1.taxon_id ' \
+          ' from orthology_detail_%s t1 ' \
+          ' left join interpro_%s t2 on t1.seqfeature_id=t2.seqfeature_id and t2.orthogroup="%s" and t2.analysis="Pfam" ' \
+          ' where t1.orthogroup="%s";' % (biodb, biodb, orthogroup, orthogroup)
+    
     print(sql)
     data = server.adaptor.execute_and_fetchall(sql,)
     print("OK")
@@ -2154,7 +2159,8 @@ def draw_pfam_tree(tree_name, locus2data,
             data = locus2data[l]
         else:
             data = locus2data[str(l)[3:len(str(l))]]
-
+        # [[None, None, 'Chlamydia pecorum (Chlamydophila pecorum) L1', 54, None, None, 13]]
+        # [[147, 258, 'Chlamydia pecorum E58', 303, 'PF13091', 'PLD-like domain', 4]]
         seq_motifs = []
 
         #print 'data!', data
@@ -2163,6 +2169,7 @@ def draw_pfam_tree(tree_name, locus2data,
         #l.img_style['size'] = 10
 
         for motif in data:
+            # check if motif is not None
             if motif[0]:
                 '''
                 #print 'motif', motif[0], motif[1]
