@@ -72,9 +72,9 @@ def locus2ko_table_legacy(biodatabase, hash2ko, hash2locus_list):
     locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
 
     sql2 = 'CREATE TABLE IF NOT EXISTS enzyme.locus2ko_%s (taxon_id INT,'\
-           ' locus_tag VARCHAR(20),' \
-           ' orthogroup varchar(20),' \
-           ' ko_id VARCHAR(20), index taxon_id (taxon_id), index ko_id (ko_id));' % (biodatabase)
+           ' locus_tag VARCHAR(200),' \
+           ' orthogroup varchar(200),' \
+           ' ko_id VARCHAR(200), index taxon_id (taxon_id), index ko_id (ko_id));' % (biodatabase)
 
     server.adaptor.execute_and_fetchall(sql2,)
     for hash in hash2ko:
@@ -130,10 +130,12 @@ if __name__ == '__main__':
 
     hash2ko = parse_kofamscan_output(args.ko_table_list)
 
+    '''
     locus2ko_table(hash2ko,
                    args.database_name,
                    ko_accession2ko_id,
                    hash2locus_list)
-
+    '''
+    
     if args.legacy:
         locus2ko_table_legacy(args.database_name, hash2ko, hash2locus_list)
