@@ -56,9 +56,10 @@ function clearBox(elementID)
                 <li class="active" id="main_overview"><a href="#tab1" data-toggle="tab">Overview</a></li>
                 <li><a href="#tab3" data-toggle="tab">Sequences</a></li>
                 <li><a href="#tab2" data-toggle="tab">InterproScan</a></li>
-                <li><a href="#tab33" data-toggle="tab">Homologs <span class="badge">{{homologues|length}}</span><br></a></li>
+                <li><a href="#12" data-toggle="tab" onclick="window.open('{% url 'homologs' data.0 data.1 %}', 'frame12'); return false">Homologs <span class="badge">{{homologues}}</span><br></a></li>
                 {% else %}
-                 <li class="active"><a href="#tab33" data-toggle="tab">Homologs <span class="badge">{{homologues|length}}</span><br></a></li>
+                     <li class="active"><a href="#tab33" data-toggle="tab">Overview<br></a></li>
+                     <li><a href="#12" data-toggle="tab" onclick="window.open('{% url 'homologs' data.0 data.1 %}', 'frame12'); return false">Homologs <span class="badge">{{homologues}}</span><br></a></li>
                 {% endif %}
 
                 {% if input_type == 'locus_tag'%}
@@ -71,7 +72,7 @@ function clearBox(elementID)
                 <li><a href="#tab55" data-toggle="tab">MSA</a></li>
                 {% endif %}
                 <!--<li><a href="#2" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' data.0 True %}', 'frame2'); return false">Orthogroup conservation</a></li>-->
-                {% if homologues|length > 3%}
+                {% if homologues > 3%}
                     <li><a href="#3" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' data.0 %}', 'frame3'); return false">Pfam tree</a></li>
                 {% endif %}
                 {% if show_tm_tree %}
@@ -81,6 +82,7 @@ function clearBox(elementID)
                 <!--{% if cog_data %}
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'string_page' cog_data.0 genome_accession %}', 'orthoIDframe'); return false">string interactions</a></li>
                 {% endif %}-->
+
                 {% if input_type != 'orthogroup' %}
                     <li><a href="#5" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' data.1 %}', 'frame5'); return false">Region</a></li>
                     <li><a href="#6" data-toggle="tab" onclick="window.open('{% url 'blastnr' data.1 %}', 'frame6'); return false">RefSeq hoologs <span class="badge">{{n_blastnr_hits}}</span></a></li>
@@ -102,6 +104,7 @@ function clearBox(elementID)
 
             </ul>
             <div id="my-tab-content" class="tab-content">
+
             {% if input_type != 'orthogroup' %}
 
                 <div class="tab-pane active" id="tab1" style="padding-left: 15px;padding-top:20px">
@@ -933,84 +936,11 @@ function clearBox(elementID)
                 </div>
 
 
-              <!-- orthogroup panel -->
-               <div class="tab-pane" id="tab33">
-
               <!-- if only group information is asked, homologs tabs become the active tab -->
               {% else %}
                   <div class="tab-pane active" id="tab33">
-              {% endif %}
-
-              <div class="container-fluid">
-                <div class="col-lg-12">
-                  {% if not orthologs %}
-                      <h2>Homologs</h2>
-                      No homologs
-                  {% else %}
-                    <div style="padding-top:20px">
-                      <div class="panel panel-default">
-                        <div class="panel-heading">
-                          <h3 class="panel-title">Homologs</h3>
-                        </div>
-                        <div class="panel-body">
-                          {{homologues|length}} homologs were identified in {{ data.8 }} genomes with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>.
-                        </div>
-                      </div>
-                    </div>
-
-                  {% endif %}
-                      <div class="row">
-
-                             <table class="display" id="homologues_table"> <!--  class="sortable" -->
-                                  <thead>
-                                      <tr>
-                                          <th></th>
-                                          <th>Locus tag</th>
-                                          <th>ID(%)</th>
-                                          <th>Uniprot Status</th>
-                                          <th>Annot. score</th>
-                                          <th>Gene (uniprot/refseq)</th>
-                                          <th>TM</th>
-                                          <th>SP</th>
-                                          <th>Organism</th>
-                                          <th>Product (uniprot/refseq)</th>
-                                          <th>Function</th>
-
-                                      </tr>
-                                  </thead>
-                                  <tbody>
-                                      {% for values in homologues %}
-
-                                      <!-- 1locus_tag,2gene,3product,4organism ,5orthogroup_size,6n_genomes,7TM,8SP,9comment_function-->
-                                      <!-- 10gene  | 11annotation_score | 12uniprot_status | 13recommendedName_fullName -->
-
-                                          <tr>
-                                              <td>{{values.0}}</td>
-                                              <td><a href="{% url 'locusx' values.1 True %}" target="_top">{{values.1}}</a></td>
-                                              <td>{{values.14}}</td> <!-- identity -->
-                                              {% if values.12 != 'reviewed'%}
-                                                  <td>UR </td> <!-- review <img src="{{ STATIC_URL }}scales/unreviewed.gif" id="uw">-->
-                                              {%else%}
-                                                  <td style="color:red">RW </td>  <!-- review <img src="{{ STATIC_URL }}scales/reviewed.gif" id="rw">-->
-                                              {%endif%}
-                                              <td>{{values.11}}</td> <!-- annotation score -->
-
-
-                                              <td>{{values.2}} <br> {{values.10}}</td> <!-- gene -->
-                                              <td>{{values.7}}</td> <!-- tm -->
-                                              <td>{{values.8}}</td> <!-- sp -->
-                                              <td>{{values.4}}</td> <!-- organism -->
-                                              <td>{{values.13}} <br> {{values.3}}</td> <!-- gene -->
-                                              <td>{{values.9}}</td> <!-- gene -->
-                                          </tr>
-
-                                      {% endfor %}
-                                  </tbody>
-                              </table>
-                            </div>
-                          </div>
                   </div>
-                </div>
+              {% endif %}
 
 
                   {% if align_path %}
@@ -1147,6 +1077,9 @@ function clearBox(elementID)
                   </div>
                   <div class="tab-pane" id="11" style="height:2px;" >
                     <iframe class="locusFrame" name="frame11" id="frame11" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                  </div>
+                  <div class="tab-pane" id="12" style="height:2px;" >
+                    <iframe class="locusFrame" name="frame12" id="frame12" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                   </div>
 
                   {% if pubmed_data  %}

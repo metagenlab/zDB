@@ -2519,51 +2519,28 @@ def locusx(request, locus=None, menu=True):
         #sql3 = 'select %s from orthology_detail_%s where orthogroup = "%s" ' % (columns, biodb, orthogroup)
 
         #homologues = list(server.adaptor.execute_and_fetchall(sql3, ))
-        sql_groups = 'select A.*,C.comment_function,C.gene,D.annotation_score,D.uniprot_status,C.recommendedName_fullName ' \
-                     ' from (select locus_tag, gene,product,organism,orthogroup_size,n_genomes,TM,SP from ' \
-                     ' biosqldb.orthology_detail_%s where orthogroup="%s") A ' \
-                     ' inner join custom_tables.locus2seqfeature_id_%s B on A.locus_tag=B.locus_tag ' \
-                     ' left join custom_tables.uniprot_annotation_%s as C on B.seqfeature_id=C.seqfeature_id ' \
-                     ' left join custom_tables.uniprot_id2seqfeature_id_%s as D on B.seqfeature_id=D.seqfeature_id;' % (biodb,
-                                                                                                          orthogroup,
-                                                                                                          biodb,
-                                                                                                          biodb,
-                                                                                                          biodb)
+        sql_groups = 'select count(*) from orthology.seqfeature_id2orthogroup_%s t1 ' \
+                     ' inner join orthology.orthogroup_%s t2 on t1.orthogroup_id=t2.orthogroup_id where t2.orthogroup_name="%s";' % (biodb, biodb, orthogroup)
 
-        homologues = list(server.adaptor.execute_and_fetchall(sql_groups, ))
+        homologues = server.adaptor.execute_and_fetchall(sql_groups, )[0][0]
 
         # check if one of the homolog has TM(s) domains
-        tm_count = 0
-        for i in homologues:
-            if i[7] is not None:
-                tm_count += int(i[7])
+        sql_TM_SP = 'select count(*) from orthology.seqfeature_id2orthogroup_%s t1 ' \
+              ' inner join orthology.orthogroup_%s t2 on t1.orthogroup_id=t2.orthogroup_id ' \
+              ' inner join interpro.interpro_%s t3 on t1.seqfeature_id=t3.seqfeature_id' \
+              ' inner join interpro.signature t4 on t3.signature_id=t4.signature_id ' \
+              ' where signature_accession in ("TRANSMEMBRANE", "SIGNAL_PEPTIDE_C_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_N_REGION") and t2.orthogroup_name="%s" ; ' % (biodb, 
+                                                                                                                                                                          biodb, 
+                                                                                                                                                                          biodb, 
+                                                                                                                                                                          orthogroup)
+        tm_count = server.adaptor.execute_and_fetchall(sql_TM_SP, )[0][0]
         if tm_count > 0:
             show_tm_tree = True
 
-        for i, row in enumerate(homologues):
-            homologues[i] = ['-' if v is None else v for v in list(row)]
-
-
-        if len(homologues) >1:
+        if int(homologues) >1:
             orthologs = True
         else:
             orthologs = False
-        from chlamdb.biosqldb import orthogroup_identity_db
-        if len(homologues) > 1:
-            orthogroup2identity_dico = orthogroup_identity_db.orthogroup2identity_dico(biodb, orthogroup)
-
-            for count, value in enumerate(homologues):
-                value = list(value)
-                locus_2 = value[0]
-                #if value[2] != '-':
-                #    interpro_id = value[2]
-                #else:
-                #    value[2] = value[1]
-
-                homologues[count] = [count+1] + value + [orthogroup2identity_dico[data[1]][locus_2]]
-
-        else:
-            homologues[0] = [1] + homologues[0] + [100]
 
         sql = 'select t1.locus_tag, t1.annotation from manual_annotation as t1 ' \
               ' inner join orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag where orthogroup="%s";' % (biodb, data[0])
@@ -8113,6 +8090,55 @@ def interpro_taxonomy(request):
 
 
 
+def homologs(request, orthogroup, locus_tag=False):
+    
+    from chlamdb.biosqldb import orthogroup_identity_db
+    biodb = settings.BIODB
+    server = manipulate_biosqldb.load_db()
+    
+    if request.method == 'GET':  # S'il s'agit d'une requête POST
+
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+        sql_groups = 'select A.*,C.comment_function,C.gene,D.annotation_score,D.uniprot_status,C.recommendedName_fullName ' \
+                    ' from (select locus_tag, gene,product,organism,orthogroup_size,n_genomes,TM,SP from ' \
+                    ' biosqldb.orthology_detail_%s where orthogroup="%s") A ' \
+                    ' inner join custom_tables.locus2seqfeature_id_%s B on A.locus_tag=B.locus_tag ' \
+                    ' left join custom_tables.uniprot_annotation_%s as C on B.seqfeature_id=C.seqfeature_id ' \
+                    ' left join custom_tables.uniprot_id2seqfeature_id_%s as D on B.seqfeature_id=D.seqfeature_id;' % (biodb,
+                                                                                                                       orthogroup,
+                                                                                                                       biodb,
+                                                                                                                       biodb,
+                                                                                                                       biodb)
+
+        homologues = list(server.adaptor.execute_and_fetchall(sql_groups, ))
+        for i, row in enumerate(homologues):
+            homologues[i] = ['-' if v is None else v for v in list(row)]
+
+
+        homologues = list(server.adaptor.execute_and_fetchall(sql_groups, ))
+        for i, row in enumerate(homologues):
+            homologues[i] = ['-' if v is None else v for v in list(row)]
+        
+        if locus_tag:
+            # add identity column
+            if len(homologues) > 1:
+                orthogroup2identity_dico = orthogroup_identity_db.orthogroup2identity_dico(biodb, orthogroup)
+
+                for count, value in enumerate(homologues):
+                    value = list(value)
+                    locus_2 = value[0]
+                    homologues[count] = [count+1] + value + [orthogroup2identity_dico[locus_tag][locus_2]]
+            else:
+                homologues[0] = [1] + homologues[0] + [100]
+        else:
+            for count, value in enumerate(homologues):
+                value = list(value)
+                homologues[count] = [count+1] + value
+
+        return render(request, 'chlamdb/homologs.html', locals())
+
+    return render(request, 'chlamdb/homologs.html', locals())
 
 
 
