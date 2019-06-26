@@ -1043,7 +1043,7 @@ for n, one_chunk in enumerate(uniprot_accession_chunks):
         try:
             uniprot_score = uniprot2score[uniprot_accession]
         # deal with eventual removed entries
-        except IndexError:
+        except KeyError:
             uniprot_score = 0
         comment_function = uniprot_annotation[1]
         ec_number = uniprot_annotation[2]
