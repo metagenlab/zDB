@@ -466,9 +466,9 @@ def plot_multiple_regions_crosslink(target_protein_list,
     #print "largeur", largeur
     #gd_diagram.set_page_size(, orientation)
     if hauteur > largeur:
-            gd_diagram.draw(format="linear", pagesize=(hauteur,largeur), orientation='portrait', fragments=1,start=0, end=max_len)
+            gd_diagram.draw(format="linear", pagesize=(hauteur, largeur), orientation='portrait', fragments=1,start=0, end=max_len)
     else:
-            gd_diagram.draw(format="linear", pagesize=(hauteur,largeur), orientation='landscape', fragments=1,start=0, end=max_len)
+            gd_diagram.draw(format="linear", pagesize=(hauteur, largeur), orientation='landscape', fragments=1,start=0, end=max_len)
     #print "writing diagram", out_name
 
     #gd_diagram.write(out_name, "SVG")

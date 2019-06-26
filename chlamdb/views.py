@@ -11649,13 +11649,14 @@ def pfam_tree(request, orthogroup):
     home_dir = os.path.dirname(__file__)
 
     alignment_path = os.path.join(home_dir, alignment_fasta)
+    print("get data")
     if os.path.exists(alignment_path):
         #pass
         locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb, aa_alignment=False) # alignment_path
     else:
 
         locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb, aa_alignment=False)
-
+    print("done")
     motif_count = {}
     for data in locus2pfam_data.values():
         for motif in data:
@@ -11667,7 +11668,7 @@ def pfam_tree(request, orthogroup):
             except:
                 print ("motif", motif)
 
-
+    print("get tree")
     sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
 
     try:
@@ -11680,7 +11681,7 @@ def pfam_tree(request, orthogroup):
     #sql = 'select taxon_id, family from genomes_classification;'
 
     #taxon_id2family = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
+    print("draw tree")
     t, ts, leaf_number = ete_motifs.draw_pfam_tree(tree, locus2pfam_data, False, taxon_id2family=False)
     path = settings.BASE_DIR + '/assets/temp/pfam_tree.svg'
     asset_path = '/temp/pfam_tree.svg'
