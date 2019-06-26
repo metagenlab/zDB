@@ -1223,9 +1223,14 @@ $(document).ready(function(){
 
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 
+$('#frame12').load(function () {
+    $('#loading').show();
+});
+
 $('#frame12').ready(function () {
     $('#loading').hide();
 });
+
 
 </script>
 
