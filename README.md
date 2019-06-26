@@ -43,10 +43,11 @@ chlamdb-load-PRIAM.py -i sequenceECs.txt -d 2019_06_PVC -c ../../data/nr_mapping
 
 # comparative tables
 chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -o # orthogroup
-chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -c # COG
+OK chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -c # COG
 chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -p # pfam
 chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -i # interpro
-chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -k # ko
+OK chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -k # ko
+OK chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
 
 chlamdb-setup-linear-taxonomy.py -d 2019_06_PVC -s linear_taxonomy.db
 chlamdb-setup-gc-content-tables.py -d 2019_06_PVC

@@ -171,8 +171,10 @@ class Uniprot_annot():
             uniprot_accession = annot[0]
             uniprot_status = annot[2]
             # '1 out of 5'
-            uniprot_score = annot[1].split(' ')[0]
-
+            if not isinstance(annot[1], int):
+                uniprot_score = annot[1].split(' ')[0]
+            else:
+                uniprot_score = annot[1]
 
             now = datetime.now()
             str_date = "%s-%s-%s" % (now.year, now.month, now.day)

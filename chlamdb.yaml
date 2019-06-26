@@ -37,6 +37,8 @@ dependencies:
  - biopython
  - django-crispy-forms
  - mysqlclient
+ - rpy2
+ - r-ggplot2
  - pip:
    - cython
    - django-citations

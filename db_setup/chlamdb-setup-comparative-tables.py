@@ -90,14 +90,12 @@ def collect_pfam(db_name):
     for accession in all_pfam_ids:
         print (i,'/', len(all_pfam_ids), accession)
         i+=1
-        sql= 'select taxon_id, count(*) from biosqldb.interpro_%s ' \
-             ' where analysis="Pfam" and signature_accession="%s" group by taxon_id;' % (db_name, accession)
+        sql = 'select taxon_id, count(*) from biosqldb.interpro_%s ' \
+              ' where analysis="Pfam" and signature_accession="%s" group by taxon_id;' % (db_name, accession)
 
         data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
         sql_temp = sql_head + '"%s",' % accession
-
-
 
         for taxon in taxon_id_list:
             try:
@@ -108,6 +106,7 @@ def collect_pfam(db_name):
 
         server.adaptor.execute(sql_temp,)
         server.adaptor.commit()
+
 
 def collect_Pfam_accession(db_name):
 
