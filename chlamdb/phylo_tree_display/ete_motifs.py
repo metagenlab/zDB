@@ -1910,7 +1910,7 @@ def get_pfam_data(orthogroup, biodb, aa_alignment=False):
     sql = 'select A.locus_tag, B.start, B.stop, A.organism, A.sequence_length, B.signature_accession, B.signature_description, A.taxon_id ' \
           ' from (select taxon_id, orthogroup,locus_tag, protein_id, organism, length(translation) as sequence_length from orthology_detail_%s ' \
           ' where orthogroup="%s" ) A ' \
-          ' left join (select * from interpro_%s where orthogroup="%s" and analysis="Pfam") B ' \
+          ' inner join (select * from interpro_%s where orthogroup="%s" and analysis="Pfam") B ' \
           ' on A.locus_tag=B.locus_tag;' % (biodb, orthogroup, biodb, orthogroup)
     '''
     sql = 'select accession, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
