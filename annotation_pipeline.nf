@@ -1951,7 +1951,7 @@ process align_refseq_BBH_with_mafft {
   """
   unset MAFFT_BINARIES
   for faa in ${og}; do
-  mafft \$faa > \${faa/.faa/_mafft.faa}
+  mafft --anysymbol \$faa > \${faa/.faa/_mafft.faa}
   done
   """
 }
