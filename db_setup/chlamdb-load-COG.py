@@ -193,32 +193,36 @@ def load_locus2cog_into_sqldb(input_blast_files,
                                locus_tag2protein_length)
 
         for locus in locus2data:
-            sql = 'INSERT into seqfeature_id2best_COG_hit_%s (bioentry_id, ' \
-                  ' seqfeature_id, ' \
-                  ' hit_cog_id,' \
-                  ' cdd_id, ' \
-                  ' query_start,' \
-                  ' query_end,' \
-                  ' hit_start,' \
-                  ' hit_end,' \
-                  ' query_coverage,' \
-                  ' hit_coverage,' \
-                  ' identity,' \
-                  ' evalue,' \
-                  ' bitscore) VALUES (%s, %s, %s, "%s", %s, %s, %s, %s, %s, %s, %s, %s, %s)' % (biodb,
-                                                                                 locus2bioentry_id[locus],
-                                                                                 locus_tag2seqfeature_id[locus],
-                                                                                 COG_name2COG_id[locus2data[locus]["cog_id"]],
-                                                                                 locus2data[locus]["cdd_id"],
-                                                                                 locus2data[locus]["query_start"],
-                                                                                 locus2data[locus]["query_end"],
-                                                                                 locus2data[locus]["hit_start"],
-                                                                                 locus2data[locus]["hit_end"],
-                                                                                 locus2data[locus]["query_coverage"],
-                                                                                 locus2data[locus]["hit_coverage"],
-                                                                                 locus2data[locus]["identity"],
-                                                                                 locus2data[locus]["evalue"],
-                                                                                 locus2data[locus]["bitscore"])
+
+            if locus2data[locus]["cog_id"] not in COG_name2COG_id:
+                print("COG %s not in COG_name2COG_id, probably removed..." % locus2data[locus]["cog_id"])
+            else:
+                sql = 'INSERT into seqfeature_id2best_COG_hit_%s (bioentry_id, ' \
+                      ' seqfeature_id, ' \
+                      ' hit_cog_id,' \
+                      ' cdd_id, ' \
+                      ' query_start,' \
+                      ' query_end,' \
+                      ' hit_start,' \
+                      ' hit_end,' \
+                      ' query_coverage,' \
+                      ' hit_coverage,' \
+                      ' identity,' \
+                      ' evalue,' \
+                      ' bitscore) VALUES (%s, %s, %s, "%s", %s, %s, %s, %s, %s, %s, %s, %s, %s)' % (biodb,
+                                                                                     locus2bioentry_id[locus],
+                                                                                     locus_tag2seqfeature_id[locus],
+                                                                                     COG_name2COG_id[locus2data[locus]["cog_id"]],
+                                                                                     locus2data[locus]["cdd_id"],
+                                                                                     locus2data[locus]["query_start"],
+                                                                                     locus2data[locus]["query_end"],
+                                                                                     locus2data[locus]["hit_start"],
+                                                                                     locus2data[locus]["hit_end"],
+                                                                                     locus2data[locus]["query_coverage"],
+                                                                                     locus2data[locus]["hit_coverage"],
+                                                                                     locus2data[locus]["identity"],
+                                                                                     locus2data[locus]["evalue"],
+                                                                                     locus2data[locus]["bitscore"])
 
             cursor.execute(sql)
     conn.commit()

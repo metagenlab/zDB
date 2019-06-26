@@ -408,10 +408,10 @@ def create_orthogroup_table_legacy(server, biodatabase_name,
                                                                                                              seqfeature_id)
             try:
                 server.adaptor.execute(sql)
-                server.adaptor.commit()
             except:
                 print('problem with:')
                 print(sql)
+    server.adaptor.commit()
 
 
 def plot_orthogroup_size_distrib(server, biodatabase_name, out_name = "orthogroup_size_distrib.svg", taxon_id = False):

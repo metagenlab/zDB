@@ -18,8 +18,8 @@ OK chlamdb-load-reference-phylogeny.py -r core_genome_phylogeny.nwk -d 2019_06_P
 chlamdb-load-alignments.py -a *faa -d 2019_06_PVC
 chlamdb-load-swissprot-homology-search.py -i chunk_.*.tab -d 2019_06_PVC -t -p 2 -l -u ../../data/nr_mapping.tab
 
-
-chlamdb-load-COG.py -i blast_COG.tab -d 2019_06_PVC -u ../../data/nr_mapping.tab -cc cog_corresp.tab -cl cog_length.tab
+# load COG and legacy table
+chlamdb-load-COG.py -i blast_COG.tab -d 2019_06_PVC -u ../../data/nr_mapping.tab -cc cog_corresp.tab -cl cog_length.tab -l
 
 # load interproscan results
 OK chlamdb-load-interproscan.py -i *tsv -d 2019_06_PVC -u ../../data/nr_mapping.tab
