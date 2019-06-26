@@ -87,8 +87,8 @@ class Orthogroup_Identity_DB:
 
     def _chunks(self, l, n):
         import random
-        l_shuffle = random.shuffle(l)
-        return [l_shuffle[i:i+n] for i in range(0, len(l_shuffle), n)]
+        random.shuffle(l)
+        return [l[i:i+n] for i in range(0, len(l), n)]
 
     def _pairewise_identity(self, seq1, seq2):
         import re
