@@ -1889,7 +1889,7 @@ def venn_cog(request, accessions=False):
     #print "loading db..."
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
-    venn_form_class = make_venn_from(biodb, plasmid=accessions, limit=6)
+    venn_form_class = make_venn_from(biodb, plasmid=accessions, limit=6, label="COG")
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form_venn = venn_form_class(request.POST)  # Nous reprenons les données
