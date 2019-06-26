@@ -183,7 +183,7 @@ class Uniprot_annot():
                                uniprot_accession,
                                uniprot_status,
                                uniprot_score,
-                               str_date)
+                               str_date))
 
             # add annotation
             sql = 'insert into uniprot_annotation_%s' % self.biodb
