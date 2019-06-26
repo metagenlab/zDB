@@ -115,7 +115,7 @@ if __name__ == '__main__':
     parser.add_argument("-k", '--ko_table_list', type=str, help="input blastGhost file", nargs='+')
     parser.add_argument("-d", '--database_name', type=str, help="database name")
     parser.add_argument("-c", '--corresp_table', type=str, help="hash to locus correspondance table")
-    parser.add_argument("-l", '--legacy', type=str, help="Create legacy table(s)")
+    parser.add_argument("-l", '--legacy', action='store_true', help="Create legacy table(s)")
 
     args = parser.parse_args()
 
