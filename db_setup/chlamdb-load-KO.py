@@ -35,18 +35,21 @@ def locus2ko_table(hash2ko_dico,
             thrshld = hash2ko_dico[hash]["thrshld"]
             score = hash2ko_dico[hash]["score"]
             evalue = hash2ko_dico[hash]["E-value"]
-            ko_id = ko_accession2ko_id[ko]
-            seqfeature_id = locus2seqfeature_id[locus_tag]
+            if ko not in ko_accession2ko_id:
+                print("KO %s not in ko_accession2ko_id, it was probably removed from KEGG, skipping..." % ko)
+            else:
+                ko_id = ko_accession2ko_id[ko]
+                seqfeature_id = locus2seqfeature_id[locus_tag]
 
-            sql = 'insert into enzyme.seqfeature_id2ko_%s (seqfeature_id, ko_id, thrshld, score, evalue) values (%s, %s, %s, %s, %s)' % (biodatabase,
-                                                                                                                                         seqfeature_id,
-                                                                                                                                         ko_id,
-                                                                                                                                         thrshld,
-                                                                                                                                         score,
-                                                                                                                                         evalue)
+                sql = 'insert into enzyme.seqfeature_id2ko_%s (seqfeature_id, ko_id, thrshld, score, evalue) values (%s, %s, %s, %s, %s)' % (biodatabase,
+                                                                                                                                             seqfeature_id,
+                                                                                                                                             ko_id,
+                                                                                                                                             thrshld,
+                                                                                                                                             score,
+                                                                                                                                             evalue)
 
 
-            server.adaptor.execute(sql,)
+                server.adaptor.execute(sql,)
     server.commit()
 
 
