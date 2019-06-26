@@ -1081,7 +1081,7 @@ function clearBox(elementID)
                     <iframe class="locusFrame" name="frame11" id="frame11" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                   </div>
                   <div class="tab-pane" id="12" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame12" id="frame12" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                    <div class="holds-the-iframe"><iframe class="locusFrame" name="frame12" id="frame12" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe></div>
                   </div>
 
                   {% if pubmed_data  %}
@@ -1221,8 +1221,23 @@ $(document).ready(function(){
 
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 
+function loadImage() {
+    $('#loading').show();
+}
+$(document).ready(function() {
+   $('#loading').hide();
+});
+
 </script>
 
 {% include "chlamdb/style_menu.html" %}
+
+
+<style>
+.holds-the-iframe {
+  background:url('http://sampsonresume.com/labs/pIkfp.gif') center center no-repeat;
+}
+</style>
+
 
 </html>
