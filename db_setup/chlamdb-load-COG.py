@@ -257,7 +257,7 @@ def load_locus2cog_into_sqldb_legacy(input_blast_files,
     protein_id2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
     protein_id2COG = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3))
     locus_tag2protein_length = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql5))
-    
+
     for input_blast in input_blast_files:
 
         locus2data = blast2COG(input_blast,
@@ -305,14 +305,14 @@ if __name__ == '__main__':
 
     hash2locus_list = chlamdb_setup_utils.get_hash2locus_list(args.hash2locus_tag)
 
-    '''
     load_locus2cog_into_sqldb(args.input_blast,
                               args.database_name,
                               hash2locus_list,
                               cdd_id2cog_id,
                               cog_id2length)
-    '''
+
     if args.legacy:
+        print("Legacy table")
         load_locus2cog_into_sqldb_legacy(args.input_blast,
                                          args.database_name,
                                          cdd_id2cog_id,

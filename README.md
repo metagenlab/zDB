@@ -10,6 +10,8 @@ OK chlamdb-load-gbk.py -g *gbk -d 2019_06_PVC
 OK chlamdb-load-orthofinder.py -m Orthogroups.txt -d 2019_06_PVC
 OK chlamdb-setup-old_locus-table.py -d 2019_06_PVC
 OK chlamdb-setup-genomes-statistics.py -d 2019_06_PVC
+OK chlamdb-load-hash2locus.py -u nr_mapping.tab -d 2019_06_PVC
+
 
 OK chlamdb-load-reference-phylogeny.py -r core_genome_phylogeny.nwk -d 2019_06_PVC -g ../../data/gbk_edited/*gbk
 
