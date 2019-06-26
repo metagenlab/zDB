@@ -50,7 +50,7 @@ def locus2ko_table(hash2ko_dico,
     server.commit()
 
 
-def locus2ko_table(biodatabase, hash2ko, hash2locus_list):
+def locus2ko_table_legacy(biodatabase, hash2ko, hash2locus_list):
     # create legacy table locus2ko
     # TODO: remove all depenancies to this table
     # content:
@@ -133,4 +133,4 @@ if __name__ == '__main__':
                    hash2locus_list)
 
     if args.legacy:
-        locus2ko_table(args.database_name, hash2ko, hash2locus_list)
+        locus2ko_table_legacy(args.database_name, hash2ko, hash2locus_list)
