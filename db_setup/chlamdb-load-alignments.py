@@ -143,7 +143,7 @@ class Orthogroup_Identity_DB:
             outdict[group_name] = id_matrix
             self.count += 1
             if i % 20 == 0:
-                print("%s / %s" % (i, len(group_align_files)))
+                print("List %s: %s / %s" % (list_id, i, len(group_align_files)))
         pickle.dump(outdict, open("list_%s.p" % list_id, "wb"))
         time.sleep(2)
         out_q.put("list_%s.p" % list_id)
@@ -226,7 +226,7 @@ class Orthogroup_Identity_DB:
             sql = 'insert into orth_%s.average_identity values ("%s", %s)' % (biodatabase_name, group, av_id)
             #print sql
             server.adaptor.execute(sql)
-            server.commit()
+        server.commit()
 
 
 def get_orthogroup_identity_table(biodb_name, orthogroup):
