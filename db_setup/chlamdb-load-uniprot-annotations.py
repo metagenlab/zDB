@@ -168,9 +168,8 @@ class Uniprot_annot():
 
             uniprot_accession = annot[0]
             uniprot_status = annot[2]
-            uniprot_score = annot[1]
-
-
+            # '1 out of 5'
+            uniprot_score = annot[1].split(' ')[0]
 
 
             now = datetime.now()
