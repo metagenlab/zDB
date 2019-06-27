@@ -213,7 +213,8 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
     print ('loading blast results into database...')
 
 
-    sql_template = 'insert into blast_swissprot_%s' % biodb + 'values (%s,%s,%s,%s,"%s","%s","%s",%s,"%s","%s",%s,%s,%s,%s,%s,%s,%s,%s,%s,"%s",%s);'
+    sql_template = 'insert into blast_swissprot_%s ' % biodb 
+    sql_template += 'values (%s,%s,%s,%s,"%s","%s","%s",%s,"%s","%s",%s,%s,%s,%s,%s,%s,%s,%s,%s,"%s",%s);'
 
     for one_blast_file in input_blast_files:
         n_file +=1
@@ -326,7 +327,8 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
                         cursor.execute(sql_template, values)
                     except:
                         print ('problem with sql query')
-                        print (sql)
+                        print (sql_template)
+                        print(values)
         # commit entire file            
         conn.commit()
 
