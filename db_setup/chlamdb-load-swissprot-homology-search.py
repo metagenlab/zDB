@@ -212,6 +212,9 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
 
     print ('loading blast results into database...')
 
+
+    sql_template = 'insert into blast_swissprot_%s' % biodb + 'values (%s,%s,%s,%s,"%s","%s","%s",%s,"%s","%s",%s,%s,%s,%s,%s,%s,%s,%s,%s,"%s",%s);'
+
     for one_blast_file in input_blast_files:
         n_file +=1
         with open(one_blast_file, 'r') as f:
@@ -298,35 +301,34 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
                     seqfeature_id = locus_tag2seqfeature_id[locus_tag]
                     query_cov = round(((query_end-query_start)/float(locus_tag2protein_length[locus_tag]))*100,2)
 
-                values = '(%s,%s,%s,%s,"%s","%s","%s",%s,"%s","%s",%s,%s,%s,%s,%s,%s,%s,%s,%s,"%s",%s);' % (locus_tag2taxon_id[locus_tag],
-                                                                                                    locus_tag2bioentry_id[locus_tag],
-                                                                                                    seqfeature_id,
-                                                                                                    hit_n,
-                                                                                                    sp_accession,
-                                                                                                    subject_kingdom,
-                                                                                                    subject_organism,
-                                                                                                    subject_taxon_id,
-                                                                                                    subject_description,
-                                                                                                    evalue,
-                                                                                                    bit_score,
-                                                                                                    percent_identity,
-                                                                                                    gaps,
-                                                                                                    length,
-                                                                                                    query_start,
-                                                                                                    query_end,
-                                                                                                    query_cov,
-                                                                                                    subject_start,
-                                                                                                    subject_end,
-                                                                                                    subject_genes,
-                                                                                                    subject_annot_score
-                                                                                                    )
-                try:
-                    sql = 'insert into blast_swissprot_%s values %s' % (biodb,values)
-                    cursor.execute(sql,)
-                    conn.commit()
-                except:
-                    print ('problem with sql query')
-                    print (sql)
+                    values = [locus_tag2taxon_id[locus_tag],
+                              locus_tag2bioentry_id[locus_tag],
+                              seqfeature_id,
+                              hit_n,
+                              sp_accession,
+                              subject_kingdom,
+                              subject_organism,
+                              subject_taxon_id,
+                              subject_description,
+                              evalue,
+                              bit_score,
+                              percent_identity,
+                              gaps,
+                              length,
+                              query_start,
+                              query_end,
+                              query_cov,
+                              subject_start,
+                              subject_end,
+                              subject_genes,
+                              subject_annot_score]
+                    try:
+                        cursor.execute(sql_template, values)
+                    except:
+                        print ('problem with sql query')
+                        print (sql)
+        # commit entire file            
+        conn.commit()
 
 
 def create_sql_blast_swissprot_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_db='blastnr'):
