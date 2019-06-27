@@ -39,17 +39,17 @@ OK chlamdb-load-phylogenies-BBH.py -t *nwk -d 2019_06_PVC
 
 chlamdb-load-swissprot-homology-search.py -i chunk_.*.tab -d 2019_06_PVC -t -p 2 -l -u ../../data/nr_mapping.tab
 
-chlamdb-load-PRIAM.py -i sequenceECs.txt -d 2019_06_PVC -c ../../data/nr_mapping.tab
+OK chlamdb-load-PRIAM.py -i sequenceECs.txt -d 2019_06_PVC -c ../../data/nr_mapping.tab
 
 # comparative tables
 chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -o # orthogroup
 OK chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -c # COG
-chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -p # pfam
-chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -i # interpro
+OK chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -p # pfam
+OK chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -i # interpro
 OK chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -k # ko
 OK chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
 
-chlamdb-setup-linear-taxonomy.py -d 2019_06_PVC -s linear_taxonomy.db
+OK chlamdb-setup-linear-taxonomy.py -d 2019_06_PVC -s linear_taxonomy.db
 chlamdb-setup-gc-content-tables.py -d 2019_06_PVC
 
 

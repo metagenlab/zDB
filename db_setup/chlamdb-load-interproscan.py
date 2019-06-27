@@ -499,11 +499,11 @@ def interpro2biosql_legacy(server,
     sql1 = 'create index lc ON biosqldb.interpro_%s (locus_tag)' % biodb
     sql2 = 'create index ana ON biosqldb.interpro_%s (analysis)' % biodb
     sql3 = 'create index tx ON biosqldb.interpro_%s (taxon_id)' % biodb
-    sql4 = 'create index or ON biosqldb.interpro_%s (organism)' % biodb
+    sql4 = 'create index og ON biosqldb.interpro_%s (organism)' % biodb
     sql5 = 'create index ac ON biosqldb.interpro_%s (accession)' % biodb
     sql6 = 'create index sf ON biosqldb.interpro_%s (seqfeature_id)' % biodb
     sql7 = 'create index ia ON biosqldb.interpro_%s (interpro_accession)' % biodb
-    sql8 = 'create index og ON biosqldb.interpro_%s (orthogroup)' % biodb
+    sql8 = 'create index sa on biosqldb.interpro_%s(signature_accession);' % biodb
     server.adaptor.execute(sql1)
     server.adaptor.execute(sql2)
     server.adaptor.execute(sql3)

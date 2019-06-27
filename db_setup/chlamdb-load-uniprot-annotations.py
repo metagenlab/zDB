@@ -220,6 +220,13 @@ class Uniprot_annot():
         for row in data:
             self.sqlite_cursor.execute(sql, row)
         self.sqlite_conn.commit()
+
+        # indexes
+        sqlid1 = 'create index taxid on taxid2locus_tag(taxid);'
+        sqlid2 = 'create index loc on taxid2locus_tag(locus_tag);'
+        self.sqlite_cursor.execute(sqlid1)
+        self.sqlite_cursor.execute(sqlid2)
+
         # import locus_tag2hash
         sql = 'create table locus_tag2hash (locus_tag varchar(200), hash binary)'
         self.sqlite_cursor.execute(sql,)
@@ -229,6 +236,13 @@ class Uniprot_annot():
                 data = row.rstrip().split("\t")
                 self.sqlite_cursor.execute(sql, data)
         self.sqlite_conn.commit()
+
+        # indexes
+        sqlid1 = 'create index lh1 on locus_tag2hash(locus_tag);'
+        sqlid2 = 'create index lh2 on locus_tag2hash(hash);'
+        self.sqlite_cursor.execute(sqlid1)
+        self.sqlite_cursor.execute(sqlid2)
+
         # import hash2uniprot_accession
         sql = 'create table hash2uniprot_accession (hash binary, uniprot_accession varchar(200), taxon_id INTEGER, description TEXT, source_db varchar(200))'
         self.sqlite_cursor.execute(sql,)
@@ -240,6 +254,15 @@ class Uniprot_annot():
                 data = row.rstrip().split("\t")
                 data[1] = data[1].split(".")[0]
                 self.sqlite_cursor.execute(sql, data)
+        # indexes
+        sqlid1 = 'create index hu1 on hash2uniprot_accession(hash);'
+        sqlid2 = 'create index hu2 on hash2uniprot_accession(uniprot_accession);'
+        sqlid3 = 'create index hu3 on hash2uniprot_accession(taxon_id);'
+        sqlid4 = 'create index hu4 on hash2uniprot_accession(source_db);'
+        self.sqlite_cursor.execute(sqlid1)
+        self.sqlite_cursor.execute(sqlid2)
+        self.sqlite_cursor.execute(sqlid3)
+        self.sqlite_cursor.execute(sqlid4)
 
         self.sqlite_conn.commit()
 
@@ -254,6 +277,12 @@ class Uniprot_annot():
                 data = row.rstrip().split("\t")
                 self.sqlite_cursor.execute(sql, data)
         self.sqlite_conn.commit()
+
+        # indexes
+        sqlid1 = 'create index up1 on uniprot_data(uniprot_accession);'
+        sqlid2 = 'create index up2 on uniprot_data(proteome);'
+        self.sqlite_cursor.execute(sqlid1)
+        self.sqlite_cursor.execute(sqlid2)
 
         sql = 'select taxid,proteome, count(*) as n from taxid2locus_tag t1 inner join locus_tag2hash t2 on t1.locus_tag=t2.locus_tag inner join hash2uniprot_accession t3 on t2.hash=t3.hash inner join uniprot_data t4 on t3.uniprot_accession=t4.uniprot_accession group by taxid,proteome order by n DESC;'
         self.sqlite_cursor.execute(sql,)
