@@ -271,35 +271,35 @@ def plot_tree(ete3_tree,
     for lf in ete3_tree.iter_leaves():
 
         try:
-            col = phylum2col[accession2name_and_phylum[lf.name][1]]
-            lf.name = '%s|%s-%s' % (lf.name, accession2name_and_phylum[lf.name][0],accession2name_and_phylum[lf.name][1])
-
-            ff = AttrFace("name", fsize=12)
-            #ff.background.color = 'red'
-            ff.fgcolor = col
-
-            lf.add_face(ff, column=0)
-
-            #nameFace = AttrFace(lf.name, fsize=30, fgcolor=phylum2col[accession2name_and_phylum[lf.name][1]])
-            #faces.add_face_to_node(nameFace, lf, 0, position="branch-right")
-            #
-            #nameFace.border.width = 1
+            swissprot_or_refseq_data = accession2name_and_phylum[lf.name]
         except:
-            col = 'red'
             try:
-                lf.name = '%s| %s' % (lf.name, locus2organism[lf.name])
-            except:
-                # tryremoving version number
-                try:
-                    print("problem with", lf.name.split(".")[0])
-                    lf.name = '%s| %s' % (lf.name, locus2organism[lf.name.split(".")[0]])
-                except:
-                    lf.name = '%s| ??' % (lf.name)
-            ff = AttrFace("name", fsize=12)
-            #ff.background.color = 'red'
-            ff.fgcolor = col
+                swissprot_or_refseq_data = accession2name_and_phylum[lf.name.split(".")[0]]
+                col = phylum2col[swissprot_or_refseq_data[1]]
+                lf.name = '%s|%s-%s' % (lf.name, swissprot_or_refseq_data[0], swissprot_or_refseq_data[1])
 
-            lf.add_face(ff, column=0)
+                ff = AttrFace("name", fsize=12)
+                #ff.background.color = 'red'
+                ff.fgcolor = col
+
+                lf.add_face(ff, column=0)
+
+                #nameFace = AttrFace(lf.name, fsize=30, fgcolor=phylum2col[accession2name_and_phylum[lf.name][1]])
+                #faces.add_face_to_node(nameFace, lf, 0, position="branch-right")
+                #
+                #nameFace.border.width = 1
+            except:
+                col = 'red'
+                try:
+                    lf.name = '%s| %s' % (lf.name, locus2organism[lf.name])
+                except:
+                    # tryremoving version number
+                    lf.name = '%s| ??' % (lf.name)
+                ff = AttrFace("name", fsize=12)
+                #ff.background.color = 'red'
+                ff.fgcolor = col
+
+                lf.add_face(ff, column=0)
     ts = TreeStyle()
     ts.show_leaf_name = False
     ts.show_branch_support = True
