@@ -10680,38 +10680,49 @@ def search(request):
                         locus_list.append(one_hit[1])
                         n+=1
 
+                    # CREATE FULLTEXT INDEX ezf ON enzyme.enzymes_dat(value);
                     sql = 'select A.ec, A.value from (select ec,value from enzyme.enzymes_dat as t1 inner join enzyme.enzymes as t2 ' \
-                          ' on t1.enzyme_dat_id=enzyme_id WHERE value REGEXP "%s" group by ec) A inner join comparative_tables.EC_%s' \
+                          ' on t1.enzyme_dat_id=enzyme_id WHERE MATCH(value) AGAINST("%s" IN NATURAL LANGUAGE MODE) group by ec) A inner join comparative_tables.EC_%s' \
                           ' as B on A.ec=B.id' % (search_term, biodb)
-
+                    print(sql)
                     raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_EC) == 0:
                         raw_data_EC = False
+
+                    # CREATE FULLTEXT INDEX koaf ON enzyme.ko_annotation_v1(definition);
+                    # filter KO absent from DB
                     sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme.ko_annotation_v1 ' \
-                          'where definition REGEXP "%s") A inner join comparative_tables.ko_%s as B on A.ko_id=B.id' % (search_term, biodb)
+                          'WHERE MATCH(definition) AGAINST("%s" IN NATURAL LANGUAGE MODE)) A inner join comparative_tables.ko_%s as B on A.ko_id=B.id' % (search_term, biodb)
                     try:
                         raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
                     except:
                         raw_data_ko = []
                     if len(raw_data_ko) == 0:
                         raw_data_ko = False
-                    sql = 'select A.COG_id,A.code,A.description, A.name from (select COG_id,code,description,name from COG.cog_names_2014 as t1 inner join ' \
-                          ' COG.code2category as t2 on t1.function=t2.code where name REGEXP "%s") A inner join ' \
-                          ' comparative_tables.COG_%s as B on A.COG_id=B.id' % (search_term, biodb)
+
+                    # CREATE FULLTEXT INDEX cogf ON COG.cog_names_2014(description);
+                    sql = ' select COG_name,code,t3.description,t1.description from COG.cog_names_2014 t1 inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id inner join COG.code2category t3 on t2.category_id=t3.category_id WHERE MATCH(t1.description) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (search_term)
                     raw_data_cog = []# :TODO server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_cog) == 0:
                         raw_data_cog = False
+
+                    # CREATE FULLTEXT INDEX ipf ON interpro.signature(signature_description);
+                    # CREATE FULLTEXT INDEX ipf ON interpro.entry(description);
                     sql = 'select analysis,signature_accession,signature_description,' \
                           ' interpro_accession,interpro_description,orthogroup from ' \
                           ' interpro_%s where signature_description REGEXP "%s" group by signature_description limit 100' % (biodb, search_term)
                     raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_interpro) == 0:
                         raw_data_interpro = False
+
+                    # CREATE FULLTEXT INDEX modf ON enzyme.kegg_module_v1(description, module_sub_cat);
                     sql = 'select module_name,module_sub_cat,module_sub_sub_cat,description from enzyme.kegg_module_v1 ' \
                           ' where (description REGEXP "%s" or module_sub_cat REGEXP "%s")' % (search_term, search_term)
                     raw_data_module = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_module) == 0:
                         raw_data_module = False
+
+                    # CREATE FULLTEXT INDEX kegf ON enzyme.kegg_pathway(description, pathway_category);
                     sql = 'select pathway_name,pathway_category,description from enzyme.kegg_pathway ' \
                           ' where (description REGEXP "%s" or pathway_category REGEXP "%s")' % (search_term, search_term)
                     raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
