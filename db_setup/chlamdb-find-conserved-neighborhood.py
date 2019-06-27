@@ -3,7 +3,7 @@
 
 
 def create_locus_link_table(biodb):
-    import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'create database if not exists interactions'
