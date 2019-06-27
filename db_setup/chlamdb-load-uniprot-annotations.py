@@ -223,7 +223,7 @@ class Uniprot_annot():
 
         # indexes
         sqlid1 = 'create index taxid on taxid2locus_tag(taxid);'
-        sqlid2 = 'create index loc on taxid2locus_tag(tlocus_tagaxid);'
+        sqlid2 = 'create index loc on taxid2locus_tag(locus_tag);'
         self.sqlite_cursor.execute(sqlid1)
         self.sqlite_cursor.execute(sqlid2)
 
