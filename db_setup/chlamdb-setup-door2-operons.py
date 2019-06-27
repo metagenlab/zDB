@@ -112,8 +112,9 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", '--biodb', type=str, help="biodatabase name")
-
+    parser.add_argument("-c", '--create_accession_table', action='store_true', help="biodatabase name")
 
     args = parser.parse_args()
-    #door_accession2door_operon_table(accession=1101)
+    if args.create_accession_table:
+        door_accession2door_operon_table(accession=1101)
     accession2operon_table(args.biodb)
