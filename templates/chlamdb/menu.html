@@ -94,7 +94,26 @@
                       </ul>
                     </div>
                 </li>
-		<!-- if biodb in 'chlamydia_04_16,2017_06_29b_motile_chlamydiae'|slice:','  -->
+
+            <li class="sidebar-dropdown">
+                <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-6" aria-expanded="false">
+                    <i class="fa fa-list"></i>
+                    <span> Genome alignments</span>
+                </a>
+                <div class="sidebar-submenu" style="display:block;">
+                  <ul id="submenu-6" class="panel-collapse collapse panel-switch" role="menu">
+
+                    <li class="item"><a href="{% url 'plot_region' %}">Plot region</a></li>
+                    <li class="item"><a href="{% url 'circos' %}">Circos</a></li>
+                    <!--<li class="item6"><a href="{% url 'circos2genomes' %}">Circos 2 genomes</a>-->
+                    <!--<li class="item5"><a href="{% url 'circos_homology' %}">Homologues location</a>-->
+                    <!--</li>-->
+                    <!--<li class="item5"><a href="{% url 'mummer' %}">Dot plots</a>-->
+                  </ul>
+                </div>
+            </li>
+
+
             <li class="sidebar-dropdown">
                 <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-4" aria-expanded="false">
                     <i class="fa fa-list"></i>
@@ -116,24 +135,6 @@
                   <ul id="submenu-5" class="panel-collapse collapse panel-switch" role="menu">
                     <li class="item"><a href="{% url 'pairwiseid' %}">Pairwise Identity</a></li>
                     <li class="item"><a href="{% url 'pairwiseCDS_length' %}">CDS lengths</a></li>
-                  </ul>
-                </div>
-            </li>
-
-            <li class="sidebar-dropdown">
-                <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-6" aria-expanded="false">
-                    <i class="fa fa-list"></i>
-                    <span> Genome alignments</span>
-                </a>
-                <div class="sidebar-submenu" style="display:block;">
-                  <ul id="submenu-6" class="panel-collapse collapse panel-switch" role="menu">
-
-                    <li class="item"><a href="{% url 'plot_region' %}">Plot region</a></li>
-                    <li class="item"><a href="{% url 'circos' %}">Circos</a></li>
-                    <!--<li class="item6"><a href="{% url 'circos2genomes' %}">Circos 2 genomes</a>-->
-                    <!--<li class="item5"><a href="{% url 'circos_homology' %}">Homologues location</a>-->
-                    <!--</li>-->
-                    <!--<li class="item5"><a href="{% url 'mummer' %}">Dot plots</a>-->
                   </ul>
                 </div>
             </li>
