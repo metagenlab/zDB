@@ -213,8 +213,10 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
     print ('loading blast results into database...')
 
 
-    sql_template = 'insert into blast_swissprot_%s ' % biodb 
+    sql_template = 'insert into blast_swissprot_%s ' % biodb
     sql_template += 'values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'
+
+    deleted_accession2annotation = {}
 
     for one_blast_file in input_blast_files:
         n_file +=1
@@ -239,10 +241,24 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
                     subject_organism = annot[4]
                 except KeyError:
                     print("Deleted entry!----- %s" % sp_accession)
-                    sp_accession = deleted_uniprot2new_identical_sequence(sp_accession)
-                    if sp_accession:
-                        temp_accession2annotation = get_swissprot_annotation([sp_accession])
-                        annot = temp_accession2annotation[sp_accession]
+                    if sp_accession not in deleted_accession2annotation:
+                        # get a new accession if possible, download annotation and store it
+                        new_accession = deleted_uniprot2new_identical_sequence(sp_accession)
+                        time.sleep(1)
+                        if new_accession:
+                            temp_accession2annotation = get_swissprot_annotation([new_accession])
+                            # add new annotation to the dictionnary
+                            deleted_accession2annotation[sp_accession] = temp_accession2annotation[new_accession]
+                        else:
+                            # if no match, false
+                            deleted_accession2annotation[sp_accession] = False
+                    annot = deleted_accession2annotation[sp_accession]
+                    if annot:
+                        subject_taxon_id = annot[0]
+                        subject_annot_score = annot[1].split(' ')[0]
+                        subject_description = annot[2]
+                        subject_genes = annot[3]
+                        subject_organism = annot[4]
                     else:
                         # set to unknown
                         subject_taxon_id = '32644'
@@ -329,7 +345,7 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
                         print ('problem with sql query')
                         print (sql_template)
                         print(values)
-        # commit entire file            
+        # commit entire file
         conn.commit()
 
 

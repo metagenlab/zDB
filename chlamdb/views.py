@@ -278,7 +278,7 @@ def home(request):
     asset_path = '/temp/tree.svg'
 
     t.render(path, dpi=500, h=500, tree_style=tss)
-    
+
     sql_n_genomes = 'select count(*) from (select distinct taxon_id from bioentry t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t2.name="%s") A;' % biodb
     n_genomes = server.adaptor.execute_and_fetchall(sql_n_genomes,)[0][0]
 
@@ -2532,9 +2532,9 @@ def locusx(request, locus=None, menu=True):
               ' inner join orthology.orthogroup_%s t2 on t1.orthogroup_id=t2.orthogroup_id ' \
               ' inner join interpro.interpro_%s t3 on t1.seqfeature_id=t3.seqfeature_id' \
               ' inner join interpro.signature t4 on t3.signature_id=t4.signature_id ' \
-              ' where signature_accession in ("TRANSMEMBRANE", "SIGNAL_PEPTIDE_C_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_N_REGION") and t2.orthogroup_name="%s" ; ' % (biodb, 
-                                                                                                                                                                          biodb, 
-                                                                                                                                                                          biodb, 
+              ' where signature_accession in ("TRANSMEMBRANE", "SIGNAL_PEPTIDE_C_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_N_REGION") and t2.orthogroup_name="%s" ; ' % (biodb,
+                                                                                                                                                                          biodb,
+                                                                                                                                                                          biodb,
                                                                                                                                                                           orthogroup)
         tm_count = server.adaptor.execute_and_fetchall(sql_TM_SP, )[0][0]
         if tm_count > 0:
@@ -8094,11 +8094,11 @@ def interpro_taxonomy(request):
 
 
 def homologs(request, orthogroup, locus_tag=False):
-    
+
     from chlamdb.biosqldb import orthogroup_identity_db
     biodb = settings.BIODB
     server = manipulate_biosqldb.load_db()
-    
+
     if request.method == 'GET':  # S'il s'agit d'une requête POST
 
         server, db = manipulate_biosqldb.load_db(biodb)
@@ -8122,7 +8122,7 @@ def homologs(request, orthogroup, locus_tag=False):
         homologues = list(server.adaptor.execute_and_fetchall(sql_groups, ))
         for i, row in enumerate(homologues):
             homologues[i] = ['-' if v is None else v for v in list(row)]
-        
+
         if locus_tag:
             # add identity column
             if len(homologues) > 1:
@@ -10522,8 +10522,6 @@ def search(request):
         server, db = manipulate_biosqldb.load_db(biodb)
         search_term = search_term.strip()
 
-
-
         if not search_type:
             import re
             if len(search_term) == len("PF04093") and search_term[0:2] == 'PF':
@@ -10562,11 +10560,11 @@ def search(request):
 
         if search_type == "no_exact_accession":
                 print ('YES no_exact_accession')
-                sql = 'select %s from orthology_detail_%s where gene REGEXP "%s"' % (columns, biodb, search_term)
-                raw_data_gene = server.adaptor.execute_and_fetchall(sql,)
 
-                sql = 'select %s from orthology_detail_%s where product REGEXP "%s"' % (columns, biodb, search_term)
-                raw_data_product = server.adaptor.execute_and_fetchall(sql,)
+                sql = 'SELECT * FROM orthology_detail_%s WHERE MATCH(gene,product) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (columns,
+                                                                                                                               biodb,
+                                                                                                                               search_term)
+                raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
 
                 sql = 'select ec,line,value from enzyme.enzymes_dat as t1 inner join enzymes as t2 ' \
                       ' on t1.enzyme_dat_id=enzyme_id WHERE value REGEXP "%s"' % (search_term)
@@ -10665,12 +10663,15 @@ def search(request):
 
             if search_type == "no_exact_accession":
 
-                    sql = 'select %s from orthology_detail_%s where gene REGEXP "%s" limit 100' % (columns, biodb, search_term)
-                    raw_data_gene = server.adaptor.execute_and_fetchall(sql,)
+                    # CREATE FULLTEXT INDEX GPF ON orthology_detail_2019_06_PVC(gene,product);
+                    sql = 'SELECT * FROM orthology_detail_%s WHERE MATCH(gene,product) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (columns,
+                                                                                                                                   biodb,
+                                                                                                                                   search_term)
+                    raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
                     n = 1
                     search_result = []
                     locus_list = []
-                    for one_hit in raw_data_gene:
+                    for one_hit in raw_data_gene_raw_data_product:
                         if one_hit[2] != '-':
                             interpro_id = one_hit[2]
                         else:
@@ -10678,20 +10679,11 @@ def search(request):
                         search_result.append((n,) + one_hit + (interpro_id,))
                         locus_list.append(one_hit[1])
                         n+=1
-                    sql = 'select %s from orthology_detail_%s where product REGEXP "%s" limit 100' % (columns, biodb, search_term)
-                    raw_data_product = server.adaptor.execute_and_fetchall(sql,)
 
-                    for one_hit in raw_data_product:
-                        if one_hit[2] != '-':
-                            interpro_id = one_hit[2]
-                        else:
-                            interpro_id = one_hit[1]
-                        if one_hit[1] not in locus_list:
-                            search_result.append((n,) + one_hit + (interpro_id,))
-                        n+=1
                     sql = 'select A.ec, A.value from (select ec,value from enzyme.enzymes_dat as t1 inner join enzyme.enzymes as t2 ' \
                           ' on t1.enzyme_dat_id=enzyme_id WHERE value REGEXP "%s" group by ec) A inner join comparative_tables.EC_%s' \
                           ' as B on A.ec=B.id' % (search_term, biodb)
+
                     raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_EC) == 0:
                         raw_data_EC = False
