@@ -93,7 +93,7 @@ def get_parwise_genome_median_identity_table(biodb, sqlite3=False):
     server.adaptor.execute(sql,)
     server.commit()
     for n, taxon_1 in enumerate(taxon_list):
-        print "%s / %s" % (n, len(taxon_list))
+        print ("%s / %s" % (n, len(taxon_list)))
         for taxon_2 in taxon_list[n+1:len(taxon_list)]:
             sql = 'select blast_identity_a_vs_b from comparative_tables.reciprocal_BBH_%s where taxon_1 =%s ' \
                   'and taxon_2=%s;' % (biodb,
@@ -122,7 +122,7 @@ def get_parwise_genome_median_identity_table(biodb, sqlite3=False):
                                                                                                   len(data)
                                                                                                   )
             server.adaptor.execute(sql,)
-            server.commit()
+        server.commit()
 
 def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
 
@@ -179,7 +179,7 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
 
     for n1, locus_1 in enumerate(locus2taxon2best_hit_id):
         if n1 % 10 == 0:
-            print "%s / %s -- %s " % (n1, len(locus2taxon2best_hit_id),str(datetime.now()))
+            print ("%s / %s -- %s " % (n1, len(locus2taxon2best_hit_id),str(datetime.now())))
         taxon_1 = locus_tag2taxon_id[locus_1]
         for taxon_2 in locus2taxon2best_hit_id[locus_1]:
 
@@ -293,8 +293,8 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
                     try:
                         server.adaptor.execute(sql,)
                     except:
-                        print 'FAIL'
-                        print sql
+                        print ('FAIL')
+                        print (sql)
 
 
 
@@ -331,7 +331,7 @@ def median_RBBH2species(biodb):
             taxon2taxon2identity[row[1]][row[0]] = row[2]
         else:
             taxon2taxon2identity[row[1]][row[0]] = row[2]
-    print taxon2taxon2identity
+    #print taxon2taxon2identity
     species_index = 0
     taxons_classified = []
     for taxon_1 in taxon_id_list:
@@ -427,7 +427,7 @@ def seqfeature_id2n_species(biodb):
 
     for group in orthogroup2locus_list:
         species = list(set([taxon_id2species_id[str(locus2taxon_id[i])] for i in orthogroup2locus_list[group]]))
-        print group, 'n species:', len(species)
+        print (group, 'n species:', len(species))
         for one_locus in orthogroup2locus_list[group]:
             seqfeature_id = locus_tag2seqfeature_id[one_locus]
             sql = 'insert into custom_tables.seqfeature_id2n_species_%s values (%s, %s)' % (biodb, seqfeature_id, len(species))
@@ -443,7 +443,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    print 'parsing files...'
+    print ('parsing files...')
 
     '''
 >>>>>>> 99ef3249c176defe522e1a7ef9710c99a51afa46
@@ -459,12 +459,12 @@ if __name__ == '__main__':
 
     #print 'get pairwise median id table...'
     #get_parwise_genome_median_identity_table(args.database)
-    
+
     #median_RBBH2species(args.database)
     #seqfeature_id2n_species(args.database)
 
 
-    
+
     taxid_chlam_list =       [314,
    886707,
    804807,
@@ -500,7 +500,7 @@ if __name__ == '__main__':
        66]
     print len(taxid_chlam_list)
     seqfeature_id2n_species_chlamydiae_only(args.database, taxid_chlam_list)
-    '''  
+    '''
     seqid2locus_tag = parse_seqid_file(args.seq_id_file)
     locus2taxon2best_hit_id = parse_orthofinder_blast_files(args.database,
                                                             args.blast_files,
