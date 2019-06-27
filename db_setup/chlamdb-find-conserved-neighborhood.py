@@ -582,7 +582,7 @@ def find_clusters_of_locus(db_name, identity_cutoff, distance_cutoff=20000):
                                                                 tmp_dico[locus_a][locus_b][1],
                                                                 tmp_dico[locus_a][locus_b][0]/float(tmp_dico[locus_a][locus_b][1]))
                         server.adaptor.execute(sql,)
-                        server.adaptor.commit()
+                server.adaptor.commit()
 
             if len(locus2linked_taxons[locus_a]) == 0:
                 del locus2linked_taxons[locus_a]
