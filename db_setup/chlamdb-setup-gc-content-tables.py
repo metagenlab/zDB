@@ -29,7 +29,7 @@ def biodb2cds_gc(biodb):
         record = db.lookup(accession=accession)
         seq = record.seq
         for n, feature in enumerate(record.features):
-            if feature.type == 'CDS' and not 'pseudo' in feature.qualifiers:
+            if feature.type == 'CDS' and not 'pseudo' in feature.qualifiers and not 'pseudogene' in feature.qualifiers and 'translation' in feature.qualifiers:
                 count_all+=1
                 dna_sequence = feature.extract(seq)
                 locus = feature.qualifiers['locus_tag'][0]
