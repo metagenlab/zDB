@@ -291,6 +291,7 @@ def plot_tree(ete3_tree,
             except:
                 # tryremoving version number
                 try:
+                    print("problem with", lf.name.split(".")[0])
                     lf.name = '%s| %s' % (lf.name, locus2organism[lf.name.split(".")[0]])
                 except:
                     lf.name = '%s| ??' % (lf.name)
