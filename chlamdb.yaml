@@ -39,6 +39,7 @@ dependencies:
  - mysqlclient
  - rpy2
  - r-ggplot2
+ - circos
  - pip:
    - cython
    - django-citations
