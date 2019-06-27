@@ -29,7 +29,7 @@ def sql_euclidian_dist_orthogroups(biodb, one_list, orthogroup2profile):
                                                                                                         one_pair[1],
                                                                                                         dist)
             server.adaptor.execute(sql,)
-            server.adaptor.commit()
+    server.adaptor.commit()
 
 
 def merge_dataframe_columns(dataframe, columns_clusters_dict):
@@ -112,7 +112,7 @@ def euclidian_dist_orthogroups(biodb, merge_taxons=False):
              user="root", password="%s",
              dbname="comparative_tables", host="localhost")
 
-    rs1 <- dbSendQuery(con, 'select taxon_1,taxon_2, median_identity from shared_og_av_id_%s;')
+    rs1 <- dbSendQuery(con, 'select taxon_1,taxon_2, median_identity from shared_og_av_id_%s union select taxon_2, taxon_1, median_identity from shared_og_av_id_%s;')
     pairwise_identity<- dbFetch(rs1, n=-1)
     rs2 <- dbSendQuery(con, 'select taxon_id,description from biosqldb.bioentry where biodatabase_id=%s and description not like "%%plasmid%%";')
     taxon2description<- dbFetch(rs2, n=-1)
@@ -124,12 +124,12 @@ def euclidian_dist_orthogroups(biodb, merge_taxons=False):
     pairwise_identity_matrix<-pairwise_identity_matrix[,2:length(pairwise_identity_matrix)]
 
     pairwise_dist <- as.dist(100-pairwise_identity_matrix)
-
+    print(pairwise_dist)
     hc <- hclust(pairwise_dist)
     clusterCut <- cutree(hc,h=30)
     taxons <- names(clusterCut)
 
-    """ % (sqlpsw, biodb, biodb_id))
+    """ % (sqlpsw, biodb, biodb, biodb_id))
 
     clusters = robjects.r["clusterCut"]
     taxons = robjects.r["taxons"]
