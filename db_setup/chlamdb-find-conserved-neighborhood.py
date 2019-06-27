@@ -485,7 +485,7 @@ def find_clusters_of_locus(db_name, identity_cutoff, distance_cutoff=20000):
             grp_list = []
             grp2locus = {}
             for feature in region_a.features:
-                if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers:
+                if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers and 'translation' in feature.qualifiers:
                     locus_b = str(locus_tag2seqfeature_id[feature.qualifiers['locus_tag'][0]])
                     orthogroup_locus = locus2orthogroup[locus_b]
                     if orthogroup_locus not in grp2locus:
@@ -529,7 +529,7 @@ def find_clusters_of_locus(db_name, identity_cutoff, distance_cutoff=20000):
                     # get group list b
                     grp_list_b = []
                     for feature in region_b.features:
-                        if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers:
+                        if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers and 'translation' in feature.qualifiers:
                             locus_b = str(locus_tag2seqfeature_id[feature.qualifiers['locus_tag'][0]])
                             orthogroup_locus = locus2orthogroup[locus_b]
                             if orthogroup_locus not in grp_list_b:
