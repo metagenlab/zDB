@@ -2181,7 +2181,7 @@ def locusx(request, locus=None, menu=True):
                     ' where locus_tag="%s" and db_xref_name not in ("GO","InterPro", "Pfam");' % (biodb,biodb,biodb,locus)
 
             sql12 = 'select uniprot_status,annotation_score,gene,recommendedName_fullName,comment_function,ec_number,' \
-                    ' comment_similarity,comment_subunit,comment_catalyticactivity,proteinExistence ' \
+                    ' comment_similarity,comment_subunit,comment_catalyticactivity,proteinExistence,uniprot_accession ' \
                     ' from custom_tables.locus2seqfeature_id_%s as t1 inner join custom_tables.uniprot_id2seqfeature_id_%s as t2 ' \
                     ' on t1.seqfeature_id=t2.seqfeature_id inner join custom_tables.uniprot_annotation_%s as t3 ' \
                     ' on t2.seqfeature_id=t3.seqfeature_id where locus_tag="%s";' % (biodb,biodb,biodb,locus)

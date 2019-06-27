@@ -411,13 +411,11 @@ background: #81F7F3;
   padding-left: 10px;
 }
 
-
-
 body {
 	/*background:#3B3B3B;*/
   background: #fafafa url(http://jackrugile.com/images/misc/noise-diagonal.png);
 	color: #444;
-	font-size: 12px;
+	font-size: 13px;
 }
 
 #locus_body {

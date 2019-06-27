@@ -117,23 +117,23 @@ function clearBox(elementID)
                                 <div class="panel-heading">
                                   <h3 class="panel-title">General</h3>
                                 </div>
-                                  <table id="panel_table" class="table-striped" style="width: 100%">
+                                  <table id="panel_table" class="table table-striped" style="width: 100%">
 
                                       <tr>
-                                          <th id="description_field">Organism</th>
+                                          <th>Organism</th>
                                           <td>{{ data.12 }}</td>
                                       </tr>
                                       <tr>
-                                          <th id="description_field">locus_tag</th>
+                                          <th>locus_tag</th>
                                           <td>{{ data.1 }}</td>
                                       </tr>
                                       {% if old_locus_tag %}
                                           <tr>
-                                              <th id="description_field">old locus_tag</th>
+                                              <th>old locus_tag</th>
                                               <td>{{ old_locus_tag }}</td>
                                           </tr>
                                       {% endif %}
-                                      <th  id="description_field">gene</th>
+                                      <th>gene</th>
                                           <td>{{ data.6 }}</td>
                                       </tr>
                                       <tr>
@@ -174,27 +174,27 @@ function clearBox(elementID)
                                  <h3 class="panel-title">Orthology</h3>
                                </div>
 
-                                 <table class="table-striped" style="width: 100%">
+                                 <table class="table table-striped" style="width: 100%">
                                    <tr>
-                                       <td id="description_field">orthogroup</td>
+                                       <td >orthogroup</td>
                                        <td>{{ data.0 }}</td>
                                    </tr>
-                                   <td id="description_field">orthogroup size</td>
+                                   <td >orthogroup size</td>
                                        <td>{{ data.7 }}</td>
                                    </tr>
 
-                                   <td id="description_field">n genomes</td>
+                                   <td >n genomes</td>
                                        <td>{{ data.8 }}</td>
                                    </tr>
                                    {%if cog_data %}
                                        <tr>
-                                       <td id="description_field">COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                       <td >COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
                                        <td><a <a href="{% url 'fam' cog_data.0 'cog' %}" target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
                                        </tr>
                                    {% endif %}
                                    {%if ko_data %}
                                        <tr>
-                                       <td id="description_field">KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                       <td >KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
                                        <td><a href="{% url 'fam' ko_data.0 'ko' %}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
                                        </tr>
                                    {% endif %}
@@ -214,23 +214,23 @@ function clearBox(elementID)
                                 <div class="panel-body">
                                   <table>
                                       <tr>
-                                          <td id="description_field">Molecular Weight</td>
+                                          <td >Molecular Weight</td>
                                           <td>{{protparams_data.0}}</td>
                                       </tr>
                                       <tr>
-                                          <td id="description_field">Isoelectric Point</td>
+                                          <td >Isoelectric Point</td>
                                           <td>{{protparams_data.1}}</td>
                                       </tr>
                                       <tr>
-                                          <td id="description_field">Aromaticity</td>
+                                          <td >Aromaticity</td>
                                           <td>{{protparams_data.2}}</td>
                                       </tr>
                                       <tr>
-                                          <td id="description_field">Instability Index</td>
+                                          <td >Instability Index</td>
                                           <td>{{protparams_data.3}}</td>
                                       </tr>
                                       <tr>
-                                          <td id="description_field">Fractions helix/turn/sheet</td>
+                                          <td >Fractions helix/turn/sheet</td>
                                           <td>{{protparams_data.4}}/{{protparams_data.5}}/{{protparams_data.6}}</td>
                                       </tr>
 
@@ -252,7 +252,7 @@ function clearBox(elementID)
                                 <div style="width: 100%;padding-left:20px">
                                     <table>
                                         <tr>
-                                        <td id="description_field">Comment orthogroup   <a href="{% url 'add_comment' data.1 %}">  edit</a></td>
+                                        <td >Comment orthogroup   <a href="{% url 'add_comment' data.1 %}">  edit</a></td>
                                         <td>
                                             {% for values in cmt_format%}
                                                 {{values.0}}: {{values.1|safe}} </br>
@@ -356,9 +356,9 @@ function clearBox(elementID)
                                     <div class="panel-heading">
                                       <h3 class="panel-title">Product</h3>
                                     </div>
-                                    <table class="table-striped" style="width: 100%">
+                                    <table class="table table-striped" style="width: 100%">
                                         <tr>
-                                            <td id="description_field">Product</td>
+                                            <td >Product</td>
                                             <td>{{ data.11 }}</td>
 
                                             {%if uniprot_id %}
@@ -381,52 +381,59 @@ function clearBox(elementID)
                                   <div class="panel-heading">
                                     <h3 class="panel-title">Uniprot Annotation</h3>
                                   </div>
-                                  <table id="panel_table" class="table-striped" style="width: 100%">
+                                  <table id="panel_table" class="table table-striped" style="width: 100%">
+
+
                                           <tr>
-                                              <th id="description_field">Uniprot status</th>
-                                              <td><strong>{{ uniprot_annotation.0 }} / Score: {{ uniprot_annotation.1 }}</strong></td>
+                                              <th >Accession</th>
+                                              <td><a href="https://www.uniprot.org/uniprot/{{ uniprot_annotation.10 }}">{{ uniprot_annotation.10 }}</a></td>
+                                          </tr>
+
+                                          <tr>
+                                              <th >Status</th>
+                                              <td><strong>{{ uniprot_annotation.0 }} / Annotation Score: {{ uniprot_annotation.1 }}</strong></td>
                                           </tr>
 
                                       {%if uniprot_annotation.2 != '-'%}
                                           <tr>
-                                              <td id="description_field">gene</td>
+                                              <th >gene</th>
                                               <td>{{ uniprot_annotation.2 }}</td>
                                           </tr>
                                       {% endif %}
                                       {%if uniprot_annotation.3 != '-'%}
                                           <tr>
-                                              <td id="description_field">product</td>
+                                              <th >product</th>
                                               <td>{{ uniprot_annotation.3 }}</td>
                                           </tr>
                                       {% endif %}
                                       {%if uniprot_annotation.4 != '-'%}
                                           <tr>
-                                              <td id="description_field">function</td>
+                                              <th >function</th>
                                               <td>{{ uniprot_annotation.4 }}</td>
                                           </tr>
                                       {% endif %}
                                       {%if uniprot_annotation.5 != '-'%}
                                           <tr>
-                                              <td id="description_field">ec_number</td>
+                                              <th >ec_number</th>
                                               <td>{{ uniprot_annotation.5 }}</td>
                                           </tr>
                                       {% endif %}
 
                                       {%if uniprot_annotation.6 != '-'%}
                                           <tr>
-                                              <td id="description_field">similarity</td>
+                                              <th >similarity</th>
                                               <td>{{ uniprot_annotation.6 }}</td>
                                           </tr>
                                       {% endif %}
                                       {%if uniprot_annotation.7 != '-'%}
                                           <tr>
-                                              <td id="description_field">subunit</td>
+                                              <th >subunit</th>
                                               <td>{{ uniprot_annotation.7 }}</td>
                                           </tr>
                                       {% endif %}
                                       {%if uniprot_annotation.8 != '-'%}
                                           <tr>
-                                              <td id="description_field">catalytic activity</td>
+                                              <th >catalytic activity</th>
                                               <td>{{ uniprot_annotation.8 }}</td>
                                           </tr>
                                       {% endif %}
@@ -467,7 +474,7 @@ function clearBox(elementID)
                                         </tr>
 
                                     </table>
-                                    <table class="table-striped" style="width: 100%">
+                                    <table class="table table-striped" style="width: 100%">
 
                                         <tr>
                                             <th style="width:80px">SuperFamily</th>
@@ -502,7 +509,7 @@ function clearBox(elementID)
                                   <a onclick='exportPNG("div_features", "div_features");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
                                   <div id="div_features" style="margin-top: 1px; width: 800px; margin-left: 20px;"></div>
 
-                                  <table id="panel_table" class="table-striped" style="width: 100%">
+                                  <table id="panel_table" class="table table-striped" style="width: 100%">
                                       {%if interpro_data %}
                                          <tr>
                                               <td style="width:70px"></td>
@@ -516,7 +523,7 @@ function clearBox(elementID)
                                       {%if pfam_data %}
                                           {% for values in pfam_data %}
                                               <tr>
-                                                  <th id="description_field"><a href="{% url 'fam' values.0 'pfam' %}" target="_top">Pf: {{values.0}}</a></th>
+                                                  <th ><a href="{% url 'fam' values.0 'pfam' %}" target="_top">Pf: {{values.0}}</a></th>
                                                   <td>{{values.1}}</td>
                                               </tr>
 
@@ -527,7 +534,7 @@ function clearBox(elementID)
                                           {% for values in interpro_data %}
                                               {% with interpro2taxononmy|keyvalue:values.0 as taxo %}
                                               <tr>
-                                                  <th id="description_field"><a href="{% url 'fam' values.0 'interpro' %}" target="_top">IP: {{values.0}}</a></th>
+                                                  <th ><a href="{% url 'fam' values.0 'interpro' %}" target="_top">IP: {{values.0}}</a></th>
                                                   <td>{{values.1}} </td>
                                                   {% if taxo.4 > taxo.5 %}
                                                       <td style="color:blue;">{{taxo.4}} ({{taxo.0}}%)</td>
@@ -553,7 +560,7 @@ function clearBox(elementID)
                                   <div class="panel-heading">
                                     <h3 class="panel-title">Pathways/Modules <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and GhostKOALA"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
                                   </div>
-                                  <table class="table-striped" style="width: 100%">
+                                  <table class="table table-striped" style="width: 100%">
 
                                       {%if ko_pathway_data %}
 
@@ -590,7 +597,7 @@ function clearBox(elementID)
                                   <div class="panel-heading">
                                     <h3 class="panel-title">Operon <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data from the Door2 database"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
                                   </div>
-                                  <table class="table-striped" style="width: 100%">
+                                  <table class="table table-striped" style="width: 100%">
                                       <tr>
                                           <th>DOOR2 id</th>
                                           <th>locus</th>
