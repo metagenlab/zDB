@@ -21,13 +21,8 @@
 
             <h3> Homologs for group: {{orthogroup}} (Identified with Orthofinder)</h3>
 
-
               <div class="container-fluid">
                 <div class="col-lg-12">
-                  {% if not orthologs %}
-                      <h2>Homologs</h2>
-                      No homologs
-                  {% else %}
                     <div style="padding-top:20px">
                       <div class="panel panel-default">
                         <div class="panel-heading">
@@ -39,7 +34,6 @@
                       </div>
                     </div>
 
-                  {% endif %}
                       <div class="row">
 
                              <table class="display" id="homologs"> <!--  class="sortable" -->
@@ -134,7 +128,7 @@
   "info":     false
   } );
   } );
-  
+
 </script>
 
 
