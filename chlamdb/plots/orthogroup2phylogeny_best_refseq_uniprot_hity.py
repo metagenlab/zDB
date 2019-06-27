@@ -289,7 +289,11 @@ def plot_tree(ete3_tree,
             try:
                 lf.name = '%s| %s' % (lf.name, locus2organism[lf.name])
             except:
-                lf.name = '%s| ??' % (lf.name)
+                # tryremoving version number
+                try:
+                    lf.name = '%s| %s' % (lf.name, locus2organism[lf.name.split(".")[0]])
+                except:
+                    lf.name = '%s| ??' % (lf.name)
             ff = AttrFace("name", fsize=12)
             #ff.background.color = 'red'
             ff.fgcolor = col
