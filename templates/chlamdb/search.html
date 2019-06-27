@@ -81,7 +81,7 @@
                                 <div class="panel-heading" style="width:100%">
                                     <h3 class="panel-title">Acronyms</h3>
                                 </div>
-                                <table class="table">
+                                <table class="table table-striped">
                                    <tr><td>S</td> <td> strand</td> </tr>
                                    <tr><td>nH</td> <td> total number of homologues</td> </tr>
                                    <tr><td>nG</td> <td> number of genomes in which at least one homologous protein is present</td> </tr>
@@ -94,7 +94,7 @@
                           </div>
 
                           <div style="width:95%">
-                            <table class="display" id="search_table1" name="search">
+                            <table class="table table-striped" id="search_table1" name="search">
                                 <thead>
                                     <tr>
                                         <th></th>
@@ -142,7 +142,7 @@
                               {% if raw_data_EC %}
                                   <div class="tab-pane" id="tab1">
                                       <h2>Enzymes</h2>
-                                      <table id="search_table2" class="table">
+                                      <table id="search_table2" class="table table-striped">
                                       <thead>
                                           <tr>
                                               <th id="entete_locus">EC</th>
@@ -161,7 +161,7 @@
                               {% if raw_data_ko %}
                                   <div class="tab-pane" id="tab2">
                                       <h2>Kegg Orthologs</h2>
-                                      <table id="search_table3" class="table">
+                                      <table id="search_table3" class="table table-striped">
                                       <thead>
                                           <tr>
                                               <th id="entete_locus">KO id</th>
@@ -182,7 +182,7 @@
                               {% if raw_data_cog %}
                                   <div class="tab-pane" id="tab3">
                                       <h2>COGs</h2>
-                                      <table id="search_table4" class="table">
+                                      <table id="search_table4" class="table table-striped">
                                       <thead>
                                           <tr>
                                               <th id="entete_locus">COG id</th>
@@ -203,7 +203,7 @@
                               {% if raw_data_interpro %}
                                   <div class="tab-pane" id="tab4">
                                       <h2>Interpro entries</h2>
-                                      <table id="search_table5" class="table">
+                                      <table id="search_table5" class="table table-striped">
                                       <thead>
                                           <tr>
                                               <th id="entete_locus">Interpro</th>
@@ -232,7 +232,7 @@
                               {% if raw_data_module %}
                                   <div class="tab-pane" id="tab5">
                                       <h2>Kegg Modules</h2>
-                                      <table id="search_table6" class="table">
+                                      <table id="search_table6" class="table table-striped">
                                       <thead>
                                           <tr>
                                               <th id="entete_locus">Name</th>
@@ -256,7 +256,7 @@
                               {% if raw_data_pathway %}
                                   <div class="tab-pane" id="tab6">
                                       <h2>Kegg Modules</h2>
-                                      <table id="search_table7" class="display">
+                                      <table id="search_table7" class="table table-striped">
                                       <thead>
                                           <tr>
                                               <th id="entete_locus">Name</th>
@@ -414,6 +414,27 @@ mark{
 
   $(document).ready(function() {
     $('#search_table6').DataTable( {
+      dom: 'Bfrtip',
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'search'
+        },
+        {
+            extend: 'csv',
+            title: 'search'
+        }
+      ],
+    "paging":   true,
+    "ordering": true,
+    "info":     false,
+    colReorder: true,
+    fixedHeader: true
+    } );
+  } );
+
+  $(document).ready(function() {
+    $('#search_table7').DataTable( {
       dom: 'Bfrtip',
       buttons: [
         {
