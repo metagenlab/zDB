@@ -10005,7 +10005,7 @@ def circos_main(request):
 
     envoi_region = True
 
-    return render(request, 'chlamdb/circos.html', locals())
+    return render(request, 'chlamdb/circos_main.html', locals())
 
 
 def circos_blastnr(request):
