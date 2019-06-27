@@ -2084,12 +2084,10 @@ def locusx(request, locus=None, menu=True):
             if m:
                 locus = "CT_%s" % (m.group(1))
                 print("updated_search", locus)
-
-
             try:
                 locus = int(locus)
                 sql = 'select locus_tag from custom_tables.locus2seqfeature_id_%s where seqfeature_id=%s' % (biodb,
-                                                                                                            locus)
+                                                                                                             locus)
                 #print sql
                 locus = server.adaptor.execute_and_fetchall(sql,)[0][0]
             except:
@@ -10606,7 +10604,7 @@ def search(request):
 
 
     server = manipulate_biosqldb.load_db()
-    #print request.method, "request.method"
+    print(request.method, "request.method")
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         display_from = 'yes'
         form = SearchForm(request.POST)  # Nous reprenons les données
@@ -10664,9 +10662,9 @@ def search(request):
             if search_type == "no_exact_accession":
 
                     # CREATE FULLTEXT INDEX GPF ON orthology_detail_2019_06_PVC(gene,product);
-                    sql = 'SELECT * FROM orthology_detail_%s WHERE MATCH(gene,product) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (columns,
-                                                                                                                                   biodb,
-                                                                                                                                   search_term)
+                    sql = 'SELECT %s FROM orthology_detail_%s WHERE MATCH(gene,product) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (columns,
+                                                                                                                                    biodb,
+                                                                                                                                    search_term)
                     raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
                     n = 1
                     search_result = []
