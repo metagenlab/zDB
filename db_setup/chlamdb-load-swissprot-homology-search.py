@@ -214,7 +214,7 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
 
 
     sql_template = 'insert into blast_swissprot_%s ' % biodb 
-    sql_template += 'values (%s,%s,%s,%s,"%s","%s","%s",%s,"%s","%s",%s,%s,%s,%s,%s,%s,%s,%s,%s,"%s",%s);'
+    sql_template += 'values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'
 
     for one_blast_file in input_blast_files:
         n_file +=1
