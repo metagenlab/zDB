@@ -41,6 +41,7 @@ dependencies:
  - r-ggplot2
  - circos
  - inkscape 
+ - r-rmysql
  - pip:
    - cython
    - django-citations
