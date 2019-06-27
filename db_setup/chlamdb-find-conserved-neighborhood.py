@@ -248,7 +248,7 @@ def find_clusters_of_orthogroups(db_name, identity_cutoff, distance_cutoff=10000
             region_a = mysqldb_plot_genomic_feature.get_feature_neighborhood(start_a, end_a, record, size, 'rec')
             grp_list = []
             for feature in region_a.features:
-                if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers:
+                if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers and 'translation' in feature.qualifiers:
                     locus_b = locus_tag2seqfeature_id[feature.qualifiers['locus_tag'][0]]
                     orthogroup_locus = locus2orthogroup[locus_b]
                     if orthogroup_locus not in grp_list:
