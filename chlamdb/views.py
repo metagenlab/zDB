@@ -10708,7 +10708,7 @@ def search(request):
                     print("COG", raw_data_cog)
                     # CREATE FULLTEXT INDEX ipf ON interpro.signature(signature_description);
                     # CREATE FULLTEXT INDEX ipf ON interpro.entry(description);
-                    sql = 'select analysis_name,signature_accession,signature_description,t3.name,t3.description from pfam.signature t1 inner join pfam.analysis t2 on t1.analysis_id=t2.analysis_id left join pfam.entry t3 on t1.interpro_id=t3.interpro_id  WHERE MATCH(t3.description) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (search_term)
+                    sql = 'select analysis_name,signature_accession,signature_description,t3.name,t3.description from interpro.signature t1 inner join interpro.analysis t2 on t1.analysis_id=t2.analysis_id left join interpro.entry t3 on t1.interpro_id=t3.interpro_id  WHERE MATCH(t3.description) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (search_term)
                     raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_interpro) == 0:
                         raw_data_interpro = False
