@@ -10705,16 +10705,14 @@ def search(request):
                     raw_data_cog = []# :TODO server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_cog) == 0:
                         raw_data_cog = False
-
+                    print("COG", raw_data_cog)
                     # CREATE FULLTEXT INDEX ipf ON interpro.signature(signature_description);
                     # CREATE FULLTEXT INDEX ipf ON interpro.entry(description);
-                    sql = 'select analysis,signature_accession,signature_description,' \
-                          ' interpro_accession,interpro_description,orthogroup from ' \
-                          ' interpro_%s where signature_description REGEXP "%s" group by signature_description limit 100' % (biodb, search_term)
+                    sql = 'select analysis_name,signature_accession,signature_description,t3.name,t3.description from pfam.signature t1 inner join pfam.analysis t2 on t1.analysis_id=t2.analysis_id left join pfam.entry t3 on t1.interpro_id=t3.interpro_id  WHERE MATCH(t3.description) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (search_term)
                     raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_interpro) == 0:
                         raw_data_interpro = False
-
+                    print("interpro", raw_data_interpro)
                     # CREATE FULLTEXT INDEX modf ON enzyme.kegg_module_v1(description, module_sub_cat);
                     sql = 'select module_name,module_sub_cat,module_sub_sub_cat,description from enzyme.kegg_module_v1 ' \
                           ' where (description REGEXP "%s" or module_sub_cat REGEXP "%s")' % (search_term, search_term)
