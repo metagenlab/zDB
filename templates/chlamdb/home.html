@@ -55,7 +55,19 @@
 
                                     <font size="3">
                                     <ul style="list-style-type:square;">
-                                       <li><a href="#tab0" data-toggle="tab">32 <i>Chlamydiae</i> genomes from 26 different species</a> (see the <a href="#tab1" data-toggle="tab">phylogeny</a>)</li>
+
+                                      {% if biodb == "chlamydia_04_16"%}
+
+                                       <li><a href="#tab0" data-toggle="tab">{{n_genomes}} <i>Chlamydiae</i> genomes from 26 different species</a> (see the <a href="#tab1" data-toggle="tab">phylogeny</a>)</li>
+
+                                      {% elif biodb == "2019_06_PVC"%}
+                                         <li><a href="#tab0" data-toggle="tab">{{n_genomes}} <i>PVC</i> genomes</a> (see the <a href="#tab1" data-toggle="tab">phylogeny</a>)</li>
+                                      {% else %}
+                                          <li><a href="#tab0" data-toggle="tab">{{n_genomes}} <i>PVC</i> genomes</a> (see the <a href="#tab1" data-toggle="tab">phylogeny</a>)</li>
+                                      {% endif %}
+
+
+
                                        <li>Orthologous proteins identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a></li>
                                        <li>Detailed annotation of proteins based on</li>
                                            <ul style="list-style-type:circle; padding-left:20px;">

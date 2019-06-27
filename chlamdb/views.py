@@ -278,6 +278,9 @@ def home(request):
     asset_path = '/temp/tree.svg'
 
     t.render(path, dpi=500, h=500, tree_style=tss)
+    
+    sql_n_genomes = 'select count(*) from (select distinct taxon_id from bioentry t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t2.name="%s") A;' % biodb
+    n_genomes = server.adaptor.execute_and_fetchall(sql_n_genomes,)[0][0]
 
     return render(request, 'chlamdb/home.html', locals())
 

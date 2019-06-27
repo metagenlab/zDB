@@ -25,7 +25,7 @@ def accession2description(tc_id):
     for row in rows:
         cols = row.find_all('td')
         cols = [ele.text.strip() for ele in cols]
-        if len(cols)>0:
+        if len(cols) > 1:
             if (tc_id in cols[0]):
                 return cols[1]
     return '-'
