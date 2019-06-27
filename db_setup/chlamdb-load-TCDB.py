@@ -82,6 +82,26 @@ def import_annot(gblast_file,
 
         rows = table.find_all('tr')
         for n, one_row in enumerate(rows):
+            
+            '''
+            0 Query ID	
+            1 Hit ID	
+            2 Hit TCID	
+            3 Hit Description	
+            4 Match Len	
+            5 e-Val	
+            6 % Identity	
+            7 Query Length	
+            8 Hit Length	
+            9 Query Coverage	
+            10 Hit Coverage	
+            11 Query TMS	
+            12 Hit TMS	
+            13 TM-Overlap Score	
+            14 Family Abrv.	
+            15 Predicted Substrate
+            '''
+            
             cols = one_row.find_all('td')
             cols = [ele.text.strip() for ele in cols]
 
@@ -98,13 +118,12 @@ def import_annot(gblast_file,
                 align_length = int(cols[4])
                 evalue = cols[5]
                 identity = cols[6]
-                query_TMS = cols[7]
-                hit_TMS = cols[8]
-                TM_overlap_score = cols[9]
+                query_TMS = cols[11]
+                hit_TMS = cols[12]
+                TM_overlap_score = cols[13]
                 if TM_overlap_score == "None":
-                    print ('none!!!!!!!!!!')
                     TM_overlap_score = 0
-                family_abrv = cols[10]
+                family_abrv = cols[14]
 
                 for locus_tag in hash2locus_list[hash]:
 
