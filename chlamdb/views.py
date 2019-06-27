@@ -10665,7 +10665,9 @@ def search(request):
                     sql = 'SELECT %s FROM orthology_detail_%s WHERE MATCH(gene,product) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (columns,
                                                                                                                                     biodb,
                                                                                                                                     search_term)
+                    print(sql)
                     raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
+                    print("n hits:", len(raw_data_gene_raw_data_product))
                     n = 1
                     search_result = []
                     locus_list = []
@@ -10721,7 +10723,7 @@ def search(request):
                             and not raw_data_ko \
                             and not raw_data_cog \
                             and not raw_data_interpro \
-                            and not raw_data_product:
+                            and not raw_data_gene_raw_data_product:
                         search_echec = True
             envoi = True
             display_form = "no"
