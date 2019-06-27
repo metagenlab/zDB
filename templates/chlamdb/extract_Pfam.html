@@ -94,7 +94,6 @@
 
                         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                             <li class="active"><a href="#red" data-toggle="tab">Pfam</a></li>
-                            <li><a href="#orange" data-toggle="tab">Phylogenetic profile</a></li>
                             <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
 
                         </ul>
@@ -105,19 +104,13 @@
 
 
                                 <div id="export_bouttons_groups">
-                                    <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" class="btn btn-success">Export to Excel</a>
-
-                                    <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" class="btn btn-success">Export to CSV</a>
                                      <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</a>
-
                                     <br/>
                                 </div>
 
-                                <p>Number of orthogroups: {{ sum_group }} </p>
+                                <h3>Number of PFAM domains: {{ sum_group }} </h3>
 
-                                <table class="sortable" id="table_groups">
-
-
+                                <table class="display" id="PFAM_table">
                                     <thead>
                                         <tr>
                                         <th></th>
@@ -144,21 +137,16 @@
 
                             </div>
 
-                            <div class="tab-pane" id="orange">
-                                <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree"></object>
-                            </div>
                             <div class="tab-pane" id="tab2">
 
                                 <h3> Locus annotation </h3>
                                 <div id="export_bouttons_groups">
-                                    <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" class="btn btn-success">Export to Excel</a>
                                     <a href="{% url 'get_fasta' %}{{fasta_url_ref}}" class="btn btn-success">Download fasta</a>
-                                    <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" class="btn btn-success">Export to CSV</a>
                                     <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</a>
 
                                     <br/>
                                 </div>
-                                <table id="cog_table" class="sortable">
+                                <table id="reference_genome" class="sortable">
                                     <thead>
                                         <tr>
                                             <th id="entete_n"></th>
@@ -286,6 +274,47 @@
       })
 
   })
+
+
+$(document).ready(function() {
+$('#PFAM_table').DataTable( {
+dom: 'Bfrtip',    
+"paging":   true,
+"ordering": true,
+"info":     false,
+buttons: [
+{
+    extend: 'excel',
+    title: 'PFAM_table'
+},
+{
+    extend: 'csv',
+    title: 'PFAM_table'
+}
+],
+} );
+} );
+
+$(document).ready(function() {
+$('#reference_genome').DataTable( {
+ dom: 'Bfrtip',   
+"paging":   true,
+"ordering": true,
+"info":     false,
+buttons: [
+{
+    extend: 'excel',
+    title: 'reference_genome'
+},
+{
+    extend: 'csv',
+    title: 'reference_genome'
+}
+],
+} );
+} );
+
+
 </script>
 </body>
 {% include "chlamdb/style_menu.html" %}
