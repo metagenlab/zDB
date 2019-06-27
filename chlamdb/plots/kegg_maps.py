@@ -3,7 +3,7 @@
 
 def map2highlighted_map(map_id, ko_list, ko2freq, biodb, outpath = 'test.pdf', taxon_id=False, n_species=60):
     import re
-    import shell_command
+    from chlamdb.biosqldb import shell_command
     from Bio.Graphics.KGML_vis import KGMLCanvas
     from Bio.Graphics import KGML_vis
     import urllib.request
