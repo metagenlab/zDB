@@ -102,7 +102,7 @@ def get_swissprot_annotation(accession_list):
             else:
                 accession2data[row[0]] = row[1:]
         return accession2data
-    except URLError:
+    except:
         print ('echec')
         print (link)
         return (False)
