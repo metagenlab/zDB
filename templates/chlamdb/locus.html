@@ -176,25 +176,24 @@ function clearBox(elementID)
 
                                  <table class="table table-striped" style="width: 100%">
                                    <tr>
-                                       <td >orthogroup</td>
+                                       <th>Orthogroup</th>
                                        <td>{{ data.0 }}</td>
                                    </tr>
-                                   <td >orthogroup size</td>
+                                   <th>Orthogroup size <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='Total number of homologs in the whole database'><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td>{{ data.7 }}</td>
                                    </tr>
-
-                                   <td >n genomes</td>
+                                   <th>N. genomes <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='Number of genomes encoding one or several homologs of this protein. See the tab "homologs" for details'><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td>{{ data.8 }}</td>
                                    </tr>
                                    {%if cog_data %}
                                        <tr>
-                                       <td >COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                       <th>COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td><a <a href="{% url 'fam' cog_data.0 'cog' %}" target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
                                        </tr>
                                    {% endif %}
                                    {%if ko_data %}
                                        <tr>
-                                       <td >KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                       <th>KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td><a href="{% url 'fam' ko_data.0 'ko' %}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
                                        </tr>
                                    {% endif %}
@@ -214,23 +213,23 @@ function clearBox(elementID)
                                 <div class="panel-body">
                                   <table class="table table-striped" style="width: 100%">
                                       <tr>
-                                          <td >Molecular Weight</td>
+                                          <th >Molecular Weight</th>
                                           <td>{{protparams_data.0}}</td>
                                       </tr>
                                       <tr>
-                                          <td >Isoelectric Point</td>
+                                          <th >Isoelectric Point</th>
                                           <td>{{protparams_data.1}}</td>
                                       </tr>
                                       <tr>
-                                          <td >Aromaticity</td>
+                                          <th >Aromaticity</th>
                                           <td>{{protparams_data.2}}</td>
                                       </tr>
                                       <tr>
-                                          <td >Instability Index</td>
+                                          <th >Instability Index</th>
                                           <td>{{protparams_data.3}}</td>
                                       </tr>
                                       <tr>
-                                          <td >Fractions helix/turn/sheet</td>
+                                          <th >Fractions helix/turn/sheet</th>
                                           <td>{{protparams_data.4}}/{{protparams_data.5}}/{{protparams_data.6}}</td>
                                       </tr>
 
