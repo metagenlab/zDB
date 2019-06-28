@@ -421,8 +421,7 @@ def plot_heatmap_tree_locus(biodb,
         # optionally indicate number of paralogs as a barplot
         if n_paralogs_barplot:
             col_index += 1
-
-            print("max!!!", float(value), max_count)
+            #print("max!!!", float(value), max_count)
             percent = (float(value)/max_count)*100
             n = StackedBarFace([percent, 100-percent], width=150, height=18, colors=['#6699ff', 'white'], line_color='white')
             n.rotation= 0
