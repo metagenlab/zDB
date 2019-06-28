@@ -27,7 +27,7 @@ def all_aa_possibles(locus2sequence):
 
 def pepstats2sql(biodb, locus2pepstats, aa_list):
 
-    import manipulate_biosqldb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import re
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -120,7 +120,7 @@ if __name__ == '__main__':
             #             stats,
             #             aa_unique_list)
     if args.biodb:
-        import manipulate_biosqldb
+        from chlamdb.bioslqb import manipulate_biosqldb
         server, db = manipulate_biosqldb.load_db(args.biodb)
 
         sql = 'select locus_tag, translation from orthology_detail_%s' % args.biodb
