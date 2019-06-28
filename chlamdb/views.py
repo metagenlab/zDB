@@ -2722,7 +2722,7 @@ def fam(request, fam, type):
         elif type == 'cog':
             sql1 = 'select seqfeature_id from COG.seqfeature_id2best_COG_hit_%s t1 ' \
                    ' inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.cog_id ' \
-                   ' where COG_id="%s"' % (biodb,
+                   ' where COG_name="%s"' % (biodb,
                                            fam)
             sql2 = 'select t2.description from COG.seqfeature_id2best_COG_hit_%s t1 ' \
                    ' inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.cog_id where t2.COG_name="%s";' % (biodb,
@@ -2787,7 +2787,6 @@ def fam(request, fam, type):
             valid_id = False
             return render(request, 'chlamdb/fam.html', locals())
         try:
-            print(sql1)
             seqfeature_id_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql1, )]
 
             seqfeature_list_form = '"' + '","'.join(seqfeature_id_list) + '"'
