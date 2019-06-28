@@ -2726,7 +2726,7 @@ def fam(request, fam, type):
                                            fam)
             sql2 = 'select t2.description from COG.seqfeature_id2best_COG_hit_%s t1 ' \
                    ' inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.cog_id where t2.COG_name="%s";' % (biodb,
-                                                                                                      fam)
+                                                                                                            fam)
             print (sql1)
             print (sql2)
             info = server.adaptor.execute_and_fetchall(sql2, )[0]
@@ -2763,7 +2763,7 @@ def fam(request, fam, type):
         elif type == 'ko':
             sql1 = 'select distinct seqfeature_id from enzyme.seqfeature_id2ko_%s t1 ' \
                    ' inner join enzyme.ko_annotation t2 on t1.ko_id=t2.ko_id where t2.ko_accession="%s";' % (biodb,
-                                                                                                      fam)
+                                                                                                             fam)
 
             sql2 = 'select * from enzyme.ko_annotation where ko_accession="%s"' % (fam)
 
@@ -2787,6 +2787,7 @@ def fam(request, fam, type):
             valid_id = False
             return render(request, 'chlamdb/fam.html', locals())
         try:
+            print(sql1)
             seqfeature_id_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql1, )]
 
             seqfeature_list_form = '"' + '","'.join(seqfeature_id_list) + '"'
@@ -2797,7 +2798,7 @@ def fam(request, fam, type):
             columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                       'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
             sql2 = 'select %s from orthology_detail_%s where seqfeature_id in (%s)' % (columns, biodb, seqfeature_list_form)
-
+            print("Seqfeature id list", seqfeature_id_list)
             all_locus_raw_data = server.adaptor.execute_and_fetchall(sql2, )
             orthogroup_list = [i[0] for i in all_locus_raw_data]
             all_locus_data = []
