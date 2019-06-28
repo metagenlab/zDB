@@ -2817,6 +2817,7 @@ def fam(request, fam, type):
                   ' where analysis="Pfam" and orthogroup in (%s);' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"')
 
         elif type == 'cog':
+            print("taxon2orthogroup2count_reference", fam)
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
                                                                               [fam],
                                                                               'COG')
