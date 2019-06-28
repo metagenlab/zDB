@@ -86,7 +86,7 @@
                                           <li>{{ fam }} is present in <strong>{{ group_count|length }} different orthogroup(s)</strong></li>
 
 
-                                          <ul>
+                                          <ul style="list-style-type:disc;">
                                               {% for group in group_count %}
                                               <li><a href="{% url 'locusx' group True%}">{{group}}</a></li>
                                               {% endfor %}
@@ -258,6 +258,16 @@ $('#fam_table').DataTable( {
 </script>
 
 <style>
+
+ol {
+  display: block;
+  list-style-type: decimal;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 40px;
+}
 
 table td.wrapcol {
 word-break: break-all;
