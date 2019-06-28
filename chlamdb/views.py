@@ -12939,7 +12939,7 @@ def transporters_list(request):
                     #print data[n][-4]
                     data[n][-4] = ','.join(set([i.rstrip().lstrip() for i in data[n][-4].split(',')]))
                     for i in range(0,len(row)):
-                        data[n][i] = str(data[n][i]).decode("latin-1")
+                        data[n][i] = str(data[n][i])#.decode("latin-1")
                 envoi = True
 
             else:
