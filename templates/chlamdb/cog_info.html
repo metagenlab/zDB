@@ -30,13 +30,9 @@
                         </p>
                     </div>
 
-                    <h3>   COG category: {% with data|first as first_doc %}{{ first_doc.4 }}{% endwith %} (n={{data|length}})</h3>
+                    <h3>   Category: {% with data|first as first_doc %}{{ first_doc.4 }}{% endwith %} (n={{data|length}})</h3>
                     <div id="export_bouttons_groups">
-                        <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-
-                        <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
                         <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
-
                         <br/>
                     </div>
                     <table id="cog_table" class="display">
@@ -44,9 +40,9 @@
                           <tr>
                               <th>Organism</th>
                               <th>locus_tag</th>
-                              <th>COG id</th>
-                              <th>Cog description</th>
-                              <th>RefSeq annotation</th>
+                              <th>Accession</th>
+                              <th>Description</th>
+                              <th>Genbank annotation</th>
                           </tr>
                           </thead>
                         <tbody>
@@ -84,11 +80,11 @@ $('#cog_table').DataTable( {
 buttons: [
 {
     extend: 'excel',
-    title: 'cog_table'
+    title: 'subset_table'
 },
 {
     extend: 'csv',
-    title: 'cog_table'
+    title: 'subset_table'
 }
 ],
 } );
