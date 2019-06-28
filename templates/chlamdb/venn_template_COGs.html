@@ -45,8 +45,7 @@
 			}
 		    value += '</table>';
 			$("#names").html(value);
-			var newTableObject = document.getElementById("cog_table");
-			newTableObject.DataTable( {
+			$('#cog_table').DataTable( {
 			 dom: 'Bfrtip',
 			"paging":   true,
 			"ordering": true,
