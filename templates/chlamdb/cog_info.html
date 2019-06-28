@@ -39,16 +39,16 @@
 
                         <br/>
                     </div>
-                    <table id="cog_table" class="sortable">
+                    <table id="cog_table" class="display">
                         <thead>
-                        <tr>
-                            <th>Organism</th>
-                            <th>locus_tag</th>
-                            <th>COG id</th>
-                            <th>Cog description</th>
-                            <th>RefSeq annotation</th>
-                        </tr>
-                        </thead>
+                          <tr>
+                              <th>Organism</th>
+                              <th>locus_tag</th>
+                              <th>COG id</th>
+                              <th>Cog description</th>
+                              <th>RefSeq annotation</th>
+                          </tr>
+                          </thead>
                         <tbody>
 
                             {%for values in data%}
@@ -73,4 +73,26 @@
 </div>
 {% include "chlamdb/style_menu.html" %}
 </body>
+<script>
+
+$(document).ready(function() {
+$('#cog_table').DataTable( {
+ dom: 'Bfrtip',
+"paging":   true,
+"ordering": true,
+"info":     false,
+buttons: [
+{
+    extend: 'excel',
+    title: 'cog_table'
+},
+{
+    extend: 'csv',
+    title: 'cog_table'
+}
+],
+} );
+} );
+
+</script>
 </html>
