@@ -12456,6 +12456,7 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
     from chlamdb.biosqldb import manipulate_biosqldb
     from chlamdb.phylo_tree_display import ete_heatmap_conservation
     from chlamdb.biosqldb import shell_command
+    from chlamdb.network_d3 import string_networks
 
     server, db = manipulate_biosqldb.load_db(biodb)
     #print 'plot phylo profile -- %s' % orthogroup_or_locus
@@ -12505,6 +12506,34 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
         taxon2locus_tag_closest[str(taxon_id)] = orthogroup_or_locus
         taxon2identity_closest[str(taxon_id)] = 100
 
+    all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2.2)
+    cutoff = 2.4
+
+    too_much_hits = False
+    if all_groups_profile == False:
+        # try with of more stringeant cutoff
+        #print 'cotoff 1 #######################'
+        all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2)
+        cutoff = 2
+        if all_groups_profile == False:
+            #print 'cotoff 0 #######################'
+            all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
+            cutoff = 1
+            #print all_groups_profile
+            if all_groups_profile == False:
+                #print 'cotoff 0 #######################'
+                all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 0)
+                cutoff = 0
+                #print all_groups_profile
+                if all_groups_profile == False:
+                    too_much_hits = True
+
+    #print 'too much hits?', too_much_hits
+    if len(all_groups_profile) <= 1:
+        profile_match = False
+    else:
+        profile_match = True
+
     locus_list = list(taxon2locus_tag_closest.values())
 
     asset_path = '/temp/phylo.svg'
@@ -12544,8 +12573,6 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
     t1.render(path, dpi=800, h=leaf_number*12)
 
     return render(request, 'chlamdb/orthogroup_conservation.html', locals())
-
-
 
 
 def priam_kegg(request):

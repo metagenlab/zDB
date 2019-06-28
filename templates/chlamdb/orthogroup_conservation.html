@@ -19,8 +19,9 @@
 
         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
             <li class="active"><a href="#tab1" data-toggle="tab">Orthogroup profile</a></li>
-
-            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'multiple_orthogroup_heatmap' orthogroup %}', 'orthoIDframe3'); return false">Similar profiles</a></li>
+            {% if profile_match %}
+            <li><a href="#tab55" data-toggle="tab" onclick="window.open('{% url 'profile_interactions' orthogroup %}', 'orthoIDframe2'); return false">Similar profiles</a></li>
+            {% endif %}
         </ul>
 
 
