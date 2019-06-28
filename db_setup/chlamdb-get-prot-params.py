@@ -120,7 +120,7 @@ if __name__ == '__main__':
             #             stats,
             #             aa_unique_list)
     if args.biodb:
-        from chlamdb.bioslqb import manipulate_biosqldb
+        from chlamdb.biosqldb import manipulate_biosqldb
         server, db = manipulate_biosqldb.load_db(args.biodb)
 
         sql = 'select locus_tag, translation from orthology_detail_%s' % args.biodb
