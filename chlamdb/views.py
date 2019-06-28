@@ -2210,7 +2210,7 @@ def locusx(request, locus=None, menu=True):
             sql19 = 'select signature_accession, interpro_description,start, stop from interpro_%s ' \
                     ' where analysis="SUPERFAMILY" and locus_tag="%s";' % (biodb, locus)
 
-            sql20 = 'select t2.hit_uniprot_id,t2.evalue, t2.bitscore_first_hsp, t2.identity, t2.query_TMS, t2.hit_TMS, ' \
+            sql20 = 'select t8.uniprot_accession,t2.evalue, t2.bitscore_first_hsp, t2.identity, t2.query_TMS, t2.hit_TMS, ' \
                     ' t2.query_cov, t2.hit_cov,t4.tc_name as transporter_name, t4.description as transporter_description, ' \
                     ' t5.tc_name as superfamily, t5.description as superfamily_description, ' \
                     ' t6.tc_name as family_name, t6.description as family_description, t7.tc_name as subfamily_name, ' \
@@ -2221,6 +2221,7 @@ def locusx(request, locus=None, menu=True):
                     ' inner join transporters.tc_table t5 on t3.superfamily=t5.tc_id ' \
                     ' inner join transporters.tc_table t6 on t3.family=t6.tc_id ' \
                     ' inner join transporters.tc_table t7 on t3.subfamily=t7.tc_id ' \
+                    ' inner join transporters.uniprot_table t8 on t1.hit_uniprot_id=t8.uniprot_id ' \
                     ' where t1.locus_tag="%s";' % (biodb, biodb, locus)
 
             sql21 = 'select seqfeature_id, taxon_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s"' % (biodb,
