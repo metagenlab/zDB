@@ -12915,7 +12915,7 @@ def transporters_list(request):
             if transporter_superfamily == 'all':
                 sql = 'select t8.locus_tag,t3.description,t1.n_hsps, t1.evalue, t1.bitscore_first_hsp, ' \
                       ' t1.identity, t1.query_TMS, t1.hit_TMS, t1.query_cov, t1.hit_cov,t7.uniprot_accession, ' \
-                      ' t7.substrate, t7.description, t5.description,t6.description, t3.tc_name from transporters.transporters_%s t1 ' \
+                      ' t7.substrate, t7.uniprot_description, t5.description,t6.description, t3.tc_name from transporters.transporters_%s t1 ' \
                       ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
                       ' inner join transporters.tc_table t3 on t2.family=t3.tc_id ' \
                       ' inner join transporters.tc_table t4 on t2.superfamily=t4.tc_id ' \
