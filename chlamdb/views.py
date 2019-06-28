@@ -2221,7 +2221,7 @@ def locusx(request, locus=None, menu=True):
                     ' inner join transporters.tc_table t5 on t3.superfamily=t5.tc_id ' \
                     ' inner join transporters.tc_table t6 on t3.family=t6.tc_id ' \
                     ' inner join transporters.tc_table t7 on t3.subfamily=t7.tc_id ' \
-                    ' inner join transporters.uniprot_table t8 on t1.hit_uniprot_id=t8.uniprot_id ' \
+                    ' inner join transporters.uniprot_table t8 on t2.hit_uniprot_id=t8.uniprot_id ' \
                     ' where t1.locus_tag="%s";' % (biodb, biodb, locus)
             print(sql20)
             sql21 = 'select seqfeature_id, taxon_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s"' % (biodb,
