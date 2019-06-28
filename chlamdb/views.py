@@ -4363,7 +4363,7 @@ def get_ko_multiple(request, type, category):
               'where ko_id in  (%s)) A inner join enzyme.pathway2ko as B on A.ko_id=B.ko_id  ' \
               ' inner join enzyme.kegg_pathway as C on B.pathway_id=C.pathway_id' \
               ' where description="%s";' % (filter, category)
-    #print sql
+    print(sql)
     data = list(server.adaptor.execute_and_fetchall(sql,))
     if type == 'module':
         for i, info in enumerate(data):
