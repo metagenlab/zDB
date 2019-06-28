@@ -10664,7 +10664,8 @@ def search(request):
             if search_type == "no_exact_accession":
 
                     # CREATE FULLTEXT INDEX GPF ON orthology_detail_2019_06_PVC(gene,product);
-                    sql = 'SELECT %s FROM orthology_detail_%s WHERE MATCH(gene,product) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (columns,
+                    #  CREATE FULLTEXT INDEX GPF2 ON orthology_detail_2019_06_PVC(gene,product,organism);
+                    sql = 'SELECT %s FROM orthology_detail_%s WHERE MATCH(gene,product,organism) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (columns,
                                                                                                                                     biodb,
                                                                                                                                     search_term)
                     print(sql)
