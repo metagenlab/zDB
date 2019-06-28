@@ -522,7 +522,7 @@ function clearBox(elementID)
                                       {%if pfam_data %}
                                           {% for values in pfam_data %}
                                               <tr>
-                                                  <th ><a href="{% url 'fam' values.0 'pfam' %}" target="_top">Pf: {{values.0}}</a></th>
+                                                  <th ><a href="{% url 'fam' values.0 'pfam' %}" target="_top">PF: {{values.0}} <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this PFAM domain in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></th>
                                                   <td>{{values.1}}</td>
                                               </tr>
 
@@ -533,7 +533,7 @@ function clearBox(elementID)
                                           {% for values in interpro_data %}
                                               {% with interpro2taxononmy|keyvalue:values.0 as taxo %}
                                               <tr>
-                                                  <th ><a href="{% url 'fam' values.0 'interpro' %}" target="_top">IP: {{values.0}}</a></th>
+                                                  <th ><a href="{% url 'fam' values.0 'interpro' %}" target="_top">IP: {{values.0}} <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Interpro entry in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></th>
                                                   <td>{{values.1}} </td>
                                                   {% if taxo.4 > taxo.5 %}
                                                       <td style="color:blue;">{{taxo.4}} ({{taxo.0}}%)</td>
