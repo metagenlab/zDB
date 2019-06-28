@@ -278,7 +278,7 @@ def home(request):
     asset_path = '/temp/tree.svg'
 
     t.render(path, dpi=500, h=500, tree_style=tss)
-    
+
     sql_n_genomes = 'select count(*) from (select distinct taxon_id from bioentry t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t2.name="%s") A;' % biodb
     n_genomes = server.adaptor.execute_and_fetchall(sql_n_genomes,)[0][0]
 
@@ -2084,12 +2084,10 @@ def locusx(request, locus=None, menu=True):
             if m:
                 locus = "CT_%s" % (m.group(1))
                 print("updated_search", locus)
-
-
             try:
                 locus = int(locus)
                 sql = 'select locus_tag from custom_tables.locus2seqfeature_id_%s where seqfeature_id=%s' % (biodb,
-                                                                                                            locus)
+                                                                                                             locus)
                 #print sql
                 locus = server.adaptor.execute_and_fetchall(sql,)[0][0]
             except:
@@ -2212,7 +2210,7 @@ def locusx(request, locus=None, menu=True):
             sql19 = 'select signature_accession, interpro_description,start, stop from interpro_%s ' \
                     ' where analysis="SUPERFAMILY" and locus_tag="%s";' % (biodb, locus)
 
-            sql20 = 'select t2.hit_uniprot_id,t2.evalue, t2.bitscore_first_hsp, t2.identity, t2.query_TMS, t2.hit_TMS, ' \
+            sql20 = 'select t8.uniprot_accession,t2.evalue, t2.bitscore_first_hsp, t2.identity, t2.query_TMS, t2.hit_TMS, ' \
                     ' t2.query_cov, t2.hit_cov,t4.tc_name as transporter_name, t4.description as transporter_description, ' \
                     ' t5.tc_name as superfamily, t5.description as superfamily_description, ' \
                     ' t6.tc_name as family_name, t6.description as family_description, t7.tc_name as subfamily_name, ' \
@@ -2223,8 +2221,9 @@ def locusx(request, locus=None, menu=True):
                     ' inner join transporters.tc_table t5 on t3.superfamily=t5.tc_id ' \
                     ' inner join transporters.tc_table t6 on t3.family=t6.tc_id ' \
                     ' inner join transporters.tc_table t7 on t3.subfamily=t7.tc_id ' \
+                    ' inner join transporters.uniprot_table t8 on t2.hit_uniprot_id=t8.uniprot_id ' \
                     ' where t1.locus_tag="%s";' % (biodb, biodb, locus)
-
+            print(sql20)
             sql21 = 'select seqfeature_id, taxon_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s"' % (biodb,
                                                                                                                        locus)
 
@@ -2532,9 +2531,9 @@ def locusx(request, locus=None, menu=True):
               ' inner join orthology.orthogroup_%s t2 on t1.orthogroup_id=t2.orthogroup_id ' \
               ' inner join interpro.interpro_%s t3 on t1.seqfeature_id=t3.seqfeature_id' \
               ' inner join interpro.signature t4 on t3.signature_id=t4.signature_id ' \
-              ' where signature_accession in ("TRANSMEMBRANE", "SIGNAL_PEPTIDE_C_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_N_REGION") and t2.orthogroup_name="%s" ; ' % (biodb, 
-                                                                                                                                                                          biodb, 
-                                                                                                                                                                          biodb, 
+              ' where signature_accession in ("TRANSMEMBRANE", "SIGNAL_PEPTIDE_C_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_N_REGION") and t2.orthogroup_name="%s" ; ' % (biodb,
+                                                                                                                                                                          biodb,
+                                                                                                                                                                          biodb,
                                                                                                                                                                           orthogroup)
         tm_count = server.adaptor.execute_and_fetchall(sql_TM_SP, )[0][0]
         if tm_count > 0:
@@ -2723,11 +2722,11 @@ def fam(request, fam, type):
         elif type == 'cog':
             sql1 = 'select seqfeature_id from COG.seqfeature_id2best_COG_hit_%s t1 ' \
                    ' inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.cog_id ' \
-                   ' where COG_id="%s"' % (biodb,
+                   ' where COG_name="%s"' % (biodb,
                                            fam)
             sql2 = 'select t2.description from COG.seqfeature_id2best_COG_hit_%s t1 ' \
                    ' inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.cog_id where t2.COG_name="%s";' % (biodb,
-                                                                                                      fam)
+                                                                                                            fam)
             print (sql1)
             print (sql2)
             info = server.adaptor.execute_and_fetchall(sql2, )[0]
@@ -2764,7 +2763,7 @@ def fam(request, fam, type):
         elif type == 'ko':
             sql1 = 'select distinct seqfeature_id from enzyme.seqfeature_id2ko_%s t1 ' \
                    ' inner join enzyme.ko_annotation t2 on t1.ko_id=t2.ko_id where t2.ko_accession="%s";' % (biodb,
-                                                                                                      fam)
+                                                                                                             fam)
 
             sql2 = 'select * from enzyme.ko_annotation where ko_accession="%s"' % (fam)
 
@@ -2798,7 +2797,7 @@ def fam(request, fam, type):
             columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                       'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
             sql2 = 'select %s from orthology_detail_%s where seqfeature_id in (%s)' % (columns, biodb, seqfeature_list_form)
-
+            print("Seqfeature id list", seqfeature_id_list)
             all_locus_raw_data = server.adaptor.execute_and_fetchall(sql2, )
             orthogroup_list = [i[0] for i in all_locus_raw_data]
             all_locus_data = []
@@ -2819,6 +2818,7 @@ def fam(request, fam, type):
                   ' where analysis="Pfam" and orthogroup in (%s);' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"')
 
         elif type == 'cog':
+            print("taxon2orthogroup2count_reference", fam)
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
                                                                               [fam],
                                                                               'COG')
@@ -4356,14 +4356,14 @@ def get_ko_multiple(request, type, category):
     filter = '"' + '","'.join(match_groups_subset) + '"'
     if type == 'module':
         sql = 'select A.ko_accession,name,definition,pathways,modules,module_name, module_sub_cat,description ' \
-              ' from (select * from enzyme.ko_annotation where ko_id in (%s)) A inner join enzyme.module2ko_ as B ' \
+              ' from (select * from enzyme.ko_annotation where ko_accession in (%s)) A inner join enzyme.module2ko as B ' \
               ' on A.ko_id=B.ko_id inner join enzyme.kegg_module as C on B.module_id=C.module_id where module_sub_sub_cat="%s";' % (filter, category)
     if type == 'pathway':
         sql = 'select A.ko_accession,name,definition,pathway_name,pathway_category,description from (select * from enzyme.ko_annotation ' \
-              'where ko_id in  (%s)) A inner join enzyme.pathway2ko as B on A.ko_id=B.ko_id  ' \
+              'where ko_accession in  (%s)) A inner join enzyme.pathway2ko as B on A.ko_id=B.ko_id  ' \
               ' inner join enzyme.kegg_pathway as C on B.pathway_id=C.pathway_id' \
               ' where description="%s";' % (filter, category)
-    #print sql
+    print(sql)
     data = list(server.adaptor.execute_and_fetchall(sql,))
     if type == 'module':
         for i, info in enumerate(data):
@@ -8094,11 +8094,11 @@ def interpro_taxonomy(request):
 
 
 def homologs(request, orthogroup, locus_tag=False):
-    
+
     from chlamdb.biosqldb import orthogroup_identity_db
     biodb = settings.BIODB
     server = manipulate_biosqldb.load_db()
-    
+
     if request.method == 'GET':  # S'il s'agit d'une requête POST
 
         server, db = manipulate_biosqldb.load_db(biodb)
@@ -8122,7 +8122,7 @@ def homologs(request, orthogroup, locus_tag=False):
         homologues = list(server.adaptor.execute_and_fetchall(sql_groups, ))
         for i, row in enumerate(homologues):
             homologues[i] = ['-' if v is None else v for v in list(row)]
-        
+
         if locus_tag:
             # add identity column
             if len(homologues) > 1:
@@ -10522,8 +10522,6 @@ def search(request):
         server, db = manipulate_biosqldb.load_db(biodb)
         search_term = search_term.strip()
 
-
-
         if not search_type:
             import re
             if len(search_term) == len("PF04093") and search_term[0:2] == 'PF':
@@ -10562,11 +10560,11 @@ def search(request):
 
         if search_type == "no_exact_accession":
                 print ('YES no_exact_accession')
-                sql = 'select %s from orthology_detail_%s where gene REGEXP "%s"' % (columns, biodb, search_term)
-                raw_data_gene = server.adaptor.execute_and_fetchall(sql,)
 
-                sql = 'select %s from orthology_detail_%s where product REGEXP "%s"' % (columns, biodb, search_term)
-                raw_data_product = server.adaptor.execute_and_fetchall(sql,)
+                sql = 'SELECT * FROM orthology_detail_%s WHERE MATCH(gene,product) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (columns,
+                                                                                                                               biodb,
+                                                                                                                               search_term)
+                raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
 
                 sql = 'select ec,line,value from enzyme.enzymes_dat as t1 inner join enzymes as t2 ' \
                       ' on t1.enzyme_dat_id=enzyme_id WHERE value REGEXP "%s"' % (search_term)
@@ -10608,7 +10606,7 @@ def search(request):
 
 
     server = manipulate_biosqldb.load_db()
-    #print request.method, "request.method"
+    print(request.method, "request.method")
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         display_from = 'yes'
         form = SearchForm(request.POST)  # Nous reprenons les données
@@ -10665,12 +10663,17 @@ def search(request):
 
             if search_type == "no_exact_accession":
 
-                    sql = 'select %s from orthology_detail_%s where gene REGEXP "%s" limit 100' % (columns, biodb, search_term)
-                    raw_data_gene = server.adaptor.execute_and_fetchall(sql,)
+                    # CREATE FULLTEXT INDEX GPF ON orthology_detail_2019_06_PVC(gene,product);
+                    sql = 'SELECT %s FROM orthology_detail_%s WHERE MATCH(gene,product) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (columns,
+                                                                                                                                    biodb,
+                                                                                                                                    search_term)
+                    print(sql)
+                    raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
+                    print("n hits:", len(raw_data_gene_raw_data_product))
                     n = 1
                     search_result = []
                     locus_list = []
-                    for one_hit in raw_data_gene:
+                    for one_hit in raw_data_gene_raw_data_product:
                         if one_hit[2] != '-':
                             interpro_id = one_hit[2]
                         else:
@@ -10678,48 +10681,48 @@ def search(request):
                         search_result.append((n,) + one_hit + (interpro_id,))
                         locus_list.append(one_hit[1])
                         n+=1
-                    sql = 'select %s from orthology_detail_%s where product REGEXP "%s" limit 100' % (columns, biodb, search_term)
-                    raw_data_product = server.adaptor.execute_and_fetchall(sql,)
 
-                    for one_hit in raw_data_product:
-                        if one_hit[2] != '-':
-                            interpro_id = one_hit[2]
-                        else:
-                            interpro_id = one_hit[1]
-                        if one_hit[1] not in locus_list:
-                            search_result.append((n,) + one_hit + (interpro_id,))
-                        n+=1
+                    # CREATE FULLTEXT INDEX ezf ON enzyme.enzymes_dat(value);
                     sql = 'select A.ec, A.value from (select ec,value from enzyme.enzymes_dat as t1 inner join enzyme.enzymes as t2 ' \
-                          ' on t1.enzyme_dat_id=enzyme_id WHERE value REGEXP "%s" group by ec) A inner join comparative_tables.EC_%s' \
+                          ' on t1.enzyme_dat_id=enzyme_id WHERE MATCH(value) AGAINST("%s" IN NATURAL LANGUAGE MODE) group by ec) A inner join comparative_tables.EC_%s' \
                           ' as B on A.ec=B.id' % (search_term, biodb)
+                    print(sql)
                     raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_EC) == 0:
                         raw_data_EC = False
+
+                    # CREATE FULLTEXT INDEX koaf ON enzyme.ko_annotation_v1(definition);
+                    # filter KO absent from DB
                     sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme.ko_annotation_v1 ' \
-                          'where definition REGEXP "%s") A inner join comparative_tables.ko_%s as B on A.ko_id=B.id' % (search_term, biodb)
+                          'WHERE MATCH(definition) AGAINST("%s" IN NATURAL LANGUAGE MODE)) A inner join comparative_tables.ko_%s as B on A.ko_id=B.id' % (search_term, biodb)
                     try:
                         raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
                     except:
                         raw_data_ko = []
                     if len(raw_data_ko) == 0:
                         raw_data_ko = False
-                    sql = 'select A.COG_id,A.code,A.description, A.name from (select COG_id,code,description,name from COG.cog_names_2014 as t1 inner join ' \
-                          ' COG.code2category as t2 on t1.function=t2.code where name REGEXP "%s") A inner join ' \
-                          ' comparative_tables.COG_%s as B on A.COG_id=B.id' % (search_term, biodb)
+
+                    # CREATE FULLTEXT INDEX cogf ON COG.cog_names_2014(description);
+                    sql = ' select COG_name,code,t3.description,t1.description from COG.cog_names_2014 t1 inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id inner join COG.code2category t3 on t2.category_id=t3.category_id WHERE MATCH(t1.description) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (search_term)
                     raw_data_cog = []# :TODO server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_cog) == 0:
                         raw_data_cog = False
-                    sql = 'select analysis,signature_accession,signature_description,' \
-                          ' interpro_accession,interpro_description,orthogroup from ' \
-                          ' interpro_%s where signature_description REGEXP "%s" group by signature_description limit 100' % (biodb, search_term)
+                    print("COG", raw_data_cog)
+                    # CREATE FULLTEXT INDEX ipf ON interpro.signature(signature_description);
+                    # CREATE FULLTEXT INDEX ipf ON interpro.entry(description);
+                    sql = 'select analysis_name,signature_accession,signature_description,t3.name,t3.description from interpro.signature t1 inner join interpro.analysis t2 on t1.analysis_id=t2.analysis_id left join interpro.entry t3 on t1.interpro_id=t3.interpro_id  WHERE MATCH(t3.description) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (search_term)
                     raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_interpro) == 0:
                         raw_data_interpro = False
+                    print("interpro", raw_data_interpro)
+                    # CREATE FULLTEXT INDEX modf ON enzyme.kegg_module_v1(description, module_sub_cat);
                     sql = 'select module_name,module_sub_cat,module_sub_sub_cat,description from enzyme.kegg_module_v1 ' \
                           ' where (description REGEXP "%s" or module_sub_cat REGEXP "%s")' % (search_term, search_term)
                     raw_data_module = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_module) == 0:
                         raw_data_module = False
+
+                    # CREATE FULLTEXT INDEX kegf ON enzyme.kegg_pathway(description, pathway_category);
                     sql = 'select pathway_name,pathway_category,description from enzyme.kegg_pathway ' \
                           ' where (description REGEXP "%s" or pathway_category REGEXP "%s")' % (search_term, search_term)
                     raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
@@ -10731,7 +10734,7 @@ def search(request):
                             and not raw_data_ko \
                             and not raw_data_cog \
                             and not raw_data_interpro \
-                            and not raw_data_product:
+                            and not raw_data_gene_raw_data_product:
                         search_echec = True
             envoi = True
             display_form = "no"
@@ -12453,6 +12456,7 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
     from chlamdb.biosqldb import manipulate_biosqldb
     from chlamdb.phylo_tree_display import ete_heatmap_conservation
     from chlamdb.biosqldb import shell_command
+    from chlamdb.network_d3 import string_networks
 
     server, db = manipulate_biosqldb.load_db(biodb)
     #print 'plot phylo profile -- %s' % orthogroup_or_locus
@@ -12502,6 +12506,34 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
         taxon2locus_tag_closest[str(taxon_id)] = orthogroup_or_locus
         taxon2identity_closest[str(taxon_id)] = 100
 
+    all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2.2)
+    cutoff = 2.4
+
+    too_much_hits = False
+    if all_groups_profile == False:
+        # try with of more stringeant cutoff
+        #print 'cotoff 1 #######################'
+        all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2)
+        cutoff = 2
+        if all_groups_profile == False:
+            #print 'cotoff 0 #######################'
+            all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
+            cutoff = 1
+            #print all_groups_profile
+            if all_groups_profile == False:
+                #print 'cotoff 0 #######################'
+                all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 0)
+                cutoff = 0
+                #print all_groups_profile
+                if all_groups_profile == False:
+                    too_much_hits = True
+
+    #print 'too much hits?', too_much_hits
+    if len(all_groups_profile) <= 1:
+        profile_match = False
+    else:
+        profile_match = True
+
     locus_list = list(taxon2locus_tag_closest.values())
 
     asset_path = '/temp/phylo.svg'
@@ -12541,8 +12573,6 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
     t1.render(path, dpi=800, h=leaf_number*12)
 
     return render(request, 'chlamdb/orthogroup_conservation.html', locals())
-
-
 
 
 def priam_kegg(request):
@@ -12885,7 +12915,7 @@ def transporters_list(request):
             if transporter_superfamily == 'all':
                 sql = 'select t8.locus_tag,t3.description,t1.n_hsps, t1.evalue, t1.bitscore_first_hsp, ' \
                       ' t1.identity, t1.query_TMS, t1.hit_TMS, t1.query_cov, t1.hit_cov,t7.uniprot_accession, ' \
-                      ' t7.substrate, t7.description, t5.description,t6.description, t3.tc_name from transporters.transporters_%s t1 ' \
+                      ' t7.substrate, t7.uniprot_description, t5.description,t6.description, t3.tc_name from transporters.transporters_%s t1 ' \
                       ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
                       ' inner join transporters.tc_table t3 on t2.family=t3.tc_id ' \
                       ' inner join transporters.tc_table t4 on t2.superfamily=t4.tc_id ' \
@@ -12909,13 +12939,13 @@ def transporters_list(request):
                     #print data[n][-4]
                     data[n][-4] = ','.join(set([i.rstrip().lstrip() for i in data[n][-4].split(',')]))
                     for i in range(0,len(row)):
-                        data[n][i] = str(data[n][i]).decode("latin-1")
+                        data[n][i] = str(data[n][i])#.decode("latin-1")
                 envoi = True
 
             else:
                 sql = 'select t8.locus_tag,t3.description,t1.n_hsps, t1.evalue, t1.bitscore_first_hsp, ' \
                       ' t1.identity, t1.query_TMS, t1.hit_TMS, t1.query_cov, t1.hit_cov,t7.uniprot_accession, ' \
-                      ' t7.substrate, t7.description, t5.description,t6.description, t3.tc_name from transporters.transporters_%s t1 ' \
+                      ' t7.substrate, t7.uniprot_description, t5.description,t6.description, t3.tc_name from transporters.transporters_%s t1 ' \
                       ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
                       ' inner join transporters.tc_table t3 on t2.family=t3.tc_id ' \
                       ' inner join transporters.tc_table t4 on t2.superfamily=t4.tc_id ' \

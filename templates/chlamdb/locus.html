@@ -176,25 +176,24 @@ function clearBox(elementID)
 
                                  <table class="table table-striped" style="width: 100%">
                                    <tr>
-                                       <td >orthogroup</td>
+                                       <th>Orthogroup</th>
                                        <td>{{ data.0 }}</td>
                                    </tr>
-                                   <td >orthogroup size</td>
+                                   <th>Orthogroup size <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='Total number of homologs in the whole database'><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td>{{ data.7 }}</td>
                                    </tr>
-
-                                   <td >n genomes</td>
+                                   <th>N. genomes <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='Number of genomes encoding one or several homologs of this protein. See the tab "homologs" for details'><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td>{{ data.8 }}</td>
                                    </tr>
                                    {%if cog_data %}
                                        <tr>
-                                       <td >COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                       <th>COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td><a <a href="{% url 'fam' cog_data.0 'cog' %}" target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
                                        </tr>
                                    {% endif %}
                                    {%if ko_data %}
                                        <tr>
-                                       <td >KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                       <th>KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td><a href="{% url 'fam' ko_data.0 'ko' %}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
                                        </tr>
                                    {% endif %}
@@ -212,25 +211,25 @@ function clearBox(elementID)
                                   <h3 class="panel-title">ProtParams</h3>
                                 </div>
                                 <div class="panel-body">
-                                  <table>
+                                  <table class="table table-striped" style="width: 100%">
                                       <tr>
-                                          <td >Molecular Weight</td>
+                                          <th >Molecular Weight</th>
                                           <td>{{protparams_data.0}}</td>
                                       </tr>
                                       <tr>
-                                          <td >Isoelectric Point</td>
+                                          <th >Isoelectric Point</th>
                                           <td>{{protparams_data.1}}</td>
                                       </tr>
                                       <tr>
-                                          <td >Aromaticity</td>
+                                          <th >Aromaticity</th>
                                           <td>{{protparams_data.2}}</td>
                                       </tr>
                                       <tr>
-                                          <td >Instability Index</td>
+                                          <th >Instability Index</th>
                                           <td>{{protparams_data.3}}</td>
                                       </tr>
                                       <tr>
-                                          <td >Fractions helix/turn/sheet</td>
+                                          <th >Fractions helix/turn/sheet</th>
                                           <td>{{protparams_data.4}}/{{protparams_data.5}}/{{protparams_data.6}}</td>
                                       </tr>
 
@@ -453,7 +452,7 @@ function clearBox(elementID)
 
                                     <table class="table-striped" style="width: 100%">
                                         <tr>
-                                            <th>Hit</th>
+                                            <th>TCDB Hit</th>
                                             <th>Evalue</th>
                                             <th>Score</th>
                                             <th>Identity</th>
@@ -463,7 +462,7 @@ function clearBox(elementID)
                                             <th>hit_cov</th>
                                         </tr>
                                         <tr>
-                                            <td>{{transporter_data.0}}</td>
+                                            <td><a href="http://www.tcdb.org/search/result.php?acc={{transporter_data.0}}">{{transporter_data.0}} <i class="fa fa-external-link"></i></a></td>
                                             <td>{{transporter_data.1}}</td>
                                             <td>{{transporter_data.2}}</td>
                                             <td>{{transporter_data.3}}</td>
@@ -506,7 +505,6 @@ function clearBox(elementID)
                                   <h3 class="panel-title">Domains</h3>
                                 </div>
                                 <div>
-                                  <a onclick='exportPNG("div_features", "div_features");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
                                   <div id="div_features" style="margin-top: 1px; width: 800px; margin-left: 20px;"></div>
 
                                   <table id="panel_table" class="table table-striped" style="width: 100%">
@@ -523,7 +521,7 @@ function clearBox(elementID)
                                       {%if pfam_data %}
                                           {% for values in pfam_data %}
                                               <tr>
-                                                  <th ><a href="{% url 'fam' values.0 'pfam' %}" target="_top">Pf: {{values.0}}</a></th>
+                                                  <th ><a href="{% url 'fam' values.0 'pfam' %}" target="_top">PF: {{values.0}} <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this PFAM domain in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></th>
                                                   <td>{{values.1}}</td>
                                               </tr>
 
@@ -534,7 +532,7 @@ function clearBox(elementID)
                                           {% for values in interpro_data %}
                                               {% with interpro2taxononmy|keyvalue:values.0 as taxo %}
                                               <tr>
-                                                  <th ><a href="{% url 'fam' values.0 'interpro' %}" target="_top">IP: {{values.0}}</a></th>
+                                                  <th ><a href="{% url 'fam' values.0 'interpro' %}" target="_top">IP: {{values.0}} <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Interpro entry in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></th>
                                                   <td>{{values.1}} </td>
                                                   {% if taxo.4 > taxo.5 %}
                                                       <td style="color:blue;">{{taxo.4}} ({{taxo.0}}%)</td>
@@ -1079,13 +1077,13 @@ function clearBox(elementID)
                     <iframe class="locusFrame" name="frame8" id="frame8" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                   </div>
                   <div class="tab-pane" id="9" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame9" id="frame9" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                    <iframe class="locusFrame" name="frame9" id="frame9" style="height:18000px;overflow:hidden;" height="18800px" width="100%" onload="javascript:resizeIframe(this);" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                   </div>
                   <div class="tab-pane" id="10" style="height:2px;" >
                     <iframe class="locusFrame" name="frame10" id="frame10" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                   </div>
                   <div class="tab-pane" id="11" style="height:2px;" >
-                    <iframe class="locusFrame" name="frame11" id="frame11" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                    <iframe class="locusFrame" name="frame11" id="frame11" style="height:8000px;overflow:hidden;" onload="javascript:resizeIframe(this);" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                   </div>
                   <div class="tab-pane" id="12" style="height:2px;" >
                     <iframe class="locusFrame" name="frame12" id="frame12" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
@@ -1193,6 +1191,25 @@ $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip();
 });
 
+
+function resizeIframe(obj)
+{
+  console.log(obj.contentWindow.document)
+  var a = obj.contentWindow.document.getElementById("pfam_tree");
+
+  console.log(a)
+
+  // Get the SVG document inside the Object tag
+  var svgDoc = a.contentDocument;
+  console.log(svgDoc);
+  var svg = svgDoc.querySelector("svg");
+
+  var svg_height = svg.getAttribute("height");
+  console.log(svg_height);
+  obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+  obj.style.width = obj.contentWindow.document.body.scrollWidth + 'px';
+  console.log(obj.style.height);
+}
 
 //var FeatureViewer = require("feature-viewer");
 //Create a new Feature Viewer and add some rendering options

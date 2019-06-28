@@ -19,8 +19,9 @@
 
         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
             <li class="active"><a href="#tab1" data-toggle="tab">Orthogroup profile</a></li>
-
-            <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'multiple_orthogroup_heatmap' orthogroup %}', 'orthoIDframe3'); return false">Similar profiles</a></li>
+            {% if profile_match %}
+            <li><a href="#tab55" data-toggle="tab" onclick="window.open('{% url 'profile_interactions' orthogroup %}', 'orthoIDframe2'); return false">Similar profiles</a></li>
+            {% endif %}
         </ul>
 
 
@@ -36,9 +37,9 @@
                    <img src="{% static "/scales/scale_identity_red.png" %}" id="circos_legend"  width="160" style="position: absolute; top: 100px; left: 600px;">
                </div>
             </div>
-                <div class="tab-pane" id="tab66" style="height:8800px">
-                    <iframe name="orthoIDframe3" id="theFrame3" scrolling="no" width="100%" height="8800px"></iframe>
-                </div>
+            <div class="tab-pane" id="tab55" style="height:8800px">
+                <iframe name="orthoIDframe2" id="theFrame2" scrolling="no" width="100%" height="8800px"></iframe>
+            </div>
         </div>
 </body>
 

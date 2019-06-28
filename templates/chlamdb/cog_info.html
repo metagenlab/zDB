@@ -3,68 +3,91 @@
 
 <html>
 <head>
-{% load staticfiles %}
-    {% load custom_tags %}
-<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+  {% load custom_tags %}
+  {% load staticfiles %}
+  {% load static %}
+
+  {% include "chlamdb/header.html" %}
+
 </head>
+
 <body>
-
-<div id="container">
-    <div id="sidebar">
-        {% include "chlamdb/menu.html" %}
-    </div>
-
-    <div id="header">
-        {% include "chlamdb/user.html" %}
-    </div>
-
-    <div id="content">
+    <div class="container-fluid" id="main_container">
+      <div class="row">
+        <div id="wrapper">
+            <div id="page-content-wrapper">
+              <div class="row">
+                <div class="col-lg-12">
+                   {% include "chlamdb/menu.html" %}
 
 
-        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
-            <div class="panel-heading" style="width:100%">
-                <h3 class="panel-title">Help</h3>
+                    <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                        <div class="panel-heading" style="width:100%">
+                            <h3 class="panel-title">Help</h3>
+                        </div>
+                        <p style="margin: 10px 10px 10px 10px">Selected subset list.
+                        </p>
+                    </div>
+
+                    <h3>   Category: {% with data|first as first_doc %}{{ first_doc.4 }}{% endwith %} (n={{data|length}})</h3>
+                    <div id="export_bouttons_groups">
+                        <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Show on circular map (takes some time)</a>
+                        <br/>
+                    </div>
+                    <table id="cog_table" class="display">
+                        <thead>
+                          <tr>
+                              <th>Organism</th>
+                              <th>locus_tag</th>
+                              <th>Accession</th>
+                              <th>Description</th>
+                              <th>Genbank annotation</th>
+                          </tr>
+                          </thead>
+                        <tbody>
+
+                            {%for values in data%}
+                            <tr>
+                                <td>{{values.0}}</td>
+                                <td><a href='{% url "locusx" values.1 True %}' target="_top">{{values.1}}</a></td>
+                                <td><a href="{% url 'fam' values.2 data_type %}" target="_top">{{values.2}}</a></td>
+                                <td>{{values.3}}</td>
+                                <td>
+                                {{ locus2annot|keyvalue:values.1 }}
+                                </td>
+                            </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
+                </div>
+              </div>
             </div>
-            <p style="margin: 10px 10px 10px 10px">Create circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. Click on the circos plot to open a new windows with clickable version of the plot.<br>
-            rRNA are colored in blue, tRNA in red.
-            </p>
+          </div>
         </div>
-
-        <h3>   COG category: {% with data|first as first_doc %}{{ first_doc.4 }}{% endwith %} (n={{data|length}})</h3>
-        <div id="export_bouttons_groups">
-            <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-
-            <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-            <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
-
-            <br/>
-        </div>
-        <table id="cog_table" class="sortable">
-            <thead>
-            <tr>
-                <th>Organism</th>
-                <th>locus_tag</th>
-                <th>COG id</th>
-                <th>Cog description</th>
-                <th>RefSeq annotation</th>
-            </tr>
-            </thead>
-            <tbody>
-
-                {%for values in data%}
-                <tr>
-                    <td>{{values.0}}</td>
-                    <td><a href='{% url "locusx" values.1 True %}' target="_top">{{values.1}}</a></td>
-                    <td><a href="{% url 'fam' values.2 data_type %}" target="_top">{{values.2}}</a></td>
-                    <td>{{values.3}}</td>
-                    <td>
-                    {{ locus2annot|keyvalue:values.1 }}
-                    </td>
-                </tr>
-                {%endfor%}
-            </tbody>
-        </table>
-    </div>
+      </div>
 </div>
+{% include "chlamdb/style_menu.html" %}
 </body>
+<script>
+
+$(document).ready(function() {
+$('#cog_table').DataTable( {
+ dom: 'Bfrtip',
+"paging":   true,
+"ordering": true,
+"info":     false,
+buttons: [
+{
+    extend: 'excel',
+    title: 'subset_table'
+},
+{
+    extend: 'csv',
+    title: 'subset_table'
+}
+],
+} );
+} );
+
+</script>
 </html>

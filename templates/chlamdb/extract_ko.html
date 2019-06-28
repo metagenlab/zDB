@@ -112,11 +112,7 @@
 
 
                         <div id="export_bouttons_groups">
-                            <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" class="btn btn-success">Export to Excel</a>
-
-                            <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" class="btn btn-success">Export to CSV</a>
                             <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</a>
-
                             <br/>
                         </div>
 
@@ -165,9 +161,7 @@
 
                         <h3> Locus annotation </h3>
                         <div id="export_bouttons_groups">
-                            <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'cog_table', 'search');" class="btn btn-success">Export to Excel</a>
                             <a href="{% url 'get_fasta' %}{{fasta_url_ref}}" class="btn btn-success">Download fasta</a>
-                            <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'cog_table');" class="btn btn-success">Export to CSV</a>
                             <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</a>
 
                             <br/>
@@ -293,23 +287,46 @@
 
   })
 
-    $(document).ready(function() {
-    $('#extract_ko').DataTable( {
-    "paging":   true,
-    "ordering": true,
-    "info":     false
-    } );
-    } );
-  $('.dropdown-toggle').dropdown()
 
-    $(document).ready(function() {
-    $('#reference_ko').DataTable( {
-    "paging":   true,
-    "ordering": true,
-    "info":     false
-    } );
-    } );
-  $('.dropdown-toggle').dropdown()
+  $(document).ready(function() {
+  $('#extract_ko').DataTable( {
+   dom: 'Bfrtip',
+  "paging":   true,
+  "ordering": true,
+  "info":     false,
+  buttons: [
+  {
+      extend: 'excel',
+      title: 'ko_table'
+  },
+  {
+      extend: 'csv',
+      title: 'ko_table'
+  }
+  ],
+  } );
+  } );
+
+  $(document).ready(function() {
+  $('#reference_ko').DataTable( {
+   dom: 'Bfrtip',
+  "paging":   true,
+  "ordering": true,
+  "info":     false,
+  buttons: [
+  {
+      extend: 'excel',
+      title: 'reference_genome_ko_list'
+  },
+  {
+      extend: 'csv',
+      title: 'reference_genome_ko_list'
+  }
+  ],
+  } );
+  } );
+
+
 
 </script>
 

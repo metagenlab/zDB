@@ -86,7 +86,7 @@
                                           <li>{{ fam }} is present in <strong>{{ group_count|length }} different orthogroup(s)</strong></li>
 
 
-                                          <ul>
+                                          <ul style="list-style-type:disc;">
                                               {% for group in group_count %}
                                               <li><a href="{% url 'locusx' group True%}">{{group}}</a></li>
                                               {% endfor %}
@@ -103,13 +103,13 @@
                                       {% elif type == 'ko' %}
 
                                           <li>KO part of <strong>{{pathway_data|length }} pathways</strong></li>
-                                          <ul>
+                                          <ul style="list-style-type:disc;">
                                               {% for path in pathway_data %}
                                               <li><a href="{% url 'KEGG_mapp_ko' path.0 %}">{{path.0}} :: {{path.1}}</a></li>
                                               {% endfor %}
                                           </ul>
                                           <li>KO part of <strong>{{module_data|length }} modules</strong></li>
-                                          <ul>
+                                          <ul style="list-style-type:disc;">
                                               {% for path in module_data %}
                                               <li><a href="{% url 'KEGG_module_map' path.0 %}">{{path.2}} :: {{path.1}}</a></li>
                                               {% endfor %}
@@ -258,6 +258,22 @@ $('#fam_table').DataTable( {
 </script>
 
 <style>
+
+ol {
+  display: block;
+  list-style-type: decimal;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 40px;
+}
+
+ol > ul > li {
+  padding: 4px;
+  margin-left: 25px;
+}
+
 
 table td.wrapcol {
 word-break: break-all;

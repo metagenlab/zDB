@@ -989,7 +989,7 @@ def multiple_profiles_heatmap(biodb,
                                                 print('Beteen 10 and 100: %s' % group2taxon2count[value][lf.name])
                                                 n = TextFace(' %s ' % local_label)
                                         else:
-                                            print('more than 100: %s' % group2taxon2count[value][lf.name])
+                                            #print('more than 100: %s' % group2taxon2count[value][lf.name])
                                             n = TextFace('%s' % local_label)
                                         if column_scale:
                                             if float(group2taxon2count[value][lf.name]) >= 0.6 * column2max[value]:
@@ -1920,7 +1920,7 @@ def get_pfam_data(orthogroup, biodb, aa_alignment=False):
           ' from orthology_detail_%s t1 ' \
           ' left join interpro_%s t2 on t1.seqfeature_id=t2.seqfeature_id and t2.orthogroup="%s" and t2.analysis="Pfam" ' \
           ' where t1.orthogroup="%s";' % (biodb, biodb, orthogroup, orthogroup)
-    
+
     print(sql)
     data = server.adaptor.execute_and_fetchall(sql,)
     print("OK")
