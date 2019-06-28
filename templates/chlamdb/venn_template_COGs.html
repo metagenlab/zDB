@@ -46,8 +46,24 @@
 		    value += '</table>';
 			$("#names").html(value);
 			var newTableObject = document.getElementById("cog_table");
-			sorttable.makeSortable(newTableObject);
-		}
+			newTableObject.DataTable( {
+					 dom: 'Bfrtip',
+					"paging":   true,
+					"ordering": true,
+					"info":     false,
+					buttons: [
+					{
+					    extend: 'excel',
+					    title: 'subset_table'
+					},
+					{
+					    extend: 'csv',
+					    title: 'subset_table'
+					}
+					],
+					} );
+					} );
+				}
 
       });
     });
