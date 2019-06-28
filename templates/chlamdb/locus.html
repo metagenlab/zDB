@@ -1194,9 +1194,11 @@ $(document).ready(function(){
 
 function resizeIframe(obj)
 {
+  var svgImage = obj.contentWindow.document.body.getElementsByTagName('svg')[0]
+  var svg_height = svgImage.getAttribute("height")
+  console.log(svg_height);
   obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
   obj.style.width = obj.contentWindow.document.body.scrollWidth + 'px';
-
   console.log(obj.style.height)
 }
 
