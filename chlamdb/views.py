@@ -4356,7 +4356,7 @@ def get_ko_multiple(request, type, category):
     filter = '"' + '","'.join(match_groups_subset) + '"'
     if type == 'module':
         sql = 'select A.ko_accession,name,definition,pathways,modules,module_name, module_sub_cat,description ' \
-              ' from (select * from enzyme.ko_annotation where ko_id in (%s)) A inner join enzyme.module2ko_ as B ' \
+              ' from (select * from enzyme.ko_annotation where ko_id in (%s)) A inner join enzyme.module2ko_v1 as B ' \
               ' on A.ko_id=B.ko_id inner join enzyme.kegg_module as C on B.module_id=C.module_id where module_sub_sub_cat="%s";' % (filter, category)
     if type == 'pathway':
         sql = 'select A.ko_accession,name,definition,pathway_name,pathway_category,description from (select * from enzyme.ko_annotation ' \
