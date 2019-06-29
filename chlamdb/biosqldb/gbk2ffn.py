@@ -42,6 +42,9 @@ def gbk2ffn(seq_records, outname, locus_tag=False, genome_accession=False):
     output_handle = open(outname, "w")
     for record in rec_list:
         for seq_feature in record.features:
+            # skip pseudogenes 
+            if 'pseudo' in seq_feature.qualifiers or 'pseudogene' in seq_feature.qualifiers:
+                continue
             if seq_feature.type == "CDS":
 
                 if locus_tag:
