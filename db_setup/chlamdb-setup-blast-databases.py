@@ -68,9 +68,10 @@ def setup_blastdb(biodb, static_dir_path):
     shell_command.shell_command("cd %s; cat *fna> all.fna" % fna_path)
 
     # formatdb
-    shell_command.shell_command("cd %s; for i in `ls *faa`;do formatdb -i $i -p T; done" % faa_path)
-    shell_command.shell_command("cd %s; for i in `ls *ffn`;do formatdb -i $i -p F; done" % ffn_path)
-    shell_command.shell_command("cd %s; for i in `ls *fna`;do formatdb -i $i -p F; done" % fna_path)
+    # makeblastdb -in prot2003-2014_test.fa -dbtype prot
+    shell_command.shell_command("cd %s; for i in `ls *faa`;do makeblastdb -in $i -dbtype prot; done" % faa_path)
+    shell_command.shell_command("cd %s; for i in `ls *ffn`;do formakeblastdbmatdb -in $i -dbtype nucl; done" % ffn_path)
+    shell_command.shell_command("cd %s; for i in `ls *fna`;do makeblastdb -in $i -dbtype nucl; done" % fna_path)
 
 
 
