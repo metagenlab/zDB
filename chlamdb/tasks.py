@@ -264,3 +264,161 @@ def run_circos(reference_taxon, target_taxons):
 
     html = template.render(Context(locals()))#render_to_string(template, context=locals())
     return html
+
+
+@shared_task
+def run_circos_main(reference_taxon, target_taxons, highlight):
+
+
+    from chlamdb.plots import gbk2circos
+    from chlamdb.biosqldb import circos
+    from chlamdb.biosqldb import shell_command
+    import ete3
+    from chlamdb.plots import gbk2circos
+
+    biodb = settings.BIODB
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    description2accession_dict = manipulate_biosqldb.description2accession_dict(server, biodb)
+
+
+    current_task.update_state(state='PROGRESS',
+                              meta={'current': 1,
+                                    'total': 4,
+                                    'percent': 25,
+                                    'description': "Get reference genome"})
+
+    reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb) # ["NC_009648"] NZ_CP009208 NC_016845
+
+    #print "reference_accessions", reference_accessions
+    record_list = []
+    for accession in reference_accessions:
+        #print "reference accession", accession
+        biorecord = cache.get(biodb + "_" + accession)
+
+        if not biorecord:
+            #print biodb + "_" + accession, "NOT in memory"
+            new_record = db.lookup(accession=accession)
+            biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
+                                                     id=new_record.id, name=new_record.name,
+                                                     description=new_record.description,
+                                                     dbxrefs =new_record.dbxrefs,
+                                                     features=new_record.features,
+                                                     annotations=new_record.annotations)
+            record_id = biorecord.id.split(".")[0]
+            cache.set(biodb + "_" + record_id, biorecord)
+            record_list.append(biorecord)
+        else:
+            #print biodb + "_" + accession, "In memory"
+            record_list.append(biorecord)
+
+    ref_name = ('').join(reference_accessions)
+
+    circos_file = "circos/%s.svg" % ref_name
+
+
+    current_task.update_state(state='PROGRESS',
+                              meta={'current': 2,
+                                    'total': 4,
+                                    'percent': 50,
+                                    'description': "Get query genome(s)"})
+    
+
+    querries = manipulate_biosqldb.get_genome_accessions(server, biodb)
+
+    target_accessions = [manipulate_biosqldb.taxon_id2accessions(server,int(i),biodb)[0] for i in target_taxons]
+
+    target_accessions += reference_accessions
+
+
+
+    draft_data = []
+    for biorecord in record_list:
+        draft_data.append(gbk2circos.circos_fasta_draft_misc_features(biorecord))
+
+    home_dir = os.path.dirname(__file__)
+
+    temp_location = os.path.join(home_dir, "../assets/circos/")
+
+    #sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
+
+    sql_order1 = 'select A.taxon_1 from (select taxon_1,median_identity from comparative_tables.shared_og_av_id_%s where taxon_2=%s ' \
+                ' union select taxon_2,median_identity from comparative_tables.shared_og_av_id_%s ' \
+                ' where taxon_1=%s order by median_identity DESC) A;' % (biodb, reference_taxon, biodb, reference_taxon)
+    try:
+        sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
+
+        ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
+    except:
+        sql_order2 = 'select taxon_2 from comparative_tables.shared_og_av_id_%s where taxon_1=%s order by median_identity desc;' % (biodb, reference_taxon)
+
+        ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order1)]
+
+    current_task.update_state(state='PROGRESS',
+                              meta={'current': 3,
+                                    'total': 4,
+                                    'percent': 75,
+                                    'description': "Plotting with circos..."})
+
+    myplot = circos.CircosAccession2multiplot(server,
+                              db,
+                              biodb,
+                              record_list,
+                              target_accessions,
+                              locus_highlight=highlight,
+                              out_directory=temp_location,
+                              draft_fasta=draft_data,
+                              href="/chlamdb/locusx/",
+                              ordered_taxons = ordered_taxons)
+
+
+
+    original_map_file = settings.BASE_DIR + "/assets/circos/%s.html" % ref_name
+    with open(original_map_file, "r") as f:
+        map_string = ''.join([line for line in f.readlines()])
+
+    circos_html = '<!DOCTYPE html>\n' \
+                  ' <html>\n' \
+                  ' <body>\n' \
+                  ' %s\n' \
+                  ' <img src="%s.svg" usemap="#%s">' \
+                  ' </body>\n' \
+                  ' </html>\n' % (map_string, ref_name, ref_name)
+
+
+    circos_new_file = '/assets/circos/circos_clic.html'
+    #print settings.BASE_DIR + circos_new_file
+    with open(settings.BASE_DIR + circos_new_file, "w") as f:
+        f.write(circos_html)
+
+    #target_map_file = settings.BASE_DIR + "/templates/circos/%s.html" % ref_name
+    original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % ref_name
+    #target_map_file_svg = settings.BASE_DIR + "/templates/circos/%s.svg" % ref_name
+    map_file = "circos/%s.html" % ref_name
+    svg_file = "circos/%s.svg" % ref_name
+    #a, b, c = shell_command.shell_command("mv %s %s" % (original_map_file, target_map_file))
+    #a, b, c = shell_command.shell_command("cp %s %s" % (original_map_file_svg, target_map_file_svg))
+    #print a,b,c
+    map_name = ref_name
+
+    template = Template('''
+            {% load staticfiles %}
+            {% load static %}
+            <div class="row">
+              <a download="circos.svg" class="btn" href="{% static circos_svg_file %}"><i class="fa fa-download"></i> Download SVG</a>
+              <a download="circos.png" class="btn" href="{% static circos_png_file %}"><i class="fa fa-download"></i> Download PNG</a>
+            </div>
+
+              <div class="row">
+                <div class="col-lg-12">
+                  <div>
+                    <a href="{{ circos_new_file }}"><img src="{% static ""%}{{circos_file}}" id="circos_plot" style="position: absolute; top: 00px; left: 00px;"></a>
+                    <img src="{% static "/scales/circos_legend.png" %}" id="circos_legend"  width="160" style="position: relative; top: 0; left: 0;">
+
+                  </div>
+                </div>
+              </div>
+            ''')
+
+    html = template.render(Context(locals()))#render_to_string(template, context=locals())
+    return html

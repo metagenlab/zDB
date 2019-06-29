@@ -25,8 +25,18 @@
                       <div class="panel-heading" style="width:100%">
                           <h3 class="panel-title">Help</h3>
                       </div>
-                      <p style="margin: 10px 10px 10px 10px">Create circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. Click on the circos plot to open a new windows with clickable version of the plot.<br>
-                      rRNA are colored in blue, tRNA in red. Click on the figure to access the interactive plot.
+                      <p style="margin: 10px 10px 10px 10px"><h3>Circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. </h3>
+                      Click on the circos plot to open a new windows with clickable version of the plot.
+                       <ul id="circos_ul" style="list-style-type:disc;">  
+                            <li>The first outer circle show contig/chromosome boundaries</li>
+                            <li>The second and third circles show open reading frames from the reference genome (in gray)</li>
+                            <ol>
+                                <li>rRNA are colored in blue, tRNA in red</li>
+                            </ol>
+                            <li>Inner blue/red circle(s) incicate the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes</li>
+                            <li>The last two inner circles show GC content (blue/red) and GC skew (blue/green)</li>
+                            
+                      </ul>
                       </p>
                   </div>
                   <div class="row">
@@ -147,5 +157,23 @@ $(hide_submenus("rollmenu1"))
     }
 </script>
 
+<style>
+
+#circos_ul {
+  display: block;
+  list-style-type: decimal;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 40px;
+}
+
+ol > ul > li {
+  padding: 4px;
+  margin-left: 25px;
+}
+
+</style>
 
 </html>
