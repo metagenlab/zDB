@@ -23,7 +23,7 @@ def setup_blastdb(biodb, static_dir_path):
     except:
         pass
     faa_path = os.path.join(db_static_path, 'faa')
-    print faa_path
+    print (faa_path)
     os.mkdir(faa_path)
 
     fna_path = os.path.join(db_static_path, 'fna')
