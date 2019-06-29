@@ -86,4 +86,4 @@ if __name__ == '__main__':
     #accession2coding_density("2017_06_29b_motile_chlamydiae","/webapps/biodb/chlamdb/assets/")
     #accession2coding_density("2017_06_29_parilichlamydiae","/webapps/biodb/chlamdb/assets/")
     #accession2coding_density("2017_05_11_proteobacteria","/webapps/biodb/chlamdb/assets/")
-    setup_blastdb("2017_05_11_proteobacteria","/webapps/biodb/chlamdb/assets/")
+    setup_blastdb(args.db_name, args.asset_path)
