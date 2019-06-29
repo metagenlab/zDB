@@ -39,6 +39,7 @@ def setup_blastdb(biodb, static_dir_path):
     os.mkdir(tab_path)
 
     for n, accession in enumerate(accession_list):
+        print(n, accession)
         record = db.lookup(accession=accession)
         # faa + merged
 
