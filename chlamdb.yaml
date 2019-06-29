@@ -42,6 +42,7 @@ dependencies:
  - circos
  - inkscape 
  - r-rmysql
+ - blast
  - pip:
    - cython
    - django-citations
