@@ -29,9 +29,9 @@ def gbk2ffn(seq_records, outname, locus_tag=False, genome_accession=False):
         rec_list = []
         for record in seq_records:
             if len(record.seq)>max_len:
-                print 'plus long!!!!!!!!!!!!!!'
+                print('plus long!!!!!!!!!!!!!!')
                 max_len = len(record.seq)
-                print max_len
+                print(max_len)
                 outname = record.id.split('.')[0] + ".ffn"
             rec_list.append(record)
         if genome_accession:
@@ -109,7 +109,7 @@ if __name__ == '__main__':
         try:
             outname = seq_records[0].annotations['accessions'][0].split(".")[0]+".ffn"
         except:
-            print seq_records[0]
+            print(seq_records[0])
             import sys
             sys.exit()
         #print 'outname', outname
