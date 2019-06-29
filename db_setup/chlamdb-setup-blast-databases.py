@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-15 -*-
 
-def accession2coding_density(biodb, static_dir_path):
+def setup_blastdb(biodb, static_dir_path):
     from chlamdb.biosqldb import manipulate_biosqldb
-    import gbk2fna
-    import gbk2faa
-    import gbk2ffn
-    import gbk2table
+    from chlamdb.biosqldb import gbk2fna
+    from chlamdb.biosqldb import gbk2faa
+    from chlamdb.biosqldb import gbk2ffn
+    from chlamdb.biosqldb import gbk2table
     import os
     from Bio import SeqIO
-    import shell_command
+    from chlamdb.biosqldb import shell_command
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -72,7 +72,18 @@ def accession2coding_density(biodb, static_dir_path):
     shell_command.shell_command("cd %s; for i in `ls *ffn`;do formatdb -i $i -p F; done" % ffn_path)
     shell_command.shell_command("cd %s; for i in `ls *fna`;do formatdb -i $i -p F; done" % fna_path)
 
-accession2coding_density("2017_06_29b_motile_chlamydiae","/webapps/biodb/chlamdb/assets/")
-accession2coding_density("2017_06_29_parilichlamydiae","/webapps/biodb/chlamdb/assets/")
-accession2coding_density("2017_05_11_proteobacteria","/webapps/biodb/chlamdb/assets/")
 
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", '--db_name', type=str, help="db name", required=True)
+    parser.add_argument("-p", '--asset_path', type=str, help="asset path (e.g /webapps/biodb/chlamdb/assets/)")
+
+    args = parser.parse_args()
+
+    
+    #accession2coding_density("2017_06_29b_motile_chlamydiae","/webapps/biodb/chlamdb/assets/")
+    #accession2coding_density("2017_06_29_parilichlamydiae","/webapps/biodb/chlamdb/assets/")
+    #accession2coding_density("2017_05_11_proteobacteria","/webapps/biodb/chlamdb/assets/")
+    setup_blastdb("2017_05_11_proteobacteria","/webapps/biodb/chlamdb/assets/")

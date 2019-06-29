@@ -29,7 +29,7 @@ OK chlamdb-load-COG.py -i blast_COG.tab -d 2019_06_PVC -u ../../data/nr_mapping.
 
 OK chlamdb-load-KO.py -k chunk*.tab -d 2019_06_PVC -c ../../data/nr_mapping.tab
 
-chlamdb-load-uniprot-annotations.py -d 2019_06_PVC -um uniprot_mapping.tab -ud uniprot_data.tab -hm ../../data/nr_mapping.tab
+OK chlamdb-load-uniprot-annotations.py -d 2019_06_PVC -um uniprot_mapping.tab -ud uniprot_data.tab -hm ../../data/nr_mapping.tab
 
 
 OK chlamdb-load-alignments.py -a *faa -d 2019_06_PVC -c 100
@@ -37,7 +37,7 @@ OK chlamdb-load-phylogenies.py -t *nwk -d 2019_06_PVC
 
 OK chlamdb-load-phylogenies-BBH.py -t *nwk -d 2019_06_PVC
 
-chlamdb-load-swissprot-homology-search.py -i chunk_.*.tab -d 2019_06_PVC -t -p 2 -l -u ../../data/nr_mapping.tab
+OK chlamdb-load-swissprot-homology-search.py -i chunk_.*.tab -d 2019_06_PVC -t -p 2 -l -u ../../data/nr_mapping.tab
 
 OK chlamdb-load-PRIAM.py -i sequenceECs.txt -d 2019_06_PVC -c ../../data/nr_mapping.tab
 
@@ -54,6 +54,6 @@ OK chlamdb-setup-gc-content-tables.py -d 2019_06_PVC
 
 OK for i in {1..265}; do echo $i; chlamdb-load-TCDB.py -d 2019_06_PVC -b tcdb -f all.faa -x TCDB_RESULTS_chunk.$i/xml/ -t TCDB_RESULTS_chunk.$i/results.html -c ../../data/nr_mapping.tab; done
 
-
+OK chlamdb-find-conserved-neighborhood.py -d 2019_06_PVC
 
 ```
