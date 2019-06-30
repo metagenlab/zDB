@@ -10873,7 +10873,7 @@ def blast(request):
             from Bio.Alphabet import IUPAC
             from Bio.Alphabet import _verify_alphabet
             import os
-            from chlamdb.chlamdb.biosqldb import shell_command
+            from chlamdb.biosqldb import shell_command
             import re
 
 
