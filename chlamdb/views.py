@@ -2123,7 +2123,6 @@ def locusx(request, locus=None, menu=True):
                 return search(request)
 
 
-        print("input type", input_type)
         columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                   'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
         sql2 = 'select %s from orthology_detail_%s where %s="%s"' % (columns, biodb, input_type, locus)
@@ -2134,8 +2133,6 @@ def locusx(request, locus=None, menu=True):
             old_locus_tag = data_old
         except:
             pass
-
-        print(locus, input_type)
 
         if input_type == 'locus_tag':
             from chlamdb.plots import uniprot_feature_viewer
@@ -2203,13 +2200,12 @@ def locusx(request, locus=None, menu=True):
             sql16 = 'select count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
               ' inner join blastnr.blast_swissprot_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where locus_tag="%s";' % (biodb, biodb, locus)
-            print(sql16)
+
             sql17 = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s"' % (biodb, data[0])
-            print(sql17)
+
             sql18 = 'select signature_accession,start,stop from interpro_%s where analysis="Phobius" and locus_tag="%s" ' \
                     ' and signature_accession in ("TRANSMEMBRANE",' \
                     ' "SIGNAL_PEPTIDE_C_REGION","SIGNAL_PEPTIDE_N_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_H_REGION");' % (biodb, locus)
-
 
             sql19 = 'select signature_accession, interpro_description,start, stop from interpro_%s ' \
                     ' where analysis="SUPERFAMILY" and locus_tag="%s";' % (biodb, locus)
@@ -2227,11 +2223,9 @@ def locusx(request, locus=None, menu=True):
                     ' inner join transporters.tc_table t7 on t3.subfamily=t7.tc_id ' \
                     ' inner join transporters.uniprot_table t8 on t2.hit_uniprot_id=t8.uniprot_id ' \
                     ' where t1.locus_tag="%s";' % (biodb, biodb, locus)
-            print(sql20)
+
             sql21 = 'select seqfeature_id, taxon_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s"' % (biodb,
                                                                                                                        locus)
-
-
 
             seqfeature_data = server.adaptor.execute_and_fetchall(sql21,)[0]
             taxon_id = seqfeature_data[1]
@@ -2436,9 +2430,6 @@ def locusx(request, locus=None, menu=True):
                     interpro2taxononmy[one_entry[0]] = server.adaptor.execute_and_fetchall(sql,)[0]
 
 
-
-
-
             except:
                 interpro_data = False
             #print interpro2taxononmy
@@ -2473,24 +2464,16 @@ def locusx(request, locus=None, menu=True):
             except:
                 pathways_data = False
 
-
-
-
-
-
         if input_type == 'locus_tag':
             seq_start = int(data[3])
             seq_end = int(data[4])
             strand = int(data[5])
             leng = (seq_end-seq_start)+100
 
-
             nucl_length = seq_end-seq_start+1
             aa_length = nucl_length/3
 
             seq = manipulate_biosqldb.location2sequence(server, genome_accession, biodb, seq_start-50, leng)
-
-
 
             if strand == -1:
 
@@ -2500,6 +2483,91 @@ def locusx(request, locus=None, menu=True):
                 seq = seq[0:49] + '<font color="red">' + seq[49:-50] + '</font>' + seq[-50:len(seq)]
             else:
                 seq = seq[0:50] + '<font color="red">' + seq[50:-50] + '</font>' + seq[-50:len(seq)]
+
+
+        if input_type == 'orthogroup':
+            
+            
+            # consensus annotation
+            sql_group1 = 'select rank,count,description from orthology.orthogroup2gene_%s t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id where t2.orthogroup_name="%s";' % (biodb, 
+                                                                                                                                                                                                      biodb, 
+                                                                                                                                                                                                      locus)
+            sql_group2 = 'select rank,count,description from orthology.orthogroup2product_%s t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id where t2.orthogroup_name="%s";' % (biodb, 
+                                                                                                                                                                                                      biodb, 
+                                                                                                                                                                                                      locus)
+            sql_group3 = 'select rank, COG_name, t3.description, count, code, t5.description from orthology.orthogroup2cog_%s t1 ' \
+                         ' inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id ' \
+                         ' inner join COG.cog_names_2014 t3 on t1.COG_id=t3.COG_id ' \
+                         ' inner join COG.cog_id2cog_category t4 on t3.COG_id=t4.COG_id' \
+                         ' inner join COG.code2category t5 on t4.category_id=t5.category_id where t2.orthogroup_name="%s";' % (biodb, 
+                                                                                                                            biodb, 
+                                                                                                                            locus)
+            sql_group4 = 'select rank,ko_accession,count,name,definition,EC,pathways,modules from orthology.orthogroup2ko_%s t1 ' \
+                         ' inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id ' \
+                         ' inner join enzyme.ko_annotation t3 on t1.ko_id=t3.ko_id where t2.orthogroup_name="%s";' % (biodb, 
+                                                                                                                    biodb, 
+                                                                                                                    locus)
+            sql_group5 = ''
+            sql_group6 = ''
+        
+            # protein length distribution
+            sql_group7 = ''
+            
+            # TM domains 
+            
+            # Signal Peptide
+            
+            
+            gene_annotations = server.adaptor.execute_and_fetchall(sql_group1,)
+            product_annotations = server.adaptor.execute_and_fetchall(sql_group2,)
+            COG_annotations = server.adaptor.execute_and_fetchall(sql_group3,)
+            KO_annotations = server.adaptor.execute_and_fetchall(sql_group4,)
+            
+
+            import plotly.plotly as py
+            import plotly.graph_objs as go
+            from collections import Counter
+            
+            sql = 'select TM from biosqldb.orthology_detail_%s where orthogroup="%s";' % (biodb, locus)
+            TM_counts = Counter([int(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)])
+            
+            for i in range(max(TM_counts.keys())):
+                if i not in TM_counts:
+                    TM_counts[i] = 0
+            
+            print("TM_counts", TM_counts)
+            
+            plot_data = [go.Bar(
+                        x=["%s TM" % i for i in TM_counts.keys()],
+                        y=list(TM_counts.values())
+                )]
+
+            layout = go.Layout(
+                title='',
+                yaxis=go.layout.YAxis(
+                    title=go.layout.yaxis.Title(
+                        text='Number of occurences',
+                        font=dict(
+                            family='Courier New, monospace',
+                            size=18,
+                            color='#7f7f7f'
+                        )
+                    )
+                )
+            )
+            plot_width = 120 + (max(TM_counts.keys()) ) * 50
+            fig = go.Figure(data=plot_data, 
+                            layout=layout)
+
+            fig.layout.margin.update({"l": 80,
+                                      "r": 20,
+                                      "b": 40,
+                                      "t": 20,
+                                      "pad": 10,
+                                      })
+
+            html_plot = manipulate_biosqldb.make_div(fig, div_id="barplot")
+            
 
         if data[2] == '-':
             data[2] = data[1]

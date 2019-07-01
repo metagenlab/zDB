@@ -13,6 +13,28 @@ from chlamdb.biosqldb import mysqldb_load_mcl_output
 # get_genome_id_from_locus_tag
 
 
+def make_div(figure_or_data, include_plotlyjs=False, show_link=False, div_id=None):
+    from plotly import offline
+    div = offline.plot(
+        figure_or_data,
+        include_plotlyjs=include_plotlyjs,
+        show_link=show_link,
+        output_type="div",
+    )
+    if ".then(function ()" in div:
+        div = """{div.partition(".then(function ()")[0]}</script>"""
+    if div_id:
+        import re
+
+        try:
+            existing_id = re.findall(r'id="(.*?)"|$', div)[0]
+            print(existing_id, div_id)
+            div = div.replace(existing_id, div_id)
+        except IndexError:
+            pass
+    return div
+
+
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via input() and return their answer.
 

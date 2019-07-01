@@ -946,7 +946,162 @@ function clearBox(elementID)
               <!-- if only group information is asked, homologs tabs become the active tab -->
               {% else %}
                   <div class="tab-pane active" id="tab33">
-                    <h3>Orthogroup: {{locus}} -- {{homologues}} members</h3>
+                    <h3>Orthogroup: {{locus}} -- {{homologues}} members: overview of the annotation</h3>
+                        <div class="col-md-12 col-lg-4">
+                          <div class="container-fluid">
+
+                            <div class="row">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">Gene</h3>
+                                </div>
+                                    <table class="table table-striped" style="width: 100%">
+                                        <thead>
+                                          <tr>
+                                              <th>#</th>
+                                              <th>Gene name</th>
+                                              <th>Number of Occurences</th>
+                                          </tr>
+                                        </thead>
+                                        </body>
+                                            {% for row in gene_annotations %}
+                                              <tr>
+                                                <td>{{row.0}}</td>
+                                                <td>{{row.2}}</td>
+                                                <td>{{row.1}}</td>  
+                                              </tr>
+                                            {% endfor %}
+                                        </body>
+                                    </table>
+                              </div>
+                            </div>
+
+
+                            <div class="row">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">Product</h3>
+                                </div>
+                                    <table class="table table-striped" style="width: 100%">
+                                        <thead>
+                                          <tr>
+                                              <th>#</th>
+                                              <th>Product</th>
+                                              <th>Number of Occurences</th>
+                                          </tr>
+                                        </thead>
+                                        </body>
+                                            {% for row in product_annotations %}
+                                              <tr>
+                                                <td>{{row.0}}</td>
+                                                <td>{{row.2}}</td>
+                                                <td>{{row.1}}</td>  
+                                              </tr>
+                                            {% endfor %}
+                                        </body>
+                                    </table>
+                              </div>
+                            </div>
+
+
+                        </div>
+                      </div>
+
+                      <div class="col-md-12 col-lg-8">
+                          <div class="container-fluid">
+
+
+
+
+                             {% if COG_annotations|length > 0 %}
+                                <div class="row">
+                                  <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">COG annotation(s)</h3>
+                                    </div>
+                                        <table class="table table-striped" style="width: 100%">
+                                            <thead>
+                                              <tr>
+                                                  <th>#</th>
+                                                  <th>COG</th>
+                                                  <th>Occurence</th>
+                                                  <th>Description</th>
+                                                  <th>Category</th>
+                                                  <th>Category description</th>
+                                              </tr>
+                                            </thead>
+                                            </body>
+                                                {% for row in COG_annotations %}
+                                                  <tr>
+                                                    <td>{{row.0}}</td>
+                                                    <td>{{row.1}}</td>
+                                                    <td>{{row.3}}</td> 
+                                                    <td>{{row.2}}</td> 
+                                                    <td>{{row.4}}</td>
+                                                    <td>{{row.5}}</td>
+                                                  </tr>
+                                                {% endfor %}
+                                            </body>
+                                        </table>
+                                  </div>
+                                </div>
+                              {% endif %}
+
+
+                             {% if KO_annotations|length > 0 %}
+                                <div class="row">
+                                  <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">Kegg Ortholog annotation(s)</h3>
+                                    </div>
+                                        <table class="table table-striped" style="width: 100%">
+                                            <thead>
+                                              <tr>
+                                                  <th>#</th>
+                                                  <th>KO</th>
+                                                  <th>Occurence</th>
+                                                  <th>Name</th>
+                                                  <th>Definition</th>
+                                                  <th>EC</th>
+                                                  <th>pathways</th>
+                                                  <th>modules</th>
+                                              </tr>
+                                            </thead>
+                                            </body>
+                                                {% for row in KO_annotations %}
+                                                  <tr>
+                                                    <td>{{row.0}}</td>
+                                                    <td>{{row.1}}</td>
+                                                    <td>{{row.2}}</td> 
+                                                    <td>{{row.3}}</td> 
+                                                    <td>{{row.4}}</td>
+                                                    <td>{{row.5}}</td>
+                                                    <td>{{row.6}}</td>
+                                                    <td>{{row.7}}</td>
+                                                  </tr>
+                                                {% endfor %}
+                                            </body>
+                                        </table>
+                                  </div>
+                                </div>
+                              {% endif %}
+                              <div class="row">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">Number of Transmembrane domains</h3>
+                                    </div>
+                                        
+                                          <div style="width:{{plot_width}}px">
+                                            {{html_plot|safe}}
+                                          </div>
+                                        
+                                </div>
+                              </div>
+
+
+
+                          </div>
+                      </div>
 
                   </div>
               {% endif %}
