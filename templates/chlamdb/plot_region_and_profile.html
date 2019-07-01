@@ -23,32 +23,30 @@
 
                 <div class="row">
 
-                    <div class="col-xs-3 col-lg-2 col-md-3" style="padding-left: 15px">
-
+                    <div class="col-xs-12 col-lg-12 col-md-12" style="padding-left: 15px">
+                      <div class="row">
                         <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
                             <div class="panel-heading" style="width:100%">
                                 <h3 class="panel-title">Help</h3>
                             </div>
-                            <p style="margin: 0px 0px 0px 10px">Plot neighboring of the considered gene. Click to get more information about any of the ORFs. <br>
-                            The plot below report conservation of each neighbor protein in all other genomes. Numbers indicate the counts of homologous proteins in the corresponding genome.
+                            <p style="margin: 0px 0px 0px 10px">Plot neighborhood of the considered gene. Click on green open reading fames (ORFs) to get more information about any of the ORFs. <br>
+                            The plot below report conservation of each neighbor protein in all other genomes (the red scale reflects the percentage of identity).
                             </p>
                         </div>
-
-                    </div>
-                    <div class="col-xs-6 col-lg-10 col-md-9" style="padding-left: 15px">
+                      </div>
 
                       <div class="row">
                         <a download="genomic_region.svg" class="btn" href="{% static name %}"><i class="fa fa-download"></i> Download SVG</a>
                         <a onclick='exportPNG("genomic_region", "genomic_region");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
 
-                          <object width="105%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
+                          <object width="105%"  type="image/svg+xml" style="margin-left: 10px" data="{% static name %}" id="genomic_region"></object>
                       </div>
 
                       <div class="row">
                         <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
                         <a onclick='exportPNG("profile", "profile");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
 
-                        <object width="100%" height="80%" align="left" style="margin-left: 0px" type="image/svg+xml" data="{% static asset_path %}" id="profile"></object>
+                        <object width="98%" height="80%" align="left" style="margin-left: 20px" type="image/svg+xml" data="{% static asset_path %}" id="profile"></object>
                       </div>
                     </div>
                 </div>
