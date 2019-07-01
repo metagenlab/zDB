@@ -445,6 +445,7 @@ def extract_orthogroup(request):
                 server, db = manipulate_biosqldb.load_db(biodb)
 
                 freq_missing = (len(include)-float(n_missing))/len(include)
+                print("get matrix")
                 if not accessions:
                     # get sub matrix and complete matrix
                     mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
@@ -464,6 +465,7 @@ def extract_orthogroup(request):
                                                                               freq_missing,
                                                                               single_copy=single_copy,
                                                                               accessions=accessions)
+                print("matrix OK")
                 match_groups = mat.index.tolist()
 
                 if len(match_groups) == 0:
@@ -480,11 +482,12 @@ def extract_orthogroup(request):
 
                     # GET max frequency for template
                     sum_group = len(match_groups)
-
+                    print("get group annotations")
                     match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(match_groups,
                                                                                                                   biodb,
                                                                                                                   taxon_filter=include,
                                                                                                                   accessions=accessions)
+                    print("done")
 
                     if len(include) == 1:
                         # get url to get single include taxon fasta
