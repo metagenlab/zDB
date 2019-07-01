@@ -23,7 +23,7 @@ def setup_blastdb(biodb, static_dir_path):
     except:
         pass
     faa_path = os.path.join(db_static_path, 'faa')
-    print faa_path
+    print (faa_path)
     os.mkdir(faa_path)
 
     fna_path = os.path.join(db_static_path, 'fna')
@@ -39,6 +39,7 @@ def setup_blastdb(biodb, static_dir_path):
     os.mkdir(tab_path)
 
     for n, accession in enumerate(accession_list):
+        print(n, accession)
         record = db.lookup(accession=accession)
         # faa + merged
 
@@ -68,9 +69,10 @@ def setup_blastdb(biodb, static_dir_path):
     shell_command.shell_command("cd %s; cat *fna> all.fna" % fna_path)
 
     # formatdb
-    shell_command.shell_command("cd %s; for i in `ls *faa`;do formatdb -i $i -p T; done" % faa_path)
-    shell_command.shell_command("cd %s; for i in `ls *ffn`;do formatdb -i $i -p F; done" % ffn_path)
-    shell_command.shell_command("cd %s; for i in `ls *fna`;do formatdb -i $i -p F; done" % fna_path)
+    # makeblastdb -in prot2003-2014_test.fa -dbtype prot
+    shell_command.shell_command("cd %s; for i in `ls *faa`;do makeblastdb -in $i -dbtype prot; done" % faa_path)
+    shell_command.shell_command("cd %s; for i in `ls *ffn`;do formakeblastdbmatdb -in $i -dbtype nucl; done" % ffn_path)
+    shell_command.shell_command("cd %s; for i in `ls *fna`;do makeblastdb -in $i -dbtype nucl; done" % fna_path)
 
 
 
@@ -86,4 +88,4 @@ if __name__ == '__main__':
     #accession2coding_density("2017_06_29b_motile_chlamydiae","/webapps/biodb/chlamdb/assets/")
     #accession2coding_density("2017_06_29_parilichlamydiae","/webapps/biodb/chlamdb/assets/")
     #accession2coding_density("2017_05_11_proteobacteria","/webapps/biodb/chlamdb/assets/")
-    setup_blastdb("2017_05_11_proteobacteria","/webapps/biodb/chlamdb/assets/")
+    setup_blastdb(args.db_name, args.asset_path)

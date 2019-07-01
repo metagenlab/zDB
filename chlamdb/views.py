@@ -85,6 +85,7 @@ from django.http import HttpResponse
 from chlamdb.forms import GenerateRandomUserForm
 from chlamdb.tasks import create_random_user_accounts2
 from chlamdb.tasks import run_circos
+from chlamdb.tasks import run_circos_main
 from chlamdb.celeryapp import app as celery_app
 
 @celery_app.task(bind=True)
@@ -9882,131 +9883,13 @@ def circos_main(request):
 
     #sql = 'select locus_tag,traduction from orthology_detail_k_cosson_05_16 where orthogroup in (%s) and accession="NC_016845"' % ('"'+'","'.join(highlight)+'"')
 
-    description2accession_dict = manipulate_biosqldb.description2accession_dict(server, biodb)
-
-    reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb) # ["NC_009648"] NZ_CP009208 NC_016845
-
-    #print "reference_accessions", reference_accessions
-    record_list = []
-    for accession in reference_accessions:
-        #print "reference accession", accession
-        biorecord = cache.get(biodb + "_" + accession)
-
-        if not biorecord:
-            #print biodb + "_" + accession, "NOT in memory"
-            new_record = db.lookup(accession=accession)
-            biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
-                                                     id=new_record.id, name=new_record.name,
-                                                     description=new_record.description,
-                                                     dbxrefs =new_record.dbxrefs,
-                                                     features=new_record.features,
-                                                     annotations=new_record.annotations)
-            record_id = biorecord.id.split(".")[0]
-            cache.set(biodb + "_" + record_id, biorecord)
-            record_list.append(biorecord)
-        else:
-            #print biodb + "_" + accession, "In memory"
-            record_list.append(biorecord)
-
-    ref_name = ('').join(reference_accessions)
-
-    circos_file = "circos/%s.svg" % ref_name
-
-    querries = manipulate_biosqldb.get_genome_accessions(server, biodb)
-
-    target_accessions = [manipulate_biosqldb.taxon_id2accessions(server,int(i),biodb)[0] for i in target_taxons]
-
-    target_accessions += reference_accessions
-
-
-
-    draft_data = []
-    for biorecord in record_list:
-        draft_data.append(gbk2circos.circos_fasta_draft_misc_features(biorecord))
-
-    home_dir = os.path.dirname(__file__)
-
-    temp_location = os.path.join(home_dir, "../assets/circos/")
-
-    #sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
-
-    sql_order1 = 'select A.taxon_1 from (select taxon_1,median_identity from comparative_tables.shared_og_av_id_%s where taxon_2=%s ' \
-                ' union select taxon_2,median_identity from comparative_tables.shared_og_av_id_%s ' \
-                ' where taxon_1=%s order by median_identity DESC) A;' % (biodb, reference_taxon, biodb, reference_taxon)
-    try:
-        sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
-
-        ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
-    except:
-        sql_order2 = 'select taxon_2 from comparative_tables.shared_og_av_id_%s where taxon_1=%s order by median_identity desc;' % (biodb, reference_taxon)
-
-        ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order1)]
-    '''
-    print tree
-    t1 = ete3.Tree(tree)
-
-    R = t1.get_midpoint_outgroup()
-    t1.set_outgroup(R)
-    print t1
-
-    node_list = []
-    for node in t1.iter_leaves():
-            node_list.append(node.name)
-
-    print 'original order', node_list
-
-    reference_index = node_list.index(reference_taxon)
-    ordered_taxons = node_list[reference_index:] + node_list[:reference_index][::-1]
-    '''
-    #print 'ordered_taxons', ordered_taxons
-
-    myplot = circos.CircosAccession2multiplot(server,
-                              db,
-                              biodb,
-                              record_list,
-                              target_accessions,
-                              locus_highlight=highlight,
-                              out_directory=temp_location,
-                              draft_fasta=draft_data,
-                              href="/chlamdb/locusx/T",
-                              ordered_taxons = ordered_taxons)
-
-
-
-    original_map_file = settings.BASE_DIR + "/assets/circos/%s.html" % ref_name
-    with open(original_map_file, "r") as f:
-        map_string = ''.join([line for line in f.readlines()])
-
-    circos_html = '<!DOCTYPE html>\n' \
-                  ' <html>\n' \
-                  ' <body>\n' \
-                  ' %s\n' \
-                  ' <img src="%s.svg" usemap="#%s">' \
-                  ' </body>\n' \
-                  ' </html>\n' % (map_string, ref_name, ref_name)
-
-
-    circos_new_file = '/assets/circos/circos_clic.html'
-    #print settings.BASE_DIR + circos_new_file
-    with open(settings.BASE_DIR + circos_new_file, "w") as f:
-        f.write(circos_html)
-
-    #target_map_file = settings.BASE_DIR + "/templates/circos/%s.html" % ref_name
-    original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % ref_name
-    #target_map_file_svg = settings.BASE_DIR + "/templates/circos/%s.svg" % ref_name
-    map_file = "circos/%s.html" % ref_name
-    svg_file = "circos/%s.svg" % ref_name
-    #a, b, c = shell_command.shell_command("mv %s %s" % (original_map_file, target_map_file))
-    #a, b, c = shell_command.shell_command("cp %s %s" % (original_map_file_svg, target_map_file_svg))
-    #print a,b,c
-    map_name = ref_name
-
-
-
-
+    task = run_circos_main.delay(reference_taxon, target_taxons, highlight)
+    print("task", task)
+    task_id = task.id
     envoi_circos = True
-
     envoi_region = True
+
+    #return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
 
     return render(request, 'chlamdb/circos_main.html', locals())
 
@@ -10990,7 +10873,7 @@ def blast(request):
             from Bio.Alphabet import IUPAC
             from Bio.Alphabet import _verify_alphabet
             import os
-            from chlamdb.chlamdb.biosqldb import shell_command
+            from chlamdb.biosqldb import shell_command
             import re
 
 
@@ -12507,33 +12390,30 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
         taxon2locus_tag_closest[str(taxon_id)] = orthogroup_or_locus
         taxon2identity_closest[str(taxon_id)] = 100
 
-    all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2.2)
-    cutoff = 2.4
-
-    too_much_hits = False
-    if all_groups_profile == False:
-        # try with of more stringeant cutoff
-        #print 'cotoff 1 #######################'
-        all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2)
-        cutoff = 2
+    try:
+        #print 'cotoff 2 #######################'
+        all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2.2)
+        too_much_hits = False
         if all_groups_profile == False:
-            #print 'cotoff 0 #######################'
-            all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
-            cutoff = 1
-            #print all_groups_profile
+            # try with of more stringeant cutoff
+            #print 'cotoff 1 #######################'
+            all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2)
             if all_groups_profile == False:
                 #print 'cotoff 0 #######################'
-                all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 0)
-                cutoff = 0
+                all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
                 #print all_groups_profile
                 if all_groups_profile == False:
-                    too_much_hits = True
+                    all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 0)
+                    if all_groups_profile == False:
+                        too_much_hits = True
+    except:
+        all_groups_profile = []
 
-    #print 'too much hits?', too_much_hits
-    if len(all_groups_profile) <= 1:
-        profile_match = False
-    else:
-        profile_match = True
+    if all_groups_profile:
+        if len(all_groups_profile) <= 1:
+            profile_match = False
+        else:
+            profile_match = True
 
     locus_list = list(taxon2locus_tag_closest.values())
 

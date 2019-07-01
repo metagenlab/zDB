@@ -35,8 +35,6 @@ def gbk2faa(seq_records,
             record_list+=tmp_list
 
     elif isinstance(seq_records, SeqRecord):
-        print ('!!!!!!!!!!!!!!!!!!!!!--------seqrecord')
-        print ('feaures', seq_records.features)
         record_list = [seq_records]
     elif type(seq_records) == list and isinstance(seq_records[0], SeqRecord):
         record_list = seq_records
@@ -76,7 +74,7 @@ def gbk2faa(seq_records,
 
         count_cds=1
         for seq_feature in record.features:
-            if 'pseudo' in seq_feature.qualifiers:
+            if 'pseudo' in seq_feature.qualifiers or 'pseudogene' in seq_feature.qualifiers or not 'translation' in seq_feature.qualifiers:
                 continue
             if seq_feature.type == "CDS":
                 try:

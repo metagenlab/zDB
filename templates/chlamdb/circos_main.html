@@ -5,7 +5,6 @@
 <head>
 {% load staticfiles %}
 {% load static %}
-{% load crispy_forms_tags %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 {% include "chlamdb/header.html" %}
@@ -20,26 +19,34 @@
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
 
-
                   <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                       <div class="panel-heading" style="width:100%">
                           <h3 class="panel-title">Help</h3>
                       </div>
-                      <p style="margin: 10px 10px 10px 10px">Create circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. Click on the circos plot to open a new windows with clickable version of the plot.<br>
-                      rRNA are colored in blue, tRNA in red. Click on the figure to access the interactive plot.
+                      <p style="margin: 10px 10px 10px 10px"><h3>Circos plots indicating the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes. </h3>
+                      Click on the circos plot to open a new windows with clickable version of the plot.
+                       <ul id="circos_ul" style="list-style-type:disc;">  
+                            <li>The first outer circle show contig/chromosome boundaries</li>
+                            <li>The second and third circles show open reading frames from the reference genome (in gray)</li>
+                            <ol>
+                                <li>rRNA are colored in blue, tRNA in red</li>
+                                <li><strong>Locus coloured in pink are specific or exhibit specific features (Interpro or Pfam domains/COG/Kegg) that are absent from the compared genomes (inner red circles).</strong></li>
+                            </ol>
+                            <li>Inner blue/red circle(s) incicate the presence(red scale)/absence(light blue) of homologous proteins in one or multiple other genomes</li>
+                            <li>The last two inner circles show GC content (blue/red) and GC skew (blue/green)</li>
+                            
+                      </ul>
                       </p>
                   </div>
                   <div class="row">
 
                   </div>
-
+                    <h3>Progress</h3>
                   <div id="progress-div" class="row" style="padding-top:5px;height:25px;" class="row"></div>
 
                   <div class="progress row" style="width=50%;" id="progress">
                     <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 20%"></div>
                   </div>
-
-
 
                   <div id="results" class="row">
                   </div>
@@ -53,38 +60,16 @@
 </body>
 {% include "chlamdb/style_menu.html" %}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script type="text/javascript">
-function hide_submenus(hidden_menu) {
-
-    var menu_ul = $('.' + hidden_menu +'> ul'),
-        menu_a  = $('.' + hidden_menu +'> a');
-
-    menu_ul.hide();
-
-    menu_a.click(function(e) {
-        e.preventDefault();
-        if(!$(this).hasClass('active')) {
-            menu_a.removeClass('active');
-            menu_ul.filter(':visible').slideUp('normal');
-            $(this).addClass('active').next().stop(true,true).slideDown('normal');
-        } else {
-            $(this).removeClass('active');
-            $(this).next().stop(true,true).slideUp('normal');
-        }
-    });
-
-};
-
-$(hide_submenus("rollmenu1"))
-
-</script>
-
 
 <script type="text/javascript">
     $("#progress").hide();
 
     var prg_dv = $('#progress-div');
     var pgrbar = $('.progress-bar');
+
+    var task_id = "{{ task_id }}";
+    console.log(task_id)
+    get_task_info(task_id);
 
     function get_task_info(task_id) {
         $.ajax({
@@ -117,11 +102,30 @@ $(hide_submenus("rollmenu1"))
                 }
             },
             error: function (data) {
+                console.log(data)
                 prg_dv.html("Something went wrong!");
             }
         });
     }
 </script>
 
+<style>
+
+#circos_ul {
+  display: block;
+  list-style-type: decimal;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 40px;
+}
+
+ol > ul > li {
+  padding: 4px;
+  margin-left: 25px;
+}
+
+</style>
 
 </html>

@@ -269,17 +269,35 @@ def make_extract_region_form(database_name):
 
     accession_choices = get_accessions(database_name, plasmid=True)
 
-    extraction_choices = [['annotation', ''],['sequence', ''],['sequence_trans', '']]
+    extraction_choices = [['annotation', 'annotation'],['sequence', 'sequence'],['sequence_trans', 'translation']]
 
     class ExtractRegionForm(forms.Form):
 
 
 
-        genome = forms.ChoiceField(choices=accession_choices)
-        region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = False)
-        extract = forms.ChoiceField(choices=extraction_choices, widget=forms.RadioSelect, label='')
+        genome = forms.ChoiceField(choices=accession_choices, required = True)
+        region = forms.CharField(max_length=100, label="Region start, stop", initial = "1, 8000", required = True)
+        extract = forms.ChoiceField(choices=extraction_choices, required = True)
         #get_annotation = forms.NullBooleanField(widget=forms.CheckboxInput())
         #get_sequence = forms.NullBooleanField(widget=forms.CheckboxInput())
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
+            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset(
+                                                Row('Extract region'),
+                                                Row('genome'),
+                                                Row('region'),
+                                                Row('extract'),
+                                                Submit('submit', 'Submit'),
+                                                css_class="col-lg-5 col-md-6 col-sm-6")
+                                        )
+
+            super(ExtractRegionForm, self).__init__(*args, **kwargs)
 
     return ExtractRegionForm
 
