@@ -947,6 +947,19 @@ function clearBox(elementID)
               {% else %}
                   <div class="tab-pane active" id="tab33">
                     <h3>Orthogroup: {{locus}} -- {{homologues}} members: overview of the annotation</h3>
+
+
+                  <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                      <div class="panel-heading" style="width:100%">
+                          <h3 class="panel-title">Help</h3>
+                      </div>
+                      <p style="margin: 10px 10px 10px 10px">Orthologs were identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. The annotation of orthologous proteins can differ depending the approach used 
+                      to annotate the source genomes. Automated annotations are also subject to errors. Spurious clustering of non-orthologous proteins can also happen. 
+                      This page summarizes the annotation of all members of the orthologous group <strong>{{locus}}</strong>, allowing to check for eventual inconsistencies. <br>
+                      The number of times (occurence) an annotation is observed in the orthogroup is reported for each annotation.<br>
+                      </p>
+                  </div>
+
                         <div class="col-md-12 col-lg-4">
                           <div class="container-fluid">
 
@@ -1088,7 +1101,7 @@ function clearBox(elementID)
                               <div class="row">
                                 <div class="panel panel-default">
                                     <div class="panel-heading">
-                                      <h3 class="panel-title">Number of Transmembrane domains</h3>
+                                      <h3 class="panel-title">Number of predicted Transmembrane domains</h3>
                                     </div>
                                         
                                           <div style="width:{{plot_width}}px">
