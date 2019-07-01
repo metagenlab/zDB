@@ -442,8 +442,8 @@ def group2cog(biodb, group_list, rank_limit=2):
         cog_name = row[1]
         cog_description = row[2]
         count = row[3]
-        category_id = row[3]
-        category_description = row[3]
+        category_id = row[4]
+        category_description = row[5]
         if group not in ortho2cog:
             ortho2cog[group] = {}
             ortho2cog[group][cog_name] = {"count": count, "cog_description": cog_description, "category_id": category_id, "category_description": category_description}
@@ -524,9 +524,9 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
                 cog_category_id = orthogroup2cogs[group][cog]["category_id"]
                 cog_category_description = orthogroup2cogs[group][cog]["category_description"]
                 cog_data += '<a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid=%s">' \
-                            '%s: %s: %s (%s)</a><br/>' % (cog, cog, cog_category_id, cog_category_description, orthogroup2cogs[group][cog])
+                            '%s: %s: %s (%s)</a><br/>' % (cog, cog, cog_category_id, cog_category_description, orthogroup2cogs[group][cog]["count"])
             cog_data = cog_data[0:-5]
-        except:
+        except KeyError:
             cog_data += ' <p>-</p> '
 
         pfam_data = ''
@@ -534,7 +534,7 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
             for pfam in orthogroup2pfam[group]:
                 pfam_data += '<a href="http://pfam.xfam.org/family/%s">%s: %s (%s)</a><br/>' % (pfam, orthogroup2pfam[group]["pfam_description"], orthogroup2pfam[group]["count"])
             pfam_data = pfam_data[0:-5]
-        except:
+        except KeyError:
             pfam_data += ' <p>-</p> '
 
         match_groups_data.append([i, group, genes_data, product_data, cog_data, pfam_data])
