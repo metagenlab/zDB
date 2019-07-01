@@ -271,7 +271,7 @@ def home(request):
         pass
     t1.ladderize()
     '''
-    t, tss = phylo_tree_bar.plot_heat_tree(t1, biodb)
+    t, tss = phylo_tree_bar.plot_heat_tree1, biodb)
 
     tss.show_branch_support = False
     #t.render("test2.svg", tree_style=ts)
@@ -2909,13 +2909,13 @@ def fam(request, fam, type):
                 big = True
                 path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
                 asset_path = '/temp/fam_tree_%s.png' % fam
-                tree.render(path, dpi=2200, h=1000, tree_style=style)
+                tree.render(path, dpi=300, tree_style=style)
             else:
                 big = False
                 path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.svg' % fam
                 asset_path = '/temp/fam_tree_%s.svg' % fam
 
-                tree.render(path, dpi=800, h=600, tree_style=style)
+                tree.render(path, dpi=300, tree_style=style)
 
     return render(request, 'chlamdb/fam.html', locals())
 
