@@ -389,10 +389,93 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
                 SeqIO.write(seqs, f, "fasta")
 
 
+def group2gene(biodb, group_list, rank_limit=2):
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    group_filter = '","'.join(group_list)
+    sql = 'select orthogroup_name,description,count from orthology.orthogroup2gene_%s t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
+    data = server.adaptor.execute_and_fetchall(sql,)
+    ortho2gene = {}
+
+    for row in data:
+        group = row[0]
+        gene = row[1]
+        count = row[2]
+        if group not in ortho2gene:
+            ortho2gene[group] = {}
+            ortho2gene[group][gene] = {"count": count}
+        else:
+            ortho2gene[group][gene] = {"count": count}
+    return ortho2gene
+
+
+def group2product(biodb, group_list, rank_limit=2):
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    group_filter = '","'.join(group_list)
+    sql = 'select orthogroup_name,description,count from orthology.orthogroup2product_%s t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
+    data = server.adaptor.execute_and_fetchall(sql,)
+    ortho2product = {}
+
+    for row in data:
+        group = row[0]
+        product = row[1]
+        count = row[2]
+        if group not in ortho2product:
+            ortho2product[group] = {}
+            ortho2product[group][product] = {"count": count}
+        else:
+            ortho2product[group][product] = {"count": count}
+    return ortho2product
+
+
+def group2cog(biodb, group_list, rank_limit=2):
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    group_filter = '","'.join(group_list)
+    sql = 'select orthogroup_name,COG_name,t3.description,count,code,t5.description from orthology.orthogroup2cog_%s t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id inner join COG.cog_names_2014 t3 on t1.COG_id=t3.COG_id inner join COG.cog_id2cog_category t4 on t1.COG_id=t4.COG_id inner join COG.code2category t5 on t4.category_id=t5.category_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
+    data = server.adaptor.execute_and_fetchall(sql,)
+    ortho2cog = {}
+
+    for row in data:
+        group = row[0]
+        cog_name = row[1]
+        cog_description = row[2]
+        count = row[3]
+        category_id = row[3]
+        category_description = row[3]
+        if group not in ortho2cog:
+            ortho2cog[group] = {}
+            ortho2cog[group][cog_name] = {"count": count, "cog_description": cog_description, "category_id": category_id, "category_description": category_description}
+        else:
+            ortho2cog[group][cog_name] = {"count": count, "cog_description": cog_description, "category_id": category_id, "category_description": category_description}
+    return ortho2cog
+
+
+def group2pfam(biodb, group_list, rank_limit=2):
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    group_filter = '","'.join(group_list)
+    sql = 'select orthogroup_name,signature_accession,signature_description,count from orthology.orthogroup2pfam_%s t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id inner join interpro.signature t3 on t1.signature_id=t3.signature_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
+    data = server.adaptor.execute_and_fetchall(sql,)
+    ortho2pfam = {}
+
+    for row in data:
+        group = row[0]
+        pfam_name = row[1]
+        pfam_description = row[2]
+        count = row[3]
+        if group not in ortho2pfam:
+            ortho2pfam[group] = {}
+            ortho2pfam[group][pfam_name] = {"count": count, "pfam_description": pfam_description}
+        else:
+            ortho2pfam[group][pfam_name] = {"count": count, "pfam_description": pfam_description}
+    return ortho2pfam
+
+
 def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter=False, accessions=False):
 
     from chlamdb.biosqldb import manipulate_biosqldb
-    from chlamdb.biosqldb import biosql_own_sql_tables
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -415,70 +498,53 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
             taxon_filter = [str(i) for i in taxon_filter]
             taxon_f = '"'+'","'.join(taxon_filter)+'"'
             sql_2 = 'select %s from orthology_detail_%s where orthogroup in (%s) and accession in (%s)' % (columns,
-                                                                                                          biodb,
-                                                                                                          group_filter,
-                                                                                                          taxon_f)
+                                                                                                           biodb,
+                                                                                                           group_filter,
+                                                                                                           taxon_f)
     raw_data = server.adaptor.execute_and_fetchall(sql_2,)
 
-    orthogroup2genes = biosql_own_sql_tables.orthogroup2gene(biodb)
-    orthogroup2products = biosql_own_sql_tables.orthogroup2product(biodb)
-    orthogroup2cogs = biosql_own_sql_tables.orthogroup2cog(biodb)
-    orthogroup2pfam = biosql_own_sql_tables.orthogroup2pfam(biodb)
-
-
-    # todo change cog_id2cog_category
-    sql = 'select COG_name,code,t1.description from COG.cog_names_2014 t1 ' \
-          ' inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
-          ' inner join COG.code2category t3 on t2.category_id=t3.category_id;'
-    sql2 = 'select signature_accession,signature_description from interpro_%s where analysis="Pfam" group by signature_accession;' % biodb
-
-    print (sql)
-
-    cog2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    pfam2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
-
+    orthogroup2genes = group2gene(biodb, ordered_orthogroups)
+    orthogroup2products = group2product(biodb, ordered_orthogroups)
+    orthogroup2cogs = group2cog(biodb, ordered_orthogroups)
+    orthogroup2pfam = group2pfam(biodb, ordered_orthogroups)
 
     match_groups_data = []
-    group_data = ''
-    #print 'getting annotation data for %s groups...' % len(ordered_orthogroups)
     for i, group in enumerate(ordered_orthogroups):
         genes_data = ''
         for gene in orthogroup2genes[group]:
-            genes_data += '%s (%s)<br/>' % (gene, orthogroup2genes[group][gene])
+            genes_data += '%s (%s)<br/>' % (gene, orthogroup2genes[group][gene]["count"])
         genes_data = genes_data[0:-5]
         product_data = ''
         for product in orthogroup2products[group]:
-            product_data += '%s (%s)<br/>' % (product, orthogroup2products[group][product])
+            product_data += '%s (%s)<br/>' % (product, orthogroup2products[group][product]["count"])
         cog_data = ''
-        for cog in orthogroup2cogs[group]:
-            if cog == None:
-                cog_data += '<p>- (%s)</p><br/>' % (orthogroup2cogs[group][cog])
-            else:
-                try:
-                    cog_info = cog2description[cog][0]
-                    cog_info2 = cog2description[cog][1]
-                except:
-                    cog_info = '-'
-                    cog_info2 = '-'
+        try:
+            for cog in orthogroup2cogs[group]:
+                cog_data += '<p>- (%s)</p><br/>' % (orthogroup2cogs[group][cog]["count"])
+                cog_category_id = orthogroup2cogs[group][cog]["category_id"]
+                cog_category_description = orthogroup2cogs[group][cog]["category_description"]
                 cog_data += '<a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid=%s">' \
-                            '%s: %s: %s (%s)</a><br/>' % (cog, cog, cog_info, cog_info2, orthogroup2cogs[group][cog])
-        cog_data = cog_data[0:-5]
+                            '%s: %s: %s (%s)</a><br/>' % (cog, cog, cog_category_id, cog_category_description, orthogroup2cogs[group][cog])
+            cog_data = cog_data[0:-5]
+        except:
+            cog_data += ' <p>-</p> '
+
         pfam_data = ''
         try:
             for pfam in orthogroup2pfam[group]:
-                pfam_data += '<a href="http://pfam.xfam.org/family/%s">%s: %s (%s)</a><br/>' % (pfam,pfam,pfam2description[pfam], orthogroup2pfam[group][pfam])
+                pfam_data += '<a href="http://pfam.xfam.org/family/%s">%s: %s (%s)</a><br/>' % (pfam, orthogroup2pfam[group]["pfam_description"], orthogroup2pfam[group]["count"])
             pfam_data = pfam_data[0:-5]
         except:
             pfam_data += ' <p>-</p> '
-            pfam_data = pfam_data[0:-5]
 
         match_groups_data.append([i, group, genes_data, product_data, cog_data, pfam_data])
         n = 1
         extract_result = []
         for one_hit in raw_data:
             extract_result.append((n,) + one_hit)
-            n+=1
+            n += 1
     return match_groups_data, extract_result
+
 
 def accession2coding_density(biodb, sqlite=False):
     from chlamdb.biosqldb import manipulate_biosqldb
@@ -1390,20 +1456,18 @@ def orthogroup2gene(db_name, accession=False):
     ortho2gene = {}
 
     for row in data:
-        if row[0] not in ortho2gene:
-            ortho2gene[row[0]] = {}
-            ortho2gene[row[0]][row[1]] = 1
+        group = row[0]
+        gene = row[1].split("_")[0]
+        if group not in ortho2gene:
+            ortho2gene[group] = {}
+            ortho2gene[group][gene] = 1
         else:
-            if row[1] in ortho2gene[row[0]]:
-                ortho2gene[row[0]][row[1]] += 1
+            if gene in ortho2gene[group]:
+                ortho2gene[group][gene] += 1
             else:
-                ortho2gene[row[0]][row[1]] = 1
+                ortho2gene[group][gene] = 1
 
     return ortho2gene
-
-
-
-
 
 
 def orthogroup2cog(db_name, accession=False, group_list=False): # group_list,
@@ -1449,6 +1513,30 @@ def orthogroup2cog(db_name, accession=False, group_list=False): # group_list,
 
     return ortho2cog
 
+
+def orthogroup2cog_id(db_name, accession=False): # group_list,
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    sql = 'select t4.orthogroup_name,hit_cog_id from COG.seqfeature_id2best_COG_hit_%s t1 inner join COG.cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology.seqfeature_id2orthogroup_%s t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology.orthogroup_%s t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
+
+    data = server.adaptor.execute_and_fetchall(sql,)
+
+    ortho2cog = {}
+
+    for row in data:
+        if row[0] not in ortho2cog:
+            ortho2cog[row[0]] = {}
+            ortho2cog[row[0]][row[1]] = 1
+        else:
+            if row[1] in ortho2cog[row[0]]:
+                ortho2cog[row[0]][row[1]] += 1
+            else:
+                ortho2cog[row[0]][row[1]] = 1
+
+    return ortho2cog
+
+
 def orthogroup2pfam(db_name, accession=False):
 
     server, db = manipulate_biosqldb.load_db(db_name)
@@ -1478,36 +1566,74 @@ def orthogroup2pfam(db_name, accession=False):
     return ortho2pfam
 
 
-def orthogroup2interpro(db_name, group_list, accession=False):
+def orthogroup2pfam_id(db_name):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    group_list_form = '"' + '","'.join(group_list) + '"'
+    sql = 'select A.orthogroup_name,A.signature_id from (select distinct t1.seqfeature_id,t3.orthogroup_name,t4.signature_id from interpro.interpro_%s t1 inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology.orthogroup_%s t3 on t2.orthogroup_id=t3.orthogroup_id inner join interpro.signature t4 on t1.signature_id=t4.signature_id inner join interpro.analysis t5 on t4.analysis_id=t5.analysis_id where t5.analysis_name="Pfam") A;' % (db_name, db_name,db_name)
 
-    if not accession:
-        sql =  'select t1.orthogroup, t2.cog_id from (select * from biosqldb.orthology_detail_%s ' \
-               ' where orthogroup in (%s)) t1 left join COG.locus_tag2gi_hit_%s ' \
-               'as t2 on t1.locus_tag=t2.locus_tag;' % (db_name, group_list_form, db_name)
-    else:
-        sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join COG.locus_tag2gi_hit_%s ' \
-              'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
+    data = server.adaptor.execute_and_fetchall(sql,)
+
+    ortho2pfam = {}
+
+    for row in data:
+        if row[0] not in ortho2pfam:
+            ortho2pfam[row[0]] = {}
+            ortho2pfam[row[0]][row[1]] = 1
+        else:
+            if row[1] in ortho2pfam[row[0]]:
+                ortho2pfam[row[0]][row[1]] += 1
+            else:
+                ortho2pfam[row[0]][row[1]] = 1
+
+    return ortho2pfam
+
+
+def orthogroup2ko_id(db_name, accession=False):
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    sql =  'select t3.orthogroup_name,ko_id from enzyme.seqfeature_id2ko_%s t1 inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology.orthogroup_%s t3 on t2.orthogroup_id=t3.orthogroup_id;' % (db_name, db_name, db_name)
 
     #print 'df', sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
-    ortho2cog = {}
+    ortho2ko = {}
 
     for row in data:
-        if row[0] not in ortho2cog:
-            ortho2cog[row[0]] = {}
-            ortho2cog[row[0]][row[1]] = 1
+        if row[0] not in ortho2ko:
+            ortho2ko[row[0]] = {}
+            ortho2ko[row[0]][row[1]] = 1
         else:
-            if row[1] in ortho2cog[row[0]]:
-                ortho2cog[row[0]][row[1]] += 1
+            if row[1] in ortho2ko[row[0]]:
+                ortho2ko[row[0]][row[1]] += 1
             else:
-                ortho2cog[row[0]][row[1]] = 1
+                ortho2ko[row[0]][row[1]] = 1
 
-    return ortho2cog
+    return ortho2ko
+
+
+def orthogroup2interpro_id(db_name):
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+
+    sql = 'select A.orthogroup_name,A.interpro_id from (select distinct t1.seqfeature_id,t3.orthogroup_name,t4.interpro_id from interpro.interpro_%s t1 inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology.orthogroup_%s t3 on t2.orthogroup_id=t3.orthogroup_id inner join interpro.signature t4 on t1.signature_id=t4.signature_id) A;' % (db_name, db_name, db_name)
+
+    data = server.adaptor.execute_and_fetchall(sql,)
+
+    ortho2interpro = {}
+
+    for row in data:
+        if row[0] not in ortho2interpro:
+            ortho2interpro[row[0]] = {}
+            ortho2interpro[row[0]][row[1]] = 1
+        else:
+            if row[1] in ortho2interpro[row[0]]:
+                ortho2interpro[row[0]][row[1]] += 1
+            else:
+                ortho2interpro[row[0]][row[1]] = 1
+
+    return ortho2interpro
 
 
 def pfam2description(db_name, accession=False):
