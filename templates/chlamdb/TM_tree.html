@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+    {% load staticfiles %}
+    {% load static %}
+    {% get_static_prefix as STATIC_PREFIX %}
+    {% include "chlamdb/header.html" %}
+
+</head>
+
+<body>
+    {% if not no_tree %}
+    <h3>Phylogeny:</h3>
+
+
+    <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+        <div class="panel-heading" style="width:100%">
+            <h3 class="panel-title">Help</h3>
+        </div>
+        <p style="margin: 10px 10px 10px 10px">This phylogeny includes all orthologs identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. 
+        The first column at the right of the phylogeny reports the locus tag of each protein sequence (it can be used in the search bar to search for the corresponding locus). 
+        The right part is a representation of the amino acid sequence. The length of the line reflects the length of the sequence. 
+        <font color="green">Green blocks</font> are predicted <font color="green">transmembrane domains</font> and <font color="red">red blocks</font> are predicted <font color="red">signal peptides</font>. Both were identified with <a href="http://phobius.sbc.su.se/">Phobius</a>.<br>
+        </p>
+    </div>
+
+    <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+    <a onclick='exportPNG("pfam_tree", "pfam_tree");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+
+    <div id="pfam_tree_div">
+        <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width:90%"></object>
+    </div>
+    <div  id="pfam_table_div">
+        <h3>Motifs:</h3>
+
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Pfam domain</th>
+                <th>Count</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for key, values in motif_count.items %}
+            <tr>
+                <td><a href="{% url 'fam' key "pfam" %}" target="_top">{{key}}</a></td>
+                <td>{{values.0}}</td>
+                <td>{{values.1}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    No tree for {{orthogroup}}
+    {% endif %}
+</body>
+</html>
