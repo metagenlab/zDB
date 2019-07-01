@@ -520,10 +520,9 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
         cog_data = ''
         try:
             for cog in orthogroup2cogs[group]:
-                cog_data += '<p>- (%s)</p><br/>' % (orthogroup2cogs[group][cog]["count"])
                 cog_category_id = orthogroup2cogs[group][cog]["category_id"]
                 cog_category_description = orthogroup2cogs[group][cog]["category_description"]
-                cog_data += '<a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid=%s">' \
+                cog_data += '<a href=/fam/%s/cog>' \
                             '%s: %s: %s (%s)</a><br/>' % (cog, cog, cog_category_id, cog_category_description, orthogroup2cogs[group][cog]["count"])
             cog_data = cog_data[0:-5]
         except KeyError:
@@ -532,7 +531,10 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
         pfam_data = ''
         try:
             for pfam in orthogroup2pfam[group]:
-                pfam_data += '<a href="http://pfam.xfam.org/family/%s">%s: %s (%s)</a><br/>' % (pfam, orthogroup2pfam[group]["pfam_description"], orthogroup2pfam[group]["count"])
+                pfam_data += '<a href=/fam/%s/pfam>%s: %s (%s)</a><br/>' % (pfam,
+                                                                                                pfam,
+                                                                                                orthogroup2pfam[group][pfam]["pfam_description"],
+                                                                                                orthogroup2pfam[group][pfam]["count"])
             pfam_data = pfam_data[0:-5]
         except KeyError:
             pfam_data += ' <p>-</p> '
