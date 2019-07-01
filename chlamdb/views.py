@@ -12415,7 +12415,8 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
         else:
             profile_match = True
 
-    locus_list = list(taxon2locus_tag_closest.values())
+    if input_type != 'orthogroup':
+        locus_list = list(taxon2locus_tag_closest.values())
 
     asset_path = '/temp/phylo.svg'
     path = settings.BASE_DIR + '/assets/' + asset_path
