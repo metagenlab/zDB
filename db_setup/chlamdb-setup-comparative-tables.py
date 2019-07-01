@@ -738,7 +738,7 @@ if __name__ == '__main__':
             create_comparative_tables_accession(args.database_name, "ko")
             collect_ko_accession(args.database_name)
 
-    if not if args.accessions:
+    if not args.accessions:
         if args.orthology:
             print("identity_closest_homolog")
             identity_closest_homolog(args.database_name)
