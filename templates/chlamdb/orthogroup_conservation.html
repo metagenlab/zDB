@@ -28,6 +28,22 @@
         <div id="my-tab-content" class="tab-content">
             <div class="tab-pane active" id="tab1">
 
+              {%if input_type != 'orthogroup' %}
+              <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
+                  <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Help</h3>
+                  </div>
+                  <p style="margin: 10px 10px 10px 10px; line-height: 180%"> Number of homologs (first column and blue bar chart) and amino acid identity of the most similar ortholog in the corresponding genome as compared to the reference protein</p>
+              </div>
+              {% else %}
+              <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
+                  <div class="panel-heading" style="width:100%">
+                      <h3 class="panel-title">Help</h3>
+                  </div>
+                  <p style="margin: 10px 10px 10px 10px; line-height: 180%"> Number of homologs (first column and blue bar chart) in each genome.</p>
+              </div>
+              {% endif %}
+
               <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
               <a onclick='exportPNG("pfam_tree", "pfam_tree");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
 
