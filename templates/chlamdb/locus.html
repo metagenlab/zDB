@@ -177,7 +177,7 @@ function clearBox(elementID)
                                  <table class="table table-striped" style="width: 100%">
                                    <tr>
                                        <th>Orthogroup</th>
-                                       <td>{{ data.0 }}</td>
+                                       <td><a href="{% url 'locusx' data.0 True %}">{{ data.0 }}</a></td>
                                    </tr>
                                    <th>Orthogroup size <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='Total number of homologs in the whole database'><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td>{{ data.7 }}</td>
