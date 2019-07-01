@@ -17,6 +17,17 @@
     {% if not no_tree %}
     <h3>Phylogeny:</h3>
 
+
+    <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+        <div class="panel-heading" style="width:100%">
+            <h3 class="panel-title">Help</h3>
+        </div>
+        <p style="margin: 10px 10px 10px 10px">This phylogeny includes all orthologs identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. 
+        The first column at the right of the phylogeny reports the locus tag of each protein sequence (that can be used in the search bar to search for the corresponding locus). 
+        The right part is a representation of the amino acid sequence. The length of the line reflects the length of the sequence, and <font color="green">green blocks</font> are identified <a href="https://pfam.xfam.org/">PFAM domains</a>.<br>
+        </p>
+    </div>
+
     <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
     <a onclick='exportPNG("pfam_tree", "pfam_tree");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
 

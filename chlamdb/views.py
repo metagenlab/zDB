@@ -11703,7 +11703,7 @@ def TM_tree(request, orthogroup):
         leaf_number = 10
     t.render(path, h=leaf_number*12, dpi=800, tree_style=ts)
 
-    return render(request, 'chlamdb/pfam_tree.html', locals())
+    return render(request, 'chlamdb/TM_tree.html', locals())
 
 
 def refseq_swissprot_tree(request, orthogroup):
