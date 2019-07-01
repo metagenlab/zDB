@@ -271,14 +271,14 @@ def home(request):
         pass
     t1.ladderize()
     '''
-    t, tss = phylo_tree_bar.plot_heat_tree1, biodb)
+    t, tss = phylo_tree_bar.plot_heat_tree(t1, biodb)
 
     tss.show_branch_support = False
     #t.render("test2.svg", tree_style=ts)
     path = settings.BASE_DIR + '/assets/temp/tree.svg'
     asset_path = '/temp/tree.svg'
 
-    t.render(path, dpi=500, tree_style=tss)
+    t.render(path, dpi=500, h=500, tree_style=tss)
 
     sql_n_genomes = 'select count(*) from (select distinct taxon_id from bioentry t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t2.name="%s") A;' % biodb
     n_genomes = server.adaptor.execute_and_fetchall(sql_n_genomes,)[0][0]
@@ -2909,13 +2909,13 @@ def fam(request, fam, type):
                 big = True
                 path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
                 asset_path = '/temp/fam_tree_%s.png' % fam
-                tree.render(path, dpi=300, tree_style=style)
+                tree.render(path, dpi=2200, h=1000, tree_style=style)
             else:
                 big = False
                 path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.svg' % fam
                 asset_path = '/temp/fam_tree_%s.svg' % fam
 
-                tree.render(path, dpi=300, tree_style=style)
+                tree.render(path, dpi=800, h=600, tree_style=style)
 
     return render(request, 'chlamdb/fam.html', locals())
 
