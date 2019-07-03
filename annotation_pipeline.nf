@@ -236,7 +236,6 @@ process get_nr_sequences {
 
   file 'nr.faa' into nr_seqs
   file 'nr_mapping.tab' into nr_mapping
-  file genome_list from faa_genomes5.collect()
 
   script:
   fasta_file = seq.name
@@ -1126,6 +1125,29 @@ for n, one_chunk in enumerate(uniprot_accession_chunks):
                                                                                                              keywords)
                                                                                                             )
     """
+}
+
+
+process get_uniprot_proteome_data {
+
+  conda 'biopython=1.73=py36h7b6447c_0'
+
+  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
+  echo true
+
+  when:
+  params.uniprot_data == true
+
+  input:
+  file "uniprot_data.tab" from uniprot_data
+
+  output:
+  file 'uniprot_match_annotations.db' into uniprot_db
+
+  script:
+  """
+  uniprot_annotations.py
+  """
 }
 
 
