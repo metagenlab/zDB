@@ -236,7 +236,7 @@ process get_nr_sequences {
 
   file 'nr.faa' into nr_seqs
   file 'nr_mapping.tab' into nr_mapping
-  file genome_list from faa_genomes.collect()
+  file genome_list from faa_genomes5.collect()
 
   script:
   fasta_file = seq.name
