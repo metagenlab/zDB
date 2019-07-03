@@ -5,12 +5,6 @@
  *
  */
 
-
-/*
- * Pipeline input params
- */
-
-
 log.info params.input
 
 log.info "====================================="
