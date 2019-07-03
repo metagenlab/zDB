@@ -1129,30 +1129,6 @@ for n, one_chunk in enumerate(uniprot_accession_chunks):
 }
 
 
-process get_uniprot_proteome_data {
-
-  conda 'biopython=1.73=py36h7b6447c_0'
-
-  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
-  echo true
-
-  when:
-  params.uniprot_data == true
-
-  input:
-  file "uniprot_data.tab" from uniprot_data
-
-  output:
-  file 'uniprot_match_annotations.db' into uniprot_db
-
-  script:
-
-  """
-  uniprot_annotations.py
-  """
-}
-
-
 process get_string_mapping {
 
   conda 'bioconda::biopython=1.68'
