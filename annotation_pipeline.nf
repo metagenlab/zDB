@@ -214,10 +214,10 @@ faa_files.into{ faa_locus1
 
 
 faa_locus1.into { faa_genomes1
-                 faa_genomes2
-                 faa_genomes3
-                 faa_genomes4
-                 faa_genomes5  }
+                  faa_genomes2
+                  faa_genomes3
+                  faa_genomes4
+                  faa_genomes5 }
 
 faa_locus2.collectFile(name: 'merged.faa', newLine: true)
     .into { merged_faa0 }
@@ -1129,7 +1129,7 @@ for n, one_chunk in enumerate(uniprot_accession_chunks):
 }
 
 
-process get_uniprot_protome_data {
+process get_uniprot_proteome_data {
 
   conda 'biopython=1.73=py36h7b6447c_0'
 
@@ -1140,7 +1140,7 @@ process get_uniprot_protome_data {
   params.uniprot_data == true
 
   input:
-  file("uniprot_data.tab") from uniprot_data
+  file "uniprot_data.tab" from uniprot_data
 
   output:
   file 'uniprot_match_annotations.db' into uniprot_db
