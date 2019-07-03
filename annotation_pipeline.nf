@@ -752,16 +752,43 @@ process checkm_analyse {
 
   conda 'bioconda::checkm-genome=1.0.12'
 
-  publishDir 'data/checkm', mode: 'copy', overwrite: true
+  publishDir 'data/checkm/analysis', mode: 'copy', overwrite: true
+
+  when:
+  params.checkm == true
 
   input:
   file genome_list from faa_genomes4.collect()
 
   output:
-  file "*faa" into orthogroups_fasta
+  file "checkm_results/*" into checkm_analysis
 
   """
-  checkm analyze --genes -x faa_gz \$CHECKM_SET_PATH faa output -t 8 --nt
+  checkm analyze --genes -x faa \$CHECKM_SET_PATH . checkm_results -t 8 --nt
+  """
+}
+
+
+process checkm_qa {
+  '''
+  Get fasta file of each orthogroup
+  '''
+
+  conda 'bioconda::checkm-genome=1.0.12'
+
+  publishDir 'data/checkm/analysis', mode: 'copy', overwrite: true
+
+  when:
+  params.checkm == true
+
+  input:
+  file checkm_analysis_results from checkm_analysis
+
+  output:
+  file "checkm_results.tab" into checkm_table
+
+  """
+  checkm qa \$CHECKM_SET_PATH . -o 2 --tab_table > checkm_results.tab
   """
 }
 
