@@ -216,7 +216,8 @@ faa_files.into{ faa_locus1
 faa_locus1.into { faa_genomes1
                  faa_genomes2
                  faa_genomes3
-                  faa_genomes4  }
+                 faa_genomes4
+                 faa_genomes5  }
 
 faa_locus2.collectFile(name: 'merged.faa', newLine: true)
     .into { merged_faa0 }
@@ -235,6 +236,7 @@ process get_nr_sequences {
 
   file 'nr.faa' into nr_seqs
   file 'nr_mapping.tab' into nr_mapping
+  file genome_list from faa_genomes.collect()
 
   script:
   fasta_file = seq.name
@@ -243,6 +245,11 @@ process get_nr_sequences {
 
 from Bio import SeqIO
 from Bio.SeqUtils import CheckSum
+
+for fasta in "${genome_list}".split(" "):
+    genome = os.path.basename(fasta).split('.')[0]
+    for seq in SeqIO.parse(fasta, "fasta"):
+        locus2genome[seq.name] = genome
 
 fasta_file = "${fasta_file}"
 
@@ -257,8 +264,9 @@ updated_records = []
 for record in records:
 
     checksum = CheckSum.crc64(record.seq)
-    nr_mapping.write("%s\\t%s\\n" % (record.id,
-                                   checksum))
+    nr_mapping.write("%s\\t%s\\t%s\\n" % (record.id,
+                                          checksum,
+                                          locus2genome[record.id]))
     if checksum not in checksum_nr_list:
       checksum_nr_list.append(checksum)
       record.id = checksum
@@ -1120,6 +1128,29 @@ for n, one_chunk in enumerate(uniprot_accession_chunks):
     """
 }
 
+
+process get_uniprot_protome_data {
+
+  conda 'biopython=1.73=py36h7b6447c_0'
+
+  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
+  echo true
+
+  when:
+  params.uniprot_data == true
+
+  input:
+  file("uniprot_data.tab") from uniprot_data
+
+  output:
+  file 'uniprot_match_annotations.db' into uniprot_db
+
+  script:
+
+  """
+  uniprot_annotations.py
+  """
+}
 
 
 process get_string_mapping {
