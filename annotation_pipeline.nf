@@ -231,6 +231,7 @@ process get_nr_sequences {
 
   input:
   file(seq) from merged_faa0
+  file genome_list from faa_genomes4.collect()
 
   output:
 
@@ -759,7 +760,7 @@ process checkm_analyse {
   params.checkm == true
 
   input:
-  file genome_list from faa_genomes4.collect()
+  file genome_list from faa_genomes5.collect()
 
   output:
   file "checkm_results/*" into checkm_analysis
