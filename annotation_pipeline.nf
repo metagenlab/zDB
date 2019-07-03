@@ -245,6 +245,7 @@ process get_nr_sequences {
 
 from Bio import SeqIO
 from Bio.SeqUtils import CheckSum
+import os
 
 for fasta in "${genome_list}".split(" "):
     genome = os.path.basename(fasta).split('.')[0]
