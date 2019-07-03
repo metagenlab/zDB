@@ -60,7 +60,7 @@
   - [X] build phylogeny
 - [X] refseq taxonomy: use downloaded accession2taxonomy + indexed refseq fasta instead of web queries
 - [X] retrieve uniprot annotation score for matched uniprotkb entries
-
+- [X] execute checkM
 
 # TODO
 
@@ -115,21 +115,23 @@
 - [X] load blast refseq results
     - [X] load refseq taxonomy table
 - [X] load TCDB annotations
-- [ ] load PMID mapping
-- [ ] load cross-references
 - [X] get phylo profile
   - [ ] setup core_orthogroups_identity_msa_
 - [X] legacy COG table
 - [ ] legacy locus2EC table
 - [X] legacy PFAM table
-- [ ] setup blast databases
+- [X] setup blast databases
+- [X] phylogenetic profiles
+- [X] use celery for circos_main view
+- [ ] load PMID mapping
+- [ ] load cross-references
+- [ ] add uniprot proteome column (+ percent overlap)
 - [ ] load RBBH data (for identity distribution plots)
 - [ ] get species table ==> display on homepage
-- [ ] checkM
+- [ ] load checkM
 - [ ] check indexes
 - [ ] update browse genome view
-- [ ] phylogenetic profiles
-- [ ] use celery for circos_main view
+
 
 ## priority 2
 
@@ -146,19 +148,19 @@
 
 ## priority 1
 
-- [ ] get STRING associations if available
-- [ ] execute checkM
+- [X] get proteome match
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
-- [ ] get cross-references from uniprot IdMapping
+- [ ] execute T3 effector prediction: BPBAac
+- [ ] execute T3 effector prediction: T3_MM
+- [ ] get cross-references from uniprot IdMapping? Or from uniprot db itself? (cross references from indexed uniprotKB xml)
   - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
   - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
-- [ ] get proteome match
 
 ## priority 2
 
-- [ ] execute T3 effector prediction: BPBAac
-- [ ] execute T3 effector prediction: T3_MM
 - [ ] execute T3 effector prediction: effective
+
+- [ ] get STRING associations if available
 
 - [ ] Inc prediction based on bi-lobbed hydrophobic domains
 
