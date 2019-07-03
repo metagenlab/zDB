@@ -114,18 +114,22 @@
   - [X] download taxonomy-description information(s)
 - [X] load blast refseq results
     - [X] load refseq taxonomy table
+- [X] load TCDB annotations
 - [ ] load PMID mapping
-- [ ] load TCDB annotations
 - [ ] load cross-references
-- [ ] get phylo profile
+- [X] get phylo profile
   - [ ] setup core_orthogroups_identity_msa_
 - [X] legacy COG table
-- [ ] legacy PFAM table
+- [ ] legacy locus2EC table
+- [X] legacy PFAM table
 - [ ] setup blast databases
 - [ ] load RBBH data (for identity distribution plots)
-- [ ] setup legacy locus2ec table
-
+- [ ] get species table ==> display on homepage
+- [ ] checkM
 - [ ] check indexes
+- [ ] update browse genome view
+- [ ] phylogenetic profiles
+- [ ] use celery for circos_main view
 
 ## priority 2
 
