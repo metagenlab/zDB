@@ -14,7 +14,12 @@ class Uniprot_annot():
                  uniprot_data,
                  hash_locus_mapping):
 
-        self.sqlite_db_path = '/tmp/uniprot.sb'
+        from chlamdb.biosqldb import manipulate_biosqldb
+        from Bio import SeqIO
+        import http.client
+        import sqlite3
+
+        self.sqlite_db_path = '/tmp/uniprot.db'
         self.biodb = biodb
         self.uniprot_mapping = uniprot_mapping
         self.uniprot_data = uniprot_data
@@ -22,13 +27,8 @@ class Uniprot_annot():
         self.taxid2most_frequent_proteome = {}
 
         # create temporary sqlite3 database
-        from chlamdb.biosqldb import manipulate_biosqldb
-        from Bio import SeqIO
-        import http.client
-        import sqlite3
-        self.sqlite_conn = sqlite3.connect("/tmp/uniprot.db")
+        self.sqlite_conn = sqlite3.connect(self.sqlite_db_path)
         self.sqlite_cursor = self.sqlite_conn.cursor()
-
         self.mysql_server, self.mysql_db = manipulate_biosqldb.load_db(self.biodb)
 
     def get_whole_db_uniprot_crossref(self):
@@ -39,25 +39,18 @@ class Uniprot_annot():
         from chlamdb.biosqldb import manipulate_biosqldb
         import re
         import os
-        #sqlpsw = os.environ['SQLPSW']
+        sqlpsw = os.environ['SQLPSW']
         from tempfile import NamedTemporaryFile
-        conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                    user="root", # your username
-                                    passwd="estrella3", # your password
-                                    db="custom_tables") # name of the data base
-
+        conn = MySQLdb.connect(host="localhost", 
+                                    user="root", 
+                                    passwd=sqlpsw,
+                                    db="custom_tables")
+        
         cursor = conn.cursor()
 
         sql1 = 'CREATE TABLE IF NOT EXISTS uniprot_id2seqfeature_id_%s (seqfeature_id INT UNIQUE, uniprot_id INT AUTO_INCREMENT,' \
                ' uniprot_accession varchar(400), uniprot_status varchar(400), annotation_score INT, insert_date varchar(300), INDEX uniprot_id(uniprot_id))' % self.biodb
 
-        #sql2 = 'CREATE TABLE IF NOT EXISTS db_xref (db_xref_id INT AUTO_INCREMENT, db_xref_name varchar(200) UNIQUE, INDEX db_xref_id(db_xref_id))'
-
-        #sql3 = 'CREATE TABLE IF NOT EXISTS uniprot_db_xref_%s (uniprot_id INT, db_xref_id INT, db_accession varchar(200), ' \
-        #       ' INDEX db_xref_id(db_xref_id), index uniprot_id(uniprot_id))' % self.biodb
-
-        #sql4 = 'CREATE TABLE IF NOT EXISTS uniprot_go_terms_%s (seqfeature_id INT, go_term_id varchar(400), go_description TEXT, ' \
-        #       ' INDEX seqfeature_id(seqfeature_id))' % self.biodb
 
         sql5 = 'CREATE TABLE IF NOT EXISTS uniprot_annotation_%s (seqfeature_id INT, comment_function TEXT,' \
                ' ec_number TEXT,comment_similarity TEXT,comment_catalyticactivity TEXT,comment_pathway TEXT,keywords TEXT,' \
@@ -67,50 +60,14 @@ class Uniprot_annot():
         sql6 = 'CREATE TABLE IF NOT EXISTS uniprot_keywords_%s (seqfeature_id INT, uniprot_accession varchar(200), keyword TEXT)' % self.biodb
 
         cursor.execute(sql1, )
-        #cursor.execute(sql2, )
-        #cursor.execute(sql3, )keywords_list = annot[14]
-        #cursor.execute(sql4, )
         cursor.execute(sql5, )
         cursor.execute(sql6, )
         conn.commit()
 
         sql1 = 'select locus_tag, seqfeature_id from locus2seqfeature_id_%s' % self.biodb
 
-        '''
-        sql2 = 'select locus_tag, old_locus_tag from biosqldb.locus_tag2old_locus_tag'
-
-        sql3 = 'select locus_tag, protein_id from biosqldb.orthology_detail_%s where protein_id not like "%%%%CHUV%%%%"' % self.biodb
-
-        sql4 = 'select locus_tag,t2.seqfeature_id from locus2seqfeature_id_%s t1 inner join uniprot_annotation_%s t2' \
-               ' on t1.seqfeature_id=t2.seqfeature_id group by locus_tag;' % (self.biodb, self.biodb)
-        sql5 = 'select locus_tag, organism from biosqldb.orthology_detail_%s' % self.biodb
-        sql6 = 'select locus_tag, translation from biosqldb.orthology_detail_%s' % self.biodb
-
-        sql7 = 'select locus_tag, accession from biosqldb.orthology_detail_%s' % self.biodb
-        '''
-
         cursor.execute(sql1, )
         locus2seqfeature_id = manipulate_biosqldb.to_dict(cursor.fetchall())
-
-        '''
-        cursor.execute(sql2, )
-        locus2old_locus = manipulate_biosqldb.to_dict(cursor.fetchall())
-
-        cursor.execute(sql3, )
-        locus2protein_id = manipulate_biosqldb.to_dict(cursor.fetchall())
-
-        cursor.execute(sql4, )
-        locus2uniprot_id = manipulate_biosqldb.to_dict(cursor.fetchall())
-
-        cursor.execute(sql5, )
-        locus2organism = manipulate_biosqldb.to_dict(cursor.fetchall())
-
-        cursor.execute(sql6, )
-        locus2sequence = manipulate_biosqldb.to_dict(cursor.fetchall())
-
-        cursor.execute(sql7, )
-        locus2genome_accession = manipulate_biosqldb.to_dict(cursor.fetchall())
-        '''
 
         sql = 'select distinct taxid, t1.locus_tag from locus_tag2hash t1 inner join hash2uniprot_accession t2 on t1.hash=t2.hash inner join taxid2locus_tag t3 on t1.locus_tag=t3.locus_tag;'
         self.sqlite_cursor.execute(sql,)
@@ -154,6 +111,7 @@ class Uniprot_annot():
             13    comment_pathway
             14    keywords
             '''
+            
             seqfeature_id = locus2seqfeature_id[locus_tag]
             comment_function = annot[4]
             ec_number = annot[5]
@@ -196,17 +154,17 @@ class Uniprot_annot():
                    '  (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
 
             cursor.execute(sql, (seqfeature_id,
-                              comment_function,
-                              ec_number,
-                              comment_similarity,
-                              comment_catalyticactivity,
-                              comment_pathway,
-                              keywords,
-                              comment_subunit,
-                              gene,
-                              recommendedName_fullName,
-                              proteinExistence,
-                              developmentalstage))
+                                 comment_function,
+                                 ec_number,
+                                 comment_similarity,
+                                 comment_catalyticactivity,
+                                 comment_pathway,
+                                 keywords,
+                                 comment_subunit,
+                                 gene,
+                                 recommendedName_fullName,
+                                 proteinExistence,
+                                 developmentalstage))
         conn.commit()
 
     def get_most_frequent_proteome(self):
