@@ -87,7 +87,7 @@ function clearBox(elementID)
 
                 {% if input_type != 'orthogroup' %}
                     <li><a href="#5" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' data.1 %}', 'frame5'); return false">Region</a></li>
-                    <li><a href="#6" data-toggle="tab" onclick="window.open('{% url 'blastnr' data.1 %}', 'frame6'); return false">RefSeq hoologs <span class="badge">{{n_blastnr_hits}}</span></a></li>
+                    <li><a href="#6" data-toggle="tab" onclick="window.open('{% url 'blastnr' data.1 %}', 'frame6'); return false">RefSeq homologs <span class="badge">{{n_blastnr_hits}}</span></a></li>
                     <li><a href="#7" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' data.1 %}', 'frame7'); return false">SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span></a></li>
                     <li><a href="#8" data-toggle="tab" onclick="window.open('{% url 'interactions' data.1 %}', 'frame8'); return false">Interactions</a></li>
                 {% endif %}
