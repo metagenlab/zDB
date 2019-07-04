@@ -877,7 +877,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
             fraction = float(taxon_id2completeness[lf.name])
             fraction_rest = 100-fraction
             #print 'fraction, rest', fraction, fraction_rest
-            b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=["#ffffbf", 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
+            b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=["#d7191c", 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
             b.rotation = 0
             b.margin_right = 1
             b.inner_border.color = "black"
@@ -899,7 +899,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
             fraction = float(taxon_id2contamination[lf.name])
             fraction_rest = 100-fraction
             #print 'fraction, rest', fraction, fraction_rest
-            b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=["##d7191c", 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
+            b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=["black", 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
             b.rotation = 0
             b.margin_right = 1
             b.inner_border.color = "black"
