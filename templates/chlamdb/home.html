@@ -181,6 +181,19 @@
                           <div class="row">
                             <div class="col-lg-12">
                               <div class="row">
+
+                            <div class="panel panel-success" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                                <div class="panel-heading" style="width:100%">
+                                    <h3 class="panel-title">Help</h3>
+                                </div>
+                                <p style="margin: 10px 10px 10px 10px; line-height: 160%">The phylogeny was build based on concatenated single copy orthologs with FastTree (default parameters). Nodes with black dots have support values lower than 1. 
+                                The percentage of non-coding DNA of fragmented genomes was calculated based on data from contigs larger than 10 kilo bases. The completeness and contamination of each genome were estimated with <a href="https://ecogenomics.github.io/CheckM/">checkM</a> based on the identification of 104 "universal" marker genes.</p>
+                                </p>
+                            </div>
+
+
+
+
                                 <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
                                 <a onclick='exportPNG("pyhlogeny", "phylogeny");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
                               </div>
