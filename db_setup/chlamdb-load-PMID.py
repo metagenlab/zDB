@@ -43,10 +43,18 @@ def load_PMID(PMID_db_path, hash2locus_list, db_name):
         locus_list = hash2locus_list[hash]
         if pmid not in pmid_already_in_db:
             server.adaptor.execute(template1, [pmid] + list(pmid2data[str(pmid)]))
+            pmid_already_in_db.append(pmid)
         for locus_tag in locus_list:
             server.adaptor.execute(template2,[locus_tag2seqfeaure_id[locus_tag], pmid])
     server.commit()
 
+    sql1 = 'create index sf on string.seqfeature_id2pmid_%s(seqfeature_id)' % db_name
+    sql2 = 'create index pm1 on string.seqfeature_id2pmid_%s(pmid)' % db_name
+    sql3 = 'create index pm2 on string.pmid2data (pmid)'
+    
+    server.adaptor.execute(sql1,)
+    server.adaptor.execute(sql2,)
+    server.adaptor.execute(sql3,)
 
 if __name__ == '__main__':
     import argparse
