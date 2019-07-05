@@ -10617,11 +10617,20 @@ def search(request):
 
             if search_type == "no_exact_accession":
 
-                    # CREATE FULLTEXT INDEX GPF ON orthology_detail_2019_06_PVC(gene,product);
-                    #  CREATE FULLTEXT INDEX GPF2 ON orthology_detail_2019_06_PVC(gene,product,organism);
-                    sql = 'SELECT %s FROM orthology_detail_%s WHERE MATCH(gene,product,organism) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (columns,
-                                                                                                                                    biodb,
-                                                                                                                                    search_term)
+                    # CREATE FULLTEXT INDEX GPF ON orthology_detail_2019_06_PVC(gene);
+                    # CREATE FULLTEXT INDEX GPF ON orthology_detail_2019_06_PVC(product);
+                    # CREATE FULLTEXT INDEX GPF ON orthology_detail_2019_06_PVC(organism);
+                    # CREATE FULLTEXT INDEX GPF2 ON orthology_detail_2019_06_PVC(gene,product,organism);
+                    sql = 'SELECT %s, ' \
+                          ' MATCH (gene) AGAINST ("%s") AS rel1, ' \
+                          ' MATCH (product) AGAINST ("%s") AS rel2, ' \
+                          ' MATCH (organism) AGAINST ("%s") AS rel3 FROM orthology_detail_%s t1 ' \
+                          ' WHERE MATCH (gene,product,organism) AGAINST ("%s") ORDER BY (rel1)+(rel2*0.5)+(rel3*10) DESC limit 100;' % (columns,
+                                                                                                                                        search_term,
+                                                                                                                                        search_term,
+                                                                                                                                        search_term,
+                                                                                                                                        biodb,
+                                                                                                                                        search_term)
                     print(sql)
                     raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
                     print("n hits:", len(raw_data_gene_raw_data_product))
