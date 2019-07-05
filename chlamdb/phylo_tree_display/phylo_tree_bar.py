@@ -613,9 +613,6 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
     from matplotlib.colors import rgb2hex
     import matplotlib as mpl
 
-
-
-
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql_biodatabase_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
@@ -649,7 +646,15 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
     sql4 = 'select t2.taxon_id,percent_non_coding from genomes_info_%s as t1 ' \
            ' inner join bioentry as t2 on t1.accession=t2.accession ' \
            ' where t2.biodatabase_id=%s and t1.description not like "%%%%plasmid%%%%";' % (biodb, db_id)
+           
+    sql_checkm_completeness = 'select taxon_id, completeness from custom_tables.checkm_%s;' % biodb
+    sql_checkm_contamination = 'select taxon_id,contamination from custom_tables.checkm_%s;' % biodb
 
+    try:
+        taxon_id2completeness = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_checkm_completeness))
+        taxon_id2contamination = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_checkm_contamination))
+    except:
+        taxon_id2completeness = False
     #taxon2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql1,))
 
     taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb, filter_names=True)
@@ -694,6 +699,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         #    continue
         if i==0:
             n = TextFace('Size (Mbp)')
+            n.rotation = -25
             n.margin_top = 1
             n.margin_right = 1
             n.margin_left = 20
@@ -703,6 +709,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
             #lf.add_face(n, 3, position="aligned")
             tss.aligned_header.add_face(n, 3)
             n = TextFace('GC (%)')
+            n.rotation = -25
             n.margin_top = 1
             n.margin_right = 1
             n.margin_left = 20
@@ -723,11 +730,42 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
             n.margin_bottom = 1
             n.inner_background.color = "white"
             n.opacity = 1.
+            n.rotation = -25
             #lf.add_face(n, 7, position="aligned")
             tss.aligned_header.add_face(n, 7)
             n = TextFace('')
             #lf.add_face(n, 6, position="aligned")
             tss.aligned_header.add_face(n, 6)
+            
+            if taxon_id2completeness:
+                n = TextFace('Completeness (%)')
+                n.margin_top = 1
+                n.margin_right = 1
+                n.margin_left = 20
+                n.margin_bottom = 1
+                n.inner_background.color = "white"
+                n.opacity = 1.
+                n.rotation = -25
+                #lf.add_face(n, 7, position="aligned")
+                tss.aligned_header.add_face(n, 9)
+                n = TextFace('')
+                #lf.add_face(n, 6, position="aligned")
+                tss.aligned_header.add_face(n, 8) 
+
+                n = TextFace('Contamination (%)')
+                n.margin_top = 1
+                n.margin_right = 1
+                n.margin_left = 20
+                n.margin_bottom = 1
+                n.inner_background.color = "white"
+                n.opacity = 1.
+                n.rotation = -25
+                #lf.add_face(n, 7, position="aligned")
+                tss.aligned_header.add_face(n, 11)
+                n = TextFace('')
+                #lf.add_face(n, 6, position="aligned")
+                tss.aligned_header.add_face(n, 10) 
+
 
         value+=1
 
@@ -823,9 +861,55 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         b.inner_border.width = 0
         b.margin_left = 5
         lf.add_face(b, 7, position="aligned")
-
-
-        #lf.name = taxon2description[lf.name]
+        
+        
+        if taxon_id2completeness:
+            n = TextFace('  %s ' % str(float(taxon_id2completeness[lf.name])))
+            n.margin_top = 1
+            n.margin_right = 0
+            n.margin_left = 0
+            n.margin_right = 0
+            n.margin_bottom = 1
+            n.fsize = 7
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            lf.add_face(n, 8, position="aligned")
+            fraction = float(taxon_id2completeness[lf.name])
+            fraction_rest = 100-fraction
+            #print 'fraction, rest', fraction, fraction_rest
+            b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=["#d7191c", 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
+            b.rotation = 0
+            b.margin_right = 1
+            b.inner_border.color = "black"
+            b.inner_border.width = 0
+            b.margin_left = 5
+            lf.add_face(b, 9, position="aligned")
+            
+            
+            n = TextFace('  %s ' % str(float(taxon_id2contamination[lf.name])))
+            n.margin_top = 1
+            n.margin_right = 0
+            n.margin_left = 0
+            n.margin_right = 0
+            n.margin_bottom = 1
+            n.fsize = 7
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            lf.add_face(n, 10, position="aligned")
+            fraction = float(taxon_id2contamination[lf.name])
+            fraction_rest = 100-fraction
+            #print 'fraction, rest', fraction, fraction_rest
+            b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=["black", 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
+            b.rotation = 0
+            b.margin_right = 1
+            b.inner_border.color = "black"
+            b.inner_border.width = 0
+            b.margin_left = 5
+            lf.add_face(b, 11, position="aligned")
+            
+            
+        
+                #lf.name = taxon2description[lf.name]
         n = TextFace(taxon2description[lf.name], fgcolor = "black", fsize = 9, fstyle = 'italic')
         n.margin_right = 30
         lf.add_face(n, 0)

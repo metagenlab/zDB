@@ -87,7 +87,7 @@ function clearBox(elementID)
 
                 {% if input_type != 'orthogroup' %}
                     <li><a href="#5" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' data.1 %}', 'frame5'); return false">Region</a></li>
-                    <li><a href="#6" data-toggle="tab" onclick="window.open('{% url 'blastnr' data.1 %}', 'frame6'); return false">RefSeq hoologs <span class="badge">{{n_blastnr_hits}}</span></a></li>
+                    <li><a href="#6" data-toggle="tab" onclick="window.open('{% url 'blastnr' data.1 %}', 'frame6'); return false">RefSeq homologs <span class="badge">{{n_blastnr_hits}}</span></a></li>
                     <li><a href="#7" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' data.1 %}', 'frame7'); return false">SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span></a></li>
                     <li><a href="#8" data-toggle="tab" onclick="window.open('{% url 'interactions' data.1 %}', 'frame8'); return false">Interactions</a></li>
                 {% endif %}
@@ -1262,7 +1262,7 @@ function clearBox(elementID)
                   {% if pubmed_data  %}
                       <div class="tab-pane" id="tab22" style="height:2px;" >
 
-                          <table class="table">
+                          <table class="table" id="pmid_table">
 
                               {% for row in pubmed_data%}
                                   <tr>
@@ -1271,8 +1271,6 @@ function clearBox(elementID)
                                           {{row.4}}
                                           </font></a></td>
                                       <td>{{row.1}}</td>
-
-
                                   </tr>
                                   <tr>
                                       <td colspan="3">{{row.3}}</td>
@@ -1416,6 +1414,67 @@ function resizeIframe(obj)
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 
 </script>
+
+
+{% if pubmed_data  %}
+<script type="text/javascript" src="{% static 'js/mark.min.js' %}"></script>
+<script>
+
+var options = {
+    "ignoreJoiners": true,
+    "exclude": [
+        "h3",
+        ".byline *",
+        "th"
+    ]
+};
+
+var options2 = {
+    "ignoreJoiners": true,
+    separateWordSearch: false,
+    "exclude": [
+        "h3",
+        ".byline *",
+        "th"
+    ]
+};
+
+var gene_list = "{{data.6}}";
+{% if uniprot_annotation %}
+gene_list = gene_list + " {{ uniprot_annotation.2 }}";
+{% endif %}
+
+$(document).ready(function() {
+    var docu = document.getElementById("pmid_table");
+    var instance = new Mark(docu);
+    instance.mark(gene_list, options);
+  } );
+
+var str = "{{ data.12 }}"; 
+var res = str.match(/^\s*(\w+)\s*,?\s*(\w+)/);
+
+$(document).ready(function() {
+    console.log("add pmid color");
+    var docu = document.getElementById("pmid_table");
+    console.log(res[1] + res[2]);
+    var instance = new Mark(docu);
+    instance.mark(res[1] + " " +res[2], options2);
+    console.log(instance);
+  } );
+
+</script>
+
+<style>
+mark{
+    background: orange;
+    color: black;
+}
+</style>
+
+
+{% endif %}
+
+
 
 {% include "chlamdb/style_menu.html" %}
 
