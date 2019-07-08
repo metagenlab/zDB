@@ -74,7 +74,8 @@ process extract_gz {
 
 
 assembly_faa.into {faa_list_1
-                   faa_list_2}
+                   faa_list_2
+                   faa_list_3}
 
 
 process get_uniparc_mapping {
@@ -218,5 +219,32 @@ process execute_kofamscan {
   export "PATH=\$KOFAMSCAN_HOME:\$PATH"
   echo exec_annotation \${input_file} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o \${input_file/faa/tab}
   exec_annotation \${input_file} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o \${input_file/faa/tab}
+  """
+}
+
+
+process execute_rpsblast_COG {
+
+  publishDir 'refseq_annotation/COG', mode: 'link', overwrite: true
+
+  conda 'bioconda::blast=2.7.1'
+
+  cpus 4
+  memory '2 GB'
+
+  when:
+  params.cog == true
+
+  input:
+  file (genome) from faa_list_3
+
+  output:
+  file "${genome.baseName}.tab" into blast_result
+
+  script:
+  n = seq.name
+  """
+  input_file=`ls *faa`
+  rpsblast -db $params.databases_dir/cdd/Cog -query ${genome} -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > ${genome.baseName}.tab
   """
 }
