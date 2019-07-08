@@ -1,10 +1,5 @@
 #!/usr/bin/env nextflow
 
-log.info params.input
-params.databases_dir = "$PWD/databases"
-params.kofamscan = false
-params.mapping_uniparc = true
-
 log.info "====================================="
 log.info "Database folder        : ${params.databases_dir}"
 
