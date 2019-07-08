@@ -124,11 +124,11 @@
 - [X] phylogenetic profiles
 - [X] use celery for circos_main view
 - [X] load PMID string mapping
+- [X] load checkM
 - [ ] load cross-references
 - [ ] add uniprot proteome column (+ percent overlap)
 - [ ] load RBBH data (for identity distribution plots)
 - [ ] get species table ==> display on homepage
-- [ ] load checkM
 - [ ] check indexes
 - [ ] update browse genome view
 - [ ] add uniprot kewords to locus page
@@ -152,14 +152,14 @@
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
 - [ ] execute T3 effector prediction: BPBAac
 - [ ] execute T3 effector prediction: T3_MM
+- [ ] execute T3 effector prediction: effectiveT3
+- [ ] execute T3 effector prediction: DeepT3
 - [ ] get cross-references from uniprot IdMapping? Or from uniprot db itself? (cross references from indexed uniprotKB xml)
   - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
   - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
 - [ ] get Refseq protein ID and locus_tag and match to new locus tags in index
 
 ## priority 2
-
-- [ ] execute T3 effector prediction: effective
 
 - [ ] get STRING associations if available
 
@@ -168,6 +168,8 @@
 - [ ] VF annotation with all databases
 
 - [ ] retrieve DOORS2 operons
+
+- [ ] predict operons with cluster_finder.pl and operon_finder.pl
 
 - [ ] mapping to uniprot proteomes: https://www.ebi.ac.uk/proteins/api/doc/#!/proteomes/search
 - [ ] curl -X GET --header 'Accept:application/json' 'https://www.ebi.ac.uk/proteins/api/proteomes?offset=0&size=100&xref=GCA_000068525.2'

@@ -198,6 +198,8 @@ process execute_kofamscan {
 
   publishDir 'refseq_annotation/KO', mode: 'link', overwrite: true
 
+  conda 'hmmer=3.2.1 parallel ruby=2.4.5'
+
   cpus 4
   memory '8 GB'
 
@@ -212,9 +214,8 @@ process execute_kofamscan {
 
   script:
   """
-  export PATH="$PATH:/home/tpillone/work/dev/annotation_pipeline_nextflow/bin/KofamScan/"
   input_file=`ls *faa`
-  echo \$input_file
+  export "PATH=\$KOFAMSCAN_HOME:\$PATH"
   echo exec_annotation \${input_file} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o \${input_file/faa/tab}
   exec_annotation \${input_file} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o \${input_file/faa/tab}
   """
