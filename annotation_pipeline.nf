@@ -1064,7 +1064,11 @@ def uniprot_accession2score(uniprot_accession_list):
     unirpot2score = {}
     for row in rows:
         if len(row) > 0:
-            if row[0] != 'Entry':
+            if row[0] == 'Entry':
+                continue
+            elif len(row)<2:
+                continue
+            else:
                 unirpot2score[row[0]] = row[1]
 
     return unirpot2score
@@ -1095,7 +1099,7 @@ for n, one_chunk in enumerate(uniprot_accession_chunks):
         try:
             uniprot_score = uniprot2score[uniprot_accession]
         # deal with eventual removed entries
-        except IndexError:
+        except KeyError:
             uniprot_score = 0
         comment_function = uniprot_annotation[1]
         ec_number = uniprot_annotation[2]

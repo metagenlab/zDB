@@ -123,7 +123,7 @@
 - [X] setup blast databases
 - [X] phylogenetic profiles
 - [X] use celery for circos_main view
-- [ ] load PMID mapping
+- [X] load PMID string mapping
 - [ ] load cross-references
 - [ ] add uniprot proteome column (+ percent overlap)
 - [ ] load RBBH data (for identity distribution plots)
