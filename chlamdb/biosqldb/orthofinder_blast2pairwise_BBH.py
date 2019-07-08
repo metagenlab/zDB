@@ -31,7 +31,8 @@ def parse_orthofinder_blast_files(biodb,
 
 
     locus2taxon2best_hit_id = {}
-    for file in orthofinder_blast_file_list:
+    for n, file in enumerate(orthofinder_blast_file_list):
+        print(n, len(orthofinder_blast_file_list))
         with open(file, 'r') as f:
             for line in f:
                 #9_1	60_294	56.647	346	139	3	4	338	5	350	3.33e-141	405
@@ -443,67 +444,58 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    print ('parsing files...')
-
     '''
->>>>>>> 99ef3249c176defe522e1a7ef9710c99a51afa46
->>>>>>> f93459bbe98d5532341e32e0921fadd9648e5a85
-    seqid2locus_tag = parse_seqid_file(args.seq_id_file)
-    locus2taxon2best_hit_id = parse_orthofinder_blast_files(args.database,
-                                                            args.blast_files,
-                                                            seqid2locus_tag,
-                                                            sqlite3=True)
-    print 'get reciprocal bbh table ...'
-    get_reciproval_BBH_table(args.database,
-                             locus2taxon2best_hit_id)
+    taxid_chlam_list = [314,
+                        886707,
+                        804807,
+                            48,
+                        1143376,
+                            283,
+                            55,
+                        1279839,
+                        1279496,
+                        1279822,
+                            46,
+                        1279815,
+                            49,
+                            87925,
+                            52,
+                        1137444,
+                            67,
+                        1172028,
+                        1069693,
+                        1172027,
+                            307,
+                            59,
+                            60,
+                        1279767,
+                        1035343,
+                            313,
+                            62,
+                            293,
+                        1069694,
+                        1279497,
+                        1279774,
+                            64,
+                            66]
 
-    #print 'get pairwise median id table...'
-    #get_parwise_genome_median_identity_table(args.database)
-
-    #median_RBBH2species(args.database)
-    #seqfeature_id2n_species(args.database)
-
-
-
-    taxid_chlam_list =       [314,
-   886707,
-   804807,
-       48,
-  1143376,
-      283,
-       55,
-  1279839,
-  1279496,
-  1279822,
-       46,
-  1279815,
-       49,
-    87925,
-       52,
-  1137444,
-       67,
-  1172028,
-  1069693,
-  1172027,
-      307,
-       59,
-       60,
-  1279767,
-  1035343,
-      313,
-       62,
-      293,
-  1069694,
-  1279497,
-  1279774,
-       64,
-       66]
-    print len(taxid_chlam_list)
     seqfeature_id2n_species_chlamydiae_only(args.database, taxid_chlam_list)
     '''
+    print("Parsing SeqID file...")
     seqid2locus_tag = parse_seqid_file(args.seq_id_file)
+    print ('Parsing blast files...')
     locus2taxon2best_hit_id = parse_orthofinder_blast_files(args.database,
                                                             args.blast_files,
                                                             seqid2locus_tag)
+    print('Loading data...')
     get_reciproval_BBH_table(args.database,
                              locus2taxon2best_hit_id)
+
+    print ('Get pairwise median id table...')
+    get_parwise_genome_median_identity_table(args.database)
+
+    print("Median_RBBH2species...")
+    median_RBBH2species(args.database)
+
+    print("seqfeature_id2n_species...")
+    seqfeature_id2n_species(args.database)
