@@ -115,13 +115,13 @@ def get_parwise_genome_median_identity_table(biodb, sqlite3=False):
             max_density = robjects.r('max_density')
 
             sql = 'insert into comparative_tables.reciprocal_BBH_average_identity_%s values(%s, %s, %s, %s, %s, %s)' % (biodb,
-                                                                                                  taxon_1,
-                                                                                                  taxon_2,
-                                                                                                  round(mean_id,2),
-                                                                                                  round(median_id,2),
-                                                                                                  round(float(max_density[0]),2),
-                                                                                                  len(data)
-                                                                                                  )
+                                                                                                                        taxon_1,
+                                                                                                                        taxon_2,
+                                                                                                                        round(mean_id, 2),
+                                                                                                                        round(median_id, 2),
+                                                                                                                        round(float(max_density[0]), 2),
+                                                                                                                        len(data)
+                                                                                                                        )
             server.adaptor.execute(sql,)
         server.commit()
 
@@ -146,15 +146,6 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
 
     server.adaptor.execute(sql,)
     server.commit()
-
-    sql2 = 'CREATE INDEX comparative_tables.taxon_1_idx_%s ON reciprocal_BBH_%s (taxon_1);' % (biodb, biodb)
-    sql3 = 'CREATE INDEX comparative_tables.taxon_2_idx_%s ON reciprocal_BBH_%s (taxon_2);' % (biodb, biodb)
-    sql4 = 'CREATE INDEX comparative_tables.seqfeature_id_1_idx_%s ON reciprocal_BBH_%s (seqfeature_id_1);' % (biodb, biodb)
-    sql5 = 'CREATE INDEX comparative_tables.seqfeature_id_2_idx_%s ON reciprocal_BBH_%s (seqfeature_id_2);' % (biodb, biodb)
-    server.adaptor.execute(sql2,)
-    server.adaptor.execute(sql3,)
-    server.adaptor.execute(sql4,)
-    server.adaptor.execute(sql5,)
 
     sql = 'select locus_tag, taxon_id from annotation.seqfeature_id2locus_%s' % biodb
 
@@ -304,6 +295,16 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
             #    print sql
             #    continue
         server.commit()
+    sql2 = 'CREATE INDEX taxid1 ON comparative_tables.reciprocal_BBH_%s (taxon_1);' % (biodb, biodb)
+    sql3 = 'CREATE INDEX taxid2 ON comparative_tables.reciprocal_BBH_%s (taxon_2);' % (biodb, biodb)
+    sql4 = 'CREATE INDEX sfid1 ON comparative_tables.reciprocal_BBH_%s (seqfeature_id_1);' % (biodb, biodb)
+    sql5 = 'CREATE INDEX sfid2 ON reciprocal_BBH_%s (seqfeature_id_2);' % (biodb, biodb)
+    server.adaptor.execute(sql2,)
+    server.adaptor.execute(sql3,)
+    server.adaptor.execute(sql4,)
+    server.adaptor.execute(sql5,)
+    server.commit()
+
 
 def median_RBBH2species(biodb):
 
