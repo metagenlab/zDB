@@ -242,9 +242,7 @@ process execute_rpsblast_COG {
   file "${genome.baseName}.tab" into blast_result
 
   script:
-  n = seq.name
   """
-  input_file=`ls *faa`
   rpsblast -db $params.databases_dir/cdd/Cog -query ${genome} -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > ${genome.baseName}.tab
   """
 }
