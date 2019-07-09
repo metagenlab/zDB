@@ -655,6 +655,7 @@ def identity_closest_homolog(db_name):
                     continue
         server.adaptor.commit()
 
+
 def shared_orthogroups_average_identity(db_name):
 
     from chlamdb.biosqldb import manipulate_biosqldb
@@ -678,8 +679,8 @@ def shared_orthogroups_average_identity(db_name):
     for i, taxon_1 in enumerate(all_taxons):
         for taxon_2 in all_taxons[i+1:]:
             data_sql = 'select identity from comparative_tables.identity_closest_homolog2_%s where taxon_1=%s and taxon_2=%s' % (db_name,
-                                                                                                             taxon_1,
-                                                                                                             taxon_2)
+                                                                                                                                 taxon_1,
+                                                                                                                                 taxon_2)
             data = list([i[0] for i in server.adaptor.execute_and_fetchall(data_sql,)])
             print(data)
             sql = 'insert into comparative_tables.shared_og_av_id_%s(taxon_1, taxon_2, average_identity,' \
