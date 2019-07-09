@@ -312,6 +312,45 @@ def make_priam_form(database_name):
     return PriamForm
 
 
+def make_species_curation_form(database_name, species_id):
+    
+    server, db = load_db(database_name)
+    
+    sql = 'select phylum, `order`, family, genus, species from species_curated_taxonomy_%s where species_id=%s;' % (database_name, species_id)
+    print(sql)
+    data = server.adaptor.execute_and_fetchall(sql,)[0]
+    print(data)
+    class TaxonomyCurationForm(forms.Form):
+        phylum = forms.CharField(max_length=600, required = True, initial=data[0])
+        order = forms.CharField(max_length=600, required = True, initial=data[1])
+        family = forms.CharField(max_length=600, required = True, initial=data[2])
+        genus = forms.CharField(max_length=600, required = True, initial=data[3])
+        species = forms.CharField(max_length=600, required = True, initial=data[4])
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            #self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
+            #self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset("Taxonomy curation",
+                                                Column(
+                                                    Row('phylum', style="padding-left:15px"),
+                                                    Row('order', style="padding-left:15px"),
+                                                    Row('family', style="padding-left:15px"),
+                                                    Row('genus', style="padding-left:15px"),
+                                                    Row('species', style="padding-left:15px"),
+                                                Submit('submit', 'Save'), css_class='form-group col-lg-12 col-md-12 col-sm-12'),
+                                                css_class="col-lg-8 col-md-8 col-sm-12")
+                                        )
+
+            super(TaxonomyCurationForm, self).__init__(*args, **kwargs)
+
+    return TaxonomyCurationForm
+
+
+
 def make_circos_form(database_name):
 
     accession_choices = get_accessions(database_name)

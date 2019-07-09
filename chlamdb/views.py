@@ -47,6 +47,7 @@ from chlamdb.forms import make_genome_selection_form
 from chlamdb.forms import make_comment_from
 from chlamdb.forms import locus_int_form
 from chlamdb.forms import LocusInt
+from chlamdb.forms import make_species_curation_form
 from chlamdb.forms import get_LocusAnnotForm
 from chlamdb.forms import make_pathway_overview_form
 from chlamdb.forms import make_interpro_taxonomy
@@ -291,6 +292,64 @@ def substription():
 
 #cache = pylibmc.Client(['127.0.0.1:8000'])
 
+
+def curated_taxonomy(request):
+    
+    biodb = settings.BIODB
+    server, db = manipulate_biosqldb.load_db(biodb)    
+    sql = 'select t5.AssemblyAccession,t1.accession,t1.taxon_id as assembly_id,t1.description,t3.* from bioentry t1' \
+            ' inner join taxid2species_%s t2 on t1.taxon_id=t2.taxon_id ' \
+            ' inner join species_curated_taxonomy_%s t3 on t2.species_id=t3.species_id ' \
+            ' left join bioentry2assembly_%s t4 on t1.bioentry_id=t4.bioentry_id ' \
+            ' left join assembly_metadata_%s t5 on t4.assembly_id=t5.assembly_id;' % (biodb, biodb, biodb, biodb)
+            
+    data = server.adaptor.execute_and_fetchall(sql,)
+    return render(request, 'chlamdb/curated_taxonomy.html', locals())
+
+
+def edit_species_taxonomy(request, species_id):
+    
+    biodb = settings.BIODB
+    #print "loading db..."
+    server, db = manipulate_biosqldb.load_db(biodb)
+    #print "db loaded..."
+
+    curation_form_class = make_species_curation_form(biodb, species_id)
+
+    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+        form = curation_form_class(request.POST)
+        print("form")
+        if form.is_valid():
+            print("valid")
+            phylum = form.cleaned_data['phylum']
+            order = form.cleaned_data['order']
+            family = form.cleaned_data['family']
+            genus = form.cleaned_data['genus']
+            species = form.cleaned_data['species']
+            
+            sql1 = 'update species_curated_taxonomy_%s set phylum="%s" where species_id=%s' % (biodb, phylum, species_id)
+            sql2 = 'update species_curated_taxonomy_%s set `order`="%s" where species_id=%s' % (biodb, order, species_id)
+            sql3 = 'update species_curated_taxonomy_%s set family="%s" where species_id=%s' % (biodb, family, species_id)
+            sql4 = 'update species_curated_taxonomy_%s set genus="%s" where species_id=%s' % (biodb, genus, species_id)
+            sql5 = 'update species_curated_taxonomy_%s set species="%s" where species_id=%s' % (biodb, species, species_id)
+            
+            server.adaptor.execute(sql1,)
+            server.adaptor.execute(sql2,)
+            server.adaptor.execute(sql3,)
+            server.adaptor.execute(sql4,)
+            server.adaptor.execute(sql5,)
+            server.commit()
+            
+            saved = True
+
+            return curated_taxonomy(request)
+
+
+    else: 
+        form = curation_form_class()  
+
+    return render(request, 'chlamdb/edit_species_taxonomy.html', locals())
 
 
 def circos_homology(request):
