@@ -170,11 +170,12 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
     seqfeature_id2sequence_length = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     for n1, locus_1 in enumerate(locus2taxon2best_hit_id):
-        if n1 % 10 == 0:
+        if n1 % 50 == 0:
+            server.commit()
             print ("%s / %s -- %s " % (n1, len(locus2taxon2best_hit_id),str(datetime.now())))
         taxon_1 = locus_tag2taxon_id[locus_1]
-        for taxon_2 in locus2taxon2best_hit_id[locus_1]:
 
+        for taxon_2 in locus2taxon2best_hit_id[locus_1]:
             if taxon_1 == taxon_2:
                 # self blast, do not store results
                 continue
@@ -200,93 +201,80 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
                 continue
             else:
                 # reciprocal BBH
-                    identity_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][1]
-                    identity_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][1]
+                identity_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][1]
+                identity_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][1]
 
-                    evalue_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][2]
-                    evalue_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][2]
+                evalue_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][2]
+                evalue_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][2]
 
-                    if (float(evalue_a_vs_b) > 0.00001) or (float(evalue_b_vs_a) > 0.00001):
-                        #print 'evalue too high!', evalue_a_vs_b, float(evalue_a_vs_b), 'and', evalue_b_vs_a, float(evalue_b_vs_a)
-                        continue
-                    query_align_length_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][4]
-                    hit_align_length_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][5]
-                    query_align_length_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][4]
-                    hit_align_length_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][5]
+                if (float(evalue_a_vs_b) > 0.00001) or (float(evalue_b_vs_a) > 0.00001):
+                    # skip if one has too low evalue
+                    continue
+                query_align_length_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][4]
+                hit_align_length_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][5]
+                query_align_length_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][4]
+                hit_align_length_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][5]
 
-                    seqfeature_id_1 = locus_tag2seqfeature_id[locus_1]
-                    seqfeature_id_2 = locus_tag2seqfeature_id[locus_2]
+                seqfeature_id_1 = locus_tag2seqfeature_id[locus_1]
+                seqfeature_id_2 = locus_tag2seqfeature_id[locus_2]
 
-                    locus_1_length = seqfeature_id2sequence_length[str(seqfeature_id_1)]
-                    locus_2_length = seqfeature_id2sequence_length[str(seqfeature_id_2)]
+                locus_1_length = seqfeature_id2sequence_length[str(seqfeature_id_1)]
+                locus_2_length = seqfeature_id2sequence_length[str(seqfeature_id_2)]
 
-                    query_cov_a_vs_b = query_align_length_a_vs_b/float(locus_1_length)
-                    hit_cov_a_vs_b = hit_align_length_a_vs_b/float(locus_2_length)
-                    query_cov_b_vs_a = query_align_length_b_vs_a/float(locus_2_length)
-                    hit_cov_b_vs_a = hit_align_length_b_vs_a/float(locus_1_length)
+                query_cov_a_vs_b = query_align_length_a_vs_b/float(locus_1_length)
+                hit_cov_a_vs_b = hit_align_length_a_vs_b/float(locus_2_length)
+                query_cov_b_vs_a = query_align_length_b_vs_a/float(locus_2_length)
+                hit_cov_b_vs_a = hit_align_length_b_vs_a/float(locus_1_length)
 
-                    if (hit_cov_b_vs_a < 0.5) or (hit_cov_a_vs_b < 0.5) or (query_cov_b_vs_a < 0.5) or (query_cov_a_vs_b < 0.5):
-                        #print 'COV:', query_cov_a_vs_b, hit_cov_a_vs_b, query_cov_b_vs_a, hit_cov_b_vs_a
-                        #ok = True
-                        continue
+                # keep only if > 50% query and hit coverage
+                if (hit_cov_b_vs_a < 0.5) or (hit_cov_a_vs_b < 0.5) or (query_cov_b_vs_a < 0.5) or (query_cov_a_vs_b < 0.5):
+                    continue
 
-                    # attention bug found!
-                    #if (hit_cov_b_vs_a < 0.5) or (hit_cov_a_vs_b < 0.5) or (query_cov_b_vs_a < 0.5) or (query_cov_a_vs_b < 0.5):
-                    #    #print 'COV:', query_cov_a_vs_b, hit_cov_a_vs_b, query_cov_b_vs_a, hit_cov_b_vs_a
-                    #    if ok == False:
-                    #        print locus_1, locus_2
-                    #        print 'COV:', query_cov_a_vs_b, hit_cov_a_vs_b, query_cov_b_vs_a, hit_cov_b_vs_a
-                    #        import sys
-                    #        sys.exit()
-                    #    else:
-                    #        continue
-                    #print 'ok--------------------'
-                    score_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][3]
-                    score_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][3]
+                score_a_vs_b = locus2taxon2best_hit_id[locus_1][taxon_2][3]
+                score_b_vs_a = locus2taxon2best_hit_id[locus_2][taxon_1][3]
 
-                    if locus_tag2orthogroup:
-                        group_1 = locus_tag2orthogroup[locus_1]
-                        group_2 = locus_tag2orthogroup[locus_2]
+                if locus_tag2orthogroup:
+                    group_1 = locus_tag2orthogroup[locus_1]
+                    group_2 = locus_tag2orthogroup[locus_2]
 
-                        if group_1 != group_2:
-                            msa_identity = "NULL"
-                        else:
-                            sql = 'select identity from orth_%s.%s where locus_a in ("%s", "%s") ' \
-                                  ' and locus_b in ("%s","%s") and locus_a!=locus_b;' % (biodb,
-                                                                                         group_1,
-                                                                                         locus_1,
-                                                                                         locus_2,
-                                                                                         locus_1,
-                                                                                         locus_2)
-
-                            msa_identity = server.adaptor.execute_and_fetchall(sql,)[0][0]
+                    if group_1 != group_2:
+                        msa_identity = "NULL"
                     else:
-                        msa_identity = 0
-                        group_1 = '-'
-                        group_2 = '-'
+                        sql = 'select identity from orth_%s.%s where locus_a in ("%s", "%s") ' \
+                                ' and locus_b in ("%s","%s") and locus_a!=locus_b;' % (biodb,
+                                                                                        group_1,
+                                                                                        locus_1,
+                                                                                        locus_2,
+                                                                                        locus_1,
+                                                                                        locus_2)
 
-                    sql = 'insert into comparative_tables.reciprocal_BBH_%s values (%s,%s,%s,%s,%s,%s,%s,%s' \
-                          ',%s,%s,%s,%s,"%s","%s")' % (biodb,
-                                                  taxon_1,
-                                                  taxon_2,
-                                                  seqfeature_id_1,
-                                                  seqfeature_id_2,
-                                                  evalue_a_vs_b,
-                                                  evalue_b_vs_a,
-                                                  score_a_vs_b,
-                                                  score_b_vs_a,
-                                                  identity_a_vs_b,
-                                                  identity_b_vs_a,
-                                                  numpy.mean( [float(identity_a_vs_b), float(identity_b_vs_a)]),
-                                                  msa_identity,
-                                                  group_1,
-                                                  group_2)
-                    #print sql
-                    try:
-                        server.adaptor.execute(sql,)
-                    except:
-                        print ('FAIL')
-                        print (sql)
+                        msa_identity = server.adaptor.execute_and_fetchall(sql,)[0][0]
+                else:
+                    msa_identity = 0
+                    group_1 = '-'
+                    group_2 = '-'
+
+                sql = 'insert into comparative_tables.reciprocal_BBH_%s values (%s,%s,%s,%s,%s,%s,%s,%s' \
+                        ',%s,%s,%s,%s,"%s","%s")' % (biodb,
+                                                taxon_1,
+                                                taxon_2,
+                                                seqfeature_id_1,
+                                                seqfeature_id_2,
+                                                evalue_a_vs_b,
+                                                evalue_b_vs_a,
+                                                score_a_vs_b,
+                                                score_b_vs_a,
+                                                identity_a_vs_b,
+                                                identity_b_vs_a,
+                                                numpy.mean( [float(identity_a_vs_b), float(identity_b_vs_a)]),
+                                                msa_identity,
+                                                group_1,
+                                                group_2)
+                try:
+                    server.adaptor.execute(sql,)
+                except:
+                    print ('FAIL')
+                    print (sql)
 
 
 
@@ -294,7 +282,7 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
             #    print 'FAIL!'
             #    print sql
             #    continue
-        server.commit()
+    server.commit()
     sql2 = 'CREATE INDEX taxid1 ON comparative_tables.reciprocal_BBH_%s (taxon_1);' % (biodb, biodb)
     sql3 = 'CREATE INDEX taxid2 ON comparative_tables.reciprocal_BBH_%s (taxon_2);' % (biodb, biodb)
     sql4 = 'CREATE INDEX sfid1 ON comparative_tables.reciprocal_BBH_%s (seqfeature_id_1);' % (biodb, biodb)
