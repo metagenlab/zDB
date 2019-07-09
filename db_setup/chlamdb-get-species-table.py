@@ -80,7 +80,6 @@ def bioentry_metadata(biodb):
     assembly2data = {}
     bioentry_id2assembly_accession = {}
     for accession in accession2bioentry_id:
-        accession = "BX908798"
         try:
             handle1 = Entrez.esearch(db="nuccore", term="%s[Accession]" % accession)
             record1 = Entrez.read(handle1)
