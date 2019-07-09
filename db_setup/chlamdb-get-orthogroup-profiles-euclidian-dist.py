@@ -21,10 +21,28 @@ def sql_euclidian_dist_orthogroups(biodb, one_list, orthogroup2profile):
     server, db = manipulate_biosqldb.load_db(biodb)
     n = len(one_list)
     for i, one_pair in enumerate(one_list):
-        print ("%s/%s" % (i,n))
+        #print ("%s/%s" % (i,n))
         dist = euclidean(orthogroup2profile[one_pair[0]], orthogroup2profile[one_pair[1]])
         if dist <= 2.5:
-            sql = 'insert into comparative_tables.phylo_profiles_eucl_dist2_%s values ("%s", "%s", %s);' % (biodb,
+            sql = 'insert into interactions.phylo_profiles_eucl_dist_%s values ("%s", "%s", %s);' % (biodb,
+                                                                                                        one_pair[0],
+                                                                                                        one_pair[1],
+                                                                                                        dist)
+            server.adaptor.execute(sql,)
+    server.adaptor.commit()
+
+
+def sql_jaccard_dist_orthogroups(biodb, one_list, orthogroup2profile):
+    from scipy.spatial.distance import jaccard
+    from chlamdb.biosqldb import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodb)
+    n = len(one_list)
+    for i, one_pair in enumerate(one_list):
+        #print ("%s/%s" % (i,n))
+        dist = jaccard(orthogroup2profile[one_pair[0]], orthogroup2profile[one_pair[1]])
+        # scale between 0 and 1
+        if dist <= 0.5:
+            sql = 'insert into interactions.phylo_profiles_jac_dist_%s values ("%s", "%s", %s);' % (biodb,
                                                                                                         one_pair[0],
                                                                                                         one_pair[1],
                                                                                                         dist)
@@ -45,36 +63,46 @@ def merge_dataframe_columns(dataframe, columns_clusters_dict):
     return new_data_frame
 
 
-def euclidian_dist_orthogroups(biodb, merge_taxons=False):
-
+def create_ortogroup_dist_table(biodb, table_name='phylo_profiles_eucl_dist'):
     from chlamdb.biosqldb import manipulate_biosqldb
-    from multiprocessing import Process
-    import math
-    import pandas
-    import numpy
-    import os
-    import rpy2.robjects.numpy2ri
-    import rpy2.robjects as robjects
-    import rpy2.robjects.numpy2ri as numpy2ri
-
-    rpy2.robjects.numpy2ri.activate()
-
+    
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql_profiles_table = 'CREATE TABLE IF NOT EXISTS comparative_tables.phylo_profiles_eucl_dist2_%s (group_1 varchar(100), ' \
-                         ' group_2 varchar(100), euclidian_dist FLOAT, INDEX group_1 (group_1), INDEX group_2 (group_2))' % (biodb)
+    sql_profiles_table = 'CREATE TABLE IF NOT EXISTS interactions.%s_%s (group_1 varchar(100), ' \
+                         ' group_2 varchar(100), euclidian_dist FLOAT, INDEX group_1 (group_1), INDEX group_2 (group_2))' % (table_name, biodb)
+                                        
     try:
         print (sql_profiles_table)
         server.adaptor.execute(sql_profiles_table)
     except:
         print ('problem creating the sql table')
 
+
+def get_reduced_orthogroup_matrix(biodb, jaccard=True):
+    '''
+    # get orthology matrix
+    # perform hierarchical clustering of genome based on median protein identity
+    # return reduced matrix
+    '''
+
+    import pandas
+    import numpy
+    import os
+    import rpy2.robjects.numpy2ri
+    import rpy2.robjects as robjects
+    import rpy2.robjects.numpy2ri as numpy2ri
+    from chlamdb.biosqldb import manipulate_biosqldb
+
+    rpy2.robjects.numpy2ri.activate()
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
     sql = 'select * from comparative_tables.orthology_%s' % biodb
 
     sql2 = 'show columns from comparative_tables.orthology_%s' % biodb
 
 
-    # get matrix as pantas table: orthogroups as rows, genomes as columns
+    # get matrix as numpy arraw: orthogroups as rows, genomes as columns
     # replace values > 1 by one (profile of presence/absence)
     # possibility: merge closely related data (merge columns)
     #orthogroup_profiles = server.adaptor.execute_and_fetchall(sql,)
@@ -90,8 +118,6 @@ def euclidian_dist_orthogroups(biodb, merge_taxons=False):
     groups = orthogroups_df["orthogroup"]
     profiles = orthogroups_df[all_cols[1:]].astype(float)
 
-
-
     #print profiles["131"] + profiles["132"]
 
     # cluster taxons based on identity of core genome aligment
@@ -104,6 +130,8 @@ def euclidian_dist_orthogroups(biodb, merge_taxons=False):
 
     sqlpsw = os.environ['SQLPSW']
 
+    # merge closely related genomes: perform hierarchical clustering based on median protein identity
+    # we could use a hard coded cutoff (eg: 95% median protein identity?)
     robjects.r("""
     library("RMySQL")
     library(reshape2)
@@ -118,13 +146,12 @@ def euclidian_dist_orthogroups(biodb, merge_taxons=False):
     taxon2description<- dbFetch(rs2, n=-1)
 
     pairwise_identity_matrix <- dcast(pairwise_identity, taxon_1~taxon_2)
-    print(dim(pairwise_identity))
+    
     rownames(pairwise_identity_matrix) <- pairwise_identity_matrix$taxon_1
 
     pairwise_identity_matrix<-pairwise_identity_matrix[,2:length(pairwise_identity_matrix)]
 
     pairwise_dist <- as.dist(100-pairwise_identity_matrix)
-    print(pairwise_dist)
     hc <- hclust(pairwise_dist)
     clusterCut <- cutree(hc,h=30)
     taxons <- names(clusterCut)
@@ -144,14 +171,28 @@ def euclidian_dist_orthogroups(biodb, merge_taxons=False):
             cluster2taxons[clust].append(tax)
 
     # build a new DataFrame with merged columns
+    print("Merging taxons:")
+    print("Cluster\ttaxon")
+    for cluster in cluster2taxons:
+        for taxon in cluster2taxons[cluster]:
+            print("%s\t%s" % (cluster, taxon))
+    
     merged_profiles = merge_dataframe_columns(profiles, cluster2taxons)
     # replace multicounts by 1
     merged_profiles[merged_profiles >1] = 1
-    #print groups[200]
+    
+    return groups, merged_profiles
+
+
+def get_compination_list(groups, merged_profiles):
+    '''
+    Remove profile with count > 0 in a single species 
+    Return 
+        all combinations to compare
+        dictionnary of profile to compare (group2profile)
+    '''
+    
     combinations = []
-    #print merged_profiles.loc[200,:]
-    #import sys
-    #sys.exit()
 
     orthogroup2profile = {}
     for i, group in enumerate(groups):
@@ -160,7 +201,6 @@ def euclidian_dist_orthogroups(biodb, merge_taxons=False):
     filtered_groups = []
     total = len(groups)
     for i, orthogroup in enumerate(groups):
-        print ("%s/%s" % (i, total))
         #if no homologs in other genomes, skip
         if sum(merged_profiles.loc[i,:]) == 1:
             continue
@@ -171,31 +211,81 @@ def euclidian_dist_orthogroups(biodb, merge_taxons=False):
     # allows then to split the job into 8 process
     total = len(groups)
     for i, orthogroup_1 in enumerate(filtered_groups):
-        print ("%s/%s" % (i, total))
+        # if conserved everywhere, skip
+        if sum(orthogroup2profile[orthogroup_1]) == len(orthogroup2profile[orthogroup_1]):
+            continue
         for y, orthogroup_2 in enumerate(filtered_groups[i:]):# in range(i, total):
-            # if no homolog in other genomes, skip
+            # if group1 == group2, skip
+            if orthogroup_1 == orthogroup_2:
+                continue
+            # if conserved everywhere, skip
+            if sum(orthogroup2profile[orthogroup_2]) == len(orthogroup2profile[orthogroup_2]):
+                continue
             combinations.append((orthogroup_1, orthogroup_2))
-    n_cpu = 8
-    # n of pairs: 139259021
+            
+    return combinations, orthogroup2profile
+
+
+def euclidian_dist_orthogroups(biodb, merge_taxons=False, n_cpus=8):
+
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from multiprocessing import Process
+    import math
+
+
+    create_ortogroup_dist_table(biodb, 'phylo_profiles_eucl_dist')
+    
+    groups, merged_profiles = get_reduced_orthogroup_matrix(biodb)
+
+    combinations, orthogroup2profile = get_compination_list(groups, merged_profiles)
+
     print ('n of pairs:', len(combinations))
-    #import sys
-    #sys.exit()
-    n_poc_per_list = math.ceil(len(combinations)/float(n_cpu))
-    #print "n_poc_per_list", n_poc_per_list
-    #print range(0, len(combinations))
-    # split the jobs into 8 lists
+    n_poc_per_list = math.ceil(len(combinations)/float(n_cpus))
+
+    # split the jobs into lists (1 per cpu)
     query_lists = chunks(range(0, len(combinations)), int(n_poc_per_list))
-    # start the 8 processes
+    # start processes
     procs = []
     for one_list in query_lists:
         comb_list = [combinations[i] for i in one_list]
-        #print len(comb_list)
         proc = Process(target=sql_euclidian_dist_orthogroups, args=(biodb, comb_list, orthogroup2profile))
         procs.append(proc)
         proc.start()
 
     for proc in procs:
         proc.join()
+        
+
+
+def jaccard_dist_orthogroups(biodb, n_cpus=8):
+    
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from multiprocessing import Process
+    import math
+
+
+    create_ortogroup_dist_table(biodb, 'phylo_profiles_jac_dist')
+    
+    groups, merged_profiles = get_reduced_orthogroup_matrix(biodb)
+
+    combinations, orthogroup2profile = get_compination_list(groups, merged_profiles)
+
+    print ('n of pairs:', len(combinations))
+    n_poc_per_list = math.ceil(len(combinations)/float(n_cpus))
+
+    # split the jobs into lists (1 per cpu)
+    query_lists = chunks(range(0, len(combinations)), int(n_poc_per_list))
+    # start processes
+    procs = []
+    for one_list in query_lists:
+        comb_list = [combinations[i] for i in one_list]
+        proc = Process(target=sql_jaccard_dist_orthogroups, args=(biodb, comb_list, orthogroup2profile))
+        procs.append(proc)
+        proc.start()
+
+    for proc in procs:
+        proc.join()
+
 
 
 def sql_euclidian_dist_cogs(biodb, one_list, orthogroup2profile):
@@ -299,7 +389,7 @@ def sql_euclidian_dist_interpro(biodb, one_list, interpro2profile):
     server, db = manipulate_biosqldb.load_db(biodb)
     n = len(one_list)
     for i, one_pair in enumerate(one_list):
-        print ("%s/%s" % (i,n))
+        #print ("%s/%s" % (i,n))
         list1 = np.asarray(interpro2profile[one_pair[0]])
         list2 = np.asarray(interpro2profile[one_pair[1]])
         list1[list1 > 1] = 1
@@ -390,9 +480,18 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", '--db_name', type=str, help="db name", required=True)
+    parser.add_argument("-c", '--cpus', type=int, help="Number of cpus", default=8)
+    parser.add_argument("-j", '--jaccard', help="Jaccard Index", action="store_true")
+    parser.add_argument("-e", '--euclidean', help="Euclidean distance", action="store_true")
 
     args = parser.parse_args()
 
-    euclidian_dist_orthogroups(args.db_name)
+    if args.euclidean:
+        euclidian_dist_orthogroups(args.db_name, 
+                                   args.cpus)
+    if args.jaccard:
+        jaccard_dist_orthogroups(args.db_name, 
+                                args.cpus)
+    
     #euclidian_dist_cogs(args.db_name)
     #euclidian_dist_interpro(args.db_name)
