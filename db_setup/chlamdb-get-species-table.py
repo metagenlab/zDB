@@ -103,7 +103,6 @@ def bioentry_metadata(biodb):
 
         handle3 = Entrez.esummary(db='assembly',id=id, retmode='xml')
         record = Entrez.read(handle3, validate=False)
-        print(record['DocumentSummarySet']['DocumentSummary'][0])
         # ['GB_BioProjects', 
         # 'AsmReleaseDate_RefSeq', 'ReleaseLevel', 'PartialGenomeRepresentation', 'LatestAccession', 'SortOrder', 'Primary', 
         # 'FtpPath_Stats_rpt', 'UCSCName', 'Synonym', 'RsUid', 'WGS', 'LastMajorReleaseAccession', 'LastUpdateDate', 
