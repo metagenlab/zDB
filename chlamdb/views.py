@@ -318,14 +318,19 @@ def curated_taxonomy(request):
         header2taxon2text["genus"][taxon_id] = data[9]
         header2taxon2text["species"][taxon_id] = data[10]
 
-    tree, style = phylo_tree_bar.plot_tree_text_metadata(tree_file,
-                                                  header2taxon2text,
-                                                  ["species_id","phylum", "order", "family", "genus", "species"])
+    sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 ' \
+               ' on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
+
+    tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+
+    tree, style = phylo_tree_bar.plot_tree_text_metadata(tree,
+                                                         header2taxon2text,
+                                                         ["species_id","phylum", "order", "family", "genus", "species"])
 
     path1 = settings.BASE_DIR + '/assets/temp/interpro_tree2.svg'
     asset_path1 = '/temp/interpro_tree2.svg'
     tree.render(path1, dpi=600, h=400, tree_style=style)
-    
+
     return render(request, 'chlamdb/curated_taxonomy.html', locals())
 
 
