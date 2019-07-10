@@ -326,7 +326,7 @@ def curated_taxonomy(request):
     tree, style = phylo_tree_bar.plot_tree_text_metadata(tree,
                                                          header2taxon2text,
                                                          ["species_id","phylum", "order", "family", "genus", "species"],
-                                                         taxon2description)
+                                                         biodb)
 
     path1 = settings.BASE_DIR + '/assets/temp/interpro_tree2.svg'
     asset_path1 = '/temp/interpro_tree2.svg'

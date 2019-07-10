@@ -12,7 +12,7 @@ def plot_tree_text_metadata(tree_file,
     server, db = manipulate_biosqldb.load_db(biodb)
 
     t1 = Tree(tree_file)
-    
+
     taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb, filter_names=True)
 
     # Calculate the midpoint node
@@ -53,7 +53,7 @@ def plot_tree_text_metadata(tree_file,
             #n.rotation = 270
             leaf.add_face(n, column, position="aligned")
         # rename leaf (taxon_id => description)        
-        n = TextFace(taxon2description[lf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
+        n = TextFace(taxon2description[leaf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
         leaf.add_face(n, 0)
 
 
