@@ -297,7 +297,7 @@ def curated_taxonomy(request):
     
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)    
-    sql = 'select t5.AssemblyAccession,t1.accession,t1.taxon_id as assembly_id,t1.description,t3.* from bioentry t1' \
+    sql = 'select distinct t5.AssemblyAccession,t1.accession,t1.taxon_id as assembly_id,t1.description,t3.* from bioentry t1' \
             ' inner join taxid2species_%s t2 on t1.taxon_id=t2.taxon_id ' \
             ' inner join species_curated_taxonomy_%s t3 on t2.species_id=t3.species_id ' \
             ' left join bioentry2assembly_%s t4 on t1.bioentry_id=t4.bioentry_id ' \
