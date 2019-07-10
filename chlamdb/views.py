@@ -330,7 +330,7 @@ def curated_taxonomy(request):
 
     path1 = settings.BASE_DIR + '/assets/temp/interpro_tree2.svg'
     asset_path1 = '/temp/interpro_tree2.svg'
-    tree.render(path1, dpi=600, h=400, tree_style=style)
+    tree.render(path1, dpi=550, tree_style=style)
 
     return render(request, 'chlamdb/curated_taxonomy.html', locals())
 
