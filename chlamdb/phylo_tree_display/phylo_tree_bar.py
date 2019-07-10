@@ -36,7 +36,7 @@ def plot_tree_text_metadata(tree_file,
                 n.opacity = 1.
                 tss.aligned_header.add_face(n, column)
         for column, header in enumerate(ordered_header_list):
-            text = header2taxon2text[header][leaf.name]
+            text = header2taxon2text[header][int(leaf.name)]
             n = TextFace('%s' % text)
             n.margin_top = 1
             n.margin_right = 1

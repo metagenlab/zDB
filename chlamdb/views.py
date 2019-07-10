@@ -317,7 +317,7 @@ def curated_taxonomy(request):
         header2taxon2text["family"][taxon_id] = data[8]
         header2taxon2text["genus"][taxon_id] = data[9]
         header2taxon2text["species"][taxon_id] = data[10]
-
+    print(header2taxon2text)
     sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 ' \
                ' on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
