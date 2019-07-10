@@ -22,6 +22,13 @@
               <div class="col-lg-12">
                 <div class="row">
 
+                    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                        <li class="active"><a href="#tab1" data-toggle="tab">Table</a></li>
+                        <li><a href="#tab2" data-toggle="tab">Phalogeny</a></li>
+                    </ul>
+                    <div id="my-tab-content" class="tab-content">
+                        <div class="tab-pane active" id="tab1">
+
                           <table class="display dataTable" id="taxonomy">
                               <thead>
                                   <tr>
@@ -55,10 +62,11 @@
                                   {% endfor %}
                               </tbody>
                           </table>
-
-                          <div>
-                            <img src="{% static asset_path1 %}" alt="phylo" style="width:800px;">
+                        <div>
+                        <div class="tab-pane" id="tab2">
+                            <img src="{% static asset_path1 %}" alt="phylo" style="width:1100px;">
                         </div>
+                    </div>
 
               </div>
             </div>
