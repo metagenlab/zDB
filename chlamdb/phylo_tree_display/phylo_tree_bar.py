@@ -5,9 +5,15 @@ from ete3 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace, BarC
 
 def plot_tree_text_metadata(tree_file,
                             header2taxon2text,
-                            ordered_header_list):
+                            ordered_header_list, 
+                            biodb):
+
+    from chlamdb.biosqldb import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     t1 = Tree(tree_file)
+    
+    taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb, filter_names=True)
 
     # Calculate the midpoint node
     R = t1.get_midpoint_outgroup()
@@ -44,20 +50,28 @@ def plot_tree_text_metadata(tree_file,
             n.margin_bottom = 1
             n.inner_background.color = "white"
             n.opacity = 1.
-            n.rotation = 270
-            leaf.add_face(n, column, position="aligned")           
+            #n.rotation = 270
+            leaf.add_face(n, column, position="aligned")
+        # rename leaf (taxon_id => description)        
+        n = TextFace(taxon2description[lf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
+        leaf.add_face(n, 0)
+
 
     for n in t1.traverse():
-       nstyle = NodeStyle()
+        # rename leaf
 
-       if n.support < 1:
-           nstyle["fgcolor"] = "black"
-           nstyle["size"] = 6
-           n.set_style(nstyle)
-       else:
-           nstyle["fgcolor"] = "red"
-           nstyle["size"] = 0
-           n.set_style(nstyle)
+        nstyle = NodeStyle()
+
+        if n.support < 1:
+            nstyle["fgcolor"] = "black"
+            nstyle["size"] = 6
+            n.set_style(nstyle)
+        else:
+            nstyle["fgcolor"] = "red"
+            nstyle["size"] = 0
+            n.set_style(nstyle)
+
+
 
     return t1, tss
 
