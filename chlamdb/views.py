@@ -298,11 +298,11 @@ def curated_taxonomy(request):
             ' left join bioentry2assembly_%s t4 on t1.bioentry_id=t4.bioentry_id ' \
             ' left join assembly_metadata_%s t5 on t4.assembly_id=t5.assembly_id;' % (biodb, biodb, biodb, biodb)
             
-    data = server.adaptor.execute_and_fetchall(sql,)[0]
+    data = server.adaptor.execute_and_fetchall(sql,)
 
     header2taxon2text = {}
     for n, row in enumerate(data):
-        taxon_id = data[2]
+        taxon_id = row[2]
         if n == 0:
             header2taxon2text["species_id"] = {}
             header2taxon2text["phylum"] = {}
@@ -311,12 +311,12 @@ def curated_taxonomy(request):
             header2taxon2text["genus"] = {}
             header2taxon2text["species"] = {}
         
-        header2taxon2text["species_id"][taxon_id] = data[5]
-        header2taxon2text["phylum"][taxon_id] = data[6]
-        header2taxon2text["order"][taxon_id] = data[7]
-        header2taxon2text["family"][taxon_id] = data[8]
-        header2taxon2text["genus"][taxon_id] = data[9]
-        header2taxon2text["species"][taxon_id] = data[10]
+        header2taxon2text["species_id"][taxon_id] = row[5]
+        header2taxon2text["phylum"][taxon_id] = row[6]
+        header2taxon2text["order"][taxon_id] = row[7]
+        header2taxon2text["family"][taxon_id] = row[8]
+        header2taxon2text["genus"][taxon_id] = row[9]
+        header2taxon2text["species"][taxon_id] = row[10]
     print(header2taxon2text)
     sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 ' \
                ' on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
