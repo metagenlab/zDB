@@ -298,7 +298,7 @@ def curated_taxonomy(request):
             ' left join bioentry2assembly_%s t4 on t1.bioentry_id=t4.bioentry_id ' \
             ' left join assembly_metadata_%s t5 on t4.assembly_id=t5.assembly_id;' % (biodb, biodb, biodb, biodb)
             
-    data = server.adaptor.execute_and_fetchall(sql,)
+    data = server.adaptor.execute_and_fetchall(sql,)[0]
 
     header2taxon2text = {}
     for n, row in enumerate(data):
