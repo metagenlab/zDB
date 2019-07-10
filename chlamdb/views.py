@@ -287,12 +287,6 @@ def home(request):
     return render(request, 'chlamdb/home.html', locals())
 
 
-def substription():
-    create_user('tpillone', 'trestan.pillonel@gmail.com', 'estrella3', "Trestan", "Pillonel")
-
-#cache = pylibmc.Client(['127.0.0.1:8000'])
-
-
 def curated_taxonomy(request):
     
     biodb = settings.BIODB
