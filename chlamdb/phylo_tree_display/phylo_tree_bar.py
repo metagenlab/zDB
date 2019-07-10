@@ -3,6 +3,64 @@
 from ete3 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace, BarChartFace, StackedBarFace, NodeStyle, faces
 
 
+def plot_tree_text_metadata(tree_file,
+                            header2taxon2text,
+                            ordered_header_list):
+
+    t1 = Tree(tree_file)
+
+    # Calculate the midpoint node
+    R = t1.get_midpoint_outgroup()
+    # and set it as tree outgroup
+    t1.set_outgroup(R)
+    tss = TreeStyle()
+    tss.draw_guiding_lines = True
+    tss.guiding_lines_color = "gray"
+    tss.show_leaf_name = False
+
+    for i, leaf in enumerate(t1.iter_leaves()):
+
+        # first leaf, add headers
+        if i == 0:
+            for column, header in enumerate(ordered_header_list):
+
+                n = TextFace('%s' % (header))
+                n.margin_top = 0
+                n.margin_right = 1
+                n.margin_left = 20
+                n.margin_bottom = 1
+                n.rotation = 270
+                n.hz_align = 2
+                n.vt_align = 2
+                n.inner_background.color = "white"
+                n.opacity = 1.
+                tss.aligned_header.add_face(n, column)
+        for column, header in enumerate(ordered_header_list):
+            text = header2taxon2text[header][leaf.name]
+            n = TextFace('%s' % text)
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 5
+            n.margin_bottom = 1
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            n.rotation = 270
+            leaf.add_face(n, column, position="aligned")           
+
+    for n in t1.traverse():
+       nstyle = NodeStyle()
+
+       if n.support < 1:
+           nstyle["fgcolor"] = "black"
+           nstyle["size"] = 6
+           n.set_style(nstyle)
+       else:
+           nstyle["fgcolor"] = "red"
+           nstyle["size"] = 0
+           n.set_style(nstyle)
+
+    return t1, tss
+
 
 def plot_tree_stacked_barplot(tree_file,
                              taxon2value_list_barplot=False,

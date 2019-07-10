@@ -289,6 +289,7 @@ def home(request):
 
 def curated_taxonomy(request):
     
+    from chlamdb.phylo_tree_display import phylo_tree_bar
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)    
     sql = 'select distinct t5.AssemblyAccession,t1.accession,t1.taxon_id as assembly_id,t1.description,t3.* from bioentry t1' \
@@ -298,6 +299,33 @@ def curated_taxonomy(request):
             ' left join assembly_metadata_%s t5 on t4.assembly_id=t5.assembly_id;' % (biodb, biodb, biodb, biodb)
             
     data = server.adaptor.execute_and_fetchall(sql,)
+
+    header2taxon2text = {}
+    for n, row in enumerate(data):
+        taxon_id = data[2]
+        if n == 0:
+            header2taxon2text["species_id"] = {}
+            header2taxon2text["phylum"] = {}
+            header2taxon2text["order"] = {}
+            header2taxon2text["family"] = {}
+            header2taxon2text["genus"] = {}
+            header2taxon2text["species"] = {}
+        
+        header2taxon2text["species_id"][taxon_id] = data[5]
+        header2taxon2text["phylum"][taxon_id] = data[6]
+        header2taxon2text["order"][taxon_id] = data[7]
+        header2taxon2text["family"][taxon_id] = data[8]
+        header2taxon2text["genus"][taxon_id] = data[9]
+        header2taxon2text["species"][taxon_id] = data[10]
+
+    tree, style = phylo_tree_bar.plot_tree_text_metadata(tree_file,
+                                                  header2taxon2text,
+                                                  ["species_id","phylum", "order", "family", "genus", "species"])
+
+    path1 = settings.BASE_DIR + '/assets/temp/interpro_tree2.svg'
+    asset_path1 = '/temp/interpro_tree2.svg'
+    tree.render(path1, dpi=600, h=400, tree_style=style)
+    
     return render(request, 'chlamdb/curated_taxonomy.html', locals())
 
 
