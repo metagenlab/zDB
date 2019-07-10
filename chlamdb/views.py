@@ -310,14 +310,14 @@ def curated_taxonomy(request):
             header2taxon2text["family"] = {}
             header2taxon2text["genus"] = {}
             header2taxon2text["species"] = {}
-        print(row)
+
         header2taxon2text["species_id"][taxon_id] = row[4]
         header2taxon2text["phylum"][taxon_id] = row[5]
         header2taxon2text["order"][taxon_id] = row[6]
         header2taxon2text["family"][taxon_id] = row[7]
         header2taxon2text["genus"][taxon_id] = row[8]
         header2taxon2text["species"][taxon_id] = row[9]
-    print(header2taxon2text)
+
     sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 ' \
                ' on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 

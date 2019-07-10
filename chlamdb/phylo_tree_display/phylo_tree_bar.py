@@ -51,7 +51,7 @@ def plot_tree_text_metadata(tree_file,
             n.inner_background.color = "white"
             n.opacity = 1.
             #n.rotation = 270
-            leaf.add_face(n, column, position="aligned")
+            leaf.add_face(n, column+1, position="aligned")
         # rename leaf (taxon_id => description)        
         n = TextFace(taxon2description[leaf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
         leaf.add_face(n, 0)
