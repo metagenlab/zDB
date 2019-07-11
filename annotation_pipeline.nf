@@ -287,7 +287,11 @@ nr_seqs.collectFile(name: 'merged_nr.faa', newLine: true)
         merged_faa3
         merged_faa4
         merged_faa5
-        merged_faa6 }
+        merged_faa6
+        merged_faa7
+        merged_faa8
+        merged_faa9
+        merged_faa10 }
 
 merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
 .into { faa_chunks1
@@ -2157,6 +2161,40 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   FastTree ${og} > ${og.baseName}.nwk
   """
 }
+
+
+process execute_BPBAac {
+
+  conda 'r::r-e1071 r::r-base'
+
+  publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
+
+  when:
+  params.effector_prediction == true
+
+  input:
+  file(nr_fasta) from merged_faa7
+
+  output:
+  file 'FinalResult.csv' into BPBAac_results
+
+  script:
+  """
+  ln -s $BPBAac_HOME/BPBAacPre.R
+  ln -s $BPBAac_HOME/BPBAac.Rdata
+  ln -s $BPBAac_HOME/Classify.pl
+  ln -s $BPBAac_HOME/DataPrepare.pl
+  ln -s $BPBAac_HOME/Feature100.pl
+  ln -s $BPBAac_HOME/Integ.pl
+  ln -s $BPBAac_HOME/Neg100AacFrequency
+  ln -s $BPBAac_HOME/Pos100AacFrequency
+  sed 's/CRC-/CRC/g'  ${nr_fasta} > edited_fasta.faa
+  perl DataPrepare.pl edited_fasta.faa;
+  Rscript BPBAacPre.R;
+  sed -i 's/CRC/CRC-/g' FinalResult.csv;
+  """
+}
+
 
 workflow.onComplete {
   // Display complete message
