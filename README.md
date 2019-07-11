@@ -151,9 +151,9 @@
 - [X] get proteome match
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
 - [X] execute T3 effector prediction: BPBAac
-- [ ] execute T3 effector prediction: T3_MM
+- [X] execute T3 effector prediction: T3_MM
 - [X] execute T3 effector prediction: effectiveT3
-- [ ] execute T3 effector prediction: DeepT3
+- [X] execute T3 effector prediction: DeepT3
 - [ ] get cross-references from uniprot IdMapping? Or from uniprot db itself? (cross references from indexed uniprotKB xml)
   - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
   - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId

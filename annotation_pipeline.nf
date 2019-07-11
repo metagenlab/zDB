@@ -2176,7 +2176,7 @@ process execute_BPBAac {
   file(nr_fasta) from merged_faa7
 
   output:
-  file 'FinalResult.csv' into BPBAac_results
+  file 'BPBAac_results.csv' into BPBAac_results
 
   script:
   """
@@ -2192,6 +2192,7 @@ process execute_BPBAac {
   perl DataPrepare.pl edited_fasta.faa;
   Rscript BPBAacPre.R;
   sed -i 's/CRC/CRC-/g' FinalResult.csv;
+  mv FinalResult.csv BPBAac_results.csv;
   """
 }
 
@@ -2242,6 +2243,29 @@ process execute_DeepT3 {
   """
 }
 
+
+process execute_T3_MM {
+
+  conda 'keras=2.2.4 biopython=1.73'
+
+  publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
+
+  when:
+  params.effector_prediction == true
+
+  input:
+  file(nr_fasta) from merged_faa10
+
+  output:
+  file 'T3_MM_results.csv' into T3_MM_results
+
+  script:
+  """
+  ln -s $T3_MM_HOME/log.freq.ratio.txt
+  perl $T3_MM_HOME/T3_MM.pl ${nr_fasta}
+  mv final.result.csv T3_MM_results.csv
+  """
+}
 
 workflow.onComplete {
   // Display complete message
