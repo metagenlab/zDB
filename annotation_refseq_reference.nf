@@ -165,19 +165,21 @@ SeqIO.write(no_mapping_uniparc_records, no_uniparc_mapping, "fasta")
   """
 }
 
+
 no_uniparc_mapping_faa.collectFile(name: 'merged.faa', newLine: true)
     .into { merged_no_uniparc_faa }
+
 
 process execute_interproscan_no_uniparc_matches {
 
   publishDir 'refseq_annotation/interproscan', mode: 'link', overwrite: true
 
-  cpus 8
+  cpus 16
   memory '16 GB'
   conda 'anaconda::openjdk=8.0.152'
 
   input:
-  file(seq) from merged_no_uniparc_faa.splitFasta( by: 500, file: "no_uniparc_match_chunk_" )
+  file(seq) from merged_no_uniparc_faa.splitFasta( by: 5000, file: "no_uniparc_match_chunk_" )
 
   output:
   file '*gff3' into interpro_gff3_no_uniparc
