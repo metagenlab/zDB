@@ -182,12 +182,7 @@ process execute_interproscan_no_uniparc_matches {
   file(seq) from merged_no_uniparc_faa.splitFasta( by: 5000, file: "no_uniparc_match_chunk_" )
 
   output:
-  file '*gff3' into interpro_gff3_no_uniparc
-  file '*html.tar.gz' into interpro_html_no_uniparc
-  file '*svg.tar.gz' into interpro_svg_no_uniparc
   file '*tsv' into interpro_tsv_no_uniparc
-  file '*xml' into interpro_xml_no_uniparc
-  file '*log' into interpro_log_no_uniparc
 
   script:
   n = seq.name
