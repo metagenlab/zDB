@@ -2196,6 +2196,29 @@ process execute_BPBAac {
 }
 
 
+process execute_effectiveT3 {
+
+  conda 'openjdk=8.0.152 blast-legacy=2.2.26'
+
+  publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
+
+  when:
+  params.effector_prediction == true
+
+  input:
+  file(nr_fasta) from merged_faa8
+
+  output:
+  file 'effective_t3.out' into effectiveT3_results
+
+  script:
+  """
+  ln -s $EFFECTIVE_T3_HOME/module
+  java -jar $EFFECTIVE_T3_HOME/TTSS_GUI-1.0.1.jar -f ${nr_fasta} -m TTSS_STD-2.0.2.jar -t cutoff=0.9999 -o effective_t3.out -q
+  """
+}
+
+
 workflow.onComplete {
   // Display complete message
   log.info "Completed at: " + workflow.complete
