@@ -192,8 +192,8 @@ process execute_interproscan_no_uniparc_matches {
   script:
   n = seq.name
   """
-  echo $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus}
-  bash $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus} >> ${n}.log
+  echo $INTERPRO_HOME/interproscan.sh -f TSV -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus}
+  bash $INTERPRO_HOME/interproscan.sh -f TSV -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus} >> ${n}.log
   """
 }
 
