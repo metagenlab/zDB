@@ -2219,6 +2219,30 @@ process execute_effectiveT3 {
 }
 
 
+process execute_DeepT3 {
+
+  conda 'keras=2.2.4 biopython=1.73'
+
+  publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
+
+  when:
+  params.effector_prediction == true
+
+  input:
+  file(nr_fasta) from merged_faa9
+
+  output:
+  file 'DeepT3_results.tab' into DeepT3_results
+
+  script:
+  """
+  # replace ambiguous amino acid with X
+  sed -i 's/J/X/g' ${nr_fasta}
+  python $DeepT3_HOME/DeepT3_scores.py -f ${nr_fasta} -o DeepT3_results.tab -d $DeepT3_HOME
+  """
+}
+
+
 workflow.onComplete {
   // Display complete message
   log.info "Completed at: " + workflow.complete
