@@ -83,7 +83,7 @@ if (params.ncbi_sample_sheet != false){
     params.ncbi_sample_sheet != false
 
     input:
-    each assembly from assembly_accession_list
+    each accession from assembly_accession_list
 
     cpus 1
 
