@@ -92,6 +92,7 @@ if (params.ncbi_sample_sheet != false){
   #!/usr/bin/env python
 
   import re
+  import time
   from ftplib import FTP
   from Bio import Entrez, SeqIO
   Entrez.email = "trestan.pillonel@chuv.ch"
@@ -99,6 +100,7 @@ if (params.ncbi_sample_sheet != false){
 
   accession_list = "${assembly_accession_list}".split(' ')
   for accession in accession_list:
+    time.sleep(3s)
     handle1 = Entrez.esearch(db="assembly", term="%s" % accession)
     record1 = Entrez.read(handle1)
 
@@ -2266,6 +2268,33 @@ process execute_T3_MM {
   mv final.result.csv T3_MM_results.csv
   """
 }
+
+
+process blast_pdb {
+
+  conda 'bioconda::blast=2.7.1'
+
+  publishDir 'annotation/pdb_mapping', mode: 'copy', overwrite: true
+
+  cpus 4
+
+  when:
+  params.pdb == true
+
+  input:
+  file(seq) from no_pdb_mapping.splitFasta( by: 1000, file: "chunk_" )
+
+  output:
+  file '*tab' into pdb_blast
+
+  script:
+
+  n = seq.name
+  """
+  blastp -db $params.databases_dir/pdb/pdb_seqres.faa -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}.tab
+  """
+}
+
 
 workflow.onComplete {
   // Display complete message

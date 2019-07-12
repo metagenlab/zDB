@@ -125,7 +125,12 @@
 - [X] use celery for circos_main view
 - [X] load PMID string mapping
 - [X] load checkM
+- [ ] load T3SS effector predictions
+- [ ] get effectiveT3 "eukaryote" domains
+- [ ] load pdb best hits
 - [ ] load cross-references
+- [ ] update PMID
+- [ ] show confidence scores for PDB, KEGG, COG,... (identity, score, evalue,...)
 - [ ] add uniprot proteome column (+ percent overlap)
 - [ ] load RBBH data (for identity distribution plots)
 - [ ] get species table ==> display on homepage
@@ -154,6 +159,7 @@
 - [X] execute T3 effector prediction: T3_MM
 - [X] execute T3 effector prediction: effectiveT3
 - [X] execute T3 effector prediction: DeepT3
+- [X] BLASTp vs pdb
 - [ ] get cross-references from uniprot IdMapping? Or from uniprot db itself? (cross references from indexed uniprotKB xml)
   - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
   - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
