@@ -12380,13 +12380,7 @@ def profile_interactions(request, orthogroup):
         #print 'plot ok, drawing plot'
         path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
         asset_path = '/temp/ortho_tree.svg'
-        tree.render(path, dpi=800, h=600, tree_style=style)
-
-
-
-
-
-
+        tree.render(path, dpi=500, tree_style=style)
 
 
     return render(request, 'chlamdb/profile_interactions.html', locals())
@@ -12455,7 +12449,7 @@ def neig_interactions(request, locus_tag):
         tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all, reference_column=orthogroup_n)
         path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
         asset_path = '/temp/ortho_tree.svg'
-        tree.render(path, dpi=800, h=600, tree_style=style)
+        tree.render(path, dpi=500, tree_style=style)
 
         sql = 'select taxon_id from biosqldb.orthology_detail_%s where locus_tag ="%s" group by taxon_id' % (biodb, locus_tag)
 
@@ -12477,10 +12471,6 @@ def neig_interactions(request, locus_tag):
         locus_tags, orthogroup_list = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, [middle_locus_tag],
                                                                           temp_file.name, int(29000),
                                                                           cache, color_locus_list=locus_tag_list)
-
-
-
-
 
 
 
