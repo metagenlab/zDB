@@ -126,8 +126,8 @@ if (params.ncbi_sample_sheet != false){
     print(filelist)
     for file in filelist:
       ftp.retrbinary("RETR "+file, open(file, "wb").write)
-    print(${accession})
-    download_genome(${accession})
+    print("${accession}")
+    download_genome("${accession}")
     """
   }
 }
