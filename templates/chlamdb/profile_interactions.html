@@ -11,10 +11,10 @@
     {% get_static_prefix as STATIC_PREFIX %}
 
     {% include "chlamdb/header.html" %}
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
     <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
-    <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.8.1/cytoscape.min.js"></script>
 
 
     <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.js"></script>
@@ -49,14 +49,8 @@
 
         <div id="my-tab-content" class="tab-content">
             <div class="tab-pane active" id="tab1">
-                <div id="export_bouttons_groups">
-                    <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
 
-                    <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-                    <br/>
-                </div>
-
-                <p>Number of orthogroups: {{ sum_group }} </p>
+                <p>Orthogroups with similar profiles:</p>
 
                 <table class="table" id="table_groups">
 
