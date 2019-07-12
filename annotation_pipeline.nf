@@ -79,6 +79,8 @@ if (params.ncbi_sample_sheet != false){
     maxRetries 3
     errorStrategy 'ignore'
 
+    echo true
+
     when:
     params.ncbi_sample_sheet != false
 
