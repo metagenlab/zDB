@@ -75,11 +75,15 @@ if (params.ncbi_sample_sheet != false){
 
     publishDir 'data/gbk_ncbi', mode: 'copy', overwrite: true
 
+    maxForks 2
+    maxRetries 3
+    errorStrategy 'ignore'
+
     when:
     params.ncbi_sample_sheet != false
 
     input:
-    val assembly_accession_list from assembly_accession_list.collect()
+    each assembly from assembly_accession_list
 
     cpus 1
 
@@ -97,8 +101,6 @@ if (params.ncbi_sample_sheet != false){
   from Bio import Entrez, SeqIO
   Entrez.email = "trestan.pillonel@chuv.ch"
   Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
-
-  accession_list = "${assembly_accession_list}".split(' ')
 
   def download_genome(accession):
     handle1 = Entrez.esearch(db="assembly", term="%s" % accession)
@@ -124,15 +126,8 @@ if (params.ncbi_sample_sheet != false){
     print(filelist)
     for file in filelist:
       ftp.retrbinary("RETR "+file, open(file, "wb").write)
-
-  for accession in accession_list:
-    print(accession)
-    time.sleep(1)
-    try:
-      download_genome(accession)
-    except RuntimeError:
-        time.sleep(10)
-        download_genome(accession)
+    print(${accession})
+    download_genome(${accession})
     """
   }
 }
