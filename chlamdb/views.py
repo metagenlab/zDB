@@ -10704,10 +10704,10 @@ def search(request):
 
             if search_type == "no_exact_accession":
 
-                    # CREATE FULLTEXT INDEX GPF ON orthology_detail_2019_06_PVC(gene);
-                    # CREATE FULLTEXT INDEX GPF ON orthology_detail_2019_06_PVC(product);
-                    # CREATE FULLTEXT INDEX GPF ON orthology_detail_2019_06_PVC(organism);
-                    # CREATE FULLTEXT INDEX GPF2 ON orthology_detail_2019_06_PVC(gene,product,organism);
+                    # CREATE FULLTEXT INDEX GPF1 ON orthology_detail_2019_06_PVC(gene);
+                    # CREATE FULLTEXT INDEX GPF2 ON orthology_detail_2019_06_PVC(product);
+                    # CREATE FULLTEXT INDEX GPF3 ON orthology_detail_2019_06_PVC(organism);
+                    # CREATE FULLTEXT INDEX GPF4 ON orthology_detail_2019_06_PVC(gene,product,organism);
                     sql = 'SELECT %s, ' \
                           ' MATCH (gene) AGAINST ("%s") AS rel1, ' \
                           ' MATCH (product) AGAINST ("%s") AS rel2, ' \

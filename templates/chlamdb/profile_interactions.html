@@ -76,7 +76,7 @@
 
                 <p>Number of orthogroups: {{ sum_group }} </p>
 
-                <table class="sortable" id="table_groups">
+                <table class="table" id="table_groups">
 
                     <thead>
                         <tr>
@@ -122,5 +122,27 @@
 
 </body>
 {{script|safe}}
-</html>
 
+<script>
+$(document).ready(function() {
+    $('#table_groups').DataTable( {
+            dom: 'Bfrtip',
+            "order": [[2, "desc" ]],
+            "pageLength": 15,
+            "paging":   true,
+            "ordering": true,
+            "info":     false,
+            buttons: [
+            {
+                extend: 'excel',
+                title: '{{ fam }}'
+            },
+            {
+                extend: 'csv',
+                title: '{{ fam }}'
+            }
+            ],
+        } );
+    } );
+</script>
+</html>
