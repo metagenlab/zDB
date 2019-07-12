@@ -71,7 +71,7 @@ if (params.local_sample_sheet != false){
 if (params.ncbi_sample_sheet != false){
   process download_assembly {
 
-    conda 'bioconda::biopython=1.68'
+    conda 'bioconda::biopython=1.73'
 
     publishDir 'data/gbk_ncbi', mode: 'copy', overwrite: true
 
