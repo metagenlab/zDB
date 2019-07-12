@@ -7,9 +7,10 @@
 
 <head>
     {% load staticfiles %}
-    {% load custom_tags %}
     {% load static %}
     {% get_static_prefix as STATIC_PREFIX %}
+
+    {% include "chlamdb/header.html" %}
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
     <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
@@ -22,8 +23,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/4.10.3/css/bootstrap-slider.min.css">
     <script type="text/javascript" src="{% static 'js/cytoscape-cola.js' %}"></script>
-
-    {% include "chlamdb/header.html" %}
+    
 
 {{script|safe}}
 
