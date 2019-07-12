@@ -100,7 +100,7 @@ if (params.ncbi_sample_sheet != false){
 
   accession_list = "${assembly_accession_list}".split(' ')
   for accession in accession_list:
-    time.sleep(3s)
+    time.sleep(3)
     handle1 = Entrez.esearch(db="assembly", term="%s" % accession)
     record1 = Entrez.read(handle1)
 
