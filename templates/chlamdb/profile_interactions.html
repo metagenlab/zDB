@@ -80,26 +80,27 @@
 
                     <thead>
                         <tr>
-                        <th></th>
-                        <th id="entete_locus">Orthogroup</th>
-                        <th>Genes</th>
-                        <th>Products</th>
-                        <th>Cogs</th>
-                        <th>Pfam</th>
+                            <th>#</th>
+                            <th>Orthogroup</th>
+                            <th>Genes</th>
+                            <th>Products</th>
+                            <th>Cogs</th>
+                            <th>Pfam</th>
                         </tr>
                     </thead>
+                    <tbody>
+                        {% for value in match_groups_data %}
+                            <tr>
+                                <td>{{value.0}}</td>
+                                <td><a href="{% url 'locusx' value.1 True%}" target="_top">{{value.1}}</a></td>
+                                <td>{{value.2|safe}}</td>
+                                <td>{{value.3|safe}}</td>
+                                <td>{{value.4|safe}}</td>
+                                <td>{{value.5|safe}}</td>
 
-                    {% for value in match_groups_data %}
-                        <tr>
-                            <td>{{value.0}}</td>
-                            <td><a href="{% url 'locusx' value.1 True%}" target="_top">{{value.1}}</a></td>
-                            <td>{{value.2|safe}}</td>
-                            <td>{{value.3|safe}}</td>
-                            <td>{{value.4|safe}}</td>
-                            <td>{{value.5|safe}}</td>
-
-                        </tr>
-                    {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
                 </table>
             </div>
             <div class="tab-pane" id="tab2">
