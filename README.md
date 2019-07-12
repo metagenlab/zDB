@@ -130,6 +130,7 @@
 - [ ] load pdb best hits
 - [ ] load cross-references
 - [ ] update PMID
+- [ ] deal with search for KO, KEGG, IP absent from genomes included in the database
 - [ ] show confidence scores for PDB, KEGG, COG,... (identity, score, evalue,...)
 - [ ] add uniprot proteome column (+ percent overlap)
 - [ ] load RBBH data (for identity distribution plots)
@@ -256,7 +257,8 @@
 - [X] download representative/reference genomes from RefSeq database
 - [X] annotate each genome with InterproScan: use exact match to uniparc to get precomputed annotations
 - [X] annotate representative genomes with kofamscan => phylogenetic profile of KO, modules, pathways,...
-- [ ] execute local interproscan for unannotated proteins
+- [X] execute local interproscan for unannotated proteins
+- [X] execute rpsblast COG cdd 
 - alternative option: work with uniprotkb proteomes 1) exclude anomalous proteomes based on refseq data 2) get species taxid for each proteome 3) remove redudancy (keep one prepresentative per species taxid) 4) retrieve interpro annotation from interproscan uniparc annotations
 - [ ]make stats from ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_genbank.txt: superkingdom, annotated genomes,...
 - [ ] use GTDB rather than NCBI taxonomy? ==> does not include eukaryotes

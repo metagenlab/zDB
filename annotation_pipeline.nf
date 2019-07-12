@@ -99,8 +99,8 @@ if (params.ncbi_sample_sheet != false){
   Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
 
   accession_list = "${assembly_accession_list}".split(' ')
-  for accession in accession_list:
-    time.sleep(3)
+
+  def download_genome(accession):
     handle1 = Entrez.esearch(db="assembly", term="%s" % accession)
     record1 = Entrez.read(handle1)
 
@@ -124,6 +124,15 @@ if (params.ncbi_sample_sheet != false){
     print(filelist)
     for file in filelist:
       ftp.retrbinary("RETR "+file, open(file, "wb").write)
+
+  for accession in accession_list:
+    print(accession)
+    time.sleep(1)
+    try:
+      download_genome(accession)
+    except RuntimeError:
+        time.sleep(10)
+        download_genome(accession)
     """
   }
 }
