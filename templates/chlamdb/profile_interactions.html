@@ -9,28 +9,11 @@
     {% load staticfiles %}
     {% load static %}
     {% get_static_prefix as STATIC_PREFIX %}
-    <script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
 
-    <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
-    <!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
-    <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
-
-    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
-
-    <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style_cytoscape.css' %}" />
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+    {% include "chlamdb/header.html" %}
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-
-    <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
     <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
     <script src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
 
 
@@ -39,9 +22,8 @@
     <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.2.5/cytoscape-qtip.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/4.10.3/css/bootstrap-slider.min.css">
-
     <script type="text/javascript" src="{% static 'js/cytoscape-cola.js' %}"></script>
-
+    
 </head>
 
 <body height="2000px">
