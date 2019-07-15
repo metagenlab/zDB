@@ -69,7 +69,7 @@ def get_accessions(database_name, all=False, plasmid=False):
         description = re.sub(".contig.0_1, whole genome shotgun sequence.", "", description)
         #accession_choices[i] = (accession[0], description)
         if description in accessions.values():
-            accessions += ' v2'
+            description += ' v2'
         accessions[accession[0]] = description
 
     accession_choices = []
