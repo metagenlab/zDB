@@ -316,6 +316,9 @@ process prepare_orthofinder {
 
   conda 'bioconda::orthofinder=2.2.7'
 
+  when:
+  params.orthofinder == true
+
   input:
     file genome_list from faa_genomes1.collect()
 
@@ -340,6 +343,10 @@ process blast_orthofinder {
   file complete_dir from result_dir
   each seq from species_fasta
   each blastdb from species_blastdb
+
+
+  when:
+  params.orthofinder == true
 
   output:
   file "${complete_dir.baseName}/WorkingDirectory/Blast${species_1}_${species_2}.txt" into blast_results
