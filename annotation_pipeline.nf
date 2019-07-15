@@ -2254,8 +2254,8 @@ process execute_DeepT3 {
   script:
   """
   # replace ambiguous amino acid with X
-  sed -i 's/J/X/g' ${nr_fasta}
-  python $DeepT3_HOME/DeepT3_scores.py -f ${nr_fasta} -o DeepT3_results.tab -d $DeepT3_HOME
+  replace_ambiguous_aa.py -i ${nr_fasta} > nr_edit.faa
+  python $DeepT3_HOME/DeepT3_scores.py -f nr_edit.faa -o DeepT3_results.tab -d $DeepT3_HOME
   """
 }
 
