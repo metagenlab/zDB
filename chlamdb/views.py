@@ -12479,6 +12479,73 @@ def neig_interactions(request, locus_tag):
     return render(request, 'chlamdb/neig_interactions.html', locals())
 
 
+def similarity_network(request, orthogroup, annotation):
+    biodb = settings.BIODB
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    if annotation == 'ko':
+        sql = 'select locus_tag,t5.ko_accession from annotation.seqfeature_id2locus_%s t1 ' \
+              ' inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+              ' inner join orthology.orthogroup_%s t3 on t2.orthogroup_id=t3.orthogroup_id ' \
+              ' inner join enzyme.seqfeature_id2ko_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
+              ' inner join enzyme.ko_annotation t5 on t4.ko_id=t5.ko_id where t3.orthogroup_name="%s";' % (biodb, 
+                                                                                                           biodb, 
+                                                                                                           biodb, 
+                                                                                                           biodb, 
+                                                                                                           
+                                                                                                           orthogroup)
+
+    locus2annotation = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    
+    unique_annotations = list(set(locus2annotation.values()))
+    annotation2group = {}
+    unique_annotations.append(None)
+    for n, value in enumerate(unique_annotations):
+        annotation2group[value] = n
+    
+    sql = 'select * from orth_%s.%s where identity!=0;' % (biodb, orthogroup)
+    data = [i for i in server.adaptor.execute_and_fetchall(sql,)]
+
+    edge_list = []
+    node2id = {}
+    id = 0
+    node_list = []
+    for row in data:
+        node_1 = row[1]
+        node_2 = row[2]
+        identity = row[3]
+        if node_1 == node_2:
+            continue
+
+        if node_1 not in locus2annotation:
+            locus2annotation[node_1] = None
+        if node_2 not in locus2annotation:
+            locus2annotation[node_2] = None
+        
+        if node_1 not in node2id:
+            node2id[node_1] = id
+            id+=1
+            node_list.append({"id": node2id[node_1], "label": node_1, "title": 'Locus_tag: ' + node_1 + '<br> %s: %s ' % (annotation, locus2annotation[node_1]) , "group": annotation2group[locus2annotation[node_1]]})
+        if node_2 not in node2id:
+            node2id[node_2] = id
+            id+=1
+            node_list.append({"id": node2id[node_2], "label": node_2, "title": 'Locus_tag: ' + node_2 + '<br> %s: %s ' % (annotation, locus2annotation[node_2]), "group": annotation2group[locus2annotation[node_2]]})
+        edge_list.append({"from": node2id[node_1], "to": node2id[node_2], "length": 100-float(identity), "label": identity})        
+    
+    '''
+    [{from: 1, to: 15},
+    {from: 1, to: 97} ]
+    
+      {id: 735, label: 'Yuya Osako', title: 'Country: ' + 'Japan' + '<br>' + 'Team: ' + '1860 München', value: 22, group: 27, x: 806.69904, y: 633.54565},
+      {id: 736, label: 'Zvjezdan Misimovic', title: 'Country: ' + 'Bosnia and Herzegovina' + '<br>' + 'Team: ' + 'Guizhou Renhe', value: 22, group: 20, x: 1277.4697, y: -479.12265}
+  
+    '''
+    envoi = True
+
+    return render(request, 'chlamdb/similarity_network.html', locals())
+
+
 
 def orthogroup_conservation_tree(request, orthogroup_or_locus):
     biodb = settings.BIODB

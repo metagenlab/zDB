@@ -110,6 +110,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^plot_region_direct/([a-zA-Z0-9_]+)$', views.plot_region_direct, name="plot_region_direct"),
                        url(r'^orthogroups/$', views.orthogroups, name="orthogroups"),
                        url(r'^multipleGC/$', views.multipleGC, name="multipleGC"),
+                       url(r'^similarity_network/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$', views.similarity_network, name="similarity_network"),
                        url(r'^multiple_codon_usage/$', views.multiple_codon_usage, name="multiple_codon_usage"),
                        url(r'^circos/$', views.circos, name="circos"),
                        url(r'^curated_taxonomy/$', views.curated_taxonomy, name="curated_taxonomy"),
