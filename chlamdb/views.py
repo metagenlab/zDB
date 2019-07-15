@@ -12534,7 +12534,7 @@ def similarity_network(request, orthogroup, annotation):
             node_list.append({"id": node2id[node_2], "label": node_2, "title": 'Locus_tag: ' + node_2 + '<br> %s: %s ' % (annotation, locus2annotation[node_2]), "group": annotation2group[locus2annotation[node_2]]})
         
         
-        if float(identity) > 80:
+        if float(identity) >= 0:
             edge_list.append({"from": node2id[node_1], "to": node2id[node_2], "length": 100-float(identity), "label": identity})        
     
     '''
