@@ -45,7 +45,7 @@ Disallow: /metabo_comparison_ko
 Disallow: /
 
 Allow: /about
-Allow: /index
+Allow: /home
 Allow: /$
 
 Sitemap : http://www.chlamdb.ch/sitemap
