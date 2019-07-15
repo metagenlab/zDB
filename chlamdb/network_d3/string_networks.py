@@ -238,7 +238,7 @@ class orthogroup2network:
 
 
 def generate_network(biodb,
-                     locus_tag_list,
+                     seqfeature_id_list,
                      target_locus_list,
                      ratio_limit,
                      scale_link=True,
@@ -251,7 +251,7 @@ def generate_network(biodb,
 
 
     server, db = manipulate_biosqldb.load_db(biodb)
-    filter = '"' + '","'.join(locus_tag_list) + '"'
+    filter =  ','.join([str(i) for i in seqfeature_id_list])
     sql = 'select * from interactions.colocalization_table_locus_%s where (locus_1 in (%s) or locus_2 in (%s)) and ratio>=%s;' % (biodb, filter, filter, ratio_limit)
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -968,13 +968,13 @@ layout: {
     return template % (',\n'.join(node_list), ',\n'.join(edge_list))
 
 
-def get_subgraph(biodb, locus_tag_list, ratio_limit, target_locus):
+def get_subgraph(biodb, seqfeature_id_list, ratio_limit, target_locus):
 
     import networkx as nx
     from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
-    myfilter = '"' + '","'.join(locus_tag_list) + '"'
+    myfilter =  ','.join([str(i) for i in seqfeature_id_list])
     sql = 'select * from interactions.colocalization_table_locus_%s where (locus_1 in (%s) or locus_2 in (%s)) and ratio>=%s;' % (biodb, myfilter, myfilter, ratio_limit)
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -1010,6 +1010,7 @@ def get_subgraph(biodb, locus_tag_list, ratio_limit, target_locus):
         if len(common) > 0:
             locus_keep+=n_list
     return locus_keep
+
 
 if __name__ == '__main__':
     import argparse

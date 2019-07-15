@@ -12053,19 +12053,19 @@ def interactions_genome(request):
             taxon_id = form.cleaned_data['genome']
             target_list = [i.rstrip() for i in form.cleaned_data['locus_list'].split('\n')]
 
-            sql = 'select locus_tag from orthology_detail_%s where taxon_id="%s"' % (biodb, taxon_id)
+            sql = 'select seqfeature_id from annotation.seqfeature_id2locus_%s where taxon_id="%s"' % (biodb, taxon_id)
 
-            locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+            seqfeature_id_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
             #print len(locus_list)
 
             #all_groups_neig = string_networks.find_links_recusrsive(biodb, locus_list, 0.8, n_comp_cutoff=2)
 
             #print "all_groups_neig", all_groups_neig
 
-            sql = 'select locus_tag, gene, product from orthology_detail_%s where taxon_id="%s"' % (biodb, taxon_id)
+            sql = 'select seqfeature_id, gene, product from orthology_detail_%s where taxon_id="%s"' % (biodb, taxon_id)
             locus2gene_product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-            sql = 'select locus_tag,interpro_accession,interpro_description from interpro_%s ' \
+            sql = 'select seqfeature_id,interpro_accession,interpro_description from interpro_%s ' \
                   ' where taxon_id=%s and interpro_accession != "0" group by locus_tag,interpro_accession' % (biodb, taxon_id)
 
             locus2interpro = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -12085,9 +12085,9 @@ def interactions_genome(request):
             '''
             if len (target_list) > 1:
                 #print 'target list!!!', target_list
-                locus_filter = string_networks.get_subgraph(biodb, locus_list, 0.8, target_list)
+                locus_filter = string_networks.get_subgraph(biodb, seqfeature_id_list, 0.8, target_list)
             else:
-                locus_filter = locus_list
+                locus_filter = seqfeature_id_list
             #print 'locus filter',locus_filter
             #print 'target list',target_list
             script = string_networks.generate_network(biodb,
