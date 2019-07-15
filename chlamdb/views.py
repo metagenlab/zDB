@@ -12472,7 +12472,7 @@ def neig_interactions(request, locus_tag):
                                                                           temp_file.name, int(29000),
                                                                           cache, color_locus_list=locus_tag_list)
 
-        sql = 'select seqfeature_id from annotation.seqfeature_id2locus_%s where locus_tag in ("%s")' % '","'.join(locus_tag_list)
+        sql = 'select seqfeature_id from annotation.seqfeature_id2locus_%s where locus_tag in ("%s")' % (biodb, '","'.join(locus_tag_list))
         seqfeature_id_list = [i[0] for i in cursor.execute_and_fetchall(sql,)]
     script = string_networks.generate_network(biodb, seqfeature_id_list, [locus_tag], 0.7, scale_link=True)
 
