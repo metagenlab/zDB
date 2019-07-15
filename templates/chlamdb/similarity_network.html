@@ -27,7 +27,7 @@
 
                   <h3>Similarity Network</h3>
                 <div id="config"></div>
-                
+
                   <div id="mynetwork"></div>
 
 
@@ -73,20 +73,12 @@ var edges = {{edge_list|safe}};
         hideEdgesOnDrag: true,
         tooltipDelay: 200
       },
-      physics: true,
-      layout: {
-        randomSeed: 222,
-        improvedLayout:true,
-        hierarchical: {
-          enabled:false,
-          levelSeparation: 150,
-          nodeSpacing: 100,
-          treeSpacing: 200,
-          blockShifting: true,
-          edgeMinimization: true,
-          parentCentralization: true,
-          direction: 'UD',        // UD, DU, LR, RL
-          sortMethod: 'hubsize'   // hubsize, directed
+      physics: {
+        stabilization: false,
+        barnesHut: {
+          gravitationalConstant: -80000,
+          springConstant: 0.001,
+          springLength: 200
         }
       },
       configure: {
