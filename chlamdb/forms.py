@@ -68,11 +68,11 @@ def get_accessions(database_name, all=False, plasmid=False):
         description = re.sub("Candidatus ", "", description)
         description = re.sub(".contig.0_1, whole genome shotgun sequence.", "", description)
         accession_choices[i] = (accession[0], description)
-        accessions[description] = accession[0]
+        accessions[accession[0]] = description
 
     accession_choices = []
-    for description in sorted(accessions.keys()):
-        accession_choices.append([accessions[description], description])
+    for accession in sorted(accessions.keys()):
+        accession_choices.append([accession, accessions[accession]])
 
     if all:
         accession_choices = [["all", "all"]] + accession_choices
