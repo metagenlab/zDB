@@ -77,7 +77,7 @@ if (params.ncbi_sample_sheet != false){
 
     maxForks 2
     maxRetries 3
-    //errorStrategy 'ignore'
+    errorStrategy 'ignore'
 
     echo false
 
