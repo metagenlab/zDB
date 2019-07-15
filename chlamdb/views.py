@@ -287,23 +287,51 @@ def home(request):
     return render(request, 'chlamdb/home.html', locals())
 
 
-def substription():
-    create_user('tpillone', 'trestan.pillonel@gmail.com', 'estrella3', "Trestan", "Pillonel")
-
-#cache = pylibmc.Client(['127.0.0.1:8000'])
-
-
 def curated_taxonomy(request):
     
+    from chlamdb.phylo_tree_display import phylo_tree_bar
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)    
-    sql = 'select t5.AssemblyAccession,t1.accession,t1.taxon_id as assembly_id,t1.description,t3.* from bioentry t1' \
+    sql = 'select distinct t5.AssemblyAccession,t1.accession,t1.taxon_id as assembly_id,t1.description,t3.* from bioentry t1' \
             ' inner join taxid2species_%s t2 on t1.taxon_id=t2.taxon_id ' \
             ' inner join species_curated_taxonomy_%s t3 on t2.species_id=t3.species_id ' \
             ' left join bioentry2assembly_%s t4 on t1.bioentry_id=t4.bioentry_id ' \
             ' left join assembly_metadata_%s t5 on t4.assembly_id=t5.assembly_id;' % (biodb, biodb, biodb, biodb)
             
     data = server.adaptor.execute_and_fetchall(sql,)
+
+    header2taxon2text = {}
+    for n, row in enumerate(data):
+        taxon_id = row[2]
+        if n == 0:
+            header2taxon2text["species_id"] = {}
+            header2taxon2text["phylum"] = {}
+            header2taxon2text["order"] = {}
+            header2taxon2text["family"] = {}
+            header2taxon2text["genus"] = {}
+            header2taxon2text["species"] = {}
+
+        header2taxon2text["species_id"][taxon_id] = row[4]
+        header2taxon2text["phylum"][taxon_id] = row[5]
+        header2taxon2text["order"][taxon_id] = row[6]
+        header2taxon2text["family"][taxon_id] = row[7]
+        header2taxon2text["genus"][taxon_id] = row[8]
+        header2taxon2text["species"][taxon_id] = row[9]
+
+    sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 ' \
+               ' on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
+
+    tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+
+    tree, style = phylo_tree_bar.plot_tree_text_metadata(tree,
+                                                         header2taxon2text,
+                                                         ["species_id","phylum", "order", "family", "genus", "species"],
+                                                         biodb)
+
+    path1 = settings.BASE_DIR + '/assets/temp/interpro_tree2.svg'
+    asset_path1 = '/temp/interpro_tree2.svg'
+    tree.render(path1, dpi=550, tree_style=style)
+
     return render(request, 'chlamdb/curated_taxonomy.html', locals())
 
 
@@ -10676,10 +10704,10 @@ def search(request):
 
             if search_type == "no_exact_accession":
 
-                    # CREATE FULLTEXT INDEX GPF ON orthology_detail_2019_06_PVC(gene);
-                    # CREATE FULLTEXT INDEX GPF ON orthology_detail_2019_06_PVC(product);
-                    # CREATE FULLTEXT INDEX GPF ON orthology_detail_2019_06_PVC(organism);
-                    # CREATE FULLTEXT INDEX GPF2 ON orthology_detail_2019_06_PVC(gene,product,organism);
+                    # CREATE FULLTEXT INDEX GPF1 ON orthology_detail_2019_06_PVC(gene);
+                    # CREATE FULLTEXT INDEX GPF2 ON orthology_detail_2019_06_PVC(product);
+                    # CREATE FULLTEXT INDEX GPF3 ON orthology_detail_2019_06_PVC(organism);
+                    # CREATE FULLTEXT INDEX GPF4 ON orthology_detail_2019_06_PVC(gene,product,organism);
                     sql = 'SELECT %s, ' \
                           ' MATCH (gene) AGAINST ("%s") AS rel1, ' \
                           ' MATCH (product) AGAINST ("%s") AS rel2, ' \
@@ -12352,13 +12380,7 @@ def profile_interactions(request, orthogroup):
         #print 'plot ok, drawing plot'
         path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
         asset_path = '/temp/ortho_tree.svg'
-        tree.render(path, dpi=800, h=600, tree_style=style)
-
-
-
-
-
-
+        tree.render(path, dpi=500, tree_style=style)
 
 
     return render(request, 'chlamdb/profile_interactions.html', locals())
@@ -12427,7 +12449,7 @@ def neig_interactions(request, locus_tag):
         tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all, reference_column=orthogroup_n)
         path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
         asset_path = '/temp/ortho_tree.svg'
-        tree.render(path, dpi=800, h=600, tree_style=style)
+        tree.render(path, dpi=500, tree_style=style)
 
         sql = 'select taxon_id from biosqldb.orthology_detail_%s where locus_tag ="%s" group by taxon_id' % (biodb, locus_tag)
 
@@ -12449,10 +12471,6 @@ def neig_interactions(request, locus_tag):
         locus_tags, orthogroup_list = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, [middle_locus_tag],
                                                                           temp_file.name, int(29000),
                                                                           cache, color_locus_list=locus_tag_list)
-
-
-
-
 
 
 

@@ -7,30 +7,24 @@
 
 <head>
     {% load staticfiles %}
-    {% load custom_tags %}
     {% load static %}
+    {% load custom_tags %}
     {% get_static_prefix as STATIC_PREFIX %}
 
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-chained/1.0.1/jquery.chained.js"></script>
-    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-1.12.3.min.js"></script>
-    <!--<script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>-->
-
+    {% include "chlamdb/header.html" %}
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
-
     <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.8.1/cytoscape.min.js"></script>
 
-    <script src="{% static 'js/cola.min.js' %}"></script>
 
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.js"></script>
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.7.1/cytoscape-qtip.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/4.10.3/css/bootstrap-slider.min.css">
     <script type="text/javascript" src="{% static 'js/cytoscape-cola.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style_cytoscape.css' %}" />
-    <script src="{% static 'js/cytoscape.min.js' %}"></script>
-    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.2.5/cytoscape-qtip.js"></script>
-
-    <!--<script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>-->
-
-    {% include "chlamdb/header.html" %}
+    
 
 {{script|safe}}
 
@@ -43,24 +37,15 @@
 
         <div class="row">
             <div class="col-lg-12 col-md-12" style="padding-left: 15px">
-                <div id="cy" style="width:600px;height:600px"></div>
-            </div>
-            <div class="col-lg-12 col-md-12" style="padding-left: 15px; width:300px;height: 800px">
-                <object type="image/svg+xml" data="{% static asset_path %}" id="cluster_profile" ></object>
+                <div id="cy" style="width:100%;height:600px"></div>
             </div>
         </div>
-
-
-
-
 
         <ul style="padding-top: 10px" id="tabs" class="nav nav-tabs" data-tabs="tabs">
             <li class="active"><a href="#tab1" data-toggle="tab">Annotation</a></li>
             <li><a href="#tab2" data-toggle="tab">Profile</a></li>
             <!--<li><a href="#tab77" data-toggle="tab" onclick="window.open('{% url 'plot_region_direct' orthogroup %}{{plot_url|safe}}', 'orthoIDframe4'); return false">Region</a></li>-->
         </ul>
-
-
 
         <div id="my-tab-content" class="tab-content">
             <div class="tab-pane active" id="tab1">

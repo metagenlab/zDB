@@ -79,8 +79,8 @@ def bioentry_metadata(biodb):
     
     assembly2data = {}
     bioentry_id2assembly_accession = {}
-    for accession in accession2bioentry_id:
-        print(accession)
+    for n, accession in enumerate(accession2bioentry_id):
+        print("%s / %s -- %s" % (n, len(accession2bioentry_id), accession))
         try:
             handle1 = Entrez.esearch(db="nuccore", term="%s[Accession]" % accession)
             record1 = Entrez.read(handle1)
@@ -91,8 +91,16 @@ def bioentry_metadata(biodb):
 
         handle2 = Entrez.elink(dbfrom="nuccore", db="assembly", id=ncbi_id)
         record2 = Entrez.read(handle2)
-
-        id = record2[0]['LinkSetDb'][0]['Link'][0]['Id']
+        try:
+            id = record2[0]['LinkSetDb'][0]['Link'][0]['Id']
+        except:
+            print("No assembly link for %s --> try from biosample" % accession)
+            handle_biosample = Entrez.elink(dbfrom="nuccore", db="biosample", id=ncbi_id)
+            record_biosample = Entrez.read(handle_biosample)
+            id_sample = record_biosample[0]['LinkSetDb'][0]['Link'][0]['Id']
+            handle2 = Entrez.elink(dbfrom="biosample", db="assembly", id=id_sample)
+            record2 = Entrez.read(handle2)
+            id = record2[0]['LinkSetDb'][0]['Link'][0]['Id']
 
         handle3 = Entrez.esummary(db='assembly',id=id, retmode='xml')
         record = Entrez.read(handle3, validate=False)
