@@ -12515,6 +12515,7 @@ def similarity_network(request, orthogroup, annotation):
         node_1 = row[1]
         node_2 = row[2]
         identity = row[3]
+        
         if node_1 == node_2:
             continue
 
@@ -12531,7 +12532,10 @@ def similarity_network(request, orthogroup, annotation):
             node2id[node_2] = id
             id+=1
             node_list.append({"id": node2id[node_2], "label": node_2, "title": 'Locus_tag: ' + node_2 + '<br> %s: %s ' % (annotation, locus2annotation[node_2]), "group": annotation2group[locus2annotation[node_2]]})
-        edge_list.append({"from": node2id[node_1], "to": node2id[node_2], "length": 100-float(identity), "label": identity})        
+        
+        
+        if float(identity) > 80:
+            edge_list.append({"from": node2id[node_1], "to": node2id[node_2], "length": 100-float(identity), "label": identity})        
     
     '''
     [{from: 1, to: 15},
