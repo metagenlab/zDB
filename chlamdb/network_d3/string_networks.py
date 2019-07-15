@@ -466,12 +466,12 @@ layout: {
     for edge in data:
         if float(edge[2])< 5:
             if scale_link:
-                edge_list.append(edge_template % (edge[0], edge[1], "47de47", (float(edge[2])*5), edge[2], edge[3]))
+                edge_list.append(edge_template % (edge[0], edge[1], "47de47", float(edge[2]), edge[2], edge[3]))
             else:
                 edge_list.append(edge_template % (edge[0], edge[1], "47de47", 2, edge[2], edge[3]))
         else:
             if scale_link:
-                edge_list.append(edge_template % (edge[0], edge[1], "ff0404", (float(edge[2])), edge[2], edge[3]))
+                edge_list.append(edge_template % (edge[0], edge[1], "ff0404", (float(edge[2]/6)), edge[2], edge[3]))
             else:
                 edge_list.append(edge_template % (edge[0], edge[1], "47de47", 10, edge[2], edge[3]))
 
