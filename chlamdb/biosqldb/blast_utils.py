@@ -301,7 +301,7 @@ class Blast():
             from io import StringIO
             from tempfile import NamedTemporaryFile
             temp_query = NamedTemporaryFile(delete=False)
-            fastastr = StringIO.StringIO()
+            fastastr = StringIO()
             SeqIO.write(query, fastastr, 'fasta')
             temp_query.write(fastastr.getvalue())
             temp_query.flush()
@@ -320,7 +320,7 @@ class Blast():
             from io import StringIO
             from tempfile import NamedTemporaryFile
             temp_db = NamedTemporaryFile(delete=False)
-            fastastrdb = StringIO.StringIO()
+            fastastrdb = StringIO()
             SeqIO.write(database, fastastrdb, 'fasta')
             temp_db.write(fastastrdb.getvalue())
             temp_db.flush()
