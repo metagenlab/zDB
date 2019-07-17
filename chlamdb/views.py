@@ -10962,7 +10962,9 @@ def blast_profile(request):
             #my_record = SeqIO.read(request.FILES['fasta_file'].open(), 'fasta')
 
 
-            tree, style1, tree2, style2, tree3, style3, locus2taxon2locus_closest = biosqldb_plot_blast_hits_phylo.plot_BBH_phylo(fasta_rec, biodb)
+            tree, style1, tree2, style2, tree3, style3, locus2taxon2locus_closest = biosqldb_plot_blast_hits_phylo.plot_BBH_phylo(fasta_rec, 
+                                                                                                                                  biodb,
+                                                                                                                                  settings.BASE_DIR + '/assets/')
 
 
             sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb

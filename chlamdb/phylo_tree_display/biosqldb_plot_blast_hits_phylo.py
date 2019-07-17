@@ -1,7 +1,10 @@
 #!/usr/bin/python
 
 
-def plot_BBH_phylo(query_fasta_record, biodb, blast_type='blastp'):
+def plot_BBH_phylo(query_fasta_record, 
+                   biodb,
+                   asset_path, 
+                   blast_type='blastp'):
 
     '''
 
@@ -17,6 +20,8 @@ def plot_BBH_phylo(query_fasta_record, biodb, blast_type='blastp'):
     from chlamdb.biosqldb import blast_utils
     from chlamdb.phylo_tree_display import ete_motifs
     from Bio import SeqIO
+    import os 
+    
     try:
         label_split = True
         ordered_accession_list = [i.id.split('|')[1] for i in query_fasta_record]
@@ -45,7 +50,7 @@ def plot_BBH_phylo(query_fasta_record, biodb, blast_type='blastp'):
         # keep accession and identity
         accession2best_hits[accession] = [i[0:3] for i in one_blast.best_hit_list]
     '''
-    faa_path = '/home/trestan/work/dev/django/chlamydia/assets/%s/faa/all.faa' % (biodb)
+    faa_path = os.path.join(asset_path, '%s/faa/all.faa' % (biodb))
     one_blast = blast_utils.Blast(query_fasta_record, faa_path)
     one_blast.run_blastp()
 
