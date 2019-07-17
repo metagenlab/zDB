@@ -303,7 +303,7 @@ class Blast():
             temp_query = NamedTemporaryFile(delete=False)
             fastastr = StringIO()
             SeqIO.write(query, fastastr, 'fasta')
-            temp_query.write(fastastr.getvalue())
+            temp_query.write(fastastr.getvalue(), "w")
             temp_query.flush()
             self.query = temp_query.name
             # add content to temporary file
@@ -322,7 +322,7 @@ class Blast():
             temp_db = NamedTemporaryFile(delete=False)
             fastastrdb = StringIO()
             SeqIO.write(database, fastastrdb, 'fasta')
-            temp_db.write(fastastrdb.getvalue())
+            temp_db.write(fastastrdb.getvalue(), "w")
             temp_db.flush()
             self.database = temp_db.name
             # add content to temporary file
