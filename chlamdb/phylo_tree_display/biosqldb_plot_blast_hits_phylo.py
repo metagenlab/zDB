@@ -23,7 +23,7 @@ def plot_BBH_phylo(query_fasta_record, biodb, blast_type='blastp'):
     except IndexError:
         label_split = False
         ordered_accession_list = [i.id for i in query_fasta_record]
-    print "ordered_accession_list", ordered_accession_list
+    print ("ordered_accession_list", ordered_accession_list)
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -113,7 +113,7 @@ def plot_BBH_phylo(query_fasta_record, biodb, blast_type='blastp'):
 
     print 'query list', query_list
     '''
-    print
+
     query_list = locus2taxon2identity_closest.keys()
     tree, style1 = ete_motifs.multiple_profiles_heatmap(biodb,
                                                 ordered_accession_list,
