@@ -3,7 +3,7 @@
 
 def run_prodigal(fasta_seq, output_name='temp.faa'):
     from Bio import SeqIO
-    import shell_command
+    from chlamdb.biosqldb import shell_command
     from  io import StringIO
     from tempfile import NamedTemporaryFile
     # -q quiet
@@ -78,7 +78,7 @@ class Hmm():
 
     def run_hmmer(self, profiles=False):
         from tempfile import NamedTemporaryFile
-        import shell_command
+        from chlamdb.biosqldb import shell_command
 
 
         if not profiles:
@@ -338,7 +338,7 @@ class Blast():
         self.formatdb = formatdb
         self.working_dir = os.getcwd()
         self.blast_path_var= 'export BLASTDB=/tmp/'
-        import shell_command
+        from chlamdb.biosqldb import shell_command
         shell_command.shell_command(self.blast_path_var)
 
 
@@ -351,7 +351,7 @@ class Blast():
         return ''.join(random.choice(chars) for _ in range(size))
 
     def format_database(self):
-        import shell_command
+        from chlamdb.biosqldb import shell_command
 
         new_database = self.id_generator(8)
 
