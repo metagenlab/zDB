@@ -300,10 +300,10 @@ class Blast():
         if type(query) == list or isinstance(query, SeqRecord.SeqRecord):
             from io import StringIO
             from tempfile import NamedTemporaryFile
-            temp_query = NamedTemporaryFile(delete=False)
+            temp_query = NamedTemporaryFile(delete=False, mode="w")
             fastastr = StringIO()
             SeqIO.write(query, fastastr, 'fasta')
-            temp_query.write(fastastr.getvalue(), "w")
+            temp_query.write(fastastr.getvalue())
             temp_query.flush()
             self.query = temp_query.name
             # add content to temporary file
@@ -319,10 +319,10 @@ class Blast():
         if type(database) == list or isinstance(database, SeqRecord.SeqRecord):
             from io import StringIO
             from tempfile import NamedTemporaryFile
-            temp_db = NamedTemporaryFile(delete=False)
+            temp_db = NamedTemporaryFile(delete=False, mode="w")
             fastastrdb = StringIO()
             SeqIO.write(database, fastastrdb, 'fasta')
-            temp_db.write(fastastrdb.getvalue(), "w")
+            temp_db.write(fastastrdb.getvalue())
             temp_db.flush()
             self.database = temp_db.name
             # add content to temporary file
