@@ -4,7 +4,7 @@
 def run_prodigal(fasta_seq, output_name='temp.faa'):
     from Bio import SeqIO
     import shell_command
-    fro  io import StringIO
+    from  io import StringIO
     from tempfile import NamedTemporaryFile
     # -q quiet
     # -a Write protein translations to the selected file
