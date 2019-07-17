@@ -11002,9 +11002,9 @@ def blast_profile(request):
             asset_path2 = '/temp/profile_tree2.svg'
             asset_path3 = '/temp/profile_tree3.svg'
 
-            tree3.render(path3, dpi=800, h=600, tree_style=style3)
-            tree.render(path2, dpi=800, h=600, tree_style=style1)
-            tree2.render(path, dpi=800, h=600, tree_style=style2)
+            tree3.render(path3, dpi=500, tree_style=style3)
+            tree.render(path2, dpi=500, tree_style=style1)
+            tree2.render(path, dpi=500, tree_style=style2)
 
 
             envoi = True
