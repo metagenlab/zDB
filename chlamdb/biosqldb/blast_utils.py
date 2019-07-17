@@ -4,7 +4,7 @@
 def run_prodigal(fasta_seq, output_name='temp.faa'):
     from Bio import SeqIO
     import shell_command
-    import StringIO
+    fro  io import StringIO
     from tempfile import NamedTemporaryFile
     # -q quiet
     # -a Write protein translations to the selected file
@@ -298,7 +298,7 @@ class Blast():
         #print type(query)
 
         if type(query) == list or isinstance(query, SeqRecord.SeqRecord):
-            import StringIO
+            from io import StringIO
             from tempfile import NamedTemporaryFile
             temp_query = NamedTemporaryFile(delete=False)
             fastastr = StringIO.StringIO()
@@ -317,7 +317,7 @@ class Blast():
 
 
         if type(database) == list or isinstance(database, SeqRecord.SeqRecord):
-            import StringIO
+            from io import StringIO
             from tempfile import NamedTemporaryFile
             temp_db = NamedTemporaryFile(delete=False)
             fastastrdb = StringIO.StringIO()
