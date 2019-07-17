@@ -14,7 +14,7 @@ def plot_BBH_phylo(query_fasta_record, biodb, blast_type='blastp'):
 
     from chlamdb.biosqldb import manipulate_biosqldb
     from chlamdb.biosqldb import biosql_own_sql_tables
-    import blast_utils
+    from chlamdb.biosqldb import blast_utils
     from chlamdb.plots import ete_motifs
     from Bio import SeqIO
     try:
