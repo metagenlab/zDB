@@ -10949,7 +10949,7 @@ def blast_profile(request):
             from ete3 import Tree, TreeStyle
 
             fasta_file = request.FILES['fasta_file']
-            fasta_string = StringIO(request.FILES['fasta_file'].read().encode("UTF-8"))
+            fasta_string = StringIO(request.FILES['fasta_file'].read().decode("UTF-8"))
             fasta_rec = [i for i in SeqIO.parse(fasta_string, 'fasta')]
 
             try:
