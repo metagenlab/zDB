@@ -74,9 +74,9 @@
 
 ## priority 1
 
-
-- [ ] PSORTb version 3.00
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
+- [ ] remove very small sequences before effector prediction
+- [ ] PSORTb version 3.00
 - [ ] get cross-references from uniprot IdMapping? Or from uniprot db itself? (cross references from indexed uniprotKB xml)
   - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
   - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
