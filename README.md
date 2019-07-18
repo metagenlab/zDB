@@ -61,106 +61,22 @@
 - [X] refseq taxonomy: use downloaded accession2taxonomy + indexed refseq fasta instead of web queries
 - [X] retrieve uniprot annotation score for matched uniprotkb entries
 - [X] execute checkM
-
-# TODO
-
-## CHLAMDB setup
-
-## priority 1
-
-### setup
-
-- [X] setup biosqldb schema
-- [ ] setup kegg tables (ENZYME database)
-  - [ ] separate script into multiple scripts and deal with incomplete tables
-  - [X] move to separate script (not in load script anymore)
-  - [X] ko2annotation table
-    - [ ] redundancy with ko2module and ko2pathway, can be simplified and accelerated
-  - [X] setup enzyme_dat and enzyme tables
-  - [X] setup pathway table
-  - [X] setup ko2pathway
-  - [X] setup module table
-  - [X] setup ko2module
-- [X] setup COG tables (COG database)
-- [X] setup linear taxonomy (with taxid for each rank see virulence db setup)
-- [ ] setup TCDB tables
-  - [X] download faa: setup_transporter table, tc_table and uniprot_table (TODO: rename table)
-  - [ ] update table organization (dev), not all entries have uniprot accessions
-
-### annotation results
-
-- [X] load genomes
-  - [X] setup features table
-  - [X] setup seqfeature_id2locus_table
-- [X] load orthofinder results  
-- [X] load interproscan results
-  - [X] add TM and SP columns to orthology_detail legacy table
-- [X] load orthogroup alignments
-- [X] get identity closest homolog table
-- [X] get average identity table
-- [X] setup genome statistics table
-- [X] load COG hits
-- [X] load KO hits
-  - [X] load legacy tables
-- [X] setup pairwise BBH identity tables
-- [X] lead orthogroup alignments(identity matrices)
-- [X] load orthogroup phylogenies
-- [X] load orthogroup BBH phylogenies
-- [X] load reference phylogeny
-- [X] get genome table (homepage)
-- [X] get conserved neighborhood
-- [X] load uniprot annotations
-- [X] load blast swissprot results
-  - [X] download taxonomy-description information(s)
-- [X] load blast refseq results
-    - [X] load refseq taxonomy table
-- [X] load TCDB annotations
-- [X] get phylo profile
-  - [ ] setup core_orthogroups_identity_msa_
-- [X] legacy COG table
-- [ ] legacy locus2EC table
-- [X] legacy PFAM table
-- [X] setup blast databases
-- [X] phylogenetic profiles
-- [X] use celery for circos_main view
-- [X] load PMID string mapping
-- [X] load checkM
-- [ ] load T3SS effector predictions
-- [ ] get effectiveT3 "eukaryote" domains
-- [ ] load pdb best hits
-- [ ] load cross-references
-- [ ] update PMID
-- [ ] deal with search for KO, KEGG, IP absent from genomes included in the database
-- [ ] show confidence scores for PDB, KEGG, COG,... (identity, score, evalue,...)
-- [ ] add uniprot proteome column (+ percent overlap)
-- [ ] load RBBH data (for identity distribution plots)
-- [ ] get species table ==> display on homepage
-- [ ] check indexes
-- [ ] update browse genome view
-- [ ] add uniprot kewords to locus page
-
-## priority 2
-
-- [ ] switch to new COG tables
-- [ ] switch to new KEGG tables
-- [ ] setup NOG_table_v5 and NOG_members_v5
-- [ ] setup interpro master table
-- [ ] setup pfam master table
-- [ ] load DOOR2 data
-    - [ ] accession table
-    - [ ] operons data
-
-## Annotation pipeline
-
-## priority 1
-
 - [X] get proteome match
-- [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
 - [X] execute T3 effector prediction: BPBAac
 - [X] execute T3 effector prediction: T3_MM
 - [X] execute T3 effector prediction: effectiveT3
 - [X] execute T3 effector prediction: DeepT3
 - [X] BLASTp vs pdb
+
+# TODO
+
+## Annotation pipeline
+
+## priority 1
+
+
+- [ ] PSORTb version 3.00
+- [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
 - [ ] get cross-references from uniprot IdMapping? Or from uniprot db itself? (cross references from indexed uniprotKB xml)
   - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
   - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
@@ -169,29 +85,19 @@
 ## priority 2
 
 - [ ] get STRING associations if available
-
 - [ ] Inc prediction based on bi-lobbed hydrophobic domains
-
 - [ ] VF annotation with all databases
-
 - [ ] retrieve DOORS2 operons
-
 - [ ] predict operons with cluster_finder.pl and operon_finder.pl
-
 - [ ] mapping to uniprot proteomes: https://www.ebi.ac.uk/proteins/api/doc/#!/proteomes/search
 - [ ] curl -X GET --header 'Accept:application/json' 'https://www.ebi.ac.uk/proteins/api/proteomes?offset=0&size=100&xref=GCA_000068525.2'
-
 - [ ] match to uniparc: use https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getBySequence
 - [ ] get entire proteomes: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
 
 ## development
 
-- [ ] integration of swissprot keywords (possibility to click on it and get complete list of prot, decsription,...)
-
 - [ ] (retrieve uniprot annotation from uniprotKB (exact match or best diamond/plast hit if no exact match?))
-
 - [ ] Resfams annotation
-
 - [ ] execute macsyfinder for crispr
 - [ ] execute macsyfinder for capsular genes
 - [ ] execute macsyfinder for secretion systems
@@ -204,20 +110,10 @@
 
 - [ ] Carbohydrate-Active Enzyme database: http://csbl.bmb.uga.edu/dbCAN/
 
-- [ ] PSORTb version 3.00
-
 - [ ] get kegg annotation from eggnog, unpiprotKB extact or best match, eggnog
 
 - [ ]  PMID mapping with ppaperBLAST http://papers.genomics.lbl.gov/cgi-bin/litSearch.cgi
 
-# Web Interface
-
-- [ ] add tcdb classification to "fam" (annotation, phylogenetic profile,...). Include all classification levels (superfamilies,...)
-- [ ] idem with EC classification system
-- [ ] integrate interpro hierarchy
-- [ ] add explanations for hydropathy plot
-- [ ] add download page (download KO mapping, interpro mapping, all phylogenies, orthology table,...)
-- [ ] search bar: add option to search for TCDB accessions
 
 ## Ideas
 
@@ -258,9 +154,9 @@
 - [X] annotate each genome with InterproScan: use exact match to uniparc to get precomputed annotations
 - [X] annotate representative genomes with kofamscan => phylogenetic profile of KO, modules, pathways,...
 - [X] execute local interproscan for unannotated proteins
-- [X] execute rpsblast COG cdd 
+- [X] execute rpsblast COG cdd
 - alternative option: work with uniprotkb proteomes 1) exclude anomalous proteomes based on refseq data 2) get species taxid for each proteome 3) remove redudancy (keep one prepresentative per species taxid) 4) retrieve interpro annotation from interproscan uniparc annotations
-- [ ]make stats from ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_genbank.txt: superkingdom, annotated genomes,...
+- [ ] make stats from ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_genbank.txt: superkingdom, annotated genomes,...
 - [ ] use GTDB rather than NCBI taxonomy? ==> does not include eukaryotes
   - [ ] see http://annotree.uwaterloo.ca/app/#/?qtype=pfam&qstring=PF00617&eval=0.00001
   - [ ] get leaf2phylum & leaf2order & leaf2class
