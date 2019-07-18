@@ -310,7 +310,8 @@ merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
         faa_chunks5
         faa_chunks6
         faa_chunks7
-        faa_chunks8 }
+        faa_chunks8
+        faa_chunks9 }
 
 process prepare_orthofinder {
 
@@ -2280,6 +2281,28 @@ process execute_T3_MM {
   ln -s $T3_MM_HOME/log.freq.ratio.txt
   perl $T3_MM_HOME/T3_MM.pl ${nr_fasta}
   mv final.result.csv T3_MM_results.csv
+  """
+}
+
+
+process execute_psortb {
+
+  container 'metagenlab/psort:3.0.6'
+
+  publishDir 'annotation/psortb/', mode: 'copy', overwrite: true
+
+  when:
+  params.psortb == true
+
+  input:
+  file(chunk) from faa_chunks9
+
+  output:
+  file 'psortb_${chunk}.txt' into psortb_results
+
+  script:
+  """
+  /usr/local/psortb/bin/psort --negative ${chunk} > psortb_${chunk}.txt
   """
 }
 
