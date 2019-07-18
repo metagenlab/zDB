@@ -1,0 +1,6 @@
+HMMTOP 2.1 Copyright (C) 2001, Gabor E. Tusnady
+
+- Compilation: cc hmmtop.c -lm -o hmmtop
+- Short help : hmmtop
+- Long help  : hmmtop -h
+- Man page   : hmmtop.man (try man ./hmmtop.man)

@@ -1450,11 +1450,13 @@ no_tcdb_mapping.splitFasta( by: 1000, file: "chunk" )
 
 process tcdb_gblast3 {
 
+  container 'metagenlab/chlamdb_annotation:1.0.0
+  '
   publishDir 'annotation/tcdb_mapping', mode: 'copy', overwrite: true
 
   cpus 1
   maxForks 20
-  conda 'anaconda::biopython=1.67=np111py27_0 conda-forge::matplotlib=2.2.3 biobuilds::fasta bioconda::blast=2.7.1'
+
   echo false
 
   when:
@@ -1471,7 +1473,7 @@ process tcdb_gblast3 {
   n = seq.name
   """
   export "PATH=\$HMMTOP_PATH:\$GBLAST3_PATH:\$PATH"
-  gblast3.py -i ${seq} -o TCDB_RESULTS_${seq}
+  python2.7 /usr/bin/BioVx/scripts/gblast3.py -i ${seq} -o TCDB_RESULTS_${seq}
   """
 }
 
@@ -2298,7 +2300,7 @@ process execute_psortb {
   file(chunk) from faa_chunks9
 
   output:
-  file 'psortb_${chunk}.txt' into psortb_results
+  file "psortb_${chunk}.txt" into psortb_results
 
   script:
   """
