@@ -65,9 +65,6 @@
 - [ ] update PMID
 - [ ] load RBBH data (for identity distribution plots)
 
-- [ ] check indexes
-
-
 ## priority 2
 
 - [ ] switch to new COG tables
