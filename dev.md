@@ -60,17 +60,13 @@
 - [X] load checkM
 - [ ] load T3SS effector predictions
 - [ ] get effectiveT3 "eukaryote" domains
-- [ ] load pdb best hits
+- [ ] load pdb best hits (with score)
 - [ ] load cross-references
 - [ ] update PMID
-- [ ] deal with search for KO, KEGG, IP absent from genomes included in the database
-- [ ] show confidence scores for PDB, KEGG, COG,... (identity, score, evalue,...)
-- [ ] add uniprot proteome column (+ percent overlap)
 - [ ] load RBBH data (for identity distribution plots)
-- [ ] get species table ==> display on homepage
+
 - [ ] check indexes
-- [ ] update browse genome view
-- [ ] add uniprot kewords to locus page
+
 
 ## priority 2
 
@@ -85,6 +81,12 @@
 
 # Web Interface
 
+- [ ] update browse genome view
+- [ ] add uniprot kewords to locus page
+- [ ] get species table ==> display on homepage
+- [ ] add uniprot proteome column (+ percent overlap)
+- [ ] deal with search for KO, KEGG, IP absent from genomes included in the database
+- [ ] show confidence scores for PDB, KEGG, COG,... (identity, score, evalue,...)
 - [ ] integration of swissprot keywords (possibility to click on it and get complete list of prot, decsription,...)
 - [ ] add tcdb classification to "fam" (annotation, phylogenetic profile,...). Include all classification levels (superfamilies,...)
 - [ ] idem with EC classification system
