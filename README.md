@@ -78,6 +78,7 @@
 ## priority 1
 
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
+- [ ] setup updated comparative refseq data (6800 genomes)
 - [ ] remove very small sequences before effector prediction
 - [ ] get cross-references from uniprot IdMapping? Or from uniprot db itself? (cross references from indexed uniprotKB xml)
   - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
