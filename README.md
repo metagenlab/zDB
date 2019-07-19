@@ -40,6 +40,13 @@
 - [X] execute diamond RefSeq for chunks of 1000 sequences
 - [X] execute interproscan by chunks of 1000 sequences
 - [X] execute kofamscan by chunks of 1000 sequence (https://www.genome.jp/tools/kofamkoala/)
+- [X] BLASTp vs pdb by chunks of 1000
+- [X] PSORTb by chunks of 1000
+- [X] execute PRIAM by chunks of 1000
+- [X] execute T3 effector prediction: BPBAac
+- [X] execute T3 effector prediction: T3_MM
+- [X] execute T3 effector prediction: effectiveT3
+- [X] execute T3 effector prediction: DeepT3
 - [X] get mapping to uniparc (exact match)
 - [X] get exact match to eggnog/string
 - [X] get exact match to oma
@@ -62,11 +69,7 @@
 - [X] retrieve uniprot annotation score for matched uniprotkb entries
 - [X] execute checkM
 - [X] get proteome match
-- [X] execute T3 effector prediction: BPBAac
-- [X] execute T3 effector prediction: T3_MM
-- [X] execute T3 effector prediction: effectiveT3
-- [X] execute T3 effector prediction: DeepT3
-- [X] BLASTp vs pdb
+- [X] mapping to uniprot proteomes: https://www.ebi.ac.uk/proteins/api/doc/#!/proteomes/search
 
 # TODO
 
@@ -76,7 +79,6 @@
 
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
 - [ ] remove very small sequences before effector prediction
-- [ ] PSORTb version 3.00
 - [ ] get cross-references from uniprot IdMapping? Or from uniprot db itself? (cross references from indexed uniprotKB xml)
   - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
   - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
@@ -89,7 +91,7 @@
 - [ ] VF annotation with all databases
 - [ ] retrieve DOORS2 operons
 - [ ] predict operons with cluster_finder.pl and operon_finder.pl
-- [ ] mapping to uniprot proteomes: https://www.ebi.ac.uk/proteins/api/doc/#!/proteomes/search
+
 - [ ] curl -X GET --header 'Accept:application/json' 'https://www.ebi.ac.uk/proteins/api/proteomes?offset=0&size=100&xref=GCA_000068525.2'
 - [ ] match to uniparc: use https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getBySequence
 - [ ] get entire proteomes: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
@@ -101,8 +103,6 @@
 - [ ] execute macsyfinder for crispr
 - [ ] execute macsyfinder for capsular genes
 - [ ] execute macsyfinder for secretion systems
-
-- [ ] execute PRIAM for each genome or hmmsearch with PRIAM database?
 
 - [ ] predict operons when not in doors? operon-mapper?
 

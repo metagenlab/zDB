@@ -1450,8 +1450,8 @@ no_tcdb_mapping.splitFasta( by: 1000, file: "chunk" )
 
 process tcdb_gblast3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.0
-  '
+  container 'metagenlab/chlamdb_annotation:1.0.0'
+
   publishDir 'annotation/tcdb_mapping', mode: 'copy', overwrite: true
 
   cpus 1
@@ -1472,8 +1472,9 @@ process tcdb_gblast3 {
 
   n = seq.name
   """
-  export "PATH=\$HMMTOP_PATH:\$GBLAST3_PATH:\$PATH"
-  python2.7 /usr/bin/BioVx/scripts/gblast3.py -i ${seq} -o TCDB_RESULTS_${seq}
+  # activate conda env
+  source activate gblast3
+  /usr/local/bin/BioVx/scripts/gblast3.py -i ${seq} -o TCDB_RESULTS_${seq} --db_file /usr/local/bin/tcdb_db/
   """
 }
 
