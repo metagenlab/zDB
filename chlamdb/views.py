@@ -3132,7 +3132,7 @@ def COG_phylo_heatmap(request, frequency):
 
     return render(request, 'chlamdb/COG_phylo_heatmap.html', locals())
 
-@login_required
+
 def venn_candidate_effectors(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -3312,7 +3312,7 @@ def venn_candidate_effectors(request):
     envoi_venn = True
     return render(request, 'chlamdb/venn_euk_domains.html', locals())
 
-@login_required
+
 def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
 
 
@@ -3544,7 +3544,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
 
     return render(request, 'chlamdb/interpro_taxonomy_homologs.html', locals())
 
-@login_required
+
 def interpro_taxonomy_with_homologs(request, domain, percentage):
 
 
@@ -6797,7 +6797,7 @@ def pairwiseCDS_length(request):
 
 
 
-@login_required
+
 def blastnr_euk(request):
     biodb = settings.BIODB
 
@@ -7674,7 +7674,7 @@ def blastnr_barchart(request):
     return render(request, 'chlamdb/blastnr_best_barplot.html', locals())
 
 
-@login_required
+
 def effector_pred(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -7890,7 +7890,7 @@ def effector_pred(request):
     return render(request, 'chlamdb/effector_pred.html', locals())
 
 
-@login_required
+
 def interpro_taxonomy(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -9616,7 +9616,7 @@ def paralogs(request):
     from ete3 import Tree,TreeStyle
     from chlamdb.biosqldb import manipulate_biosqldb
     from chlamdb.biosqldb import biosql_own_sql_tables
-    from chlamdb.plots import phylo_tree_bar
+    from chlamdb.phylo_tree_display import phylo_tree_bar
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -9696,7 +9696,7 @@ def species_specific_groups(request):
     from ete3 import Tree,TreeStyle
     from chlamdb.biosqldb import manipulate_biosqldb
     from chlamdb.biosqldb import biosql_own_sql_tables
-    from chlamdb.plots import phylo_tree_bar
+    from chlamdb.phylo_tree_display import phylo_tree_bar
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
