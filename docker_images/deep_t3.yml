@@ -1,0 +1,8 @@
+name: T3_MM
+channels:
+ - bioconda
+ - conda-forge
+ - biobuilds
+dependencies:
+ - keras=2.2.4
+ - biopython=1.73

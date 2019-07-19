@@ -1,0 +1,10 @@
+name: effective
+channels:
+ - bioconda
+ - conda-forge
+ - biobuilds
+dependencies:
+ - biopython = 1.67
+ - matplotlib = 2.2.3
+ - fasta 
+ - blast=2.7.1

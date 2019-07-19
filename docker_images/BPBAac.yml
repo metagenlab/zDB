@@ -1,0 +1,6 @@
+name: BPBAac
+channels:
+ - r
+dependencies:
+ - r-base
+ - r-e1071

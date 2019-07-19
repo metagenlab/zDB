@@ -1474,7 +1474,7 @@ process tcdb_gblast3 {
   """
   # activate conda env
   source activate gblast3
-  /usr/local/bin/BioVx/scripts/gblast3.py -i ${seq} -o TCDB_RESULTS_${seq} --db_file /usr/local/bin/tcdb_db/
+  /usr/local/bin/BioVx/scripts/gblast3.py -i ${seq} -o TCDB_RESULTS_${seq} --db_path /usr/local/bin/tcdb_db/
   """
 }
 
@@ -1672,8 +1672,7 @@ process execute_kofamscan {
   script:
   n = seq.name
   """
-  export "PATH=\$KOFAMSCAN_HOME:\$PATH"
-  exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
+  /usr/local/bin/kofamscan/exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
   """
 }
 
@@ -1682,7 +1681,7 @@ process execute_PRIAM {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
-  conda 'openjdk=8.0.152 blast-legacy=2.2.26'
+  container 'metagenlab/chlamdb_annotation:1.0.0'
 
   cpus 2
   memory '4 GB'
@@ -1699,7 +1698,8 @@ process execute_PRIAM {
   script:
   n = seq.name
   """
-  java -jar  $params.databases_dir/PRIAM/PRIAM_search.jar -i ${n} -o results -p $params.databases_dir/PRIAM/PRIAM_JAN18 --num_proc ${task.cpus}
+  source activate priam
+  java -jar  /usr/local/bin/PRIAM/PRIAM_search.jar -i ${n} -o results -p $params.databases_dir/PRIAM/PRIAM_JAN18 --num_proc ${task.cpus}
   """
 }
 
@@ -2200,14 +2200,15 @@ process execute_BPBAac {
 
   script:
   """
-  ln -s $BPBAac_HOME/BPBAacPre.R
-  ln -s $BPBAac_HOME/BPBAac.Rdata
-  ln -s $BPBAac_HOME/Classify.pl
-  ln -s $BPBAac_HOME/DataPrepare.pl
-  ln -s $BPBAac_HOME/Feature100.pl
-  ln -s $BPBAac_HOME/Integ.pl
-  ln -s $BPBAac_HOME/Neg100AacFrequency
-  ln -s $BPBAac_HOME/Pos100AacFrequency
+  source activate BPBAac
+  ln -s /usr/local/bin/BPBAac/BPBAacPre.R
+  ln -s /usr/local/bin/BPBAac/BPBAac.Rdata
+  ln -s /usr/local/bin/BPBAac/Classify.pl
+  ln -s /usr/local/bin/BPBAac/DataPrepare.pl
+  ln -s /usr/local/bin/BPBAac/Feature100.pl
+  ln -s /usr/local/bin/BPBAac/Integ.pl
+  ln -s /usr/local/bin/BPBAac/Neg100AacFrequency
+  ln -s /usr/local/bin/BPBAac/Pos100AacFrequency
   sed 's/CRC-/CRC/g'  ${nr_fasta} > edited_fasta.faa
   perl DataPrepare.pl edited_fasta.faa;
   Rscript BPBAacPre.R;
@@ -2219,7 +2220,7 @@ process execute_BPBAac {
 
 process execute_effectiveT3 {
 
-  conda 'openjdk=8.0.152 blast-legacy=2.2.26'
+  container 'metagenlab/chlamdb_annotation:1.0.0'
 
   publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
 
@@ -2234,15 +2235,16 @@ process execute_effectiveT3 {
 
   script:
   """
-  ln -s $EFFECTIVE_T3_HOME/module
-  java -jar $EFFECTIVE_T3_HOME/TTSS_GUI-1.0.1.jar -f ${nr_fasta} -m TTSS_STD-2.0.2.jar -t cutoff=0.9999 -o effective_t3.out -q
+  source activate priam
+  ln -s /usr/local/bin/effective/module
+  java -jar /usr/local/bin/effective/TTSS_GUI-1.0.1.jar -f ${nr_fasta} -m TTSS_STD-2.0.2.jar -t cutoff=0.9999 -o effective_t3.out -q
   """
 }
 
 
 process execute_DeepT3 {
 
-  conda 'keras=2.2.4 biopython=1.73'
+  container 'metagenlab/chlamdb_annotation:1.0.0'
 
   publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
 
@@ -2257,16 +2259,17 @@ process execute_DeepT3 {
 
   script:
   """
+  source activate deep_t3
   # replace ambiguous amino acid with X
   replace_ambiguous_aa.py -i ${nr_fasta} > nr_edit.faa
-  python $DeepT3_HOME/DeepT3_scores.py -f nr_edit.faa -o DeepT3_results.tab -d $DeepT3_HOME
+  DeepT3_scores.py -f nr_edit.faa -o DeepT3_results.tab -d $DeepT3_HOME
   """
 }
 
 
 process execute_T3_MM {
 
-  conda 'keras=2.2.4 biopython=1.73'
+  container 'metagenlab/chlamdb_annotation:1.0.0'
 
   publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
 
@@ -2281,8 +2284,8 @@ process execute_T3_MM {
 
   script:
   """
-  ln -s $T3_MM_HOME/log.freq.ratio.txt
-  perl $T3_MM_HOME/T3_MM.pl ${nr_fasta}
+  ln -s /usr/local/bin/T3_MM/log.freq.ratio.txt
+  perl /usr/local/bin/T3_MM/T3_MM.pl ${nr_fasta}
   mv final.result.csv T3_MM_results.csv
   """
 }
