@@ -1698,7 +1698,7 @@ process execute_PRIAM {
   script:
   n = seq.name
   """
-  source activate priam
+  conda activate /opt/conda/envs/priam
   java -jar  /usr/local/bin/PRIAM/PRIAM_search.jar -i ${n} -o results -p $params.databases_dir/PRIAM/PRIAM_JAN18 --num_proc ${task.cpus}
   """
 }
@@ -2185,7 +2185,7 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 
 process execute_BPBAac {
 
-  conda 'r::r-e1071 r::r-base'
+  container 'metagenlab/chlamdb_annotation:1.0.1'
 
   publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
 
@@ -2200,7 +2200,6 @@ process execute_BPBAac {
 
   script:
   """
-  source activate BPBAac
   ln -s /usr/local/bin/BPBAac/BPBAacPre.R
   ln -s /usr/local/bin/BPBAac/BPBAac.Rdata
   ln -s /usr/local/bin/BPBAac/Classify.pl
@@ -2220,7 +2219,7 @@ process execute_BPBAac {
 
 process execute_effectiveT3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.0'
+  container 'metagenlab/chlamdb_annotation:1.0.1'
 
   publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
 
@@ -2235,7 +2234,6 @@ process execute_effectiveT3 {
 
   script:
   """
-  source activate priam
   ln -s /usr/local/bin/effective/module
   java -jar /usr/local/bin/effective/TTSS_GUI-1.0.1.jar -f ${nr_fasta} -m TTSS_STD-2.0.2.jar -t cutoff=0.9999 -o effective_t3.out -q
   """
@@ -2244,7 +2242,7 @@ process execute_effectiveT3 {
 
 process execute_DeepT3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.0'
+  container 'metagenlab/chlamdb_annotation:1.0.1'
 
   publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
 
@@ -2259,17 +2257,17 @@ process execute_DeepT3 {
 
   script:
   """
-  source activate deep_t3
   # replace ambiguous amino acid with X
+  PYTHONPATH=/usr/local/bin/DeepT3/DeepT3/DeepT3-Keras:$PYTHONPATH
   replace_ambiguous_aa.py -i ${nr_fasta} > nr_edit.faa
-  DeepT3_scores.py -f nr_edit.faa -o DeepT3_results.tab -d $DeepT3_HOME
+  DeepT3_scores.py -f nr_edit.faa -o DeepT3_results.tab -d /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
   """
 }
 
 
 process execute_T3_MM {
 
-  container 'metagenlab/chlamdb_annotation:1.0.0'
+  container 'metagenlab/chlamdb_annotation:1.0.1'
 
   publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
 

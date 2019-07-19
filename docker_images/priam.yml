@@ -1,8 +1,0 @@
-name: priam
-channels:
- - bioconda
- - conda-forge
- - biobuilds
-dependencies:
- - openjdk=8.0.152
- - blast-legacy=2.2.26
