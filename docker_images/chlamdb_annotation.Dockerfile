@@ -33,7 +33,7 @@ RUN apt-get update && apt-get -yq install curl \
 WORKDIR /usr/local/bin 
 
 # export "PATH=\$HMMTOP_PATH:\$GBLAST3_PATH:\$PATH"
-RUN git clone -b dev --single-branch https://github.com/metagenlab/annotation_pipeline_nextflow.git && echo ok
+RUN git clone -b dev --single-branch https://github.com/metagenlab/annotation_pipeline_nextflow.git
 
 ENV PATH=/usr/local/bin/annotation_pipeline_nextflow/bin/hmmtop_2.1/:$PATH
 ENV HMMTOP_ARCH=/usr/local/bin/annotation_pipeline_nextflow/bin/hmmtop_2.1/hmmtop.arch
