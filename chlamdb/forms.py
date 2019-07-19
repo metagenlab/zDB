@@ -805,11 +805,24 @@ def make_blast_form(biodb):
                                            ("blastp", "blastp"),
                                            ("blastx", "blastx"),
                                            ("tblastn", "tblastn")])
-        target = forms.ChoiceField(choices=accession_choices)
+        target = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
         blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 20}))
 
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
+            self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset(
+                                                Row("BLAST"),
+                                                Row('target'),
+                                                Row('blast_input'),
+                                                css_class="col-lg-5 col-md-6 col-sm-6")
+                                        )
 
-        #biodatabase = forms.ChoiceField(choices=choices)
+            super(BlastForm, self).__init__(*args, **kwargs)
 
     return BlastForm
 
