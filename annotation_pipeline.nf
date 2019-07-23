@@ -13,7 +13,7 @@ log.info "COG                    : ${params.cog}"
 log.info "Orthofinder            : ${params.orthofinder}"
 log.info "Orthofinder path       : ${params.genome_faa_folder}"
 log.info "Core missing           : ${params.core_missing}"
-log.info "Executor               : ${params.executor}"
+log.info "Executor               : ${process.executor}"
 
 
 
