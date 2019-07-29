@@ -2142,6 +2142,8 @@ def draw_pfam_tree(tree_name, locus2data,
     from ete3 import Tree, TreeStyle, faces, AttrFace
     t = Tree(tree_name)
     ts = TreeStyle()
+    ts.draw_guiding_lines = True
+    ts.guiding_lines_color = "gray"   
     #ts.show_leaf_name = False
     ts.show_branch_support = True
     #ts.layout_fn = layout    
@@ -2265,7 +2267,7 @@ def draw_pfam_tree(tree_name, locus2data,
                 l.add_face(ff, column=0)
 
         locus.margin_right = 10
-        locus.margin_left = 10
+        locus.margin_left = 22
         locus.margin_bottom = 0
         l.add_face(locus, column=0, position="aligned")
 
@@ -2278,6 +2280,8 @@ def draw_TM_tree(tree_name, locus2data):
     
     t = Tree(tree_name)
     ts = TreeStyle()
+    ts.draw_guiding_lines = True
+    ts.guiding_lines_color = "gray"    
     #t.populate(8)
     # Calculate the midpoint node
     R = t.get_midpoint_outgroup()
@@ -2300,7 +2304,8 @@ def draw_TM_tree(tree_name, locus2data):
             n.inner_background.color = "white"
             n.opacity = 1.
             n.rotation = -25
-            #lf.add_face(n, 7, position="aligned")
+            n.vt_align = 2
+            n.hz_align = 2
             ts.aligned_header.add_face(n, 0)
  
             n = TextFace('SP/TM domain(s)')
@@ -2311,7 +2316,8 @@ def draw_TM_tree(tree_name, locus2data):
             n.inner_background.color = "white"
             n.opacity = 1.
             n.rotation = -25
-            #lf.add_face(n, 7, position="aligned")
+            n.vt_align = 2
+            n.hz_align = 2
             ts.aligned_header.add_face(n, 1)
 
         locus_name = str(l)[3:len(str(l))]
@@ -2377,7 +2383,7 @@ def draw_TM_tree(tree_name, locus2data):
         except:
             l.name = data[1]
         locus.margin_right = 10
-        locus.margin_left = 10
+        locus.margin_left = 15
         locus.margin_bottom = 0
         l.add_face(locus, column=0, position="aligned")
 

@@ -365,7 +365,8 @@ def plot_heatmap_tree_locus(biodb,
 
     t1 = Tree(tree_file)
     ts = TreeStyle()
-
+    ts.draw_guiding_lines = True
+    ts.guiding_lines_color = "gray"
     # Calculate the midpoint node
     R = t1.get_midpoint_outgroup()
     # and set it as tree outgroup
