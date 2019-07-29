@@ -58,11 +58,16 @@
 - [X] use celery for circos_main view
 - [X] load PMID string mapping
 - [X] load checkM
+- [X] update PMID
 - [ ] load T3SS effector predictions
+  - [ ] T3_MM
+  - [ ] deep_T3
+  - [ ] effective
+  - [ ] BPBAac
+- [ ] load psortdb results
 - [ ] get effectiveT3 "eukaryote" domains
 - [ ] load pdb best hits (with score)
 - [ ] load cross-references
-- [ ] update PMID
 - [ ] load RBBH data (for identity distribution plots)
 
 ## priority 2

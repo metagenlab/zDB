@@ -2141,6 +2141,10 @@ def draw_pfam_tree(tree_name, locus2data,
     # from the original set
     from ete3 import Tree, TreeStyle, faces, AttrFace
     t = Tree(tree_name)
+    ts = TreeStyle()
+    #ts.show_leaf_name = False
+    ts.show_branch_support = True
+    #ts.layout_fn = layout    
     #t.populate(8)
     # Calculate the midpoint node
     print (t)
@@ -2152,7 +2156,32 @@ def draw_pfam_tree(tree_name, locus2data,
     color_dico = organism2color(locus2data, taxon_id2family)
 
     leaf_number = 0
-    for l in t.iter_leaves():
+    for i, l in enumerate(t.iter_leaves()):
+        # top leaf: add headers
+        if i == 0:
+            
+            n = TextFace('Locus tag')
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 20
+            n.margin_bottom = 1
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            n.rotation = -25
+            #lf.add_face(n, 7, position="aligned")
+            ts.aligned_header.add_face(n, 0)
+ 
+            n = TextFace('Protein domains')
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 20
+            n.margin_bottom = 1
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            n.rotation = -25
+            #lf.add_face(n, 7, position="aligned")
+            ts.aligned_header.add_face(n, 1)
+            
         leaf_number+=1
         if locus2protein_id:
             #protein_id = locus2protein_id[str(l)[3:len(str(l))]]
@@ -2240,10 +2269,7 @@ def draw_pfam_tree(tree_name, locus2data,
         locus.margin_bottom = 0
         l.add_face(locus, column=0, position="aligned")
 
-    ts = TreeStyle()
-    #ts.show_leaf_name = False
-    ts.show_branch_support = True
-    #ts.layout_fn = layout
+
     return t, ts, leaf_number
 
 def draw_TM_tree(tree_name, locus2data):
