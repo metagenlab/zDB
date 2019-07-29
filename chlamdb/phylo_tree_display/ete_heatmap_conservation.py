@@ -386,7 +386,7 @@ def plot_heatmap_tree_locus(biodb,
         # top leaf, add header
         if i == 0:
             
-            n = TextFace('Nomber of homologs')
+            n = TextFace('Number of homologs')
             n.margin_top = 1
             n.margin_right = 1
             n.margin_left = 20
