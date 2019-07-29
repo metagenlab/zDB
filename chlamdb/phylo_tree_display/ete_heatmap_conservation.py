@@ -416,8 +416,6 @@ def plot_heatmap_tree_locus(biodb,
             n.inner_background.color = "white"
             n.opacity = 1.
             n.rotation = -25
-            n.vt_align = 1
-            n.hz_align = 2
             #lf.add_face(n, 7, position="aligned")
             ts.aligned_header.add_face(n, 3)
         
