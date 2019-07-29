@@ -126,7 +126,7 @@ if (params.ncbi_sample_sheet != false){
   print(filelist)
   for file in filelist:
     ftp.retrbinary("RETR "+file, open(file, "wb").write)
-    
+
 
     """
   }
@@ -223,7 +223,8 @@ faa_locus1.into { faa_genomes1
                   faa_genomes2
                   faa_genomes3
                   faa_genomes4
-                  faa_genomes5 }
+                  faa_genomes5
+                  faa_genomes6 }
 
 faa_locus2.collectFile(name: 'merged.faa', newLine: true)
     .into { merged_faa0 }
@@ -2282,6 +2283,33 @@ process execute_T3_MM {
   ln -s /usr/local/bin/T3_MM/log.freq.ratio.txt
   perl /usr/local/bin/T3_MM/T3_MM.pl ${nr_fasta}
   mv final.result.csv T3_MM_results.csv
+  """
+}
+
+
+process execute_macsyfinder_T3SS {
+
+  container 'metagenlab/chlamdb_annotation:1.0.2'
+
+  publishDir 'annotation/macsyfinder/T3SS/', mode: 'copy', overwrite: true
+
+  when:
+  params.macsyfinder == true
+
+  input:
+  file(genome) from faa_genomes6
+
+  output:
+  file "macsyfinder-${genome.baseName}/macsyfinder.conf"
+  file "macsyfinder-${genome.baseName}/macsyfinder.log"
+  file "macsyfinder-${genome.baseName}/macsyfinder.out"
+  file "macsyfinder-${genome.baseName}/macsyfinder.report"
+  file "macsyfinder-${genome.baseName}/macsyfinder.summary"
+
+  script:
+  """
+  python /usr/local/bin/macsyfinder/bin/macsyfinder --db-type unordered_replicon --sequence-db ${genome} -d /usr/local/bin/annotation_pipeline_nextflow/data/macsyfinder/secretion_systems/TXSS/definitions -p /usr/local/bin/annotation_pipeline_nextflow/data/macsyfinder/secretion_systems/TXSS/profiles all --coverage-profile 0.2 --i-evalue-select 1 --e-value-search 1
+  mv macsyfinder-* macsyfinder-${genome.baseName}
   """
 }
 

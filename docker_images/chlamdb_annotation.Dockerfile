@@ -30,10 +30,10 @@ RUN sed -i 's/^#\s*\(deb.*multiverse\)$/\1/g' /etc/apt/sources.list
 
 RUN apt-get update && apt-get -yq install curl \
 	wget \
-    git \ 
+    git \
     build-essential \
-    procps \ 
-    ncbi-blast+-legacy \ 
+    procps \
+    ncbi-blast+-legacy \
     python3.6 \
     python3-distutils \
     ncbi-blast+ \
@@ -44,20 +44,20 @@ RUN apt-get update && apt-get -yq install curl \
     openjdk-8-jdk \
     perl && apt-get clean
 
-WORKDIR /usr/local/bin 
+WORKDIR /usr/local/bin
 
-RUN wget https://github.com/wrpearson/fasta36/releases/download/fasta-v36.3.8g/fasta-36.3.8g-linux64.tar.gz && tar -xvzf fasta-36.3.8g-linux64.tar.gz && mv fasta-36.3.8g/bin/* . && rm -rf fasta-36.3.8g* 
+RUN wget https://github.com/wrpearson/fasta36/releases/download/fasta-v36.3.8g/fasta-36.3.8g-linux64.tar.gz && tar -xvzf fasta-36.3.8g-linux64.tar.gz && mv fasta-36.3.8g/bin/* . && rm -rf fasta-36.3.8g*
 
 RUN wget https://bootstrap.pypa.io/get-pip.py
 RUN python2.7 get-pip.py
 RUN python3.6 get-pip.py
 
-RUN pip2 install numpy 
+RUN pip2 install numpy
 RUN pip2 install biopython==1.67 matplotlib==2.2.3
 
 RUN pip3 install tensorflow keras==2.2.4 biopython==1.73
 
- #- fasta 
+ #- fasta
  #- blast=2.7.1
  #- openjdk=8.0.152
  #- blast-legacy=2.2.26
@@ -99,7 +99,7 @@ RUN wget https://biocomputer.bio.cuhk.edu.hk/softwares/T3_MM/T3_MM.tar.gz && tar
 
 RUN wget https://biocomputer.bio.cuhk.edu.hk/softwares/BPBAac/BPBAac.tar.gz && tar zxvf BPBAac.tar.gz && rm BPBAac.tar.gz
 
-RUN mkdir effective 
+RUN mkdir effective
 
 WORKDIR /usr/local/bin/effective
 
@@ -114,6 +114,20 @@ WORKDIR /usr/local/bin
 RUN git clone https://github.com/lje00006/DeepT3.git
 
 ENV PYTHONPATH=/usr/local/bin/DeepT3/DeepT3/DeepT3-Keras:$PYTHONPATH
+
+RUN wget https://github.com/gem-pasteur/macsyfinder/archive/macsyfinder-1.0.5.tar.gz && tar zxvf macsyfinder-1.0.5.tar.gz && mv macsyfinder-macsyfinder-1.0.5 macsyfinder
+
+WORKDIR /usr/local/bin/macsyfinder
+
+RUN python setup.py build
+
+RUN python setup.py test -vv
+
+ENV MACSY_HOME=/usr/local/bin/macsyfinder/
+
+RUN apt install -y hmmer && apt-get clean
+
+WORKDIR /usr/local/bin
 
 ENTRYPOINT ["/bin/bash"]
 CMD ["/bin/bash"]
