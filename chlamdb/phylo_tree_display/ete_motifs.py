@@ -2314,8 +2314,6 @@ def draw_TM_tree(tree_name, locus2data):
             n.inner_background.color = "white"
             n.opacity = 1.
             n.rotation = -25
-            n.vt_align = 2
-            n.hz_align = 2
             ts.aligned_header.add_face(n, 1)
 
         locus_name = str(l)[3:len(str(l))]
