@@ -2171,7 +2171,7 @@ def draw_pfam_tree(tree_name, locus2data,
             #lf.add_face(n, 7, position="aligned")
             ts.aligned_header.add_face(n, 0)
  
-            n = TextFace('Protein domains')
+            n = TextFace('Pfam domain(s)')
             n.margin_top = 1
             n.margin_right = 1
             n.margin_left = 20
@@ -2275,7 +2275,9 @@ def draw_pfam_tree(tree_name, locus2data,
 def draw_TM_tree(tree_name, locus2data):
     # from the original set
     from ete3 import Tree, TreeStyle, faces, AttrFace
+    
     t = Tree(tree_name)
+    ts = TreeStyle()
     #t.populate(8)
     # Calculate the midpoint node
     R = t.get_midpoint_outgroup()
@@ -2286,7 +2288,32 @@ def draw_TM_tree(tree_name, locus2data):
     color_dico = organism2color(locus2data)
 
     for leaf_number, l in enumerate(t.iter_leaves()):
-        #print 'leaf', leaf_number
+
+
+        if leaf_number == 0:
+            
+            n = TextFace('Locus tag')
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 20
+            n.margin_bottom = 1
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            n.rotation = -25
+            #lf.add_face(n, 7, position="aligned")
+            ts.aligned_header.add_face(n, 0)
+ 
+            n = TextFace('SP/TM domain(s)')
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 20
+            n.margin_bottom = 1
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            n.rotation = -25
+            #lf.add_face(n, 7, position="aligned")
+            ts.aligned_header.add_face(n, 1)
+
         locus_name = str(l)[3:len(str(l))]
         locus_name = locus_name.split('|')[0]
         print(locus_name, locus_name in locus2data)
@@ -2354,7 +2381,7 @@ def draw_TM_tree(tree_name, locus2data):
         locus.margin_bottom = 0
         l.add_face(locus, column=0, position="aligned")
 
-    ts = TreeStyle()
+    
     #ts.layout_fn = layout
     return t, ts, leaf_number+1
 
