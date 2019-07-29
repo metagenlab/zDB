@@ -12673,7 +12673,7 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
     url_pattern=url_pattern[0:-1]
 
     #t1, leaf_number = ete_heatmap_conservation.plot_heat_tree(biodb, taxid2n, tree)
-    t1, leaf_number = ete_heatmap_conservation.plot_heatmap_tree_locus(biodb,
+    t1, leaf_number, tree_style = ete_heatmap_conservation.plot_heatmap_tree_locus(biodb,
                                                                        tree,
                                                                        taxid2n,
                                                                        taxid2identity= taxon2identity_closest,
@@ -12682,7 +12682,10 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
                                                                        n_paralogs_barplot=True)
     shell_command.shell_command('rm %s' % path)
 
-    t1.render(path, dpi=800, h=leaf_number*12)
+    t1.render(path, 
+              tree_style=tree_style,
+              dpi=800, 
+              h=leaf_number*18)
 
     return render(request, 'chlamdb/orthogroup_conservation.html', locals())
 
