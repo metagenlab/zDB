@@ -59,6 +59,7 @@
 - [X] load PMID string mapping
 - [X] load checkM
 - [X] update PMID
+- [ ] load PRIAM data
 - [ ] load T3SS effector predictions
   - [ ] T3_MM
   - [ ] deep_T3
@@ -83,6 +84,16 @@
 
 # Web Interface
 
+- [ ] add download newick tree
+- [ ] integrate genome properties: table with property2steps avec IPP accession
+- [ ] eficaz
+- [ ] enzyme hierarchy
+- [ ] interpro hierarchy 
+- [ ] show scores
+- [ ] keep comp tables in memory
+- [ ] eggnog comparative table 
+- [ ] cdd comparative table
+- [ ] update to new eggnog version (and string)
 - [ ] update browse genome view
 - [ ] add uniprot kewords to locus page
 - [ ] get species table ==> display on homepage
