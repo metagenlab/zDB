@@ -2349,6 +2349,8 @@ def locusx(request, locus=None, menu=True):
                 transporter_data = [str(i) for i in server.adaptor.execute_and_fetchall(sql20, )[0]]
                 transporter_data[16]= ' '.join(transporter_data[16].split(' ')[1:]).split("OS=")[0]
                 transporter_data[17] = transporter_data[17].split("(")[0]
+                # remove species name in case already in description
+                transporter_data[16] = re.sub(transporter_data[17],"",transporter_data[16])
                 print(transporter_data[17])
             except:
                 transporter_data = False
