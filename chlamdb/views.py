@@ -2409,9 +2409,9 @@ def locusx(request, locus=None, menu=True):
                 print (type(uniprot_annotation[0]))
                 print (uniprot_annotation[0] == '1')
                 if uniprot_annotation[0] == '1':
-                    uniprot_annotation[0] == 'Reviewed'
+                    uniprot_annotation[0] = 'Reviewed'
                 if uniprot_annotation[0] == '0':
-                    uniprot_annotation[0] == 'Unreviewed'  
+                    uniprot_annotation[0] = 'Unreviewed'  
                 print(uniprot_annotation)             
 
             except:
