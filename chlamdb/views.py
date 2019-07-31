@@ -2347,7 +2347,7 @@ def locusx(request, locus=None, menu=True):
 
             try:
                 transporter_data = [str(i) for i in server.adaptor.execute_and_fetchall(sql20, )[0]]
-                transporter_data[16]= ' '.join(transporter_data[16].split(' ')[1:]).split("OS")[0]
+                transporter_data[16]= ' '.join(transporter_data[16].split(' ')[1:]).split("OS=")[0]
                 transporter_data[17] = transporter_data[17].split("(")[0]
                 print(transporter_data[17])
             except:
