@@ -2403,7 +2403,7 @@ def locusx(request, locus=None, menu=True):
                     uniprot_go_terms = False
 
             try:
-                uniprot_annotation = server.adaptor.execute_and_fetchall(sql12, )[0]
+                uniprot_annotation = list(server.adaptor.execute_and_fetchall(sql12, )[0])
                 print(uniprot_annotation)
                 print(uniprot_annotation[0])
                 print (type(uniprot_annotation[0]))
