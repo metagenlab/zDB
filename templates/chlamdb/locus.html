@@ -213,11 +213,11 @@ function clearBox(elementID)
                                 <div class="panel-body">
                                   <table class="table table-striped" style="width: 100%">
                                       <tr>
-                                          <th >Molecular Weight</th>
+                                          <th >Molecular Weight (kDa)</th>
                                           <td>{{protparams_data.0}}</td>
                                       </tr>
                                       <tr>
-                                          <th >Isoelectric Point</th>
+                                          <th >Isoelectric Point (pI)</th>
                                           <td>{{protparams_data.1}}</td>
                                       </tr>
                                       <tr>
@@ -225,7 +225,7 @@ function clearBox(elementID)
                                           <td>{{protparams_data.2}}</td>
                                       </tr>
                                       <tr>
-                                          <th >Instability Index</th>
+                                          <th>Instability Index <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Calculated with the method of Guruprasad et al. (1990, Protein Engineering, 4, 155-161). This method tests a protein for stability. Any value above 40 means the protein is unstable (=has a short half life)."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                           <td>{{protparams_data.3}}</td>
                                       </tr>
                                       <tr>
@@ -447,49 +447,72 @@ function clearBox(elementID)
                               <div style="padding-top:40px;">
                                   <div class="panel panel-default">
                                     <div class="panel-heading">
-                                      <h3 class="panel-title">Transporter</h3>
+                                      <h3 class="panel-title">TransporterClassification Database  <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Best hit from gBLAST (https://github.com/SaierLaboratory/BioVx)"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
                                     </div>
 
-                                    <table class="table-striped" style="width: 100%">
+
+
+                                    
+                                    <table class="table table-striped" style="width: 100%">
+
                                         <tr>
-                                            <th>TCDB Hit</th>
-                                            <th>Evalue</th>
-                                            <th>Score</th>
-                                            <th>Identity</th>
-                                            <th>TM_query</th>
-                                            <th>TM_hit</th>
-                                            <th>query_cov</th>
-                                            <th>hit_cov</th>
-                                        </tr>
-                                        <tr>
+                                            <th>TCDB Hit</th> 
                                             <td><a href="http://www.tcdb.org/search/result.php?acc={{transporter_data.0}}">{{transporter_data.0}} <i class="fa fa-external-link"></i></a></td>
-                                            <td>{{transporter_data.1}}</td>
-                                            <td>{{transporter_data.2}}</td>
-                                            <td>{{transporter_data.3}}</td>
-                                            <td>{{transporter_data.4}}</td>
-                                            <td>{{transporter_data.5}}</td>
-                                            <td>{{transporter_data.6}}</td>
-                                            <td>{{transporter_data.7}}</td>
+                                            <td>{{transporter_data.16}} ({{transporter_data.17}})</td>
+                                            <td><a data-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1"><span class="badge" aria-hidden="true">Score <i class="fa fa-plus"></i></span></a> </td>
+                                        </tr>    
+                                            
+
+
+                                          <tr class="collapse" id="multiCollapseExample1">
+                                            <td colspan="3">
+                                                  <table class="table table" style="width: 100%">
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Evalue</th>
+                                                          <th>Score</th>
+                                                          <th>Identity</th>
+                                                          <th>TM_query</th>
+                                                          <th>TM_hit</th>
+                                                          <th>query_cov</th>
+                                                          <th>hit_cov</th>
+                                                      </tr>
+                                                      <tr bgcolor="#CEFFFE">
+                                                          <td>{{transporter_data.1}}</td>
+                                                          <td>{{transporter_data.2}}</td>
+                                                          <td>{{transporter_data.3}}</td>
+                                                          <td>{{transporter_data.4}}</td>
+                                                          <td>{{transporter_data.5}}</td>
+                                                          <td>{{transporter_data.6}}</td>
+                                                          <td>{{transporter_data.7}}</td>
+                                                      </tr>
+                                                  </table>
+                                            <td>
+                                          </tr>
+                                            
+                                            
+                                    
                                         </tr>
 
-                                    </table>
-                                    <table class="table table-striped" style="width: 100%">
 
                                         <tr>
                                             <th>SuperFamily</th>
                                             <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.10}}">{{transporter_data.10}} <i class="fa fa-external-link"></i></a></td><td>{{transporter_data.11}}</td>
+                                            <td></td>
                                         </tr>
                                         <tr>
                                             <th>Family</th>
                                             <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.12}}">{{transporter_data.12}} <i class="fa fa-external-link"></i></a></td><td>{{transporter_data.13}}</td>
+                                            <td></td>
                                         </tr>
                                         <tr>
                                             <th>Subfamily</th>
                                             <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.14}}">{{transporter_data.14}} <i class="fa fa-external-link"></i></a></td><td>{{transporter_data.15}}</td>
+                                            <td></td>
                                         </tr>
                                         <tr>
                                             <th>Transporter</th>
-                                            <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.14}}#{{transporter_data.8}}">{{transporter_data.8}} <i class="fa fa-external-link"></i></a></td><td>{{transporter_data.9}}</td>
+                                            <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.8}}">{{transporter_data.8}} <i class="fa fa-external-link"></i></a></td><td>{{transporter_data.9}}</td>
+                                            <td></td>
                                         </tr>
                                     </table>
 
@@ -556,7 +579,7 @@ function clearBox(elementID)
                               <div class="row">
                                 <div class="panel panel-default">
                                   <div class="panel-heading">
-                                    <h3 class="panel-title">Pathways/Modules <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and GhostKOALA"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
+                                    <h3 class="panel-title">Pathways/Modules <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and KofamScan"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
                                   </div>
                                   <table class="table table-striped" style="width: 100%">
 
@@ -564,8 +587,8 @@ function clearBox(elementID)
 
                                           {% for pathway in ko_pathway_data %}
                                               <tr>
-                                                  <td>Pathway: {{pathway.1}} <a href="{% url 'KEGG_mapp_ko' pathway.1 %}" target="_top">ko</a> /
-                                                      <a href="{% url 'KEGG_mapp' pathway.1 %}" target="_top">priam_ec</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                                  <td>Pathway</td>
+                                                  <td><a href="{% url 'KEGG_mapp_ko' pathway.1 %}" target="_top">{{pathway.1}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
                                                   <td>{{pathway.2}}</td>
                                                   <td>{{pathway.3}}</td>
                                               </tr>
@@ -577,7 +600,8 @@ function clearBox(elementID)
 
                                           {% for module in ko_module_data %}
                                               <tr>
-                                                  <td>Module: <a href="{% url 'KEGG_module_map' module.0 %}" target="_top">{{module.0}} (ko_based) </a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
+                                                  <td>Module</td>
+                                                  <td><a href="{% url 'KEGG_module_map' module.0 %}" target="_top">{{module.0}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
                                                   <td>{{module.1}}</td>
                                                   <td>{{module.2}}</td>
                                               </tr>

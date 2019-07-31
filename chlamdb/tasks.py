@@ -157,7 +157,7 @@ def run_circos(reference_taxon, target_taxons):
     highlight_BBH = True
     if highlight_BBH:
           
-        sql_phylum = 'select family from biodatabase t1 inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id ' \
+        sql_phylum = 'select phylum from biodatabase t1 inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id ' \
                      ' inner join taxid2species_%s t3 on t2.taxon_id=t3.taxon_id ' \
                      ' inner join species_curated_taxonomy_%s t4 on t3.species_id=t4.species_id ' \
                      ' where t1.name="%s" and t2.taxon_id=%s limit 1; ' % (biodb,
@@ -174,7 +174,7 @@ def run_circos(reference_taxon, target_taxons):
               ' inner join blastnr.blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
               ' inner join custom_tables.locus2seqfeature_id_%s t5 ' \
               ' on t1.seqfeature_id=t5.seqfeature_id ' \
-              ' where t1.hit_number=1 and t3.name="%s" and t4.family!="%s" and t1.query_taxon_id=%s;' % (biodb,
+              ' where t1.hit_number=1 and t3.name="%s" and t4.phylum!="%s" and t1.query_taxon_id=%s;' % (biodb,
                                                                                                          biodb,
                                                                                                          biodb,
                                                                                                          reference_phylum,
@@ -194,7 +194,7 @@ def run_circos(reference_taxon, target_taxons):
                   ' inner join blastnr.blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
                   ' inner join custom_tables.locus2seqfeature_id_%s t5 ' \
                   ' on t1.seqfeature_id=t5.seqfeature_id ' \
-                  ' where t1.hit_number=2 and t3.name="%s" and t4.family!="%s" and t1.query_taxon_id=%s;' % (biodb,
+                  ' where t1.hit_number=2 and t3.name="%s" and t4.phylum!="%s" and t1.query_taxon_id=%s;' % (biodb,
                                                                                                              biodb,
                                                                                                              biodb,
                                                                                                              reference_phylum,

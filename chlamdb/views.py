@@ -2301,7 +2301,7 @@ def locusx(request, locus=None, menu=True):
                     ' t2.query_cov, t2.hit_cov,t4.tc_name as transporter_name, t4.description as transporter_description, ' \
                     ' t5.tc_name as superfamily, t5.description as superfamily_description, ' \
                     ' t6.tc_name as family_name, t6.description as family_description, t7.tc_name as subfamily_name, ' \
-                    ' t7.description as subfamily_description  from custom_tables.locus2seqfeature_id_%s t1 ' \
+                    ' t7.description as subfamily_description, t8.tcdb_description, t8.organism  from custom_tables.locus2seqfeature_id_%s t1 ' \
                     ' inner join transporters.transporters_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                     ' inner join transporters.transporter_table t3 on t2.transporter_id=t3.transporter_id ' \
                     ' inner join transporters.tc_table t4 on t3.transporter_id=t4.tc_id ' \
@@ -2344,6 +2344,9 @@ def locusx(request, locus=None, menu=True):
 
             try:
                 transporter_data = [str(i) for i in server.adaptor.execute_and_fetchall(sql20, )[0]]
+                transporter_data[16]= ' '.join(transporter_data[16].split(' ')[1:]).split("OS")[0]
+                transporter_data[17] = transporter_data[17].split("(")[0]
+                print(transporter_data[17])
             except:
                 transporter_data = False
 
@@ -2502,7 +2505,14 @@ def locusx(request, locus=None, menu=True):
             except:
                 uniprot_id = False
             try:
-                protparams_data = server.adaptor.execute_and_fetchall(sql9,)[0]
+                protparams_data = list(server.adaptor.execute_and_fetchall(sql9,)[0])
+                protparams_data[0] = round(float(protparams_data[0])/1000, 2)
+                protparams_data[1] = round(protparams_data[1], 2)
+                protparams_data[2] = round(protparams_data[2], 2)
+                protparams_data[3] = round(protparams_data[3], 2)
+                protparams_data[4] = round(protparams_data[4]*100, 2)
+                protparams_data[5] = round(protparams_data[5]*100, 2)
+                protparams_data[6] = round(protparams_data[6]*100, 2)
             except:
                 protparams_data = False
             try:
@@ -11771,7 +11781,7 @@ def pfam_tree(request, orthogroup):
     if leaf_number < 10:
         leaf_number = 10
     ts.show_branch_support = False
-    t.render(path, h=leaf_number*12, dpi=800, tree_style=ts)
+    t.render(path, dpi=500, tree_style=ts)
 
     return render(request, 'chlamdb/pfam_tree.html', locals())
 
@@ -11799,7 +11809,7 @@ def TM_tree(request, orthogroup):
     asset_path = '/temp/TM_tree.svg'
     if leaf_number < 10:
         leaf_number = 10
-    t.render(path, h=leaf_number*12, dpi=800, tree_style=ts)
+    t.render(path, dpi=500, tree_style=ts)
 
     return render(request, 'chlamdb/TM_tree.html', locals())
 
@@ -12684,8 +12694,8 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
 
     t1.render(path, 
               tree_style=tree_style,
-              dpi=800, 
-              h=leaf_number*18)
+              dpi=300, 
+              w=600)
 
     return render(request, 'chlamdb/orthogroup_conservation.html', locals())
 
