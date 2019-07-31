@@ -178,23 +178,73 @@ function clearBox(elementID)
                                    <tr>
                                        <th>Orthogroup</th>
                                        <td><a href="{% url 'locusx' data.0 True %}">{{ data.0 }}</a></td>
+                                       <td></td>
                                    </tr>
                                    <th>Orthogroup size <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='Total number of homologs in the whole database'><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td>{{ data.7 }}</td>
+                                       <td></td>
                                    </tr>
                                    <th>N. genomes <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='Number of genomes encoding one or several homologs of this protein. See the tab "homologs" for details'><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td>{{ data.8 }}</td>
+                                       <td></td>
                                    </tr>
                                    {%if cog_data %}
                                        <tr>
-                                       <th>COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
-                                       <td><a <a href="{% url 'fam' cog_data.0 'cog' %}" target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
+                                          <th>COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
+                                          <td><a <a href="{% url 'fam' cog_data.0 'cog' %}" target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
+                                          <td><a data-toggle="collapse" href="#multiCollapseCOG" role="button" aria-expanded="false" aria-controls="multiCollapseCOG"><span class="badge" aria-hidden="true">Score <i class="fa fa-plus"></i></span></a> </td>
                                        </tr>
+
+                                          <tr class="collapse" id="multiCollapseCOG">
+                                            <td colspan="2">
+                                                  <table class="table table" style="width: 100%">
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Query start</th>
+                                                          <td>{{cog_data.3}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Query end</th>
+                                                          <td>{{cog_data.4}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Hit start</th>
+                                                          <td>{{cog_data.5}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Hit end</th>
+                                                          <td>{{cog_data.6}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Query coverage (%)</th>
+                                                          <td>{{cog_data.7}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Hit coverage (%)</th>
+                                                          <td>{{cog_data.8}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Identity (%)</th>
+                                                          <td>{{cog_data.9}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Evalue</th>
+                                                          <td>{{cog_data.10}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Bitscore</th>
+                                                          <td>{{cog_data.11}}</td>
+                                                    </tr>
+                                                </table>
+                                            <td>
+                                          </tr>
+
+
                                    {% endif %}
                                    {%if ko_data %}
                                        <tr>
-                                       <th>KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
-                                       <td><a href="{% url 'fam' ko_data.0 'ko' %}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
+                                          <th>KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
+                                          <td><a href="{% url 'fam' ko_data.0 'ko' %}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
+                                          <td></td>
                                        </tr>
                                    {% endif %}
                                 </table>

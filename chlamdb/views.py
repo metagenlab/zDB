@@ -2229,7 +2229,10 @@ def locusx(request, locus=None, menu=True):
             sql4 = 'select accession from orthology_detail_%s where locus_tag="%s" limit 1' % (biodb, locus)
             genome_accession = server.adaptor.execute_and_fetchall(sql4,)[0][0]
 
-            sql3 = 'select COG_name,code,t2.description from COG.seqfeature_id2best_COG_hit_%s t1 inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.COG_id inner join COG.cog_id2cog_category t3 on t2.COG_id=t3.COG_id inner join COG.code2category t4 on t3.category_id=t4.category_id inner join annotation.seqfeature_id2locus_%s t6 on t1.seqfeature_id=t6.seqfeature_id where locus_tag="%s";' % (biodb, biodb, locus)
+            sql3 = 'select COG_name,code,t2.description,t1.query_start,t1.query_end, t1.hit_start, t1.hit_end, t1.query_coverage, t1.hit_coverage, t1.identity, t1.evalue, t1.bitscore from COG.seqfeature_id2best_COG_hit_%s t1 inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.COG_id ' \
+                   ' inner join COG.cog_id2cog_category t3 on t2.COG_id=t3.COG_id inner ' \
+                   ' join COG.code2category t4 on t3.category_id=t4.category_id inner join annotation.seqfeature_id2locus_%s t6 on t1.seqfeature_id=t6.seqfeature_id ' \
+                   ' where locus_tag="%s";' % (biodb, biodb, locus)
 
             sql4 = 'select A.analysis_name,A.signature_accession, A.signature_description, start, stop,score, B.name,B.description from (select t1.*,t2.signature_accession,t2.signature_description,t2.interpro_id,t3.* from interpro.interpro_%s t1 inner join interpro.signature t2 on t1.signature_id=t2.signature_id inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id inner join annotation.seqfeature_id2locus_%s t4 on t1.seqfeature_id=t4.seqfeature_id where locus_tag="%s") A left join interpro.entry B on A.interpro_id=B.interpro_id;' % (biodb, biodb, locus)
             print(sql4)
@@ -2404,15 +2407,10 @@ def locusx(request, locus=None, menu=True):
 
             try:
                 uniprot_annotation = list(server.adaptor.execute_and_fetchall(sql12, )[0])
-                print(uniprot_annotation)
-                print(uniprot_annotation[0])
-                print (type(uniprot_annotation[0]))
-                print (uniprot_annotation[0] == '1')
                 if uniprot_annotation[0] == '1':
                     uniprot_annotation[0] = 'Reviewed'
                 if uniprot_annotation[0] == '0':
                     uniprot_annotation[0] = 'Unreviewed'  
-                print(uniprot_annotation)             
 
             except:
                 uniprot_annotation = False
