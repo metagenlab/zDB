@@ -2404,6 +2404,10 @@ def locusx(request, locus=None, menu=True):
 
             try:
                 uniprot_annotation = server.adaptor.execute_and_fetchall(sql12, )[0]
+                if uniprot_annotation[0] == 1:
+                    uniprot_annotation[0] == 'Reviewed'
+                if uniprot_annotation[0] == 0:
+                    uniprot_annotation[0] == 'Unreviewed'               
 
             except:
                 uniprot_annotation = False
