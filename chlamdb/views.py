@@ -2411,7 +2411,8 @@ def locusx(request, locus=None, menu=True):
                 if uniprot_annotation[0] == '1':
                     uniprot_annotation[0] == 'Reviewed'
                 if uniprot_annotation[0] == '0':
-                    uniprot_annotation[0] == 'Unreviewed'               
+                    uniprot_annotation[0] == 'Unreviewed'  
+                print(uniprot_annotation)             
 
             except:
                 uniprot_annotation = False
