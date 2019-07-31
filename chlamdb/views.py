@@ -12702,7 +12702,7 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
     t1.render(path, 
               tree_style=tree_style,
               dpi=300, 
-              w=600)
+              w=800)
 
     return render(request, 'chlamdb/orthogroup_conservation.html', locals())
 
