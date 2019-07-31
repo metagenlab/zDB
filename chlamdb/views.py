@@ -2237,7 +2237,7 @@ def locusx(request, locus=None, menu=True):
             sql4 = 'select A.analysis_name,A.signature_accession, A.signature_description, start, stop,score, B.name,B.description from (select t1.*,t2.signature_accession,t2.signature_description,t2.interpro_id,t3.* from interpro.interpro_%s t1 inner join interpro.signature t2 on t1.signature_id=t2.signature_id inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id inner join annotation.seqfeature_id2locus_%s t4 on t1.seqfeature_id=t4.seqfeature_id where locus_tag="%s") A left join interpro.entry B on A.interpro_id=B.interpro_id;' % (biodb, biodb, locus)
             print(sql4)
 
-            sql5 = 'select t3.ko_accession, t3.name, t3.definition, t3.pathways, t3.modules from ' \
+            sql5 = 'select t3.ko_accession, t3.name, t3.definition, t3.pathways, t3.modules, t2.thrshld, t2.score, t2.evalue from ' \
                    ' custom_tables.locus2seqfeature_id_%s t1 ' \
                    ' inner join enzyme.seqfeature_id2ko_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                    ' inner join enzyme.ko_annotation t3 on t2.ko_id=t3.ko_id where t1.locus_tag="%s";' % (biodb,

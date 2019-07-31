@@ -244,8 +244,31 @@ function clearBox(elementID)
                                        <tr>
                                           <th>KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                           <td><a href="{% url 'fam' ko_data.0 'ko' %}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
-                                          <td></td>
+                                          <td><a data-toggle="collapse" href="#multiCollapseKO" role="button" aria-expanded="false" aria-controls="multiCollapseKO"><span class="badge" aria-hidden="true">Score <i class="fa fa-plus"></i></span></a> </td>
                                        </tr>
+
+
+                                          <tr class="collapse" id="multiCollapseKO">
+                                            <td colspan="2">
+                                                  <table class="table table" style="width: 100%">
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>KoFamScan Score threshold</th>
+                                                          <td>{{ko_data.5}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Score</th>
+                                                          <td>{{ko_data.6}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Evalue</th>
+                                                          <td>{{ko_data.7}}</td>
+                                                    </tr>
+                                                </table>
+                                            <td>
+                                          </tr>
+
+
+
                                    {% endif %}
                                 </table>
 
