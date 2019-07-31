@@ -66,14 +66,16 @@
                         <span class="sidebar-icon"><i class="fa fa-list"></i></span>
                         <span class="sidebar-title"> Search</span>
                     </a>
-                    <ul id="submenu-2" class="panel-collapse collapse panel-switch" role="menu">
-                        <!--<li class="item"><a href="{% url 'search' %}">Keyword Search</a></li>-->
-                        <li class="item"><a href="{% url 'blast' %}">Blast</a></li>
-                        <!--<li class="item6"><a href="{% url 'motif_search' %}">Motif search</a>-->
-                        <!--</li>-->
-                        <!--<li class="item6"><a href="{% url 'interpro' %}">Interpro search</a>-->
-                        <li class="item"><a href="{% url 'extract_region' %}">Retrieve sequence</a></li>
-                    </ul>
+                    <div class="sidebar-submenu" style="display:block;">
+                      <ul id="submenu-2" class="panel-collapse collapse panel-switch" role="menu">
+                          <!--<li class="item"><a href="{% url 'search' %}">Keyword Search</a></li>-->
+                          <li class="item"><a href="{% url 'blast' %}">Blast</a></li>
+                          <!--<li class="item6"><a href="{% url 'motif_search' %}">Motif search</a>-->
+                          <!--</li>-->
+                          <!--<li class="item6"><a href="{% url 'interpro' %}">Interpro search</a>-->
+                          <li class="item"><a href="{% url 'extract_region' %}">Retrieve sequence</a></li>
+                      </ul>
+                    </div>
               </li>
                 <!--<li class="item6"><a href="{% url 'primer_search' %}">Primer search</a>->
                 <!--</li>-->
