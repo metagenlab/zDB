@@ -1381,7 +1381,7 @@ pmid_chunks = chunks(pmid_nr_list, 50)
 # get PMID data and load into sqldb
 sql_template = 'insert into pmid2data values (?, ?, ?, ?, ?)'
 for n, chunk in enumerate(pmid_chunks):
-    print("pmid2data -- chunk %s / " % (n, len(pmid_chunks))
+    print("pmid2data -- chunk %s / %s" % (n, len(pmid_chunks)))
     pmid2data = pmid2abstract_info(chunk)
     for pmid in pmid2data:
         cursor.execute(sql_template, (pmid, pmid2data[pmid]["title"], str(pmid2data[pmid]["authors"]), pmid2data[pmid]["source"], pmid2data[pmid]["abstract"]))
