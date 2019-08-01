@@ -1340,7 +1340,15 @@ def pmid2abstract_info(pmid_list):
           pmid = record["PMID"]
       except:
           print(record)
-          raise("Problem with pmid")
+          #{'id:': ['696885 Error occurred: PMID 28696885 is a duplicate of PMID 17633143']}
+          if 'duplicate' in record['id']:
+              duplicate = record['id'].split(' ')[0]
+              correct = record['id'].split(' ')[-1]
+              print("removing duplicated PMID... %s --> %s" % (duplicate, correct))
+              # remove duplicate from list
+              pmid_list.remove(duplicate)
+              return pmid2abstract_info(pmid_list)
+
       pmid2data[pmid] = {}
       pmid2data[pmid]["title"] = record.get("TI", "?")
       pmid2data[pmid]["authors"] = record.get("AU", "?")
