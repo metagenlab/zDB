@@ -1336,7 +1336,11 @@ def pmid2abstract_info(pmid_list):
 
     pmid2data = {}
     for record in records:
-      pmid = record["PMID"]
+      try:
+          pmid = record["PMID"]
+      except:
+          print(record)
+          raise("Problem with pmid")
       pmid2data[pmid] = {}
       pmid2data[pmid]["title"] = record.get("TI", "?")
       pmid2data[pmid]["authors"] = record.get("AU", "?")
@@ -1369,7 +1373,7 @@ with open("string_mapping_PMID.tab", "r") as f:
             if data[1] not in pmid_nr_list:
                 pmid_nr_list.append(data[1])
         if n % 1000 == 0:
-            print(n, '---- insert ----')
+            print(n, 'hash2pmid ---- insert ----')
             conn.commit()
 
 pmid_chunks = chunks(pmid_nr_list, 50)
@@ -1377,7 +1381,7 @@ pmid_chunks = chunks(pmid_nr_list, 50)
 # get PMID data and load into sqldb
 sql_template = 'insert into pmid2data values (?, ?, ?, ?, ?)'
 for n, chunk in enumerate(pmid_chunks):
-    print("%s" % n)
+    print("pmid2data -- chunk %s / " % (n, len(pmid_chunks))
     pmid2data = pmid2abstract_info(chunk)
     for pmid in pmid2data:
         cursor.execute(sql_template, (pmid, pmid2data[pmid]["title"], str(pmid2data[pmid]["authors"]), pmid2data[pmid]["source"], pmid2data[pmid]["abstract"]))
