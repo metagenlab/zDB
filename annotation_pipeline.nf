@@ -1376,7 +1376,7 @@ with open("string_mapping_PMID.tab", "r") as f:
             print(n, 'hash2pmid ---- insert ----')
             conn.commit()
 
-pmid_chunks = chunks(pmid_nr_list, 50)
+pmid_chunks = [i for i in chunks(pmid_nr_list, 50)]
 
 # get PMID data and load into sqldb
 sql_template = 'insert into pmid2data values (?, ?, ?, ?, ?)'
