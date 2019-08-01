@@ -66,10 +66,8 @@
   - [ ] effective
   - [ ] BPBAac
 - [ ] load psortdb results
-- [ ] get effectiveT3 "eukaryote" domains
 - [ ] load pdb best hits (with score)
 - [ ] load cross-references
-- [ ] load RBBH data (for identity distribution plots)
 
 ## priority 2
 
@@ -81,29 +79,68 @@
 - [ ] load DOOR2 data
     - [ ] accession table
     - [ ] operons data
+- [ ] load RBBH data (for identity distribution plots)
+- [ ] get effectiveT3 "eukaryote" domains
 
 # Web Interface
 
-- [ ] add download newick tree
+## done
+
+- [X] show scores
+
+## TODO
+
+### priority 1
+
+- [ ] update browse genome view
+- [ ] ass MSA faa to assets
+- [ ] download page - bulk download all genome or for specific genomes 
+  - [ ] KO annotation 
+  - [ ] COG annotation 
+  - [ ] TCDB annotation
+  - [ ] interproscan
+  - [ ] pfam only 
+  - [ ] all phylogenies
+  - [ ] all orthogroup fasta
+  - [ ] orthology table 
+  - [ ] all alignments
+  - [ ] ...
+- [ ] synonymous table 
+  - [ ] uniprot accession
+  - [ ] unirpot ID
+  - [ ] refseq protein accession 
+  - [ ] refseq locus tag
+  - [ ] genbank locus tag
+  - [ ] genbank protein accession
+- [ ] plot region ==> celery task
+- [ ] BLAST ==> celery task
+- [ ] keep comp tables in memory
+- [ ] blast multiple proteins: return table with hits
+- [ ] deal with COG, PFAM,... missing from the database
+- [ ] update to boolean search
+- [ ] check and update module, pathway, fam profile,... size
+- [ ] add effector prediction to locus page
+- [ ] add barplot pan-genome
+- [ ] add download newick tree on pfam, TM tabs and phylogeny with BBH
+- [ ] add uniprot proteome column (+ percent overlap) to genome table
+- [ ] add explanations for hydropathy plot
+
+### priority 2
+
 - [ ] integrate genome properties: table with property2steps avec IPP accession
 - [ ] eficaz
 - [ ] enzyme hierarchy
 - [ ] interpro hierarchy 
-- [ ] show scores
-- [ ] keep comp tables in memory
 - [ ] eggnog comparative table 
 - [ ] cdd comparative table
 - [ ] update to new eggnog version (and string)
-- [ ] update browse genome view
 - [ ] add uniprot kewords to locus page
-- [ ] get species table ==> display on homepage
-- [ ] add uniprot proteome column (+ percent overlap)
+- [ ] get species table 
+  - [ ] display on homepage
+  - [ ] use it for phylogenetic profiling?
 - [ ] deal with search for KO, KEGG, IP absent from genomes included in the database
 - [ ] show confidence scores for PDB, KEGG, COG,... (identity, score, evalue,...)
 - [ ] integration of swissprot keywords (possibility to click on it and get complete list of prot, decsription,...)
 - [ ] add tcdb classification to "fam" (annotation, phylogenetic profile,...). Include all classification levels (superfamilies,...)
 - [ ] idem with EC classification system
-- [ ] integrate interpro hierarchy
-- [ ] add explanations for hydropathy plot
-- [ ] add download page (download KO mapping, interpro mapping, all phylogenies, orthology table,...)
 - [ ] search bar: add option to search for TCDB accessions
