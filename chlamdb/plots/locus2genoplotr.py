@@ -1,15 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-import rpy2.robjects.numpy2ri
-
+from rpy2.robjects import numpy2ri
 import numpy as np
 import rpy2.robjects as robjects
-import rpy2.robjects.numpy2ri as numpy2ri
 from rpy2.robjects.packages import importr
 import rpy2.rlike.container as rlc
 from rpy2.robjects import pandas2ri
 pandas2ri.activate()
-import pandas.rpy.common as com
+#import pandas.rpy.common as com
 
 
 class Locus2genoplotR():
@@ -35,7 +33,7 @@ class Locus2genoplotR():
         elif type(reference_genbank) == list and isinstance(reference_genbank[0], SeqRecord.SeqRecord):
             self.reference_record = reference_genbank
         else:
-            print 'wrong input reference'
+            print ('wrong input reference')
 
         self.ref_locus_seqrecord, self.ref_sub_record, self.ref_feature = self.get_target_locus_region(self.query_locus,
                                                                                      self.reference_record,
@@ -53,7 +51,7 @@ class Locus2genoplotR():
                 else:
                     self.orf_lagging_strand_count += 1
 
-        print 'orf count:', self.orf_leading_strand_count, self.orf_lagging_strand_count
+        print ('orf count:', self.orf_leading_strand_count, self.orf_lagging_strand_count)
         '''
 
     def get_target_locus_region(self, target_locus_tag,
@@ -61,7 +59,7 @@ class Locus2genoplotR():
                                 right_side=0,
                                 left_side=0,
                                 flip_record=False):
-        print 'geting locus'
+        print ('geting locus')
         from Bio.SeqRecord import SeqRecord
         match=False
         for record in records:
@@ -69,7 +67,7 @@ class Locus2genoplotR():
             #    flip_record=True
             #    print 'match!-----------------------------------------------------'
             if flip_record:
-                print 'fplipping record', record.id
+                print ('fplipping record', record.id)
                 name = record.description
                 tmp_name = re.sub(', whole genome shotgun sequence.','', name)
                 tmp_name = re.sub('strain ','', tmp_name)
@@ -100,7 +98,7 @@ class Locus2genoplotR():
 
                         if region_end > len(record.seq):
                             region_end=len(record.seq)
-                        print 'extraction from %s to %s' % (region_start, region_end)
+                        print ('extraction from %s to %s' % (region_start, region_end))
 
                         query_sub_record = record[region_start:region_end]
 
@@ -124,7 +122,7 @@ class Locus2genoplotR():
                         region_end = query_end+right_side
                         if region_end > len(record.seq):
                             region_end=len(record.seq)
-                        print 'extraction from %s to %s' % (region_start, region_end)
+                        print ('extraction from %s to %s' % (region_start, region_end))
 
 
 
@@ -137,7 +135,7 @@ class Locus2genoplotR():
                         match=True
                         match_feature = feature
                         break
-        print 'match,', match
+        print ('match,', match)
         if not match:
             return False
         else:
@@ -190,7 +188,7 @@ class Locus2genoplotR():
                rec_list = target_record
 
             else:
-                print 'wrong target gbk format'
+                print ('wrong target gbk format')
 
             temp_target = NamedTemporaryFile(delete=False)
             fastastr = StringIO.StringIO()
@@ -201,12 +199,12 @@ class Locus2genoplotR():
             temp_target.flush()
 
             B = blast_utils.Blast(temp_ref.name, temp_target.name, protein=True)
-            print 'formatting...'
+            print ('formatting...')
             B.format_database()
-            print 'blasting...'
+            print ('blasting...')
             B.run_blastp()
             best_hit = B.best_hit_list[0]
-            print 'best hit locus:', best_hit[1]
+            print ('best hit locus:', best_hit[1])
 
             target_seq, target_sub_record, feature = self.get_target_locus_region(best_hit[1],
                                                                          rec_list,
@@ -225,20 +223,20 @@ class Locus2genoplotR():
                     else:
                         orf_lagging_strand_count += 1
 
-            print 'orf count comp', self.orf_leading_strand_count > self.orf_lagging_strand_count, orf_leading_strand_count < orf_lagging_strand_count
-            print self.orf_leading_strand_count, self.orf_lagging_strand_count, orf_leading_strand_count, orf_lagging_strand_count
+            print ('orf count comp', self.orf_leading_strand_count > self.orf_lagging_strand_count, orf_leading_strand_count < orf_lagging_strand_count)
+            print (self.orf_leading_strand_count, self.orf_lagging_strand_count, orf_leading_strand_count, orf_lagging_strand_count)
             if (self.orf_leading_strand_count > orf_leading_strand_count) and (self.orf_lagging_strand_count < orf_lagging_strand_count):
             '''
             if (feature.location.strand != self.ref_feature.location.strand):
-                print 'first trial'
-                print feature.location.strand != self.ref_feature.location.strand
+                print ('first trial')
+                print (feature.location.strand != self.ref_feature.location.strand)
                 target_seq, target_sub_record, feature = self.get_target_locus_region(best_hit[1],
                                                                              rec_list,
                                                                              right_side=self.right_side,
                                                                              left_side=self.left_side,
                                                                              flip_record=True)
 
-            print target_sub_record.id, '#############################################################################'
+            print (target_sub_record.id, '#############################################################################')
             '''
             if target_sub_record.id =="NC_009648.1":
                 print 'fpli!!!!!!!!!!!!!!!!!!!!!!!!!!'
@@ -253,7 +251,7 @@ class Locus2genoplotR():
                 self.sub_record_list.append(target_sub_record)
 
 
-        print 'sub record list', self.sub_record_list
+        print ('sub record list', self.sub_record_list)
 
 
     def write_genbank_subrecords(self, subrecord_list):
@@ -289,12 +287,12 @@ class Locus2genoplotR():
             # write fasta nucl to temp files
             # blast
             # keep output name into memory
-            print 'record 1\n--------------------', record_list[i]
-            print 'record 2\n--------------------', record_list[i+1]
+            print ('record 1\n--------------------', record_list[i])
+            print ('record 2\n--------------------', record_list[i+1])
             B = blast_utils.Blast(record_list[i], record_list[i+1], protein=False)
-            print 'formatting...'
+            print ('formatting...')
             B.format_database()
-            print 'blasting...'
+            print ('blasting...')
             if not self.tblastx:
                 blast_file = B.run_blastn(min_identity=min_identity)
             else:
@@ -655,7 +653,7 @@ if __name__ == '__main__':
             names[i] = tmp_name
         blast_result_files = L.record_list2blast(all_records, args.min_identity)
         gbk_list = L.write_genbank_subrecords(all_records)
-        print 'gbks', gbk_list
+        print ('gbks', gbk_list)
         L.record2multi_plot(gbk_list, blast_result_files, names, args.show_labels)
     else:
         gbk_list = L.write_genbank_subrecords([L.ref_sub_record])

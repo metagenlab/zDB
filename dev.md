@@ -81,6 +81,7 @@
     - [ ] operons data
 - [ ] load RBBH data (for identity distribution plots)
 - [ ] get effectiveT3 "eukaryote" domains
+- [ ] setup alignnments from nucletide sequence with genoplotR (see locus2genoplotr.py)
 
 # Web Interface
 
