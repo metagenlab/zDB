@@ -13135,7 +13135,9 @@ def transporters_family(request, family):
 
     acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
     filter = '"' + '","'.join(acc_list) + '"'
-    sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
+    sql = 'select taxon_id from bioentry t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
+          ' where t2.name="%s" and accession in (%s)' % (biodb, filter)
+    
     taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
     t1 = Tree(tree)
     R = t1.get_midpoint_outgroup()
@@ -13197,19 +13199,23 @@ def transporters_family(request, family):
 
     #family_filter = '"','","'.join([family]),'"'
     family_filter = '"%s"' % family
-    sql = 'select locus_tag,orthogroup, A.taxon_id from (' \
+    sql = 'select locus_tag,orthogroup_name, A.taxon_id from (' \
           ' select t1.taxon_id,t3.description,t1.seqfeature_id from transporters.transporters_%s t1  ' \
           ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
           ' inner join transporters.tc_table t3 on t2.family=t3.tc_id ' \
           ' inner join transporters.tc_table t4 on t2.family=t4.tc_id ' \
           ' where query_cov>=%s and hit_cov>=%s and evalue<=%s and bitscore_first_hsp>=%s and t4.tc_name in (%s))A ' \
-          ' inner join custom_tables.locus2seqfeature_id_%s B on A.seqfeature_id=B.seqfeature_id;' % (biodb,
-                                                                                                      query_coverage_cutoff,
-                                                                                                      hit_coverage_cutoff,
-                                                                                                      score_cutoff,
-                                                                                                      evalue_cutoff,
-                                                                                                      family_filter,
-                                                                                                      biodb)
+          ' inner join annotation.seqfeature_id2locus_%s B on A.seqfeature_id=B.seqfeature_id' \
+          ' inner join orthology.seqfeature_id2orthogroup_%s C on A.seqfeature_id=C.seqfeature_id' \
+          ' inner join orthology.orthogroup_%s D on C.orthogroup_id=D.orthogroup_id;' % (biodb,
+                                                                                         query_coverage_cutoff,
+                                                                                         hit_coverage_cutoff,
+                                                                                         score_cutoff,
+                                                                                         evalue_cutoff,
+                                                                                         family_filter,
+                                                                                         biodb,
+                                                                                         biodb,
+                                                                                         biodb)
 
     taxon2orthogroup2transporter_family = {}
     data = server.adaptor.execute_and_fetchall(sql,)
