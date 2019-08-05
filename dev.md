@@ -125,6 +125,7 @@
 - [ ] add download newick tree on pfam, TM tabs and phylogeny with BBH
 - [ ] add uniprot proteome column (+ percent overlap) to genome table
 - [ ] add explanations for hydropathy plot
+- [ ] improve integration of transporters_family and 
 
 ### priority 2
 
