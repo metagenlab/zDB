@@ -13262,11 +13262,11 @@ def transporters_family(request, family):
     locus_annot = [list(i) for i in server.adaptor.execute_and_fetchall(sql,)]
 
     sql = 'select locus_tag,t3.COG_name,t5.code,t3.description ' \
-          ' from seqfeature_id2best_COG_hit_%s t1 ' \
+          ' from COG.seqfeature_id2best_COG_hit_%s t1 ' \
           ' inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-          ' inner join cog_names_2014 t3 on t1.hit_cog_id=t3.cog_id ' \
-          ' inner join cog_id2cog_category t4 on t3.cog_id=t4.cog_id ' \
-          ' inner join code2category t5 on t4.category_id=t5.category_id where locus_tag in (%s);' % (biodb, 
+          ' inner join COG.cog_names_2014 t3 on t1.hit_cog_id=t3.cog_id ' \
+          ' inner join COG.cog_id2cog_category t4 on t3.cog_id=t4.cog_id ' \
+          ' inner join COG.code2category t5 on t4.category_id=t5.category_id where locus_tag in (%s);' % (biodb, 
                                                                                                       biodb, 
                                                                                                       filter)
     #print sql
