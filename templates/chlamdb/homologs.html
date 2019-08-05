@@ -69,10 +69,10 @@
                                               {% if locus_tag %}
                                                   <td>{{values.14}}</td> <!-- identity -->
                                               {% endif %}
-                                              {% if values.12 != 'reviewed'%}
-                                                  <td>UR </td> <!-- review <img src="{{ STATIC_URL }}scales/unreviewed.gif" id="uw">-->
-                                              {%else%}
+                                              {% if values.12 == 'reviewed' or values.12 == '1' %}
                                                   <td style="color:red">RW </td>  <!-- review <img src="{{ STATIC_URL }}scales/reviewed.gif" id="rw">-->
+                                              {%else%}
+                                                  <td>UR </td> <!-- review <img src="{{ STATIC_URL }}scales/unreviewed.gif" id="uw">-->
                                               {%endif%}
                                               <td>{{values.11}}</td> <!-- annotation score -->
 
