@@ -18,7 +18,7 @@
 
                     <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                         <li class="active"><a href="#tab1" data-toggle="tab">Counts</a></li>
-                        <li><a href="#tab2" data-toggle="tab">annot</a></li>
+                        <li><a href="#tab2" data-toggle="tab">Annotation</a></li>
                         <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://tcdb.org/search/result.php?tc={{family}}', 'orthoIDframe2'); return false">Informations</a></li>
 
                     </ul>
@@ -33,18 +33,12 @@
 
 
                             <div id="export_bouttons_groups">
-                                <a download="biodb_extract.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_groups', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-
-                                <a download="biodb_extract.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_groups');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Export to CSV</a>
-
                                 <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_url|safe}}'">fasta aa</button>
-
-                                <br/>
                             </div>
 
                             <p>Number of orthogroups: {{ sum_group }} </p>
 
-                            <table class="sortable" id="table_groups">
+                            <table class="table" id="table_tcdb">
 
                                 <thead>
                                     <tr>
@@ -64,40 +58,39 @@
                                     </tr>
 
                                 </thead>
-                                {% for value in locus_annot %}
-                                    <tr>
+                                <tbody>
+                                    {% for value in locus_annot %}
+                                        <tr>
 
-                                        <td><a href="{% url 'locusx' value.0 True%}">{{value.0}}</a></td>
-                                        <td>{{value.1}}</td>
-                                        <td>{{value.2|safe}}</td>
-                                        <td>{{value.3|safe}}</td>
-                                        <td>{{value.4|safe}}</td>
-                                        <td>{{value.5|safe}}</td>
-                                        <td>{{value.6|safe}}</td>
-                                        <td>{{value.7|safe}}</td>
-                                        <td>{{value.8|safe}}</td>
-                                        <td>{{value.9|safe}}</td>
-                                        <td>{{value.10|safe}}</td>
-                                        <td>{{value.11|safe}}</td>
+                                            <td><a href="{% url 'locusx' value.0 True%}">{{value.0}}</a></td>
+                                            <td>{{value.1}}</td>
+                                            <td>{{value.2|safe}}</td>
+                                            <td>{{value.3|safe}}</td>
+                                            <td>{{value.4|safe}}</td>
+                                            <td>{{value.5|safe}}</td>
+                                            <td>{{value.6|safe}}</td>
+                                            <td>{{value.7|safe}}</td>
+                                            <td>{{value.8|safe}}</td>
+                                            <td>{{value.9|safe}}</td>
+                                            <td>{{value.10|safe}}</td>
+                                            <td>{{value.11|safe}}</td>
 
-                                        {% with locus2interpro|keyvalue:value.0 as interpro_data %}
-                                        <td>
-                                            {% for one_interpro in interpro_data %}
-                                            {% if one_interpro.0 != '-' %}
-                                                <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
-                                            {%else%}
-                                                {{one_interpro.0}}
-                                            {%endif%}
-                                                {{one_interpro.1}} </br>
-                                            {% endfor %}
-                                            {%endwith%}
-                                        </td>
-                                    </tr>
-                                {% endfor %}
+                                            {% with locus2interpro|keyvalue:value.0 as interpro_data %}
+                                            <td>
+                                                {% for one_interpro in interpro_data %}
+                                                {% if one_interpro.0 != '-' %}
+                                                    <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                                {%else%}
+                                                    {{one_interpro.0}}
+                                                {%endif%}
+                                                    {{one_interpro.1}} </br>
+                                                {% endfor %}
+                                                {%endwith%}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
                             </table>
-                        </div>
-                        <div class="tab-pane" id="tab66" style="height:100%">
-                                <iframe name="orthoIDframe2" id="theFrame2" scrolling="no" width="100%" height="1800px"></iframe>
                         </div>
                     </div>
             </div>
@@ -116,5 +109,28 @@
 
 }
 </style>
+
+<script>
+
+$(document).ready(function() {
+      $('#table_tcdb').DataTable( {
+      dom: 'Bfrtip',
+      "paging":   true,
+      "ordering": true,
+      "info":     false,
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'table_tcdb'
+        },
+        {
+            extend: 'csv',
+            title: 'table_tcdb'
+        }
+      ],
+      } );
+      } );
+
+</script>
 
 </html>
