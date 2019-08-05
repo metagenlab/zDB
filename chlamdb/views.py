@@ -13304,7 +13304,7 @@ def transporters_family(request, family):
                                                 as_float=False,
                                                 rotate=True)
     '''
-    style1.rotation = 90
+    #style1.rotation = 90
     path1 = settings.BASE_DIR + '/assets/temp/ortho_tree2.svg'
     asset_path1 = '/temp/ortho_tree2.svg'
     tree1.render(path1, dpi=800, h=600, tree_style=style1)
