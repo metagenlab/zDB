@@ -13926,15 +13926,15 @@ def kegg_module_subcat(request):
                             tree,
                             modules,
                             taxon_id_list = [],
-                            rotate=True)
-            style.rotation = 90
+                            rotate=False)
+            #style.rotation = 90
 
 
 
 
             path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
             asset_path = '/temp/metabo_tree.svg'
-            tree.render(path, dpi=800, h=600, tree_style=style)
+            tree.render(path, dpi=500, w=800, tree_style=style)
 
 
             envoi = True

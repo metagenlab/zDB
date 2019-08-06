@@ -77,7 +77,7 @@ def plot_module_heatmap(biodb, ref_tree, module_list, taxon_id_list=[], rotate=F
                                                 column_scale=True,
                                                 tree=ref_tree,
                                                 as_float=False,
-                                                 rotate=rotate)
+                                                rotate=rotate)
     return tree2
 
 

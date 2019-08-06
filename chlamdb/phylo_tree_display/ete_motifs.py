@@ -291,12 +291,12 @@ def combined_profiles_heatmap(biodb,
                 #'first row, print gene names'
                 #print 'ok!'
                 n = TextFace(' %s ' % str(value))
-                n.vt_align = 2
-                n.hz_align = 2
+                #n.vt_align = 2
+                #n.hz_align = 2
                 n.rotation = 270
-                n.margin_top = 2
-                n.margin_right = 2
-                n.margin_left = 2
+                #n.margin_top = 2
+                #n.margin_right = 2
+                #n.margin_left = 2
                 n.margin_bottom = 6
 
                 n.inner_background.color = "white"
@@ -894,6 +894,11 @@ def multiple_profiles_heatmap(biodb,
     leaf_list = [i for i in t1.iter_leaves()]
     n_leaves = len(leaf_list)
 
+    longest_label = 0
+    for i in column_labels:
+        if len(i) > longest_label:
+            longest_label = len(i)
+
     for lf_count, lf in enumerate(t1.iter_leaves()):
         lf.branch_vertical_margin = 0
 
@@ -901,13 +906,14 @@ def multiple_profiles_heatmap(biodb,
         for col, value in enumerate(column_labels):
             if lf_count == 0:
                     # add labels
-                    n = TextFace(' %s ' % str(value))
-                    n.vt_align = 2
-                    n.hz_align = 2
+                    diff = (longest_label - len(value)) + 2
+                    n = TextFace('%s%s' % (str(value), diff * ' '))
+                    n.vt_align = 0
+                    n.hz_align = 0
                     n.rotation= 270
-                    n.margin_top = 2
-                    n.margin_right = 2
-                    n.margin_left = 2
+                    #n.margin_top = 2
+                    #n.margin_right = 2
+                    #n.margin_left = 2
                     n.margin_bottom = 6
 
                     from ete3 import NodeStyle
@@ -965,7 +971,7 @@ def multiple_profiles_heatmap(biodb,
                                     else:
                                         try:
                                             print('ok!')
-                                            local_label = "%s" % int(group2taxon2count[value][lf.name])
+                                            local_label = " %s " % int(group2taxon2count[value][lf.name])
                                         except:
                                             local_label = "%s" % group2taxon2count[value][lf.name]
                                 else:
@@ -984,10 +990,10 @@ def multiple_profiles_heatmap(biodb,
                                         if round(group2taxon2count[value][lf.name], 2) < 100 and column_scale:
                                             if round(group2taxon2count[value][lf.name], 2) < 10:
                                                 #print('less than 10: %s' % group2taxon2count[value][lf.name])
-                                                n = TextFace('  %s  ' % local_label)
+                                                n = TextFace(' %s ' % local_label)
                                             else:
                                                 print('Beteen 10 and 100: %s' % group2taxon2count[value][lf.name])
-                                                n = TextFace(' %s ' % local_label)
+                                                n = TextFace('%s' % local_label)
                                         else:
                                             #print('more than 100: %s' % group2taxon2count[value][lf.name])
                                             n = TextFace('%s' % local_label)
