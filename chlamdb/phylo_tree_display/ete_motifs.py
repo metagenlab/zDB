@@ -883,6 +883,7 @@ def multiple_profiles_heatmap(biodb,
     tss.draw_guiding_lines = True
     tss.guiding_lines_color = "gray"
     tss.show_leaf_name = False
+    tss.draw_aligned_faces_as_table=True
 
     R = t1.get_midpoint_outgroup()
     t1.set_outgroup(R)
@@ -906,11 +907,16 @@ def multiple_profiles_heatmap(biodb,
         for col, value in enumerate(column_labels):
             if lf_count == 0:
                     # add labels
-                    diff = (longest_label - len(value)) + 2
+                    diff = (longest_label - len(value))
                     n = TextFace('%s%s' % (str(value), diff * ' '))
                     n.vt_align = 0
                     n.hz_align = 0
                     n.rotation= 270
+                    if col == 0:
+                        n.margin_left = 3
+                    else:
+                        n.margin_bottom = 2
+                        n.margin_left = 2
                     #n.margin_top = 2
                     #n.margin_right = 2
                     #n.margin_left = 2
@@ -940,7 +946,7 @@ def multiple_profiles_heatmap(biodb,
                 ref_data = str(value)
                 n.margin_top = 2
                 n.margin_right = 2
-                n.margin_left = 30
+                n.margin_left = 3
                 n.margin_bottom = 2
 
                 if group2taxon2count[value][lf.name] > 0 and group2taxon2count[value][lf.name] != '-':
