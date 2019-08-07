@@ -1067,7 +1067,8 @@ def extract_pfam(request, classification="taxon_id"):
                                                                               "id",
                                                                               include,
                                                                               exclude,
-                                                                              freq_missing)
+                                                                              freq_missing,
+                                                                              cache=cache)
 
                 match_groups = mat.index.tolist()
 
@@ -1195,7 +1196,8 @@ def extract_ko(request):
                                                                               "id",
                                                                               include,
                                                                               exclude,
-                                                                              freq_missing)
+                                                                              freq_missing,
+                                                                              cache=cache)
 
                 match_groups = mat.index.tolist()
 
@@ -1357,7 +1359,8 @@ def extract_EC(request):
                                                                               "id",
                                                                               include,
                                                                               exclude,
-                                                                              freq_missing)
+                                                                              freq_missing,
+                                                                              cache=cache)
 
                 match_groups = mat.index.tolist()
 
@@ -1659,7 +1662,8 @@ def extract_interpro(request, classification="taxon_id"):
                                                                               "id",
                                                                               include,
                                                                               exclude,
-                                                                              freq_missing)
+                                                                              freq_missing,
+                                                                              cache=cache)
 
                 match_groups = mat.index.tolist()
                 # get count in subgroup
@@ -1843,7 +1847,8 @@ def extract_cog(request):
                                                                               include,
                                                                               exclude,
                                                                               freq_missing,
-                                                                              accessions=accessions)
+                                                                              accessions=accessions,
+                                                                              cache=cache)
 
 
                 match_groups = mat.index.tolist()
@@ -4413,7 +4418,8 @@ def get_cog_multiple(request, category, accessions=False):
                                                                   include,
                                                                   exclude,
                                                                   freq_missing,
-                                                                  accessions=accessions)
+                                                                  accessions=accessions,
+                                                                              cache=cache)
 
     match_groups_subset = mat.index.tolist()
     filter = '"' + '","'.join(match_groups_subset) + '"'
@@ -4534,7 +4540,8 @@ def get_ko_multiple(request, type, category):
                                                                   "id",
                                                                   include,
                                                                   exclude,
-                                                                  freq_missing)
+                                                                  freq_missing,
+                                                                              cache=cache)
 
     match_groups_subset = mat.index.tolist()
     filter = '"' + '","'.join(match_groups_subset) + '"'
@@ -4956,7 +4963,8 @@ def ko_subset_barchart(request, type):
                                                                   "id",
                                                                   include,
                                                                   exclude,
-                                                                  freq_missing)
+                                                                  freq_missing,
+                                                                              cache=cache)
 
     match_groups_subset = mat.index.tolist()
 
@@ -5092,7 +5100,8 @@ def cog_subset_barchart(request, accessions=False):
                                                                       "id",
                                                                       include,
                                                                       exclude,
-                                                                      freq_missing)
+                                                                      freq_missing,
+                                                                              cache=cache)
     else:
         mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
                                                                       "COG",
@@ -5100,7 +5109,8 @@ def cog_subset_barchart(request, accessions=False):
                                                                       include,
                                                                       exclude,
                                                                       freq_missing,
-                                                                      accessions=True)
+                                                                      accessions=True,
+                                                                              cache=cache)
     match_groups_subset = mat.index.tolist()
 
 
@@ -9160,7 +9170,8 @@ def get_fasta(request):
                                                                   exclude,
                                                                   ratio=freq_missing,
                                                                   single_copy=single_copy,
-                                                                  accessions=accessions)
+                                                                  accessions=accessions,
+                                                                              cache=cache)
     else:
         mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
                                                                   "orthology",
@@ -9169,7 +9180,8 @@ def get_fasta(request):
                                                                   exclude,
                                                                   ratio=freq_missing,
                                                                   single_copy=single_copy,
-                                                                  accessions=accessions)
+                                                                  accessions=accessions,
+                                                                              cache=cache)
     match_groups = mat.index.tolist()
     #print 'match', len(match_groups), match_groups
     for n, group in enumerate(match_groups):
@@ -9261,7 +9273,8 @@ def get_fasta_all(request):
                                                                   exclude,
                                                                   freq_missing,
                                                                   single_copy=single_copy,
-                                                                  accessions=accessions)
+                                                                  accessions=accessions,
+                                                                              cache=cache)
     else:
         mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
                                                                   "orthology",
@@ -9270,7 +9283,8 @@ def get_fasta_all(request):
                                                                   exclude,
                                                                   freq_missing,
                                                                   single_copy=single_copy,
-                                                                  accessions=accessions)
+                                                                  accessions=accessions,
+                                                                              cache=cache)
     match_groups = mat.index.tolist()
 
     #print 'match', len(match_groups), match_groups
@@ -9795,7 +9809,8 @@ def species_specific_groups(request):
                                                                   other_taxons,
                                                                   ratio=1/float(len(species_taxons)),
                                                                   single_copy=False,
-                                                                  accessions=False)
+                                                                  accessions=False,
+                                                                              cache=cache)
 
         species_id2count_unique[species] = [len(mat)]
 
@@ -12299,7 +12314,8 @@ def plot_heatmap(request, type):
                                                                           [],
                                                                           ratio=1/float(len(targets)),
                                                                           single_copy=False,
-                                                                          accessions=accessions)
+                                                                          accessions=accessions,
+                                                                              cache=cache)
                 taxon_list = list(mat.columns.values)
                 labels = [taxon2description[i] for i in taxon_list]
                 print(labels)
@@ -12312,7 +12328,8 @@ def plot_heatmap(request, type):
                                                                           [],
                                                                           ratio=1/float(len(targets)),
                                                                           single_copy=False,
-                                                                          accessions=accessions)
+                                                                          accessions=accessions,
+                                                                              cache=cache)
                 accession_list = list(mat.columns.values)
                 labels = [accession2description[i] for i in accession_list]
 
