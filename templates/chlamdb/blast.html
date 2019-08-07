@@ -130,7 +130,7 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
 #container{font-size: 10px; line-height: 12px;}
 #blast_res {font-size: 8px; line-height: 10px;}
 </STYLE>
-<script type="text/javascript" src="{% static 'js/html2canvas.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/html2canvas.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/blaster.min.js' %}"></script>
 {% include "chlamdb/header.html" %}
 </head>
@@ -227,27 +227,30 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
 
 
                       <div style="height:100px;">
-                          <object width="70%"  type="image/svg+xml" style="margin-left: -30px" data="{% static name %}" id="genomic_region"></object>
+                        {% for fig in fig_list%}
+                          <h3>{{fig.0}}</h3>
+                          <object width="70%"  type="image/svg+xml" style="margin-left: -30px" data="{% static fig.1 %}" id="genomic_region"></object>
+                        {% endfor %}
                       </div>
-                      <table id="tblastn">
-                      <h2>Hits</h2>
-                      {% for values in all_data %}
 
-                      <tr><th id="tblastn_first_col">Accession</th><td><span style="color: #0000FF;">{{ values.0 }}, {{ values.10 }}</span></td></tr>
-                      <tr><th>SEQ</th><td>{{ values.11 }}</td></tr>
-                      <tr><th></th><td>start: {{ values.1 }}, end: {{ values.2 }}, length: {{ values.3 }}</td></tr>
-                      <tr><th>Frame 1</th><td>{{ values.4 }}</td></tr>
-                      <tr><th>Frame 2</th><td>{{ values.5 }}</td></tr>
-                      <tr><th>Frame 3</th><td>{{ values.6 }}</td></tr>
-                      <tr><th>Frame -1</th><td>{{ values.7 }}</td></tr>
-                      <tr><th>Frame -2</th><td>{{ values.8 }}</td></tr>
-                      <tr><th>Frame -3</th><td>{{ values.9 }}</td></tr>
-                      <tr id="inter_tblastn"></tr>
+                      {% if show_translation %}
+                            <table id="tblastn">
+                            <h2>Hits</h2>
+                            {% for values in all_data %}
 
-
-                      {% endfor %}
-                      </table>
-
+                            <tr><th id="tblastn_first_col">Accession</th><td><span style="color: #0000FF;">{{ values.0 }}, {{ values.10 }}</span></td></tr>
+                            <tr><th>SEQ</th><td>{{ values.11 }}</td></tr>
+                            <tr><th></th><td>start: {{ values.1 }}, end: {{ values.2 }}, length: {{ values.3 }}</td></tr>
+                            <tr><th>Frame 1</th><td>{{ values.4 }}</td></tr>
+                            <tr><th>Frame 2</th><td>{{ values.5 }}</td></tr>
+                            <tr><th>Frame 3</th><td>{{ values.6 }}</td></tr>
+                            <tr><th>Frame -1</th><td>{{ values.7 }}</td></tr>
+                            <tr><th>Frame -2</th><td>{{ values.8 }}</td></tr>
+                            <tr><th>Frame -3</th><td>{{ values.9 }}</td></tr>
+                            <tr id="inter_tblastn"></tr>
+                            {% endfor %}
+                            </table>
+                      {% endif %}
                   {% endif %}
 
 

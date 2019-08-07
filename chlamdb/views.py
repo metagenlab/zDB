@@ -11158,27 +11158,32 @@ def blast(request):
 
                     blast_records = NCBIXML.parse(StringIO(blast_stdout2))
                     all_data = []
-                    best_hit_start = False
+                    best_hit_list = []
                     for record in blast_records:
+                        print(dir(record))
                         for n, alignment in enumerate(record.alignments):
                             accession = alignment.title.split(' ')[1]
                             #accession = 'Rht'
                             sql = 'select description from bioentry where accession="%s" ' % accession
 
                             description = server.adaptor.execute_and_fetchall(sql,)[0][0]
+                            print(alignment)
                             for n2, hsp in enumerate(alignment.hsps):
                                 if n == 0 and n2 == 0:
-                                    best_hit_start = hsp.sbjct_start
-                                    best_hit_end = hsp.sbjct_end
+                                    best_hit_list.append([record.query, hsp.sbjct_start, hsp.sbjct_end])
+                               
                                 start = hsp.sbjct_start
                                 end = hsp.sbjct_end
+                                if start > end:
+                                    start = hsp.sbjct_end
+                                    end = hsp.sbjct_start
                                 length = end-start
                                 #print 'seq for acc', accession, start, end,
                                 leng = end-start
-
                                 #print 'end', 'start', end, start, end-start
                                 #accession = 'Rht'
                                 seq = manipulate_biosqldb.location2sequence(server, accession, biodb, start, leng)
+                                print(seq)
                                 #print seq
                                 from Bio.Seq import reverse_complement, translate
                                 anti = reverse_complement(seq)
@@ -11192,19 +11197,25 @@ def blast(request):
                                     tmp2 = translate(anti[i:i+fragment_length], 1)[::-1]
                                     frames[-(i+1)] = tmp2
                                 all_data.append([accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq])
-                    if best_hit_start:
-                        temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
-                        temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-                        name = 'temp/' + os.path.basename(temp_file.name)
-                        orthogroup_list = mysqldb_plot_genomic_feature.location2plot(db,
-                                                                                      biodb,
-                                                                                      target_accession,
-                                                                                      temp_file.name,
-                                                                                      best_hit_start-15000,
-                                                                                      best_hit_end+15000,
-                                                                                      cache,
-                                                                                      color_locus_list = [],
-                                                                                      region_highlight=[best_hit_start, best_hit_end])
+                    if len(best_hit_list) > 0:
+                        fig_list = []
+                        for best_hit in best_hit_list:
+                            accession = best_hit[0]
+                            best_hit_start = best_hit[1]
+                            best_hit_end = best_hit[2]
+                            temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
+                            temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
+                            name = 'temp/' + os.path.basename(temp_file.name)
+                            fig_list.append([accession, name])
+                            orthogroup_list = mysqldb_plot_genomic_feature.location2plot(db,
+                                                                                        biodb,
+                                                                                        target_accession,
+                                                                                        temp_file.name,
+                                                                                        best_hit_start-15000,
+                                                                                        best_hit_end+15000,
+                                                                                        cache,
+                                                                                        color_locus_list = [],
+                                                                                        region_highlight=[best_hit_start, best_hit_end])
 
 
                 no_match = re.compile('.* No hits found .*', re.DOTALL)
@@ -11245,12 +11256,12 @@ def blast(request):
                     f.close()
 
                     asset_blast_path = '/assets/temp/%s.xml' % rand_id
-
-                    if len(my_record) == 1:
-                        js_out = True
-                    else:
-                        js_out = False
-                        #print blast_stdout
+                    js_out = True
+                    #if len(my_record) == 1:
+                    #    js_out = True
+                    #else:
+                    #    js_out = False
+                    #    #print blast_stdout
 
                     #blast_file.write(blast_stdout)
                     #out, err, code = shell_command.shell_command('cat /temp/blast.temp | wc -l')
