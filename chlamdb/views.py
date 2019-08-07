@@ -2635,8 +2635,8 @@ def locusx(request, locus=None, menu=True):
             KO_annotations = server.adaptor.execute_and_fetchall(sql_group4,)
             
 
-            import plotly.plotly as py
-            import plotly.graph_objs as go
+            import chart_studio.plotly as py
+            import plotly.graph_objects as go
             from collections import Counter
             
             sql = 'select TM from biosqldb.orthology_detail_%s where orthogroup="%s";' % (biodb, locus)
