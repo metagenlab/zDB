@@ -2634,8 +2634,6 @@ def locusx(request, locus=None, menu=True):
             COG_annotations = server.adaptor.execute_and_fetchall(sql_group3,)
             KO_annotations = server.adaptor.execute_and_fetchall(sql_group4,)
             
-
-            import chart_studio.plotly as py
             import plotly.graph_objects as go
             from collections import Counter
             
