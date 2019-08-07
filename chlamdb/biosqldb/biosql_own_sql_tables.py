@@ -1198,8 +1198,6 @@ def get_comparative_subtable(biodb,
     single_copy: only consider singly copy locus
     accessions (bol): compare accession and not taxons (differentiate plasmids from chromosome)
     '''
-
-    server, db = manipulate_biosqldb.load_db(biodb)
     
     import MySQLdb
     import os
@@ -1212,8 +1210,6 @@ def get_comparative_subtable(biodb,
                                 user=mysql_user,
                                 passwd=mysql_pwd,
                                 db=mysql_db)
-    cursor = conn.cursor()    
-    
     
     if not accessions:
         cache_id = f"{biodb}_{table_name}2"   
@@ -1221,84 +1217,40 @@ def get_comparative_subtable(biodb,
 
         if not isinstance(count_df, pandas.DataFrame):
             sql = f'select * from comparative_tables.{table_name}_{biodb}'
-            count_df = pandas.read_sql(sql, conn, index_col="orthogroup")
+            count_df = pandas.read_sql(sql, conn, index_col=first_col_name)
             cache.set(f"{biodb}_{table_name}", count_df)
     else:
         count_df = cache.get(f"{biodb}_{table_name}_acc")
 
         if not count_df:
             sql = f'select * from comparative_tables.{table_name}_accessions_{biodb}'
-            count_df = pandas.read_sql(sql, conn,index_col="orthogroup")
+            count_df = pandas.read_sql(sql, conn,index_col=first_col_name)
             cache.set(f"{biodb}_{table_name}_acc", count_df)      
-    print('ok in memory')
-    print(count_df.head())
     
      # convert to integer
     count_df = count_df.apply(pandas.to_numeric, args=('coerce',))
-    # rename columns
+    # rename columns (interger are not ok for df.query())
     count_df.columns = ["taxid_%s" % i for i in list(count_df)]
 
-    # apply filter
-    if not single_copy:
-        exclude_string = ' & '.join(["taxid_%s==0" % i for i in exclude_taxon_list])
-        #include_string = ' & '.join(["taxid_%s>0" % i for i in taxon_list])
-        print(exclude_string)
-        include_cols = ["taxid_%s" % i for i in taxon_list]
-        count_df2 = count_df.query(exclude_string).loc[:,include_cols]
-    print("result", count_df2.head())    
+    # apply exclude filter
+    exclude_string = ' & '.join(["taxid_%s==0" % i for i in exclude_taxon_list])
+    #include_string = ' & '.join(["taxid_%s>0" % i for i in taxon_list])
+    include_cols = ["taxid_%s" % i for i in taxon_list]
+    count_df2 = count_df.query(exclude_string).loc[:,include_cols]
+  
+    # calculate limit when accepting missing data
     limit = len(taxon_list)*ratio
+    
+    if not single_copy: 
         
-    return count_df2[(count_df2 > 0).sum(axis=1) >= limit], count_df2
-
-    '''
-    if not accessions:
-        columns = '`'+'`,`'.join(taxon_list)+'`'
-        if len(exclude_taxon_list)>0:
-            exclude_sql = "`" + "`=0 and `".join(exclude_taxon_list) + "`=0"
-            sql = 'select %s, %s from comparative_tables.%s_%s where(%s)' % (first_col_name, columns, table_name,biodb, exclude_sql)
-        else:
-            sql = 'select %s, %s from comparative_tables.%s_%s' % (first_col_name, columns, table_name,biodb)
-        sql2 = 'select * from comparative_tables.%s_%s' % (table_name, biodb)
-        sql3 = 'show columns from comparative_tables.%s_%s' % (table_name, biodb)
-
+        return count_df2[(count_df2 > 0).sum(axis=1) >= limit], count_df
     else:
-        columns = ','.join(taxon_list)
-        if len(exclude_taxon_list)>0:
-            exclude_sql = "=0 and ".join(exclude_taxon_list) + "=0"
-            sql = 'select %s, %s from comparative_tables.%s_accessions_%s where(%s)' % (first_col_name, columns, table_name, biodb, exclude_sql)
-        else:
-            sql = 'select %s, %s from comparative_tables.%s_accessions_%s' % (first_col_name, columns, table_name,biodb)
-        sql2 = 'select * from comparative_tables.%s_accessions_%s' % (table_name, biodb)
-        sql3 = 'show columns from comparative_tables.%s_accessions_%s' % (table_name, biodb)
-    #print sql
-    data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
-    data2 = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql2,)])
+        # identify and remove rows with paralogs
+        groups_with_paralogs = count_df2[(count_df2 > 1).sum(axis=1) > 0].index
+        count_df2 = count_df2.drop(groups_with_paralogs)
 
-    all_cols = [i[0] for i in server.adaptor.execute_and_fetchall(sql3,)]
+        return count_df2[(count_df2 == 1).sum(axis=1) >= limit], count_df       
 
-    cols = [first_col_name]+taxon_list
-
-    # set the persentage of taxon that must have homologs/domain/... => default is 1 (100%)
-    limit = len(taxon_list)*ratio
-
-    count_df = pandas.DataFrame(data, columns=cols)
-    count_df2 = pandas.DataFrame(data2, columns=all_cols)
-
-    count_df = count_df.set_index([first_col_name])
-    count_df = count_df.apply(pandas.to_numeric, args=('coerce',))
-
-    count_df2 = count_df2.set_index([first_col_name])
-    count_df2 = count_df2.apply(pandas.to_numeric, args=('coerce',))
-
-    if not single_copy:
-        return count_df[(count_df > 0).sum(axis=1) >= limit], count_df2 #
-    else:
-
-        groups_with_paralogs = count_df[(count_df > 1).sum(axis=1) > 0].index
-        count_df = count_df.drop(groups_with_paralogs)
-
-        return count_df[(count_df == 1).sum(axis=1) >= limit], count_df2
-    '''
     
 def best_hit_classification(db_name, accession):
     sql = 'select A.*, t4.superkingdom, t4.kingdom, t4.phylum, t4.order, t4.family, t4.genus, t4.species' \
