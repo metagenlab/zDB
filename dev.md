@@ -93,8 +93,10 @@
 
 ### priority 1
 
+- [X] keep comparative tables in memory
 - [ ] update browse genome view
-- [ ] ass MSA faa to assets
+- [ ] orthogroup Venn: use consensus annotation
+- [ ] add MSA faa to assets
 - [ ] download page - bulk download all genome or for specific genomes 
   - [ ] KO annotation 
   - [ ] COG annotation 
@@ -115,7 +117,6 @@
   - [ ] genbank protein accession
 - [ ] plot region ==> celery task
 - [ ] BLAST ==> celery task
-- [ ] keep comp tables in memory
 - [ ] blast multiple proteins: return table with hits
 - [ ] deal with COG, PFAM,... missing from the database
 - [ ] update to boolean search

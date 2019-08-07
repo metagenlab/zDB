@@ -91,9 +91,7 @@
                 <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                     <li class="active"><a href="#red" data-toggle="tab">Orthogroups</a></li>
                     <li><a href="#orange" data-toggle="tab">Table detail</a></li>
-                    {% if show_reference_annot %}
-                        <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
-                    {% endif %}
+                    <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
                 </ul>
 
                 <div id="my-tab-content" class="tab-content">
@@ -210,13 +208,12 @@
                     <div class="tab-pane" id="tab2">
 
                         <h3> Locus annotation </h3>
-                        <div id="export_bouttons_groups">
-                            <a href="{% url 'get_fasta' %}{{fasta_url_ref}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Download fasta</a>
-                            <a href="{% url 'circos_main' %}{{circos_url}}" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;"">Show on circular map (takes some time)</a>
-
-                            <br/>
+                        <div id="export_bouttons_groups" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
+                            <a href="{% url "get_fasta" %}{{fasta_url_ref}}" class="btn btn-success">Download fasta</a>
+                            <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map</a>
+                        <br/>
                         </div>
-                        <table id="cog_table" class="display">
+                        <table id="reference_table" class="table">
                             <thead>
                                 <tr>
                                     <th></th>
@@ -362,6 +359,24 @@ buttons: [
 } );
 } );
 
+$(document).ready(function() {
+$('#reference_table').DataTable( {
+ dom: 'Bfrtip',   
+"paging":   true,
+"ordering": true,
+"info":     false,
+buttons: [
+{
+    extend: 'excel',
+    title: 'locus'
+},
+{
+    extend: 'csv',
+    title: 'locus'
+}
+],
+} );
+} );
 
 
 </script>

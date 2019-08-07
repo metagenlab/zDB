@@ -498,11 +498,6 @@ def extract_orthogroup(request):
 
             reference_taxon = form.cleaned_data['reference']
 
-            if len(include) == 1:
-                show_reference_annot = False
-            else:
-                show_reference_annot = True
-
             if reference_taxon == "None":
                 reference_taxon = include[0]
 
@@ -599,29 +594,28 @@ def extract_orthogroup(request):
                     fasta_url_ref = fasta_url +'&ref=%s' % reference_taxon
                     fasta_url_noref =fasta_url + '&ref=F'
 
-                    if show_reference_annot:
-                        if not accessions:
-                            sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and taxon_id=%s' % (biodb,
-                                                                                                                      '"' + '","'.join(match_groups) + '"',
-                                                                                                                      reference_taxon)
-                        else:
-                            sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and accession="%s"' % (biodb,
-                                                                                                                      '"' + '","'.join(match_groups) + '"',
-                                                                                                                      reference_taxon)
-                        locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+                    if not accessions:
+                        sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and taxon_id=%s' % (biodb,
+                                                                                                                    '"' + '","'.join(match_groups) + '"',
+                                                                                                                    reference_taxon)
+                    else:
+                        sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and accession="%s"' % (biodb,
+                                                                                                                    '"' + '","'.join(match_groups) + '"',
+                                                                                                                    reference_taxon)
+                    locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
 
-                        fasta_ref_url = '?l=' + '&l='.join(locus_list)
+                    fasta_ref_url = '?l=' + '&l='.join(locus_list)
 
-                        locus2annot, \
-                        locus_tag2cog_catego, \
-                        locus_tag2cog_name, \
-                        locus_tag2ko, \
-                        pathway2category, \
-                        module2category, \
-                        ko2ko_pathways, \
-                        ko2ko_modules,\
-                        locus2interpro = get_locus_annotations(biodb, locus_list)
+                    locus2annot, \
+                    locus_tag2cog_catego, \
+                    locus_tag2cog_name, \
+                    locus_tag2ko, \
+                    pathway2category, \
+                    module2category, \
+                    ko2ko_pathways, \
+                    ko2ko_modules,\
+                    locus2interpro = get_locus_annotations(biodb, locus_list)
 
                     # only show reference annotation if more than one genome included
 
@@ -9164,26 +9158,27 @@ def get_fasta(request):
     if not accessions:
         # get sub matrix and complete matrix
         mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                  "orthology",
-                                                                  "orthogroup",
-                                                                  include,
-                                                                  exclude,
-                                                                  ratio=freq_missing,
-                                                                  single_copy=single_copy,
-                                                                  accessions=accessions,
-                                                                              cache=cache)
+                                                                      "orthology",
+                                                                      "orthogroup",
+                                                                      include,
+                                                                      exclude,
+                                                                      ratio=freq_missing,
+                                                                      single_copy=single_copy,
+                                                                      accessions=accessions,
+                                                                      cache=cache)
     else:
         mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                  "orthology",
-                                                                  "id",
-                                                                  include,
-                                                                  exclude,
-                                                                  ratio=freq_missing,
-                                                                  single_copy=single_copy,
-                                                                  accessions=accessions,
-                                                                              cache=cache)
+                                                                      "orthology",
+                                                                      "id",
+                                                                      include,
+                                                                      exclude,
+                                                                      ratio=freq_missing,
+                                                                      single_copy=single_copy,
+                                                                      accessions=accessions,
+                                                                      cache=cache)
     match_groups = mat.index.tolist()
     #print 'match', len(match_groups), match_groups
+    merged_reference_fasta = ''
     for n, group in enumerate(match_groups):
         #print n, group
         if not accessions:
@@ -9210,20 +9205,30 @@ def get_fasta(request):
         data = server.adaptor.execute_and_fetchall(sql,)
         fasta = ''
         for seq_data in data:
-            fasta+='>%s %s\n' % (seq_data[0], seq_data[1])
-            for i in range(0, len(seq_data[2]), 60):
-                fasta+=(seq_data[2][i:i + 60] + "\n")
-        with open('/tmp/%s.fasta' % group, 'w') as f:
-            f.write(fasta)
-
-    #shell_command.shell_command('tar -zcvf /tmp/groups_fasta.tar.gz /tmp/group_*fasta')
+            if not reference:
+                fasta+='>%s %s\n' % (seq_data[0], seq_data[1])
+                for i in range(0, len(seq_data[2]), 60):
+                    fasta+=(seq_data[2][i:i + 60] + "\n")
+            else:
+                merged_reference_fasta+='>%s %s\n' % (seq_data[0], seq_data[1])
+                for i in range(0, len(seq_data[2]), 60):
+                    merged_reference_fasta+=(seq_data[2][i:i + 60] + "\n")
+        if not reference:          
+            with open('/tmp/%s.fasta' % group, 'w') as f:
+                f.write(fasta)
+    
     response = HttpResponse(content_type='application/x-gzip')
     response['Content-Disposition'] = 'attachment; filename=download.tar.gz'
     tarred = tarfile.open(fileobj=response, mode='w:gz')
-
-    for group in match_groups:
-        tarred.add('/tmp/%s.fasta' % group)
-    tarred.close()
+    
+    if reference:
+        with open('/tmp/reference.fasta', 'w') as f:
+            f.write(merged_reference_fasta)
+        tarred.add('/tmp/reference.fasta', arcname='reference.fasta')
+    else:
+        for group in match_groups:
+            tarred.add('/tmp/%s.fasta' % group, arcname='%s.fasta' % group)
+    tarred.close()           
 
     return response
 
