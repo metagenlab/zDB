@@ -5,9 +5,11 @@ channels:
  - bioconda
  - conda-forge
  - defaults
+ - plotly
 dependencies:
  - python=3.6.7
  - django=2.1.1
+ - plotly=3.6
  - celery
  - pip
  - django-extensions

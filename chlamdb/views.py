@@ -10994,7 +10994,7 @@ def blast_profile(request):
             from ete3 import Tree, TreeStyle
 
             fasta_file = request.FILES['fasta_file']
-            fasta_string = StringIO(request.FILES['fasta_file'].read())
+            fasta_string = StringIO(request.FILES['fasta_file'].read().decode("UTF-8"))
             fasta_rec = [i for i in SeqIO.parse(fasta_string, 'fasta')]
 
             try:
@@ -11007,7 +11007,9 @@ def blast_profile(request):
             #my_record = SeqIO.read(request.FILES['fasta_file'].open(), 'fasta')
 
 
-            tree, style1, tree2, style2, tree3, style3, locus2taxon2locus_closest = biosqldb_plot_blast_hits_phylo.plot_BBH_phylo(fasta_rec, biodb)
+            tree, style1, tree2, style2, tree3, style3, locus2taxon2locus_closest = biosqldb_plot_blast_hits_phylo.plot_BBH_phylo(fasta_rec, 
+                                                                                                                                  biodb,
+                                                                                                                                  settings.BASE_DIR + '/assets/')
 
 
             sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
@@ -11045,9 +11047,9 @@ def blast_profile(request):
             asset_path2 = '/temp/profile_tree2.svg'
             asset_path3 = '/temp/profile_tree3.svg'
 
-            tree3.render(path3, dpi=800, h=600, tree_style=style3)
-            tree.render(path2, dpi=800, h=600, tree_style=style1)
-            tree2.render(path, dpi=800, h=600, tree_style=style2)
+            tree3.render(path3, dpi=500, tree_style=style3)
+            tree.render(path2, dpi=500, tree_style=style1)
+            tree2.render(path, dpi=500, tree_style=style2)
 
 
             envoi = True
