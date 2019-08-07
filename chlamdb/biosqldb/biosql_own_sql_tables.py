@@ -1187,7 +1187,8 @@ def get_comparative_subtable(biodb,
                              exclude_taxon_list,
                              ratio=1,
                              single_copy=False,
-                             accessions=False):
+                             accessions=False,
+                             cache=False):
 
     import pandas
     import numpy
@@ -1196,10 +1197,60 @@ def get_comparative_subtable(biodb,
     ratio: ratio of missing data tolaration
     single_copy: only consider singly copy locus
     accessions (bol): compare accession and not taxons (differentiate plasmids from chromosome)
-
     '''
 
     server, db = manipulate_biosqldb.load_db(biodb)
+    
+    import MySQLdb
+    import os
+    import pandas
+    mysql_host = 'localhost'
+    mysql_user = 'root'
+    mysql_pwd = os.environ['SQLPSW']
+    mysql_db = 'comparative_tables'
+    conn = MySQLdb.connect(host=mysql_host,
+                                user=mysql_user,
+                                passwd=mysql_pwd,
+                                db=mysql_db)
+    cursor = conn.cursor()    
+    
+    
+    if not accessions:
+        cache_id = f"{biodb}_{table_name}2"   
+        count_df = cache.get(cache_id)
+
+        if not isinstance(count_df, pandas.DataFrame):
+            sql = f'select * from comparative_tables.{table_name}_{biodb}'
+            count_df = pandas.read_sql(sql, conn, index_col="orthogroup")
+            cache.set(f"{biodb}_{table_name}", count_df)
+    else:
+        count_df = cache.get(f"{biodb}_{table_name}_acc")
+
+        if not count_df:
+            sql = f'select * from comparative_tables.{table_name}_accessions_{biodb}'
+            count_df = pandas.read_sql(sql, conn,index_col="orthogroup")
+            cache.set(f"{biodb}_{table_name}_acc", count_df)      
+    print('ok in memory')
+    print(count_df.head())
+    
+     # convert to integer
+    count_df = count_df.apply(pandas.to_numeric, args=('coerce',))
+    # rename columns
+    count_df.columns = ["taxid_%s" % i for i in list(count_df)]
+
+    # apply filter
+    if not single_copy:
+        exclude_string = ' & '.join(["taxid_%s==0" % i for i in exclude_taxon_list])
+        #include_string = ' & '.join(["taxid_%s>0" % i for i in taxon_list])
+        print(exclude_string)
+        include_cols = ["taxid_%s" % i for i in taxon_list]
+        count_df2 = count_df.query(exclude_string).loc[:,include_cols]
+    print("result", count_df2.head())    
+    limit = len(taxon_list)*ratio
+        
+    return count_df2[(count_df2 > 0).sum(axis=1) >= limit], count_df2
+
+    '''
     if not accessions:
         columns = '`'+'`,`'.join(taxon_list)+'`'
         if len(exclude_taxon_list)>0:
@@ -1247,7 +1298,8 @@ def get_comparative_subtable(biodb,
         count_df = count_df.drop(groups_with_paralogs)
 
         return count_df[(count_df == 1).sum(axis=1) >= limit], count_df2
-
+    '''
+    
 def best_hit_classification(db_name, accession):
     sql = 'select A.*, t4.superkingdom, t4.kingdom, t4.phylum, t4.order, t4.family, t4.genus, t4.species' \
           ' from (select locus_tag, TM, SP, gene, product from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \

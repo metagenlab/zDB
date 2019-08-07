@@ -478,6 +478,8 @@ def extract_orthogroup(request):
     :return:
     '''
 
+    print(f"{biodb}_test")
+
     server = manipulate_biosqldb.load_db()
     #print "extract orthogroup %s" % biodb
     extract_form_class = make_extract_form(biodb, plasmid=True)
@@ -542,7 +544,8 @@ def extract_orthogroup(request):
                                                                               exclude,
                                                                               freq_missing,
                                                                               single_copy=single_copy,
-                                                                              accessions=accessions)
+                                                                              accessions=accessions,
+                                                                              cache=cache)
                 else:
                     mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
                                                                               "orthology",
@@ -551,7 +554,8 @@ def extract_orthogroup(request):
                                                                               exclude,
                                                                               freq_missing,
                                                                               single_copy=single_copy,
-                                                                              accessions=accessions)
+                                                                              accessions=accessions,
+                                                                              cache=cache)
                 print("matrix OK")
                 match_groups = mat.index.tolist()
 

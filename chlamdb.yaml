@@ -40,7 +40,6 @@ dependencies:
  - rpy2
  - r-ggplot2
  - circos
- - inkscape 
  - r-rmysql
  - blast
  - pip:
