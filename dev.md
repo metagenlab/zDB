@@ -95,8 +95,9 @@
 
 - [X] keep comparative tables in memory
 - [X] blast multiple proteins
-    - blastp
-    - tblastn
+- [X] blast link only when blasting locus databases
+- [ ] add formatdb ffn
+- [ ] add database all for tblastn
 - [ ] update browse genome view
 - [ ] orthogroup Venn: use consensus annotation
 - [ ] add MSA faa to assets
@@ -119,7 +120,6 @@
   - [ ] genbank locus tag
   - [ ] genbank protein accession
 - [ ] plot region ==> celery task
-- [ ] BLAST ==> celery task
 - [ ] deal with COG, PFAM,... missing from the database
 - [ ] update to boolean search
 - [ ] check and update module, pathway, fam profile,... size
@@ -129,6 +129,8 @@
 - [ ] add uniprot proteome column (+ percent overlap) to genome table
 - [ ] add explanations for hydropathy plot
 - [ ] improve integration of transporters_family and 
+- [ ] BLAST ==> celery task
+
 
 ### priority 2
 
