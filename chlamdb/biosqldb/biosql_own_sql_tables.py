@@ -1232,11 +1232,13 @@ def get_comparative_subtable(biodb,
     # rename columns (interger are not ok for df.query())
     count_df.columns = ["taxid_%s" % i for i in list(count_df)]
 
-    # apply exclude filter
-    exclude_string = ' & '.join(["taxid_%s==0" % i for i in exclude_taxon_list])
-    #include_string = ' & '.join(["taxid_%s>0" % i for i in taxon_list])
     include_cols = ["taxid_%s" % i for i in taxon_list]
-    count_df2 = count_df.query(exclude_string).loc[:,include_cols]
+    if len(exclude_taxon_list) > 0:
+        # apply exclude filter
+        exclude_string = ' & '.join(["taxid_%s==0" % i for i in exclude_taxon_list])       
+        count_df2 = count_df.query(exclude_string).loc[:,include_cols]
+    else:
+        count_df2 = count_df.loc[:,include_cols]
   
     # calculate limit when accepting missing data
     limit = len(taxon_list)*ratio
