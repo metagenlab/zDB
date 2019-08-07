@@ -5884,16 +5884,16 @@ def genome_annotation(request, accession):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select * from (select t1.seqfeature_id,t2.locus_tag,start,stop, "CDS" as type, NULL as product ' \
-          ' from custom_tables.locus2seqfeature_id_%s t1 ' \
-          ' inner join biosqldb.orthology_detail_%s t2 on t1.locus_tag=t2.locus_tag ' \
-          ' where t2.accession="%s") B UNION select * ' \
-          ' from (select seqfeature_id,locus_tag,start,stop,type, product ' \
-          ' from non_protein_coding_locus_%s where accession="%s") B order by start ASC;' % (biodb,
-                                                                                             biodb,
-                                                                                             accession,
-                                                                                             biodb,
-                                                                                             accession)
+    sql = f'select t1.seqfeature_id,locus_tag,start,stop,t2.name,product from annotation.seqfeature_id2locus_{biodb} t1 ' \
+          f' inner join biosqldb.term t2 on t1.feature_type_id=t2.term_id ' \
+          f' inner join annotation.seqfeature_id2RNA_annotation_{biodb} t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+          f' inner join biosqldb.bioentry t4 on t1.bioentry_id=t4.bioentry_id where t4.accession="{accession}" ' \
+          f' union select t1.seqfeature_id,locus_tag,start,stop,t2.name,product from annotation.seqfeature_id2locus_{biodb} t1 ' \
+          f' inner join biosqldb.term t2 on t1.feature_type_id=t2.term_id ' \
+          f' inner join annotation.seqfeature_id2CDS_annotation_{biodb} t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+          f' inner join biosqldb.bioentry t4 on t1.bioentry_id=t4.bioentry_id ' \
+          f' where t4.accession="{accession}" order by start ASC;'
+
     ordered_data = server.adaptor.execute_and_fetchall(sql,)
 
     locus_list = []
