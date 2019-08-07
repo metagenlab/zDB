@@ -94,6 +94,9 @@
 ### priority 1
 
 - [X] keep comparative tables in memory
+- [X] blast multiple proteins
+    - blastp
+    - tblastn
 - [ ] update browse genome view
 - [ ] orthogroup Venn: use consensus annotation
 - [ ] add MSA faa to assets
@@ -117,7 +120,6 @@
   - [ ] genbank protein accession
 - [ ] plot region ==> celery task
 - [ ] BLAST ==> celery task
-- [ ] blast multiple proteins: return table with hits
 - [ ] deal with COG, PFAM,... missing from the database
 - [ ] update to boolean search
 - [ ] check and update module, pathway, fam profile,... size

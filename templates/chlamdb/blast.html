@@ -195,21 +195,20 @@ FONT.S112{background-color:#5bfdfd;color:#000000} FONT.T112{color:#5bfdfd} /* fi
                           <div id="blast-multiple-alignments"></div>
                           <div id="blast-alignments-table"></div>
                           <div id="blast-single-alignment"></div>
-                      {% else %}
-                               <div id="blast_res">
-                                  {% autoescape off %}{{blast_stdout}}{% endautoescape %}
-                               </div>
-                      {%endif%}
+                      {% endif %}
                   {% if blast_result %}
+                      <h3>Result</h3>
                        <div id="blast_res">
                       {% autoescape off %}{{blast_result}}{% endautoescape %}</div>
                   {% elif blast_no_hits %}
-                        <pre id=blast_result>
-                         {{blast_no_hits}}
+                  <h3>No hits</h3>
+                        <pre id="blast_result">
+                         {% autoescape off %}{{blast_no_hits}}{% endautoescape %}
                         </pre>
                   {% elif blast_err %}
-                        <pre id=blast_result>
-                         {{blast_err}}
+                        <h3>Error</h3>
+                        <pre id="blast_result">
+                         {% autoescape off %}{{blast_err}}{% endautoescape %}
                         </pre>
                   {% endif %}
 
