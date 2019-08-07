@@ -2374,6 +2374,62 @@ process blast_pdb {
 }
 
 
+process get_uniparc_crossreferences {
+
+  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
+  echo true
+
+  when:
+  params.uniparc == true
+
+  input:
+  file(table) from uniparc_mapping_tab
+
+  output:
+  file 'uniparc_crossreferences.tab'
+
+  script:
+
+  """
+#!/usr/bin/env python3.6
+import sqlite3
+import datetime
+import logging
+
+logging.basicConfig(filename='uniparc_crossrefs.log',level=logging.DEBUG)
+
+
+conn = sqlite3.connect("${params.databases_dir}/uniprot/uniparc/uniparc.db")
+cursor = conn.cursor()
+
+o = open("uniparc_crossreferences.tab", "w")
+
+sql = 'select db_name,accession, status from uniparc_cross_references t1 inner join crossref_databases t2 on t1.db_id=t2.db_id where uniparc_id=? and db_name not in ("SEED", "PATRIC", "EPO", "JPO", "KIPO", "USPTO");'
+
+with open("${table}", 'r') as f:
+    for n, row in enumerate(f):
+        if n == 0:
+            continue
+        data = row.rstrip().split("\t")
+        uniparc_id = str(data[1])
+        checksum = data[0]
+        print(uniparc_id)
+        cursor.execute(sql, [uniparc_id])
+        crossref_list = cursor.fetchall()
+        for crossref in crossref_list:
+            db_name = crossref[0]
+            db_accession = crossref[1]
+            entry_status = crossref[2]
+            o.write("%s\\t%s\\t%s\\t%s\\n" % ( checksum,
+                                          db_name,
+                                          db_accession,
+                                          entry_status))
+
+    """
+}
+
+
+
 workflow.onComplete {
   // Display complete message
   log.info "Completed at: " + workflow.complete
