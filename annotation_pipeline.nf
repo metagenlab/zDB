@@ -1020,6 +1020,10 @@ SeqIO.write(mapping_uniparc_records, uniparc_mapping_faa, "fasta")
   """
 }
 
+uniparc_mapping_tab.into{
+  uniparc_mapping_tab1
+  uniparc_mapping_tab2
+}
 
 process get_uniprot_data {
 
@@ -2377,13 +2381,12 @@ process blast_pdb {
 process get_uniparc_crossreferences {
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
-  echo true
 
   when:
   params.uniparc == true
 
   input:
-  file(table) from uniparc_mapping_tab
+  file(table) from uniparc_mapping_tab1
 
   output:
   file 'uniparc_crossreferences.tab'
@@ -2413,7 +2416,6 @@ with open("${table}", 'r') as f:
         data = row.rstrip().split("\t")
         uniparc_id = str(data[1])
         checksum = data[0]
-        print(uniparc_id)
         cursor.execute(sql, [uniparc_id])
         crossref_list = cursor.fetchall()
         for crossref in crossref_list:
@@ -2424,6 +2426,60 @@ with open("${table}", 'r') as f:
                                           db_name,
                                           db_accession,
                                           entry_status))
+
+    """
+}
+
+
+process get_idmapping_crossreferences {
+
+  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
+  echo true
+
+  when:
+  params.uniprot_idmapping == true
+
+  input:
+  file(table) from uniparc_mapping_tab2
+
+  output:
+  file 'idmapping_crossreferences.tab'
+
+  script:
+
+  """
+#!/usr/bin/env python3.6
+import sqlite3
+import datetime
+import logging
+
+logging.basicConfig(filename='uniparc_crossrefs.log',level=logging.DEBUG)
+
+
+conn = sqlite3.connect("${params.databases_dir}/uniprot/idmapping/idmapping.db")
+cursor = conn.cursor()
+
+o = open("idmapping_crossreferences.tab", "w")
+
+sql = 'select uniprokb_accession, db_name,accession from uniparc2uniprotkb t1 inner join uniprotkb_cross_references t2 on t1.uniprotkb_id=t2.uniprotkb_id inner join database t3 on t2.db_id=t3.db_id where uniparc_accession=?;'
+
+with open("${table}", 'r') as f:
+    for n, row in enumerate(f):
+        if n == 0:
+            continue
+        data = row.rstrip().split("\t")
+        uniparc_accession = data[2]
+        checksum = data[0]
+        cursor.execute(sql, [uniparc_accession])
+        crossref_list = cursor.fetchall()
+        for crossref in crossref_list:
+            uniprot_accession = crossref[0]
+            db_name = crossref[1]
+            db_accession = crossref[2]
+            o.write("%s\\t%s\\t%s\\t%s\\n" % ( checksum,
+                                               uniprot_accession,
+                                               db_name,
+                                               db_accession))
 
     """
 }
