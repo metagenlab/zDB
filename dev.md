@@ -96,11 +96,12 @@
 - [X] keep comparative tables in memory
 - [X] blast multiple proteins
 - [X] blast link only when blasting locus databases
+- [X] update browse genome view
 - [ ] add formatdb ffn
-- [ ] add database all for tblastn
-- [ ] update browse genome view
-- [ ] orthogroup Venn: use consensus annotation
 - [ ] add MSA faa to assets
+- [ ] add database all for tblastn
+- [ ] orthogroup Venn: use consensus annotation
+- [ ] add effector prediction to locus page
 - [ ] download page - bulk download all genome or for specific genomes 
   - [ ] KO annotation 
   - [ ] COG annotation 
@@ -112,18 +113,23 @@
   - [ ] orthology table 
   - [ ] all alignments
   - [ ] ...
+
 - [ ] synonymous table 
-  - [ ] uniprot accession
-  - [ ] unirpot ID
-  - [ ] refseq protein accession 
+  - [ ] from uniparc
+  - [X] from uniprot idmapping 
+  - [X] uniprot accession
+  - [X] unirpot ID
+  - [ ] refseq protein accession
   - [ ] refseq locus tag
-  - [ ] genbank locus tag
-  - [ ] genbank protein accession
+  - [X] genbank locus tag
+  - [X] genbank protein accession
+- [ ] search: single vs multiple matches
+
 - [ ] plot region ==> celery task
 - [ ] deal with COG, PFAM,... missing from the database
 - [ ] update to boolean search
 - [ ] check and update module, pathway, fam profile,... size
-- [ ] add effector prediction to locus page
+
 - [ ] add barplot pan-genome
 - [ ] add download newick tree on pfam, TM tabs and phylogeny with BBH
 - [ ] add uniprot proteome column (+ percent overlap) to genome table
