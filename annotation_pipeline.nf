@@ -190,6 +190,7 @@ if (params.ncbi_sample_sheet != false){
   # only consider annotated genbank => get corresponding refseq assembly
   if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
       ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+      print("ftp_path", ftp_path)
       ftp=FTP('ftp.ncbi.nih.gov')
       ftp.login("anonymous","trestan.pillonel@unil.ch")
       ftp.cwd(ftp_path)
