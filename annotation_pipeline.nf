@@ -213,7 +213,7 @@ if (params.ncbi_sample_sheet != false){
     maxRetries 3
     //errorStrategy 'ignore'
 
-    echo true
+    echo false
 
     when:
     params.get_refseq_locus_corresp == true
