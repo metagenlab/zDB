@@ -130,4 +130,4 @@ RUN apt install -y hmmer && apt-get clean
 WORKDIR /usr/local/bin
 
 ENTRYPOINT ["/bin/bash"]
-CMD ["/bin/bash"]
+#CMD ["/bin/bash"]

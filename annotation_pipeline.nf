@@ -1582,7 +1582,7 @@ no_tcdb_mapping.splitFasta( by: 1000, file: "chunk" )
 
 process tcdb_gblast3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.0'
+  container 'metagenlab/chlamdb_annotation:1.0.2'
 
   publishDir 'annotation/tcdb_mapping', mode: 'copy', overwrite: true
 
@@ -1813,7 +1813,7 @@ process execute_PRIAM {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
-  container 'metagenlab/chlamdb_annotation:1.0.0'
+  container 'metagenlab/chlamdb_annotation:1.0.2'
 
   cpus 2
   memory '4 GB'
@@ -2352,7 +2352,7 @@ nr_faa_large_sequences.splitFasta( by: 5000, file: "chunk_" ).into{ nr_faa_large
 
 process execute_BPBAac {
 
-  container 'metagenlab/chlamdb_annotation:1.0.1'
+  container 'metagenlab/chlamdb_annotation:1.0.2'
 
   when:
   params.effector_prediction == true
@@ -2385,7 +2385,7 @@ BPBAac_results.collectFile(name: 'annotation/T3SS_effectors/BPBAac_results.tab')
 
 process execute_effectiveT3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.1'
+  container 'metagenlab/chlamdb_annotation:1.0.2'
 
   when:
   params.effector_prediction == true
@@ -2407,7 +2407,7 @@ effectiveT3_results.collectFile(name: 'annotation/T3SS_effectors/effectiveT3_res
 
 process execute_DeepT3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.1'
+  container 'metagenlab/chlamdb_annotation:1.0.2'
 
   when:
   params.effector_prediction == true
@@ -2431,7 +2431,7 @@ DeepT3_results.collectFile(name: 'annotation/T3SS_effectors/DeepT3_results.tab')
 
 process execute_T3_MM {
 
-  container 'metagenlab/chlamdb_annotation:1.0.1'
+  container 'metagenlab/chlamdb_annotation:1.0.2'
 
   when:
   params.effector_prediction == true
