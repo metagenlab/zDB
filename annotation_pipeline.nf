@@ -2345,22 +2345,20 @@ SeqIO.write(filtered_records,"nr_more_10aa.faa", "fasta")
 """
 }
 
-nr_faa_large_sequences.into{ nr_faa_large_sequences1
-                             nr_faa_large_sequences2
-                             nr_faa_large_sequences3
-                             nr_faa_large_sequences4 }
+nr_faa_large_sequences.splitFasta( by: 1000, file: "chunk_" ).into{ nr_faa_large_sequences_chunks1
+                                                                    nr_faa_large_sequences_chunks2
+                                                                    nr_faa_large_sequences_chunks3
+                                                                    nr_faa_large_sequences_chunks4 }
 
 process execute_BPBAac {
 
   container 'metagenlab/chlamdb_annotation:1.0.1'
 
-  publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
-
   when:
   params.effector_prediction == true
 
   input:
-  file(nr_fasta) from nr_faa_large_sequences1
+  file "nr_fasta.faa" from nr_faa_large_sequences_chunks1
 
   output:
   file 'BPBAac_results.csv' into BPBAac_results
@@ -2375,7 +2373,7 @@ process execute_BPBAac {
   ln -s /usr/local/bin/BPBAac/Integ.pl
   ln -s /usr/local/bin/BPBAac/Neg100AacFrequency
   ln -s /usr/local/bin/BPBAac/Pos100AacFrequency
-  sed 's/CRC-/CRC/g'  ${nr_fasta} > edited_fasta.faa
+  sed 's/CRC-/CRC/g' nr_fasta.faa > edited_fasta.faa
   perl DataPrepare.pl edited_fasta.faa;
   Rscript BPBAacPre.R;
   sed -i 's/CRC/CRC-/g' FinalResult.csv;
@@ -2383,18 +2381,17 @@ process execute_BPBAac {
   """
 }
 
+BPBAac_results.collectFile(name: 'annotation/T3SS_effectors/BPBAac_results.tab')
 
 process execute_effectiveT3 {
 
   container 'metagenlab/chlamdb_annotation:1.0.1'
 
-  publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
-
   when:
   params.effector_prediction == true
 
   input:
-  file(nr_fasta) from nr_faa_large_sequences2
+  file "nr_fasta.faa" from nr_faa_large_sequences_chunks2
 
   output:
   file 'effective_t3.out' into effectiveT3_results
@@ -2402,22 +2399,21 @@ process execute_effectiveT3 {
   script:
   """
   ln -s /usr/local/bin/effective/module
-  java -jar /usr/local/bin/effective/TTSS_GUI-1.0.1.jar -f ${nr_fasta} -m TTSS_STD-2.0.2.jar -t cutoff=0.9999 -o effective_t3.out -q
+  java -jar /usr/local/bin/effective/TTSS_GUI-1.0.1.jar -f nr_fasta.faa -m TTSS_STD-2.0.2.jar -t cutoff=0.9999 -o effective_t3.out -q
   """
 }
 
+effectiveT3_results.collectFile(name: 'annotation/T3SS_effectors/effectiveT3_results.tab')
 
 process execute_DeepT3 {
 
   container 'metagenlab/chlamdb_annotation:1.0.1'
 
-  publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
-
   when:
   params.effector_prediction == true
 
   input:
-  file(nr_fasta) from nr_faa_large_sequences3
+  file "nr_fasta.faa" from nr_faa_large_sequences_chunks3
 
   output:
   file 'DeepT3_results.tab' into DeepT3_results
@@ -2426,23 +2422,22 @@ process execute_DeepT3 {
   """
   # replace ambiguous amino acid with X
   PYTHONPATH=/usr/local/bin/DeepT3/DeepT3/DeepT3-Keras:$PYTHONPATH
-  replace_ambiguous_aa.py -i ${nr_fasta} > nr_edit.faa
+  replace_ambiguous_aa.py -i nr_fasta.faa > nr_edit.faa
   DeepT3_scores.py -f nr_edit.faa -o DeepT3_results.tab -d /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
   """
 }
 
+DeepT3_results.collectFile(name: 'annotation/T3SS_effectors/DeepT3_results.tab')
 
 process execute_T3_MM {
 
   container 'metagenlab/chlamdb_annotation:1.0.1'
 
-  publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
-
   when:
   params.effector_prediction == true
 
   input:
-  file(nr_fasta) from nr_faa_large_sequences4
+  file "nr_fasta.faa" from nr_faa_large_sequences_chunks4
 
   output:
   file 'T3_MM_results.csv' into T3_MM_results
@@ -2450,10 +2445,13 @@ process execute_T3_MM {
   script:
   """
   ln -s /usr/local/bin/T3_MM/log.freq.ratio.txt
-  perl /usr/local/bin/T3_MM/T3_MM.pl ${nr_fasta}
+  perl /usr/local/bin/T3_MM/T3_MM.pl nr_fasta.faa
   mv final.result.csv T3_MM_results.csv
   """
 }
+
+
+T3_MM_results.collectFile(name: 'annotation/T3SS_effectors/T3_MM_results.tab')
 
 
 process execute_macsyfinder_T3SS {
