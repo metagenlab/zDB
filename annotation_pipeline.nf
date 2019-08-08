@@ -152,7 +152,7 @@ if (params.ncbi_sample_sheet != false){
     maxRetries 3
     //errorStrategy 'ignore'
 
-    echo true
+    echo false
 
     when:
     params.ncbi_sample_sheet != false && params.get_refseq_locus_corresp == true
@@ -416,10 +416,7 @@ nr_seqs.collectFile(name: 'merged_nr.faa', newLine: true)
         merged_faa4
         merged_faa5
         merged_faa6
-        merged_faa7
-        merged_faa8
-        merged_faa9
-        merged_faa10 }
+        merged_faa7 }
 
 merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
 .into { faa_chunks1
@@ -2317,6 +2314,41 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   """
 }
 
+process filter_very_small_sequences {
+
+  conda 'biopython=1.73'
+
+  publishDir 'data/', mode: 'copy', overwrite: true
+
+  when:
+  params.effector_prediction == true
+
+  input: 
+    file (nr_fasta) from merged_faa7
+
+  output:
+    file "nr_more_10aa.faa" into nr_faa_large_sequences
+  
+  script:
+"""
+#!/usr/bin/env python
+
+from Bio import SeqIO
+
+records = SeqIO.parse("${nr_fasta}", "fasta")
+filtered_records = []
+for record in records:
+    if len(record.seq) >= 10:
+        filtered_records.append(record)
+SeqIO.write(filtered_records,"nr_more_10aa.faa", "fasta")
+    
+"""
+}
+
+nr_faa_large_sequences.into{ nr_faa_large_sequences1
+                             nr_faa_large_sequences2
+                             nr_faa_large_sequences3
+                             nr_faa_large_sequences4 }
 
 process execute_BPBAac {
 
@@ -2328,7 +2360,7 @@ process execute_BPBAac {
   params.effector_prediction == true
 
   input:
-  file(nr_fasta) from merged_faa7
+  file(nr_fasta) from nr_faa_large_sequences1
 
   output:
   file 'BPBAac_results.csv' into BPBAac_results
@@ -2362,7 +2394,7 @@ process execute_effectiveT3 {
   params.effector_prediction == true
 
   input:
-  file(nr_fasta) from merged_faa8
+  file(nr_fasta) from nr_faa_large_sequences2
 
   output:
   file 'effective_t3.out' into effectiveT3_results
@@ -2385,7 +2417,7 @@ process execute_DeepT3 {
   params.effector_prediction == true
 
   input:
-  file(nr_fasta) from merged_faa9
+  file(nr_fasta) from nr_faa_large_sequences3
 
   output:
   file 'DeepT3_results.tab' into DeepT3_results
@@ -2410,7 +2442,7 @@ process execute_T3_MM {
   params.effector_prediction == true
 
   input:
-  file(nr_fasta) from merged_faa10
+  file(nr_fasta) from nr_faa_large_sequences4
 
   output:
   file 'T3_MM_results.csv' into T3_MM_results
