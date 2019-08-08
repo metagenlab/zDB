@@ -2442,7 +2442,7 @@ process execute_DeepT3 {
 
   script:
   """
-  python3.6 /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/DeepT3_scores.py -f nr_fasta.faa -o DeepT3_results.tab -d /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
+  DeepT3_scores.py -f nr_fasta.faa -o DeepT3_results.tab -d /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
   """
 }
 
