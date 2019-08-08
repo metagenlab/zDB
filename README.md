@@ -77,6 +77,12 @@
 
 ## priority 1
 
+- [X] get accession mapping
+  - [X] from uniprot idmapping
+  - [X] from refseq
+  - [X] from uniparc cross references
+- [ ] filter very small sequences before T3SS effetors annotations
+- [ ] check for unusual amino acids before T3SS effetors annotations ==> replace ambiguous aa by "X"
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
 - [ ] setup updated comparative refseq data (6800 genomes)
 - [ ] remove very small sequences before effector prediction
