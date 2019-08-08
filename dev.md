@@ -114,15 +114,10 @@
   - [ ] all alignments
   - [ ] ...
 
-- [ ] synonymous table 
-  - [ ] from uniparc
+- [ ] load synonymous table 
   - [X] from uniprot idmapping 
-  - [X] uniprot accession
-  - [X] unirpot ID
-  - [ ] refseq protein accession
-  - [ ] refseq locus tag
-  - [X] genbank locus tag
-  - [X] genbank protein accession
+  - [ ] uniparc cross references
+  - [ ] RefSeq locus_tag/protein id
 - [ ] search: single vs multiple matches
 
 - [ ] plot region ==> celery task
