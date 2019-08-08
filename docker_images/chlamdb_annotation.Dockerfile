@@ -68,9 +68,9 @@ RUN pip3 install tensorflow keras==2.2.4 biopython==1.73
 
 RUN git clone -b dev --single-branch https://github.com/metagenlab/annotation_pipeline_nextflow.git
 
-ENV PATH=/usr/local/bin/annotation_pipeline_nextflow/bin/hmmtop_2.1/:$PATH
-ENV HMMTOP_ARCH=/usr/local/bin/annotation_pipeline_nextflow/bin/hmmtop_2.1/hmmtop.arch
-ENV HMMTOP_PSV=/usr/local/bin/annotation_pipeline_nextflow/bin/hmmtop_2.1/hmmtop.psv
+ENV PATH "/usr/local/bin/annotation_pipeline_nextflow/bin/hmmtop_2.1/:${PATH}"
+ENV HMMTOP_ARCH "/usr/local/bin/annotation_pipeline_nextflow/bin/hmmtop_2.1/hmmtop.arch"
+ENV HMMTOP_PSV "/usr/local/bin/annotation_pipeline_nextflow/bin/hmmtop_2.1/hmmtop.psv"
 
 RUN mkdir -p /usr/local/bin/tcdb_db/
 
@@ -82,7 +82,7 @@ RUN formatdb -i /usr/local/bin/tcdb_db/betabarrel -p T
 
 RUN git clone https://github.com/metagenlab/BioVx.git
 
-ENV PATH=/usr/local/bin/BioVx/scripts:$PATH
+ENV PATH "/usr/local/bin/BioVx/scripts:${PATH}"
 
 RUN wget http://plast.gforge.inria.fr/files/plastbinary_linux_v2.3.1.tar.gz && tar zxvf plastbinary_linux_v2.3.1.tar.gz \
 && mv plastbinary_linux_20160121/build/bin/plast . && rm -rf plastbinary_linux*
@@ -113,7 +113,7 @@ WORKDIR /usr/local/bin
 
 RUN git clone https://github.com/lje00006/DeepT3.git
 
-ENV PYTHONPATH=/usr/local/bin/DeepT3/DeepT3/DeepT3-Keras:$PYTHONPATH
+ENV PYTHONPATH "/usr/local/bin/DeepT3/DeepT3/DeepT3-Keras:${PYTHONPATH}"
 
 RUN wget https://github.com/gem-pasteur/macsyfinder/archive/macsyfinder-1.0.5.tar.gz && tar zxvf macsyfinder-1.0.5.tar.gz && mv macsyfinder-macsyfinder-1.0.5 macsyfinder
 
@@ -123,7 +123,7 @@ RUN python setup.py build
 
 RUN python setup.py test -vv
 
-ENV MACSY_HOME=/usr/local/bin/macsyfinder/
+ENV MACSY_HOME "/usr/local/bin/macsyfinder/"
 
 RUN apt install -y hmmer && apt-get clean
 

@@ -1582,7 +1582,7 @@ no_tcdb_mapping.splitFasta( by: 1000, file: "chunk" )
 
 process tcdb_gblast3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.2'
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   publishDir 'annotation/tcdb_mapping', mode: 'copy', overwrite: true
 
@@ -1813,7 +1813,7 @@ process execute_PRIAM {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
-  container 'metagenlab/chlamdb_annotation:1.0.2'
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   cpus 2
   memory '4 GB'
@@ -2374,7 +2374,7 @@ nr_faa_large_sequences_filtered.splitFasta( by: 5000, file: "chunk_" ).into{ nr_
 
 process execute_BPBAac {
 
-  container 'metagenlab/chlamdb_annotation:1.0.2'
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   when:
   params.effector_prediction == true
@@ -2407,7 +2407,7 @@ BPBAac_results.collectFile(name: 'annotation/T3SS_effectors/BPBAac_results.tab')
 
 process execute_effectiveT3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.2'
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   when:
   params.effector_prediction == true
@@ -2429,7 +2429,7 @@ effectiveT3_results.collectFile(name: 'annotation/T3SS_effectors/effectiveT3_res
 
 process execute_DeepT3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.2'
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   when:
   params.effector_prediction == true
@@ -2442,7 +2442,6 @@ process execute_DeepT3 {
 
   script:
   """
-  PYTHONPATH=/usr/local/bin/DeepT3/DeepT3/DeepT3-Keras:$PYTHONPATH
   python /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/DeepT3_scores.py -f nr_fasta.faa -o DeepT3_results.tab -d /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
   """
 }
@@ -2451,7 +2450,7 @@ DeepT3_results.collectFile(name: 'annotation/T3SS_effectors/DeepT3_results.tab')
 
 process execute_T3_MM {
 
-  container 'metagenlab/chlamdb_annotation:1.0.2'
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   when:
   params.effector_prediction == true
@@ -2476,7 +2475,7 @@ T3_MM_results.collectFile(name: 'annotation/T3SS_effectors/T3_MM_results.tab')
 
 process execute_macsyfinder_T3SS {
 
-  container 'metagenlab/chlamdb_annotation:1.0.2'
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   publishDir 'annotation/macsyfinder/T3SS/', mode: 'copy', overwrite: true
 
