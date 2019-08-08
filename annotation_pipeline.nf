@@ -26,6 +26,17 @@ if (params.ncbi_sample_sheet != false){
                       .into{
                           assembly_accession_list
                       }
+  Channel.fromPath( file(params.ncbi_sample_sheet) )
+                      .splitCsv(header: true, sep: '\t')
+                      .map{row ->
+                          // get the list of accessions
+                          def assembly_accession = row."RefSeq"
+                          return "${assembly_accession}"
+                      }
+                      .into{
+                          assembly_accession_list_refseq
+                      }
+
 }
 if (params.local_sample_sheet != false){
   Channel.fromPath( file(params.local_sample_sheet) )
@@ -130,6 +141,116 @@ if (params.ncbi_sample_sheet != false){
 
     """
   }
+
+  process download_assembly_refseq {
+
+    conda 'biopython=1.73'
+
+    publishDir 'data/refseq_corresp', mode: 'copy', overwrite: true
+
+    maxForks 2
+    maxRetries 3
+    //errorStrategy 'ignore'
+
+    echo false
+
+    when:
+    params.ncbi_sample_sheet != false && params.get_refseq_locus_corresp == true
+
+    input:
+    each accession from assembly_accession_list_refseq
+
+    cpus 1
+
+    output:
+    file '*.gbff.gz' into raw_ncbi_gbffs_refseq
+
+    script:
+    //accession = assembly_accession[0]
+    """
+  #!/usr/bin/env python
+
+  import re
+  import time
+  from ftplib import FTP
+  from Bio import Entrez, SeqIO
+  Entrez.email = "trestan.pillonel@chuv.ch"
+  Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
+
+  print("${accession}")
+
+  handle1 = Entrez.esearch(db="assembly", term="${accession}")
+  record1 = Entrez.read(handle1)
+
+  ncbi_id = record1['IdList'][-1]
+  print(ncbi_id)
+  handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
+  assembly_record = Entrez.read(handle_assembly, validate=False)
+
+  # only consider annotated genbank => get corresponding refseq assembly
+  if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
+      ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+  else:
+    continue
+  print(ftp_path)
+  ftp=FTP('ftp.ncbi.nih.gov')
+  ftp.login("anonymous","trestan.pillonel@unil.ch")
+  ftp.cwd(ftp_path)
+  filelist=ftp.nlst()
+  filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
+  print(filelist)
+  for file in filelist:
+    ftp.retrbinary("RETR "+file, open(file, "wb").write)
+    """
+  }
+
+  process refseq_locus_mapping {
+
+    conda 'biopython=1.73'
+
+    publishDir 'data/refseq_corresp', mode: 'copy', overwrite: true
+
+    maxForks 2
+    maxRetries 3
+    //errorStrategy 'ignore'
+
+    echo false
+
+    when:
+    params.ncbi_sample_sheet != false && params.get_refseq_locus_corresp == true
+
+    input:
+    each accession_list from assembly_accession_list_refseq.collect()
+
+    cpus 1
+
+    output:
+    file 'refseq_corresp.tab'
+
+    script:
+    """
+  #!/usr/bin/env python
+
+  import re
+  import time
+  from Bio import SeqIO
+  import gzip
+
+  o = open("refseq_corresp.tab", "w")
+
+  for accession in "${accession_list}".split(" "):
+      with gzip.open(accession, "rt") as handle:
+        records = SeqIO.parse(handle, "genbank")
+        for record in records:
+            for feature in record.features:
+                if 'protein_id' in feature.qualifiers and 'old_locus_tag' in feature.qualifiers:
+                    refseq_locus_tag = feature.qualifiers["locus_tag"][0]
+                    protein_id = feature.qualifiers["protein_id"][0]
+                    old_locus_tag = feature.qualifiers["old_locus_tag"][0]
+                    o.write(f"{old_locus_tag}\\t{refseq_locus_tag}\\t{protein_id}\\n")
+    """
+  }
+
 }
 
 // merge local and ncbi gbk into a single channel
