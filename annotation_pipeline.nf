@@ -2345,7 +2345,29 @@ SeqIO.write(filtered_records,"nr_more_10aa.faa", "fasta")
 """
 }
 
-nr_faa_large_sequences.splitFasta( by: 5000, file: "chunk_" ).into{ nr_faa_large_sequences_chunks1
+process remove_amibiguous_aa {
+
+  conda 'biopython=1.73'
+
+  publishDir 'data/', mode: 'copy', overwrite: true
+
+  when:
+  params.effector_prediction == true
+
+  input: 
+    file "nr_fasta.faa" from nr_faa_large_sequences
+
+  output:
+    file "nr_more_10aa_filtered.faa" into nr_faa_large_sequences_filtered
+  
+  script:
+"""
+replace_ambiguous_aa.py -i nr_fasta.faa > nr_more_10aa_filtered.faa    
+"""
+}
+
+
+nr_faa_large_sequences_filtered.splitFasta( by: 5000, file: "chunk_" ).into{ nr_faa_large_sequences_chunks1
                                                                     nr_faa_large_sequences_chunks2
                                                                     nr_faa_large_sequences_chunks3
                                                                     nr_faa_large_sequences_chunks4 }
@@ -2422,7 +2444,6 @@ process execute_DeepT3 {
   """
   # replace ambiguous amino acid with X
   PYTHONPATH=/usr/local/bin/DeepT3/DeepT3/DeepT3-Keras:$PYTHONPATH
-  replace_ambiguous_aa.py -i nr_fasta.faa > nr_edit.faa
   DeepT3_scores.py -f nr_edit.faa -o DeepT3_results.tab -d /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
   """
 }
