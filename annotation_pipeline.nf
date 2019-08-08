@@ -163,7 +163,7 @@ if (params.ncbi_sample_sheet != false){
     cpus 1
 
     output:
-    file '*.gbff.gz' into raw_ncbi_gbffs_refseq
+    file '*.gbff.gz' optional true into raw_ncbi_gbffs_refseq
 
     script:
     //accession = assembly_accession[0]
@@ -190,17 +190,16 @@ if (params.ncbi_sample_sheet != false){
   # only consider annotated genbank => get corresponding refseq assembly
   if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
       ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+      ftp=FTP('ftp.ncbi.nih.gov')
+      ftp.login("anonymous","trestan.pillonel@unil.ch")
+      ftp.cwd(ftp_path)
+      filelist=ftp.nlst()
+      filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
+      print(filelist)
+      for file in filelist:
+        ftp.retrbinary("RETR "+file, open(file, "wb").write)
   else:
-    continue
-  print(ftp_path)
-  ftp=FTP('ftp.ncbi.nih.gov')
-  ftp.login("anonymous","trestan.pillonel@unil.ch")
-  ftp.cwd(ftp_path)
-  filelist=ftp.nlst()
-  filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
-  print(filelist)
-  for file in filelist:
-    ftp.retrbinary("RETR "+file, open(file, "wb").write)
+     print("no genbank annotation for ${accession}")
     """
   }
 
@@ -214,13 +213,13 @@ if (params.ncbi_sample_sheet != false){
     maxRetries 3
     //errorStrategy 'ignore'
 
-    echo false
+    echo true
 
     when:
-    params.ncbi_sample_sheet != false && params.get_refseq_locus_corresp == true
+    params.get_refseq_locus_corresp == true
 
     input:
-    each accession_list from assembly_accession_list_refseq.collect()
+    file accession_list from raw_ncbi_gbffs_refseq.collect()
 
     cpus 1
 
@@ -239,6 +238,7 @@ if (params.ncbi_sample_sheet != false){
   o = open("refseq_corresp.tab", "w")
 
   for accession in "${accession_list}".split(" "):
+      print(accession)
       with gzip.open(accession, "rt") as handle:
         records = SeqIO.parse(handle, "genbank")
         for record in records:
