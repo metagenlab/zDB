@@ -2442,9 +2442,8 @@ process execute_DeepT3 {
 
   script:
   """
-  # replace ambiguous amino acid with X
   PYTHONPATH=/usr/local/bin/DeepT3/DeepT3/DeepT3-Keras:$PYTHONPATH
-  /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/DeepT3_scores.py -f nr_fasta.faa -o DeepT3_results.tab -d /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
+  python /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/DeepT3_scores.py -f nr_fasta.faa -o DeepT3_results.tab -d /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
   """
 }
 
