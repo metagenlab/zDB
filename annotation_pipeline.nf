@@ -137,7 +137,7 @@ if (params.ncbi_sample_sheet != false){
   print(filelist)
   for file in filelist:
     ftp.retrbinary("RETR "+file, open(file, "wb").write)
-    
+
 
     """
   }
@@ -344,7 +344,8 @@ faa_locus1.into { faa_genomes1
                   faa_genomes2
                   faa_genomes3
                   faa_genomes4
-                  faa_genomes5 }
+                  faa_genomes5
+                  faa_genomes6 }
 
 faa_locus2.collectFile(name: 'merged.faa', newLine: true)
     .into { merged_faa0 }
@@ -1140,6 +1141,10 @@ SeqIO.write(mapping_uniparc_records, uniparc_mapping_faa, "fasta")
   """
 }
 
+uniparc_mapping_tab.into{
+  uniparc_mapping_tab1
+  uniparc_mapping_tab2
+}
 
 process get_uniprot_data {
 
@@ -1456,7 +1461,19 @@ def pmid2abstract_info(pmid_list):
 
     pmid2data = {}
     for record in records:
-      pmid = record["PMID"]
+      try:
+          pmid = record["PMID"]
+      except:
+          print(record)
+          #{'id:': ['696885 Error occurred: PMID 28696885 is a duplicate of PMID 17633143']}
+          if 'duplicate' in record['id:']:
+              duplicate = record['id:'].split(' ')[0]
+              correct = record['id:'].split(' ')[-1]
+              print("removing duplicated PMID... %s --> %s" % (duplicate, correct))
+              # remove duplicate from list
+              pmid_list.remove(duplicate)
+              return pmid2abstract_info(pmid_list)
+
       pmid2data[pmid] = {}
       pmid2data[pmid]["title"] = record.get("TI", "?")
       pmid2data[pmid]["authors"] = record.get("AU", "?")
@@ -1489,15 +1506,15 @@ with open("string_mapping_PMID.tab", "r") as f:
             if data[1] not in pmid_nr_list:
                 pmid_nr_list.append(data[1])
         if n % 1000 == 0:
-            print(n, '---- insert ----')
+            print(n, 'hash2pmid ---- insert ----')
             conn.commit()
 
-pmid_chunks = chunks(pmid_nr_list, 50)
+pmid_chunks = [i for i in chunks(pmid_nr_list, 50)]
 
 # get PMID data and load into sqldb
 sql_template = 'insert into pmid2data values (?, ?, ?, ?, ?)'
 for n, chunk in enumerate(pmid_chunks):
-    print("%s" % n)
+    print("pmid2data -- chunk %s / %s" % (n, len(pmid_chunks)))
     pmid2data = pmid2abstract_info(chunk)
     for pmid in pmid2data:
         cursor.execute(sql_template, (pmid, pmid2data[pmid]["title"], str(pmid2data[pmid]["authors"]), pmid2data[pmid]["source"], pmid2data[pmid]["abstract"]))
@@ -2407,6 +2424,33 @@ process execute_T3_MM {
 }
 
 
+process execute_macsyfinder_T3SS {
+
+  container 'metagenlab/chlamdb_annotation:1.0.2'
+
+  publishDir 'annotation/macsyfinder/T3SS/', mode: 'copy', overwrite: true
+
+  when:
+  params.macsyfinder == true
+
+  input:
+  file(genome) from faa_genomes6
+
+  output:
+  file "macsyfinder-${genome.baseName}/macsyfinder.conf"
+  file "macsyfinder-${genome.baseName}/macsyfinder.log"
+  file "macsyfinder-${genome.baseName}/macsyfinder.out"
+  file "macsyfinder-${genome.baseName}/macsyfinder.report"
+  file "macsyfinder-${genome.baseName}/macsyfinder.summary"
+
+  script:
+  """
+  python /usr/local/bin/macsyfinder/bin/macsyfinder --db-type unordered_replicon --sequence-db ${genome} -d /usr/local/bin/annotation_pipeline_nextflow/data/macsyfinder/secretion_systems/TXSS/definitions -p /usr/local/bin/annotation_pipeline_nextflow/data/macsyfinder/secretion_systems/TXSS/profiles all --coverage-profile 0.2 --i-evalue-select 1 --e-value-search 1
+  mv macsyfinder-* macsyfinder-${genome.baseName}
+  """
+}
+
+
 process execute_psortb {
 
   container 'metagenlab/psort:3.0.6'
@@ -2453,6 +2497,114 @@ process blast_pdb {
   blastp -db $params.databases_dir/pdb/pdb_seqres.faa -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}.tab
   """
 }
+
+
+process get_uniparc_crossreferences {
+
+  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
+
+  when:
+  params.uniparc == true
+
+  input:
+  file(table) from uniparc_mapping_tab1
+
+  output:
+  file 'uniparc_crossreferences.tab'
+
+  script:
+
+  """
+#!/usr/bin/env python3.6
+import sqlite3
+import datetime
+import logging
+
+logging.basicConfig(filename='uniparc_crossrefs.log',level=logging.DEBUG)
+
+
+conn = sqlite3.connect("${params.databases_dir}/uniprot/uniparc/uniparc.db")
+cursor = conn.cursor()
+
+o = open("uniparc_crossreferences.tab", "w")
+
+sql = 'select db_name,accession, status from uniparc_cross_references t1 inner join crossref_databases t2 on t1.db_id=t2.db_id where uniparc_id=? and db_name not in ("SEED", "PATRIC", "EPO", "JPO", "KIPO", "USPTO");'
+
+with open("${table}", 'r') as f:
+    for n, row in enumerate(f):
+        if n == 0:
+            continue
+        data = row.rstrip().split("\t")
+        uniparc_id = str(data[1])
+        checksum = data[0]
+        cursor.execute(sql, [uniparc_id])
+        crossref_list = cursor.fetchall()
+        for crossref in crossref_list:
+            db_name = crossref[0]
+            db_accession = crossref[1]
+            entry_status = crossref[2]
+            o.write("%s\\t%s\\t%s\\t%s\\n" % ( checksum,
+                                          db_name,
+                                          db_accession,
+                                          entry_status))
+
+    """
+}
+
+
+process get_idmapping_crossreferences {
+
+  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
+  echo true
+
+  when:
+  params.uniprot_idmapping == true
+
+  input:
+  file(table) from uniparc_mapping_tab2
+
+  output:
+  file 'idmapping_crossreferences.tab'
+
+  script:
+
+  """
+#!/usr/bin/env python3.6
+import sqlite3
+import datetime
+import logging
+
+logging.basicConfig(filename='uniparc_crossrefs.log',level=logging.DEBUG)
+
+
+conn = sqlite3.connect("${params.databases_dir}/uniprot/idmapping/idmapping.db")
+cursor = conn.cursor()
+
+o = open("idmapping_crossreferences.tab", "w")
+
+sql = 'select uniprokb_accession, db_name,accession from uniparc2uniprotkb t1 inner join uniprotkb_cross_references t2 on t1.uniprotkb_id=t2.uniprotkb_id inner join database t3 on t2.db_id=t3.db_id where uniparc_accession=?;'
+
+with open("${table}", 'r') as f:
+    for n, row in enumerate(f):
+        if n == 0:
+            continue
+        data = row.rstrip().split("\t")
+        uniparc_accession = data[2]
+        checksum = data[0]
+        cursor.execute(sql, [uniparc_accession])
+        crossref_list = cursor.fetchall()
+        for crossref in crossref_list:
+            uniprot_accession = crossref[0]
+            db_name = crossref[1]
+            db_accession = crossref[2]
+            o.write("%s\\t%s\\t%s\\t%s\\n" % ( checksum,
+                                               uniprot_accession,
+                                               db_name,
+                                               db_accession))
+
+    """
+}
+
 
 
 workflow.onComplete {

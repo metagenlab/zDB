@@ -80,10 +80,12 @@
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
 - [ ] setup updated comparative refseq data (6800 genomes)
 - [ ] remove very small sequences before effector prediction
+- [ ] check for ambiguous aa before effector prediction and psortdb annotation
 - [ ] get cross-references from uniprot IdMapping? Or from uniprot db itself? (cross references from indexed uniprotKB xml)
   - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
   - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
 - [ ] get Refseq protein ID and locus_tag and match to new locus tags in index
+ - [ ] download refseq => extract faa => hash to make the correspondance?
 
 ## priority 2
 
