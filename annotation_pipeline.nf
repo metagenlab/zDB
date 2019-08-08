@@ -2345,7 +2345,7 @@ SeqIO.write(filtered_records,"nr_more_10aa.faa", "fasta")
 """
 }
 
-nr_faa_large_sequences.splitFasta( by: 1000, file: "chunk_" ).into{ nr_faa_large_sequences_chunks1
+nr_faa_large_sequences.splitFasta( by: 5000, file: "chunk_" ).into{ nr_faa_large_sequences_chunks1
                                                                     nr_faa_large_sequences_chunks2
                                                                     nr_faa_large_sequences_chunks3
                                                                     nr_faa_large_sequences_chunks4 }
