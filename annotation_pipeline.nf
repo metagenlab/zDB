@@ -177,30 +177,29 @@ if (params.ncbi_sample_sheet != false){
   Entrez.email = "trestan.pillonel@chuv.ch"
   Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
 
-  print("${accession}")
+  if "${accession}" != "":
+      handle1 = Entrez.esearch(db="assembly", term="${accession}")
+      record1 = Entrez.read(handle1)
 
-  handle1 = Entrez.esearch(db="assembly", term="${accession}")
-  record1 = Entrez.read(handle1)
+      ncbi_id = record1['IdList'][-1]
+      print(ncbi_id)
+      handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
+      assembly_record = Entrez.read(handle_assembly, validate=False)
 
-  ncbi_id = record1['IdList'][-1]
-  print(ncbi_id)
-  handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
-  assembly_record = Entrez.read(handle_assembly, validate=False)
-
-  # only consider annotated genbank => get corresponding refseq assembly
-  if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
-      ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
-      print("ftp_path", ftp_path)
-      ftp=FTP('ftp.ncbi.nih.gov')
-      ftp.login("anonymous","trestan.pillonel@unil.ch")
-      ftp.cwd(ftp_path)
-      filelist=ftp.nlst()
-      filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
-      print(filelist)
-      for file in filelist:
-        ftp.retrbinary("RETR "+file, open(file, "wb").write)
-  else:
-     print("no genbank annotation for ${accession}")
+      # only consider annotated genbank => get corresponding refseq assembly
+      if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
+          ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+          print("ftp_path", ftp_path)
+          ftp=FTP('ftp.ncbi.nih.gov')
+          ftp.login("anonymous","trestan.pillonel@unil.ch")
+          ftp.cwd(ftp_path)
+          filelist=ftp.nlst()
+          filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
+          print(filelist)
+          for file in filelist:
+            ftp.retrbinary("RETR "+file, open(file, "wb").write)
+      else:
+        print("no genbank annotation for ${accession}")
     """
   }
 
