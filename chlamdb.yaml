@@ -44,6 +44,7 @@ dependencies:
  - circos
  - r-rmysql
  - blast
+ - django-redis
  - pip:
    - cython
    - django-citations
