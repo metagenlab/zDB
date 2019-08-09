@@ -79,19 +79,19 @@
 
 - [X] get accession mapping
   - [X] from uniprot idmapping
-  - [X] from refseq
+  - [X] get Refseq protein ID and locus_tag and match to new locus tags in index
+   - [X] download refseq => extract faa => hash to make the correspondance?
   - [X] from uniparc cross references
-- [ ] filter very small sequences before T3SS effetors annotations
-- [ ] check for unusual amino acids before T3SS effetors annotations ==> replace ambiguous aa by "X"
-- [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
+- [X] filter very small sequences before T3SS effetors annotations
+- [X] check for unusual amino acids before T3SS effetors annotations ==> replace ambiguous aa by "X"
+- [ ] retrieve GO annotations from uniprotKB GOA 
+    - [ ] from uniprot accession mapping
+    - [ ] from diamond uniprotKB for unmapped sequences => keep best hit only 
 - [ ] setup updated comparative refseq data (6800 genomes)
-- [ ] remove very small sequences before effector prediction
-- [ ] check for ambiguous aa before effector prediction and psortdb annotation
 - [ ] get cross-references from uniprot IdMapping? Or from uniprot db itself? (cross references from indexed uniprotKB xml)
   - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
   - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
-- [ ] get Refseq protein ID and locus_tag and match to new locus tags in index
- - [ ] download refseq => extract faa => hash to make the correspondance?
+
 
 ## priority 2
 

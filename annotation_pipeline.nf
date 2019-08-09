@@ -137,8 +137,6 @@ if (params.ncbi_sample_sheet != false){
   print(filelist)
   for file in filelist:
     ftp.retrbinary("RETR "+file, open(file, "wb").write)
-
-
     """
   }
 
@@ -1143,6 +1141,22 @@ uniparc_mapping_tab.into{
   uniparc_mapping_tab2
 }
 
+uniprot_mapping_tab.into{
+  uniprot_mapping_tab1
+  uniprot_mapping_tab2
+}
+
+
+uniprot_mapping_tab2.splitCsv(header: false, sep: '\t')
+.map{row ->
+    def uniprot_accession = row[1]
+    return "${uniprot_accession}"
+}
+.collect()
+.unique()
+.into {uniprot_nr_accessions}
+
+
 process get_uniprot_data {
 
   conda 'biopython=1.73=py36h7b6447c_0'
@@ -1154,7 +1168,7 @@ process get_uniprot_data {
   params.uniprot_data == true
 
   input:
-  file(table) from uniprot_mapping_tab
+  file(table) from uniprot_mapping_tab1
 
   output:
   file 'uniprot_data.tab' into uniprot_data
@@ -2654,6 +2668,48 @@ with open("${table}", 'r') as f:
     """
 }
 
+
+process get_uniprot_goa_mapping {
+
+  publishDir 'annotation/goa/', mode: 'copy', overwrite: true
+  echo true
+
+  when:
+  params.uniprot_goa == true
+
+  input:
+  val (uniprot_acc_list) from uniprot_nr_accessions
+
+  output:
+  file 'goa_uniprot_exact_annotations.tab'
+
+  script:
+
+  """
+#!/usr/bin/env python3.6
+import sqlite3
+import datetime
+
+conn = sqlite3.connect("${params.databases_dir}/goa/goa_uniprot.db")
+cursor = conn.cursor()
+
+o = open("goa_uniprot_exact_annotations.tab", "w")
+
+sql = 'select GO_id, reference,evidence_code,category from goa_table where uniprotkb_accession=?;'
+
+for accession in "${uniprot_acc_list}".split(","):
+    accession_base = accession.split(".")[0].strip()
+    cursor.execute(sql, [accession_base])
+    #print(f'select GO_id, reference,evidence_code,category from goa_table where uniprotkb_accession="{accession_base}";')
+    go_list = cursor.fetchall()
+    for go in go_list:
+        GO_id = go[0]
+        reference = go[1]
+        evidence_code = go[2]
+        category = go[3]
+        o.write(f"{accession_base}\\t{GO_id}\\t{reference}\\t{evidence_code}\\t{category}\\n")
+    """
+}
 
 
 workflow.onComplete {
