@@ -51,7 +51,7 @@
 - [X] get phylo profile
   - [ ] setup core_orthogroups_identity_msa_
 - [X] legacy COG table
-- [ ] legacy locus2EC table
+- [X] legacy locus2EC table
 - [X] legacy PFAM table
 - [X] setup blast databases
 - [X] phylogenetic profiles
