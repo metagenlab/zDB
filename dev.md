@@ -59,17 +59,18 @@
 - [X] load PMID string mapping
 - [X] load checkM
 - [X] update PMID
-- [ ] load idmapping data
+- [X] load idmapping data
   - [X] from uniprot idmapping
-  - [ ] from RefSeq (locus tag and protein accession)
+  - [X] from RefSeq (locus tag and protein accession)
 - [X] load T3SS effector predictions
   - [X] T3_MM
   - [X] deep_T3
   - [X] effective
   - [X] BPBAac
+- [X] load cross-references
 - [ ] load psortdb results
 - [ ] load pdb identical hit or best hits (with score). Hown many?
-- [ ] load cross-references
+
 
 
 ## priority 2
