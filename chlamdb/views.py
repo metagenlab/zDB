@@ -12337,7 +12337,7 @@ def plot_heatmap(request, type):
                                                                           single_copy=False,
                                                                           accessions=accessions,
                                                                               cache=cache)
-                taxon_list = list(mat.columns.values)
+                taxon_list = [i.split("_")[1] for i in list(mat.columns.values)]
                 labels = [taxon2description[i] for i in taxon_list]
                 print(labels)
             else:

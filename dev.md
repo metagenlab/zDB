@@ -59,7 +59,9 @@
 - [X] load PMID string mapping
 - [X] load checkM
 - [X] update PMID
-- [ ] load PRIAM data
+- [ ] load idmapping data
+  - [X] from uniprot idmapping
+  - [ ] from RefSEq (locus tag and protein accession)
 - [ ] load T3SS effector predictions
   - [ ] T3_MM
   - [ ] deep_T3
@@ -67,6 +69,7 @@
   - [ ] BPBAac
 - [ ] load psortdb results
 - [ ] load pdb best hits (with score)
+- [ ] load PRIAM data
 - [ ] load cross-references
 
 ## priority 2
@@ -96,7 +99,7 @@
 - [X] keep comparative tables in memory
 - [X] blast multiple proteins
 - [X] blast link only when blasting locus databases
-- [X] update browse genome view
+- [X] update browse genome view 
 - [ ] add formatdb ffn
 - [ ] add MSA faa to assets
 - [ ] add database all for tblastn
@@ -114,13 +117,20 @@
   - [ ] all alignments
   - [ ] ...
 
+
 - [ ] load synonymous table 
-  - [X] from uniprot idmapping 
-  - [ ] uniparc cross references
-  - [ ] RefSeq locus_tag/protein id
+    - [X] from uniprot idmapping
+    - [ ] RefSeq locus_tag/protein id
+    - [ ] uniparc cross references
+  
 - [ ] search: single vs multiple matches
 
-- [ ] plot region ==> celery task
+- [ ] switch to celery task
+    - [ ] plot region ==> celery task
+    - [ ] BLAST ==> celery task
+    - [ ] extract orthogroup ==> celery task
+    - [ ] plot orthogroup/COG/KO,... heatmap ==> celery task
+
 - [ ] deal with COG, PFAM,... missing from the database
 - [ ] update to boolean search
 - [ ] check and update module, pathway, fam profile,... size
@@ -130,7 +140,6 @@
 - [ ] add uniprot proteome column (+ percent overlap) to genome table
 - [ ] add explanations for hydropathy plot
 - [ ] improve integration of transporters_family and 
-- [ ] BLAST ==> celery task
 
 
 ### priority 2
