@@ -87,6 +87,7 @@ from chlamdb.forms import GenerateRandomUserForm
 from chlamdb.tasks import create_random_user_accounts2
 from chlamdb.tasks import run_circos
 from chlamdb.tasks import run_circos_main
+from chlamdb.tasks import extract_orthogroup_task
 from chlamdb.celeryapp import app as celery_app
 
 @celery_app.task(bind=True)
@@ -523,103 +524,26 @@ def extract_orthogroup(request):
             #print 'exclude', exclude
             n_missing = form.cleaned_data['frequency']
 
-            if int(n_missing)>=len(include):
-                wrong_n_missing = True
-            else:
-                server, db = manipulate_biosqldb.load_db(biodb)
+            #if int(n_missing)>=len(include):
 
-                freq_missing = (len(include)-float(n_missing))/len(include)
-                print("get matrix")
-                if not accessions:
-                    # get sub matrix and complete matrix
-                    mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                              "orthology",
-                                                                              "orthogroup",
-                                                                              include,
-                                                                              exclude,
-                                                                              freq_missing,
-                                                                              single_copy=single_copy,
-                                                                              accessions=accessions,
-                                                                              cache=cache)
-                else:
-                    mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                              "orthology",
-                                                                              "id",
-                                                                              include,
-                                                                              exclude,
-                                                                              freq_missing,
-                                                                              single_copy=single_copy,
-                                                                              accessions=accessions,
-                                                                              cache=cache)
-                print("matrix OK")
-                match_groups = mat.index.tolist()
+            server, db = manipulate_biosqldb.load_db(biodb)
 
-                if len(match_groups) == 0:
-                    no_match = True
-                else:
+            freq_missing = (len(include)-float(n_missing))/len(include)
 
-                    # get count in subgroup
-                    orthogroup2count = dict((mat > 0).sum(axis=1))
-                    # get count in complete database
-                    orthogroup2count_all = dict((mat_all > 0).sum(axis=1))
+            task = extract_orthogroup_task.delay(biodb, 
+                                                    include,
+                                                    exclude,
+                                                    freq_missing,
+                                                    single_copy,
+                                                    accessions,
+                                                    reference_taxon,
+                                                    fasta_url,
+                                                    n_missing)
+            task_id = task.id
 
-                    #print cog2count_all
-                    max_n = max(orthogroup2count_all.values())
-
-                    # GET max frequency for template
-                    sum_group = len(match_groups)
-                    print("get group annotations")
-                    match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(match_groups,
-                                                                                                                  biodb,
-                                                                                                                  taxon_filter=include,
-                                                                                                                  accessions=accessions)
-                    print("done")
-
-                    if len(include) == 1:
-                        # get url to get single include taxon fasta
-                        locus_list = [i[2] for i in extract_result]
-                        fasta_ref_url = '?l=' + '&l='.join(locus_list)
-
-                    columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                              'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-
-                    envoi_extract = True
-
-                    circos_url = '?ref=%s&' % reference_taxon
-                    circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(match_groups)
-                    fasta_url+= "&i="+('&i=').join(include)
-                    fasta_url+= "&e="+('&e=').join(exclude)
-                    fasta_url+= "&f=%s" % freq_missing
-                    fasta_url+= "&s=%s" % single_copy
-                    fasta_url_ref = fasta_url +'&ref=%s' % reference_taxon
-                    fasta_url_noref =fasta_url + '&ref=F'
-
-                    if not accessions:
-                        sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and taxon_id=%s' % (biodb,
-                                                                                                                    '"' + '","'.join(match_groups) + '"',
-                                                                                                                    reference_taxon)
-                    else:
-                        sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and accession="%s"' % (biodb,
-                                                                                                                    '"' + '","'.join(match_groups) + '"',
-                                                                                                                    reference_taxon)
-                    locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-
-
-                    fasta_ref_url = '?l=' + '&l='.join(locus_list)
-
-                    locus2annot, \
-                    locus_tag2cog_catego, \
-                    locus_tag2cog_name, \
-                    locus_tag2ko, \
-                    pathway2category, \
-                    module2category, \
-                    ko2ko_pathways, \
-                    ko2ko_modules,\
-                    locus2interpro = get_locus_annotations(biodb, locus_list)
-
-                    # only show reference annotation if more than one genome included
-
-
+            return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
+        else:
+            return HttpResponse(json.dumps({'task_id': None}), content_type='application/json')
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
         form = extract_form_class()  # Nous créons un formulaire vide

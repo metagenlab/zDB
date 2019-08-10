@@ -15,6 +15,8 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 import os
 from django.template import Template, Context
+from django.core.cache import cache
+
 
 @shared_task
 def create_random_user_accounts2(request):
@@ -38,6 +40,394 @@ def create_random_user_accounts2(request):
     print(locals())
     html = '<h3>Fertig!</h3>'#render_to_string('chlamdb/celery_test.html', context=locals())
     return html#HttpResponse(html)
+
+@shared_task
+def extract_orthogroup_task(biodb, 
+                            include,
+                            exclude,
+                            freq_missing,
+                            single_copy,
+                            accessions,
+                            reference_taxon,
+                            fasta_url,
+                            n_missing):
+  
+    from chlamdb.biosqldb import biosql_own_sql_tables
+    from chlamdb.views import get_locus_annotations
+    
+    server = manipulate_biosqldb.load_db()
+    
+    
+    current_task.update_state(state='PROGRESS',
+    meta={'current': 1,
+          'total': 3,
+          'percent': 25,
+          'description': "Get orthogroup list"})
+    
+    if int(n_missing)>=len(include):
+        template = Template('''
+        {% load staticfiles %}
+        {% load static %}
+        <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">You cannot set a number of missing data bigger than the number of included genomes</p>
+        </div>
+        ''')
+
+        html = template.render(Context(locals()))#render_to_string(template, context=locals())
+        return html   
+    
+    print("get matrix")
+    if not accessions:
+        # get sub matrix and complete matrix
+        mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
+                                                                  "orthology",
+                                                                  "orthogroup",
+                                                                  include,
+                                                                  exclude,
+                                                                  freq_missing,
+                                                                  single_copy=single_copy,
+                                                                  accessions=accessions,
+                                                                  cache=cache)
+    else:
+        mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
+                                                                  "orthology",
+                                                                  "id",
+                                                                  include,
+                                                                  exclude,
+                                                                  freq_missing,
+                                                                  single_copy=single_copy,
+                                                                  accessions=accessions,
+                                                                  cache=cache)
+    print("matrix OK")
+    match_groups = mat.index.tolist()
+
+    if len(match_groups) == 0:
+        template = Template('''
+        {% load staticfiles %}
+        {% load static %}
+        <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+        <div class="panel-heading" style="width:100%">
+            <h3 class="panel-title"></h3>
+        </div>
+        <p style="margin: 10px 10px 10px 10px">No match</p>
+        </div>
+        ''')
+
+        html = template.render(Context(locals()))#render_to_string(template, context=locals())
+        return html
+    else:
+
+        # get count in subgroup
+        orthogroup2count = dict((mat > 0).sum(axis=1))
+        # get count in complete database
+        orthogroup2count_all = dict((mat_all > 0).sum(axis=1))
+
+        #print cog2count_all
+        max_n = max(orthogroup2count_all.values())
+
+        # GET max frequency for template
+        sum_group = len(match_groups)
+
+        current_task.update_state(state='PROGRESS',
+        meta={'current': 2,
+              'total': 3,
+              'percent': 50,
+              'description': "Retrieve annotations"})
+
+        match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(match_groups,
+                                                                                                      biodb,
+                                                                                                      taxon_filter=include,
+                                                                                                      accessions=accessions)
+        print("done")
+
+        if len(include) == 1:
+            # get url to get single include taxon fasta
+            locus_list = [i[2] for i in extract_result]
+            fasta_ref_url = '?l=' + '&l='.join(locus_list)
+
+        columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                  'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+
+        envoi_extract = True
+
+        circos_url = '?ref=%s&' % reference_taxon
+        circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(match_groups)
+        fasta_url+= "&i="+('&i=').join(include)
+        fasta_url+= "&e="+('&e=').join(exclude)
+        fasta_url+= "&f=%s" % freq_missing
+        fasta_url+= "&s=%s" % single_copy
+        fasta_url_ref = fasta_url +'&ref=%s' % reference_taxon
+        fasta_url_noref =fasta_url + '&ref=F'
+
+        current_task.update_state(state='PROGRESS',
+        meta={'current': 3,
+              'total': 3,
+              'percent': 90,
+              'description': "Retrieve reference genome annotation"})
+
+        if not accessions:
+            sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and taxon_id=%s' % (biodb,
+                                                                                                        '"' + '","'.join(match_groups) + '"',
+                                                                                                        reference_taxon)
+        else:
+            sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and accession="%s"' % (biodb,
+                                                                                                        '"' + '","'.join(match_groups) + '"',
+                                                                                                        reference_taxon)
+        locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+
+
+        fasta_ref_url = '?l=' + '&l='.join(locus_list)
+
+        locus2annot, \
+        locus_tag2cog_catego, \
+        locus_tag2cog_name, \
+        locus_tag2ko, \
+        pathway2category, \
+        module2category, \
+        ko2ko_pathways, \
+        ko2ko_modules,\
+        locus2interpro = get_locus_annotations(biodb, locus_list)    
+
+        template = Template('''
+        {% load staticfiles %}
+        {% load static %}
+        {% load custom_tags %}
+
+        <div class="row" style="padding-top:20px">
+        <div class="col-lg-12">
+          <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+              <li class="active"><a href="#red" data-toggle="tab">Orthogroups</a></li>
+              <li><a href="#orange" data-toggle="tab">Table detail</a></li>
+              <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
+          </ul>
+
+          <div id="my-tab-content" class="tab-content">
+              <div class="tab-pane active" id="red">
+                <div style="padding-top:10px;">
+                    <div id="export_bouttons_groups">
+                        <a href="{% url 'get_fasta' %}{{fasta_url_noref}}" class="btn btn-success">Download fasta</a>
+                        <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</a>
+                        <a href="{% url 'orthogroup_list_cog_barchart' accessions%}{{circos_url}}" class="btn btn-success">Show cog categories of orthogroup subset vs all orthogroups</a>
+                        <br/>
+                    </div>
+
+                    <h3>Number of orthogroups: {{ sum_group }} </h3>
+
+
+                      <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
+                          <div class="panel-heading" style="width:100%">
+                              <h3 class="panel-title">Help</h3>
+                          </div>
+                          <p style="margin: 10px 10px 10px 10px; line-height: 180%">The annotation(s) of orthologous groups is a consensus of the annotation of all members of the group. For each annotation (gene name, product, COG,...), 
+                          only the two most frequent annotations are reported. Number in parentheses indicates the number of occurences of the annotation (how many proteins of the orthologous group have this exact annotation). </br>
+                          The second tab reports the complete list of protein of reference genome(s).                               
+                          </p>
+                      </div>
+
+
+                    <table class="display" id="table_groups">
+
+                        <thead>
+                            <tr>
+                            <th></th>
+                            <th id="entete_locus">Orthogroup</th>
+                            <th>Genes</th>
+                            <th>Products</th>
+                            <th>Cogs</th>
+                            <th>Pfam</th>
+                            <th>present in (/{{include|length}})</th>
+                            <th>freq complete database {{max_n}}</th>
+                            </tr>
+                        </thead>
+
+                        {% for value in match_groups_data %}
+                            <tr>
+                                <td>{{value.0}}</td>
+                                <td><a href="{% url 'locusx' value.1 True%}">{{value.1}}</a></td>
+                                <td>{{value.2|safe}}</td>
+                                <td>{{value.3|safe}}</td>
+                                <td>{{value.4|safe}}</td>
+                                <td>{{value.5|safe}}</td>
+                                <td>{{orthogroup2count|keyvalue:value.1}}</td>
+                                <td>{{orthogroup2count_all|keyvalue:value.1}}</td>
+                            </tr>
+                        {% endfor %}
+
+
+                    </table>
+                </div>
+              </div>
+              <div class="tab-pane" id="orange">
+                      <div id="export_bouttons_groups">
+                          {% if show_reference_annot %}
+                          <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_ref_url|safe}}'">fasta aa</button>
+                          {% endif %}
+                            <br/>
+                      </div>
+
+
+                      <h3>Number of orthogroups: {{ sum_group }} </h3>
+
+                      <table class="display" id="cog_table">
+                          <thead>
+                              <tr>
+                                  <th></th>
+                                  <th>Orthogroup</th>
+                                  <th>Locus</th>
+                                  <th>Protein id</th>
+                                  <th>Start</th>
+                                  <th>Stop</th>
+                                  <th>S.</th>
+                                  <th>Gene</th>
+                                  <th>nH</th>
+                                  <th>nG</th>
+                                  <th>TM</th>
+                                  <th>SP</th>
+                                  <th>Product</th>
+                                  <th>Organism</th>
+                                  <th>Translation</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+
+                              {% for values in extract_result %}
+                                  <tr>
+                                      <td>{{values.0}}</td>
+                                      <td><a href="{% url 'locusx' values.1 True %}"  target="_top">{{values.1}}</a></td>
+                                      <td>{{values.2}}</td>
+                                      <td>{{values.3}}</td>
+                                      <td>{{values.4}}</td>
+                                      <td>{{values.5}}</td>
+                                      <td>{{values.6}}</td>
+                                      <td>{{values.7}}</td>
+                                      <td>{{values.8}}</td>
+                                      <td>{{values.9}}</td>
+                                      <td>{{values.10}}</td>
+                                      <td>{{values.11}}</td>
+                                      <td>{{values.12}}</td>
+                                      <td>{{values.13}}</td>
+                                      <td>{{values.14}}</td>
+                                  </tr>
+                              {% endfor %}
+                          </tbody>
+                      </table>
+              </div>
+              <div class="tab-pane" id="tab2">
+
+                  <h3> Locus annotation </h3>
+                  <div id="export_bouttons_groups" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
+                      <a href="{% url "get_fasta" %}{{fasta_url_ref}}" class="btn btn-success">Download fasta</a>
+                      <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map</a>
+                  <br/>
+                  </div>
+                  <table id="reference_table" class="table">
+                      <thead>
+                          <tr>
+                              <th></th>
+                              <th id="entete_locus">Orthogroup</th>
+                              <th id="entete_locus">Locus</th>
+                              <th style="width:10px">C</th>
+                              <th style="width:70px">COGn</th>
+                              <th style="width:55px">KO</th>
+                              <th style="width:260px">Pathways</th>
+                              <th style="width:230px">Modules</th>
+                              <th style="width:230px">Interpro</th>
+                              <th id="entete_gene">Gene</th>
+                              <th id="entete_n">nH</th>
+                              <th id="entete_n">nG</th>
+                              <th id="entete_n">TM</th>
+                              <th id="entete_n">SP</th>
+                              <th id="entete_product">Product</th>
+
+
+                          </tr>
+                      </thead>
+                      <tbody>
+
+                          {%for values in locus2annot%}
+                          <tr>
+                              <td>{{values.0}}</td>
+                              <td>{{values.1}}</td>
+                              <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
+                              <td>{{locus_tag2cog_catego|keyvalue:values.2}}</td>
+                              {% with locus_tag2cog_name|keyvalue:values.2 as name %}
+                                  {% if name == '-' %}
+                                      <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
+                                  {% else %}
+                                      <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
+                                  {% endif %}
+                              {%endwith%}
+                              {% with locus_tag2ko|keyvalue:values.2 as oneko %}
+                                  {% if oneko == '-' %}
+                                      <td>{{locus_tag2ko|keyvalue:values.2}}</td>
+                                      <td>-</td>
+                                      <td>-</td>
+                                  {% else %}
+                                      <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
+                                      {% with ko2ko_pathways|keyvalue:oneko as name %}
+                                          {% if name == '-' %}
+                                              <td>-</td>
+                                          {% else %}
+                                              <td>{{name|safe}}</td>
+                                          {% endif %}
+                                      {%endwith%}
+                                      {% with ko2ko_modules|keyvalue:oneko as name %}
+                                          {% if name == '-' %}
+                                              <td>-</td>
+                                          {% else %}
+                                              <td>{{name|safe}}</td>
+                                          {% endif %}
+                                      {%endwith%}
+                                  {% endif %}
+
+
+                              {%endwith%}
+                              {% with locus2interpro|keyvalue:values.2 as interpro_data %}
+                              <td>
+                                  {% for one_interpro in interpro_data %}
+                                  {% if one_interpro.0 != '-' %}
+                                      <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                  {%else%}
+                                      {{one_interpro.0}}
+                                  {%endif%}
+                                      {{one_interpro.1}} </br>
+                                  {% endfor %}
+                                  {%endwith%}
+                              </td>
+                              <td>{{values.7}}</td>
+                              <td>{{values.8}}</td>
+                              <td>{{values.9}}</td>
+                              <td>{{values.10}}</td>
+                              <td>{{values.11}}</td>
+                              <td>{{values.12}}</td>
+
+                          </tr>
+
+                          {%endfor%}
+                      </tbody>
+                  </table>
+
+
+
+              </div>
+
+          </div>
+        </div>
+        </div>
+
+
+
+
+        ''')
+
+        html = template.render(Context(locals()))#render_to_string(template, context=locals())
+        return html
+
+
+
 
 @shared_task
 def run_circos(reference_taxon, target_taxons):

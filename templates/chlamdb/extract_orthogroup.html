@@ -58,258 +58,22 @@
                 </div>
                 -->
                 {% block content %}
-                <form action="{% url "extract_orthogroup" %}" method="post">
+                <form action="{% url "extract_orthogroup" %}" method="post" id="extract-form">
                     {% csrf_token %}
                     {% crispy form %}
                 </form>
                 {% endblock %}
             </div>
 
-            {% if wrong_n_missing%}
+            <div class="col-lg-12">
+                  <div id="progress-div" class="row" style="padding-top:5px;height:25px;" class="row"></div>
 
-            <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                <div class="panel-heading" style="width:100%">
-                    <h3 class="panel-title">Help</h3>
-                </div>
-                <p style="margin: 10px 10px 10px 10px">You cannot set a number of missing data bigger than the number of included genomes</p>
+                  <div class="progress row" style="width=50%;" id="progress">
+                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 20%"></div>
+                  </div>
+                  <div id="results" class="row"></div>
             </div>
 
-            {% elif no_match%}
-
-            <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                <div class="panel-heading" style="width:100%">
-                    <h3 class="panel-title"></h3>
-                </div>
-                <p style="margin: 10px 10px 10px 10px">No match</p>
-            </div>
-
-            {% endif %}
-
-            {% if envoi_extract %}
-            <div class="row" style="padding-top:20px">
-              <div class="col-lg-12">
-                <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                    <li class="active"><a href="#red" data-toggle="tab">Orthogroups</a></li>
-                    <li><a href="#orange" data-toggle="tab">Table detail</a></li>
-                    <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
-                </ul>
-
-                <div id="my-tab-content" class="tab-content">
-                    <div class="tab-pane active" id="red">
-                      <div style="padding-top:10px;">
-                          <div id="export_bouttons_groups">
-                              <a href="{% url 'get_fasta' %}{{fasta_url_noref}}" class="btn btn-success">Download fasta</a>
-                              <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</a>
-                              <a href="{% url 'orthogroup_list_cog_barchart' accessions%}{{circos_url}}" class="btn btn-success">Show cog categories of orthogroup subset vs all orthogroups</a>
-                              <br/>
-                          </div>
-
-                          <h3>Number of orthogroups: {{ sum_group }} </h3>
-
-
-                            <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
-                                <div class="panel-heading" style="width:100%">
-                                    <h3 class="panel-title">Help</h3>
-                                </div>
-                                <p style="margin: 10px 10px 10px 10px; line-height: 180%">The annotation(s) of orthologous groups is a consensus of the annotation of all members of the group. For each annotation (gene name, product, COG,...), 
-                                only the two most frequent annotations are reported. Number in parentheses indicates the number of occurences of the annotation (how many proteins of the orthologous group have this exact annotation). </br>
-                                The second tab reports the complete list of protein of reference genome(s).                               
-                                </p>
-                            </div>
-
-
-                          <table class="display" id="table_groups">
-
-                              <thead>
-                                  <tr>
-                                  <th></th>
-                                  <th id="entete_locus">Orthogroup</th>
-                                  <th>Genes</th>
-                                  <th>Products</th>
-                                  <th>Cogs</th>
-                                  <th>Pfam</th>
-                                  <th>present in (/{{include|length}})</th>
-                                  <th>freq complete database {{max_n}}</th>
-                                  </tr>
-                              </thead>
-
-                              {% for value in match_groups_data %}
-                                  <tr>
-                                      <td>{{value.0}}</td>
-                                      <td><a href="{% url 'locusx' value.1 True%}">{{value.1}}</a></td>
-                                      <td>{{value.2|safe}}</td>
-                                      <td>{{value.3|safe}}</td>
-                                      <td>{{value.4|safe}}</td>
-                                      <td>{{value.5|safe}}</td>
-                                      <td>{{orthogroup2count|keyvalue:value.1}}</td>
-                                      <td>{{orthogroup2count_all|keyvalue:value.1}}</td>
-                                  </tr>
-                              {% endfor %}
-
-
-                          </table>
-                      </div>
-                    </div>
-                    <div class="tab-pane" id="orange">
-                            <div id="export_bouttons_groups">
-                                {% if show_reference_annot %}
-                                <button type="button" class="btn btn-primary btn-xs" onclick="location.href='/chlamdb/fasta/{{fasta_ref_url|safe}}'">fasta aa</button>
-                                {% endif %}
-                                  <br/>
-                            </div>
-
-
-                            <h3>Number of orthogroups: {{ sum_group }} </h3>
-
-                            <table class="display" id="cog_table">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>Orthogroup</th>
-                                        <th>Locus</th>
-                                        <th>Protein id</th>
-                                        <th>Start</th>
-                                        <th>Stop</th>
-                                        <th>S.</th>
-                                        <th>Gene</th>
-                                        <th>nH</th>
-                                        <th>nG</th>
-                                        <th>TM</th>
-                                        <th>SP</th>
-                                        <th>Product</th>
-                                        <th>Organism</th>
-                                        <th>Translation</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-
-                                    {% for values in extract_result %}
-                                        <tr>
-                                            <td>{{values.0}}</td>
-                                            <td><a href="{% url 'locusx' values.1 True %}"  target="_top">{{values.1}}</a></td>
-                                            <td>{{values.2}}</td>
-                                            <td>{{values.3}}</td>
-                                            <td>{{values.4}}</td>
-                                            <td>{{values.5}}</td>
-                                            <td>{{values.6}}</td>
-                                            <td>{{values.7}}</td>
-                                            <td>{{values.8}}</td>
-                                            <td>{{values.9}}</td>
-                                            <td>{{values.10}}</td>
-                                            <td>{{values.11}}</td>
-                                            <td>{{values.12}}</td>
-                                            <td>{{values.13}}</td>
-                                            <td>{{values.14}}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                    </div>
-                    <div class="tab-pane" id="tab2">
-
-                        <h3> Locus annotation </h3>
-                        <div id="export_bouttons_groups" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
-                            <a href="{% url "get_fasta" %}{{fasta_url_ref}}" class="btn btn-success">Download fasta</a>
-                            <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map</a>
-                        <br/>
-                        </div>
-                        <table id="reference_table" class="table">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th id="entete_locus">Orthogroup</th>
-                                    <th id="entete_locus">Locus</th>
-                                    <th style="width:10px">C</th>
-                                    <th style="width:70px">COGn</th>
-                                    <th style="width:55px">KO</th>
-                                    <th style="width:260px">Pathways</th>
-                                    <th style="width:230px">Modules</th>
-                                    <th style="width:230px">Interpro</th>
-                                    <th id="entete_gene">Gene</th>
-                                    <th id="entete_n">nH</th>
-                                    <th id="entete_n">nG</th>
-                                    <th id="entete_n">TM</th>
-                                    <th id="entete_n">SP</th>
-                                    <th id="entete_product">Product</th>
-
-
-                                </tr>
-                            </thead>
-                            <tbody>
-
-                                {%for values in locus2annot%}
-                                <tr>
-                                    <td>{{values.0}}</td>
-                                    <td>{{values.1}}</td>
-                                    <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
-                                    <td>{{locus_tag2cog_catego|keyvalue:values.2}}</td>
-                                    {% with locus_tag2cog_name|keyvalue:values.2 as name %}
-                                        {% if name == '-' %}
-                                            <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
-                                        {% else %}
-                                            <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
-                                        {% endif %}
-                                    {%endwith%}
-                                    {% with locus_tag2ko|keyvalue:values.2 as oneko %}
-                                        {% if oneko == '-' %}
-                                            <td>{{locus_tag2ko|keyvalue:values.2}}</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                        {% else %}
-                                            <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
-                                            {% with ko2ko_pathways|keyvalue:oneko as name %}
-                                                {% if name == '-' %}
-                                                    <td>-</td>
-                                                {% else %}
-                                                    <td>{{name|safe}}</td>
-                                                {% endif %}
-                                            {%endwith%}
-                                            {% with ko2ko_modules|keyvalue:oneko as name %}
-                                                {% if name == '-' %}
-                                                    <td>-</td>
-                                                {% else %}
-                                                    <td>{{name|safe}}</td>
-                                                {% endif %}
-                                            {%endwith%}
-                                        {% endif %}
-
-
-                                    {%endwith%}
-                                    {% with locus2interpro|keyvalue:values.2 as interpro_data %}
-                                    <td>
-                                        {% for one_interpro in interpro_data %}
-                                        {% if one_interpro.0 != '-' %}
-                                            <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
-                                        {%else%}
-                                            {{one_interpro.0}}
-                                        {%endif%}
-                                            {{one_interpro.1}} </br>
-                                        {% endfor %}
-                                        {%endwith%}
-                                    </td>
-                                    <td>{{values.7}}</td>
-                                    <td>{{values.8}}</td>
-                                    <td>{{values.9}}</td>
-                                    <td>{{values.10}}</td>
-                                    <td>{{values.11}}</td>
-                                    <td>{{values.12}}</td>
-
-                                </tr>
-
-                                {%endfor%}
-                            </tbody>
-                        </table>
-
-
-
-                    </div>
-
-                </div>
-              </div>
-            </div>
-            {% else %}
-                </div>
-            {% endif %}
         </div> <!-- row -->
       </div> <!-- page-content-wrapper -->
     </div> <!-- wrapper -->
@@ -319,66 +83,124 @@
 {% include "chlamdb/show_hide_plasmid_accessions.html" %}
 </body>
 
-<script>
+<script type="text/javascript">
+    $("#progress").hide();
 
-$(document).ready(function() {
-$('#table_groups').DataTable( {
-dom: 'Bfrtip',    
-"paging":   true,
-"ordering": true,
-"info":     false,
-buttons: [
-{
-    extend: 'excel',
-    title: 'orthogroups'
-},
-{
-    extend: 'csv',
-    title: 'orthogroups'
-}
-],
-} );
-} );
+    var frm = $('#extract-form');
+    var prg_dv = $('#progress-div');
+    var pgrbar = $('.progress-bar');
+    frm.submit(function () {
+        console.log("submit!!!")
+        $.ajax({
+            type: frm.attr('method'),
+            url: frm.attr('action'),
+            data: frm.serialize(),
+            success: function (data) {
+                console.log("success");
+                console.log(data.task_id);
+                if (data.task_id != null) {
+                    get_task_info(data.task_id);
+                }
+            },
+            error: function (data) {
+                console.log("Something went wrong!");
+            }
+        });
+        return false;
+    });
 
-$(document).ready(function() {
-$('#cog_table').DataTable( {
- dom: 'Bfrtip',   
-"paging":   true,
-"ordering": true,
-"info":     false,
-buttons: [
-{
-    extend: 'excel',
-    title: 'locus'
-},
-{
-    extend: 'csv',
-    title: 'locus'
-}
-],
-} );
-} );
-
-$(document).ready(function() {
-$('#reference_table').DataTable( {
- dom: 'Bfrtip',   
-"paging":   true,
-"ordering": true,
-"info":     false,
-buttons: [
-{
-    extend: 'excel',
-    title: 'locus'
-},
-{
-    extend: 'csv',
-    title: 'locus'
-}
-],
-} );
-} );
+    function get_task_info(task_id) {
+        $.ajax({
+            type: 'get',
+            url: '/get-task-info/',
+            data: {'task_id': task_id},
+            success: function (data) {
+                pgrbar.css('width', 10+'%').attr('aria-valuenow', 10)
+                $("#progress").show();
+                $('#results').html('')
+                if (data.state == 'PENDING') {
+                    prg_dv.html('Please wait...');
+                }
+                else if (data.state == 'PROGRESS') {
+                    pgrbar.css('width', data.result.percent+'%').attr('aria-valuenow', data.result.percent)
+                    console.log(data.result.percent);
+                    prg_dv.html('Step ' + data.result.current + '/' + data.result.total + ': ' + data.result.description);
+                }
+                else if (data.state == 'SUCCESS') {
+                    // pgrbar.hide();
+                    prg_dv.html('Done');
+                    $('#results').html(data.result);
+                    $("#progress").hide();
 
 
+                    $('#table_groups').DataTable( {
+                    dom: 'Bfrtip',    
+                    "paging":   true,
+                    "ordering": true,
+                    "info":     false,
+                    buttons: [
+                    {
+                        extend: 'excel',
+                        title: 'orthogroups'
+                    },
+                    {
+                        extend: 'csv',
+                        title: 'orthogroups'
+                    }
+                    ],
+                    } );
+
+
+                    $('#cog_table').DataTable( {
+                    dom: 'Bfrtip',   
+                    "paging":   true,
+                    "ordering": true,
+                    "info":     false,
+                    buttons: [
+                    {
+                        extend: 'excel',
+                        title: 'locus'
+                    },
+                    {
+                        extend: 'csv',
+                        title: 'locus'
+                    }
+                    ],
+                    } );
+
+
+
+                    $('#reference_table').DataTable( {
+                    dom: 'Bfrtip',   
+                    "paging":   true,
+                    "ordering": true,
+                    "info":     false,
+                    buttons: [
+                    {
+                        extend: 'excel',
+                        title: 'locus'
+                    },
+                    {
+                        extend: 'csv',
+                        title: 'locus'
+                    }
+                    ],
+                    } );
+
+
+                }
+
+                if (data.state != 'SUCCESS') {
+                    setTimeout(function () {
+                        get_task_info(task_id)
+                    }, 1000);
+                }
+            },
+            error: function (data) {
+                prg_dv.html("Something went wrong!");
+            }
+        });
+    }
 </script>
 
 </html>

@@ -118,10 +118,9 @@
   - [ ] all alignments
   - [ ] ...
 
-
 - [ ] load synonymous table 
     - [X] from uniprot idmapping
-    - [ ] RefSeq locus_tag/protein id
+    - [x] RefSeq locus_tag/protein id
     - [ ] uniparc cross references
   
 - [ ] search: single vs multiple matches
@@ -136,7 +135,7 @@
 - [ ] update to boolean search
 - [ ] check and update module, pathway, fam profile,... size
 
-- [ ] add barplot pan-genome
+- [ ] add barplot pan-genome ! ALREADY EXIST FOR ORTHOGROUP (IN A TAB)
 - [ ] add download newick tree on pfam, TM tabs and phylogeny with BBH
 - [ ] add uniprot proteome column (+ percent overlap) to genome table
 - [ ] add explanations for hydropathy plot
