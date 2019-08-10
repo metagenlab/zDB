@@ -89,6 +89,7 @@ from chlamdb.tasks import run_circos
 from chlamdb.tasks import run_circos_main
 from chlamdb.tasks import extract_orthogroup_task
 from chlamdb.tasks import plot_neighborhood_task
+from chlamdb.tasks import TM_tree_task
 from chlamdb.celeryapp import app as celery_app
 
 @celery_app.task(bind=True)
@@ -11655,28 +11656,11 @@ def pfam_tree(request, orthogroup):
 def TM_tree(request, orthogroup):
     print("orthogroup", orthogroup)
     biodb = settings.BIODB
-    from chlamdb.biosqldb import manipulate_biosqldb
-    from chlamdb.phylo_tree_display import ete_motifs
 
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    home_dir = os.path.dirname(__file__)
-    alignment_fasta = "../assets/%s_fasta/%s.fa" % (biodb, orthogroup)
-    alignment_path = os.path.join(home_dir, alignment_fasta)
-    if os.path.exists(alignment_path):
-        locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False, signal_peptide=True)
-    else:
-        locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False, signal_peptide=True)
-    print("locus2TM_data", locus2TM_data)
-    sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
-    tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
-
-    t, ts, leaf_number = ete_motifs.draw_TM_tree(tree, locus2TM_data)
-    path = settings.BASE_DIR + '/assets/temp/TM_tree.svg'
-    asset_path = '/temp/TM_tree.svg'
-    if leaf_number < 10:
-        leaf_number = 10
-    t.render(path, dpi=500, tree_style=ts)
+    task = TM_tree_task.delay(biodb, 
+                              orthogroup)
+    print("task", task)
+    task_id = task.id
 
     return render(request, 'chlamdb/TM_tree.html', locals())
 

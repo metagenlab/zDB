@@ -977,3 +977,103 @@ def plot_neighborhood_task(biodb, target_locus, region_size):
 
     html = template.render(Context(locals()))
     return html
+
+
+
+@shared_task
+def TM_tree_task(biodb, 
+                 orthogroup):
+
+    from chlamdb.phylo_tree_display import ete_motifs
+    from tempfile import NamedTemporaryFile
+    from chlamdb.biosqldb import mysqldb_plot_genomic_feature
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.phylo_tree_display import ete_motifs
+    
+    current_task.update_state(state='PROGRESS',
+                              meta={'current': 1,
+                                    'total': 1,
+                                    'percent': 50,
+                                    'description': "Plotting TM tree"})
+
+
+
+
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    home_dir = os.path.dirname(__file__)
+    alignment_fasta = "../assets/%s_fasta/%s.fa" % (biodb, orthogroup)
+    alignment_path = os.path.join(home_dir, alignment_fasta)
+    if os.path.exists(alignment_path):
+        locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False, signal_peptide=True)
+    else:
+        locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False, signal_peptide=True)
+    sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
+    tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
+
+    t, ts, leaf_number = ete_motifs.draw_TM_tree(tree, locus2TM_data)
+    path = settings.BASE_DIR + '/assets/temp/TM_tree.svg'
+    asset_path = '/temp/TM_tree.svg'
+    if leaf_number < 10:
+        leaf_number = 10
+    
+    t.render(path, dpi=500, tree_style=ts)
+
+
+    template = Template('''
+            {% load staticfiles %}
+            {% load static %}
+
+            {% if not no_tree %}
+            <h3>Phylogeny:</h3>
+        
+        
+            <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                <div class="panel-heading" style="width:100%">
+                    <h3 class="panel-title">Help</h3>
+                </div>
+                <p style="margin: 10px 10px 10px 10px">This phylogeny includes all orthologs identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. 
+                The first column at the right of the phylogeny reports the locus tag of each protein sequence (it can be used in the search bar to search for the corresponding locus). 
+                The right part is a representation of the amino acid sequence. The length of the line reflects the length of the sequence. 
+                <font color="green">Green blocks</font> are predicted <font color="green">transmembrane domains</font> and <font color="red">red blocks</font> are predicted <font color="red">signal peptides</font>. Both were identified with <a href="http://phobius.sbc.su.se/">Phobius</a>.<br>
+                </p>
+            </div>
+        
+            <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+            <a onclick='exportPNG("pfam_tree", "pfam_tree");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+        
+            <div id="pfam_tree_div">
+                <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width:90%"></object>
+            </div>
+            <div  id="pfam_table_div">
+                <h3>Motifs:</h3>
+        
+        
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Pfam domain</th>
+                        <th>Count</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for key, values in motif_count.items %}
+                    <tr>
+                        <td><a href="{% url 'fam' key "pfam" %}" target="_top">{{key}}</a></td>
+                        <td>{{values.0}}</td>
+                        <td>{{values.1}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            No tree for {{orthogroup}}
+            {% endif %}
+
+            ''')
+
+    html = template.render(Context(locals()))
+    return html
