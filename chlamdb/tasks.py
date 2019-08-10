@@ -1046,6 +1046,111 @@ def TM_tree_task(biodb,
             <div id="pfam_tree_div">
                 <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width:90%"></object>
             </div>
+
+            {% else %}
+            No tree for {{orthogroup}}
+            {% endif %}
+
+            ''')
+
+    html = template.render(Context(locals()))
+    return html
+
+
+@shared_task
+def pfam_tree_task(biodb, 
+                 orthogroup):
+
+    from chlamdb.phylo_tree_display import ete_motifs
+    from tempfile import NamedTemporaryFile
+    from chlamdb.biosqldb import mysqldb_plot_genomic_feature
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.phylo_tree_display import ete_motifs
+    
+    current_task.update_state(state='PROGRESS',
+                              meta={'current': 1,
+                                    'total': 1,
+                                    'percent': 50,
+                                    'description': "Plotting TM tree"})
+
+    print ('pfam tree %s -- %s' % (biodb, orthogroup))
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    #sql_locus2protein_id = 'select locus_tag, protein_id from orthology_detail_%s where orthogroup="%s"' % (biodb, orthogroup)
+
+    #locus2protein_id= manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_locus2protein_id,))
+
+    alignment_fasta = "../assets/%s_fasta/%s.fa" % (biodb, orthogroup)
+
+    home_dir = os.path.dirname(__file__)
+
+    alignment_path = os.path.join(home_dir, alignment_fasta)
+    print("get data")
+    if os.path.exists(alignment_path):
+        #pass
+        locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb, aa_alignment=False) # alignment_path
+    else:
+
+        locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb, aa_alignment=False)
+    print("done")
+    motif_count = {}
+    for data in locus2pfam_data.values():
+        for motif in data:
+            try:
+                if motif[4] not in motif_count:
+                    motif_count[motif[4]] = [1, motif[5]]
+                else:
+                    motif_count[motif[4]][0]+=1
+            except:
+                print ("motif", motif)
+
+    print("get tree")
+    sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
+
+    try:
+        tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
+    except IndexError:
+        no_tree = True
+        return render(request, 'chlamdb/pfam_tree.html', locals())
+
+
+    #sql = 'select taxon_id, family from genomes_classification;'
+
+    #taxon_id2family = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    print("draw tree")
+    t, ts, leaf_number = ete_motifs.draw_pfam_tree(tree, locus2pfam_data, False, taxon_id2family=False)
+    path = settings.BASE_DIR + '/assets/temp/pfam_tree.svg'
+    asset_path = '/temp/pfam_tree.svg'
+    if leaf_number < 10:
+        leaf_number = 10
+    ts.show_branch_support = False
+    t.render(path, dpi=500, tree_style=ts)
+
+
+    template = Template('''
+            {% load staticfiles %}
+            {% load static %}
+
+            {% if not no_tree %}
+            <h3>Phylogeny:</h3>
+        
+        
+            <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                <div class="panel-heading" style="width:100%">
+                    <h3 class="panel-title">Help</h3>
+                </div>
+                <p style="margin: 10px 10px 10px 10px">This phylogeny includes all orthologs identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. 
+                The first column at the right of the phylogeny reports the locus tag of each protein sequence (that can be used in the search bar to search for the corresponding locus). 
+                The right part is a representation of the amino acid sequence. The length of the line reflects the length of the sequence, and <font color="green">green blocks</font> are identified <a href="https://pfam.xfam.org/">PFAM domains</a>.<br>
+                </p>
+            </div>
+        
+            <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+            <a onclick='exportPNG("pfam_tree", "pfam_tree");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+        
+            <div id="pfam_tree_div">
+                <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width:90%"></object>
+            </div>
             <div  id="pfam_table_div">
                 <h3>Motifs:</h3>
         
@@ -1072,7 +1177,63 @@ def TM_tree_task(biodb,
             {% else %}
             No tree for {{orthogroup}}
             {% endif %}
+            ''')
 
+    html = template.render(Context(locals()))
+    return html
+
+
+
+@shared_task
+def phylogeny_task(biodb, 
+                   orthogroup):
+
+
+    
+    current_task.update_state(state='PROGRESS',
+                              meta={'current': 1,
+                                    'total': 1,
+                                    'percent': 50,
+                                    'description': "Plotting TM tree"})
+
+
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from ete3 import Tree
+    import os
+    from chlamdb.plots import orthogroup2phylogeny_best_refseq_uniprot_hity
+
+    sqlpsw = os.environ['SQLPSW']
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s";' % (biodb, orthogroup)
+
+    ete3_tree = Tree(server.adaptor.execute_and_fetchall(sql,)[0][0])
+
+    t, ts = orthogroup2phylogeny_best_refseq_uniprot_hity.plot_tree(ete3_tree,
+                                                                    orthogroup,
+                                                                    biodb,
+                                                                    mysql_pwd=sqlpsw)
+    path = settings.BASE_DIR + '/assets/temp/BBH_tree.svg'
+    asset_path = '/temp/BBH_tree.svg'
+
+    t.render(path, tree_style=ts)
+
+
+    template = Template('''
+            {% load staticfiles %}
+            {% load static %}
+            {% if not no_tree %}
+            <h3>Phylogeny including all orthologs and their closest homologs in RefSeq and SwissProt database</h3>
+            <p>
+              The alignment was made with mafft and the phylogeny was reconstructed with FastTree with default parameters.
+            </p>
+            <div id="pfam_tree_div">
+                <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width:80%"></object>
+            </div>
+            {% else %}
+            No tree for {{orthogroup}}
+            {% endif %}
             ''')
 
     html = template.render(Context(locals()))

@@ -90,6 +90,8 @@ from chlamdb.tasks import run_circos_main
 from chlamdb.tasks import extract_orthogroup_task
 from chlamdb.tasks import plot_neighborhood_task
 from chlamdb.tasks import TM_tree_task
+from chlamdb.tasks import pfam_tree_task
+from chlamdb.tasks import phylogeny_task
 from chlamdb.celeryapp import app as celery_app
 
 @celery_app.task(bind=True)
@@ -2573,7 +2575,7 @@ def locusx(request, locus=None, menu=True):
             print("TM_counts", TM_counts)
             
             plot_data = [go.Bar(
-                        x=["%s TM" % i for i in TM_counts.keys()],
+                        x= [int(i) for i in TM_counts.keys()], #["%s TM" % i for i in TM_counts.keys()],
                         y=list(TM_counts.values())
                 )]
 
@@ -11596,60 +11598,11 @@ def multiple_COGs_heatmap(request):
 
 def pfam_tree(request, orthogroup):
     biodb = settings.BIODB
-    from chlamdb.phylo_tree_display import ete_motifs
-    from chlamdb.biosqldb import manipulate_biosqldb
-    print ('pfam tree %s -- %s' % (biodb, orthogroup))
-    server, db = manipulate_biosqldb.load_db(biodb)
 
-    #sql_locus2protein_id = 'select locus_tag, protein_id from orthology_detail_%s where orthogroup="%s"' % (biodb, orthogroup)
-
-    #locus2protein_id= manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_locus2protein_id,))
-
-    alignment_fasta = "../assets/%s_fasta/%s.fa" % (biodb, orthogroup)
-
-    home_dir = os.path.dirname(__file__)
-
-    alignment_path = os.path.join(home_dir, alignment_fasta)
-    print("get data")
-    if os.path.exists(alignment_path):
-        #pass
-        locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb, aa_alignment=False) # alignment_path
-    else:
-
-        locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb, aa_alignment=False)
-    print("done")
-    motif_count = {}
-    for data in locus2pfam_data.values():
-        for motif in data:
-            try:
-                if motif[4] not in motif_count:
-                    motif_count[motif[4]] = [1, motif[5]]
-                else:
-                    motif_count[motif[4]][0]+=1
-            except:
-                print ("motif", motif)
-
-    print("get tree")
-    sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
-
-    try:
-        tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
-    except IndexError:
-        no_tree = True
-        return render(request, 'chlamdb/pfam_tree.html', locals())
-
-
-    #sql = 'select taxon_id, family from genomes_classification;'
-
-    #taxon_id2family = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    print("draw tree")
-    t, ts, leaf_number = ete_motifs.draw_pfam_tree(tree, locus2pfam_data, False, taxon_id2family=False)
-    path = settings.BASE_DIR + '/assets/temp/pfam_tree.svg'
-    asset_path = '/temp/pfam_tree.svg'
-    if leaf_number < 10:
-        leaf_number = 10
-    ts.show_branch_support = False
-    t.render(path, dpi=500, tree_style=ts)
+    task = pfam_tree_task.delay(biodb, 
+                              orthogroup)
+    print("task", task)
+    task_id = task.id
 
     return render(request, 'chlamdb/pfam_tree.html', locals())
 
@@ -11667,27 +11620,11 @@ def TM_tree(request, orthogroup):
 
 def refseq_swissprot_tree(request, orthogroup):
     biodb = settings.BIODB
-    from chlamdb.biosqldb import manipulate_biosqldb
-    from ete3 import Tree
-    import os
-    from chlamdb.plots import orthogroup2phylogeny_best_refseq_uniprot_hity
 
-    sqlpsw = os.environ['SQLPSW']
-
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    sql = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s";' % (biodb, orthogroup)
-
-    ete3_tree = Tree(server.adaptor.execute_and_fetchall(sql,)[0][0])
-
-    t, ts = orthogroup2phylogeny_best_refseq_uniprot_hity.plot_tree(ete3_tree,
-                                                                   orthogroup,
-                                                                   biodb,
-                                                                   mysql_pwd=sqlpsw)
-    path = settings.BASE_DIR + '/assets/temp/BBH_tree.svg'
-    asset_path = '/temp/BBH_tree.svg'
-
-    t.render(path, tree_style=ts)
+    task = phylogeny_task.delay(biodb, 
+                                orthogroup)
+    print("task", task)
+    task_id = task.id
 
     return render(request, 'chlamdb/best_refseq_swissprot_tree.html', locals())
 
