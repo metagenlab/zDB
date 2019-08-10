@@ -827,3 +827,153 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
 
     html = template.render(Context(locals()))#render_to_string(template, context=locals())
     return html
+
+
+
+@shared_task
+def plot_neighborhood_task(biodb, target_locus, region_size):
+
+    from chlamdb.phylo_tree_display import ete_motifs
+    from tempfile import NamedTemporaryFile
+    from chlamdb.biosqldb import mysqldb_plot_genomic_feature
+
+    current_task.update_state(state='PROGRESS',
+                              meta={'current': 1,
+                                    'total': 3,
+                                    'percent': 25,
+                                    'description': "Plotting region"})
+
+ 
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql2 = 'select orthogroup, taxon_id from orthology_detail_%s where locus_tag = "%s"' % (biodb, target_locus)
+
+    reference_orthogroup = server.adaptor.execute_and_fetchall(sql2, )[0]
+    reference_taxid = reference_orthogroup[1]
+
+    if reference_orthogroup:
+        
+        orthogroup = reference_orthogroup[0]
+        reference_taxon_id = reference_orthogroup[1]
+        
+
+        operon_locus = []
+        operon_ofs = False
+        temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
+        temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
+        name = 'temp/' + os.path.basename(temp_file.name)
+
+        sql10 = 'select operon_id from custom_tables.locus2seqfeature_id_%s t1 ' \
+                ' inner join custom_tables.DOOR2_operons_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
+                ' where t1.locus_tag="%s"' % (biodb,
+                                                biodb,
+                                                target_locus)
+        try:
+            operon_id = server.adaptor.execute_and_fetchall(sql10, )[0][0]
+            sqlo = 'select operon_id,gi,locus_tag,old_locus_tag,COG_number,product from custom_tables.DOOR2_operons_%s t1 ' \
+                    ' left join custom_tables.locus2seqfeature_id_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                    ' where operon_id=%s;' % (biodb, biodb, operon_id)
+            operon = server.adaptor.execute_and_fetchall(sqlo, )
+            operon_locus = [i[2] for i in operon]
+        except IndexError:
+            try:
+                sqlo = 'select C.locus_tag' \
+                        ' from (select operon_id from custom_tables.locus2seqfeature_id_%s t1 ' \
+                        ' inner join custom_tables.ofs_operons_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                        ' where t1.locus_tag="%s") A ' \
+                        ' inner join custom_tables.ofs_operons_%s B on A.operon_id=B.operon_id ' \
+                        ' inner join custom_tables.locus2seqfeature_id_%s C on B.seqfeature_id=C.seqfeature_id' % (biodb,
+                                                                                            biodb,
+                                                                                            target_locus,
+                                                                                            biodb,
+                                                                                            biodb)
+
+
+
+                operon_ofs = server.adaptor.execute_and_fetchall(sqlo, )
+                operon_locus = [i[0] for i in operon_ofs]
+
+            except:
+                operon_locus = []
+                operon_ofs = False
+
+            locus_tags, orthogroup_list = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, 
+                                                                                            db, 
+                                                                                            biodb, 
+                                                                                            [target_locus],
+                                                                                            temp_file.name, 
+                                                                                            int(region_size),
+                                                                                            cache, 
+                                                                                            operon_locus)
+
+
+    current_task.update_state(state='PROGRESS',
+    meta={'current': 2,
+            'total': 3,
+            'percent': 50,
+            'description': "Preparing profile data"})
+    
+    taxon2orthogroup2count_all = ete_motifs.get_taxon2orthogroup2count(biodb, orthogroup_list)
+
+    labels = orthogroup_list
+
+    n_orthogroup = orthogroup_list.index(orthogroup)
+
+    taxon2locus2identity_closest = ete_motifs.get_locus2taxon2identity(biodb, locus_tags)
+
+    locus2taxon = {}
+    for i in locus_tags:
+        locus2taxon[i] = reference_taxid
+
+    # remove potential pseudogenes from the list
+    locus_tags_labels = []
+    for i in locus_tags:
+        if i in locus2taxon.keys():
+            locus_tags_labels.append(i)
+
+    current_task.update_state(state='PROGRESS',
+    meta={'current': 3,
+            'total': 3,
+            'percent': 90,
+            'description': "Plotting profile"})
+
+    tree2, style = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                locus_tags_labels,
+                                                taxon2locus2identity_closest,
+                                                identity_scale=True,
+                                                show_labels=False,
+                                                reference_taxon=locus2taxon)
+
+
+    path = settings.BASE_DIR + '/assets/temp/region.svg'
+    asset_path = '/temp/region.svg'
+    tree2.render(path, dpi=800, h=600, tree_style=style)
+ 
+ 
+    template = Template('''
+            {% load staticfiles %}
+            {% load static %}
+
+
+
+            <div class="row">
+            <h3>Region</h3>
+              <a download="genomic_region.svg" class="btn" href="{% static name %}"><i class="fa fa-download"></i> Download SVG</a>
+              <a onclick='exportPNG("genomic_region", "genomic_region");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+
+                <object width="105%"  type="image/svg+xml" style="margin-left: 10px" data="{% static name %}" id="genomic_region"></object>
+            </div>
+
+            <div class="row">
+              <h3>Conservation profile</h3>
+              <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+              <a onclick='exportPNG("profile", "profile");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+
+                 <object type="image/svg+xml" data="{% static asset_path %}" id="profile"></object>
+                 <!--<object width="98%" height="80%" align="left" style="margin-left: 20px" type="image/svg+xml" data="{% static asset_path %}" id="profile"></object>-->
+            </div>
+
+            ''')
+
+    html = template.render(Context(locals()))
+    return html

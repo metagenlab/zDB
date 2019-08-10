@@ -88,6 +88,7 @@ from chlamdb.tasks import create_random_user_accounts2
 from chlamdb.tasks import run_circos
 from chlamdb.tasks import run_circos_main
 from chlamdb.tasks import extract_orthogroup_task
+from chlamdb.tasks import plot_neighborhood_task
 from chlamdb.celeryapp import app as celery_app
 
 @celery_app.task(bind=True)
@@ -8452,118 +8453,11 @@ def plot_neighborhood(request, target_locus, region_size=23000):
 
     server = manipulate_biosqldb.load_db()
 
-
-    valid_id = True
-
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    sql2 = 'select orthogroup, taxon_id from orthology_detail_%s where locus_tag = "%s"' % (biodb, target_locus)
-
-    reference_orthogroup = server.adaptor.execute_and_fetchall(sql2, )[0]
-    reference_taxid = reference_orthogroup[1]
-
-    if not reference_orthogroup:
-            valid_id = False
-    if valid_id:
-        orthogroup = reference_orthogroup[0]
-        reference_taxon_id = reference_orthogroup[1]
-        if plot_region:
-            operon_locus = []
-            operon_ofs = False
-            temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
-            temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-            name = 'temp/' + os.path.basename(temp_file.name)
-
-            sql10 = 'select operon_id from custom_tables.locus2seqfeature_id_%s t1 ' \
-                    ' inner join custom_tables.DOOR2_operons_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
-                    ' where t1.locus_tag="%s"' % (biodb,
-                                                  biodb,
-                                                  target_locus)
-            try:
-                operon_id = server.adaptor.execute_and_fetchall(sql10, )[0][0]
-                sqlo = 'select operon_id,gi,locus_tag,old_locus_tag,COG_number,product from custom_tables.DOOR2_operons_%s t1 ' \
-                       ' left join custom_tables.locus2seqfeature_id_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-                       ' where operon_id=%s;' % (biodb, biodb, operon_id)
-                operon = server.adaptor.execute_and_fetchall(sqlo, )
-                operon_locus = [i[2] for i in operon]
-            except IndexError:
-                try:
-                    sqlo = 'select C.locus_tag' \
-                           ' from (select operon_id from custom_tables.locus2seqfeature_id_%s t1 ' \
-                           ' inner join custom_tables.ofs_operons_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-                           ' where t1.locus_tag="%s") A ' \
-                           ' inner join custom_tables.ofs_operons_%s B on A.operon_id=B.operon_id ' \
-                           ' inner join custom_tables.locus2seqfeature_id_%s C on B.seqfeature_id=C.seqfeature_id' % (biodb,
-                                                                                              biodb,
-                                                                                              target_locus,
-                                                                                              biodb,
-                                                                                              biodb)
-
-
-
-                    operon_ofs = server.adaptor.execute_and_fetchall(sqlo, )
-                    operon_locus = [i[0] for i in operon_ofs]
-
-                except:
-                    operon_locus = []
-                    operon_ofs = False
-
-            locus_tags, orthogroup_list = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, [target_locus],
-                                                                              temp_file.name, int(region_size),
-                                                                              cache, operon_locus)
-    #print "orthogroup_list", orthogroup_list
-    envoi = True
-    from chlamdb.phylo_tree_display import ete_motifs
-    taxon2orthogroup2count_all = ete_motifs.get_taxon2orthogroup2count(biodb, orthogroup_list)
-
-    labels = orthogroup_list
-
-    n_orthogroup = orthogroup_list.index(orthogroup)
-
-    '''
-    tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all, reference_taxon_id, n_orthogroup)
-
-    big = False
-    path = settings.BASE_DIR + '/assets/temp/cog_tree.svg'
-    asset_path = '/assets/temp/cog_tree.svg'
-
-    tree.render(path, dpi=800, h=600)
-    print asset_path
-    return render(request, 'chlamdb/plot_region_and_profile.html', locals())
-    '''
-    #print 'getting id closest...'
-    taxon2locus2identity_closest = ete_motifs.get_locus2taxon2identity(biodb, locus_tags)
-    #print 'ok'
-
-    #filter = '"'+'","'.join(locus_tags)+'"'
-    #sql = 'select locus_tag, taxon_id from orthology_detail_%s where locus_tag in (%s)' % (biodb, filter)
-
-    locus2taxon = {} #manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    for i in locus_tags:
-        locus2taxon[i] = reference_taxid
-
-    # remove potential pseudogenes from the list
-    locus_tags_labels = []
-    for i in locus_tags:
-        if i in locus2taxon.keys():
-            locus_tags_labels.append(i)
-
-    tree2, style = ete_motifs.multiple_profiles_heatmap(biodb,
-                                                locus_tags_labels,
-                                                taxon2locus2identity_closest,
-                                                identity_scale=True,
-                                                show_labels=False,
-                                                reference_taxon=locus2taxon)
-
-
-    #except:
-    #    tree = ete_motifs.multiple_profiles_heatmap(biodb, labels, merged_dico)
-
-
-
-    path = settings.BASE_DIR + '/assets/temp/cog_tree.svg'
-    asset_path = '/temp/cog_tree.svg'
-    tree2.render(path, dpi=800, h=600, tree_style=style)
+    task = plot_neighborhood_task.delay(biodb, target_locus, region_size)
+    print("task", task)
+    task_id = task.id
+    
+    #time.sleep(5)
     return render(request, 'chlamdb/plot_region_and_profile.html', locals())
 
 def plot_region_generic(biodb, orthogroup, taxon_list, region_size):
