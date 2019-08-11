@@ -2581,7 +2581,26 @@ def locusx(request, locus=None, menu=True):
 
             layout = go.Layout(
                 title='',
- 
+                yaxis=go.layout.YAxis(
+                    title=go.layout.yaxis.Title(
+                        text='Number of occurences',
+                        font=dict(
+                            family='Courier New, monospace',
+                            size=15,
+                            color='#7f7f7f'
+                        )
+                    )
+                ),
+                xaxis=go.layout.XAxis(
+                    title=go.layout.xaxis.Title(
+                        text='Number of TM',
+                        font=dict(
+                            family='Courier New, monospace',
+                            size=15,
+                            color='#7f7f7f'
+                        )
+                    )
+                )
             )
             plot_width = 120 + (max(TM_counts.keys()) ) * 50
             fig = go.Figure(data=plot_data, 
