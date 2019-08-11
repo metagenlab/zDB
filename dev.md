@@ -69,6 +69,7 @@
   - [X] BPBAac
 - [X] load cross-references
 - [ ] load psortdb results
+- [ ] load GOA annotation
 - [ ] load pdb identical hit or best hits (with score). Hown many?
 
 
@@ -101,9 +102,10 @@
 - [X] blast multiple proteins
 - [X] blast link only when blasting locus databases
 - [X] update browse genome view 
-- [ ] add formatdb ffn
-- [ ] add MSA faa to assets
-- [ ] add database all for tblastn
+- [X] add formatdb ffn
+- [X] database all for tblastn
+
+- [ ] 2019_06_PVC: add MSA faa to assets
 - [ ] orthogroup Venn: use consensus annotation
 - [ ] add effector prediction to locus page
 - [ ] download page - bulk download all genome or for specific genomes 
@@ -118,6 +120,11 @@
   - [ ] all alignments
   - [ ] ...
 
+- [ ] improve orthogroup table
+    - [ ] length distribution
+    - [ ] domain organization
+    - [ ] mapping to uniprot (n mapped, n reviewed,...)
+
 - [ ] load synonymous table 
     - [X] from uniprot idmapping
     - [x] RefSeq locus_tag/protein id
@@ -129,6 +136,7 @@
     - [X] plot region ==> celery task
     - [ ] BLAST ==> celery task
     - [X] extract orthogroup ==> celery task
+    - [ ] plot phylogeny
     - [ ] plot orthogroup/COG/KO,... heatmap ==> celery task
 
 - [ ] deal with COG, PFAM,... missing from the database
@@ -138,7 +146,7 @@
 - [ ] add download newick tree on pfam, TM tabs and phylogeny with BBH
 - [ ] add uniprot proteome column (+ percent overlap) to genome table
 - [ ] add explanations for hydropathy plot
-- [ ] improve integration of transporters_family and 
+- [ ] improve integration of transporters_family 
 
 
 ### priority 2
