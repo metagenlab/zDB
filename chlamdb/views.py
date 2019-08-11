@@ -2575,22 +2575,13 @@ def locusx(request, locus=None, menu=True):
             print("TM_counts", TM_counts)
             
             plot_data = [go.Bar(
-                        x= [int(i) for i in TM_counts.keys()], #["%s TM" % i for i in TM_counts.keys()],
-                        y=list(TM_counts.values())
+                        x= ["%s TM" % i for i in range(0, len(TM_counts.keys() ) )], #["%s TM" % i for i in TM_counts.keys()],
+                        y=[TM_counts[i] for i in range(0, len(TM_counts.keys() ) )]
                 )]
 
             layout = go.Layout(
                 title='',
-                yaxis=go.layout.YAxis(
-                    title=go.layout.yaxis.Title(
-                        text='Number of occurences',
-                        font=dict(
-                            family='Courier New, monospace',
-                            size=18,
-                            color='#7f7f7f'
-                        )
-                    )
-                )
+ 
             )
             plot_width = 120 + (max(TM_counts.keys()) ) * 50
             fig = go.Figure(data=plot_data, 

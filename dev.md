@@ -134,10 +134,10 @@
 
 - [ ] switch to celery task
     - [X] plot region ==> celery task
-    - [ ] BLAST ==> celery task
     - [X] extract orthogroup ==> celery task
-    - [ ] plot phylogeny
+    - [X] plot phylogeny
     - [ ] plot orthogroup/COG/KO,... heatmap ==> celery task
+    - [ ] BLAST ==> celery task
 
 - [ ] deal with COG, PFAM,... missing from the database
 - [ ] update to boolean search
