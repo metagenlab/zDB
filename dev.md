@@ -126,16 +126,15 @@
 - [ ] search: single vs multiple matches
 
 - [ ] switch to celery task
-    - [ ] plot region ==> celery task
+    - [X] plot region ==> celery task
     - [ ] BLAST ==> celery task
-    - [ ] extract orthogroup ==> celery task
+    - [X] extract orthogroup ==> celery task
     - [ ] plot orthogroup/COG/KO,... heatmap ==> celery task
 
 - [ ] deal with COG, PFAM,... missing from the database
 - [ ] update to boolean search
 - [ ] check and update module, pathway, fam profile,... size
 
-- [ ] add barplot pan-genome ! ALREADY EXIST FOR ORTHOGROUP (IN A TAB)
 - [ ] add download newick tree on pfam, TM tabs and phylogeny with BBH
 - [ ] add uniprot proteome column (+ percent overlap) to genome table
 - [ ] add explanations for hydropathy plot
