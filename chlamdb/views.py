@@ -2271,6 +2271,40 @@ def locusx(request, locus=None, menu=True):
 
             interpro_hash = server.adaptor.execute_and_fetchall(sql24,)[0][0]
 
+            sql25 = f'select distinct t2.effectors,SVM_value from annotation.seqfeature_id2locus_{biodb} t1' \
+                    f' left join effectors.predicted_BPBAac_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
+            sql26 = f'select distinct effectors from annotation.seqfeature_id2locus_{biodb} t1' \
+                    f' left join effectors.predicted_DeepT3_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
+            sql27 = f'select distinct effectors,probability from annotation.seqfeature_id2locus_{biodb} t1' \
+                    f' left join effectors.predicted_T3MM_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
+            sql28 = f'select distinct t2.effectors,score from annotation.seqfeature_id2locus_{biodb} t1' \
+                    f' left join effectors.predicted_effectiveT3_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
+
+
+            try:
+                BPBAac_data = list(server.adaptor.execute_and_fetchall(sql25,)[0])
+                DeepT3_data = list(server.adaptor.execute_and_fetchall(sql26,)[0])
+                T3MM_data = list(server.adaptor.execute_and_fetchall(sql27,)[0])
+                effectiveT3_data = list(server.adaptor.execute_and_fetchall(sql28,)[0])
+                print("effectors---------", BPBAac_data)
+                effector_sum = 0
+                if BPBAac_data[0] == 1:
+                    effectors = True
+                    effector_sum+=1
+                if DeepT3_data[0] == 1:
+                    effectors= True
+                    effector_sum+=1
+                if T3MM_data[0] == 1:
+                    effectors = True
+                    effector_sum+=1
+                if effectiveT3_data[0] == 1:
+                    effectors = True 
+                    effector_sum+=1
+                print("effector:", effectors)               
+            except:
+                print("NO EFFECTORS")
+                effector_sum = 0
+                effectors = False
             try:
                 pubmed_data = server.adaptor.execute_and_fetchall(sql23,)
             except:
@@ -2552,7 +2586,12 @@ def locusx(request, locus=None, menu=True):
                          ' inner join enzyme.ko_annotation t3 on t1.ko_id=t3.ko_id where t2.orthogroup_name="%s";' % (biodb, 
                                                                                                                     biodb, 
                                                                                                                     locus)
-            sql_group5 = ''
+            sql_group5 = f'select distinct t1.seqfeature_id,start,stop,signature_accession,signature_description from interpro.interpro_{biodb} t1 ' \
+                         f' inner join interpro.signature t2 on t1.signature_id=t2.signature_id ' \
+                         f' inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id ' \
+                         f' inner join orthology.seqfeature_id2orthogroup_{biodb} t4 on t1.seqfeature_id=t4.seqfeature_id ' \
+                         f' inner join orthology.orthogroup_{biodb} t5 on t4.orthogroup_id=t5.orthogroup_id ' \
+                         f' where t5.orthogroup_name="{locus}" and analysis_name="Pfam" order by start;'
             sql_group6 = ''
         
             # protein length distribution
@@ -2567,7 +2606,30 @@ def locusx(request, locus=None, menu=True):
             product_annotations = server.adaptor.execute_and_fetchall(sql_group2,)
             COG_annotations = server.adaptor.execute_and_fetchall(sql_group3,)
             KO_annotations = server.adaptor.execute_and_fetchall(sql_group4,)
+            pfam_annotations = server.adaptor.execute_and_fetchall(sql_group5,)
+            import seaborn as sns
             
+            if len(pfam_annotations) > 0:
+                domain_list = []
+                domain2description = {}
+                seqfeature_id2pfam_domains = {}
+                for row in pfam_annotations:
+                    if row[3] not in domain_list:
+                        domain_list.append(row[3])
+                        domain2description[row[3]] = row[4]
+                    if row[0] not in seqfeature_id2pfam_domains:
+                        seqfeature_id2pfam_domains[row[0]] = [row[3]]
+                    else:
+                        seqfeature_id2pfam_domains[row[0]].append(row[3])
+                domain2color = {}
+                color_list = sns.color_palette("hls", len(domain_list)).as_hex()
+                for n, domain in enumerate(domain_list):
+                    domain2color[domain]=color_list[n]
+                l = list(tuple(i) for i in seqfeature_id2pfam_domains.values())
+                s = set(l)
+                topo2count = dict([(x,l.count(x)) for x in set(l)])
+                longest_topo = len(max(list(topo2count.keys()), key=len))
+
             import plotly.graph_objects as go
             from collections import Counter
             

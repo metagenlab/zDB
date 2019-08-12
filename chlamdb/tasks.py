@@ -1194,7 +1194,7 @@ def phylogeny_task(biodb,
                               meta={'current': 1,
                                     'total': 1,
                                     'percent': 50,
-                                    'description': "Plotting TM tree"})
+                                    'description': "Plotting phylogenetic tree"})
 
 
     from chlamdb.biosqldb import manipulate_biosqldb

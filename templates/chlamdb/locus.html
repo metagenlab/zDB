@@ -275,6 +275,80 @@ function clearBox(elementID)
                              </div>
                            </div>
 
+
+                           
+
+
+                            <div class="row">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">T3SS effectors prediction: {{effector_sum}}/4</h3>
+                                </div>
+                                {% if effectors %}
+                                <div class="panel-body">
+                                  
+                                      <table class="table table-striped" style="width: 100%">
+
+                                        <thead>
+                                        <tr>
+                                          <th>Predictor</th>
+                                          <th>Score</th>
+                                          <th>Effector</th>
+                                        </tr>
+
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                              <td>Effective T3</td>
+                                              {% if effectiveT3_data.0 == 1 %}
+                                                <td>{{effectiveT3_data.1}}</td>
+                                                <td>YES</td>
+                                              {% else %}
+                                                <td>-</td>  
+                                                <td>NO</td>
+                                              {% endif %}
+                                          </tr>
+                                          <tr>
+                                              <td>DeepT3</td>
+                                              {% if DeepT3_data.0 == 1 %}
+                                                <td>-</td>
+                                                <td>YES</td>
+                                              {% else %}
+                                                <td>-</td>  
+                                                <td>NO</td>
+                                              {% endif %}
+                                          </tr>
+                                          <tr>
+                                              <td>BPBAac</td>
+                                              {% if BPBAac_data.0 == 1 %}
+                                                <td>{{BPBAac_data.1}}</td>
+                                                <td>YES</td>
+                                              {% else %}
+                                                <td>-</td>  
+                                                <td>NO</td>
+                                              {% endif %}
+                                          </tr>
+                                          <tr>
+                                              <td>T3MM</td>
+                                              {% if T3MM_data.0 == 1 %}
+                                                <td>{{T3MM_data.1}}</td>
+                                                <td>YES</td>
+                                              {% else %}
+                                                <td>-</td>   
+                                                <td>NO</td>
+                                              {% endif %}
+                                          </tr>
+                                        </tbody>  
+
+                                      </table>
+                                  
+                                </div>
+                               {% endif %} 
+                              </div>
+                            </div>
+
+                           
+
                             {% if protparams_data %}
 
 
@@ -1195,6 +1269,45 @@ function clearBox(elementID)
                                   </div>
                                 </div>
                               {% endif %}
+
+                              <div class="row">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">Pfam domains organization</h3>
+                                    </div>
+                                        
+                                          <div>
+                                          <table class="table" id="domains_table">
+                                              <thead>
+                                              <tr>
+                                                  <th>Occurence</th>
+                                                  <th>Topology</th>
+                                              </tr>
+                                              </thead>
+                                              <tbody>
+                                                  {% for key, value in topo2count.items %}
+                                                      <tr>
+                                                          <td>{{value}}</td>
+                                                          <td> 
+                                                              {% for domain in key %}
+                                                               --<a title="{{ domain2description|keyvalue:domain }}" type="button" href="{% url 'fam' domain 'pfam' %}" class="pfam_domain" style="background-color:{{ domain2color|keyvalue:domain }};">{{domain}}</a>--
+                                                              {% endfor %}
+                                                          </td>
+                                                      </tr>
+                                                  {% endfor %}
+                                              </tbody>
+                                          </table>
+
+                                            
+
+                                            
+                                          </div>
+                                        
+                                </div>
+                              </div>
+
+
+
                               <div class="row">
                                 <div class="panel panel-default">
                                     <div class="panel-heading">
@@ -1416,6 +1529,17 @@ function clearBox(elementID)
 
 <script>
 
+
+$(document).ready(function() {
+    $('#domains_table').DataTable( {
+        dom: 't',
+        "order": [[ 0, "desc" ]],
+        "pageLength": 200
+    } );
+} );
+
+
+
 $(document).ready(function() {
     $('#homologues_table').DataTable( {
         dom: 'Bfrtip',
@@ -1566,6 +1690,19 @@ mark{
     background: orange;
     color: black;
 }
+
+.pfam_domain {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
 </style>
 
 
@@ -1576,3 +1713,17 @@ mark{
 {% include "chlamdb/style_menu.html" %}
 
 </html>
+<style>
+.pfam_domain {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 8px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+</style>
