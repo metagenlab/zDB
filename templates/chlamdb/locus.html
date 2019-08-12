@@ -1339,6 +1339,40 @@ function clearBox(elementID)
                               </div>
 
 
+                              {% if length_distrib %}
+                                  <div class="row">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                          <h3 class="panel-title">Protein length</h3>
+                                        </div>
+                                          <table class="table" id="length" style="width:300px">
+                                              <tbody>
+                                                <tr>
+                                                    <th>Min length</th>
+                                                    <td>{{min_protein_length}}</td>
+                                                </tr>
+                                                 <tr>
+                                                    <th>Max length</th>
+                                                    <td>{{max_protein_length}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Mean length (sd)</th>
+                                                    <td>{{mean_protein_length}} ({{std_protein_length}})</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Median length</th>
+                                                    <td>{{median_protein_length}}</td>
+                                                </tr>
+                                              </tbody>
+                                          </table>
+                                          <h3>Distribution</h3>
+                                              <div style="width:80%">
+                                                {{html_plot_prot_length|safe}}
+                                              </div>
+                                            
+                                    </div>
+                                  </div>
+                              {% endif %}
 
                           </div>
                       </div>

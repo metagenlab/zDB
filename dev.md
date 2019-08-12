@@ -70,8 +70,7 @@
 - [X] load cross-references
 - [ ] load psortdb results
 - [ ] load GOA annotation
-- [ ] load pdb identical hit or best hits (with score). Hown many?
-
+- [ ] load pdb identical hit or best hits (with score). How many?
 
 
 ## priority 2
@@ -104,10 +103,20 @@
 - [X] update browse genome view 
 - [X] add formatdb ffn
 - [X] database all for tblastn
+- [X] add effector prediction to locus page
+- [ ] switch to celery task
+    - [X] plot region ==> celery task
+    - [X] extract orthogroup ==> celery task
+    - [X] plot phylogeny
+    - [X] plot orthogroup/COG/KO,... heatmap ==> celery task
+    - [ ] BLAST ==> celery task
+- [ ] load synonymous table 
+    - [X] from uniprot idmapping
+    - [x] RefSeq locus_tag/protein id
+    - [ ] uniparc cross references
 
 - [ ] 2019_06_PVC: add MSA faa to assets
 
-- [ ] add effector prediction to locus page
 - [ ] download page - bulk download all genome or for specific genomes 
   - [ ] KO annotation 
   - [ ] COG annotation 
@@ -122,26 +131,14 @@
 
 - [ ] improve orthogroup table
     - [ ] length distribution
-    - [ ] domain organization
+    - [X] domain organization
     - [ ] mapping to uniprot (n mapped, n reviewed,...)
-
-- [ ] load synonymous table 
-    - [X] from uniprot idmapping
-    - [x] RefSeq locus_tag/protein id
-    - [ ] uniparc cross references
   
-- [ ] search: single vs multiple matches
-
-- [ ] switch to celery task
-    - [X] plot region ==> celery task
-    - [X] extract orthogroup ==> celery task
-    - [X] plot phylogeny
-    - [ ] plot orthogroup/COG/KO,... heatmap ==> celery task
-    - [ ] BLAST ==> celery task
+- [ ] update search using synonymous table single vs multiple matches
 
 - [ ] deal with COG, PFAM,... missing from the database
 - [ ] update to boolean search
-- [ ] check and update module, pathway, fam profile,... size
+- [ ] check and update module, pathway, fam profile,... profile figure size
 
 - [ ] add download newick tree on pfam, TM tabs and phylogeny with BBH
 - [ ] add uniprot proteome column (+ percent overlap) to genome table

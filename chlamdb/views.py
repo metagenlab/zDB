@@ -13,6 +13,7 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 import chlamdb.plots
 import seaborn as sns
+import numpy 
 # from django.core.cache import cache
 #import pylibmc
 #from django.core.cache import cache
@@ -2594,7 +2595,7 @@ def locusx(request, locus=None, menu=True):
                          f' inner join orthology.orthogroup_{biodb} t5 on t4.orthogroup_id=t5.orthogroup_id ' \
                          f' where t5.orthogroup_name="{locus}" and analysis_name="Pfam" order by start;'
             
-            sql_group6 = f'select char_length(translation) as len from orthology_detail_{biodb} where orthogroup={locus}'
+            sql_group6 = f'select char_length(translation) as len from orthology_detail_{biodb} where orthogroup="{locus}"'
         
             # protein length distribution
             sql_group7 = ''
@@ -2610,7 +2611,7 @@ def locusx(request, locus=None, menu=True):
             
             KO_annotations = [list(i) for i in server.adaptor.execute_and_fetchall(sql_group4,)]
             pfam_annotations = server.adaptor.execute_and_fetchall(sql_group5,)
-            
+            protein_lengths = [int(i[0]) for i in server.adaptor.execute_and_fetchall(sql_group6,)]
 
             for row in KO_annotations:
                 row[6] = row[6].replace("ko", "map")
@@ -2640,6 +2641,20 @@ def locusx(request, locus=None, menu=True):
 
             import plotly.graph_objects as go
             from collections import Counter
+            import plotly.figure_factory as ff
+            
+            if len(protein_lengths) >2:
+                length_distrib = True
+                mean_protein_length = round(numpy.mean(protein_lengths),2)
+                std_protein_length = round(numpy.std(protein_lengths),2)
+                min_protein_length = min(protein_lengths)
+                max_protein_length = max(protein_lengths)
+                median_protein_length = round(numpy.median(protein_lengths),2)
+                fig1 = ff.create_distplot([protein_lengths], ["sequence length"], bin_size=20)
+                fig1.update_xaxes(range=[0, max(protein_lengths)])
+                html_plot_prot_length = manipulate_biosqldb.make_div(fig1, div_id="distplot")
+            else:
+                length_distrib = False
             
             sql = 'select TM from biosqldb.orthology_detail_%s where orthogroup="%s";' % (biodb, locus)
             TM_counts = Counter([int(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)])
