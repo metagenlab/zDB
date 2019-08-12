@@ -87,7 +87,7 @@
                 </div>
 
 
-                <form action="{% url "plot_heatmap" type %}" method="post">
+                <form action="{% url "plot_heatmap" type %}" method="post" id="heatmap-form">
 
                     <div class="form-inline">
                         <div class="form-group">
@@ -109,11 +109,18 @@
 
             </div>
 
-           {% if envoi %}
 
-              <img type="image/svg+xml" src="{% static asset_path %}" alt="heatmap" style="width:90%;">
+                <div class="row" style="padding-left:40px">
+                    <div id="progress-div" class="row" style="padding-top:5px;height:25px;" class="row"></div>
 
-           {% endif %}
+                    <div class="progress row" style="width=50%;" id="progress">
+                        <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 20%"></div>
+                    </div>
+
+                    <div id="results" class="row"></div>
+                <div class="row">
+
+              
 
          </div>
        </div>
@@ -127,21 +134,56 @@
 
 -->
 
+
+</body>
+{% include "chlamdb/style_menu.html" %}
+</html>
+
 <script>
-    $(document).ready(function() {
-        /* no plasmids by default */
-        var y=document.getElementById("id_targets");
-        for (var i = 0; i < y.options.length; i++) {
-            if (y.options[i].text.includes('plasmid')) {
-                $("#id_targets").children("option[value^=" + y.options[i].value + "]").hide();
-            } else {
-                $("#id_targets").children("option[value^=" + y.options[i].value + "]").show()
-            }
+$(document).ready(function() {
+    console.log("hiding plasmids");
+    /* no plasmids by default */
+    var y=document.getElementById("id_targets");
+    for (var i = 0; i < y.options.length; i++) {
+        if (y.options[i].text.includes('plasmid')) {
+            $("#id_targets").children("option[value^=" + y.options[i].value + "]").hide();
+        } else {
+            $("#id_targets").children("option[value^=" + y.options[i].value + "]").show()
         }
+    }
+
+    $("#progress").hide();
+    console.log("hiding progress bar");
+    var frm = $('#heatmap-form');
+    var prg_dv = $('#progress-div');
+    var pgrbar = $('.progress-bar');
+    frm.submit(function () {
+        console.log("submit!");
+        $.ajax({
+            type: frm.attr('method'),
+            url: frm.attr('action'),
+            data: frm.serialize(),
+            success: function (data) {
+                console.log("success");
+                console.log(data.task_id);
+                if (data.task_id != null) {
+                    get_task_info(data.task_id);
+                }
+            },
+            error: function (data) {
+                console.log("Something went wrong!");
+            }
+        });
+        return false;
+    });
+
+
     $("#id_checkbox_accessions").change(function() {
+            console.log("change plasmid!");
             var x = document.getElementById("id_targets");
             for (var i = 0; i < x.options.length; i++) {
-
+                console.log(i);
+                console.log(y.options[i].text);
                 if (y.options[i].text.includes('plasmid')) {
                     if (document.getElementById('id_checkbox_accessions').checked) {
                         $("#id_targets").children("option[value^=" + y.options[i].value + "]").show()
@@ -152,15 +194,46 @@
                     $("#id_targets").children("option[value^=" + y.options[i].value + "]").show()
                 }
             }
+            $('.selectpicker').selectpicker('refresh');
     })
 
-    })
 
+    function get_task_info(task_id) {
+        $.ajax({
+            type: 'get',
+            url: '/get-task-info/',
+            data: {'task_id': task_id},
+            success: function (data) {
+                console.log("task id");
+                pgrbar.css('width', 10+'%').attr('aria-valuenow', 10)
+                $("#progress").show();
+                $('#results').html('')
+                if (data.state == 'PENDING') {
+                    prg_dv.html('Please wait...');
+                }
+                else if (data.state == 'PROGRESS') {
+                    pgrbar.css('width', data.result.percent+'%').attr('aria-valuenow', data.result.percent)
+                    console.log(data.result.percent);
+                    prg_dv.html('Step ' + data.result.current + '/' + data.result.total + ': ' + data.result.description);
+                }
+                else if (data.state == 'SUCCESS') {
+                    // pgrbar.hide();
+                    prg_dv.html('');
+                    $('#results').html(data.result);
+                    $("#progress").hide();
+                }
 
+                if (data.state != 'SUCCESS') {
+                    setTimeout(function () {
+                        get_task_info(task_id)
+                    }, 1000);
+                }
+            },
+            error: function (data) {
+                prg_dv.html("Something went wrong!");
+            }
+        });
+    }
+
+})
 </script>
-
-<p id="jqtest"></p>
-
-</body>
-{% include "chlamdb/style_menu.html" %}
-</html>

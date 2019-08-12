@@ -1238,3 +1238,100 @@ def phylogeny_task(biodb,
 
     html = template.render(Context(locals()))
     return html
+
+
+@shared_task
+def plot_heatmap_task(biodb,
+                      targets, 
+                      accessions,
+                      type):
+
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.biosqldb import biosql_own_sql_tables
+    from chlamdb.plots import heatmap
+    import numpy as np
+    import time
+        
+    server, db = manipulate_biosqldb.load_db(biodb)
+    
+    current_task.update_state(state='PROGRESS',
+                              meta={'current': 1,
+                                    'total': 2,
+                                    'percent': 50,
+                                    'description': "Get data"})
+
+    # particularity of orthology table
+    if type == 'orthology':
+        col_id = 'orthogroup'
+    else:
+        col_id = 'id'
+
+    if not accessions:
+        # get sub matrix and complete matrix
+        taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
+        mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
+                                                                    type,
+                                                                    col_id,
+                                                                    targets,
+                                                                    [],
+                                                                    ratio=1/float(len(targets)),
+                                                                    single_copy=False,
+                                                                    accessions=accessions,
+                                                                        cache=cache)
+        taxon_list = [i.split("_")[1] for i in list(mat.columns.values)]
+        labels = [taxon2description[i] for i in taxon_list]
+        print(labels)
+    else:
+        accession2description = manipulate_biosqldb.accession2description(server,biodb)
+        mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
+                                                                    type,
+                                                                    'id',
+                                                                    targets,
+                                                                    [],
+                                                                    ratio=1/float(len(targets)),
+                                                                    single_copy=False,
+                                                                    accessions=accessions,
+                                                                        cache=cache)
+        accession_list = list(mat.columns.values)
+        labels = [accession2description[i] for i in accession_list]
+
+    m = np.array(mat.transpose())
+    m = m.astype(float)
+    collabels = [""]*len(m[1,:])
+    for i in range(0,len(m[1,:]), 100):
+        collabels[i] = i
+
+    path = settings.BASE_DIR + '/assets/temp/heatmap_%s.png' % type
+    asset_path = '/temp/heatmap_%s.png' % type
+
+    current_task.update_state(state='PROGRESS',
+                              meta={'current': 2,
+                                    'total': 2,
+                                    'percent': 75,
+                                    'description': "Plotting"})
+
+    heatmap.heatmap_pangenome(m,
+                                output=path,
+                    breaks="-0.5, 0.5, 1.5, 2.5",
+                    rows=labels,
+                    format="png",
+                    orderCols=True)
+
+    named_tuple = time.localtime()
+    timestamp = time.strftime("%H%M%S", named_tuple)
+    
+    template = Template('''
+            {% load staticfiles %}
+            {% load static %}
+            {% if not no_tree %}
+            <h3>Heatmap</h3>
+            <div id="heatmap">
+                <img type="image/svg+xml" src="{% static asset_path %}?{{timestamp}}" alt="heatmap" style="width:90%;">
+            </div>
+            {% else %}
+            No tree for {{orthogroup}}
+            {% endif %}
+            ''')
+
+    html = template.render(Context(locals()))
+    return html

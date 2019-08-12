@@ -92,6 +92,7 @@ from chlamdb.tasks import plot_neighborhood_task
 from chlamdb.tasks import TM_tree_task
 from chlamdb.tasks import pfam_tree_task
 from chlamdb.tasks import phylogeny_task
+from chlamdb.tasks import plot_heatmap_task
 from chlamdb.celeryapp import app as celery_app
 
 @celery_app.task(bind=True)
@@ -12051,9 +12052,6 @@ def interactions(request, locus_tag):
 
 def plot_heatmap(request, type):
     biodb = settings.BIODB
-    from chlamdb.biosqldb import biosql_own_sql_tables
-    from chlamdb.plots import heatmap
-    import numpy as np
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -12063,7 +12061,7 @@ def plot_heatmap(request, type):
 
         form_venn = form_class(request.POST)
 
-        if 'venn' in request.POST and form_venn.is_valid():
+        if form_venn.is_valid():
             targets = form_venn.cleaned_data['targets']
 
             try:
@@ -12073,57 +12071,15 @@ def plot_heatmap(request, type):
                 accessions = False
                 accession2taxon = manipulate_biosqldb.accession2taxon_id(server, biodb)
                 targets = [str(accession2taxon[i]) for i in targets]
-            # oarticularity of orthology table
-            if type == 'orthology':
-                col_id = 'orthogroup'
-            else:
-                col_id = 'id'
-
-            if not accessions:
-                # get sub matrix and complete matrix
-                taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
-                mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                          type,
-                                                                          col_id,
-                                                                          targets,
-                                                                          [],
-                                                                          ratio=1/float(len(targets)),
-                                                                          single_copy=False,
-                                                                          accessions=accessions,
-                                                                              cache=cache)
-                taxon_list = [i.split("_")[1] for i in list(mat.columns.values)]
-                labels = [taxon2description[i] for i in taxon_list]
-                print(labels)
-            else:
-                accession2description = manipulate_biosqldb.accession2description(server,biodb)
-                mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                          type,
-                                                                          'id',
-                                                                          targets,
-                                                                          [],
-                                                                          ratio=1/float(len(targets)),
-                                                                          single_copy=False,
-                                                                          accessions=accessions,
-                                                                              cache=cache)
-                accession_list = list(mat.columns.values)
-                labels = [accession2description[i] for i in accession_list]
-
-            m = np.array(mat.transpose())
-            m = m.astype(float)
-            collabels = [""]*len(m[1,:])
-            for i in range(0,len(m[1,:]), 100):
-                collabels[i] = i
-
-            path = settings.BASE_DIR + '/assets/temp/heatmap_%s.png' % type
-            asset_path = '/temp/heatmap_%s.png' % type
-
-            heatmap.heatmap_pangenome(m,
-                                      output=path,
-                            breaks="-0.5, 0.5, 1.5, 2.5",
-                            rows=labels,
-                            format="png",
-                            orderCols=True)
-            envoi = True
+            
+            task = plot_heatmap_task.delay(biodb,
+                                targets, 
+                                accessions,
+                                type)
+            task_id = task.id
+            return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
+        else:
+            return HttpResponse(json.dumps({'task_id': None}), content_type='application/json')
 
     else:
         form_venn = form_class()

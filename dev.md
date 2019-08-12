@@ -106,7 +106,7 @@
 - [X] database all for tblastn
 
 - [ ] 2019_06_PVC: add MSA faa to assets
-- [ ] orthogroup Venn: use consensus annotation
+
 - [ ] add effector prediction to locus page
 - [ ] download page - bulk download all genome or for specific genomes 
   - [ ] KO annotation 
@@ -147,7 +147,7 @@
 - [ ] add uniprot proteome column (+ percent overlap) to genome table
 - [ ] add explanations for hydropathy plot
 - [ ] improve integration of transporters_family 
-
+- [ ] orthogroup Venn: use consensus annotation
 
 ### priority 2
 
