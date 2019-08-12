@@ -12,6 +12,7 @@ from django.shortcuts import render
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 import chlamdb.plots
+import seaborn as sns
 # from django.core.cache import cache
 #import pylibmc
 #from django.core.cache import cache
@@ -2592,7 +2593,8 @@ def locusx(request, locus=None, menu=True):
                          f' inner join orthology.seqfeature_id2orthogroup_{biodb} t4 on t1.seqfeature_id=t4.seqfeature_id ' \
                          f' inner join orthology.orthogroup_{biodb} t5 on t4.orthogroup_id=t5.orthogroup_id ' \
                          f' where t5.orthogroup_name="{locus}" and analysis_name="Pfam" order by start;'
-            sql_group6 = ''
+            
+            sql_group6 = f'select char_length(translation) as len from orthology_detail_{biodb} where orthogroup={locus}'
         
             # protein length distribution
             sql_group7 = ''
@@ -2605,9 +2607,15 @@ def locusx(request, locus=None, menu=True):
             gene_annotations = server.adaptor.execute_and_fetchall(sql_group1,)
             product_annotations = server.adaptor.execute_and_fetchall(sql_group2,)
             COG_annotations = server.adaptor.execute_and_fetchall(sql_group3,)
-            KO_annotations = server.adaptor.execute_and_fetchall(sql_group4,)
+            
+            KO_annotations = [list(i) for i in server.adaptor.execute_and_fetchall(sql_group4,)]
             pfam_annotations = server.adaptor.execute_and_fetchall(sql_group5,)
-            import seaborn as sns
+            
+
+            for row in KO_annotations:
+                row[6] = row[6].replace("ko", "map")
+                row[6] = row[6].split(",")
+                row[7] = row[7].split(",")     
             
             if len(pfam_annotations) > 0:
                 domain_list = []
