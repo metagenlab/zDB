@@ -2598,7 +2598,11 @@ def locusx(request, locus=None, menu=True):
             sql_group6 = f'select char_length(translation) as len from orthology_detail_{biodb} where orthogroup="{locus}"'
         
             # protein length distribution
-            sql_group7 = ''
+            sql_group7 = f'select uniprot_accession,uniprot_status,annotation_score,gene,recommendedName_fullName from orthology.orthogroup_{biodb} t1 ' \
+                         f' inner join orthology.seqfeature_id2orthogroup_{biodb} t2 on t1.orthogroup_id=t2.orthogroup_id ' \
+                         f' left join custom_tables.uniprot_id2seqfeature_id_{biodb} t3 on t2.seqfeature_id=t3.seqfeature_id ' \
+                         f' left join custom_tables.uniprot_annotation_{biodb} t4 on t2.seqfeature_id=t4.seqfeature_id ' \
+                         f' where orthogroup_name="{locus}";'
             
             # TM domains 
             
@@ -2612,6 +2616,13 @@ def locusx(request, locus=None, menu=True):
             KO_annotations = [list(i) for i in server.adaptor.execute_and_fetchall(sql_group4,)]
             pfam_annotations = server.adaptor.execute_and_fetchall(sql_group5,)
             protein_lengths = [int(i[0]) for i in server.adaptor.execute_and_fetchall(sql_group6,)]
+            uniprot_annotations = server.adaptor.execute_and_fetchall(sql_group7,)
+            print(uniprot_annotations)
+            unreviewed = len([i for i in uniprot_annotations if i[1] == "unreviewed"])
+            reviewed = [i for i in uniprot_annotations if i[1] == "reviewed"]
+            mapped = unreviewed + len(reviewed)
+            unmapped = len([i for i in uniprot_annotations if i[1] == None])
+            print("unreviewed", unreviewed, reviewed, unmapped)
 
             for row in KO_annotations:
                 row[6] = row[6].replace("ko", "map")
@@ -2652,6 +2663,12 @@ def locusx(request, locus=None, menu=True):
                 median_protein_length = round(numpy.median(protein_lengths),2)
                 fig1 = ff.create_distplot([protein_lengths], ["sequence length"], bin_size=20)
                 fig1.update_xaxes(range=[0, max(protein_lengths)])
+                fig1.layout.margin.update({"l": 80,
+                "r": 20,
+                "b": 40,
+                "t": 20,
+                "pad": 10,
+                })
                 html_plot_prot_length = manipulate_biosqldb.make_div(fig1, div_id="distplot")
             else:
                 length_distrib = False

@@ -1161,6 +1161,59 @@ function clearBox(elementID)
                             </div>
 
 
+
+                            <div class="row">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">UniProtKB annotation</h3>
+                                </div>
+                                    <table class="table table-striped" style="width: 100%">
+                                        <thead>
+                                          <tr>
+                                              <th></th>
+                                              <th>Mapped</th>
+                                              <th>Unmapped</th>
+                                          </tr>
+                                        </thead>
+                                        </tbody>
+                                              <tr>
+                                                <td></td>
+                                                <td>{{mapped}}</td>
+                                                <td>{{unmapped}}</td>  
+                                              </tr>
+                                        </tbody>
+                                    </table>
+
+
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">{{reviewed|length}} reviewed SwissProt entries</h3>
+                                </div>
+                                {% if reviewed|length != 0 %}
+                                    <table class="table table-striped" style="width: 100%">
+                                        <thead>
+                                            <tr>
+                                                <th>UniProt accession</th>
+                                                <th>Annotation score</th>
+                                                <th>Gene</th>
+                                                <th>Full Name</th>
+                                            </tr>
+                                        </thead>
+                                        </tbody>
+                                        {% for swissprot in reviewed %}
+                                              <tr>
+                                                  <td><a href="https://www.uniprot.org/uniprot/{{swissprot.0}}">{{swissprot.0}}</a></td>
+                                                  <td>{{swissprot.2}}</td>
+                                                  <td>{{swissprot.3}}</td>  
+                                                  <td>{{swissprot.4}}</td>   
+                                              </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% endif %}
+                              </div>
+                            </div>
+
+
                             <div class="row">
                               <div class="panel panel-default">
                                 <div class="panel-heading">
@@ -1365,7 +1418,9 @@ function clearBox(elementID)
                                                 </tr>
                                               </tbody>
                                           </table>
-                                          <h3>Distribution</h3>
+                                        <div class="panel-heading">
+                                          <h3 class="panel-title">Protein length distribution</h3>
+                                        </div>
                                               <div style="width:80%">
                                                 {{html_plot_prot_length|safe}}
                                               </div>
