@@ -119,7 +119,7 @@
     - [X] domain organization
     - [X] mapping to uniprot (n mapped, n reviewed,...)
 
-- [ ] 2019_06_PVC: add MSA faa to assets
+- [X] 2019_06_PVC: add MSA faa to assets
 
 - [ ] download page - bulk download all genome or for specific genomes 
   - [ ] KO annotation 
@@ -134,9 +134,10 @@
   - [ ] ...
   
 - [ ] update search using synonymous table single vs multiple matches
+- [ ] update to boolean search
+
 
 - [ ] deal with COG, PFAM,... missing from the database
-- [ ] update to boolean search
 - [ ] check and update module, pathway, fam profile,... profile figure size
 
 - [ ] add download newick tree on pfam, TM tabs and phylogeny with BBH
@@ -144,6 +145,7 @@
 - [ ] add explanations for hydropathy plot
 - [ ] improve integration of transporters_family 
 - [ ] orthogroup Venn: use consensus annotation
+
 
 ### priority 2
 
