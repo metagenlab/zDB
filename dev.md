@@ -68,10 +68,13 @@
   - [X] effective
   - [X] BPBAac
 - [X] load cross-references
-- [ ] load psortdb results
+- [X] load psortdb results
+- [X] load pdb best hits (with score)
+- [ ] load synonymous table 
+    - [X] from uniprot idmapping
+    - [x] RefSeq locus_tag/protein id
+    - [ ] uniparc cross references
 - [ ] load GOA annotation
-- [ ] load pdb identical hit or best hits (with score). How many?
-
 
 ## priority 2
 
@@ -110,10 +113,11 @@
     - [X] plot phylogeny
     - [X] plot orthogroup/COG/KO,... heatmap ==> celery task
     - [ ] BLAST ==> celery task
-- [ ] load synonymous table 
-    - [X] from uniprot idmapping
-    - [x] RefSeq locus_tag/protein id
-    - [ ] uniparc cross references
+
+- [X] improve orthogroup table
+    - [X] length distribution
+    - [X] domain organization
+    - [X] mapping to uniprot (n mapped, n reviewed,...)
 
 - [ ] 2019_06_PVC: add MSA faa to assets
 
@@ -128,11 +132,6 @@
   - [ ] orthology table 
   - [ ] all alignments
   - [ ] ...
-
-- [ ] improve orthogroup table
-    - [ ] length distribution
-    - [X] domain organization
-    - [ ] mapping to uniprot (n mapped, n reviewed,...)
   
 - [ ] update search using synonymous table single vs multiple matches
 
