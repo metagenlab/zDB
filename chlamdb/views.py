@@ -8647,6 +8647,7 @@ def plot_region(request):
         #form2 = ContactForm(request.POST)
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
             valid_id = True
+            import re
 
             accession = extract_alphanumeric(form.cleaned_data['accession'])
 
