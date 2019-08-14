@@ -54,11 +54,13 @@ def unirpot_crossrefs(biodatabase,
     sql3 = f'select locus_tag,seqfeature_id from annotation.seqfeature_id2locus_{biodatabase};'
     sql4 = f'select seqfeature_id,protein_id from annotation.seqfeature_id2CDS_annotation_{biodatabase}'
     sql5 = f'select protein_id, seqfeature_id from annotation.seqfeature_id2CDS_annotation_{biodatabase}'
+    sql6 = f'select accession, db_name from biosqldb.cross_references_{biodatabase} where db_name in ("RefSeq","RefSeq locus_tag")'
 
     seqfeature_id2uniprot_accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3))
     seqfeature_id2protein_accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql4))
     protein_accession2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql5))
+    refseq_accession2db = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql6))
 
     # store protein accession without version into dict as well
     protein_accession_no_version2seqfeature_id = {}
@@ -116,6 +118,10 @@ def unirpot_crossrefs(biodatabase,
                     continue
                 # skip if the accession is the same as Genbank
                 if db_acc == prot:
+                    continue
+                # skip if already attributed using RefSeq data
+                # skip
+                if db_acc in refseq_accession2db:
                     continue
 
                 sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "{db_name}", "{db_acc}")'
