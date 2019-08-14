@@ -94,7 +94,7 @@ def unirpot_crossrefs(biodatabase,
                 if db_acc == prot:
                     continue
                 # skip because not accurate mapping with exact match
-                if db_name == 'Gene_ORFName':
+                if db_name in ['Gene_ORFName', 'Gene_OrderedLocusName']:
                     continue
                 # skip if one accession is the locus_tag
                 if db_acc == locus:
