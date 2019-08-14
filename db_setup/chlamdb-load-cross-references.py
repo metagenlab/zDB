@@ -53,10 +53,12 @@ def unirpot_crossrefs(biodatabase,
     sql2 = f'select seqfeature_id,uniprot_accession from custom_tables.uniprot_id2seqfeature_id_{biodatabase};'
     sql3 = f'select locus_tag,seqfeature_id from annotation.seqfeature_id2locus_{biodatabase};'
     sql4 = f'select seqfeature_id,protein_id from annotation.seqfeature_id2CDS_annotation_{biodatabase}'
+    sql5 = f'select protein_id, seqfeature_id from annotation.seqfeature_id2CDS_annotation_{biodatabase}'
 
     seqfeature_id2uniprot_accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3))
     seqfeature_id2protein_accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql4))
+    protein_accession2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql5))
 
     # parse crossrefs table
     uniprot_accession2crosserfs = parse_idmapping_crossrefs(uniprot_crossrefs_table)
@@ -96,9 +98,10 @@ def unirpot_crossrefs(biodatabase,
                 db_acc = uniprot_crossref[1]
 
                 # if match to any of the locus tag or protein accession the db (primary key), skip
-                if db_acc in locus_tag2seqfeature_id or db_acc in seqfeature_id2protein_accession.values():
+                if db_acc in locus_tag2seqfeature_id:
                     continue
-                
+                if db_acc in protein_accession2seqfeature_id:
+                    continue
                 # skip if the accession is the same as Genbank
                 if db_acc == prot:
                     continue
