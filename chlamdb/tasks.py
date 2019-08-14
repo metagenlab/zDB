@@ -153,6 +153,8 @@ def extract_orthogroup_task(biodb,
 
         envoi_extract = True
 
+        target_circos_taxons = include + exclude
+
         circos_url = '?ref=%s&' % reference_taxon
         circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(match_groups)
         fasta_url+= "&i="+('&i=').join(include)
@@ -210,6 +212,15 @@ def extract_orthogroup_task(biodb,
                     <div id="export_bouttons_groups">
                         <a href="{% url 'get_fasta' %}{{fasta_url_noref}}" class="btn btn-success">Download fasta</a>
                         <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</a>
+                        
+                        <form name="circos_form" id="circos_form" action="{% url 'circos_main' %}" method="post">
+                            <input type="hidden" name="locus_list" value="{{ locus_list }}">
+                            <input type="hidden" name="reference_taxon" value="{{ reference_taxon }}">
+                            <input type="hidden" name="target_list" value="{{ target_circos_taxons }}">
+                            <input type="hidden" name="highlight" value="{{ match_groups }}">
+                            <button class="btn btn-success">Show on circular map</button>
+                        </form>
+                        
                         <a href="{% url 'orthogroup_list_cog_barchart' accessions%}{{circos_url}}" class="btn btn-success">Show cog categories of orthogroup subset vs all orthogroups</a>
                         <br/>
                     </div>
@@ -320,7 +331,8 @@ def extract_orthogroup_task(biodb,
                   <h3> Locus annotation </h3>
                   <div id="export_bouttons_groups" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
                       <a href="{% url "get_fasta" %}{{fasta_url_ref}}" class="btn btn-success">Download fasta</a>
-                      <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map</a>
+                      <button class="btn btn-success">Show on circular map</button>
+
                   <br/>
                   </div>
                   <table id="reference_table" class="table">
@@ -416,6 +428,7 @@ def extract_orthogroup_task(biodb,
 
           </div>
         </div>
+        
         </div>
 
 
