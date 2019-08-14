@@ -109,7 +109,7 @@ def unirpot_crossrefs(biodatabase,
                     continue
                 if db_acc in protein_accession2seqfeature_id:
                     continue
-                if db_acc in protein_accession_no_version2seqfeature_id:
+                if db_acc.split(".")[0] in protein_accession_no_version2seqfeature_id:
                     continue
                 # skip if the accession is the same as Genbank
                 if db_acc == prot:
