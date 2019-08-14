@@ -211,13 +211,11 @@ def extract_orthogroup_task(biodb,
                 <div style="padding-top:10px;">
                     <div id="export_bouttons_groups">
                         <a href="{% url 'get_fasta' %}{{fasta_url_noref}}" class="btn btn-success">Download fasta</a>
-                        <a href="{% url 'circos_main' %}{{circos_url}}" class="btn btn-success">Show on circular map (takes some time)</a>
                         
                         <form name="circos_form" id="circos_form" action="{% url 'circos_main' %}" method="post">
-                            <input type="hidden" name="locus_list" value="{{ locus_list }}">
                             <input type="hidden" name="reference_taxon" value="{{ reference_taxon }}">
                             <input type="hidden" name="target_list" value="{{ target_circos_taxons }}">
-                            <input type="hidden" name="highlight" value="{{ match_groups }}">
+                            <input type="hidden" name="highlight" value="{{ locus_list }}">
                             <button class="btn btn-success">Show on circular map</button>
                         </form>
                         

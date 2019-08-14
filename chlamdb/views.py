@@ -1833,7 +1833,9 @@ def extract_cog(request):
 
 
                 locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-
+                
+                
+                target_circos_taxons = include + exclude
                 taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
                 taxon_out_url = "&o="+("&o=").join(exclude)
                 circos_url = '?ref=%s&' % reference_taxon
@@ -10051,7 +10053,6 @@ def circos_main(request):
 
     if request.method == 'POST':
         
-        locus_list = eval(request.POST["locus_list"])
         reference_taxon = request.POST["reference_taxon"]
         target_taxons = eval(request.POST["target_list"])
         highlight = eval(request.POST["highlight"])
