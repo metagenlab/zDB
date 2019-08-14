@@ -77,7 +77,12 @@ def unirpot_crossrefs(biodatabase,
             if prot != locus:
                 sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "Protein Accession", "{prot}")'
                 server.adaptor.execute(sql,)
-    
+                prot_accession_and_version = prot.split(".")
+                # add accession without version number
+                if len(accession_and_version) == 2:
+                    prot_accession_no_version = accession_and_version[0]
+                    sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "Protein Accession", "{prot_accession_no_version}")'
+                    server.adaptor.execute(sql,)
             # get uniprot crossrefs and insert
             try:
                 uniprot_accession = seqfeature_id2uniprot_accession[str(seqfeature_id)]
@@ -90,8 +95,8 @@ def unirpot_crossrefs(biodatabase,
                 db_name = uniprot_crossref[0]
                 db_acc = uniprot_crossref[1]
 
-                # if match to any of the locus tag of the db (primary key), skip
-                if db_acc in locus_tag2seqfeature_id:
+                # if match to any of the locus tag or protein accession the db (primary key), skip
+                if db_acc in locus_tag2seqfeature_id or db_acc in seqfeature_id2protein_accession.values():
                     continue
                 
                 # skip if the accession is the same as Genbank
