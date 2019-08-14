@@ -89,17 +89,15 @@ def unirpot_crossrefs(biodatabase,
             for uniprot_crossref in uniprot_crossrefs:
                 db_name = uniprot_crossref[0]
                 db_acc = uniprot_crossref[1]
+
+                # if match to any of the locus tag of the db (primary key), skip
+                if db_acc in locus_tag2seqfeature_id:
+                    continue
                 
                 # skip if the accession is the same as Genbank
                 if db_acc == prot:
                     continue
-                # skip because not accurate mapping with exact match
-                if db_name in ['Gene_ORFName', 'Gene_OrderedLocusName']:
-                    continue
-                # skip if one accession is the locus_tag
-                if db_acc == locus:
-                    continue                
-                
+
                 sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "{db_name}", "{db_acc}")'
                 try:
                     server.adaptor.execute(sql,)
