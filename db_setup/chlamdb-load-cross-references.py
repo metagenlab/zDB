@@ -107,7 +107,7 @@ def unirpot_crossrefs(biodatabase,
                     print("Duplicate key:", seqfeature_id, db_acc)
                 # if format accession.version add accession as well
                 accession_and_version = db_acc.split(".")
-                if len(accession_and_version) == 2:
+                if len(accession_and_version) == 2 and db_name != "STRING":
                     accession_no_version = accession_and_version[0]
                     sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "{db_name}", "{accession_no_version}")'
                     try:
