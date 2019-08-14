@@ -455,7 +455,7 @@ def make_extract_form(database_name, plasmid=False, label="Orthologs"):
         checkbox_accessions = forms.BooleanField(required = False, label="Distinguish plasmids from chromosomes")
         checkbox_single_copy = forms.BooleanField(required = False, label="Only consider single copy %s" % label)
 
-        orthologs_in = forms.MultipleChoiceField(label='%s conserved in' % label, choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker", "data-live-search":"true"}), required = False)
+        orthologs_in = forms.MultipleChoiceField(label='%s conserved in' % label, choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker", "data-live-search":"true"}), required = True)
         no_orthologs_in = forms.MultipleChoiceField(label="%s absent from (optional)" % label, choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker remove-example", "data-live-search":"true"}), required = False)
 
         new_choices = [['None', 'None']] + accession_choices
