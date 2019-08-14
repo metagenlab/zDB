@@ -944,10 +944,10 @@ def multiple_profiles_heatmap(biodb,
                     #n = RectFace(width=10, height=10, fgcolor="red", bgcolor="blue", label='-')
                     group2taxon2count[value][lf.name] = 0
                 ref_data = str(value)
-                n.margin_top = 2
-                n.margin_right = 2
-                n.margin_left = 3
-                n.margin_bottom = 2
+                n.margin_top = 1
+                n.margin_right = 1
+                n.margin_left = 1
+                n.margin_bottom = 1
 
                 if group2taxon2count[value][lf.name] > 0 and group2taxon2count[value][lf.name] != '-':
                     n.inner_background.color = "#FA5858"
@@ -976,8 +976,8 @@ def multiple_profiles_heatmap(biodb,
                                         local_label = "%.2f" % group2taxon2count[value][lf.name]
                                     else:
                                         try:
-                                            print('ok!')
-                                            local_label = " %s " % int(group2taxon2count[value][lf.name])
+                                            #print('ok!')
+                                            local_label = "%s" % int(group2taxon2count[value][lf.name])
                                         except:
                                             local_label = "%s" % group2taxon2count[value][lf.name]
                                 else:
@@ -1029,10 +1029,10 @@ def multiple_profiles_heatmap(biodb,
                                 n = TextFace(' - ')
                     '''
                     if show_labels:
-                        n.margin_top = 2
-                        n.margin_right = 2
-                        n.margin_left = 2
-                        n.margin_bottom = 2
+                        n.margin_top = 1
+                        n.margin_right = 1
+                        n.margin_left = 1
+                        n.margin_bottom = 1
                     else:
                         n.margin_top = 0
                         n.margin_right = 0
@@ -1085,10 +1085,10 @@ def multiple_profiles_heatmap(biodb,
                     except:
                         group2taxon2count[value][lf.name] = 0
                         n = TextFace(' - ')
-                    n.margin_top = 2
-                    n.margin_right = 2
-                    n.margin_left = 2
-                    n.margin_bottom = 2
+                    n.margin_top = 1
+                    n.margin_right = 1
+                    n.margin_left = 1
+                    n.margin_bottom = 1
                     if group2taxon2count[value][lf.name] > 0 and group2taxon2count[value][lf.name] != '-':
                         if not reference_column:
                             #print 'no ref column'
