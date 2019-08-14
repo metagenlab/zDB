@@ -60,6 +60,13 @@ def unirpot_crossrefs(biodatabase,
     seqfeature_id2protein_accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql4))
     protein_accession2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql5))
 
+    # store protein accession without version into dict as well
+    protein_accession_no_version2seqfeature_id = {}
+    for protein in protein_accession2seqfeature_id:
+        protein_id = protein.split(".")
+        if len(protein_id) == 2:
+            protein_accession_no_version2seqfeature_id[protein_id[0]] =  protein_accession2seqfeature_id[seqfeature_id]
+
     # parse crossrefs table
     uniprot_accession2crosserfs = parse_idmapping_crossrefs(uniprot_crossrefs_table)
     
@@ -101,6 +108,8 @@ def unirpot_crossrefs(biodatabase,
                 if db_acc in locus_tag2seqfeature_id:
                     continue
                 if db_acc in protein_accession2seqfeature_id:
+                    continue
+                if db_acc in protein_accession_no_version2seqfeature_id:
                     continue
                 # skip if the accession is the same as Genbank
                 if db_acc == prot:
