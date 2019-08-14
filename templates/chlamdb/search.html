@@ -31,7 +31,7 @@
                                   <h3 class="panel-title">No match!</h3>
                               </div>
                               <p style="margin: 0px 0px 0px 10px">
-                                The following protein accessions should work (if present in the database):
+                                <h3>The following protein accessions should work (if present in the database)</h3>
 
                                 <table class="table">
                                     <thead>
@@ -72,10 +72,50 @@
                                     </tbody>
                                 </table>
                                 <br>
+                                <h3>It is also possible to search for specific annotations</h3>
 
-                              Accession from the KEGG orthology database (<a href="{% url 'fam' 'K00844' 'ko' %}">K00844</a>), the COG database (<a href="{% url 'fam' 'COG0333' 'cog' %}">COG0333</a>) and from PFAM (<a href="{% url 'fam' 'PF06723' 'pfam' %}">PF06723</a>) and interpro databases (<a href="{% url 'fam' 'IPR004753' 'interpro' %}">IPR004753</a>) are also recognized if present in the database (if identified in at least one genome).
-                              KEGG modules (<a href="{% url 'KEGG_module_map' 'M00023' %}">M00023</a>) and pathways (<a href="{% url 'KEGG_mapp_ko' 'map00400' %}">map00400</a>) are also recognized. <br>
-                              Alternatively, you can browse genomes overview tables from links listed in the <a href="{% url 'home' %}">home page</a> table (column: Browse online) or <a href="{% url 'blast' %}">BLAST</a> a refserence sequence.</p>.
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Accession type</th>
+                                            <th>Example</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>KEGG ortholog</td> 
+                                            <td><a href="{% url 'locusx' %}?accession=K00844">K00844</a></td> 
+                                        </tr>
+                                        <tr>
+                                            <td>COG</td> 
+                                            <td><a href="{% url 'locusx' %}?accession=COG0333">COG0333</a></td> 
+                                        </tr>                                       
+                                        <tr>
+                                            <td>PFAM</td> 
+                                            <td><a href="{% url 'locusx' %}?accession=PF06723">PF06723</a></td> 
+                                        </tr> 
+                                        <tr>
+                                            <td>InterPro</td> 
+                                            <td><a href="{% url 'locusx' %}?accession=IPR004753">IPR004753</a></td> 
+                                        </tr>  
+                                        <tr>
+                                            <td>KEGG modules</td> 
+                                            <td><a href="{% url 'locusx' %}?accession=M00023">M00023</a></td> 
+                                        </tr>  
+                                        <tr>
+                                            <td>Kegg pathways</td> 
+                                            <td><a href="{% url 'locusx' %}?accession=map00400">map00400</a></td> 
+                                        </tr> 
+                                        <tr>
+                                            <td>UniProtKB-ID</td> 
+                                            <td><a href="{% url 'locusx' %}?accession=">D6YS95_WADCW</a></td> 
+                                        </tr> 
+                                    </tbody>
+                                </table>
+
+                              <h3>You can browse genomes overview tables from links listed in the <a href="{% url 'home' %}#genomes">home page</a> table (column: Browse online) </h3> 
+                                
+                              <h3> You can also <a href="{% url 'blast' %}">BLAST</a> a reference sequence.</p>.</h3> 
                            </div>
 
                       {% else %}
