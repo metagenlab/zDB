@@ -8663,12 +8663,9 @@ def plot_region(request):
                 closest_only=True
 
             sql2 = 'select orthogroup, locus_tag, protein_id, start, stop, strand, organism ' \
-                   ' from orthology_detail_%s where locus_tag like "%%%%%s%%%%" or protein_id like "%%%%%s%%%%"' % (biodb, accession, accession)
+                   ' from orthology_detail_%s where locus_tag="%s" or protein_id="%s"' % (biodb, accession, accession)
 
             data = server.adaptor.execute_and_fetchall(sql2, )[0]
-
-
-
 
             if not data:
                     valid_id = False
