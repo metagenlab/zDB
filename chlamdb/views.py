@@ -1066,6 +1066,7 @@ def extract_pfam(request, classification="taxon_id"):
 
                     circos_url = '?ref=%s&' % reference_taxon
                     circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
+                    target_circos_taxons = include + exclude
 
                     locus2annot, \
                     locus_tag2cog_catego, \
@@ -1218,6 +1219,9 @@ def extract_ko(request):
             circos_url = '?ref=%s&' % reference_taxon
             circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
 
+
+            target_circos_taxons = include + exclude
+            
             # url to get the barchart of selected KO
             taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
             taxon_out_url = "&o="+("&o=").join(exclude)
@@ -1356,7 +1360,7 @@ def extract_EC(request):
             circos_url = '?ref=%s&' % reference_taxon
             circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
             #print "circos_url", circos_url
-
+            target_circos_taxons = include + exclude
 
 
             # get phylogenetic profile of match if not too big
@@ -1662,6 +1666,8 @@ def extract_interpro(request, classification="taxon_id"):
 
                 circos_url = '?ref=%s&' % reference_taxon
                 circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
+                
+                target_circos_taxons = include + exclude
 
                 envoi_extract = True
                 locus2annot, \
