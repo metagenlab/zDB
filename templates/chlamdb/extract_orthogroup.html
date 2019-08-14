@@ -78,6 +78,7 @@
       </div> <!-- page-content-wrapper -->
     </div> <!-- wrapper -->
   </div>  <!-- row -->
+  
 </div>  <!-- container-fluid -->
 {% include "chlamdb/style_menu.html" %}
 {% include "chlamdb/show_hide_plasmid_accessions.html" %}
@@ -131,6 +132,11 @@
                     prg_dv.html('Done');
                     $('#results').html(data.result);
                     $("#progress").hide();
+
+                    
+
+                    $('#circos_form').append('<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">');
+
 
 
                     $('#table_groups').DataTable( {

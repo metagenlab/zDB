@@ -501,6 +501,9 @@ def extract_orthogroup(request):
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
+        
+        if 'locus_list' in request.POST:
+            print("locus list!!!!!!!!!")
 
         if form.is_valid():  # Nous vérifions que les données envoyées sont valides
 
@@ -544,14 +547,14 @@ def extract_orthogroup(request):
             freq_missing = (len(include)-float(n_missing))/len(include)
 
             task = extract_orthogroup_task.delay(biodb, 
-                                                    include,
-                                                    exclude,
-                                                    freq_missing,
-                                                    single_copy,
-                                                    accessions,
-                                                    reference_taxon,
-                                                    fasta_url,
-                                                    n_missing)
+                                                 include,
+                                                 exclude,
+                                                 freq_missing,
+                                                 single_copy,
+                                                 accessions,
+                                                 reference_taxon,
+                                                 fasta_url,
+                                                 n_missing)
             task_id = task.id
 
             return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
@@ -1063,6 +1066,7 @@ def extract_pfam(request, classification="taxon_id"):
 
                     circos_url = '?ref=%s&' % reference_taxon
                     circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
+                    target_circos_taxons = include + exclude
 
                     locus2annot, \
                     locus_tag2cog_catego, \
@@ -1215,6 +1219,9 @@ def extract_ko(request):
             circos_url = '?ref=%s&' % reference_taxon
             circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
 
+
+            target_circos_taxons = include + exclude
+            
             # url to get the barchart of selected KO
             taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
             taxon_out_url = "&o="+("&o=").join(exclude)
@@ -1353,7 +1360,7 @@ def extract_EC(request):
             circos_url = '?ref=%s&' % reference_taxon
             circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
             #print "circos_url", circos_url
-
+            target_circos_taxons = include + exclude
 
 
             # get phylogenetic profile of match if not too big
@@ -1659,6 +1666,8 @@ def extract_interpro(request, classification="taxon_id"):
 
                 circos_url = '?ref=%s&' % reference_taxon
                 circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
+                
+                target_circos_taxons = include + exclude
 
                 envoi_extract = True
                 locus2annot, \
@@ -1830,7 +1839,9 @@ def extract_cog(request):
 
 
                 locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-
+                
+                
+                target_circos_taxons = include + exclude
                 taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
                 taxon_out_url = "&o="+("&o=").join(exclude)
                 circos_url = '?ref=%s&' % reference_taxon
@@ -10046,36 +10057,60 @@ def circos_main(request):
     from chlamdb.plots import gbk2circos
     from chlamdb.biosqldb import circos
 
+    if request.method == 'POST':
+        
+        reference_taxon = request.POST["reference_taxon"]
+        target_taxons = eval(request.POST["target_list"])
+        highlight = eval(request.POST["highlight"])
+        
+        if len(target_taxons) == 0:
+            try:
+                sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
+                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
+                target_taxons = ordered_taxons[0:10]
+            except:
+                sql_order = 'select taxon_2 from comparative_tables.shared_orthogroups_%s where taxon_1=%s order by n_shared_orthogroups DESC;' % (biodb,
+                                                                                                                        reference_taxon)
 
-    server, db = manipulate_biosqldb.load_db(biodb)
+                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
+                target_taxons = ordered_taxons[0:10]   
+                         
+        task = run_circos_main.delay(reference_taxon, target_taxons, highlight)
+        print("task", task)
+        task_id = task.id
+        envoi_circos = True
+        envoi_region = True
+            
+    if request.method == 'GET':
+        server, db = manipulate_biosqldb.load_db(biodb)
 
-    reference_taxon = int(request.GET.getlist('ref')[0])
-    #print request.GET.getlist('t')
-    if request.GET.getlist('t')[0] == '':
-        # if no target list given, get the 10 closest genomes
-        try:
-            sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
-            ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
-            target_taxons = ordered_taxons[0:10]
-        except:
-            sql_order = 'select taxon_2 from comparative_tables.shared_orthogroups_%s where taxon_1=%s order by n_shared_orthogroups DESC;' % (biodb,
-                                                                                                                      reference_taxon)
+        reference_taxon = int(request.GET.getlist('ref')[0])
+        #print request.GET.getlist('t')
+        if request.GET.getlist('t')[0] == '':
+            # if no target list given, get the 10 closest genomes
+            try:
+                sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
+                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
+                target_taxons = ordered_taxons[0:10]
+            except:
+                sql_order = 'select taxon_2 from comparative_tables.shared_orthogroups_%s where taxon_1=%s order by n_shared_orthogroups DESC;' % (biodb,
+                                                                                                                        reference_taxon)
 
-            ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
-            target_taxons = ordered_taxons[0:10]
-    else:
-        target_taxons = [int(i) for i in request.GET.getlist('t')]
-    highlight = request.GET.getlist('h')
+                ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
+                target_taxons = ordered_taxons[0:10]
+        else:
+            target_taxons = [int(i) for i in request.GET.getlist('t')]
+        highlight = request.GET.getlist('h')
 
-    #sql = 'select locus_tag,traduction from orthology_detail_k_cosson_05_16 where orthogroup in (%s) and accession="NC_016845"' % ('"'+'","'.join(highlight)+'"')
+        #sql = 'select locus_tag,traduction from orthology_detail_k_cosson_05_16 where orthogroup in (%s) and accession="NC_016845"' % ('"'+'","'.join(highlight)+'"')
 
-    task = run_circos_main.delay(reference_taxon, target_taxons, highlight)
-    print("task", task)
-    task_id = task.id
-    envoi_circos = True
-    envoi_region = True
+        task = run_circos_main.delay(reference_taxon, target_taxons, highlight)
+        print("task", task)
+        task_id = task.id
+        envoi_circos = True
+        envoi_region = True
 
-    #return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
+        #return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
 
     return render(request, 'chlamdb/circos_main.html', locals())
 
