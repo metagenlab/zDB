@@ -72,7 +72,7 @@
                                     </tbody>
                                 </table>
                                 <br>
-                                <h3>It is also possible to search for specific annotations</h3>
+                                <h3>Search for specific annotations</h3>
 
                                 <table class="table">
                                     <thead>
@@ -116,15 +116,16 @@
                                     </tbody>
                                 </table>
 
-                              <h3> You can also search for a gene name, a product name,... </h3>
+                              <h3>Search for a gene name, a product name,... </h3>
                               <ul>
                                     <li><a href="{% url 'locusx' %}?accession=mreb">mreb</a></li>
                                     <li><a href="{% url 'locusx' %}?accession=mreb+Waddlia">mreb Waddlia</a></li>
                                     <li><a href="{% url 'locusx' %}?accession=secretion+system">secretion system</a></li>
                               </ul>
-                              <h3>You can browse genomes overview tables from links listed in the <a href="{% url 'home' %}#genomes">home page</a> table (column: Browse online) </h3> 
+                              <h3>It's also possible to browse genomes tables from links listed in the <a href="{% url 'home' %}#genomes">home page</a> table (column: Browse online) </h3> 
                                 
-                              <h3> You can also <a href="{% url 'blast' %}">BLAST</a> a reference sequence.</p>.</h3> 
+                              <h3>A <a href="{% url 'blast' %}">BLAST</a> interface is also available for homology search</h3> 
+                              
                            </div>
 
                       {% else %}
