@@ -958,7 +958,7 @@ def plot_neighborhood_task(biodb, target_locus, region_size):
 
     path = settings.BASE_DIR + '/assets/temp/region.svg'
     asset_path = '/temp/region.svg'
-    tree2.render(path, dpi=800, h=600, tree_style=style)
+    tree2.render(path, dpi=800, w=800, tree_style=style)
  
  
     template = Template('''
