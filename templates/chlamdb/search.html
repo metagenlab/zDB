@@ -79,40 +79,49 @@
                                         <tr>
                                             <th>Accession type</th>
                                             <th>Example</th>
+                                            <th>Description</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
                                             <td>KEGG ortholog</td> 
                                             <td><a href="{% url 'locusx' %}?accession=K00844">K00844</a></td> 
+                                            <td>hexokinase [EC:2.7.1.1]</td>
                                         </tr>
                                         <tr>
                                             <td>COG</td> 
                                             <td><a href="{% url 'locusx' %}?accession=COG0333">COG0333</a></td> 
+                                            <td>Ribosomal protein L32</td>
                                         </tr>                                       
                                         <tr>
                                             <td>PFAM</td> 
                                             <td><a href="{% url 'locusx' %}?accession=PF06723">PF06723</a></td> 
+                                            <td>MreB/Mbl protein</td>
                                         </tr> 
                                         <tr>
                                             <td>InterPro</td> 
                                             <td><a href="{% url 'locusx' %}?accession=IPR004753">IPR004753</a></td> 
+                                            <td>Cell shape determining protein MreB</td>
                                         </tr>  
                                         <tr>
                                             <td>KEGG modules</td> 
                                             <td><a href="{% url 'locusx' %}?accession=M00023">M00023</a></td> 
+                                            <td>Amino acid metabolism </td>
                                         </tr>  
                                         <tr>
                                             <td>Kegg pathways</td> 
                                             <td><a href="{% url 'locusx' %}?accession=map00400">map00400</a></td> 
-                                        </tr> 
-                                        <tr>
-                                            <td>UniProtKB-ID</td> 
-                                            <td><a href="{% url 'locusx' %}?accession=">D6YS95_WADCW</a></td> 
+                                            <td>Phenylalanine, tyrosine and tryptophan biosynthesis </td>
                                         </tr> 
                                     </tbody>
                                 </table>
 
+                              <h3> You can also search for a gene name, a product name,... </h3>
+                              <ul>
+                                    <li><a href="{% url 'locusx' %}?accession=mreb">mreb</a></li>
+                                    <li><a href="{% url 'locusx' %}?accession=mreb+Waddlia">mreb Waddlia</a></li>
+                                    <li><a href="{% url 'locusx' %}?accession=secretion+system">secretion system</a></li>
+                              </ul>
                               <h3>You can browse genomes overview tables from links listed in the <a href="{% url 'home' %}#genomes">home page</a> table (column: Browse online) </h3> 
                                 
                               <h3> You can also <a href="{% url 'blast' %}">BLAST</a> a reference sequence.</p>.</h3> 
