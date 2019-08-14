@@ -8650,6 +8650,10 @@ def plot_region(request):
 
             accession = extract_alphanumeric(form.cleaned_data['accession'])
 
+            m = re.match("CT([0-9]+)", accession)
+            if m:
+                accession = "CT_%s" % (m.group(1))
+
             server, db = manipulate_biosqldb.load_db(biodb)
 
             region_size = form.cleaned_data['region_size']
