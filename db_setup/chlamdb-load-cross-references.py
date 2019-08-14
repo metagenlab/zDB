@@ -110,7 +110,11 @@ def unirpot_crossrefs(biodatabase,
                 if len(accession_and_version) == 2:
                     accession_no_version = accession_and_version[0]
                     sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "{db_name}", "{accession_no_version}")'
-                    server.adaptor.execute(sql,)  
+                    try:
+                        server.adaptor.execute(sql,)
+                    except:
+                        print("problem with", sql)
+                        continue
             # add uniprot accession itself
             try:
                 sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "UniProtKB-Accession", "{uniprot_accession}")'
