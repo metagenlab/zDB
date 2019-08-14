@@ -166,6 +166,7 @@ def refseq_crossrefs(biodatabase,
                 seqfeature_id = locus_tag2seqfeature_id[data[0]]
             except:
                 print("Pseudogene?", seqfeature_id, biodb_locus)
+                continue
             refseq_locus = data[1]
             refseq_protein_accession = data[2]
             refseq_protein_accession_no_version = data[2].split(".")[0]
@@ -176,15 +177,18 @@ def refseq_crossrefs(biodatabase,
             try:
                 server.adaptor.execute(sql1,)
             except:
-                print("Duplicate key:", seqfeature_id, refseq_locus)
+                print(sql1)
+                print("Duplicate key refseq_locus:", seqfeature_id, refseq_locus)
             try:
                 server.adaptor.execute(sql2,) 
             except:
-                print("Duplicate key:", seqfeature_id, refseq_protein_accession)
+                print(sql2)
+                print("Duplicate key protein_accession:", seqfeature_id, refseq_protein_accession)
             try:
                 server.adaptor.execute(sql3,) 
             except:
-                print("Duplicate key:", seqfeature_id, refseq_protein_accession_no_version)
+                print(sql3)
+                print("Duplicate key protein_accession no version:", seqfeature_id, refseq_protein_accession_no_version)
     server.commit()
 
 

@@ -31,7 +31,7 @@
                                   <h3 class="panel-title">No match!</h3>
                               </div>
                               <p style="margin: 0px 0px 0px 10px">
-                                <h3>The following protein accessions should work (if present in the database)</h3>
+                                <h3>The following protein accessions are recognised:</h3>
 
                                 <table class="table">
                                     <thead>
@@ -72,7 +72,7 @@
                                     </tbody>
                                 </table>
                                 <br>
-                                <h3>Search for specific annotations</h3>
+                                <h3>Accessions from KEGG, COG, Pfam and InterPro can also be searched:</h3>
 
                                 <table class="table">
                                     <thead>
@@ -116,7 +116,7 @@
                                     </tbody>
                                 </table>
 
-                              <h3>Search for a gene name, a product name,... </h3>
+                              <h3>It's also possible to seach for a gene or product name</h3>
                               <ul>
                                     <li><a href="{% url 'locusx' %}?accession=mreb">mreb</a></li>
                                     <li><a href="{% url 'locusx' %}?accession=mreb+Waddlia">mreb Waddlia</a></li>
@@ -125,7 +125,7 @@
                               <h3>It's also possible to browse genomes tables from links listed in the <a href="{% url 'home' %}#genomes">home page</a> table (column: Browse online) </h3> 
                                 
                               <h3>A <a href="{% url 'blast' %}">BLAST</a> interface is also available for homology search</h3> 
-                              
+
                            </div>
 
                       {% else %}
