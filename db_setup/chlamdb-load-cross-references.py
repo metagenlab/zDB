@@ -65,7 +65,7 @@ def unirpot_crossrefs(biodatabase,
     for protein in protein_accession2seqfeature_id:
         protein_id = protein.split(".")
         if len(protein_id) == 2:
-            protein_accession_no_version2seqfeature_id[protein_id[0]] =  protein_accession2seqfeature_id[seqfeature_id]
+            protein_accession_no_version2seqfeature_id[protein_id[0]] =  protein_accession2seqfeature_id[protein]
 
     # parse crossrefs table
     uniprot_accession2crosserfs = parse_idmapping_crossrefs(uniprot_crossrefs_table)
