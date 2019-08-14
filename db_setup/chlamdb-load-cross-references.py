@@ -79,7 +79,7 @@ def unirpot_crossrefs(biodatabase,
                 server.adaptor.execute(sql,)
                 prot_accession_and_version = prot.split(".")
                 # add accession without version number
-                if len(accession_and_version) == 2:
+                if len(prot_accession_and_version) == 2:
                     prot_accession_no_version = prot_accession_and_version[0]
                     sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "Protein Accession", "{prot_accession_no_version}")'
                     server.adaptor.execute(sql,)
