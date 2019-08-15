@@ -2144,7 +2144,7 @@ def locusx(request, locus=None, menu=True):
              input_type = 'orthogroup'
         else:
             # check if single or multiple search terms
-            if len(locus.split()):
+            if len(locus.split(" ")):
                 return search(request)
 
             # try searchin synonymous table
