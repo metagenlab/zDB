@@ -2143,6 +2143,10 @@ def locusx(request, locus=None, menu=True):
         if m:
              input_type = 'orthogroup'
         else:
+            # check if single or multiple search terms
+            if len(locus.split()):
+                return search(request)
+
             # try searchin synonymous table
             try:
                 sql = f'select t1.db_name,t1.accession,t2.orthogroup,t2.locus_tag,t2.start,t2.stop,t2.strand,t2.gene, t2.orthogroup_size,t2.n_genomes,t2.TM,t2.SP,t2.product,t2.organism ' \
