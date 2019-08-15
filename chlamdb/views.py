@@ -2118,51 +2118,86 @@ def locusx(request, locus=None, menu=True):
         import re
 
         server, db = manipulate_biosqldb.load_db(biodb)
+        
         if locus == None:
             menu = True
             locus = request.GET.get('accession').strip()
-            print(locus)
+            
+            # check if Chlamydia trachomatis locus
             m = re.match("CT([0-9]+)", locus)
             if m:
                 locus = "CT_%s" % (m.group(1))
                 print("updated_search", locus)
+            
+            # check if exact match to seqfeature_id
             try:
                 locus = int(locus)
                 sql = 'select locus_tag from custom_tables.locus2seqfeature_id_%s where seqfeature_id=%s' % (biodb,
                                                                                                              locus)
-                #print sql
                 locus = server.adaptor.execute_and_fetchall(sql,)[0][0]
             except:
                 pass
-        valid_id = True
-
-        sql0 = 'select locus_tag from custom_tables.seqfeature_id2old_locus_tag_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where old_locus_tag="%s" ' % (biodb, biodb, locus)
-
-        try:
-            data = server.adaptor.execute_and_fetchall(sql0, )[0][0]
-            old_locus_tag = locus
-            locus = data
-            input_type = 'locus_tag'
-        except IndexError:
-            sql0 = 'select locus_tag from orthology_detail_%s where (locus_tag="%s" or protein_id="%s")' % (biodb,
-                                                                                                            locus,
-                                                                                                            locus)
-        try:
-            locus = server.adaptor.execute_and_fetchall(sql0, )[0][0]
-            input_type = 'locus_tag'
-        except IndexError:
-
-            sql1 = 'select orthogroup from orthology_detail_%s where orthogroup="%s"' % (biodb, locus)
+        
+        # check if orthogroup
+        m = re.match("group_([0-9]+)", locus)
+        if m:
+             input_type = 'orthogroup'
+        else:
+            # try searchin synonymous table
             try:
-                locus = server.adaptor.execute_and_fetchall(sql1, )[0][0]
-                input_type = 'orthogroup'
-            except IndexError:
-                print ('not a valid id, trying search')
-                return search(request)
+                sql = f'select t1.db_name,t1.accession,t2.orthogroup,t2.locus_tag,t2.start,t2.stop,t2.strand,t2.gene, t2.orthogroup_size,t2.n_genomes,t2.TM,t2.SP,t2.product,t2.organism ' \
+                      f' from biosqldb.cross_references_{biodb} t1 ' \
+                      f' inner join orthology_detail_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                      f' where match(t1.accession) AGAINST ("{locus}" IN BOOLEAN MODE) ' \
+                      f' and db_name not in ("STRING", "KEGG", "KO") group by t1.seqfeature_id limit 200;'
+                print(sql)
+                raw_search = server.adaptor.execute_and_fetchall(sql,)
+                if len(raw_search) == 0:
+                    print("nomatch synonymous!")
+                    raise("nomatch")
+                elif len(raw_search) == 1:
+                    print("single match!")
+                    input_type = 'locus_tag'
+                    locus = raw_search[0][3]
+                else:
+                    print("return all matches")
+                    n = 1
+                    search_result = []
+                    for one_hit in raw_search:
+                        search_result.append((n,) + one_hit)
+                        n+=1
+                    return render(request, 'chlamdb/search_synonymous.html', locals())
+            except:
+                # no synonymous table, use old method
+                print("echec synonymous table")
+                
+                
+                sql0 = 'select locus_tag from custom_tables.seqfeature_id2old_locus_tag_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where old_locus_tag="%s" ' % (biodb, biodb, locus)
 
+                try:
+                    data = server.adaptor.execute_and_fetchall(sql0, )[0][0]
+                    old_locus_tag = locus
+                    locus = data
+                    input_type = 'locus_tag'
+                except IndexError:
+                    sql0 = 'select locus_tag from orthology_detail_%s where (locus_tag="%s" or protein_id="%s")' % (biodb,
+                                                                                                                    locus,
+                                                                                                                    locus)
+                try:
+                    locus = server.adaptor.execute_and_fetchall(sql0, )[0][0]
+                    input_type = 'locus_tag'
+                except IndexError:
 
+                    sql1 = 'select orthogroup from orthology_detail_%s where orthogroup="%s"' % (biodb, locus)
+                    try:
+                        locus = server.adaptor.execute_and_fetchall(sql1, )[0][0]
+                        input_type = 'orthogroup'
+                    except IndexError:
+                        print ('not a valid id, trying search')
+                        return search(request)
+        valid_id = True
         columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                  'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+                'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
         sql2 = 'select %s from orthology_detail_%s where %s="%s"' % (columns, biodb, input_type, locus)
         data = list(server.adaptor.execute_and_fetchall(sql2, )[0])
         sql_old = 'select old_locus_tag from custom_tables.seqfeature_id2old_locus_tag_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s" ' % (biodb, biodb, data[1])
@@ -2175,7 +2210,8 @@ def locusx(request, locus=None, menu=True):
         if input_type == 'locus_tag':
             from chlamdb.plots import uniprot_feature_viewer
 
-
+            print("input type locus tag----------------")
+            print("data", data)
 
             sql4 = 'select accession from orthology_detail_%s where locus_tag="%s" limit 1' % (biodb, locus)
             genome_accession = server.adaptor.execute_and_fetchall(sql4,)[0][0]
@@ -2242,7 +2278,7 @@ def locusx(request, locus=None, menu=True):
               ' inner join blastnr.blast_swissprot_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where locus_tag="%s";' % (biodb, biodb, locus)
 
-            sql17 = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s"' % (biodb, data[0])
+            sql17 = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s"' % (biodb, locus)
 
             sql18 = 'select signature_accession,start,stop from interpro_%s where analysis="Phobius" and locus_tag="%s" ' \
                     ' and signature_accession in ("TRANSMEMBRANE",' \
@@ -10674,6 +10710,7 @@ def search(request):
 
                 sql = 'select ec,line,value from enzyme.enzymes_dat as t1 inner join enzymes as t2 ' \
                       ' on t1.enzyme_dat_id=enzyme_id WHERE value REGEXP "%s"' % (search_term)
+                      
                 raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
 
                 sql = 'select * from ko_annotation_v1 where definition REGEXP "%s"' % (search_term)
@@ -10819,14 +10856,20 @@ def search(request):
                         raw_data_ko = False
 
                     # CREATE FULLTEXT INDEX cogf ON COG.cog_names_2014(description);
-                    sql = ' select COG_name,code,t3.description,t1.description from COG.cog_names_2014 t1 inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id inner join COG.code2category t3 on t2.category_id=t3.category_id WHERE MATCH(t1.description) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (search_term)
+                    sql = ' select COG_name,code,t3.description,t1.description from COG.cog_names_2014 t1 ' \
+                          ' inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
+                          ' inner join COG.code2category t3 on t2.category_id=t3.category_id ' \
+                          ' WHERE MATCH(t1.description) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (search_term)
                     raw_data_cog = []# :TODO server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_cog) == 0:
                         raw_data_cog = False
                     print("COG", raw_data_cog)
                     # CREATE FULLTEXT INDEX ipf ON interpro.signature(signature_description);
                     # CREATE FULLTEXT INDEX ipf ON interpro.entry(description);
-                    sql = 'select analysis_name,signature_accession,signature_description,t3.name,t3.description from interpro.signature t1 inner join interpro.analysis t2 on t1.analysis_id=t2.analysis_id left join interpro.entry t3 on t1.interpro_id=t3.interpro_id  WHERE MATCH(t3.description) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (search_term)
+                    sql = 'select analysis_name,signature_accession,signature_description,t3.name,t3.description from interpro.signature t1 ' \
+                          ' inner join interpro.analysis t2 on t1.analysis_id=t2.analysis_id ' \
+                          ' left join interpro.entry t3 on t1.interpro_id=t3.interpro_id ' \
+                          ' WHERE MATCH(t3.description) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (search_term)
                     raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_interpro) == 0:
                         raw_data_interpro = False
@@ -10844,6 +10887,7 @@ def search(request):
                     raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_pathway) == 0:
                         raw_data_pathway = False
+                    
                     if not raw_data_module \
                             and not raw_data_pathway \
                             and not raw_data_EC \
