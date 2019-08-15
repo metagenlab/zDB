@@ -2993,7 +2993,10 @@ def fam(request, fam, type):
                      ' inner join interpro.interpro_%s t2 on t1.signature_id=t2.signature_id ' \
                      ' where t1.signature_accession="%s" group by seqfeature_id;' % (biodb, fam)
             sql2 = 'select signature_description from interpro_%s where signature_accession="%s" limit 1' % (biodb, fam)
-            info = server.adaptor.execute_and_fetchall(sql2, )[0]
+            try:
+                info = server.adaptor.execute_and_fetchall(sql2, )[0]
+            except:
+                valid_id = False
         elif type == 'cog':
             sql1 = 'select seqfeature_id from COG.seqfeature_id2best_COG_hit_%s t1 ' \
                    ' inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.cog_id ' \
@@ -3004,7 +3007,10 @@ def fam(request, fam, type):
                                                                                                             fam)
             print (sql1)
             print (sql2)
-            info = server.adaptor.execute_and_fetchall(sql2, )[0]
+            try:
+                info = server.adaptor.execute_and_fetchall(sql2, )[0]
+            except:
+                valid_id = False
         elif type == 'interpro':
             sql1 =   'select seqfeature_id from interpro.entry t1 inner join interpro.signature t2 on t1.interpro_id=t2.interpro_id ' \
                      ' inner join interpro.interpro_%s t3 on t2.signature_id=t3.signature_id ' \
@@ -3033,31 +3039,35 @@ def fam(request, fam, type):
                            ' where pathway_category !="1.0 Global and overview maps";' % (fam)
 
             pathway_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_pathways, )]
-            info =  server.adaptor.execute_and_fetchall(sql2, )
-
+            try:
+                info =  server.adaptor.execute_and_fetchall(sql2, )
+            except:
+                valid_id = False
         elif type == 'ko':
             sql1 = 'select distinct seqfeature_id from enzyme.seqfeature_id2ko_%s t1 ' \
                    ' inner join enzyme.ko_annotation t2 on t1.ko_id=t2.ko_id where t2.ko_accession="%s";' % (biodb,
                                                                                                              fam)
 
             sql2 = 'select * from enzyme.ko_annotation where ko_accession="%s"' % (fam)
+            try:
+                ko_data = server.adaptor.execute_and_fetchall(sql2,)[0]
+                external_link = 'http://www.genome.jp/dbget-bin/www_bget?%s' % (fam)
 
-            ko_data = server.adaptor.execute_and_fetchall(sql2,)[0]
-            external_link = 'http://www.genome.jp/dbget-bin/www_bget?%s' % (fam)
+                sql_modules = 'select pathways, modules from enzyme.ko_annotation where ko_accession="%s";' % (fam)
+                data = server.adaptor.execute_and_fetchall(sql_modules,)[0]
 
-            sql_modules = 'select pathways, modules from enzyme.ko_annotation where ko_accession="%s";' % (fam)
-            data = server.adaptor.execute_and_fetchall(sql_modules,)[0]
-
-            if data[0] != '-':
-                import re
-                pathway_list = [re.sub('ko', 'map',i) for i in data[0].split(',')]
-                pathway_list = '("' + '","'.join(pathway_list) + '")'
-                sql = 'select pathway_name,pathway_category,description from enzyme.kegg_pathway where pathway_name in %s' % pathway_list
-                pathway_data = server.adaptor.execute_and_fetchall(sql,)
-            if data[1] != '-':
-                module_list = '("' + '","'.join(data[1].split(',')) + '")'
-                sql = 'select module_name,module_sub_sub_cat,description from enzyme.kegg_module where module_name in %s' % module_list
-                module_data = server.adaptor.execute_and_fetchall(sql,)
+                if data[0] != '-':
+                    import re
+                    pathway_list = [re.sub('ko', 'map',i) for i in data[0].split(',')]
+                    pathway_list = '("' + '","'.join(pathway_list) + '")'
+                    sql = 'select pathway_name,pathway_category,description from enzyme.kegg_pathway where pathway_name in %s' % pathway_list
+                    pathway_data = server.adaptor.execute_and_fetchall(sql,)
+                if data[1] != '-':
+                    module_list = '("' + '","'.join(data[1].split(',')) + '")'
+                    sql = 'select module_name,module_sub_sub_cat,description from enzyme.kegg_module where module_name in %s' % module_list
+                    module_data = server.adaptor.execute_and_fetchall(sql,)
+            except:
+                valid_id = False
         else:
             valid_id = False
             return render(request, 'chlamdb/fam.html', locals())
