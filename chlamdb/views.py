@@ -2163,6 +2163,7 @@ def locusx(request, locus=None, menu=True):
                     print("single match!")
                     input_type = 'locus_tag'
                     locus = raw_search[0][3]
+                    orthogroup = raw_search[0][2]
                 else:
                     print("return all matches")
                     n = 1
@@ -2204,6 +2205,7 @@ def locusx(request, locus=None, menu=True):
                 'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
         sql2 = 'select %s from orthology_detail_%s where %s="%s"' % (columns, biodb, input_type, locus)
         data = list(server.adaptor.execute_and_fetchall(sql2, )[0])
+        orthogroup = data[0] 
         sql_old = 'select old_locus_tag from custom_tables.seqfeature_id2old_locus_tag_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s" ' % (biodb, biodb, data[1])
         try:
             data_old = server.adaptor.execute_and_fetchall(sql_old, )[0][0]
@@ -2282,7 +2284,7 @@ def locusx(request, locus=None, menu=True):
               ' inner join blastnr.blast_swissprot_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where locus_tag="%s";' % (biodb, biodb, locus)
 
-            sql17 = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s"' % (biodb, locus)
+            sql17 = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s"' % (biodb, orthogroup)
 
             sql18 = 'select signature_accession,start,stop from interpro_%s where analysis="Phobius" and locus_tag="%s" ' \
                     ' and signature_accession in ("TRANSMEMBRANE",' \
@@ -2405,7 +2407,6 @@ def locusx(request, locus=None, menu=True):
                 closest_phylo = True
             except:
                 closest_phylo = False
-
             try:
                 n_blastnr_hits = server.adaptor.execute_and_fetchall(sql15, )[0][0]
             except:
@@ -2656,10 +2657,16 @@ def locusx(request, locus=None, menu=True):
                          f' left join custom_tables.uniprot_annotation_{biodb} t4 on t2.seqfeature_id=t4.seqfeature_id ' \
                          f' where orthogroup_name="{locus}";'
             
+            
+            sql_group8 = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s"' % (biodb, locus)
             # TM domains 
             
             # Signal Peptide
-            
+            try:
+                trial = server.adaptor.execute_and_fetchall(sql_group8, )[0][0]
+                closest_phylo = True
+            except:
+                closest_phylo = False
             
             gene_annotations = server.adaptor.execute_and_fetchall(sql_group1,)
             product_annotations = server.adaptor.execute_and_fetchall(sql_group2,)
