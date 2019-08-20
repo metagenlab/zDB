@@ -1235,10 +1235,8 @@ def phylogeny_task(biodb,
             {% load staticfiles %}
             {% load static %}
             {% if not no_tree %}
-            <h3>Phylogeny including all orthologs and their closest homologs in RefSeq and SwissProt database</h3>
-            <p>
-              The alignment was made with mafft and the phylogeny was reconstructed with FastTree with default parameters.
-            </p>
+            <h3>Phylogeny</h3>
+
             <div id="pfam_tree_div">
                 <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width:80%"></object>
             </div>
