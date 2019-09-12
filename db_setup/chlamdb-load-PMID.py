@@ -42,8 +42,11 @@ def load_PMID(PMID_db_path, hash2locus_list, db_name):
         hash, pmid = row 
         locus_list = hash2locus_list[hash]
         if pmid not in pmid_already_in_db:
-            server.adaptor.execute(template1, [pmid] + list(pmid2data[str(pmid)]))
-            pmid_already_in_db.append(pmid)
+            try:
+                server.adaptor.execute(template1, [pmid] + list(pmid2data[str(pmid)]))
+                pmid_already_in_db.append(pmid)
+            except KeyError:
+                print("Problem with pmid %s" % pmid)
         for locus_tag in locus_list:
             server.adaptor.execute(template2,[locus_tag2seqfeaure_id[locus_tag], pmid])
     server.commit()
