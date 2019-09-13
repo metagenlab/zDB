@@ -2346,7 +2346,7 @@ def draw_TM_tree(tree_name, locus2data):
         #print("len data", len(data), data)
         if isinstance(data[0], list):
             for motif in data:
-                print(motif[-1])
+                #print(motif[-1])
                 if motif[-2] != "SIGNAL_PEPTIDE":
                     seq_motifs.append([motif[0], motif[1], "()", None, 10, "black", "PaleGreen", "arial|8|red|"])
                 else:
