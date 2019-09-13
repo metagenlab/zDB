@@ -21,7 +21,7 @@ from django.core.cache import cache
 @shared_task
 def create_random_user_accounts2(request):
     # get data
-    print("get data")
+    #print("get data")
     current_task.update_state(state='PROGRESS',
                               meta={'current': 1,
                                     'total': 3,
@@ -29,7 +29,7 @@ def create_random_user_accounts2(request):
                                     'description': "Getting data"})
 
     time.sleep(1)
-    print("plotting")
+    #print("plotting")
     current_task.update_state(state='PROGRESS',
                               meta={'current': 2,
                                     'total': 3,
@@ -37,7 +37,7 @@ def create_random_user_accounts2(request):
                                     'description': "Plotting circos"})
     time.sleep(1)
     fertig = True
-    print(locals())
+    #print(locals())
     html = '<h3>Fertig!</h3>'#render_to_string('chlamdb/celery_test.html', context=locals())
     return html#HttpResponse(html)
 
@@ -79,7 +79,7 @@ def extract_orthogroup_task(biodb,
         html = template.render(Context(locals()))#render_to_string(template, context=locals())
         return html   
     
-    print("get matrix")
+    #print("get matrix")
     if not accessions:
         # get sub matrix and complete matrix
         mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
@@ -101,7 +101,7 @@ def extract_orthogroup_task(biodb,
                                                                   single_copy=single_copy,
                                                                   accessions=accessions,
                                                                   cache=cache)
-    print("matrix OK")
+    #print("matrix OK")
     match_groups = mat.index.tolist()
 
     if len(match_groups) == 0:
@@ -141,7 +141,7 @@ def extract_orthogroup_task(biodb,
                                                                                                       biodb,
                                                                                                       taxon_filter=include,
                                                                                                       accessions=accessions)
-        print("done")
+        #print("done")
 
         if len(include) == 1:
             # get url to get single include taxon fasta
@@ -519,7 +519,7 @@ def run_circos(reference_taxon, target_taxons):
         ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
         #print 'msa core identity order!'
     except:
-        print('msa orthogroups_average_identity order!')
+        #print('msa orthogroups_average_identity order!')
 
         # median identity
         sql_order = 'select taxon from (select taxon_2 as taxon, median_identity ' \
@@ -566,7 +566,7 @@ def run_circos(reference_taxon, target_taxons):
                                                                            biodb, 
                                                                            reference_taxon)
         reference_phylum = server.adaptor.execute_and_fetchall(sql_phylum,)[0][0]
-        print(reference_phylum)
+        #print(reference_phylum)
         
         try:
             sql = 'select locus_tag from blastnr.blastnr_%s t1 ' \
@@ -1084,7 +1084,7 @@ def pfam_tree_task(biodb,
                                     'percent': 50,
                                     'description': "Plotting TM tree"})
 
-    print ('pfam tree %s -- %s' % (biodb, orthogroup))
+    #print ('pfam tree %s -- %s' % (biodb, orthogroup))
     server, db = manipulate_biosqldb.load_db(biodb)
 
     #sql_locus2protein_id = 'select locus_tag, protein_id from orthology_detail_%s where orthogroup="%s"' % (biodb, orthogroup)
@@ -1096,14 +1096,14 @@ def pfam_tree_task(biodb,
     home_dir = os.path.dirname(__file__)
 
     alignment_path = os.path.join(home_dir, alignment_fasta)
-    print("get data")
+    #print("get data")
     if os.path.exists(alignment_path):
         #pass
         locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb, aa_alignment=False) # alignment_path
     else:
 
         locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb, aa_alignment=False)
-    print("done")
+    #print("done")
     motif_count = {}
     for data in locus2pfam_data.values():
         for motif in data:
@@ -1115,7 +1115,7 @@ def pfam_tree_task(biodb,
             except:
                 print ("motif", motif)
 
-    print("get tree")
+    #print("get tree")
     sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
 
     try:
@@ -1128,7 +1128,7 @@ def pfam_tree_task(biodb,
     #sql = 'select taxon_id, family from genomes_classification;'
 
     #taxon_id2family = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    print("draw tree")
+    #print("draw tree")
     t, ts, leaf_number = ete_motifs.draw_pfam_tree(tree, locus2pfam_data, False, taxon_id2family=False)
     path = settings.BASE_DIR + '/assets/temp/pfam_tree.svg'
     asset_path = '/temp/pfam_tree.svg'
@@ -1289,7 +1289,7 @@ def plot_heatmap_task(biodb,
                                                                         cache=cache)
         taxon_list = [i.split("_")[1] for i in list(mat.columns.values)]
         labels = [taxon2description[i] for i in taxon_list]
-        print(labels)
+        #print(labels)
     else:
         accession2description = manipulate_biosqldb.accession2description(server,biodb)
         mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,

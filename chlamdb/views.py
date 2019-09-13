@@ -493,12 +493,10 @@ def extract_orthogroup(request):
     :return:
     '''
 
-    print(f"{biodb}_test")
-
     server = manipulate_biosqldb.load_db()
     #print "extract orthogroup %s" % biodb
     extract_form_class = make_extract_form(biodb, plasmid=True)
-    print(request.method)
+    #print(request.method)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
@@ -8645,7 +8643,7 @@ def plot_neighborhood(request, target_locus, region_size=23000):
     server = manipulate_biosqldb.load_db()
 
     task = plot_neighborhood_task.delay(biodb, target_locus, region_size)
-    print("task", task)
+    #print("task", task)
     task_id = task.id
     
     #time.sleep(5)

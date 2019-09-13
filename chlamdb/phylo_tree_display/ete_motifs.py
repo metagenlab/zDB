@@ -998,7 +998,7 @@ def multiple_profiles_heatmap(biodb,
                                                 #print('less than 10: %s' % group2taxon2count[value][lf.name])
                                                 n = TextFace(' %s ' % local_label)
                                             else:
-                                                print('Beteen 10 and 100: %s' % group2taxon2count[value][lf.name])
+                                                #print('Beteen 10 and 100: %s' % group2taxon2count[value][lf.name])
                                                 n = TextFace('%s' % local_label)
                                         else:
                                             #print('more than 100: %s' % group2taxon2count[value][lf.name])
@@ -1008,7 +1008,7 @@ def multiple_profiles_heatmap(biodb,
                                                 n.fgcolor = 'white'
                                     # labels are not floats
                                     except TypeError:
-                                        print("not float")
+                                        #print("not float")
                                         n = TextFace(' %s ' % group2taxon2count[value][lf.name])
                                 else:
                                     n = TextFace(' - ')
@@ -1933,9 +1933,9 @@ def get_pfam_data(orthogroup, biodb, aa_alignment=False):
           ' left join interpro_%s t2 on t1.seqfeature_id=t2.seqfeature_id and t2.orthogroup="%s" and t2.analysis="Pfam" ' \
           ' where t1.orthogroup="%s";' % (biodb, biodb, orthogroup, orthogroup)
 
-    print(sql)
+    #print(sql)
     data = server.adaptor.execute_and_fetchall(sql,)
-    print("OK")
+    #print("OK")
     locus2aa_seq = {}
     # getting aa alignment
     if aa_alignment:
@@ -1966,7 +1966,7 @@ def get_TM_data(biodb,
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     if orthogroup:
-        print("orthogroup!")
+        #print("orthogroup!")
         sql = 'select locus_tag, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where orthogroup="%s" and analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (biodb, orthogroup)
 
@@ -1985,7 +1985,7 @@ def get_TM_data(biodb,
     else:
         sql = 'select locus_tag, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (biodb)
-    print(sql)
+    #print(sql)
     data = server.adaptor.execute_and_fetchall(sql,)
 
     if signal_peptide:
@@ -2099,8 +2099,8 @@ def interpro_tsv2pfam_data(interpro_tsv_file,
         for row in f:
             data = row.rstrip().split('\t')
             if len(data) != 13:
-                print (len(data))
-                print (data)
+                #print (len(data))
+                #print (data)
                 raise IOError('Unexpected number of columns in the tsv file (expected 13 of the standard 13 columns format from 2018)')
             else:
                 locus_tag = data[0]
@@ -2161,9 +2161,9 @@ def draw_pfam_tree(tree_name, locus2data,
     #ts.layout_fn = layout    
     #t.populate(8)
     # Calculate the midpoint node
-    print (t)
+    #print (t)
     R = t.get_midpoint_outgroup()
-    print (R)
+    #print (R)
     # and set it as tree outgroup
     t.set_outgroup(R)
 
@@ -2300,7 +2300,7 @@ def draw_TM_tree(tree_name, locus2data):
     # and set it as tree outgroup
     t.set_outgroup(R)
 
-    print("draw_TM_tree--------------", locus2data)
+    #print("draw_TM_tree--------------", locus2data)
     color_dico = organism2color(locus2data)
 
     for leaf_number, l in enumerate(t.iter_leaves()):
@@ -2330,7 +2330,7 @@ def draw_TM_tree(tree_name, locus2data):
 
         locus_name = str(l)[3:len(str(l))]
         locus_name = locus_name.split('|')[0]
-        print(locus_name, locus_name in locus2data)
+        #print(locus_name, locus_name in locus2data)
         try:
             data = locus2data[locus_name]
             seq_motifs = []
@@ -2343,7 +2343,7 @@ def draw_TM_tree(tree_name, locus2data):
             l.img_style['hz_line_type'] = 0
             l.img_style['size'] = 6
         # case in which we have more than seq length
-        print("len data", len(data), data)
+        #print("len data", len(data), data)
         if isinstance(data[0], list):
             for motif in data:
                 print(motif[-1])
@@ -2351,7 +2351,7 @@ def draw_TM_tree(tree_name, locus2data):
                     seq_motifs.append([motif[0], motif[1], "()", None, 10, "black", "PaleGreen", "arial|8|red|"])
                 else:
                     seq_motifs.append([motif[0], motif[1], "[]", None, 10, "black", "red", "arial|8|red|"])
-            print("motifs:", seq_motifs)
+            #print("motifs:", seq_motifs)
         if isinstance(data[0], int):
             seqFace = SeqMotifFace(data[0]*'N',
                                     motifs=[],
