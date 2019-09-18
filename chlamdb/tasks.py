@@ -19,30 +19,6 @@ from django.core.cache import cache
 
 
 @shared_task
-def create_random_user_accounts2(request):
-    # get data
-    #print("get data")
-    current_task.update_state(state='PROGRESS',
-                              meta={'current': 1,
-                                    'total': 3,
-                                    'percent': 10,
-                                    'description': "Getting data"})
-
-    time.sleep(1)
-    #print("plotting")
-    current_task.update_state(state='PROGRESS',
-                              meta={'current': 2,
-                                    'total': 3,
-                                    'percent': 10,
-                                    'description': "Plotting circos"})
-    time.sleep(1)
-    fertig = True
-    #print(locals())
-    html = '<h3>Fertig!</h3>'#render_to_string('chlamdb/celery_test.html', context=locals())
-    return html#HttpResponse(html)
-
-
-@shared_task
 def extract_orthogroup_task(biodb, 
                             include,
                             exclude,
@@ -118,6 +94,13 @@ def extract_orthogroup_task(biodb,
         ''')
 
         html = template.render(Context(locals()))#render_to_string(template, context=locals())
+ 
+        current_task.update_state(state='SECCESS',
+                              meta={'current': 3,
+                                    'total': 3,
+                                    'percent': 100,
+                                    'description': "Done"})
+ 
         return html
     else:
 
@@ -436,6 +419,13 @@ def extract_orthogroup_task(biodb,
         ''')
 
         html = template.render(Context(locals()))#render_to_string(template, context=locals())
+ 
+        current_task.update_state(state='SECCESS',
+                              meta={'current': 3,
+                                    'total': 3,
+                                    'percent': 100,
+                                    'description': "Done"})
+ 
         return html
 
 
@@ -680,6 +670,13 @@ def run_circos(reference_taxon, target_taxons):
             ''')
 
     html = template.render(Context(locals()))#render_to_string(template, context=locals())
+
+    current_task.update_state(state='SECCESS',
+                              meta={'current': 4,
+                                    'total': 4,
+                                    'percent': 100,
+                                    'description': "Done"})
+
     return html
 
 
@@ -838,6 +835,13 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
             ''')
 
     html = template.render(Context(locals()))#render_to_string(template, context=locals())
+
+    current_task.update_state(state='SECCESS',
+                              meta={'current': 4,
+                                    'total': 4,
+                                    'percent': 100,
+                                    'description': "Done"})
+
     return html
 
 
@@ -988,6 +992,13 @@ def plot_neighborhood_task(biodb, target_locus, region_size):
             ''')
 
     html = template.render(Context(locals()))
+
+    current_task.update_state(state='SECCESS',
+                              meta={'current': 3,
+                                    'total': 3,
+                                    'percent': 100,
+                                    'description': "Done"})
+
     return html
 
 
@@ -1067,12 +1078,12 @@ def TM_tree_task(biodb,
 
     html = template.render(Context(locals()))
 
-    current_task.update_state(state='SUCCESS',
+    current_task.update_state(state='SECCESS',
                               meta={'current': 1,
                                     'total': 1,
                                     'percent': 100,
-                                    'description': "Plotting TM tree done"})
-    
+                                    'description': "Done"})
+   
     return html
 
 
@@ -1199,6 +1210,13 @@ def pfam_tree_task(biodb,
             ''')
 
     html = template.render(Context(locals()))
+
+    current_task.update_state(state='SECCESS',
+                              meta={'current': 1,
+                                    'total': 1,
+                                    'percent': 100,
+                                    'description': "Done"})
+
     return html
 
 
@@ -1358,4 +1376,11 @@ def plot_heatmap_task(biodb,
             ''')
 
     html = template.render(Context(locals()))
+
+    current_task.update_state(state='SECCESS',
+                              meta={'current': 2,
+                                    'total': 2,
+                                    'percent': 100,
+                                    'description': "Done"})
+
     return html
