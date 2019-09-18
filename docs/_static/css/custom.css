@@ -1,0 +1,19 @@
+
+td {
+    border-bottom: 1px solid #ddd;
+  }
+th {
+    border-bottom: 1px solid black;
+  }
+
+tr {
+    line-height: 10px;
+}
+tr:nth-child(even)  {
+    background-color: lightcyan;
+ }
+
+ table.align-center {
+    margin-left: auto;
+    margin-right: auto;
+}
