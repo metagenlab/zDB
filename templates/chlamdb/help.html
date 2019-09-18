@@ -19,23 +19,249 @@
               <div class="col-lg-12">
                  {% include "chlamdb/menu.html" %}
                   <div id="help">
-                      <h2>Chlamydiae Database version 1.0</h2>
-                      <div class="row" style="padding-top:20px;">
+                      <h2>Chlamydiae Database version 2.0</h2>
 
-                      </div>
-                      <div col class="col-lg-1">
-                        <img width = "100%" src = "{% static "homepage/Under_construction.png" %}" alt = "circos" />
-
-                      </div>
-                      <div col class="col-lg-10">
-                        <font size="3">Help page under construction. Contact <strong>&#116;&#114;&#101;&#115;&#116;&#097;&#110;&#046;&#112;&#105;&#108;&#108;&#111;&#110;&#101;&#108;[&#064;]&#099;&#104;&#117;&#118;&#046;&#099;&#104; </strong> if you have suggestions, problems or questions.</font>
-                      </div>
 
                       <div class="row" style="padding-top:20px;">
+
+                        </div>
+                        <div col class="col-lg-1">
+                          <img width = "100%" src = "{% static "homepage/Under_construction.png" %}" alt = "circos" />
+  
+                        </div>
                         <div col class="col-lg-10">
-                        <a href="{% static "homepage/poster_chlamdb.pdf" %}">Poster of the CBRS meeting describing the database</a>
-                      </div>
-                      </div>
+                          <font size="3">Help page under construction. Contact <strong>&#116;&#114;&#101;&#115;&#116;&#097;&#110;&#046;&#112;&#105;&#108;&#108;&#111;&#110;&#101;&#108;[&#064;]&#099;&#104;&#117;&#118;&#046;&#099;&#104; </strong> if you have suggestions, problems or questions.</font>
+                        </div>
+  
+                        <div class="row" style="padding-top:20px;">
+                          <div col class="col-lg-10">
+                          <a href="{% static "homepage/poster_chlamdb.pdf" %}">Poster of the CBRS meeting describing the database</a>
+                        </div>
+                        </div>
+
+
+                      <div class="row">
+                        <!--Nav Bar -->
+                        <nav class="col-xs-3 bs-docs-sidebar">
+                            <ul id="sidebar" class="nav nav-stacked fixed">
+
+                                <li>
+                                    <a href="#GroupA">Website tutorial</a>
+                                    <ul class="nav nav-stacked">
+                                        <li><a href="#GroupASub1">Search for a protein of interest</a></li>
+                                        <li><a href="#GroupASub2">BLAST interface</a></li> 
+                                        <li><a href="#GroupASub3">Protein page</a></li>
+                                        <li><a href="#GroupASub4">Alignments</a></li>
+                                        <li><a href="#GroupASub5">Whole genomes alignments</a></li>
+                                        <li><a href="#GroupASub6">Identification of genome(s) specific genes</a></li>
+                                        <li><a href="#GroupASub7">Comparison of COG, Kegg, interpro annotations</a></li>
+                                        
+                                    </ul>
+                                </li>
+                                <li>
+                                  <a href="#GroupB">Methods</a>
+                                  <ul class="nav nav-stacked">
+                                      <li><a href="#GroupBSub1">Source of the data</a></li>
+                                      <li><a href="#GroupBSub2">Proteins annotation</a></li>
+                                      <li><a href="#GroupBSub3">Phylogenetic trees</a></li>
+                                      <li><a href="#GroupBSub4">Homology search with RefSeq and SwissProt</a></li>
+                                      <li><a href="#GroupBSub5">Candidate T3SS effector identification</a></li>
+                                      <li><a href="#GroupBSub6">Identification of orthologs</a></li>
+                                      <li><a href="#GroupBSub7">Domains and COG phyletic profiling</a></li>
+                                      <li><a href="#GroupBSub7">Protein-Protein Interactions</a></li>
+                                  </ul>
+                              </li>
+                              <li>
+                                <a href="#GroupC">ChlamDB Version 2.0 details</a>
+                                <ul class="nav nav-stacked">
+                                    <li><a href="#GroupCSub1">Source databases</a></li>
+                                    <li><a href="#GroupCSub2">Softwares</a></li>
+                                </ul>
+                            </li>
+
+                            </ul>
+                        </nav>
+                        <!--Main Content -->
+                        <div class="col-md-9 col-lg-9">
+
+                            <section id="GroupA" class="group">
+                                <h3>Website tutorial</h3>
+                                <div id="GroupASub1" class="subgroup">
+                                  <h4>Search for a protein of interest</h4>
+
+                                  - using protein id, 
+
+                                  - inconcistencies in the annotation: benefit of comparative data: eg. 
+
+                                </div>
+                                <div id="GroupASub2" class="subgroup">
+                                    <h4>BLAST interface</h4>
+                                </div>
+                                <div id="GroupASub3" class="subgroup">
+                                    <h4>Protein page</h4>
+                                </div>
+                                <div id="GroupASub4" class="subgroup">
+                                    <h4>Alignments of target genomic regions</h4>
+                                    
+
+                                    <div class="col-lg-12 col-md-12 col-sm-12">
+
+                                        <div class="panel panel-default">
+                                          <div class="panel-heading">
+                                            <h3 class="panel-title">Genome aligments based on identified orthologs (interactive plot)</h3>
+                                          </div>
+                                          <div class="panel-body" style="margin: 10px 10px 10px 10px">
+                
+                                            <object type="image/svg+xml" data="{% static "homepage/region_align.svg" %}" id="venn" style="width:100%"></object>
+                
+                                          </div>
+                                        </div>
+                                      </div>
+
+
+                                </div>
+
+                                <div id="GroupASub5" class="subgroup">
+
+                                    <h4>Whole genomes alignments</h4>
+
+                                    <div class="col-lg-12 col-md-12 col-sm-12">
+
+                                        <div class="panel panel-default">
+                                          <div class="panel-heading">
+                                            <h3 class="panel-title">Circos comparative plot (interactive plot)</h3>
+                                          </div>
+                                          <div class="panel-body" style="margin: 10px 10px 10px 10px">
+                
+                                            <img width = "50%" src = "{% static "homepage/circos.png" %}" alt = "circos" />
+                
+                                          </div>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+
+
+                                <div id="GroupASub6" class="subgroup">
+                                    <h4>Identification of genome(s) specific genes</h4>
+                                </div>
+                                <div id="GroupASub7" class="subgroup">
+                                    <h4>Protein-Protein Interactions</h4>
+                                </div>
+
+
+
+                            </section>
+                            <section id="GroupB" class="group">
+                                <h3>Methods</h3>
+                                <div id="GroupBSub1" class="subgroup">
+
+
+                                  <h4>Alignment of target regions</h4>
+
+
+
+
+                                </div>
+                              </section>  
+                              <section id="GroupC" class="group">
+                                  <div id="GroupCSub1" class="subgroup">
+                                      <h3>ChlamDB Version 2.0 details</h3>
+                                        <table class="table" id="db_data" style="width:400px">
+
+                                          <thead>
+                                            <tr>
+                                              <th>Database name</th>
+                                              <th>Version</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            <tr>
+                                              <td>UniprotKB</td>
+                                              <td>...</td>
+                                            </tr>
+                                            <tr>
+                                              <td>TCDB</td>
+                                              <td>...</td>
+                                            </tr>  
+                                            <tr>
+                                                <td>RefSeq</td>
+                                                <td>...</td>
+                                            </tr>  
+                                            <tr>
+                                              <td>Interpro</td>
+                                              <td>...</td>
+                                            </tr>    
+                                          </tbody>
+                                        </table>
+                                  </div>
+
+                                  <div id="GroupCSub2" class="subgroup">
+                                      <h4>Softwares</h4>
+    
+                                      <table class="table" id="db_soft" style="width:400px;">
+
+                                          <thead>
+                                            <tr>
+                                              <th>Software name</th>
+                                              <th>Version</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            <tr>
+                                              <td>FastTree</td>
+                                              <td>...</td>
+                                            </tr>
+                                            <tr>
+                                              <td>BLAST+</td>
+                                              <td>...</td>
+                                            </tr>  
+                                            <tr>
+                                                <td>Diamond</td>
+                                                <td>...</td>
+                                            </tr>  
+                                            <tr>
+                                              <td>...</td>
+                                              <td>...</td>
+                                            </tr>    
+                                          </tbody>
+                                        </table>
+    
+                                    </div>
+
+                              </section>
+
+                              
+                        </div>
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                   </div>
 
@@ -81,19 +307,7 @@
 
 
                     <div class="row">
-                      <div class="col-lg-6 col-md-6 col-sm-12">
 
-                        <div class="panel panel-default">
-                          <div class="panel-heading">
-                            <h3 class="panel-title">Circos comparative plot (interactive plot)</h3>
-                          </div>
-                          <div class="panel-body" style="margin: 10px 10px 10px 10px">
-
-                            <img width = "100%" src = "{% static "homepage/circos.png" %}" alt = "circos" />
-
-                          </div>
-                        </div>
-                      </div>
                       <div class="col-lg-6 col-md-6 col-sm-12">
 
                         <div class="panel panel-default">
@@ -124,19 +338,7 @@
                           </div>
                         </div>
                       </div>
-                      <div class="col-lg-6 col-md-6 col-sm-12">
 
-                        <div class="panel panel-default">
-                          <div class="panel-heading">
-                            <h3 class="panel-title">Genome aligments based on identified orthologs (interactive plot)</h3>
-                          </div>
-                          <div class="panel-body" style="margin: 10px 10px 10px 10px">
-
-                            <object type="image/svg+xml" data="{% static "homepage/region_align.svg" %}" id="venn" style="width:100%"></object>
-
-                          </div>
-                        </div>
-                      </div>
                     </div>
 
 
@@ -186,12 +388,135 @@
     </div>
   </div>
 </div>
-    <script>
+<script>
 
-    $('.dropdown-toggle').dropdown()
+$('.dropdown-toggle').dropdown()
 
-    </script>
+$(document).ready(function() {
+    $('#db_data').DataTable( {
+            dom: 'Bfrtip',
+            "order": [[2, "desc" ]],
+            "pageLength": 15,
+            "paging":   true,
+            "ordering": true,
+            "info":     false,
+            buttons: [
+            {
+                extend: 'excel',  
+                title: '{{ fam }}'
+            },
+            {
+                extend: 'csv',
+                title: '{{ fam }}'
+            }
+            ],
+        } );
+    } );
+
+    $(document).ready(function() {
+    $('#db_soft').DataTable( {
+            dom: 'Bfrtip',
+            "order": [[2, "desc" ]],
+            "pageLength": 15,
+            "paging":   true,
+            "ordering": true,
+            "info":     false,
+            buttons: [
+            {
+                extend: 'excel',  
+                title: '{{ fam }}'
+            },
+            {
+                extend: 'csv',
+                title: '{{ fam }}'
+            }
+            ],
+        } );
+    } );
+
+</script>
 <!--<script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>-->
 </body>
 {% include "chlamdb/style_menu.html" %}
 </html>
+<style>
+
+
+.group {
+    background: yellow;
+    width: 100%;
+    height: 100%x;
+}
+.group .subgroup {
+    background: orange;
+    width: 100%;
+    height: 100%;
+}
+.fixed {
+    position: fixed;
+}
+
+/* sidebar */
+.bs-docs-sidebar {
+    padding-left: 2px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* all links */
+.bs-docs-sidebar .nav>li>a {
+    color: #999;
+    border-left: 2px solid transparent;
+    padding: 4px 20px;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+/* nested links */
+.bs-docs-sidebar .nav .nav>li>a {
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 30px;
+    font-size: 12px;
+}
+
+/* active & hover links */
+.bs-docs-sidebar .nav>.active>a, 
+.bs-docs-sidebar .nav>li>a:hover, 
+.bs-docs-sidebar .nav>li>a:focus {
+    color: #563d7c;                 
+    text-decoration: none;          
+    background-color: transparent;  
+    border-left-color: #563d7c; 
+}
+/* all active links */
+.bs-docs-sidebar .nav>.active>a, 
+.bs-docs-sidebar .nav>.active:hover>a,
+.bs-docs-sidebar .nav>.active:focus>a {
+    font-weight: 700;
+}
+/* nested active links */
+.bs-docs-sidebar .nav .nav>.active>a, 
+.bs-docs-sidebar .nav .nav>.active:hover>a,
+.bs-docs-sidebar .nav .nav>.active:focus>a {
+    font-weight: 500;
+}
+
+/* hide inactive nested list 
+.bs-docs-sidebar .nav ul.nav {
+    display: none;           
+}
+/* show active nested list 
+.bs-docs-sidebar .nav>.active>ul.nav {
+    display: block;           
+}
+*/
+
+</style>
+
+<script>
+$('body').scrollspy({
+    target: '.bs-docs-sidebar',
+    offset: 40
+});
+</script>

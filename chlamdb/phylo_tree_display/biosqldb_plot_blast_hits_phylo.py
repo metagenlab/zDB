@@ -1,7 +1,10 @@
 #!/usr/bin/python
 
 
-def plot_BBH_phylo(query_fasta_record, biodb, blast_type='blastp'):
+def plot_BBH_phylo(query_fasta_record, 
+                   biodb,
+                   asset_path, 
+                   blast_type='blastp'):
 
     '''
 
@@ -14,16 +17,18 @@ def plot_BBH_phylo(query_fasta_record, biodb, blast_type='blastp'):
 
     from chlamdb.biosqldb import manipulate_biosqldb
     from chlamdb.biosqldb import biosql_own_sql_tables
-    import blast_utils
-    from chlamdb.plots import ete_motifs
+    from chlamdb.biosqldb import blast_utils
+    from chlamdb.phylo_tree_display import ete_motifs
     from Bio import SeqIO
+    import os 
+    
     try:
         label_split = True
         ordered_accession_list = [i.id.split('|')[1] for i in query_fasta_record]
     except IndexError:
         label_split = False
         ordered_accession_list = [i.id for i in query_fasta_record]
-    print "ordered_accession_list", ordered_accession_list
+    print ("ordered_accession_list", ordered_accession_list)
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -45,7 +50,7 @@ def plot_BBH_phylo(query_fasta_record, biodb, blast_type='blastp'):
         # keep accession and identity
         accession2best_hits[accession] = [i[0:3] for i in one_blast.best_hit_list]
     '''
-    faa_path = '/home/trestan/work/dev/django/chlamydia/assets/%s/faa/all.faa' % (biodb)
+    faa_path = os.path.join(asset_path, '%s/faa/all.faa' % (biodb))
     one_blast = blast_utils.Blast(query_fasta_record, faa_path)
     one_blast.run_blastp()
 
@@ -113,7 +118,7 @@ def plot_BBH_phylo(query_fasta_record, biodb, blast_type='blastp'):
 
     print 'query list', query_list
     '''
-    print
+
     query_list = locus2taxon2identity_closest.keys()
     tree, style1 = ete_motifs.multiple_profiles_heatmap(biodb,
                                                 ordered_accession_list,
