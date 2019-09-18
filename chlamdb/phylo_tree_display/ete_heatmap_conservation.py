@@ -397,27 +397,28 @@ def plot_heatmap_tree_locus(biodb,
             #lf.add_face(n, 7, position="aligned")
             ts.aligned_header.add_face(n, 1)
  
-            n = TextFace('Protein identity')
-            n.margin_top = 1
-            n.margin_right = 1
-            n.margin_left = 20
-            n.margin_bottom = 1
-            n.inner_background.color = "white"
-            n.opacity = 1.
-            n.rotation = -25
-            #lf.add_face(n, 7, position="aligned")
-            ts.aligned_header.add_face(n, 2)
- 
-            n = TextFace('Locus tag')
-            n.margin_top = 1
-            n.margin_right = 1
-            n.margin_left = 20
-            n.margin_bottom = 1
-            n.inner_background.color = "white"
-            n.opacity = 1.
-            n.rotation = -25
-            #lf.add_face(n, 7, position="aligned")
-            ts.aligned_header.add_face(n, 3)
+            if taxid2identity:
+                n = TextFace('Protein identity')
+                n.margin_top = 1
+                n.margin_right = 1
+                n.margin_left = 20
+                n.margin_bottom = 1
+                n.inner_background.color = "white"
+                n.opacity = 1.
+                n.rotation = -25
+                #lf.add_face(n, 7, position="aligned")
+                ts.aligned_header.add_face(n, 2)
+            if taxid2locus:
+                n = TextFace('Locus tag')
+                n.margin_top = 1
+                n.margin_right = 1
+                n.margin_left = 20
+                n.margin_bottom = 1
+                n.inner_background.color = "white"
+                n.opacity = 1.
+                n.rotation = -25
+                #lf.add_face(n, 7, position="aligned")
+                ts.aligned_header.add_face(n, 3)
         
         leaf_number+=1
         #print lf

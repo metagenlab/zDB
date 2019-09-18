@@ -47,7 +47,7 @@ def load_BPBAac_table(table_file,
                                                                                               locus_tag2taxon_id[locus],
                                                                                               data[1],
                                                                                               effector)
-                server.adaptor.execute(sql,)
+                    server.adaptor.execute(sql,)
                 server.commit()
 
 
@@ -95,7 +95,7 @@ def load_T3_MM_table(table_file,
                                                                                                      data[1],
                                                                                                      effector,
                                                                                                      data[3])
-                server.adaptor.execute(sql,)
+                    server.adaptor.execute(sql,)
                 server.commit()
 
 
@@ -143,7 +143,7 @@ def load_effectiveT3_table(table_file,
                                                                                                 locus_tag2taxon_id[locus],
                                                                                                 data[2],
                                                                                                 effector)
-            server.adaptor.execute(sql,)
+                server.adaptor.execute(sql,)
             server.commit()
                 
 
@@ -188,7 +188,7 @@ def load_DeepT3_table(table_file,
                                                                                                 locus_tag2seqfeature_id[locus],
                                                                                                 locus_tag2taxon_id[locus],
                                                                                                 effector)
-                server.adaptor.execute(sql,)
+                    server.adaptor.execute(sql,)
                 server.commit()
                                 
 
