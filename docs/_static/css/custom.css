@@ -8,6 +8,7 @@ th {
 
 tr {
     line-height: 10px;
+    vertical-align: middle;
 }
 tr:nth-child(even)  {
     background-color: lightcyan;
@@ -16,4 +17,9 @@ tr:nth-child(even)  {
  table.align-center {
     margin-left: auto;
     margin-right: auto;
+}
+
+table.align-center tr {
+  line-height: 10px;
+  vertical-align: middle;
 }

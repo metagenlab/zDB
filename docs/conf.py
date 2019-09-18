@@ -50,7 +50,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 import quark_sphinx_theme
 import sphinx_bootstrap_theme
-import sphinx_theme_material
+# import sphinx_theme_material
 html_theme_path = [quark_sphinx_theme.get_path()]
 html_theme = 'quark'
 #html_theme = 'bootstrap'
