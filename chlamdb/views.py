@@ -87,7 +87,6 @@ from celery.result import AsyncResult
 from django.http import HttpResponse
 from django.http import StreamingHttpResponse
 from chlamdb.forms import GenerateRandomUserForm
-from chlamdb.tasks import create_random_user_accounts2
 from chlamdb.tasks import run_circos
 from chlamdb.tasks import run_circos_main
 from chlamdb.tasks import extract_orthogroup_task
@@ -101,23 +100,6 @@ from chlamdb.celeryapp import app as celery_app
 @celery_app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
-
-def generate_random_user(request):
-    if request.method == 'POST':
-        form = GenerateRandomUserForm(request.POST)
-        if form.is_valid():
-            print("valid form")
-            total_user = form.cleaned_data.get('total_user')
-            print("total user", total_user)
-            task = create_random_user_accounts2.delay(3)
-            print("task", task)
-            return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
-        else:
-            return HttpResponse(json.dumps({'task_id': None}), content_type='application/json')
-    else:
-        print("IN valid form")
-        form = GenerateRandomUserForm
-    return render(request, 'chlamdb/celery_test.html', {'form': form})
 
 
 def get_task_info(request):
