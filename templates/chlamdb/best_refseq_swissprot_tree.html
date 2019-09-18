@@ -47,7 +47,7 @@
 
     var task_id = "{{ task_id }}";
     console.log(task_id)
-    get_task_info(task_id);
+    get_task_info("initial task id:", task_id);
 
     function get_task_info(task_id) {
         $.ajax({
@@ -55,6 +55,7 @@
             url: '/get-task-info/',
             data: {'task_id': task_id},
             success: function (data) {
+                console.log("success, checking state... ", data.state)
                 pgrbar.css('width', 10+'%').attr('aria-valuenow', 10)
                 $("#progress").show();
                 $('#results').html('')
@@ -74,9 +75,10 @@
                 }
 
                 if (data.state != 'SUCCESS') {
+                    console.log("waiting...")
                     setTimeout(function () {
                         get_task_info(task_id)
-                    }, 1000);
+                    }, 2000);
                 }
             },
             error: function (data) {

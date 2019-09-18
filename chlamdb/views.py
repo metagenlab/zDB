@@ -119,14 +119,18 @@ def generate_random_user(request):
         form = GenerateRandomUserForm
     return render(request, 'chlamdb/celery_test.html', {'form': form})
 
+
 def get_task_info(request):
+    
     task_id = request.GET.get('task_id', None)
+    
     if task_id is not None:
         task = AsyncResult(task_id)
         data = {
             'state': task.state,
             'result': task.result,
         }
+        
         return HttpResponse(json.dumps(data), content_type='application/json')
     else:
         return HttpResponse('No job id given.')
@@ -11378,7 +11382,7 @@ def blast(request):
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
         form = blast_form_class()  # Nous créons un formulaire vide
 
-    return render(request, 'chlamdb/blast.html', locals())
+    return render(request, 'BIODBFDB/blast.html', locals())
 
 
 def get_record_from_memory(biodb, cache_obj, record_key, accession):
