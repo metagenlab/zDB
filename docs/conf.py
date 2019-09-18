@@ -52,7 +52,7 @@ import quark_sphinx_theme
 import sphinx_bootstrap_theme
 # import sphinx_theme_material
 html_theme_path = [quark_sphinx_theme.get_path()]
-html_theme = 'quark'
+html_theme = 'nature'
 #html_theme = 'bootstrap'
 #html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 #html_theme = 'alabaster'
@@ -68,5 +68,6 @@ html_css_files = [
 
 html_js_files = [
     'js/bootstrap.min.js',
+    'js/custom.js'
 ]
 
