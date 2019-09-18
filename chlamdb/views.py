@@ -11892,7 +11892,7 @@ def refseq_swissprot_tree(request, orthogroup):
 
     task = phylogeny_task.delay(biodb, 
                                 orthogroup)
-    print("task", task)
+    print("refseq_swissprot_tree task", task)
     task_id = task.id
 
     return render(request, 'chlamdb/best_refseq_swissprot_tree.html', locals())

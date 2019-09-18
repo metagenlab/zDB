@@ -36,7 +36,7 @@
     var pgrbar = $('.progress-bar');
 
     var task_id = "{{ task_id }}";
-    console.log(task_id)
+    console.log("my task id", task_id)
     get_task_info("initial task id:", task_id);
 
     function get_task_info(task_id) {
@@ -48,7 +48,7 @@
                 pgrbar.css('width', 10+'%').attr('aria-valuenow', 10)
                 $("#progress").show();
                 $('#results').html('')
-                console.log(task_id)
+                console.log("data task id", data.task_id)
                 if (data.state == 'PENDING') {
                     prg_dv.html('Please wait...');
                 }
