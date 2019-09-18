@@ -41,6 +41,7 @@ def create_random_user_accounts2(request):
     html = '<h3>Fertig!</h3>'#render_to_string('chlamdb/celery_test.html', context=locals())
     return html#HttpResponse(html)
 
+
 @shared_task
 def extract_orthogroup_task(biodb, 
                             include,
@@ -1065,6 +1066,13 @@ def TM_tree_task(biodb,
             ''')
 
     html = template.render(Context(locals()))
+
+    current_task.update_state(state='SUCCESS',
+                              meta={'current': 1,
+                                    'total': 1,
+                                    'percent': 100,
+                                    'description': "Plotting TM tree done"})
+    
     return html
 
 
@@ -1246,6 +1254,13 @@ def phylogeny_task(biodb,
             ''')
 
     html = template.render(Context(locals()))
+    
+    current_task.update_state(state='SUCCESS',
+                              meta={'current': 1,
+                                    'total': 1,
+                                    'percent': 100,
+                                    'description': "Plotting phylogenetic tree"})
+    
     return html
 
 
