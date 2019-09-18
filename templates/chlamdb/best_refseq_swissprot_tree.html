@@ -48,6 +48,7 @@
                 pgrbar.css('width', 10+'%').attr('aria-valuenow', 10)
                 $("#progress").show();
                 $('#results').html('')
+                console.log(task_id)
                 if (data.state == 'PENDING') {
                     prg_dv.html('Please wait...');
                 }
