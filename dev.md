@@ -75,6 +75,8 @@
     - [x] RefSeq locus_tag/protein id
     - [ ] uniparc cross references
 - [ ] load GOA annotation
+- [ ] krona like plots for blast
+- [ ] kronal like plots for 1 blast hit, 2 blast hit,... (choice) 
 
 ## priority 2
 
@@ -95,6 +97,27 @@
 ## done
 
 - [X] show scores
+
+## euk like domains 
+
+- [ ] plot distribution of euk proportion (how is the distribution?). See where to put the cutoff.
+
+## user interface
+
+- [ ] gene sets: table allowing redordering (drag and drop )
+- [ ] plot distribution normalized identity between species (rate of evolution)
+- [ ] species tree (collapsed)
+- [ ] paralogs tab?
+- [ ] plot n species specific groups (collapse tree by species)
+- [ ] plot n genus specific groups,...
+- [ ] circos taxonomy
+- [ ] overview number of different KO/group, COG/group,...
+- [ ] overview taxonomy top 200 refseq hits
+- [ ] blast page: highlight best non self phylum hit
+- [ ] blast celery
+- [ ] cross references
+- [ ] go terms
+- [ ] download page
 
 ## TODO
 
@@ -166,3 +189,4 @@
 - [ ] add tcdb classification to "fam" (annotation, phylogenetic profile,...). Include all classification levels (superfamilies,...)
 - [ ] idem with EC classification system
 - [ ] search bar: add option to search for TCDB accessions
+- [ ] orthoinspector
