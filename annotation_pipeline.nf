@@ -137,8 +137,6 @@ if (params.ncbi_sample_sheet != false){
   print(filelist)
   for file in filelist:
     ftp.retrbinary("RETR "+file, open(file, "wb").write)
-
-
     """
   }
 
@@ -163,7 +161,7 @@ if (params.ncbi_sample_sheet != false){
     cpus 1
 
     output:
-    file '*.gbff.gz' into raw_ncbi_gbffs_refseq
+    file '*.gbff.gz' optional true into raw_ncbi_gbffs_refseq
 
     script:
     //accession = assembly_accession[0]
@@ -177,30 +175,29 @@ if (params.ncbi_sample_sheet != false){
   Entrez.email = "trestan.pillonel@chuv.ch"
   Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
 
-  print("${accession}")
+  if "${accession}" != "":
+      handle1 = Entrez.esearch(db="assembly", term="${accession}")
+      record1 = Entrez.read(handle1)
 
-  handle1 = Entrez.esearch(db="assembly", term="${accession}")
-  record1 = Entrez.read(handle1)
+      ncbi_id = record1['IdList'][-1]
+      print(ncbi_id)
+      handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
+      assembly_record = Entrez.read(handle_assembly, validate=False)
 
-  ncbi_id = record1['IdList'][-1]
-  print(ncbi_id)
-  handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
-  assembly_record = Entrez.read(handle_assembly, validate=False)
-
-  # only consider annotated genbank => get corresponding refseq assembly
-  if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
-      ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
-  else:
-    continue
-  print(ftp_path)
-  ftp=FTP('ftp.ncbi.nih.gov')
-  ftp.login("anonymous","trestan.pillonel@unil.ch")
-  ftp.cwd(ftp_path)
-  filelist=ftp.nlst()
-  filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
-  print(filelist)
-  for file in filelist:
-    ftp.retrbinary("RETR "+file, open(file, "wb").write)
+      # only consider annotated genbank => get corresponding refseq assembly
+      if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
+          ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+          print("ftp_path", ftp_path)
+          ftp=FTP('ftp.ncbi.nih.gov')
+          ftp.login("anonymous","trestan.pillonel@unil.ch")
+          ftp.cwd(ftp_path)
+          filelist=ftp.nlst()
+          filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
+          print(filelist)
+          for file in filelist:
+            ftp.retrbinary("RETR "+file, open(file, "wb").write)
+      else:
+        print("no genbank annotation for ${accession}")
     """
   }
 
@@ -217,10 +214,10 @@ if (params.ncbi_sample_sheet != false){
     echo false
 
     when:
-    params.ncbi_sample_sheet != false && params.get_refseq_locus_corresp == true
+    params.get_refseq_locus_corresp == true
 
     input:
-    each accession_list from assembly_accession_list_refseq.collect()
+    file accession_list from raw_ncbi_gbffs_refseq.collect()
 
     cpus 1
 
@@ -239,6 +236,7 @@ if (params.ncbi_sample_sheet != false){
   o = open("refseq_corresp.tab", "w")
 
   for accession in "${accession_list}".split(" "):
+      print(accession)
       with gzip.open(accession, "rt") as handle:
         records = SeqIO.parse(handle, "genbank")
         for record in records:
@@ -416,10 +414,7 @@ nr_seqs.collectFile(name: 'merged_nr.faa', newLine: true)
         merged_faa4
         merged_faa5
         merged_faa6
-        merged_faa7
-        merged_faa8
-        merged_faa9
-        merged_faa10 }
+        merged_faa7 }
 
 merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
 .into { faa_chunks1
@@ -1146,6 +1141,22 @@ uniparc_mapping_tab.into{
   uniparc_mapping_tab2
 }
 
+uniprot_mapping_tab.into{
+  uniprot_mapping_tab1
+  uniprot_mapping_tab2
+}
+
+
+uniprot_mapping_tab2.splitCsv(header: false, sep: '\t')
+.map{row ->
+    def uniprot_accession = row[1]
+    return "${uniprot_accession}"
+}
+.collect()
+.unique()
+.into {uniprot_nr_accessions}
+
+
 process get_uniprot_data {
 
   conda 'biopython=1.73=py36h7b6447c_0'
@@ -1157,7 +1168,7 @@ process get_uniprot_data {
   params.uniprot_data == true
 
   input:
-  file(table) from uniprot_mapping_tab
+  file(table) from uniprot_mapping_tab1
 
   output:
   file 'uniprot_data.tab' into uniprot_data
@@ -1585,7 +1596,7 @@ no_tcdb_mapping.splitFasta( by: 1000, file: "chunk" )
 
 process tcdb_gblast3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.0'
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   publishDir 'annotation/tcdb_mapping', mode: 'copy', overwrite: true
 
@@ -1816,7 +1827,7 @@ process execute_PRIAM {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
-  container 'metagenlab/chlamdb_annotation:1.0.0'
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   cpus 2
   memory '4 GB'
@@ -2317,18 +2328,73 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   """
 }
 
+process filter_very_small_sequences {
+
+  conda 'biopython=1.73'
+
+  publishDir 'data/', mode: 'copy', overwrite: true
+
+  when:
+  params.effector_prediction == true
+
+  input: 
+    file (nr_fasta) from merged_faa7
+
+  output:
+    file "nr_more_10aa.faa" into nr_faa_large_sequences
+  
+  script:
+"""
+#!/usr/bin/env python
+
+from Bio import SeqIO
+
+records = SeqIO.parse("${nr_fasta}", "fasta")
+filtered_records = []
+for record in records:
+    if len(record.seq) >= 10:
+        filtered_records.append(record)
+SeqIO.write(filtered_records,"nr_more_10aa.faa", "fasta")
+    
+"""
+}
+
+process remove_amibiguous_aa {
+
+  conda 'biopython=1.73'
+
+  publishDir 'data/', mode: 'copy', overwrite: true
+
+  when:
+  params.effector_prediction == true
+
+  input: 
+    file "nr_fasta.faa" from nr_faa_large_sequences
+
+  output:
+    file "nr_more_10aa_filtered.faa" into nr_faa_large_sequences_filtered
+  
+  script:
+"""
+replace_ambiguous_aa.py -i nr_fasta.faa > nr_more_10aa_filtered.faa    
+"""
+}
+
+
+nr_faa_large_sequences_filtered.splitFasta( by: 5000, file: "chunk_" ).into{ nr_faa_large_sequences_chunks1
+                                                                    nr_faa_large_sequences_chunks2
+                                                                    nr_faa_large_sequences_chunks3
+                                                                    nr_faa_large_sequences_chunks4 }
 
 process execute_BPBAac {
 
-  container 'metagenlab/chlamdb_annotation:1.0.1'
-
-  publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   when:
   params.effector_prediction == true
 
   input:
-  file(nr_fasta) from merged_faa7
+  file "nr_fasta.faa" from nr_faa_large_sequences_chunks1
 
   output:
   file 'BPBAac_results.csv' into BPBAac_results
@@ -2343,7 +2409,7 @@ process execute_BPBAac {
   ln -s /usr/local/bin/BPBAac/Integ.pl
   ln -s /usr/local/bin/BPBAac/Neg100AacFrequency
   ln -s /usr/local/bin/BPBAac/Pos100AacFrequency
-  sed 's/CRC-/CRC/g'  ${nr_fasta} > edited_fasta.faa
+  sed 's/CRC-/CRC/g' nr_fasta.faa > edited_fasta.faa
   perl DataPrepare.pl edited_fasta.faa;
   Rscript BPBAacPre.R;
   sed -i 's/CRC/CRC-/g' FinalResult.csv;
@@ -2351,18 +2417,17 @@ process execute_BPBAac {
   """
 }
 
+BPBAac_results.collectFile(name: 'annotation/T3SS_effectors/BPBAac_results.tab')
 
 process execute_effectiveT3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.1'
-
-  publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   when:
   params.effector_prediction == true
 
   input:
-  file(nr_fasta) from merged_faa8
+  file "nr_fasta.faa" from nr_faa_large_sequences_chunks2
 
   output:
   file 'effective_t3.out' into effectiveT3_results
@@ -2370,47 +2435,42 @@ process execute_effectiveT3 {
   script:
   """
   ln -s /usr/local/bin/effective/module
-  java -jar /usr/local/bin/effective/TTSS_GUI-1.0.1.jar -f ${nr_fasta} -m TTSS_STD-2.0.2.jar -t cutoff=0.9999 -o effective_t3.out -q
+  java -jar /usr/local/bin/effective/TTSS_GUI-1.0.1.jar -f nr_fasta.faa -m TTSS_STD-2.0.2.jar -t cutoff=0.9999 -o effective_t3.out -q
   """
 }
 
+effectiveT3_results.collectFile(name: 'annotation/T3SS_effectors/effectiveT3_results.tab')
 
 process execute_DeepT3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.1'
-
-  publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   when:
   params.effector_prediction == true
 
   input:
-  file(nr_fasta) from merged_faa9
+  file "nr_fasta.faa" from nr_faa_large_sequences_chunks3
 
   output:
   file 'DeepT3_results.tab' into DeepT3_results
 
   script:
   """
-  # replace ambiguous amino acid with X
-  PYTHONPATH=/usr/local/bin/DeepT3/DeepT3/DeepT3-Keras:$PYTHONPATH
-  replace_ambiguous_aa.py -i ${nr_fasta} > nr_edit.faa
-  DeepT3_scores.py -f nr_edit.faa -o DeepT3_results.tab -d /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
+  DeepT3_scores.py -f nr_fasta.faa -o DeepT3_results.tab -d /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
   """
 }
 
+DeepT3_results.collectFile(name: 'annotation/T3SS_effectors/DeepT3_results.tab')
 
 process execute_T3_MM {
 
-  container 'metagenlab/chlamdb_annotation:1.0.1'
-
-  publishDir 'annotation/T3SS_effectors/', mode: 'copy', overwrite: true
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   when:
   params.effector_prediction == true
 
   input:
-  file(nr_fasta) from merged_faa10
+  file "nr_fasta.faa" from nr_faa_large_sequences_chunks4
 
   output:
   file 'T3_MM_results.csv' into T3_MM_results
@@ -2418,15 +2478,18 @@ process execute_T3_MM {
   script:
   """
   ln -s /usr/local/bin/T3_MM/log.freq.ratio.txt
-  perl /usr/local/bin/T3_MM/T3_MM.pl ${nr_fasta}
+  perl /usr/local/bin/T3_MM/T3_MM.pl nr_fasta.faa
   mv final.result.csv T3_MM_results.csv
   """
 }
 
 
+T3_MM_results.collectFile(name: 'annotation/T3SS_effectors/T3_MM_results.tab')
+
+
 process execute_macsyfinder_T3SS {
 
-  container 'metagenlab/chlamdb_annotation:1.0.2'
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   publishDir 'annotation/macsyfinder/T3SS/', mode: 'copy', overwrite: true
 
@@ -2605,6 +2668,48 @@ with open("${table}", 'r') as f:
     """
 }
 
+
+process get_uniprot_goa_mapping {
+
+  publishDir 'annotation/goa/', mode: 'copy', overwrite: true
+  echo true
+
+  when:
+  params.uniprot_goa == true
+
+  input:
+  val (uniprot_acc_list) from uniprot_nr_accessions
+
+  output:
+  file 'goa_uniprot_exact_annotations.tab'
+
+  script:
+
+  """
+#!/usr/bin/env python3.6
+import sqlite3
+import datetime
+
+conn = sqlite3.connect("${params.databases_dir}/goa/goa_uniprot.db")
+cursor = conn.cursor()
+
+o = open("goa_uniprot_exact_annotations.tab", "w")
+
+sql = 'select GO_id, reference,evidence_code,category from goa_table where uniprotkb_accession=?;'
+
+for accession in "${uniprot_acc_list}".split(","):
+    accession_base = accession.split(".")[0].strip()
+    cursor.execute(sql, [accession_base])
+    #print(f'select GO_id, reference,evidence_code,category from goa_table where uniprotkb_accession="{accession_base}";')
+    go_list = cursor.fetchall()
+    for go in go_list:
+        GO_id = go[0]
+        reference = go[1]
+        evidence_code = go[2]
+        category = go[3]
+        o.write(f"{accession_base}\\t{GO_id}\\t{reference}\\t{evidence_code}\\t{category}\\n")
+    """
+}
 
 
 workflow.onComplete {
