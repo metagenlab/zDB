@@ -23,3 +23,8 @@ table.align-center tr {
   line-height: 10px;
   vertical-align: middle;
 }
+
+div.body
+{
+  max-width: 1000px;
+}

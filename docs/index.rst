@@ -5,16 +5,10 @@ ChlamDB documentation
    :maxdepth: 2
    :caption: Contents:
 
-   methods/overview.rst
-   methods/data.rst
    methods/annotation.rst
+   tutorial/website.rst
 
-Indices and tables
-==================
+Search
+=======
 
-* :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
-
-
-
