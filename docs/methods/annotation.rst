@@ -14,9 +14,6 @@ Overview
 Software versions
 -------------------
 
-
-est
-
 .. table:: Version of the main softwares used for protein annotation
     :width: 800 px
     :align: center
@@ -55,8 +52,7 @@ Source databases
     COG/CDD              -
     KoFam                -
     ==================   ======================
-
-
+	    
 ------------------
 Protein annotation
 ------------------
