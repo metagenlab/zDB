@@ -15,12 +15,12 @@ A simplified scheme of ``ChlamDB`` annotation workflow is shown in **Figure 1**.
         * An alignment and a phylogeny was reconstructed for each orthologous group.
     * The closest homologs of each protein were identified in RefSeq_ and SwissProt_
         * A phylogeny including the closest non-PVC homologs was reconstructed for each orthogroup
+    * Data were then integrated into a custom SQL database based on the bioSQL_ relational model.
 
 .. figure:: ../img/workflowV2.svg
     :figclass: align-center
 
     **Figure 1:** Simplified annotation workflow.
-
 
 -----------------
 NextFlow pipeline
@@ -62,21 +62,22 @@ Protein annotation
 Protein sequences were annotated using data from multiple databases and various bioinformatic softwares (*Figure 1*). 
 Those annotations are summarized on the "locus" page available for each protein (see for instance the entry of CT_495_).
 
-    * ``Transporters`` were annotated using the `Transporter Classification Database`_ (TCDB) and the gBLAST3 software from 
-      the `BioV suite`_. Detailed scores including the *E-value*, *score*, *percentage of identity*, the 
-      *number of transmembrane domains* identified in the query and the reference protein, the query and hit *coverage* 
+    * ``Transporters`` were annotated using the `Transporter Classification Database`_ (TCDB) and the gBLAST3 software from
+      the `BioV suite`_. Detailed scores including the *E-value*, *score*, *percentage of identity*, the
+      *number of transmembrane domains* identified in the query and the reference protein, the query and hit *coverage*
       are reported on the locus page.
-    * ``COG`` annotation was done with rpsblast_ (with an e-value cutoff of *0.001*) using `position-specific scoring matrix`_ 
+    * ``COG`` annotation was done with rpsblast_ (with an e-value cutoff of *0.001*) using `position-specific scoring matrix`_
       (PSSM) from the `Conserved Domain Database`_ (CDD)
     * Proteins were assigned to `Kegg Orthologs numbers`_ (KO) by HMMER/HMMSEARCH against KOfam_ (a customized HMM database of KEGG Orthologs).
         * The `KEGG API`_ was used to retrieve the annotation of ``Kegg Orthologs`` and mapping to ``KEGG modules`` and ``KEGG pathways``.
-    * InterProScan
-    * PRIAM
+    * `Enzyme Commission number`_ were assigned based on KEGG data and with PRIAM_, a method for automated enzyme detection in a fully
+      sequenced genome, based on all sequences available in the ENZYME database.
+    * InterProScan_ was used to identify protein signatures such as ``transmembrane domains``, ``Pfam domains``, ``CDD domains``,... Detailed InterPro annotations as well as scores associated with each annotation are reported on the "InterproScan" tab of each `locus pages`_.
+        * `The InterProScan match lookup service`_ was used to retrieve pre-calculated InterProScan results for protein integrated into the InterPro database. For sequences not in the lookup service, InterProScan was used to analyse sequences from scratch.
     * STRING
     * Psortb
     * Effectors
-    * UNIPARC, SwissProt, 
-
+    * UNIPARC, SwissProt,
 
 --------------------------------------
 Homology search (RefSeq and SwissProt)
@@ -120,6 +121,11 @@ Circular genome plots (Circos)
 Species phylogeny
 ------------------
 
+---------------------------------------------------------------------
+Comparative analyses of orthogroups and COG/KEGG/Interpro annotations
+---------------------------------------------------------------------
+
+Orthogroups KEGG, COG, Interpro entries
 
 ------------------------------------------
 Prediction of protein-protein interactions
@@ -139,8 +145,8 @@ Taxonomic profile of Pfam domains and COGs
 SQL database and Web Interface
 ------------------------------
 
-
-
+.. note::
+    Thee SQL database is about 80GB in size. Protein alignments are not stored into the database.
 
 -----------------
 Source databases
@@ -215,3 +221,9 @@ Public database download and indexing   https://github.com/metagenlab/annotation
 .. _`Kegg Orthologs numbers`: https://www.genome.jp/kegg/ko.html
 .. _KOfam : https://www.genome.jp/tools/kofamkoala/
 .. _`KEGG API` : https://www.kegg.jp/kegg/rest/keggapi.html
+.. _bioSQL : https://biosql.org/wiki/Main_Page
+.. _`locus pages` : https://chlamdb.ch/locusx?accession=CT_495
+.. _InterProScan : https://github.com/ebi-pf-team/interproscan
+.. _`The InterProScan match lookup service` : https://github.com/ebi-pf-team/interproscan/wiki/LocalLookupService
+.. _`Enzyme Commission number` : https://www.qmul.ac.uk/sbcs/iubmb/enzyme/
+.. _PRIAM : http://priam.prabi.fr/
