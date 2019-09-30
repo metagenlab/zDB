@@ -175,7 +175,8 @@ Orthogroup exhibiting similar patterns of presence/absence were identified by ca
     :figclass: align-center
     :width: 500 px
 
-    **Figure 3**: Phylogenetic profiling.
+    **Figure 3**: Schematic view of the phylogenetic profiling method used to predict protein-protein interactions. The distance between profiles of presence/absence of orthologous groups were calculated using two different metics (the euclidian distance and jaccard distance).
+
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 2. Identification of conserved gene neighborhood in different species
