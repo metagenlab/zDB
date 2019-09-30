@@ -15,7 +15,7 @@ A simplified scheme of ``ChlamDB`` annotation workflow is shown in **Figure 1**.
         * An alignment and a phylogeny was reconstructed for each orthologous group.
     * The closest homologs of each protein were identified in RefSeq_ and SwissProt_
         * A phylogeny including the closest non-PVC homologs was reconstructed for each orthogroup
-    * Data were then integrated into a custom SQL database based on the bioSQL_ relational model.
+    * Data were then integrated into a custom SQL database derived from the bioSQL_ relational model.
 
 .. figure:: ../img/workflowV2.svg
     :figclass: align-center
@@ -27,7 +27,7 @@ NextFlow pipeline
 -----------------
 
 The annotation pipeline summarized in **Figure 1** was fully automated using NextFlow_ . 
-The code with detailed software versions and command parameters is available on github here_.
+The code with detailed software versions and command line parameters is available on github here_.
 
 -----------------------------------------------------
 Selection of PVC genomes integrated into the database
@@ -65,24 +65,30 @@ Those annotations are summarized on the "locus" page available for each protein 
     * ``Transporters`` were annotated using the `Transporter Classification Database`_ (TCDB) and the gBLAST3 software from
       the `BioV suite`_. Detailed scores including the *E-value*, *score*, *percentage of identity*, the
       *number of transmembrane domains* identified in the query and the reference protein, the query and hit *coverage*
-      are reported on the locus page.
+      are reported on the `locus page`_.
     * ``COG`` annotation was done with rpsblast_ (with an e-value cutoff of *0.001*) using `position-specific scoring matrix`_
       (PSSM) from the `Conserved Domain Database`_ (CDD)
-    * Proteins were assigned to `Kegg Orthologs numbers`_ (KO) by HMMER/HMMSEARCH against KOfam_ (a customized HMM database of KEGG Orthologs).
-        * The `KEGG API`_ was used to retrieve the annotation of ``Kegg Orthologs`` and mapping to ``KEGG modules`` and ``KEGG pathways``.
-    * `Enzyme Commission number`_ were assigned based on KEGG data and with PRIAM_, a method for automated enzyme detection in a fully
-      sequenced genome, based on all sequences available in the ENZYME database.
-    * InterProScan_ was used to identify protein signatures such as ``transmembrane domains``, ``Pfam domains``, ``CDD domains``,... Detailed InterPro annotations as well as scores associated with each annotation are reported on the "InterproScan" tab of each `locus pages`_.
+    * Proteins were assigned to `Kegg Orthologs`_ (KO) numbers with KofamScan_ (default parameters) and KOfam_ (a database of Hidden Markov Models [HMM] of `KEGG Orthologs`_). KofamScan rely on HMMER_ to search the HMM database. 
+        * The `KEGG API`_ was used to retrieve the annotation of ``Kegg Orthologs`` and mapping to ``KEGG modules``, ``KEGG pathways`` and `Enzyme Commission numbers`_.
+    * `Enzyme Commission numbers`_ were assigned based on `Kegg Orthologs`_ annotations and with PRIAM_, a method for automated enzyme detection in fully sequenced genomes. PRIAM uses `position-specific scoring matrix`_ (PSSM) of all sequences available in the ENZYME_ database.
+    * InterProScan_ was used to identify protein signatures such as ``transmembrane domains``, ``Pfam domains``, ``CDD domains``,... Detailed InterPro annotations as well as scores associated with each annotation are reported on the "InterproScan" tab of each `locus page`_.
         * `The InterProScan match lookup service`_ was used to retrieve pre-calculated InterProScan results for protein integrated into the InterPro database. For sequences not in the lookup service, InterProScan was used to analyse sequences from scratch.
-    * STRING
-    * Psortb
-    * Effectors
-    * UNIPARC, SwissProt,
+    * Mapping to STRING_ (a database of protein-protein interactions) was done by exact protein sequence match. 
+      Protein sequences from SRING were indexed using `SEGUID checksums`_. Associations to the scientific literature (``PMID`` tab) 
+      were retrived using the `STRING API`_.  
+    * Protein subcellular localization predictions were done using PSORTb_ (withe the ``--negative`` argument). 
+    * Effectors of the type III secretion system were predicted using four different softwares:
+        * BPBAac_ (default parameters)
+        * effectiveT3_ (model ``TTSS_STD-2.0.2``, cutoff of ``0.9999``)
+        * DeepT3_  (default parameters)
+        * T3_MM_ (default parameters)
+    * UNIPARC - SwissProt
 
 --------------------------------------
 Homology search (RefSeq and SwissProt)
 --------------------------------------
 
+The closest identifiable RefSeq homologs were 
 
 -----------------------------
 Identification of Orthogroups
@@ -190,6 +196,7 @@ Software versions
     CheckM      	1.0.12
     KoFamScan    	2019/4/9
     Mafft       	7.407
+    PSORTb          3.0.6
     =============   =======
 
 -----------------
@@ -218,12 +225,23 @@ Public database download and indexing   https://github.com/metagenlab/annotation
 .. _`Conserved Domain Database` : https://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml
 .. _`position-specific scoring matrix` : https://www.ncbi.nlm.nih.gov/Structure/cdd/cdd_help.shtml#CD_PSSM
 .. _rpsblast : https://www.ncbi.nlm.nih.gov/books/NBK279690/
-.. _`Kegg Orthologs numbers`: https://www.genome.jp/kegg/ko.html
+.. _`Kegg Orthologs`: https://www.genome.jp/kegg/ko.html
 .. _KOfam : https://www.genome.jp/tools/kofamkoala/
 .. _`KEGG API` : https://www.kegg.jp/kegg/rest/keggapi.html
 .. _bioSQL : https://biosql.org/wiki/Main_Page
-.. _`locus pages` : https://chlamdb.ch/locusx?accession=CT_495
+.. _`locus page` : https://chlamdb.ch/locusx?accession=CT_495
 .. _InterProScan : https://github.com/ebi-pf-team/interproscan
 .. _`The InterProScan match lookup service` : https://github.com/ebi-pf-team/interproscan/wiki/LocalLookupService
-.. _`Enzyme Commission number` : https://www.qmul.ac.uk/sbcs/iubmb/enzyme/
+.. _`Enzyme Commission numbers` : https://www.qmul.ac.uk/sbcs/iubmb/enzyme/
 .. _PRIAM : http://priam.prabi.fr/
+.. _STRING : https://www.string-db.org/
+.. _`SEGUID checksums` : https://biopython.org/DIST/docs/api/Bio.SeqUtils.CheckSum-module.html
+.. _PSORTb : https://www.psort.org/psortb/index.html
+.. _BPBAac : https://academic.oup.com/bioinformatics/article/27/6/777/235789
+.. _T3_MM : https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0058173
+.. _effectiveT3 : https://academic.oup.com/nar/article/39/suppl_1/D591/2507337
+.. _DeepT3 : https://academic.oup.com/bioinformatics/article/35/12/2051/5165378
+.. _`STRING API` : http://version11.string-db.org/help/api/
+.. _HMMER : http://hmmer.org/
+.. _KofamScan : ftp://ftp.genome.jp/pub/tools/kofamscan/
+.. _ENZYME : https://enzyme.expasy.org/
