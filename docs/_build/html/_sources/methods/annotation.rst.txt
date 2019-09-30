@@ -134,13 +134,13 @@ Nevertheless, if the alignment covered less than 30% of one of the two compared 
 Circular genome plots (Circos)
 ------------------------------
 
-Circular genome plots are generated dynamically with Circos_. These plots are not generated based on the alignment of DNA sequences but based on orthology data (see the three previous paragraphs). The two outer gray circle show the location of coding sequences of the reference genome (**Figure 2 A and B**). The red/blue inner circles show the conservation of each coding sequence with one or multiple other genomes. This is based on identity values calculated based on orthogroup alignments (see previous paragraphs). If the compared genome(s) encode more than one ortholog, the highest identity is used to color the region .
+Circular genome plots are generated dynamically with Circos_. These plots are not generated based on the alignment of DNA sequences but based on orthology data (see previous paragraphs). The two outer gray circles show the location of `open reading frames`_ (ORFs) encoded on the leading and lagging strand of the reference genome (**Figure 2 A and B**). The red/blue inner circles show the conservation of each protein encoding ORF in one or multiple other genomes. Identity values were pre-calculated from protein alignments (see previous paragraphs). If the compared genomes encode more than one ortholog, the highest identity is used to color the region.
 
 .. figure:: ../img/circos_method.png
     :figclass: align-center
     :width: 100%
 
-    **Figure 2**: Example of circular genome plot. A) Complete figure. Compared genomes are ordered based on the median protein identity with the reference genome. B) Zoom showing the detail of a genomic region. All circular plots are interactive and users can click on any coding sequence to access the detailed annotation page of the corresponding protein.
+    **Figure 2**: Example of circular genome plot. **A)** Compared genomes are ordered based on the median protein identity with the reference genome. **B)** Zoom showing the detail of a genomic region. All circular plots are interactive and users can click on any ORF to access the detailed annotation page of the corresponding protein.
 
 ------------------
 Species phylogeny
@@ -304,3 +304,4 @@ Public database download and indexing   https://github.com/metagenlab/annotation
 .. _`this blog post discussing` : http://lh3.github.io/2018/11/25/on-the-definition-of-sequence-identity
 .. _Circos : http://circos.ca/
 .. _`only if references were found` : https://chlamdb.ch/locusx?accession=765098
+.. _`open reading frames` : https://en.wikipedia.org/wiki/Open_reading_frame
