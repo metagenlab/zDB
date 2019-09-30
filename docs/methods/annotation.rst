@@ -76,7 +76,7 @@ Those annotations are summarized on the "locus" page available for each protein 
     * InterProScan_ was used to identify protein signatures such as ``transmembrane domains``, ``Pfam domains``, ``CDD domains``,... Detailed InterPro annotations as well as scores associated with each annotation are reported on the "InterproScan" tab of each `locus page`_.
         * `The InterProScan match lookup service`_ was used to retrieve pre-calculated InterProScan results for protein integrated into the InterPro database. For sequences not in the lookup service, InterProScan was used to analyse sequences from scratch.
     * Mapping to STRING_ (a database of protein-protein interactions) was done by exact protein sequence match. 
-      Protein sequences from SRING were indexed using `SEGUID checksums`_. Associations to the scientific literature (``PMID`` tab) 
+      Protein sequences from SRING were indexed using `SEGUID checksums`_. Associations to the scientific literature (``PMID`` tab visible `only if references were found`_) 
       were retrived using the `STRING API`_.  
     * Protein subcellular localization predictions were done using PSORTb_ (withe the ``--negative`` argument). 
     * Effectors of the type III secretion system were predicted using four different softwares:
@@ -302,3 +302,4 @@ Public database download and indexing   https://github.com/metagenlab/annotation
 .. _`boostrap support values` : https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1558-5646.1985.tb00420.x
 .. _`this blog post discussing` : http://lh3.github.io/2018/11/25/on-the-definition-of-sequence-identity
 .. _Circos : http://circos.ca/
+.. _`only if references were found` : https://chlamdb.ch/locusx?accession=765098
