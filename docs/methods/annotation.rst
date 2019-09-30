@@ -10,17 +10,19 @@ A simplified scheme of ``ChlamDB`` annotation workflow is shown in **Figure 1**.
 
     * Annotated genome assemblies integrated into ChlamDB were downloaded from GenBank_ (or 
       RefSeq_ if the GenBank assembly was not annotated).
-    * Protein sequences were annotated based on data from muliple source databases and annotation softwares.
+    * Protein sequences were annotated based on data from multiple source databases and annotation softwares.
     * Protein sequences were clustered into orthologous groups (orthogroups) with OrthoFinder_. 
         * An alignment and a phylogeny was reconstructed for each orthologous group.
     * The closest homologs of each protein were identified in RefSeq_ and SwissProt_
         * A phylogeny including the closest non-PVC homologs was reconstructed for each orthogroup
     * Data were then integrated into a custom SQL database derived from the bioSQL_ relational model.
 
+
+
 .. figure:: ../img/workflowV2.svg
     :figclass: align-center
 
-    **Figure 1:** Simplified annotation workflow.
+    **Figure 1**: Simplified annotation workflow.
 
 -----------------
 NextFlow pipeline
@@ -33,14 +35,14 @@ The code with detailed software versions and command line parameters is availabl
 Selection of PVC genomes integrated into the database
 -----------------------------------------------------
 
-They are more than 2'000 genome assemblies classified as part of the PVC superphylum (NCBI Taxid 1783257) 
-on the `NCBI taxonomy website`_. Those genomes are highly redundant (with a high number of genomes of the 
-same species, in particular for species of the *Chlamydia* genus). In order to limit the size of the database, 
+They are more than 2'000 genome assemblies classified as part of the PVC superphylum (NCBI Taxid 1783257)
+on the `NCBI taxonomy website`_. Those genomes are highly redundant (with a high number of genomes of the
+same species, in particular for species of the *Chlamydia* genus). In order to limit the size of the database,
 not all genome assemblies were included into the database. 
 ``ChlamDB version 2.0`` (June 2019) includes:
 
     - All complete PVC genomes (June 2019).
-    - All draft *Chlamydiae* genomes excluding draft genomes from species of 
+    - All draft *Chlamydiae* genomes excluding draft genomes from species of
       the *Chlamydia* genus with at least one complete genome (June 2019).
 
 .. note::
@@ -48,7 +50,7 @@ not all genome assemblies were included into the database.
 
 .. note::
     Draft genomes of *Planctomycetes*, *Lentisphaerae*, *Verrucomicrobia* and *Kiritimatiellaeota* phyla were 
-    excluded to limit the total number of genomes in the database. Additional genomes of clades of interest 
+    excluded to limit the total number of genomes in the database. Additional genomes of clades of interest
     might be integrated in future releases of the database.
 
 The list of genomes is available on `ChlamDB home page`_. Complete genomes can be distinguished from draft 
@@ -84,18 +86,20 @@ Those annotations are summarized on the "locus" page available for each protein 
         * T3_MM_ (default parameters)
     * UNIPARC - SwissProt
 
---------------------------------------
-Homology search (RefSeq and SwissProt)
---------------------------------------
+-----------------------------------------
+_`Homology search` (RefSeq and SwissProt)
+-----------------------------------------
 
-The closest identifiable RefSeq homologs were 
+* The closest identifiable RefSeq_ homologs were searched with Diamond_ (parameters: ``--max-target-seqs`` 200 ``-e`` 0.01 ``--max-hsps`` 1). The 200 first hits were retained for each protein.
+
+* The closest identifiable SwissProt_ homologs were searched with BLASTp (parameters: ``-evalue`` 0.001). The 100 first hits were retained for each protein.
 
 -----------------------------
 Identification of Orthogroups
 -----------------------------
 
-Orthogroups were identified with OrthoFinder_. This tools identify orthogroups based on BLASTp (evalue cutoff of 0.001) 
-results using the MCL_ software.
+Orthogroups (or orthologous groups) were identified with OrthoFinder_. This tools identify orthogroups based on BLASTp (parameters: ``-evalue`` 0.001) 
+results using the MCL_ clustering software.
 
 .. note::
    ``Orthologs`` are pairs of genes that descended from a single gene in the last common ancestor (LCA) of two species.
@@ -104,32 +108,50 @@ results using the MCL_ software.
     An ``orthogroup`` is the group of genes descended from a single gene in the last common ancestor (LCA) of a group of species.
     As gene duplication and loss occur frequently in bacteria, we rarely have exactly one ortholog in each considered genome.
 
------------------------------------
-Orthogroup alignments & phylogenies
------------------------------------
+--------------------------------------------------------
+Orthogroup multiple sequence alignments & phylogenies
+--------------------------------------------------------
+
+Protein sequences of each orthogroup were aligned with MAFFT_ (default parameters). A phylogeny was then reconstructed for each orthogroup of three or more sequences. The phylogeny was reconstructed with FastTree_ with default parameters. The node support values are not traditionnal `boostrap support values`_. FastTree_ uses the Shimodaira-Hasegawa test with 1,000 bootstrap replicates to quickly estimate the reliability of each split in the tree. Values higher than **0.95** can be considered as "strongly supported".
 
 ---------------------------------------
-Calculation of parwise protein identity
+Phlogeny including top RefSeq hits
 ---------------------------------------
 
+A second phylogeny was reconstructed for each orthogroup. This phylogeny includes the 4 best RefSeq hits of each protein (see the `Homology search`_ paragraph). It allows users to check whether PVC proteins form a monophyletic group or if they are for instance hints of horizontal gene transfer(s) with bacteria from other phyla. The phylogeny was reconstructed with FastTree_ with default parameters.
+
+----------------------------------------
+Calculation of pairwise protein identity
+----------------------------------------
+
+Pairwise protein sequence identities reported on ChlamDB were calculated based on the multiple sequence alignments of orthologous groups (two see previous paragraph). The identity between two sequences can be calculated in different ways (see `this blog post discussing`_ that topic). We calculated the identity by excluding gaps and calculating the identity based on aligned positions only: 
+
+* number of matches / ( number of matches +  number of mismatches)
+
+Nevertheless, if the alignment covered less than 30% of one of the two compared sequences, the identity was set to 0.
 
 ------------------------------
 Circular genome plots (Circos)
 ------------------------------
 
+Circular genome plots are generated dynamically with Circos_. These plots are not generated based on the alignment of DNA sequences but based on orthology data (see the three previous paragraphs). The two outer gray circle show the location of coding sequences of the reference genome (**Figure 2 A and B**). The red/blue inner circles show the conservation of each coding sequence with one or multiple other genomes. This is based on identity values calculated based on orthogroup alignments (see previous paragraphs). If the compared genome(s) encode more than one ortholog, the highest identity is used to color the region .
+
 .. figure:: ../img/circos_method.png
     :figclass: align-center
-    :width: 400 px
+    :width: 100%
 
-    Figure 1: Simplified annotation workflow.
+    **Figure 2**: Example of circular genome plot. A) Complete figure. Compared genomes are ordered based on the median protein identity with the reference genome. B) Zoom showing the detail of a genomic region. All circular plots are interactive and users can click on any coding sequence to access the detailed annotation page of the corresponding protein.
 
 ------------------
 Species phylogeny
 ------------------
 
+The reference phylogeny was reconstructed with FastTree_ (default parameters, JTT+CAT model) based on the concatenated alignment of 32 single copy orthogroups conserved in at least 266 out of the 277 genomes part of ``ChlamDB 2.0``.
+
 ---------------------------------------------------------------------
 Comparative analyses of orthogroups and COG/KEGG/Interpro annotations
 ---------------------------------------------------------------------
+
 
 Orthogroups KEGG, COG, Interpro entries
 
@@ -137,10 +159,39 @@ Orthogroups KEGG, COG, Interpro entries
 Prediction of protein-protein interactions
 ------------------------------------------
 
+The interactions reported in the "interactions" tab were predicted based on two different approaches
 
-----------------------------------------------------------
-Prediction of candidate type III secetion system effectors
-----------------------------------------------------------
++++++++++++++++++++++++++
+1 Phylogenetic profiling
++++++++++++++++++++++++++
+
+Orthogroup exhibiting similar patterns of presence/absence were identified by calculating the Euclidian distance of all pairs of orthologroups phylogenetic profiles (see **Figure 3**).
+
+    1. Phylogenetic profiles were collapsed at the species level
+    2. Pairwise euclidian and jaccard distances were calculated between pairs of profiles
+    3. The default euclidian distance cutoff to report interactions is ``2.2``. If more than 30 profiles had an euclidian distance smaller or equal to ``2.2``, the stringency was adjusted incrementally with cutoffs of ``2``, ``1`` and finally ``0``. If more than 30 profiles exhibit the exact same profile, nothing is reported. Indeed, it would by typically poorly informative interactions (e.g. proteins conserved in all species).
+
+.. figure:: ../img/profile.svg
+    :figclass: align-center
+    :width: 500 px
+
+    **Figure 3**: Phylogenetic profiling.
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+2. Identification of conserved gene neighborhood in different species
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+gg
+
+-----------------------------------------------------------
+Prediction of candidate type III secretion system effectors
+-----------------------------------------------------------
+
+Effectors of the type III secretion system were predicted using four different softwares:
+    * BPBAac_ (default parameters)
+    * effectiveT3_ (model ``TTSS_STD-2.0.2``, cutoff of ``0.9999``)
+    * DeepT3_  (default parameters)
+    * T3_MM_ (default parameters)
 
 ------------------------------------------
 Taxonomic profile of Pfam domains and COGs
@@ -245,3 +296,9 @@ Public database download and indexing   https://github.com/metagenlab/annotation
 .. _HMMER : http://hmmer.org/
 .. _KofamScan : ftp://ftp.genome.jp/pub/tools/kofamscan/
 .. _ENZYME : https://enzyme.expasy.org/
+.. _Diamond : https://www.nature.com/articles/nmeth.3176
+.. _MAFFT : https://mafft.cbrc.jp/alignment/software/
+.. _FastTree : http://www.microbesonline.org/fasttree/
+.. _`boostrap support values` : https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1558-5646.1985.tb00420.x
+.. _`this blog post discussing` : http://lh3.github.io/2018/11/25/on-the-definition-of-sequence-identity
+.. _Circos : http://circos.ca/

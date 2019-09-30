@@ -51,7 +51,7 @@
 <div><ul class="simple">
 <li><p>Annotated genome assemblies integrated into ChlamDB were downloaded from <a class="reference external" href="https://www.ncbi.nlm.nih.gov/genbank/">GenBank</a> (or
 <a class="reference external" href="https://www.ncbi.nlm.nih.gov/refseq/">RefSeq</a> if the GenBank assembly was not annotated).</p></li>
-<li><p>Protein sequences were annotated based on data from muliple source databases and annotation softwares.</p></li>
+<li><p>Protein sequences were annotated based on data from multiple source databases and annotation softwares.</p></li>
 <li><dl class="simple">
 <dt>Protein sequences were clustered into orthologous groups (orthogroups) with <a class="reference external" href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>.</dt><dd><ul>
 <li><p>An alignment and a phylogeny was reconstructed for each orthologous group.</p></li>
@@ -70,7 +70,7 @@
 </ul>
 </div></blockquote>
 <div class="align-center figure align-default" id="id1">
-<img alt="../_images/workflowV2.svg" src="../_images/workflowV2.svg" /><p class="caption"><span class="caption-text"><strong>Figure 1:</strong> Simplified annotation workflow.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<img alt="../_images/workflowV2.svg" src="../_images/workflowV2.svg" /><p class="caption"><span class="caption-text"><strong>Figure 1</strong>: Simplified annotation workflow.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="nextflow-pipeline">
@@ -151,13 +151,16 @@ were retrived using the <a class="reference external" href="http://version11.str
 </div></blockquote>
 </div>
 <div class="section" id="homology-search-refseq-and-swissprot">
-<h2>Homology search (RefSeq and SwissProt)<a class="headerlink" href="#homology-search-refseq-and-swissprot" title="Permalink to this headline">¶</a></h2>
-<p>The closest identifiable RefSeq homologs were</p>
+<h2><span class="target" id="homology-search">Homology search</span> (RefSeq and SwissProt)<a class="headerlink" href="#homology-search-refseq-and-swissprot" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>The closest identifiable <a class="reference external" href="https://www.ncbi.nlm.nih.gov/refseq/">RefSeq</a> homologs were searched with <a class="reference external" href="https://www.nature.com/articles/nmeth.3176">Diamond</a> (parameters: <code class="docutils literal notranslate"><span class="pre">--max-target-seqs</span></code> 200 <code class="docutils literal notranslate"><span class="pre">-e</span></code> 0.01 <code class="docutils literal notranslate"><span class="pre">--max-hsps</span></code> 1). The 200 first hits were retained for each protein.</p></li>
+<li><p>The closest identifiable <a class="reference external" href="https://www.uniprot.org/">SwissProt</a> homologs were searched with BLASTp (parameters: <code class="docutils literal notranslate"><span class="pre">-evalue</span></code> 0.001). The 100 first hits were retained for each protein.</p></li>
+</ul>
 </div>
 <div class="section" id="identification-of-orthogroups">
 <h2>Identification of Orthogroups<a class="headerlink" href="#identification-of-orthogroups" title="Permalink to this headline">¶</a></h2>
-<p>Orthogroups were identified with <a class="reference external" href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. This tools identify orthogroups based on BLASTp (evalue cutoff of 0.001)
-results using the <a class="reference external" href="https://micans.org/mcl/">MCL</a> software.</p>
+<p>Orthogroups (or orthologous groups) were identified with <a class="reference external" href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. This tools identify orthogroups based on BLASTp (parameters: <code class="docutils literal notranslate"><span class="pre">-evalue</span></code> 0.001)
+results using the <a class="reference external" href="https://micans.org/mcl/">MCL</a> clustering software.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><code class="docutils literal notranslate"><span class="pre">Orthologs</span></code> are pairs of genes that descended from a single gene in the last common ancestor (LCA) of two species.</p>
@@ -168,21 +171,33 @@ results using the <a class="reference external" href="https://micans.org/mcl/">M
 As gene duplication and loss occur frequently in bacteria, we rarely have exactly one ortholog in each considered genome.</p>
 </div>
 </div>
-<div class="section" id="orthogroup-alignments-phylogenies">
-<h2>Orthogroup alignments &amp; phylogenies<a class="headerlink" href="#orthogroup-alignments-phylogenies" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="orthogroup-multiple-sequence-alignments-phylogenies">
+<h2>Orthogroup multiple sequence alignments &amp; phylogenies<a class="headerlink" href="#orthogroup-multiple-sequence-alignments-phylogenies" title="Permalink to this headline">¶</a></h2>
+<p>Protein sequences of each orthogroup were aligned with <a class="reference external" href="https://mafft.cbrc.jp/alignment/software/">MAFFT</a> (default parameters). A phylogeny was then reconstructed for each orthogroup of three or more sequences. The phylogeny was reconstructed with <a class="reference external" href="http://www.microbesonline.org/fasttree/">FastTree</a> with default parameters. The node support values are not traditionnal <a class="reference external" href="https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1558-5646.1985.tb00420.x">boostrap support values</a>. <a class="reference external" href="http://www.microbesonline.org/fasttree/">FastTree</a> uses the Shimodaira-Hasegawa test with 1,000 bootstrap replicates to quickly estimate the reliability of each split in the tree. Values higher than <strong>0.95</strong> can be considered as “strongly supported”.</p>
 </div>
-<div class="section" id="calculation-of-parwise-protein-identity">
-<h2>Calculation of parwise protein identity<a class="headerlink" href="#calculation-of-parwise-protein-identity" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="phlogeny-including-top-refseq-hits">
+<h2>Phlogeny including top RefSeq hits<a class="headerlink" href="#phlogeny-including-top-refseq-hits" title="Permalink to this headline">¶</a></h2>
+<p>A second phylogeny was reconstructed for each orthogroup. This phylogeny includes the 4 best RefSeq hits of each protein (see the <a class="reference internal" href="#homology-search">Homology search</a> paragraph). It allows users to check whether PVC proteins form a monophyletic group or if they are for instance hints of horizontal gene transfer(s) with bacteria from other phyla. The phylogeny was reconstructed with <a class="reference external" href="http://www.microbesonline.org/fasttree/">FastTree</a> with default parameters.</p>
+</div>
+<div class="section" id="calculation-of-pairwise-protein-identity">
+<h2>Calculation of pairwise protein identity<a class="headerlink" href="#calculation-of-pairwise-protein-identity" title="Permalink to this headline">¶</a></h2>
+<p>Pairwise protein sequence identities reported on ChlamDB were calculated based on the multiple sequence alignments of orthologous groups (two see previous paragraph). The identity between two sequences can be calculated in different ways (see <a class="reference external" href="http://lh3.github.io/2018/11/25/on-the-definition-of-sequence-identity">this blog post discussing</a> that topic). We calculated the identity by excluding gaps and calculating the identity based on aligned positions only:</p>
+<ul class="simple">
+<li><p>number of matches / ( number of matches +  number of mismatches)</p></li>
+</ul>
+<p>Nevertheless, if the alignment covered less than 30% of one of the two compared sequences, the identity was set to 0.</p>
 </div>
 <div class="section" id="circular-genome-plots-circos">
 <h2>Circular genome plots (Circos)<a class="headerlink" href="#circular-genome-plots-circos" title="Permalink to this headline">¶</a></h2>
+<p>Circular genome plots are generated dynamically with <a class="reference external" href="http://circos.ca/">Circos</a>. These plots are not generated based on the alignment of DNA sequences but based on orthology data (see the three previous paragraphs). The two outer gray circle show the location of coding sequences of the reference genome (<strong>Figure 2 A and B</strong>). The red/blue inner circles show the conservation of each coding sequence with one or multiple other genomes. This is based on identity values calculated based on orthogroup alignments (see previous paragraphs). If the compared genome(s) encode more than one ortholog, the highest identity is used to color the region .</p>
 <div class="align-center figure align-default" id="id2">
-<a class="reference internal image-reference" href="../_images/circos_method.png"><img alt="../_images/circos_method.png" src="../_images/circos_method.png" style="width: 400px;" /></a>
-<p class="caption"><span class="caption-text">Figure 1: Simplified annotation workflow.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<a class="reference internal image-reference" href="../_images/circos_method.png"><img alt="../_images/circos_method.png" src="../_images/circos_method.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 2</strong>: Example of circular genome plot. A) Complete figure. Compared genomes are ordered based on the median protein identity with the reference genome. B) Zoom showing the detail of a genomic region. All circular plots are interactive and users can click on any coding sequence to access the detailed annotation page of the corresponding protein.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="species-phylogeny">
 <h2>Species phylogeny<a class="headerlink" href="#species-phylogeny" title="Permalink to this headline">¶</a></h2>
+<p>The reference phylogeny was reconstructed with <a class="reference external" href="http://www.microbesonline.org/fasttree/">FastTree</a> (default parameters, JTT+CAT model) based on the concatenated alignment of 32 single copy orthogroups conserved in at least 266 out of the 277 genomes part of <code class="docutils literal notranslate"><span class="pre">ChlamDB</span> <span class="pre">2.0</span></code>.</p>
 </div>
 <div class="section" id="comparative-analyses-of-orthogroups-and-cog-kegg-interpro-annotations">
 <h2>Comparative analyses of orthogroups and COG/KEGG/Interpro annotations<a class="headerlink" href="#comparative-analyses-of-orthogroups-and-cog-kegg-interpro-annotations" title="Permalink to this headline">¶</a></h2>
@@ -190,9 +205,38 @@ As gene duplication and loss occur frequently in bacteria, we rarely have exactl
 </div>
 <div class="section" id="prediction-of-protein-protein-interactions">
 <h2>Prediction of protein-protein interactions<a class="headerlink" href="#prediction-of-protein-protein-interactions" title="Permalink to this headline">¶</a></h2>
+<p>The interactions reported in the “interactions” tab were predicted based on two different approaches</p>
+<div class="section" id="phylogenetic-profiling">
+<h3>1 Phylogenetic profiling<a class="headerlink" href="#phylogenetic-profiling" title="Permalink to this headline">¶</a></h3>
+<p>Orthogroup exhibiting similar patterns of presence/absence were identified by calculating the Euclidian distance of all pairs of orthologroups phylogenetic profiles (see <strong>Figure 3</strong>).</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Phylogenetic profiles were collapsed at the species level</p></li>
+<li><p>Pairwise euclidian and jaccard distances were calculated between pairs of profiles</p></li>
+<li><p>The default euclidian distance cutoff to report interactions is <code class="docutils literal notranslate"><span class="pre">2.2</span></code>. If more than 30 profiles had an euclidian distance smaller or equal to <code class="docutils literal notranslate"><span class="pre">2.2</span></code>, the stringency was adjusted incrementally with cutoffs of <code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">1</span></code> and finally <code class="docutils literal notranslate"><span class="pre">0</span></code>. If more than 30 profiles exhibit the exact same profile, nothing is reported. Indeed, it would by typically poorly informative interactions (e.g. proteins conserved in all species).</p></li>
+</ol>
+</div></blockquote>
+<div class="align-center figure align-default" id="id3">
+<a class="reference internal image-reference" href="../_images/profile.svg"><img alt="../_images/profile.svg" src="../_images/profile.svg" width="500px" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 3</strong>: Phylogenetic profiling.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
-<div class="section" id="prediction-of-candidate-type-iii-secetion-system-effectors">
-<h2>Prediction of candidate type III secetion system effectors<a class="headerlink" href="#prediction-of-candidate-type-iii-secetion-system-effectors" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="identification-of-conserved-gene-neighborhood-in-different-species">
+<h3>2. Identification of conserved gene neighborhood in different species<a class="headerlink" href="#identification-of-conserved-gene-neighborhood-in-different-species" title="Permalink to this headline">¶</a></h3>
+<p>gg</p>
+</div>
+</div>
+<div class="section" id="prediction-of-candidate-type-iii-secretion-system-effectors">
+<h2>Prediction of candidate type III secretion system effectors<a class="headerlink" href="#prediction-of-candidate-type-iii-secretion-system-effectors" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>Effectors of the type III secretion system were predicted using four different softwares:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://academic.oup.com/bioinformatics/article/27/6/777/235789">BPBAac</a> (default parameters)</p></li>
+<li><p><a class="reference external" href="https://academic.oup.com/nar/article/39/suppl_1/D591/2507337">effectiveT3</a> (model <code class="docutils literal notranslate"><span class="pre">TTSS_STD-2.0.2</span></code>, cutoff of <code class="docutils literal notranslate"><span class="pre">0.9999</span></code>)</p></li>
+<li><p><a class="reference external" href="https://academic.oup.com/bioinformatics/article/35/12/2051/5165378">DeepT3</a>  (default parameters)</p></li>
+<li><p><a class="reference external" href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0058173">T3_MM</a> (default parameters)</p></li>
+</ul>
+</dd>
+</dl>
 </div>
 <div class="section" id="taxonomic-profile-of-pfam-domains-and-cogs">
 <h2>Taxonomic profile of Pfam domains and COGs<a class="headerlink" href="#taxonomic-profile-of-pfam-domains-and-cogs" title="Permalink to this headline">¶</a></h2>
@@ -206,8 +250,8 @@ As gene duplication and loss occur frequently in bacteria, we rarely have exactl
 </div>
 <div class="section" id="source-databases">
 <h2>Source databases<a class="headerlink" href="#source-databases" title="Permalink to this headline">¶</a></h2>
-<table class="docutils align-center" id="id3">
-<caption><span class="caption-text">Version of source databases used for the annotation</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<table class="docutils align-center" id="id4">
+<caption><span class="caption-text">Version of source databases used for the annotation</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 45%" />
 <col style="width: 55%" />
@@ -253,8 +297,8 @@ As gene duplication and loss occur frequently in bacteria, we rarely have exactl
 </div>
 <div class="section" id="software-versions">
 <h2>Software versions<a class="headerlink" href="#software-versions" title="Permalink to this headline">¶</a></h2>
-<table class="docutils align-center" id="id4">
-<caption><span class="caption-text">Version of the main softwares used for protein annotation</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
+<table class="docutils align-center" id="id5">
+<caption><span class="caption-text">Version of the main softwares used for protein annotation</span><a class="headerlink" href="#id5" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 52%" />
 <col style="width: 48%" />
@@ -329,13 +373,18 @@ As gene duplication and loss occur frequently in bacteria, we rarely have exactl
 <li><a class="reference internal" href="#protein-annotation">Protein annotation</a></li>
 <li><a class="reference internal" href="#homology-search-refseq-and-swissprot">Homology search (RefSeq and SwissProt)</a></li>
 <li><a class="reference internal" href="#identification-of-orthogroups">Identification of Orthogroups</a></li>
-<li><a class="reference internal" href="#orthogroup-alignments-phylogenies">Orthogroup alignments &amp; phylogenies</a></li>
-<li><a class="reference internal" href="#calculation-of-parwise-protein-identity">Calculation of parwise protein identity</a></li>
+<li><a class="reference internal" href="#orthogroup-multiple-sequence-alignments-phylogenies">Orthogroup multiple sequence alignments &amp; phylogenies</a></li>
+<li><a class="reference internal" href="#phlogeny-including-top-refseq-hits">Phlogeny including top RefSeq hits</a></li>
+<li><a class="reference internal" href="#calculation-of-pairwise-protein-identity">Calculation of pairwise protein identity</a></li>
 <li><a class="reference internal" href="#circular-genome-plots-circos">Circular genome plots (Circos)</a></li>
 <li><a class="reference internal" href="#species-phylogeny">Species phylogeny</a></li>
 <li><a class="reference internal" href="#comparative-analyses-of-orthogroups-and-cog-kegg-interpro-annotations">Comparative analyses of orthogroups and COG/KEGG/Interpro annotations</a></li>
-<li><a class="reference internal" href="#prediction-of-protein-protein-interactions">Prediction of protein-protein interactions</a></li>
-<li><a class="reference internal" href="#prediction-of-candidate-type-iii-secetion-system-effectors">Prediction of candidate type III secetion system effectors</a></li>
+<li><a class="reference internal" href="#prediction-of-protein-protein-interactions">Prediction of protein-protein interactions</a><ul>
+<li><a class="reference internal" href="#phylogenetic-profiling">1 Phylogenetic profiling</a></li>
+<li><a class="reference internal" href="#identification-of-conserved-gene-neighborhood-in-different-species">2. Identification of conserved gene neighborhood in different species</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#prediction-of-candidate-type-iii-secretion-system-effectors">Prediction of candidate type III secretion system effectors</a></li>
 <li><a class="reference internal" href="#taxonomic-profile-of-pfam-domains-and-cogs">Taxonomic profile of Pfam domains and COGs</a></li>
 <li><a class="reference internal" href="#sql-database-and-web-interface">SQL database and Web Interface</a></li>
 <li><a class="reference internal" href="#source-databases">Source databases</a></li>
