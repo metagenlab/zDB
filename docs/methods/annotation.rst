@@ -119,7 +119,7 @@ Phlogeny including top RefSeq hits
 ---------------------------------------
 
 A second phylogeny was reconstructed for each orthogroup. This phylogeny includes the 4 best  non-PVC RefSeq hits of each protein (see the `Homology search`_ paragraph). 
-First, the NCBI taxon ID of each RefSeq hit was retrieved using the ``prot.accession2taxid`` mapping file available from the `NCBI taxonomy ftp website`_. PVC hits were removed and the amino acid sequence of the 4 best non-PVC hits was retrieved from the NCBI using the `biopython intrevace to Entrez`_. Protein sequences of each orthogroup + RefSeq homologs were aligned with MAFFT_ (default parameters) and the phylogeny was reconstructed with FastTree_ (default parameters).
+First, the NCBI taxon ID of each RefSeq hit was retrieved using the ``prot.accession2taxid`` mapping file available from the `NCBI taxonomy ftp website`_. PVC hits were removed and the amino acid sequence of the 4 best non-PVC hits was retrieved from the NCBI using the `biopython interface to Entrez`_. Protein sequences of each orthogroup + RefSeq homologs were aligned with MAFFT_ (default parameters) and the phylogeny was reconstructed with FastTree_ (default parameters).
 
 \
 
@@ -170,17 +170,23 @@ The interactions reported in the "interactions" tab were predicted based on two 
 1 Phylogenetic profiling
 +++++++++++++++++++++++++
 
-Orthogroup exhibiting similar patterns of presence/absence were identified by calculating the Euclidian distance of all pairs of orthologroups phylogenetic profiles (see **Figure 3**).
+Orthogroup exhibiting similar patterns of presence/absence were identified by calculating the Euclidian distance of all pairs of orthologroups phylogenetic profiles (see **Figure 3**). See for instance `Kensche et al.`_ for a review on phylogenetic profiling methods.
 
-    1. Phylogenetic profiles were collapsed at the species level
-    2. Pairwise euclidean_ and jaccard_ distances were calculated between pairs of profiles (see `Kensche et al.`_ for a review on that topic)
-    3. The default euclidian distance cutoff to report interactions is ``2.2``. If more than 30 profiles had an euclidian distance smaller or equal to ``2.2``, the stringency was adjusted incrementally with cutoffs of ``2``, ``1`` and finally ``0``. If more than 30 profiles exhibit the exact same profile, nothing is reported. Indeed, it would by typically poorly informative interactions (e.g. proteins conserved in all species).
+    1. Phylogenetic profiles were collapsed at the species level. If an orthogroup was present in only a subset of the strains of the considered species, it was still considered as present in that species.
+    2. Pairwise euclidean_ and jaccard_ distances were calculated between pairs of profiles
+    3. The default euclidian distance cutoff to report interactions is ``2.2``. If more than 30 profiles had an euclidian distance smaller or equal to ``2.2``, the stringency was adjusted incrementally with cutoffs of ``2``, ``1`` and finally ``0``. If more than 30 profiles exhibit the exact same profile, nothing is reported. Indeed, it would by typically poorly informative profiles (e.g. proteins conserved in all species).
 
 .. figure:: ../img/profile.svg
     :figclass: align-center
     :width: 500 px
 
-    **Figure 3**: Schematic view of the phylogenetic profiling method used to predict protein-protein interactions. Distances between profiles of presence/absence of orthologs were calculated using two different metrics (euclidean_ and jaccard_ distances).
+    **Figure 3**: Schematic view of the phylogenetic profiling method used to predict protein-protein interactions. Distances between profiles of presence/absence of orthologs were calculated using two different metrics (euclidean_ and jaccard_ distances). 
+
+.. note::
+    Have a look at the predicted interactors of the `cell shape-determining protein MreB`_. The detailed profile of each orthogroup if available in the "profile" tab.
+
+.. warning:: 
+    The profiles 5 and 6 in **Figure 3** are strictly identitcal but poorly informative since orthologs were identified in all considered species. Spurious associations like this one cannot always be automatically discarded, those data should be interpreted with caution. The detailed profile of associated orthogroups is always provided on the "interactions" tab.
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 2. Identification of conserved gene neighborhood in different species
@@ -328,4 +334,5 @@ Public database download and indexing   https://github.com/metagenlab/annotation
 .. _Euclidean : https://en.wikipedia.org/wiki/Euclidean_distance
 .. _jaccard : https://en.wikipedia.org/wiki/Jaccard_index
 .. _`NCBI taxonomy ftp website` : ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/
-.. _`biopython intrevace to Entrez` : https://biopython.org/DIST/docs/api/Bio.Entrez-module.html
+.. _`biopython interface to Entrez` : https://biopython.org/DIST/docs/api/Bio.Entrez-module.html
+.. _`cell shape-determining protein MreB` : https://chlamdb.ch/profile_interactions/group_414
