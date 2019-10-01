@@ -84,7 +84,7 @@ Those annotations are summarized on the "locus" page available for each protein 
         * effectiveT3_ (model ``TTSS_STD-2.0.2``, cutoff of ``0.9999``)
         * DeepT3_  (default parameters)
         * T3_MM_ (default parameters)
-    * UNIPARC - SwissProt
+    * TODO: UNIPARC - SwissProt
 
 -----------------------------------------
 _`Homology search` (RefSeq and SwissProt)
@@ -118,7 +118,12 @@ Protein sequences of each orthogroup were aligned with MAFFT_ (default parameter
 Phlogeny including top RefSeq hits
 ---------------------------------------
 
-A second phylogeny was reconstructed for each orthogroup. This phylogeny includes the 4 best RefSeq hits of each protein (see the `Homology search`_ paragraph). It allows users to check whether PVC proteins form a monophyletic group or if they are for instance hints of horizontal gene transfer(s) with bacteria from other phyla. The phylogeny was reconstructed with FastTree_ with default parameters.
+A second phylogeny was reconstructed for each orthogroup. This phylogeny includes the 4 best  non-PVC RefSeq hits of each protein (see the `Homology search`_ paragraph). 
+First, the NCBI taxon ID of each RefSeq hit was retrieved using the ``prot.accession2taxid`` mapping file available from the `NCBI taxonomy ftp website`_. PVC hits were removed and the amino acid sequence of the 4 best non-PVC hits was retrieved from the NCBI using the `biopython intrevace to Entrez`_. Protein sequences of each orthogroup + RefSeq homologs were aligned with MAFFT_ (default parameters) and the phylogeny was reconstructed with FastTree_ (default parameters).
+
+\
+
+This phylogeny allows users to check whether PVC proteins form a monophyletic group or if they are for instance hints of horizontal gene transfer(s) with bacteria from other phyla.
 
 ----------------------------------------
 Calculation of pairwise protein identity
@@ -181,7 +186,11 @@ Orthogroup exhibiting similar patterns of presence/absence were identified by ca
 2. Identification of conserved gene neighborhood in different species
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-TODO
+
+
+.. figure:: ../img/conserved_neig.svg
+    :figclass: align-center
+    :width: 100 %
 
 -----------------------------------------------------------
 Prediction of candidate type III secretion system effectors
@@ -199,11 +208,19 @@ Taxonomic profile of Pfam domains and COGs
 
 TODO
 
+---------------------------
+Protein accessions mapping
+---------------------------
+
+- RefSeq, GenBank, UniProt
+
 ------------------------------
 SQL database and Web Interface
 ------------------------------
 
 TODO
+* database size 80Gb
+* Figure generated from stores data
 
 .. note::
     Thee SQL database is about 80GB in size. Protein alignments are not stored into the database.
@@ -310,3 +327,5 @@ Public database download and indexing   https://github.com/metagenlab/annotation
 .. _`Kensche et al.` : https://royalsocietypublishing.org/doi/10.1098/rsif.2007.1047
 .. _Euclidean : https://en.wikipedia.org/wiki/Euclidean_distance
 .. _jaccard : https://en.wikipedia.org/wiki/Jaccard_index
+.. _`NCBI taxonomy ftp website` : ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/
+.. _`biopython intrevace to Entrez` : https://biopython.org/DIST/docs/api/Bio.Entrez-module.html

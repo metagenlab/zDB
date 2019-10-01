@@ -49,6 +49,18 @@ Pathways/Modules`` description fields. The results (if matches were found) are r
 It's also possible to browse genomes tables from links listed in the `ChlamDB home page`_ (column: Browse online)
 
 
+
+-----------------
+Species phylogeny
+-----------------
+
+----------------------
+Orthogroup phylogenies
+----------------------
+
+“Putative interactors were predicted in-house from genomic data alone using phylogenetic profiling and investigation of conserved gene neighborhood (see online methods). Phylogenetic profile similarity (pattern of presence/absence of orthologs within the PVC superphylum) was calculated using Euclidean and Jaccard distances. Conserved neighbors were identified by identifying orthologs encoded less than 20 kilobases apart in genomes from different species of the PVC superphylum (Figure 1.H). See (19) and (20) for the rationale justifying use of those two approaches.”
+
+
 ---------------------------------------------------
 Search using COG, Pfam, Interpro or KEGG accessions
 ---------------------------------------------------

@@ -147,7 +147,7 @@ were retrived using the <a class="reference external" href="http://version11.str
 </dd>
 </dl>
 </li>
-<li><p>UNIPARC - SwissProt</p></li>
+<li><p>TODO: UNIPARC - SwissProt</p></li>
 </ul>
 </div></blockquote>
 </div>
@@ -178,7 +178,10 @@ As gene duplication and loss occur frequently in bacteria, we rarely have exactl
 </div>
 <div class="section" id="phlogeny-including-top-refseq-hits">
 <h2>Phlogeny including top RefSeq hits<a class="headerlink" href="#phlogeny-including-top-refseq-hits" title="Permalink to this headline">¶</a></h2>
-<p>A second phylogeny was reconstructed for each orthogroup. This phylogeny includes the 4 best RefSeq hits of each protein (see the <a class="reference internal" href="#homology-search">Homology search</a> paragraph). It allows users to check whether PVC proteins form a monophyletic group or if they are for instance hints of horizontal gene transfer(s) with bacteria from other phyla. The phylogeny was reconstructed with <a class="reference external" href="http://www.microbesonline.org/fasttree/">FastTree</a> with default parameters.</p>
+<p>A second phylogeny was reconstructed for each orthogroup. This phylogeny includes the 4 best  non-PVC RefSeq hits of each protein (see the <a class="reference internal" href="#homology-search">Homology search</a> paragraph).
+First, the NCBI taxon ID of each RefSeq hit was retrieved using the <code class="docutils literal notranslate"><span class="pre">prot.accession2taxid</span></code> mapping file available from the <a class="reference external" href="ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/">NCBI taxonomy ftp website</a>. PVC hits were removed and the amino acid sequence of the 4 best non-PVC hits was retrieved from the NCBI using the <a class="reference external" href="https://biopython.org/DIST/docs/api/Bio.Entrez-module.html">biopython intrevace to Entrez</a>. Protein sequences of each orthogroup + RefSeq homologs were aligned with <a class="reference external" href="https://mafft.cbrc.jp/alignment/software/">MAFFT</a> (default parameters) and the phylogeny was reconstructed with <a class="reference external" href="http://www.microbesonline.org/fasttree/">FastTree</a> (default parameters).</p>
+<p></p>
+<p>This phylogeny allows users to check whether PVC proteins form a monophyletic group or if they are for instance hints of horizontal gene transfer(s) with bacteria from other phyla.</p>
 </div>
 <div class="section" id="calculation-of-pairwise-protein-identity">
 <h2>Calculation of pairwise protein identity<a class="headerlink" href="#calculation-of-pairwise-protein-identity" title="Permalink to this headline">¶</a></h2>
@@ -224,7 +227,9 @@ As gene duplication and loss occur frequently in bacteria, we rarely have exactl
 </div>
 <div class="section" id="identification-of-conserved-gene-neighborhood-in-different-species">
 <h3>2. Identification of conserved gene neighborhood in different species<a class="headerlink" href="#identification-of-conserved-gene-neighborhood-in-different-species" title="Permalink to this headline">¶</a></h3>
-<p>TODO</p>
+<div class="align-center figure align-default">
+<a class="reference internal image-reference" href="../_images/conserved_neig.svg"><img alt="../_images/conserved_neig.svg" src="../_images/conserved_neig.svg" width="100%" /></a>
+</div>
 </div>
 </div>
 <div class="section" id="prediction-of-candidate-type-iii-secretion-system-effectors">
@@ -243,9 +248,17 @@ As gene duplication and loss occur frequently in bacteria, we rarely have exactl
 <h2>Taxonomic profile of Pfam domains and COGs<a class="headerlink" href="#taxonomic-profile-of-pfam-domains-and-cogs" title="Permalink to this headline">¶</a></h2>
 <p>TODO</p>
 </div>
+<div class="section" id="protein-accessions-mapping">
+<h2>Protein accessions mapping<a class="headerlink" href="#protein-accessions-mapping" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>RefSeq, GenBank, UniProt</p></li>
+</ul>
+</div>
 <div class="section" id="sql-database-and-web-interface">
 <h2>SQL database and Web Interface<a class="headerlink" href="#sql-database-and-web-interface" title="Permalink to this headline">¶</a></h2>
-<p>TODO</p>
+<p>TODO
+* database size 80Gb
+* Figure generated from stores data</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Thee SQL database is about 80GB in size. Protein alignments are not stored into the database.</p>
@@ -389,6 +402,7 @@ As gene duplication and loss occur frequently in bacteria, we rarely have exactl
 </li>
 <li><a class="reference internal" href="#prediction-of-candidate-type-iii-secretion-system-effectors">Prediction of candidate type III secretion system effectors</a></li>
 <li><a class="reference internal" href="#taxonomic-profile-of-pfam-domains-and-cogs">Taxonomic profile of Pfam domains and COGs</a></li>
+<li><a class="reference internal" href="#protein-accessions-mapping">Protein accessions mapping</a></li>
 <li><a class="reference internal" href="#sql-database-and-web-interface">SQL database and Web Interface</a></li>
 <li><a class="reference internal" href="#source-databases">Source databases</a></li>
 <li><a class="reference internal" href="#software-versions">Software versions</a></li>
