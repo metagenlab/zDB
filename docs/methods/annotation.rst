@@ -183,10 +183,10 @@ Orthogroup exhibiting similar patterns of presence/absence were identified by ca
     **Figure 3**: Schematic view of the phylogenetic profiling method used to predict protein-protein interactions. Distances between profiles of presence/absence of orthologs were calculated using two different metrics (euclidean_ and jaccard_ distances). 
 
 .. note::
-    Have a look at the predicted interactors of the `cell shape-determining protein MreB`_. The detailed profile of each orthogroup if available in the "profile" tab.
+    Have a look at the predicted interactors of the `cell shape-determining protein MreB`_. The detailed profile of each orthogroup is available in the "profile" tab.
 
 .. warning:: 
-    The profiles 5 and 6 in **Figure 3** are strictly identitcal but poorly informative since orthologs were identified in all considered species. Spurious associations like this one cannot always be automatically discarded, those data should be interpreted with caution. The detailed profile of associated orthogroups is always provided on the "interactions" tab.
+    The profiles 5 and 6 in **Figure 3** are strictly identitcal but poorly informative since orthologs were identified in all considered species. Spurious associations like this one cannot always be automatically discarded. Thus, those associations should always be interpreted with caution. The detailed profile of associated orthogroups is always provided ("profile" tab).
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 2. Identification of conserved gene neighborhood in different species
