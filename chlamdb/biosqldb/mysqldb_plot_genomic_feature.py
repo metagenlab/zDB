@@ -623,11 +623,11 @@ def proteins_id2cossplot(server, biodb, biodb_name, locus_tag_list, out_name, re
             #unloaded_bioentry.append(bioentry)
             new_record = biodb.lookup(accession=bioentry)
             new_record_reformat = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
-                                                             id=new_record.id, name=new_record.name,
-                                                             description=new_record.description,
-                                                             dbxrefs =new_record.dbxrefs,
-                                                             features=new_record.features,
-                                                             annotations=new_record.annotations)
+                                            id=new_record.id, name=new_record.name,
+                                            description=new_record.description,
+                                            dbxrefs =new_record.dbxrefs,
+                                            features=new_record.features,
+                                            annotations=new_record.annotations)
             record_id = biodb_name + "_" + new_record_reformat.id.split(".")[0]
             cache.set(key, new_record_reformat, cache_time)
             biorecord = cache.get(key)
@@ -705,7 +705,8 @@ def location2plot(biodb,
                   color_locus_list = [],
                   region_highlight=[]):
     import copy
-
+    if start < 0:
+        start=0
     key = biodb_name + "_" + accession
     biorecord = cache.get(key)
     if biorecord:
@@ -728,10 +729,14 @@ def location2plot(biodb,
 
     fake_feature = copy.copy(biorecord.features[1])
     fake_feature.type = "tblast_target"
+    print(region_highlight[0], region_highlight[1])
     fake_feature.location = FeatureLocation(region_highlight[0], region_highlight[1], strand=0)
     biorecord.features.append(fake_feature)
+    print("start-end",start,end)
     sub_record = biorecord[start:end]
-    sub_record.features = ([sub_record.features[-1]] + sub_record.features[0:-1])
+    print(sub_record.features)
+    if len(sub_record.features) > 0:
+        sub_record.features = ([sub_record.features[-1]] + sub_record.features[0:-1])
     region_locus_list = plot_multiple_regions_crosslink([],
                                                         [sub_record],
                                                         [False],

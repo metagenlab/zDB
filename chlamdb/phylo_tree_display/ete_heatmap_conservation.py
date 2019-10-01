@@ -364,7 +364,9 @@ def plot_heatmap_tree_locus(biodb,
     taxid2organism = manipulate_biosqldb.taxon_id2genome_description(server, biodb, True)
 
     t1 = Tree(tree_file)
-
+    ts = TreeStyle()
+    ts.draw_guiding_lines = True
+    ts.guiding_lines_color = "gray"
     # Calculate the midpoint node
     R = t1.get_midpoint_outgroup()
     # and set it as tree outgroup
@@ -379,7 +381,45 @@ def plot_heatmap_tree_locus(biodb,
 
     max_count = max([taxid2count[str(lf.name)] for lf in t1.iter_leaves()])
 
-    for lf in t1.iter_leaves():
+    for i, lf in enumerate(t1.iter_leaves()):
+        
+        # top leaf, add header
+        if i == 0:
+            
+            n = TextFace('Number of homologs')
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 20
+            n.margin_bottom = 1
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            n.rotation = -25
+            #lf.add_face(n, 7, position="aligned")
+            ts.aligned_header.add_face(n, 1)
+ 
+            if taxid2identity:
+                n = TextFace('Protein identity')
+                n.margin_top = 1
+                n.margin_right = 1
+                n.margin_left = 20
+                n.margin_bottom = 1
+                n.inner_background.color = "white"
+                n.opacity = 1.
+                n.rotation = -25
+                #lf.add_face(n, 7, position="aligned")
+                ts.aligned_header.add_face(n, 2)
+            if taxid2locus:
+                n = TextFace('Locus tag')
+                n.margin_top = 1
+                n.margin_right = 1
+                n.margin_left = 20
+                n.margin_bottom = 1
+                n.inner_background.color = "white"
+                n.opacity = 1.
+                n.rotation = -25
+                #lf.add_face(n, 7, position="aligned")
+                ts.aligned_header.add_face(n, 3)
+        
         leaf_number+=1
         #print lf
         lf.branch_vertical_margin = 0
@@ -484,7 +524,7 @@ def plot_heatmap_tree_locus(biodb,
             lf.add_face(n, col_index+2, position="aligned")
         lf.name = taxid2organism[str(lf.name)]
 
-    return t1, leaf_number
+    return t1, leaf_number, ts
 
 
 if __name__ == '__main__':

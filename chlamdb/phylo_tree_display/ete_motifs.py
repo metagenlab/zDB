@@ -291,12 +291,12 @@ def combined_profiles_heatmap(biodb,
                 #'first row, print gene names'
                 #print 'ok!'
                 n = TextFace(' %s ' % str(value))
-                n.vt_align = 2
-                n.hz_align = 2
+                #n.vt_align = 2
+                #n.hz_align = 2
                 n.rotation = 270
-                n.margin_top = 2
-                n.margin_right = 2
-                n.margin_left = 2
+                #n.margin_top = 2
+                #n.margin_right = 2
+                #n.margin_left = 2
                 n.margin_bottom = 6
 
                 n.inner_background.color = "white"
@@ -883,6 +883,7 @@ def multiple_profiles_heatmap(biodb,
     tss.draw_guiding_lines = True
     tss.guiding_lines_color = "gray"
     tss.show_leaf_name = False
+    tss.draw_aligned_faces_as_table=True
 
     R = t1.get_midpoint_outgroup()
     t1.set_outgroup(R)
@@ -894,6 +895,11 @@ def multiple_profiles_heatmap(biodb,
     leaf_list = [i for i in t1.iter_leaves()]
     n_leaves = len(leaf_list)
 
+    longest_label = 0
+    for i in column_labels:
+        if len(i) > longest_label:
+            longest_label = len(i)
+
     for lf_count, lf in enumerate(t1.iter_leaves()):
         lf.branch_vertical_margin = 0
 
@@ -901,13 +907,19 @@ def multiple_profiles_heatmap(biodb,
         for col, value in enumerate(column_labels):
             if lf_count == 0:
                     # add labels
-                    n = TextFace(' %s ' % str(value))
-                    n.vt_align = 2
-                    n.hz_align = 2
+                    diff = (longest_label - len(value))
+                    n = TextFace('%s%s' % (str(value), diff * ' '))
+                    n.vt_align = 0
+                    n.hz_align = 0
                     n.rotation= 270
-                    n.margin_top = 2
-                    n.margin_right = 2
-                    n.margin_left = 2
+                    if col == 0:
+                        n.margin_left = 3
+                    else:
+                        n.margin_bottom = 2
+                        n.margin_left = 2
+                    #n.margin_top = 2
+                    #n.margin_right = 2
+                    #n.margin_left = 2
                     n.margin_bottom = 6
 
                     from ete3 import NodeStyle
@@ -932,10 +944,10 @@ def multiple_profiles_heatmap(biodb,
                     #n = RectFace(width=10, height=10, fgcolor="red", bgcolor="blue", label='-')
                     group2taxon2count[value][lf.name] = 0
                 ref_data = str(value)
-                n.margin_top = 2
-                n.margin_right = 2
-                n.margin_left = 30
-                n.margin_bottom = 2
+                n.margin_top = 1
+                n.margin_right = 1
+                n.margin_left = 1
+                n.margin_bottom = 1
 
                 if group2taxon2count[value][lf.name] > 0 and group2taxon2count[value][lf.name] != '-':
                     n.inner_background.color = "#FA5858"
@@ -964,7 +976,7 @@ def multiple_profiles_heatmap(biodb,
                                         local_label = "%.2f" % group2taxon2count[value][lf.name]
                                     else:
                                         try:
-                                            print('ok!')
+                                            #print('ok!')
                                             local_label = "%s" % int(group2taxon2count[value][lf.name])
                                         except:
                                             local_label = "%s" % group2taxon2count[value][lf.name]
@@ -984,10 +996,10 @@ def multiple_profiles_heatmap(biodb,
                                         if round(group2taxon2count[value][lf.name], 2) < 100 and column_scale:
                                             if round(group2taxon2count[value][lf.name], 2) < 10:
                                                 #print('less than 10: %s' % group2taxon2count[value][lf.name])
-                                                n = TextFace('  %s  ' % local_label)
-                                            else:
-                                                print('Beteen 10 and 100: %s' % group2taxon2count[value][lf.name])
                                                 n = TextFace(' %s ' % local_label)
+                                            else:
+                                                #print('Beteen 10 and 100: %s' % group2taxon2count[value][lf.name])
+                                                n = TextFace('%s' % local_label)
                                         else:
                                             #print('more than 100: %s' % group2taxon2count[value][lf.name])
                                             n = TextFace('%s' % local_label)
@@ -996,7 +1008,7 @@ def multiple_profiles_heatmap(biodb,
                                                 n.fgcolor = 'white'
                                     # labels are not floats
                                     except TypeError:
-                                        print("not float")
+                                        #print("not float")
                                         n = TextFace(' %s ' % group2taxon2count[value][lf.name])
                                 else:
                                     n = TextFace(' - ')
@@ -1017,10 +1029,10 @@ def multiple_profiles_heatmap(biodb,
                                 n = TextFace(' - ')
                     '''
                     if show_labels:
-                        n.margin_top = 2
-                        n.margin_right = 2
-                        n.margin_left = 2
-                        n.margin_bottom = 2
+                        n.margin_top = 1
+                        n.margin_right = 1
+                        n.margin_left = 1
+                        n.margin_bottom = 1
                     else:
                         n.margin_top = 0
                         n.margin_right = 0
@@ -1073,10 +1085,10 @@ def multiple_profiles_heatmap(biodb,
                     except:
                         group2taxon2count[value][lf.name] = 0
                         n = TextFace(' - ')
-                    n.margin_top = 2
-                    n.margin_right = 2
-                    n.margin_left = 2
-                    n.margin_bottom = 2
+                    n.margin_top = 1
+                    n.margin_right = 1
+                    n.margin_left = 1
+                    n.margin_bottom = 1
                     if group2taxon2count[value][lf.name] > 0 and group2taxon2count[value][lf.name] != '-':
                         if not reference_column:
                             #print 'no ref column'
@@ -1921,9 +1933,9 @@ def get_pfam_data(orthogroup, biodb, aa_alignment=False):
           ' left join interpro_%s t2 on t1.seqfeature_id=t2.seqfeature_id and t2.orthogroup="%s" and t2.analysis="Pfam" ' \
           ' where t1.orthogroup="%s";' % (biodb, biodb, orthogroup, orthogroup)
 
-    print(sql)
+    #print(sql)
     data = server.adaptor.execute_and_fetchall(sql,)
-    print("OK")
+    #print("OK")
     locus2aa_seq = {}
     # getting aa alignment
     if aa_alignment:
@@ -1954,7 +1966,7 @@ def get_TM_data(biodb,
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     if orthogroup:
-        print("orthogroup!")
+        #print("orthogroup!")
         sql = 'select locus_tag, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where orthogroup="%s" and analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (biodb, orthogroup)
 
@@ -1973,7 +1985,7 @@ def get_TM_data(biodb,
     else:
         sql = 'select locus_tag, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro_%s as t2 where analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (biodb)
-    print(sql)
+    #print(sql)
     data = server.adaptor.execute_and_fetchall(sql,)
 
     if signal_peptide:
@@ -2087,8 +2099,8 @@ def interpro_tsv2pfam_data(interpro_tsv_file,
         for row in f:
             data = row.rstrip().split('\t')
             if len(data) != 13:
-                print (len(data))
-                print (data)
+                #print (len(data))
+                #print (data)
                 raise IOError('Unexpected number of columns in the tsv file (expected 13 of the standard 13 columns format from 2018)')
             else:
                 locus_tag = data[0]
@@ -2141,18 +2153,49 @@ def draw_pfam_tree(tree_name, locus2data,
     # from the original set
     from ete3 import Tree, TreeStyle, faces, AttrFace
     t = Tree(tree_name)
+    ts = TreeStyle()
+    ts.draw_guiding_lines = True
+    ts.guiding_lines_color = "gray"   
+    #ts.show_leaf_name = False
+    ts.show_branch_support = True
+    #ts.layout_fn = layout    
     #t.populate(8)
     # Calculate the midpoint node
-    print (t)
+    #print (t)
     R = t.get_midpoint_outgroup()
-    print (R)
+    #print (R)
     # and set it as tree outgroup
     t.set_outgroup(R)
 
     color_dico = organism2color(locus2data, taxon_id2family)
 
     leaf_number = 0
-    for l in t.iter_leaves():
+    for i, l in enumerate(t.iter_leaves()):
+        # top leaf: add headers
+        if i == 0:
+            
+            n = TextFace('Locus tag')
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 20
+            n.margin_bottom = 1
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            n.rotation = -25
+            #lf.add_face(n, 7, position="aligned")
+            ts.aligned_header.add_face(n, 0)
+ 
+            n = TextFace('Pfam domain(s)')
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 20
+            n.margin_bottom = 1
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            n.rotation = -25
+            #lf.add_face(n, 7, position="aligned")
+            ts.aligned_header.add_face(n, 1)
+            
         leaf_number+=1
         if locus2protein_id:
             #protein_id = locus2protein_id[str(l)[3:len(str(l))]]
@@ -2236,34 +2279,58 @@ def draw_pfam_tree(tree_name, locus2data,
                 l.add_face(ff, column=0)
 
         locus.margin_right = 10
-        locus.margin_left = 10
+        locus.margin_left = 22
         locus.margin_bottom = 0
         l.add_face(locus, column=0, position="aligned")
 
-    ts = TreeStyle()
-    #ts.show_leaf_name = False
-    ts.show_branch_support = True
-    #ts.layout_fn = layout
+
     return t, ts, leaf_number
 
 def draw_TM_tree(tree_name, locus2data):
     # from the original set
     from ete3 import Tree, TreeStyle, faces, AttrFace
+    
     t = Tree(tree_name)
+    ts = TreeStyle()
+    ts.draw_guiding_lines = True
+    ts.guiding_lines_color = "gray"    
     #t.populate(8)
     # Calculate the midpoint node
     R = t.get_midpoint_outgroup()
     # and set it as tree outgroup
     t.set_outgroup(R)
 
-    print("draw_TM_tree--------------", locus2data)
+    #print("draw_TM_tree--------------", locus2data)
     color_dico = organism2color(locus2data)
 
     for leaf_number, l in enumerate(t.iter_leaves()):
-        #print 'leaf', leaf_number
+
+
+        if leaf_number == 0:
+            
+            n = TextFace('Locus tag')
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 20
+            n.margin_bottom = 1
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            n.rotation = -25
+            ts.aligned_header.add_face(n, 0)
+ 
+            n = TextFace('SP/TM domain(s)')
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 20
+            n.margin_bottom = 1
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            n.rotation = -25
+            ts.aligned_header.add_face(n, 1)
+
         locus_name = str(l)[3:len(str(l))]
         locus_name = locus_name.split('|')[0]
-        print(locus_name, locus_name in locus2data)
+        #print(locus_name, locus_name in locus2data)
         try:
             data = locus2data[locus_name]
             seq_motifs = []
@@ -2276,15 +2343,15 @@ def draw_TM_tree(tree_name, locus2data):
             l.img_style['hz_line_type'] = 0
             l.img_style['size'] = 6
         # case in which we have more than seq length
-        print("len data", len(data), data)
+        #print("len data", len(data), data)
         if isinstance(data[0], list):
             for motif in data:
-                print(motif[-1])
+                #print(motif[-1])
                 if motif[-2] != "SIGNAL_PEPTIDE":
                     seq_motifs.append([motif[0], motif[1], "()", None, 10, "black", "PaleGreen", "arial|8|red|"])
                 else:
                     seq_motifs.append([motif[0], motif[1], "[]", None, 10, "black", "red", "arial|8|red|"])
-            print("motifs:", seq_motifs)
+            #print("motifs:", seq_motifs)
         if isinstance(data[0], int):
             seqFace = SeqMotifFace(data[0]*'N',
                                     motifs=[],
@@ -2324,11 +2391,11 @@ def draw_TM_tree(tree_name, locus2data):
         except:
             l.name = data[1]
         locus.margin_right = 10
-        locus.margin_left = 10
+        locus.margin_left = 15
         locus.margin_bottom = 0
         l.add_face(locus, column=0, position="aligned")
 
-    ts = TreeStyle()
+    
     #ts.layout_fn = layout
     return t, ts, leaf_number+1
 

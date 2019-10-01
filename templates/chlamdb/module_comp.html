@@ -40,22 +40,25 @@
                     </form>
 
                     {% if envoi_comp %}
-                            <div id="export_bouttons" style="float:left">
-                                <a download="biodb_search.xls" href="#" onclick="return ExcellentExport.excel(this, 'table_modules', 'search');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to Excel</a>
-                                <a download="biodb_search.csv" href="#" onclick="return ExcellentExport.csv(this, 'table_modules');" style="background-color:#DCFFF0;color:black;padding:2px;border:1px solid black;">Export to CSV</a>
-                            <br/>
-                            </div>
-                            <table class="sortable" id="table_modules">
-                                    <style>
-                        table {
-                            width:100%;
-                            table-layout:fixed;
-                        }
-                        td {
-                            overflow: hidden;
-                            white-space: nowrap;
-                        }
-                    </style>
+
+                    <table class="table" id="table_modules">
+                        <style>
+                            table {
+                                width:100%;
+                                table-layout:fixed;
+                            }
+                            td {
+                                overflow: hidden;
+                                white-space: nowrap;
+                            }
+
+                                .header th {
+                                  height: 250px;
+                                  line-height: 2px;
+                                }
+
+                        </style>
+                          <thead class="header">
                             <tr>
                                 <th id="entete_meta6">Category</th>
                                 <th id="entete_meta5">SubCategory</th>
@@ -67,26 +70,33 @@
                                 {% for taxon in taxon_list %}
                                     <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
                                 {% endfor %}
-                            <tr>
+                            </tr>
+                          </thead>
+                          <body>
                             {% for category, values in category2maps.items %}
                                 {% for value0, value1 in values %}
                                 <tr>
 
                                     <td>{{category}}</td><td>{{module2sub_category|keyvalue:value0}}</td>
-                                    <td><a href="http://www.genome.jp/dbget-bin/www_bget?md:{{value0}}" target="_top">{{value0}}</a>
-                                        <a href="{% url 'KEGG_module_map' value0 %}">link</a></td>
+                                    <td><a href="{% url 'KEGG_module_map' value0 %}">{{value0}}</a></td>
                                     <td>{{value1}}</td>
                                     {% for value in map2count|keyvalue:value0 %}
+                                    
                                         <td>{{value}}</td>
                                     {% endfor %}
                                     {%for map_dico in taxon_maps %}
+                                        {% if map_dico|keyvalue:value0 == None %}
+                                        <td data-hist="None">0</td>
+                                        {% else %}
                                         <td data-hist="{{map_dico|keyvalue:value0}}">{{map_dico|keyvalue:value0}}</td>
+                                        {% endif %}
                                     {% endfor %}
 
                                 </tr>
                                 {% endfor %}
                             {% endfor %}
-                            </table>
+                          </tbody>
+                        </table>
                     {% endif %}
                 </div>
             </div>
@@ -95,25 +105,60 @@
       </div>
     </div>
     <script src="{% static 'js/jquery.hottie.js' %}"></script>
-    <script>
-      $(function(){
 
 
-        $("#table_modules td").hottie({
+</body>
+
+<script>
+
+  $(document).ready(function() {
+
+    $("#table_modules td").hottie({
           readValue : function(e) {
             return $(e).attr("data-hist");
           },
         colorArray : [
-        "#5858FA",
+            "#5858FA",
             "#FBEFEF",
             "#FA5858"
         ]
-
         });
 
-      });
-    </script>
+        $('#table_modules').DataTable( {
+        dom: 'Bfrtip',
+        "paging":   false,
+        "ordering": true,
+        "info":     false,
+        buttons: [
 
-</body>
+        {
+            extend: 'colvis',
+            columns: ':not(.noVis)',
+        },
+
+          {
+              extend: 'excel',
+              title: 'table_tcdb'
+          },
+          {
+              extend: 'csv',
+              title: 'table_tcdb'
+          }
+        ],
+        "columnDefs": [
+    { "width": "15", "targets": 2 },
+    { "width": "15", "targets": 4 },
+    { "width": "15", "targets": 5 },
+    { "width": "15", "targets": 6 },
+    { "width": "5", "targets": 7 },
+    { "width": "5", "targets": 8 },
+    { "width": "5", "targets": 9 },
+    { "width": "5", "targets": 10 }
+  ]        
+        } );
+        } );
+  
+  </script>
+
 {% include "chlamdb/style_menu.html" %}
 </html>

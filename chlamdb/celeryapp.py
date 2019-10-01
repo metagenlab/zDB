@@ -16,6 +16,8 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
 
+CELERYD_MAX_TASKS_PER_CHILD = 20
+BROKER_TRANSPORT_OPTIONS = {'confirm_publish': True}
 
 @app.task(bind=True)
 def debug_task(self):

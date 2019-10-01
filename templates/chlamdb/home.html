@@ -23,14 +23,14 @@
                 <div class="col-lg-12">
                    {% include "chlamdb/menu.html" %}
                     <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                        <li class="active"><a href="#tab2" data-toggle="tab">Home</a></li>
-                        <li><a href="#tab0" data-toggle="tab">Genomes</a></li>
-                        <li><a href="#tab1" data-toggle="tab">Phylogeny</a></li>
+                        <li class="active"><a href="#home" data-toggle="tab">Home</a></li>
+                        <li><a href="#genomes" data-toggle="tab">Genomes</a></li>
+                        <li><a href="#phylogeny" data-toggle="tab">Phylogeny</a></li>
                     </ul>
 
 
                     <div id="my-tab-content" class="tab-content">
-                        <div class="tab-pane active" id="tab2">
+                        <div class="tab-pane active" id="home">
 
 
                             <div style="padding-top:20px;">
@@ -38,7 +38,7 @@
                                 <h1>Chlamydiae Database </h1>
                                 <center>
                                   <p>
-                                  A comparative genomics database of the phylum <i>Chlamydiae</i>
+                                  A comparative genomics database of the  <i>Planctomycetes</i>-<i>Verrucomicrobia</i>-<i>Chlamydiae</i> superphylum
                                   </p>
                                 </center>
 
@@ -60,15 +60,13 @@
 
                                       {% if biodb == "chlamydia_04_16"%}
 
-                                       <li><a href="#tab0" data-toggle="tab">{{n_genomes}} <i>Chlamydiae</i> genomes from 26 different species</a> (see the <a href="#tab1" data-toggle="tab">phylogeny</a>)</li>
+                                       <li><a href="/home/#genomes">{{n_genomes}} <i>Chlamydiae</i> genomes from 26 different species</a> (see the <a href="/home#phylogeny">phylogeny</a>)</li>
 
                                       {% elif biodb == "2019_06_PVC"%}
-                                         <li><a href="#tab0" data-toggle="tab">{{n_genomes}} <i>PVC</i> genomes</a> (see the <a href="#tab1" data-toggle="tab">phylogeny</a>)</li>
+                                         <li><a href="/home/#genomes">{{n_genomes}} <i>PVC</i> genomes</a> (see the <a href="/home/#phylogeny">phylogeny</a>)</li>
                                       {% else %}
-                                          <li><a href="#tab0" data-toggle="tab">{{n_genomes}} <i>PVC</i> genomes</a> (see the <a href="#tab1" data-toggle="tab">phylogeny</a>)</li>
+                                          <li><a href="/home/#genomes">{{n_genomes}} <i>PVC</i> genomes</a> (see the <a href="/home/#phylogeny">phylogeny</a>)</li>
                                       {% endif %}
-
-
 
                                        <li>Orthologous proteins identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a></li>
                                        <li>Detailed annotation of proteins based on</li>
@@ -104,7 +102,7 @@
 
 
                         </div>
-                        <div class="tab-pane" id="tab0">
+                        <div class="tab-pane" id="genomes">
                           <div class="col-lg-12 col-md-12 col-sm-12">
                            <div class="row">
 
@@ -120,7 +118,7 @@
                                         <th>Size</th>
                                         <th>Percent non coding</th>
                                         <th>Organism</th>
-                                        <!--<th>Browse Online</th>-->
+                                        <th>Browse Online</th>
                                         <th>gbk</th>
                                         <th>faa</th>
                                         <th>fna</th>
@@ -144,7 +142,7 @@
                                         <!--<td>{{values.8}}</td>-->
                                         <td>{{values.9}}</td>
                                         <td>{{values.13}}</td>
-                                        <!--<td><a href="{% url 'genome_annotation' values.0 %}">{{values.0}}</a></td>-->
+                                        <td><a href="{% url 'genome_annotation' values.0 %}">{{values.0}}</a></td>
 
                                         <td style="vertical-align:top" nowrap>
                                             <a  style="text-decoration:none;" href="{% url 'get_record' values.0 'gbk' %}">
@@ -179,7 +177,7 @@
                         </div><!-- row -->
                       </div> <!-- col -->
                     </div> <!-- tab0 -->
-                        <div class="tab-pane" id="tab1">
+                        <div class="tab-pane" id="phylogeny">
                           <div class="row">
                             <div class="col-lg-12">
                               <div class="row">
@@ -216,6 +214,18 @@
 
     <script>
       $(document).ready(function() {
+
+      // Javascript to enable link to tab
+      var url = document.location.toString();
+      if (url.match('#')) {
+          $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
+      } 
+
+      // Change hash for page-reload
+      $('.nav-tabs a').on('shown.bs.tab', function (e) {
+          window.location.hash = e.target.hash;
+      })
+
       $('#genomes_table').DataTable( {
       dom: 'Bfrtip',
       "paging":   true,
@@ -234,7 +244,13 @@
       } );
       } );
     $('.dropdown-toggle').dropdown()
+
+
+
+
     </script>
+
+
 
 
 </body>

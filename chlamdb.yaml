@@ -7,9 +7,9 @@ channels:
  - defaults
  - plotly
 dependencies:
- - python=3.6.7
- - django=2.1.1
- - plotly=3.6
+ - python>=3.6
+ - django
+ - plotly
  - celery
  - pip
  - django-extensions
@@ -24,7 +24,7 @@ dependencies:
  - qtconsole
  - ete3
  - ete_toolchain
- - pyqt=4.11.4
+ #- pyqt=4
  - matplotlib
  - scipy
  - pylibmc
@@ -42,9 +42,9 @@ dependencies:
  - rpy2
  - r-ggplot2
  - circos
- - inkscape 
  - r-rmysql
  - blast
+ - django-redis
  - pip:
    - cython
    - django-citations

@@ -67,12 +67,14 @@ def get_accessions(database_name, all=False, plasmid=False):
         description = re.sub(", wgs", "", description)
         description = re.sub("Candidatus ", "", description)
         description = re.sub(".contig.0_1, whole genome shotgun sequence.", "", description)
-        accession_choices[i] = (accession[0], description)
-        accessions[description] = accession[0]
+        #accession_choices[i] = (accession[0], description)
+        if description in accessions.values():
+            description += ' v2'
+        accessions[accession[0]] = description
 
     accession_choices = []
-    for description in sorted(accessions.keys()):
-        accession_choices.append([accessions[description], description])
+    for accession in sorted(accessions.keys()):
+        accession_choices.append([accession, accessions[accession]])
 
     if all:
         accession_choices = [["all", "all"]] + accession_choices
@@ -453,7 +455,7 @@ def make_extract_form(database_name, plasmid=False, label="Orthologs"):
         checkbox_accessions = forms.BooleanField(required = False, label="Distinguish plasmids from chromosomes")
         checkbox_single_copy = forms.BooleanField(required = False, label="Only consider single copy %s" % label)
 
-        orthologs_in = forms.MultipleChoiceField(label='%s conserved in' % label, choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker", "data-live-search":"true"}), required = False)
+        orthologs_in = forms.MultipleChoiceField(label='%s conserved in' % label, choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker", "data-live-search":"true"}), required = True)
         no_orthologs_in = forms.MultipleChoiceField(label="%s absent from (optional)" % label, choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker remove-example", "data-live-search":"true"}), required = False)
 
         new_choices = [['None', 'None']] + accession_choices
@@ -803,11 +805,24 @@ def make_blast_form(biodb):
                                            ("blastp", "blastp"),
                                            ("blastx", "blastx"),
                                            ("tblastn", "tblastn")])
-        target = forms.ChoiceField(choices=accession_choices)
+        target = forms.ChoiceField(choices=accession_choices, widget=forms.Select(attrs={"class":"selectpicker", "data-live-search":"true"}))
         blast_input = forms.CharField(widget=forms.Textarea(attrs={'cols': 10, 'rows': 20}))
 
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.form_method = 'post'
+            self.helper.label_class = 'col-lg-4 col-md-6 col-sm-6'
+            self.helper.field_class = 'col-lg-6 col-md-6 col-sm-6'
+            self.helper.layout = Layout(
+                                        Fieldset(
+                                                Row("BLAST"),
+                                                Row('target'),
+                                                Row('blast_input'),
+                                                css_class="col-lg-5 col-md-6 col-sm-6")
+                                        )
 
-        #biodatabase = forms.ChoiceField(choices=choices)
+            super(BlastForm, self).__init__(*args, **kwargs)
 
     return BlastForm
 

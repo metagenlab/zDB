@@ -178,29 +178,176 @@ function clearBox(elementID)
                                    <tr>
                                        <th>Orthogroup</th>
                                        <td><a href="{% url 'locusx' data.0 True %}">{{ data.0 }}</a></td>
+                                       <td></td>
                                    </tr>
                                    <th>Orthogroup size <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='Total number of homologs in the whole database'><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td>{{ data.7 }}</td>
+                                       <td></td>
                                    </tr>
                                    <th>N. genomes <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='Number of genomes encoding one or several homologs of this protein. See the tab "homologs" for details'><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                        <td>{{ data.8 }}</td>
+                                       <td></td>
                                    </tr>
                                    {%if cog_data %}
                                        <tr>
-                                       <th>COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
-                                       <td><a <a href="{% url 'fam' cog_data.0 'cog' %}" target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
+                                          <th>COG <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this COG in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
+                                          <td><a <a href="{% url 'fam' cog_data.0 'cog' %}" target="_top">{{cog_data.0}}: {{cog_data.2}} ({{cog_data.1}})</a></td>
+                                          <td><a data-toggle="collapse" href="#multiCollapseCOG" role="button" aria-expanded="false" aria-controls="multiCollapseCOG"><span class="badge" aria-hidden="true">Score <i class="fa fa-plus"></i></span></a> </td>
                                        </tr>
+
+                                          <tr class="collapse" id="multiCollapseCOG">
+                                            <td colspan="2">
+                                                  <table class="table table" style="width: 100%">
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Query start</th>
+                                                          <td>{{cog_data.3}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Query end</th>
+                                                          <td>{{cog_data.4}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Hit start</th>
+                                                          <td>{{cog_data.5}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Hit end</th>
+                                                          <td>{{cog_data.6}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Query coverage (%)</th>
+                                                          <td>{{cog_data.7}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Hit coverage (%)</th>
+                                                          <td>{{cog_data.8}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Identity (%)</th>
+                                                          <td>{{cog_data.9}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Evalue</th>
+                                                          <td>{{cog_data.10}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Bitscore</th>
+                                                          <td>{{cog_data.11}}</td>
+                                                    </tr>
+                                                </table>
+                                            <td>
+                                          </tr>
+
+
                                    {% endif %}
                                    {%if ko_data %}
                                        <tr>
-                                       <th>KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
-                                       <td><a href="{% url 'fam' ko_data.0 'ko' %}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
+                                          <th>KO <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Kegg Ortholog in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
+                                          <td><a href="{% url 'fam' ko_data.0 'ko' %}"  target="_top">{{ko_data.0}}: {{ko_data.1}}, {{ko_data.2}}</a></td>
+                                          <td><a data-toggle="collapse" href="#multiCollapseKO" role="button" aria-expanded="false" aria-controls="multiCollapseKO"><span class="badge" aria-hidden="true">Score <i class="fa fa-plus"></i></span></a> </td>
                                        </tr>
+
+
+                                          <tr class="collapse" id="multiCollapseKO">
+                                            <td colspan="2">
+                                                  <table class="table table" style="width: 100%">
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>KoFamScan Score threshold</th>
+                                                          <td>{{ko_data.5}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Score</th>
+                                                          <td>{{ko_data.6}}</td>
+                                                    </tr>
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Evalue</th>
+                                                          <td>{{ko_data.7}}</td>
+                                                    </tr>
+                                                </table>
+                                            <td>
+                                          </tr>
+
+
+
                                    {% endif %}
                                 </table>
 
                              </div>
                            </div>
+
+
+                           
+
+
+                            <div class="row">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">T3SS effectors prediction: {{effector_sum}}/4</h3>
+                                </div>
+                                {% if effectors %}
+                                <div class="panel-body">
+                                  
+                                      <table class="table table-striped" style="width: 100%">
+
+                                        <thead>
+                                        <tr>
+                                          <th>Predictor</th>
+                                          <th>Score</th>
+                                          <th>Effector</th>
+                                        </tr>
+
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                              <td>Effective T3</td>
+                                              {% if effectiveT3_data.0 == 1 %}
+                                                <td>{{effectiveT3_data.1}}</td>
+                                                <td>YES</td>
+                                              {% else %}
+                                                <td>-</td>  
+                                                <td>NO</td>
+                                              {% endif %}
+                                          </tr>
+                                          <tr>
+                                              <td>DeepT3</td>
+                                              {% if DeepT3_data.0 == 1 %}
+                                                <td>-</td>
+                                                <td>YES</td>
+                                              {% else %}
+                                                <td>-</td>  
+                                                <td>NO</td>
+                                              {% endif %}
+                                          </tr>
+                                          <tr>
+                                              <td>BPBAac</td>
+                                              {% if BPBAac_data.0 == 1 %}
+                                                <td>{{BPBAac_data.1}}</td>
+                                                <td>YES</td>
+                                              {% else %}
+                                                <td>-</td>  
+                                                <td>NO</td>
+                                              {% endif %}
+                                          </tr>
+                                          <tr>
+                                              <td>T3MM</td>
+                                              {% if T3MM_data.0 == 1 %}
+                                                <td>{{T3MM_data.1}}</td>
+                                                <td>YES</td>
+                                              {% else %}
+                                                <td>-</td>   
+                                                <td>NO</td>
+                                              {% endif %}
+                                          </tr>
+                                        </tbody>  
+
+                                      </table>
+                                  
+                                </div>
+                               {% endif %} 
+                              </div>
+                            </div>
+
+                           
 
                             {% if protparams_data %}
 
@@ -213,11 +360,11 @@ function clearBox(elementID)
                                 <div class="panel-body">
                                   <table class="table table-striped" style="width: 100%">
                                       <tr>
-                                          <th >Molecular Weight</th>
+                                          <th >Molecular Weight (kDa)</th>
                                           <td>{{protparams_data.0}}</td>
                                       </tr>
                                       <tr>
-                                          <th >Isoelectric Point</th>
+                                          <th >Isoelectric Point (pI)</th>
                                           <td>{{protparams_data.1}}</td>
                                       </tr>
                                       <tr>
@@ -225,7 +372,7 @@ function clearBox(elementID)
                                           <td>{{protparams_data.2}}</td>
                                       </tr>
                                       <tr>
-                                          <th >Instability Index</th>
+                                          <th>Instability Index <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Calculated with the method of Guruprasad et al. (1990, Protein Engineering, 4, 155-161). This method tests a protein for stability. Any value above 40 means the protein is unstable (=has a short half life)."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                           <td>{{protparams_data.3}}</td>
                                       </tr>
                                       <tr>
@@ -447,49 +594,72 @@ function clearBox(elementID)
                               <div style="padding-top:40px;">
                                   <div class="panel panel-default">
                                     <div class="panel-heading">
-                                      <h3 class="panel-title">Transporter</h3>
+                                      <h3 class="panel-title">TransporterClassification Database  <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Best hit from gBLAST (https://github.com/SaierLaboratory/BioVx)"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
                                     </div>
 
-                                    <table class="table-striped" style="width: 100%">
+
+
+                                    
+                                    <table class="table table-striped" style="width: 100%">
+
                                         <tr>
-                                            <th>TCDB Hit</th>
-                                            <th>Evalue</th>
-                                            <th>Score</th>
-                                            <th>Identity</th>
-                                            <th>TM_query</th>
-                                            <th>TM_hit</th>
-                                            <th>query_cov</th>
-                                            <th>hit_cov</th>
-                                        </tr>
-                                        <tr>
+                                            <th>TCDB Hit</th> 
                                             <td><a href="http://www.tcdb.org/search/result.php?acc={{transporter_data.0}}">{{transporter_data.0}} <i class="fa fa-external-link"></i></a></td>
-                                            <td>{{transporter_data.1}}</td>
-                                            <td>{{transporter_data.2}}</td>
-                                            <td>{{transporter_data.3}}</td>
-                                            <td>{{transporter_data.4}}</td>
-                                            <td>{{transporter_data.5}}</td>
-                                            <td>{{transporter_data.6}}</td>
-                                            <td>{{transporter_data.7}}</td>
+                                            <td>{{transporter_data.16}} ({{transporter_data.17}})</td>
+                                            <td><a data-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1"><span class="badge" aria-hidden="true">Score <i class="fa fa-plus"></i></span></a> </td>
+                                        </tr>    
+                                            
+
+
+                                          <tr class="collapse" id="multiCollapseExample1">
+                                            <td colspan="3">
+                                                  <table class="table table" style="width: 100%">
+                                                    <tr bgcolor="#CEFFFE">
+                                                          <th>Evalue</th>
+                                                          <th>Score</th>
+                                                          <th>Identity</th>
+                                                          <th>TM_query</th>
+                                                          <th>TM_hit</th>
+                                                          <th>query_cov</th>
+                                                          <th>hit_cov</th>
+                                                      </tr>
+                                                      <tr bgcolor="#CEFFFE">
+                                                          <td>{{transporter_data.1}}</td>
+                                                          <td>{{transporter_data.2}}</td>
+                                                          <td>{{transporter_data.3}}</td>
+                                                          <td>{{transporter_data.4}}</td>
+                                                          <td>{{transporter_data.5}}</td>
+                                                          <td>{{transporter_data.6}}</td>
+                                                          <td>{{transporter_data.7}}</td>
+                                                      </tr>
+                                                  </table>
+                                            <td>
+                                          </tr>
+                                            
+                                            
+                                    
                                         </tr>
 
-                                    </table>
-                                    <table class="table table-striped" style="width: 100%">
 
                                         <tr>
                                             <th>SuperFamily</th>
                                             <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.10}}">{{transporter_data.10}} <i class="fa fa-external-link"></i></a></td><td>{{transporter_data.11}}</td>
+                                            <td></td>
                                         </tr>
                                         <tr>
                                             <th>Family</th>
                                             <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.12}}">{{transporter_data.12}} <i class="fa fa-external-link"></i></a></td><td>{{transporter_data.13}}</td>
+                                            <td></td>
                                         </tr>
                                         <tr>
                                             <th>Subfamily</th>
                                             <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.14}}">{{transporter_data.14}} <i class="fa fa-external-link"></i></a></td><td>{{transporter_data.15}}</td>
+                                            <td></td>
                                         </tr>
                                         <tr>
                                             <th>Transporter</th>
-                                            <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.14}}#{{transporter_data.8}}">{{transporter_data.8}} <i class="fa fa-external-link"></i></a></td><td>{{transporter_data.9}}</td>
+                                            <td><a href="http://tcdb.org/search/result.php?tc={{transporter_data.8}}">{{transporter_data.8}} <i class="fa fa-external-link"></i></a></td><td>{{transporter_data.9}}</td>
+                                            <td></td>
                                         </tr>
                                     </table>
 
@@ -556,7 +726,7 @@ function clearBox(elementID)
                               <div class="row">
                                 <div class="panel panel-default">
                                   <div class="panel-heading">
-                                    <h3 class="panel-title">Pathways/Modules <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and GhostKOALA"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
+                                    <h3 class="panel-title">Pathways/Modules <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and KofamScan"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
                                   </div>
                                   <table class="table table-striped" style="width: 100%">
 
@@ -564,8 +734,8 @@ function clearBox(elementID)
 
                                           {% for pathway in ko_pathway_data %}
                                               <tr>
-                                                  <td>Pathway: {{pathway.1}} <a href="{% url 'KEGG_mapp_ko' pathway.1 %}" target="_top">ko</a> /
-                                                      <a href="{% url 'KEGG_mapp' pathway.1 %}" target="_top">priam_ec</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                                  <td>Pathway</td>
+                                                  <td><a href="{% url 'KEGG_mapp_ko' pathway.1 %}" target="_top">{{pathway.1}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on the pathway id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
                                                   <td>{{pathway.2}}</td>
                                                   <td>{{pathway.3}}</td>
                                               </tr>
@@ -577,7 +747,8 @@ function clearBox(elementID)
 
                                           {% for module in ko_module_data %}
                                               <tr>
-                                                  <td>Module: <a href="{% url 'KEGG_module_map' module.0 %}" target="_top">{{module.0}} (ko_based) </a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
+                                                  <td>Module</td>
+                                                  <td><a href="{% url 'KEGG_module_map' module.0 %}" target="_top">{{module.0}}</a> <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click on module id to get the list and distribution of identified proteins in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
                                                   <td>{{module.1}}</td>
                                                   <td>{{module.2}}</td>
                                               </tr>
@@ -990,6 +1161,59 @@ function clearBox(elementID)
                             </div>
 
 
+
+                            <div class="row">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">UniProtKB annotation</h3>
+                                </div>
+                                    <table class="table table-striped" style="width: 100%">
+                                        <thead>
+                                          <tr>
+                                              <th></th>
+                                              <th>Mapped</th>
+                                              <th>Unmapped</th>
+                                          </tr>
+                                        </thead>
+                                        </tbody>
+                                              <tr>
+                                                <td></td>
+                                                <td>{{mapped}}</td>
+                                                <td>{{unmapped}}</td>  
+                                              </tr>
+                                        </tbody>
+                                    </table>
+
+
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">{{reviewed|length}} reviewed SwissProt entries</h3>
+                                </div>
+                                {% if reviewed|length != 0 %}
+                                    <table class="table table-striped" style="width: 100%">
+                                        <thead>
+                                            <tr>
+                                                <th>UniProt accession</th>
+                                                <th>Annotation score</th>
+                                                <th>Gene</th>
+                                                <th>Full Name</th>
+                                            </tr>
+                                        </thead>
+                                        </tbody>
+                                        {% for swissprot in reviewed %}
+                                              <tr>
+                                                  <td><a href="https://www.uniprot.org/uniprot/{{swissprot.0}}">{{swissprot.0}}</a></td>
+                                                  <td>{{swissprot.2}}</td>
+                                                  <td>{{swissprot.3}}</td>  
+                                                  <td>{{swissprot.4}}</td>   
+                                              </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% endif %}
+                              </div>
+                            </div>
+
+
                             <div class="row">
                               <div class="panel panel-default">
                                 <div class="panel-heading">
@@ -1047,7 +1271,7 @@ function clearBox(elementID)
                                                 {% for row in COG_annotations %}
                                                   <tr>
                                                     <td>{{row.0}}</td>
-                                                    <td>{{row.1}}</td>
+                                                    <td><a href="{% url 'fam' row.1 'cog' %}">{{row.1}}</a></td>
                                                     <td>{{row.3}}</td> 
                                                     <td>{{row.2}}</td> 
                                                     <td>{{row.4}}</td>
@@ -1084,13 +1308,30 @@ function clearBox(elementID)
                                                 {% for row in KO_annotations %}
                                                   <tr>
                                                     <td>{{row.0}}</td>
-                                                    <td>{{row.1}}</td>
+                                                    <td><a href="{% url 'fam' row.1 'ko' %}">{{row.1}}</a></td>
                                                     <td>{{row.2}}</td> 
                                                     <td>{{row.3}}</td> 
                                                     <td>{{row.4}}</td>
                                                     <td>{{row.5}}</td>
-                                                    <td>{{row.6}}</td>
-                                                    <td>{{row.7}}</td>
+                                                    
+                                                    <td>
+                                                        {% for pathway in row.6 %}
+                                                            {% if pathway != '-' %}
+                                                                <a href="{% url 'KEGG_mapp_ko' pathway %}">{{pathway}}</a>
+                                                            {% else %}
+                                                                -
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </td>
+                                                    <td>
+                                                        {% for module in row.7%}
+                                                            {% if module != '-' %}
+                                                                 <a href="{% url 'KEGG_module_map' module %}">{{module}}</a>
+                                                            {% else %}
+                                                                -
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </td>
                                                   </tr>
                                                 {% endfor %}
                                             </body>
@@ -1098,6 +1339,45 @@ function clearBox(elementID)
                                   </div>
                                 </div>
                               {% endif %}
+
+                              <div class="row">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">Pfam domains organization</h3>
+                                    </div>
+                                        
+                                          <div>
+                                          <table class="table" id="domains_table">
+                                              <thead>
+                                              <tr>
+                                                  <th>Occurence</th>
+                                                  <th>Topology</th>
+                                              </tr>
+                                              </thead>
+                                              <tbody>
+                                                  {% for key, value in topo2count.items %}
+                                                      <tr>
+                                                          <td>{{value}}</td>
+                                                          <td> 
+                                                              {% for domain in key %}
+                                                               --<a title="{{ domain2description|keyvalue:domain }}" type="button" href="{% url 'fam' domain 'pfam' %}" class="pfam_domain" style="background-color:{{ domain2color|keyvalue:domain }};">{{domain}}</a>--
+                                                              {% endfor %}
+                                                          </td>
+                                                      </tr>
+                                                  {% endfor %}
+                                              </tbody>
+                                          </table>
+
+                                            
+
+                                            
+                                          </div>
+                                        
+                                </div>
+                              </div>
+
+
+
                               <div class="row">
                                 <div class="panel panel-default">
                                     <div class="panel-heading">
@@ -1112,6 +1392,42 @@ function clearBox(elementID)
                               </div>
 
 
+                              {% if length_distrib %}
+                                  <div class="row">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">
+                                          <h3 class="panel-title">Protein length</h3>
+                                        </div>
+                                          <table class="table" id="length" style="width:300px">
+                                              <tbody>
+                                                <tr>
+                                                    <th>Min length</th>
+                                                    <td>{{min_protein_length}}</td>
+                                                </tr>
+                                                 <tr>
+                                                    <th>Max length</th>
+                                                    <td>{{max_protein_length}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Mean length (sd)</th>
+                                                    <td>{{mean_protein_length}} ({{std_protein_length}})</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Median length</th>
+                                                    <td>{{median_protein_length}}</td>
+                                                </tr>
+                                              </tbody>
+                                          </table>
+                                        <div class="panel-heading">
+                                          <h3 class="panel-title">Protein length distribution</h3>
+                                        </div>
+                                              <div style="width:80%">
+                                                {{html_plot_prot_length|safe}}
+                                              </div>
+                                            
+                                    </div>
+                                  </div>
+                              {% endif %}
 
                           </div>
                       </div>
@@ -1319,6 +1635,17 @@ function clearBox(elementID)
 
 <script>
 
+
+$(document).ready(function() {
+    $('#domains_table').DataTable( {
+        dom: 't',
+        "order": [[ 0, "desc" ]],
+        "pageLength": 200
+    } );
+} );
+
+
+
 $(document).ready(function() {
     $('#homologues_table').DataTable( {
         dom: 'Bfrtip',
@@ -1469,6 +1796,19 @@ mark{
     background: orange;
     color: black;
 }
+
+.pfam_domain {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
 </style>
 
 
@@ -1479,3 +1819,17 @@ mark{
 {% include "chlamdb/style_menu.html" %}
 
 </html>
+<style>
+.pfam_domain {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 8px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+</style>

@@ -49,7 +49,7 @@ class Uniprot_annot():
         cursor = conn.cursor()
 
         sql1 = 'CREATE TABLE IF NOT EXISTS uniprot_id2seqfeature_id_%s (seqfeature_id INT UNIQUE, uniprot_id INT AUTO_INCREMENT,' \
-               ' uniprot_accession varchar(400), uniprot_status varchar(400), annotation_score INT, insert_date varchar(300), INDEX uniprot_id(uniprot_id))' % self.biodb
+               ' uniprot_accession varchar(400), uniprot_status varchar(400), annotation_score INT, proteome varchar(200), insert_date varchar(300), INDEX uniprot_id(uniprot_id))' % self.biodb
 
 
         sql5 = 'CREATE TABLE IF NOT EXISTS uniprot_annotation_%s (seqfeature_id INT, comment_function TEXT,' \
@@ -57,11 +57,11 @@ class Uniprot_annot():
                ' comment_subunit TEXT, gene TEXT, recommendedName_fullName TEXT, proteinExistence TEXT, ' \
                ' developmentalstage TEXT, index seqfeature_id(seqfeature_id))' % self.biodb
 
-        sql6 = 'CREATE TABLE IF NOT EXISTS uniprot_keywords_%s (seqfeature_id INT, uniprot_accession varchar(200), keyword TEXT)' % self.biodb
+        #sql6 = 'CREATE TABLE IF NOT EXISTS uniprot_keywords_%s (seqfeature_id INT, uniprot_accession varchar(200), keyword TEXT)' % self.biodb
 
         cursor.execute(sql1, )
         cursor.execute(sql5, )
-        cursor.execute(sql6, )
+        #cursor.execute(sql6, )
         conn.commit()
 
         sql1 = 'select locus_tag, seqfeature_id from locus2seqfeature_id_%s' % self.biodb
@@ -128,6 +128,7 @@ class Uniprot_annot():
 
             uniprot_accession = annot[0]
             uniprot_status = annot[2]
+            proteome = annot[3]
             # '1 out of 5'
             if not isinstance(annot[1], int):
                 uniprot_score = annot[1].split(' ')[0]
@@ -138,12 +139,13 @@ class Uniprot_annot():
             str_date = "%s-%s-%s" % (now.year, now.month, now.day)
 
             sql = 'insert into uniprot_id2seqfeature_id_%s' % self.biodb
-            sql += '(seqfeature_id, uniprot_accession, uniprot_status, annotation_score, insert_date) ' \
-                   ' values (%s, %s, %s, %s,%s)'
+            sql += '(seqfeature_id, uniprot_accession, uniprot_status, annotation_score, proteome, insert_date) ' \
+                   ' values (%s, %s, %s, %s, %s, %s)'
             cursor.execute(sql, (seqfeature_id,
                                uniprot_accession,
                                uniprot_status,
                                uniprot_score,
+                               proteome,
                                str_date))
 
             # add annotation

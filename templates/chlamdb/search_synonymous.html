@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load staticfiles %}
+    {% include "chlamdb/header.html" %}
+    <script type="text/javascript" src="{% static 'js/mark.min.js' %}"></script>
+</head>
+
+<body>
+  <div class="container-fluid" id="main_container">
+    <div class="row">
+      <div id="wrapper">
+          <div id="page-content-wrapper">
+            <div class="row">
+              <div class="col-lg-12">
+                  {% include "chlamdb/menu.html" %}
+
+                          <h3>Search term: {{search_term}}. Search limited to 100 hits</h3>
+
+
+                          <div id="help_text">
+
+                            <div class="panel panel-warning" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+                                <div class="panel-heading" style="width:100%">
+                                    <h3 class="panel-title">Acronyms</h3>
+                                </div>
+                                <table class="table table-striped">
+                                   <tr><td>S</td> <td> strand</td> </tr>
+                                   <tr><td>nH</td> <td> total number of homologues</td> </tr>
+                                   <tr><td>nG</td> <td> number of genomes in which at least one homologous protein is present</td> </tr>
+                                   <tr><td>TM</td> <td> Transmmembrane domains</td> </tr>
+                                   <tr><td>SP</td> <td> Signl peptide</td> </tr>
+                                </table>
+                             </div>
+
+
+                          </div>
+
+                          <div style="width:95%">
+
+                            <table class="table table-striped" id="search_table1" name="search">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Acc. type</th>
+                                        <th>Accession</th>
+                                        <th>Orthogroup</th>
+                                        <th>Locus</th>
+                                        <th>Start</th>
+                                        <th>Stop</th>
+                                        <th>S.</th>
+                                        <th>Gene</th>
+                                        <th>nH</th>
+                                        <th>nG</th>
+                                        <th>TM</th>
+                                        <th>SP</th>
+                                        <th>Product</th>
+                                        <th>Organism</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% load staticfiles %}
+                                    {% for values in search_result %}
+                                    <tr>
+                                        <td>{{values.0}}</td>
+                                        <td>{{values.1}}</td>
+                                        <td>{{values.2}}</td>
+                                        <td><a href="{% url 'locusx' values.3 True%}"  target="_top">{{values.3}}</a></td>
+                                        <td><a href="{% url 'locusx' values.4 True%}"  target="_top">{{values.4}}</a></td>
+                                        <td>{{values.5}}</td>
+                                        <td>{{values.6}}</td>
+                                        <td>{{values.7}}</td>
+                                        <td>{{values.8}}</td>
+                                        <td>{{values.9}}</td>
+                                        <td>{{values.10}}</td>
+                                        <td>{{values.11}}</td>
+                                        <td>{{values.12}}</td>
+                                        <td>{{values.13}}</td>
+                                        <td>{{values.14}}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                          </div> <!-- table container -->
+                </div> <!-- tab pane -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</body>
+{% include "chlamdb/style_menu.html" %}
+<style>
+mark{
+    background: orange;
+    color: black;
+}
+</style>
+<script>
+  var options = {
+      "ignoreJoiners": true,
+      "exclude": [
+          "h3",
+          ".byline *",
+          "th"
+      ]
+  };
+
+  $(document).ready(function() {
+    $('#search_table1').DataTable( {
+      dom: 'Bfrtip',
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'search'
+        },
+        {
+            extend: 'csv',
+            title: 'search'
+        }
+      ],
+    "paging":   false,
+    "ordering": true,
+    "info":     false,
+    colReorder: true,
+    fixedHeader: true
+    } );
+  } );
+
+
+  $(document).ready(function() {
+    var docu = document.getElementById("wrapper");
+    var instance = new Mark(docu);
+    instance.mark("{{locus}}", options);
+  } );
+
+</script>
+
+<style>
+
+table td.wrapcol {
+  word-break: break-all;
+  word-wrap: break-word;
+  width: auto;
+}
+
+</style>
+
+</html>
