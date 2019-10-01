@@ -168,15 +168,14 @@ The interactions reported in the "interactions" tab were predicted based on two 
 Orthogroup exhibiting similar patterns of presence/absence were identified by calculating the Euclidian distance of all pairs of orthologroups phylogenetic profiles (see **Figure 3**).
 
     1. Phylogenetic profiles were collapsed at the species level
-    2. Pairwise euclidian and jaccard distances were calculated between pairs of profiles
+    2. Pairwise euclidean_ and jaccard distances were calculated between pairs of profiles (see `Kensche et al.`_ for a review on that topic)
     3. The default euclidian distance cutoff to report interactions is ``2.2``. If more than 30 profiles had an euclidian distance smaller or equal to ``2.2``, the stringency was adjusted incrementally with cutoffs of ``2``, ``1`` and finally ``0``. If more than 30 profiles exhibit the exact same profile, nothing is reported. Indeed, it would by typically poorly informative interactions (e.g. proteins conserved in all species).
 
 .. figure:: ../img/profile.svg
     :figclass: align-center
     :width: 500 px
 
-    **Figure 3**: Schematic view of the phylogenetic profiling method used to predict protein-protein interactions. The distance between profiles of presence/absence of orthologous groups were calculated using two different metics (the euclidian distance and jaccard distance).
-
+    **Figure 3**: Schematic view of the phylogenetic profiling method used to predict protein-protein interactions. Distances between profiles of presence/absence of orthologs were calculated using two different metics (euclidean_ and jaccard_ distances).
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 2. Identification of conserved gene neighborhood in different species
@@ -305,3 +304,6 @@ Public database download and indexing   https://github.com/metagenlab/annotation
 .. _Circos : http://circos.ca/
 .. _`only if references were found` : https://chlamdb.ch/locusx?accession=765098
 .. _`open reading frames` : https://en.wikipedia.org/wiki/Open_reading_frame
+.. _`Kensche et al.` : https://royalsocietypublishing.org/doi/10.1098/rsif.2007.1047
+.. _Euclidean : https://en.wikipedia.org/wiki/Euclidean_distance
+.. _jaccard : https://en.wikipedia.org/wiki/Jaccard_index
