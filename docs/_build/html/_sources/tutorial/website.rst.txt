@@ -2,6 +2,9 @@
 Website tutorial
 ================
 
+.. warning:: 
+    This page is under construction. Contact Trestan Pillonel (trestan.pillonel@chuv.ch) if you have any question or suggestion regarding the website or its documentation.
+
 --------------------------------
 Search for a protein of interest
 --------------------------------
