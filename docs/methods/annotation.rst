@@ -18,8 +18,7 @@ A simplified scheme of ``ChlamDB`` annotation workflow is shown in **Figure 1**.
     * Data were then integrated into a custom SQL database derived from the bioSQL_ relational model.
 
 
-
-.. figure:: ../img/workflowV2.svg
+.. figure:: ../img/workflowV2.png
     :figclass: align-center
 
     **Figure 1**: Simplified annotation workflow.
@@ -60,6 +59,7 @@ genomes based on the number of contigs ("N. contigs" column) since draft assembl
 ------------------
 Protein annotation
 ------------------
+
 
 Protein sequences were annotated using data from multiple databases and various bioinformatic softwares (*Figure 1*). 
 Those annotations are summarized on the "locus" page available for each protein (see for instance the entry of CT_495_).

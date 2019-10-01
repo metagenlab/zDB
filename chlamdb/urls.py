@@ -197,6 +197,5 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^get_record/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', views.get_record, name="get_record"),
                        url(r'^get-task-info/', views.get_task_info),
                        url(r'^docs/(?P<path>.*)$', static.serve, {'document_root': settings.DOCS_ROOT}),
-                       url(r'^docs/', static.serve, {'document_root': settings.DOCS_ROOT, 'path': 'index.html'}),
                        url(r'^.*$', views.home, name="home"),
 ]
