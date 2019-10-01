@@ -69,9 +69,9 @@
 <li><p>Data were then integrated into a custom SQL database derived from the <a class="reference external" href="https://biosql.org/wiki/Main_Page">bioSQL</a> relational model.</p></li>
 </ul>
 </div></blockquote>
-<div class="align-center figure align-default" id="id1">
+<div class="align-center figure align-default" id="id2">
 <img alt="../_images/workflowV2.png" src="../_images/workflowV2.png" />
-<p class="caption"><span class="caption-text"><strong>Figure 1</strong>: Simplified annotation workflow.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text"><strong>Figure 1</strong>: Simplified annotation workflow.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="nextflow-pipeline">
@@ -158,8 +158,8 @@ were retrived using the <a class="reference external" href="http://version11.str
 <li><p>The closest identifiable <a class="reference external" href="https://www.uniprot.org/">SwissProt</a> homologs were searched with BLASTp (parameters: <code class="docutils literal notranslate"><span class="pre">-evalue</span></code> 0.001). The 100 first hits were retained for each protein.</p></li>
 </ul>
 </div>
-<div class="section" id="identification-of-orthogroups">
-<h2>Identification of Orthogroups<a class="headerlink" href="#identification-of-orthogroups" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h2><span class="target" id="identification-of-orthogroups">Identification of Orthogroups</span><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <p>Orthogroups (or orthologous groups) were identified with <a class="reference external" href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. This tools identify orthogroups based on BLASTp (parameters: <code class="docutils literal notranslate"><span class="pre">-evalue</span></code> 0.001)
 results using the <a class="reference external" href="https://micans.org/mcl/">MCL</a> clustering software.</p>
 <div class="admonition note">
@@ -194,9 +194,9 @@ First, the NCBI taxon ID of each RefSeq hit was retrieved using the <code class=
 <div class="section" id="circular-genome-plots-circos">
 <h2>Circular genome plots (Circos)<a class="headerlink" href="#circular-genome-plots-circos" title="Permalink to this headline">¶</a></h2>
 <p>Circular genome plots are generated dynamically with <a class="reference external" href="http://circos.ca/">Circos</a>. These plots are not generated based on the alignment of DNA sequences but based on orthology data (see previous paragraphs). The two outer gray circles show the location of <a class="reference external" href="https://en.wikipedia.org/wiki/Open_reading_frame">open reading frames</a> (ORFs) encoded on the leading and lagging strand of the reference genome (<strong>Figure 2 A and B</strong>). The red/blue inner circles show the conservation of each protein encoding ORF in one or multiple other genomes. Identity values were pre-calculated from protein alignments (see previous paragraphs). If the compared genomes encode more than one ortholog, the highest identity is used to color the region.</p>
-<div class="align-center figure align-default" id="id2">
+<div class="align-center figure align-default" id="id3">
 <a class="reference internal image-reference" href="../_images/circos_method.png"><img alt="../_images/circos_method.png" src="../_images/circos_method.png" style="width: 100%;" /></a>
-<p class="caption"><span class="caption-text"><strong>Figure 2</strong>: Example of circular genome plot. <strong>A)</strong> Compared genomes are ordered based on the median protein identity with the reference genome. <strong>B)</strong> Zoom showing the detail of a genomic region. All circular plots are interactive and users can click on any ORF to access the detailed annotation page of the corresponding protein.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text"><strong>Figure 2</strong>: Example of circular genome plot. <strong>A)</strong> Compared genomes are ordered based on the median protein identity with the reference genome. <strong>B)</strong> Zoom showing the detail of a genomic region. All circular plots are interactive and users can click on any ORF to access the detailed annotation page of the corresponding protein.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="species-phylogeny">
@@ -209,10 +209,10 @@ First, the NCBI taxon ID of each RefSeq hit was retrieved using the <code class=
 </div>
 <div class="section" id="prediction-of-protein-protein-interactions">
 <h2>Prediction of protein-protein interactions<a class="headerlink" href="#prediction-of-protein-protein-interactions" title="Permalink to this headline">¶</a></h2>
-<p>The interactions reported in the “interactions” tab were predicted based on two different approaches</p>
+<p>The interactions reported in the “interactions” tab were predicted based on two different approaches: <code class="docutils literal notranslate"><span class="pre">phylogenetic</span> <span class="pre">profiling</span></code> and <code class="docutils literal notranslate"><span class="pre">conservation</span> <span class="pre">of</span> <span class="pre">gene</span> <span class="pre">neighborhood</span></code>. Indeed, proteins that physically interact tend to be encoded in a close neighborhood and tend to co-occur in the same genomes (see <a class="reference external" href="https://www.ncbi.nlm.nih.gov/pubmed/9787636">Dandekar  et al</a> and <a class="reference external" href="https://royalsocietypublishing.org/doi/10.1098/rsif.2007.1047">Kensche et al.</a> for more details).</p>
 <div class="section" id="phylogenetic-profiling">
 <h3>1 Phylogenetic profiling<a class="headerlink" href="#phylogenetic-profiling" title="Permalink to this headline">¶</a></h3>
-<p>Orthogroup exhibiting similar patterns of presence/absence were identified by calculating the Euclidian distance of all pairs of orthologroups phylogenetic profiles (see <strong>Figure 3</strong>). See for instance <a class="reference external" href="https://royalsocietypublishing.org/doi/10.1098/rsif.2007.1047">Kensche et al.</a> for a review on phylogenetic profiling methods.</p>
+<p>Orthogroup exhibiting similar patterns of presence/absence were identified by calculating the euclidian and jaccard distances of all pairs of orthologroups phylogenetic profiles (see <strong>Figure 3</strong>). See <a class="reference external" href="https://royalsocietypublishing.org/doi/10.1098/rsif.2007.1047">Kensche et al.</a> for a review on phylogenetic profiling methods.</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li><p>Phylogenetic profiles were collapsed at the species level. If an orthogroup was present in only a subset of the strains of the considered species, it was still considered as present in that species.</p></li>
@@ -220,9 +220,9 @@ First, the NCBI taxon ID of each RefSeq hit was retrieved using the <code class=
 <li><p>The default euclidian distance cutoff to report interactions is <code class="docutils literal notranslate"><span class="pre">2.2</span></code>. If more than 30 profiles had an euclidian distance smaller or equal to <code class="docutils literal notranslate"><span class="pre">2.2</span></code>, the stringency was adjusted incrementally with cutoffs of <code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">1</span></code> and finally <code class="docutils literal notranslate"><span class="pre">0</span></code>. If more than 30 profiles exhibit the exact same profile, nothing is reported. Indeed, it would by typically poorly informative profiles (e.g. proteins conserved in all species).</p></li>
 </ol>
 </div></blockquote>
-<div class="align-center figure align-default" id="id3">
+<div class="align-center figure align-default" id="id4">
 <a class="reference internal image-reference" href="../_images/profile.svg"><img alt="../_images/profile.svg" src="../_images/profile.svg" width="500px" /></a>
-<p class="caption"><span class="caption-text"><strong>Figure 3</strong>: Schematic view of the phylogenetic profiling method used to predict protein-protein interactions. Distances between profiles of presence/absence of orthologs were calculated using two different metrics (<a class="reference external" href="https://en.wikipedia.org/wiki/Euclidean_distance">euclidean</a> and <a class="reference external" href="https://en.wikipedia.org/wiki/Jaccard_index">jaccard</a> distances).</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-text"><strong>Figure 3</strong>: Schematic view of the phylogenetic profiling method used to predict protein-protein interactions. Distances between profiles of presence/absence of orthologs were calculated using two different metrics (<a class="reference external" href="https://en.wikipedia.org/wiki/Euclidean_distance">euclidean</a> and <a class="reference external" href="https://en.wikipedia.org/wiki/Jaccard_index">jaccard</a> distances).</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -235,22 +235,40 @@ First, the NCBI taxon ID of each RefSeq hit was retrieved using the <code class=
 </div>
 <div class="section" id="identification-of-conserved-gene-neighborhood-in-different-species">
 <h3>2. Identification of conserved gene neighborhood in different species<a class="headerlink" href="#identification-of-conserved-gene-neighborhood-in-different-species" title="Permalink to this headline">¶</a></h3>
-<div class="align-center figure align-default">
+<p>Genes encoded in a close neighborhood in distantly related species were identified based on orthology data (see <a class="reference internal" href="#identification-of-orthogroups">Identification of Orthogroups</a>). See for example the case of the subunits of the <a class="reference external" href="https://www.chlamdb.ch/neig_interactions/wcw_1123">F-type ATPase</a> that are systematically encoded in a close neighborhood. The method was the following:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>protein encoding genes were iterated for each genome</p></li>
+<li><p>if the considered protein encoding gene had one (or multiple) homolog(s) in distantly related genomes (a cutoff of 60% median protein identity was used to consider two genomes sufficently distant)</p></li>
+<li><p>the 10 kilobases upstream and downstream of each ortholog were compared to the reference genome to identify conserved  neighbors (see <strong>Figure 4.A</strong>)</p></li>
+<li><p>the ratio of co-occurence of pairs of orthogroups was used to score the association between pairs of locus (<strong>Figure 4.B</strong>)</p></li>
+<li><p>only proteins exhibiting a <code class="docutils literal notranslate"><span class="pre">conservation</span> <span class="pre">score</span> <span class="pre">of</span> <span class="pre">0.8</span></code> are reported in the “interactions” tab of locus pages</p></li>
+</ol>
+</div></blockquote>
+<div class="align-center figure align-default" id="id5">
 <a class="reference internal image-reference" href="../_images/conserved_neig.svg"><img alt="../_images/conserved_neig.svg" src="../_images/conserved_neig.svg" width="100%" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 4</strong>: Identification of conserved gene neighborhood. <strong>A)</strong> Example with the red locus, part of the orthologous group <code class="docutils literal notranslate"><span class="pre">group_222</span></code>. This locus has orthologs in 3 other genomes.
+Proteins encoded 10 kilobases upstream and 10 kilobases downstream of the reference locus are extracted and compared between the reference
+genome and all other genomes in which an ortholog is present. <strong>B)</strong> The <code class="docutils literal notranslate"><span class="pre">conservation</span> <span class="pre">score</span></code> of a pair of locus is the ratio of cases for which orthologs were encoded in the green windows out of the total number of comparisons. For instance, the green locus is encoded less than 10kb upstream of the red locus in two genomes, but more than 10kb apprt in the third genome. Is score is thus of 2/3 (2 out of 2 comparsions). The pink locus is always encoded in the vicinity of the red locus in all compared genomes. Its score is thus of 3/3. <strong>C)</strong> If multiple orthologs were identified if the compared genome, only the most similar one is considered for the comparison (based on amino acid identity calculated based on the orthogroup multiple sequence alignment).</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Since orthologous groups identified by <a class="reference external" href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a> include both orthologs and paralogs, the relationship between pair of genomes is not necessarily 1 to 1 (have a look at the <a class="reference external" href="https://omabrowser.org/oma/type/">OMA website</a> to read detailed explanations of the different types of orthologs). If multiple orthologs were encoded in the compared genome, only the most similar one was used for the comparison (<strong>Figure 4.C</strong>). The choice of the closest locus was based on protein identity and not based on phylogenetic trees, which means that we might not always consider the most closely related protein encoded in the compared genome for the comparison.</p>
 </div>
 </div>
 </div>
 <div class="section" id="prediction-of-candidate-type-iii-secretion-system-effectors">
 <h2>Prediction of candidate type III secretion system effectors<a class="headerlink" href="#prediction-of-candidate-type-iii-secretion-system-effectors" title="Permalink to this headline">¶</a></h2>
-<dl class="simple">
-<dt>Effectors of the type III secretion system were predicted using four different softwares:</dt><dd><ul class="simple">
+<p>Effectors of the type III secretion system are poorly conserved. In addition, the signal allowing to specifically secrete effector proteins is not clearly identified. It is thus difficult to identify effectors in newly sequenced genomes. Predition methods generally rely on the use classifiers that are trained on a set of known effector proteins. Since all <em>Chlamydiae</em> genomes encode a type III secretion system, candidate effectors were identified using four different classifiers:</p>
+<blockquote>
+<div><ul class="simple">
 <li><p><a class="reference external" href="https://academic.oup.com/bioinformatics/article/27/6/777/235789">BPBAac</a> (default parameters)</p></li>
 <li><p><a class="reference external" href="https://academic.oup.com/nar/article/39/suppl_1/D591/2507337">effectiveT3</a> (model <code class="docutils literal notranslate"><span class="pre">TTSS_STD-2.0.2</span></code>, cutoff of <code class="docutils literal notranslate"><span class="pre">0.9999</span></code>)</p></li>
 <li><p><a class="reference external" href="https://academic.oup.com/bioinformatics/article/35/12/2051/5165378">DeepT3</a>  (default parameters)</p></li>
 <li><p><a class="reference external" href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0058173">T3_MM</a> (default parameters)</p></li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
+<p>Results of all four tools are reported on the <a class="reference external" href="https://chlamdb.ch/locusx?accession=CT_495">locus page</a>  of each protein (in the <code class="docutils literal notranslate"><span class="pre">T3SS</span> <span class="pre">effectors</span> <span class="pre">prediction</span></code> section).</p>
 </div>
 <div class="section" id="taxonomic-profile-of-pfam-domains-and-cogs">
 <h2>Taxonomic profile of Pfam domains and COGs<a class="headerlink" href="#taxonomic-profile-of-pfam-domains-and-cogs" title="Permalink to this headline">¶</a></h2>
@@ -274,8 +292,8 @@ First, the NCBI taxon ID of each RefSeq hit was retrieved using the <code class=
 </div>
 <div class="section" id="source-databases">
 <h2>Source databases<a class="headerlink" href="#source-databases" title="Permalink to this headline">¶</a></h2>
-<table class="docutils align-center" id="id4">
-<caption><span class="caption-text">Version of source databases used for the annotation</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
+<table class="docutils align-center" id="id6">
+<caption><span class="caption-text">Version of source databases used for the annotation</span><a class="headerlink" href="#id6" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 45%" />
 <col style="width: 55%" />
@@ -321,8 +339,8 @@ First, the NCBI taxon ID of each RefSeq hit was retrieved using the <code class=
 </div>
 <div class="section" id="software-versions">
 <h2>Software versions<a class="headerlink" href="#software-versions" title="Permalink to this headline">¶</a></h2>
-<table class="docutils align-center" id="id5">
-<caption><span class="caption-text">Version of the main softwares used for protein annotation</span><a class="headerlink" href="#id5" title="Permalink to this table">¶</a></caption>
+<table class="docutils align-center" id="id7">
+<caption><span class="caption-text">Version of the main softwares used for protein annotation</span><a class="headerlink" href="#id7" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 52%" />
 <col style="width: 48%" />
@@ -396,7 +414,7 @@ First, the NCBI taxon ID of each RefSeq hit was retrieved using the <code class=
 <li><a class="reference internal" href="#selection-of-pvc-genomes-integrated-into-the-database">Selection of PVC genomes integrated into the database</a></li>
 <li><a class="reference internal" href="#protein-annotation">Protein annotation</a></li>
 <li><a class="reference internal" href="#homology-search-refseq-and-swissprot">Homology search (RefSeq and SwissProt)</a></li>
-<li><a class="reference internal" href="#identification-of-orthogroups">Identification of Orthogroups</a></li>
+<li><a class="reference internal" href="#id1">Identification of Orthogroups</a></li>
 <li><a class="reference internal" href="#orthogroup-multiple-sequence-alignments-phylogenies">Orthogroup multiple sequence alignments &amp; phylogenies</a></li>
 <li><a class="reference internal" href="#phlogeny-including-top-refseq-hits">Phlogeny including top RefSeq hits</a></li>
 <li><a class="reference internal" href="#calculation-of-pairwise-protein-identity">Calculation of pairwise protein identity</a></li>

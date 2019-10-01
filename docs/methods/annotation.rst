@@ -94,9 +94,9 @@ _`Homology search` (RefSeq and SwissProt)
 
 * The closest identifiable SwissProt_ homologs were searched with BLASTp (parameters: ``-evalue`` 0.001). The 100 first hits were retained for each protein.
 
------------------------------
-Identification of Orthogroups
------------------------------
+--------------------------------
+_`Identification of Orthogroups`
+--------------------------------
 
 Orthogroups (or orthologous groups) were identified with OrthoFinder_. This tools identify orthogroups based on BLASTp (parameters: ``-evalue`` 0.001) 
 results using the MCL_ clustering software.
@@ -164,13 +164,13 @@ Orthogroups KEGG, COG, Interpro entries
 Prediction of protein-protein interactions
 ------------------------------------------
 
-The interactions reported in the "interactions" tab were predicted based on two different approaches
+The interactions reported in the "interactions" tab were predicted based on two different approaches: ``phylogenetic profiling`` and ``conservation of gene neighborhood``. Indeed, proteins that physically interact tend to be encoded in a close neighborhood and tend to co-occur in the same genomes (see `Dandekar  et al`_ and `Kensche et al.`_ for more details).
 
 +++++++++++++++++++++++++
 1 Phylogenetic profiling
 +++++++++++++++++++++++++
 
-Orthogroup exhibiting similar patterns of presence/absence were identified by calculating the Euclidian distance of all pairs of orthologroups phylogenetic profiles (see **Figure 3**). See for instance `Kensche et al.`_ for a review on phylogenetic profiling methods.
+Orthogroup exhibiting similar patterns of presence/absence were identified by calculating the euclidian and jaccard distances of all pairs of orthologroups phylogenetic profiles (see **Figure 3**). See `Kensche et al.`_ for a review on phylogenetic profiling methods.
 
     1. Phylogenetic profiles were collapsed at the species level. If an orthogroup was present in only a subset of the strains of the considered species, it was still considered as present in that species.
     2. Pairwise euclidean_ and jaccard_ distances were calculated between pairs of profiles
@@ -192,21 +192,38 @@ Orthogroup exhibiting similar patterns of presence/absence were identified by ca
 2. Identification of conserved gene neighborhood in different species
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+Genes encoded in a close neighborhood in distantly related species were identified based on orthology data (see `Identification of Orthogroups`_). See for example the case of the subunits of the `F-type ATPase`_ that are systematically encoded in a close neighborhood. The method was the following:
 
+    1. protein encoding genes were iterated for each genome 
+    2. if the considered protein encoding gene had one (or multiple) homolog(s) in distantly related genomes (a cutoff of 60% median protein identity was used to consider two genomes sufficently distant)
+    3. the 10 kilobases upstream and downstream of each ortholog were compared to the reference genome to identify conserved  neighbors (see **Figure 4.A**)
+    4. the ratio of co-occurence of pairs of orthogroups was used to score the association between pairs of locus (**Figure 4.B**) 
+    5. only proteins exhibiting a ``conservation score of 0.8`` are reported in the "interactions" tab of locus pages
 
 .. figure:: ../img/conserved_neig.svg
     :figclass: align-center
     :width: 100 %
 
+    **Figure 4**: Identification of conserved gene neighborhood. **A)** Example with the red locus, part of the orthologous group ``group_222``. This locus has orthologs in 3 other genomes. 
+    Proteins encoded 10 kilobases upstream and 10 kilobases downstream of the reference locus are extracted and compared between the reference 
+    genome and all other genomes in which an ortholog is present. **B)** The ``conservation score`` of a pair of locus is the ratio of cases for which orthologs were encoded in the green windows out of the total number of comparisons. For instance, the green locus is encoded less than 10kb upstream of the red locus in two genomes, but more than 10kb apprt in the third genome. Is score is thus of 2/3 (2 out of 2 comparsions). The pink locus is always encoded in the vicinity of the red locus in all compared genomes. Its score is thus of 3/3. **C)** If multiple orthologs were identified if the compared genome, only the most similar one is considered for the comparison (based on amino acid identity calculated based on the orthogroup multiple sequence alignment). 
+
+
+.. warning::
+    Since orthologous groups identified by OrthoFinder_ include both orthologs and paralogs, the relationship between pair of genomes is not necessarily 1 to 1 (have a look at the `OMA website`_ to read detailed explanations of the different types of orthologs). If multiple orthologs were encoded in the compared genome, only the most similar one was used for the comparison (**Figure 4.C**). The choice of the closest locus was based on protein identity and not based on phylogenetic trees, which means that we might not always consider the most closely related protein encoded in the compared genome for the comparison.
+
 -----------------------------------------------------------
 Prediction of candidate type III secretion system effectors
 -----------------------------------------------------------
 
-Effectors of the type III secretion system were predicted using four different softwares:
+Effectors of the type III secretion system are poorly conserved. In addition, the signal allowing to specifically secrete effector proteins is not clearly identified. It is thus difficult to identify effectors in newly sequenced genomes. Predition methods generally rely on the use classifiers that are trained on a set of known effector proteins. Since all *Chlamydiae* genomes encode a type III secretion system, candidate effectors were identified using four different classifiers:
+
     * BPBAac_ (default parameters)
     * effectiveT3_ (model ``TTSS_STD-2.0.2``, cutoff of ``0.9999``)
     * DeepT3_  (default parameters)
     * T3_MM_ (default parameters)
+
+Results of all four tools are reported on the `locus page`_  of each protein (in the ``T3SS effectors prediction`` section).
 
 ------------------------------------------
 Taxonomic profile of Pfam domains and COGs
@@ -336,3 +353,6 @@ Public database download and indexing   https://github.com/metagenlab/annotation
 .. _`NCBI taxonomy ftp website` : ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/
 .. _`biopython interface to Entrez` : https://biopython.org/DIST/docs/api/Bio.Entrez-module.html
 .. _`cell shape-determining protein MreB` : https://chlamdb.ch/profile_interactions/group_414
+.. _`Dandekar  et al` : https://www.ncbi.nlm.nih.gov/pubmed/9787636
+.. _`OMA website`: https://omabrowser.org/oma/type/
+.. _`F-type ATPase` : https://www.chlamdb.ch/neig_interactions/wcw_1123
