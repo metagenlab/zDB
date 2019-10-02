@@ -12049,30 +12049,30 @@ def interactions(request, locus_tag):
     sql = 'select orthogroup from orthology_detail_%s where locus_tag="%s"' % (biodb,locus_tag)
 
     orthogroup = server.adaptor.execute_and_fetchall(sql,)[0][0]
-    try:
-        #print 'cotoff 2 #######################'
-        all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2.2)
-        too_much_hits = False
-        if all_groups_profile == False:
-            # try with of more stringeant cutoff
-            #print 'cotoff 1 #######################'
-            all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2)
-            if all_groups_profile == False:
-                #print 'cotoff 0 #######################'
-                all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
-                #print all_groups_profile
-                if all_groups_profile == False:
-                    all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 0)
-                    if all_groups_profile == False:
-                        too_much_hits = True
-    except:
-        all_groups_profile = []
 
-    if all_groups_profile:
-        if len(all_groups_profile) <= 1:
-            profile_match = False
-        else:
-            profile_match = True
+    all_groups_profile_jac, cutoff_jac, too_much_hits_jac = string_networks.successive_cutof_search(biodb,
+                                                                                        "jac",
+                                                                                        orthogroup,
+                                                                                        0.15,
+                                                                                        0.1,
+                                                                                        0.05,
+                                                                                        0)
+
+    all_groups_profile_eucl, cutoff_eucl, too_much_hits_eucl = string_networks.successive_cutof_search(biodb,
+                                                                                        "eucl",
+                                                                                        orthogroup,
+                                                                                        2.2,
+                                                                                        2,
+                                                                                        1,
+                                                                                        0)
+
+    if len(all_groups_profile_eucl) > 1:
+        profile_match_eucl = True
+        profile_match = True
+
+    if len(all_groups_profile_jac) > 1:
+        profile_match_jac = True
+        profile_match = True
 
     if biodb != 'chlamydia_04_16':
         sql = 'select seqfeature_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s"' % (biodb,
@@ -12130,7 +12130,7 @@ def plot_heatmap(request, type):
 
 
 
-def profile_interactions(request, orthogroup):
+def profile_interactions(request, orthogroup, distance):
     biodb = settings.BIODB
     from chlamdb.biosqldb import manipulate_biosqldb
     from chlamdb.network_d3 import string_networks
@@ -12140,47 +12140,39 @@ def profile_interactions(request, orthogroup):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2.2)
-    cutoff = 2.4
+    if distance == "eucl":
+        all_groups_profile, cutoff, too_much_hits = string_networks.successive_cutof_search(biodb,
+                                                                                            "eucl",
+                                                                                            orthogroup,
+                                                                                            2.2,
+                                                                                            2,
+                                                                                            1,
+                                                                                            0)
+    if distance == "jac":
+        all_groups_profile, cutoff, too_much_hits = string_networks.successive_cutof_search(biodb,
+                                                                                            "jac",
+                                                                                            orthogroup,
+                                                                                            0.15,
+                                                                                            0.1,
+                                                                                            0.05,
+                                                                                            0)                                                                   
 
-    too_much_hits = False
-    if all_groups_profile == False:
-        # try with of more stringeant cutoff
-        #print 'cotoff 1 #######################'
-        all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2)
-        cutoff = 2
-        if all_groups_profile == False:
-            #print 'cotoff 0 #######################'
-            all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
-            cutoff = 1
-            #print all_groups_profile
-            if all_groups_profile == False:
-                #print 'cotoff 0 #######################'
-                all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 0)
-                cutoff = 0
-                #print all_groups_profile
-                if all_groups_profile == False:
-                    too_much_hits = True
-    #print 'too much hits?', too_much_hits
     if len(all_groups_profile) <= 1:
         profile_match = False
     else:
         profile_match = True
-
-    too_much_hits = False
-    if all_groups_profile == False:
-        #print 'too much'
-        too_much_hits = True
-    if len(all_groups_profile) <=1:
-        match = False
-
-    else:
-        #print 'get grp data'
         from chlamdb.phylo_tree_display import ete_motifs
         match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(all_groups_profile, biodb)
         match = True
         #print 'get script'
-        script = string_networks.generate_network_profile(biodb, all_groups_profile, [orthogroup], euclidian_distance_limit=cutoff, scale_link=True)
+        script = string_networks.generate_network_profile(biodb, 
+                                                          all_groups_profile, 
+                                                          [orthogroup], 
+                                                          euclidian_distance_limit=cutoff, 
+                                                          scale_link=True,
+                                                          interpro=False,
+                                                          annot=False,
+                                                          distance=distance)
 
         #print 'script ok, getting orthogroups counts'
 
@@ -12431,30 +12423,28 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
         taxon2locus_tag_closest[str(taxon_id)] = orthogroup_or_locus
         taxon2identity_closest[str(taxon_id)] = 100
 
-    try:
-        #print 'cotoff 2 #######################'
-        all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2.2)
-        too_much_hits = False
-        if all_groups_profile == False:
-            # try with of more stringeant cutoff
-            #print 'cotoff 1 #######################'
-            all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 2)
-            if all_groups_profile == False:
-                #print 'cotoff 0 #######################'
-                all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 1)
-                #print all_groups_profile
-                if all_groups_profile == False:
-                    all_groups_profile = string_networks.find_profile_links_recusrsive(biodb, [orthogroup], 0)
-                    if all_groups_profile == False:
-                        too_much_hits = True
-    except:
-        all_groups_profile = []
+    all_groups_profile_eucl, cutoff_eucl, too_much_hits_eucl = string_networks.successive_cutof_search(biodb,
+                                                                                        "eucl",
+                                                                                        orthogroup,
+                                                                                        2.2,
+                                                                                        2,
+                                                                                        1,
+                                                                                        0)
 
-    if all_groups_profile:
-        if len(all_groups_profile) <= 1:
-            profile_match = False
-        else:
-            profile_match = True
+    all_groups_profile_jac, cutoff_jac, too_much_hits_jac = string_networks.successive_cutof_search(biodb,
+                                                                                        "jac",
+                                                                                        orthogroup,
+                                                                                        0.15,
+                                                                                        0.1,
+                                                                                        0.05,
+                                                                                        0)
+    
+    
+    if len(all_groups_profile_jac) > 1:
+        profile_match_jac = True
+    if len(all_groups_profile_eucl) > 1:
+        profile_match_eucl = False
+    print(all_groups_profile_jac, all_groups_profile_eucl)
 
     if input_type != 'orthogroup':
         locus_list = list(taxon2locus_tag_closest.values())

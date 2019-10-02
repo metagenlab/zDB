@@ -6,6 +6,35 @@
 # Date: 2016
 # ---------------------------------------------------------------------------
 
+def successive_cutof_search(biodb,
+                            dist, 
+                            orthogroup,
+                            cutof1, 
+                            cutof2, 
+                            cutof3,
+                            cutof4):
+    too_much_hits = False
+    all_groups_profile = find_profile_links_recusrsive(biodb, [orthogroup], cutof1, 0, dist)
+    cutoff = cutof1
+    if all_groups_profile == False:
+        all_groups_profile = find_profile_links_recusrsive(biodb, [orthogroup], cutof2, 0, dist)
+        cutoff = cutof2
+        if all_groups_profile == False:
+            #print 'cotoff 0 #######################'
+            all_groups_profile = find_profile_links_recusrsive(biodb, [orthogroup], cutof3, 0, dist)
+            cutoff = cutof3
+            #print all_groups_profile
+            if all_groups_profile == False:
+                #print 'cotoff 0 #######################'
+                all_groups_profile = find_profile_links_recusrsive(biodb, [orthogroup], cutof4, 0, dist)
+                cutoff = cutof4
+                #print all_groups_profile
+                if all_groups_profile == False:
+                    all_groups_profile = []
+                    too_much_hits = True
+    return all_groups_profile, cutoff, too_much_hits
+
+
 
 def find_links_recusrsive(biodb, all_connected_seqfeatures, ratio_cutoff=0.5, n_comp_cutoff=1):
 
@@ -39,8 +68,18 @@ def find_links_recusrsive(biodb, all_connected_seqfeatures, ratio_cutoff=0.5, n_
         return all_groups
 
 
-def find_profile_links_recusrsive(biodb, all_connected_groups, max_euclidian_dist=1, max_iterations=0):
-
+def find_profile_links_recusrsive(biodb, 
+                                  all_connected_groups, 
+                                  max_dist=1, 
+                                  max_iterations=0,
+                                  distance="eucl"):
+    '''
+    all_connected_groups: orthogroup list under consideration
+    max_dist : distance cutoff
+    max_iterations : max number of iteration search to identify connections
+    distance : either eucl (euclidean) or jac (jaccard)
+    '''
+    
     if max_iterations >= 1:
         return all_connected_groups
     else:
@@ -49,8 +88,12 @@ def find_profile_links_recusrsive(biodb, all_connected_groups, max_euclidian_dis
     server, db = manipulate_biosqldb.load_db(biodb)
 
     filter = '"' + '","'.join(all_connected_groups) + '"'
-    sql = 'select * from comparative_tables.phylo_profiles_eucl_dist2_%s where (group_1 in (%s) or group_2 in (%s)) and ' \
-          ' (euclidian_dist <= %s)' % (biodb, filter, filter, max_euclidian_dist)
+    sql = 'select * from interactions.phylo_profiles_%s_dist_%s where (group_1 in (%s) or group_2 in (%s)) and ' \
+          ' (euclidian_dist <= %s)' % (distance,
+                                       biodb, 
+                                       filter, 
+                                       filter, 
+                                       max_dist)
 
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -65,7 +108,11 @@ def find_profile_links_recusrsive(biodb, all_connected_groups, max_euclidian_dis
         if i[1] not in all_groups:
             all_groups.append(i[1])
     if len(all_groups) > len(all_connected_groups):
-        return find_profile_links_recusrsive(biodb, all_groups, max_euclidian_dist, max_iterations)
+        return find_profile_links_recusrsive(biodb, 
+                                             all_groups, 
+                                             max_dist, 
+                                             max_iterations, 
+                                             distance=distance)
     else:
         return all_groups
 
@@ -741,12 +788,18 @@ def generate_network_profile(biodb,
                              euclidian_distance_limit=1.5,
                              scale_link=True,
                              interpro=False,
-                             annot=False):
+                             annot=False,
+                             distance="eucl"):
+    
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     filter = '"' + '","'.join(group_list) + '"'
     # group_1     | group_2     | euclidian_dist
-    sql = 'select * from comparative_tables.phylo_profiles_eucl_dist2_%s where (group_1 in (%s) and group_2 in (%s)) and euclidian_dist<=%s;' % (biodb, filter, filter, euclidian_distance_limit)
+    sql = 'select * from interactions.phylo_profiles_%s_dist_%s where (group_1 in (%s) and group_2 in (%s)) and euclidian_dist<=%s;' % (distance,
+                                                                                                                                        biodb, 
+                                                                                                                                        filter, 
+                                                                                                                                        filter, 
+                                                                                                                                        euclidian_distance_limit)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 

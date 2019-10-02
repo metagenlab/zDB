@@ -62,7 +62,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^interpro_taxonomy_with_homologs/([a-zA-Z0-9_\-]+)/([a-zA-Z0-9_\-]+)', views.interpro_taxonomy_with_homologs, name="interpro_taxonomy_with_homologs"),
                        url(r'^pfam_taxonomy_with_homologs/([\.a-zA-Z0-9_\-]+)/([\.a-zA-Z0-9_\-]+)', views.pfam_taxonomy_with_homologs,name="pfam_taxonomy_with_homologs"),
                        url(r'^neig_interactions/([a-zA-Z0-9_\.]+)', views.neig_interactions, name="neig_interactions"),
-                       url(r'^profile_interactions/([a-zA-Z0-9_\.]+)', views.profile_interactions, name="profile_interactions"),
+                       url(r'^profile_interactions/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)', views.profile_interactions, name="profile_interactions"),
                        url(r'^interactions/([a-zA-Z0-9_\.]+)', views.interactions, name="interactions"),
                        url(r'^pfam_profile/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)', views.pfam_profile, name="pfam_profile"),
                        url(r'^get_pfam_taxon_table/([a-zA-Z0-9_\.]+)', views.get_pfam_taxon_table, name="get_pfam_taxon_table"),
