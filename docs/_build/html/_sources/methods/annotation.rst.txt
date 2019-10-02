@@ -229,7 +229,19 @@ Results of all four tools are reported on the `locus page`_  of each protein (in
 Taxonomic profile of Pfam domains and COGs
 ------------------------------------------
 
-TODO
+Coding sequences of the 6661 reference and representative genomes available from RefSeq (September 2017) were downloaded from RefSeq ftp (ftp://ftp.ncbi.nlm.nih.gov/refseq/). Hidden Markov models of the PFAM database (6) were used to search for sporulation-related domains using hmmsearch (HMMER version 3.1b2, (7)). Hits were filtered based on PFAM trusted cutoffs. Genomes were then grouped by order based on the NCBI Taxonomy database (8) with the python library ete2. Only orders exhibiting a minimum of 5 genomes are reported.
+
+* https://chlamdb.ch/pfam_profile/PF01823/phylum
+
+.. figure:: ../img/PF08486_phylum_profile.svg
+    :figclass: align-center
+    :width: 600 px
+
+-----------------------------------------------------------
+Evaluation of the quality and completeness of draft genomes
+-----------------------------------------------------------
+
+
 
 ---------------------------
 Protein accessions mapping
@@ -291,7 +303,9 @@ Software versions
     KoFamScan    	2019/4/9
     Mafft       	7.407
     PSORTb          3.0.6
+    HMMER           3.1b2
     =============   =======
+
 
 -----------------
 Code availability

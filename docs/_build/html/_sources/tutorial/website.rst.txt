@@ -108,6 +108,10 @@ Kegg pathways 	    map00400_ 	Phenylalanine, tyrosine and tryptophan biosynthesi
 Taxonomic profile of COGs and Pfam domains
 ------------------------------------------
 
+.. figure:: ../img/PF08486_phylum_profile.svg
+    :figclass: align-center
+    :width: 600 px
+
 ----------------
 BLAST interface
 ----------------
@@ -152,19 +156,58 @@ Whole genomes alignments: interactive circular plots
 
     Figure 1: Simplified annotation workflow.
 
--------------------------------------------------------------------
-Identification of genes specific to one or more strain(s)/specie(s)
--------------------------------------------------------------------
+--------------------------------------------
+comparing the content of two or more genomes
+--------------------------------------------
 
++++++++++
+Overview
++++++++++
 
 .. figure:: ../img/extract_orthogroup_page.png
     :figclass: align-center
 
     Figure 1: Simplified annotation workflow.
 
---------------------------------------------------------------------------------------------------------
-Comparison of the annotation: identification of conserved or clade specific domains/COGs,EC numbers,...
---------------------------------------------------------------------------------------------------------
+
++++++++++++++++++++++++++++++++++++++++
+Venn diagrams to compare genome content
++++++++++++++++++++++++++++++++++++++++
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Identification of the largest protein families in one or multiple genomes
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+++++++++++++++++++
+Proteomes heatmaps
+++++++++++++++++++
+
+
+++++++++++++++++++++++
+Pan/Core genome plots
+++++++++++++++++++++++
+
+
+-------------------------------------------------------------------------
+Comparison of COG, Pfam, KO and InterPro annotations at the genome scale
+-------------------------------------------------------------------------
+
+ * identification of conserved or clade specific domains/COGs,EC numbers
+
+----------------------------------------------------------------
+Get the list of Pfam domains specific to one or a set of genomes
+----------------------------------------------------------------
+
+
+
+----------
+Metabolism
+----------
+
+
+
 
 
 .. _`ChlamDB home page`: https://chlamdb.ch/#genomes
