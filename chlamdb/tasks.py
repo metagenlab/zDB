@@ -1057,7 +1057,7 @@ def TM_tree_task(biodb,
                     <h3 class="panel-title">Help</h3>
                 </div>
                 <p style="margin: 10px 10px 10px 10px">This phylogeny includes all orthologs identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. 
-                (see detailed method <a href="https://chlamdb.ch/docs/methods/annotation.html#id1" target="_top">here</a>). 
+                (see detailed method <a href="/docs/methods/annotation.html#id1" target="_top">here</a>). 
                 The first column at the right of the phylogeny reports the locus tag of each protein sequence (it can be used in the search bar to search for the corresponding locus) 
                 The right part is a representation of the amino acid sequence. The length of the line reflects the length of the sequence. 
                 <font color="green">Green blocks</font> are predicted <font color="green">transmembrane domains</font> and <font color="red">red blocks</font> are predicted <font color="red">signal peptides</font>. Both were identified with <a href="http://phobius.sbc.su.se/">Phobius</a>.<br>
@@ -1172,7 +1172,7 @@ def pfam_tree_task(biodb,
                     <h3 class="panel-title">Help</h3>
                 </div>
                 <p style="margin: 10px 10px 10px 10px">This phylogeny includes all orthologs identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a> 
-                (see detailed method <a href="https://chlamdb.ch/docs/methods/annotation.html#id1" target="_top">here</a>).
+                (see detailed method <a href="/docs/methods/annotation.html#id1" target="_top">here</a>).
                 The first column at the right of the phylogeny reports the locus tag of each protein sequence (that can be used in the search bar to search for the corresponding locus). 
                 The right part is a representation of the amino acid sequence. The length of the line reflects the length of the sequence, and <font color="green">green blocks</font> are identified <a href="https://pfam.xfam.org/">PFAM domains</a>.<br>
                 </p>
@@ -1274,7 +1274,7 @@ def phylogeny_task(biodb,
                             <h3 class="panel-title">Help</h3>
                         </div>
                         <p style="margin: 10px 10px 10px 10px">This phylogeny includes all orthologs identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a> as well as the 4 best RefSeq hit of each protein 
-                        (see detailed method <a href="https://chlamdb.ch/docs/methods/annotation.html#phlogeny-including-top-refseq-hits" target="_top">here</a>). 
+                        (see detailed method <a href="/docs/methods/annotation.html#phlogeny-including-top-refseq-hits" target="_top">here</a>). 
                          </p>
                     </div>
 
