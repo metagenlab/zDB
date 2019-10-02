@@ -22,18 +22,18 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 
-          <div class="col-sm-3 col-md-7 col-lg-5">
+          <div class="col-sm-3 col-md-4 col-lg-5">
               <form class="navbar-form" role="search" action='{% url "locusx" %}' method="GET" class="form-inline pull-xs-right">
-              <div class="input-group">
-                  <input type="text" class="form-control" style="width:500px;" placeholder="Gene, product, orthogroup, COG, interpro ID, KEGG id, ..." name="accession">
-                  <div class="input-group-btn">
-                      <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
-                  </div>
-              </div>
+                <div class="input-group" style="width:100%;max-width:500px;">
+                    <input type="text" class="form-control" style="width:100%;max-width:500px;" placeholder="Gene, product, orthogroup, COG, interpro ID, KEGG id, ..." name="accession">
+                    <div class="input-group-btn">
+                        <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+                    </div>
+                </div>
               </form>
           </div>
 
-          <div class="col-sm-2 col-md-2" style="margin: 15px 5px 5px 5px">
+          <div class="col-sm-3 col-md-3 col-lg-2" style="margin: 10px 5px 5px 5px;">
             <font color="white">examples: <a style="color:#FF0000;" href="{% url 'locusx' "CT_013" True %}">CT_013</a> or <a style="color:#FF0000;" href="{% url 'fam' "K00024" "ko" %}">K00024</a></font>
           </div>
 
@@ -42,6 +42,7 @@
             <li><a href="{% url 'chlamdb_login' %}">Login</a></li>
             <li><a href="{% url 'about' %}">About</a></li>
           </ul>
+
         </div><!-- /.navbar-collapse -->
       </div> <!-- /.container-fluid -->
     </nav>
