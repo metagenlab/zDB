@@ -1,5 +1,8 @@
 <style>
 
+  .sidebar-title{
+    padding-left: 12px;
+  }
   #wrapper {
       margin-top: 40px;
       padding-left: 0;
@@ -130,7 +133,7 @@
 
   @media(min-width:950px) {
       #wrapper {
-          padding-left: 220px;
+          padding-left: 200px;
       }
 
       #wrapper.toggled {
@@ -164,43 +167,26 @@
 
   @media(max-width:950px) {
     #wrapper {
-        padding-left: 280px;
+        padding-left: 30px;
     }
 
-  #wrapper.toggled #page-content-wrapper {
+    #wrapper.toggled #page-content-wrapper {
       position: absolute;
       margin-right:60px;
-  }
+    }
 
-  #wrapper.toggled {
-      padding-right: 60px;
-  }
-
-   #wrapper {
-          padding-left: 20px;
-      }
-
-      #wrapper.toggled {
-          padding-left: 0;
-      }
+    #wrapper.toggled {
+        padding-left: 170px;
+    }
 
       #sidebar-wrapper {
           width: 50px;
       }
 
       #wrapper.toggled #sidebar-wrapper {
-          width: 220px;
+          width: 200px;
 
       }
-
-      #wrapper.toggled span {
-          visibility:visible;
-          position:relative;
-          left:70px;
-          bottom:13px;
-
-      }
-
 
       #page-content-wrapper {
           padding: 5px;
