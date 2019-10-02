@@ -8712,14 +8712,17 @@ def get_orthogroup_fasta(request, orthogroup, seqtype):
     response.write(strio.getvalue())
     return response
 
-def get_newick_tree(request, orthogroup):
+def get_newick_tree(request, orthogroup, refseq_BBH_phylogeny):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
-    #print sql_tree
+    if refseq_BBH_phylogeny == "False":
+        print("group phylo")
+        sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
+    else:
+        sql_tree = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s";' % (biodb, orthogroup)
     try:
-
+        print("BBH phylo")
         tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
     except IndexError:
         tree = 'No tree for orthogroup: %s' % orthogroup

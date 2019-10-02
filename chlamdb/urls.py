@@ -55,7 +55,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^pfam2fasta/([a-zA-Z0-9_]+)/', views.pfam2fasta, name="pfam2fasta"),
                        url(r'^venn_candidate_effectors/$', views.venn_candidate_effectors, name="venn_candidate_effectors"),
                        url(r'^plot_heatmap/([a-zA-Z0-9_\-]+)', views.plot_heatmap, name="plot_heatmap"),
-                       url(r'^get_newick_tree/([a-zA-Z0-9_\-]+)', views.get_newick_tree, name="get_newick_tree"),
+                       url(r'^get_newick_tree/([a-zA-Z0-9_\-]+)/([a-zA-Z0-9_\-]+)', views.get_newick_tree, name="get_newick_tree"),
                        url(r'^get_orthogroup_fasta/([a-zA-Z0-9_\-]+)/([a-zA-Z0-9_\-]+)', views.get_orthogroup_fasta, name="get_orthogroup_fasta"),
                        url(r'^add_comment/([a-zA-Z0-9_\.]+)', views.add_comment, name="add_comment"),
                        url(r'^add_locus_int/$', views.add_locus_int, name="add_locus_int"),

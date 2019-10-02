@@ -162,7 +162,7 @@ function clearBox(elementID)
                                   <div style="width: 100%;padding-left:20px">
                                       <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' data.0 "aa"%}'">fasta aa</button>
                                       <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' data.0 "nucl"%}'">fasta nucl</button>
-                                      <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_newick_tree' data.0 %}'">newick tree</button>
+                                      <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_newick_tree' data.0 False %}'">newick tree</button>
                                       <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% static alignment_fasta %}'">MSA</button>
                                   </div>
                                 </div>

@@ -1057,7 +1057,8 @@ def TM_tree_task(biodb,
                     <h3 class="panel-title">Help</h3>
                 </div>
                 <p style="margin: 10px 10px 10px 10px">This phylogeny includes all orthologs identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. 
-                The first column at the right of the phylogeny reports the locus tag of each protein sequence (it can be used in the search bar to search for the corresponding locus). 
+                (see detailed method <a href="https://chlamdb.ch/docs/methods/annotation.html#id1" target="_top">here</a>). 
+                The first column at the right of the phylogeny reports the locus tag of each protein sequence (it can be used in the search bar to search for the corresponding locus) 
                 The right part is a representation of the amino acid sequence. The length of the line reflects the length of the sequence. 
                 <font color="green">Green blocks</font> are predicted <font color="green">transmembrane domains</font> and <font color="red">red blocks</font> are predicted <font color="red">signal peptides</font>. Both were identified with <a href="http://phobius.sbc.su.se/">Phobius</a>.<br>
                 </p>
@@ -1065,7 +1066,8 @@ def TM_tree_task(biodb,
         
             <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
             <a onclick='exportPNG("pfam_tree", "pfam_tree");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
-        
+            <a class="btn" href="{% url 'get_newick_tree' orthogroup False %}"><i class="fa fa-download"></i> Download tree (newick format)</a>
+
             <div id="pfam_tree_div">
                 <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width:90%"></object>
             </div>
@@ -1169,7 +1171,8 @@ def pfam_tree_task(biodb,
                 <div class="panel-heading" style="width:100%">
                     <h3 class="panel-title">Help</h3>
                 </div>
-                <p style="margin: 10px 10px 10px 10px">This phylogeny includes all orthologs identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>. 
+                <p style="margin: 10px 10px 10px 10px">This phylogeny includes all orthologs identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a> 
+                (see detailed method <a href="https://chlamdb.ch/docs/methods/annotation.html#id1" target="_top">here</a>).
                 The first column at the right of the phylogeny reports the locus tag of each protein sequence (that can be used in the search bar to search for the corresponding locus). 
                 The right part is a representation of the amino acid sequence. The length of the line reflects the length of the sequence, and <font color="green">green blocks</font> are identified <a href="https://pfam.xfam.org/">PFAM domains</a>.<br>
                 </p>
@@ -1177,7 +1180,7 @@ def pfam_tree_task(biodb,
         
             <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
             <a onclick='exportPNG("pfam_tree", "pfam_tree");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
-        
+            <a class="btn" href="{% url 'get_newick_tree' orthogroup False %}"><i class="fa fa-download"></i> Download tree (newick format)</a>
             <div id="pfam_tree_div">
                 <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width:90%"></object>
             </div>
@@ -1264,7 +1267,24 @@ def phylogeny_task(biodb,
             <h3>Phylogeny</h3>
 
             <div id="pfam_tree_div">
-                <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width:80%"></object>
+                <div class="row">
+
+                    <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                        <div class="panel-heading" style="width:100%">
+                            <h3 class="panel-title">Help</h3>
+                        </div>
+                        <p style="margin: 10px 10px 10px 10px">This phylogeny includes all orthologs identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a> as well as the 4 best RefSeq hit of each protein 
+                        (see detailed method <a href="https://chlamdb.ch/docs/methods/annotation.html#phlogeny-including-top-refseq-hits" target="_top">here</a>). 
+                         </p>
+                    </div>
+
+                    <a download="phylogeny.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+                    <a onclick='exportPNG("pyhlogeny", "pyhlogeny");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+                    <a class="btn" href="{% url 'get_newick_tree' orthogroup True %}"><i class="fa fa-download"></i> Download tree (newick format)</a>
+                </div>
+                <div class="row">
+                    <object type="image/svg+xml" data="{% static asset_path %}" id="pyhlogeny" style="width:80%"></object>
+                </div>
             </div>
             {% else %}
             No tree for {{orthogroup}}
