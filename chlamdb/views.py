@@ -631,7 +631,7 @@ def orthogroup_annotation(request, display_form):
             path = settings.BASE_DIR + '/assets/temp/tree.svg'
             asset_path = '/temp/tree.svg'
 
-            tree.render(path, dpi=800, h=600, tree_style=style)
+            tree.render(path, dpi=800, tree_style=style)
 
             envoi_annot = True
             envoi_annot = True
@@ -659,7 +659,7 @@ def orthogroup_annotation(request, display_form):
             path = settings.BASE_DIR + '/assets/temp/tree.svg'
             asset_path = '/temp/tree.svg'
 
-            tree.render(path, dpi=800, h=600, tree_style=style)
+            tree.render(path, dpi=800, tree_style=style)
 
             envoi_annot = True
 
@@ -782,7 +782,7 @@ def locus_annotation(request, display_form):
             path = settings.BASE_DIR + '/assets/temp/tree.svg'
             asset_path = '/temp/tree.svg'
             style2.rotation = 90
-            tree2.render(path, dpi=800, h=600, tree_style=style2)
+            tree2.render(path, dpi=800, tree_style=style2)
 
 
             sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
@@ -820,7 +820,7 @@ def locus_annotation(request, display_form):
             path2 = settings.BASE_DIR + '/assets/temp/tree2.svg'
             asset_path2 = '/temp/tree2.svg'
             style3.rotation = 90
-            tree3.render(path2, dpi=800, h=600, tree_style=style3)
+            tree3.render(path2, dpi=800, tree_style=style3)
 
             envoi_annot = True
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
@@ -847,7 +847,7 @@ def locus_annotation(request, display_form):
             path = settings.BASE_DIR + '/assets/temp/tree.svg'
             asset_path = '/temp/tree.svg'
 
-            tree.render(path, dpi=800, h=600, tree_style=style)
+            tree.render(path, dpi=800, tree_style=style)
 
             envoi_annot = True
 
@@ -1385,7 +1385,7 @@ def extract_EC(request):
                     big = True
                     path = settings.BASE_DIR + '/assets/temp/profil_tree.png'
                     asset_path = '/temp/profil_tree.png'
-                    tree2.render(path, dpi=1200, h=600)
+                    tree2.render(path, dpi=1200)
 
 
 
@@ -1396,7 +1396,7 @@ def extract_EC(request):
                     path2 = settings.BASE_DIR + '/assets/temp/profil_tree.svg'
                     asset_path = '/temp/profil_tree.svg'
 
-                    tree2.render(path2, dpi=800, h=600, tree_style=style2)
+                    tree2.render(path2, dpi=800, tree_style=style2)
 
 
 
@@ -3245,7 +3245,7 @@ def COG_phylo_heatmap(request, frequency):
 
         path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
         asset_path = '/temp/COG_tree.svg'
-        tree.render(path, dpi=600, h=400, tree_style=style)
+        tree.render(path, dpi=600, tree_style=style)
 
         #path2 = settings.BASE_DIR + '/assets/temp/COG_tree_%s_complete.svg' % module_name
         #asset_path2 = '/assets/temp/KEGG_tree_%s_complete.svg' % module_name
@@ -3954,7 +3954,7 @@ def KEGG_module_map(request, module_name):
             big = True
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % module_name
             asset_path = '/temp/KEGG_tree_%s.png' % module_name
-            tree.render(path, dpi=1200, h=600, tree_style=style)
+            tree.render(path, dpi=1200, tree_style=style)
 
 
 
@@ -3962,12 +3962,12 @@ def KEGG_module_map(request, module_name):
             big = False
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % module_name
             asset_path = '/temp/KEGG_tree_%s.svg' % module_name
-            tree.render(path, dpi=800, h=600, tree_style=style)
+            tree.render(path, dpi=800, tree_style=style)
 
             path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % module_name
             asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % module_name
 
-            tree2.render(path2, dpi=800, h=600, tree_style=style2)
+            tree2.render(path2, dpi=800, tree_style=style2)
 
 
         ko_url = '+' + '+'.join(ko_list)
@@ -4101,7 +4101,7 @@ def KEGG_mapp(request, map_name):
             big = True
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % map_name
             asset_path = '/temp/KEGG_tree_%s.png' % map_name
-            tree.render(path, dpi=1200, h=600, tree_style=style)
+            tree.render(path, dpi=1200, tree_style=style)
 
 
 
@@ -4110,12 +4110,12 @@ def KEGG_mapp(request, map_name):
             big = False
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % map_name
             asset_path = '/temp/KEGG_tree_%s.svg' % map_name
-            tree.render(path, dpi=800, h=600, tree_style=style)
+            tree.render(path, dpi=800, tree_style=style)
 
             path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
             asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % map_name
 
-            tree2.render(path2, dpi=800, h=600, tree_style=style2)
+            tree2.render(path2, dpi=800, tree_style=style2)
         envoi = True
         menu = True
         valid_id = True
@@ -6241,7 +6241,7 @@ def core_genome_missing(request, type):
 
             path2 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
             asset_path2 = '/temp/ortho_tree1.svg'
-            tree1.render(path2, dpi=800, h=600, tree_style=style1)
+            tree1.render(path2, dpi=800, tree_style=style1)
 
             envoi = True
 
@@ -6437,7 +6437,7 @@ def pairwiseid(request):
 
             path2 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
             asset_path2 = '/temp/ortho_tree1.svg'
-            tree1.render(path2, dpi=800, h=600, tree_style=style1)
+            tree1.render(path2, dpi=800, tree_style=style1)
             envoi = True
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
         form = pairwiseid_form_class()
@@ -6916,7 +6916,7 @@ def blastnr_euk(request):
 
     path1 = settings.BASE_DIR + '/assets/temp/interpro_tree2.svg'
     asset_path1 = '/temp/interpro_tree2.svg'
-    tree1.render(path1, dpi=600, h=400, tree_style=style1)
+    tree1.render(path1, dpi=600, tree_style=style1)
 
     #pairwiseid_plots.density_plot([identity_values],["identity hits Eukaryota"])
     #pairwiseid_plots.basic_plot(identity_values, count_n_species, output_path="~/tata.svg")
@@ -6992,7 +6992,7 @@ def prot_length_barchart(request):
 
     path1 = settings.BASE_DIR + '/assets/temp/CDS_length.svg'
     asset_path1 = '/temp/CDS_length.svg'
-    tree1.render(path1, dpi=600, h=400, tree_style=style1)
+    tree1.render(path1, dpi=600, tree_style=style1)
     return render(request, 'chlamdb/CDS_length.html', locals())
 
 
@@ -7410,7 +7410,7 @@ def blastnr_overview(request):
     # col = '#fc8d59' # col = '#91bfdb' '#99d594'
     path1 = settings.BASE_DIR + '/assets/temp/interpro_tree2.svg'
     asset_path1 = '/temp/interpro_tree2.svg'
-    tree1.render(path1, dpi=600, h=400, tree_style=style1)
+    tree1.render(path1, dpi=600, tree_style=style1)
     return render(request, 'chlamdb/blastnr_overview.html', locals())
 
 
@@ -7804,7 +7804,7 @@ def effector_pred(request):
 
     path = settings.BASE_DIR + '/assets/temp/interpro_tree.svg'
     asset_path = '/temp/interpro_tree.svg'
-    tree1.render(path, dpi=600, h=400, tree_style=style1)
+    tree1.render(path, dpi=600, tree_style=style1)
 
     tree2, style2 = phylo_tree_bar.plot_tree_barplot(tree,
                                                     taxon2values2,
@@ -7815,7 +7815,7 @@ def effector_pred(request):
                                                     general_max=False)
     path2 = settings.BASE_DIR + '/assets/temp/interpro_tree2.svg'
     asset_path2 = '/temp/interpro_tree2.svg'
-    tree2.render(path2, dpi=600, h=400, tree_style=style2)
+    tree2.render(path2, dpi=600, tree_style=style2)
 
     all=True
 
@@ -8024,7 +8024,7 @@ def interpro_taxonomy(request):
 
                 path = settings.BASE_DIR + '/assets/temp/interpro_tree.svg'
                 asset_path = '/temp/interpro_tree.svg'
-                tree1.render(path, dpi=600, h=400, tree_style=style1)
+                tree1.render(path, dpi=600, tree_style=style1)
 
                 #for taxon in taxon2values2:
                 #    m = max([float(i) for i in taxon2values2[taxon]])
@@ -8040,7 +8040,7 @@ def interpro_taxonomy(request):
                                                                 general_max=False)
                 path2 = settings.BASE_DIR + '/assets/temp/interpro_tree2.svg'
                 asset_path2 = '/temp/interpro_tree2.svg'
-                tree2.render(path2, dpi=600, h=400, tree_style=style2)
+                tree2.render(path2, dpi=600, tree_style=style2)
 
                 all=True
 
@@ -8166,7 +8166,7 @@ def interpro_taxonomy(request):
                 style.rotation = 90
                 path = settings.BASE_DIR + '/assets/temp/interpro_tree.svg'
                 asset_path = '/temp/interpro_tree.svg'
-                tree2.render(path, dpi=600, h=400, tree_style=style)
+                tree2.render(path, dpi=600, tree_style=style)
 
                 #path2 = settings.BASE_DIR + '/assets/temp/COG_tree_%s_complete.svg' % module_name
                 #asset_path2 = '/assets/temp/KEGG_tree_%s_complete.svg' % modulextract_interproe_name
@@ -9310,7 +9310,7 @@ def eggnog_profile(request, eggnog_id, rank):
 
     tree, style = eggnog_data.plot_phylum_counts(eggnog_id, rank=rank,colapse_low_species_counts=0)
 
-    tree.render(path, h=600, tree_style=style) # dpi=800,
+    tree.render(path, tree_style=style) # dpi=800,
     return render(request, 'chlamdb/eggnog_profile.html', locals())
 
 def annotation_overview(request):
@@ -9467,7 +9467,7 @@ def annotation_overview(request):
 
     pairwiseid_plots.plot_multiseries_points(proportions,output_path="/home/tpillone/ko2size.svg")
 
-    tree1.render(path, dpi=800, h=600, tree_style=style1)
+    tree1.render(path, dpi=800, tree_style=style1)
     return render(request, 'chlamdb/species_specific.html', locals())
 
 def orthogroup_KO_COG(request):
@@ -9573,7 +9573,7 @@ def paralogs(request):
     path = settings.BASE_DIR + '/assets/temp/tree.svg'
     asset_path = '/temp/tree.svg'
 
-    tree1.render(path, dpi=800, h=600, tree_style=style1)
+    tree1.render(path, dpi=800, tree_style=style1)
     return render(request, 'chlamdb/species_specific.html', locals())
 
 
@@ -9680,7 +9680,7 @@ def species_specific_groups(request):
     path = settings.BASE_DIR + '/assets/temp/tree.svg'
     asset_path = '/temp/tree.svg'
 
-    tree1.render(path, dpi=800, h=600, tree_style=style1)
+    tree1.render(path, dpi=800, tree_style=style1)
     return render(request, 'chlamdb/species_specific.html', locals())
 
 
@@ -11642,13 +11642,13 @@ def multiple_COGs_heatmap(request):
         big = True
         path = settings.BASE_DIR + '/assets/temp/cog_tree.png'
         asset_path = '/temp/cog_tree.png'
-        t1.render(path, dpi=1200, h=600)
+        t1.render(path, dpi=1200)
     else:
         big = False
         path = settings.BASE_DIR + '/assets/temp/cog_tree.svg'
         asset_path = '/temp/cog_tree.svg'
 
-        t1.render(path, dpi=800, h=600)
+        t1.render(path, dpi=800)
 
     return render(request, 'chlamdb/cog_tree.html', locals())
 
@@ -11825,12 +11825,12 @@ def multiple_orthogroup_heatmap(request, reference_orthogroup, max_distance=2.2)
         big = True
         path = settings.BASE_DIR + '/assets/temp/profile_tree_%s.png' % reference_orthogroup
         asset_path = '/temp/profile_tree_%s.png' % reference_orthogroup
-        t1.render(path, dpi=1200, h=800)
+        t1.render(path, dpi=1200)
     else:
         big = False
         path = settings.BASE_DIR + '/assets/temp/profile_tree_%s.svg' % reference_orthogroup
         asset_path = '/temp/profile_tree_%s.svg' % reference_orthogroup
-        t1.render(path, dpi=800, h=600)
+        t1.render(path, dpi=800)
 
     # get data about orthogroups
 
@@ -13099,7 +13099,7 @@ def transporters_family(request, family):
     #style1.rotation = 90
     path1 = settings.BASE_DIR + '/assets/temp/ortho_tree2.svg'
     asset_path1 = '/temp/ortho_tree2.svg'
-    tree1.render(path1, dpi=800, h=600, tree_style=style1)
+    tree1.render(path1, dpi=800, tree_style=style1)
     envoi = True
 
     return render(request, 'chlamdb/transporters_families.html', locals())
@@ -13169,7 +13169,7 @@ def transporters(request):
                 style1.rotation = 90
                 path1 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
                 asset_path1 = '/temp/ortho_tree1.svg'
-                tree1.render(path1, dpi=800, h=600, tree_style=style1)
+                tree1.render(path1, dpi=800, tree_style=style1)
                 envoi = True
 
             else:
@@ -13196,7 +13196,7 @@ def transporters(request):
                 style1.rotation = 90
                 path1 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
                 asset_path1 = '/temp/ortho_tree1.svg'
-                tree1.render(path1, dpi=800, h=600, tree_style=style1)
+                tree1.render(path1, dpi=800, tree_style=style1)
                 envoi = True
 
 
@@ -13264,7 +13264,7 @@ def blast_sets(request):
 
                 path1 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
                 asset_path1 = '/temp/ortho_tree1.svg'
-                tree1.render(path1, dpi=800, h=600, tree_style=style1)
+                tree1.render(path1, dpi=800, tree_style=style1)
 
 
                 gene2taxon2score2, gene_list2 = blast_heatmap.get_multiple_set_profiles(biodb,
@@ -13284,7 +13284,7 @@ def blast_sets(request):
 
                 path2 = settings.BASE_DIR + '/assets/temp/ortho_tree2.svg'
                 asset_path2 = '/temp/ortho_tree2.svg'
-                tree2.render(path2, dpi=800, h=600, tree_style=style2)
+                tree2.render(path2, dpi=800, tree_style=style2)
 
                 gene2taxon2score3, gene_list3 = blast_heatmap.get_multiple_set_profiles(biodb,
                                                                               hmm_sets,
@@ -13303,7 +13303,7 @@ def blast_sets(request):
 
                 path3 = settings.BASE_DIR + '/assets/temp/ortho_tree3.svg'
                 asset_path3 = '/temp/ortho_tree3.svg'
-                tree3.render(path3, dpi=800, h=600, tree_style=style3)
+                tree3.render(path3, dpi=800, tree_style=style3)
 
                 gene2taxon2score4, gene_list4 = blast_heatmap.get_multiple_set_profiles(biodb,
                                                                               hmm_sets,
@@ -13322,7 +13322,7 @@ def blast_sets(request):
 
                 path4 = settings.BASE_DIR + '/assets/temp/ortho_tree4.svg'
                 asset_path4 = '/temp/ortho_tree4.svg'
-                tree4.render(path4, dpi=800, h=600, tree_style=style4)
+                tree4.render(path4, dpi=800, tree_style=style4)
 
 
                 gene2taxon2score5, gene_list5 = blast_heatmap.get_multiple_set_profiles(biodb,
@@ -13343,7 +13343,7 @@ def blast_sets(request):
 
                 path5 = settings.BASE_DIR + '/assets/temp/ortho_tree5.svg'
                 asset_path5 = '/temp/ortho_tree5.svg'
-                tree5.render(path5, dpi=800, h=600, tree_style=style5)
+                tree5.render(path5, dpi=800, tree_style=style5)
 
                 envoi = True
             else:
@@ -13384,7 +13384,7 @@ def blast_sets(request):
                 style1.rotation = 90
                 path1 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
                 asset_path1 = '/temp/ortho_tree1.svg'
-                tree1.render(path1, dpi=800, h=600, tree_style=style1)
+                tree1.render(path1, dpi=800, tree_style=style1)
                 envoi = True
 
 
@@ -13446,7 +13446,7 @@ def hmm(request):
 
                 path1 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
                 asset_path1 = '/temp/ortho_tree1.svg'
-                tree1.render(path1, dpi=800, h=600, tree_style=style1)
+                tree1.render(path1, dpi=800, tree_style=style1)
 
 
 
@@ -13467,7 +13467,7 @@ def hmm(request):
 
                 path2 = settings.BASE_DIR + '/assets/temp/ortho_tree2.svg'
                 asset_path2 = '/temp/ortho_tree2.svg'
-                tree2.render(path2, dpi=800, h=600, tree_style=style2)
+                tree2.render(path2, dpi=800, tree_style=style2)
 
                 gene2taxon2score3, gene_list3 = hmm_heatmap.get_single_set_data(biodb,
                                                                               hmm_set,
@@ -13485,7 +13485,7 @@ def hmm(request):
 
                 path3 = settings.BASE_DIR + '/assets/temp/ortho_tree3.svg'
                 asset_path3 = '/temp/ortho_tree3.svg'
-                tree3.render(path3, dpi=800, h=600, tree_style=style3)
+                tree3.render(path3, dpi=800, tree_style=style3)
 
 
                 envoi = True
@@ -13592,16 +13592,16 @@ def locus_int(request):
                 path2 = settings.BASE_DIR + '/assets/temp/ortho_tree2.png'
                 asset_path = '/temp/ortho_tree.png'
                 asset_path2 = '/temp/ortho_tree2.png'
-                tree1.render(path, dpi=1200, h=600, tree_style=style)
-                tree2.render(path2, dpi=1200, h=600, tree_style=style2)
+                tree1.render(path, dpi=1200, tree_style=style)
+                tree2.render(path2, dpi=1200, tree_style=style2)
             else:
                 big = False
                 path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
                 path2 = settings.BASE_DIR + '/assets/temp/ortho_tree2.svg'
                 asset_path = '/temp/ortho_tree.svg'
                 asset_path2 = '/temp/ortho_tree2.svg'
-                tree1.render(path, dpi=800, h=600, tree_style=style)
-                tree2.render(path2, dpi=800, h=600, tree_style=style2)
+                tree1.render(path, dpi=800, tree_style=style)
+                tree2.render(path2, dpi=800, tree_style=style2)
             envoi = True
 
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
@@ -13666,7 +13666,7 @@ def kegg_pathway_heatmap(request):
 
             path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
             asset_path = '/temp/metabo_tree.svg'
-            tree.render(path, dpi=800, h=600, tree_style=style)
+            tree.render(path, dpi=800, tree_style=style)
 
 
             envoi = True
@@ -13821,13 +13821,13 @@ def kegg_module(request):
                 big = True
                 path = settings.BASE_DIR + '/assets/temp/metabo_tree.png'
                 asset_path = '/temp/metabo_tree.png'
-                tree.render(path, dpi=1200, h=600, tree_style=ts)
+                tree.render(path, dpi=1200, tree_style=ts)
             else:
                 big = False
                 path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
                 asset_path = '/temp/metabo_tree.svg'
 
-                tree.render(path, dpi=800, h=600, tree_style=ts)
+                tree.render(path, dpi=800, tree_style=ts)
 
             envoi = True
 
