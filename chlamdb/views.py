@@ -95,6 +95,8 @@ from chlamdb.tasks import TM_tree_task
 from chlamdb.tasks import pfam_tree_task
 from chlamdb.tasks import phylogeny_task
 from chlamdb.tasks import plot_heatmap_task
+from chlamdb.tasks import KEGG_map_ko_task
+from chlamdb.tasks import KEGG_map_ko_organism_task
 from chlamdb.celeryapp import app as celery_app
 
 @celery_app.task(bind=True)
@@ -249,6 +251,7 @@ def home(request):
 
     sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
                ' where t2.name="%s";' % biodb
+    print(sql_tree)
     server, db = manipulate_biosqldb.load_db(biodb)
     tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
 
@@ -4022,107 +4025,10 @@ def kegg_multi(request, map_name, ko_name):
 def KEGG_mapp_ko(request, map_name):
     biodb = settings.BIODB
 
-
-    #cache.clear()
-
     if request.method == 'GET':  # S'il s'agit d'une requête POST
-        from chlamdb.phylo_tree_display import ete_motifs
-        from chlamdb.plots import kegg_maps
 
-        server, db = manipulate_biosqldb.load_db(biodb)
-
-        sql = 'select pathway_name,pathway_category,description,C.EC, C.ko_accession, D.definition, A.pathway_id from ' \
-              ' (select * from enzyme.kegg_pathway where pathway_name="%s") A inner join enzyme.pathway2ko as B ' \
-              ' on A.pathway_id=B.pathway_id inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id ' \
-              ' inner join enzyme.ko_annotation as D on B.ko_id=D.ko_id;' % (map_name)
-
-        map_data = server.adaptor.execute_and_fetchall(sql,)
-        pathway_id = map_data[0][-1]
-        ko_list = [i[4] for i in map_data]
-
-        # fetch ko pylogenetic profiles
-        sql = 'select id from comparative_tables.ko_%s where id in (%s);' % (biodb,
-                                                          '"' + '","'.join(ko_list) + '"')
-
-        ko_list_found_in_db = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-
-        # get list of all orthogroups with corresponding KO
-        sql = 'select distinct aa.ko_accession, bb.orthogroup from ' \
-              ' (select C.ko_accession, E.seqfeature_id from   ' \
-              ' (select * from enzyme.kegg_pathway  where pathway_id=%s) A ' \
-              ' inner join enzyme.pathway2ko as B  on A.pathway_id=B.pathway_id  ' \
-              ' inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id  ' \
-              ' inner join enzyme.seqfeature_id2ko_%s E on B.ko_id=E.ko_id ' \
-              ' group by B.ko_id, E.seqfeature_id) aa ' \
-              ' inner join biosqldb.orthology_detail_%s bb on aa.seqfeature_id=bb.seqfeature_id;' % (pathway_id,
-                                                                                                     biodb,
-                                                                                                     biodb)
-        #print sql
-        orthogroup_data = server.adaptor.execute_and_fetchall(sql,)
-        ko2orthogroups = {}
-        orthogroup_list = []
-        for i in orthogroup_data:
-            if i[0] not in ko2orthogroups:
-                ko2orthogroups[i[0]] = [i[1]]
-            else:
-                ko2orthogroups[i[0]].append(i[1])
-            orthogroup_list.append(i[1])
-
-        taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, orthogroup_list, type="orthogroup")
-        taxon2ko2count = ete_motifs.get_taxon2name2count(biodb, ko_list_found_in_db, type="ko")
-
-        labels = ko_list_found_in_db
-        tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2ko2count)
-
-        tree2, style2 = ete_motifs.combined_profiles_heatmap(biodb,
-                                                     labels,
-                                                     taxon2orthogroup2count,
-                                                     taxon2ko2count,
-                                                     ko2orthogroups)
-
-
-        if len(labels) > 70:
-            big = True
-            path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % map_name
-            asset_path = '/temp/KEGG_tree_%s.png' % map_name
-            tree.render(path, dpi=1200, h=600, tree_style=style)
-            print (path)
-
-            path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.png' % map_name
-            asset_path2 = '/temp/KEGG_tree_%s_complete.png' % map_name
-            print (path2)
-            tree2.render(path2, dpi=800, h=600, tree_style=style2)
-
-        else:
-            big = False
-            path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % map_name
-            asset_path = '/temp/KEGG_tree_%s.svg' % map_name
-            tree.render(path, dpi=800, h=600, tree_style=style)
-
-            path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
-            asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % map_name
-            print (path2)
-            tree2.render(path2, dpi=800, h=600, tree_style=style2)
-        envoi = True
-        menu = True
-        valid_id = True
-
-        sql = 'select bb.ko_accession, count(*) from (select C.ko_accession, E.seqfeature_id from  ' \
-              ' (select * from enzyme.kegg_pathway  where pathway_name="%s") A ' \
-              ' inner join enzyme.pathway2ko as B  on A.pathway_id=B.pathway_id ' \
-              ' inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id ' \
-              ' inner join enzyme.seqfeature_id2ko_%s E on B.ko_id=E.ko_id ' \
-              ' group by B.ko_id,seqfeature_id) bb group by ko_accession;' % (map_name, biodb)
-        #print sql
-
-        ko2freq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-        path_map_freq = settings.BASE_DIR + '/assets/temp/KEGG_map_freq_%s' % map_name
-        path_map_freq_svg = '/temp/KEGG_map_freq_%s.svg' % map_name
-
-        keg_path_highlight = '+'+'+'.join(ko_list_found_in_db)
-
-        kegg_maps.map2highlighted_map(map_name, ko_list_found_in_db, ko2freq, biodb, path_map_freq+'.pdf')
+        task = KEGG_map_ko_task.delay(biodb, map_name)
+        task_id = task.id
 
     return render(request, 'chlamdb/KEGG_map_ko.html', locals())
 
@@ -4131,112 +4037,11 @@ def KEGG_mapp_ko(request, map_name):
 def KEGG_mapp_ko_organism(request, map_name, taxon_id):
     biodb = settings.BIODB
 
-
-    #cache.clear()
-
     if request.method == 'GET':  # S'il s'agit d'une requête POST
-        from chlamdb.phylo_tree_display import ete_motifs
-        from chlamdb.plots import kegg_maps
-
-        print ('kegg mapp organism %s -- %s -- %s' % (biodb, map_name, taxon_id))
-
-        server, db = manipulate_biosqldb.load_db(biodb)
-
-        sql = 'select pathway_name,pathway_category,description,C.EC, C.ko_accession, D.definition, A.pathway_id from ' \
-              ' (select * from enzyme.kegg_pathway where pathway_name="%s") A inner join enzyme.pathway2ko as B ' \
-              ' on A.pathway_id=B.pathway_id inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id ' \
-              ' inner join enzyme.ko_annotation as D on B.ko_id=D.ko_id;' % (map_name)
-
-        map_data = server.adaptor.execute_and_fetchall(sql,)
-
-        ko_list = [i[4] for i in map_data]
-
-        sql = 'select id from comparative_tables.ko_%s where id in (%s);' % (biodb,
-                                                          '"' + '","'.join(ko_list) + '"')
-        ko_list_found_in_db = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-
-        # get list of all orthogroups with corresponding KO
-        sql = 'select distinct ko_id,orthogroup from enzyme.locus2ko_%s as t1 ' \
-              ' where ko_id in (%s);' % (biodb,
-                                         '"' + '","'.join(ko_list_found_in_db) + '"')
-        orthogroup_data = server.adaptor.execute_and_fetchall(sql,)
-        ko2orthogroups = {}
-        orthogroup_list = []
-        for i in orthogroup_data:
-            if i[0] not in ko2orthogroups:
-                ko2orthogroups[i[0]] = [i[1]]
-            else:
-                ko2orthogroups[i[0]].append(i[1])
-            orthogroup_list.append(i[1])
-
-        taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, orthogroup_list, type="orthogroup")
-        taxon2ko2count = ete_motifs.get_taxon2name2count(biodb, ko_list_found_in_db, type="ko")
-
-        labels = ko_list_found_in_db
-        tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2ko2count)
-
-        tree2, style2 = ete_motifs.combined_profiles_heatmap(biodb,
-                                                     labels,
-                                                     taxon2orthogroup2count,
-                                                     taxon2ko2count,
-                                                     ko2orthogroups)
-
-
-        if len(labels) > 70:
-            big = True
-            path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % map_name
-            asset_path = '/temp/KEGG_tree_%s.png' % map_name
-            tree.render(path, dpi=1200, h=600, tree_style=style)
-
-        else:
-            big = False
-            path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % map_name
-            asset_path = '/temp/KEGG_tree_%s.svg' % map_name
-            tree.render(path, dpi=800, h=600, tree_style=style)
-
-            path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
-            asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % map_name
-
-            tree2.render(path2, dpi=800, h=600, tree_style=style2)
-        envoi = True
-        menu = True
-        valid_id = True
-
-        sql = 'select bb.ko_accession, count(*) from (select C.ko_accession, E.seqfeature_id from  ' \
-              ' (select * from enzyme.kegg_pathway  where pathway_name="%s") A ' \
-              ' inner join enzyme.pathway2ko as B  on A.pathway_id=B.pathway_id ' \
-              ' inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id ' \
-              ' inner join enzyme.seqfeature_id2ko_%s E on B.ko_id=E.ko_id ' \
-              ' group by B.ko_id,seqfeature_id) bb group by ko_accession;' % (map_name, biodb)
-        #print sql
-        ko2freq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-        # slow TODO
-        sql = 'select ko_accession from enzyme.seqfeature_id2ko_%s t1 ' \
-              ' inner join enzyme.pathway2ko t2 on t1.ko_id=t2.ko_id ' \
-              ' inner join enzyme.kegg_pathway t3 on t2.pathway_id=t3.pathway_id ' \
-              ' inner join biosqldb.orthology_detail_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
-              ' inner join enzyme.ko_annotation t5 on t1.ko_id=t5.ko_id' \
-              ' where taxon_id=%s and pathway_name="%s";' % (biodb,
-                                                             biodb,
-                                                             taxon_id,
-                                                             map_name)
-
-        ko_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-        #print 'ko list!', ko_list
-        path_map_freq = settings.BASE_DIR + '/assets/temp/KEGG_map_freq_%s' % map_name
-        path_map_freq_svg = '/temp/KEGG_map_freq_%s.svg' % map_name
-
-        keg_path_highlight = '+'+'+'.join(ko_list_found_in_db)
-
-        kegg_maps.map2highlighted_map(map_name, ko_list, ko2freq, biodb, path_map_freq+'.pdf', taxon_id=taxon_id)
-
-        sql = 'select t1.description from bioentry t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id' \
-              ' where t2.name="%s" and t1.taxon_id=%s' % (biodb,
-                                                          taxon_id)
-
-        organism = server.adaptor.execute_and_fetchall(sql,)[0][0]
-
+ 
+        task = KEGG_map_ko_organism_task.delay(biodb, map_name, taxon_id)
+        task_id = task.id
+        
     return render(request, 'chlamdb/KEGG_map_ko.html', locals())
 
 

@@ -20,102 +20,17 @@
           <div id="page-content-wrapper">
             <div class="row">
               <div class="col-lg-12">
-
-                {% if not valid_id %}
-
-                    <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
-
-                {% else %}
+               
                     <div class="container-fluid" id="main_container">
-                    {%  if menu %}
-                      {% include "chlamdb/menu.html" %}
-                    {% endif %}
+                     {% include "chlamdb/menu.html" %}
 
-                     <h3> {% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %}: {% with map_data|first as first_doc %}{{ first_doc.2 }}{% endwith %} {% if organism%}:  {{organism}} {%endif%}</h3>
+                     <div id="progress-div" class="row" style="padding-top:5px;height:25px;" class="row"></div>
 
-                      <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                          <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
-                          <li><a href="#tab2" data-toggle="tab">Profile</a></li>
-                          <li><a href="#tab3" data-toggle="tab">Profile + homologs</a></li>
-                          <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.genome.jp/kegg-bin/show_pathway?{% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %}{{keg_path_highlight}}', 'orthoIDframe2'); return false">Informations</a></li>
-                          <li><a href="#tab4" data-toggle="tab">KEGG map</a></li>
-
-                      </ul>
-
-                      <div id="my-tab-content" class="tab-content">
-                          <div class="tab-pane active" id="tab1">
-                              <ol>
-                                  <li>KEGG {% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %} ::
-                                      {% with map_data|first as first_doc %}{{ first_doc.2 }}{% endwith %} ::
-                                      ({% with map_data|first as first_doc %}{{ first_doc.1 }}{% endwith %})
-                              </ol>
-                              <table id="ko_table">
-                                  <thead>
-                                  <tr>
-                                      <th>EC(s)</th>
-                                      <th>KO</th>
-                                      <th>KO occurences</th>
-                                      <th>Description</th>
-                                  </tr>
-                                  </thead>
-                                  <tbody>
-                                  {% for values in map_data%}
-                                      <tr>
-                                          {%if not ' ' in values.3 and not '-' in values.3 %}
-                                              <td><a href="{% url 'fam'  values.3 'EC' %}" target="_top">{{values.3}}</a></td>
-                                          {% else %}
-                                              <td>{{values.3}}</td>
-                                          {% endif %}
-                                          {%if ko2freq|keyvalue:values.4 != None %}
-                                             <td><a href="{% url 'fam'  values.4 'ko' %}" target="_top">{{values.4}}</a></td>
-                                             <td>{{ko2freq|keyvalue:values.4}}</td>
-                                          {%else%}
-                                             <td>{{values.4}}</td>
-                                             <td>0</td>
-                                          {%endif%}
-
-                                          <td>{{values.5}}</td>
-                                      </tr>
-                                  {% endfor %}
-
-                                  </tbody>
-                              </table>
-                          </div>
-                          <div class="tab-pane" id="tab66" style="height:100%">
-                              <iframe name="orthoIDframe2" id="theFrame2" scrolling="no" width="100%" height="1800px"></iframe>
-                          </div>
-                          <div class="tab-pane" id="tab2">
-                              <object type="image/svg+xml" data="{% static asset_path %}" id="cog_tree"></object>
-                          </div>
-                          <div class="tab-pane" id="tab3">
-                              <object type="image/svg+xml" data="{% static asset_path2 %}" id="cog_tree2"></object>
-                          </div>
-                          <div class="tab-pane" id="tab4">
-
-                           <div class="panel panel-success" style="width:80%; top: 400px; margin: 10px 10px 10px 10px">
-                              <div class="panel-heading" style="width:100%">
-                                  <h3 class="panel-title">Help</h3>
-                              </div>
-                              <p style="margin: 10px 10px 10px 10px; line-height: 180%">
-                                  {% if organism %}
-
-                                      Red scale: no homolog identified in the genome of {{organism}}. The color scale reflects the number of homologs in other genomes (the more the darker). <br>
-                                      Green scale: homolog identified in the genome of {{organism}}. The color scale reflects the number of homologs in other genomes.
-                                  {% else %}
-                                      <br>
-                                      Green scale: reflects the conservation of the KO among all organisms included in th database
-                                  {% endif %}
-
-                              </p>
-                          </div>
-
-                              <object type="image/svg+xml" data="{% static path_map_freq_svg %}" style="width: 100%; height:130vh;"></object>
-                          </div>
-
-
-                      </div>
-
-              {% endif %}
+                     <div class="progress row" style="width=50%;" id="progress">
+                         <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 20%"></div>
+                     </div>
+             
+                     <div id="results" class="row"></div>
 
               </div>
           </div>
@@ -126,27 +41,53 @@
 </div>
 </body>
 {% include "chlamdb/style_menu.html" %}
-<script>
-$(document).ready(function() {
-$('#ko_table').DataTable( {
-dom: 'Bfrtip',
-"order": [[2, "desc" ]],
-"pageLength": 15,
-"paging":   true,
-"ordering": true,
-"info":     false,
-buttons: [
-{
-    extend: 'excel',
-    title: '{% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %}'
-},
-{
-    extend: 'csv',
-    title: '{% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %}'
-}
-],
-} );
-} );
 
+<script type="text/javascript">
+    $("#progress").hide();
+
+    var prg_dv = $('#progress-div');
+    var pgrbar = $('.progress-bar');
+
+    var task_id = "{{ task_id }}";
+    console.log(task_id)
+    get_task_info(task_id);
+
+    function get_task_info(task_id) {
+        $.ajax({
+            type: 'get',
+            url: '/get-task-info/',
+            data: {'task_id': task_id},
+            success: function (data) {
+                pgrbar.css('width', 10+'%').attr('aria-valuenow', 10)
+                $("#progress").show();
+                $('#results').html('')
+                if (data.state == 'PENDING') {
+                    prg_dv.html('Please wait...');
+                }
+                else if (data.state == 'PROGRESS') {
+                    pgrbar.css('width', data.result.percent+'%').attr('aria-valuenow', data.result.percent)
+                    console.log(data.result.percent);
+                    prg_dv.html('Step ' + data.result.current + '/' + data.result.total + ': ' + data.result.description);
+                }
+                else if (data.state == 'SUCCESS') {
+                    // pgrbar.hide();
+                    prg_dv.html('');
+                    $('#results').html(data.result);
+                    $("#progress").hide();
+                }
+
+                if (data.state != 'SUCCESS') {
+                    setTimeout(function () {
+                        get_task_info(task_id)
+                    }, 1000);
+                }
+            },
+            error: function (data) {
+                console.log(data)
+                prg_dv.html("Something went wrong!");
+            }
+        });
+    }
 </script>
+
 </html>
