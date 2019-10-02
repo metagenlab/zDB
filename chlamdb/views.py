@@ -12443,8 +12443,8 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
     if len(all_groups_profile_jac) > 1:
         profile_match_jac = True
     if len(all_groups_profile_eucl) > 1:
-        profile_match_eucl = False
-    print(all_groups_profile_jac, all_groups_profile_eucl)
+        profile_match_eucl = True
+    print(profile_match_jac, profile_match_eucl)
 
     if input_type != 'orthogroup':
         locus_list = list(taxon2locus_tag_closest.values())

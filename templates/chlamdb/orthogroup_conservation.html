@@ -23,7 +23,7 @@
             <li><a href="#tab2" data-toggle="tab" onclick="window.open('{% url 'profile_interactions' orthogroup "jac" %}', 'orthoIDframe2'); return false">Similar profiles (euclidean distance)</a></li>
             {% endif %}
             {% if profile_match_eucl %}
-            <li><a href="#tab3" data-toggle="tab" onclick="window.open('{% url 'profile_interactions' orthogroup "eucl" %}', 'orthoIDframe2'); return false">Similar profiles (jaccard distance)</a></li>
+            <li><a href="#tab3" data-toggle="tab" onclick="window.open('{% url 'profile_interactions' orthogroup "eucl" %}', 'orthoIDframe3'); return false">Similar profiles (jaccard distance)</a></li>
             {% endif %}
         </ul>
 
@@ -56,8 +56,11 @@
                    <img src="{% static "/scales/scale_identity_red.png" %}" id="circos_legend"  width="160" style="position: absolute; top: 200px; left: 600px;">
                </div>
             </div>
-            <div class="tab-pane" id="tab55" style="height:8800px">
+            <div class="tab-pane" id="tab2" style="height:8800px">
                 <iframe name="orthoIDframe2" id="theFrame2" scrolling="no" width="100%" height="8800px"></iframe>
+            </div>
+            <div class="tab-pane" id="tab3" style="height:8800px">
+                <iframe name="orthoIDframe3" id="theFrame2" scrolling="no" width="100%" height="8800px"></iframe>
             </div>
         </div>
 </body>

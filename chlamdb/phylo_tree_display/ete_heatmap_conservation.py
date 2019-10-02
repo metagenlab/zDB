@@ -125,8 +125,6 @@ def plot_heat_tree_V1(taxid2n, tree_file, genes, taxid2st=False, leaf_label_conv
             pass
         for col, value in enumerate(data):
 
-            #print 'col', col, 'value', value
-
             if leaf_number==1:
                 n = TextFace('%s' % (genes[col]), fsize=6)
                 n.vt_align = 2
@@ -373,7 +371,7 @@ def plot_heatmap_tree_locus(biodb,
     t1.set_outgroup(R)
 
     leaf_number = 0
-    print(taxid2count)
+
     for lf in t1.iter_leaves():
 
         if str(lf.name) not in taxid2count:
@@ -421,14 +419,11 @@ def plot_heatmap_tree_locus(biodb,
                 ts.aligned_header.add_face(n, 3)
         
         leaf_number+=1
-        #print lf
+
         lf.branch_vertical_margin = 0
-        print(taxid2count[str(lf.name)])
+
         data = [taxid2count[str(lf.name)]]
 
-        #print 'taxon', int(lf.name)
-
-        print(data)
         # possibility to add one or more columns
         for col, value in enumerate(data):
             col_index = col
@@ -461,7 +456,6 @@ def plot_heatmap_tree_locus(biodb,
         # optionally indicate number of paralogs as a barplot
         if n_paralogs_barplot:
             col_index += 1
-            #print("max!!!", float(value), max_count)
             percent = (float(value)/max_count)*100
             n = StackedBarFace([percent, 100-percent], width=150, height=18, colors=['#6699ff', 'white'], line_color='white')
             n.rotation= 0
@@ -578,10 +572,6 @@ if __name__ == '__main__':
             else:
                 data = row.rstrip().split('\t')
                 taxid2st[data[0]] = data[2]
-    #print taxid2st
-
-
-
     taxid2n = {}
     with open(args.matrix) as f:
         for n, row in enumerate(f):
@@ -590,6 +580,6 @@ if __name__ == '__main__':
             else:
                 data = row.rstrip().split('\t')
                 taxid2n[data[0]] = [float(i) for i in data[1:]]
-    #print taxid2n
+
     t, n, style = plot_heat_tree_V1(taxid2n, args.tree, genes,taxid2st, accession2description)
     t.render("test.svg", tree_style=style)
