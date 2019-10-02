@@ -11722,7 +11722,7 @@ def multiple_orthogroup_heatmap(request, reference_orthogroup, max_distance=2.2)
     taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
 
-    sql = 'select * from comparative_tables.phylo_profiles_eucl_dist2_%s' \
+    sql = 'select * from interactions.phylo_profiles_eucl_dist_%s' \
           ' where (group_1="%s" or group_2="%s") and euclidian_dist <=%s limit 40;' % (biodb,
                                                                           reference_orthogroup,
                                                                           reference_orthogroup,
