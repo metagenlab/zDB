@@ -4041,7 +4041,7 @@ def KEGG_mapp_ko_organism(request, map_name, taxon_id):
  
         task = KEGG_map_ko_organism_task.delay(biodb, map_name, taxon_id)
         task_id = task.id
-        
+
     return render(request, 'chlamdb/KEGG_map_ko.html', locals())
 
 
@@ -11169,7 +11169,7 @@ def blast(request):
     else:  # Si ce n'est pas du POST, c'est probablement une requête GET
         form = blast_form_class()  # Nous créons un formulaire vide
 
-    return render(request, 'BIODBFDB/blast.html', locals())
+    return render(request, 'chlamdb/blast.html', locals())
 
 
 def get_record_from_memory(biodb, cache_obj, record_key, accession):
