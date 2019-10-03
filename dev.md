@@ -77,6 +77,7 @@
 - [ ] load GOA annotation
 - [ ] krona like plots for blast
 - [ ] kronal like plots for 1 blast hit, 2 blast hit,... (choice) 
+- [ ] similarity networks dervied from patristic distances (from RefSeq phylogeny?) ==>better than identity, score or e-value
 
 ## priority 2
 
