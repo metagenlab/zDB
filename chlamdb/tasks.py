@@ -1002,6 +1002,83 @@ def plot_neighborhood_task(biodb, target_locus, region_size):
     return html
 
 
+@shared_task
+def basic_tree_task(biodb, 
+                    orthogroup):
+
+    from chlamdb.phylo_tree_display import ete_motifs
+    from tempfile import NamedTemporaryFile
+    from chlamdb.biosqldb import mysqldb_plot_genomic_feature
+    from chlamdb.biosqldb import manipulate_biosqldb
+    from chlamdb.phylo_tree_display import ete_motifs
+    
+    current_task.update_state(state='PROGRESS',
+                              meta={'current': 1,
+                                    'total': 1,
+                                    'percent': 50,
+                                    'description': "Plotting TM tree"})
+
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
+    tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
+
+    sql = f'select distinct locus_tag,t4.description from orthology.orthogroup_{biodb} t1 ' \
+          f' inner join orthology.seqfeature_id2orthogroup_{biodb} t2 on t1.orthogroup_id=t2.orthogroup_id ' \
+          f' inner join annotation.seqfeature_id2locus_{biodb} t3 on t2.seqfeature_id=t3.seqfeature_id ' \
+          f' inner join biosqldb.bioentry t4 on t3.bioentry_id=t4.bioentry_id where orthogroup_name="{orthogroup}";'
+    
+    locus2organism = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql, ))
+
+    t, ts, leaf_number = ete_motifs.draw_basic_tree(tree, locus2organism)
+    path = settings.BASE_DIR + '/assets/temp/TM_tree.svg'
+    asset_path = '/temp/TM_tree.svg'
+    if leaf_number < 10:
+        leaf_number = 10
+    
+    t.render(path, dpi=500, tree_style=ts)
+
+
+    template = Template('''
+            {% load staticfiles %}
+            {% load static %}
+
+            {% if not no_tree %}     
+        
+            <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                <div class="panel-heading" style="width:100%">
+                    <h3 class="panel-title">Help</h3>
+                </div>
+                <p style="margin: 10px 10px 10px 10px">
+                Phylogeny
+                </p>
+            </div>
+        
+            <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
+            <a onclick='exportPNG("pfam_tree", "pfam_tree");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
+            <a class="btn" href="{% url 'get_newick_tree' orthogroup False %}"><i class="fa fa-download"></i> Download tree (newick format)</a>
+
+            <div id="pfam_tree_div">
+                <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree" style="width:90%"></object>
+            </div>
+
+            {% else %}
+            No tree for {{orthogroup}}
+            {% endif %}
+
+            ''')
+
+    html = template.render(Context(locals()))
+
+    current_task.update_state(state='SECCESS',
+                              meta={'current': 1,
+                                    'total': 1,
+                                    'percent': 100,
+                                    'description': "Done"})
+   
+    return html
+
 
 @shared_task
 def TM_tree_task(biodb, 
@@ -1035,6 +1112,8 @@ def TM_tree_task(biodb,
     sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
     tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
 
+    print(locus2TM_data)
+
     t, ts, leaf_number = ete_motifs.draw_TM_tree(tree, locus2TM_data)
     path = settings.BASE_DIR + '/assets/temp/TM_tree.svg'
     asset_path = '/temp/TM_tree.svg'
@@ -1048,9 +1127,7 @@ def TM_tree_task(biodb,
             {% load staticfiles %}
             {% load static %}
 
-            {% if not no_tree %}
-            <h3>Phylogeny:</h3>
-        
+            {% if not no_tree %}    
         
             <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                 <div class="panel-heading" style="width:100%">
@@ -1164,9 +1241,7 @@ def pfam_tree_task(biodb,
             {% load static %}
 
             {% if not no_tree %}
-            <h3>Phylogeny:</h3>
-        
-        
+             
             <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                 <div class="panel-heading" style="width:100%">
                     <h3 class="panel-title">Help</h3>

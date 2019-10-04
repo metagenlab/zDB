@@ -64,6 +64,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^neig_interactions/([a-zA-Z0-9_\.]+)', views.neig_interactions, name="neig_interactions"),
                        url(r'^profile_interactions/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)', views.profile_interactions, name="profile_interactions"),
                        url(r'^interactions/([a-zA-Z0-9_\.]+)', views.interactions, name="interactions"),
+                       url(r'^phylogeny/([a-zA-Z0-9_\.]+)', views.phylogeny, name="phylogeny"),
                        url(r'^pfam_profile/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)', views.pfam_profile, name="pfam_profile"),
                        url(r'^get_pfam_taxon_table/([a-zA-Z0-9_\.]+)', views.get_pfam_taxon_table, name="get_pfam_taxon_table"),
                        url(r'^get_pfam_hit_list/([a-zA-Z0-9_\.]+)/(.*)/(.*)/(.*)/(.*)/(.*)', views.get_pfam_hit_list, name="get_pfam_hit_list"),

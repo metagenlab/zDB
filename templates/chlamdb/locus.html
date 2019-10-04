@@ -42,7 +42,7 @@ function clearBox(elementID)
     <div id="wrapper">
       <div id="page-content-wrapper">
         <div class="row">
-          <div class="col-lg-12">
+          <div class="col-lg-12 col-md-12 col-sm-12">
 
           {% if menu %}
               {% include "chlamdb/menu.html" %}
@@ -74,12 +74,6 @@ function clearBox(elementID)
                 <li><a href="#tab55" data-toggle="tab">MSA</a></li>
                 {% endif %}
                 <!--<li><a href="#2" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' data.0 True %}', 'frame2'); return false">Orthogroup conservation</a></li>-->
-                {% if homologues > 3%}
-                    <li><a href="#3" data-toggle="tab" onclick="window.open('{% url 'pfam_tree' data.0 %}', 'frame3'); return false">Pfam tree</a></li>
-                {% endif %}
-                {% if show_tm_tree %}
-                    <li><a href="#4" data-toggle="tab" onclick="window.open('{% url 'TM_tree' data.0 %}', 'frame4'); return false">TM tree</a></li>
-                {% endif %}
 
                 <!--{% if cog_data %}
                 <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'string_page' cog_data.0 genome_accession %}', 'orthoIDframe'); return false">string interactions</a></li>
@@ -91,9 +85,6 @@ function clearBox(elementID)
                     <li><a href="#7" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' data.1 %}', 'frame7'); return false">SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span></a></li>
                     <li><a href="#8" data-toggle="tab" onclick="window.open('{% url 'interactions' data.1 %}', 'frame8'); return false">Interactions</a></li>
                 {% endif %}
-                {% if closest_phylo %}
-                    <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' data.0 %}', 'frame9'); return false">Phylogeny</a></li>
-                {% endif %}
                 {% if input_type != 'orthogroup' %}
                     <li><a href="#10" data-toggle="tab" onclick="window.open('{% url 'hydropathy' data.1 %}', 'frame10'); return false">Hydropathy plot</a></li>
                     <!--<li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'aa_comp_locus' data.1 %}', 'orthoIDframe'); return false">AA composition PCA</a></li>-->
@@ -102,9 +93,13 @@ function clearBox(elementID)
                         <li><a href="#tab22" data-toggle="tab">Pubmed  <span class="badge">{{pubmed_data|length}}</span></a></li>
                     {% endif %}
                 {% endif %}
-
-
-            </ul>
+                {% if closest_phylo %}
+                    <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'phylogeny' data.0 %}', 'frame9'); return false">Orthogroup phylogeny</a></li>
+                {% endif %}
+                {% if closest_phylo %}
+                    <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' data.0 %}', 'frame9'); return false">Best hit phylogeny</a></li>
+                {% endif %}
+              </ul>
             <div id="my-tab-content" class="tab-content">
 
             {% if input_type != 'orthogroup' %}

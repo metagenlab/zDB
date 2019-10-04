@@ -97,6 +97,7 @@ from chlamdb.tasks import phylogeny_task
 from chlamdb.tasks import plot_heatmap_task
 from chlamdb.tasks import KEGG_map_ko_task
 from chlamdb.tasks import KEGG_map_ko_organism_task
+from chlamdb.tasks import basic_tree_task
 from chlamdb.celeryapp import app as celery_app
 
 @celery_app.task(bind=True)
@@ -11675,6 +11676,35 @@ def TM_tree(request, orthogroup):
     task_id = task.id
 
     return render(request, 'chlamdb/TM_tree.html', locals())
+
+def phylogeny(request, orthogroup):
+    biodb = settings.BIODB
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql_groups = 'select count(*) from orthology.seqfeature_id2orthogroup_%s t1 ' \
+                    ' inner join orthology.orthogroup_%s t2 on t1.orthogroup_id=t2.orthogroup_id where t2.orthogroup_name="%s";' % (biodb, biodb, orthogroup)
+
+    homologues = server.adaptor.execute_and_fetchall(sql_groups, )[0][0]
+
+    sql_TM_SP = 'select count(*) from orthology.seqfeature_id2orthogroup_%s t1 ' \
+            ' inner join orthology.orthogroup_%s t2 on t1.orthogroup_id=t2.orthogroup_id ' \
+            ' inner join interpro.interpro_%s t3 on t1.seqfeature_id=t3.seqfeature_id' \
+            ' inner join interpro.signature t4 on t3.signature_id=t4.signature_id ' \
+            ' where signature_accession in ("TRANSMEMBRANE", "SIGNAL_PEPTIDE_C_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_N_REGION") and t2.orthogroup_name="%s" ; ' % (biodb,
+                                                                                                                                                                        biodb,
+                                                                                                                                                                        biodb,
+                                                                                                                                                           orthogroup)
+    tm_count = server.adaptor.execute_and_fetchall(sql_TM_SP, )[0][0]
+    if tm_count > 0:
+        show_tm_tree = True
+
+    task = pfam_tree_task.delay(biodb, 
+                                orthogroup)
+
+    task_id = task.id
+
+    return render(request, 'chlamdb/phylogeny.html', locals())
 
 
 def refseq_swissprot_tree(request, orthogroup):

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+    {% load staticfiles %}
+    {% load static %}
+    {% get_static_prefix as STATIC_PREFIX %}
+
+    <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.tablesorter.js' %}"></script>
+    <!--<script type="text/javascript" src="{% static 'js/jquery-1.11.2.min.js' %}"></script>-->
+    <script type="text/javascript" src="{% static 'js/sorttable.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/excellentexport.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.chained.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'js/jvenn.min.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+
+    <script type="text/javascript" src="{% static 'js/bootstrap-switch.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/toggle-switch.css' %}" />
+
+</head>
+
+<body height="2000px">
+<h3>Phylogeny of the orthologous group {{orthogroup}}</h3>
+
+
+        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+            <li class="active"><a href="#tab1" data-toggle="tab">Pfam Phylogeny</a></li>
+            {% if show_tm_tree %}
+            <li><a href="#tab3" data-toggle="tab" onclick="window.open('{% url 'TM_tree' orthogroup %}', 'thePhyloFrame2'); return false">TM domains</a></li>
+            {% endif %}
+        </ul>
+
+        <div id="my-tab-content" class="tab-content">
+
+                <div class="tab-pane active" id="tab1" style="height:8800px">
+                     <div class="row" style="padding-left:40px">
+                        <div id="progress-div" class="row" style="padding-top:5px;height:25px;" class="row"></div>
+                
+                        <div class="progress row" style="width=50%;" id="progress">
+                            <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 20%"></div>
+                        </div>
+                
+                        <div id="results" class="row"></div>
+                    </div>  
+                 </div>
+
+                <div class="tab-pane" id="tab2" style="height:8800px">
+                    <iframe name="thePhyloFrame1" id="thePhyloFrame1" scrolling="no" width="100%" height="8800px"></iframe>
+                </div>
+                <div class="tab-pane" id="tab3" style="height:8800px">
+                        <iframe name="thePhyloFrame2" id="thePhyloFrame2" scrolling="no" width="100%" height="8800px"></iframe>
+                </div>
+
+        </div>
+</body>
+</html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+    $("#progress").hide();
+
+    var prg_dv = $('#progress-div');
+    var pgrbar = $('.progress-bar');
+
+    var task_id = "{{ task_id }}";
+    console.log(task_id)
+    get_task_info(task_id);
+
+    function get_task_info(task_id) {
+        $.ajax({
+            type: 'get',
+            url: '/get-task-info/',
+            data: {'task_id': task_id},
+            success: function (data) {
+                pgrbar.css('width', 10+'%').attr('aria-valuenow', 10)
+                $("#progress").show();
+                $('#results').html('')
+                if (data.state == 'PENDING') {
+                    prg_dv.html('Please wait...');
+                }
+                else if (data.state == 'PROGRESS') {
+                    pgrbar.css('width', data.result.percent+'%').attr('aria-valuenow', data.result.percent)
+                    console.log(data.result.percent);
+                    prg_dv.html('Step ' + data.result.current + '/' + data.result.total + ': ' + data.result.description);
+                }
+                else if (data.state == 'SUCCESS') {
+                    // pgrbar.hide();
+                    prg_dv.html('');
+                    $('#results').html(data.result);
+                    $("#progress").hide();
+                }
+
+                if (data.state != 'SUCCESS') {
+                    setTimeout(function () {
+                        get_task_info(task_id)
+                    }, 1000);
+                }
+            },
+            error: function (data) {
+                console.log(data)
+                prg_dv.html("Something went wrong!");
+            }
+        });
+    }
+</script>
