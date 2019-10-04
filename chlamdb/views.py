@@ -12442,11 +12442,13 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
                                                                                         0.05,
                                                                                         0)
     
-    
+    profile_match_jac = False
+    profile_match_eucl = False
     if len(all_groups_profile_jac) > 1:
         profile_match_jac = True
     if len(all_groups_profile_eucl) > 1:
         profile_match_eucl = True
+    
     print(profile_match_jac, profile_match_eucl)
 
     if input_type != 'orthogroup':
