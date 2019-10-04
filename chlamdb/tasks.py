@@ -1339,7 +1339,7 @@ def phylogeny_task(biodb,
             {% load staticfiles %}
             {% load static %}
             {% if not no_tree %}
-            <h3>Phylogeny</h3>
+            <h3>Phylogeny including best RefSeq hits</h3>
 
             <div id="pfam_tree_div">
                 <div class="row">
@@ -1349,7 +1349,8 @@ def phylogeny_task(biodb,
                             <h3 class="panel-title">Help</h3>
                         </div>
                         <p style="margin: 10px 10px 10px 10px">This phylogeny includes all orthologs identified with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a> as well as the 4 best RefSeq hit of each protein 
-                        (see detailed method <a href="/docs/methods/annotation.html#phlogeny-including-top-refseq-hits" target="_top">here</a>). 
+                        (see detailed method <a href="/docs/methods/annotation.html#phlogeny-including-top-refseq-hits" target="_top">here</a>). </br>
+                        PVC bacteria are coloured in red. Other species are coloured according to their phylum-level classification.
                          </p>
                     </div>
 
