@@ -76,6 +76,8 @@
 
 ## priority 1
 
+- [ ] TCDB and PDB: no exact match first, directly blast against db
+- [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
 - [X] get accession mapping
   - [X] from uniprot idmapping
   - [X] get Refseq protein ID and locus_tag and match to new locus tags in index
@@ -95,6 +97,8 @@
 
 ## priority 2
 
+- [ ] STRING pmid mapping: gat mapping of best hit if not in STRING
+- [ ] get STRING PMID mapping of C trachomatis from version 10
 - [ ] get STRING associations if available
 - [ ] Inc prediction based on bi-lobbed hydrophobic domains
 - [ ] VF annotation with all databases
