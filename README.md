@@ -1,5 +1,5 @@
 
-# annotation pipeline (chlamdb-type database)
+# annotation pipeline (ChlamDB-type database)
 
 - automatic download from GenBank (input: assembly table)
 - check gbk format for biosqldb setup (concatenate draft genomes if necessary)
@@ -14,11 +14,10 @@
 - BLASTp to swissprot database
 - diamond or plast to RefSEq (top 100 hits)
 - annotate with interproscan
-- execute gBLAST for TCDB annotation (transporters)
+- execute gBLAST for TCDB annotation transporters)
 - execute KofamScan to get KO annotation
 - mapping to string, oma, pdb, tcdb databases (exact matches)
 - get PMID mapping from string
-
 
 # DONE
 
@@ -90,7 +89,8 @@
 - [ ] setup updated comparative refseq data (6800 genomes)
 - [ ] get cross-references from uniprot IdMapping? Or from uniprot db itself? (cross references from indexed uniprotKB xml)
   - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
-  - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteomeId
+  - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteome
+
 
 
 ## priority 2

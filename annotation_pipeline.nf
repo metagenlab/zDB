@@ -950,7 +950,7 @@ process rpsblast_COG {
   script:
   n = seq.name
   """
-  rpsblast -db $params.databases_dir/cdd/Cog -query seq -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > blast_result
+  rpsblast -db $params.databases_dir/cdd/profiles/Cog -query seq -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > blast_result
   """
 }
 
