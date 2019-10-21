@@ -2325,7 +2325,14 @@ def locusx(request, locus=None, menu=True):
             sql28 = f'select distinct t2.effectors,score from annotation.seqfeature_id2locus_{biodb} t1' \
                     f' left join effectors.predicted_effectiveT3_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
 
-
+            sql29 = f'select final_prediction,score from annotation.seqfeature_id2locus_{biodb} t1' \
+                    f' inner join custom_tables.seqfeature_id2psortb_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
+            
+            try:
+                psort_data = server.adaptor.execute_and_fetchall(sql29,)[0]
+            except:
+                psort_data = False
+            
             try:
                 BPBAac_data = list(server.adaptor.execute_and_fetchall(sql25,)[0])
                 DeepT3_data = list(server.adaptor.execute_and_fetchall(sql26,)[0])

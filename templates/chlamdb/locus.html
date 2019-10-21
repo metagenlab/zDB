@@ -144,6 +144,13 @@ function clearBox(elementID)
                                           <th>Length</th>
                                           <td>{{ nucl_length }} (nucleotides) / {{aa_length}} (amino acids)</td>
                                       </tr>
+
+                                      <tr>
+                                          <th>Subcellular localization</th>
+                                          <td>{{psort_data.0}} (score: {{psort_data.1}})</td>
+                                      </tr>
+
+                                      
                                   </table>
                               </div>
                             </div>
@@ -343,6 +350,9 @@ function clearBox(elementID)
                             </div>
 
                            
+
+
+
 
                             {% if protparams_data %}
 
