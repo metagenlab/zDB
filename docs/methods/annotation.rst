@@ -151,14 +151,8 @@ Circular genome plots are generated dynamically with Circos_. These plots are no
 Species phylogeny
 ------------------
 
-The reference phylogeny was reconstructed with FastTree_ (default parameters, JTT+CAT model) based on the concatenated alignment of 32 single copy orthogroups conserved in at least 266 out of the 277 genomes part of ``ChlamDB 2.0``.
-
----------------------------------------------------------------------
-Comparative analyses of orthogroups and COG/KEGG/Interpro annotations
----------------------------------------------------------------------
-
-
-Orthogroups KEGG, COG, Interpro entries
+The reference phylogeny was reconstructed with FastTree_ (default parameters, JTT+CAT model) based on the concatenated alignment of 32 single copy orthogroups conserved in at least 266 out of the 277 
+genomes part of ``ChlamDB 2.0``.
 
 ------------------------------------------
 Prediction of protein-protein interactions
@@ -229,25 +223,46 @@ Results of all four tools are reported on the `locus page`_  of each protein (in
 Taxonomic profile of Pfam domains and COGs
 ------------------------------------------
 
-Coding sequences of the 6661 reference and representative genomes available from RefSeq (September 2017) were downloaded from RefSeq ftp (ftp://ftp.ncbi.nlm.nih.gov/refseq/). Hidden Markov models of the PFAM database (6) were used to search for sporulation-related domains using hmmsearch (HMMER version 3.1b2, (7)). Hits were filtered based on PFAM trusted cutoffs. Genomes were then grouped by order based on the NCBI Taxonomy database (8) with the python library ete2. Only orders exhibiting a minimum of 5 genomes are reported.
+Coding sequences of the 6661 reference and representative genomes available from RefSeq (September 2017) were downloaded from RefSeq ftp (ftp://ftp.ncbi.nlm.nih.gov/refseq/). 
+Hidden Markov models of the PFAM database were used to search for sporulation-related domains using hmmsearch (HMMER version 3.1b2). 
+Hits were filtered based on PFAM trusted cutoffs. Genomes were then grouped by order based on the NCBI Taxonomy database with the python library ete3. 
+Only orders exhibiting a minimum of 5 genomes are reported of the figure.
 
-* https://chlamdb.ch/pfam_profile/PF01823/phylum
+* see for instance the profile of the Pfam domain PF01823 (MAC/Perforin domain): https://chlamdb.ch/pfam_profile/PF01823/phylum
 
 .. figure:: ../img/PF08486_phylum_profile.svg
     :figclass: align-center
     :width: 600 px
 
+Phylogenetic profiles of COGs are based on data from the eggnog_ database (v4.51). Eggnog provides Clusters of Orthologous Groups annotation of 2,031 genomes. 
+Taxonomic profiles of non-supervised orthologous groups (NOGs) were extracted from the file  `NOG.members.tsv`_ . 
+The 2,031 genomes were classified according to the classification of the NCBI taxonomy database.
+
+* see for instance the profile of COG2385 (Peptidoglycan hydrolase enhancer domain protein): https://chlamdb.ch/fam/COG2385/cog
+
 -----------------------------------------------------------
 Evaluation of the quality and completeness of draft genomes
 -----------------------------------------------------------
 
+The completeness and contamination of each genome was evaluated with checkM_ (v1.0.12). Completeness and contamination estimates are reported on the the `home page phylogeny`_. 
 
+-----------------
+Pubmed References
+-----------------
+
+Links to Pubmed references were retreived from two difference sources: STRING_ (v11)  and PaperBLAST_ (`December_2018_release`_). 
+
+- STRING_ references are derived from text mining of scientific publications. Only PubMed references from identical protein sequences were retrieved from STRING_.
+- PaperBLAST_ links to research publications come from automated text searches against the articles in EuropePMC and from manually-curated information from GeneRIF, UniProtKB/Swiss-Prot, BRENDA, CAZy (as made available by dbCAN), CharProtDB, MetaCyc, EcoCyc, REBASE, and the Fitness Browser (see `PaperBLAST paper`_). All proteins were blasted against the PaperBLAST database (evalue cutoff of 10^-3). Links to research publications from the top 20 best hits were integrated into ChlamDB.
 
 ---------------------------
 Protein accessions mapping
 ---------------------------
 
-- RefSeq, GenBank, UniProt
+Protein accessions from multiple reference databases such as **RefSeq**, **GenBank** and **UniProt** can be used to search for ChlamDB entries. The mapping between the various identifiers was donc 
+
+* by exact protein sequence match for **UniParc/UniProt**
+* was extracted from RefSeq genome assembly records for **RefSeq**. The "old_locus_tag" qualifier was used to map RefSeq locus tags with Genbank locus tags (see `RefSeq documentation`_)
 
 ------------------------------
 SQL database and Web Interface
@@ -282,6 +297,7 @@ Source databases
     COG/CDD              v3.17
     KoFam                2019.04.09
     PRIAM                2018.06
+    EggNOG               4.51
     ==================   ======================
 
 -------------------
@@ -370,3 +386,11 @@ Public database download and indexing   https://github.com/metagenlab/annotation
 .. _`Dandekar  et al` : https://www.ncbi.nlm.nih.gov/pubmed/9787636
 .. _`OMA website`: https://omabrowser.org/oma/type/
 .. _`F-type ATPase` : https://www.chlamdb.ch/neig_interactions/wcw_1123
+.. _PaperBLAST : http://papers.genomics.lbl.gov/cgi-bin/litSearch.cgi
+.. _`December_2018_release` : https://figshare.com/articles/PaperBLAST_December_2018_release/7439216
+.. _`PaperBLAST paper` : https://www.ncbi.nlm.nih.gov/pubmed/28845458
+.. _`home page phylogeny` : https://chlamdb.ch/#phylogeny
+.. _checkM : https://ecogenomics.github.io/CheckM/
+.. _eggnog : http://eggnogdb.embl.de/#/app/home
+.. _`NOG.members.tsv`: http://eggnogdb.embl.de/download/eggnog_4.5/data/NOG/
+.. _`RefSeq documentation` : https://www.ncbi.nlm.nih.gov/refseq/about/prokaryotes/reannotation/

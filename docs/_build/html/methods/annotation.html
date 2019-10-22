@@ -201,11 +201,8 @@ First, the NCBI taxon ID of each RefSeq hit was retrieved using the <code class=
 </div>
 <div class="section" id="species-phylogeny">
 <h2>Species phylogeny<a class="headerlink" href="#species-phylogeny" title="Permalink to this headline">¶</a></h2>
-<p>The reference phylogeny was reconstructed with <a class="reference external" href="http://www.microbesonline.org/fasttree/">FastTree</a> (default parameters, JTT+CAT model) based on the concatenated alignment of 32 single copy orthogroups conserved in at least 266 out of the 277 genomes part of <code class="docutils literal notranslate"><span class="pre">ChlamDB</span> <span class="pre">2.0</span></code>.</p>
-</div>
-<div class="section" id="comparative-analyses-of-orthogroups-and-cog-kegg-interpro-annotations">
-<h2>Comparative analyses of orthogroups and COG/KEGG/Interpro annotations<a class="headerlink" href="#comparative-analyses-of-orthogroups-and-cog-kegg-interpro-annotations" title="Permalink to this headline">¶</a></h2>
-<p>Orthogroups KEGG, COG, Interpro entries</p>
+<p>The reference phylogeny was reconstructed with <a class="reference external" href="http://www.microbesonline.org/fasttree/">FastTree</a> (default parameters, JTT+CAT model) based on the concatenated alignment of 32 single copy orthogroups conserved in at least 266 out of the 277
+genomes part of <code class="docutils literal notranslate"><span class="pre">ChlamDB</span> <span class="pre">2.0</span></code>.</p>
 </div>
 <div class="section" id="prediction-of-protein-protein-interactions">
 <h2>Prediction of protein-protein interactions<a class="headerlink" href="#prediction-of-protein-protein-interactions" title="Permalink to this headline">¶</a></h2>
@@ -272,21 +269,41 @@ genome and all other genomes in which an ortholog is present. <strong>B)</strong
 </div>
 <div class="section" id="taxonomic-profile-of-pfam-domains-and-cogs">
 <h2>Taxonomic profile of Pfam domains and COGs<a class="headerlink" href="#taxonomic-profile-of-pfam-domains-and-cogs" title="Permalink to this headline">¶</a></h2>
-<p>Coding sequences of the 6661 reference and representative genomes available from RefSeq (September 2017) were downloaded from RefSeq ftp (<a class="reference external" href="ftp://ftp.ncbi.nlm.nih.gov/refseq/">ftp://ftp.ncbi.nlm.nih.gov/refseq/</a>). Hidden Markov models of the PFAM database (6) were used to search for sporulation-related domains using hmmsearch (HMMER version 3.1b2, (7)). Hits were filtered based on PFAM trusted cutoffs. Genomes were then grouped by order based on the NCBI Taxonomy database (8) with the python library ete2. Only orders exhibiting a minimum of 5 genomes are reported.</p>
+<p>Coding sequences of the 6661 reference and representative genomes available from RefSeq (September 2017) were downloaded from RefSeq ftp (<a class="reference external" href="ftp://ftp.ncbi.nlm.nih.gov/refseq/">ftp://ftp.ncbi.nlm.nih.gov/refseq/</a>).
+Hidden Markov models of the PFAM database were used to search for sporulation-related domains using hmmsearch (HMMER version 3.1b2).
+Hits were filtered based on PFAM trusted cutoffs. Genomes were then grouped by order based on the NCBI Taxonomy database with the python library ete3.
+Only orders exhibiting a minimum of 5 genomes are reported of the figure.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://chlamdb.ch/pfam_profile/PF01823/phylum">https://chlamdb.ch/pfam_profile/PF01823/phylum</a></p></li>
+<li><p>see for instance the profile of the Pfam domain PF01823 (MAC/Perforin domain): <a class="reference external" href="https://chlamdb.ch/pfam_profile/PF01823/phylum">https://chlamdb.ch/pfam_profile/PF01823/phylum</a></p></li>
 </ul>
 <div class="align-center figure align-default">
-<a class="reference internal image-reference" href="methods/../img/PF08486_phylum_profile.svg"><img alt="methods/../img/PF08486_phylum_profile.svg" src="methods/../img/PF08486_phylum_profile.svg" width="600px" /></a>
+<a class="reference internal image-reference" href="../_images/PF08486_phylum_profile.svg"><img alt="../_images/PF08486_phylum_profile.svg" src="../_images/PF08486_phylum_profile.svg" width="600px" /></a>
 </div>
+<p>Phylogenetic profiles of COGs are based on data from the <a class="reference external" href="http://eggnogdb.embl.de/#/app/home">eggnog</a> database (v4.51). Eggnog provides Clusters of Orthologous Groups annotation of 2,031 genomes.
+Taxonomic profiles of non-supervised orthologous groups (NOGs) were extracted from the file  <a class="reference external" href="http://eggnogdb.embl.de/download/eggnog_4.5/data/NOG/">NOG.members.tsv</a> .
+The 2,031 genomes were classified according to the classification of the NCBI taxonomy database.</p>
+<ul class="simple">
+<li><p>see for instance the profile of COG2385 (Peptidoglycan hydrolase enhancer domain protein): <a class="reference external" href="https://chlamdb.ch/fam/COG2385/cog">https://chlamdb.ch/fam/COG2385/cog</a></p></li>
+</ul>
 </div>
 <div class="section" id="evaluation-of-the-quality-and-completeness-of-draft-genomes">
 <h2>Evaluation of the quality and completeness of draft genomes<a class="headerlink" href="#evaluation-of-the-quality-and-completeness-of-draft-genomes" title="Permalink to this headline">¶</a></h2>
+<p>The completeness and contamination of each genome was evaluated with <a class="reference external" href="https://ecogenomics.github.io/CheckM/">checkM</a> (v1.0.12). Completeness and contamination estimates are reported on the the <a class="reference external" href="https://chlamdb.ch/#phylogeny">home page phylogeny</a>.</p>
+</div>
+<div class="section" id="pubmed-references">
+<h2>Pubmed References<a class="headerlink" href="#pubmed-references" title="Permalink to this headline">¶</a></h2>
+<p>Links to Pubmed references were retreived from two difference sources: <a class="reference external" href="https://www.string-db.org/">STRING</a> (v11)  and <a class="reference external" href="http://papers.genomics.lbl.gov/cgi-bin/litSearch.cgi">PaperBLAST</a> (<a class="reference external" href="https://figshare.com/articles/PaperBLAST_December_2018_release/7439216">December_2018_release</a>).</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.string-db.org/">STRING</a> references are derived from text mining of scientific publications. Only PubMed references from identical protein sequences were retrieved from <a class="reference external" href="https://www.string-db.org/">STRING</a>.</p></li>
+<li><p><a class="reference external" href="http://papers.genomics.lbl.gov/cgi-bin/litSearch.cgi">PaperBLAST</a> links to research publications come from automated text searches against the articles in EuropePMC and from manually-curated information from GeneRIF, UniProtKB/Swiss-Prot, BRENDA, CAZy (as made available by dbCAN), CharProtDB, MetaCyc, EcoCyc, REBASE, and the Fitness Browser (see <a class="reference external" href="https://www.ncbi.nlm.nih.gov/pubmed/28845458">PaperBLAST paper</a>). All proteins were blasted against the PaperBLAST database (evalue cutoff of 10^-3). Links to research publications from the top 20 best hits were integrated into ChlamDB.</p></li>
+</ul>
 </div>
 <div class="section" id="protein-accessions-mapping">
 <h2>Protein accessions mapping<a class="headerlink" href="#protein-accessions-mapping" title="Permalink to this headline">¶</a></h2>
+<p>Protein accessions from multiple reference databases such as <strong>RefSeq</strong>, <strong>GenBank</strong> and <strong>UniProt</strong> can be used to search for ChlamDB entries. The mapping between the various identifiers was donc</p>
 <ul class="simple">
-<li><p>RefSeq, GenBank, UniProt</p></li>
+<li><p>by exact protein sequence match for <strong>UniParc/UniProt</strong></p></li>
+<li><p>was extracted from RefSeq genome assembly records for <strong>RefSeq</strong>. The “old_locus_tag” qualifier was used to map RefSeq locus tags with Genbank locus tags (see <a class="reference external" href="https://www.ncbi.nlm.nih.gov/refseq/about/prokaryotes/reannotation/">RefSeq documentation</a>)</p></li>
 </ul>
 </div>
 <div class="section" id="sql-database-and-web-interface">
@@ -342,6 +359,9 @@ genome and all other genomes in which an ortholog is present. <strong>B)</strong
 </tr>
 <tr class="row-odd"><td><p>PRIAM</p></td>
 <td><p>2018.06</p></td>
+</tr>
+<tr class="row-even"><td><p>EggNOG</p></td>
+<td><p>4.51</p></td>
 </tr>
 </tbody>
 </table>
@@ -432,7 +452,6 @@ genome and all other genomes in which an ortholog is present. <strong>B)</strong
 <li><a class="reference internal" href="#calculation-of-pairwise-protein-identity">Calculation of pairwise protein identity</a></li>
 <li><a class="reference internal" href="#circular-genome-plots-circos">Circular genome plots (Circos)</a></li>
 <li><a class="reference internal" href="#species-phylogeny">Species phylogeny</a></li>
-<li><a class="reference internal" href="#comparative-analyses-of-orthogroups-and-cog-kegg-interpro-annotations">Comparative analyses of orthogroups and COG/KEGG/Interpro annotations</a></li>
 <li><a class="reference internal" href="#prediction-of-protein-protein-interactions">Prediction of protein-protein interactions</a><ul>
 <li><a class="reference internal" href="#phylogenetic-profiling">1 Phylogenetic profiling</a></li>
 <li><a class="reference internal" href="#identification-of-conserved-gene-neighborhood-in-different-species">2. Identification of conserved gene neighborhood in different species</a></li>
@@ -441,6 +460,7 @@ genome and all other genomes in which an ortholog is present. <strong>B)</strong
 <li><a class="reference internal" href="#prediction-of-candidate-type-iii-secretion-system-effectors">Prediction of candidate type III secretion system effectors</a></li>
 <li><a class="reference internal" href="#taxonomic-profile-of-pfam-domains-and-cogs">Taxonomic profile of Pfam domains and COGs</a></li>
 <li><a class="reference internal" href="#evaluation-of-the-quality-and-completeness-of-draft-genomes">Evaluation of the quality and completeness of draft genomes</a></li>
+<li><a class="reference internal" href="#pubmed-references">Pubmed References</a></li>
 <li><a class="reference internal" href="#protein-accessions-mapping">Protein accessions mapping</a></li>
 <li><a class="reference internal" href="#sql-database-and-web-interface">SQL database and Web Interface</a></li>
 <li><a class="reference internal" href="#source-databases">Source databases</a></li>
