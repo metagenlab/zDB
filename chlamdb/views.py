@@ -2011,7 +2011,7 @@ def pmid(request, seqfeature_id):
         string_data = server.adaptor.execute_and_fetchall(sql2,)
     except:
         string_data = False
-
+    print("str", string_data, paperblast_data)
     return render(request, 'chlamdb/pmid.html', locals())
 
 
