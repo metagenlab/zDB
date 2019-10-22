@@ -20,13 +20,16 @@
             {% if paperblast_data  %}
                 <li class="active"><a href="#tab1" data-toggle="tab">PaperBLAST</a></li>
             {% endif  %}
-            {% if string_data  %}
+            {% if string_data and not paperblast_data %}
+                <li class="active"><a href="#tab2" data-toggle="tab">String</a></li>
+            {% elif string_data and paperblast_data %}   
                 <li><a href="#tab2" data-toggle="tab">String</a></li>
+            {% else %} 
             {% endif %}
         </ul>
 
         <div id="my-tab-content" class="tab-content">
-            {% if paperblast_data  %}
+            {% if paperblast_data %}
                 <div class="tab-pane active" id="tab1">
 
 
@@ -73,10 +76,8 @@
 
                 </div>
            {% endif %} 
-           {% if string_data  %}
-                <div class="tab-pane" id="tab2" style="height:8800px">
-
-
+           {% if string_data and not paperblast_data %}
+                <div class="tab-pane active" id="tab2" style="height:8800px">
                         <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
                                 <div class="panel-heading" style="width:100%">
                                     <h3 class="panel-title">Help</h3>
@@ -103,7 +104,39 @@
                                 {%endfor%}
                             </table>
                 </div>
-            {% endif %} 
+            {% elif string_data and paperblast_data %}   
+                <div class="tab-pane" id="tab2" style="height:8800px">
+                        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                                <div class="panel-heading" style="width:100%">
+                                    <h3 class="panel-title">Help</h3>
+                                </div>
+                                <p style="margin: 10px 10px 10px 10px">
+                                        The <a href="http://papers.genomics.lbl.gov/cgi-bin/litSearch.cgi"></a>STRING</a> database provide links to the litterature from textmining.
+                                </p>
+                            </div>
+
+                        <table class="table" id="pmid_table">
+
+                                {% for row in pubmed_data%}
+                                    <tr>
+                                        <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{row.0}}"><font size="2">{{row.2}}</font>
+                                            <br>
+                                            {{row.4}}
+                                            </font></a></td>
+                                        <td>{{row.1}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">{{row.3}}</td>
+                                    </tr>
+
+                                {%endfor%}
+                            </table>
+                </div>         
+            {% else %} 
+            {% endif %}
+                
+
+
 
         </div>
 </body>
