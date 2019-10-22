@@ -238,7 +238,7 @@ Phylogenetic profiles of COGs are based on data from the eggnog_ database (v4.51
 Taxonomic profiles of non-supervised orthologous groups (NOGs) were extracted from the file  `NOG.members.tsv`_ . 
 The 2,031 genomes were classified according to the classification of the NCBI taxonomy database.
 
-* see for instance the profile of COG2385 (Peptidoglycan hydrolase enhancer domain protein): https://chlamdb.ch/fam/COG2385/cog
+* see for instance the profile of COG2385 (Peptidoglycan hydrolase enhancer domain protein): https://chlamdb.ch/eggnog_profile/COG2385/phylum
 
 -----------------------------------------------------------
 Evaluation of the quality and completeness of draft genomes
@@ -278,7 +278,6 @@ TODO
 -----------------
 Source databases
 -----------------
-
 
 .. table:: Version of source databases used for the annotation
     :width: 800px
@@ -321,7 +320,6 @@ Software versions
     PSORTb          3.0.6
     HMMER           3.1b2
     =============   =======
-
 
 -----------------
 Code availability

@@ -18,12 +18,12 @@
 
         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
             {% if paperblast_data  %}
-                <li class="active"><a href="#tab1" data-toggle="tab">PaperBLAST</a></li>
+                <li class="active"><a href="#tab1" data-toggle="tab">PaperBLAST  <span class="badge">{{paperblast_data|length}}</span></a></li>
             {% endif  %}
             {% if string_data and not paperblast_data %}
-                <li class="active"><a href="#tab2" data-toggle="tab">String</a></li>
+                <li class="active"><a href="#tab2" data-toggle="tab">String  <span class="badge">{{string_data|length}}</span></a></li>
             {% elif string_data and paperblast_data %}   
-                <li><a href="#tab2" data-toggle="tab">String</a></li>
+                <li><a href="#tab2" data-toggle="tab">String  <span class="badge">{{string_data|length}}</span></a></li>
             {% else %} 
             {% endif %}
         </ul>

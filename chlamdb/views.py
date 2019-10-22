@@ -2000,8 +2000,10 @@ def pmid(request, seqfeature_id):
     sql1 = f'select distinct accession,db_name,organism,description,query_cov,hit_cov,identity,evalue,score,t4.* from string.seqfeature_id2paperblast t1' \
             f' inner join string.paperblast_entry t2 on t1.paperblast_id=t2.id inner join string.paperblast2pmid t3 on t1.paperblast_id=t3.paperblast_id' \
             f' inner join string.pmid2data_paperblast t4 on t3.pmid=t4.pmid where t1.seqfeature_id={seqfeature_id};'
+    pubmed_count = 0
     try:
         paperblast_data = server.adaptor.execute_and_fetchall(sql1,)
+        
     except:
         paperblast_data = False
 
@@ -2011,6 +2013,8 @@ def pmid(request, seqfeature_id):
         string_data = server.adaptor.execute_and_fetchall(sql2,)
     except:
         string_data = False
+        
+    print("")
     return render(request, 'chlamdb/pmid.html', locals())
 
 
@@ -2376,16 +2380,20 @@ def locusx(request, locus=None, menu=True):
                 print("NO EFFECTORS")
                 effector_sum = 0
                 effectors = False
-            print(sql23)
-            print(sql30)
+            pubmed_count = 0
             try:
                 string_data = server.adaptor.execute_and_fetchall(sql23,)
+                pubmed_count+=len(string_data)
             except:
                 string_data = False
             try:
                 paperblast_data = server.adaptor.execute_and_fetchall(sql30,)
+                pubmed_count+=len(paperblast_data)
             except:
                 paperblast_data = False
+            
+            
+            print("pubmed_count", pubmed_count)
             print("litt", string_data, paperblast_data)
             try:
                 rnaseq_data = server.adaptor.execute_and_fetchall(sql22,)[0]

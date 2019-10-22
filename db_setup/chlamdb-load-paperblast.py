@@ -31,7 +31,7 @@ class PaperBlast():
         sql = 'select pmId,doi,title,journal,year from (select distinct pmId,doi,title,journal,year from GenePaper) A;'
         self.pmid2article_data = manipulate_biosqldb.to_dict(self.paperblast_cursor.execute(sql,).fetchall())
         sql = f'select distinct hash from string.seqfeature_id2paperblast t1 inner join annotation.hash2seqfeature_id_{db_name} t2 on t1.seqfeature_id=t2.seqfeature_id;'
-        self.hash_in_db =[i[0] for i in self.server.adaptor.execute_and_fetchall(sql,)]
+        self.hash_in_db =set([i[0] for i in self.server.adaptor.execute_and_fetchall(sql,)])
         sql = 'select pmid from string.pmid2data_paperblast'
         self.pmid_in_db = [i[0] for i in self.server.adaptor.execute_and_fetchall(sql,)]
         sql = 'select pmid from string.pmid2gene_rif_comment'
@@ -172,7 +172,8 @@ class PaperBlast():
                     # skip already inserted entries
                     if check_if_new:
                         if row[0] in self.hash_in_db:
-                            print(n)
+                            if n % 100000 == 0:
+                                print(n)
                             continue
                         else:
                             # stop checking if the entry exists
