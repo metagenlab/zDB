@@ -73,9 +73,13 @@ def load_db(db_name=False, sqlite=False):
     sqlpsw = os.environ['SQLPSW']
 
     if not sqlite:
-
-        server = BioSeqDatabase.open_database(driver="MySQLdb", user="root",
-                           passwd = sqlpsw, host = "127.0.0.1", db="biosqldb")
+        server = BioSeqDatabase.open_database(driver="MySQLdb", 
+                                              user="root",
+                                              passwd = sqlpsw, 
+                                              host = "127.0.0.1", 
+                                              db="biosqldb", 
+                                              charset='utf8',
+                                              use_unicode=True)
     else:
         server = BioSeqDatabase.open_database(driver="sqlite3", user="root",
                            passwd = sqlpsw, host = "127.0.0.1", db=sqlite)

@@ -29,6 +29,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^sitemap$', views.sitemap, name="sitemap"),
                        url(r'^home/$', views.home, name="home"),
                        url(r'^blastnr_euk/$', views.blastnr_euk, name="blastnr_euk"),
+                       url(r'^pmid/([a-zA-Z0-9_]+)$', views.pmid, name="pmid"),
                        url(r'^cog_barchart/$', views.cog_barchart, name="cog_barchart"),
                        url(r'^blast_sets/$', views.blast_sets, name="blast_sets"),
                        url(r'^rnaseq_class/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', views.rnaseq_class, name="rnaseq_class"),

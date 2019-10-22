@@ -1992,6 +1992,27 @@ def venn_cog(request, accessions=False):
     return render(request, 'chlamdb/venn_cogs.html', locals())
 
 
+def pmid(request, seqfeature_id):
+    biodb = settings.BIODB
+    extract_region_form_class = make_extract_region_form(biodb)
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql1 = f'select distinct accession,db_name,organism,description,query_cov,hit_cov,identity,evalue,score,t4.* from string.seqfeature_id2paperblast t1' \
+            f' inner join string.paperblast_entry t2 on t1.paperblast_id=t2.id inner join string.paperblast2pmid t3 on t1.paperblast_id=t3.paperblast_id' \
+            f' inner join string.pmid2data_paperblast t4 on t3.pmid=t4.pmid where t1.seqfeature_id={seqfeature_id};'
+    try:
+        paperblast_data = server.adaptor.execute_and_fetchall(sql1,)
+    except:
+        paperblast_data = False
+
+    sql1 = f'select t1.pmid,authors,title,abstract,source from string.seqfeature_id2pmid_{biodb}  t1 ' \
+            f' inner join string.pmid2data t2 on t1.pmid=t2.pmid where t1.seqfeature_id={seqfeature_id};'
+    try:
+        string_data = server.adaptor.execute_and_fetchall(sql2,)
+    except:
+        string_data = False
+
+    return render(request, 'chlamdb/pmid.html', locals())
 
 
 def extract_region(request):
@@ -2307,10 +2328,7 @@ def locusx(request, locus=None, menu=True):
                     ' hpi_2_3, hpi_48_1,hpi_48_2,hpi_48_3,hpi_96_1,hpi_96_2,hpi_96_3, extracellular_1, ' \
                     ' extracellular_2, extracellular_3 from rnaseq.%s_%s where seqfeature_id=%s' % (biodb, taxon_id, seqfeature_id)
 
-            sql23 = 'select t1.pmid,authors,title,abstract,source from string.seqfeature_id2pmid_%s t1 ' \
-                    ' inner join string.pmid2data t2 on t1.pmid=t2.pmid where t1.seqfeature_id=%s;' % (biodb, seqfeature_id)
-
-            print(sql23)
+            sql23 = 'select t1.pmid from string.seqfeature_id2pmid_%s where t1.seqfeature_id=%s;' % (biodb, seqfeature_id)
 
             sql24 = 'select hash from annotation.hash2seqfeature_id_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where t2.locus_tag="%s";' % (biodb, biodb, locus)
 
@@ -2327,7 +2345,9 @@ def locusx(request, locus=None, menu=True):
 
             sql29 = f'select final_prediction,score from annotation.seqfeature_id2locus_{biodb} t1' \
                     f' inner join custom_tables.seqfeature_id2psortb_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
-            
+
+            sql30 = 'select paperblast_id from string.seqfeature_id2paperblast where seqfeature_id=%s;' % (seqfeature_id)
+
             try:
                 psort_data = server.adaptor.execute_and_fetchall(sql29,)[0]
             except:
@@ -2357,12 +2377,17 @@ def locusx(request, locus=None, menu=True):
                 print("NO EFFECTORS")
                 effector_sum = 0
                 effectors = False
+            print(sql23)
+            print(sql30)
             try:
-                pubmed_data = server.adaptor.execute_and_fetchall(sql23,)
+                string_data = server.adaptor.execute_and_fetchall(sql23,)
             except:
-                pubmed_data = False
-
-
+                string_data = False
+            try:
+                paperblast_data = server.adaptor.execute_and_fetchall(sql30,)
+            except:
+                paperblast_data = False
+            print("litt", string_data, paperblast_data)
             try:
                 rnaseq_data = server.adaptor.execute_and_fetchall(sql22,)[0]
             except:
@@ -2403,6 +2428,8 @@ def locusx(request, locus=None, menu=True):
                 closest_phylo = True
             except:
                 closest_phylo = False
+            print("closest phylo", closest_phylo)
+            print(sql17)
             try:
                 n_blastnr_hits = server.adaptor.execute_and_fetchall(sql15, )[0][0]
             except:

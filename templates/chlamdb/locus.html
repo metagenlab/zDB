@@ -89,13 +89,13 @@ function clearBox(elementID)
                     <li><a href="#10" data-toggle="tab" onclick="window.open('{% url 'hydropathy' data.1 %}', 'frame10'); return false">Hydropathy plot</a></li>
                     <!--<li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'aa_comp_locus' data.1 %}', 'orthoIDframe'); return false">AA composition PCA</a></li>-->
                     <li><a href="#11" data-toggle="tab" onclick="window.open('{% url 'gc_locus' data.1 %}', 'frame11'); return false">GC</a></li>
-                    {% if pubmed_data  %}
-                        <li><a href="#tab22" data-toggle="tab">Pubmed  <span class="badge">{{pubmed_data|length}}</span></a></li>
+                    {% if paperblast_data or string_data  %}
+                        <li><a href="#13" data-toggle="tab" onclick="window.open('{% url 'pmid' seqfeature_id %}', 'frame13'); return false">Pubmed</a></li>
                     {% endif %}
                 {% endif %}
-                {% if closest_phylo %}
-                    <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'phylogeny' data.0 %}', 'frame9'); return false">Orthogroup phylogeny</a></li>
-                {% endif %}
+
+                <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'phylogeny' data.0 %}', 'frame9'); return false">Orthogroup phylogeny</a></li>
+
                 {% if closest_phylo %}
                     <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' data.0 %}', 'frame9'); return false">Best hit phylogeny</a></li>
                 {% endif %}
@@ -1579,6 +1579,9 @@ function clearBox(elementID)
                   <div class="tab-pane" id="12" style="height:2px;" >
                     <iframe class="locusFrame" name="frame12" id="frame12" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
                   </div>
+                  <div class="tab-pane" id="13" style="height:2px;" >
+                      <iframe class="locusFrame" name="frame13" id="frame13" style="height:8000px;overflow:hidden;" width="100%" height="8800px" frameborder="0" hspace="0" vspace="0" scrolling="no"></iframe>
+                    </div>
 
                   {% if pubmed_data  %}
                       <div class="tab-pane" id="tab22" style="height:2px;" >
@@ -1746,80 +1749,6 @@ function resizeIframe(obj)
 function inIframe(){try{return window.self!==window.top}catch(e){return true}}
 
 </script>
-
-
-{% if pubmed_data  %}
-<script type="text/javascript" src="{% static 'js/mark.min.js' %}"></script>
-<script>
-
-var options = {
-    "ignoreJoiners": true,
-    "exclude": [
-        "h3",
-        ".byline *",
-        "th"
-    ]
-};
-
-var options2 = {
-    "ignoreJoiners": true,
-    separateWordSearch: false,
-    "exclude": [
-        "h3",
-        ".byline *",
-        "th"
-    ]
-};
-
-var gene_list = "{{data.6}}";
-{% if uniprot_annotation %}
-gene_list = gene_list + " {{ uniprot_annotation.2 }}";
-{% endif %}
-
-$(document).ready(function() {
-    var docu = document.getElementById("pmid_table");
-    var instance = new Mark(docu);
-    instance.mark(gene_list, options);
-  } );
-
-var str = "{{ data.12 }}"; 
-var res = str.match(/^\s*(\w+)\s*,?\s*(\w+)/);
-
-$(document).ready(function() {
-    console.log("add pmid color");
-    var docu = document.getElementById("pmid_table");
-    console.log(res[1] + res[2]);
-    var instance = new Mark(docu);
-    instance.mark(res[1] + " " +res[2], options2);
-    console.log(instance);
-  } );
-
-</script>
-
-<style>
-mark{
-    background: orange;
-    color: black;
-}
-
-.pfam_domain {
-  background-color: #4CAF50; /* Green */
-  border: none;
-  color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  border-radius: 8px;
-}
-
-</style>
-
-
-{% endif %}
-
-
 
 {% include "chlamdb/style_menu.html" %}
 

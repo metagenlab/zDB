@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+
+<html>
+
+
+
+<head>
+    {% load staticfiles %}
+    {% load static %}
+    {% get_static_prefix as STATIC_PREFIX %}
+    {% include "chlamdb/header.html" %}
+</head>
+
+<body height="2000px">
+<h3>Litterature search</h3>
+
+
+        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+            {% if paperblast_data  %}
+                <li class="active"><a href="#tab1" data-toggle="tab">PaperBLAST</a></li>
+            {% endif  %}
+            {% if string_data  %}
+                <li><a href="#tab2" data-toggle="tab">String</a></li>
+            {% endif %}
+        </ul>
+
+        <div id="my-tab-content" class="tab-content">
+            {% if paperblast_data  %}
+                <div class="tab-pane active" id="tab1">
+
+
+                        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                                <div class="panel-heading" style="width:100%">
+                                    <h3 class="panel-title">Help</h3>
+                                </div>
+                                <p style="margin: 10px 10px 10px 10px">
+                                        <a href="http://papers.genomics.lbl.gov/cgi-bin/litSearch.cgi">PaperBLAST</a> is a database of protein sequences that are linked to scientific articles. </br>
+                                        These links come from automated text searches against the articles in EuropePMC and from manually-curated information from GeneRIF, UniProtKB/Swiss-Prot, 
+                                        BRENDA, CAZy (as made available by dbCAN), CharProtDB, MetaCyc, EcoCyc, REBASE, and the Fitness Browser.</br>
+                                        References to the litterature of the top 20 BLASTp hits are shown the table below.
+                                </p>
+                            </div>
+
+
+                    <table class="table" id="paperblast">
+                        <thead>
+                            <tr>
+                                <th>hit</th>
+                                <th>organism</th>
+                                <th>description</th>
+                                <th>identity</th>
+                                <th>title</th>
+                                <th>journal</th>
+                                <th>year</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                           {% for row in paperblast_data %} 
+                                <tr>
+                                    <!--accession,db_name,organism,description,query_cov,hit_cov,identity,evalue,score,pmid,title,journal,year-->
+                                    <td>{{row.0}}</td> 
+                                    <td>{{row.2}}</td>
+                                    <td>{{row.3}}</td> 
+                                    <td>{{row.6}}</td>
+                                    <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{row.9}}">{{row.10}}</a></td>
+                                    <td>{{row.11}}</td>
+                                    <td>{{row.12}}</td>
+                                </tr>
+                           {% endfor %} 
+                        </table>
+                    </table>
+
+                </div>
+           {% endif %} 
+           {% if string_data  %}
+                <div class="tab-pane" id="tab2" style="height:8800px">
+
+
+                        <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
+                                <div class="panel-heading" style="width:100%">
+                                    <h3 class="panel-title">Help</h3>
+                                </div>
+                                <p style="margin: 10px 10px 10px 10px">
+                                        The <a href="http://papers.genomics.lbl.gov/cgi-bin/litSearch.cgi"></a>STRING</a> database provide links to the litterature from textmining.
+                                </p>
+                            </div>
+
+                        <table class="table" id="pmid_table">
+
+                                {% for row in pubmed_data%}
+                                    <tr>
+                                        <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{row.0}}"><font size="2">{{row.2}}</font>
+                                            <br>
+                                            {{row.4}}
+                                            </font></a></td>
+                                        <td>{{row.1}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">{{row.3}}</td>
+                                    </tr>
+
+                                {%endfor%}
+                            </table>
+                </div>
+            {% endif %} 
+
+        </div>
+</body>
+{% include "chlamdb/style_menu.html" %}
+</html>
+<script>
+
+$(document).ready(function() {
+    $('#paperblast').DataTable( {
+      dom: 'Bfrtip',
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'search'
+        },
+        {
+            extend: 'csv',
+            title: 'search'
+        }
+      ],
+    "order": [[ 3, "desc" ]],
+    "paging":   true,
+    "ordering": true,
+    "info":     false,
+    colReorder: true,
+    fixedHeader: true
+    } );
+  } );
+
+</script>
+
+<script type="text/javascript" src="{% static 'js/mark.min.js' %}"></script>
+<script>
+
+var options = {
+    "ignoreJoiners": true,
+    "exclude": [
+        "h3",
+        ".byline *",
+        "th"
+    ]
+};
+
+var options2 = {
+    "ignoreJoiners": true,
+    separateWordSearch: false,
+    "exclude": [
+        "h3",
+        ".byline *",
+        "th"
+    ]
+};
+
+var gene_list = "{{data.6}}";
+{% if uniprot_annotation %}
+gene_list = gene_list + " {{ uniprot_annotation.2 }}";
+{% endif %}
+
+$(document).ready(function() {
+    var docu = document.getElementById("pmid_table");
+    var instance = new Mark(docu);
+    instance.mark(gene_list, options);
+  } );
+
+var str = "{{ data.12 }}"; 
+var res = str.match(/^\s*(\w+)\s*,?\s*(\w+)/);
+
+$(document).ready(function() {
+    console.log("add pmid color");
+    var docu = document.getElementById("pmid_table");
+    console.log(res[1] + res[2]);
+    var instance = new Mark(docu);
+    instance.mark(res[1] + " " +res[2], options2);
+    console.log(instance);
+  } );
+
+</script>
+
+<style>
+mark{
+    background: orange;
+    color: black;
+}
+
+.pfam_domain {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+</style>
