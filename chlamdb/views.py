@@ -2005,13 +2005,12 @@ def pmid(request, seqfeature_id):
     except:
         paperblast_data = False
 
-    sql1 = f'select t1.pmid,authors,title,abstract,source from string.seqfeature_id2pmid_{biodb}  t1 ' \
+    sql2 = f'select t1.pmid,authors,title,abstract,source from string.seqfeature_id2pmid_{biodb}  t1 ' \
             f' inner join string.pmid2data t2 on t1.pmid=t2.pmid where t1.seqfeature_id={seqfeature_id};'
     try:
         string_data = server.adaptor.execute_and_fetchall(sql2,)
     except:
         string_data = False
-    print("str", string_data, paperblast_data)
     return render(request, 'chlamdb/pmid.html', locals())
 
 
