@@ -28,6 +28,10 @@ class PaperBlast():
 
         self.missing_pmid_data =[] 
 
+        # create tables if not exists
+        self.create_tables()
+
+        # check if some data were already inserted
         sql = 'select pmId,doi,title,journal,year from (select distinct pmId,doi,title,journal,year from GenePaper) A;'
         self.pmid2article_data = manipulate_biosqldb.to_dict(self.paperblast_cursor.execute(sql,).fetchall())
         sql = f'select distinct hash from string.seqfeature_id2paperblast t1 inner join annotation.hash2seqfeature_id_{db_name} t2 on t1.seqfeature_id=t2.seqfeature_id;'
@@ -42,7 +46,7 @@ class PaperBlast():
         sql_desc_gene = 'select geneId,organism,desc from Gene'
         self.paperblast_accession2desc =  manipulate_biosqldb.to_dict(self.paperblast_cursor.execute(sql_desc_gene_curated,).fetchall())
         self.paperblast_accession2desc.update(manipulate_biosqldb.to_dict(self.paperblast_cursor.execute(sql_desc_gene).fetchall()))
-        self.create_tables()
+        
 
     def create_tables(self):
         sql1 = 'create table if not exists string.seqfeature_id2paperblast (seqfeature_id INT, paperblast_id INT, query_cov FLOAT, hit_cov FLOAT, identity FLOAT, evalue FLOAT, score FLOAT)'

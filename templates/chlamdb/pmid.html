@@ -63,7 +63,21 @@
                            {% for row in paperblast_data %} 
                                 <tr>
                                     <!--accession,db_name,organism,description,query_cov,hit_cov,identity,evalue,score,pmid,title,journal,year-->
-                                    <td>{{row.0}}</td> 
+                                    {% if "VIM" in row.0 %}
+                                        <td><a href="http://www.microbesonline.org/cgi-bin/fetchLocus.cgi?locus={{row.0}}" target="_top">{{row.0}}</a></td> 
+                                    {% elif "WP_" in row.0 %}
+                                        <td><a href="https://www.ncbi.nlm.nih.gov/protein/{{row.0}}" target="_top">{{row.0}}</a></td> 
+                                    {% elif "XP_" in row.0 %}
+                                        <td><a href="https://www.ncbi.nlm.nih.gov/protein/{{row.0}}" target="_top">{{row.0}}</a></td>                                         
+                                    {% elif "YP_" in row.0 %}
+                                        <td><a href="https://www.ncbi.nlm.nih.gov/protein/{{row.0}}" target="_top">{{row.0}}</a></td>   
+                                    {% elif "NP_" in row.0 %}
+                                        <td><a href="https://www.ncbi.nlm.nih.gov/protein/{{row.0}}" target="_top">{{row.0}}</a></td> 
+                                    {% elif row.0|length == 6 %}
+                                        <td><a href="https://www.uniprot.org/uniprot/{{row.0}}" target="_top">{{row.0}}</a></td> 
+                                    {% else %}
+                                        <td>{{row.0}}</td> 
+                                    {% endif %}
                                     <td>{{row.2}}</td>
                                     <td>{{row.3}}</td> 
                                     <td>{{row.6}}</td>

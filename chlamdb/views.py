@@ -2003,7 +2003,6 @@ def pmid(request, seqfeature_id):
     pubmed_count = 0
     try:
         paperblast_data = server.adaptor.execute_and_fetchall(sql1,)
-        
     except:
         paperblast_data = False
 
