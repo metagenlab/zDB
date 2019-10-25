@@ -276,7 +276,7 @@ class PaperBlast():
                         sql = f'insert into string.seqfeature_id2paperblast (seqfeature_id, paperblast_id, query_cov, hit_cov, identity, evalue, score)' \
                               f' values ({seqfeature_id}, {paperblast_id}, {query_cov}, {hit_cov}, {identity}, {evalue} ,{score})'
                         self.server.adaptor.execute(sql,)
-         
+        self.server.adaptor.commit()  
 
 
 if __name__ == '__main__':
