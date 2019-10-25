@@ -250,7 +250,7 @@ The completeness and contamination of each genome was evaluated with checkM_ (v1
 Pubmed References
 -----------------
 
-Links to Pubmed references were retreived from two difference sources: STRING_ (v11)  and PaperBLAST_ (`September 25 2019_release`_). 
+Links to Pubmed references were retreived from two difference sources: STRING_ (v11)  and PaperBLAST_ (September 25 2019_release). 
 
 - STRING_ references are derived from text mining of scientific publications. Only PubMed references from identical protein sequences were retrieved from STRING_.
 - PaperBLAST_ links to research publications come from automated text searches against the articles in EuropePMC and from manually-curated information from GeneRIF, UniProtKB/Swiss-Prot, BRENDA, CAZy (as made available by dbCAN), CharProtDB, MetaCyc, EcoCyc, REBASE, and the Fitness Browser (see `PaperBLAST paper`_). All proteins were blasted against the PaperBLAST database (evalue cutoff of 10^-3). Links to research publications from the top 20 best hits were integrated into ChlamDB.
@@ -385,7 +385,6 @@ Public database download and indexing   https://github.com/metagenlab/annotation
 .. _`OMA website`: https://omabrowser.org/oma/type/
 .. _`F-type ATPase` : https://www.chlamdb.ch/neig_interactions/wcw_1123
 .. _PaperBLAST : http://papers.genomics.lbl.gov/cgi-bin/litSearch.cgi
-.. _`December_2018_release` : https://figshare.com/articles/PaperBLAST_December_2018_release/7439216
 .. _`PaperBLAST paper` : https://www.ncbi.nlm.nih.gov/pubmed/28845458
 .. _`home page phylogeny` : https://chlamdb.ch/#phylogeny
 .. _checkM : https://ecogenomics.github.io/CheckM/
