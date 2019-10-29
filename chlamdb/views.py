@@ -142,16 +142,16 @@ def extract_alphanumeric(input_string):
 
 def choose_db(request):
     server = manipulate_biosqldb.load_db()
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = BiodatabaseForm(request.POST)  # Nous reprenons les données
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
 
             biodb = form.cleaned_data['biodatabase']
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = BiodatabaseForm()  # Nous créons un formulaire vide
+    else:  
+        form = BiodatabaseForm()
 
     return render(request, 'chlamdb/choose_db.html', locals())
 
@@ -225,7 +225,7 @@ def chlamdb_login(request):
             else: # sinon une erreur sera affichée
                 error = True
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
 
             biodb = form.cleaned_data['biodatabase']
             envoi = True
@@ -349,7 +349,7 @@ def edit_species_taxonomy(request, species_id):
 
     curation_form_class = make_species_curation_form(biodb, species_id)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = curation_form_class(request.POST)
         print("form")
@@ -395,7 +395,7 @@ def circos_homology(request):
 
     circos_orthology_form_class = make_circos_orthology_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = circos_orthology_form_class(request.POST)
 
@@ -465,8 +465,8 @@ def circos_homology(request):
             circos_file = "circos/circos_ortho.svg"
             envoi_circos = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = circos_orthology_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = circos_orthology_form_class()
 
     return render(request, 'chlamdb/circos_homology.html', locals())
 
@@ -487,14 +487,14 @@ def extract_orthogroup(request):
     #print "extract orthogroup %s" % biodb
     extract_form_class = make_extract_form(biodb, plasmid=True)
     #print(request.method)
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
         
         if 'locus_list' in request.POST:
             print("locus list!!!!!!!!!")
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
 
             from chlamdb.biosqldb import biosql_own_sql_tables
 
@@ -550,8 +550,8 @@ def extract_orthogroup(request):
         else:
             return HttpResponse(json.dumps({'task_id': None}), content_type='application/json')
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = extract_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = extract_form_class()
 
     return render(request, 'chlamdb/extract_orthogroup.html', locals())
 
@@ -565,12 +565,12 @@ def locus_list2orthogroups(request):
 
     #print request.method
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = AnnotForm(request.POST)  # Nous reprenons les données
 
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
             from chlamdb.phylo_tree_display import ete_motifs
             server, db = manipulate_biosqldb.load_db(biodb)
@@ -592,7 +592,7 @@ def locus_list2orthogroups(request):
             total = len(group2count)
 
             envoi_annot = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:  
 
         form = AnnotForm()
 
@@ -608,12 +608,12 @@ def orthogroup_annotation(request, display_form):
 
     #print request.method
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = AnnotForm(request.POST)  # Nous reprenons les données
 
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
             from chlamdb.phylo_tree_display import ete_motifs
             server, db = manipulate_biosqldb.load_db(biodb)
@@ -636,7 +636,7 @@ def orthogroup_annotation(request, display_form):
 
             envoi_annot = True
             envoi_annot = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:  
         if display_form == "True":
             form = AnnotForm()
         else:
@@ -677,13 +677,13 @@ def locus_annotation(request, display_form):
 
     form_class = get_LocusAnnotForm(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = form_class(request.POST)
         # Nous reprenons les données
 
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
             from chlamdb.phylo_tree_display import ete_motifs
             from ete3 import Tree
@@ -824,7 +824,7 @@ def locus_annotation(request, display_form):
             tree3.render(path2, dpi=800, tree_style=style3)
 
             envoi_annot = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:  
         if display_form == "True":
             form = form_class()
         else:
@@ -864,7 +864,7 @@ def venn_orthogroup(request):
     print("db loaded...")
     venn_form_class = make_venn_from(biodb, plasmid=True)
     print("method", request.method)
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form_venn = venn_form_class(request.POST)
         print("check", 'venn' in request.POST )
@@ -938,7 +938,7 @@ def venn_orthogroup(request):
             ##print series
             print("data", series)
             envoi_venn = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:  
         form_venn = venn_form_class()
     return render(request, 'chlamdb/venn_orthogroup.html', locals())
 
@@ -960,11 +960,11 @@ def extract_pfam(request, classification="taxon_id"):
     #print "db loaded..."
     extract_form_class = make_extract_form(biodb, label="PFAM domains")
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
             #print request.POST
             #print form.cleaned_data.keys()
@@ -1068,8 +1068,8 @@ def extract_pfam(request, classification="taxon_id"):
                     locus2interpro = get_locus_annotations(biodb, locus_list)
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = extract_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = extract_form_class()
 
     return render(request, 'chlamdb/extract_Pfam.html', locals())
 
@@ -1092,11 +1092,11 @@ def extract_ko(request):
     #print "db loaded..."
     extract_form_class = make_extract_form(biodb, label="Kegg Orthologs")
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
@@ -1232,8 +1232,8 @@ def extract_ko(request):
 
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = extract_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = extract_form_class()
 
     return render(request, 'chlamdb/extract_ko.html', locals())
 
@@ -1258,11 +1258,11 @@ def extract_EC(request):
     #print "db loaded..."
     extract_form_class = make_extract_form(biodb, label="EC numbers")
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
@@ -1420,8 +1420,8 @@ def extract_EC(request):
 
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = extract_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = extract_form_class()
 
     return render(request, 'chlamdb/extract_EC.html', locals())
 
@@ -1433,7 +1433,7 @@ def venn_pfam(request):
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
     venn_form_class = make_venn_from(biodb, limit=6)
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form_venn = venn_form_class(request.POST)
         #form2 = ContactForm(request.POST)
@@ -1472,7 +1472,7 @@ def venn_pfam(request):
             #print series
 
             envoi_venn = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:  
         form_venn = venn_form_class()
     return render(request, 'chlamdb/venn_Pfam.html', locals())
 
@@ -1485,7 +1485,7 @@ def venn_EC(request):
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
     venn_form_class = make_venn_from(biodb, limit=6)
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form_venn = venn_form_class(request.POST)
         #form2 = ContactForm(request.POST)
@@ -1540,7 +1540,7 @@ def venn_EC(request):
             #print series
 
             envoi_venn = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:  
         form_venn = venn_form_class()
     return render(request, 'chlamdb/venn_EC.html', locals())
 
@@ -1562,12 +1562,12 @@ def extract_interpro(request, classification="taxon_id"):
     #print "db loaded..."
     extract_form_class = make_extract_form(biodb, label="Interpro entries")
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
 
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
@@ -1669,8 +1669,8 @@ def extract_interpro(request, classification="taxon_id"):
                 ko2ko_modules,\
                 locus2interpro = get_locus_annotations(biodb, locus_list)
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = extract_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = extract_form_class()
 
     return render(request, 'chlamdb/extract_interpro.html', locals())
 
@@ -1685,7 +1685,7 @@ def venn_interpro(request):
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
     venn_form_class = make_venn_from(biodb, limit=6)
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form_venn = venn_form_class(request.POST)
         #form2 = ContactForm(request.POST)
@@ -1721,7 +1721,7 @@ def venn_interpro(request):
             #print series
 
             envoi_venn = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:  
         form_venn = venn_form_class()
     return render(request, 'chlamdb/venn_interpro.html', locals())
 
@@ -1736,12 +1736,12 @@ def extract_cog(request):
 
     extract_form_class = make_extract_form(biodb, plasmid=True, label="COG")
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = extract_form_class(request.POST)  # Nous reprenons les données
 
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
@@ -1850,8 +1850,8 @@ def extract_cog(request):
 
                 envoi_extract = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = extract_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = extract_form_class()
 
     return render(request, 'chlamdb/extract_cogs.html', locals())
 
@@ -1870,11 +1870,11 @@ def venn_ko(request):
     #print "db loaded..."
     venn_form_class = make_venn_from(biodb, limit=6)
     display_form = True
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form_venn = venn_form_class(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
-        if form_venn.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form_venn.is_valid():  
 
             targets = form_venn.cleaned_data['targets']
 
@@ -1906,8 +1906,8 @@ def venn_ko(request):
 
             envoi_venn = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form_venn = venn_form_class()  # Nous créons un formulaire vide
+    else:  
+        form_venn = venn_form_class()
 
     return render(request, 'chlamdb/venn_ko.html', locals())
 
@@ -1924,11 +1924,11 @@ def venn_cog(request, accessions=False):
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
     venn_form_class = make_venn_from(biodb, plasmid=accessions, limit=6, label="COG")
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form_venn = venn_form_class(request.POST)  # Nous reprenons les données
 
-        if form_venn.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form_venn.is_valid():  
 
             targets = form_venn.cleaned_data['targets']
 
@@ -1986,8 +1986,8 @@ def venn_cog(request, accessions=False):
             #print series
             envoi_venn = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form_venn = venn_form_class()  # Nous créons un formulaire vide
+    else:  
+        form_venn = venn_form_class()
 
     return render(request, 'chlamdb/venn_cogs.html', locals())
 
@@ -2126,7 +2126,7 @@ def locusx(request, locus=None, menu=True):
     biodb = settings.BIODB
     print ('-- locus or search term: %s -- biodb %s' % (locus, biodb))
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
         import re
 
         server, db = manipulate_biosqldb.load_db(biodb)
@@ -3019,7 +3019,7 @@ def gc_locus(request, locus_tag):
 
 def fam(request, fam, type):
     biodb = settings.BIODB
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
 
         valid_id = True
 
@@ -3248,7 +3248,7 @@ def fam(request, fam, type):
 def COG_phylo_heatmap(request, frequency):
     biodb = settings.BIODB
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
         from ete3 import Tree
         from chlamdb.phylo_tree_display import ete_motifs
         from chlamdb.plots import cog_heatmap
@@ -3486,7 +3486,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
 
     biodb = settings.BIODB
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
         from chlamdb.phylo_tree_display import ete_motifs
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -3718,7 +3718,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
 
     biodb = settings.BIODB
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
         from chlamdb.phylo_tree_display import ete_motifs
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -3942,7 +3942,7 @@ def KEGG_module_map(request, module_name):
 
     #cache.clear()
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
         from chlamdb.phylo_tree_display import ete_motifs
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -4027,7 +4027,7 @@ def kegg_multi(request, map_name, ko_name):
 
     #cache.clear()
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
         from chlamdb.phylo_tree_display import ete_motifs
         from chlamdb.plots import kegg_maps
 
@@ -4066,7 +4066,7 @@ def kegg_multi(request, map_name, ko_name):
 def KEGG_mapp_ko(request, map_name):
     biodb = settings.BIODB
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
 
         task = KEGG_map_ko_task.delay(biodb, map_name)
         task_id = task.id
@@ -4078,7 +4078,7 @@ def KEGG_mapp_ko(request, map_name):
 def KEGG_mapp_ko_organism(request, map_name, taxon_id):
     biodb = settings.BIODB
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
  
         task = KEGG_map_ko_organism_task.delay(biodb, map_name, taxon_id)
         task_id = task.id
@@ -4088,7 +4088,7 @@ def KEGG_mapp_ko_organism(request, map_name, taxon_id):
 
 def KEGG_mapp(request, map_name):
     biodb = settings.BIODB
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
         from chlamdb.phylo_tree_display import ete_motifs
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -4171,7 +4171,7 @@ def sunburst(request, locus):
 
     #cache.clear()
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
         #print 'okkkkkkkkkkkkkkk'
         valid_id = True
 
@@ -4782,7 +4782,7 @@ def module_barchart(request):
 
             circos_url = '?h=' + ('&h=').join(target_taxons)
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = venn_form_class()
     return render(request, 'chlamdb/module_barplot.html', locals())
 
@@ -5207,7 +5207,7 @@ def compare_homologs(request):
 
             dataset = dataset_template % data_string
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = venn_form_class()
 
     return render(request, 'chlamdb/prot_length_scatter.html', locals())
@@ -5697,7 +5697,7 @@ def cog_barchart(request):
 
             circos_url = '?h=' + ('&h=').join(target_taxons)
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = venn_form_class()
     return render(request, 'chlamdb/cog_barplot.html', locals())
 
@@ -6156,7 +6156,7 @@ def pan_genome(request, type):
             for i, count in enumerate(counts_n_genomes):
                 genome_count_list.append([i+1, count])
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = venn_form_class()
     return render(request, 'chlamdb/pan_genome.html', locals())
 
@@ -6287,7 +6287,7 @@ def core_genome_missing(request, type):
             envoi = True
 
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = venn_form_class()
     return render(request, 'chlamdb/core_genome_missing.html', locals())
 
@@ -6480,7 +6480,7 @@ def pairwiseid(request):
             asset_path2 = '/temp/ortho_tree1.svg'
             tree1.render(path2, dpi=800, tree_style=style1)
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = pairwiseid_form_class()
     return render(request, 'chlamdb/pairwise_id.html', locals())
 
@@ -6534,7 +6534,7 @@ def multiple_codon_usage(request):
             pca_seq_composition.multiple_aa_composition_pca(mat, path)
 
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = pairwiseCDS_length_form_class()
     return render(request, 'chlamdb/codons_multiple_pca.html', locals())
 
@@ -6670,7 +6670,7 @@ def multipleGC(request):
             pca_seq_composition.multiple_aa_composition_pca(mat, path)
 
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = pairwiseCDS_length_form_class()
     return render(request, 'chlamdb/aa_multiple_pca.html', locals())
 
@@ -6763,7 +6763,7 @@ def pairwiseCDS_length(request):
 
 
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = pairwiseCDS_length_form_class()
     return render(request, 'chlamdb/pairwise_CDS_length.html', locals())
 
@@ -7501,7 +7501,7 @@ def blastnr_top_non_phylum(request):
             data = server.adaptor.execute_and_fetchall(sql,)
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = blastnr_form_class()
     return render(request, 'chlamdb/blastnr_locus_list.html', locals())
 
@@ -7642,7 +7642,7 @@ def blastnr_barchart(request):
 
 
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = blastnr_form_class()
     return render(request, 'chlamdb/blastnr_best_barplot.html', locals())
 
@@ -8217,7 +8217,7 @@ def interpro_taxonomy(request):
 
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = interpro_form_class()
     return render(request, 'chlamdb/interpro_taxonomy.html', locals())
 
@@ -8231,7 +8231,7 @@ def homologs(request, orthogroup, locus_tag=False):
     biodb = settings.BIODB
     server = manipulate_biosqldb.load_db()
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
 
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -8292,7 +8292,7 @@ def blastswissprot(request, locus_tag):
 
     server = manipulate_biosqldb.load_db()
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
 
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -8329,7 +8329,7 @@ def blastnr(request, locus_tag):
 
     server = manipulate_biosqldb.load_db()
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
 
 
 
@@ -8378,19 +8378,19 @@ def homology(request):
     #print "db loaded..."
     contact_form_class = make_contact_form(server, biodb)
     #print 'request.method', request.method
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
 
         form = contact_form_class(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             accession = request.POST['accession']
 
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         print ('baba')
 
-        form = make_contact_form(server, biodb)  # Nous créons un formulaire vide
+        form = make_contact_form(server, biodb)
     return render(request, 'chlamdb/homology.html', locals())
 
 
@@ -8529,11 +8529,11 @@ def plot_region(request):
     server = manipulate_biosqldb.load_db()
     #print "db loaded..."
     plot_region_form_class = make_plot_form(biodb)
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = plot_region_form_class(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             valid_id = True
             import re
 
@@ -8627,8 +8627,8 @@ def plot_region(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = plot_region_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = plot_region_form_class()
 
     return render(request, 'chlamdb/plot_region.html', locals())
 
@@ -8640,12 +8640,12 @@ def plot_region(request, biodb):
     print "cache", cache
     server = manipulate_biosqldb.load_db()
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
 
         form = plot_form_class(request.POST)  # Nous reprenons les données
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
 
 
 
@@ -8654,8 +8654,8 @@ def plot_region(request, biodb):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = plot_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = plot_form_class()
 
     return render(request, 'chlamdb/plot_region.html', locals())
 '''
@@ -10238,7 +10238,7 @@ def search_taxonomy(request):
     from collections import Counter
     server = manipulate_biosqldb.load_db()
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         #print request.POST
 
@@ -10445,11 +10445,11 @@ def interpro(request):
 
     interproform = make_interpro_from(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = interproform(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             invalid_id = False
             # Ici nous pouvons traiter les données du formulaire
             search_type = form.cleaned_data['search_type']
@@ -10506,8 +10506,8 @@ def interpro(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = interproform()  # Nous créons un formulaire vide
+    else:  
+        form = interproform()
 
     return render(request, 'chlamdb/interpro.html', locals())
 
@@ -10605,11 +10605,11 @@ def search(request):
 
     server = manipulate_biosqldb.load_db()
     print(request.method, "request.method")
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         display_from = 'yes'
         form = SearchForm(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             invalid_id = False
             # Ici nous pouvons traiter les données du formulaire
             search_type = form.cleaned_data['search_type']
@@ -10619,7 +10619,7 @@ def search(request):
             search_result = perform_search(search_term, search_type)
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         search_term = request.GET.get('accession').strip()
 
         if search_term:
@@ -10761,7 +10761,7 @@ def search(request):
             #    envoi = True
         else:
             display_from = 'yes'
-            form = SearchForm()  # Nous créons un formulaire vide
+            form = SearchForm()
 
 
     return render(request, 'chlamdb/search.html', locals())
@@ -10772,11 +10772,11 @@ def search(request):
 def primer_search(request):
     biodb = settings.BIODB
     server = manipulate_biosqldb.load_db()
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = PCRForm(request.POST)  # Nous reprenons les données
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from Bio.Blast.Applications import NcbiblastpCommandline
             #from StringIO import StringIO
             from tempfile import NamedTemporaryFile
@@ -10827,8 +10827,8 @@ def primer_search(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = PCRForm()  # Nous créons un formulaire vide
+    else:  
+        form = PCRForm()
 
     return render(request, 'chlamdb/pcr.html', locals())
 
@@ -10891,7 +10891,7 @@ def motif_search(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = motif_form_class()  # empty form
 
     return render(request, 'chlamdb/motifs.html', locals())
@@ -10901,11 +10901,11 @@ def blast_profile(request):
     biodb = settings.BIODB
     server = manipulate_biosqldb.load_db()
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = BlastProfileForm(request.POST, request.FILES)  # Nous reprenons les données
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from tempfile import NamedTemporaryFile
             from io import StringIO
             from chlamdb.phylo_tree_display import biosqldb_plot_blast_hits_phylo
@@ -10973,8 +10973,8 @@ def blast_profile(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = BlastProfileForm()  # Nous créons un formulaire vide
+    else:  
+        form = BlastProfileForm()
 
     return render(request, 'chlamdb/blast_profile.html', locals())
 
@@ -10991,15 +10991,16 @@ def blast(request):
 
     blast_form_class = make_blast_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
-        form = blast_form_class(request.POST)  # Nous reprenons les données
+        form = blast_form_class(request.POST)
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from Bio.Blast.Applications import NcbiblastpCommandline
             from Bio.Blast.Applications import NcbiblastnCommandline
             from Bio.Blast.Applications import NcbitblastnCommandline
             from Bio.Blast.Applications import NcbiblastxCommandline
+            from Bio.Seq import reverse_complement, translate
             from tempfile import NamedTemporaryFile
             from io import StringIO
             from Bio.Blast import NCBIXML
@@ -11017,9 +11018,8 @@ def blast(request):
             blast_type = form.cleaned_data['blast']
 
 
-            #input_sequence = extract_alphanumeric(input_sequence)
-            #print input_sequence
-            #print '>' in input_sequence
+            unknown_format = False
+
             if '>' in input_sequence:
                 my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta', alphabet=IUPAC.ambiguous_dna)]
                 seq = my_record[0]
@@ -11044,174 +11044,138 @@ def blast(request):
                         my_record = [SeqRecord(seq, id="INPUT", description="INPUT")]
                     else:
                         unknown_format = True
-            if my_record[0].seq.alphabet == IUPAC.extended_protein and blast_type in ["blastn_ffn", "blastn_fna", "blastx"]:
-                wrong_format = True
-            elif my_record[0].seq.alphabet == IUPAC.ambiguous_dna and blast_type in ["blastp", "tblastn"]:
-                wrong_format = True
-            else:
-                query_file = NamedTemporaryFile(mode='w')
-                SeqIO.write(my_record, query_file, "fasta")
-                query_file.flush()
-
-                if blast_type=='blastn_ffn':
-                    blastType = 'locus'
-                    blastdb = settings.BASE_DIR + "/assets/%s/ffn/%s.ffn" % (biodb, target_accession)
-                    blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
-                if blast_type=='blastn_fna':
-                    blastType = 'genome'
-                    blastdb = settings.BASE_DIR + "/assets/%s/fna/%s.fna" % (biodb, target_accession)
-                    blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
-                if blast_type=='blastp':
-                    blastType = 'locus'
-                    blastdb = settings.BASE_DIR + "/assets/%s/faa/%s.faa" % (biodb, target_accession)
-                    blast_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
-                if blast_type=='tblastn':
-                    blastType = 'genome'
-                    blastdb = settings.BASE_DIR + "/assets/%s/fna/%s.fna" % (biodb, target_accession)
-                    blast_cline = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
-                    blast_cline2 = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=5)
-                if blast_type=='blastx':
-                    blastType = 'locus'
-                    blastdb = settings.BASE_DIR + "/assets/%s/faa/%s.faa" % (biodb, target_accession)
-                    blast_cline = NcbiblastxCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
-
-                blast_stdout, blast_stderr = blast_cline()
-
-                if blast_type=='tblastn':
-                    from Bio.SeqUtils import six_frame_translations
-
-                    blast_stdout2, blast_stderr2 = blast_cline2()
-
-                    blast_records = NCBIXML.parse(StringIO(blast_stdout2))
-                    all_data = []
-                    best_hit_list = []
-                    for record in blast_records:
-                        print(dir(record))
-                        for n, alignment in enumerate(record.alignments):
-                            accession = alignment.title.split(' ')[1]
-                            #accession = 'Rht'
-                            sql = 'select description from bioentry where accession="%s" ' % accession
-
-                            description = server.adaptor.execute_and_fetchall(sql,)[0][0]
-                            print(alignment)
-                            for n2, hsp in enumerate(alignment.hsps):
-                                if n == 0 and n2 == 0:
-                                    best_hit_list.append([record.query, hsp.sbjct_start, hsp.sbjct_end])
-                               
-                                start = hsp.sbjct_start
-                                end = hsp.sbjct_end
-                                if start > end:
-                                    start = hsp.sbjct_end
-                                    end = hsp.sbjct_start
-                                length = end-start
-                                #print 'seq for acc', accession, start, end,
-                                leng = end-start
-                                #print 'end', 'start', end, start, end-start
-                                #accession = 'Rht'
-                                seq = manipulate_biosqldb.location2sequence(server, accession, biodb, start, leng)
-                                print(seq)
-                                #print seq
-                                from Bio.Seq import reverse_complement, translate
-                                anti = reverse_complement(seq)
-                                comp = anti[::-1]
-                                length = len(seq)
-                                frames = {}
-                                for i in range(0, 3):
-                                    fragment_length = 3 * ((length-i) // 3)
-                                    tem1 = translate(seq[i:i+fragment_length], 1)
-                                    frames[i+1] = '<span style="color: #181407;">%s</span><span style="color: #bb60d5;">%s</span><span style="color: #181407;">%s</span>' % (tem1[0:100], tem1[100:len(tem1)-99], tem1[len(tem1)-99:])
-                                    tmp2 = translate(anti[i:i+fragment_length], 1)[::-1]
-                                    frames[-(i+1)] = tmp2
-                                all_data.append([accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq])
-                    if len(best_hit_list) > 0:
-                        fig_list = []
-                        for best_hit in best_hit_list:
-                            accession = best_hit[0]
-                            best_hit_start = best_hit[1]
-                            best_hit_end = best_hit[2]
-                            temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
-                            temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-                            name = 'temp/' + os.path.basename(temp_file.name)
-                            fig_list.append([accession, name])
-                            orthogroup_list = mysqldb_plot_genomic_feature.location2plot(db,
-                                                                                        biodb,
-                                                                                        target_accession,
-                                                                                        temp_file.name,
-                                                                                        best_hit_start-15000,
-                                                                                        best_hit_end+15000,
-                                                                                        cache,
-                                                                                        color_locus_list = [],
-                                                                                        region_highlight=[best_hit_start, best_hit_end])
-
-
-                no_match = re.compile('.* No hits found .*', re.DOTALL)
-
-                if no_match.match(blast_stdout):
-                    print ("no blast hit")
-                    blast_no_hits = blast_stdout
-                elif len(blast_stderr) != 0:
-                    print ("blast error")
-                    blast_err = blast_stderr
+            if not unknown_format:
+                if my_record[0].seq.alphabet == IUPAC.extended_protein and blast_type in ["blastn_ffn", "blastn_fna", "blastx"]:
+                    wrong_format = True
+                elif my_record[0].seq.alphabet == IUPAC.ambiguous_dna and blast_type in ["blastp", "tblastn"]:
+                    wrong_format = True
                 else:
-                    #print "running mview"
-                    #blast_file = NamedTemporaryFile()
+                    query_file = NamedTemporaryFile(mode='w')
+                    SeqIO.write(my_record, query_file, "fasta")
+                    query_file.flush()
 
-                    from Bio import SearchIO
-                    #blast_parser = NCBIStandalone.BlastParser()
-                    blast_record = [i for i  in SearchIO.parse(StringIO(blast_stdout), 'blast-text')]
-                    all_locus_tag = []
-                    print("record", blast_record)
-                    for query in blast_record:
-                        #print alignment.title
-                        for hit in query:
-                            print(dir(hit))
-                            locus_tag = hit.id #split(' ')[1]
+                    if blast_type=='blastn_ffn':
+                        blastType = 'locus'
+                        blastdb = settings.BASE_DIR + "/assets/%s/ffn/%s.ffn" % (biodb, target_accession)
+                        blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+                    if blast_type=='blastn_fna':
+                        blastType = 'genome'
+                        blastdb = settings.BASE_DIR + "/assets/%s/fna/%s.fna" % (biodb, target_accession)
+                        blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+                    if blast_type=='blastp':
+                        blastType = 'locus'
+                        blastdb = settings.BASE_DIR + "/assets/%s/faa/%s.faa" % (biodb, target_accession)
+                        blast_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+                    if blast_type=='tblastn':
+                        blastType = 'genome'
+                        blastdb = settings.BASE_DIR + "/assets/%s/fna/%s.fna" % (biodb, target_accession)
+                        blast_cline = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+                        blast_cline2 = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=5)
+                    if blast_type=='blastx':
+                        blastType = 'locus'
+                        blastdb = settings.BASE_DIR + "/assets/%s/faa/%s.faa" % (biodb, target_accession)
+                        blast_cline = NcbiblastxCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
 
-                            print("locus", locus_tag)
-                            all_locus_tag.append(locus_tag)
+                    blast_stdout, blast_stderr = blast_cline()
 
-                    locus_filter = '"' + '","'.join(all_locus_tag) + '"'
-                    sql = 'select locus_tag, product from orthology_detail_%s where locus_tag in (%s)' % (biodb, locus_filter)
-                    locus2product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+                    if blast_type=='tblastn':
+                        from Bio.SeqUtils import six_frame_translations
 
-                    rand_id = id_generator(6)
+                        blast_stdout2, blast_stderr2 = blast_cline2()
 
-                    blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
-                    f = open(blast_file_l, 'w')
-                    f.write(blast_stdout)
-                    f.close()
+                        blast_records = NCBIXML.parse(StringIO(blast_stdout2))
+                        all_data = []
+                        best_hit_list = []
+                        for record in blast_records:
+                            print(dir(record))
+                            for n, alignment in enumerate(record.alignments):
+                                accession = alignment.title.split(' ')[1]
 
-                    asset_blast_path = '/assets/temp/%s.xml' % rand_id
-                    js_out = True
-                    #if len(my_record) == 1:
-                    #    js_out = True
-                    #else:
-                    #    js_out = False
-                    #    #print blast_stdout
+                                sql = 'select description from bioentry where accession="%s" ' % accession
 
-                    #blast_file.write(blast_stdout)
-                    #out, err, code = shell_command.shell_command('cat /temp/blast.temp | wc -l')
-                    #print 'n lines', out
-                    #if blast_type=='blastp' or blast_type=='blastn_ffn':
-                    #    mview_cmd = 'mview -in blast -srs on -ruler on -html data -css on -coloring identity /tmp/blast.temp' #% blast_file.name
-                    #else:
-                    #    mview_cmd = 'mview -in blast -ruler on -html data -css on -coloring identity /tmp/blast.temp'
-                    #stdout, stderr, code = shell_command.shell_command(mview_cmd)
+                                description = server.adaptor.execute_and_fetchall(sql,)[0][0]
+                                print(alignment)
+                                for n2, hsp in enumerate(alignment.hsps):
+                                    if n == 0 and n2 == 0:
+                                        best_hit_list.append([record.query, hsp.sbjct_start, hsp.sbjct_end])
+                                
+                                    start = hsp.sbjct_start
+                                    end = hsp.sbjct_end
+                                    if start > end:
+                                        start = hsp.sbjct_end
+                                        end = hsp.sbjct_start
+                                    length = end-start
+                                    leng = end-start
+                                    seq = manipulate_biosqldb.location2sequence(server, accession, biodb, start, leng)
+                                    
+                                    anti = reverse_complement(seq)
+                                    comp = anti[::-1]
+                                    length = len(seq)
+                                    frames = {}
+                                    for i in range(0, 3):
+                                        fragment_length = 3 * ((length-i) // 3)
+                                        tem1 = translate(seq[i:i+fragment_length], 1)
+                                        frames[i+1] = '<span style="color: #181407;">%s</span><span style="color: #bb60d5;">%s</span><span style="color: #181407;">%s</span>' % (tem1[0:100], tem1[100:len(tem1)-99], tem1[len(tem1)-99:])
+                                        tmp2 = translate(anti[i:i+fragment_length], 1)[::-1]
+                                        frames[-(i+1)] = tmp2
+                                    all_data.append([accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq])
+                        if len(best_hit_list) > 0:
+                            fig_list = []
+                            for best_hit in best_hit_list:
+                                accession = best_hit[0]
+                                best_hit_start = best_hit[1]
+                                best_hit_end = best_hit[2]
+                                temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
+                                temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
+                                name = 'temp/' + os.path.basename(temp_file.name)
+                                fig_list.append([accession, name])
+                                orthogroup_list = mysqldb_plot_genomic_feature.location2plot(db,
+                                                                                            biodb,
+                                                                                            target_accession,
+                                                                                            temp_file.name,
+                                                                                            best_hit_start-15000,
+                                                                                            best_hit_end+15000,
+                                                                                            cache,
+                                                                                            color_locus_list = [],
+                                                                                            region_highlight=[best_hit_start, best_hit_end])
 
-                    #if len(stdout) == 0:
-                    #    blast_no_hits = blast_stdout
-                    #    blast_result = None
-                    #else:
-                    #    blast_result = stdout
-                #blast_result = NCBIXML.parse(StringIO(stdout))
-                #print blast_result
-                #blast_record = next(blast_result)
-                #print blast_record
+
+                    no_match = re.compile('.* No hits found .*', re.DOTALL)
+
+                    if no_match.match(blast_stdout):
+                        print ("no blast hit")
+                        blast_no_hits = blast_stdout
+                    elif len(blast_stderr) != 0:
+                        print ("blast error")
+                        blast_err = blast_stderr
+                    else:
+                        from Bio import SearchIO
+                        blast_record = [i for i  in SearchIO.parse(StringIO(blast_stdout), 'blast-text')]
+                        all_locus_tag = []
+                        print("record", blast_record)
+                        for query in blast_record:
+                            for hit in query:
+                                locus_tag = hit.id
+                                all_locus_tag.append(locus_tag)
+
+                        locus_filter = '"' + '","'.join(all_locus_tag) + '"'
+                        sql = 'select locus_tag, product from orthology_detail_%s where locus_tag in (%s)' % (biodb, locus_filter)
+                        locus2product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+                        rand_id = id_generator(6)
+
+                        blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
+                        f = open(blast_file_l, 'w')
+                        f.write(blast_stdout)
+                        f.close()
+
+                        asset_blast_path = '/assets/temp/%s.xml' % rand_id
+                        js_out = True
 
                 envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = blast_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = blast_form_class()
 
     return render(request, 'chlamdb/blast.html', locals())
 
@@ -11241,13 +11205,10 @@ def mummer(request):
     server = manipulate_biosqldb.load_db()
     mummer_form_class = make_mummer_form(biodb)
 
-
-
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
-        #make_circos2genomes_form
+    if request.method == 'POST': 
         plot = True
         form = mummer_form_class(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             server, db = manipulate_biosqldb.load_db(biodb)
             reference_taxon = form.cleaned_data['reference_genome']
             query_taxon = form.cleaned_data['query_genome']
@@ -11255,16 +11216,8 @@ def mummer(request):
             reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb)
             query_accessions = manipulate_biosqldb.taxon_id2accessions(server, query_taxon, biodb)
 
-
             ref_accession = manipulate_biosqldb.taxon_id2chromosome_accession(server, biodb, reference_taxon)
             query_accession = manipulate_biosqldb.taxon_id2chromosome_accession(server, biodb, query_taxon)
-            #result = result[0]
-            #print "mummer acc", ref_accession, query_accession
-
-
-
-
-            #print settings.STATIC_ROOT, type(settings.STATIC_ROOT)
 
             reference_path = settings.BASE_DIR + '/assets/%s/fna/%s.fna' % (biodb, ref_accession)
             query_path = settings.BASE_DIR + '/assets/%s/fna/%s.fna' % (biodb, query_accession)
@@ -11294,8 +11247,8 @@ def mummer(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = mummer_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = mummer_form_class()
 
     return render(request, 'chlamdb/mummer.html', locals())
 
@@ -11313,11 +11266,11 @@ def circos2genomes(request):
 
 
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         #make_circos2genomes_form
 
         form = circos2genomes_form_class(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             valid_id = True
             server, db = manipulate_biosqldb.load_db(biodb)
             reference_taxon = form.cleaned_data['reference_genome']
@@ -11402,8 +11355,8 @@ def circos2genomes(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = circos2genomes_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = circos2genomes_form_class()
 
     return render(request, 'chlamdb/circos2genomes.html', locals())
 
@@ -11469,13 +11422,13 @@ def crossplot(request):
     update_db(server)
 
     crossplot_form_class = make_crossplot_form("Chlamydia_11_14")
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         #make_circos2genomes_form
 
         form = DBForm(request.POST) #crossplot_form_class(request.POST)
 
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             server, db = manipulate_biosqldb.load_db("Chlamydia_11_14")
 
             update_genomes_db(server, "Chlamydia_11_14")
@@ -11529,8 +11482,8 @@ def crossplot(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = DBForm() #crossplot_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = DBForm() #crossplot_form_class()
         form2 = DBForm()
     return render(request, 'chlamdb/crossplot.html', locals())
 
@@ -11985,11 +11938,8 @@ def interactions_genome(request):
             sql = 'select seqfeature_id from annotation.seqfeature_id2locus_%s where taxon_id="%s"' % (biodb, taxon_id)
 
             seqfeature_id_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-            #print len(locus_list)
 
             #all_groups_neig = string_networks.find_links_recusrsive(biodb, locus_list, 0.8, n_comp_cutoff=2)
-
-            #print "all_groups_neig", all_groups_neig
 
             sql = 'select seqfeature_id, gene, product from orthology_detail_%s where taxon_id="%s"' % (biodb, taxon_id)
             locus2gene_product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -11999,26 +11949,10 @@ def interactions_genome(request):
 
             locus2interpro = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-            '''
-            target_list = [
-                "RhT_00152",
-                "RhT_00154",
-                "RhT_00155",
-                "RhT_00158",
-                "RhT_00993",
-                "RhT_00994",
-                "RhT_01238",
-                "RhT_01242",
-                "RhT_01249"
-            ]
-            '''
             if len (target_list) > 1:
-                #print 'target list!!!', target_list
                 locus_filter = string_networks.get_subgraph(biodb, seqfeature_id_list, 0.8, target_list)
             else:
                 locus_filter = seqfeature_id_list
-            #print 'locus filter',locus_filter
-            #print 'target list',target_list
             script = string_networks.generate_network(biodb,
                                                       locus_filter,
                                                       target_list,
@@ -12058,11 +11992,8 @@ def interactions_genome_string(request):
             sql = 'select locus_tag from orthology_detail_%s where taxon_id="%s"' % (biodb, taxon_id)
 
             locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-            #print len(locus_list)
 
             #all_groups_neig = string_networks.find_links_recusrsive(biodb, locus_list, 0.8, n_comp_cutoff=2)
-
-            #print "all_groups_neig", all_groups_neig
 
             sql = 'select locus_tag, gene, product from orthology_detail_%s where taxon_id="%s"' % (biodb, taxon_id)
             locus2gene_product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -12072,19 +12003,6 @@ def interactions_genome_string(request):
 
             locus2interpro = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-            '''
-            target_list = [
-                "RhT_00152",
-                "RhT_00154",
-                "RhT_00155",
-                "RhT_00158",
-                "RhT_00993",
-                "RhT_00994",
-                "RhT_01238",
-                "RhT_01242",
-                "RhT_01249"
-            ]
-            '''
             if len (target_list) > 1:
                 #print 'target list!!!', target_list
                 locus_filter = string_networks.get_subgraph(biodb, locus_list, 0.8, target_list)
@@ -12572,7 +12490,7 @@ def priam_kegg(request):
 
     #print 'request', request.method
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         #print 'request', request.method
         form = priam_form_class(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
@@ -12605,8 +12523,8 @@ def priam_kegg(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = priam_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = priam_form_class()
 
     return render(request, 'chlamdb/priam_kegg.html', locals())
 
@@ -12743,7 +12661,7 @@ def hmm2circos(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     hmm_form = hmm_sets_form_circos(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = hmm_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import hmm_heatmap
@@ -12877,8 +12795,8 @@ def hmm2circos(request):
 
             envoi_circos = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = hmm_form()  # Nous créons un formulaire vide
+    else:  
+        form = hmm_form()
 
     return render(request, 'chlamdb/hmm2circos.html', locals())
 
@@ -12891,11 +12809,11 @@ def transporters_list(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     transporters_form = transporters_superfam_form(biodb, True)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = transporters_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import blast_heatmap
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
             genome = form.cleaned_data['genome']
             transporter_superfamily = form.cleaned_data['transporter_superfamily'][0]
             score_cutoff = form.cleaned_data['score_cutoff']
@@ -12967,8 +12885,8 @@ def transporters_list(request):
                 envoi = True
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = transporters_form()  # Nous créons un formulaire vide
+    else:  
+        form = transporters_form()
 
     return render(request, 'chlamdb/transporters_table.html', locals())
 
@@ -12981,7 +12899,7 @@ def transporters_family(request, family):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     from chlamdb.plots import blast_heatmap
-    #if request.method == 'POST':  # S'il s'agit d'une requête POST
+    #if request.method == 'POST': 
 
 
     from ete3 import Tree
@@ -13011,40 +12929,39 @@ def transporters_family(request, family):
     hit_coverage_cutoff = 0.5
 
     transporter_family_list = [ "2.A.15",
-"2.A.111",
-"2.A.12",
-"2.A.17",
-"2.A.19",
-"2.A.2",
-"2.A.20",
-"2.A.21",
-"2.A.22",
-"2.A.23",
-"2.A.25",
-"2.A.26",
-"2.A.27",
-"2.A.28",
-"2.A.3",
-"2.A.30",
-"2.A.33",
-"2.A.35",
-"2.A.36",
-"2.A.37",
-"2.A.39",
-"2.A.4",
-"2.A.40",
-"2.A.41",
-"2.A.47",
-"2.A.55",
-"2.A.58",
-"2.A.6",
-"2.A.62",
-"2.A.63",
-"2.A.66",
-"2.A.7",
-"2.A.83"
-
-]
+                                "2.A.111",
+                                "2.A.12",
+                                "2.A.17",
+                                "2.A.19",
+                                "2.A.2",
+                                "2.A.20",
+                                "2.A.21",
+                                "2.A.22",
+                                "2.A.23",
+                                "2.A.25",
+                                "2.A.26",
+                                "2.A.27",
+                                "2.A.28",
+                                "2.A.3",
+                                "2.A.30",
+                                "2.A.33",
+                                "2.A.35",
+                                "2.A.36",
+                                "2.A.37",
+                                "2.A.39",
+                                "2.A.4",
+                                "2.A.40",
+                                "2.A.41",
+                                "2.A.47",
+                                "2.A.55",
+                                "2.A.58",
+                                "2.A.6",
+                                "2.A.62",
+                                "2.A.63",
+                                "2.A.66",
+                                "2.A.7",
+                                "2.A.83"
+                                ]
 
 
     superfam_list, taxon2code2count = transporters_heatmap.transporter_family_heatmap(biodb,
@@ -13176,11 +13093,11 @@ def transporters(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     transporters_form = transporters_superfam_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = transporters_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import blast_heatmap
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
 
             transporter_superfamily = form.cleaned_data['transporter_superfamily'][0]
             score_cutoff = form.cleaned_data['score_cutoff']
@@ -13266,8 +13183,8 @@ def transporters(request):
 
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = transporters_form()  # Nous créons un formulaire vide
+    else:  
+        form = transporters_form()
 
     return render(request, 'chlamdb/transporters_superfam.html', locals())
 
@@ -13283,11 +13200,11 @@ def blast_sets(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     sets_form = blast_sets_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = sets_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import blast_heatmap
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
 
             hmm_sets = form.cleaned_data['blast_set']
             score_cutoff = form.cleaned_data['score_cutoff']
@@ -13418,17 +13335,17 @@ def blast_sets(request):
                 server, db = manipulate_biosqldb.load_db(biodb)
                 tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
 
-                acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
-                filter = '"' + '","'.join(acc_list) + '"'
-                sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
-                taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
+                #acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
+                #filter = '"' + '","'.join(acc_list) + '"'
+                #sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
+                #taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
                 t1 = Tree(tree)
                 R = t1.get_midpoint_outgroup()
                 t1.set_outgroup(R)
-                try:
-                    t2 = t1.prune(taxon_list)
-                except:
-                    pass
+                #try:
+                #    t2 = t1.prune(taxon_list)
+                #except:
+                #    pass
                 t1.ladderize()
 
                 set2taxon2count = blast_heatmap.get_multiple_set_counts(biodb,
@@ -13438,14 +13355,14 @@ def blast_sets(request):
                                                                         hit_coverage_cutoff)
 
                 tree1, style1 = ete_motifs.multiple_profiles_heatmap(biodb,
-                                                            hmm_sets,
-                                                            set2taxon2count,
+                                                                     hmm_sets,
+                                                                     set2taxon2count,
                                                                      tree=t1,
-                                                            identity_scale=False,
-                                                            show_labels=True,
-                                                            column_scale=True,
-                                                            as_float=False,
-                                                            rotate=True)
+                                                                     identity_scale=False,
+                                                                     show_labels=True,
+                                                                     column_scale=True,
+                                                                     as_float=False,
+                                                                     rotate=True)
                 style1.rotation = 90
                 path1 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
                 asset_path1 = '/temp/ortho_tree1.svg'
@@ -13456,8 +13373,8 @@ def blast_sets(request):
 
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = sets_form()  # Nous créons un formulaire vide
+    else:  
+        form = sets_form()
 
     return render(request, 'chlamdb/blast_sets_profiles.html', locals())
 
@@ -13470,11 +13387,11 @@ def hmm(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     hmm_form = hmm_sets_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = hmm_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import hmm_heatmap
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
@@ -13555,8 +13472,8 @@ def hmm(request):
 
                 envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = hmm_form()  # Nous créons un formulaire vide
+    else:  
+        form = hmm_form()
 
     return render(request, 'chlamdb/hmm_profiles.html', locals())
 
@@ -13568,10 +13485,10 @@ def locus_int(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     module_int_form = locus_int_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = module_int_form(request.POST)
         if form.is_valid():
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
@@ -13669,8 +13586,8 @@ def locus_int(request):
                 tree2.render(path2, dpi=800, tree_style=style2)
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = module_int_form()  # Nous créons un formulaire vide
+    else:  
+        form = module_int_form()
 
     return render(request, 'chlamdb/inter_tree.html', locals())
 
@@ -13684,12 +13601,12 @@ def kegg_pathway_heatmap(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     pathway_form = make_pathway_overview_form(biodb)#get_locus_annotations_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = pathway_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import pathway_heatmap
             from ete3 import Tree
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
@@ -13737,8 +13654,8 @@ def kegg_pathway_heatmap(request):
             envoi = True
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = pathway_form()  # Nous créons un formulaire vide
+    else:  
+        form = pathway_form()
 
     return render(request, 'chlamdb/pathway_cat.html', locals())
 
@@ -13751,11 +13668,11 @@ def kegg_module_subcat(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     module_overview_form = make_module_overview_form(biodb, sub_sub_cat=True)#get_locus_annotations_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = module_overview_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import module_heatmap
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
@@ -13797,8 +13714,8 @@ def kegg_module_subcat(request):
             envoi = True
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = module_overview_form()  # Nous créons un formulaire vide
+    else:  
+        form = module_overview_form()
 
     return render(request, 'chlamdb/module_subcat.html', locals())
 
@@ -13810,11 +13727,11 @@ def kegg_module(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     module_overview_form = make_module_overview_form(biodb)#get_locus_annotations_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = module_overview_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import module_heatmap
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
@@ -13896,8 +13813,8 @@ def kegg_module(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = module_overview_form()  # Nous créons un formulaire vide
+    else:  
+        form = module_overview_form()
 
     return render(request, 'chlamdb/module_overview.html', locals())
 
@@ -13908,7 +13825,7 @@ def module2heatmap(request):
 
     comp_metabo_form = make_kegg_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
         if form.is_valid():
             from chlamdb.plots import pathway_heatmap
@@ -14010,8 +13927,8 @@ def module2heatmap(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = comp_metabo_form()  # Nous créons un formulaire vide
+    else:  
+        form = comp_metabo_form()
 
     return render(request, 'chlamdb/module2heatmap.html', locals())
 
@@ -14023,7 +13940,7 @@ def module_comparison(request):
 
     comp_metabo_form = make_metabo_from(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
         if form.is_valid():
             from chlamdb.biosqldb import biosql_own_sql_tables
@@ -14080,8 +13997,8 @@ def module_comparison(request):
 
             envoi_comp = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = comp_metabo_form()  # Nous créons un formulaire vide
+    else:  
+        form = comp_metabo_form()
 
     return render(request, 'chlamdb/module_comp.html', locals())
 
@@ -14094,7 +14011,7 @@ def metabo_overview(request):
     #print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    #if request.method == 'POST':  # S'il s'agit d'une requête POST
+    #if request.method == 'POST': 
 
     sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
@@ -14176,8 +14093,8 @@ def metabo_overview(request):
     '''
     envoi = True
 
-    #else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-    #    pass  # Nous créons un formulaire vide
+    #else:  
+    #    pass
 
     return render(request, 'chlamdb/metabo_overview.html', locals())
 
@@ -14190,7 +14107,7 @@ def metabo_comparison(request):
 
     comp_metabo_form = make_metabo_from(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
         if form.is_valid():
@@ -14257,8 +14174,8 @@ def metabo_comparison(request):
 
             envoi_comp = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = comp_metabo_form()  # Nous créons un formulaire vide
+    else:  
+        form = comp_metabo_form()
 
     return render(request, 'chlamdb/metabo_comp.html', locals())
 
@@ -14270,7 +14187,7 @@ def metabo_comparison_ko(request):
 
     comp_metabo_form = make_metabo_from(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
         if form.is_valid():
@@ -14335,8 +14252,8 @@ def metabo_comparison_ko(request):
 
             envoi_comp = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = comp_metabo_form()  # Nous créons un formulaire vide
+    else:  
+        form = comp_metabo_form()
 
     return render(request, 'chlamdb/metabo_comp_ko.html', locals())
 
@@ -14348,7 +14265,7 @@ def pfam_comparison(request):
 
     comp_metabo_form = make_metabo_from(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
         if form.is_valid():
@@ -14399,8 +14316,8 @@ def pfam_comparison(request):
 
             envoi_comp = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = comp_metabo_form()  # Nous créons un formulaire vide
+    else:  
+        form = comp_metabo_form()
 
     return render(request, 'chlamdb/pfam_comp.html', locals())
 
@@ -14413,7 +14330,7 @@ def orthogroup_comparison(request):
 
     comp_metabo_form = make_metabo_from(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
         if form.is_valid():
@@ -14459,8 +14376,8 @@ def orthogroup_comparison(request):
                             continue
             envoi_comp = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = comp_metabo_form()  # Nous créons un formulaire vide
+    else:  
+        form = comp_metabo_form()
 
     return render(request, 'chlamdb/ortho_comp.html', locals())
 
@@ -14472,7 +14389,7 @@ def ko_comparison(request):
 
     comp_metabo_form = make_metabo_from(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = comp_metabo_form(request.POST)  # Nous reprenons les données
         #form2 = ContactForm(request.POST)
         if form.is_valid():
@@ -14507,7 +14424,7 @@ def ko_comparison(request):
 
             envoi_comp = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = comp_metabo_form()  # Nous créons un formulaire vide
+    else:  
+        form = comp_metabo_form()
 
     return render(request, 'chlamdb/ko_comp.html', locals())
