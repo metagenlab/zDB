@@ -186,13 +186,13 @@ def about(request):
          'ENTRYTYPE': 'article', 'ID': 'cock2009biopython'}
 
         """
-        string = ("%s. <b>%s</b> %s, %s(%s):%s, %s" % (  entry["author"],
-                                            re.sub('[{}]','', entry["title"]),
-                                            entry["journal"],
-                                            entry["volume"],
-                                            entry["number"],
-                                            entry["pages"],
-                                            entry["year"],
+        string = ("<b>%s</b></br> %s, %s, %s(%s):%s, %s" % (re.sub('[{}]','', entry["title"]),
+                                                         entry["author"],
+                                                            entry["journal"],
+                                                            entry["volume"],
+                                                            entry["number"],
+                                                            entry["pages"],
+                                                            entry["year"],
                            ))
         url = entry["url"]
         entry_list.append([string, url])
