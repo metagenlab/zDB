@@ -56,7 +56,6 @@ def extract_orthogroup_task(biodb,
         html = template.render(Context(locals()))#render_to_string(template, context=locals())
         return html   
     
-    #print("get matrix")
     if not accessions:
         # get sub matrix and complete matrix
         mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
@@ -78,7 +77,7 @@ def extract_orthogroup_task(biodb,
                                                                   single_copy=single_copy,
                                                                   accessions=accessions,
                                                                   cache=cache)
-    #print("matrix OK")
+
     match_groups = mat.index.tolist()
 
     if len(match_groups) == 0:
@@ -109,7 +108,6 @@ def extract_orthogroup_task(biodb,
         # get count in complete database
         orthogroup2count_all = dict((mat_all > 0).sum(axis=1))
 
-        #print cog2count_all
         max_n = max(orthogroup2count_all.values())
 
         # GET max frequency for template
@@ -125,7 +123,6 @@ def extract_orthogroup_task(biodb,
                                                                                                       biodb,
                                                                                                       taxon_filter=include,
                                                                                                       accessions=accessions)
-        #print("done")
 
         if len(include) == 1:
             # get url to get single include taxon fasta
@@ -454,12 +451,9 @@ def run_circos(reference_taxon, target_taxons):
 
     record_list = []
     for accession in reference_accessions:
-
-        #print "reference accession", accession
         biorecord = cache.get(biodb + "_" + accession)
 
         if not biorecord:
-            #print biodb + "_" + accession, "NOT in memory"
             new_record = db.lookup(accession=accession)
             biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
                                                      id=new_record.id, name=new_record.name,
@@ -471,7 +465,6 @@ def run_circos(reference_taxon, target_taxons):
             cache.set(biodb + "_" + record_id, biorecord)
             record_list.append(biorecord)
         else:
-            #print biodb + "_" + accession, "IN memory"
             record_list.append(biorecord)
 
     ref_name = ''
@@ -496,7 +489,6 @@ def run_circos(reference_taxon, target_taxons):
         draft_data.append(gbk2circos.circos_fasta_draft_misc_features(biorecord))
 
     home_dir = os.path.dirname(__file__)
-    #print "home_dir", home_dir
     temp_location = os.path.join(home_dir, "../assets/circos/")
 
     #sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
@@ -506,11 +498,9 @@ def run_circos(reference_taxon, target_taxons):
                 ' where taxon_1=%s order by median_identity DESC) A;' % (biodb, reference_taxon, biodb, reference_taxon)
     try:
         sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
-        #print sql_order
         ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
-        #print 'msa core identity order!'
+
     except:
-        #print('msa orthogroups_average_identity order!')
 
         # median identity
         sql_order = 'select taxon from (select taxon_2 as taxon, median_identity ' \
@@ -524,23 +514,19 @@ def run_circos(reference_taxon, target_taxons):
         # n shared orthogroups
         sql_order = 'select taxon_2 from comparative_tables.shared_orthogroups_%s where taxon_1=%s order by n_shared_orthogroups DESC;' % (biodb,
                                                                                                                   reference_taxon)
-        print
         '''
         ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
 
     '''
-    print tree
+
     t1 = ete3.Tree(tree)
 
     R = t1.get_midpoint_outgroup()
     t1.set_outgroup(R)
-    print t1
 
     node_list = []
     for node in t1.iter_leaves():
             node_list.append(node.name)
-
-    print 'original order', node_list
 
     reference_index = node_list.index(reference_taxon)
     ordered_taxons = node_list[reference_index:] + node_list[:reference_index][::-1]
@@ -557,7 +543,6 @@ def run_circos(reference_taxon, target_taxons):
                                                                            biodb, 
                                                                            reference_taxon)
         reference_phylum = server.adaptor.execute_and_fetchall(sql_phylum,)[0][0]
-        #print(reference_phylum)
         
         try:
             sql = 'select locus_tag from blastnr.blastnr_%s t1 ' \
@@ -704,14 +689,11 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
 
     reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb) # ["NC_009648"] NZ_CP009208 NC_016845
 
-    #print "reference_accessions", reference_accessions
     record_list = []
     for accession in reference_accessions:
-        #print "reference accession", accession
         biorecord = cache.get(biodb + "_" + accession)
 
         if not biorecord:
-            #print biodb + "_" + accession, "NOT in memory"
             new_record = db.lookup(accession=accession)
             biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
                                                      id=new_record.id, name=new_record.name,
@@ -723,7 +705,6 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
             cache.set(biodb + "_" + record_id, biorecord)
             record_list.append(biorecord)
         else:
-            #print biodb + "_" + accession, "In memory"
             record_list.append(biorecord)
 
     ref_name = ('').join(reference_accessions)
@@ -801,7 +782,6 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
 
 
     circos_new_file = '/assets/circos/circos_clic.html'
-    #print settings.BASE_DIR + circos_new_file
     with open(settings.BASE_DIR + circos_new_file, "w") as f:
         f.write(circos_html)
 
@@ -812,7 +792,6 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
     svg_file = "circos/%s.svg" % ref_name
     #a, b, c = shell_command.shell_command("mv %s %s" % (original_map_file, target_map_file))
     #a, b, c = shell_command.shell_command("cp %s %s" % (original_map_file_svg, target_map_file_svg))
-    #print a,b,c
     map_name = ref_name
 
     template = Template('''
@@ -1112,8 +1091,6 @@ def TM_tree_task(biodb,
     sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
     tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
 
-    print(locus2TM_data)
-
     t, ts, leaf_number = ete_motifs.draw_TM_tree(tree, locus2TM_data)
     path = settings.BASE_DIR + '/assets/temp/TM_tree.svg'
     asset_path = '/temp/TM_tree.svg'
@@ -1182,7 +1159,6 @@ def pfam_tree_task(biodb,
                                     'percent': 50,
                                     'description': "Plotting TM tree"})
 
-    #print ('pfam tree %s -- %s' % (biodb, orthogroup))
     server, db = manipulate_biosqldb.load_db(biodb)
 
     #sql_locus2protein_id = 'select locus_tag, protein_id from orthology_detail_%s where orthogroup="%s"' % (biodb, orthogroup)
@@ -1194,14 +1170,14 @@ def pfam_tree_task(biodb,
     home_dir = os.path.dirname(__file__)
 
     alignment_path = os.path.join(home_dir, alignment_fasta)
-    #print("get data")
+
     if os.path.exists(alignment_path):
         #pass
         locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb, aa_alignment=False) # alignment_path
     else:
 
         locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb, aa_alignment=False)
-    #print("done")
+
     motif_count = {}
     for data in locus2pfam_data.values():
         for motif in data:
@@ -1213,7 +1189,6 @@ def pfam_tree_task(biodb,
             except:
                 print ("motif", motif)
 
-    #print("get tree")
     sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
 
     try:
@@ -1226,7 +1201,7 @@ def pfam_tree_task(biodb,
     #sql = 'select taxon_id, family from genomes_classification;'
 
     #taxon_id2family = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    #print("draw tree")
+
     t, ts, leaf_number = ete_motifs.draw_pfam_tree(tree, locus2pfam_data, False, taxon_id2family=False)
     path = settings.BASE_DIR + '/assets/temp/pfam_tree.svg'
     asset_path = '/temp/pfam_tree.svg'
@@ -1418,7 +1393,7 @@ def plot_heatmap_task(biodb,
                                                                         cache=cache)
         taxon_list = [i.split("_")[1] for i in list(mat.columns.values)]
         labels = [taxon2description[i] for i in taxon_list]
-        #print(labels)
+
     else:
         accession2description = manipulate_biosqldb.accession2description(server,biodb)
         mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
@@ -1540,7 +1515,7 @@ def KEGG_map_ko_task(biodb,
             ' inner join biosqldb.orthology_detail_%s bb on aa.seqfeature_id=bb.seqfeature_id;' % (pathway_id,
                                                                                                     biodb,
                                                                                                     biodb)
-    #print sql
+
     orthogroup_data = server.adaptor.execute_and_fetchall(sql,)
     ko2orthogroups = {}
     orthogroup_list = []
@@ -1569,11 +1544,10 @@ def KEGG_map_ko_task(biodb,
         path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % map_name
         asset_path = '/temp/KEGG_tree_%s.png' % map_name
         tree.render(path, dpi=1200, tree_style=style)
-        print (path)
 
         path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.png' % map_name
         asset_path2 = '/temp/KEGG_tree_%s_complete.png' % map_name
-        print (path2)
+
         tree2.render(path2, dpi=800, tree_style=style2)
 
     else:
@@ -1584,7 +1558,6 @@ def KEGG_map_ko_task(biodb,
 
         path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
         asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % map_name
-        print (path2)
         tree2.render(path2, dpi=800, tree_style=style2)
 
     sql = 'select bb.ko_accession, count(*) from (select C.ko_accession, E.seqfeature_id from  ' \
@@ -1593,7 +1566,6 @@ def KEGG_map_ko_task(biodb,
             ' inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id ' \
             ' inner join enzyme.seqfeature_id2ko_%s E on B.ko_id=E.ko_id ' \
             ' group by B.ko_id,seqfeature_id) bb group by ko_accession;' % (map_name, biodb)
-    #print sql
 
     ko2freq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
