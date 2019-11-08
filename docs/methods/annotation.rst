@@ -328,7 +328,7 @@ Code availability
 =====================================   ===========================================================
 Website interface                       https://github.com/metagenlab/chlamdb
 Annotation pipeline                     https://github.com/metagenlab/annotation_pipeline_nextflow
-Public database download and indexing   https://github.com/metagenlab/annotation_pipeline_snakemake
+Public database download and indexing   https://github.com/metagenlab/databases_setup
 =====================================   ===========================================================
 
 
