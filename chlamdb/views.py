@@ -1910,9 +1910,38 @@ def venn_cog(request, accessions=False):
     return render(request, 'chlamdb/venn_cogs.html', locals())
 
 
+def pimd_associations(request, bioentry_id, pmid):
+    biodb = settings.BIODB
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = 'select t1.description from biosqldb.bioentry t1 inner join biosqldb.biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t1.bioentry_id=%s and t2.name="%s"' % (bioentry_id, biodb)
+    genome = server.adaptor.execute_and_fetchall(sql,)[0][0]
+
+    sql = 'select title,journal,year from string.pmid2data_paperblast where pmid=%s;' % (pmid)
+    paper_data = server.adaptor.execute_and_fetchall(sql,)[0]
+
+    sql = 'select distinct locus_tag from string.seqfeature_id2paperblast t1 ' \
+          ' inner join string.paperblast2pmid t2 on t1.paperblast_id=t2.paperblast_id ' \
+          ' inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+          ' where PMID=%s and bioentry_id=%s;' % (biodb, pmid, bioentry_id)
+
+    locus_list =[i[0] for i in server.adaptor.execute_and_fetchall(sql,)] 
+
+    locus2annot, \
+    locus_tag2cog_catego, \
+    locus_tag2cog_name, \
+    locus_tag2ko, \
+    pathway2category, \
+    module2category, \
+    ko2ko_pathways, \
+    ko2ko_modules, \
+    locus2interpro = get_locus_annotations(biodb, locus_list)
+
+
+    return render(request, 'chlamdb/pmid_associations.html', locals())
+
 def pmid(request, seqfeature_id):
     biodb = settings.BIODB
-    extract_region_form_class = make_extract_region_form(biodb)
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql1 = f'select distinct accession,db_name,organism,description,query_cov,hit_cov,identity,evalue,score,t4.* from string.seqfeature_id2paperblast t1' \
@@ -1930,15 +1959,12 @@ def pmid(request, seqfeature_id):
         pmid_list =[str(i[9]) for i in paperblast_data] 
         pmid_filter = ','.join(pmid_list)
         sql1 = f'select bioentry_id from annotation.seqfeature_id2locus_{biodb} where seqfeature_id={seqfeature_id}' 
-        bioentry = server.adaptor.execute_and_fetchall(sql1,)[0][0]
-        print("get pmid counts")
+        bioentry_id = server.adaptor.execute_and_fetchall(sql1,)[0][0]
         sql_2 = 'select pmid,count(*) from (select distinct pmid,t3.seqfeature_id from string.seqfeature_id2paperblast t1 ' \
                 ' inner join string.paperblast2pmid t2 on t1.paperblast_id=t2.paperblast_id ' \
                 ' inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
-                ' where bioentry_id=%s) A where A.pmid in (%s) group by pmid;'  % (biodb, bioentry, pmid_filter)
-        print(sql_2)
+                ' where bioentry_id=%s) A where A.pmid in (%s) group by pmid;'  % (biodb, bioentry_id, pmid_filter)
         pmid2n_associated_proteins = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_2,))
-        print("ok")
         pmid2n_associated_proteins = {int(k):int(v) for k,v in pmid2n_associated_proteins.items()}
 
     sql2 = f'select t1.pmid,authors,title,abstract,source from string.seqfeature_id2pmid_{biodb}  t1 ' \

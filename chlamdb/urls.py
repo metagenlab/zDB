@@ -170,6 +170,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^choose_db/$', views.choose_db, name="choose_db"),
                        url(r'^circos2genomes/$', views.circos2genomes, name="circos2genomes"),
                        url(r'^download_COG/$', views.download_COG, name="download_COG"),
+                       url(r'^pimd_associations/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)$', views.pimd_associations, name="pimd_associations"),
                        url(r'^metabo_overview/$', views.metabo_overview, name="metabo_overview"),
                        url(r'^kegg_module/$', views.kegg_module, name="kegg_module"),
                        url(r'^kegg_module_subcat$', views.kegg_module_subcat, name="kegg_module_subcat"),
