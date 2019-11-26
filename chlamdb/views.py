@@ -8845,21 +8845,26 @@ def download_all_COG(request):
           f' inner join COG.cog_names_2014 t6 on t5.hit_cog_id=t6.cog_id where t4.name="{biodb}" order by t3.accession'
     
     df = pandas.read_sql(sql, conn)
-    sio = StringIO()
     zbuf = BytesIO()
     
-    df.to_csv(sio, sep='\t')
+    with gzip.GzipFile(fileobj=zbuf, compresslevel=6, mode='wb') as f:
+        f.write(df.to_csv(sep="\t").encode('utf-8'))
     
-    #tab_file = sio.getvalue()
-    
-    gzip_handler = gzip.GzipFile(fileobj=zbuf,mode='wb')
-    
-    gzip_handler.write(sio.getvalue().encode('utf-8'))
+    zbuf.seek(0)
+
+    '''
+    gzip_handler = gzip.GzipFile(fileobj=zbuf, 
+                                 mode='wb')
+
+    gzip_handler.write(zbuf.getvalue())
     
     gzip_handler.flush()
+    gzip_handler.close()
+    '''
 
-    response = StreamingHttpResponse(zbuf.getvalue(), content_type='application/x-gzip')
+    response = StreamingHttpResponse(zbuf, content_type='application/x-gzip')
     response['Content-Disposition'] = 'attachment; filename="COG_annotation.tsv.gz"'
+
     return response
 
 
