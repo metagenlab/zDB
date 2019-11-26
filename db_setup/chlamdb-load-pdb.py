@@ -44,6 +44,8 @@ def load_pdb_data(blast_output_files,
                   hash2locus_list):
     
     from chlamdb.biosqldb import manipulate_biosqldb
+
+    print("db conn:", db_name)
     server, db = manipulate_biosqldb.load_db(db_name)
     
     sql = f'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_{db_name}'
@@ -56,12 +58,16 @@ def load_pdb_data(blast_output_files,
     
     pdb2data = retrieve_pdb_data()
     
+    problem_list = []
+    
     for blast_file in blast_output_files:
         with open(blast_file, "r") as f:
             rows = [i.rstrip().split("\t") for i in f]
             count = 1
             for n, row in enumerate(rows):
-                print(row)
+                #print(row)
+                if n % 1000000 == 0:
+                    print(n)
                 query_hash = row[0]
                 previous_query_hash = rows[n-1][0]
                 if query_hash == previous_query_hash:
@@ -83,7 +89,9 @@ def load_pdb_data(blast_output_files,
                     match_problem = False
                 # in case of mapping problem, take the next BBH
                 except KeyError:
-                    print("problem with", )
+                    print("problem with", hit_accession)
+                    if hit_accession not in problem_list:
+                        problem_list.append(hit_accession)
                     match_problem = True
                     continue
                 try:
@@ -106,6 +114,7 @@ def load_pdb_data(blast_output_files,
     sql = f'create index sfp on custom_tables.seqfeature_id2pdb_BBH_{db_name}(seqfeature_id)'                 
     server.adaptor.execute(sql,)
     server.commit()
+    print(len(problem_list), problem_list)
 
 
 if __name__ == '__main__':

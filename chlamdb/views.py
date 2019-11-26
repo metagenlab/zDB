@@ -8818,6 +8818,47 @@ def get_fasta(request):
     #return FileResponse(open('/tmp/groups_fasta.tar.gz', 'rb')) #HttpResponse(request, fasta, content_type='text/plain; charset=utf8')
 
 
+def download_COG(request, accession=False):
+    import MySQLdb
+    import os
+    import pandas
+    import gzip
+    from io import BytesIO
+    from io import StringIO
+    mysql_host = 'localhost'
+    mysql_user = 'root'
+    mysql_pwd = os.environ['SQLPSW']
+    mysql_db = 'COG'
+    
+    biodb = settings.BIODB
+    
+    conn = MySQLdb.connect(host=mysql_host,
+                                user=mysql_user,
+                                passwd=mysql_pwd,
+                                db=mysql_db)
+
+    sql = f'select t3.accession,t3.description,locus_tag,start,stop,strand,gene,protein_id,product,t6.COG_name,t6.description ' \
+          f' from annotation.seqfeature_id2locus_{biodb} t1 ' \
+          f' inner join annotation.seqfeature_id2CDS_annotation_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+          f' inner join biosqldb.bioentry t3 on t1.bioentry_id=t3.bioentry_id ' \
+          f' inner join biosqldb.biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \
+          f' inner join COG.seqfeature_id2best_COG_hit_{biodb} t5 on t1.seqfeature_id=t5.seqfeature_id ' \
+          f' inner join COG.cog_names_2014 t6 on t5.hit_cog_id=t6.cog_id where t4.name="{biodb}" order by t3.accession'
+    
+    df = pandas.read_sql(sql, conn)
+    zbuf = BytesIO()
+    
+    with gzip.GzipFile(fileobj=zbuf, compresslevel=6, mode='wb') as f:
+        f.write(df.to_csv(sep="\t").encode('utf-8'))
+    
+    zbuf.seek(0)
+
+    response = StreamingHttpResponse(zbuf, content_type='application/x-gzip')
+    response['Content-Disposition'] = 'attachment; filename="COG_annotation.tsv.gz"'
+
+    return response
+
+
 def download_all_COG(request):
     import MySQLdb
     import os
@@ -8836,6 +8877,7 @@ def download_all_COG(request):
                                 user=mysql_user,
                                 passwd=mysql_pwd,
                                 db=mysql_db)
+    
     sql = f'select t3.accession,t3.description,locus_tag,start,stop,strand,gene,protein_id,product,t6.COG_name,t6.description ' \
           f' from annotation.seqfeature_id2locus_{biodb} t1 ' \
           f' inner join annotation.seqfeature_id2CDS_annotation_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id ' \
@@ -8852,20 +8894,14 @@ def download_all_COG(request):
     
     zbuf.seek(0)
 
-    '''
-    gzip_handler = gzip.GzipFile(fileobj=zbuf, 
-                                 mode='wb')
-
-    gzip_handler.write(zbuf.getvalue())
-    
-    gzip_handler.flush()
-    gzip_handler.close()
-    '''
-
     response = StreamingHttpResponse(zbuf, content_type='application/x-gzip')
     response['Content-Disposition'] = 'attachment; filename="COG_annotation.tsv.gz"'
 
     return response
+
+
+
+
 
 
 def get_fasta_all(request):
