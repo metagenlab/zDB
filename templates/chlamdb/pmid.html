@@ -8,6 +8,7 @@
 <head>
     {% load staticfiles %}
     {% load static %}
+    {% load custom_tags %}
     {% get_static_prefix as STATIC_PREFIX %}
     {% include "chlamdb/header.html" %}
 </head>
@@ -57,6 +58,7 @@
                                 <th>title</th>
                                 <th>journal</th>
                                 <th>year</th>
+                                <th>Number of proteins</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -84,6 +86,8 @@
                                     <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{row.9}}" target="_top">{{row.10}}</a></td>
                                     <td>{{row.11}}</td>
                                     <td>{{row.12}}</td>
+
+                                    <td>{{ pmid2n_associated_proteins|keyvalue:row.9 }} </td>
                                 </tr>
                            {% endfor %} 
                         </table>

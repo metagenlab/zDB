@@ -1924,6 +1924,23 @@ def pmid(request, seqfeature_id):
     except:
         paperblast_data = False
 
+    if paperblast_data:
+        # retrieve bioentry
+
+        pmid_list =[str(i[9]) for i in paperblast_data] 
+        pmid_filter = ','.join(pmid_list)
+        sql1 = f'select bioentry_id from annotation.seqfeature_id2locus_{biodb} where seqfeature_id={seqfeature_id}' 
+        bioentry = server.adaptor.execute_and_fetchall(sql1,)[0][0]
+        print("get pmid counts")
+        sql_2 = 'select pmid,count(*) from (select distinct pmid,t3.seqfeature_id from string.seqfeature_id2paperblast t1 ' \
+                ' inner join string.paperblast2pmid t2 on t1.paperblast_id=t2.paperblast_id ' \
+                ' inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+                ' where bioentry_id=%s) A where A.pmid in (%s) group by pmid;'  % (biodb, bioentry, pmid_filter)
+        print(sql_2)
+        pmid2n_associated_proteins = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_2,))
+        print("ok")
+        pmid2n_associated_proteins = {int(k):int(v) for k,v in pmid2n_associated_proteins.items()}
+
     sql2 = f'select t1.pmid,authors,title,abstract,source from string.seqfeature_id2pmid_{biodb}  t1 ' \
             f' inner join string.pmid2data t2 on t1.pmid=t2.pmid where t1.seqfeature_id={seqfeature_id};'
     try:
@@ -2263,10 +2280,10 @@ def locusx(request, locus=None, menu=True):
 
             sql30 = 'select paperblast_id from string.seqfeature_id2paperblast where seqfeature_id=%s;' % (seqfeature_id)
 
-            sql30 = 'select * from custom_tables.seqfeature_id2pdb_BBH_2019_06_PVC where seqfeature_id=%s;' % (seqfeature_id)
+            sql31 = 'select * from custom_tables.seqfeature_id2pdb_BBH_2019_06_PVC where seqfeature_id=%s;' % (seqfeature_id)
 
             try:
-                pdb_data = server.adaptor.execute_and_fetchall(sql30,)[0]
+                pdb_data = server.adaptor.execute_and_fetchall(sql31,)[0]
             except:
                 pdb_data = False
 
