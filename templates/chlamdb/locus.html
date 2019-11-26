@@ -727,6 +727,49 @@ function clearBox(elementID)
                               </div>
                             </div>
 
+
+                           {% if pdb_data %} 
+                            <div class="row">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">PDB 3D Structure (best BLAST hit)</h3>
+                                </div>
+                                <div>
+                                  <div id="div_features" style="margin-top: 1px; width: 800px; margin-left: 20px;"></div>
+
+                                  <table id="panel_table" class="table table-striped" style="width: 100%">
+                                    <thead>
+                                        <tr>
+                                          <th>Accession</th>
+                                          <th>Header</th>
+                                          <th>Compound</th>
+                                          <th>Source</th>
+                                          <th>Resolution</th>
+                                          <th>Method</th>
+                                          <th>Identity</th>
+                                          <th>Evalue</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <td><a href="https://www.rcsb.org/structure/{{pdb_data.1}}">{{pdb_data.1}}</a></td>
+                                        <td>{{pdb_data.2}}</td>
+                                        <td>{{pdb_data.3}}</td>
+                                        <td>{{pdb_data.4}}</td>
+                                        <td>{{pdb_data.5}}</td>
+                                        <td>{{pdb_data.6}}</td>
+                                        <td>{{pdb_data.7}}</td>
+                                        <td>{{pdb_data.9}}</td>
+                                      </tr>
+                                  </tbody>
+
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                            {% endif %} 
+
+
                             {%if ko_pathway_data or ko_module_data %}
                               <div class="row">
                                 <div class="panel panel-default">

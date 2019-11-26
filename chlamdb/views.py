@@ -2263,6 +2263,13 @@ def locusx(request, locus=None, menu=True):
 
             sql30 = 'select paperblast_id from string.seqfeature_id2paperblast where seqfeature_id=%s;' % (seqfeature_id)
 
+            sql30 = 'select * from custom_tables.seqfeature_id2pdb_BBH_2019_06_PVC where seqfeature_id=%s;' % (seqfeature_id)
+
+            try:
+                pdb_data = server.adaptor.execute_and_fetchall(sql30,)[0]
+            except:
+                pdb_data = False
+
             try:
                 psort_data = server.adaptor.execute_and_fetchall(sql29,)[0]
             except:
@@ -8818,7 +8825,7 @@ def get_fasta(request):
     #return FileResponse(open('/tmp/groups_fasta.tar.gz', 'rb')) #HttpResponse(request, fasta, content_type='text/plain; charset=utf8')
 
 
-def download_COG(request, accession=False):
+def download_COG(request, accession=False): 
     import MySQLdb
     import os
     import pandas
