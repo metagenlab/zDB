@@ -19,6 +19,19 @@ def setup_sqlitedb(sqlite_db_path):
     sqlite_cursor.execute("PRAGMA synchronous = OFF")
     sqlite_cursor.execute("BEGIN TRANSACTION")
 
+
+    # setup species table 
+    sql_species = 'select species_id,compact_name,kingdom,protein_count from items.species;'
+    sql_species_create = 'create table species (species_id INT, compact_name TEXT, kingdom varchar(200), protein_count INT)'
+    sqlite_cursor.execute(sql_species_create)
+    pg_cursor.execute(sql_species)
+
+    sql_template = 'insert into species values (?,?,?,?)'
+    for row in pg_cursor.fetchall():
+        sqlite_cursor.execute(sql_template, row)
+    sqlite_conn.commit()
+    print("ok")
+    
     # -- items.proteins --
     # protein_id 
     # protein_external_id 
@@ -47,23 +60,24 @@ def setup_sqlitedb(sqlite_db_path):
     sqlite_cursor.executemany(sql_template, entry_list)
     sqlite_conn.commit()
     print("ok")
-
+ 
     # -- evidence.publications --
     # publication_id --> PMID:24616884
     # publication_date 
     # publication_source 
     # linkout_url 
     # authors  
+    # title 
     # abstract - empty 
 
-    sql_publications = 'select publication_id,publication_date,publication_source,linkout_url,authors from evidence.publications;'
-    sql_publications_create = 'create table publications (pmid INT, publication_date varchar(400), publication_source TEXT, linkout_url TEXT, authors TEXT)'
+    sql_publications = 'select publication_id,publication_date,publication_source,linkout_url,authors,title from evidence.publications;'
+    sql_publications_create = 'create table publications (pmid INT, publication_date varchar(400), publication_source TEXT, linkout_url TEXT, authors TEXT, title TEXT)'
     sqlite_cursor.execute(sql_publications_create)
     pg_cursor.execute(sql_publications)
 
     n = 0
     entry_list = []
-    sql_template = 'insert into publications values (?,?,?,?,?)'
+    sql_template = 'insert into publications values (?,?,?,?,?,?)'
     for row in pg_cursor.fetchall():
         n+=1
         row = list(row)
@@ -76,7 +90,6 @@ def setup_sqlitedb(sqlite_db_path):
     sqlite_cursor.executemany(sql_template, entry_list)
 
     sqlite_conn.commit()
-    print("ok")
 
     # -- evidence.items_publications --
     # item_id 
@@ -113,9 +126,7 @@ def setup_sqlitedb(sqlite_db_path):
 
     sql1 = 'create index prid1 on proteins(protein_id);'
     sql2 = 'create index prid2 on proteins(protein_external_id);'
-
     sql3 = 'create index pmid1 on publications(pmid);'
-
     sql4 = 'create index prid3 on protein_id2pmid(protein_id);'
     sql5 = 'create index prid4 on protein_id2pmid(pmid);'
 
@@ -123,9 +134,10 @@ def setup_sqlitedb(sqlite_db_path):
     sqlite_cursor.execute(sql2)
     sqlite_cursor.execute(sql3)
     sqlite_cursor.execute(sql4)
-    sqlite_cursor.execute(sql5)
+    sqlite_cursor.execute(sql5) 
 
     sqlite_conn.commit()
+
 
 
 if __name__ == '__main__':
