@@ -37,7 +37,7 @@ class StringPMID():
         
         sql_species = 'select species_id,compact_name from species'
         self.pmid2article_data = manipulate_biosqldb.to_dict(self.string_cursor.execute(sql,).fetchall())
-        self.species_id2species_name = manipulate_biosqldb.to_dict(self.string_cursor.execute(sql_species).fetchall()))
+        self.species_id2species_name = manipulate_biosqldb.to_dict(self.string_cursor.execute(sql_species).fetchall())
                 
         # retrieve protein hash from biosqldb
         sql = f'select distinct hash from string.seqfeature_id2string_protein_mapping t1 inner join annotation.hash2seqfeature_id_{db_name} t2 on t1.seqfeature_id=t2.seqfeature_id;'
