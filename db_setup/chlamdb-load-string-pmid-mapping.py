@@ -131,16 +131,16 @@ class StringPMID():
                     if not string_protein_id:
                         # new string entry
                         
-                        sql_protein_data = f'select protein_external_id,annotation,preferred_name,pmid from proteins t1 inner join protein_id2pmid t2 on t1.protein_id=t2.protein_id where protein_external_id="{accession}";'
+                        sql_protein_data = f'select protein_external_id,annotation,preferred_name,pmid from proteins t1 inner join protein_id2pmid t2 on t1.protein_id=t2.protein_id where protein_external_id="{hit_accession}";'
                     
-                        protein_data = list(list[i] for i in self.sql_protein.execute(sql_protein_data,).fetchall())
-                        nr_pmid_list = [i[3] for i in protein_data]
+                        protein_data = list(list(i) for i in self.string_cursor.execute(sql_protein_data,).fetchall())
+                        nr_pmid_list = [str(i[3]) for i in protein_data]
                         
-                        protein_external_id, annotation, preferred_name = protein_data[0]
+                        protein_external_id, annotation, preferred_name, pmid = protein_data[0]
                         species_id = protein_external_id.split(".")[0]
                         species_name = self.species_id2species_name[species_id]
                         
-                        sql = f'insert into string.string_protein_entry (accession, organism, description, preferred_name) values (%s, %s, %s, %s, %s)'
+                        sql = f'insert into string.string_protein_entry (accession, organism, description, preferred_name) values (%s, %s, %s, %s)'
                         self.server.adaptor.execute(sql, (protein_external_id, species_name, annotation, preferred_name))
                         
                         # add new id to dictionnary
@@ -148,13 +148,13 @@ class StringPMID():
                         self.string_proteins2string_protein_id[hit_accession] = string_protein_id
                         
                         for pmid in nr_pmid_list:
-                            sql = f'insert into string.string_protein_id2pmid (string_protein_id, pmid) values ({string_protein_id}, {pmid})'
+                            sql = f'insert into string.string_protein2pmid (string_protein_id, pmid) values ({string_protein_id}, {pmid})'
                             self.server.adaptor.execute(sql,)
                             # insert data if not already present in db 
                             if pmid not in self.pmid_in_db:
                                 article_data = self.pmid2article_data[pmid]
                                 publication_date, publication_source, linkout_url, authors, title = article_data
-                                sql2 = f'insert into string.pmid2data_stringdb (pmid, title, journal, year, authors) values (%s, %s, %s, %s, %s, %s)'
+                                sql2 = f'insert into string.pmid2data_stringdb (pmid, title, journal, year, linkout_url, authors) values (%s, %s, %s, %s, %s, %s)'
                                 self.server.adaptor.execute(sql2, (pmid, title, publication_source, publication_date, linkout_url, authors))
                                 self.pmid_in_db.append(pmid)
 
