@@ -4,7 +4,7 @@
     {% load staticfiles %}
     {% include "chlamdb/header.html" %}
     {% load custom_tags %}
-    <script type="text/javascript" src="{% static 'js/mark.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/mark.min.js' %}?v1"></script>
 </head>
 
 <body>
@@ -424,6 +424,7 @@ mark{
 <script>
   var options = {
       "ignoreJoiners": true,
+      "wildcards": "enabled",
       "exclude": [
           "h3",
           ".byline *",
@@ -583,7 +584,7 @@ mark{
   $(document).ready(function() {
     var docu = document.getElementById("wrapper");
     var instance = new Mark(docu);
-    instance.mark("{{search_term}}", options);
+    instance.mark("{{search_term_edit}}", options);
   } );
 
 </script>

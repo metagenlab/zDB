@@ -10300,6 +10300,7 @@ def interpro(request):
             search_type = form.cleaned_data['search_type']
             search_term = form.cleaned_data['search_term']
             taxon_ids = form.cleaned_data['targets']
+
             #biodb = form.cleaned_data['biodatabase']
             server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -10590,7 +10591,7 @@ def search(request):
                     sql1 = 'select * from (SELECT pmid,title, MATCH (title) AGAINST ("%s" IN BOOLEAN MODE) as score ' \
                           ' FROM string.pmid2data_paperblast )A where score > 0 order by score DESC limit 20;' % (search_term)
                     sql2 = 'SELECT pmid,title,year,journal,authors from string.pmid2data_stringdb where MATCH(title,journal,year,authors)' \
-                           ' AGAINST ("%s" IN BOOLEAN MODE) > 0 limit 10;' % (search_term)
+                           ' AGAINST ("%s" IN BOOLEAN MODE) > 0 limit 50;' % (search_term)
                     #raw_data_pmid_paperblast2title = server.adaptor.execute_and_fetchall(sql1,)
                     raw_data_pmid_string2title = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
                     
@@ -10643,6 +10644,8 @@ def search(request):
             display_from = 'yes'
             form = SearchForm()
 
+    search_term_edit = re.sub("\-|\+", "", search_term)
+    print("SEARCH:", search_term_edit, search_term)
 
     return render(request, 'chlamdb/search.html', locals())
 
