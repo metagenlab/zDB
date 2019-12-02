@@ -178,7 +178,7 @@
                                     <h3 class="panel-title">Acronyms</h3>
                                 </div>
                                 <table class="table table-striped">
-                                   <tr><td>S</td> <td> strand</td> </tr>
+                                   <tr><td>S</td>  <td> strand</td> </tr>
                                    <tr><td>nH</td> <td> total number of homologues</td> </tr>
                                    <tr><td>nG</td> <td> number of genomes in which at least one homologous protein is present</td> </tr>
                                    <tr><td>TM</td> <td> Transmmembrane domains</td> </tr>
@@ -389,12 +389,12 @@
                                       <tbody>
                                       {% for key, values in pmid2title.items %}
                                           <tr>
-                                              <td><a href="https://"  target="_top">{{key}}</a></td>
+                                              <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{key}}"  target="_top">{{key}}</a></td>
                                               <td>{{values.0}}</td>
                                               <td>{{values.2}}</td>
                                               <td>{{values.1}}</td>
                                               <td>{{values.3}}</td>
-                                              <td>{{ pmid2n_homologs|keyvalue:key }}</td>
+                                              <td><a href="{% url 'pmid_associations_orthogroups' key "STRING" %}">{{ pmid2n_homologs|keyvalue:key }}</a></td>
                                           </tr>
 
                                       {% endfor %}
@@ -580,6 +580,28 @@ mark{
     fixedHeader: true
     } );
   } );
+
+  $(document).ready(function() {
+    $('#search_table8').DataTable( {
+      dom: 'Bfrtip',
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'search'
+        },
+        {
+            extend: 'csv',
+            title: 'search'
+        }
+      ],
+    "paging":   true,
+    "ordering": true,
+    "info":     false,
+    colReorder: true,
+    fixedHeader: true
+    } );
+  } );
+
 
   $(document).ready(function() {
     var docu = document.getElementById("wrapper");

@@ -87,7 +87,7 @@
                                     <td>{{row.11}}</td>
                                     <td>{{row.12}}</td>
 
-                                    <td> <a href="{% url 'pmid_associations' bioentry_id row.9 "paperblast" %}" target="_top"> {{ pmid2n_associated_proteins|keyvalue:row.9 }} </a></td>
+                                    <td> <a href="{% url 'pmid_associations' bioentry_id row.9 "PaperBlast" %}" target="_top"> {{ pmid2n_associated_proteins|keyvalue:row.9 }} </a></td>
                                 </tr>
                            {% endfor %} 
                         </table>
@@ -132,7 +132,7 @@
                                             <td>{{row.10}}</td>
                                             <td>{{row.11}}</td>
         
-                                            <td> <a href="{% url 'pmid_associations' bioentry_id row.8 "string" %}" target="_top"> {{ pmid2n_associated_proteins_string|keyvalue:row.8 }} </a></td>
+                                            <td> <a href="{% url 'pmid_associations' bioentry_id row.8 "STRING" %}" target="_top"> {{ pmid2n_associated_proteins_string|keyvalue:row.8 }} </a></td>
                                         </tr>
                                    {% endfor %} 
                                 </table>
@@ -177,7 +177,7 @@
                                             <td>{{row.10}}</td>
                                             <td>{{row.11}}</td>
         
-                                            <td> <a href="{% url 'pmid_associations' bioentry_id row.8 "string" %}" target="_top"> {{ pmid2n_associated_proteins_string|keyvalue:row.8 }} </a></td>
+                                            <td> <a href="{% url 'pmid_associations' bioentry_id row.8 "STRING" %}" target="_top"> {{ pmid2n_associated_proteins_string|keyvalue:row.8 }} </a></td>
                                         </tr>
                                    {% endfor %} 
                                 </table>

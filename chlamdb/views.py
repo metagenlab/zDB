@@ -1914,7 +1914,7 @@ def pmid_associations(request, bioentry_id, pmid, data_type):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    if data_type == "paperblast":
+    if data_type == "PaperBlast":
         sql = 'select t1.description from biosqldb.bioentry t1 inner join biosqldb.biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t1.bioentry_id=%s and t2.name="%s"' % (bioentry_id, biodb)
         genome = server.adaptor.execute_and_fetchall(sql,)[0][0]
 
@@ -1926,7 +1926,7 @@ def pmid_associations(request, bioentry_id, pmid, data_type):
             ' inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
             ' where PMID=%s and bioentry_id=%s;' % (biodb, pmid, bioentry_id)
 
-    if data_type == "string":
+    if data_type == "STRING":
         sql = 'select t1.description from biosqldb.bioentry t1 ' \
               ' inner join biosqldb.biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t1.bioentry_id=%s and t2.name="%s"' % (bioentry_id, biodb)
         genome = server.adaptor.execute_and_fetchall(sql,)[0][0]
@@ -1953,6 +1953,51 @@ def pmid_associations(request, bioentry_id, pmid, data_type):
 
 
     return render(request, 'chlamdb/pmid_associations.html', locals())
+
+
+def pmid_associations_orthogroups(request, pmid, data_type):
+    from chlamdb.biosqldb import biosql_own_sql_tables
+
+    biodb = settings.BIODB
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    if data_type == "PaperBlast":
+        sql = 'select t1.description from biosqldb.bioentry t1 inner join biosqldb.biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t1.bioentry_id=%s and t2.name="%s"' % (bioentry_id, biodb)
+        genome = server.adaptor.execute_and_fetchall(sql,)[0][0]
+
+        sql = 'select title,journal,year from string.pmid2data_paperblast where pmid=%s;' % (pmid)
+        paper_data = server.adaptor.execute_and_fetchall(sql,)[0]
+
+        sql = 'select distinct locus_tag from string.seqfeature_id2paperblast t1 ' \
+            ' inner join string.paperblast2pmid t2 on t1.paperblast_id=t2.paperblast_id ' \
+            ' inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+            ' where PMID=%s and bioentry_id=%s;' % (biodb, pmid, bioentry_id)
+
+    if data_type == "STRING":
+        sql = 'select t1.pmid,orthogroup_name from string.pmid2data_stringdb t1 ' \
+                ' inner join string.string_protein2pmid t2 on t1.pmid=t2.pmid ' \
+                ' inner join string.seqfeature_id2string_protein_mapping t3 on t2.string_protein_id=t3.string_protein_id ' \
+                ' inner join orthology.seqfeature_id2orthogroup_%s t4 on t3.seqfeature_id=t4.seqfeature_id ' \
+                ' inner join orthology.orthogroup_%s t5 on t4.orthogroup_id=t5.orthogroup_id' \
+                ' where t1.pmid in (%s) group by t1.pmid,orthogroup_name' % (biodb, biodb, pmid)
+
+        orthogroups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+        sql2 = 'select title,journal,year from string.pmid2data_stringdb where pmid=%s;' % (pmid)
+        paper_data = server.adaptor.execute_and_fetchall(sql2,)[0]
+
+    orthogroup_list =[i[1] for i in server.adaptor.execute_and_fetchall(sql,)] 
+
+    match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(orthogroup_list,
+                                                                                                  biodb,
+                                                                                                  taxon_filter=False,
+                                                                                                  accessions=False)
+
+
+    return render(request, 'chlamdb/pmid_associations_orthogroups.html', locals())
+
+
+
 
 def pmid(request, seqfeature_id):
     biodb = settings.BIODB

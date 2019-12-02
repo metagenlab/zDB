@@ -171,6 +171,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^circos2genomes/$', views.circos2genomes, name="circos2genomes"),
                        url(r'^download_COG/$', views.download_COG, name="download_COG"),
                        url(r'^pmid_associations/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)$', views.pmid_associations, name="pmid_associations"),
+                       url(r'^pmid_associations_orthogroups/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)$', views.pmid_associations_orthogroups, name="pmid_associations_orthogroups"),
                        url(r'^metabo_overview/$', views.metabo_overview, name="metabo_overview"),
                        url(r'^kegg_module/$', views.kegg_module, name="kegg_module"),
                        url(r'^kegg_module_subcat$', views.kegg_module_subcat, name="kegg_module_subcat"),
