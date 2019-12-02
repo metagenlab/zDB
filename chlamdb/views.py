@@ -10507,17 +10507,18 @@ def search(request):
                     # CREATE FULLTEXT INDEX GPF2 ON orthology_detail_2019_06_PVC(product);
                     # CREATE FULLTEXT INDEX GPF3 ON orthology_detail_2019_06_PVC(organism);
                     # CREATE FULLTEXT INDEX GPF4 ON orthology_detail_2019_06_PVC(gene,product,organism);
+                    print(search_term)
                     sql = 'SELECT %s, ' \
                           ' MATCH (gene) AGAINST ("%s") AS rel1, ' \
                           ' MATCH (product) AGAINST ("%s") AS rel2, ' \
                           ' MATCH (organism) AGAINST ("%s") AS rel3 FROM orthology_detail_%s t1 ' \
-                          ' WHERE MATCH (gene,product,organism) AGAINST ("%s") ORDER BY (rel1)+(rel2*0.5)+(rel3*10) DESC limit 100;' % (columns,
+                          ' WHERE MATCH (gene,product,organism) AGAINST ("%s" IN BOOLEAN MODE) ORDER BY (rel1)+(rel2*0.5)+(rel3*10) DESC limit 100;' % (columns,
                                                                                                                                         search_term,
                                                                                                                                         search_term,
                                                                                                                                         search_term,
                                                                                                                                         biodb,
                                                                                                                                         search_term)
-
+                    print(sql)
                     raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
 
                     n = 1
@@ -10573,25 +10574,62 @@ def search(request):
 
                     # CREATE FULLTEXT INDEX modf ON enzyme.kegg_module_v1(description, module_sub_cat);
                     sql = 'select module_name,module_sub_cat,module_sub_sub_cat,description from enzyme.kegg_module_v1 ' \
-                          ' where (description REGEXP "%s" or module_sub_cat REGEXP "%s")' % (search_term, search_term)
+                          ' where MATCH(description,module_sub_cat) AGAINST("%s" IN BOOLEAN MODE)' % (search_term)
                     raw_data_module = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_module) == 0:
                         raw_data_module = False
 
                     # CREATE FULLTEXT INDEX kegf ON enzyme.kegg_pathway(description, pathway_category);
                     sql = 'select pathway_name,pathway_category,description from enzyme.kegg_pathway ' \
-                          ' where (description REGEXP "%s" or pathway_category REGEXP "%s")' % (search_term, search_term)
+                          ' where MATCH(description, pathway_category) AGAINST("%s" IN BOOLEAN MODE) ' % (search_term)
                     raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_pathway) == 0:
                         raw_data_pathway = False
                     
+                    # ALTER TABLE pmid2data_stringdb ADD FULLTEXT (title,journal,year,authors);;
+                    sql1 = 'select * from (SELECT pmid,title, MATCH (title) AGAINST ("%s" IN BOOLEAN MODE) as score ' \
+                          ' FROM string.pmid2data_paperblast )A where score > 0 order by score DESC limit 20;' % (search_term)
+                    sql2 = 'SELECT pmid,title,year,journal,authors from string.pmid2data_stringdb where MATCH(title,journal,year,authors)' \
+                           ' AGAINST ("%s" IN BOOLEAN MODE) > 0 limit 10;' % (search_term)
+                    #raw_data_pmid_paperblast2title = server.adaptor.execute_and_fetchall(sql1,)
+                    raw_data_pmid_string2title = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+                    
+                    pmid2title = {}
+                    #pmid2title.update(raw_data_pmid_paperblast2title)
+                    pmid2title.update(raw_data_pmid_string2title)
+
+                    pmid_data = False
+                    if len(pmid2title) != 0:
+                        sql = 'select A.pmid,count(*) as n from (select t1.pmid,orthogroup_id from string.pmid2data_stringdb t1 ' \
+                              ' inner join string.string_protein2pmid t2 on t1.pmid=t2.pmid ' \
+                              ' inner join string.seqfeature_id2string_protein_mapping t3 on t2.string_protein_id=t3.string_protein_id ' \
+                              ' inner join orthology.seqfeature_id2orthogroup_%s t4 on t3.seqfeature_id=t4.seqfeature_id ' \
+                              ' where t1.pmid in (%s) group by t1.pmid,orthogroup_id) A group by pmid;' % (biodb, ','.join(pmid2title.keys()))
+
+                        pmid2n_homologs = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+                        pmid_data = True
+                        '''
+                        set_pmid_paperblast = set(raw_data_pmid_paperblast2title.keys())
+                        set_pmid_string = set(raw_data_pmid_string2title.keys())
+                        pmid2presence = {}
+                        for pmid in pmid2title:
+                            if pmid in set_pmid_paperblast and pmid in set_pmid_string:
+                                pmid2presence[pmid] = [1,1]
+                            if pmid in set_pmid_paperblast and pmid not in set_pmid_string: 
+                                pmid2presence[pmid] = [1,0]
+                            if pmid not in set_pmid_paperblast and pmid in set_pmid_string: 
+                                pmid2presence[pmid] = [0,1]    
+                        '''
+                                   
                     if not raw_data_module \
                             and not raw_data_pathway \
                             and not raw_data_EC \
                             and not raw_data_ko \
                             and not raw_data_cog \
                             and not raw_data_interpro \
-                            and not raw_data_gene_raw_data_product:
+                            and not raw_data_gene_raw_data_product \
+                            and not pmid_data:
                         search_echec = True
             envoi = True
             display_form = "no"
