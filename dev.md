@@ -77,7 +77,7 @@
 - [ ] load GOA annotation
 - [ ] krona like plots for blast
 - [ ] kronal like plots for 1 blast hit, 2 blast hit,... (choice) 
-- [ ] similarity networks dervied from patristic distances (from RefSeq phylogeny?) ==>better than identity, score or e-value
+- [ ] similarity networks dervied from patristic distances (from RefSeq phylogeny?) ==> better than identity, score or e-value
 
 ## priority 2
 
@@ -105,7 +105,7 @@
 
 ## user interface
 
-- [ ] gene sets: table allowing redordering (drag and drop )
+- [ ] gene sets: table allowing redordering (drag and drop)
 - [ ] plot distribution normalized identity between species (rate of evolution)
 - [ ] species tree (collapsed)
 - [ ] paralogs tab?
@@ -144,7 +144,11 @@
     - [X] mapping to uniprot (n mapped, n reviewed,...)
 
 - [X] 2019_06_PVC: add MSA faa to assets
-
+- [X] update search using synonymous table single vs multiple matches
+- [X] update to boolean search
+- [X] deal with COG, PFAM,... missing from the database
+- [X] check and update module, pathway, fam profile,... profile figure size
+- 
 - [ ] download page - bulk download all genome or for specific genomes 
   - [ ] KO annotation 
   - [ ] COG annotation 
@@ -157,14 +161,8 @@
   - [ ] all alignments
   - [ ] ...
   
-- [ ] update search using synonymous table single vs multiple matches
-- [ ] update to boolean search
 
-
-- [ ] deal with COG, PFAM,... missing from the database
-- [ ] check and update module, pathway, fam profile,... profile figure size
-
-- [ ] add download newick tree on pfam, TM tabs and phylogeny with BBH
+- [X] add download newick tree on pfam, TM tabs and phylogeny with BBH
 - [ ] add uniprot proteome column (+ percent overlap) to genome table
 - [ ] add explanations for hydropathy plot
 - [ ] improve integration of transporters_family 
@@ -185,7 +183,7 @@
   - [ ] display on homepage
   - [ ] use it for phylogenetic profiling?
 - [ ] deal with search for KO, KEGG, IP absent from genomes included in the database
-- [ ] show confidence scores for PDB, KEGG, COG,... (identity, score, evalue,...)
+- [X] show confidence scores for PDB, KEGG, COG,... (identity, score, evalue,...)
 - [ ] integration of swissprot keywords (possibility to click on it and get complete list of prot, decsription,...)
 - [ ] add tcdb classification to "fam" (annotation, phylogenetic profile,...). Include all classification levels (superfamilies,...)
 - [ ] idem with EC classification system
