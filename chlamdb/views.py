@@ -1910,20 +1910,34 @@ def venn_cog(request, accessions=False):
     return render(request, 'chlamdb/venn_cogs.html', locals())
 
 
-def pimd_associations(request, bioentry_id, pmid):
+def pmid_associations(request, bioentry_id, pmid, data_type):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select t1.description from biosqldb.bioentry t1 inner join biosqldb.biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t1.bioentry_id=%s and t2.name="%s"' % (bioentry_id, biodb)
-    genome = server.adaptor.execute_and_fetchall(sql,)[0][0]
+    if data_type == "paperblast":
+        sql = 'select t1.description from biosqldb.bioentry t1 inner join biosqldb.biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t1.bioentry_id=%s and t2.name="%s"' % (bioentry_id, biodb)
+        genome = server.adaptor.execute_and_fetchall(sql,)[0][0]
 
-    sql = 'select title,journal,year from string.pmid2data_paperblast where pmid=%s;' % (pmid)
-    paper_data = server.adaptor.execute_and_fetchall(sql,)[0]
+        sql = 'select title,journal,year from string.pmid2data_paperblast where pmid=%s;' % (pmid)
+        paper_data = server.adaptor.execute_and_fetchall(sql,)[0]
 
-    sql = 'select distinct locus_tag from string.seqfeature_id2paperblast t1 ' \
-          ' inner join string.paperblast2pmid t2 on t1.paperblast_id=t2.paperblast_id ' \
-          ' inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
-          ' where PMID=%s and bioentry_id=%s;' % (biodb, pmid, bioentry_id)
+        sql = 'select distinct locus_tag from string.seqfeature_id2paperblast t1 ' \
+            ' inner join string.paperblast2pmid t2 on t1.paperblast_id=t2.paperblast_id ' \
+            ' inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+            ' where PMID=%s and bioentry_id=%s;' % (biodb, pmid, bioentry_id)
+
+    if data_type == "string":
+        sql = 'select t1.description from biosqldb.bioentry t1 ' \
+              ' inner join biosqldb.biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t1.bioentry_id=%s and t2.name="%s"' % (bioentry_id, biodb)
+        genome = server.adaptor.execute_and_fetchall(sql,)[0][0]
+
+        sql = 'select title,journal,year from string.pmid2data_stringdb where pmid=%s;' % (pmid)
+        paper_data = server.adaptor.execute_and_fetchall(sql,)[0]
+
+        sql = 'select distinct locus_tag from string.seqfeature_id2string_protein_mapping t1 ' \
+            ' inner join string.string_protein2pmid t2 on t1.string_protein_id=t2.string_protein_id ' \
+            ' inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+            ' where PMID=%s and bioentry_id=%s;' % (biodb, pmid, bioentry_id)
 
     locus_list =[i[0] for i in server.adaptor.execute_and_fetchall(sql,)] 
 
@@ -1947,19 +1961,27 @@ def pmid(request, seqfeature_id):
     sql1 = f'select distinct accession,db_name,organism,description,query_cov,hit_cov,identity,evalue,score,t4.* from string.seqfeature_id2paperblast t1' \
             f' inner join string.paperblast_entry t2 on t1.paperblast_id=t2.id inner join string.paperblast2pmid t3 on t1.paperblast_id=t3.paperblast_id' \
             f' inner join string.pmid2data_paperblast t4 on t3.pmid=t4.pmid where t1.seqfeature_id={seqfeature_id};'
+    
+    print(sql1)
+
     pubmed_count = 0
     try:
         paperblast_data = server.adaptor.execute_and_fetchall(sql1,)
     except:
         paperblast_data = False
 
+    sql1 = f'select bioentry_id,locus_tag from annotation.seqfeature_id2locus_{biodb} where seqfeature_id={seqfeature_id}' 
+
+    data = server.adaptor.execute_and_fetchall(sql1,)[0]
+    bioentry_id = data[0]
+    locus_tag = data[1]
+
     if paperblast_data:
         # retrieve bioentry
 
         pmid_list =[str(i[9]) for i in paperblast_data] 
         pmid_filter = ','.join(pmid_list)
-        sql1 = f'select bioentry_id from annotation.seqfeature_id2locus_{biodb} where seqfeature_id={seqfeature_id}' 
-        bioentry_id = server.adaptor.execute_and_fetchall(sql1,)[0][0]
+
         sql_2 = 'select pmid,count(*) from (select distinct pmid,t3.seqfeature_id from string.seqfeature_id2paperblast t1 ' \
                 ' inner join string.paperblast2pmid t2 on t1.paperblast_id=t2.paperblast_id ' \
                 ' inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
@@ -1967,13 +1989,32 @@ def pmid(request, seqfeature_id):
         pmid2n_associated_proteins = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_2,))
         pmid2n_associated_proteins = {int(k):int(v) for k,v in pmid2n_associated_proteins.items()}
 
-    sql2 = f'select t1.pmid,authors,title,abstract,source from string.seqfeature_id2pmid_{biodb}  t1 ' \
-            f' inner join string.pmid2data t2 on t1.pmid=t2.pmid where t1.seqfeature_id={seqfeature_id};'
+    sql2 = f'select distinct accession,organism,description,query_cov,hit_cov,identity,evalue,score,t4.* ' \
+           f' from string.seqfeature_id2string_protein_mapping t1 ' \
+           f' inner join string.string_protein_entry t2 on t1.string_protein_id=t2.id ' \
+           f' inner join string.string_protein2pmid t3 on t1.string_protein_id=t3.string_protein_id ' \
+           f' inner join string.pmid2data_stringdb t4 on t3.pmid=t4.pmid where t1.seqfeature_id={seqfeature_id};'
+
+    print(sql2)    
     try:
         string_data = server.adaptor.execute_and_fetchall(sql2,)
     except:
         string_data = False
 
+
+    if string_data:
+        
+        pmid_list =[str(i[8]) for i in string_data] 
+        pmid_filter = ','.join(pmid_list)
+
+        sql_2 = 'select pmid,count(*) from (select distinct pmid,t3.seqfeature_id from string.seqfeature_id2string_protein_mapping t1 ' \
+                ' inner join string.string_protein2pmid t2 on t1.string_protein_id=t2.string_protein_id ' \
+                ' inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+                ' where bioentry_id=%s) A where A.pmid in (%s) group by pmid;'  % (biodb, bioentry_id, pmid_filter)
+        
+        pmid2n_associated_proteins_string = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_2,))
+        pmid2n_associated_proteins_string = {int(k):int(v) for k,v in pmid2n_associated_proteins_string.items()}
+        print(pmid2n_associated_proteins_string)
     return render(request, 'chlamdb/pmid.html', locals())
 
 
@@ -9294,6 +9335,7 @@ def annotation_overview(request):
 
     sql_string_pmid = 'select taxon_id,count(*) from(select * from string.seqfeature_id2string_pmid_%s ' \
                       ' group by seqfeature_id) A where taxon_id is not NULL group by taxon_id;' % biodb
+
     taxon_id2count_pmid = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_string_pmid,))
 
 

@@ -51,13 +51,13 @@
                     <table class="table" id="paperblast">
                         <thead>
                             <tr>
-                                <th>hit</th>
-                                <th>organism</th>
-                                <th>description</th>
-                                <th>identity</th>
-                                <th>title</th>
-                                <th>journal</th>
-                                <th>year</th>
+                                <th>Hit</th>
+                                <th>Organism</th>
+                                <th>PaperBLAST description</th>
+                                <th>Identity <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Identity between {{locus_tag}} and the closest hits in the PaperBLAST database"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
+                                <th>Paper title</th>
+                                <th>Journal</th>
+                                <th>Year</th>
                                 <th>Number of proteins <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Number of proteins from this genome associated with the same pubmed entry. Click to access the list of proteins."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                             </tr>
                         </thead>
@@ -87,7 +87,7 @@
                                     <td>{{row.11}}</td>
                                     <td>{{row.12}}</td>
 
-                                    <td> <a href="{% url 'pimd_associations' bioentry_id row.9 %}" target="_top"> {{ pmid2n_associated_proteins|keyvalue:row.9 }} </a></td>
+                                    <td> <a href="{% url 'pmid_associations' bioentry_id row.9 "paperblast" %}" target="_top"> {{ pmid2n_associated_proteins|keyvalue:row.9 }} </a></td>
                                 </tr>
                            {% endfor %} 
                         </table>
@@ -102,28 +102,43 @@
                                     <h3 class="panel-title">Help</h3>
                                 </div>
                                 <p style="margin: 10px 10px 10px 10px">
-                                        The <a href="https://string-db.org/" target="_top"></a>STRING</a> database provides links to the litterature based on the automated analysis of scientific publications 
-                                        (textmining). Contrarily to PaperBLast results, references to the litterature were retrieved from STRING for strictly identical proteins only (no references are 
-                                        reported for proteins absent from the STRING database).
+                                        The <a href="https://string-db.org/" target="_top">STRING</a> database provides links to the litterature based on the automated analysis of scientific publications 
+                                        (textmining). References to the litterature were retrieved from STRING for the top 20 best BLAST hits in the STRING database.
                                 </p>
                             </div>
 
-                        <table class="table" id="pmid_table">
-
-                                {% for row in string_data%}
+                            <table class="table" id="string">
+                                <thead>
                                     <tr>
-                                        <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{row.0}}" target="_top"><font size="2">{{row.2}}</font>
-                                            <br>
-                                            {{row.4}}
-                                            </font></a></td>
-                                        <td>{{row.1}}</td>
+                                        <th>Hit</th>
+                                        <th>Organism</th>
+                                        <th>STRING Description</th>
+                                        <th>Identity <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Identity between {{locus_tag}} and the closest hits in the STRING database"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
+                                        <th>Paper title</th>
+                                        <th>Journal</th>
+                                        <th>Year</th>
+                                        <th>Number of proteins <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Number of proteins from this genome associated with the same pubmed entry. Click to access the list of proteins."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                     </tr>
-                                    <tr>
-                                        <td colspan="3">{{row.3}}</td>
-                                    </tr>
-
-                                {%endfor%}
+                                </thead>
+                                <tbody>
+                                   {% for row in string_data %} 
+                                        <tr>
+                                            <!--accession,db_name,organism,description,query_cov,hit_cov,identity,evalue,score,pmid,title,journal,year-->
+                                            <td><a href="http://string-db.org/newstring_cgi/show_network_section.pl?identifier={{row.0}}" target="_top">{{row.0}}</a></td> 
+                                            <td>{{row.3}}</td>
+                                            <td>{{row.4}}</td> 
+                                            <td>{{row.5}}</td>
+                                            <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{row.8}}" target="_top">{{row.9}}</a></td>
+                                            <td>{{row.10}}</td>
+                                            <td>{{row.11}}</td>
+        
+                                            <td> <a href="{% url 'pmid_associations' bioentry_id row.8 "string" %}" target="_top"> {{ pmid2n_associated_proteins_string|keyvalue:row.8 }} </a></td>
+                                        </tr>
+                                   {% endfor %} 
+                                </table>
                             </table>
+
+
                 </div>
             {% elif string_data and paperblast_data %}   
                 <div class="tab-pane" id="tab2" style="height:8800px">
@@ -132,27 +147,40 @@
                                     <h3 class="panel-title">Help</h3>
                                 </div>
                                 <p style="margin: 10px 10px 10px 10px">
-                                        The <a href="https://string-db.org/" target="_top"></a>STRING</a> database provides links to the litterature based on the automated analysis of scientific publications 
-                                        (textmining). Contrarily to PaperBLast results, references to the litterature were retrieved from STRING for strictly identical proteins only (no references are 
-                                        reported for proteins absent from the STRING database).
+                                        The <a href="https://string-db.org/" target="_top">STRING</a> database provides links to the litterature based on the automated analysis of scientific publications 
+                                        (textmining). References to the litterature were retrieved from STRING for the top 20 best BLAST hits in the STRING database.
                                 </p>
                             </div>
 
-                        <table class="table" id="pmid_table">
-
-                                {% for row in string_data %}
+                            <table class="table" id="string">
+                                <thead>
                                     <tr>
-                                        <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{row.0}}" target="_top"><font size="2">{{row.2}}</font>
-                                            <br>
-                                            {{row.4}}
-                                            </font></a></td>
-                                        <td>{{row.1}}</td>
+                                        <th>Hit</th>
+                                        <th>Organism</th>
+                                        <th>STRING description</th>
+                                        <th>Identity <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Identity between {{locus_tag}} and the closest hits in the STRING database"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
+                                        <th>Paper title</th>
+                                        <th>Journal</th>
+                                        <th>Year</th>
+                                        <th>Number of proteins <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Number of proteins from this genome associated with the same pubmed entry. Click to access the list of proteins."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
                                     </tr>
-                                    <tr>
-                                        <td colspan="3">{{row.3}}</td>
-                                    </tr>
-
-                                {%endfor%}
+                                </thead>
+                                <tbody>
+                                   {% for row in string_data %} 
+                                        <tr>
+                                            <!--accession,db_name,organism,description,query_cov,hit_cov,identity,evalue,score,pmid,title,journal,year-->
+                                            <td><a href="http://string-db.org/newstring_cgi/show_network_section.pl?identifier={{row.0}}" target="_top">{{row.0}}</a></td> 
+                                            <td>{{row.1}}</td>
+                                            <td>{{row.2}}</td> 
+                                            <td>{{row.5}}</td>
+                                            <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{row.8}}" target="_top">{{row.9}}</a></td>
+                                            <td>{{row.10}}</td>
+                                            <td>{{row.11}}</td>
+        
+                                            <td> <a href="{% url 'pmid_associations' bioentry_id row.8 "string" %}" target="_top"> {{ pmid2n_associated_proteins_string|keyvalue:row.8 }} </a></td>
+                                        </tr>
+                                   {% endfor %} 
+                                </table>
                             </table>
                 </div>         
             {% else %} 
@@ -188,6 +216,29 @@ $(document).ready(function() {
     fixedHeader: true
     } );
   } );
+
+  $(document).ready(function() {
+    $('#string').DataTable( {
+      dom: 'Bfrtip',
+      buttons: [
+        {
+            extend: 'excel',
+            title: 'search'
+        },
+        {
+            extend: 'csv',
+            title: 'search'
+        }
+      ],
+    "order": [[ 3, "desc" ]],
+    "paging":   true,
+    "ordering": true,
+    "info":     false,
+    colReorder: true,
+    fixedHeader: true
+    } );
+  } );
+
 
 </script>
 
