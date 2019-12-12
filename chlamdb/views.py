@@ -3334,6 +3334,181 @@ def COG_phylo_heatmap(request, frequency):
     return render(request, 'chlamdb/COG_phylo_heatmap.html', locals())
 
 
+
+def plot_hist(data, xlab, ylab, title, abline, div_id):
+
+    import plotly.graph_objects as go
+    from collections import Counter
+    import plotly.figure_factory as ff
+
+    plot_data = [go.Histogram(x=data)]
+
+    layout = go.Layout(
+        title=title,
+        yaxis=go.layout.YAxis(
+            title=go.layout.yaxis.Title(
+                text=ylab,
+                font=dict(
+                    family='Courier New, monospace',
+                    size=15,
+                    color='#7f7f7f'
+                )
+            )
+        ),
+        xaxis=go.layout.XAxis(
+            title=go.layout.xaxis.Title(
+                text=xlab,
+                font=dict(
+                    family='Courier New, monospace',
+                    size=15,
+                    color='#7f7f7f'
+                )
+            )
+        )
+    )
+
+    fig = go.Figure()
+
+    fig = go.Figure(data=plot_data, 
+                    layout=layout)
+
+    if abline:
+        # Add abline
+        fig.add_shape(
+                # Line Vertical
+                go.layout.Shape(
+                    type="line",
+                    x0=abline,
+                    y0=0,
+                    x1=abline,
+                    y1=200,
+                    line=dict(
+                        color="RoyalBlue",
+                        width=3
+                    )
+        ))
+
+    fig.layout.margin.update({"l": 80,
+                              "r": 20,
+                              "b": 40,
+                              "t": 80,
+                              "pad": 10,
+                                })
+
+    html_plot = manipulate_biosqldb.make_div(fig, div_id=div_id)
+    return html_plot
+
+
+def effector_predictions(request, genome):
+    biodb = settings.BIODB
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    sql = f'select taxon_id from biosqldb.bioentry where accession="{genome}"'
+    taxid_list = [str(server.adaptor.execute_and_fetchall(sql,)[0][0])]
+
+    print(taxid_list)
+
+    sql_locus_tag_effectiveT3 = 'select distinct t2.locus_tag from effectors.predicted_effectiveT3_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    locus_tag_list_effective_T3 = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql_locus_tag_effectiveT3, )]
+
+    sql_locus_tag_T3MM = 'select distinct t2.locus_tag from effectors.predicted_T3MM_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s) and probability > 0.5;' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    locus_tag_list_effective_T3MM = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql_locus_tag_T3MM, )]
+
+    sql_locus_tag_BPBAac = 'select distinct t2.locus_tag from effectors.predicted_BPBAac_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    locus_tag_list_effective_BPBAac = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql_locus_tag_BPBAac, )]
+
+
+    sql_locus_tag_DeepT3 = 'select distinct t2.locus_tag from effectors.predicted_DeepT3_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    locus_tag_list_effective_DeepT3 = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql_locus_tag_DeepT3, )]
+
+
+    serie_effective_T3 = '{' + f'name: "effectiveT3", data: {locus_tag_list_effective_T3}'  + '}' 
+    serie_effective_T3MM = '{' + f'name: "T3MM", data: {locus_tag_list_effective_T3MM}'  + '}' 
+    serie_effective_BPBAac = '{' + f'name: "BPBAac", data: {locus_tag_list_effective_BPBAac}'  + '}' 
+    serie_effective_DeepT3 = '{' + f'name: "DeepT3", data: {locus_tag_list_effective_DeepT3}' + '}' 
+
+    #series = [serie_pfam, serie_interpro, serie_blastnr, serie_effective_ELD] # serie_effective_T3, serie_effective_T3MM
+
+    series = [serie_effective_T3, serie_effective_T3MM, serie_effective_BPBAac, serie_effective_DeepT3]
+    series_string = '[%s]' % ','.join(series)
+
+    envoi_venn = True
+
+
+
+    sql_scores_effectiveT3 = 'select score from effectors.predicted_effectiveT3_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    score_list_effective_T3 = [float(i[0]) for i in server.adaptor.execute_and_fetchall(sql_scores_effectiveT3, )]
+
+    
+    sql_scores_T3MM = 'select probability from effectors.predicted_T3MM_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    score_list_T3MM = [float(i[0]) for i in server.adaptor.execute_and_fetchall(sql_scores_T3MM, )]
+
+    
+    sql_scores_BPBAac = 'select SVM_value from effectors.predicted_BPBAac_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    score_list_BPBAac = [float(i[0]) for i in server.adaptor.execute_and_fetchall(sql_scores_BPBAac, )]
+
+    
+    sql_scores_DeepT3 = 'select score from effectors.predicted_DeepT3_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    # score_list_DeepT3 = [float(i[0]) for i in server.adaptor.execute_and_fetchall(sql_scores_DeepT3, )]
+
+    
+    title = 'Score distribution: effective_T3 (%s hits)' % len(score_list_effective_T3)
+    xlab = 'Score'
+    ylab = 'Density'
+    plot_effective_T3 = plot_hist(score_list_effective_T3, xlab, ylab, title, False, "plot1")
+    title = 'Score distribution: T3MM (%s hits)' % len(score_list_T3MM)
+    plot_T3MM = plot_hist(score_list_T3MM, xlab, ylab, title, False, "plot2")
+    title = 'Score distribution: BPBAac (%s hits)' % len(score_list_BPBAac)
+    plot_BPBAac = plot_hist(score_list_BPBAac, xlab, ylab, title, False, "plot3")    
+    # title = 'Score distribution: DeepT3 (%s hits)' % len(score_list_DeepT3)
+    # plot_DeepT3 = plot_hist(score_list_DeepT3, xlab, ylab, title, False, "plot4")      
+
+
+    
+
+    return render(request, 'chlamdb/venn_effectors.html', locals())
+
+
 def venn_candidate_effectors(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)

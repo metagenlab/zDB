@@ -58,6 +58,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^ko2fasta/([a-zA-Z0-9_]+)/', views.ko2fasta, name="ko2fasta"),
                        url(r'^pfam2fasta/([a-zA-Z0-9_]+)/', views.pfam2fasta, name="pfam2fasta"),
                        url(r'^venn_candidate_effectors/$', views.venn_candidate_effectors, name="venn_candidate_effectors"),
+                       url(r'^effector_predictions/([a-zA-Z0-9_]+)', views.effector_predictions, name="effector_predictions"),
                        url(r'^plot_heatmap/([a-zA-Z0-9_\-]+)', views.plot_heatmap, name="plot_heatmap"),
                        url(r'^get_newick_tree/([a-zA-Z0-9_\-]+)/([a-zA-Z0-9_\-]+)', views.get_newick_tree, name="get_newick_tree"),
                        url(r'^get_orthogroup_fasta/([a-zA-Z0-9_\-]+)/([a-zA-Z0-9_\-]+)', views.get_orthogroup_fasta, name="get_orthogroup_fasta"),
