@@ -10813,22 +10813,26 @@ def search(request):
                     sql2 = 'SELECT pmid,title,year,journal,authors from string.pmid2data_stringdb where MATCH(title,journal,year,authors)' \
                            ' AGAINST ("%s" IN BOOLEAN MODE) > 0 limit 50;' % (search_term)
                     #raw_data_pmid_paperblast2title = server.adaptor.execute_and_fetchall(sql1,)
-                    raw_data_pmid_string2title = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
-                    
+                    raw_data_pmid = list(server.adaptor.execute_and_fetchall(sql2,))
+                    for n,row in enumerate(raw_data_pmid):
+                        raw_data_pmid[n] = [str(i) for i in row]
                     pmid2title = {}
                     #pmid2title.update(raw_data_pmid_paperblast2title)
-                    pmid2title.update(raw_data_pmid_string2title)
+                    #pmid2title.update(raw_data_pmid_string2title)
 
                     pmid_data = False
-                    if len(pmid2title) != 0:
+                    if len(raw_data_pmid) != 0:
+
+                        pmid_list = [i[0] for i in raw_data_pmid]
+
                         sql = 'select A.pmid,count(*) as n from (select t1.pmid,orthogroup_id from string.pmid2data_stringdb t1 ' \
                               ' inner join string.string_protein2pmid t2 on t1.pmid=t2.pmid ' \
                               ' inner join string.seqfeature_id2string_protein_mapping t3 on t2.string_protein_id=t3.string_protein_id ' \
                               ' inner join orthology.seqfeature_id2orthogroup_%s t4 on t3.seqfeature_id=t4.seqfeature_id ' \
-                              ' where t1.pmid in (%s) group by t1.pmid,orthogroup_id) A group by pmid;' % (biodb, ','.join(pmid2title.keys()))
+                              ' where t1.pmid in (%s) group by t1.pmid,orthogroup_id) A group by pmid;' % (biodb, ','.join(pmid_list))
 
                         pmid2n_homologs = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
+                        print(pmid2n_homologs)
                         pmid_data = True
                         '''
                         set_pmid_paperblast = set(raw_data_pmid_paperblast2title.keys())

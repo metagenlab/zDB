@@ -387,14 +387,14 @@
                                           </tr>
                                       </thead>
                                       <tbody>
-                                      {% for key, values in pmid2title.items %}
+                                      {% for row in raw_data_pmid %}
                                           <tr>
-                                              <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{key}}"  target="_top">{{key}}</a></td>
-                                              <td>{{values.0}}</td>
-                                              <td>{{values.2}}</td>
-                                              <td>{{values.1}}</td>
-                                              <td>{{values.3}}</td>
-                                              <td><a href="{% url 'pmid_associations_orthogroups' key "STRING" %}">{{ pmid2n_homologs|keyvalue:key }}</a></td>
+                                              <td><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{row.0}}"  target="_top">{{row.0}}</a></td>
+                                              <td>{{row.1}}</td>
+                                              <td>{{row.3}}</td>
+                                              <td>{{row.2}}</td>
+                                              <td>{{row.4}}</td>
+                                              <td><a href="{% url 'pmid_associations_orthogroups' row.0 "STRING" %}">{{ pmid2n_homologs|keyvalue:row.0 }}</a></td>
                                           </tr>
 
                                       {% endfor %}
@@ -595,10 +595,9 @@ mark{
         }
       ],
     "paging":   true,
-    "ordering": true,
     "info":     false,
-    colReorder: true,
-    fixedHeader: true
+    fixedHeader: true,
+    "ordering": false
     } );
   } );
 
