@@ -14,6 +14,7 @@ from Bio.Seq import Seq
 import chlamdb.plots
 import seaborn as sns
 import numpy 
+import re
 # from django.core.cache import cache
 #import pylibmc
 #from django.core.cache import cache
@@ -2169,17 +2170,21 @@ def extract_region(request):
 
 #
 def locusx(request, locus=None, menu=True):
+    
     biodb = settings.BIODB
     print ('-- locus or search term: %s -- biodb %s' % (locus, biodb))
-
     if request.method == 'GET': 
-        import re
 
         server, db = manipulate_biosqldb.load_db(biodb)
         
         if locus == None:
             menu = True
             locus = request.GET.get('accession').strip()
+
+            if locus[-1] == '+':
+                locus = re.sub("\+","",locus)
+            elif "%" in locus:
+                locus = re.sub("%", " ", locus)
             
             # check if Chlamydia trachomatis locus
             m = re.match("CT([0-9]+)", locus)
@@ -2210,10 +2215,10 @@ def locusx(request, locus=None, menu=True):
                 sql = f'select t1.db_name,t1.accession,t2.orthogroup,t2.locus_tag,t2.start,t2.stop,t2.strand,t2.gene, t2.orthogroup_size,t2.n_genomes,t2.TM,t2.SP,t2.product,t2.organism ' \
                       f' from biosqldb.cross_references_{biodb} t1 ' \
                       f' inner join orthology_detail_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-                      f' where match(t1.accession) AGAINST ("{locus}" IN BOOLEAN MODE) ' \
+                      f' where match(t1.accession) AGAINST ("%s" IN BOOLEAN MODE) ' \
                       f' and db_name not in ("STRING", "KEGG", "KO", "eggNOG") group by t1.seqfeature_id limit 200;'
-
-                raw_search = server.adaptor.execute_and_fetchall(sql,)
+                print(sql)
+                raw_search = server.adaptor.execute_and_fetchall(sql, locus)
                 if len(raw_search) == 0:
                     print("nomatch synonymous!")
                     raise("nomatch")
@@ -10685,6 +10690,14 @@ def search(request):
 
     else:  
         search_term = request.GET.get('accession').strip()
+        if search_term[-1] == '+':
+            search_term = search_term[0:-1]
+        elif "%" in search_term:
+            import re
+            search_term = re.sub("%", " ", search_term)
+        elif "@" in search_term:
+            import re
+            search_term = re.sub("@", " ", search_term)
 
         if search_term:
 
