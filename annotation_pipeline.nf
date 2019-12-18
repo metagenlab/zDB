@@ -27,23 +27,14 @@ log.info "Executor               : ${params.executor}"
 if (params.ncbi_sample_sheet != false){
   Channel.fromPath( file(params.ncbi_sample_sheet) )
                       .splitCsv(header: true, sep: '\t')
-                      .map{row ->
-                          // get the list of accessions
-                          def assembly_accession = row."Genbank"
-                          return "${assembly_accession}"
-                      }
-                      .into{
-                          assembly_accession_list
-                      }
+                      .map { row -> "$row.Genbank" }
+                      .set { assembly_accession_list }
 }
-if (params.local_sample_sheet != false){
+
+if (params.local_sample_sheet != false) {
   Channel.fromPath( file(params.local_sample_sheet) )
                       .splitCsv(header: true, sep: '\t')
-                      .map{row ->
-                          // get the list of accessions
-                          def gbk_path = row."gbk_path"
-                          return gbk_path
-                      }
+                      .map{row -> "$row.gbk_path" }
                       .map { file(it) }
                       .set { local_gbk_list }
 }
@@ -150,7 +141,7 @@ process gbk_check {
 
   publishDir 'data/gbk_edited', mode: 'copy', overwrite: true
 
-  conda 'bioconda::biopython=1.68'
+  // conda 'bioconda::biopython=1.68'
 
   cpus 2
 
@@ -171,7 +162,7 @@ process convert_gbk_to_faa {
 
   publishDir 'data/faa_locus', mode: 'copy', overwrite: true
 
-  conda 'bioconda::biopython=1.68'
+  // conda 'bioconda::biopython=1.68'
 
   echo false
 
@@ -185,32 +176,10 @@ process convert_gbk_to_faa {
 
   script:
   """
-#!/usr/bin/env python
-print("${edited_gbk}")
-from Bio import Entrez, SeqIO
+	#!/usr/bin/env python
+	import annotations
 
-records = SeqIO.parse("${edited_gbk}", 'genbank')
-edited_records = open("${edited_gbk.baseName}.faa", 'w')
-for record in records:
-  protein2count = {}
-  for feature in record.features:
-      if feature.type == 'CDS' and 'pseudo' not in feature.qualifiers and 'pseudogene' not in feature.qualifiers:
-          try:
-            locus_tag = feature.qualifiers["locus_tag"][0]
-          except KeyError:
-            protein_id = feature.qualifiers["protein_id"][0].split(".")[0]
-            if protein_id not in protein2count:
-                protein2count[protein_id] = 1
-                locus_tag = protein_id
-            else:
-                protein2count[protein_id] += 1
-                locus_tag = "%s_%s" % (protein_id, protein2count[protein_id])
-          try:
-            edited_records.write(">%s %s\\n%s\\n" % (locus_tag,
-                                                     record.description,
-                                                     feature.qualifiers['translation'][0]))
-          except KeyError:
-              print("problem with feature:", feature)
+	annotations.convert_gbk_to_faa("${edited_gbk}", "${edited_gbk.baseName}.faa")
   """
 }
 
@@ -229,7 +198,7 @@ faa_locus2.collectFile(name: 'merged.faa', newLine: true)
 
 process get_nr_sequences {
 
-  conda 'bioconda::biopython=1.68'
+  // conda 'bioconda::biopython=1.68'
 
   publishDir 'data/', mode: 'copy', overwrite: true
 
@@ -296,7 +265,7 @@ merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
 
 process prepare_orthofinder {
 
-  conda 'bioconda::orthofinder=2.2.7'
+  // conda 'bioconda::orthofinder=2.2.7'
 
   input:
     file genome_list from faa_genomes1.collect()
@@ -746,7 +715,7 @@ process build_core_phylogeny_with_fasttree {
 
 process rpsblast_COG {
 
-  conda 'bioconda::blast=2.7.1'
+  // conda 'bioconda::blast=2.7.1'
 
   cpus 4
 
@@ -1082,7 +1051,7 @@ for n, one_chunk in enumerate(uniprot_accession_chunks):
 
 process get_string_mapping {
 
-  conda 'bioconda::biopython=1.68'
+  // conda 'bioconda::biopython=1.68'
 
   publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
 
@@ -1100,38 +1069,10 @@ process get_string_mapping {
   script:
   fasta_file = seq.name
   """
-#!/usr/bin/env python
+	#!/usr/bin/env python
+	import annotations
 
-from Bio import SeqIO
-import sqlite3
-from Bio.SeqUtils import CheckSum
-
-conn = sqlite3.connect("${params.databases_dir}/string/string_proteins.db")
-cursor = conn.cursor()
-
-fasta_file = "${fasta_file}"
-
-string_map = open('string_mapping.tab', 'w')
-no_string_mapping = open('no_string_mapping.faa', 'w')
-
-string_map.write("locus_tag\\tstring_id\\n")
-
-records = SeqIO.parse(fasta_file, "fasta")
-no_mapping_string_records = []
-for record in records:
-    sql = 'select accession from hash_table where sequence_hash=?'
-    cursor.execute(sql, (CheckSum.seguid(record.seq),))
-    hits = cursor.fetchall()
-    if len(hits) == 0:
-        no_mapping_string_records.append(record)
-    else:
-        for hit in hits:
-          string_map.write("%s\\t%s\\n" % (record.id,
-                                              hit[0]))
-
-
-SeqIO.write(no_mapping_string_records, no_string_mapping, "fasta")
-
+	annotations.get_string_mapping("${fasta_file}", "${params.databases_dir}")
   """
 }
 
@@ -1194,7 +1135,7 @@ with open(string_mapping, 'r') as f:
 
 process get_tcdb_mapping {
 
-  conda 'bioconda::biopython=1.68'
+  // conda 'bioconda::biopython=1.68'
 
   publishDir 'annotation/tcdb_mapping/', mode: 'copy', overwrite: true
 
@@ -1212,38 +1153,10 @@ process get_tcdb_mapping {
   script:
   fasta_file = seq.name
   """
-#!/usr/bin/env python
-
-from Bio import SeqIO
-import sqlite3
-from Bio.SeqUtils import CheckSum
-
-conn = sqlite3.connect("${params.databases_dir}/TCDB/tcdb.db")
-cursor = conn.cursor()
-
-fasta_file = "${fasta_file}"
-
-tcdb_map = open('tcdb_mapping.tab', 'w')
-no_tcdb_mapping = open('no_tcdb_mapping.faa', 'w')
-
-tcdb_map.write("locus_tag\\ttcdb_id\\n")
-
-records = SeqIO.parse(fasta_file, "fasta")
-no_tcdb_mapping_records = []
-for record in records:
-    sql = 'select accession from hash_table where sequence_hash=?'
-    cursor.execute(sql, (CheckSum.seguid(record.seq),))
-    hits = cursor.fetchall()
-    if len(hits) == 0:
-        no_tcdb_mapping_records.append(record)
-    else:
-        for hit in hits:
-          tcdb_map.write("%s\\t%s\\n" % (record.id,
-                                              hit[0]))
-
-
-SeqIO.write(no_tcdb_mapping_records, no_tcdb_mapping, "fasta")
-
+	#!/usr/bin/env python
+	
+	import annotations
+	annotations.get_tcdb_mapping("${fasta_file}", "${params.databases_dir}")
   """
 }
 
@@ -1279,7 +1192,7 @@ process tcdb_gblast3 {
 
 process get_pdb_mapping {
 
-  conda 'bioconda::biopython=1.68'
+  // conda 'bioconda::biopython=1.68'
 
   publishDir 'annotation/pdb_mapping/', mode: 'copy', overwrite: true
 
@@ -1297,38 +1210,9 @@ process get_pdb_mapping {
   script:
   fasta_file = seq.name
   """
-#!/usr/bin/env python
-
-from Bio import SeqIO
-import sqlite3
-from Bio.SeqUtils import CheckSum
-
-conn = sqlite3.connect("${params.databases_dir}/pdb/pdb.db")
-cursor = conn.cursor()
-
-fasta_file = "${fasta_file}"
-
-pdb_map = open('pdb_mapping.tab', 'w')
-no_pdb_mapping = open('no_pdb_mapping.faa', 'w')
-
-pdb_map.write("locus_tag\\tpdb_id\\n")
-
-records = SeqIO.parse(fasta_file, "fasta")
-no_pdb_mapping_records = []
-for record in records:
-    sql = 'select accession from hash_table where sequence_hash=?'
-    cursor.execute(sql, (CheckSum.seguid(record.seq),))
-    hits = cursor.fetchall()
-    if len(hits) == 0:
-        no_pdb_mapping_records.append(record)
-    else:
-        for hit in hits:
-          pdb_map.write("%s\\t%s\\n" % (record.id,
-                                              hit[0]))
-
-
-SeqIO.write(no_pdb_mapping_records, no_pdb_mapping, "fasta")
-
+	#!/usr/bin/env python
+	import annotations
+	annotations.get_pdb_mapping("${fasta_file}", "${params.databases_dir}")
   """
 }
 
