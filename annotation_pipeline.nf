@@ -18,24 +18,13 @@ log.info "Core missing           : ${params.core_missing}"
 if (params.ncbi_sample_sheet != false){
   Channel.fromPath( file(params.ncbi_sample_sheet) )
                       .splitCsv(header: true, sep: '\t')
-                      .map{row ->
-                          // get the list of accessions
-                          def assembly_accession = row."Genbank"
-                          return "${assembly_accession}"
-                      }
-                      .into{
-                          assembly_accession_list
-                      }
+                      .map{ row -> "$row.Genbank" } 
+                      .into{ assembly_accession_list }
+
   Channel.fromPath( file(params.ncbi_sample_sheet) )
                       .splitCsv(header: true, sep: '\t')
-                      .map{row ->
-                          // get the list of accessions
-                          def assembly_accession = row."RefSeq"
-                          return "${assembly_accession}"
-                      }
-                      .into{
-                          assembly_accession_list_refseq
-                      }
+                      .map{ row -> "$row.RefSeq" }
+                      .set{ assembly_accession_list_refseq }
 
 }
 
@@ -859,12 +848,12 @@ process build_core_phylogeny_with_fasttree {
 }
 
 
-process checkm_analyse {
+/* process checkm_analyse {
   '''
   Get fasta file of each orthogroup
   '''
 
-  conda 'bioconda::checkm-genome=1.0.12'
+  // conda 'bioconda::checkm-genome=1.0.12'
 
   publishDir 'data/checkm/analysis', mode: 'copy', overwrite: true
 
@@ -904,7 +893,7 @@ process checkm_qa {
   """
   checkm qa \$CHECKM_SET_PATH . -o 2 --tab_table > checkm_results.tab
   """
-}
+} */
 
 
 process rpsblast_COG {
@@ -2186,9 +2175,12 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   """
 }
 
-process filter_very_small_sequences {
 
-  conda 'biopython=1.73'
+// TODO : merge simples rules like this one and the next ones, as such changes would
+// - take less lines of code
+// - be more efficient : less disk accesses and less forking
+process filter_very_small_sequences {
+  // conda 'biopython=1.73'
 
   publishDir 'data/', mode: 'copy', overwrite: true
 
@@ -2196,30 +2188,22 @@ process filter_very_small_sequences {
   params.effector_prediction == true
 
   input: 
-    file (nr_fasta) from merged_faa7
+    file nr_fasta from merged_faa7
 
   output:
     file "nr_more_10aa.faa" into nr_faa_large_sequences
   
   script:
-"""
-#!/usr/bin/env python
-
-from Bio import SeqIO
-
-records = SeqIO.parse("${nr_fasta}", "fasta")
-filtered_records = []
-for record in records:
-    if len(record.seq) >= 10:
-        filtered_records.append(record)
-SeqIO.write(filtered_records,"nr_more_10aa.faa", "fasta")
-    
-"""
+	"""
+	#!/usr/bin/env python
+	import annotations
+	annotations.filter_small_sequences("${nr_fasta}")
+	"""
 }
 
-process remove_amibiguous_aa {
+process remove_ambiguous_aa {
 
-  conda 'biopython=1.73'
+  // conda 'biopython=1.73'
 
   publishDir 'data/', mode: 'copy', overwrite: true
 
@@ -2227,15 +2211,17 @@ process remove_amibiguous_aa {
   params.effector_prediction == true
 
   input: 
-    file "nr_fasta.faa" from nr_faa_large_sequences
+    file fasta_file from nr_faa_large_sequences
 
   output:
     file "nr_more_10aa_filtered.faa" into nr_faa_large_sequences_filtered
   
   script:
-"""
-replace_ambiguous_aa.py -i nr_fasta.faa > nr_more_10aa_filtered.faa    
-"""
+	"""
+	#!/usr/bin/env python
+	import annotations
+	annotations.filter_small_sequences("$fasta_file")
+	"""
 }
 
 

@@ -1,5 +1,8 @@
 from Bio import Entrez, SeqIO
 from Bio.SeqUtils import CheckSum
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+from Bio.Alphabet import IUPAC
 
 import sqlite3
 import urllib
@@ -116,3 +119,23 @@ def convert_gbk_to_faa(gbf_file, edited_gbf):
                                                      feature.qualifiers['translation'][0]))
                 except KeyError:
                     print("problem with feature:", feature)
+
+def filter_small_sequences(fasta_file):
+    records = SeqIO.parse(fasta_file, "fasta")
+    filtered_records = []
+    for record in records:
+        if len(record.seq) >= 10:
+            filtered_records.append(record)
+    SeqIO.write(filtered_records,"nr_more_10aa.faa", "fasta")
+
+def remove_ambiguous_aa(fasta_file):
+    records = SeqIO.parse(fasta_file, "r", "fasta")
+    edited_records = []
+    for record in records:
+        # replace ambiguous aa by X
+        edited_record = SeqRecord(Seq(re.sub("B|Z|J", "X", str(record.seq)), IUPAC.protein),
+                                  id=record.id, 
+                                  name=record.name,
+                                  description=record.description)
+        edited_records.append(edited_record)         
+    SeqIO.write(edited_records, sys.stdout, "fasta")
