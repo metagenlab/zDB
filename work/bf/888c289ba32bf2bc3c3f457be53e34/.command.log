@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "/scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/bf/888c289ba32bf2bc3c3f457be53e34/.command.sh", line 2, in <module>
-    import annotations
-  File "/scratch/hdd/bmarquis/annotation_pipeline_nextflow/bin/annotations.py", line 9
-    print link
-          ^
-SyntaxError: Missing parentheses in call to 'print'. Did you mean print(link)?

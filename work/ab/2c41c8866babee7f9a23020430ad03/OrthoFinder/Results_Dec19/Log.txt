@@ -1,4 +1,0 @@
-2019-12-19 12:07:33 : Started OrthoFinder version 2.3.8
-Command Line: /home/bmarquis/miniconda3/envs/annotation/bin/orthofinder -op -a 8 -f .
-
-WorkingDirectory_Base: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/ab/2c41c8866babee7f9a23020430ad03/OrthoFinder/Results_Dec19/WorkingDirectory/
