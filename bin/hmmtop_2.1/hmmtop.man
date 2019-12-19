@@ -1,0 +1,236 @@
+.\" Copyright (c) 2000 Gabor E. Tusnady.
+.\" All rights reserved.
+.\"
+.\"
+.TH HMMTOP 1 "April 2001" "HMMTOP 2.0" "HMMTOP User's Guide"
+.SH NAME
+HMMTOP - Prediction of transmembrane helices and topology for transmembrane
+proteins using hidden Markov model
+.SH COMMAND
+\fBhmmtop\fR 
+\fB\-if\fR=\fIname\fR
+[\fB\-of\fR=\fIname\fR]
+[\fB\-sf\fR=\fIformat\fR]
+[\fB\-lf\fR=\fIname\fR]
+[\fB\-pi\fR=\fImode\fR]
+[\fB\-ps\fR=\fIsize\fR]
+[\fB\-is\fR=\fIpoint\fR]
+[\fB\-in\fR=\fInum\fR]
+[\fB\-pp\fR]
+[\fB\-pc\fR]
+[\fB\-pl\fR]
+[\fB\-loc\fR=\fIb-e-sp\fR]
+[\fB\-locf\fR=\fIname\fR]
+[\fB\-noit\fR]
+[\fB\-h\fR]
+[\fB\-sh]
+
+.SH DESCRIPTION
+\fBhmmtop\fR predicts membrane topology of integral membrane proteins
+using hidden Markov model. The program can interpret multiple sequences 
+in two different ways. In \fImpred\fR mode prediction will be provided 
+for the first sequence interpreting further sequences as homologues to
+the first one. The homologous sequences provided need not be 
+aligned. In \fIspred\fR mode \fBhmmtop\fR simply evaluates the input 
+sequences one by one, providing independent prediction for each of them 
+using only single sequence information.
+.br
+\fBhmmtop\fR can read from the standard input. It supports three input 
+sequence formats (FASTA, NBRF/PIR, SWISSPROT) and offers various 
+output formats. The options are case sensitive, but their values are case 
+insensitive (for example \fB\-sf\fR=\fIpir\fR is the same as 
+\fB\-sf\fR=\fIPIR\fR, but \fB\-SF\fR=\fIPIR\fR is not accepted).
+The option name, the equal sign and its value have to be written in one
+word (for example \fB\-sf\fR=\fIpir\fR is accepted, but \fB\-sf\fR= \fIpir\fR, 
+\fB\-sf\fR =\fIpir\fR or \fB\-sf\fR = \fIpir\fR is not interpreted).
+.br
+The architecture of the hidden Markov model has to defined in a file 
+(called \fIhmmtop.arch\fR by thedault) 
+and the \fBHMMTOP_ARCH\fR environment variable has to point this
+architecture file. The program uses a pseudo count method in order
+to faster optimization. The data of the pseudo count vector are given
+in the \fIhmmtop.psv\fR file, and the \fBHMMTOP_PSV\fR environment 
+variable has to point this file.
+
+.SH INPUT OPTIONS
+.TP 
+\fB\-if\fR=\fIname\fR, \fB\-\-input\_file\fR=\fIname\fR
+\fIname\fR of the input sequence file. If \fIname\fR is
+\fB--\fR then the program reads from the standard input.
+
+.TP 
+\fB\-sf\fR=\fIformat\fR, \fB\-\-sequence\_format\fR=\fIformat
+\fIformat\fR of the sequence(s). \fIformat\fR may be \fBFAS\fR
+for fasta format (default), \fBPIR\fR for NBRF/PIR format or  
+\fBSWP\fR for  SWISSPROT format.
+
+.TP
+\fB\-pi\fR=\fImode\fR, \fB\-\-process\_inputfile\fR=\fImode\fR
+treat sequences in input file as single or homologous
+sequences. \fImode\fR may be \fBspred\fR or \fBmpred\fR.
+In the case of \fBspred\fR prediction will be done for each sequence 
+in the input_file (default). In the case of \fBmpred\fR prediction
+will be done only for 
+the first sequence in the input file and the  
+remaining sequences will be treated as helpers.
+
+.TP
+\fB\-ps\fR=\fIsize\fR, \fB\-\-pseudo\_size\fR=\fIsize\fR
+\fIsize\fR of the pseudo count vector.  \fIsize\fR may be from 0 (no
+pseudo count vector used) to 10000 (default=10000).
+
+.TP
+\fB\-is\fR=\fIpoint\fR, \fB\-\-iteration\_start\fR=\fIpoint\fR
+starting \fIpoint\fR of the iteration(s).  \fIpoint\fR  may be 
+\fBpseudo\fR or \fBrandom\fR.  In the case of \fBpseudo\fR the iteration 
+starts from the pseudo countvector  (default).  In  the case  of  
+\fBrandom\fR the iteration starts from random values.
+
+.TP
+\fB\-in\fR=\fInum\fR, \fB\-\-iteration\_number\fR=\fInum\fR
+\fInum\fR is the number of iterations (only if the \fB-is\fR 
+flag is \fBrandom\fR).
+
+.TP
+\fB\-loc\fR=\fIb-e-sp\fR, \fB\-\-locate\fR=\fIb-e-sp\fR
+locates or locks a given sequence piece in a given structural
+part. The sequence piece is given by \fIb-e\fR numbers, where
+\fIb\fR is the begin position, \fIe\fR is the end position. 
+\fIsp\fR is the structural part and \fIsp\fR may be i, I, o, O and
+H for inside tail, inside loop, outside tail, outside loop and
+helix parts, respectively. \fIe\fR position may be the character
+\fBE\fR meaning the C terminal end of the sequence.
+
+.TP
+\fB\-locf\fR=\fIfile_name\fR, \fB\-\-loc_file\fR=\fIfile_name\fR
+file for multiple locates. If the input sequence file contains
+multiple sequences and \fB-pi\fR=\fIspred\fR option is given, then
+for each sequence the program reads the locates from the 
+\fIfile_name\fR given. The locates have to be line by line for each
+sequence, and the syntaxis is the same as in \fB-loc\fR=\fIb-e-sp\fR
+option (see above).
+
+.TP
+\fB\-noit\fR, \fB\-\-noiteration\fR
+makes prediction without any iteration (optimization), i.e. the
+parameters of the hidden Markov model are set to the pseudo count
+vector, and no iteration will be done to maximize the probability
+if the model is given. Therefore, this option makes the program
+behaviour similar to \fBMEMSAT\fR and \fBTMHMM\fR, i.e. it is more 
+faster but less reliable.
+
+.SH OUTPUT OPTIONS
+In the output \fBhmmtop\fR prints the number of amino acids and
+the name of the predicted sequence
+in one line begining with a \fB\'>HP: \'\fR string, and following by
+the localization of the N terminal amino acid (\fBIN\fR or \fBOUT\fR), the
+number of the predicted transmembrane helices and the begin and end
+positions of each transmembrane helix. Additional output can be
+generated by the following options.
+
+.TP 
+\fB\-of\fR=\fIname\fR, \fB\-\-output\_file\fR=\fIname\fR
+\fIname\fR of the output sequence file. If this option
+is omitted or \fIname\fR is
+\fB--\fR then the program writes to the standard output.
+
+.TP
+\fB\-pp\fR, \fB\-\-print\_probabilities\fR
+Print the optimized probabilities.
+
+.TP
+\fB\-pc\fR, \fB\-\-print\_pseudocount\fR
+Print the pseudocount vector used.
+
+.TP
+\fB\-pl\fR, \fB\-\-print\_longprediction\fR
+Print prediction in a long format. The input sequence
+and the predicted localization of each amino acid will
+be printed.
+
+
+.SH MISCELLANEOUS OPTIONS
+.TP 
+\fB\-h\fR, \fB\-\-help\fR 
+Print a long help message.
+
+.TP 
+\fB\-sh, \fB\-\-short_help\fR
+Print a short help message.
+
+.TP 
+\fB\-lf\fR=\fIname\fR, \fB\-\-log\_file\fR=\fIname\fR
+\fIname\fR of the log file for debugging purposes.
+
+.SH ENVIRONMENT
+.TP
+\fBHMMTOP_ARCH\fR
+has to point to the file containing the architecture of the model.
+If not set, the program searches for the \fIhmmtop.arch\fR file in the current
+directory.
+
+.TP
+\fBHMMTOP_PSV\fR
+has to point to the file containing the pseudo count vector
+corresponding to the given architecture. If not set, the program
+searches for the \fIhmmtop.psv\fR file in the current directory.
+
+.SH EXAMPLES
+.TP
+hmmtop -if=sequence.fas
+predicts the topology of each sequence in the \fBsequence.fas\fR
+file using only single sequence information. 
+Sequences are in fasta format.
+.TP
+hmmtop -if=sequence.pir -sf=PIR -pi=mpred
+predicts the topology of the first sequence in the
+\fBsequence.pir\fR file. If there are more than one 
+sequences in the \fBsequence.pir\fR file then they will be 
+used as helper sequences.
+.TP
+hmmtop -if=sprot36.dat -sf=SWP
+predicts the topology of each sequence in \fBsprot36.dat\fR
+file, using only single sequence information. 
+Sequences are in swissprot format (for example the full swissprot
+database).
+.TP
+hmmtop -if=sequence.pir -sf=PIR -pi=spred -loc=123-242-I
+predicts the topology of each sequence given in the \fBsequence.pir\fR
+file in \fBpir\fR format with the condition, that the
+sequence piece between \fB123\fR and \fB242\fR are intracellular.
+If \fBsequence.pir\fR file contains multiple sequences for each sequence
+will be handled with this condition.
+.TP
+hmmtop -if=sequence.fas -sf=fas -pi=spred -locf=sequence.loc
+predicts the topology of each sequence given in the \fBsequence.fas\fR
+file in \fBfasta\fR format with conditions given in the \fBsequence.loc\fR
+file. The file has to contain locates in the syntaxis \fBb-e-sp\fR 
+(see above) for each sequence line by line.
+
+.SH BUGS
+Please report bugs to tusi@enzim.hu, after carefully reading
+through all the documentation. In the bug report please include
+the input file, the output file, the log file (use the
+\fB\-lf\fR=\fIname\fR option) and the operating system.
+
+.SH FILES
+.TP
+\fIhmmtop.arch\fR
+The architecture file of the hidden Markov model.
+.TP
+\fIhmmtop.psv\fR
+Data for calculating pseudocount vector used by the optimization.
+
+.SH REFERENCES
+G.E. Tusnady and I. Simon (1998)
+.br
+Principles Governing Amino Acid Composition of Integral
+Membrane Proteins:  Applications to topology prediction
+.br
+J. Mol. Biol. 283, 489-506
+.br
+.br
+http://www.enzim.hu/hmmtop
+
+.SH COPYRIGHT
+Gabor E. Tusnady, 2000, 2001

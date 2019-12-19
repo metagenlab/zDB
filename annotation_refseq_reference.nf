@@ -1,10 +1,5 @@
 #!/usr/bin/env nextflow
 
-log.info params.input
-params.databases_dir = "$PWD/databases"
-params.kofamscan = false
-params.mapping_uniparc = true
-
 log.info "====================================="
 log.info "Database folder        : ${params.databases_dir}"
 
@@ -79,7 +74,8 @@ process extract_gz {
 
 
 assembly_faa.into {faa_list_1
-                   faa_list_2}
+                   faa_list_2
+                   faa_list_3}
 
 
 process get_uniparc_mapping {
@@ -169,39 +165,38 @@ SeqIO.write(no_mapping_uniparc_records, no_uniparc_mapping, "fasta")
   """
 }
 
+
 no_uniparc_mapping_faa.collectFile(name: 'merged.faa', newLine: true)
     .into { merged_no_uniparc_faa }
+
 
 process execute_interproscan_no_uniparc_matches {
 
   publishDir 'refseq_annotation/interproscan', mode: 'link', overwrite: true
 
-  cpus 8
+  cpus 16
   memory '16 GB'
   conda 'anaconda::openjdk=8.0.152'
 
   input:
-  file(seq) from merged_no_uniparc_faa.splitFasta( by: 500, file: "no_uniparc_match_chunk_" )
+  file(seq) from merged_no_uniparc_faa.splitFasta( by: 5000, file: "no_uniparc_match_chunk_" )
 
   output:
-  file '*gff3' into interpro_gff3_no_uniparc
-  file '*html.tar.gz' into interpro_html_no_uniparc
-  file '*svg.tar.gz' into interpro_svg_no_uniparc
   file '*tsv' into interpro_tsv_no_uniparc
-  file '*xml' into interpro_xml_no_uniparc
-  file '*log' into interpro_log_no_uniparc
 
   script:
   n = seq.name
   """
-  echo $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus}
-  bash $INTERPRO_HOME/interproscan.sh --pathways --enable-tsv-residue-annot -f TSV,XML,GFF3,HTML,SVG -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus} >> ${n}.log
+  echo $INTERPRO_HOME/interproscan.sh -f TSV -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus}
+  bash $INTERPRO_HOME/interproscan.sh -f TSV -i ${n} -d . -T . --disable-precalc -cpu ${task.cpus} >> ${n}.log
   """
 }
 
 process execute_kofamscan {
 
   publishDir 'refseq_annotation/KO', mode: 'link', overwrite: true
+
+  conda 'hmmer=3.2.1 parallel ruby=2.4.5'
 
   cpus 4
   memory '8 GB'
@@ -217,10 +212,34 @@ process execute_kofamscan {
 
   script:
   """
-  export PATH="$PATH:/home/tpillone/work/dev/annotation_pipeline_nextflow/bin/KofamScan/"
   input_file=`ls *faa`
-  echo \$input_file
+  export "PATH=\$KOFAMSCAN_HOME:\$PATH"
   echo exec_annotation \${input_file} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o \${input_file/faa/tab}
   exec_annotation \${input_file} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o \${input_file/faa/tab}
+  """
+}
+
+
+process execute_rpsblast_COG {
+
+  publishDir 'refseq_annotation/COG', mode: 'link', overwrite: true
+
+  conda 'bioconda::blast=2.7.1'
+
+  cpus 4
+  memory '2 GB'
+
+  when:
+  params.cog == true
+
+  input:
+  file (genome) from faa_list_3
+
+  output:
+  file "${genome.baseName}.tab" into blast_result
+
+  script:
+  """
+  rpsblast -db $params.databases_dir/cdd/Cog -query ${genome} -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > ${genome.baseName}.tab
   """
 }

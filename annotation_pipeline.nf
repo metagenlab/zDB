@@ -5,12 +5,6 @@
  *
  */
 
-
-/*
- * Pipeline input params
- */
-
-
 log.info params.input
 
 log.info "====================================="
@@ -19,16 +13,30 @@ log.info "COG                    : ${params.cog}"
 log.info "Orthofinder            : ${params.orthofinder}"
 log.info "Orthofinder path       : ${params.genome_faa_folder}"
 log.info "Core missing           : ${params.core_missing}"
-log.info "Executor               : ${params.executor}"
-
-
 
 // Each Sample
 if (params.ncbi_sample_sheet != false){
   Channel.fromPath( file(params.ncbi_sample_sheet) )
                       .splitCsv(header: true, sep: '\t')
-                      .map { row -> "$row.Genbank" }
-                      .set { assembly_accession_list }
+                      .map{row ->
+                          // get the list of accessions
+                          def assembly_accession = row."Genbank"
+                          return "${assembly_accession}"
+                      }
+                      .into{
+                          assembly_accession_list
+                      }
+  Channel.fromPath( file(params.ncbi_sample_sheet) )
+                      .splitCsv(header: true, sep: '\t')
+                      .map{row ->
+                          // get the list of accessions
+                          def assembly_accession = row."RefSeq"
+                          return "${assembly_accession}"
+                      }
+                      .into{
+                          assembly_accession_list_refseq
+                      }
+
 }
 
 if (params.local_sample_sheet != false) {
@@ -68,15 +76,21 @@ if (params.local_sample_sheet != false){
 if (params.ncbi_sample_sheet != false){
   process download_assembly {
 
-    conda 'bioconda::biopython=1.68'
+    conda 'biopython=1.73'
 
     publishDir 'data/gbk_ncbi', mode: 'copy', overwrite: true
+
+    maxForks 2
+    maxRetries 3
+    //errorStrategy 'ignore'
+
+    echo false
 
     when:
     params.ncbi_sample_sheet != false
 
     input:
-    val assembly_accession_list from assembly_accession_list.collect()
+    each accession from assembly_accession_list
 
     cpus 1
 
@@ -89,38 +103,149 @@ if (params.ncbi_sample_sheet != false){
   #!/usr/bin/env python
 
   import re
+  import time
   from ftplib import FTP
   from Bio import Entrez, SeqIO
   Entrez.email = "trestan.pillonel@chuv.ch"
   Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
 
-  accession_list = "${assembly_accession_list}".split(' ')
-  for accession in accession_list:
-    handle1 = Entrez.esearch(db="assembly", term="%s" % accession)
-    record1 = Entrez.read(handle1)
+  print("${accession}")
 
-    ncbi_id = record1['IdList'][-1]
-    print(ncbi_id)
-    handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
-    assembly_record = Entrez.read(handle_assembly, validate=False)
+  handle1 = Entrez.esearch(db="assembly", term="${accession}")
+  record1 = Entrez.read(handle1)
 
-    if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
-        ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
-    elif 'refseq_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
-        ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
-    else:
-      raise("%s assembly not annotated! --- exit ---" % accession)
-    print(ftp_path)
-    ftp=FTP('ftp.ncbi.nih.gov')
-    ftp.login("anonymous","trestan.pillonel@unil.ch")
-    ftp.cwd(ftp_path)
-    filelist=ftp.nlst()
-    filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
-    print(filelist)
-    for file in filelist:
-      ftp.retrbinary("RETR "+file, open(file, "wb").write)
+  ncbi_id = record1['IdList'][-1]
+  print(ncbi_id)
+  handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
+  assembly_record = Entrez.read(handle_assembly, validate=False)
+
+  if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
+      ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+  elif 'refseq_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
+      ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+  else:
+    raise("${accession} assembly not annotated! --- exit ---")
+  print(ftp_path)
+  ftp=FTP('ftp.ncbi.nih.gov')
+  ftp.login("anonymous","trestan.pillonel@unil.ch")
+  ftp.cwd(ftp_path)
+  filelist=ftp.nlst()
+  filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
+  print(filelist)
+  for file in filelist:
+    ftp.retrbinary("RETR "+file, open(file, "wb").write)
     """
   }
+
+  process download_assembly_refseq {
+
+    conda 'biopython=1.73'
+
+    publishDir 'data/refseq_corresp', mode: 'copy', overwrite: true
+
+    maxForks 2
+    maxRetries 3
+    //errorStrategy 'ignore'
+
+    echo false
+
+    when:
+    params.ncbi_sample_sheet != false && params.get_refseq_locus_corresp == true
+
+    input:
+    each accession from assembly_accession_list_refseq
+
+    cpus 1
+
+    output:
+    file '*.gbff.gz' optional true into raw_ncbi_gbffs_refseq
+
+    script:
+    //accession = assembly_accession[0]
+    """
+  #!/usr/bin/env python
+
+  import re
+  import time
+  from ftplib import FTP
+  from Bio import Entrez, SeqIO
+  Entrez.email = "trestan.pillonel@chuv.ch"
+  Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
+
+  if "${accession}" != "":
+      handle1 = Entrez.esearch(db="assembly", term="${accession}")
+      record1 = Entrez.read(handle1)
+
+      ncbi_id = record1['IdList'][-1]
+      print(ncbi_id)
+      handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
+      assembly_record = Entrez.read(handle_assembly, validate=False)
+
+      # only consider annotated genbank => get corresponding refseq assembly
+      if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
+          ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+          print("ftp_path", ftp_path)
+          ftp=FTP('ftp.ncbi.nih.gov')
+          ftp.login("anonymous","trestan.pillonel@unil.ch")
+          ftp.cwd(ftp_path)
+          filelist=ftp.nlst()
+          filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
+          print(filelist)
+          for file in filelist:
+            ftp.retrbinary("RETR "+file, open(file, "wb").write)
+      else:
+        print("no genbank annotation for ${accession}")
+    """
+  }
+
+  process refseq_locus_mapping {
+
+    conda 'biopython=1.73'
+
+    publishDir 'data/refseq_corresp', mode: 'copy', overwrite: true
+
+    maxForks 2
+    maxRetries 3
+    //errorStrategy 'ignore'
+
+    echo false
+
+    when:
+    params.get_refseq_locus_corresp == true
+
+    input:
+    file accession_list from raw_ncbi_gbffs_refseq.collect()
+
+    cpus 1
+
+    output:
+    file 'refseq_corresp.tab'
+
+    script:
+    """
+  #!/usr/bin/env python
+
+  import re
+  import time
+  from Bio import SeqIO
+  import gzip
+
+  o = open("refseq_corresp.tab", "w")
+
+  for accession in "${accession_list}".split(" "):
+      print(accession)
+      with gzip.open(accession, "rt") as handle:
+        records = SeqIO.parse(handle, "genbank")
+        for record in records:
+            for feature in record.features:
+                if 'protein_id' in feature.qualifiers and 'old_locus_tag' in feature.qualifiers:
+                    refseq_locus_tag = feature.qualifiers["locus_tag"][0]
+                    protein_id = feature.qualifiers["protein_id"][0]
+                    old_locus_tag = feature.qualifiers["old_locus_tag"][0]
+                    o.write(f"{old_locus_tag}\\t{refseq_locus_tag}\\t{protein_id}\\n")
+    """
+  }
+
 }
 
 // merge local and ncbi gbk into a single channel
@@ -189,8 +314,11 @@ faa_files.into{ faa_locus1
 
 
 faa_locus1.into { faa_genomes1
-                 faa_genomes2
-                 faa_genomes3 }
+                  faa_genomes2
+                  faa_genomes3
+                  faa_genomes4
+                  faa_genomes5
+                  faa_genomes6 }
 
 faa_locus2.collectFile(name: 'merged.faa', newLine: true)
     .into { merged_faa0 }
@@ -204,6 +332,7 @@ process get_nr_sequences {
 
   input:
   file(seq) from merged_faa0
+  file genome_list from faa_genomes4.collect()
 
   output:
 
@@ -217,6 +346,13 @@ process get_nr_sequences {
 
 from Bio import SeqIO
 from Bio.SeqUtils import CheckSum
+import os
+
+locus2genome = {}
+for fasta in "${genome_list}".split(" "):
+    genome = os.path.basename(fasta).split('.')[0]
+    for seq in SeqIO.parse(fasta, "fasta"):
+        locus2genome[seq.name] = genome
 
 fasta_file = "${fasta_file}"
 
@@ -231,8 +367,9 @@ updated_records = []
 for record in records:
 
     checksum = CheckSum.crc64(record.seq)
-    nr_mapping.write("%s\\t%s\\n" % (record.id,
-                                   checksum))
+    nr_mapping.write("%s\\t%s\\t%s\\n" % (record.id,
+                                          checksum,
+                                          locus2genome[record.id]))
     if checksum not in checksum_nr_list:
       checksum_nr_list.append(checksum)
       record.id = checksum
@@ -251,7 +388,8 @@ nr_seqs.collectFile(name: 'merged_nr.faa', newLine: true)
         merged_faa3
         merged_faa4
         merged_faa5
-        merged_faa6 }
+        merged_faa6
+        merged_faa7 }
 
 merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
 .into { faa_chunks1
@@ -261,11 +399,15 @@ merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
         faa_chunks5
         faa_chunks6
         faa_chunks7
-        faa_chunks8 }
+        faa_chunks8
+        faa_chunks9 }
 
 process prepare_orthofinder {
 
   // conda 'bioconda::orthofinder=2.2.7'
+
+  when:
+  params.orthofinder == true
 
   input:
     file genome_list from faa_genomes1.collect()
@@ -291,6 +433,10 @@ process blast_orthofinder {
   file complete_dir from result_dir
   each seq from species_fasta
   each blastdb from species_blastdb
+
+
+  when:
+  params.orthofinder == true
 
   output:
   file "${complete_dir.baseName}/WorkingDirectory/Blast${species_1}_${species_2}.txt" into blast_results
@@ -713,6 +859,54 @@ process build_core_phylogeny_with_fasttree {
 }
 
 
+process checkm_analyse {
+  '''
+  Get fasta file of each orthogroup
+  '''
+
+  conda 'bioconda::checkm-genome=1.0.12'
+
+  publishDir 'data/checkm/analysis', mode: 'copy', overwrite: true
+
+  when:
+  params.checkm == true
+
+  input:
+  file genome_list from faa_genomes5.collect()
+
+  output:
+  file "checkm_results/*" into checkm_analysis
+
+  """
+  checkm analyze --genes -x faa \$CHECKM_SET_PATH . checkm_results -t 8 --nt
+  """
+}
+
+
+process checkm_qa {
+  '''
+  Get fasta file of each orthogroup
+  '''
+
+  conda 'bioconda::checkm-genome=1.0.12'
+
+  publishDir 'data/checkm/analysis', mode: 'copy', overwrite: true
+
+  when:
+  params.checkm == true
+
+  input:
+  file checkm_analysis_results from checkm_analysis
+
+  output:
+  file "checkm_results.tab" into checkm_table
+
+  """
+  checkm qa \$CHECKM_SET_PATH . -o 2 --tab_table > checkm_results.tab
+  """
+}
+
+
 process rpsblast_COG {
 
   // conda 'bioconda::blast=2.7.1'
@@ -731,7 +925,7 @@ process rpsblast_COG {
   script:
   n = seq.name
   """
-  rpsblast -db $params.databases_dir/cdd/Cog -query seq -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > blast_result
+  rpsblast -db $params.databases_dir/cdd/profiles/Cog -query seq -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > blast_result
   """
 }
 
@@ -917,6 +1111,26 @@ SeqIO.write(mapping_uniparc_records, uniparc_mapping_faa, "fasta")
   """
 }
 
+uniparc_mapping_tab.into{
+  uniparc_mapping_tab1
+  uniparc_mapping_tab2
+}
+
+uniprot_mapping_tab.into{
+  uniprot_mapping_tab1
+  uniprot_mapping_tab2
+}
+
+
+uniprot_mapping_tab2.splitCsv(header: false, sep: '\t')
+.map{row ->
+    def uniprot_accession = row[1]
+    return "${uniprot_accession}"
+}
+.collect()
+.unique()
+.into {uniprot_nr_accessions}
+
 
 process get_uniprot_data {
 
@@ -929,7 +1143,7 @@ process get_uniprot_data {
   params.uniprot_data == true
 
   input:
-  file(table) from uniprot_mapping_tab
+  file(table) from uniprot_mapping_tab1
 
   output:
   file 'uniprot_data.tab' into uniprot_data
@@ -979,9 +1193,12 @@ def uniprot_accession2score(uniprot_accession_list):
                 success = False
     unirpot2score = {}
     for row in rows:
-        print(row)
-        if len(row) > 1:
-            if row[0] != 'Entry':
+        if len(row) > 0:
+            if row[0] == 'Entry':
+                continue
+            elif len(row)<2:
+                continue
+            else:
                 unirpot2score[row[0]] = row[1]
 
     return unirpot2score
@@ -1048,6 +1265,28 @@ for n, one_chunk in enumerate(uniprot_accession_chunks):
 }
 
 
+process get_uniprot_proteome_data {
+
+  conda 'biopython=1.73=py36h7b6447c_0'
+
+  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
+  echo true
+
+  when:
+  params.uniprot_data == true
+
+  input:
+  file "uniprot_data.tab" from uniprot_data
+
+  output:
+  file 'uniprot_match_annotations.db' into uniprot_db
+
+  script:
+  """
+  uniprot_annotations.py
+  """
+}
+
 
 process get_string_mapping {
 
@@ -1101,6 +1340,117 @@ process get_string_PMID_mapping {
 }
 
 
+process get_PMID_data {
+
+  conda 'bioconda::biopython=1.68'
+
+  publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
+
+  when:
+  params.string == true
+
+  input:
+  file 'string_mapping_PMID.tab' from string_mapping_BMID
+
+
+  output:
+  file 'string_mapping_PMID.db' into PMID_db
+
+  script:
+
+  """
+#!/usr/bin/env python
+
+from Bio import Entrez
+import sqlite3
+
+Entrez.email = "trestan.pillonel@chuv.ch"
+
+
+def chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
+
+
+def pmid2abstract_info(pmid_list):
+    from Bio import Medline
+
+    # make sure that pmid are strings
+    pmid_list = [str(i) for i in pmid_list]
+
+    try:
+        handle = Entrez.efetch(db="pubmed", id=','.join(pmid_list), rettype="medline", retmode="text")
+        records = Medline.parse(handle)
+    except:
+        print("FAIL:", pmid)
+        return None
+
+    pmid2data = {}
+    for record in records:
+      try:
+          pmid = record["PMID"]
+      except:
+          print(record)
+          #{'id:': ['696885 Error occurred: PMID 28696885 is a duplicate of PMID 17633143']}
+          if 'duplicate' in record['id:']:
+              duplicate = record['id:'].split(' ')[0]
+              correct = record['id:'].split(' ')[-1]
+              print("removing duplicated PMID... %s --> %s" % (duplicate, correct))
+              # remove duplicate from list
+              pmid_list.remove(duplicate)
+              return pmid2abstract_info(pmid_list)
+
+      pmid2data[pmid] = {}
+      pmid2data[pmid]["title"] = record.get("TI", "?")
+      pmid2data[pmid]["authors"] = record.get("AU", "?")
+      pmid2data[pmid]["source"] = record.get("SO", "?")
+      pmid2data[pmid]["abstract"] = record.get("AB", "?")
+      pmid2data[pmid]["pmid"] = pmid
+
+    return pmid2data
+
+conn = sqlite3.connect("string_mapping_PMID.db")
+cursor = conn.cursor()
+
+sql = 'create table if not exists hash2pmid (hash binary, ' \
+      ' pmid INTEGER)'
+
+sql2 = 'create table if not exists pmid2data (pmid INTEGER, title TEXT, authors TEXT, source TEXT, abstract TEXT)'
+cursor.execute(sql,)
+cursor.execute(sql2,)
+
+# get PMID nr list and load PMID data into sqldb
+pmid_nr_list = []
+sql_template = 'insert into hash2pmid values (?, ?)'
+with open("string_mapping_PMID.tab", "r") as f:
+    n = 0
+    for row in f:
+        data = row.rstrip().split("\t")
+        if data[1] != 'None':
+            n+=1
+            cursor.execute(sql_template, data)
+            if data[1] not in pmid_nr_list:
+                pmid_nr_list.append(data[1])
+        if n % 1000 == 0:
+            print(n, 'hash2pmid ---- insert ----')
+            conn.commit()
+
+pmid_chunks = [i for i in chunks(pmid_nr_list, 50)]
+
+# get PMID data and load into sqldb
+sql_template = 'insert into pmid2data values (?, ?, ?, ?, ?)'
+for n, chunk in enumerate(pmid_chunks):
+    print("pmid2data -- chunk %s / %s" % (n, len(pmid_chunks)))
+    pmid2data = pmid2abstract_info(chunk)
+    for pmid in pmid2data:
+        cursor.execute(sql_template, (pmid, pmid2data[pmid]["title"], str(pmid2data[pmid]["authors"]), pmid2data[pmid]["source"], pmid2data[pmid]["abstract"]))
+    if n % 10 == 0:
+        conn.commit()
+conn.commit()
+  """
+}
+
+
 process get_tcdb_mapping {
 
   // conda 'bioconda::biopython=1.68'
@@ -1133,11 +1483,13 @@ no_tcdb_mapping.splitFasta( by: 1000, file: "chunk" )
 
 process tcdb_gblast3 {
 
+  container 'metagenlab/chlamdb_annotation:1.0.3'
+
   publishDir 'annotation/tcdb_mapping', mode: 'copy', overwrite: true
 
   cpus 1
   maxForks 20
-  conda 'anaconda::biopython=1.67=np111py27_0 conda-forge::matplotlib=2.2.3 biobuilds::fasta bioconda::blast=2.7.1'
+
   echo false
 
   when:
@@ -1153,8 +1505,9 @@ process tcdb_gblast3 {
 
   n = seq.name
   """
-  export "PATH=\$HMMTOP_PATH:\$GBLAST3_PATH:\$PATH"
-  gblast3.py -i ${seq} -o TCDB_RESULTS_${seq}
+  # activate conda env
+  source activate gblast3
+  /usr/local/bin/BioVx/scripts/gblast3.py -i ${seq} -o TCDB_RESULTS_${seq} --db_path /usr/local/bin/tcdb_db/
   """
 }
 
@@ -1323,8 +1676,7 @@ process execute_kofamscan {
   script:
   n = seq.name
   """
-  export "PATH=\$KOFAMSCAN_HOME:\$PATH"
-  exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
+  /usr/local/bin/kofamscan/exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
   """
 }
 
@@ -1333,7 +1685,7 @@ process execute_PRIAM {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
-  conda 'openjdk=8.0.152 blast-legacy=2.2.26'
+  container 'metagenlab/chlamdb_annotation:1.0.3'
 
   cpus 2
   memory '4 GB'
@@ -1350,7 +1702,8 @@ process execute_PRIAM {
   script:
   n = seq.name
   """
-  java -jar  $params.databases_dir/PRIAM/PRIAM_search.jar -i ${n} -o results -p $params.databases_dir/PRIAM/PRIAM_JAN18 --num_proc ${task.cpus}
+  conda activate /opt/conda/envs/priam
+  java -jar  /usr/local/bin/PRIAM/PRIAM_search.jar -i ${n} -o results -p $params.databases_dir/PRIAM/PRIAM_JAN18 --num_proc ${task.cpus}
   """
 }
 
@@ -1551,6 +1904,7 @@ cursor = conn.cursor()
 
 cursor.execute("PRAGMA synchronous = OFF")
 cursor.execute("BEGIN TRANSACTION")
+
 
 def chunks(l, n):
     for i in range(0, len(l), n):
@@ -1831,6 +2185,390 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   FastTree ${og} > ${og.baseName}.nwk
   """
 }
+
+process filter_very_small_sequences {
+
+  conda 'biopython=1.73'
+
+  publishDir 'data/', mode: 'copy', overwrite: true
+
+  when:
+  params.effector_prediction == true
+
+  input: 
+    file (nr_fasta) from merged_faa7
+
+  output:
+    file "nr_more_10aa.faa" into nr_faa_large_sequences
+  
+  script:
+"""
+#!/usr/bin/env python
+
+from Bio import SeqIO
+
+records = SeqIO.parse("${nr_fasta}", "fasta")
+filtered_records = []
+for record in records:
+    if len(record.seq) >= 10:
+        filtered_records.append(record)
+SeqIO.write(filtered_records,"nr_more_10aa.faa", "fasta")
+    
+"""
+}
+
+process remove_amibiguous_aa {
+
+  conda 'biopython=1.73'
+
+  publishDir 'data/', mode: 'copy', overwrite: true
+
+  when:
+  params.effector_prediction == true
+
+  input: 
+    file "nr_fasta.faa" from nr_faa_large_sequences
+
+  output:
+    file "nr_more_10aa_filtered.faa" into nr_faa_large_sequences_filtered
+  
+  script:
+"""
+replace_ambiguous_aa.py -i nr_fasta.faa > nr_more_10aa_filtered.faa    
+"""
+}
+
+
+nr_faa_large_sequences_filtered.splitFasta( by: 5000, file: "chunk_" ).into{ nr_faa_large_sequences_chunks1
+                                                                    nr_faa_large_sequences_chunks2
+                                                                    nr_faa_large_sequences_chunks3
+                                                                    nr_faa_large_sequences_chunks4 }
+
+process execute_BPBAac {
+
+  container 'metagenlab/chlamdb_annotation:1.0.3'
+
+  when:
+  params.effector_prediction == true
+
+  input:
+  file "nr_fasta.faa" from nr_faa_large_sequences_chunks1
+
+  output:
+  file 'BPBAac_results.csv' into BPBAac_results
+
+  script:
+  """
+  ln -s /usr/local/bin/BPBAac/BPBAacPre.R
+  ln -s /usr/local/bin/BPBAac/BPBAac.Rdata
+  ln -s /usr/local/bin/BPBAac/Classify.pl
+  ln -s /usr/local/bin/BPBAac/DataPrepare.pl
+  ln -s /usr/local/bin/BPBAac/Feature100.pl
+  ln -s /usr/local/bin/BPBAac/Integ.pl
+  ln -s /usr/local/bin/BPBAac/Neg100AacFrequency
+  ln -s /usr/local/bin/BPBAac/Pos100AacFrequency
+  sed 's/CRC-/CRC/g' nr_fasta.faa > edited_fasta.faa
+  perl DataPrepare.pl edited_fasta.faa;
+  Rscript BPBAacPre.R;
+  sed -i 's/CRC/CRC-/g' FinalResult.csv;
+  mv FinalResult.csv BPBAac_results.csv;
+  """
+}
+
+BPBAac_results.collectFile(name: 'annotation/T3SS_effectors/BPBAac_results.tab')
+
+process execute_effectiveT3 {
+
+  container 'metagenlab/chlamdb_annotation:1.0.3'
+
+  when:
+  params.effector_prediction == true
+
+  input:
+  file "nr_fasta.faa" from nr_faa_large_sequences_chunks2
+
+  output:
+  file 'effective_t3.out' into effectiveT3_results
+
+  script:
+  """
+  ln -s /usr/local/bin/effective/module
+  java -jar /usr/local/bin/effective/TTSS_GUI-1.0.1.jar -f nr_fasta.faa -m TTSS_STD-2.0.2.jar -t cutoff=0.9999 -o effective_t3.out -q
+  """
+}
+
+effectiveT3_results.collectFile(name: 'annotation/T3SS_effectors/effectiveT3_results.tab')
+
+process execute_DeepT3 {
+
+  container 'metagenlab/chlamdb_annotation:1.0.3'
+
+  when:
+  params.effector_prediction == true
+
+  input:
+  file "nr_fasta.faa" from nr_faa_large_sequences_chunks3
+
+  output:
+  file 'DeepT3_results.tab' into DeepT3_results
+
+  script:
+  """
+  DeepT3_scores.py -f nr_fasta.faa -o DeepT3_results.tab -d /usr/local/bin/DeepT3/DeepT3/DeepT3-Keras/
+  """
+}
+
+DeepT3_results.collectFile(name: 'annotation/T3SS_effectors/DeepT3_results.tab')
+
+process execute_T3_MM {
+
+  container 'metagenlab/chlamdb_annotation:1.0.3'
+
+  when:
+  params.effector_prediction == true
+
+  input:
+  file "nr_fasta.faa" from nr_faa_large_sequences_chunks4
+
+  output:
+  file 'T3_MM_results.csv' into T3_MM_results
+
+  script:
+  """
+  ln -s /usr/local/bin/T3_MM/log.freq.ratio.txt
+  perl /usr/local/bin/T3_MM/T3_MM.pl nr_fasta.faa
+  mv final.result.csv T3_MM_results.csv
+  """
+}
+
+
+T3_MM_results.collectFile(name: 'annotation/T3SS_effectors/T3_MM_results.tab')
+
+
+process execute_macsyfinder_T3SS {
+
+  container 'metagenlab/chlamdb_annotation:1.0.3'
+
+  publishDir 'annotation/macsyfinder/T3SS/', mode: 'copy', overwrite: true
+
+  when:
+  params.macsyfinder == true
+
+  input:
+  file(genome) from faa_genomes6
+
+  output:
+  file "macsyfinder-${genome.baseName}/macsyfinder.conf"
+  file "macsyfinder-${genome.baseName}/macsyfinder.log"
+  file "macsyfinder-${genome.baseName}/macsyfinder.out"
+  file "macsyfinder-${genome.baseName}/macsyfinder.report"
+  file "macsyfinder-${genome.baseName}/macsyfinder.summary"
+
+  script:
+  """
+  python /usr/local/bin/macsyfinder/bin/macsyfinder --db-type unordered_replicon --sequence-db ${genome} -d /usr/local/bin/annotation_pipeline_nextflow/data/macsyfinder/secretion_systems/TXSS/definitions -p /usr/local/bin/annotation_pipeline_nextflow/data/macsyfinder/secretion_systems/TXSS/profiles all --coverage-profile 0.2 --i-evalue-select 1 --e-value-search 1
+  mv macsyfinder-* macsyfinder-${genome.baseName}
+  """
+}
+
+
+process execute_psortb {
+
+  container 'metagenlab/psort:3.0.6'
+
+  publishDir 'annotation/psortb/', mode: 'copy', overwrite: true
+
+  when:
+  params.psortb == true
+
+  input:
+  file(chunk) from faa_chunks9
+
+  output:
+  file "psortb_${chunk}.txt" into psortb_results
+
+  script:
+  """
+  /usr/local/psortb/bin/psort --negative ${chunk} > psortb_${chunk}.txt
+  """
+}
+
+
+process blast_pdb {
+
+  conda 'bioconda::blast=2.7.1'
+
+  publishDir 'annotation/pdb_mapping', mode: 'copy', overwrite: true
+
+  cpus 4
+
+  when:
+  params.pdb == true
+
+  input:
+  file(seq) from no_pdb_mapping.splitFasta( by: 1000, file: "chunk_" )
+
+  output:
+  file '*tab' into pdb_blast
+
+  script:
+
+  n = seq.name
+  """
+  blastp -db $params.databases_dir/pdb/pdb_seqres.faa -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}.tab
+  """
+}
+
+
+process get_uniparc_crossreferences {
+
+  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
+
+  when:
+  params.uniparc == true
+
+  input:
+  file(table) from uniparc_mapping_tab1
+
+  output:
+  file 'uniparc_crossreferences.tab'
+
+  script:
+
+  """
+#!/usr/bin/env python3.6
+import sqlite3
+import datetime
+import logging
+
+logging.basicConfig(filename='uniparc_crossrefs.log',level=logging.DEBUG)
+
+
+conn = sqlite3.connect("${params.databases_dir}/uniprot/uniparc/uniparc.db")
+cursor = conn.cursor()
+
+o = open("uniparc_crossreferences.tab", "w")
+
+sql = 'select db_name,accession, status from uniparc_cross_references t1 inner join crossref_databases t2 on t1.db_id=t2.db_id where uniparc_id=? and db_name not in ("SEED", "PATRIC", "EPO", "JPO", "KIPO", "USPTO");'
+
+with open("${table}", 'r') as f:
+    for n, row in enumerate(f):
+        if n == 0:
+            continue
+        data = row.rstrip().split("\t")
+        uniparc_id = str(data[1])
+        checksum = data[0]
+        cursor.execute(sql, [uniparc_id])
+        crossref_list = cursor.fetchall()
+        for crossref in crossref_list:
+            db_name = crossref[0]
+            db_accession = crossref[1]
+            entry_status = crossref[2]
+            o.write("%s\\t%s\\t%s\\t%s\\n" % ( checksum,
+                                          db_name,
+                                          db_accession,
+                                          entry_status))
+
+    """
+}
+
+
+process get_idmapping_crossreferences {
+
+  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
+  echo true
+
+  when:
+  params.uniprot_idmapping == true
+
+  input:
+  file(table) from uniparc_mapping_tab2
+
+  output:
+  file 'idmapping_crossreferences.tab'
+
+  script:
+
+  """
+#!/usr/bin/env python3.6
+import sqlite3
+import datetime
+import logging
+
+logging.basicConfig(filename='uniparc_crossrefs.log',level=logging.DEBUG)
+
+
+conn = sqlite3.connect("${params.databases_dir}/uniprot/idmapping/idmapping.db")
+cursor = conn.cursor()
+
+o = open("idmapping_crossreferences.tab", "w")
+
+sql = 'select uniprokb_accession, db_name,accession from uniparc2uniprotkb t1 inner join uniprotkb_cross_references t2 on t1.uniprotkb_id=t2.uniprotkb_id inner join database t3 on t2.db_id=t3.db_id where uniparc_accession=?;'
+
+with open("${table}", 'r') as f:
+    for n, row in enumerate(f):
+        if n == 0:
+            continue
+        data = row.rstrip().split("\t")
+        uniparc_accession = data[2]
+        checksum = data[0]
+        cursor.execute(sql, [uniparc_accession])
+        crossref_list = cursor.fetchall()
+        for crossref in crossref_list:
+            uniprot_accession = crossref[0]
+            db_name = crossref[1]
+            db_accession = crossref[2]
+            o.write("%s\\t%s\\t%s\\t%s\\n" % ( checksum,
+                                               uniprot_accession,
+                                               db_name,
+                                               db_accession))
+
+    """
+}
+
+
+process get_uniprot_goa_mapping {
+
+  publishDir 'annotation/goa/', mode: 'copy', overwrite: true
+  echo true
+
+  when:
+  params.uniprot_goa == true
+
+  input:
+  val (uniprot_acc_list) from uniprot_nr_accessions
+
+  output:
+  file 'goa_uniprot_exact_annotations.tab'
+
+  script:
+
+  """
+#!/usr/bin/env python3.6
+import sqlite3
+import datetime
+
+conn = sqlite3.connect("${params.databases_dir}/goa/goa_uniprot.db")
+cursor = conn.cursor()
+
+o = open("goa_uniprot_exact_annotations.tab", "w")
+
+sql = 'select GO_id, reference,evidence_code,category from goa_table where uniprotkb_accession=?;'
+
+for accession in "${uniprot_acc_list}".split(","):
+    accession_base = accession.split(".")[0].strip()
+    cursor.execute(sql, [accession_base])
+    #print(f'select GO_id, reference,evidence_code,category from goa_table where uniprotkb_accession="{accession_base}";')
+    go_list = cursor.fetchall()
+    for go in go_list:
+        GO_id = go[0]
+        reference = go[1]
+        evidence_code = go[2]
+        category = go[3]
+        o.write(f"{accession_base}\\t{GO_id}\\t{reference}\\t{evidence_code}\\t{category}\\n")
+    """
+}
+
 
 workflow.onComplete {
   // Display complete message

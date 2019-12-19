@@ -1,0 +1,394 @@
+Dec-19 12:03:00.454 [main] DEBUG nextflow.cli.Launcher - $> nextflow run annotation_pipeline.nf
+Dec-19 12:03:00.593 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 19.10.0
+Dec-19 12:03:00.609 [main] INFO  nextflow.cli.CmdRun - Launching `annotation_pipeline.nf` [agitated_shirley] - revision: 38b08d8ae9
+Dec-19 12:03:00.625 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/nextflow.config
+Dec-19 12:03:00.626 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/nextflow.config
+Dec-19 12:03:00.676 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Dec-19 12:03:01.059 [main] DEBUG nextflow.extension.OperatorEx - Dataflow extension methods: branch,buffer,chain,choice,collate,collect,collectFile,combine,concat,count,countBy,countFasta,countFastq,countLines,countText,cross,distinct,filter,first,flatMap,flatten,fork,groupBy,groupTuple,ifEmpty,into,join,last,map,max,mean,merge,min,mix,phase,print,println,randomSample,reduce,separate,set,splitCsv,splitFasta,splitFastq,splitText,spread,subscribe,sum,take,tap,toDouble,toFloat,toInteger,toList,toLong,toSortedList,transpose,unique,until,view
+Dec-19 12:03:01.070 [main] DEBUG nextflow.Session - Session uuid: 767fb16e-d4b3-4fe8-b35e-5b5201c7f3dc
+Dec-19 12:03:01.070 [main] DEBUG nextflow.Session - Run name: agitated_shirley
+Dec-19 12:03:01.071 [main] DEBUG nextflow.Session - Executor pool size: 112
+Dec-19 12:03:01.098 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 19.10.0 build 5170
+  Created: 21-10-2019 15:07 UTC (17:07 CEST)
+  System: Linux 5.0.0-36-generic
+  Runtime: Groovy 2.5.8 on OpenJDK 64-Bit Server VM 11.0.1-internal+0-adhoc..src
+  Encoding: UTF-8 (UTF-8)
+  Process: 23464@HOS60345 [127.0.1.1]
+  CPUs: 112 - Mem: 376.6 GB (2.7 GB) - Swap: 2 GB (1.7 GB)
+Dec-19 12:03:01.120 [main] DEBUG nextflow.Session - Work-dir: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work [ext2/ext3]
+Dec-19 12:03:01.137 [main] DEBUG nextflow.Session - Observer factory: TowerFactory
+Dec-19 12:03:01.138 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Dec-19 12:03:01.363 [main] DEBUG nextflow.Session - Session start invoked
+Dec-19 12:03:01.860 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Dec-19 12:03:01.871 [main] INFO  nextflow.Nextflow - faa/*.faa
+Dec-19 12:03:01.874 [main] INFO  nextflow.Nextflow - =====================================
+Dec-19 12:03:01.874 [main] INFO  nextflow.Nextflow - input                  : faa/*.faa
+Dec-19 12:03:01.874 [main] INFO  nextflow.Nextflow - COG                    : true
+Dec-19 12:03:01.874 [main] INFO  nextflow.Nextflow - Orthofinder            : true
+Dec-19 12:03:01.874 [main] INFO  nextflow.Nextflow - Orthofinder path       : /scratch/hdd/bmarquis/annotation_pipeline_nextflow/faa
+Dec-19 12:03:01.875 [main] INFO  nextflow.Nextflow - Core missing           : 10
+Dec-19 12:03:01.875 [main] INFO  nextflow.Nextflow - Executor               : local
+Dec-19 12:03:02.083 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.083 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.086 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Dec-19 12:03:02.090 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=8; memory=32 GB; capacity=112; pollInterval=100ms; dumpInterval=5m
+Dec-19 12:03:02.119 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > copy_local_assemblies -- maxForks: 112
+Dec-19 12:03:02.151 [main] WARN  nextflow.extension.IntoOp - The `into` operator should be used to connect two or more target channels -- consider to replace it with `.set { all_raw_gbff }`
+Dec-19 12:03:02.163 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.163 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.164 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > gbk_check -- maxForks: 112
+Dec-19 12:03:02.169 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.169 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.171 [main] DEBUG nextflow.processor.TaskProcessor - Creating *combiner* operator for each param(s) at index(es): [0]
+Dec-19 12:03:02.220 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > convert_gbk_to_faa -- maxForks: 112
+Dec-19 12:03:02.312 [main] WARN  nextflow.extension.IntoOp - The `into` operator should be used to connect two or more target channels -- consider to replace it with `.set { merged_faa0 }`
+Dec-19 12:03:02.318 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.318 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.323 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > get_nr_sequences -- maxForks: 112
+Dec-19 12:03:02.351 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.351 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.353 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > prepare_orthofinder -- maxForks: 112
+Dec-19 12:03:02.359 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.359 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.361 [main] DEBUG nextflow.processor.TaskProcessor - Creating *combiner* operator for each param(s) at index(es): [1, 2]
+Dec-19 12:03:02.363 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > blast_orthofinder -- maxForks: 112
+Dec-19 12:03:02.369 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.369 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.370 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > orthofinder_main -- maxForks: 112
+Dec-19 12:03:02.377 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.377 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.378 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > orthogroups2fasta -- maxForks: 112
+Dec-19 12:03:02.389 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.389 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.390 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > align_with_mafft -- maxForks: 112
+Dec-19 12:03:02.408 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.408 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.423 [main] DEBUG nextflow.processor.TaskProcessor - Creating *combiner* operator for each param(s) at index(es): [0]
+Dec-19 12:03:02.424 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > orthogroups_phylogeny_with_fasttree3 -- maxForks: 112
+Dec-19 12:03:02.429 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.430 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.431 [main] DEBUG nextflow.processor.TaskProcessor - Creating *combiner* operator for each param(s) at index(es): [0]
+Dec-19 12:03:02.431 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > orthogroups_phylogeny_with_iqtree -- maxForks: 112
+Dec-19 12:03:02.436 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.436 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.438 [main] DEBUG nextflow.processor.TaskProcessor - Creating *combiner* operator for each param(s) at index(es): [0]
+Dec-19 12:03:02.439 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > orthogroups_phylogeny_with_iqtree_no_boostrap -- maxForks: 112
+Dec-19 12:03:02.442 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.443 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.443 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > get_core_orthogroups -- maxForks: 112
+Dec-19 12:03:02.445 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.445 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.445 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > concatenate_core_orthogroups -- maxForks: 112
+Dec-19 12:03:02.447 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.447 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.447 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > build_core_phylogeny_with_fasttree -- maxForks: 112
+Dec-19 12:03:02.450 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.450 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.451 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > rpsblast_COG -- maxForks: 112
+Dec-19 12:03:02.452 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-19 12:03:02.458 [Task submitter] INFO  nextflow.Session - [5b/585c95] Submitted process > copy_local_assemblies (1)
+Dec-19 12:03:02.459 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.459 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.460 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > blast_swissprot -- maxForks: 112
+Dec-19 12:03:02.461 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.461 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.462 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > plast_refseq -- maxForks: 112
+Dec-19 12:03:02.464 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.464 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.464 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > diamond_refseq -- maxForks: 112
+Dec-19 12:03:02.466 [main] WARN  nextflow.extension.IntoOp - The `into` operator should be used to connect two or more target channels -- consider to replace it with `.set { refseq_diamond_results_sqlitedb }`
+Dec-19 12:03:02.467 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.467 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.468 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > get_uniparc_mapping -- maxForks: 112
+Dec-19 12:03:02.470 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.470 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.470 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > get_uniprot_data -- maxForks: 112
+Dec-19 12:03:02.471 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.472 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.472 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > get_string_mapping -- maxForks: 112
+Dec-19 12:03:02.473 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.473 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.474 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > get_string_PMID_mapping -- maxForks: 112
+Dec-19 12:03:02.475 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.475 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.475 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > get_tcdb_mapping -- maxForks: 112
+Dec-19 12:03:02.478 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.478 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.478 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > tcdb_gblast3 -- maxForks: 20
+Dec-19 12:03:02.479 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.479 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.480 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > get_pdb_mapping -- maxForks: 112
+Dec-19 12:03:02.481 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.481 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.481 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > get_oma_mapping -- maxForks: 112
+Dec-19 12:03:02.483 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.483 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.483 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > execute_interproscan_no_uniparc_matches -- maxForks: 112
+Dec-19 12:03:02.486 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.486 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.486 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > execute_interproscan_uniparc_matches -- maxForks: 112
+Dec-19 12:03:02.488 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.488 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.488 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > execute_kofamscan -- maxForks: 112
+Dec-19 12:03:02.489 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.489 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.490 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > execute_PRIAM -- maxForks: 112
+Dec-19 12:03:02.492 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.492 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.492 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > setup_orthology_db -- maxForks: 112
+Dec-19 12:03:02.494 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.494 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.494 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > setup_diamond_refseq_db -- maxForks: 112
+Dec-19 12:03:02.496 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.496 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.496 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > get_refseq_hits_taxonomy -- maxForks: 112
+Dec-19 12:03:02.497 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.497 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.498 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > get_diamond_refseq_top_hits -- maxForks: 112
+Dec-19 12:03:02.500 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.500 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.500 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > align_refseq_BBH_with_mafft -- maxForks: 112
+Dec-19 12:03:02.502 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-19 12:03:02.502 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-19 12:03:02.503 [main] DEBUG nextflow.processor.TaskProcessor - Creating *combiner* operator for each param(s) at index(es): [0]
+Dec-19 12:03:02.503 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > orthogroup_refseq_BBH_phylogeny_with_fasttree -- maxForks: 112
+Dec-19 12:03:02.505 [main] DEBUG nextflow.script.BaseScript - No entry workflow defined
+Dec-19 12:03:02.505 [main] DEBUG nextflow.script.ScriptRunner - > Await termination 
+Dec-19 12:03:02.505 [main] DEBUG nextflow.Session - Session await
+Dec-19 12:03:02.725 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: copy_local_assemblies (1); status: COMPLETED; exit: 0; error: -; workDir: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/5b/585c955252470f98f32ae94f9174d2]
+Dec-19 12:03:02.748 [Task monitor] DEBUG n.util.BlockingThreadExecutorFactory - Thread pool name=FileTransfer; maxThreads=336; maxQueueSize=1008; keepAlive=1m
+Dec-19 12:03:02.778 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-19 12:03:02.779 [Task submitter] INFO  nextflow.Session - [10/2ec952] Submitted process > gbk_check
+Dec-19 12:03:02.975 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: gbk_check; status: COMPLETED; exit: 0; error: -; workDir: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/10/2ec952dd999843f05faf64b33062f3]
+Dec-19 12:03:03.027 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-19 12:03:03.028 [Task submitter] INFO  nextflow.Session - [7b/98ab5e] Submitted process > convert_gbk_to_faa (1)
+Dec-19 12:03:03.192 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 3; name: convert_gbk_to_faa (1); status: COMPLETED; exit: 0; error: -; workDir: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/7b/98ab5e2f43abd8ad4ad8d87a4b0b01]
+Dec-19 12:03:03.223 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-19 12:03:03.224 [Task submitter] INFO  nextflow.Session - [7a/2ebcfe] Submitted process > prepare_orthofinder
+Dec-19 12:03:03.267 [Actor Thread 5] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 1; slices: 1; internal sort time: 0.001 s; external sort time: 0.016 s; total time: 0.017 s
+Dec-19 12:03:03.274 [Actor Thread 5] DEBUG nextflow.file.FileCollector - Saved collect-files list to: /tmp/0c0e0b43562f33f5cd42e9e27e50ecf7.collect-file
+Dec-19 12:03:03.280 [Actor Thread 5] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /tmp/nxf-15414571141050161703
+Dec-19 12:03:03.293 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-19 12:03:03.293 [Task submitter] INFO  nextflow.Session - [b6/410448] Submitted process > get_nr_sequences (1)
+Dec-19 12:03:03.455 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 5; name: get_nr_sequences (1); status: COMPLETED; exit: 0; error: -; workDir: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/b6/410448909f8267ff395b4c1ab0c6e3]
+Dec-19 12:03:03.492 [Actor Thread 9] DEBUG nextflow.sort.BigSort - Sort completed -- entries: 1; slices: 1; internal sort time: 0.0 s; external sort time: 0.002 s; total time: 0.002 s
+Dec-19 12:03:03.498 [Actor Thread 9] DEBUG nextflow.file.FileCollector - Saved collect-files list to: /tmp/037773e829431c12b31ddf8678f5c1a0.collect-file
+Dec-19 12:03:03.500 [Actor Thread 9] DEBUG nextflow.file.FileCollector - Deleting file collector temp dir: /tmp/nxf-12719450359632366272
+Dec-19 12:03:03.509 [Actor Thread 5] DEBUG n.splitter.AbstractTextSplitter - Splitter `Fasta` collector path: nextflow.splitter.TextFileCollector$CachePath(/scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/d0/a9a24b74216dd6225d8a2a269900b5/chunk_, null)
+Dec-19 12:03:03.527 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-19 12:03:03.528 [Task submitter] INFO  nextflow.Session - [32/8faa5b] Submitted process > get_pdb_mapping (1)
+Dec-19 12:03:03.528 [Actor Thread 12] DEBUG nextflow.file.SortFileCollector - FileCollector temp dir not removed: null
+Dec-19 12:03:03.542 [Actor Thread 22] DEBUG nextflow.conda.CondaCache - Conda found local env for environment=bioconda::biopython=1.68; path=/home/bmarquis/miniconda3/nextflow/env-35f8e7b0f3c1a686114e65b303c0b41f
+Dec-19 12:03:03.542 [Actor Thread 20] DEBUG nextflow.conda.CondaCache - Conda found local env for environment=bioconda::blast=2.7.1; path=/home/bmarquis/miniconda3/nextflow/env-5e1eeaa4a023b047bd661cbc36a2c7c6
+Dec-19 12:03:03.542 [Actor Thread 11] DEBUG nextflow.conda.CondaCache - Conda found local env for environment=hmmer=3.2.1 parallel ruby=2.4.5; path=/home/bmarquis/miniconda3/nextflow/env-8a6be00f909ebccc0f62f433583c6eb6
+Dec-19 12:03:03.542 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-19 12:03:03.543 [Task submitter] INFO  nextflow.Session - [37/a0c614] Submitted process > get_tcdb_mapping (1)
+Dec-19 12:03:03.551 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-19 12:03:03.551 [Task submitter] INFO  nextflow.Session - [ed/15efa6] Submitted process > get_string_mapping (1)
+Dec-19 12:03:03.552 [Actor Thread 26] DEBUG nextflow.conda.CondaCache - Conda found local env for environment=bioconda::diamond=0.9.24; path=/home/bmarquis/miniconda3/nextflow/env-585b4c60e4f04b8e36470dea2018755a
+Dec-19 12:03:03.698 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 10; name: get_pdb_mapping (1); status: COMPLETED; exit: 0; error: -; workDir: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/32/8faa5b793d0ab9a2c992a748761c6e]
+Dec-19 12:03:03.703 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-19 12:03:03.704 [Task submitter] INFO  nextflow.Session - [f0/13567c] Submitted process > get_oma_mapping (1)
+Dec-19 12:03:03.712 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 6; name: get_tcdb_mapping (1); status: COMPLETED; exit: 0; error: -; workDir: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/37/a0c614b9a746aa41fd51c6a3f00695]
+Dec-19 12:03:03.714 [Actor Thread 15] DEBUG n.splitter.AbstractTextSplitter - Splitter `Fasta` collector path: nextflow.splitter.TextFileCollector$CachePath(/scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/13/ffa554994567d3151b49d258a91620/chunk, null)
+Dec-19 12:03:03.716 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-19 12:03:03.717 [Task submitter] INFO  nextflow.Session - [c6/871d14] Submitted process > get_uniparc_mapping (1)
+Dec-19 12:03:03.727 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 7; name: get_string_mapping (1); status: COMPLETED; exit: 0; error: -; workDir: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/ed/15efa68bdeed8ee606c899b5e14406]
+Dec-19 12:03:03.736 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 9; name: get_uniparc_mapping (1); status: COMPLETED; exit: 1; error: -; workDir: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/c6/871d142fbeceae6936cce152eb41a8]
+Dec-19 12:03:03.742 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-19 12:03:03.742 [Task submitter] INFO  nextflow.Session - [ed/b90796] Submitted process > rpsblast_COG (1)
+Dec-19 12:03:03.748 [Task monitor] DEBUG nextflow.processor.TaskRun - Unable to dump output of process 'null' -- Cause: java.nio.file.NoSuchFileException: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/c6/871d142fbeceae6936cce152eb41a8/.command.out
+Dec-19 12:03:03.750 [Task monitor] DEBUG nextflow.processor.TaskRun - Unable to dump error of process 'null' -- Cause: java.nio.file.NoSuchFileException: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/c6/871d142fbeceae6936cce152eb41a8/.command.err
+Dec-19 12:03:03.765 [Task monitor] ERROR nextflow.processor.TaskProcessor - Error executing process > 'get_uniparc_mapping (1)'
+
+Caused by:
+  Process `get_uniparc_mapping (1)` terminated with an error exit status (1)
+
+Command executed:
+
+  #!/usr/bin/env python
+  
+  from Bio import SeqIO
+  import sqlite3
+  from Bio.SeqUtils import CheckSum
+  
+  conn = sqlite3.connect("/data/databases/uniprot/uniparc/uniparc.db")
+  cursor = conn.cursor()
+  
+  fasta_file = "merged_nr.faa"
+  
+  uniparc_map = open('uniparc_mapping.tab', 'w')
+  uniprot_map = open('uniprot_mapping.tab', 'w')
+  no_uniprot_mapping = open('no_uniprot_mapping.faa', 'w')
+  no_uniparc_mapping = open('no_uniparc_mapping.faa', 'w')
+  uniparc_mapping_faa = open('uniparc_mapping.faa', 'w')
+  
+  uniparc_map.write("locus_tag\tuniparc_id\tuniparc_accession\tstatus\n")
+  uniprot_map.write("locus_tag\tuniprot_accession\ttaxon_id\tdescription\n")
+  
+  records = SeqIO.parse(fasta_file, "fasta")
+  no_mapping_uniprot_records = []
+  no_mapping_uniparc_records = []
+  mapping_uniparc_records = []
+  
+  for record in records:
+      match = False
+      sql = 'select t1.uniparc_id,uniparc_accession,accession,taxon_id,description, db_name, status from uniparc_accession t1 inner join uniparc_cross_references t2 on t1.uniparc_id=t2.uniparc_id inner join crossref_databases t3 on t2.db_id=t3.db_id where sequence_hash=?'
+      cursor.execute(sql, (CheckSum.seguid(record.seq),))
+      hits = cursor.fetchall()
+      if len(hits) == 0:
+          no_mapping_uniparc_records.append(record)
+          no_mapping_uniprot_records.append(record)
+      else:
+          mapping_uniparc_records.append(record)
+          all_status = [i[6] for i in hits]
+          if 1 in all_status:
+              status = 'active'
+          else:
+              status = 'dead'
+          uniparc_map.write("%s\t%s\t%s\t%s\n" % (record.id,
+                                                 hits[0][0],
+                                                 hits[0][1],
+                                                 status))
+          for uniprot_hit in hits:
+              if uniprot_hit[5] in ["UniProtKB/Swiss-Prot", "UniProtKB/TrEMBL"] and uniprot_hit[6] == 1:
+                  match = True
+                  uniprot_map.write("%s\t%s\t%s\t%s\t%s\n" % (record.id,
+                                                                   uniprot_hit[2],
+                                                                   uniprot_hit[3],
+                                                                   uniprot_hit[4],
+                                                                   uniprot_hit[5]))
+          if not match:
+              no_mapping_uniprot_records.append(record)
+  
+  SeqIO.write(no_mapping_uniprot_records, no_uniprot_mapping, "fasta")
+  SeqIO.write(no_mapping_uniparc_records, no_uniparc_mapping, "fasta")
+  SeqIO.write(mapping_uniparc_records, uniparc_mapping_faa, "fasta")
+
+Command exit status:
+  1
+
+Command output:
+  (empty)
+
+Command wrapper:
+  .command.run: line 80: activate: No such file or directory
+
+Work dir:
+  /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/c6/871d142fbeceae6936cce152eb41a8
+
+Tip: you can replicate the issue by changing to the process work dir and entering the command `bash .command.run`
+Dec-19 12:03:03.772 [Task monitor] DEBUG nextflow.Session - Session aborted -- Cause: Process `get_uniparc_mapping (1)` terminated with an error exit status (1)
+Dec-19 12:03:03.791 [Task monitor] DEBUG nextflow.Session - The following nodes are still active:
+[process] blast_orthofinder
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: complete_dir
+  port 1: (value) OPEN  ; channel: __$eachinparam<1>
+  port 2: (value) OPEN  ; channel: __$eachinparam<2>
+  port 3: (cntrl) -     ; channel: $
+
+[process] orthofinder_main
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: complete_dir
+  port 1: (value) OPEN  ; channel: blast_results
+  port 2: (cntrl) -     ; channel: $
+
+[process] orthogroups2fasta
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: Orthogroups.txt
+  port 1: (value) bound ; channel: genome_list
+  port 2: (cntrl) -     ; channel: $
+
+[process] align_with_mafft
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: og
+  port 1: (cntrl) -     ; channel: $
+
+[process] orthogroups_phylogeny_with_fasttree3
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: __$eachinparam<0>
+  port 1: (cntrl) -     ; channel: $
+
+[process] orthogroups_phylogeny_with_iqtree
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: __$eachinparam<0>
+  port 1: (cntrl) -     ; channel: $
+
+[process] orthogroups_phylogeny_with_iqtree_no_boostrap
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: __$eachinparam<0>
+  port 1: (cntrl) -     ; channel: $
+
+[process] get_core_orthogroups
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: Orthogroups.txt
+  port 1: (value) bound ; channel: genome_list
+  port 2: (value) OPEN  ; channel: fasta_files
+  port 3: (cntrl) -     ; channel: $
+
+[process] concatenate_core_orthogroups
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: core_groups
+  port 1: (cntrl) -     ; channel: $
+
+[process] build_core_phylogeny_with_fasttree
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: msa.faa
+  port 1: (cntrl) -     ; channel: $
+
+[process] setup_orthology_db
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: nr_mapping_file
+  port 1: (value) OPEN  ; channel: orthogroup
+  port 2: (queue) OPEN  ; channel: nr_fasta
+  port 3: (cntrl) -     ; channel: $
+
+[process] setup_diamond_refseq_db
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: diamond_tsv_list
+  port 1: (cntrl) -     ; channel: $
+
+[process] get_refseq_hits_taxonomy
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: refseq_hit_table
+  port 1: (cntrl) -     ; channel: $
+
+[process] get_diamond_refseq_top_hits
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: orthology.db
+  port 1: (value) OPEN  ; channel: refseq_taxonomy.db
+  port 2: (value) OPEN  ; channel: diamond_refseq.db
+  port 3: (cntrl) -     ; channel: $
+
+[process] align_refseq_BBH_with_mafft
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: og
+  port 1: (cntrl) -     ; channel: $
+
+[process] orthogroup_refseq_BBH_phylogeny_with_fasttree
+  status=ACTIVE
+  port 0: (value) OPEN  ; channel: __$eachinparam<0>
+  port 1: (cntrl) -     ; channel: $
+
+Dec-19 12:03:03.792 [Task monitor] DEBUG nextflow.processor.TaskRun - Unable to dump error of process 'null' -- Cause: java.nio.file.NoSuchFileException: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/c6/871d142fbeceae6936cce152eb41a8/.command.err
+Dec-19 12:03:03.792 [Task monitor] DEBUG nextflow.processor.TaskRun - Unable to dump output of process 'null' -- Cause: java.nio.file.NoSuchFileException: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/c6/871d142fbeceae6936cce152eb41a8/.command.out
+Dec-19 12:03:03.792 [Task monitor] INFO  nextflow.Nextflow - Workflow execution stopped with the following message:
+Dec-19 12:03:03.793 [Task monitor] INFO  nextflow.Nextflow -   null
+Dec-19 12:03:03.794 [main] DEBUG nextflow.Session - Session await > all process finished
+Dec-19 12:03:03.799 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Dec-19 12:03:03.811 [Actor Thread 5] DEBUG nextflow.file.SortFileCollector - FileCollector temp dir not removed: null
+Dec-19 12:03:03.811 [Actor Thread 26] DEBUG nextflow.file.SortFileCollector - FileCollector temp dir not removed: null
+Dec-19 12:03:03.814 [main] DEBUG nextflow.processor.TaskRun - Unable to dump error of process 'null' -- Cause: java.nio.file.NoSuchFileException: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/c6/871d142fbeceae6936cce152eb41a8/.command.err
+Dec-19 12:03:03.814 [main] DEBUG nextflow.processor.TaskRun - Unable to dump output of process 'null' -- Cause: java.nio.file.NoSuchFileException: /scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/c6/871d142fbeceae6936cce152eb41a8/.command.out
+Dec-19 12:03:03.815 [main] INFO  nextflow.Nextflow - Completed at: 2019-12-19T12:03:03.801455+01:00
+Dec-19 12:03:03.824 [main] INFO  nextflow.Nextflow - Duration    : 2.7s
+Dec-19 12:03:03.824 [main] INFO  nextflow.Nextflow - Success     : false
+Dec-19 12:03:03.824 [main] INFO  nextflow.Nextflow - Exit status : 1
+Dec-19 12:03:03.831 [main] WARN  n.processor.TaskPollingMonitor - Killing pending tasks (3)
+Dec-19 12:03:03.855 [main] DEBUG nextflow.executor.LocalTaskHandler - Unable to kill rpsblast_COG (1) -- command: kill -TERM 24557; exit: 1 
+ bash: line 0: kill: (24557) - No such process
+
+Dec-19 12:03:03.862 [main] DEBUG nextflow.trace.StatsObserver - Workflow completed > WorkflowStats[succeedCount=7; failedCount=4; ignoredCount=0; cachedCount=0; succeedDuration=1.7s; failedDuration=8ms; cachedDuration=0ms]
+Dec-19 12:03:03.989 [main] DEBUG nextflow.CacheDB - Closing CacheDB done
+Dec-19 12:03:04.012 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye

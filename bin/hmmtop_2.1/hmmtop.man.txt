@@ -1,0 +1,237 @@
+HMMTOP(1)              HMMTOP User's Guide              HMMTOP(1)
+
+
+NAME
+       HMMTOP  - Prediction of transmembrane helices and topology
+       for transmembrane proteins using hidden Markov model
+
+COMMAND
+       hmmtop   -if=name   [-of=name]   [-sf=format]   [-lf=name]
+       [-pi=mode]  [-ps=size]  [-is=point]  [-in=num] [-pp] [-pc]
+       [-pl] [-loc=b-e-sp] [-locf=name] [-noit] [-h] [-sh]
+
+
+DESCRIPTION
+       hmmtop predicts membrane  topology  of  integral  membrane
+       proteins using hidden Markov model. The program can inter-
+       pret multiple sequences in two different  ways.  In  mpred
+       mode  prediction  will  be provided for the first sequence
+       interpreting further sequences as homologues to the  first
+       one.   The  homologous  sequences  provided  need  not  be
+       aligned. In spred mode hmmtop simply evaluates  the  input
+       sequences one by one, providing independent prediction for
+       each of them using only single sequence information.
+       hmmtop can read from the standard input. It supports three
+       input  sequence  formats  (FASTA, NBRF/PIR, SWISSPROT) and
+       offers various output formats. The options are case sensi-
+       tive,  but  their values are case insensitive (for example
+       -sf=pir is  the  same  as  -sf=PIR,  but  -SF=PIR  is  not
+       accepted).   The option name, the equal sign and its value
+       have to be written in one word  (for  example  -sf=pir  is
+       accepted,  but  -sf=  pir,  -sf  =pir  or -sf = pir is not
+       interpreted).
+       The architecture of the hidden Markov model has to defined
+       in  a  file  (called hmmtop.arch by thedault) and the HMM-
+       TOP_ARCH environment variable has to point this  architec-
+       ture file. The program uses a pseudo count method in order
+       to faster optimization. The data of the pseudo count  vec-
+       tor  are  given in the hmmtop.psv file, and the HMMTOP_PSV
+       environment variable has to point this file.
+
+
+INPUT OPTIONS
+       -if=name, --input_file=name
+              name of the input sequence file. If name is -- then
+              the program reads from the standard input.
+
+
+       -sf=format, --sequence_format=format
+              format  of  the  sequence(s). format may be FAS for
+              fasta format (default), PIR for NBRF/PIR format  or
+              SWP for  SWISSPROT format.
+
+
+       -pi=mode, --process_inputfile=mode
+              treat  sequences in input file as single or homolo-
+              gous sequences. mode may be spred or mpred.  In the
+              case  of  spred  prediction  will  be done for each
+              sequence in the input_file (default). In  the  case
+              of mpred prediction will be done only for the first
+              sequence  in  the  input  file  and  the  remaining
+              sequences will be treated as helpers.
+
+
+       -ps=size, --pseudo_size=size
+              size  of the pseudo count vector.  size may be from
+              0  (no  pseudo  count   vector   used)   to   10000
+              (default=10000).
+
+
+       -is=point, --iteration_start=point
+              starting  point of the iteration(s).  point  may be
+              pseudo or random.  In the case of pseudo the itera-
+              tion starts from the pseudo countvector  (default).
+              In  the case  of random the iteration  starts  from
+              random values.
+
+
+       -in=num, --iteration_number=num
+              num  is  the  number of iterations (only if the -is
+              flag is random).
+
+
+       -loc=b-e-sp, --locate=b-e-sp
+              locates or locks a given sequence piece in a  given
+              structural part. The sequence piece is given by b-e
+              numbers, where b is the begin position,  e  is  the
+              end position.  sp is the structural part and sp may
+              be i, I, o, O and H for inside tail,  inside  loop,
+              outside tail, outside loop and helix parts, respec-
+              tively. e position may be the character  E  meaning
+              the C terminal end of the sequence.
+
+
+       -locf=file_name, --loc_file=file_name
+              file  for  multiple  locates. If the input sequence
+              file  contains  multiple  sequences  and  -pi=spred
+              option is given, then for each sequence the program
+              reads the locates from  the  file_name  given.  The
+              locates  have to be line by line for each sequence,
+              and the syntaxis is  the  same  as  in  -loc=b-e-sp
+              option (see above).
+
+
+       -noit, --noiteration
+              makes  prediction  without any iteration (optimiza-
+              tion), i.e. the parameters  of  the  hidden  Markov
+              model  are  set  to the pseudo count vector, and no
+              iteration will be done to maximize the  probability
+              if the model is given. Therefore, this option makes
+              the program behaviour similar to MEMSAT and  TMHMM,
+              i.e. it is more faster but less reliable.
+
+
+OUTPUT OPTIONS
+       In  the output hmmtop prints the number of amino acids and
+       the name of the predicted sequence in  one  line  begining
+       with  a  '>HP: ' string, and following by the localization
+       of the N terminal amino acid (IN or OUT),  the  number  of
+       the  predicted transmembrane helices and the begin and end
+       positions of each transmembrane helix.  Additional  output
+       can be generated by the following options.
+
+
+       -of=name, --output_file=name
+              name of the output sequence file. If this option is
+              omitted or name is -- then the  program  writes  to
+              the standard output.
+
+
+       -pp, --print_probabilities
+              Print the optimized probabilities.
+
+
+       -pc, --print_pseudocount
+              Print the pseudocount vector used.
+
+
+       -pl, --print_longprediction
+              Print  prediction  in  a  long  format.  The  input
+              sequence and the  predicted  localization  of  each
+              amino acid will be printed.
+
+
+
+MISCELLANEOUS OPTIONS
+       -h, --help
+              Print a long help message.
+
+
+       -sh, --short_help
+              Print a short help message.
+
+
+       -lf=name, --log_file=name
+              name of the log file for debugging purposes.
+
+
+ENVIRONMENT
+       HMMTOP_ARCH
+              has  to  point to the file containing the architec-
+              ture  of  the  model.   If  not  set,  the  program
+              searches  for  the  hmmtop.arch file in the current
+              directory.
+
+
+       HMMTOP_PSV
+              has to point to  the  file  containing  the  pseudo
+              count  vector  corresponding to the given architec-
+              ture. If not set, the program searches for the hmm-
+              top.psv file in the current directory.
+
+
+EXAMPLES
+       hmmtop -if=sequence.fas
+              predicts  the  topology  of  each  sequence  in the
+              sequence.fas file using only single sequence infor-
+              mation.  Sequences are in fasta format.
+
+       hmmtop -if=sequence.pir -sf=PIR -pi=mpred
+              predicts  the topology of the first sequence in the
+              sequence.pir file.  If  there  are  more  than  one
+              sequences  in  the sequence.pir file then they will
+              be used as helper sequences.
+
+       hmmtop -if=sprot36.dat -sf=SWP
+              predicts  the  topology   of   each   sequence   in
+              sprot36.dat file, using only single sequence infor-
+              mation.  Sequences are  in  swissprot  format  (for
+              example the full swissprot database).
+
+       hmmtop -if=sequence.pir -sf=PIR -pi=spred -loc=123-242-I
+              predicts the topology of each sequence given in the
+              sequence.pir file in pir format with the condition,
+              that  the  sequence  piece  between 123 and 242 are
+              intracellular.  If sequence.pir file contains  mul-
+              tiple  sequences  for each sequence will be handled
+              with this condition.
+
+       hmmtop -if=sequence.fas -sf=fas -pi=spred
+       -locf=sequence.loc
+              predicts the topology of each sequence given in the
+              sequence.fas file in fasta format  with  conditions
+              given  in  the  sequence.loc  file. The file has to
+              contain locates in the syntaxis b-e-sp (see  above)
+              for each sequence line by line.
+
+
+BUGS
+       Please report bugs to tusi@enzim.hu, after carefully read-
+       ing through all  the  documentation.  In  the  bug  report
+       please  include  the  input file, the output file, the log
+       file (use the -lf=name option) and the operating system.
+
+
+FILES
+       hmmtop.arch
+              The architecture file of the hidden Markov model.
+
+       hmmtop.psv
+              Data for calculating pseudocount vector used by the
+              optimization.
+
+
+
+REFERENCES
+       G.E. Tusnady and I. Simon (1998)
+       Principles  Governing  Amino  Acid Composition of Integral
+       Membrane Proteins:  Applications to topology prediction
+       J. Mol. Biol. 283, 489-506
+       http://www.enzim.hu/hmmtop
+
+
+COPYRIGHT
+       Gabor E. Tusnady, 2000, 2001
+
+HMMTOP 2.0                  April 2001                          1
+

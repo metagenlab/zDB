@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/scratch/hdd/bmarquis/annotation_pipeline_nextflow/work/99/234295f3de27164aec769d22d3506c/.command.sh", line 2, in <module>
+    import annotations
+  File "/scratch/hdd/bmarquis/annotation_pipeline_nextflow/bin/annotations.py", line 5, in <module>
+    import urllib2
+ModuleNotFoundError: No module named 'urllib2'
