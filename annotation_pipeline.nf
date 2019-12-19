@@ -836,7 +836,7 @@ refseq_diamond.collectFile()
 
 process get_uniparc_mapping {
 
-  conda 'bioconda::biopython=1.68'
+  // conda 'bioconda::biopython=1.68'
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
 
@@ -1064,7 +1064,6 @@ process get_string_mapping {
 
   output:
   file 'string_mapping.tab' into string_mapping
-  file 'no_string_mapping.faa' into no_string_mapping
 
   script:
   fasta_file = seq.name
@@ -1078,7 +1077,7 @@ process get_string_mapping {
 
 process get_string_PMID_mapping {
 
-  conda 'bioconda::biopython=1.68'
+  // conda 'bioconda::biopython=1.68'
 
   publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
 
@@ -1095,40 +1094,9 @@ process get_string_PMID_mapping {
   script:
 
   """
-#!/usr/bin/env python
-
-import urllib2
-
-def string_id2pubmed_id_list(accession):
-
-    link = 'http://string-db.org/api/tsv/abstractsList?identifiers=%s' % accession
-    print link
-    try:
-        data = urllib2.urlopen(link).read().rstrip().decode('utf-8').split('\\n')[1:]
-    except urllib2.URLError:
-        print ('echec', link)
-        return False
-    pid_list = [row.split(':')[1] for row in data]
-    print ('list', pid_list)
-    return pid_list
-
-o = open("string_mapping_PMID.tab", "w")
-
-string_mapping = "${string_map}"
-
-with open(string_mapping, 'r') as f:
-    for n, row in enumerate(f):
-        if n == 0:
-            continue
-        else:
-            data = row.rstrip().split("\t")
-            pmid_list = string_id2pubmed_id_list(data[1])
-            if pmid_list:
-                for id in pmid_list:
-                    o.write("%s\\t%s\\n" % (data[0], id))
-            else:
-                o.write("%s\\tNone\\n" % (data[0]))
-
+	#!/usr/bin/env python
+	import annotations
+	annotations.get_string_PMID_mapping("${string_map}")
   """
 }
 
@@ -1218,7 +1186,7 @@ process get_pdb_mapping {
 
 process get_oma_mapping {
 
-  conda 'bioconda::biopython=1.68'
+  // conda 'bioconda::biopython=1.68'
 
   publishDir 'annotation/oma_mapping/', mode: 'copy', overwrite: true
 

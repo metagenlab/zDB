@@ -2,6 +2,30 @@ from Bio import Entrez, SeqIO
 from Bio.SeqUtils import CheckSum
 
 import sqlite3
+import urllib
+
+def string_id2pubmed_id_list(accession):
+    link = 'http://string-db.org/api/tsv/abstractsList?identifiers=%s' % accession
+    try:
+        data = urllib2.urlopen(link).read().rstrip().decode('utf-8').split('\\n')[1:]
+    except urllib2.URLError:
+        return False
+    pid_list = [row.split(':')[1] for row in data]
+    return pid_list
+
+def get_string_PMID_mapping(string_map):
+    o = open("string_mapping_PMID.tab", "w")
+    with open(string_map, 'r') as f:
+        for n, row in enumerate(f):
+            if n == 0:
+                continue
+            data = row.rstrip().split("\t")
+            pmid_list = string_id2pubmed_id_list(data[1])
+            if pmid_list:
+                for id in pmid_list:
+                    o.write("%s\t%s\n" % (data[0], id))
+            else:
+                o.write("%s\tNone\n" % (data[0]))
 
 
 def get_pdb_mapping(fasta_file, database_dir):
@@ -53,12 +77,7 @@ def get_tcdb_mapping(fasta_file, database_dir):
 def get_string_mapping(fasta_file, database_dir):
     conn = sqlite3.connect(database_dir + "/string/string_proteins.db")
     cursor = conn.cursor()
-
-    fasta_file = "${fasta_file}"
-
     string_map = open('string_mapping.tab', 'w')
-    no_string_mapping = open('no_string_mapping.faa', 'w')
-
     string_map.write("locus_tag\tstring_id\n")
 
     records = SeqIO.parse(fasta_file, "fasta")
@@ -67,17 +86,10 @@ def get_string_mapping(fasta_file, database_dir):
         sql = 'select accession from hash_table where sequence_hash=?'
         cursor.execute(sql, (CheckSum.seguid(record.seq),))
         hits = cursor.fetchall()
-        if len(hits) == 0:
-            no_mapping_string_records.append(record)
-        else:
-            for hit in hits:
-              string_map.write("%s\t%s\n" % (record.id,
-                                              hit[0]))
-    SeqIO.write(no_mapping_string_records, no_string_mapping, "fasta")
-
+        for hit in hits:
+          string_map.write("%s\t%s\n" % (record.id, hit[0]))
 
 def convert_gbk_to_faa(gbf_file, edited_gbf):
-    print(edited_gbf)
     records = SeqIO.parse(gbf_file, 'genbank')
     edited_records = open(edited_gbf, 'w')
 
