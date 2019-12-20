@@ -28,37 +28,27 @@ if (params.ncbi_sample_sheet != false){
 
 }
 
-if (params.local_sample_sheet != false) {
-  Channel.fromPath( file(params.local_sample_sheet) )
-                      .splitCsv(header: true, sep: '\t')
-                      .map{row -> "$row.gbk_path" }
-                      .map { file(it) }
-                      .set { local_gbk_list }
-}
-
-// only define process if nedded
-if (params.local_sample_sheet != false){
-  process copy_local_assemblies {
-
+process copy_local_assemblies {
     publishDir 'data/gbk_local', mode: 'copy', overwrite: true
 
     cpus 1
 
     when:
-    params.local_sample_sheet != false
+    params.local_sample_sheet
 
     input:
-    file(local_gbk) from local_gbk_list
+    file local_gbk from Channel.fromPath(file(params.local_sample_sheet))
+                      .splitCsv(header: true, sep: '\t')
+                      .map{row -> "$row.gbk_path" }
+                      .map { file(it) }
 
     output:
     file "${local_gbk.name}.gz" into raw_local_gbffs
 
     script:
-
     """
     gzip -f ${local_gbk.name}
     """
-  }
 }
 
 // only define process if nedded
