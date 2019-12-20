@@ -5,12 +5,6 @@ import concat_gbk
 
 
 def filter_plasmid(record_list):
-    '''
-    Return 2 lists: one with plasmid record(s), one without plasmids
-    :param record_list:
-    :return:
-    '''
-
     plasmid_record_list = []
     chromosome_record_list = []
 
@@ -35,12 +29,8 @@ def count_missing_locus_tags(gbk_record):
     for feature in gbk_record.features:
         if feature.type == 'CDS':
             count_CDS += 1
-            try:
-                test = feature.qualifiers['locus_tag']
-            except:
-                # missing locus case
+            if "locus_tag" not in feature.qualifiers:
                 count_no_locus += 1
-        pass
     return count_no_locus, count_CDS
 
 
@@ -136,35 +126,33 @@ def check_gbk(gbff_files,
         plasmid_reannot = False
         chromosome_reannot = False
 
-        if len(plasmids) > 0:
+        for n_plasmid, plasmid in plasmids:
+            annot_check = is_annotated(plasmid)
+            if annot_check:
 
-            for n_plasmid, plasmid in enumerate(plasmids):
-                annot_check = is_annotated(plasmid)
-                if annot_check:
+                plasmid.description = clean_description(plasmid.description)
 
-                    plasmid.description = clean_description(plasmid.description)
-
-                    plasmid = update_record_taxon_id(plasmid, 1000 + genome_number)
-                    strain, new_source = rename_source(plasmid)
-                    print("plasmid:", strain, new_source )
-                    if new_source:
-                        if not 'plasmid' in new_source:
-                            new_source = "%s plasmid %s" % (new_source, n_plasmid+1)
-                        if strain.lower() not in plasmid.annotations['source'].lower():
-                            plasmid.description = new_source
-                        if strain.lower() not in plasmid.annotations['organism'].lower():
-                            plasmid.annotations['organism'] = new_source
-                        if strain.lower() not in plasmid.annotations['source'].lower():
-                            plasmid.annotations['source'] = new_source
-                    else:
-                        print ('ACHTUNG\t no strain name for \t%s\t, SOUCE uniqueness should be checked manually' % merged_record.id)
-                    # check if accession is meaningful
-                    if 'NODE_' in plasmid.id or 'NODE_' in plasmid.name:
-                        print ('ACHTUNG\t accession probably not unique (%s) for \t%s\t --> should be checked manually' % (merged_record.id))
-                    cleaned_records.append(plasmid)
+                plasmid = update_record_taxon_id(plasmid, 1000 + genome_number)
+                strain, new_source = rename_source(plasmid)
+                print("plasmid:", strain, new_source )
+                if new_source:
+                    if not 'plasmid' in new_source:
+                        new_source = "%s plasmid %s" % (new_source, n_plasmid+1)
+                    if strain.lower() not in plasmid.annotations['source'].lower():
+                        plasmid.description = new_source
+                    if strain.lower() not in plasmid.annotations['organism'].lower():
+                        plasmid.annotations['organism'] = new_source
+                    if strain.lower() not in plasmid.annotations['source'].lower():
+                        plasmid.annotations['source'] = new_source
                 else:
-                    plasmid_reannot = True
-                    print("Warrning: unannotated genome: %s" % plasmid)
+                    print ('ACHTUNG\t no strain name for \t%s\t, SOUCE uniqueness should be checked manually' % merged_record.id)
+                # check if accession is meaningful
+                if 'NODE_' in plasmid.id or 'NODE_' in plasmid.name:
+                    print ('ACHTUNG\t accession probably not unique (%s) for \t%s\t --> should be checked manually' % (merged_record.id))
+                cleaned_records.append(plasmid)
+            else:
+                plasmid_reannot = True
+                print("Warrning: unannotated genome: %s" % plasmid)
 
         if len(chromosome) > 0:
 

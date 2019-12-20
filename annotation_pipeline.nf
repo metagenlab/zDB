@@ -28,6 +28,52 @@ if (params.ncbi_sample_sheet != false){
 
 }
 
+
+process prokka {
+	publishDir 'data/prokka_output', mode: 'copy', overwrite: true
+
+	// NOTE : according to Prokka documentation, a linear acceleration
+	// is obtained up to 8 processes and after that, the overhead becomes
+	// more important
+	cpus 8
+
+	when:
+	params.prokka
+
+	input:
+	file genome_fasta from Channel.fromPath(params.fna_dir + "/*.fna")
+
+	output:
+	file "prokka_results/*.gbk" into gbk_from_local_assembly
+
+	script:
+	"""
+	prokka $genome_fasta --outdir prokka_results --prefix ${genome_fasta.baseName} \\
+		 --centre X --compliant --cpus ${task.cpus}
+	"""
+}
+
+// leave all the contigs with no coding region (check_gbk doesn't like them)
+process prokka_filter_CDS {
+	publishDir 'data/prokka_output_filtered', mode: 'copy', overwrite: true
+	input:
+	file prokka_file from gbk_from_local_assembly.collect()
+
+	output:
+	file "*_filtered.gbk" into gbk_prokka_filtered
+
+	script:
+	"""
+	#!/usr/bin/env python
+	
+	import annotations
+
+	gbk_files = "${prokka_file}".split()
+	for i in gbk_files:
+		annotations.filter_out_unannotated(i)
+	"""
+}
+
 process copy_local_assemblies {
     publishDir 'data/gbk_local', mode: 'copy', overwrite: true
 
@@ -36,11 +82,14 @@ process copy_local_assemblies {
     when:
     params.local_sample_sheet
 
+	// Mixing inputs from local assemblies annotated with Prokka
+	// and local annotated genomes in .gbk format
     input:
     file local_gbk from Channel.fromPath(file(params.local_sample_sheet))
                       .splitCsv(header: true, sep: '\t')
                       .map{row -> "$row.gbk_path" }
                       .map { file(it) }
+                      .mix(gbk_prokka_filtered)
 
     output:
     file "${local_gbk.name}.gz" into raw_local_gbffs
@@ -227,32 +276,6 @@ if (params.ncbi_sample_sheet != false){
 
 }
 
-process prokka {
-	publishDir 'data/prokka_output', mode: 'copy', overwrite: true
-
-
-	// NOTE : according to Prokka documentation, a linear acceleration
-	// is obtained up to 8 processes and after that, the overhead becomes
-	// more important
-	cpus 8
-
-	when:
-	params.prokka
-
-	input:
-	file genome_fasta from Channel.fromPath(params.fna_dir + "/*.fna")
-
-	output:
-	file "prokka_results/*.gbk" into gbk_from_local_assembly
-
-	script:
-	"""
-	prokka $genome_fasta --outdir prokka_results --prefix ${genome_fasta.baseName} \\
-		 --centre X --compliant --cpus ${task.cpus}
-	"""
-}
-
-
 // merge local and ncbi gbk into a single channel
 if (params.ncbi_sample_sheet != false && params.local_sample_sheet == false) {
 println "ncbi"
@@ -268,7 +291,6 @@ raw_ncbi_gbffs.mix(raw_local_gbffs).into{all_raw_gbff}
 }
 
 process gbk_check {
-
   publishDir 'data/gbk_edited', mode: 'copy', overwrite: true
 
   // conda 'bioconda::biopython=1.68'
@@ -276,15 +298,17 @@ process gbk_check {
   cpus 2
 
   input:
-  file(all_gbff) from all_raw_gbff.collect()
+  file all_gbff from all_raw_gbff.collect()
 
   output:
   file "*merged.gbk" into edited_gbks
 
   script:
-  println all_gbff
   """
-  gbff_check.py -i ${all_gbff} -l 1000
+  #!/usr/bin/env python
+  
+  import annotations
+  annotations.check_gbk("$all_gbff".split())
   """
 }
 

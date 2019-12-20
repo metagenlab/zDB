@@ -1,6 +1,6 @@
-Dec-18 15:38:09.592 [main] DEBUG nextflow.cli.Launcher - $> nextflow run annotation_pipeline.nf
-Dec-18 15:38:09.652 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 19.10.0
-Dec-18 15:38:09.671 [main] DEBUG nextflow.cli.Launcher - Operation aborted
+Dec-20 12:30:11.827 [main] DEBUG nextflow.cli.Launcher - $> nextflow run annotation_pipeline.nf
+Dec-20 12:30:11.886 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 19.10.0
+Dec-20 12:30:11.950 [main] DEBUG nextflow.cli.Launcher - Operation aborted
 nextflow.exception.AbortOperationException: Not a valid project name: annotation_pipeline.nf
 	at nextflow.scm.AssetManager.resolveName(AssetManager.groovy:246)
 	at nextflow.scm.AssetManager.build(AssetManager.groovy:121)
