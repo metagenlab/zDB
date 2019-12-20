@@ -126,7 +126,7 @@ def filter_small_sequences(fasta_file):
     for record in records:
         if len(record.seq) >= 10:
             filtered_records.append(record)
-    SeqIO.write(filtered_records,"nr_more_10aa.faa", "fasta")
+    SeqIO.write(filtered_records, "nr_more_10aa.faa", "fasta")
 
 def remove_ambiguous_aa(fasta_file):
     records = SeqIO.parse(fasta_file, "r", "fasta")

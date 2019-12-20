@@ -237,6 +237,32 @@ if (params.ncbi_sample_sheet != false){
 
 }
 
+process prokka {
+	publishDir 'data/prokka_output', mode: 'copy', overwrite: true
+
+
+	// NOTE : according to Prokka documentation, a linear acceleration
+	// is obtained up to 8 processes and after that, the overhead becomes
+	// more important
+	cpus 8
+
+	when:
+	params.prokka
+
+	input:
+	file genome_fasta from Channel.fromPath(params.fna_dir + "/*.fna")
+
+	output:
+	file "prokka_results/*.gbk" into gbk_from_local_assembly
+
+	script:
+	"""
+	prokka $genome_fasta --outdir prokka_results --prefix ${genome_fasta.baseName} \\
+		 --centre X --compliant --cpus ${task.cpus}
+	"""
+}
+
+
 // merge local and ncbi gbk into a single channel
 if (params.ncbi_sample_sheet != false && params.local_sample_sheet == false) {
 println "ncbi"
@@ -2178,7 +2204,7 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 
 // TODO : merge simples rules like this one and the next ones, as such changes would
 // - take less lines of code
-// - be more efficient : less disk accesses and less forking
+// - be more efficient : less disk read/write and less process forking
 process filter_very_small_sequences {
   // conda 'biopython=1.73'
 
@@ -2211,7 +2237,7 @@ process remove_ambiguous_aa {
   params.effector_prediction == true
 
   input: 
-    file fasta_file from nr_faa_large_sequences
+    file "nr_more_10aa.faa" from nr_faa_large_sequences
 
   output:
     file "nr_more_10aa_filtered.faa" into nr_faa_large_sequences_filtered
@@ -2220,7 +2246,7 @@ process remove_ambiguous_aa {
 	"""
 	#!/usr/bin/env python
 	import annotations
-	annotations.filter_small_sequences("$fasta_file")
+	annotations.filter_small_sequences("nr_more_10aa.faa")
 	"""
 }
 
