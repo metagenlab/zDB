@@ -93,14 +93,14 @@ process copy_local_assemblies {
 	// Mixing inputs from local assemblies annotated with Prokka
 	// and local annotated genomes in .gbk format
     input:
-    file local_gbk from local_genomes.mix(gbk_prokka_filtered)
+    file local_gbk from local_genomes.mix(gbk_prokka_filtered.flatMap())
 
     output:
-    file "${local_gbk.name}.gz" into raw_local_gbffs
+    file "${local_gbk}.gz" into raw_local_gbffs
 
     script:
     """
-    gzip -f ${local_gbk.name}
+    gzip -f ${local_gbk}
     """
 }
 
@@ -438,13 +438,13 @@ process prepare_orthofinder {
     file genome_list from faa_genomes1.collect()
 
   output:
-    file 'Results_*/WorkingDirectory/Species*.fa' into species_fasta
-    file 'Results_*/WorkingDirectory/BlastDBSpecies*.phr' into species_blastdb
+    file 'OrthoFinder/Results_*/WorkingDirectory/Species*.fa' into species_fasta
+    file 'OrthoFinder/Results_*/WorkingDirectory/BlastDBSpecies*.phr' into species_blastdb
     file 'Result*' into result_dir
 
   script:
   """
-  orthofinder -op -a 8 -f . > of_prep.tab
+  orthofinder -op -a 8 -S blast -f . > of_prep.tab
   """
 }
 
