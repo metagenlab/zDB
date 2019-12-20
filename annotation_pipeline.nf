@@ -5,14 +5,6 @@
  *
  */
 
-log.info params.input
-
-log.info "====================================="
-log.info "input                  : ${params.input}"
-log.info "COG                    : ${params.cog}"
-log.info "Orthofinder            : ${params.orthofinder}"
-log.info "Orthofinder path       : ${params.genome_faa_folder}"
-log.info "Core missing           : ${params.core_missing}"
 
 // Each Sample
 if (params.ncbi_sample_sheet != false){
@@ -27,7 +19,6 @@ if (params.ncbi_sample_sheet != false){
                       .set{ assembly_accession_list_refseq }
 
 }
-
 
 process prokka {
 	publishDir 'data/prokka_output', mode: 'copy', overwrite: true
@@ -59,6 +50,9 @@ process prokka_filter_CDS {
 	input:
 	file prokka_file from gbk_from_local_assembly.collect()
 
+	when:
+	params.prokka
+
 	output:
 	file "*_filtered.gbk" into gbk_prokka_filtered
 
@@ -74,22 +68,32 @@ process prokka_filter_CDS {
 	"""
 }
 
+if(!params.prokka) {
+	gbk_prokka_filtered = Channel.empty()
+}
+
+
+if(params.local_sample_sheet){
+	local_genomes = Channel.fromPath(params.local_sample_sheet)
+				  .splitCsv(header: true, sep: '\t')
+				  .map{row -> "$row.gbk_path" }
+				  .map { file(it) }
+} else {
+	local_genomes = Channel.empty()
+} 
+
 process copy_local_assemblies {
     publishDir 'data/gbk_local', mode: 'copy', overwrite: true
 
     cpus 1
 
     when:
-    params.local_sample_sheet
+    params.local_sample_sheet || params.prokka
 
 	// Mixing inputs from local assemblies annotated with Prokka
 	// and local annotated genomes in .gbk format
     input:
-    file local_gbk from Channel.fromPath(file(params.local_sample_sheet))
-                      .splitCsv(header: true, sep: '\t')
-                      .map{row -> "$row.gbk_path" }
-                      .map { file(it) }
-                      .mix(gbk_prokka_filtered)
+    file local_gbk from local_genomes.mix(gbk_prokka_filtered)
 
     output:
     file "${local_gbk.name}.gz" into raw_local_gbffs
@@ -100,8 +104,13 @@ process copy_local_assemblies {
     """
 }
 
-// only define process if nedded
-if (params.ncbi_sample_sheet != false){
+if(!params.prokka && !params.local_sample_sheet) {
+	raw_local_gbffs = Channel.empty()	
+}
+
+if(params.ncbi_sample_sheet == false) {
+	raw_ncbi_gbffs = Channel.empty()
+}else {
   process download_assembly {
 
     conda 'biopython=1.73'
@@ -273,22 +282,9 @@ if (params.ncbi_sample_sheet != false){
                     o.write(f"{old_locus_tag}\\t{refseq_locus_tag}\\t{protein_id}\\n")
     """
   }
-
 }
 
-// merge local and ncbi gbk into a single channel
-if (params.ncbi_sample_sheet != false && params.local_sample_sheet == false) {
-println "ncbi"
-raw_ncbi_gbffs.collect().into{all_raw_gbff}
-}
-else if(params.ncbi_sample_sheet == false && params.local_sample_sheet != false) {
-println "local"
-raw_local_gbffs.collect().into{all_raw_gbff}
-}
-else {
-println "both"
-raw_ncbi_gbffs.mix(raw_local_gbffs).into{all_raw_gbff}
-}
+all_raw_gbff = raw_ncbi_gbffs.mix(raw_local_gbffs)
 
 process gbk_check {
   publishDir 'data/gbk_edited', mode: 'copy', overwrite: true
@@ -436,7 +432,7 @@ process prepare_orthofinder {
   // conda 'bioconda::orthofinder=2.2.7'
 
   when:
-  params.orthofinder == true
+  params.orthofinder
 
   input:
     file genome_list from faa_genomes1.collect()
