@@ -76,6 +76,7 @@
 
 ## priority 1
 
+- [ ] Build a set a containers that contains all tools necessary to run the pipeline (i.e. Kofam_scan, etc) so that it can be run without having to debug it first
 - [ ] TCDB and PDB: no exact match first, directly blast against db
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
 - [X] get accession mapping

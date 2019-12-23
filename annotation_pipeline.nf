@@ -450,7 +450,7 @@ process prepare_orthofinder {
 
 process blast_orthofinder {
 
-  conda 'bioconda::blast=2.7.1'
+  // conda 'bioconda::blast=2.7.1'
 
   cpus 2
 
@@ -465,6 +465,7 @@ process blast_orthofinder {
 
   output:
   file "${complete_dir.baseName}/WorkingDirectory/Blast${species_1}_${species_2}.txt" into blast_results
+  
 
   script:
   blastdb_name = blastdb.getBaseName()
@@ -480,7 +481,7 @@ process blast_orthofinder {
 
 process orthofinder_main {
 
-  conda 'bioconda::orthofinder=2.2.7'
+  // conda 'bioconda::orthofinder=2.2.7'
 
   publishDir 'orthology', mode: 'copy', overwrite: true
   echo true
@@ -492,14 +493,18 @@ process orthofinder_main {
   val blast_results from blast_results.collect()
 
   output:
-  file 'Results_*/WorkingDirectory/Orthogroups.txt' into orthogroups
-  file 'Results_*/WorkingDirectory/SingleCopyOrthogroups.txt' into singletons
+  // for some reason, executing orthofinder on previous blast results makes it change directory
+  // and output its results in the new directory... TODO : fixit!
+  file "Results_$params.orthofinder_output_dir/WorkingDirectory/OrthoFinder/Results_$params.orthofinder_output_dir/Orthogroups/Orthogroups.txt" into orthogroups
+  file "Results_$params.orthofinder_output_dir/WorkingDirectory/OrthoFinder/Results_$params.orthofinder_output_dir/Orthogroups/Orthogroups_SingleCopyOrthologues.txt" into singletons
 
   script:
   """
   echo "${complete_dir.baseName}"
   ls
-  orthofinder -og -t ${task.cpus} -a ${task.cpus} -b ./Results*/WorkingDirectory/ > of_grouping.txt
+  orthofinder -og -t ${task.cpus} -a ${task.cpus} \
+	-b ./Results_$params.orthofinder_output_dir/WorkingDirectory/ > of_grouping.txt \
+	-n "$params.orthofinder_output_dir"
   """
 }
 
@@ -958,7 +963,7 @@ blast_result.collectFile(name: 'annotation/COG/blast_COG.tab')
 
 process blast_swissprot {
 
-  conda 'bioconda::blast=2.7.1'
+  // conda 'bioconda::blast=2.7.1'
 
   publishDir 'annotation/blast_swissprot', mode: 'copy', overwrite: true
 
@@ -1015,10 +1020,10 @@ process diamond_refseq {
   publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
 
   cpus 4
-  conda 'bioconda::diamond=0.9.24'
+  // conda 'bioconda::diamond=0.9.24'
 
   when:
-  params.diamond_refseq == true
+  params.diamond_refseq
 
   input:
   file(seq) from faa_chunks6
@@ -1367,7 +1372,7 @@ process get_string_PMID_mapping {
 
 process get_PMID_data {
 
-  conda 'bioconda::biopython=1.68'
+  // conda 'bioconda::biopython=1.68'
 
   publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
 
@@ -1684,7 +1689,7 @@ process execute_kofamscan {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
-  conda 'hmmer=3.2.1 parallel ruby=2.4.5'
+  // conda 'hmmer=3.2.1 parallel ruby=2.4.5'
 
   cpus 4
   memory '8 GB'
@@ -1700,8 +1705,10 @@ process execute_kofamscan {
 
   script:
   n = seq.name
+
+  // Hack for now
   """
-  /usr/local/bin/kofamscan/exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
+  ${params.databases_dir}/kegg/exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
   """
 }
 
@@ -1824,7 +1831,7 @@ process setup_diamond_refseq_db {
   - [ ] load blast results into sqlite db
   */
 
-  conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
+  // conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
   publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
   echo false
   cpus 4
@@ -2300,7 +2307,7 @@ process execute_DeepT3 {
   container 'metagenlab/chlamdb_annotation:1.0.3'
 
   when:
-  params.effector_prediction == true
+  params.effector_prediction == true && false
 
   input:
   file "nr_fasta.faa" from nr_faa_large_sequences_chunks3
@@ -2392,7 +2399,7 @@ process execute_psortb {
 
 process blast_pdb {
 
-  conda 'bioconda::blast=2.7.1'
+  // conda 'bioconda::blast=2.7.1'
 
   publishDir 'annotation/pdb_mapping', mode: 'copy', overwrite: true
 
