@@ -438,13 +438,13 @@ process prepare_orthofinder {
     file genome_list from faa_genomes1.collect()
 
   output:
-    file 'OrthoFinder/Results_*/WorkingDirectory/Species*.fa' into species_fasta
-    file 'OrthoFinder/Results_*/WorkingDirectory/BlastDBSpecies*.phr' into species_blastdb
-    file 'Result*' into result_dir
+    file "OrthoFinder/Results_$params.orthofinder_output_dir/WorkingDirectory/Species*.fa" into species_fasta
+    file "OrthoFinder/Results_$params.orthofinder_output_dir/WorkingDirectory/BlastDBSpecies*.phr" into species_blastdb
+    path "OrthoFinder/Results_$params.orthofinder_output_dir/" into result_dir
 
   script:
   """
-  orthofinder -op -a 8 -S blast -f . > of_prep.tab
+  orthofinder -op -a 8 -n "$params.orthofinder_output_dir" -S blast -f . > of_prep.tab
   """
 }
 
@@ -461,7 +461,7 @@ process blast_orthofinder {
 
 
   when:
-  params.orthofinder == true
+  params.orthofinder
 
   output:
   file "${complete_dir.baseName}/WorkingDirectory/Blast${species_1}_${species_2}.txt" into blast_results
@@ -2212,56 +2212,30 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 }
 
 
-// TODO : merge simples rules like this one and the next ones, as such changes would
-// - take less lines of code
-// - be more efficient : less disk read/write and less process forking
-process filter_very_small_sequences {
+// Filter out small sequences and ambiguous AA
+process filter_sequences {
   // conda 'biopython=1.73'
 
   publishDir 'data/', mode: 'copy', overwrite: true
 
   when:
-  params.effector_prediction == true
+  params.effector_prediction
 
   input: 
     file nr_fasta from merged_faa7
 
   output:
-    file "nr_more_10aa.faa" into nr_faa_large_sequences
+    file "filtered_sequences.faa" into filtered_sequences
   
   script:
 	"""
 	#!/usr/bin/env python
 	import annotations
-	annotations.filter_small_sequences("${nr_fasta}")
+	annotations.filter_sequences("${nr_fasta}")
 	"""
 }
 
-process remove_ambiguous_aa {
-
-  // conda 'biopython=1.73'
-
-  publishDir 'data/', mode: 'copy', overwrite: true
-
-  when:
-  params.effector_prediction == true
-
-  input: 
-    file "nr_more_10aa.faa" from nr_faa_large_sequences
-
-  output:
-    file "nr_more_10aa_filtered.faa" into nr_faa_large_sequences_filtered
-  
-  script:
-	"""
-	#!/usr/bin/env python
-	import annotations
-	annotations.filter_small_sequences("nr_more_10aa.faa")
-	"""
-}
-
-
-nr_faa_large_sequences_filtered.splitFasta( by: 5000, file: "chunk_" ).into{ nr_faa_large_sequences_chunks1
+filtered_sequences.splitFasta( by: 5000, file: "chunk_" ).into{ nr_faa_large_sequences_chunks1
                                                                     nr_faa_large_sequences_chunks2
                                                                     nr_faa_large_sequences_chunks3
                                                                     nr_faa_large_sequences_chunks4 }
