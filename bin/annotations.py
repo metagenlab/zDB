@@ -9,6 +9,7 @@ import sqlite3
 import urllib
 import gzip
 import re
+import os
 
 def merge_gbk(gbk_records, filter_size=0, gi=False):
     '''
@@ -363,6 +364,11 @@ def get_string_mapping(fasta_file, database_dir):
         for hit in hits:
           string_map.write("%s\t%s\n" % (record.id, hit[0]))
 
+
+# Maybe possible to compact this one with 
+# get_nr_sequences to have less lines of code and 
+# be more efficient
+# TODO : check with Trestan
 def convert_gbk_to_faa(gbf_file, edited_gbf):
     records = SeqIO.parse(gbf_file, 'genbank')
     edited_records = open(edited_gbf, 'w')
@@ -403,3 +409,80 @@ def filter_sequences(fasta_file):
                                   description=record.description))
 
     SeqIO.write(processed_records, "filtered_sequences.faa", "fasta")
+
+def get_nr_sequences(fasta_file, genomes_list):
+    locus2genome = {}
+    for fasta in genomes_list:
+        genome = os.path.basename(fasta).split('.')[0]
+        for seq in SeqIO.parse(fasta, "fasta"):
+            locus2genome[seq.name] = genome
+    nr_fasta = open('nr.faa', 'w')
+    nr_mapping = open('nr_mapping.tab', 'w')
+
+    checksum_nr_list = []
+
+    records = SeqIO.parse(fasta_file, "fasta")
+    updated_records = []
+
+    for record in records:
+
+        checksum = CheckSum.crc64(record.seq)
+        nr_mapping.write("%s\t%s\t%s\n" % (record.id,
+                                          checksum,
+                                          locus2genome[record.id]))
+        if checksum not in checksum_nr_list:
+            checksum_nr_list.append(checksum)
+            record.id = checksum
+            record.name = ""
+            updated_records.append(record)
+
+    SeqIO.write(updated_records, nr_fasta, "fasta")
+
+def setup_orthology_db(fasta_file, nr_mapping_file, orthogroup):
+  fasta_dict = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"))
+
+  conn = sqlite3.connect("orthology.db")
+  cursor = conn.cursor()
+
+  # sequence table
+  sql0 = 'create table sequence_hash2aa_sequence (sequence_hash binary, sequence TEXT )'
+  cursor.execute(sql0,)
+  sql = 'insert into  sequence_hash2aa_sequence values (?, ?)'
+  for hash in fasta_dict:
+    cursor.execute(sql, (hash, str(fasta_dict[hash].seq)))
+
+  # hash mapping table
+  sql1 = 'create table locus_tag2sequence_hash (locus_tag varchar(200), sequence_hash binary)'
+  cursor.execute(sql1,)
+
+  sql = 'insert into locus_tag2sequence_hash values (?,?)'
+  with open(nr_mapping_file, 'r') as f:
+      for row in f:
+          data = row.rstrip().split("\t")[0:2]
+          cursor.execute(sql, data)
+  conn.commit()
+
+  # orthogroup table
+  sql2 = 'create table locus_tag2orthogroup (locus_tag varchar(200), orthogroup varchar(200))'
+  cursor.execute(sql2,)
+  sql = 'insert into locus_tag2orthogroup values (?, ?)'
+  with open(orthogroup, 'r') as f:
+      for row in f:
+          data = row.rstrip().split(" ")
+          for locus in data[1:]:
+            cursor.execute(sql,(locus, data[0][0:-1]))
+  conn.commit()
+
+  # index hash, locus and orthogroup columns
+  sql_index_1 = 'create index hash1 on sequence_hash2aa_sequence (sequence_hash);'
+  sql_index_2 = 'create index hash2 on locus_tag2sequence_hash (sequence_hash);'
+  sql_index_3 = 'create index locus1 on locus_tag2sequence_hash (locus_tag);'
+  sql_index_4 = 'create index locus2 on locus_tag2orthogroup (locus_tag);'
+  sql_index_5 = 'create index og on locus_tag2orthogroup (orthogroup);'
+
+  cursor.execute(sql_index_1)
+  cursor.execute(sql_index_2)
+  cursor.execute(sql_index_3)
+  cursor.execute(sql_index_4)
+  cursor.execute(sql_index_5)
+  conn.commit()
