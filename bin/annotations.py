@@ -5,6 +5,8 @@ from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation, ExactPosition
 from Bio.Alphabet import IUPAC
 
+import pandas as pd
+import sys
 import sqlite3
 import urllib
 import gzip
@@ -486,3 +488,72 @@ def setup_orthology_db(fasta_file, nr_mapping_file, orthogroup):
   cursor.execute(sql_index_4)
   cursor.execute(sql_index_5)
   conn.commit()
+
+
+# not that hard, but needs some optimization
+def orthofinder2core_groups(fasta_list,
+                          mcl_file,
+                          n_missing=0,
+                          orthomcl=False):
+
+    orthogroup2locus_list = {}
+    with open(mcl_file, 'r') as f:
+        all_grp = [i for i in f]
+        for n, line in enumerate(all_grp):
+            if orthomcl:
+                groups = line.rstrip().split('\t')
+                groups = [i.split('|')[1] for i in groups]
+            else:
+                groups = line.rstrip().split(' ')
+                groups = groups[1:len(groups)]
+            orthogroup2locus_list["group_%s" % n] = groups
+
+    locus2genome = {}
+    for fasta in fasta_list:
+        genome = os.path.basename(fasta).split('.')[0]
+        for seq in SeqIO.parse(fasta, "fasta"):
+            locus2genome[seq.name] = genome
+
+    df = pd.DataFrame(index=orthogroup2locus_list.keys(), columns=set(locus2genome.values()))
+    df = df.fillna(0)
+
+    for n, group in enumerate(orthogroup2locus_list):
+        genome2count = {}
+        for locus in orthogroup2locus_list[group]:
+            genome = locus2genome[locus]
+            df.loc[group, genome] += 1
+
+    df =df.apply(pd.to_numeric, args=('coerce',))
+
+    n_genomes = len(set(locus2genome.values()))
+    n_minimum_genomes = n_genomes-n_missing
+    freq_missing = (n_genomes-float(n_missing))/n_genomes
+    limit = freq_missing*n_genomes
+
+    groups_with_paralogs = df[(df > 1).sum(axis=1) > 0].index
+    df = df.drop(groups_with_paralogs)
+
+    core_groups = df[(df == 1).sum(axis=1) >= limit].index.tolist()
+
+    return df, core_groups, orthogroup2locus_list, locus2genome
+
+def get_core_orthogroups(genomes_list, int_core_missing):
+  orthology_table, core_groups, orthogroup2locus_list, locus2genome = orthofinder2core_groups(genomes_list,
+                                                                                              'Orthogroups.txt',
+                                                                                              int_core_missing,
+                                                                                              False)
+  logging.debug('Iter core groups and write core groups fasta files...\\n')
+  for one_group in core_groups:
+    sequence_data = SeqIO.to_dict(SeqIO.parse("OG{0:07d}_mafft.faa".format(int(one_group.split('_')[1])), "fasta"))
+    dest = '%s_taxon_ids.faa' % one_group
+    new_fasta = []
+    for locus in orthogroup2locus_list[one_group]:
+        tmp_seq = sequence_data[locus]
+        tmp_seq.name = locus2genome[locus]
+        tmp_seq.id = locus2genome[locus]
+        tmp_seq.description = locus2genome[locus]
+        new_fasta.append(tmp_seq)
+
+    out_handle = open(dest, 'w')
+    SeqIO.write(new_fasta, out_handle, "fasta")
+    out_handle.close()
