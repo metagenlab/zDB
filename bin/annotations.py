@@ -12,6 +12,9 @@ import urllib
 import gzip
 import re
 import os
+import datetime
+import logging
+import http.client
 
 def merge_gbk(gbk_records, filter_size=0, gi=False):
     '''
@@ -557,3 +560,100 @@ def get_core_orthogroups(genomes_list, int_core_missing):
     out_handle = open(dest, 'w')
     SeqIO.write(new_fasta, out_handle, "fasta")
     out_handle.close()
+
+def chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
+
+# ToDo : is it worth it to add a cache?
+# I'd suspect some queries could be redundant and it would be worth
+# it to use a cache to speed up the queries instead of always querying
+# the web.
+def accession2taxid_entrez(accession):
+    from Bio import Entrez
+    from socket import error as SocketError
+    import errno
+
+    Entrez.email = "trestan.pillonel@chuv.ch"
+    Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
+    try:
+        handle = Entrez.esummary(db="protein", id="%s" % accession, retmax=1)
+    except SocketError as e:
+        if e.errno != errno.ECONNRESET:
+            raise('error connexion with %s' % accession)
+        else:
+            import time
+            print ('connexion error, trying again...')
+            time.sleep(60)
+            accession2taxid_entrez(accession)
+    record = Entrez.read(handle, validate=False)[0]
+    # record['AccessionVersion'],
+    # record['TaxId'],
+    # record['Title'],
+    # record['Length']
+    return int(record['TaxId'])
+
+def get_refseq_hits_taxonomy(hit_table, database_dir):
+    conn = sqlite3.connect("refseq_taxonomy.db")
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA synchronous = OFF")
+    cursor.execute("BEGIN TRANSACTION")
+    conn_refseq = sqlite3.connect(database_dir + "/refseq/merged_refseq.db")
+    cursor_refseq = conn_refseq.cursor()
+
+    conn_taxid = sqlite3.connect(database_dir + "/ncbi-taxonomy/prot_accession2taxid.db")
+    cursor_taxid = conn_taxid.cursor() 
+    sql = 'create table refseq_hits (accession varchar(200), taxid INTEGER, description TEXT, length INTEGER)'
+    cursor.execute(sql,)
+    conn.commit()
+
+    f = open(hit_table, 'r')
+    # get list of accessions, remove version number
+    hit_list = [i.rstrip().split(".")[0] for i in f]
+
+    chunk_lists = chunks(hit_list, 5000)
+    sql_template = 'insert into refseq_hits values (?,?,?,?)'
+    list_of_lists = []
+    template_annotation = 'select accession, description, sequence_length from refseq where accession in ("%s")'
+    template_taxid = 'select accession, taxid from accession2taxid where accession in ("%s")'
+
+    # not sure that batching requests this way is really more efficient
+    for n, acc_list in enumerate(chunk_lists):
+        logging.debug("chunk: %s -- %s" % (n, datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+        filter = '","'.join(acc_list)
+        #logging.debug('SQL ------- %s' % (n, datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+        data_annotation = cursor_refseq.execute(template_annotation % filter,).fetchall()
+        data_taxid = cursor_taxid.execute(template_taxid % filter,).fetchall()
+        #logging.debug('SQL-done -- %s' % (n, datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
+        # create dictionnary
+
+        accession2taxid = {}
+        for row in data_taxid:
+            accession2taxid[row[0]] = row[1]
+        for annot in data_annotation:
+            annot = list(annot)
+            accession = annot[0]
+            seq_length = annot[2]
+            # AccessionVersion, TaxId, Title, Length
+            description = re.sub("%s.[0-9]+ " % annot[0], "", annot[1])
+            try:
+                taxid = accession2taxid[annot[0]]
+            except:
+                logging.debug("Missing taxid:\t%s" % accession)
+                taxid = accession2taxid_entrez(accession)
+            list_of_lists.append([accession, taxid, description, seq_length])
+        if n % 10 == 0:
+            logging.debug('insert: %s' % n)
+            cursor.executemany(sql_template, list_of_lists)
+            conn.commit()
+            list_of_lists = []
+    logging.debug('LAST insert: %s' % n)
+    cursor.executemany(sql_template, list_of_lists)
+    conn.commit()
+    # index accession and taxid columns
+    sql_index_1 = 'create index acc on refseq_hits (accession);'
+    sql_index_2 = 'create index taxid on refseq_hits (taxid);'
+
+    cursor.execute(sql_index_1)
+    cursor.execute(sql_index_2)
+    conn.commit()
