@@ -19,6 +19,11 @@
 - mapping to string, oma, pdb, tcdb databases (exact matches)
 - get PMID mapping from string
 
+
+# ToDo Containers
+
+- [ ]  add interproscan in a standard location
+
 # DONE
 
 - [X] input samples table1: genbank assembly accession

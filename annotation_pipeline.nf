@@ -344,7 +344,7 @@ faa_locus1.into { faa_genomes1
                   faa_genomes6 }
 
 faa_locus2.collectFile(name: 'merged.faa', newLine: true)
-    .into { merged_faa0 }
+    .set { merged_faa0 }
 
 
 process get_nr_sequences {
@@ -914,8 +914,7 @@ process diamond_refseq {
   """
 }
 
-refseq_diamond.collectFile()
-.into { refseq_diamond_results_sqlitedb }
+refseq_diamond.collectFile().set { refseq_diamond_results_sqlitedb }
 
 
 //refseq_diamond_results_taxid_mapping
@@ -1504,10 +1503,10 @@ process execute_interproscan_no_uniparc_matches {
 
   cpus 8
   memory '16 GB'
-  conda 'anaconda::openjdk=8.0.152'
+  // conda 'anaconda::openjdk=8.0.152'
 
   when:
-  params.interproscan == true
+  params.interproscan
 
   input:
   file(seq) from no_uniparc_mapping_faa.splitFasta( by: 300, file: "no_uniparc_match_chunk_" )
@@ -1727,7 +1726,7 @@ with open("nr_refseq_hits.tab", 'w') as f:
 
 process get_refseq_hits_taxonomy {
 
-  conda 'biopython=1.73=py36h7b6447c_0'
+  // conda 'biopython=1.73=py36h7b6447c_0'
 
   publishDir 'annotation/diamond_refseq/', mode: 'copy', overwrite: true
 
@@ -2307,7 +2306,7 @@ process get_idmapping_crossreferences {
   echo true
 
   when:
-  params.uniprot_idmapping == true
+  params.uniprot_idmapping
 
   input:
   file(table) from uniparc_mapping_tab2
