@@ -553,7 +553,7 @@ all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.s
 process orthogroups_phylogeny_with_raxml {
 
   echo false
-  conda 'bioconda::raxml=8.2.9'
+  // conda 'bioconda::raxml=8.2.9'
   cpus 4
   publishDir 'orthology/orthogroups_phylogenies', mode: 'copy', overwrite: false
 
@@ -573,7 +573,7 @@ process orthogroups_phylogeny_with_raxml {
 
 process orthogroups_phylogeny_with_fasttree3 {
 
-  conda 'bioconda::fasttree=2.1.10'
+  // conda 'bioconda::fasttree=2.1.10'
   cpus 4
   publishDir 'orthology/orthogroups_phylogenies_fasttree', mode: 'copy', overwrite: true
 
@@ -658,7 +658,7 @@ process get_core_orthogroups {
 
   input:
   file 'Orthogroups.txt' from orthogroups
-  file genome_list from faa_genomes3.collect()
+  file genomes_list from faa_genomes3.collect()
   file fasta_files from all_alignments_3.collect()
 
   output:
@@ -669,7 +669,8 @@ process get_core_orthogroups {
   """
   #!/usr/bin/env python
   import annotations
-  annotations.get_core_orthogroups(genome_list.split(), int("${params.core_missing}"))
+  genomes_list = "$genomes_list".split()
+  annotations.get_core_orthogroups(genomes_list, int("${params.core_missing}"))
   """
 }
 
