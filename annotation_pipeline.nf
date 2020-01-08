@@ -1534,10 +1534,10 @@ process execute_interproscan_uniparc_matches {
 
   cpus 8
   memory '8 GB'
-  conda 'anaconda::openjdk=8.0.152'
+  // conda 'anaconda::openjdk=8.0.152'
 
   when:
-  params.interproscan == true
+  params.interproscan
 
   input:
   file(seq) from uniparc_mapping_faa.splitFasta( by: 1000, file: "uniparc_match_chunk_" )
