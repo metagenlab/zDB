@@ -493,23 +493,28 @@ def setup_orthology_db(fasta_file, nr_mapping_file, orthogroup):
   conn.commit()
 
 
-# not that hard, but needs some optimization
+# This function parses the result of orthofinder/orthoMCL, 
+# retrieves the groups of orthologs detected by the tools
+# and returns the core orthologs (i.e. the ortholog present
+# in all samples)
+#
+# Orthofinder output file : Orthogroup_ID: locus1 locus2... locusN
 def orthofinder2core_groups(fasta_list,
                           mcl_file,
                           n_missing=0,
                           orthomcl=False):
-
     orthogroup2locus_list = {}
     with open(mcl_file, 'r') as f:
-        all_grp = [i for i in f]
-        for n, line in enumerate(all_grp):
+        for line in f:
             if orthomcl:
+                # not sure this code will work with orthoMCL, to be checked
                 groups = line.rstrip().split('\t')
                 groups = [i.split('|')[1] for i in groups]
             else:
                 groups = line.rstrip().split(' ')
-                groups = groups[1:len(groups)]
-            orthogroup2locus_list["group_%s" % n] = groups
+                group_id = groups[0][:-1] # remove lagging ':'
+                groups = groups[1:]
+            orthogroup2locus_list[group_id] = groups
 
     locus2genome = {}
     for fasta in fasta_list:
@@ -520,12 +525,13 @@ def orthofinder2core_groups(fasta_list,
     df = pd.DataFrame(index=orthogroup2locus_list.keys(), columns=set(locus2genome.values()))
     df = df.fillna(0)
 
-    for n, group in enumerate(orthogroup2locus_list):
-        genome2count = {}
-        for locus in orthogroup2locus_list[group]:
+    for group_id,loci_list in orthogroup2locus_list.items():
+        for locus in loci_list:
             genome = locus2genome[locus]
-            df.loc[group, genome] += 1
+            df.loc[group_id, genome] += 1
 
+    # why is this necessary? entries are already 
+    # numeric values
     df =df.apply(pd.to_numeric, args=('coerce',))
 
     n_genomes = len(set(locus2genome.values()))
@@ -533,24 +539,26 @@ def orthofinder2core_groups(fasta_list,
     freq_missing = (n_genomes-float(n_missing))/n_genomes
     limit = freq_missing*n_genomes
 
+    # Paralogs will have several copies per genomes (df > 1)
+    # Why are they removed?
     groups_with_paralogs = df[(df > 1).sum(axis=1) > 0].index
     df = df.drop(groups_with_paralogs)
 
+    # should be an equality?
     core_groups = df[(df == 1).sum(axis=1) >= limit].index.tolist()
 
-    return df, core_groups, orthogroup2locus_list, locus2genome
+    return core_groups, orthogroup2locus_list, locus2genome
 
 def get_core_orthogroups(genomes_list, int_core_missing):
-  orthology_table, core_groups, orthogroup2locus_list, locus2genome = orthofinder2core_groups(genomes_list,
-                                                                                              'Orthogroups.txt',
-                                                                                              int_core_missing,
-                                                                                              False)
-  logging.debug('Iter core groups and write core groups fasta files...\\n')
-  for one_group in core_groups:
-    sequence_data = SeqIO.to_dict(SeqIO.parse("OG{0:07d}_mafft.faa".format(int(one_group.split('_')[1])), "fasta"))
-    dest = '%s_taxon_ids.faa' % one_group
+  core_groups, orthogroup2locus_list, locus2genome = orthofinder2core_groups(genomes_list,
+          'Orthogroups.txt', int_core_missing, False)
+
+  for group_id in core_groups:
+    # sequence_data = SeqIO.to_dict(SeqIO.parse("OG{0:07d}_mafft.faa".format(int(one_group.split('_')[1])), "fasta"))
+    sequence_data = SeqIO.to_dict(SeqIO.parse(group_id + "_mafft.faa", "fasta"))
+    dest = group_id + '_taxon_ids.faa'
     new_fasta = []
-    for locus in orthogroup2locus_list[one_group]:
+    for locus in orthogroup2locus_list[group_id]:
         tmp_seq = sequence_data[locus]
         tmp_seq.name = locus2genome[locus]
         tmp_seq.id = locus2genome[locus]
