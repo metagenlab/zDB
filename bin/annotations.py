@@ -825,10 +825,12 @@ def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
 
     sql = """SELECT GO_id, reference, evidence_code, category 
         FROM goa_table 
-        WHERE uniprotkb_accession IN ({});"""
-    
-    accessions_base = [i.split(".")[0].strip() for i in uniprot_acc_list.split(",")]
-    cursor.execute(sql.format(",".join(accessions_base)))
+        WHERE uniprotkb_accession IN (\"{}\");"""
+
+    accessions_base = [i.split(".")[0].strip() for i in uniprot_acc_list]
+    query = sql.format("\",\"".join(accessions_base))
+    print(query)
+    cursor.execute(sql.format(",".join(accessions_base)),)
     go_list = cursor.fetchall()
     for go in go_list:
         GO_id = go[0]

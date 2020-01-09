@@ -960,16 +960,8 @@ uniprot_mapping_tab.into{
   uniprot_mapping_tab2
 }
 
-
-uniprot_mapping_tab2.splitCsv(header: false, sep: '\t')
-.map{row ->
-    def uniprot_accession = row[1]
-    return "${uniprot_accession}"
-}
-.collect()
-.unique()
-.into {uniprot_nr_accessions}
-
+uniprot_mapping_tab2.splitCsv(header: true, sep: '\t')
+.map{row -> "\"$row.uniprot_accession\"" }.collect().unique().set { uniprot_nr_accessions }
 
 process get_uniprot_data {
 
@@ -2051,7 +2043,7 @@ process get_uniprot_goa_mapping {
   script:
 
   """
-	#!/usr/bin/env python3.6
+	#!/usr/bin/env python
 	import annotations
 	annotations.get_uniprot_goa_mapping("$params.databases_dir", $uniprot_acc_list)
   """
