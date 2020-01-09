@@ -91,6 +91,7 @@ from chlamdb.forms import GenerateRandomUserForm
 from chlamdb.tasks import run_circos
 from chlamdb.tasks import run_circos_main
 from chlamdb.tasks import extract_orthogroup_task
+from chlamdb.tasks import extract_interpro_task
 from chlamdb.tasks import plot_neighborhood_task
 from chlamdb.tasks import TM_tree_task
 from chlamdb.tasks import pfam_tree_task
@@ -1499,11 +1500,9 @@ def extract_interpro(request, classification="taxon_id"):
     :return:
     '''
 
-
-    
     server = manipulate_biosqldb.load_db()
     
-    extract_form_class = make_extract_form(biodb, label="Interpro entries")
+    extract_form_class = make_extract_form(biodb, label="Interpro entries", plasmid=True)
 
     if request.method == 'POST': 
 
@@ -1511,6 +1510,7 @@ def extract_interpro(request, classification="taxon_id"):
 
         #form2 = ContactForm(request.POST)
         if form.is_valid():  
+            print("valid form!")
             from chlamdb.biosqldb import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
@@ -1520,101 +1520,41 @@ def extract_interpro(request, classification="taxon_id"):
             if reference_taxon == "None":
                 reference_taxon = include[0]
 
-            if int(n_missing)>=len(include):
-                wrong_n_missing = True
-            else:
-                freq_missing = (len(include)-float(n_missing))/len(include)
+            freq_missing = (len(include)-float(n_missing))/len(include)
 
-                # get sub matrix and complete matrix
-                mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                              "interpro",
-                                                                              "id",
-                                                                              include,
-                                                                              exclude,
-                                                                              freq_missing,
-                                                                              cache=cache)
+            try:
+                accessions = request.POST['checkbox_accessions']
+                accessions = True
+                fasta_url='?a=T'
+            except:
+                accessions = False
+                fasta_url='?a=F'
+                accession2taxon = manipulate_biosqldb.accession2taxon_id(server, biodb)
+                include = [str(accession2taxon[i]) for i in include]
+                exclude = [str(accession2taxon[i]) for i in exclude]
+                reference_taxon = accession2taxon[reference_taxon]
 
-                match_groups = mat.index.tolist()
-                # get count in subgroup
-                interpro2count = dict((mat > 0).sum(axis=1))
-                # get count in complete database
-                interpro2count_all = dict((mat_all > 0).sum(axis=1))
+            
+            print("running task!")
+            task = extract_interpro_task.delay(biodb, 
+                                                include,
+                                                exclude,
+                                                freq_missing,
+                                                reference_taxon,
+                                                accessions,
+                                                n_missing)
+            task_id = task.id
 
-                max_n = max(list(interpro2count_all.values()))
+            print("task ok!")
 
-                # GET max frequency for template
-                sum_group = len(match_groups)
-
-                filter = '"' + '","'.join(match_groups) + '"'
-
-                sql2 = 'select interpro_accession, interpro_description from interpro_%s' \
-                ' where interpro_accession in (%s) group by interpro_accession;' % (biodb, filter)
-
-                raw_data = list(server.adaptor.execute_and_fetchall(sql2,))
-
-                match_data = []
-                for one_match in raw_data:
-                    match_data.append(list(one_match)+[interpro2count[one_match[0]], interpro2count_all[one_match[0]]])
-
-                sql_include = 'taxon_id ='
-                for i in range(0, len(include)-1):
-                    sql_include+='%s or taxon_id =' % include[i]
-                sql_include+=include[-1]
-                n = 1
-                search_result = []
-
-                group_filter = 'where ('
-
-                for i, group in enumerate(match_groups):
-                    if i == 0:
-                        group_filter += 'orthogroup="%s"' % group
-                    else:
-                        group_filter += ' or orthogroup="%s"' % group
-                group_filter+=')'
-
-                columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                          'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-                sql_2 = 'select %s from orthology_detail_%s %s' % (columns, biodb, group_filter)
-
-                raw_data = server.adaptor.execute_and_fetchall(sql_2,)
-
-                n = 1
-                extract_result = []
-                for one_hit in raw_data:
-                    extract_result.append((n,) + one_hit)
-                    n+=1
-
-
-                interpro_list = '"' + '","'.join(match_groups) + '"'
-
-                locus_list_sql = 'select locus_tag from interpro_%s where taxon_id=%s ' \
-                             ' and interpro_accession in (%s)' % (biodb, reference_taxon, interpro_list)
-
-                locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-
-                circos_url = '?ref=%s&' % reference_taxon
-                circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
-                
-                target_circos_taxons = include + exclude
-
-                envoi_extract = True
-                locus2annot, \
-                locus_tag2cog_catego, \
-                locus_tag2cog_name, \
-                locus_tag2ko, \
-                pathway2category, \
-                module2category, \
-                ko2ko_pathways, \
-                ko2ko_modules,\
-                locus2interpro = get_locus_annotations(biodb, locus_list)
+            return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
+        else:
+            return HttpResponse(json.dumps({'task_id': None}), content_type='application/json')
 
     else:  
         form = extract_form_class()
 
     return render(request, 'chlamdb/extract_interpro.html', locals())
-
-
-
 
 
 def venn_interpro(request):
@@ -14339,3 +14279,5 @@ def ko_comparison(request):
         form = comp_metabo_form()
 
     return render(request, 'chlamdb/ko_comp.html', locals())
+
+
