@@ -1456,7 +1456,7 @@ process execute_interproscan_no_uniparc_matches {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
 
-  cpus 8
+  cpus 20
   memory '16 GB'
   // conda 'anaconda::openjdk=8.0.152'
 
@@ -1487,7 +1487,7 @@ process execute_interproscan_uniparc_matches {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
 
-  cpus 8
+  cpus	20
   memory '8 GB'
   // conda 'anaconda::openjdk=8.0.152'
 
@@ -2115,29 +2115,10 @@ process get_uniprot_goa_mapping {
   script:
 
   """
-#!/usr/bin/env python3.6
-import sqlite3
-import datetime
-
-conn = sqlite3.connect("${params.databases_dir}/goa/goa_uniprot.db")
-cursor = conn.cursor()
-
-o = open("goa_uniprot_exact_annotations.tab", "w")
-
-sql = 'select GO_id, reference,evidence_code,category from goa_table where uniprotkb_accession=?;'
-
-for accession in "${uniprot_acc_list}".split(","):
-    accession_base = accession.split(".")[0].strip()
-    cursor.execute(sql, [accession_base])
-    #print(f'select GO_id, reference,evidence_code,category from goa_table where uniprotkb_accession="{accession_base}";')
-    go_list = cursor.fetchall()
-    for go in go_list:
-        GO_id = go[0]
-        reference = go[1]
-        evidence_code = go[2]
-        category = go[3]
-        o.write(f"{accession_base}\\t{GO_id}\\t{reference}\\t{evidence_code}\\t{category}\\n")
-    """
+	#!/usr/bin/env python3.6
+	import annotations
+	annotations.get_uniprot_goa_mapping("$params.databases_dir", $uniprot_acc_list)
+  """
 }
 
 

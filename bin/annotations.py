@@ -777,6 +777,8 @@ def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
     for group in orthogroup2locus2top_hits:
         ortho_sequences = orthogroup2locus_and_sequence[group]
         refseq_sequence_records = []
+
+        # returns a list of list of top hits per locus
         top_hits = [orthogroup2locus2top_hits[group][i] for i in orthogroup2locus2top_hits[group]]
         nr_top_hit = list(set([hit for hits_list in top_hits for hit in hits_list])) # flatten list... yeah, ugly.
         split_lists = chunks(nr_top_hit, 50)
@@ -793,3 +795,25 @@ def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
                     name = record.name
                     f.write(">%s\\n%s\\n" % (name, str(record.seq)))
 
+
+def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
+    conn = sqlite3.connect(database_dir + "/goa/goa_uniprot.db")
+    cursor = conn.cursor()
+
+    o = open("goa_uniprot_exact_annotations.tab", "w")
+
+    sql = """SELECT GO_id, reference, evidence_code, category 
+        FROM goa_table 
+        WHERE uniprotkb_accession=?;"""
+
+    for accession in "${uniprot_acc_list}".split(","):
+        accession_base = accession.split(".")[0].strip()
+        cursor.execute(sql, [accession_base])
+        #print(f'select GO_id, reference,evidence_code,category from goa_table where uniprotkb_accession="{accession_base}";')
+        go_list = cursor.fetchall()
+        for go in go_list:
+            GO_id = go[0]
+            reference = go[1]
+            evidence_code = go[2]
+            category = go[3]
+            o.write(f"{accession_base}\\t{GO_id}\\t{reference}\\t{evidence_code}\\t{category}\\n")
