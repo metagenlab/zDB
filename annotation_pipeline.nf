@@ -491,29 +491,9 @@ process orthogroups2fasta {
   file "*faa" into orthogroups_fasta
 
   """
-  #!/usr/bin/env python
-
-  from Bio import SeqIO
-  import os
-
-  fasta_list = "${genome_list}".split(' ')
-
-  sequence_data = {}
-  for fasta_file in fasta_list:
-      sequence_data.update(SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta")))
-
-  # write fasta
-  with open("Orthogroups.txt") as f:
-      all_grp = [i for i in f]
-      for n, line in enumerate(all_grp):
-          groups = line.rstrip().split(' ')
-          group_name = groups[0][0:-1]
-          groups = groups[1:len(groups)]
-          if len(groups)>1:
-              new_fasta = [sequence_data[i] for i in groups]
-              out_path = "%s.faa" % group_name
-              out_handle = open(out_path, "w")
-              SeqIO.write(new_fasta, out_handle, "fasta")
+	#!/usr/bin/env python
+	import annotations
+	annotations.orthogroups_to_fasta("$genome_list")
   """
 }
 
@@ -578,7 +558,7 @@ process orthogroups_phylogeny_with_fasttree3 {
   publishDir 'orthology/orthogroups_phylogenies_fasttree', mode: 'copy', overwrite: true
 
   when:
-  params.orthogroups_phylogeny_with_fasttree == true
+  params.orthogroups_phylogeny_with_fasttree
 
   input:
   each file(og) from alignement_larger_than_2_seqs
@@ -699,12 +679,12 @@ process concatenate_core_orthogroups {
 
 process build_core_phylogeny_with_fasttree {
 
-  conda 'bioconda::fasttree=2.1.10'
+  // conda 'bioconda::fasttree=2.1.10'
 
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
 
   when:
-  params.core_genome_phylogeny_with_fasttree == true
+  params.core_genome_phylogeny_with_fasttree
 
   input:
   file 'msa.faa' from core_msa
@@ -2060,7 +2040,7 @@ process get_uniprot_goa_mapping {
   echo true
 
   when:
-  params.uniprot_goa == true
+  params.uniprot_goa
 
   input:
   val (uniprot_acc_list) from uniprot_nr_accessions

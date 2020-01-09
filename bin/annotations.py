@@ -170,6 +170,27 @@ def clean_description(description):
     return description
 
 
+def orthogroups_to_fasta(genomes_list):
+    fasta_list = genomes_list.split(' ')
+
+    sequence_data = {}
+    for fasta_file in fasta_list:
+        sequence_data.update(SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta")))
+
+      # write fasta
+    with open("Orthogroups.txt") as f:
+        all_grp = [i for i in f]
+        for n, line in enumerate(all_grp):
+            groups = line.rstrip().split(' ')
+            group_name = groups[0][:-1]
+            groups = groups[1:]
+            if len(groups)>1:
+                new_fasta = [sequence_data[i] for i in groups]
+                out_path = "%s.faa" % group_name
+                out_handle = open(out_path, "w")
+                SeqIO.write(new_fasta, out_handle, "fasta")
+
+
 def check_gbk(gbff_files, minimal_contig_length=1000):
     reannotation_list = []
 
