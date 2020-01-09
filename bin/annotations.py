@@ -796,6 +796,7 @@ def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
                     f.write(">%s\\n%s\\n" % (name, str(record.seq)))
 
 
+# modified so as to send a single query
 def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
     conn = sqlite3.connect(database_dir + "/goa/goa_uniprot.db")
     cursor = conn.cursor()
@@ -804,16 +805,14 @@ def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
 
     sql = """SELECT GO_id, reference, evidence_code, category 
         FROM goa_table 
-        WHERE uniprotkb_accession=?;"""
-
-    for accession in "${uniprot_acc_list}".split(","):
-        accession_base = accession.split(".")[0].strip()
-        cursor.execute(sql, [accession_base])
-        #print(f'select GO_id, reference,evidence_code,category from goa_table where uniprotkb_accession="{accession_base}";')
-        go_list = cursor.fetchall()
-        for go in go_list:
-            GO_id = go[0]
-            reference = go[1]
-            evidence_code = go[2]
-            category = go[3]
-            o.write(f"{accession_base}\\t{GO_id}\\t{reference}\\t{evidence_code}\\t{category}\\n")
+        WHERE uniprotkb_accession IN ({});"""
+    
+    accessions_base = [i.split(".")[0].strip() for i in uniprot_acc_list.split(",")]
+    cursor.execute(sql.format(",".join(accessions_base)))
+    go_list = cursor.fetchall()
+    for go in go_list:
+        GO_id = go[0]
+        reference = go[1]
+        evidence_code = go[2]
+        category = go[3]
+        o.write(f"{accession_base}\\t{GO_id}\\t{reference}\\t{evidence_code}\\t{category}\\n")
