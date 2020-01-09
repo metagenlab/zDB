@@ -705,18 +705,15 @@ def concatenate_core_orthogroups(fasta_files):
     with open(out_name, "w") as handle:
         AlignIO.write(MSA, handle, "fasta")
 
+# Note : removed poor error handling
+# (infinite recursion with infinite waiting time is 
+# something goes wrong: better to crash fast than 
+# a slow agonizing death)
 def refseq_accession2fasta(accession_list):
     Entrez.email = "trestan.pillonel@unil.ch"
     handle = Entrez.efetch(db='protein', id=','.join(accession_list), rettype="fasta", retmode="text")
     records = [i for i in SeqIO.parse(handle, "fasta")]
     return records
-
-def flatten(items):
-    # flatten list of lists
-    merged_list = []
-    for x in items:
-        merged_list+=x
-    return merged_list
 
 def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
     conn = sqlite3.connect("orthology.db")
@@ -751,9 +748,6 @@ def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
         locus_tag = row[1]
         hit_id = row[2]
 
-        # not too happy with that... 
-        # hash table, in a hash table
-        # hash-tableception
         if orthogroup not in orthogroup2locus2top_hits:
             orthogroup2locus2top_hits[orthogroup] = {}
         if locus_tag not in orthogroup2locus2top_hits[orthogroup]:
@@ -764,6 +758,7 @@ def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
     # retrieve aa sequences
     # why not select on orthogroups in orthogroup2locus2top_hits?
     # would be more efficient and spare some lines of code
+    # as this is done in the loop below
     sql = """SELECT orthogroup, t1.locus_tag, sequence 
      FROM locus_tag2orthogroup t1 INNER JOIN locus_tag2sequence_hash t2 ON t1.locus_tag=t2.locus_tag 
      INNER JOIN sequence_hash2aa_sequence t3 ON t2.sequence_hash=t3.sequence_hash"""
@@ -783,13 +778,15 @@ def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
         ortho_sequences = orthogroup2locus_and_sequence[group]
         refseq_sequence_records = []
         top_hits = [orthogroup2locus2top_hits[group][i] for i in orthogroup2locus2top_hits[group]]
-        nr_top_hit = list(set(flatten(top_hits)))
+        nr_top_hit = list(set([hit for hits_list in top_hits for hit in hits_list])) # flatten list... yeah, ugly.
         split_lists = chunks(nr_top_hit, 50)
+
+        # multithreading here would be nice to run queries in parallel
         for one_list in split_lists:
             refseq_sequence_records += refseq_accession2fasta(one_list)
 
         if len(refseq_sequence_records) > 0:
-            with open("%s_nr_hits.faa" % group, 'w') as f:
+            with open(group + "_nr_hits.faa", 'w') as f:
                 for one_ortholog in ortho_sequences:
                     f.write(">%s\\n%s\\n" % (one_ortholog[0], one_ortholog[1]))
                 for record in refseq_sequence_records:
