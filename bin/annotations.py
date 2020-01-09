@@ -800,7 +800,6 @@ def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
 def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
     conn = sqlite3.connect(database_dir + "/goa/goa_uniprot.db")
     cursor = conn.cursor()
-
     o = open("goa_uniprot_exact_annotations.tab", "w")
 
     sql = """SELECT GO_id, reference, evidence_code, category 
@@ -816,3 +815,48 @@ def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
         evidence_code = go[2]
         category = go[3]
         o.write(f"{accession_base}\\t{GO_id}\\t{reference}\\t{evidence_code}\\t{category}\\n")
+
+def setup_diamond_refseq_db(diamond_tsv_files_list):
+    conn = sqlite3.connect("diamond_refseq.db")
+    cursor = conn.cursor()
+
+    sql1 = """CREATE TABLE diamond_refseq(hit_count INTEGER, qseqid varchar(200),
+        sseqid varchar(200), pident FLOAT, length INTEGER, mismatch INTEGER,
+        gapopen INTEGER, qstart INTEGER, qend INTEGER, sstart INTEGER,
+        send INTEGER, evalue FLOAT, bitscore FLOAT)"""
+    cursor.execute(sql1,)
+    conn.commit()
+
+    sql = 'insert into diamond_refseq values (?,?,?,?,?,?,?,?,?,?,?,?,?)'
+
+    diamond_file_list = diamond_tsv_files_list.split(' ')
+    for one_file in diamond_file_list:
+        diamond_table = pd.read_csv(one_file, sep="\\t")
+        accession = ''
+        count = ''
+        # add hit count as first column
+        for index, row in diamond_table.iterrows():
+            # remove version number from accession
+            row[1] = row[1].split(".")[0]
+            # if new protein, reinitialise the count
+            if row[0] != accession:
+                accession = row[0]
+                count = 1
+            else:
+                count+=1
+            cursor.execute(sql, [count] + row.tolist())
+        conn.commit()
+
+    # index query accession (hash) + hit number
+    sql_index_1 = 'create index hitc on diamond_refseq (hit_count);'
+    sql_index_2 = 'create index qacc on diamond_refseq (qseqid);'
+    sql_index_3 = 'create index sacc on diamond_refseq (sseqid);'
+
+    cursor.execute(sql_index_1)
+    cursor.execute(sql_index_2)
+    cursor.execute(sql_index_3)
+    conn.commit()
+    sql = 'select distinct sseqid from diamond_refseq'
+    with open("nr_refseq_hits.tab", 'w') as f:
+        for acc in cursor.execute(sql,):
+            f.write("%s\\n" % acc[0])
