@@ -4,6 +4,8 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature, FeatureLocation, ExactPosition
 from Bio.Alphabet import IUPAC
+from Bio import AlignIO
+from Bio.Align import MultipleSeqAlignment
 
 import pandas as pd
 import sys
@@ -15,6 +17,8 @@ import os
 import datetime
 import logging
 import http.client
+
+from collections import Iterable
 
 def merge_gbk(gbk_records, filter_size=0, gi=False):
     '''
@@ -550,24 +554,24 @@ def orthofinder2core_groups(fasta_list,
     return core_groups, orthogroup2locus_list, locus2genome
 
 def get_core_orthogroups(genomes_list, int_core_missing):
-  core_groups, orthogroup2locus_list, locus2genome = orthofinder2core_groups(genomes_list,
+    core_groups, orthogroup2locus_list, locus2genome = orthofinder2core_groups(genomes_list,
           'Orthogroups.txt', int_core_missing, False)
 
-  for group_id in core_groups:
+    for group_id in core_groups:
     # sequence_data = SeqIO.to_dict(SeqIO.parse("OG{0:07d}_mafft.faa".format(int(one_group.split('_')[1])), "fasta"))
-    sequence_data = SeqIO.to_dict(SeqIO.parse(group_id + "_mafft.faa", "fasta"))
-    dest = group_id + '_taxon_ids.faa'
-    new_fasta = []
-    for locus in orthogroup2locus_list[group_id]:
-        tmp_seq = sequence_data[locus]
-        tmp_seq.name = locus2genome[locus]
-        tmp_seq.id = locus2genome[locus]
-        tmp_seq.description = locus2genome[locus]
-        new_fasta.append(tmp_seq)
+        sequence_data = SeqIO.to_dict(SeqIO.parse(group_id + "_mafft.faa", "fasta"))
+        dest = group_id + '_taxon_ids.faa'
+        new_fasta = []
+        for locus in orthogroup2locus_list[group_id]:
+            tmp_seq = sequence_data[locus]
+            tmp_seq.name = locus2genome[locus]
+            tmp_seq.id = locus2genome[locus]
+            tmp_seq.description = locus2genome[locus]
+            new_fasta.append(tmp_seq)
 
-    out_handle = open(dest, 'w')
-    SeqIO.write(new_fasta, out_handle, "fasta")
-    out_handle.close()
+        out_handle = open(dest, 'w')
+        SeqIO.write(new_fasta, out_handle, "fasta")
+        out_handle.close()
 
 def chunks(l, n):
     for i in range(0, len(l), n):
@@ -618,6 +622,9 @@ def get_refseq_hits_taxonomy(hit_table, database_dir):
     chunk_lists = chunks(hit_list, 5000)
     sql_template = 'insert into refseq_hits values (?,?,?,?)'
     hits = []
+
+    # TODO : make a single query using join on the two tables would probably
+    # be more efficient and spare some lines of code
     template_annotation = 'select accession, description, sequence_length from refseq where accession in ("%s")'
     template_taxid = 'select accession, taxid from accession2taxid where accession in ("%s")'
 
@@ -651,3 +658,141 @@ def get_refseq_hits_taxonomy(hit_table, database_dir):
     cursor.execute(sql_index_1)
     cursor.execute(sql_index_2)
     conn.commit()
+
+
+def concatenate_core_orthogroups(fasta_files):
+    out_name = 'msa.faa'
+
+    # identification of all distinct fasta headers id (all unique taxons ids) in all fasta
+    # storing records in all_seq_data (dico)
+    taxons = []
+    all_seq_data = {}
+    for one_fasta in fasta_files:
+        all_seq_data[one_fasta] = {}
+        with open(one_fasta) as f:
+            alignment = AlignIO.read(f, "fasta")
+            for record in alignment:
+                if record.id not in taxons:
+                    taxons.append(record.id)
+            all_seq_data[one_fasta][record.id] = record
+
+
+    # building dictionnary of the form: dico[one_fasta][one_taxon] = sequence
+    concat_data = {}
+
+    start_stop_list = []
+    start = 0
+    stop = 0
+
+    for one_fasta in fasta_files:
+        start = stop + 1
+        stop = start + len(all_seq_data[one_fasta][list(all_seq_data[one_fasta].keys())[0]]) - 1
+        start_stop_list.append([start, stop])
+        print(len(taxons))
+        for taxon in taxons:
+            # check if the considered taxon is present in the record
+            if taxon not in all_seq_data[one_fasta]:
+                 # if taxon absent, create SeqRecord object "-"*len(alignments): gap of the size of the alignment
+                seq = Seq("-"*len(all_seq_data[one_fasta][list(all_seq_data[one_fasta].keys())[0]]))
+                all_seq_data[one_fasta][taxon] = SeqRecord(seq, id=taxon)
+            if taxon not in concat_data:
+                concat_data[taxon] = all_seq_data[one_fasta][taxon]
+            else:
+                concat_data[taxon] += all_seq_data[one_fasta][taxon]
+
+    # concatenating the alignments, writing to fasta file
+    MSA = MultipleSeqAlignment([concat_data[i] for i in concat_data])
+    with open(out_name, "w") as handle:
+        AlignIO.write(MSA, handle, "fasta")
+
+def refseq_accession2fasta(accession_list):
+    Entrez.email = "trestan.pillonel@unil.ch"
+    handle = Entrez.efetch(db='protein', id=','.join(accession_list), rettype="fasta", retmode="text")
+    records = [i for i in SeqIO.parse(handle, "fasta")]
+    return records
+
+def flatten(items):
+    # flatten list of lists
+    merged_list = []
+    for x in items:
+        merged_list+=x
+    return merged_list
+
+def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
+    conn = sqlite3.connect("orthology.db")
+    cursor = conn.cursor()
+    #sql1 = 'create table diamond_top_%s_nr_hits(orthogroup varchar, hit_accession, hit_sequence)' % ${params.refseq_diamond_BBH_phylogeny_top_n_hits}
+
+    sql2 = 'attach "' + databases_dir + '/ncbi-taxonomy/linear_taxonomy.db" as linear_taxonomy'
+    sql3 = 'attach "refseq_taxonomy.db" as refseq_taxonomy'
+    sql4 = 'attach "diamond_refseq.db" as diamond_refseq'
+
+    #cursor.execute(sql1,)
+    cursor.execute(sql2,)
+    cursor.execute(sql3,)
+    cursor.execute(sql4,)
+    conn.commit()
+
+    #sql_template = 'insert into diamond_top_%s_nr_hits values (?,?,?)' % ${params.refseq_diamond_BBH_phylogeny_top_n_hits}
+
+    sql_filtered_hits = """SELECT t1.orthogroup, t1.locus_tag, t3.sseqid, t3.hit_count 
+       FROM locus_tag2orthogroup t1 INNER JOIN locus_tag2sequence_hash t2 ON t1.locus_tag=t2.locus_tag 
+       INNER JOIN diamond_refseq.diamond_refseq t3 ON t2.sequence_hash=t3.qseqid 
+       INNER JOIN refseq_taxonomy.refseq_hits t4 ON t3.sseqid=t4.accession
+       INNER JOIN linear_taxonomy.ncbi_taxonomy t5 ON t4.taxid=t5.tax_id 
+       WHERE t5.phylum not in ("%s")
+       ORDER BY t1.orthogroup, t1.locus_tag, t3.hit_count;"""  % '","'.join(phylum_filter)
+    filtered_hits = cursor.execute(sql_filtered_hits,).fetchall()
+
+    # retrieve top hits excluding phylum of choice
+    orthogroup2locus2top_hits = {}
+    for row in filtered_hits:
+        orthogroup = row[0]
+        locus_tag = row[1]
+        hit_id = row[2]
+
+        # not too happy with that... 
+        # hash table, in a hash table
+        # hash-tableception
+        if orthogroup not in orthogroup2locus2top_hits:
+            orthogroup2locus2top_hits[orthogroup] = {}
+        if locus_tag not in orthogroup2locus2top_hits[orthogroup]:
+            orthogroup2locus2top_hits[orthogroup][locus_tag] = []
+        if len(orthogroup2locus2top_hits[orthogroup][locus_tag]) < n_hits:
+            orthogroup2locus2top_hits[orthogroup][locus_tag].append(hit_id)
+
+    # retrieve aa sequences
+    # why not select on orthogroups in orthogroup2locus2top_hits?
+    # would be more efficient and spare some lines of code
+    sql = """SELECT orthogroup, t1.locus_tag, sequence 
+     FROM locus_tag2orthogroup t1 INNER JOIN locus_tag2sequence_hash t2 ON t1.locus_tag=t2.locus_tag 
+     INNER JOIN sequence_hash2aa_sequence t3 ON t2.sequence_hash=t3.sequence_hash"""
+    orthogroup_sequences = cursor.execute(sql,).fetchall()
+    orthogroup2locus_and_sequence = {}
+    for row in orthogroup_sequences:
+        orthogroup = row[0]
+        locus_tag = row[1]
+        sequence = row[2]
+        if orthogroup not in orthogroup2locus_and_sequence:
+            orthogroup2locus_and_sequence[orthogroup] = []
+        orthogroup2locus_and_sequence[orthogroup].append([locus_tag, sequence])
+
+    # for each group, retrieve aa sequence from NCBI
+    # write it to fasta file with orthogroup sequences
+    for group in orthogroup2locus2top_hits:
+        ortho_sequences = orthogroup2locus_and_sequence[group]
+        refseq_sequence_records = []
+        top_hits = [orthogroup2locus2top_hits[group][i] for i in orthogroup2locus2top_hits[group]]
+        nr_top_hit = list(set(flatten(top_hits)))
+        split_lists = chunks(nr_top_hit, 50)
+        for one_list in split_lists:
+            refseq_sequence_records += refseq_accession2fasta(one_list)
+
+        if len(refseq_sequence_records) > 0:
+            with open("%s_nr_hits.faa" % group, 'w') as f:
+                for one_ortholog in ortho_sequences:
+                    f.write(">%s\\n%s\\n" % (one_ortholog[0], one_ortholog[1]))
+                for record in refseq_sequence_records:
+                    name = record.name
+                    f.write(">%s\\n%s\\n" % (name, str(record.seq)))
+

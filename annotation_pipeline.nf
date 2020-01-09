@@ -676,7 +676,7 @@ process get_core_orthogroups {
 
 process concatenate_core_orthogroups {
 
-  conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
+  // conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
 
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
 
@@ -690,56 +690,10 @@ process concatenate_core_orthogroups {
 
   """
   #!/usr/bin/env python
-
+  import annotations
   fasta_files = "${core_groups}".split(" ")
-  print(fasta_files)
-  out_name = 'msa.faa'
+  annotations.concatenate_core_orthogroups(fasta_files)
 
-  from Bio import AlignIO
-  from Bio.SeqRecord import SeqRecord
-  from Bio.Seq import Seq
-  from Bio.Align import MultipleSeqAlignment
-  # identification of all distinct fasta headers id (all unique taxons ids) in all fasta
-  # storing records in all_seq_data (dico)
-  taxons = []
-  all_seq_data = {}
-  for one_fasta in fasta_files:
-      all_seq_data[one_fasta] = {}
-      with open(one_fasta) as f:
-          alignment = AlignIO.read(f, "fasta")
-      for record in alignment:
-          if record.id not in taxons:
-              taxons.append(record.id)
-          all_seq_data[one_fasta][record.id] = record
-
-
-  # building dictionnary of the form: dico[one_fasta][one_taxon] = sequence
-  concat_data = {}
-
-  start_stop_list = []
-  start = 0
-  stop = 0
-
-  for one_fasta in fasta_files:
-      start = stop + 1
-      stop = start + len(all_seq_data[one_fasta][list(all_seq_data[one_fasta].keys())[0]]) - 1
-      start_stop_list.append([start, stop])
-      print(len(taxons))
-      for taxon in taxons:
-          # check if the considered taxon is present in the record
-          if taxon not in all_seq_data[one_fasta]:
-              # if taxon absent, create SeqRecord object "-"*len(alignments): gap of the size of the alignment
-              seq = Seq("-"*len(all_seq_data[one_fasta][list(all_seq_data[one_fasta].keys())[0]]))
-              all_seq_data[one_fasta][taxon] = SeqRecord(seq, id=taxon)
-          if taxon not in concat_data:
-              concat_data[taxon] = all_seq_data[one_fasta][taxon]
-          else:
-              concat_data[taxon] += all_seq_data[one_fasta][taxon]
-
-  # concatenating the alignments, writing to fasta file
-  MSA = MultipleSeqAlignment([concat_data[i] for i in concat_data])
-  with open(out_name, "w") as handle:
-      AlignIO.write(MSA, handle, "fasta")
   """
 }
 
@@ -1748,7 +1702,7 @@ process get_refseq_hits_taxonomy {
 	#!/usr/bin/env python
 
 	import annotations
-	annotations.get_refseq_hits_taxonomy("$refseq_hit_table", "$params.database_dir")
+	annotations.get_refseq_hits_taxonomy("$refseq_hit_table", "$params.databases_dir")
   """
 }
 
@@ -1758,14 +1712,14 @@ process get_diamond_refseq_top_hits {
   - [ ] load blast results into sqlite db
   */
 
-  conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
+  // conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
   publishDir 'annotation/diamond_refseq_BBH_phylogenies', mode: 'copy', overwrite: true
   echo false
   cpus 4
   memory '8 GB'
 
   when:
-  params.refseq_diamond_BBH_phylogeny == true
+  params.refseq_diamond_BBH_phylogeny
 
   input:
   file 'orthology.db' from orthology_db
@@ -1777,121 +1731,11 @@ process get_diamond_refseq_top_hits {
 
   script:
   """
-#!/usr/bin/env python
-
-from Bio import SeqIO
-import sqlite3
-from Bio.SeqUtils import CheckSum
-import pandas
-from collections import Iterable
-
-def chunks(l, n):
-    for i in range(0, len(l), n):
-        yield l[i:i+n]
-
-def refseq_accession2fasta(accession_list):
-    from Bio import Entrez
-    from Bio import SeqIO
-    import urllib2
-
-    Entrez.email = "trestan.pillonel@unil.ch"
-    try:
-        handle = Entrez.efetch(db='protein', id=','.join(accession_list), rettype="fasta", retmode="text")
-    except urllib2.HTTPError as e:
-        print (e)
-        print (accession_list)
-        print ('connexion problem, waiting 60s. and trying again...')
-        # run again if connexion error
-        import time
-        time.sleep(60)
-        return refseq_accession2fasta(accession_list)
-    except urllib2.URLError:
-        print (e)
-        print (accession_list)
-        print ('connexion problem, waiting 60s. and trying again...')
-        # run again if connexion error
-        import time
-        time.sleep(60)
-        return refseq_accession2fasta(accession_list)
-
-    records = [i for i in SeqIO.parse(handle, "fasta")]
-
-    return records
-
-    from collections import Iterable
-
-
-def flatten(items):
-    # flatten list of lists
-    merged_list = []
-    for x in items:
-        merged_list+=x
-    return merged_list
-
-conn = sqlite3.connect("orthology.db")
-cursor = conn.cursor()
-#sql1 = 'create table diamond_top_%s_nr_hits(orthogroup varchar, hit_accession, hit_sequence)' % ${params.refseq_diamond_BBH_phylogeny_top_n_hits}
-
-sql2 = 'attach "${params.databases_dir}/ncbi-taxonomy/linear_taxonomy.db" as linear_taxonomy'
-sql3 = 'attach "refseq_taxonomy.db" as refseq_taxonomy'
-sql4 = 'attach "diamond_refseq.db" as diamond_refseq'
-
-#cursor.execute(sql1,)
-cursor.execute(sql2,)
-cursor.execute(sql3,)
-cursor.execute(sql4,)
-conn.commit()
-
-#sql_template = 'insert into diamond_top_%s_nr_hits values (?,?,?)' % ${params.refseq_diamond_BBH_phylogeny_top_n_hits}
-
-sql_filtered_hits = 'select t1.orthogroup,t1.locus_tag,t3.sseqid,t3.hit_count from locus_tag2orthogroup t1 inner join locus_tag2sequence_hash t2 on t1.locus_tag=t2.locus_tag inner join diamond_refseq.diamond_refseq t3 on t2.sequence_hash=t3.qseqid inner join refseq_taxonomy.refseq_hits t4 on t3.sseqid=t4.accession inner join linear_taxonomy.ncbi_taxonomy t5 on t4.taxid=t5.tax_id where t5.phylum not in ("%s") order by t1.orthogroup,t1.locus_tag,t3.hit_count;'  % '","'.join(${params.refseq_diamond_BBH_phylogeny_phylum_filter})
-print(len(sql_filtered_hits))
-filtered_hits = cursor.execute(sql_filtered_hits,).fetchall()
-
-# retrieve top hits excluding phylum of choice
-orthogroup2locus2top_hits = {}
-for row in filtered_hits:
-    orthogroup = row[0]
-    locus_tag = row[1]
-    hit_id = row[2]
-    if orthogroup not in orthogroup2locus2top_hits:
-        orthogroup2locus2top_hits[orthogroup] = {}
-    if locus_tag not in orthogroup2locus2top_hits[orthogroup]:
-        orthogroup2locus2top_hits[orthogroup][locus_tag] = []
-    if len(orthogroup2locus2top_hits[orthogroup][locus_tag]) < int(${params.refseq_diamond_BBH_phylogeny_top_n_hits}):
-        orthogroup2locus2top_hits[orthogroup][locus_tag].append(hit_id)
-
-# retrieve aa sequences
-sql = 'select orthogroup,t1.locus_tag,sequence from locus_tag2orthogroup t1 inner join locus_tag2sequence_hash t2 on t1.locus_tag=t2.locus_tag inner join sequence_hash2aa_sequence t3 on t2.sequence_hash=t3.sequence_hash '
-orthogroup_sequences = cursor.execute(sql,).fetchall()
-orthogroup2locus_and_sequence = {}
-for row in orthogroup_sequences:
-    orthogroup = row[0]
-    locus_tag = row[1]
-    sequence = row[2]
-    if orthogroup not in orthogroup2locus_and_sequence:
-        orthogroup2locus_and_sequence[orthogroup] = []
-    orthogroup2locus_and_sequence[orthogroup].append([locus_tag, sequence])
-
-
-# for each group, retrieve aa sequence from NCBI
-# write it to fasta file with orthogroup sequences
-for group in orthogroup2locus2top_hits:
-    ortho_sequences = orthogroup2locus_and_sequence[group]
-    refseq_sequence_records = []
-    top_hits = [orthogroup2locus2top_hits[group][i] for i in orthogroup2locus2top_hits[group]]
-    nr_top_hit = list(set(flatten(top_hits)))
-    split_lists = chunks(nr_top_hit, 50)
-    for one_list in split_lists:
-        refseq_sequence_records += refseq_accession2fasta(one_list)
-
-    if len(refseq_sequence_records) > 0:
-        with open("%s_nr_hits.faa" % group, 'w') as f:
-            for one_ortholog in ortho_sequences:
-                f.write(">%s\\n%s\\n" % (one_ortholog[0], one_ortholog[1]))
-            for record in refseq_sequence_records:
-                name = record.name
-                f.write(">%s\\n%s\\n" % (name, str(record.seq)))
+  #!/usr/bin/env python
+  import annotations
+  annotations.get_diamond_refseq_top_hits("$params.databases_dir",
+	$params.refseq_diamond_BBH_phylogeny_phylum_filter,
+	int($params.refseq_diamond_BBH_phylogeny_top_n_hits))
   """
 }
 
