@@ -196,10 +196,10 @@
                                             {% if not big %}
                                                 <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
                                                 <a onclick='exportPNG("cog_tree", "profile");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
-                                            {% endif %}
+                                            {% else %}
                                                 <!-- if image too large, only png available -->
                                                 <a download="profile.png" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download PNG</a> 
-                                            {% else %}    
+                                            {% endif %}    
                                        </div>
                                        <div class="row">
                                            {% if not big %}
