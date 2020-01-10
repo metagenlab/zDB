@@ -750,6 +750,8 @@ process plast_refseq {
   """
 }
 
+// cut sequences in smaller chunks to speed up execution?
+// use a caching method to speed up queries if two identical sequences come up?
 process diamond_refseq {
 
   publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
@@ -1102,6 +1104,8 @@ process execute_interproscan_no_uniparc_matches {
 }
 
 
+// Might also be interesting to split fasta files into smaller chunks
+// judging from the execution time
 process execute_interproscan_uniparc_matches {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
@@ -1517,7 +1521,8 @@ process execute_macsyfinder_T3SS {
   """
 }
 
-
+// TODO see if this is interesting to make smaller chunks
+// to speed up execution
 process execute_psortb {
 
   container 'metagenlab/psort:3.0.6'
@@ -1538,7 +1543,6 @@ process execute_psortb {
   /usr/local/psortb/bin/psort --negative ${chunk} > psortb_${chunk}.txt
   """
 }
-
 
 process blast_pdb {
 
