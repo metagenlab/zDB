@@ -25,6 +25,105 @@ def chunks(l, n):
         yield l[i:i+n]
 
 
+def get_oma_mapping(databases_dir, fasta_file):
+    conn = sqlite3.connect(databases_dir + "/oma/oma.db")
+    cursor = conn.cursor()
+    oma_map = open('oma_mapping.tab', 'w')
+    no_oma_mapping = open('no_oma_mapping.faa', 'w')
+    oma_map.write("locus_tag\\toma_id\\n")
+    records = SeqIO.parse(fasta_file, "fasta")
+    no_oma_mapping_records = []
+
+    # TODO : parallelize database requests or make a single big request
+    #  using IN with all the accessions
+    for record in records:
+        sql = 'select accession from hash_table where sequence_hash=?'
+        cursor.execute(sql, (CheckSum.seguid(record.seq),))
+        hits = cursor.fetchall()
+        if len(hits) == 0:
+            no_oma_mapping_records.append(record)
+        else:
+            for hit in hits:
+            oma_map.write("%s\\t%s\\n" % (record.id, hit[0]))
+
+
+SeqIO.write(no_oma_mapping_records, no_oma_mapping, "fasta")
+
+
+def pmid2abstract_info(pmid_list):
+    from Bio import Medline
+
+    # make sure that pmid are strings
+    pmid_list = [str(i) for i in pmid_list]
+
+    try:
+        handle = Entrez.efetch(db="pubmed", id=','.join(pmid_list), rettype="medline", retmode="text")
+        records = Medline.parse(handle)
+    except:
+        print("FAIL:", pmid)
+        return None
+
+    pmid2data = {}
+    for record in records:
+        try:
+            pmid = record["PMID"]
+        except:
+            print(record)
+            #{'id:': ['696885 Error occurred: PMID 28696885 is a duplicate of PMID 17633143']}
+            if 'duplicate' in record['id:']:
+                duplicate = record['id:'].split(' ')[0]
+                correct = record['id:'].split(' ')[-1]
+                print("removing duplicated PMID... %s --> %s" % (duplicate, correct))
+                # remove duplicate from list
+                pmid_list.remove(duplicate)
+                return pmid2abstract_info(pmid_list)
+
+        pmid2data[pmid] = {}
+        pmid2data[pmid]["title"] = record.get("TI", "?")
+        pmid2data[pmid]["authors"] = record.get("AU", "?")
+        pmid2data[pmid]["source"] = record.get("SO", "?")
+        pmid2data[pmid]["abstract"] = record.get("AB", "?")
+        pmid2data[pmid]["pmid"] = pmid
+    return pmid2data
+
+def get_PMID_data():
+    Entrez.email = "trestan.pillonel@chuv.ch"
+    conn = sqlite3.connect("string_mapping_PMID.db")
+    cursor = conn.cursor()
+    sql = 'create table if not exists hash2pmid (hash binary, pmid INTEGER)'
+    sql2 = 'create table if not exists pmid2data (pmid INTEGER, title TEXT, authors TEXT, source TEXT, abstract TEXT)'
+    cursor.execute(sql,)
+    cursor.execute(sql2,)
+
+    # get PMID nr list and load PMID data into sqldb
+    pmid_nr_list = []
+    sql_template = 'insert into hash2pmid values (?, ?)'
+    with open("string_mapping_PMID.tab", "r") as f:
+        n = 0
+        for row in f:
+            data = row.rstrip().split("\t")
+            if data[1] != 'None':
+                n+=1
+                cursor.execute(sql_template, data)
+                if data[1] not in pmid_nr_list:
+                    pmid_nr_list.append(data[1])
+            if n % 1000 == 0:
+                print(n, 'hash2pmid ---- insert ----')
+                conn.commit()
+
+    pmid_chunks = [i for i in chunks(pmid_nr_list, 50)]
+
+    # get PMID data and load into sqldb
+    sql_template = 'insert into pmid2data values (?, ?, ?, ?, ?)'
+    for n, chunk in enumerate(pmid_chunks):
+        print("pmid2data -- chunk %s / %s" % (n, len(pmid_chunks)))
+        pmid2data = pmid2abstract_info(chunk)
+        for pmid in pmid2data:
+            cursor.execute(sql_template, (pmid, pmid2data[pmid]["title"], str(pmid2data[pmid]["authors"]), pmid2data[pmid]["source"], pmid2data[pmid]["abstract"]))
+        if n % 10 == 0:
+            conn.commit()
+    conn.commit()
+
 # Removed error handling possibly leading
 # to endless loop. A quick death is usually better.
 def uniprot_accession2score(uniprot_accession_list):
@@ -49,10 +148,8 @@ def uniprot_accession2score(uniprot_accession_list):
 def get_uniprot_data(databases_dir, table):
     conn = sqlite3.connect(databases_dir + "/uniprot/idmapping/uniprot_sprot_trembl.db")
     cursor = conn.cursor()
-
     uniprot_table = open(table, 'r')
     uniprot_data = open('uniprot_data.tab', 'w')
-
     uniprot_data.write("uniprot_accession\\tuniprot_score\\tuniprot_status\\tproteome\\tcomment_function\\tec_number\\tcomment_subunit\\tgene\\trecommendedName_fullName\\tproteinExistence\\tdevelopmentalstage\\tcomment_similarity\\tcomment_catalyticactivity\\tcomment_pathway\\tkeywords\\n")
 
     uniprot_accession_list = [row.rstrip().split("\\t")[1].split(".")[0] for row in uniprot_table if row.rstrip().split("\\t")[1] != 'uniprot_accession']
@@ -60,6 +157,8 @@ def get_uniprot_data(databases_dir, table):
 
     sql_uniprot_annot = 'SELECT * FROM uniprot_annotation WHERE uniprot_accession IN ("%s");'
 
+    # parallelizing those requests could be interesting if this function
+    # took too much time
     for one_chunk in uniprot_accession_chunks:
         uniprot2score = uniprot_accession2score(one_chunk)
         filter = '","'.join(one_chunk)
@@ -85,22 +184,11 @@ def get_uniprot_data(databases_dir, table):
             proteome = uniprot_annotation[12]
             reviewed = uniprot_annotation[14]
 
-            uniprot_data.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n" % ( uniprot_accession,
-                                                                                                             uniprot_score,
-                                                                                                             reviewed,
-                                                                                                             proteome,
-                                                                                                             comment_function,
-                                                                                                             ec_number,
-                                                                                                             comment_subunit,
-                                                                                                             gene,
-                                                                                                             recommendedName_fullName,
-                                                                                                             proteinExistence,
-                                                                                                             developmentalstage,
-                                                                                                             comment_similarity,
-                                                                                                             comment_catalyticactivity,
-                                                                                                             comment_pathway,
-                                                                                                             keywords)
-                                                                                                            )
+            uniprot_data.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n"
+                    % (uniprot_accession, uniprot_score, reviewed, proteome, comment_function, ec_number,
+                       comment_subunit, gene, recommendedName_fullName, proteinExistence,
+                       developmentalstage, comment_similarity, comment_catalyticactivity,
+                       comment_pathway, keywords))
 
 def get_uniparc_mapping(databases_dir, fasta_file):
     conn = sqlite3.connect(databases_dir + "/uniprot/uniparc/uniparc.db")
