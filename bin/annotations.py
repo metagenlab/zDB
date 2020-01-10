@@ -18,7 +18,212 @@ import datetime
 import logging
 import http.client
 
-from collections import Iterable
+from ftplib import FTP
+
+def chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i+n]
+
+
+# Removed error handling possibly leading
+# to endless loop. A quick death is usually better.
+def uniprot_accession2score(uniprot_accession_list):
+    # https://www.uniprot.org/uniprot/?query=id:V8TQN7+OR+id:V8TR74&format=xml
+    link = "http://www.uniprot.org/uniprot/?query=id:%s&columns=id,annotation%%20score&format=tab" % ("+OR+id:".join(uniprot_accession_list))
+
+    page = urllib.request.urlopen(link)
+    data = page.read().decode('utf-8').split('\\n')
+    rows = [i.rstrip().split('\\t') for i in data]
+    unirpot2score = {}
+    for row in rows:
+        if len(row) > 0:
+            if row[0] == 'Entry':
+                continue
+            elif len(row)<2:
+                continue
+            else:
+                unirpot2score[row[0]] = row[1]
+    return unirpot2score
+
+
+def get_uniprot_data(databases_dir, table):
+    conn = sqlite3.connect(databases_dir + "/uniprot/idmapping/uniprot_sprot_trembl.db")
+    cursor = conn.cursor()
+
+    uniprot_table = open(table, 'r')
+    uniprot_data = open('uniprot_data.tab', 'w')
+
+    uniprot_data.write("uniprot_accession\\tuniprot_score\\tuniprot_status\\tproteome\\tcomment_function\\tec_number\\tcomment_subunit\\tgene\\trecommendedName_fullName\\tproteinExistence\\tdevelopmentalstage\\tcomment_similarity\\tcomment_catalyticactivity\\tcomment_pathway\\tkeywords\\n")
+
+    uniprot_accession_list = [row.rstrip().split("\\t")[1].split(".")[0] for row in uniprot_table if row.rstrip().split("\\t")[1] != 'uniprot_accession']
+    uniprot_accession_chunks = chunks(uniprot_accession_list, 300)
+
+    sql_uniprot_annot = 'SELECT * FROM uniprot_annotation WHERE uniprot_accession IN ("%s");'
+
+    for one_chunk in uniprot_accession_chunks:
+        uniprot2score = uniprot_accession2score(one_chunk)
+        filter = '","'.join(one_chunk)
+        uniprot_annot_data = cursor.execute(sql_uniprot_annot % filter,).fetchall()
+
+        for uniprot_annotation in uniprot_annot_data:
+            uniprot_accession = uniprot_annotation[0]
+            if uniprot_accession in uniprot2score:
+                uniprot_score = uniprot2score[uniprot_accession]
+            else:
+                uniprot_score = 0
+            comment_function = uniprot_annotation[1]
+            ec_number = uniprot_annotation[2]
+            comment_similarity = uniprot_annotation[3]
+            comment_catalyticactivity = uniprot_annotation[4]
+            comment_pathway = uniprot_annotation[5]
+            keywords = uniprot_annotation[6]
+            comment_subunit = uniprot_annotation[7]
+            gene = uniprot_annotation[8]
+            recommendedName_fullName = uniprot_annotation[9]
+            proteinExistence = uniprot_annotation[10]
+            developmentalstage = uniprot_annotation[11]
+            proteome = uniprot_annotation[12]
+            reviewed = uniprot_annotation[14]
+
+            uniprot_data.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n" % ( uniprot_accession,
+                                                                                                             uniprot_score,
+                                                                                                             reviewed,
+                                                                                                             proteome,
+                                                                                                             comment_function,
+                                                                                                             ec_number,
+                                                                                                             comment_subunit,
+                                                                                                             gene,
+                                                                                                             recommendedName_fullName,
+                                                                                                             proteinExistence,
+                                                                                                             developmentalstage,
+                                                                                                             comment_similarity,
+                                                                                                             comment_catalyticactivity,
+                                                                                                             comment_pathway,
+                                                                                                             keywords)
+                                                                                                            )
+
+def get_uniparc_mapping(databases_dir, fasta_file):
+    conn = sqlite3.connect(databases_dir + "/uniprot/uniparc/uniparc.db")
+    cursor = conn.cursor()
+
+    uniparc_map = open('uniparc_mapping.tab', 'w')
+    uniprot_map = open('uniprot_mapping.tab', 'w')
+    no_uniprot_mapping = open('no_uniprot_mapping.faa', 'w')
+    no_uniparc_mapping = open('no_uniparc_mapping.faa', 'w')
+    uniparc_mapping_faa = open('uniparc_mapping.faa', 'w')
+
+    uniparc_map.write("locus_tag\\tuniparc_id\\tuniparc_accession\\tstatus\\n")
+    uniprot_map.write("locus_tag\\tuniprot_accession\\ttaxon_id\\tdescription\\n")
+
+    records = SeqIO.parse(fasta_file, "fasta")
+    no_mapping_uniprot_records = []
+    no_mapping_uniparc_records = []
+    mapping_uniparc_records = []
+
+    # might be better for performances to run a single query if this function
+    # were to become a bottleneck
+    # WHERE sequence_hash IN (hsh1, hsh2, ... hshN) instead of the current version
+    for record in records:
+        match = False
+        sql = """SELECT t1.uniparc_id, uniparc_accession, accession,taxon_id, description, db_name, status
+            FROM uniparc_accession t1 INNER JOIN uniparc_cross_references t2 ON t1.uniparc_id=t2.uniparc_id
+            INNER JOIN crossref_databases t3 ON t2.db_id=t3.db_id 
+            WHERE sequence_hash=?"""
+        cursor.execute(sql, (CheckSum.seguid(record.seq),))
+        hits = cursor.fetchall()
+        if len(hits) == 0:
+            no_mapping_uniparc_records.append(record)
+            no_mapping_uniprot_records.append(record)
+        else:
+            # NOTE : the following code seems buggy
+            # the indices don't correspond to the SQL query return values
+            # Besides, if there is only one active record, we select the first
+            # one in the list anyway instead of the active one. Is this the correct
+            # behaviour?
+            mapping_uniparc_records.append(record)
+            all_status = [i[6] for i in hits]
+            if 1 in all_status:
+                status = 'active'
+            else:
+                status = 'dead'
+            uniparc_map.write(f"{record.id}\\t{hits[0][0]}\\t{hits[0][1]}\\t{status}\\n")
+            for uniprot_hit in hits:
+                if uniprot_hit[5] in ["UniProtKB/Swiss-Prot", "UniProtKB/TrEMBL"] and uniprot_hit[6] == 1:
+                    match = True
+                    uniprot_map.write("%s\\t%s\\t%s\\t%s\\t%s\\n" % (record.id,
+                                                                 uniprot_hit[2],
+                                                                 uniprot_hit[3],
+                                                                 uniprot_hit[4],
+                                                                 uniprot_hit[5]))
+            if not match:
+                no_mapping_uniprot_records.append(record)
+    SeqIO.write(no_mapping_uniprot_records, no_uniprot_mapping, "fasta")
+    SeqIO.write(no_mapping_uniparc_records, no_uniparc_mapping, "fasta")
+    SeqIO.write(mapping_uniparc_records, uniparc_mapping_faa, "fasta")
+
+def refseq_locus_mapping(accessions_list):
+    o = open("refseq_corresp.tab", "w")
+    for accession in accessions_list:
+        with gzip.open(accession, "rt") as handle:
+            records = SeqIO.parse(handle, "genbank")
+            for record in records:
+                for feature in record.features:
+                    if 'protein_id' in feature.qualifiers and 'old_locus_tag' in feature.qualifiers:
+                        refseq_locus_tag = feature.qualifiers["locus_tag"][0]
+                        protein_id = feature.qualifiers["protein_id"][0]
+                        old_locus_tag = feature.qualifiers["old_locus_tag"][0]
+                        o.write(f"{old_locus_tag}\\t{refseq_locus_tag}\\t{protein_id}\\n")
+
+def download_assembly_refseq(accession):
+    Entrez.email = "trestan.pillonel@chuv.ch"
+    Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
+    if accession=="":
+        return
+
+    handle1 = Entrez.esearch(db="assembly", term=accession)
+    record1 = Entrez.read(handle1)
+    ncbi_id = record1['IdList'][-1]
+    handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
+    assembly_record = Entrez.read(handle_assembly, validate=False)
+
+    # only consider annotated genbank => get corresponding refseq assembly
+    if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
+        ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+        ftp=FTP('ftp.ncbi.nih.gov')
+        ftp.login("anonymous","trestan.pillonel@unil.ch")
+        ftp.cwd(ftp_path)
+        filelist=ftp.nlst()
+        filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
+        for file in filelist:
+            ftp.retrbinary("RETR "+file, open(file, "wb").write)
+    else:
+        print("no genbank annotation for ${accession}")
+
+def download_assembly(accession):
+    Entrez.email = "trestan.pillonel@chuv.ch"
+    Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
+
+    handle1 = Entrez.esearch(db="assembly", term=accession)
+    record1 = Entrez.read(handle1)
+
+    ncbi_id = record1['IdList'][-1]
+    handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
+    assembly_record = Entrez.read(handle_assembly, validate=False)
+
+    if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
+        ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+    elif 'refseq_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
+      ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
+    else:
+        raise("${accession} assembly not annotated! --- exit ---")
+    ftp=FTP('ftp.ncbi.nih.gov')
+    ftp.login("anonymous","trestan.pillonel@unil.ch")
+    ftp.cwd(ftp_path)
+    filelist=ftp.nlst()
+    filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
+    for file in filelist:
+        ftp.retrbinary("RETR " + file, open(file, "wb").write)
+
 
 def merge_gbk(gbk_records, filter_size=0, gi=False):
     '''
@@ -594,9 +799,6 @@ def get_core_orthogroups(genomes_list, int_core_missing):
         SeqIO.write(new_fasta, out_handle, "fasta")
         out_handle.close()
 
-def chunks(l, n):
-    for i in range(0, len(l), n):
-        yield l[i:i+n]
 
 def accession2taxid_entrez(accession):
     from Bio import Entrez
@@ -818,6 +1020,8 @@ def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
 
 
 # modified so as to send a single query
+# Note : uniprot_acc_list may contain duplicates
+# that need to be removed
 def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
     conn = sqlite3.connect(database_dir + "/goa/goa_uniprot.db")
     cursor = conn.cursor()
@@ -829,7 +1033,6 @@ def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
 
     accessions_base = [i.split(".")[0].strip() for i in uniprot_acc_list]
     query = sql.format("\",\"".join(accessions_base))
-    print(query)
     cursor.execute(sql.format(",".join(accessions_base)),)
     go_list = cursor.fetchall()
     for go in go_list:

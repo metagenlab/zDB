@@ -111,6 +111,8 @@ if(!params.prokka && !params.local_sample_sheet) {
 if(params.ncbi_sample_sheet == false) {
 	raw_ncbi_gbffs = Channel.empty()
 }else {
+  
+  // TODO : create a single query to the database
   process download_assembly {
 
     // conda 'biopython=1.73'
@@ -121,10 +123,8 @@ if(params.ncbi_sample_sheet == false) {
     maxRetries 3
     //errorStrategy 'ignore'
 
-    echo false
-
     when:
-    params.ncbi_sample_sheet != false
+    params.ncbi_sample_sheet
 
     input:
     each accession from assembly_accession_list
@@ -137,46 +137,16 @@ if(params.ncbi_sample_sheet == false) {
     script:
     //accession = assembly_accession[0]
     """
-  #!/usr/bin/env python
-
-  import re
-  import time
-  from ftplib import FTP
-  from Bio import Entrez, SeqIO
-  Entrez.email = "trestan.pillonel@chuv.ch"
-  Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
-
-  print("${accession}")
-
-  handle1 = Entrez.esearch(db="assembly", term="${accession}")
-  record1 = Entrez.read(handle1)
-
-  ncbi_id = record1['IdList'][-1]
-  print(ncbi_id)
-  handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
-  assembly_record = Entrez.read(handle_assembly, validate=False)
-
-  if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
-      ftp_path = re.findall('<FtpPath type="GenBank">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
-  elif 'refseq_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
-      ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
-  else:
-    raise("${accession} assembly not annotated! --- exit ---")
-  print(ftp_path)
-  ftp=FTP('ftp.ncbi.nih.gov')
-  ftp.login("anonymous","trestan.pillonel@unil.ch")
-  ftp.cwd(ftp_path)
-  filelist=ftp.nlst()
-  filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
-  print(filelist)
-  for file in filelist:
-    ftp.retrbinary("RETR "+file, open(file, "wb").write)
+	#!/usr/bin/env python
+	import annotations
+	annotations.download_assembly("$accession")
     """
   }
 
+  // TODO: create a single query to the database
   process download_assembly_refseq {
 
-    conda 'biopython=1.73'
+    // conda 'biopython=1.73'
 
     publishDir 'data/refseq_corresp', mode: 'copy', overwrite: true
 
@@ -187,7 +157,7 @@ if(params.ncbi_sample_sheet == false) {
     echo false
 
     when:
-    params.ncbi_sample_sheet != false && params.get_refseq_locus_corresp == true
+    params.ncbi_sample_sheet && params.get_refseq_locus_corresp
 
     input:
     each accession from assembly_accession_list_refseq
@@ -200,38 +170,9 @@ if(params.ncbi_sample_sheet == false) {
     script:
     //accession = assembly_accession[0]
     """
-  #!/usr/bin/env python
-
-  import re
-  import time
-  from ftplib import FTP
-  from Bio import Entrez, SeqIO
-  Entrez.email = "trestan.pillonel@chuv.ch"
-  Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
-
-  if "${accession}" != "":
-      handle1 = Entrez.esearch(db="assembly", term="${accession}")
-      record1 = Entrez.read(handle1)
-
-      ncbi_id = record1['IdList'][-1]
-      print(ncbi_id)
-      handle_assembly = Entrez.esummary(db="assembly", id=ncbi_id)
-      assembly_record = Entrez.read(handle_assembly, validate=False)
-
-      # only consider annotated genbank => get corresponding refseq assembly
-      if 'genbank_has_annotation' in assembly_record['DocumentSummarySet']['DocumentSummary'][0]["PropertyList"]:
-          ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
-          print("ftp_path", ftp_path)
-          ftp=FTP('ftp.ncbi.nih.gov')
-          ftp.login("anonymous","trestan.pillonel@unil.ch")
-          ftp.cwd(ftp_path)
-          filelist=ftp.nlst()
-          filelist = [i for i in filelist if 'genomic.gbff.gz' in i]
-          print(filelist)
-          for file in filelist:
-            ftp.retrbinary("RETR "+file, open(file, "wb").write)
-      else:
-        print("no genbank annotation for ${accession}")
+	#!/usr/bin/env python
+	import annotations
+	annotations.download_assembly_refseq("$accession")
     """
   }
 
@@ -260,26 +201,10 @@ if(params.ncbi_sample_sheet == false) {
 
     script:
     """
-  #!/usr/bin/env python
-
-  import re
-  import time
-  from Bio import SeqIO
-  import gzip
-
-  o = open("refseq_corresp.tab", "w")
-
-  for accession in "${accession_list}".split(" "):
-      print(accession)
-      with gzip.open(accession, "rt") as handle:
-        records = SeqIO.parse(handle, "genbank")
-        for record in records:
-            for feature in record.features:
-                if 'protein_id' in feature.qualifiers and 'old_locus_tag' in feature.qualifiers:
-                    refseq_locus_tag = feature.qualifiers["locus_tag"][0]
-                    protein_id = feature.qualifiers["protein_id"][0]
-                    old_locus_tag = feature.qualifiers["old_locus_tag"][0]
-                    o.write(f"{old_locus_tag}\\t{refseq_locus_tag}\\t{protein_id}\\n")
+	#!/usr/bin/env python
+	import annotations
+	accessions_list = "$accession_list".split(' ')
+	annotations.refseq_locus_mapping(accessions_list)
     """
   }
 }
@@ -889,64 +814,9 @@ process get_uniparc_mapping {
   script:
   fasta_file = seq.name
   """
-#!/usr/bin/env python
-
-from Bio import SeqIO
-import sqlite3
-from Bio.SeqUtils import CheckSum
-
-conn = sqlite3.connect("${params.databases_dir}/uniprot/uniparc/uniparc.db")
-cursor = conn.cursor()
-
-fasta_file = "${fasta_file}"
-
-uniparc_map = open('uniparc_mapping.tab', 'w')
-uniprot_map = open('uniprot_mapping.tab', 'w')
-no_uniprot_mapping = open('no_uniprot_mapping.faa', 'w')
-no_uniparc_mapping = open('no_uniparc_mapping.faa', 'w')
-uniparc_mapping_faa = open('uniparc_mapping.faa', 'w')
-
-uniparc_map.write("locus_tag\\tuniparc_id\\tuniparc_accession\\tstatus\\n")
-uniprot_map.write("locus_tag\\tuniprot_accession\\ttaxon_id\\tdescription\\n")
-
-records = SeqIO.parse(fasta_file, "fasta")
-no_mapping_uniprot_records = []
-no_mapping_uniparc_records = []
-mapping_uniparc_records = []
-
-for record in records:
-    match = False
-    sql = 'select t1.uniparc_id,uniparc_accession,accession,taxon_id,description, db_name, status from uniparc_accession t1 inner join uniparc_cross_references t2 on t1.uniparc_id=t2.uniparc_id inner join crossref_databases t3 on t2.db_id=t3.db_id where sequence_hash=?'
-    cursor.execute(sql, (CheckSum.seguid(record.seq),))
-    hits = cursor.fetchall()
-    if len(hits) == 0:
-        no_mapping_uniparc_records.append(record)
-        no_mapping_uniprot_records.append(record)
-    else:
-        mapping_uniparc_records.append(record)
-        all_status = [i[6] for i in hits]
-        if 1 in all_status:
-            status = 'active'
-        else:
-            status = 'dead'
-        uniparc_map.write("%s\\t%s\\t%s\\t%s\\n" % (record.id,
-                                               hits[0][0],
-                                               hits[0][1],
-                                               status))
-        for uniprot_hit in hits:
-            if uniprot_hit[5] in ["UniProtKB/Swiss-Prot", "UniProtKB/TrEMBL"] and uniprot_hit[6] == 1:
-                match = True
-                uniprot_map.write("%s\\t%s\\t%s\\t%s\\t%s\\n" % (record.id,
-                                                                 uniprot_hit[2],
-                                                                 uniprot_hit[3],
-                                                                 uniprot_hit[4],
-                                                                 uniprot_hit[5]))
-        if not match:
-            no_mapping_uniprot_records.append(record)
-
-SeqIO.write(no_mapping_uniprot_records, no_uniprot_mapping, "fasta")
-SeqIO.write(no_mapping_uniparc_records, no_uniparc_mapping, "fasta")
-SeqIO.write(mapping_uniparc_records, uniparc_mapping_faa, "fasta")
+	#!/usr/bin/env python
+	import annotations
+	annotations.get_uniparc_mapping("$database_dir", "$fasta_file")
   """
 }
 
@@ -961,7 +831,7 @@ uniprot_mapping_tab.into{
 }
 
 uniprot_mapping_tab2.splitCsv(header: true, sep: '\t')
-.map{row -> "\"$row.uniprot_accession\"" }.collect().unique().set { uniprot_nr_accessions }
+.map{row -> "\"$row.uniprot_accession\"" }.unique().set { uniprot_nr_accessions }
 
 process get_uniprot_data {
 
@@ -980,119 +850,11 @@ process get_uniprot_data {
   file 'uniprot_data.tab' into uniprot_data
 
   script:
-
-  """
-#!/usr/bin/env python3.6
-
-from Bio import SeqIO
-import sqlite3
-from Bio.SeqUtils import CheckSum
-import datetime
-import logging
-
-logging.basicConfig(filename='uniprot_data.log',level=logging.DEBUG)
-
-def chunks(l, n):
-    for i in range(0, len(l), n):
-        yield l[i:i+n]
-
-def uniprot_accession2score(uniprot_accession_list):
-
-    import urllib.request
-    from urllib.error import URLError
-
-    # https://www.uniprot.org/uniprot/?query=id:V8TQN7+OR+id:V8TR74&format=xml
-    link = "http://www.uniprot.org/uniprot/?query=id:%s&columns=id,annotation%%20score&format=tab" % ("+OR+id:".join(uniprot_accession_list))
-
-    try:
-        page = urllib.request.urlopen(link)
-        data = page.read().decode('utf-8').split('\\n')
-        rows = [i.rstrip().split('\\t') for i in data]
-    except URLError:
-        success = False
-        while not success:
-            import time
-            logging.debug('connection problem, trying again...\\n')
-            logging.debug('%s\\n' % link)
-            time.sleep(10)
-            try:
-                page = urllib.request.urlopen(req)
-                data = page.read().decode('utf-8').split('\\n')
-                rows = [i.rstrip().split('\\t') for i in data]
-                success=True
-            except:
-                success = False
-    unirpot2score = {}
-    for row in rows:
-        if len(row) > 0:
-            if row[0] == 'Entry':
-                continue
-            elif len(row)<2:
-                continue
-            else:
-                unirpot2score[row[0]] = row[1]
-
-    return unirpot2score
-
-
-conn = sqlite3.connect("${params.databases_dir}/uniprot/idmapping/uniprot_sprot_trembl.db")
-cursor = conn.cursor()
-
-uniprot_table = open("${table}", 'r')
-uniprot_data = open('uniprot_data.tab', 'w')
-
-uniprot_data.write("uniprot_accession\\tuniprot_score\\tuniprot_status\\tproteome\\tcomment_function\\tec_number\\tcomment_subunit\\tgene\\trecommendedName_fullName\\tproteinExistence\\tdevelopmentalstage\\tcomment_similarity\\tcomment_catalyticactivity\\tcomment_pathway\\tkeywords\\n")
-
-uniprot_accession_list = [row.rstrip().split("\\t")[1].split(".")[0] for row in uniprot_table if row.rstrip().split("\\t")[1] != 'uniprot_accession']
-uniprot_accession_chunks = chunks(uniprot_accession_list, 300)
-
-sql_uniprot_annot = 'select * from uniprot_annotation where uniprot_accession in ("%s");'
-
-for n, one_chunk in enumerate(uniprot_accession_chunks):
-    logging.debug("chunk: %s -- %s\\n" % (n, datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
-    uniprot2score = uniprot_accession2score(one_chunk)
-    filter = '","'.join(one_chunk)
-    uniprot_annot_data = cursor.execute(sql_uniprot_annot % filter,).fetchall()
-
-    for m, uniprot_annotation in enumerate(uniprot_annot_data):
-        uniprot_accession = uniprot_annotation[0]
-        #print("chunk:", n, "entry", m , uniprot_accession)
-        try:
-            uniprot_score = uniprot2score[uniprot_accession]
-        # deal with eventual removed entries
-        except KeyError:
-            uniprot_score = 0
-        comment_function = uniprot_annotation[1]
-        ec_number = uniprot_annotation[2]
-        comment_similarity = uniprot_annotation[3]
-        comment_catalyticactivity = uniprot_annotation[4]
-        comment_pathway = uniprot_annotation[5]
-        keywords = uniprot_annotation[6]
-        comment_subunit = uniprot_annotation[7]
-        gene = uniprot_annotation[8]
-        recommendedName_fullName = uniprot_annotation[9]
-        proteinExistence = uniprot_annotation[10]
-        developmentalstage = uniprot_annotation[11]
-        proteome = uniprot_annotation[12]
-        reviewed = uniprot_annotation[14]
-
-        uniprot_data.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n" % ( uniprot_accession,
-                                                                                                             uniprot_score,
-                                                                                                             reviewed,
-                                                                                                             proteome,
-                                                                                                             comment_function,
-                                                                                                             ec_number,
-                                                                                                             comment_subunit,
-                                                                                                             gene,
-                                                                                                             recommendedName_fullName,
-                                                                                                             proteinExistence,
-                                                                                                             developmentalstage,
-                                                                                                             comment_similarity,
-                                                                                                             comment_catalyticactivity,
-                                                                                                             comment_pathway,
-                                                                                                             keywords)
-                                                                                                            )
-    """
+  	"""
+	#!/usr/bin/env python3.6
+	import annotations
+	annotations.get_uniprot_data("${params.databases_dir}", "${table}")
+	"""
 }
 
 
@@ -2035,7 +1797,7 @@ process get_uniprot_goa_mapping {
   params.uniprot_goa
 
   input:
-  val (uniprot_acc_list) from uniprot_nr_accessions
+  val (uniprot_acc_list) from uniprot_nr_accessions.collect()
 
   output:
   file 'goa_uniprot_exact_annotations.tab'
