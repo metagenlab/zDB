@@ -24,6 +24,68 @@ def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i+n]
 
+def get_idmapping_crossreferences(databases_dir, table):
+    conn = sqlite3.connect(databases_dir + "/uniprot/idmapping/idmapping.db")
+    cursor = conn.cursor()
+    o = open("idmapping_crossreferences.tab", "w")
+    sql = """SELECT uniprokb_accession, db_name, accession 
+        FROM uniparc2uniprotkb t1 INNER JOIN uniprotkb_cross_references t2 ON t1.uniprotkb_id=t2.uniprotkb_id 
+        INNER JOIN database t3 ON t2.db_id=t3.db_id 
+        WHERE uniparc_accession=?;"""
+
+    # TODO : heavy SQL request. Group it in a single
+    # query to speed up.
+    # uniparc_accession IN (...)
+    with open(table, 'r') as f:
+        f.readline()
+        for row in f:
+            data = row.rstrip().split("\t")
+            uniparc_accession = data[2]
+            checksum = data[0]
+            cursor.execute(sql, [uniparc_accession])
+            crossref_list = cursor.fetchall()
+            for crossref in crossref_list:
+                uniprot_accession = crossref[0]
+                db_name = crossref[1]
+                db_accession = crossref[2]
+                o.write("%s\\t%s\\t%s\\t%s\\n" % ( checksum,
+                                               uniprot_accession,
+                                               db_name,
+                                               db_accession))
+
+def get_uniparc_crossreferences(database_dir, table):
+    conn = sqlite3.connect("${params.databases_dir}/uniprot/uniparc/uniparc.db")
+    cursor = conn.cursor()
+    o = open("uniparc_crossreferences.tab", "w")
+
+    # TODO : where do those keyword come from? 
+    # would be good to have them in variable names
+    # or if they are static, actually precompute the entries to speed
+    # up the query and simplify the code
+    sql = """SELECT db_name, accession, status 
+        FROM uniparc_cross_references t1 INNER JOIN crossref_databases t2 ON t1.db_id=t2.db_id 
+        WHERE uniparc_id=? AND db_name NOT IN ("SEED", "PATRIC", "EPO", "JPO", "KIPO", "USPTO");"""
+
+    # TODO : speed up the database accesses
+    # by making a single big query
+    with open(table, 'r') as f:
+        # skip header
+        f.getline()
+        for row in f:
+            data = row.rstrip().split("\t")
+            uniparc_id = str(data[1])
+            checksum = data[0]
+            cursor.execute(sql, [uniparc_id])
+            crossref_list = cursor.fetchall()
+            for crossref in crossref_list:
+                db_name = crossref[0]
+                db_accession = crossref[1]
+                entry_status = crossref[2]
+                o.write("%s\\t%s\\t%s\\t%s\\n" % ( checksum,
+                                          db_name,
+                                          db_accession,
+                                          entry_status))
+
 
 def get_oma_mapping(databases_dir, fasta_file):
     conn = sqlite3.connect(databases_dir + "/oma/oma.db")

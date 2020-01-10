@@ -902,7 +902,6 @@ process get_string_mapping {
   """
 	#!/usr/bin/env python
 	import annotations
-
 	annotations.get_string_mapping("${fasta_file}", "${params.databases_dir}")
   """
 }
@@ -952,94 +951,10 @@ process get_PMID_data {
   script:
 
   """
-#!/usr/bin/env python
+	#!/usr/bin/env python
+	import annotations
+	annotations.get_PMID_data()
 
-from Bio import Entrez
-import sqlite3
-
-Entrez.email = "trestan.pillonel@chuv.ch"
-
-
-def chunks(l, n):
-    for i in range(0, len(l), n):
-        yield l[i:i+n]
-
-
-def pmid2abstract_info(pmid_list):
-    from Bio import Medline
-
-    # make sure that pmid are strings
-    pmid_list = [str(i) for i in pmid_list]
-
-    try:
-        handle = Entrez.efetch(db="pubmed", id=','.join(pmid_list), rettype="medline", retmode="text")
-        records = Medline.parse(handle)
-    except:
-        print("FAIL:", pmid)
-        return None
-
-    pmid2data = {}
-    for record in records:
-      try:
-          pmid = record["PMID"]
-      except:
-          print(record)
-          #{'id:': ['696885 Error occurred: PMID 28696885 is a duplicate of PMID 17633143']}
-          if 'duplicate' in record['id:']:
-              duplicate = record['id:'].split(' ')[0]
-              correct = record['id:'].split(' ')[-1]
-              print("removing duplicated PMID... %s --> %s" % (duplicate, correct))
-              # remove duplicate from list
-              pmid_list.remove(duplicate)
-              return pmid2abstract_info(pmid_list)
-
-      pmid2data[pmid] = {}
-      pmid2data[pmid]["title"] = record.get("TI", "?")
-      pmid2data[pmid]["authors"] = record.get("AU", "?")
-      pmid2data[pmid]["source"] = record.get("SO", "?")
-      pmid2data[pmid]["abstract"] = record.get("AB", "?")
-      pmid2data[pmid]["pmid"] = pmid
-
-    return pmid2data
-
-conn = sqlite3.connect("string_mapping_PMID.db")
-cursor = conn.cursor()
-
-sql = 'create table if not exists hash2pmid (hash binary, ' \
-      ' pmid INTEGER)'
-
-sql2 = 'create table if not exists pmid2data (pmid INTEGER, title TEXT, authors TEXT, source TEXT, abstract TEXT)'
-cursor.execute(sql,)
-cursor.execute(sql2,)
-
-# get PMID nr list and load PMID data into sqldb
-pmid_nr_list = []
-sql_template = 'insert into hash2pmid values (?, ?)'
-with open("string_mapping_PMID.tab", "r") as f:
-    n = 0
-    for row in f:
-        data = row.rstrip().split("\t")
-        if data[1] != 'None':
-            n+=1
-            cursor.execute(sql_template, data)
-            if data[1] not in pmid_nr_list:
-                pmid_nr_list.append(data[1])
-        if n % 1000 == 0:
-            print(n, 'hash2pmid ---- insert ----')
-            conn.commit()
-
-pmid_chunks = [i for i in chunks(pmid_nr_list, 50)]
-
-# get PMID data and load into sqldb
-sql_template = 'insert into pmid2data values (?, ?, ?, ?, ?)'
-for n, chunk in enumerate(pmid_chunks):
-    print("pmid2data -- chunk %s / %s" % (n, len(pmid_chunks)))
-    pmid2data = pmid2abstract_info(chunk)
-    for pmid in pmid2data:
-        cursor.execute(sql_template, (pmid, pmid2data[pmid]["title"], str(pmid2data[pmid]["authors"]), pmid2data[pmid]["source"], pmid2data[pmid]["abstract"]))
-    if n % 10 == 0:
-        conn.commit()
-conn.commit()
   """
 }
 
@@ -1150,39 +1065,9 @@ process get_oma_mapping {
   script:
   fasta_file = seq.name
   """
-#!/usr/bin/env python
-
-
-from Bio import SeqIO
-import sqlite3
-from Bio.SeqUtils import CheckSum
-
-conn = sqlite3.connect("${params.databases_dir}/oma/oma.db")
-cursor = conn.cursor()
-
-fasta_file = "${fasta_file}"
-
-oma_map = open('oma_mapping.tab', 'w')
-no_oma_mapping = open('no_oma_mapping.faa', 'w')
-
-oma_map.write("locus_tag\\toma_id\\n")
-
-records = SeqIO.parse(fasta_file, "fasta")
-no_oma_mapping_records = []
-for record in records:
-    sql = 'select accession from hash_table where sequence_hash=?'
-    cursor.execute(sql, (CheckSum.seguid(record.seq),))
-    hits = cursor.fetchall()
-    if len(hits) == 0:
-        no_oma_mapping_records.append(record)
-    else:
-        for hit in hits:
-          oma_map.write("%s\\t%s\\n" % (record.id,
-                                              hit[0]))
-
-
-SeqIO.write(no_oma_mapping_records, no_oma_mapping, "fasta")
-
+	#!/usr/bin/env python
+	import annotations
+	annotations.get_oma_mapping(databases_dir, fasta_file)
   """
 }
 
@@ -1697,40 +1582,10 @@ process get_uniparc_crossreferences {
   script:
 
   """
-#!/usr/bin/env python3.6
-import sqlite3
-import datetime
-import logging
-
-logging.basicConfig(filename='uniparc_crossrefs.log',level=logging.DEBUG)
-
-
-conn = sqlite3.connect("${params.databases_dir}/uniprot/uniparc/uniparc.db")
-cursor = conn.cursor()
-
-o = open("uniparc_crossreferences.tab", "w")
-
-sql = 'select db_name,accession, status from uniparc_cross_references t1 inner join crossref_databases t2 on t1.db_id=t2.db_id where uniparc_id=? and db_name not in ("SEED", "PATRIC", "EPO", "JPO", "KIPO", "USPTO");'
-
-with open("${table}", 'r') as f:
-    for n, row in enumerate(f):
-        if n == 0:
-            continue
-        data = row.rstrip().split("\t")
-        uniparc_id = str(data[1])
-        checksum = data[0]
-        cursor.execute(sql, [uniparc_id])
-        crossref_list = cursor.fetchall()
-        for crossref in crossref_list:
-            db_name = crossref[0]
-            db_accession = crossref[1]
-            entry_status = crossref[2]
-            o.write("%s\\t%s\\t%s\\t%s\\n" % ( checksum,
-                                          db_name,
-                                          db_accession,
-                                          entry_status))
-
-    """
+	#!/usr/bin/env python
+	import annotations
+	annotations.get_uniparc_crossreferences("${params.databases_dir}" , "${table}")
+  """
 }
 
 
@@ -1750,41 +1605,11 @@ process get_idmapping_crossreferences {
 
   script:
 
-  """
-#!/usr/bin/env python3.6
-import sqlite3
-import datetime
-import logging
-
-logging.basicConfig(filename='uniparc_crossrefs.log',level=logging.DEBUG)
-
-
-conn = sqlite3.connect("${params.databases_dir}/uniprot/idmapping/idmapping.db")
-cursor = conn.cursor()
-
-o = open("idmapping_crossreferences.tab", "w")
-
-sql = 'select uniprokb_accession, db_name,accession from uniparc2uniprotkb t1 inner join uniprotkb_cross_references t2 on t1.uniprotkb_id=t2.uniprotkb_id inner join database t3 on t2.db_id=t3.db_id where uniparc_accession=?;'
-
-with open("${table}", 'r') as f:
-    for n, row in enumerate(f):
-        if n == 0:
-            continue
-        data = row.rstrip().split("\t")
-        uniparc_accession = data[2]
-        checksum = data[0]
-        cursor.execute(sql, [uniparc_accession])
-        crossref_list = cursor.fetchall()
-        for crossref in crossref_list:
-            uniprot_accession = crossref[0]
-            db_name = crossref[1]
-            db_accession = crossref[2]
-            o.write("%s\\t%s\\t%s\\t%s\\n" % ( checksum,
-                                               uniprot_accession,
-                                               db_name,
-                                               db_accession))
-
-    """
+	"""
+	#!/usr/bin/env python
+	import annotations
+	annotations.get_idmapping_crossreferences("${databases_dir}", "${table}")
+	"""
 }
 
 
