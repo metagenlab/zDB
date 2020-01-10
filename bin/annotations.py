@@ -106,11 +106,8 @@ def get_oma_mapping(databases_dir, fasta_file):
             no_oma_mapping_records.append(record)
         else:
             for hit in hits:
-            oma_map.write("%s\\t%s\\n" % (record.id, hit[0]))
-
-
-SeqIO.write(no_oma_mapping_records, no_oma_mapping, "fasta")
-
+                oma_map.write("%s\\t%s\\n" % (record.id, hit[0]))
+    SeqIO.write(no_oma_mapping_records, no_oma_mapping, "fasta")
 
 def pmid2abstract_info(pmid_list):
     from Bio import Medline
@@ -433,8 +430,6 @@ def merge_gbk(gbk_records, filter_size=0, gi=False):
 
     return merged_rec
 
-
-
 def filter_plasmid(record_list):
     plasmid_record_list = []
     chromosome_record_list = []
@@ -452,7 +447,6 @@ def filter_plasmid(record_list):
             else:
                 chromosome_record_list.append(record)
     return (chromosome_record_list, plasmid_record_list)
-
 
 def count_missing_locus_tags(gbk_record):
     count_CDS = 0

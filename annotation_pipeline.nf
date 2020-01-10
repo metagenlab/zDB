@@ -816,7 +816,7 @@ process get_uniparc_mapping {
   """
 	#!/usr/bin/env python
 	import annotations
-	annotations.get_uniparc_mapping("$database_dir", "$fasta_file")
+	annotations.get_uniparc_mapping("${params.databases_dir}", "$fasta_file")
   """
 }
 
@@ -1067,7 +1067,7 @@ process get_oma_mapping {
   """
 	#!/usr/bin/env python
 	import annotations
-	annotations.get_oma_mapping(databases_dir, fasta_file)
+	annotations.get_oma_mapping("${params.databases_dir}", "$fasta_file")
   """
 }
 
@@ -1608,7 +1608,7 @@ process get_idmapping_crossreferences {
 	"""
 	#!/usr/bin/env python
 	import annotations
-	annotations.get_idmapping_crossreferences("${databases_dir}", "${table}")
+	annotations.get_idmapping_crossreferences("${params.databases_dir}", "${table}")
 	"""
 }
 
