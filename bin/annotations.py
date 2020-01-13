@@ -54,7 +54,7 @@ def get_idmapping_crossreferences(databases_dir, table):
                                                db_accession))
 
 def get_uniparc_crossreferences(databases_dir, table):
-    conn = sqlite3.connect(databases_dir, "/uniprot/uniparc/uniparc.db")
+    conn = sqlite3.connect(databases_dir + "/uniprot/uniparc/uniparc.db")
     cursor = conn.cursor()
     o = open("uniparc_crossreferences.tab", "w")
 
