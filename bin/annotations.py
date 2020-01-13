@@ -70,7 +70,7 @@ def get_uniparc_crossreferences(databases_dir, table):
     # by making a single big query
     with open(table, 'r') as f:
         # skip header
-        f.getline()
+        f.readline()
         for row in f:
             data = row.rstrip().split("\t")
             uniparc_id = str(data[1])
