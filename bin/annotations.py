@@ -458,6 +458,7 @@ def count_missing_locus_tags(gbk_record):
                 count_no_locus += 1
     return count_no_locus, count_CDS
 
+# See documentation of GenBank record format for more informations
 def is_annotated(gbk_record):
     return not (len(gbk_record.features) == 1
             and gbk_record.features[0].type == 'source')
@@ -650,12 +651,9 @@ def check_gbk(gbff_files, minimal_contig_length=1000):
 
 def filter_out_unannotated(gbk_file):
     # assumes ".gbk" file ending
-    result_file = gbk_file[:-len(".gbk")] + "_filtered.gbk"
-    to_keep = []
-    for record in SeqIO.parse(gbk_file, "genbank"):
-        if is_annotated(record):
-            to_keep.append(record)
 
+    result_file = gbk_file[:-len(".gbk")] + "_filtered.gbk"
+    to_keep = [rec for rec in SeqIO.parse(gbk_file, "genbank") if is_annotated(rec)]
     SeqIO.write(to_keep, result_file, "genbank")
 
 def string_id2pubmed_id_list(accession):
@@ -667,12 +665,15 @@ def string_id2pubmed_id_list(accession):
     pid_list = [row.split(':')[1] for row in data]
     return pid_list
 
+
+# TODO may be interesting to parellize the queries if performance were
+# to become an issue
 def get_string_PMID_mapping(string_map):
     o = open("string_mapping_PMID.tab", "w")
     with open(string_map, 'r') as f:
-        for n, row in enumerate(f):
-            if n == 0:
-                continue
+        # skip header
+        f.readline()
+        for row in f:
             data = row.rstrip().split("\t")
             pmid_list = string_id2pubmed_id_list(data[1])
             if pmid_list:
@@ -698,10 +699,8 @@ def get_pdb_mapping(fasta_file, database_dir):
         hits = cursor.fetchall()
         if len(hits) == 0:
             no_pdb_mapping_records.append(record)
-        else:
-            for hit in hits:
-              pdb_map.write("%s\t%s\n" % (record.id,
-                                              hit[0]))
+        for hit in hits:
+            pdb_map.write("%s\t%s\n" % (record.id, hit[0]))
     SeqIO.write(no_pdb_mapping_records, no_pdb_mapping, "fasta")
 
 
@@ -720,10 +719,8 @@ def get_tcdb_mapping(fasta_file, database_dir):
         hits = cursor.fetchall()
         if len(hits) == 0:
             no_tcdb_mapping_records.append(record)
-        else:
-            for hit in hits:
-              tcdb_map.write("%s\t%s\n" % (record.id,
-                                              hit[0]))
+        for hit in hits:
+            tcdb_map.write("%s\t%s\n" % (record.id, hit[0]))
 
     SeqIO.write(no_tcdb_mapping_records, no_tcdb_mapping, "fasta")
 
