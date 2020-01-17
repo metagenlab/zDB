@@ -1256,10 +1256,8 @@ process setup_diamond_refseq_db {
 
 process get_refseq_hits_taxonomy {
 
-  // conda 'biopython=1.73=py36h7b6447c_0'
-
   publishDir 'annotation/diamond_refseq/', mode: 'copy', overwrite: true
-  container 'metagenlab/annotation_pipeline:1.1'
+  container 'metagenlab/annotation-pipeline:1.1'
 
   echo true
 
@@ -1288,7 +1286,7 @@ process get_diamond_refseq_top_hits {
   - [ ] load blast results into sqlite db
   */
 
-  container 'metagenlab/annotation_pipeline:1.1'
+  container 'metagenlab/annotation-pipeline:1.1'
   publishDir 'annotation/diamond_refseq_BBH_phylogenies', mode: 'copy', overwrite: true
   echo false
   cpus 4
