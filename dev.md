@@ -189,6 +189,8 @@
 
 ### ideas
 
+- [ ] kegg pathway => link show on circos
+- [ ] kegg module => link show on circos
 - [ ] integrate genome properties: table with property2steps avec IPP accession
 - [ ] eficaz
 - [ ] enzyme hierarchy

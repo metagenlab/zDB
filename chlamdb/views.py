@@ -2113,6 +2113,7 @@ def locusx(request, locus=None, menu=True):
     
     biodb = settings.BIODB
     print ('-- locus or search term: %s -- biodb %s' % (locus, biodb))
+    print(request.method)
     if request.method == 'GET': 
 
         server, db = manipulate_biosqldb.load_db(biodb)
@@ -2150,15 +2151,16 @@ def locusx(request, locus=None, menu=True):
             if (len(locus.split(" ")) > 1):
                 return search(request)
 
-            # try searchin synonymous table
+            # try searching synonymous table
             try:
-                sql = f'select t1.db_name,t1.accession,t2.orthogroup,t2.locus_tag,t2.start,t2.stop,t2.strand,t2.gene, t2.orthogroup_size,t2.n_genomes,t2.TM,t2.SP,t2.product,t2.organism ' \
+                # 
+                sql_sy = f'select t1.db_name,t1.accession,t2.orthogroup,t2.locus_tag,t2.start,t2.stop,t2.strand,t2.gene, t2.orthogroup_size,t2.n_genomes,t2.TM,t2.SP,t2.product,t2.organism ' \
                       f' from biosqldb.cross_references_{biodb} t1 ' \
                       f' inner join orthology_detail_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-                      f' where match(t1.accession) AGAINST ("%s" IN BOOLEAN MODE) ' \
+                      f' where t1.accession="{locus}" ' \
                       f' and db_name not in ("STRING", "KEGG", "KO", "eggNOG") group by t1.seqfeature_id limit 200;'
-                print(sql)
-                raw_search = server.adaptor.execute_and_fetchall(sql, locus)
+
+                raw_search = server.adaptor.execute_and_fetchall(sql_sy)
                 if len(raw_search) == 0:
                     print("nomatch synonymous!")
                     raise("nomatch")
@@ -2178,6 +2180,7 @@ def locusx(request, locus=None, menu=True):
             except:
                 # no synonymous table, use old method
                 print("echec synonymous table")
+                print(sql_sy)
                 sql0 = 'select locus_tag from custom_tables.seqfeature_id2old_locus_tag_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where old_locus_tag="%s" ' % (biodb, biodb, locus)
 
                 try:
@@ -10578,7 +10581,11 @@ def search(request):
                       
                 raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
 
-                sql = 'select * from ko_annotation_v1 where definition REGEXP "%s"' % (search_term)
+                
+
+                #sql = 'select * from ko_annotation_v1 where definition REGEXP "%s"' % (search_term)
+                sql = 'SELECT * FROM ko_annotation_v1 WHERE MATCH(ko_id,name,definition,EC) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (search_term)
+                print(sql)
                 try:
                     raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
                 except:
@@ -10718,8 +10725,9 @@ def search(request):
 
                     # CREATE FULLTEXT INDEX koaf ON enzyme.ko_annotation_v1(definition);
                     # filter KO absent from DB
+                    # CREATE FULLTEXT INDEX ko_full ON ko_annotation_v1(ko_id,name,definition,EC);
                     sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme.ko_annotation_v1 ' \
-                          'WHERE MATCH(definition) AGAINST("%s" IN NATURAL LANGUAGE MODE)) A inner join comparative_tables.ko_%s as B on A.ko_id=B.id' % (search_term, biodb)
+                          'WHERE MATCH(ko_id,name,definition,EC) AGAINST("%s" IN NATURAL LANGUAGE MODE)) A inner join comparative_tables.ko_%s as B on A.ko_id=B.id' % (search_term, biodb)
                     try:
                         raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
                     except:
