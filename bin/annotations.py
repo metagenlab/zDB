@@ -104,9 +104,8 @@ def get_oma_mapping(databases_dir, fasta_file):
         hits = cursor.fetchall()
         if len(hits) == 0:
             no_oma_mapping_records.append(record)
-        else:
-            for hit in hits:
-                oma_map.write("%s\\t%s\\n" % (record.id, hit[0]))
+        for hit in hits:
+            oma_map.write("%s\\t%s\\n" % (record.id, hit[0]))
     SeqIO.write(no_oma_mapping_records, no_oma_mapping, "fasta")
 
 def pmid2abstract_info(pmid_list):
@@ -651,7 +650,6 @@ def check_gbk(gbff_files, minimal_contig_length=1000):
 
 def filter_out_unannotated(gbk_file):
     # assumes ".gbk" file ending
-
     result_file = gbk_file[:-len(".gbk")] + "_filtered.gbk"
     to_keep = [rec for rec in SeqIO.parse(gbk_file, "genbank") if is_annotated(rec)]
     SeqIO.write(to_keep, result_file, "genbank")
