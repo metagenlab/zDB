@@ -1259,7 +1259,7 @@ process get_refseq_hits_taxonomy {
   // conda 'biopython=1.73=py36h7b6447c_0'
 
   publishDir 'annotation/diamond_refseq/', mode: 'copy', overwrite: true
-  container 'annotation.sif'
+  container 'metagenlab/annotation_pipeline:1.1'
 
   echo true
 
@@ -1288,8 +1288,7 @@ process get_diamond_refseq_top_hits {
   - [ ] load blast results into sqlite db
   */
 
-  // conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
-  container 'annotation.sif'
+  container 'metagenlab/annotation_pipeline:1.1'
   publishDir 'annotation/diamond_refseq_BBH_phylogenies', mode: 'copy', overwrite: true
   echo false
   cpus 4
@@ -1367,7 +1366,7 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 // Filter out small sequences and ambiguous AA
 process filter_sequences {
 
-  container 'annotation.sif'
+  container 'metagenlab/annotation-pipeline:1.1'
   publishDir 'data/', mode: 'copy', overwrite: true
 
   when:
