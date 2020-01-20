@@ -218,10 +218,7 @@ all_raw_gbff = raw_ncbi_gbffs.mix(raw_local_gbffs)
 process gbk_check {
   publishDir 'data/gbk_edited', mode: 'copy', overwrite: true
 
-  // conda 'bioconda::biopython=1.68'
   container "metagenlab/annotation-pipeline:1.1"
-
-  cpus 2
 
   input:
   file all_gbff from all_raw_gbff.collect()
@@ -242,7 +239,6 @@ process convert_gbk_to_faa {
 
   publishDir 'data/faa_locus', mode: 'copy', overwrite: true
 
-  // conda 'bioconda::biopython=1.68'
   container "metagenlab/annotation-pipeline:1.1"
 
   echo false
@@ -280,7 +276,6 @@ faa_locus2.collectFile(name: 'merged.faa', newLine: true)
 
 process get_nr_sequences {
 
-  // conda 'bioconda::biopython=1.68'
   container "metagenlab/annotation-pipeline:1.1"
 
   publishDir 'data/', mode: 'copy', overwrite: true
@@ -327,7 +322,6 @@ merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
 
 process prepare_orthofinder {
 
-  // conda 'bioconda::orthofinder=2.2.7'
   container "metagenlab/annotation-pipeline:1.1"
 
   when:
@@ -349,7 +343,6 @@ process prepare_orthofinder {
 
 process blast_orthofinder {
 
-  // conda 'bioconda::blast=2.7.1'
   container "metagenlab/annotation-pipeline:1.1"
 
   cpus 2
@@ -381,7 +374,6 @@ process blast_orthofinder {
 
 process orthofinder_main {
 
-  // conda 'bioconda::orthofinder=2.2.7'
   container "metagenlab/annotation-pipeline:1.1"
 
   publishDir 'orthology', mode: 'copy', overwrite: true
@@ -414,7 +406,6 @@ orthogroups
         orthogroups_2}
 
 process orthogroups2fasta {
-  // conda 'bioconda::biopython=1.70'
   container "metagenlab/annotation-pipeline:1.1"
 
   publishDir 'orthology/orthogroups_fasta', mode: 'copy', overwrite: true
@@ -468,7 +459,6 @@ all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.s
 process orthogroups_phylogeny_with_raxml {
 
   echo false
-  // conda 'bioconda::raxml=8.2.9'
   container "metagenlab/annotation-pipeline:1.1"
   cpus 4
   publishDir 'orthology/orthogroups_phylogenies', mode: 'copy', overwrite: false
@@ -489,7 +479,6 @@ process orthogroups_phylogeny_with_raxml {
 
 process orthogroups_phylogeny_with_fasttree3 {
 
-  // conda 'bioconda::fasttree=2.1.10'
   container "metagenlab/annotation-pipeline:1.1"
   cpus 4
   publishDir 'orthology/orthogroups_phylogenies_fasttree', mode: 'copy', overwrite: true
@@ -512,13 +501,12 @@ process orthogroups_phylogeny_with_fasttree3 {
 
 process orthogroups_phylogeny_with_iqtree {
 
-  conda 'bioconda::iqtree=1.6.8'
   container "metagenlab/annotation-pipeline:1.1"
   cpus 2
   publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: true
 
   when:
-  params.orthogroups_phylogeny_with_iqtree == true
+  params.orthogroups_phylogeny_with_iqtree
 
   input:
   each file(og) from alignments_larget_tah_3_seqs
@@ -541,7 +529,6 @@ process orthogroups_phylogeny_with_iqtree {
 
 process orthogroups_phylogeny_with_iqtree_no_boostrap {
 
-  conda 'bioconda::iqtree=1.6.8'
   container "metagenlab/annotation-pipeline:1.1"
   cpus 2
   publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: true
@@ -569,7 +556,6 @@ process orthogroups_phylogeny_with_iqtree_no_boostrap {
 
 process get_core_orthogroups {
 
-  // conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
   container "metagenlab/annotation-pipeline:1.1"
   cpus 1
   memory '16 GB'
@@ -596,7 +582,6 @@ process get_core_orthogroups {
 
 process concatenate_core_orthogroups {
 
-  // conda 'bioconda::biopython=1.68 anaconda::pandas=0.23.4'
   container "metagenlab/annotation-pipeline:1.1"
 
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
@@ -620,7 +605,6 @@ process concatenate_core_orthogroups {
 
 process build_core_phylogeny_with_fasttree {
 
-  // conda 'bioconda::fasttree=2.1.10'
   container "metagenlab/annotation-pipeline:1.1"
 
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
@@ -689,7 +673,6 @@ blast_result.collectFile(name: 'annotation/COG/blast_COG.tab')
 
 process blast_swissprot {
 
-  // conda 'bioconda::blast=2.7.1'
   container "metagenlab/annotation-pipeline:1.1"
 
   publishDir 'annotation/blast_swissprot', mode: 'copy', overwrite: true
@@ -749,7 +732,6 @@ process diamond_refseq {
   publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
 
   cpus 4
-  // conda 'bioconda::diamond=0.9.24'
   container "metagenlab/annotation-pipeline:1.1"
 
   when:
@@ -789,7 +771,6 @@ refseq_diamond.collectFile().set { refseq_diamond_results_sqlitedb }
 
 process get_uniparc_mapping {
 
-  // conda 'bioconda::biopython=1.68'
   container "metagenlab/annotation-pipeline:1.1"
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
@@ -879,7 +860,6 @@ process get_uniprot_proteome_data {
 
 process get_string_mapping {
 
-  // conda 'bioconda::biopython=1.68'
   container "metagenlab/annotation-pipeline:1.1"
 
   publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
@@ -905,7 +885,6 @@ process get_string_mapping {
 
 process get_string_PMID_mapping {
 
-  // conda 'bioconda::biopython=1.68'
   container "metagenlab/annotation-pipeline:1.1"
 
   publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
@@ -932,7 +911,6 @@ process get_string_PMID_mapping {
 
 process get_PMID_data {
 
-  // conda 'bioconda::biopython=1.68'
   container "metagenlab/annotation-pipeline:1.1"
 
   publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
@@ -960,7 +938,6 @@ process get_PMID_data {
 
 process get_tcdb_mapping {
 
-  // conda 'bioconda::biopython=1.68'
   container "metagenlab/annotation-pipeline:1.1"
 
   publishDir 'annotation/tcdb_mapping/', mode: 'copy', overwrite: true
@@ -1013,8 +990,6 @@ process tcdb_gblast3 {
 
   n = seq.name
   """
-  # activate conda env
-  source activate gblast3
   /usr/local/bin/BioVx/scripts/gblast3.py -i ${seq} -o TCDB_RESULTS_${seq} --db_path /usr/local/bin/tcdb_db/
   """
 }
