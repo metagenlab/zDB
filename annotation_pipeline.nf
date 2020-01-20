@@ -1023,7 +1023,6 @@ process get_pdb_mapping {
 
 process get_oma_mapping {
 
-  // conda 'bioconda::biopython=1.68'
   container "metagenlab/annotation-pipeline:1.1"
 
   publishDir 'annotation/oma_mapping/', mode: 'copy', overwrite: true
@@ -1051,16 +1050,16 @@ process get_oma_mapping {
 process execute_interproscan_no_uniparc_matches {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
+  // container 'metagenlab/annotation-pipeline:1.1'
 
   cpus 20
   memory '16 GB'
-  // conda 'anaconda::openjdk=8.0.152'
 
   when:
   params.interproscan
 
   input:
-  file(seq) from no_uniparc_mapping_faa.splitFasta( by: 300, file: "no_uniparc_match_chunk_" )
+  file(seq) from no_uniparc_mapping_faa.splitFasta( by: 2000, file: "no_uniparc_match_chunk_" )
 
   output:
   file '*gff3' into interpro_gff3_no_uniparc
@@ -1159,8 +1158,7 @@ process execute_PRIAM {
   script:
   n = seq.name
   """
-  conda activate /opt/conda/envs/priam
-  java -jar  /usr/local/bin/PRIAM/PRIAM_search.jar -i ${n} -o results -p $params.databases_dir/PRIAM/PRIAM_JAN18 --num_proc ${task.cpus}
+  java -jar  /usr/local/bin/PRIAM_search.jar -i ${n} -o results -p $params.databases_dir/PRIAM/PRIAM_JAN18 --num_proc ${task.cpus}
   """
 }
 
@@ -1169,12 +1167,6 @@ PRIAM_results.collectFile(name: 'annotation/PRIAM/sequenceECs.txt')
 
 
 process setup_orthology_db {
-  /*
-  - [ ] load locus_tag2hash table
-  - [ ] load locus2orthogroup data into sqlite db (locus2orthogroup)
-  */
-
-  // conda 'biopython=1.73=py36h7b6447c_0'
   publishDir 'orthology/', mode: 'link', overwrite: true
   container 'metagenlab/annotation-pipeline:1.1'
 
@@ -1257,9 +1249,6 @@ process get_refseq_hits_taxonomy {
 
 
 process get_diamond_refseq_top_hits {
-  /*
-  - [ ] load blast results into sqlite db
-  */
 
   container 'metagenlab/annotation-pipeline:1.1'
   publishDir 'annotation/diamond_refseq_BBH_phylogenies', mode: 'copy', overwrite: true
