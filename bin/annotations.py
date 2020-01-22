@@ -561,7 +561,7 @@ def check_gbk(gbff_files, minimal_contig_length=1000):
         plasmid_reannot = False
         chromosome_reannot = False
 
-        for n_plasmid, plasmid in plasmids:
+        for n_plasmid, plasmid in enumerate(plasmids):
             annot_check = is_annotated(plasmid)
             if annot_check:
 
