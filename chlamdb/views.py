@@ -3232,11 +3232,13 @@ def fam_interpro(request, fam, type):
                  f' inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id ' \
                  f' where analysis_name="{type}" and signature_accession="{fam}" limit 1'
 
-        #try:
-        info = server.adaptor.execute_and_fetchall(sql2, )[0]
-        #except IndexError:
-        #    valid_id = False
-        #    return render(request, 'chlamdb/fam.html', locals())
+        try:
+            info = server.adaptor.execute_and_fetchall(sql2, )[0]
+        except IndexError:
+            #    valid_id = False
+            no_match = True
+            menu = True
+            return render(request, 'chlamdb/fam.html', locals())
 
         try:
             seqfeature_id_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql1, )]
