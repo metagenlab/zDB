@@ -53,8 +53,6 @@
                                   {% elif type == 'Pfam' %}
                                       <li><a href="{% url 'pfam_profile' fam 'phylum' %}">Taxonomic profile (phylum)</a></li>
                                       <li><a href="{% url 'pfam_profile' fam 'order' %}">Taxonomic profile (order)</a></li>
-                                  {% elif type == 'interpro' %}
-                                      <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.ebi.ac.uk/interpro/entry/{{ fam }}', 'orthoIDframe2'); return false"> <i class="fa fa-external-link"></i> Informations </a>  </li>
                                   {% endif %}
                               </ul>
 

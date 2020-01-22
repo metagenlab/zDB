@@ -62,7 +62,7 @@ def get_interpro2taxon_id2count(biodb,
             interpro2taxon_id2count[signature_accession] = {}
         
         interpro2taxon_id2count[signature_accession][taxon_id] = n
-    print("interpro2taxon_id2count",interpro2taxon_id2count)
+    #print("interpro2taxon_id2count",interpro2taxon_id2count)
     return interpro2taxon_id2count
 
 
@@ -980,12 +980,8 @@ def multiple_profiles_heatmap(biodb,
             if first_column and not reference_column and highlight_first_column:
                 
                 # highlight of the first column only (red)
-                if value in group2taxon2count:
-                    #pass
-                    print("ok", group2taxon2count[value])
-                    print("lf.name", lf.name, type(lf.name))
                 try:
-                    print(value, group2taxon2count[value][lf.name])
+                    #print(value, group2taxon2count[value][lf.name])
                     n = TextFace(' %s ' % str(group2taxon2count[value][lf.name]))
 
                 except:
@@ -1281,7 +1277,6 @@ def multiple_profiles_heatmap_nobiodb(column_labels,
     leaf_list = [i for i in t1.iter_leaves()]
     n_leaves = len(leaf_list)
 
-    print("gg")
 
 
     for lf_count, lf in enumerate(t1.iter_leaves()):

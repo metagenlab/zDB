@@ -3168,7 +3168,6 @@ def fam(request, fam, type):
         if len(taxon2orthogroup2ec) == 0:
             no_match = True
         else:
-            print(taxon2orthogroup2ec)
             taxon2orthogroup2count = ete_motifs.get_taxon2orthogroup2count(biodb, group_count)
             merged_dico = taxon2orthogroup2count
             for i in taxon2orthogroup2count_reference:
@@ -3249,7 +3248,7 @@ def fam_interpro(request, fam, type):
             valid_id = False
             return render(request, 'chlamdb/fam.html', locals())
         else:
-            print(seqfeature_id_list)
+
             # retrieve locus list and their annotations
             columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                       'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
