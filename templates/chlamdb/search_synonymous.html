@@ -148,3 +148,166 @@ table td.wrapcol {
 </style>
 
 </html>
+
+
+
+
+
+
+
+
+
+<div class="panel panel-warning" style="width:80% ; top: 200px; margin: 10px 10px 10px 10px">
+    <div class="panel-heading" style="width:100%">
+        <h3 class="panel-title">No match!</h3>
+    </div>
+    <p style="margin: 0px 0px 0px 10px">
+    <h3>The following protein accessions are recognised:</h3>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Example</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Genbank locus tag</td> 
+                <td><a href="{% url 'locusx' %}?accession=wcw_1594">wcw_1594</a></td> 
+            </tr>
+            <tr>
+                <td>Genbank protein accession</td> 
+                <td><a href="{% url 'locusx' %}?accession=ADI38940.1">ADI38940.1</a></td> 
+            </tr>                                       
+            <tr>
+                <td>RefSeq locus tag</td> 
+                <td><a href="{% url 'locusx' %}?accession=WCW_RS07680">WCW_RS07680</a></td> 
+            </tr> 
+            <tr>
+                <td>RefSeq protein accession</td> 
+                <td><a href="{% url 'locusx' %}?accession=WP_013182646.1">WP_013182646.1</a></td> 
+            </tr>  
+            <tr>
+                <td>UniParc accession</td> 
+                <td><a href="{% url 'locusx' %}?accession=UPI0001D5C1DD">UPI0001D5C1DD</a></td> 
+            </tr>  
+            <tr>
+                <td>UniProtKB-Accession</td> 
+                <td><a href="{% url 'locusx' %}?accession=D6YS95">D6YS95</a></td> 
+            </tr> 
+            <tr>
+                <td>UniProtKB-ID</td> 
+                <td><a href="{% url 'locusx' %}?accession=D6YS95_WADCW">D6YS95_WADCW</a></td> 
+            </tr> 
+        </tbody>
+    </table>
+    <br>
+    <h3>Accessions from KEGG, COG, Pfam and InterPro can also be searched:</h3>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Accession type</th>
+                <th>Example</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>KEGG ortholog</td> 
+                <td><a href="{% url 'locusx' %}?accession=K00844">K00844</a></td> 
+                <td>hexokinase [EC:2.7.1.1]</td>
+            </tr>
+            <tr>
+                <td>COG</td> 
+                <td><a href="{% url 'locusx' %}?accession=COG0333">COG0333</a></td> 
+                <td>Ribosomal protein L32</td>
+            </tr>                                       
+            <tr>
+                <td>PFAM</td> 
+                <td><a href="{% url 'locusx' %}?accession=PF06723">PF06723</a></td> 
+                <td>MreB/Mbl protein</td>
+            </tr> 
+            <tr>
+                <td>InterPro</td> 
+                <td><a href="{% url 'locusx' %}?accession=IPR004753">IPR004753</a></td> 
+                <td>Cell shape determining protein MreB</td>
+            </tr>  
+            <tr>
+                <td>KEGG modules</td> 
+                <td><a href="{% url 'locusx' %}?accession=M00023">M00023</a></td> 
+                <td>Amino acid metabolism </td>
+            </tr>  
+            <tr>
+                <td>Kegg pathways</td> 
+                <td><a href="{% url 'locusx' %}?accession=map00400">map00400</a></td> 
+                <td>Phenylalanine, tyrosine and tryptophan biosynthesis </td>
+            </tr> 
+        </tbody>
+    </table>
+
+    <h3>It's also possible to seach for a gene or product name</h3>
+    <ul>
+        <li><a href="{% url 'locusx' %}?accession=mreb">mreb</a></li>
+        <li><a href="{% url 'locusx' %}?accession=mreb+Waddlia">mreb Waddlia</a></li>
+        <li><a href="{% url 'locusx' %}?accession=secretion+system">secretion system</a></li>
+    </ul>
+    <h3>It's also possible to browse genomes tables from links listed in the <a href="{% url 'home' %}#genomes">home page</a> table (column: Browse online) </h3> 
+    
+    <h3>A <a href="{% url 'blast' %}">BLAST</a> interface is also available for homology search</h3> 
+
+</div> <!-- warning panel -->
+
+
+
+
+<table class="table table-striped" id="search_table1" name="search">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Acc. type</th>
+            <th>Accession</th>
+            <th>Orthogroup</th>
+            <th>Locus</th>
+            <th>Start</th>
+            <th>Stop</th>
+            <th>S.</th>
+            <th>Gene</th>
+            <th>nH</th>
+            <th>nG</th>
+            <th>TM</th>
+            <th>SP</th>
+            <th>Product</th>
+            <th>Organism</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% load staticfiles %}
+        {% for values in locus_list %}
+        <tr>
+            <td>{{values.0}}</td>
+            <td>{{values.1}}</td>
+            <td>{{values.2}}</td>
+            <td><a href="{% url 'locusx' values.3 True%}"  target="_top">{{values.3}}</a></td>
+            <td><a href="{% url 'locusx' values.4 True%}"  target="_top">{{values.4}}</a></td>
+            <td>{{values.5}}</td>
+            <td>{{values.6}}</td>
+            <td>{{values.7}}</td>
+            <td>{{values.8}}</td>
+            <td>{{values.9}}</td>
+            <td>{{values.10}}</td>
+            <td>{{values.11}}</td>
+            <td>{{values.12}}</td>
+            <td>{{values.13}}</td>
+            <td>{{values.14}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+
+
+
+
