@@ -1147,7 +1147,7 @@ process execute_PRIAM {
   memory '4 GB'
 
   when:
-  params.PRIAM == true
+  params.PRIAM
 
   input:
   file(seq) from faa_chunks8

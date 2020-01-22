@@ -657,8 +657,8 @@ def filter_out_unannotated(gbk_file):
 def string_id2pubmed_id_list(accession):
     link = 'http://string-db.org/api/tsv/abstractsList?identifiers=%s' % accession
     try:
-        data = urllib2.urlopen(link).read().rstrip().decode('utf-8').split('\\n')[1:]
-    except urllib2.URLError:
+        data = urllib.request.urlopen(link).read().rstrip().decode('utf-8').split('\\n')[1:]
+    except urllib.URLError:
         return False
     pid_list = [row.split(':')[1] for row in data]
     return pid_list
