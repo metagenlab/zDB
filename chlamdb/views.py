@@ -2117,94 +2117,57 @@ def locusx(request, locus=None, menu=True):
     if request.method == 'GET': 
 
         server, db = manipulate_biosqldb.load_db(biodb)
-        
+
         if locus == None:
             menu = True
             locus = request.GET.get('accession').strip()
 
-            if locus[-1] == '+':
-                locus = re.sub("\+","",locus)
-            elif "%" in locus:
-                locus = re.sub("%", " ", locus)
-            
-            # check if Chlamydia trachomatis locus
-            m = re.match("CT([0-9]+)", locus)
-            if m:
-                locus = "CT_%s" % (m.group(1))
-                print("updated_search", locus)
-            
-            # check if exact match to seqfeature_id
-            try:
-                locus = int(locus)
-                sql = 'select locus_tag from custom_tables.locus2seqfeature_id_%s where seqfeature_id=%s' % (biodb,
-                                                                                                             locus)
-                locus = server.adaptor.execute_and_fetchall(sql,)[0][0]
-            except:
-                pass
+        if locus[-1] == '+':
+            locus = re.sub("\+","",locus)
+        elif "%" in locus:
+            locus = re.sub("%", " ", locus)
         
-        # check if orthogroup
-        m = re.match("group_([0-9]+)", locus)
+        # check if Chlamydia trachomatis locus
+        m = re.match("CT([0-9]+)", locus)
         if m:
-             input_type = 'orthogroup'
-        else:
-            # check if single or multiple search terms
-            if (len(locus.split(" ")) > 1):
-                return search(request)
+            locus = "CT_%s" % (m.group(1))
+            print("updated_search", locus)
+        
+        try:
+            locus = int(locus)
+            sql = 'select locus_tag from custom_tables.locus2seqfeature_id_%s where seqfeature_id=%s' % (biodb,
+                                                                                                            locus)
+            locus = server.adaptor.execute_and_fetchall(sql,)[0][0]
+        except:
+            pass
+        
+        sql0 = 'select locus_tag from custom_tables.seqfeature_id2old_locus_tag_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where old_locus_tag="%s" ' % (biodb, biodb, locus)
 
-            # try searching synonymous table
+        try:
+            data = server.adaptor.execute_and_fetchall(sql0, )[0][0]
+            old_locus_tag = locus
+            locus = data
+            input_type = 'locus_tag'
+        except IndexError:
+            sql0 = 'select locus_tag from orthology_detail_%s where (locus_tag="%s" or protein_id="%s")' % (biodb,
+                                                                                                            locus,
+                                                                                                            locus)
+        try:
+            locus = server.adaptor.execute_and_fetchall(sql0, )[0][0]
+            input_type = 'locus_tag'
+        except IndexError:
+
+            sql1 = 'select orthogroup from orthology_detail_%s where orthogroup="%s"' % (biodb, locus)
             try:
-                # 
-                sql_sy = f'select t1.db_name,t1.accession,t2.orthogroup,t2.locus_tag,t2.start,t2.stop,t2.strand,t2.gene, t2.orthogroup_size,t2.n_genomes,t2.TM,t2.SP,t2.product,t2.organism ' \
-                      f' from biosqldb.cross_references_{biodb} t1 ' \
-                      f' inner join orthology_detail_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-                      f' where t1.accession="{locus}" ' \
-                      f' and db_name not in ("STRING", "KEGG", "KO", "eggNOG") group by t1.seqfeature_id limit 200;'
-
-                raw_search = server.adaptor.execute_and_fetchall(sql_sy)
-                if len(raw_search) == 0:
-                    print("nomatch synonymous!")
-                    raise("nomatch")
-                elif len(raw_search) == 1:
-                    print("single match!")
-                    input_type = 'locus_tag'
-                    locus = raw_search[0][3]
-                    orthogroup = raw_search[0][2]
-                else:
-                    print("return all matches")
-                    n = 1
-                    search_result = []
-                    for one_hit in raw_search:
-                        search_result.append((n,) + one_hit)
-                        n+=1
-                    return render(request, 'chlamdb/search_synonymous.html', locals())
-            except:
-                # no synonymous table, use old method
-                print("echec synonymous table")
-                print(sql_sy)
-                sql0 = 'select locus_tag from custom_tables.seqfeature_id2old_locus_tag_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where old_locus_tag="%s" ' % (biodb, biodb, locus)
-
-                try:
-                    data = server.adaptor.execute_and_fetchall(sql0, )[0][0]
-                    old_locus_tag = locus
-                    locus = data
-                    input_type = 'locus_tag'
-                except IndexError:
-                    sql0 = 'select locus_tag from orthology_detail_%s where (locus_tag="%s" or protein_id="%s")' % (biodb,
-                                                                                                                    locus,
-                                                                                                                    locus)
-                try:
-                    locus = server.adaptor.execute_and_fetchall(sql0, )[0][0]
-                    input_type = 'locus_tag'
-                except IndexError:
-
-                    sql1 = 'select orthogroup from orthology_detail_%s where orthogroup="%s"' % (biodb, locus)
-                    try:
-                        locus = server.adaptor.execute_and_fetchall(sql1, )[0][0]
-                        input_type = 'orthogroup'
-                    except IndexError:
-                        print ('not a valid id, trying search')
-                        return search(request)
+                locus = server.adaptor.execute_and_fetchall(sql1, )[0][0]
+                input_type = 'orthogroup'
+            except IndexError:
+                print ('not a valid id, trying search')
+                return search(request)
+        
         valid_id = True
+
+        # retrieve basic data about locus
         columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                 'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
         sql2 = 'select %s from orthology_detail_%s where %s="%s"' % (columns, biodb, input_type, locus)
@@ -2216,6 +2179,12 @@ def locusx(request, locus=None, menu=True):
             old_locus_tag = data_old
         except:
             pass
+        # check if orthogroup
+        m = re.match("group_([0-9]+)", locus)
+        if m:
+            input_type = 'orthogroup'
+        else:
+            input_type = 'locus_tag'
 
         if input_type == 'locus_tag':
             from chlamdb.plots import uniprot_feature_viewer
@@ -2617,7 +2586,6 @@ def locusx(request, locus=None, menu=True):
             except:
                 pathways_data = False
 
-        if input_type == 'locus_tag':
             seq_start = int(data[3])
             seq_end = int(data[4])
             strand = int(data[5])
@@ -3180,8 +3148,11 @@ def fam(request, fam, type):
 
 
         taxon2orthogroup2ec = {}
+        # dico of the form:
+        # taxid: {group: {domain}}
+        # 58: {'group_414': ['PF06723']}, 216: {'group_414': ['PF06723']}, 269: {'group_414': ['PF06723']},
         for one_row in data:
-            taxon = one_row[0]
+            taxon = int(one_row[0])
             group = one_row[1]
             ec = one_row[2]
             if taxon not in taxon2orthogroup2ec:
@@ -3197,6 +3168,7 @@ def fam(request, fam, type):
         if len(taxon2orthogroup2ec) == 0:
             no_match = True
         else:
+            print(taxon2orthogroup2ec)
             taxon2orthogroup2count = ete_motifs.get_taxon2orthogroup2count(biodb, group_count)
             merged_dico = taxon2orthogroup2count
             for i in taxon2orthogroup2count_reference:
@@ -3204,12 +3176,147 @@ def fam(request, fam, type):
 
             labels = [fam] + group_count
 
+            print("plotting")
 
             tree, style = ete_motifs.multiple_profiles_heatmap(biodb,
                                                         labels,
                                                         merged_dico,
                                                         taxon2group2value=taxon2orthogroup2ec,
                                                         highlight_first_column=True)
+
+
+            if len(labels) > 30:
+                big = True
+                path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
+                asset_path = '/temp/fam_tree_%s.png' % fam
+                tree.render(path, dpi=300, tree_style=style)
+            else:
+                big = False
+                path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.svg' % fam
+                asset_path = '/temp/fam_tree_%s.svg' % fam
+
+                tree.render(path, dpi=300, tree_style=style)
+
+    return render(request, 'chlamdb/fam.html', locals())
+
+
+def fam_interpro(request, fam, type):
+
+    # flag for template rendering
+    fam_interpro = True
+
+    if type == "Gene3D":
+        Gene3D_acc = fam.split(":")[1]
+
+    '''
+    Same as fam but don't rely on comparative matrix
+    retrieve pattern of presence/absence from interproscan result table
+    '''
+    biodb = settings.BIODB
+    if request.method == 'GET': 
+        from chlamdb.phylo_tree_display import ete_motifs
+
+        valid_id = True
+
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+        print ('-- family request: biodb %s -- type %s -- name %s' % (biodb, type, fam))
+
+        sql1 = f'select distinct t1.seqfeature_id from interpro.interpro_{biodb} t1 ' \
+               f' inner join interpro.signature t2 on t1.signature_id=t2.signature_id ' \
+               f' inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id ' \
+               f' where analysis_name="{type}" and signature_accession="{fam}";'
+
+        sql2 =   f'select signature_accession,signature_description from interpro.interpro_{biodb} t1 ' \
+                 f' inner join interpro.signature t2 on t1.signature_id=t2.signature_id ' \
+                 f' inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id ' \
+                 f' where analysis_name="{type}" and signature_accession="{fam}" limit 1'
+
+        #try:
+        info = server.adaptor.execute_and_fetchall(sql2, )[0]
+        #except IndexError:
+        #    valid_id = False
+        #    return render(request, 'chlamdb/fam.html', locals())
+
+        try:
+            seqfeature_id_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql1, )]
+
+            seqfeature_list_form = '"' + '","'.join(seqfeature_id_list) + '"'
+
+        except IndexError:
+            valid_id = False
+            return render(request, 'chlamdb/fam.html', locals())
+        else:
+            print(seqfeature_id_list)
+            # retrieve locus list and their annotations
+            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+            sql2 = 'select %s from orthology_detail_%s where seqfeature_id in (%s)' % (columns, biodb, seqfeature_list_form)
+
+            all_locus_raw_data = server.adaptor.execute_and_fetchall(sql2, )
+            orthogroup_list = [i[0] for i in all_locus_raw_data]
+            all_locus_data = []
+            group_count = []
+            for i in range(0, len(all_locus_raw_data)):
+                 all_locus_data.append([i] + list(all_locus_raw_data[i]))
+                 if all_locus_raw_data[i][0] not in group_count:
+                    group_count.append(all_locus_raw_data[i][0])
+        envoi = True
+        menu = True
+        
+        
+
+        signature2taxon_id2count = ete_motifs.get_interpro2taxon_id2count(biodb,
+                                                                          [fam],
+                                                                          type)
+
+
+        sql3 = 'select distinct taxon_id,orthogroup,signature_accession from ' \
+                ' interpro_%s where orthogroup in (%s) and signature_accession="%s";' % (biodb,
+                                                                                       '"'+'","'.join(set(orthogroup_list))+'"',
+                                                                                       fam)
+
+
+        data = server.adaptor.execute_and_fetchall(sql3,)
+
+        # dico of the form:
+        # taxid: {group: {domain}}
+        # one group can be associated to multiple domains
+        # 58: {'group_414': ['PF06723']}, 216: {'group_414': ['PF06723']}, 269: {'group_414': ['PF06723']},
+
+        taxon2orthogroup2target_domain = {}
+        for one_row in data:
+            taxon = int(one_row[0])
+            group = one_row[1]
+            signature = one_row[2]
+            if taxon not in taxon2orthogroup2target_domain:
+                taxon2orthogroup2target_domain[taxon] = {}
+                taxon2orthogroup2target_domain[taxon][group] = [signature]
+            else:
+                if group not in taxon2orthogroup2target_domain[taxon]:
+                    taxon2orthogroup2target_domain[taxon][group] = [signature]
+                else:
+                    if signature not in taxon2orthogroup2target_domain[taxon][group]:
+                        taxon2orthogroup2target_domain[taxon][group].append(signature)
+
+        if len(taxon2orthogroup2target_domain) == 0:
+            no_match = True
+        else:
+            taxon2orthogroup2count = ete_motifs.get_taxon2orthogroup2count(biodb, group_count)
+            merged_dico = taxon2orthogroup2count
+            for i in signature2taxon_id2count:
+                merged_dico[i] = signature2taxon_id2count[i]
+
+            labels = [fam] + group_count
+
+
+            print("plotting")
+
+            tree, style = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                               labels,
+                                                               merged_dico, # group2taxon2count
+                                                               taxon2group2value=taxon2orthogroup2target_domain,
+                                                               highlight_first_column=True)
 
 
             if len(labels) > 30:
@@ -10527,100 +10634,16 @@ def interpro(request):
 
 
 def search(request):
+
+    import re
+    from chlamdb.biosqldb import search
+
     biodb = settings.BIODB
 
-    def perform_search(search_term, search_type=False, redo=True):
-        server, db = manipulate_biosqldb.load_db(biodb)
-        search_term = search_term.strip()
-
-        if not search_type:
-            import re
-            if len(search_term) == len("PF04093") and search_term[0:2] == 'PF':
-                return fam(request,search_term, 'pfam')
-            elif len(search_term) == len('K03652') and search_term[0:1] == 'K':
-                return fam(request, search_term, 'ko')
-            elif len(search_term) == len('COG0001') and search_term[0:3] == 'COG':
-                return fam(request, search_term, 'cog')
-            elif len(search_term) == len('IPR000014') and search_term[0:3] == 'IPR':
-                #request.method = 'GET'
-                return fam(request, search_term, 'interpro')
-            elif len(search_term) == len('M00406') and search_term[0:3] == 'M00':
-                return KEGG_module_map(request, search_term)
-            elif len(search_term) == len('map00550') and search_term[0:3] == 'map':
-                return KEGG_mapp_ko(request, search_term)
-
-            elif re.match("^[0-9\.]+$", search_term) and '\.' in search_term:
-                return fam(request, search_term, 'EC')
-            else:
-                search_type = 'no_exact_accession'
-
-        columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                  'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-        if search_type == "gene":
-            sql = 'select %s from orthology_detail_%s where gene REGEXP "%s"' % (columns, biodb, search_term)
-            raw_data = server.adaptor.execute_and_fetchall(sql,)
-
-        if search_type == "product":
-            sql = 'select %s from orthology_detail_%s where product REGEXP "%s"' % (columns, biodb, search_term)
-            raw_data = server.adaptor.execute_and_fetchall(sql,)
-
-        if search_type == "locus_tag":
-            sql = 'select %s from orthology_detail_%s where locus_tag REGEXP "%s"' % (columns, biodb, search_term)
-            raw_data = server.adaptor.execute_and_fetchall(sql,)
-
-        if search_type == "no_exact_accession":
-                print ('YES no_exact_accession')
-
-                sql = 'SELECT * FROM orthology_detail_%s WHERE MATCH(gene,product) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (columns,
-                                                                                                                               biodb,
-                                                                                                                               search_term)
-                raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
-
-                sql = 'select ec,line,value from enzyme.enzymes_dat as t1 inner join enzymes as t2 ' \
-                      ' on t1.enzyme_dat_id=enzyme_id WHERE value REGEXP "%s"' % (search_term)
-                      
-                raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
-
-                
-
-                #sql = 'select * from ko_annotation_v1 where definition REGEXP "%s"' % (search_term)
-                sql = 'SELECT * FROM ko_annotation_v1 WHERE MATCH(ko_id,name,definition,EC) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (search_term)
-                print(sql)
-                try:
-                    raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
-                except:
-                    raw_data_ko = False
-
-                sql = 'select COG_id,code,description,name from COG.cog_names_2014 as t1 inner join ' \
-                      ' COG.code2category as t2 on t1.function=t2.code where description REGEXP "%s"' % (search_term)
-                raw_data_cog = server.adaptor.execute_and_fetchall(sql,)
-
-                sql = 'select * from interpro_%s where (signature_description REGEXP "%s"' \
-                      ' or interpro_description REGEXP "%s")' % (biodb, search_term, search_term)
-                raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
-
-                sql = 'select * from enzyme.kegg_module_v1 where description REGEXP "%s"' % (search_term)
-                raw_data_module = server.adaptor.execute_and_fetchall(sql,)
-
-                sql = 'select * from enzyme.kegg_pathway where description REGEXP "%s"' % (search_term)
-                raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
-
-
-        else:
-            n = 1
-            search_result = []
-            for one_hit in raw_data:
-                if one_hit[2] != '-':
-                    interpro_id = one_hit[2]
-                else:
-                    interpro_id = one_hit[1]
-                search_result.append((n,) + one_hit + (interpro_id,))
-                n+=1
-
-            return search_result
-
-
     server = manipulate_biosqldb.load_db()
+
+    print("request type --- ", request.method)
+
     if request.method == 'POST': 
         display_from = 'yes'
         form = SearchForm(request.POST)
@@ -10632,7 +10655,22 @@ def search(request):
             search_term = form.cleaned_data['search_term']
             #biodb = form.cleaned_data['biodatabase']
 
-            search_result = perform_search(search_term, search_type)
+            search_result = search.perform_search(request, search_term)
+
+            if search_result is None:
+                search_echec = True 
+            else:
+                locus_list, 
+                raw_data_gene_raw_data_product, 
+                raw_data_EC,
+                raw_data_ko,
+                raw_data_cog,
+                raw_data_interpro,
+                raw_data_pathway,
+                raw_data_pmid,
+                pmid2n_homologs,
+                pmid_data,
+                search_echec = search_result
             envoi = True
 
     else:  
@@ -10648,175 +10686,19 @@ def search(request):
 
         if search_term:
 
-            import re
-            if len(search_term) == len("PF04093") and search_term[0:2] == 'PF':
-                return fam(request, search_term, 'pfam')
-            elif len(search_term) == len('K03652') and search_term[0:1] == 'K':
-                return fam(request, search_term, 'ko')
-            elif len(search_term) == len('COG0001') and search_term[0:3] == 'COG':
-                return fam(request, search_term, 'cog')
-            elif len(search_term) == len('IPR000014') and search_term[0:3] == 'IPR':
-                #request.method = 'GET'
-                return fam(request, search_term, 'interpro')
-            elif len(search_term) == len('M00406') and search_term[0:3] == 'M00':
-                return KEGG_module_map(request, search_term)
-            elif len(search_term) == len('map00550') and search_term[0:3] == 'map':
-                return KEGG_mapp_ko(request, search_term)
-            elif re.match("^[0-9\.]+$", search_term) and '\.' in search_term:
-                return fam(request, search_term, 'EC')
+            search_result = search.perform_search(request, biodb, search_term)
+            print(search_result)
+            if search_result is None:
+                search_echec = True 
+            elif isinstance(search_result, HttpResponse):
+                return search_result
+
+            elif len(search_result) == 1:
+                return locusx(request, search_result[0])
             else:
-                search_type = 'no_exact_accession'
+                locus_list, raw_data_EC, raw_data_ko, raw_data_cog, raw_data_interpro, raw_data_pathway, raw_data_pmid, pmid2n_homologs, pmid_data, synonymous = search_result
+            envoi = True
 
-            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-
-            if search_type == "gene":
-                sql = 'select %s from orthology_detail_%s where gene REGEXP "%s"' % (columns, biodb, search_term)
-                raw_data = server.adaptor.execute_and_fetchall(sql,)
-
-            if search_type == "product":
-                sql = 'select %s from orthology_detail_%s where product REGEXP "%s" limit 100' % (columns, biodb, search_term)
-                raw_data = server.adaptor.execute_and_fetchall(sql,)
-
-            if search_type == "locus_tag":
-                sql = 'select %s from orthology_detail_%s where locus_tag REGEXP "%s"' % (columns, biodb, search_term)
-                raw_data = server.adaptor.execute_and_fetchall(sql,)
-
-            if search_type == "no_exact_accession":
-
-                    # CREATE FULLTEXT INDEX GPF1 ON orthology_detail_2019_06_PVC(gene);
-                    # CREATE FULLTEXT INDEX GPF2 ON orthology_detail_2019_06_PVC(product);
-                    # CREATE FULLTEXT INDEX GPF3 ON orthology_detail_2019_06_PVC(organism);
-                    # CREATE FULLTEXT INDEX GPF4 ON orthology_detail_2019_06_PVC(gene,product,organism);
-                    print(search_term)
-                    sql = 'SELECT %s, ' \
-                          ' MATCH (gene) AGAINST ("%s") AS rel1, ' \
-                          ' MATCH (product) AGAINST ("%s") AS rel2, ' \
-                          ' MATCH (organism) AGAINST ("%s") AS rel3 FROM orthology_detail_%s t1 ' \
-                          ' WHERE MATCH (gene,product,organism) AGAINST ("%s" IN BOOLEAN MODE) ORDER BY (rel1)+(rel2*0.5)+(rel3*10) DESC limit 100;' % (columns,
-                                                                                                                                        search_term,
-                                                                                                                                        search_term,
-                                                                                                                                        search_term,
-                                                                                                                                        biodb,
-                                                                                                                                        search_term)
-                    print(sql)
-                    raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
-
-                    n = 1
-                    search_result = []
-                    locus_list = []
-                    for one_hit in raw_data_gene_raw_data_product:
-                        if one_hit[2] != '-':
-                            interpro_id = one_hit[2]
-                        else:
-                            interpro_id = one_hit[1]
-                        search_result.append((n,) + one_hit + (interpro_id,))
-                        locus_list.append(one_hit[1])
-                        n+=1
-
-                    # CREATE FULLTEXT INDEX ezf ON enzyme.enzymes_dat(value);
-                    sql = 'select A.ec, A.value from (select ec,value from enzyme.enzymes_dat as t1 inner join enzyme.enzymes as t2 ' \
-                          ' on t1.enzyme_dat_id=enzyme_id WHERE MATCH(value) AGAINST("%s" IN NATURAL LANGUAGE MODE) group by ec) A inner join comparative_tables.EC_%s' \
-                          ' as B on A.ec=B.id' % (search_term, biodb)
-
-                    raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
-                    if len(raw_data_EC) == 0:
-                        raw_data_EC = False
-
-                    # CREATE FULLTEXT INDEX koaf ON enzyme.ko_annotation_v1(definition);
-                    # filter KO absent from DB
-                    # CREATE FULLTEXT INDEX ko_full ON ko_annotation_v1(ko_id,name,definition,EC);
-                    sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme.ko_annotation_v1 ' \
-                          'WHERE MATCH(ko_id,name,definition,EC) AGAINST("%s" IN NATURAL LANGUAGE MODE)) A inner join comparative_tables.ko_%s as B on A.ko_id=B.id' % (search_term, biodb)
-                    try:
-                        raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
-                    except:
-                        raw_data_ko = []
-                    if len(raw_data_ko) == 0:
-                        raw_data_ko = False
-
-                    # CREATE FULLTEXT INDEX cogf ON COG.cog_names_2014(description);
-                    sql = ' select COG_name,code,t3.description,t1.description from COG.cog_names_2014 t1 ' \
-                          ' inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
-                          ' inner join COG.code2category t3 on t2.category_id=t3.category_id ' \
-                          ' WHERE MATCH(t1.description) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (search_term)
-                    raw_data_cog = []# :TODO server.adaptor.execute_and_fetchall(sql,)
-                    if len(raw_data_cog) == 0:
-                        raw_data_cog = False
-
-                    # CREATE FULLTEXT INDEX ipf ON interpro.signature(signature_description);
-                    # CREATE FULLTEXT INDEX ipf ON interpro.entry(description);
-                    sql = 'select analysis_name,signature_accession,signature_description,t3.name,t3.description from interpro.signature t1 ' \
-                          ' inner join interpro.analysis t2 on t1.analysis_id=t2.analysis_id ' \
-                          ' left join interpro.entry t3 on t1.interpro_id=t3.interpro_id ' \
-                          ' WHERE MATCH(t3.description) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (search_term)
-                    raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
-                    if len(raw_data_interpro) == 0:
-                        raw_data_interpro = False
-
-                    # CREATE FULLTEXT INDEX modf ON enzyme.kegg_module_v1(description, module_sub_cat);
-                    sql = 'select module_name,module_sub_cat,module_sub_sub_cat,description from enzyme.kegg_module_v1 ' \
-                          ' where MATCH(description,module_sub_cat) AGAINST("%s" IN BOOLEAN MODE)' % (search_term)
-                    raw_data_module = server.adaptor.execute_and_fetchall(sql,)
-                    if len(raw_data_module) == 0:
-                        raw_data_module = False
-
-                    # CREATE FULLTEXT INDEX kegf ON enzyme.kegg_pathway(description, pathway_category);
-                    sql = 'select pathway_name,pathway_category,description from enzyme.kegg_pathway ' \
-                          ' where MATCH(description, pathway_category) AGAINST("%s" IN BOOLEAN MODE) ' % (search_term)
-                    raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
-                    if len(raw_data_pathway) == 0:
-                        raw_data_pathway = False
-                    
-                    # ALTER TABLE pmid2data_stringdb ADD FULLTEXT (title,journal,year,authors);;
-                    sql1 = 'select * from (SELECT pmid,title, MATCH (title) AGAINST ("%s" IN BOOLEAN MODE) as score ' \
-                          ' FROM string.pmid2data_paperblast )A where score > 0 order by score DESC limit 20;' % (search_term)
-                    sql2 = 'SELECT pmid,title,year,journal,authors from string.pmid2data_stringdb where MATCH(title,journal,year,authors)' \
-                           ' AGAINST ("%s" IN BOOLEAN MODE) > 0 limit 50;' % (search_term)
-                    #raw_data_pmid_paperblast2title = server.adaptor.execute_and_fetchall(sql1,)
-                    raw_data_pmid = list(server.adaptor.execute_and_fetchall(sql2,))
-                    for n,row in enumerate(raw_data_pmid):
-                        raw_data_pmid[n] = [str(i) for i in row]
-                    pmid2title = {}
-                    #pmid2title.update(raw_data_pmid_paperblast2title)
-                    #pmid2title.update(raw_data_pmid_string2title)
-
-                    pmid_data = False
-                    if len(raw_data_pmid) != 0:
-
-                        pmid_list = [i[0] for i in raw_data_pmid]
-
-                        sql = 'select A.pmid,count(*) as n from (select t1.pmid,orthogroup_id from string.pmid2data_stringdb t1 ' \
-                              ' inner join string.string_protein2pmid t2 on t1.pmid=t2.pmid ' \
-                              ' inner join string.seqfeature_id2string_protein_mapping t3 on t2.string_protein_id=t3.string_protein_id ' \
-                              ' inner join orthology.seqfeature_id2orthogroup_%s t4 on t3.seqfeature_id=t4.seqfeature_id ' \
-                              ' where t1.pmid in (%s) group by t1.pmid,orthogroup_id) A group by pmid;' % (biodb, ','.join(pmid_list))
-
-                        pmid2n_homologs = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-                        print(pmid2n_homologs)
-                        pmid_data = True
-                        '''
-                        set_pmid_paperblast = set(raw_data_pmid_paperblast2title.keys())
-                        set_pmid_string = set(raw_data_pmid_string2title.keys())
-                        pmid2presence = {}
-                        for pmid in pmid2title:
-                            if pmid in set_pmid_paperblast and pmid in set_pmid_string:
-                                pmid2presence[pmid] = [1,1]
-                            if pmid in set_pmid_paperblast and pmid not in set_pmid_string: 
-                                pmid2presence[pmid] = [1,0]
-                            if pmid not in set_pmid_paperblast and pmid in set_pmid_string: 
-                                pmid2presence[pmid] = [0,1]    
-                        '''
-                                   
-                    if not raw_data_module \
-                            and not raw_data_pathway \
-                            and not raw_data_EC \
-                            and not raw_data_ko \
-                            and not raw_data_cog \
-                            and not raw_data_interpro \
-                            and not raw_data_gene_raw_data_product \
-                            and not pmid_data:
-                        search_echec = True
             envoi = True
             display_form = "no"
             #print "display_form",  display_form

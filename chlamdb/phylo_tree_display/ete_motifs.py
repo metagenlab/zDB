@@ -22,6 +22,50 @@ def _get_colors(num_colors):
     return colors
 
 
+def get_interpro2taxon_id2count(biodb, 
+                             id_list, 
+                             analysis="Pfam", 
+                             taxon_filter=False):
+
+
+    '''
+    get presence/absence of pfam domain(s) in all organisms of database "biodb"
+    return it as a dictionnary taxon[domain_id] --> count
+    :param biodb:
+    :param id_list: lit of COgs/interpro/pfam identifiers
+    :param type: COG/Pfam/interpro or any comparative table stored in "comparative_tables" mysql database
+    :return:
+    '''
+
+    from chlamdb.biosqldb import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    id_filter = '"' + '","'.join(id_list)+ '"'
+    sql = f'select taxon_id,signature_accession, count(*) as n from' \
+          f' (select distinct t1.seqfeature_id,taxon_id,signature_accession,signature_description ' \
+          f' from interpro.interpro_{biodb} t1 ' \
+          f' inner join interpro.signature t2 on t1.signature_id=t2.signature_id ' \
+          f' inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id ' \
+          f' inner join annotation.seqfeature_id2locus_{biodb} t4 on t1.seqfeature_id=t4.seqfeature_id' \
+          f' where analysis_name="{analysis}" and signature_accession in ({id_filter})) A ' \
+          f' group by taxon_id,signature_accession,signature_description;'
+
+    data = server.adaptor.execute_and_fetchall(sql,)
+
+    interpro2taxon_id2count = {}
+    for i, row in enumerate(data):
+        taxon_id = str(row[0])
+        signature_accession = row[1]
+        n = row[2] 
+        if signature_accession not in interpro2taxon_id2count:
+            interpro2taxon_id2count[signature_accession] = {}
+        
+        interpro2taxon_id2count[signature_accession][taxon_id] = n
+    print("interpro2taxon_id2count",interpro2taxon_id2count)
+    return interpro2taxon_id2count
+
+
 
 def get_taxon2name2count(biodb, id_list, type="COG", taxon_filter=False):
 
@@ -934,14 +978,21 @@ def multiple_profiles_heatmap(biodb,
                     #lf.set_style(nstyle)
 
             if first_column and not reference_column and highlight_first_column:
+                
                 # highlight of the first column only (red)
+                if value in group2taxon2count:
+                    #pass
+                    print("ok", group2taxon2count[value])
+                    print("lf.name", lf.name, type(lf.name))
                 try:
-
+                    print(value, group2taxon2count[value][lf.name])
                     n = TextFace(' %s ' % str(group2taxon2count[value][lf.name]))
 
                 except:
                     n = TextFace(' - ')
                     #n = RectFace(width=10, height=10, fgcolor="red", bgcolor="blue", label='-')
+                    if value not in group2taxon2count:
+                        group2taxon2count[value] = {}
                     group2taxon2count[value][lf.name] = 0
                 ref_data = str(value)
                 n.margin_top = 1
@@ -957,9 +1008,6 @@ def multiple_profiles_heatmap(biodb,
             else:
                 if not taxon2group2value:
                     if value not in group2taxon2count:
-
-                        #print 'not-------------------', value
-
                         n = TextFace(' - ')
                     else:
                         if lf.name not in group2taxon2count[value]:
@@ -1233,6 +1281,9 @@ def multiple_profiles_heatmap_nobiodb(column_labels,
     leaf_list = [i for i in t1.iter_leaves()]
     n_leaves = len(leaf_list)
 
+    print("gg")
+
+
     for lf_count, lf in enumerate(t1.iter_leaves()):
         lf.branch_vertical_margin = 0
 
@@ -1261,6 +1312,7 @@ def multiple_profiles_heatmap_nobiodb(column_labels,
                     #lf.set_style(nstyle)
 
             if first_column and not reference_column and highlight_first_column:
+                print("highlight of the first column only (red)")
                 # highlight of the first column only (red)
                 try:
 
@@ -1282,6 +1334,7 @@ def multiple_profiles_heatmap_nobiodb(column_labels,
                     n.inner_background.color = 'white'
                 first_column = False
             else:
+                print("no not highlight of the first column only (red)")
                 if not taxon2group2value:
                     if value not in group2taxon2count:
 

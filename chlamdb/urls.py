@@ -111,6 +111,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^pairwiseCDS_length/$', views.pairwiseCDS_length, name="pairwiseCDS_length"),
                        url(r'^sunburst/([a-zA-Z0-9_\.]+)$', views.sunburst, name="sunburst"),
                        url(r'^fam/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)$', views.fam, name="fam"),
+                       url(r'^fam_interpro/([a-zA-Z0-9_\.\:]+)/([a-zA-Z0-9_\.]+)$', views.fam_interpro, name="fam_interpro"),
                        url(r'^blastnr/([a-zA-Z0-9_\.\-]+)$', views.blastnr, name="blastnr"),
                        url(r'^blastswissprot/([a-zA-Z0-9_\.\-]+)$', views.blastswissprot, name="blastswissprot"),
                        url(r'^plot_region/$', views.plot_region, name="plot_region"),
