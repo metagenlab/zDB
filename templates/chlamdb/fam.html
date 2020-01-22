@@ -29,6 +29,8 @@
                  {% else %}
                      <div id="content">
 
+
+
                              <h3>{{ fam }}  {% if type == 'ko' %} <button type="button" class="btn btn-primary btn-xs"
                                                                           onclick="location.href='{% url 'ko2fasta' fam %}'">ko fasta</button>
                                                                   <button type="button" class="btn btn-primary btn-xs"
@@ -40,7 +42,7 @@
                              </h3>
                               <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
                                   <li class="active"><a href="#tab1" data-toggle="tab">General</a></li>
-                                  <li><a href="#tab2" data-toggle="tab">Details</a></li>
+                                  <li><a href="#tab2" data-toggle="tab">Protein list</a></li>
                                   <li><a href="#tab3" data-toggle="tab">Profile</a></li>
                                   {% if type == 'cog' %}
                                       <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'eggnog_profile' fam 'phylum' %}', 'orthoIDframe2'); return false">Taxonomic profile (phylum)</a></li>
@@ -48,87 +50,220 @@
                                   {% elif type == 'pfam' %}
                                       <li><a href="{% url 'pfam_profile' fam 'phylum' %}">Taxonomic profile (phylum)</a></li>
                                       <li><a href="{% url 'pfam_profile' fam 'order' %}">Taxonomic profile (order)</a></li>
+                                  {% elif type == 'Pfam' %}
+                                      <li><a href="{% url 'pfam_profile' fam 'phylum' %}">Taxonomic profile (phylum)</a></li>
+                                      <li><a href="{% url 'pfam_profile' fam 'order' %}">Taxonomic profile (order)</a></li>
                                   {% elif type == 'interpro' %}
                                       <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.ebi.ac.uk/interpro/entry/{{ fam }}', 'orthoIDframe2'); return false"> <i class="fa fa-external-link"></i> Informations </a>  </li>
                                   {% endif %}
                               </ul>
 
-                              <div id="my-tab-content" class="tab-content">
-                                  <div class="tab-pane active" id="tab1">
+                                <div id="my-tab-content" class="tab-content">
+                                    <div class="tab-pane active" id="tab1">
+
+                                        <div class="col-md-12 col-lg-8" style="padding-right:30px;padding-top:30px">
+                                            <div class="row">
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading">
+                                                        <h3 class="panel-title">Description</h3>
+                                                    </div>
+                                                    <table class="table table-striped" style="width: 100%">
+                                                        {% if type == 'cog' %}
+                                                            <tr>
+                                                                <th>External link</th>
+                                                                <td><a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{ fam }}"> {{ fam }} <i class="fa fa-external-link"></i></a></td>
+                                                            </tr>
+        
+                                                        {% elif type == 'pfam' %}
+
+                                                            <tr>
+                                                                <th>External link</th>
+                                                                <td><a href="http://pfam.xfam.org/family/{{ fam }}"> {{ fam }} <i class="fa fa-external-link"></i></a></td>
+                                                            </tr>
+
+                                                        {% elif type == 'interpro' %}
+                                                            <tr>
+                                                                <th>External link</th>
+                                                                <td><a href="http://www.ebi.ac.uk/interpro/entry/{{ fam }}"> {{ fam }} <i class="fa fa-external-link"></i></a></td>
+                                                            </tr>
+
+                                                        {% elif type == 'ko' %}
+                                                            <tr>
+                                                                <th>External link</th>
+                                                                <td><a href="http://www.genome.jp/dbget-bin/www_bget?{{ fam }}"> {{ fam }} <i class="fa fa-external-link"></i></a></td>
+                                                            </tr>
+
+                                                        {% elif type == 'EC' %}
+                                                            <tr>
+                                                                <th>External link</th>
+                                                                <td><a href="{{ external_link }}">  {{ fam }}<i class="fa fa-external-link"></i></a></td>
+                                                            </tr>
+
+                                                        {% endif %}
 
 
 
-                                      <ol>
-                                          {% if type == 'EC' %}
-                                              <table>
+                                                        {% if type == 'EC' %}
+            
+                                                                {% for key, value in info%}
+                                                                    <tr>
+                                                                        <th>{{key}}</th>
+                                                                        <td>{{value}}</td>
+                                                                    </tr>
+                                                                {% endfor %}
 
-                                                  {% for key, value in info%}
-                                                      <tr>
-                                                      <td><strong>{{key}}</strong></td><td>{{value}}</td>
-                                                      </tr>
-                                                  {% endfor %}
+                                                                <tr>
+                                                                        <th>{{key}}</th>
+                                                                        <td>{{value}}</td>
+                                                                </tr>
+
+                                                            <li>EC present in <strong>{{pathway_data|length }} pathways</strong></li>
+                                                            <ul>
+                                                                {% for path in pathway_data %}
+                                                                <li><a href="{% url 'KEGG_mapp' path.0 %}">{{path.2}} :: {{path.1}}</a></li>
+                                                                {% endfor %}       
+                                                        </ul>
+        
+                                                        {% elif type == 'ko'%}
+        
+                                                            <tr>
+                                                                <th style="width:160px">Accession</th>
+                                                                <td>{{ ko_data.1 }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th style="width:160px">Name</th>
+                                                                <td>{{ ko_data.2 }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th style="width:160px">Description</th>
+                                                                <td>{{ ko_data.3 }}</td>
+                                                            </tr>
+        
+        
+                                                        {% elif fam_interpro %}
+        
+                                                            <tr>
+                                                                <th style="width:160px">Signature accession</th>
+                                                                {% if type == "PANTHER" %}
+                                                                    <td><a href="http://www.pantherdb.org/panther/family.do?clsAccession={{info.0}}">{{ info.0 }}</a></td>
+                                                                {% elif type == "CDD" %}
+                                                                    <td><a href="https://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{info.0}}">{{ info.0 }}</a></td>
+                                                                {% elif type == "Pfam" %}
+                                                                    <td><a href="http://pfam.xfam.org/family/{{info.0}}">{{ info.0 }}</a></td>
+                                                                    {% elif type == "PRINTS" %}
+                                                                    <td><a href="http://130.88.97.239/cgi-bin/dbbrowser/sprint/searchprintss.cgi?prints_accn={{info.0}}&display_opts=Prints&category=None&queryform=false&regexpr=off">{{ info.0 }}</a></td>
+                                                                    {% elif type == "TIGRFAM" %}
+                                                                    <td><a href="http://tigrfams.jcvi.org/cgi-bin/HmmReportPage.cgi?acc={{info.0}}">{{ info.0 }}</a></td>
+                                                                    {% elif type == "Hamap" %}
+                                                                    <td><a href="https://hamap.expasy.org/signature/{{info.0}}">{{ info.0 }}</a></td>
+                                                                    {% elif type == "Gene3D" %}
+                                                                    <td><a href="http://www.cathdb.info/version/latest/superfamily/{{Gene3D_acc}}">{{ info.0 }}</a></td>
+                                                                    {% elif type == "SUPERFAMILY" %}
+                                                                    <td><a href="http://supfam.org/SUPERFAMILY/cgi-bin/scop.cgi?ipid={{info.0}}">{{ info.0 }}</a></td>
+                                                                    {% elif type == "SMART" %}
+                                                                    <td><a href="http://smart.embl-heidelberg.de/smart/do_annotation.pl?DOMAIN={{info.0}}">{{ info.0 }}</a></td>
+                                                                    {% elif type == "ProSitePatterns" %}
+                                                                    <td><a href="https://prosite.expasy.org/{{info.0}}">{{ info.0 }}</a></td>
+                                                            
+                                                                    {% else %}
+                                                                    <td>{{ info.0 }}</td>
+                                                                {% endif %}
+                                                            </tr>
+
+                                                            {% if info.1 != "0" %}
+                                                                <tr>
+                                                                    <th style="width:160px">Signature description</th>
+                                                                    <td> {{ info.1 }}</td>
+                                                                </tr>
+                                                            {% else %}
+                                                                <tr>
+                                                                    <th style="width:160px">Signature description</th>
+                                                                    <td> N/A </td>
+                                                                </tr>
+                                                            {% endif %}
+            
+                                                        {% else %}
+                                                            <tr>
+                                                                <th style="width:160px">Description</th>
+                                                                <td> {{ info.0 }} {{ info.1 }} </td>
+                                                            </tr>
+                                                        {% endif %}
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            {% if type == 'ko'%}
+
+                                                <div class="row">
+                                                    <div class="panel panel-default">
+                                                        <div class="panel-heading">
+                                                            <h3 class="panel-title"></h3>KO part of <strong>{{pathway_data|length }} pathways</strong></h3>
+                                                        </div>
+                                                        {% if pathway_data|length > 0 %}
+                                                            <table class="table table-striped" style="width: 100%">
+                                                                <tbody>
+                                                                    {% for path in pathway_data %}
+                                                                    <tr>
+                                                                        <td style="width:160px"><a href="{% url 'KEGG_mapp_ko' path.0 %}">{{path.0}}</a></td>
+                                                                        <td>{{path.1}}</td>
+                                                                    </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        {% endif %}
+
+                                                            <div class="panel-heading">
+                                                                    <h3 class="panel-title">KO part of <strong>{{module_data|length }} modules </strong></h3>
+                                                                </div>
+                                                                {% if module_data|length > 0 %}
+                                                                    <table class="table table-striped" style="width: 100%"></table>
+                                                                        <ul style="list-style-type:disc;">
+                                                                            {% for path in module_data %}
+                                                                                <tr>
+                                                                                    <td style="width:160px"><a href="{% url 'KEGG_module_map' path.0 %}">{{path.2}}</a></td>
+                                                                                    <td>{{path.1}}</td>
+                                                                                </tr>
+                                                                            {% endfor %}
+                                                                        </ul>
+                                                                    </table>
+                                                                {% endif %}
+
+                                                    </div>
+                                                </div>
 
 
-                                              </table>
-                                              <li><a href="{{ external_link }}"> <i class="fa fa-external-link"></i> External link</a></li>
-                                          {% elif type == 'ko'%}
 
-                                              <li><strong>Name:</strong> {{ ko_data.1 }}</li>
-                                              <li><strong>Description:</strong> {{ ko_data.2 }}</li>
-                                              <li><strong>EC:</strong> {{ ko_data.3 }}</li>
+                                            {% endif %}
 
-                                          {% else %}
-                                              <li>{{ info.1 }} {{ info.0 }}</li>
-                                          {% endif %}
+                                            <div class="row">
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading">
+                                                        <h3 class="panel-title">Occurence in the database</h3>
+                                                    </div>
+                                                        <table class="table table-striped" style="width: 100%">
 
-
-                                          <li>{{ fam }} is present in <strong>{{ all_locus_data|length }} copies</strong></li>
-                                          <li>{{ fam }} is present in <strong>{{ group_count|length }} different orthogroup(s)</strong></li>
-
-
-                                          <ul style="list-style-type:disc;">
-                                              {% for group in group_count %}
-                                              <li><a href="{% url 'locusx' group True%}">{{group}}</a></li>
-                                              {% endfor %}
-                                          </ul>
-                                      {% if type == 'EC' %}
-                                          <li>EC present in <strong>{{pathway_data|length }} pathways</strong></li>
-                                          <ul>
-                                              {% for path in pathway_data %}
-                                              <li><a href="{% url 'KEGG_mapp' path.0 %}">{{path.2}} :: {{path.1}}</a></li>
-                                              {% endfor %}
+                                                            <tr>
+                                                                <td>{{ fam }} is associated to <strong>{{ all_locus_data|length }} different proteins</strong> (see tab "<a href="#tab2" data-toggle="tab">Protein list</a>" and "<a href="#tab3" data-toggle="tab">Profile</a>")</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td> The {{ all_locus_data|length }} proteins are classified into <strong>{{ group_count|length }} different orthogroup(s)</strong></td>
+                                                            </tr>                                                        
+                                                        </table>
+                                                        <div style="padding-left:40px">
+                                                            <ul style="list-style-type:disc;">
+                                                                    {% for group in group_count %}
+                                                                    <li><a href="{% url 'locusx' group True%}">{{group}}</a></li>
+                                                                    {% endfor %}
+                                                            </ul>
+                                                        </div>
+                                                </div>
+                                            </div>
 
 
-                                          </ul>
-                                      {% elif type == 'ko' %}
+                                        </div>
 
-                                          <li>KO part of <strong>{{pathway_data|length }} pathways</strong></li>
-                                          <ul style="list-style-type:disc;">
-                                              {% for path in pathway_data %}
-                                              <li><a href="{% url 'KEGG_mapp_ko' path.0 %}">{{path.0}} :: {{path.1}}</a></li>
-                                              {% endfor %}
-                                          </ul>
-                                          <li>KO part of <strong>{{module_data|length }} modules</strong></li>
-                                          <ul style="list-style-type:disc;">
-                                              {% for path in module_data %}
-                                              <li><a href="{% url 'KEGG_module_map' path.0 %}">{{path.2}} :: {{path.1}}</a></li>
-                                              {% endfor %}
-                                          </ul>
 
-                                      {% endif %}
-
-                                      {% if type == 'cog' %}
-                                          <li>External link: <a href="http://www.ncbi.nlm.nih.gov/Structure/cdd/cddsrv.cgi?uid={{ fam }}"> Extrenal {{ fam }}  <i class="fa fa-external-link"></i></a></li>
-                                      {% elif type == 'pfam' %}
-                                          <li>External link: <a href="http://pfam.xfam.org/family/{{ fam }}"> {{ fam }}  <i class="fa fa-external-link"></i></a></li>
-                                      {% elif type == 'interpro' %}
-                                          <li>External link: <a href="http://www.ebi.ac.uk/interpro/entry/{{ fam }}"> {{ fam }}  <i class="fa fa-external-link"></i></a></li>
-                                      {% elif type == 'ko' %}
-                                          <li>External link: <a href="http://www.genome.jp/dbget-bin/www_bget?{{ fam }}"> {{ fam }}  <i class="fa fa-external-link"></i></a></li>
-                                      {% endif %}
-
-                                      </ol>
                                   </div>
+
                                   <div class="tab-pane" id="tab2">
 
                                     <h3>Detail</h3>
@@ -210,7 +345,7 @@
                                        </div>
 
                                   </div>
-                              </div>
+                                </div> <!--tabs-->
                      </div>
                  {% endif %}
           </div>
@@ -236,53 +371,36 @@ $('.nav-tabs a').on('shown.bs.tab', function (e) {
 })
 
 $(document).ready(function() {
-$('#fam_table').DataTable( {
-        dom: 'Bfrtip',
-        "order": [[2, "desc" ]],
-        "columnDefs": [
-        { className: "wrapcol", "targets": [ 12 ] }
-        ],
-        "pageLength": 15,
-        "paging":   true,
-        "ordering": true,
-        "info":     false,
-        buttons: [
-        {
-            extend: 'excel',
-            title: '{{ fam }}'
-        },
-        {
-            extend: 'csv',
-            title: '{{ fam }}'
-        }
-        ],
-    } );
+
+    // Javascript to enable link to tab
+    var url = document.location.toString();
+    if (url.match('#')) {
+        $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
+    } 
+
+    $('#fam_table').DataTable( {
+            dom: 'Bfrtip',
+            "order": [[2, "desc" ]],
+            "columnDefs": [
+            { className: "wrapcol", "targets": [ 12 ] }
+            ],
+            "pageLength": 15,
+            "paging":   true,
+            "ordering": true,
+            "info":     false,
+            buttons: [
+            {
+                extend: 'excel',
+                title: '{{ fam }}'
+            },
+            {
+                extend: 'csv',
+                title: '{{ fam }}'
+            }
+            ],
+        } );
 } );
 
 </script>
 
-<style>
-
-ol {
-  display: block;
-  list-style-type: decimal;
-  margin-top: 1em;
-  margin-bottom: 1em;
-  margin-left: 0;
-  margin-right: 0;
-  padding-left: 40px;
-}
-
-ol > ul > li {
-  padding: 4px;
-  margin-left: 25px;
-}
-
-
-table td.wrapcol {
-word-break: break-all;
-word-wrap: break-word;
-width: auto;
-}
-</style>
 </html>
