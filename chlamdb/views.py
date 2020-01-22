@@ -3007,7 +3007,7 @@ def fam(request, fam, type):
             sql1 =   'select seqfeature_id from interpro.entry t1 inner join interpro.signature t2 on t1.interpro_id=t2.interpro_id ' \
                      ' inner join interpro.interpro_%s t3 on t2.signature_id=t3.signature_id ' \
                      ' where name="%s" group by seqfeature_id;;' % (biodb, fam)
-            sql2 = 'select signature_description from interpro_%s where interpro_accession="%s" limit 1' % (biodb, fam)
+            sql2 = 'select interpro_description from interpro_%s where interpro_accession="%s" limit 1' % (biodb, fam)
             try:
                 info = server.adaptor.execute_and_fetchall(sql2, )[0]
             except IndexError:
