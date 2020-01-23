@@ -203,6 +203,7 @@
                                                                     <tr>
                                                                         <td style="width:160px"><a href="{% url 'KEGG_mapp_ko' path.0 %}">{{path.0}}</a></td>
                                                                         <td>{{path.1}}</td>
+                                                                        <td>{{path.2}}</td>
                                                                     </tr>
                                                                     {% endfor %}
                                                                 </tbody>
@@ -211,17 +212,18 @@
 
                                                             <div class="panel-heading">
                                                                     <h3 class="panel-title">KO part of <strong>{{module_data|length }} modules </strong></h3>
-                                                                </div>
+                                                            </div>
                                                                 {% if module_data|length > 0 %}
-                                                                    <table class="table table-striped" style="width: 100%"></table>
-                                                                        <ul style="list-style-type:disc;">
+                                                                    <table class="table table-striped" style="width: 100%">
+                                                                        <tbody>
                                                                             {% for path in module_data %}
                                                                                 <tr>
-                                                                                    <td style="width:160px"><a href="{% url 'KEGG_module_map' path.0 %}">{{path.2}}</a></td>
+                                                                                    <td style="width:160px"><a href="{% url 'KEGG_module_map' path.0 %}">{{path.0}}</a></td>
                                                                                     <td>{{path.1}}</td>
+                                                                                    <td>{{path.2}}</td>
                                                                                 </tr>
                                                                             {% endfor %}
-                                                                        </ul>
+                                                                        </tbody>
                                                                     </table>
                                                                 {% endif %}
 

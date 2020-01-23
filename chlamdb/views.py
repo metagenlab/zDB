@@ -3081,11 +3081,12 @@ def fam(request, fam, type):
                     import re
                     pathway_list = [re.sub('ko', 'map',i) for i in data[0].split(',')]
                     pathway_list = '("' + '","'.join(pathway_list) + '")'
-                    sql = 'select pathway_name,pathway_category,description from enzyme.kegg_pathway where pathway_name in %s' % pathway_list
+                    sql = 'select distinct pathway_name,pathway_category,description from enzyme.kegg_pathway where pathway_name in %s' % pathway_list
                     pathway_data = server.adaptor.execute_and_fetchall(sql,)
                 if data[1] != '-':
                     module_list = '("' + '","'.join(data[1].split(',')) + '")'
-                    sql = 'select module_name,module_sub_sub_cat,description from enzyme.kegg_module where module_name in %s' % module_list
+                    sql = 'select distinct module_name,module_sub_sub_cat,description from enzyme.kegg_module where module_name in %s' % module_list
+                    print(sql)
                     module_data = server.adaptor.execute_and_fetchall(sql,)
             except:
                 valid_id = False
