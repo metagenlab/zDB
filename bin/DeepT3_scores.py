@@ -12,7 +12,6 @@ if __name__ == '__main__':
     from keras.models import model_from_json
     from fasta_reader import readFile
     from helpers import *
-    import numpy as np
     from Bio import SeqIO
     import os
 
@@ -60,13 +59,3 @@ if __name__ == '__main__':
             f.write("%s\tnon-T3SE\n" % accession)
 
     f.close()
-
-
-
-
-
-
-
-
-
-
