@@ -810,8 +810,7 @@ uniprot_mapping_tab2.splitCsv(header: true, sep: '\t')
 .map{row -> "\"$row.uniprot_accession\"" }.unique().set { uniprot_nr_accessions }
 
 process get_uniprot_data {
-
-  conda 'biopython=1.73=py36h7b6447c_0'
+  container "$params.annotation_container"
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
   echo true
@@ -836,7 +835,7 @@ process get_uniprot_data {
 
 process get_uniprot_proteome_data {
 
-  conda 'biopython=1.73=py36h7b6447c_0'
+  container "$params.annotation_container"
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
   echo true
@@ -995,7 +994,6 @@ process tcdb_gblast3 {
 
 process get_pdb_mapping {
 
-  // conda 'bioconda::biopython=1.68'
   container "$params.annotation_container"
 
   publishDir 'annotation/pdb_mapping/', mode: 'copy', overwrite: true
@@ -1049,7 +1047,7 @@ process get_oma_mapping {
 process execute_interproscan_no_uniparc_matches {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
-  // container "$params.annotation_container"
+  container "$params.annotation_container"
 
   cpus 20
   memory '16 GB'
@@ -1076,15 +1074,13 @@ process execute_interproscan_no_uniparc_matches {
 }
 
 
-// Might also be interesting to split fasta files into smaller chunks
-// judging from the execution time
 process execute_interproscan_uniparc_matches {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
+  container "$params.annotation_container"
 
   cpus	20
   memory '8 GB'
-  // conda 'anaconda::openjdk=8.0.152'
 
   when:
   params.interproscan
@@ -1278,7 +1274,7 @@ process get_diamond_refseq_top_hits {
 
 process align_refseq_BBH_with_mafft {
 
-  conda 'bioconda::mafft=7.407'
+  container "$params.annotation_container"
 
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_alignments', mode: 'copy', overwrite: true
 
@@ -1304,7 +1300,9 @@ mafft_alignments_refseq_BBH.flatten().set{ diamond_BBH_alignments }
 
 process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 
-  conda 'bioconda::fasttree=2.1.10'
+  // Note : not sure fasttree is actually included in
+  // annotation_container
+  container "$params.annotation_container"
   cpus 4
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_phylogenies', mode: 'copy', overwrite: true
 
