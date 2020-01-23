@@ -19,7 +19,8 @@ def perform_search(request,
     if len(split_term) != 1:
         synonymous = False
     else:
-    
+        print("check exact acc")
+        print(re.match("^[0-9\.]+$", search_term))
         if len(search_term) == len("PF04093") and search_term[0:2] == 'PF':
             return fam(request, search_term, 'pfam')
         elif len(search_term) == len('K03652') and search_term[0:1] == 'K':
@@ -32,7 +33,7 @@ def perform_search(request,
             return KEGG_module_map(request, search_term)
         elif len(search_term) == len('map00550') and search_term[0:3] == 'map':
             return KEGG_mapp_ko(request, search_term)
-        elif re.match("^[0-9\.]+$", search_term) and '\.' in search_term:
+        elif re.match("^[0-9\.]+$", search_term) is not None and len(search_term.split(".")) == 4:
             return fam(request, search_term, 'EC')
         else:
         
