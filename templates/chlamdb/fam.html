@@ -8,6 +8,7 @@
 <head>
 {% load staticfiles %}
 {% load static %}
+{% load custom_tags %}
 {% get_static_prefix as STATIC_PREFIX %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
@@ -59,7 +60,7 @@
                                 <div id="my-tab-content" class="tab-content">
                                     <div class="tab-pane active" id="tab1">
 
-                                        <div class="col-md-12 col-lg-8" style="padding-right:30px;padding-top:30px">
+                                        <div class="col-md-12 col-lg-10" style="padding-right:30px;padding-top:30px">
                                             <div class="row">
                                                 <div class="panel panel-default">
                                                     <div class="panel-heading">
@@ -94,7 +95,7 @@
                                                         {% elif type == 'EC' %}
                                                             <tr>
                                                                 <th>External link</th>
-                                                                <td><a href="{{ external_link }}">  {{ fam }}<i class="fa fa-external-link"></i></a></td>
+                                                                <td><a href="{{ external_link }}">  {{ fam }} <i class="fa fa-external-link"></i></a></td>
                                                             </tr>
 
                                                         {% endif %}
@@ -105,8 +106,14 @@
             
                                                                 {% for key, value in info%}
                                                                     <tr>
+                                                                        
                                                                         <th>{{key}}</th>
-                                                                        <td>{{value}}</td>
+                                                                        {% if key == "prosite"%}
+                                                                            <td><a href="https://prosite.expasy.org/{{value}}">{{value}}</a></td>
+                                                                        {% else %}
+                                                                            <td>{{value}}</td>
+                                                                        {% endif %}
+                                                                        
                                                                     </tr>
                                                                 {% endfor %}
 
@@ -114,14 +121,7 @@
                                                                         <th>{{key}}</th>
                                                                         <td>{{value}}</td>
                                                                 </tr>
-
-                                                            <li>EC present in <strong>{{pathway_data|length }} pathways</strong></li>
-                                                            <ul>
-                                                                {% for path in pathway_data %}
-                                                                <li><a href="{% url 'KEGG_mapp' path.0 %}">{{path.2}} :: {{path.1}}</a></li>
-                                                                {% endfor %}       
-                                                        </ul>
-        
+       
                                                         {% elif type == 'ko'%}
         
                                                             <tr>
@@ -194,7 +194,7 @@
                                                 <div class="row">
                                                     <div class="panel panel-default">
                                                         <div class="panel-heading">
-                                                            <h3 class="panel-title"></h3>KO part of <strong>{{pathway_data|length }} pathways</strong></h3>
+                                                            <h3 class="panel-title">KO part of <strong>{{pathway_data|length }} pathways</strong></h3>
                                                         </div>
                                                         {% if pathway_data|length > 0 %}
                                                             <table class="table table-striped" style="width: 100%">
@@ -229,6 +229,69 @@
                                                 </div>
 
 
+
+                                            {% endif %}
+
+
+                                            {% if type == 'EC'%}
+
+                                                <div class="row">
+                                                    <div class="panel panel-default">
+                                                        <div class="panel-heading">
+                                                            <h3 class="panel-title">EC part of <strong>{{pathway_data|length }} pathways</strong></h3>
+                                                        </div>
+                                                        {% if pathway_data|length > 0 %}
+                                                            <table class="table table-striped" style="width: 100%">
+                                                                <tbody>
+                                                                    {% for path in pathway_data %}
+                                                                    <tr>
+                                                                        <td style="width:160px"><a href="{% url 'KEGG_mapp_ko' path.0 %}">{{path.0}}</a></td>
+                                                                        <td>{{path.1}}</td>
+                                                                    </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+
+                                                {% if associated_ko|length > 0 %}
+
+                                                <div class="row">
+                                                        <div class="panel panel-default">
+                                                            <div class="panel-heading">
+                                                                <h3 class="panel-title">Kegg Orthologs</h3></strong></h3>
+                                                            </div>
+                                                                <table class="table table-striped" style="width: 100%">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Accession</th>
+                                                                            <th>Description</th>
+                                                                            <th>Frequency in the database</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% for ko in associated_ko %}
+                                                                        <tr>
+                                                                            {% with ko2freq|keyvalue:ko.0 as freq%}
+                                                                                {% if freq > 0%}
+                                                                                    <td style="width:160px"><a href="{% url 'fam' ko.0 "ko" %}">{{ko.0}}</a></td>
+                                                                                    <td>{{ko.1}}</td>
+                                                                                    <td>{{ freq }}</td>
+                                                                                {% else %}
+                                                                                    <td style="width:160px">{{ko.0}}</td>
+                                                                                    <td>{{ko.1}}</td>
+                                                                                    <td>-</td>
+                                                                                {% endif %}
+
+                                                                             {% endwith %}
+                                                                        </tr>
+                                                                        {% endfor %}
+                                                                    </tbody>
+                                                                </table>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
 
                                             {% endif %}
 

@@ -2307,9 +2307,28 @@ def locusx(request, locus=None, menu=True):
             sql29 = f'select final_prediction,score from annotation.seqfeature_id2locus_{biodb} t1' \
                     f' inner join custom_tables.seqfeature_id2psortb_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
 
-            sql30 = 'select paperblast_id from string.seqfeature_id2paperblast where seqfeature_id=%s;' % (seqfeature_id)
+            sql30 = f'select paperblast_id from string.seqfeature_id2paperblast where seqfeature_id={seqfeature_id};'
 
-            sql31 = 'select * from custom_tables.seqfeature_id2pdb_BBH_2019_06_PVC where seqfeature_id=%s;' % (seqfeature_id)
+            sql31 = f'select * from custom_tables.seqfeature_id2pdb_BBH_{biodb} where seqfeature_id={seqfeature_id};'
+
+            sql32 = f'select distinct ec,value from enzyme.seqfeature_id2ec_{biodb} t1 ' \
+                    f' inner join enzyme.enzymes t2 on t1.ec_id=t2.enzyme_id ' \
+                    f' inner join enzyme.enzymes_dat t3 on t1.ec_id=t3.enzyme_dat_id ' \
+                    f' where seqfeature_id="{seqfeature_id}" and line="description";'
+
+            sql33 = f'select EC,definition,thrshld,score,evalue,t1.ko_id from enzyme.seqfeature_id2ko_{biodb} t1 ' \
+                    f' inner join enzyme.ko_annotation t2 on t1.ko_id=t2.ko_id ' \
+                    f' inner join enzyme.ko2ec t3 on t2.ko_accession=t3.ko_id where seqfeature_id={seqfeature_id}; '
+
+            try:
+                ec_priam_data = server.adaptor.execute_and_fetchall(sql32,)
+            except:
+                ec_priam_data = False
+
+            try:
+                ec_ko_data = server.adaptor.execute_and_fetchall(sql33,)
+            except:
+                ec_ko_data = False
 
             try:
                 pdb_data = server.adaptor.execute_and_fetchall(sql31,)[0]
@@ -3013,18 +3032,16 @@ def fam(request, fam, type):
             except IndexError:
                 valid_id = False
         elif type == 'EC':
-            sql1 = 'select seqfeature_id from (select locus_tag from enzyme.locus2ec_%s as t1 ' \
-                   ' inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id ' \
-                   ' where ec="%s" group by locus_tag) A ' \
-                   ' inner join annotation.seqfeature_id2locus_%s B on A.locus_tag=B.locus_tag group by seqfeature_id;' % (biodb,
-                                                                                                                           fam,
-                                                                                                                           biodb)
+            sql1 = f'select distinct seqfeature_id from enzyme.seqfeature_id2ec_{biodb} t1' \
+                   f' inner join enzyme.enzymes t2 on t1.ec_id=t2.enzyme_id where ec="{fam}";' 
+            print(sql1)
             sql2 = 'select line,value from (select * from enzyme.enzymes where ec="%s") t1 ' \
                    ' inner join enzyme.enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id;' % (fam)
             path = fam.split('.')
-            external_link = 'http://www.chem.qmul.ac.uk/iubmb/enzyme/EC%s/%s/%s/%s.html' % (path[0], path[1], path[2], path[3])
+            print(sql2)
+            external_link = 'https://www.qmul.ac.uk/sbcs/iubmb/enzyme/EC%s/%s/%s/%s.html' % (path[0], path[1], path[2], path[3])
 
-            sql_pathways = 'select pathway_name,pathway_category,description ' \
+            sql_pathways = 'select distinct pathway_name,pathway_category,description ' \
                            ' from (select * from enzyme.enzymes where ec = "%s") t1 ' \
                            ' inner join enzyme.kegg2ec as t2 on t2.ec_id=t1.enzyme_id ' \
                            ' inner join enzyme.kegg_pathway as t3 on t2.pathway_id=t3.pathway_id' \
@@ -3035,6 +3052,18 @@ def fam(request, fam, type):
                 info =  server.adaptor.execute_and_fetchall(sql2, )
             except:
                 valid_id = False
+
+            sql_ko = f'select distinct t3.ko_accession,t3.definition from enzyme.ko2ec t1' \
+                     f' inner join enzyme.enzymes t2 on t1.enzyme_id=t2.enzyme_id ' \
+                     f' inner join enzyme.ko_annotation t3 on t1.ko_id=t3.ko_accession where t2.ec="{fam}";'
+            associated_ko = [list(i) for i in server.adaptor.execute_and_fetchall(sql_ko, )]
+            sql_ko_freq = f'select ko_accession,count(*) as n from (select distinct t3.ko_accession,seqfeature_id from enzyme.ko2ec t1 ' \
+                          f' inner join enzyme.enzymes t2 on t1.enzyme_id=t2.enzyme_id' \
+                          f' inner join enzyme.ko_annotation t3 on t1.ko_id=t3.ko_accession ' \
+                          f' inner join enzyme.seqfeature_id2ko_2019_06_PVC t4 on t3.ko_id=t4.ko_id ' \
+                          f'where t2.ec="{fam}") A group by ko_accession;'
+            ko2freq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_ko_freq,))
+
         elif type == 'ko':
             sql1 = 'select distinct seqfeature_id from enzyme.seqfeature_id2ko_%s t1 ' \
                    ' inner join enzyme.ko_annotation t2 on t1.ko_id=t2.ko_id where t2.ko_accession="%s";' % (biodb,
@@ -3115,12 +3144,15 @@ def fam(request, fam, type):
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
                                                                               [fam],
                                                                               'EC')
-            sql3 = 'select distinct taxon_id,t1.orthogroup,t2.ec ' \
-                   'from (select orthogroup,locus_tag,ec_id from enzyme.locus2ec_%s ' \
-                   'where orthogroup in (%s)) t1 ' \
-                   'left join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id ' \
-                   'left join biosqldb.orthology_detail_%s as t3 ' \
-                   'on t1.locus_tag=t3.locus_tag;' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"', biodb)
+
+            group_filter = '"'+'","'.join(set(orthogroup_list))+'"'   
+
+            sql3 = f'select distinct taxon_id,orthogroup_name,ec from enzyme.seqfeature_id2ec_{biodb} t1 ' \
+                   f' inner join enzyme.enzymes t2 on t1.ec_id=t2.enzyme_id ' \
+                   f' inner join annotation.seqfeature_id2locus_{biodb} t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+                   f' inner join orthology.seqfeature_id2orthogroup_{biodb} t4 on t1.seqfeature_id=t4.seqfeature_id ' \
+                   f' inner join orthology.orthogroup_{biodb} as t5 on t4.orthogroup_id=t5.orthogroup_id ' \
+                   f' where orthogroup_name in ({group_filter});'
 
         elif type == 'ko':
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
@@ -3144,6 +3176,7 @@ def fam(request, fam, type):
                    ' where orthogroup in (%s)) A inner join enzyme.locus2ko_%s as B ' \
                    ' on A.locus_tag=B.locus_tag;' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"', biodb)
 
+        print(sql3)
         data = server.adaptor.execute_and_fetchall(sql3,)
 
 
@@ -3152,7 +3185,7 @@ def fam(request, fam, type):
         # taxid: {group: {domain}}
         # 58: {'group_414': ['PF06723']}, 216: {'group_414': ['PF06723']}, 269: {'group_414': ['PF06723']},
         for one_row in data:
-            taxon = int(one_row[0])
+            taxon = str(one_row[0])
             group = one_row[1]
             ec = one_row[2]
             if taxon not in taxon2orthogroup2ec:
@@ -3177,11 +3210,14 @@ def fam(request, fam, type):
 
             print("plotting")
 
+            #print("merged_dico", merged_dico)
+            #print("taxon2orthogroup2ec", taxon2orthogroup2ec)
+
             tree, style = ete_motifs.multiple_profiles_heatmap(biodb,
-                                                        labels,
-                                                        merged_dico,
-                                                        taxon2group2value=taxon2orthogroup2ec,
-                                                        highlight_first_column=True)
+                                                               labels,
+                                                               merged_dico,
+                                                               taxon2group2value=taxon2orthogroup2ec,
+                                                               highlight_first_column=True)
 
 
             if len(labels) > 30:
