@@ -626,7 +626,7 @@ process build_core_phylogeny_with_fasttree {
 
 
 process checkm_analyse {
-  container 'metagenlab/checkm:1.0.18'
+  container 'metagenlab/checkm:1.0.19'
 
   publishDir 'data/checkm/analysis', mode: 'copy', overwrite: true
 
