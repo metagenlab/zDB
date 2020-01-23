@@ -1,7 +1,7 @@
 # Config file
 
 - the default config file is located in the default_config directory
-- copy it in the main directory and modify it according to your needs
+- copy it in the main directory (under the name nextflow.config) and modify it according to your needs
 - this has been done so that only the default config file is tracked by git
 
 # annotation pipeline (ChlamDB-type database)
