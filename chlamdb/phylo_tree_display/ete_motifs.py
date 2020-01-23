@@ -754,7 +754,7 @@ def pathways_heatmapV2(biodb,
                 taxon = lf.name
                 #print category2taxon2map2count[category][int(taxon)]
                 try:
-                    map_data = category2taxon2map2count[category][int(taxon)][map[0]]
+                    map_data = category2taxon2map2count[category][taxon][map[0]]
                 except:
                     #print 'map', map[0]
                     if head:
@@ -824,8 +824,8 @@ def pathways_heatmapV2(biodb,
                     if map_data[0] > 0:
                         #n.inner_background.color = "#FA5858"
                         try:
-                            n.inner_background.color = taxon2map2color[map[0]][int(taxon)][0] #"#58ACFA"
-                            n.fgcolor = taxon2map2color[map[0]][int(taxon)][1]
+                            n.inner_background.color = taxon2map2color[map[0]][taxon][0] #"#58ACFA"
+                            n.fgcolor = taxon2map2color[map[0]][taxon][1]
                         except:
                             n.inner_background.color = "#58ACFA"
 
@@ -1124,6 +1124,7 @@ def multiple_profiles_heatmap(biodb,
                             else:
                                 n.inner_background.color = 'white'
                 else:
+
                     try:
                         n = TextFace(' %s ' % str(group2taxon2count[value][lf.name]))
                     except:
@@ -1133,6 +1134,7 @@ def multiple_profiles_heatmap(biodb,
                     n.margin_right = 1
                     n.margin_left = 1
                     n.margin_bottom = 1
+
                     if group2taxon2count[value][lf.name] > 0 and group2taxon2count[value][lf.name] != '-':
                         if not reference_column:
                             #print 'no ref column'
@@ -1141,8 +1143,10 @@ def multiple_profiles_heatmap(biodb,
                                     #print 'group', value
                                     #print 'ref data', ref_data
                                     #print taxon2group2value[str(lf.name)][value]
+                                    #print(taxon2group2value)
+                                    #print("test", taxon2group2value[str(lf.name)][value])
                                     try:
-                                        if ref_data not in taxon2group2value[int(lf.name)][value]:
+                                        if ref_data not in taxon2group2value[str(lf.name)][value]:
                                             n.inner_background.color = "#9FF781" #58ACFA
                                         else:
                                             n.inner_background.color = "#F78181" ##F6D8CE
@@ -1465,7 +1469,7 @@ def multiple_profiles_heatmap_nobiodb(column_labels,
                                     #print 'ref data', ref_data
                                     #print taxon2group2value[str(lf.name)][value]
                                     try:
-                                        if ref_data not in taxon2group2value[int(lf.name)][value]:
+                                        if ref_data not in taxon2group2value[lf.name][value]:
                                             n.inner_background.color = "#9FF781" #58ACFA
                                         else:
                                             n.inner_background.color = "#F78181" ##F6D8CE
