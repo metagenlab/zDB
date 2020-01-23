@@ -598,7 +598,7 @@ function clearBox(elementID)
                               <div>
                                   <div class="panel panel-default">
                                     <div class="panel-heading">
-                                      <h3 class="panel-title">TransporterClassification Database  <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Best hit from gBLAST (https://github.com/SaierLaboratory/BioVx)"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
+                                      <h3 class="panel-title">Transporter Classification Database  <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Best hit from gBLAST (https://github.com/SaierLaboratory/BioVx)"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
                                     </div>
 
 
@@ -767,6 +767,69 @@ function clearBox(elementID)
                               </div>
                             </div>
                             {% endif %} 
+
+
+
+                            {%if ec_priam_data or ec_ko_data %}
+                              <div class="row">
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    <h3 class="panel-title">EC annotations <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and KofamScan"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
+                                  </div>
+                                  <table class="table table-striped" style="width: 100%">
+                                      <tr>
+                                        <th>Source</th>
+                                        <th>EC</th>
+                                        <th>Description</th>
+                                      </tr>
+
+                                      {%if ec_priam_data %}
+
+                                          {% for ec in ec_priam_data %}
+                                              <tr>
+                                                  <td>PRIAM</td>
+                                                  <td><a href="{% url 'fam' ec.0 "EC" %}" target="_top">{{ec.0}}</a></td>
+                                                  <td>{{ec.1}}</td>
+                                              </tr>
+                                          {% endfor %}
+
+
+                                      {% endif %}
+                                      {%if ec_ko_data %}
+
+                                          {% for ec in ec_ko_data %}
+                                              <tr>
+                                                  <td>KoFamScan</td>
+                                                  <td><a href="{% url 'fam' ec.0 "EC" %}" target="_top">{{ec.0}}</a></td>
+                                                  <td>{{ec.1}}</td>
+                                                  <td><a data-toggle="collapse" href="#multiCollapseEC_{{ec.5}}" role="button" aria-expanded="false" aria-controls="multiCollapseEC_{{ec.5}}"><span class="badge" aria-hidden="true">Score <i class="fa fa-plus"></i></span></a> </td>
+                                                  <tr class="collapse" id="multiCollapseEC_{{ec.5}}">
+                                                      <td colspan="2">
+                                                            <table class="table table" style="width: 100%">
+                                                              <tr bgcolor="#CEFFFE">
+                                                                    <th>Threshold</th>
+                                                                    <td>{{ec.2}}</td>
+                                                              </tr>
+                                                              <tr bgcolor="#CEFFFE">
+                                                                    <th>Score</th>
+                                                                    <td>{{ec.3}}</td>
+                                                              </tr>
+                                                              <tr bgcolor="#CEFFFE">
+                                                                    <th>E-value</th>
+                                                                    <td>{{ec.4}}</td>
+                                                              </tr>
+                                                          </table>
+                                                      <td>
+                                                    </tr>
+                                              </tr>
+                                          {% endfor %}
+                                      {% endif %}
+                                  </table>
+                                </div>
+                              </div>
+
+                            {% endif %}
+
 
 
                             {%if ko_pathway_data or ko_module_data %}
