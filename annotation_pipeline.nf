@@ -23,7 +23,7 @@ if (params.ncbi_sample_sheet != false){
 process prokka {
 	publishDir 'data/prokka_output', mode: 'copy', overwrite: true
 
-	container 'metagenlab/annotation-pipeline:1.2'
+	container "$params.annotation_container"
 
 	// NOTE : according to Prokka documentation, a linear acceleration
 	// is obtained up to 8 processes and after that, the overhead becomes
@@ -49,7 +49,7 @@ process prokka {
 // leave all the contigs with no coding region (check_gbk doesn't like them)
 process prokka_filter_CDS {
 	publishDir 'data/prokka_output_filtered', mode: 'copy', overwrite: true
-	container 'metagenlab/annotation-pipeline:1.2'
+	container "$params.annotation_container"
 
 	input:
 	file prokka_file from gbk_from_local_assembly.collect()
@@ -119,7 +119,7 @@ if(params.ncbi_sample_sheet == false) {
   // TODO : create a single query to the database
   process download_assembly {
 
-	container 'metagenlab/annotation-pipeline:1.2'
+	container "$params.annotation_container"
 
     publishDir 'data/gbk_ncbi', mode: 'copy', overwrite: true
 
@@ -150,8 +150,6 @@ if(params.ncbi_sample_sheet == false) {
   // TODO: create a single query to the database
   process download_assembly_refseq {
 
-    // conda 'biopython=1.73'
-
     publishDir 'data/refseq_corresp', mode: 'copy', overwrite: true
 
     maxForks 2
@@ -180,9 +178,10 @@ if(params.ncbi_sample_sheet == false) {
     """
   }
 
+  // TODO : test with containers
   process refseq_locus_mapping {
 
-    conda 'biopython=1.73'
+	container "$params.annotation_container"
 
     publishDir 'data/refseq_corresp', mode: 'copy', overwrite: true
 
@@ -218,7 +217,7 @@ all_raw_gbff = raw_ncbi_gbffs.mix(raw_local_gbffs)
 process gbk_check {
   publishDir 'data/gbk_edited', mode: 'copy', overwrite: true
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   input:
   file all_gbff from all_raw_gbff.collect()
@@ -239,7 +238,7 @@ process convert_gbk_to_faa {
 
   publishDir 'data/faa_locus', mode: 'copy', overwrite: true
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   echo false
 
@@ -276,7 +275,7 @@ faa_locus2.collectFile(name: 'merged.faa', newLine: true)
 
 process get_nr_sequences {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   publishDir 'data/', mode: 'copy', overwrite: true
 
@@ -322,7 +321,7 @@ merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
 
 process prepare_orthofinder {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   when:
   params.orthofinder
@@ -343,7 +342,7 @@ process prepare_orthofinder {
 
 process blast_orthofinder {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   cpus 2
 
@@ -374,7 +373,7 @@ process blast_orthofinder {
 
 process orthofinder_main {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   publishDir 'orthology', mode: 'copy', overwrite: true
   echo true
@@ -406,7 +405,7 @@ orthogroups
         orthogroups_2}
 
 process orthogroups2fasta {
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   publishDir 'orthology/orthogroups_fasta', mode: 'copy', overwrite: true
 
@@ -426,7 +425,7 @@ process orthogroups2fasta {
 
 
 process align_with_mafft {
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   publishDir 'orthology/orthogroups_alignments', mode: 'copy', overwrite: true
 
@@ -459,7 +458,7 @@ all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.s
 process orthogroups_phylogeny_with_raxml {
 
   echo false
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
   cpus 4
   publishDir 'orthology/orthogroups_phylogenies', mode: 'copy', overwrite: false
 
@@ -479,7 +478,7 @@ process orthogroups_phylogeny_with_raxml {
 
 process orthogroups_phylogeny_with_fasttree3 {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
   cpus 4
   publishDir 'orthology/orthogroups_phylogenies_fasttree', mode: 'copy', overwrite: true
 
@@ -501,7 +500,7 @@ process orthogroups_phylogeny_with_fasttree3 {
 
 process orthogroups_phylogeny_with_iqtree {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
   cpus 2
   publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: true
 
@@ -529,7 +528,7 @@ process orthogroups_phylogeny_with_iqtree {
 
 process orthogroups_phylogeny_with_iqtree_no_boostrap {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
   cpus 2
   publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: true
 
@@ -556,7 +555,7 @@ process orthogroups_phylogeny_with_iqtree_no_boostrap {
 
 process get_core_orthogroups {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
   cpus 1
   memory '16 GB'
   echo false
@@ -582,7 +581,7 @@ process get_core_orthogroups {
 
 process concatenate_core_orthogroups {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
 
@@ -605,7 +604,7 @@ process concatenate_core_orthogroups {
 
 process build_core_phylogeny_with_fasttree {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   publishDir 'orthology/core_alignment_and_phylogeny', mode: 'copy', overwrite: true
 
@@ -626,7 +625,7 @@ process build_core_phylogeny_with_fasttree {
 
 
 process checkm_analyse {
-  container 'metagenlab/checkm:1.0.19'
+  container "$params.checkm_container"
 
   publishDir 'data/checkm/analysis', mode: 'copy', overwrite: true
 
@@ -649,7 +648,7 @@ process checkm_analyse {
 
 process rpsblast_COG {
   
-  container 'metagenlab/annotation-pipeline:1.2'
+  container "$params.annotation_container"
 
   cpus 4
 
@@ -673,7 +672,7 @@ blast_result.collectFile(name: 'annotation/COG/blast_COG.tab')
 
 process blast_swissprot {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   publishDir 'annotation/blast_swissprot', mode: 'copy', overwrite: true
 
@@ -732,7 +731,7 @@ process diamond_refseq {
   publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
 
   cpus 4
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   when:
   params.diamond_refseq
@@ -771,7 +770,7 @@ refseq_diamond.collectFile().set { refseq_diamond_results_sqlitedb }
 
 process get_uniparc_mapping {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
 
@@ -860,7 +859,7 @@ process get_uniprot_proteome_data {
 
 process get_string_mapping {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
 
@@ -885,7 +884,7 @@ process get_string_mapping {
 
 process get_string_PMID_mapping {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
 
@@ -911,7 +910,7 @@ process get_string_PMID_mapping {
 
 process get_PMID_data {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
 
@@ -938,7 +937,7 @@ process get_PMID_data {
 
 process get_tcdb_mapping {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   publishDir 'annotation/tcdb_mapping/', mode: 'copy', overwrite: true
 
@@ -968,7 +967,7 @@ no_tcdb_mapping.splitFasta( by: 1000, file: "chunk" )
 
 process tcdb_gblast3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.3'
+  container "$params.chlamdb_container"
 
   publishDir 'annotation/tcdb_mapping', mode: 'copy', overwrite: true
 
@@ -997,7 +996,7 @@ process tcdb_gblast3 {
 process get_pdb_mapping {
 
   // conda 'bioconda::biopython=1.68'
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   publishDir 'annotation/pdb_mapping/', mode: 'copy', overwrite: true
 
@@ -1023,7 +1022,7 @@ process get_pdb_mapping {
 
 process get_oma_mapping {
 
-  container "metagenlab/annotation-pipeline:1.2"
+  container "$params.annotation_container"
 
   publishDir 'annotation/oma_mapping/', mode: 'copy', overwrite: true
 
@@ -1050,7 +1049,7 @@ process get_oma_mapping {
 process execute_interproscan_no_uniparc_matches {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
-  // container 'metagenlab/annotation-pipeline:1.2'
+  // container "$params.annotation_container"
 
   cpus 20
   memory '16 GB'
@@ -1113,7 +1112,7 @@ process execute_kofamscan {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
-  container 'metagenlab/annotation-pipeline:1.2'
+  container "$params.annotation_container"
 
   cpus 4
   memory '8 GB'
@@ -1141,7 +1140,7 @@ process execute_PRIAM {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
-  container 'metagenlab/chlamdb_annotation:1.0.3'
+  container "$params.chlamdb_container"
 
   cpus 2
   memory '4 GB'
@@ -1168,7 +1167,7 @@ PRIAM_results.collectFile(name: 'annotation/PRIAM/sequenceECs.txt')
 
 process setup_orthology_db {
   publishDir 'orthology/', mode: 'link', overwrite: true
-  container 'metagenlab/annotation-pipeline:1.2'
+  container "$params.annotation_container"
 
   cpus 4
   memory '8 GB'
@@ -1196,7 +1195,7 @@ process setup_orthology_db {
 
 process setup_diamond_refseq_db {
 
-  container 'metagenlab/annotation-pipeline:1.2'
+  container "$params.annotation_container"
   publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
   echo false
   cpus 4
@@ -1224,7 +1223,7 @@ process setup_diamond_refseq_db {
 process get_refseq_hits_taxonomy {
 
   publishDir 'annotation/diamond_refseq/', mode: 'copy', overwrite: true
-  container 'metagenlab/annotation-pipeline:1.2'
+  container "$params.annotation_container"
 
   echo true
 
@@ -1250,7 +1249,7 @@ process get_refseq_hits_taxonomy {
 
 process get_diamond_refseq_top_hits {
 
-  container 'metagenlab/annotation-pipeline:1.2'
+  container "$params.annotation_container"
   publishDir 'annotation/diamond_refseq_BBH_phylogenies', mode: 'copy', overwrite: true
   echo false
   cpus 4
@@ -1328,7 +1327,7 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 // Filter out small sequences and ambiguous AA
 process filter_sequences {
 
-  container 'metagenlab/annotation-pipeline:1.2'
+  container "$params.annotation_container"
   publishDir 'data/', mode: 'copy', overwrite: true
 
   when:
@@ -1355,7 +1354,7 @@ filtered_sequences.splitFasta( by: 5000, file: "chunk_" ).into{ nr_faa_large_seq
 
 process execute_BPBAac {
 
-  container 'metagenlab/chlamdb_annotation:1.0.3'
+  container "$params.chlamdb_container"
 
   when:
   params.effector_prediction == true
@@ -1388,7 +1387,7 @@ BPBAac_results.collectFile(name: 'annotation/T3SS_effectors/BPBAac_results.tab')
 
 process execute_effectiveT3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.3'
+  container "$params.chlamdb_container"
 
   when:
   params.effector_prediction == true
@@ -1410,7 +1409,7 @@ effectiveT3_results.collectFile(name: 'annotation/T3SS_effectors/effectiveT3_res
 
 process execute_DeepT3 {
 
-  container 'metagenlab/chlamdb_annotation:1.0.3'
+  container "$params.chlamdb_container"
 
   when:
   params.effector_prediction == true && false
@@ -1431,7 +1430,7 @@ DeepT3_results.collectFile(name: 'annotation/T3SS_effectors/DeepT3_results.tab')
 
 process execute_T3_MM {
 
-  container 'metagenlab/chlamdb_annotation:1.0.3'
+  container "$params.chlamdb_container"
 
   when:
   params.effector_prediction == true
@@ -1456,7 +1455,7 @@ T3_MM_results.collectFile(name: 'annotation/T3SS_effectors/T3_MM_results.tab')
 
 process execute_macsyfinder_T3SS {
 
-  container 'metagenlab/chlamdb_annotation:1.0.3'
+  container "$params.chlamdb_container"
 
   publishDir 'annotation/macsyfinder/T3SS/', mode: 'copy', overwrite: true
 
@@ -1483,8 +1482,7 @@ process execute_macsyfinder_T3SS {
 // TODO see if this is interesting to make smaller chunks
 // to speed up execution
 process execute_psortb {
-
-  container 'metagenlab/psort:3.0.6'
+  container "$params.psort_container"
 
   publishDir 'annotation/psortb/', mode: 'copy', overwrite: true
 
@@ -1504,11 +1502,8 @@ process execute_psortb {
 }
 
 process blast_pdb {
-
-  // conda 'bioconda::blast=2.7.1'
-
   publishDir 'annotation/pdb_mapping', mode: 'copy', overwrite: true
-  container 'metagenlab/annotation-pipeline:1.2'
+  container "$params.annotation_container"
 
   cpus 4
 
@@ -1533,7 +1528,7 @@ process blast_pdb {
 process get_uniparc_crossreferences {
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
-  container 'metagenlab/annotation-pipeline:1.2'
+  container "$params.annotation_container"
 
   when:
   params.uniparc
@@ -1557,7 +1552,7 @@ process get_uniparc_crossreferences {
 process get_idmapping_crossreferences {
 
   publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
-  container 'metagenlab/annotation-pipeline:1.2'
+  container "$params.annotation_container"
 
   when:
   params.uniprot_idmapping
@@ -1581,7 +1576,7 @@ process get_idmapping_crossreferences {
 process get_uniprot_goa_mapping {
 
   publishDir 'annotation/goa/', mode: 'copy', overwrite: true
-  container 'metagenlab/annotation-pipeline:1.2'
+  container "$params.annotation_container"
   echo true
 
   when:
