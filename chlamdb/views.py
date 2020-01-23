@@ -2316,7 +2316,7 @@ def locusx(request, locus=None, menu=True):
                     f' inner join enzyme.enzymes_dat t3 on t1.ec_id=t3.enzyme_dat_id ' \
                     f' where seqfeature_id="{seqfeature_id}" and line="description";'
 
-            sql33 = f'select EC,definition,thrshld,score,evalue,t1.ko_id from enzyme.seqfeature_id2ko_{biodb} t1 ' \
+            sql33 = f'select EC,definition,thrshld,score,evalue,t2.ko_accession from enzyme.seqfeature_id2ko_{biodb} t1 ' \
                     f' inner join enzyme.ko_annotation t2 on t1.ko_id=t2.ko_id ' \
                     f' inner join enzyme.ko2ec t3 on t2.ko_accession=t3.ko_id where seqfeature_id={seqfeature_id}; '
 

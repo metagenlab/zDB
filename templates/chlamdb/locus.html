@@ -800,7 +800,7 @@ function clearBox(elementID)
                                           {% for ec in ec_ko_data %}
                                               <tr>
                                                   <td>KoFamScan</td>
-                                                  <td>{{ec.0}}</td>
+                                                  <td><a href="{% url 'fam' ec.5 "ko" %}" target="_top">{{ec.0}}</a></td>
                                                   <td>{{ec.1}}</td>
                                                   <td><a data-toggle="collapse" href="#multiCollapseEC_{{ec.5}}" role="button" aria-expanded="false" aria-controls="multiCollapseEC_{{ec.5}}"><span class="badge" aria-hidden="true">Score <i class="fa fa-plus"></i></span></a> </td>
                                                   <tr class="collapse" id="multiCollapseEC_{{ec.5}}">
