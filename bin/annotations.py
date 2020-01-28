@@ -6,6 +6,7 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation, ExactPosition
 from Bio.Alphabet import IUPAC
 from Bio import AlignIO
 from Bio.Align import MultipleSeqAlignment
+from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
 import pandas as pd
 import sys
@@ -19,6 +20,57 @@ import logging
 import http.client
 
 from ftplib import FTP
+
+# Amino-acid hydrophobicity values value, from
+# Kyte J., Doolittle R.F. 
+# J. Mol. Biol. 157:105-132(1982).
+AA_HYDROPHOBICITY_SCALE_VALUES = {
+    'A' : 1.8,
+    'R' : -4.5,
+    'N' : -3.5,
+    'D' : -3.5,
+    'C' : 2.5,
+    'Q' : -3.5,
+    'E' : -3.5,
+    'G' : -0.4,
+    'H' : -3.2,
+    'I' : 4.5,
+    'L' : 3.8,
+    'K' : -3.9,
+    'M' : 1.9,
+    'F' : 2.8,
+    'P' : -1.6,
+    'S' : -0.8,
+    'T' : -0.7,
+    'W' : -0.9,
+    'Y' : -1.3,
+    'V' : 4.2
+}
+
+
+# Heuristic to detect T3SS effectors inc proteins
+# according to https://doi.org/10.1093/dnares/10.1.9
+# - bi-lobed hydropathic domain, 55-65 aa long,
+#   either 20-100 residues downstream the N-terminus or
+#   100 residus from the C-terminus
+# - no other hydrophic domain of more than 20 amino acid is present
+# - the N-terminal portion doesn't contain any hydrophobic domain 
+#    or signal peptide (to be determined)
+# 
+# Note : 
+# - protein scale using the Kyte-Doolittle values
+#
+# Input: fasta file
+# Output: the set of proteins satisfying the conditions
+# above
+def T3SS_inc_proteins_detection(fasta_file, out_file, sliding_window=7):
+    for record in SeqIO.parse(fasta_file, "fasta"):
+        analysis = ProteinAnalysis(str(record.seq))
+        values = analysis.protein_scale(AA_HYDROPHOBICITY_SCALE_VALUES, sliding_window)
+
+        has_bilobed_
+        for i in range():
+
 
 def chunks(l, n):
     for i in range(0, len(l), n):
