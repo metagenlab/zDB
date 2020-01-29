@@ -80,8 +80,6 @@ AA_HYDROPHOBICITY_SCALE_VALUES = {
 
 # Note: the criteria are a bit loosened as candidates will
 # necessitate a manual control of the hydropathy plot anyway
-#
-# Sliding_window should be an odd number
 def T3SS_inc_proteins_detection(fasta_file, out_file):
     T3SS_predicted_incs = []
     T3SS_hydropathy_values = []
@@ -144,10 +142,11 @@ def T3SS_inc_proteins_detection(fasta_file, out_file):
             T3SS_predicted_incs.append(record)
     
     hydrophobic_plot_file = open(out_file + "_values", "w")
+    hydrophobic_plot_file.write(f">SLIDING_WINDOW: {SLIDING_WINDOW}\n")
     for values, domain, record_id in T3SS_hydropathy_values:
         string_val = [str(i) for i in values]
-        hydrophobic_plot_file.write(">" + record_id + "\n")
-        hydrophobic_plot_file.write(">" + str(domain[0]) + "-" + str(domain[1]) + "\n")
+        hydrophobic_plot_file.write(f">{record_id}\n")
+        hydrophobic_plot_file.write(f">{domain[0]}-{domain[1]}\n")
         hydrophobic_plot_file.write("\n".join(string_val) + "\n")
     SeqIO.write(T3SS_predicted_incs, open(out_file, "w"), "fasta")
 
