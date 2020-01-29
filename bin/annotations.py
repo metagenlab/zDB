@@ -21,6 +21,31 @@ import http.client
 
 from ftplib import FTP
 
+# Heuristic to detect T3SS effectors inc proteins
+# according to https://doi.org/10.1093/dnares/10.1.9
+# - bi-lobed hydropathic domain, 55-65 aa long,
+#   either 20-100 residues downstream the N-terminus or
+#   100 residus from the C-terminus
+# - no other hydrophic domain of more than 20 amino acid is present
+# - the N-terminal portion doesn't contain any hydrophobic domain 
+#    or signal peptide (to be determined)
+# 
+# Note : 
+# - protein scale using the Kyte-Doolittle algorithm
+#
+# Input: fasta file
+# Output: the set of proteins satisfying the conditions
+# above
+
+N_TERMINUS_RANGE = (20, 101) # to take the last aa into account
+C_TERMINUS_RANGE = (0, 101)
+BILOBED_DOMAIN_MIN_SIZE = 55
+BILOBED_DOMAIN_MAX_SIZE = 65
+
+# if another hydrophobic domain bigger or equal to this
+# is present, probably not an INC protein
+HYDROPHOBIC_DOMAIN_EXCLUSION_SIZE = 20
+
 # Amino-acid hydrophobicity values value, from
 # Kyte J., Doolittle R.F. 
 # J. Mol. Biol. 157:105-132(1982).
@@ -48,29 +73,41 @@ AA_HYDROPHOBICITY_SCALE_VALUES = {
 }
 
 
-# Heuristic to detect T3SS effectors inc proteins
-# according to https://doi.org/10.1093/dnares/10.1.9
-# - bi-lobed hydropathic domain, 55-65 aa long,
-#   either 20-100 residues downstream the N-terminus or
-#   100 residus from the C-terminus
-# - no other hydrophic domain of more than 20 amino acid is present
-# - the N-terminal portion doesn't contain any hydrophobic domain 
-#    or signal peptide (to be determined)
-# 
-# Note : 
-# - protein scale using the Kyte-Doolittle values
-#
-# Input: fasta file
-# Output: the set of proteins satisfying the conditions
-# above
+# Note: the criteria are a bit loosened as candidates will
+# necessitate a manual control of the hydropathy plot anyway
 def T3SS_inc_proteins_detection(fasta_file, out_file, sliding_window=7):
+    T3SS_predicted_incs = []
+
     for record in SeqIO.parse(fasta_file, "fasta"):
         analysis = ProteinAnalysis(str(record.seq))
         values = analysis.protein_scale(AA_HYDROPHOBICITY_SCALE_VALUES, sliding_window)
 
-        has_bilobed_
-        for i in range():
+        has_bilobed_N_terminus = False
+        has_bilobed_C_terminus = False
+        has_other_hydrophobic_domain = False
 
+        # not too happy with this solution, storing the domains
+        # may not be necessary
+
+        # collect the hydropathy domains
+        hydropathy_domains = []
+        i = 0
+        while i<len(values):
+            if values[i] < 0:
+                i += 1
+                continue
+            
+            j = i+1
+            while j<len(values) and values[j]>=0:
+                j+=1
+            hydropathy_domains.append((i, j))
+            i = j+1
+
+        for start, end in hydropathy_domains:
+            # see if end or beginning of the domain is within bounds
+            # Note: this is less stringent than the initial conditions
+
+    SeqIO.write(T3SS_predicted_incs, open(out_file, "w"), "fasta")
 
 def chunks(l, n):
     for i in range(0, len(l), n):
