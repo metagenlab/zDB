@@ -84,6 +84,7 @@ AA_HYDROPHOBICITY_SCALE_VALUES = {
 # Sliding_window should be an odd number
 def T3SS_inc_proteins_detection(fasta_file, out_file):
     T3SS_predicted_incs = []
+    T3SS_hydropathy_values = []
 
     # because of the sliding window algorithm, we have results for the following
     # positions [index_shift;index_shift + 1... ; len-index_shift-1; len-index_shift]
@@ -112,34 +113,44 @@ def T3SS_inc_proteins_detection(fasta_file, out_file):
             # not interesting to take it into account if size
             # lower than this --> wouldn't change anything
             if j-i>=HYDROPHOBIC_DOMAIN_EXCLUSION_SIZE:
-                hydropathy_domains.append((i, j))
+                hydropathy_domains.append((i, j-1))
             i = j+1
 
         C_terminus_start_limit = len(values)-(C_TERMINUS_LIMIT-index_shift)
         has_bilobed_domain = False
         has_other_hydrophobic_domain = False
+        bilobed_domain = []
         for start, end in hydropathy_domains:
             # see if end or beginning of the domain is within bounds
             # Note: this is less stringent than the initial conditions
             if ((start+index_shift>N_TERMINUS_RANGE[0] and start+index_shift<N_TERMINUS_RANGE[1]) \
                     or (end+index_shift<N_TERMINUS_RANGE[1]) \
                     or end>=C_terminus_start_limit):
-                length = end-start
+                length = end-start+1
                 if length>=BILOBED_DOMAIN_MIN_SIZE and length<=BILOBED_DOMAIN_MAX_SIZE:
                     # only allow a single domain
                     has_other_hydrophobic_domain = has_other_hydrophobic_domain or has_bilobed_domain
+                    bilobed_domain = (start+index_shift, end+index_shift)
                     has_bilobed_domain = True
                 else:
-                    # we know that the sequence is long enough
-                    # to disqualify this protein as only sequences
-                    # longer than HYDROPHOBIC_DOMAIN_EXCLUSION_SIZE were included
-                    # in the domains list. Leave the loop
                     has_other_hydrophobic_domain = True
                     break
+            else:
+                # we know that the sequence is long enough
+                # to disqualify this protein as only sequences
+                # longer than HYDROPHOBIC_DOMAIN_EXCLUSION_SIZE were included
+                # in the domains list. Leave the loop
+                has_other_hydrophobic_domain = True
+                break
 
-            if has_bilobed_domain and not has_other_hydrophobic_domain:
-                T3SS_predicted_incs.append(record)
-
+        if has_bilobed_domain and not has_other_hydrophobic_domain:
+            T3SS_hydropathy_values.append([values, bilobed_domain, record.id])
+            T3SS_predicted_incs.append(record)
+    
+    hydrophobic_plot_file = open(out_file + "_values", "w")
+    for values, domain, record_id in T3SS_hydropathy_values:
+        string_val = [str(i) for i in values]
+        hydrophobic_plot_file.write(">" + record_id + " " + str(domain) + "\n" + "\n".join(string_val) + "\n")
     SeqIO.write(T3SS_predicted_incs, open(out_file, "w"), "fasta")
 
 def chunks(l, n):
