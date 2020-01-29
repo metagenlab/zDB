@@ -37,10 +37,15 @@ from ftplib import FTP
 # Output: the set of proteins satisfying the conditions
 # above
 
-N_TERMINUS_RANGE = (20, 100) # to take the last aa into account
+# Used to compute the hydrophobic plot
+# CAVE : Should be an odd number
+SLIDING_WINDOW = 7
+
+N_TERMINUS_RANGE = (20, 100)
 C_TERMINUS_LIMIT = 100 # must be within 100 aa from the C-terminal end
 BILOBED_DOMAIN_MIN_SIZE = 55
 BILOBED_DOMAIN_MAX_SIZE = 65
+
 
 # if another hydrophobic domain bigger or equal to this
 # is present, probably not an INC protein
@@ -75,20 +80,24 @@ AA_HYDROPHOBICITY_SCALE_VALUES = {
 
 # Note: the criteria are a bit loosened as candidates will
 # necessitate a manual control of the hydropathy plot anyway
-def T3SS_inc_proteins_detection(fasta_file, out_file, sliding_window=7):
+#
+# Sliding_window should be an odd number
+def T3SS_inc_proteins_detection(fasta_file, out_file):
     T3SS_predicted_incs = []
+
+    # because of the sliding window algorithm, we have results for the following
+    # positions [index_shift;index_shift + 1... ; len-index_shift-1; len-index_shift]
+    index_shift = (SLIDING_WINDOW+1)/2
 
     for record in SeqIO.parse(fasta_file, "fasta"):
         analysis = ProteinAnalysis(str(record.seq))
-        values = analysis.protein_scale(AA_HYDROPHOBICITY_SCALE_VALUES, sliding_window)
-
-        has_bilobed_domain = False
-        has_other_hydrophobic_domain = False
+        values = analysis.protein_scale(AA_HYDROPHOBICITY_SCALE_VALUES, SLIDING_WINDOW)
 
         # collect the hydropathy domains
         hydropathy_domains = []
         i = 0
         while i<len(values):
+            # not hydrophic, skip
             if values[i] < 0:
                 i += 1
                 continue
@@ -106,13 +115,15 @@ def T3SS_inc_proteins_detection(fasta_file, out_file, sliding_window=7):
                 hydropathy_domains.append((i, j))
             i = j+1
 
-        C_terminus_start_limit = len(values)-C_TERMINUS_LIMIT
+        C_terminus_start_limit = len(values)-(C_TERMINUS_LIMIT-index_shift)
+        has_bilobed_domain = False
+        has_other_hydrophobic_domain = False
         for start, end in hydropathy_domains:
             # see if end or beginning of the domain is within bounds
             # Note: this is less stringent than the initial conditions
-            if (start>N_TERMINUS_RANGE[0] and start<N_TERMINUS_RANGE[1])
-                    or (end<N_TERMINUS_RANGE[1])
-                    or end>C_terminus_start_limit:
+            if (start+index_shift>N_TERMINUS_RANGE[0] and start+index_shift<N_TERMINUS_RANGE[1])
+                    or (end+index_shift<N_TERMINUS_RANGE[1])
+                    or end>=C_terminus_start_limit:
                 length = end-start
                 if length>=BILOBED_DOMAIN_MIN_SIZE && length<=BILOBED_DOMAIN_MAX_SIZE:
                     # only allow a single domain
@@ -122,8 +133,9 @@ def T3SS_inc_proteins_detection(fasta_file, out_file, sliding_window=7):
                     # we know that the sequence is long enough
                     # to disqualify this protein as only sequences
                     # longer than HYDROPHOBIC_DOMAIN_EXCLUSION_SIZE were included
-                    # in the domains list
+                    # in the domains list. Leave the loop
                     has_other_hydrophobic_domain = True
+                    break
 
             if has_bilobed_domain and not has_other_hydrophobic_domain:
                 T3SS_predicted_incs.append(record)
