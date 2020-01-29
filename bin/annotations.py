@@ -121,11 +121,11 @@ def T3SS_inc_proteins_detection(fasta_file, out_file):
         for start, end in hydropathy_domains:
             # see if end or beginning of the domain is within bounds
             # Note: this is less stringent than the initial conditions
-            if (start+index_shift>N_TERMINUS_RANGE[0] and start+index_shift<N_TERMINUS_RANGE[1])
-                    or (end+index_shift<N_TERMINUS_RANGE[1])
-                    or end>=C_terminus_start_limit:
+            if ((start+index_shift>N_TERMINUS_RANGE[0] and start+index_shift<N_TERMINUS_RANGE[1]) \
+                    or (end+index_shift<N_TERMINUS_RANGE[1]) \
+                    or end>=C_terminus_start_limit):
                 length = end-start
-                if length>=BILOBED_DOMAIN_MIN_SIZE && length<=BILOBED_DOMAIN_MAX_SIZE:
+                if length>=BILOBED_DOMAIN_MIN_SIZE and length<=BILOBED_DOMAIN_MAX_SIZE:
                     # only allow a single domain
                     has_other_hydrophobic_domain = has_other_hydrophobic_domain or has_bilobed_domain
                     has_bilobed_domain = True
