@@ -37,8 +37,8 @@ from ftplib import FTP
 # Output: the set of proteins satisfying the conditions
 # above
 
-N_TERMINUS_RANGE = (20, 101) # to take the last aa into account
-C_TERMINUS_RANGE = (0, 101)
+N_TERMINUS_RANGE = (20, 100) # to take the last aa into account
+C_TERMINUS_LIMIT = 100 # must be within 100 aa from the C-terminal end
 BILOBED_DOMAIN_MIN_SIZE = 55
 BILOBED_DOMAIN_MAX_SIZE = 65
 
@@ -82,12 +82,8 @@ def T3SS_inc_proteins_detection(fasta_file, out_file, sliding_window=7):
         analysis = ProteinAnalysis(str(record.seq))
         values = analysis.protein_scale(AA_HYDROPHOBICITY_SCALE_VALUES, sliding_window)
 
-        has_bilobed_N_terminus = False
-        has_bilobed_C_terminus = False
+        has_bilobed_domain = False
         has_other_hydrophobic_domain = False
-
-        # not too happy with this solution, storing the domains
-        # may not be necessary
 
         # collect the hydropathy domains
         hydropathy_domains = []
@@ -98,14 +94,39 @@ def T3SS_inc_proteins_detection(fasta_file, out_file, sliding_window=7):
                 continue
             
             j = i+1
+            # Note : may be too stringent, what if a single value
+            # in the middle of an otherwise perfect sequence is
+            # too low. Should we keep it?
             while j<len(values) and values[j]>=0:
                 j+=1
-            hydropathy_domains.append((i, j))
+
+            # not interesting to take it into account if size
+            # lower than this --> wouldn't change anything
+            if j-i>=HYDROPHOBIC_DOMAIN_EXCLUSION_SIZE:
+                hydropathy_domains.append((i, j))
             i = j+1
 
+        C_terminus_start_limit = len(values)-C_TERMINUS_LIMIT
         for start, end in hydropathy_domains:
             # see if end or beginning of the domain is within bounds
             # Note: this is less stringent than the initial conditions
+            if (start>N_TERMINUS_RANGE[0] and start<N_TERMINUS_RANGE[1])
+                    or (end<N_TERMINUS_RANGE[1])
+                    or end>C_terminus_start_limit:
+                length = end-start
+                if length>=BILOBED_DOMAIN_MIN_SIZE && length<=BILOBED_DOMAIN_MAX_SIZE:
+                    # only allow a single domain
+                    has_other_hydrophobic_domain = has_other_hydrophobic_domain or has_bilobed_domain
+                    has_bilobed_domain = True
+                else:
+                    # we know that the sequence is long enough
+                    # to disqualify this protein as only sequences
+                    # longer than HYDROPHOBIC_DOMAIN_EXCLUSION_SIZE were included
+                    # in the domains list
+                    has_other_hydrophobic_domain = True
+
+            if has_bilobed_domain and not has_other_hydrophobic_domain:
+                T3SS_predicted_incs.append(record)
 
     SeqIO.write(T3SS_predicted_incs, open(out_file, "w"), "fasta")
 
