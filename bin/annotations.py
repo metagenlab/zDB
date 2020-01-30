@@ -139,7 +139,6 @@ def T3SS_inc_proteins_detection(fasta_file, out_file):
             T3SS_predicted_incs.append(record)
     
     hydrophobic_plot_file = open(out_file + "_values", "w")
-    hydrophobic_plot_file.write(f">SLIDING_WINDOW: {SLIDING_WINDOW}\n")
     for values, domain, record_id in T3SS_hydropathy_values:
         string_val = [str(i) for i in values]
         hydrophobic_plot_file.write(f">{record_id}\n")
