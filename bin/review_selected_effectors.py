@@ -73,7 +73,6 @@ while line:
             user_input = ""
 
     if user_input == "Y":
-        print(f"Keeping : {record_id}")
         records_to_keep.append(record_id)
 
 output_file = args.fasta + "_selected"
