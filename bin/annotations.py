@@ -80,8 +80,10 @@ AA_HYDROPHOBICITY_SCALE_VALUES = {
 
 # Note: the criteria are a bit loosened as candidates will
 # necessitate a manual control of the hydropathy plot anyway
+#
+# TODO : add detection of the different types of effectors according to the paper
+# Type I, II and III and modify the manual handpicking accordingly
 def T3SS_inc_proteins_detection(fasta_file, out_file):
-    T3SS_predicted_incs = []
     T3SS_hydropathy_values = []
 
     # because of the sliding window algorithm, we have results for the following
@@ -103,17 +105,18 @@ def T3SS_inc_proteins_detection(fasta_file, out_file):
             j = i+1
             # Note : may be too stringent, what if a single value
             # in the middle of an otherwise perfect sequence is
-            # too low. Should we keep it?
+            # too low. Should we keep it or tolerate short hydrophilic window
+            # in the middle of an overall hydrophobic bilobed domain ?
             while j<len(values) and values[j]>=0:
                 j+=1
 
-            # not interesting to take it into account if size
+            # not interesting to take into account if size
             # lower than this --> wouldn't change anything
             if j-i>=HYDROPHOBIC_DOMAIN_EXCLUSION_SIZE:
                 hydropathy_domains.append((i, j-1))
             i = j+1
 
-        C_terminus_start_limit = len(values)-(C_TERMINUS_LIMIT-index_shift)
+        C_terminus_start_limit = len(values)-C_TERMINUS_LIMIT
         n_domains = 0
         has_other_hydrophobic_domain = False
         bilobed_domain = []
@@ -125,9 +128,9 @@ def T3SS_inc_proteins_detection(fasta_file, out_file):
 
             # see if end or beginning of the domain is within bounds
             # Note: this is less stringent than the initial conditions
-            if ((start+index_shift>N_TERMINUS_RANGE[0] and start+index_shift<N_TERMINUS_RANGE[1]) \
-                    or (end+index_shift>N_TERMINUS_RANGE[0] and end+index_shift<N_TERMINUS_RANGE[1]) \
-                    or end>=C_terminus_start_limit):
+            if ((start+index_shift>=N_TERMINUS_RANGE[0] and start+index_shift<=N_TERMINUS_RANGE[1]) \
+                    or (end+index_shift>=N_TERMINUS_RANGE[0] and end+index_shift<=N_TERMINUS_RANGE[1]) \
+                    or end>=C_terminus_start_limit+index_shift):
                 n_domains += 1
                 bilobed_domain = (start, end)
             else:
@@ -136,15 +139,13 @@ def T3SS_inc_proteins_detection(fasta_file, out_file):
 
         if n_domains==1 and not has_other_hydrophobic_domain:
             T3SS_hydropathy_values.append([values, bilobed_domain, record.id])
-            T3SS_predicted_incs.append(record)
     
-    hydrophobic_plot_file = open(out_file + "_values", "w")
+    hydrophobic_plot_file = open(out_file, "w")
     for values, domain, record_id in T3SS_hydropathy_values:
         string_val = [str(i) for i in values]
         hydrophobic_plot_file.write(f">{record_id}\n")
         hydrophobic_plot_file.write(f">{domain[0]}-{domain[1]}\n")
         hydrophobic_plot_file.write("\n".join(string_val) + "\n")
-    SeqIO.write(T3SS_predicted_incs, open(out_file, "w"), "fasta")
 
 def chunks(l, n):
     for i in range(0, len(l), n):

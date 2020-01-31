@@ -1490,7 +1490,6 @@ process execute_T3SS_inc_protein_prediction {
 
   output:
   file "${genomes}_PREDICTED_INC"
-  file "${genomes}_PREDICTED_INC_values"
 
   when:
   params.effector_prediction
