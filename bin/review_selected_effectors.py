@@ -14,7 +14,7 @@ def draw_hydropathy_plot(record_id, values, bilobed_domain, inc_type=1):
             i+=1
             continue
         j = i+1
-        while values[j]>=0:
+        while j<len(values) and values[j]>=0:
             j+=1
         
         if i>=bilobed_domain[0] and i<=bilobed_domain[1]:
