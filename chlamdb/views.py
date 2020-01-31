@@ -7924,15 +7924,14 @@ def effector_pred(request):
 
     taxon2values_eld = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-   # pfam refseq tanonomy
-   sql = 'select taxon_id, count(*) as n from (select distinct t5.taxon_id,t5.locus_tag from interpro.interpro_signature2pfam_id_chlamydia_04_16 t1 ' \
+    # pfam refseq tanonomy
+    sql = 'select taxon_id, count(*) as n from (select distinct t5.taxon_id,t5.locus_tag from interpro.interpro_signature2pfam_id_chlamydia_04_16 t1 ' \
          ' inner join interpro.interpro_chlamydia_04_16 t2 on t1.signature_id=t2.signature_id ' \
          ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id  inner join interpro.signature t4 on t1.signature_id=t4.signature_id ' \
          ' inner join annotation.seqfeature_id2locus_chlamydia_04_16 t5 on t2.seqfeature_id=t5.seqfeature_id where bacteria_freq<=0.02 and eukaryota_count>5) BBB group by taxon_id;'
 
     taxon2pfam_refseq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     
-
     # mex 3 algo
     sql = 'select A.taxon_id, count(*) from (select t1.taxon_id, t1.seqfeature_id from effectors.predicted_effectiveT3_%s t1 ' \
           ' inner join effectors.predicted_BPBAac_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
