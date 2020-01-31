@@ -189,6 +189,10 @@
 
 ### ideas
 
+
+- [ ] HAMAP rules as SPARQL A portable annotation pipeline for genomes and proteomes (https://www.biorxiv.org/content/10.1101/615294v1) 
+- [ ] unifire annotation (UniRule and SAAS from interproscan results): https://gitlab.ebi.ac.uk/uniprot-public/unifire
+  - [ ] https://www.ebi.ac.uk/training/online/sites/ebi.ac.uk.training.online/files/UniFIRE-URML.pdf
 - [ ] kegg pathway => link show on circos
 - [ ] kegg module => link show on circos
 - [ ] integrate genome properties: table with property2steps avec IPP accession
