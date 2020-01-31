@@ -267,7 +267,8 @@ faa_locus1.into { faa_genomes1
                   faa_genomes3
                   faa_genomes4
                   faa_genomes5
-                  faa_genomes6 }
+                  faa_genomes6 
+                  inc_effectors_prediction }
 
 faa_locus2.collectFile(name: 'merged.faa', newLine: true)
     .set { merged_faa0 }
@@ -1474,6 +1475,32 @@ process execute_macsyfinder_T3SS {
   """
   python /usr/local/bin/macsyfinder/bin/macsyfinder --db-type unordered_replicon --sequence-db ${genome} -d /usr/local/bin/annotation_pipeline_nextflow/data/macsyfinder/secretion_systems/TXSS/definitions -p /usr/local/bin/annotation_pipeline_nextflow/data/macsyfinder/secretion_systems/TXSS/profiles all --coverage-profile 0.2 --i-evalue-select 1 --e-value-search 1
   mv macsyfinder-* macsyfinder-${genome.baseName}
+  """
+}
+
+// inclusion membrane T3SS effector prediction
+// based on 
+process execute_T3SS_inc_protein_prediction {
+  container "$params.annotation_container"
+
+  publishDir "annotation/T3SS_inc_effectors/", mode: "copy", overwrite: true
+
+  input:
+  file genomes from inc_effectors_prediction
+
+  output:
+  file "${genomes}_PREDICTED_INC"
+  file "${genomes}_PREDICTED_INC_values"
+
+  when:
+  params.effector_prediction
+
+  script:
+  """
+  #!/usr/bin/env python
+
+  import annotations
+  annotations.T3SS_inc_proteins_detection("${genomes}", "${genomes}_PREDICTED_INC")
   """
 }
 
