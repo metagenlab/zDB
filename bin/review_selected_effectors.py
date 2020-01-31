@@ -26,6 +26,7 @@ def draw_hydropathy_plot(record_id, values, bilobed_domain, inc_type=1):
 
     # plot the domain interval
     axvspan(bilobed_domain[0], bilobed_domain[1], facecolor="r", alpha=0.1, label="Bilobed hydrophobic domain")
+    axhline(y=0, color="k")
     # plot([bilobed_domain[0], bilobed_domain[1]], [0, 0], color="r", linewidth=2)
     plot([annotations.N_TERMINUS_RANGE[0], annotations.N_TERMINUS_RANGE[0]], [-4, 4],
             color="g", linestyle=":", linewidth=2)
@@ -37,7 +38,6 @@ def draw_hydropathy_plot(record_id, values, bilobed_domain, inc_type=1):
     legend()
     xlabel("Residue")
     ylabel("Hydrophobicity")
-    grid(True)
     show()
 
 # This script is designed to allow user to review manually
