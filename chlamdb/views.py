@@ -7924,6 +7924,15 @@ def effector_pred(request):
 
     taxon2values_eld = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
+   # pfam refseq tanonomy
+   sql = 'select taxon_id, count(*) as n from (select distinct t5.taxon_id,t5.locus_tag from interpro.interpro_signature2pfam_id_chlamydia_04_16 t1 ' \
+         ' inner join interpro.interpro_chlamydia_04_16 t2 on t1.signature_id=t2.signature_id ' \
+         ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id  inner join interpro.signature t4 on t1.signature_id=t4.signature_id ' \
+         ' inner join annotation.seqfeature_id2locus_chlamydia_04_16 t5 on t2.seqfeature_id=t5.seqfeature_id where bacteria_freq<=0.02 and eukaryota_count>5) BBB group by taxon_id;'
+
+    taxon2pfam_refseq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    
+
     # mex 3 algo
     sql = 'select A.taxon_id, count(*) from (select t1.taxon_id, t1.seqfeature_id from effectors.predicted_effectiveT3_%s t1 ' \
           ' inner join effectors.predicted_BPBAac_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
@@ -7978,6 +7987,12 @@ def effector_pred(request):
             taxon2values_chaperones[taxon] = [int(taxon2values_chaperones[taxon]),
                                        round((float(taxon2values_chaperones[taxon])/float(taxon_id2genome_size[taxon]))*100,2)]
 
+        if taxon not in taxon2pfam_refseq:
+            taxon2pfam_refseq[taxon] = [0, 0]
+        else:
+            taxon2pfam_refseq[taxon] = [int(taxon2pfam_refseq[taxon]),
+                                       round((float(taxon2pfam_refseq[taxon])/float(taxon_id2genome_size[taxon]))*100,2)]
+
 
         taxon2values[taxon] = [taxon2values_effectiveT3[taxon][0],
                                taxon2values_BPBAac[taxon][0],
@@ -7986,7 +8001,8 @@ def effector_pred(request):
                                taxon2values_T4SEpre_psAac[taxon][0],
                                taxon2values_chaperones[taxon][0],
                                taxon2values_eld[taxon][0],
-                               taxon2values_mix[taxon][0]
+                               taxon2values_mix[taxon][0],
+                               taxon2pfam_refseq[taxon][0]  
                                ]
 
         taxon2values2[taxon] = [taxon2values_effectiveT3[taxon][1],
@@ -7996,10 +8012,11 @@ def effector_pred(request):
                                taxon2values_T4SEpre_psAac[taxon][1],
                                taxon2values_chaperones[taxon][1],
                                taxon2values_eld[taxon][1],
-                               taxon2values_mix[taxon][1]
+                               taxon2values_mix[taxon][1],
+                               taxon2pfam_refseq[taxon][1] 
                                ]
 
-    header_list2 = ['effectiveT3', 'BPBAac', 'T3MM', 'T4SEpre_bpbAac', 'T4SEpre_psAac', 'chaperones','ELD', 'intesect']
+    header_list2 = ['effectiveT3', 'BPBAac', 'T3MM', 'T4SEpre_bpbAac', 'T4SEpre_psAac', 'chaperones','ELD', 'intesect', 'pfam_refseq']
 
 
     sql = 'SELECT orthogroup, count(*) as n FROM (select  orthogroup,taxon_id from orthology_detail_%s ' \
