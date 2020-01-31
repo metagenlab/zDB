@@ -8,6 +8,22 @@ from pylab import *
 def draw_hydropathy_plot(record_id, values, bilobed_domain, inc_type=1):
     plot(values)
 
+    i=0
+    while i<len(values):
+        if values[i]<0:
+            i+=1
+            continue
+        j = i+1
+        while values[j]>=0:
+            j+=1
+        
+        if i>=bilobed_domain[0] and i<=bilobed_domain[1]:
+            # found the bilobed domain, it will have a different colour
+            pass
+        else:
+            axvspan(i, j-1, facecolor="g", alpha=0.1)
+        i = j+1
+
     # plot the domain interval
     axvspan(bilobed_domain[0], bilobed_domain[1], facecolor="r", alpha=0.1, label="Bilobed hydrophobic domain")
     # plot([bilobed_domain[0], bilobed_domain[1]], [0, 0], color="r", linewidth=2)
