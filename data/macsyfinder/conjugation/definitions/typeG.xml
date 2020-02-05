@@ -1,0 +1,27 @@
+<system inter_gene_max_space="30" min_mandatory_genes_required="3" min_genes_required="6">  
+	<gene name="virb4" presence="mandatory" system_ref="CONJ" />
+    <gene name="t4cp1" presence="mandatory" system_ref="CONJ" />
+    <gene name="MOBB" presence="mandatory" system_ref="CONJ" />
+
+    <gene name="G_tfc7" presence="accessory" />
+    <gene name="G_tfc8" presence="accessory" />
+    <gene name="G_tfc9" presence="accessory" />
+    <gene name="G_tfc10" presence="accessory" />
+    <gene name="G_tfc11" presence="accessory" />
+    <gene name="G_tfc12" presence="accessory" />
+    <gene name="G_tfc13" presence="accessory" />
+    <gene name="G_tfc14" presence="accessory" />
+    <gene name="G_tfc15" presence="accessory" />
+    <gene name="G_tfc17" presence="accessory" />
+    <gene name="G_tfc18" presence="accessory" />
+    <gene name="G_tfc19" presence="accessory" />
+    <gene name="G_tfc22" presence="accessory" />
+    <gene name="G_tfc23" presence="accessory" />
+    <gene name="G_tfc24" presence="accessory" />
+    <gene name="G_tfc2" presence="accessory" />
+    <gene name="G_tfc3" presence="accessory" />
+    <gene name="G_tfc5" presence="accessory" />
+    
+    <gene name="I_traE" presence="accessory" system_ref="typeI" />
+    <gene name="T_virB1" presence="accessory" system_ref="typeT" />
+</system>
