@@ -1479,17 +1479,21 @@ process execute_macsyfinder_T3SS {
 }
 
 // inclusion membrane T3SS effector prediction
-// based on 
+
 process execute_T3SS_inc_protein_prediction {
   container "$params.annotation_container"
 
   publishDir "annotation/T3SS_inc_effectors/", mode: "copy", overwrite: true
 
   input:
-  file genomes from inc_effectors_prediction
+  String suffix = "_PREDICTED_INC"
+
+  // algorithm fast enough to avoid the overhead cost of 
+  // running it in separate processes
+  file genomes from inc_effectors_prediction.collect()
 
   output:
-  file "${genomes}_PREDICTED_INC"
+  file "*" + suffix
 
   when:
   params.effector_prediction
@@ -1499,7 +1503,9 @@ process execute_T3SS_inc_protein_prediction {
   #!/usr/bin/env python
 
   import annotations
-  annotations.T3SS_inc_proteins_detection("${genomes}", "${genomes}_PREDICTED_INC")
+  genomes_list = "${genomes}".split()
+  for genome in genomes_list:
+    annotations.T3SS_inc_proteins_detection(genome, genome + "${suffix}")
   """
 }
 
