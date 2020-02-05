@@ -163,6 +163,9 @@ def get_idmapping_crossreferences(databases_dir, table):
     # TODO : heavy SQL request. Group it in a single
     # query to speed up.
     # uniparc_accession IN (...)
+    # TP: those tables are very big (hundreds of millon of rows), 
+    # I'm not sure that filtering with a large number of values 
+    # would be faster 
     with open(table, 'r') as f:
         f.readline()
         for row in f:
