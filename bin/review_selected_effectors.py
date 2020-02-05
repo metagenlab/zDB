@@ -79,12 +79,14 @@ while line:
 
     draw_hydropathy_plot(record_id, values, bilobed_domain_indices)
     user_input = ""
-    while user_input!="Y" and user_input!="N" and user_input!="R":
-        user_input = input("Keep as an effector ? (Y/N/(R)echeck) : ")
+    while user_input!="Y" and user_input!="N" and user_input!="R" and user_input!="A":
+        user_input = input("Keep as an effector ? (Y/N/(R)echeck/(A)bort) : ")
         if user_input=="R":
             draw_hydropathy_plot(record_id, values, bilobed_domain_indices)
             user_input = ""
 
+    if user_input == "A":
+        break
     if user_input == "Y":
         records_to_keep.append(record_id)
 
