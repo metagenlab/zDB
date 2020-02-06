@@ -163,25 +163,29 @@ Source databases
 List of public databases and files needed to perform the annotation. 
 Most databases are optional depending of the annotation that are configured in the config file.
 
-=============================  =========  =================================================
-Name                           Mandatory  Path
-=============================  =========  =================================================
-interproscan                   ?          https://github.com/ebi-pf-team/interproscan/wiki/HowToDownload
-SwissProt/TrEMBL               ?          ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/
-Uniprot idmapping file         ?          ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/
-UNIPARC                        ?          ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/
-TCDB                           ?          http://www.tcdb.org/download.php
-PDB                            ?          ftp://ftp.wwpdb.org/pub/pdb/derived_data/
-RefSeq                         ?          ftp://ftp.ncbi.nlm.nih.gov/refseq/release/complete/
-prot_acc2taxid                 ?          ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/
-linear NCBI taxonomy           ?          https://github.com/tpillone/ncbitax2lin
-kegg KO profiles database      ?          ftp://ftp.genome.jp/pub/db/kofam/
-UNIPARC interpro annotations   ?          ftp://ftp.ebi.ac.uk/pub/databases/interpro/uniparc_match.tar.gz
-paperBLAST                     ?          https://github.com/morgannprice/PaperBLAST#download
-STRING                         ?          https://stringdb-static.org/download/items_schema.v11.0.sql.gz, https://stringdb-static.org/download/evidence_schema.v11.0.sql.gz
-PRIAM                          ?          http://priam.prabi.fr/REL_JAN18/Distribution.zip
-=============================  =========  =================================================
+=============================  ========= ========  =================================================
+Name                           Mandatory Size      Path
+=============================  ========= ========  =================================================
+interproscan                   ?         74G       https://github.com/ebi-pf-team/interproscan/wiki/HowToDownload
+UNIPARC interpro annotations   ?         164G      ftp://ftp.ebi.ac.uk/pub/databases/interpro/uniparc_match.tar.gz
+SwissProt/TrEMBL               ?         30G       ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/
+Uniprot idmapping file         ?         94G       ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/
+UNIPARC                        ?         152G      ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/
+TCDB                           ?         10M       http://www.tcdb.org/download.php
+PDB                            ?         150M      ftp://ftp.wwpdb.org/pub/pdb/derived_data/
+RefSeq                         ?         54G+14G   ftp://ftp.ncbi.nlm.nih.gov/refseq/release/complete/
+prot_acc2taxid                 ?         32G       ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/
+linear NCBI taxonomy           ?         539M      https://github.com/tpillone/ncbitax2lin
+kegg KO profiles database      ?         4.8G      ftp://ftp.genome.jp/pub/db/kofam/
+paperBLAST                     ?         2.3G      https://github.com/morgannprice/PaperBLAST#download
+STRING                         ?         54G+13G   https://stringdb-static.org/download/items_schema.v11.0.sql.gz, https://stringdb-static.org/download/evidence_schema.v11.0.sql.gz
+PRIAM                          ?         3.4G      http://priam.prabi.fr/REL_JAN18/Distribution.zip
+=============================  ========= ========  =================================================
 
+
+.. note::
+
+    Approximatively ``700Gb`` of disk space (TODO: remove temporary/unnecessary files, set them as temp snakemake outputs)
 
 
 Download & indexing of source databases
@@ -234,7 +238,8 @@ Overview of executed tasks:
         1	formatdb_tcdb
         1	get_linear_taxonomy
         1	index_accession2taxid
-        1	index_id_mapping
+        1	index_id_Source databases
+================mapping
         1	index_interproscan
         1	index_pdb
         1	index_tcdb
@@ -380,6 +385,16 @@ orthology/orthogroups_refseq_diamond_BBH_phylogenies/OG*nwk   FastTree phylogeny
 ===========================================================   ==================================
 
 
+
+
+
+STRING
+======
+
+STRING can be downloaded as postgresql database dump. We have to load it than extract the information of interest:
+
+- PMID associations from textmining (DONE)
+- predicted protein-protein interactions (TODO)
 
 
 .. _Nextflow : https://www.nextflow.io/
