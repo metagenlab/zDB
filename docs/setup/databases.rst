@@ -358,7 +358,7 @@ Homology search + phylogenies
 SwissProt & RefSeq homologs
 ...........................
 
-- closest SwissProt & RefSeq homologs, sqlite db for fasta data retrieval
+- closest SwissProt & RefSeq homologs, sqlite db for fast data retrieval
 
 ========================================================   ==================================
 PATH                                                       Comment
