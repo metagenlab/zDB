@@ -397,8 +397,22 @@ STRING can be downloaded as postgresql database dump. We have to load it than ex
 - predicted protein-protein interactions (TODO)
 
 
+Database setup
+==============
+
+Multiple scripts are used to import all the annotations and compareative data into a MySQL database. `Scripts are here`_
+They need to be executed in a specific order (e.g load gbk files and only then the annotations, orthology & phylogenies). 
+
+- TODO: automate setup `with this nextflow workflow`_
+
+
+
+
+
 .. _Nextflow : https://www.nextflow.io/
 .. _`documentation of the ChlamDB` : https://chlamdb.ch/docs/methods/annotation.html
 .. _`Snakemake workflow` : https://github.com/metagenlab/databases_setup
 .. _sqlite : https://www.sqlite.org/index.html
 .. _`sequences hashes` : https://biopython.org/DIST/docs/api/Bio.SeqUtils.CheckSum-module.html
+.. _`Scripts are here` : https://github.com/metagenlab/chlamdb/tree/master/db_setup
+.. _`with this nextflow workflow` : https://github.com/metagenlab/annotation_pipeline_nextflow/blob/master/chlamdb_setup.nf
