@@ -16,7 +16,7 @@ Input files
 Configuration file
 ==================
 
-.. code-block::
+.. code-block:: bash
 
     ////////////////////
     ///// INPUT ////////
