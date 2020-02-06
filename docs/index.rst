@@ -12,13 +12,3 @@ Welcome to annotation's documentation!
    :caption: Contents:
 
    setup/*
-
-
-	     
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
