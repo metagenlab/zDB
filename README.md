@@ -1,3 +1,8 @@
+# Config file
+
+- the default config file is located in the default_config directory
+- copy it in the main directory (under the name nextflow.config) and modify it according to your needs
+- this has been done so that only the default config file is tracked by git
 
 # annotation pipeline (ChlamDB-type database)
 
@@ -18,6 +23,11 @@
 - execute KofamScan to get KO annotation
 - mapping to string, oma, pdb, tcdb databases (exact matches)
 - get PMID mapping from string
+
+
+# ToDo Containers
+
+- [ ]  add interproscan in a standard location
 
 # DONE
 
@@ -76,15 +86,12 @@
 
 ## priority 1
 
-- [ ] TCDB and PDB: no exact match first, directly blast against db
+- [ ] Build a set a containers that contains all tools necessary to run the pipeline (i.e. Kofam_scan, etc) so that it can be run without having to debug it first
+- [ ] TCDB: no exact match first, directly blast against db
+- [ ] PDB: no exact match first, directly blast against db
+- [ ] STRING no exact match first, directly blast against db
+- [ ] add PaperBlast BLAST
 - [ ] retrieve GO annotations from uniprotKB GOA (exact match or best diamond/plast hit if no exact match?)
-- [X] get accession mapping
-  - [X] from uniprot idmapping
-  - [X] get Refseq protein ID and locus_tag and match to new locus tags in index
-   - [X] download refseq => extract faa => hash to make the correspondance?
-  - [X] from uniparc cross references
-- [X] filter very small sequences before T3SS effetors annotations
-- [X] check for unusual amino acids before T3SS effetors annotations ==> replace ambiguous aa by "X"
 - [ ] retrieve GO annotations from uniprotKB GOA 
     - [ ] from uniprot accession mapping
     - [ ] from diamond uniprotKB for unmapped sequences => keep best hit only 
@@ -92,7 +99,13 @@
 - [ ] get cross-references from uniprot IdMapping? Or from uniprot db itself? (cross references from indexed uniprotKB xml)
   - [ ] priority to uniprot entries from corresponding proteome (otherwise based on exact match)
   - [ ] multiple match case? get entire proteomes to get the correct mapping between locus_tag and un iprot entries: https://www.ebi.ac.uk/proteins/api/doc/#!/uniparc/getByProteome
-
+- [X] get accession mapping
+  - [X] from uniprot idmapping
+  - [X] get Refseq protein ID and locus_tag and match to new locus tags in index
+   - [X] download refseq => extract faa => hash to make the correspondance?
+  - [X] from uniparc cross references
+- [X] filter very small sequences before T3SS effetors annotations
+- [X] check for unusual amino acids before T3SS effetors annotations ==> replace ambiguous aa by "X"
 
 
 ## priority 2
