@@ -18,6 +18,7 @@ Configuration file
 
 .. code-block::
 
+
     ////////////////////
     ///// INPUT ////////
     ////////////////////
@@ -35,9 +36,80 @@ Configuration file
 
 
     //////////////////////////////
-    ///// CONTAINERS CONFIG //////
+    ///// PROTEIN ANNOTATION /////
     //////////////////////////////
 
+    params.cog = true
+    params.interproscan = true
+    params.uniparc = true
+    params.tcdb = true
+    params.string = true
+    params.pdb = true
+    params.oma = true
+    params.ko = true
+    params.tcdb_gblast = false
+    params.PRIAM = true
+    params.psortb = true
+    params.uniprot_goa = true
+    params.uniprot_idmapping = true
+
+    params.macsyfinder = true
+    params.effector_prediction = true
+    params.DeepT3 = true
+
+    // retrieve uniprot annotations & scores 
+    params.uniprot_data = false
+
+
+
+    //////////////////////////////
+    ///// QUALITY CHECK //////////
+    //////////////////////////////
+
+    params.checkm = true
+
+
+
+    //////////////////////////////
+    ///// Orthology //////////////
+    //////////////////////////////
+
+    params.orthofinder = true
+    params.orthofinder_output_dir = "output"
+
+    // allow (or not) missing data when identifying single copy core genes
+    params.core_missing = 0
+    params.core_genome_phylogeny_with_fasttree = true
+
+    // build orthogroup phylogeny
+    params.orthogroups_phylogeny_with_iqtree = false
+    params.orthogroups_phylogeny_with_fasttree = true
+
+
+
+    ////////////////////////////////////////////
+    ///// HOMOLOGY SEARCH & PHYLOGENIES ////////
+    ////////////////////////////////////////////
+
+    // homology search vs RefSeq and SwissProt
+    params.blast_swissprot = false
+    params.plast_refseq = false
+    params.diamond_refseq = true
+    params.diamond_refseq_taxonomy = true
+
+    // build phylogenies including closest BBH
+    // possibility to filter BBH based on phylum name
+    params.refseq_diamond_BBH_phylogeny = true
+    params.refseq_diamond_BBH_phylogeny_top_n_hits = 4
+    params.refseq_diamond_BBH_phylogeny_phylum_filter = '["Chlamydiae", "Verrucomicrobia", "Planctomycetes", "Kiritimatiellaeota", "Lentisphaerae"]'
+
+    params.interproscan_home = "$params.databases_dir/interproscan/interproscan-latest"
+
+
+
+    //////////////////////////////
+    ///// CONTAINERS CONFIG //////
+    //////////////////////////////
 
     // Necessary to be able to access the database directory
     // in singularity
@@ -57,67 +129,14 @@ Configuration file
 
 
 
-    //////////////////////////////
-    ///// ANALYSIS TO RUN ////////
-    //////////////////////////////
-
-    params.cog = true
-    params.orthofinder = true
-    params.orthofinder_output_dir = "output"
-
-    params.interproscan = true
-    params.uniparc = true
-    params.uniprot_data = false
-    params.tcdb = true
-    params.blast_swissprot = false
-    params.plast_refseq = false
-    params.diamond_refseq = true
-    params.diamond_refseq_taxonomy = true
-    params.refseq_diamond_BBH_phylogeny = true
-    params.refseq_diamond_BBH_phylogeny_top_n_hits = 4
-    params.refseq_diamond_BBH_phylogeny_phylum_filter = '["Chlamydiae", "Verrucomicrobia", "Planctomycetes", "Kiritimatiellaeota", "Lentisphaerae"]'
-    params.string = true
-    params.pdb = true
-    params.oma = true
-    params.ko = true
-    params.checkm = true
-    params.tcdb_gblast = false
-    params.PRIAM = true
-    params.effector_prediction = true
-    params.macsyfinder = true
-    params.psortb = true
-    params.orthogroups_phylogeny_with_iqtree = false
-    params.orthogroups_phylogeny_with_fasttree = true
-    params.core_missing = 0
-    params.genome_faa_folder = "$PWD/faa"
-
-    params.core_genome_phylogeny_with_fasttree = true
-
-    params.DeepT3 = true
-    params.DeepT3_dir = 
-
-    params.executor = 'local'
-
-
-    // TODO : unify the different tasks
-    // if uniprot is to be used, it would make sense that all 
-    // the linked tasks should execute
-    params.uniprot_goa = true
-    params.uniprot_idmapping = true
-    params.core_genome_phylogeny_with_fasttree = true
-
-    params.interproscan_home = "$params.databases_dir/interproscan/interproscan-latest"
-
-
     /////////////////////////////
     ///// EXECUTION CONTROL /////
     /////////////////////////////
 
-
-
     process.queue = 'normal'
     process.memory = '2G'
     process.cpus = 40
+    params.executor = 'local'
 
     executor {
     $lsf {
@@ -148,20 +167,20 @@ Most databases are optional depending of the annotation that are configured in t
 =============================  =========  =================================================
 Name                           Mandatory  Path
 =============================  =========  =================================================
-interproscan                   Yes        https://github.com/ebi-pf-team/interproscan/wiki/HowToDownload
-SwissProt/TrEMBL               Yes        ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/
-Uniprot idmapping file         Yes        ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/
-UNIPARC                        Yes        ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/
-TCDB                                      http://www.tcdb.org/download.php
-PDB                                       ftp://ftp.wwpdb.org/pub/pdb/derived_data/
-RefSeq                                    ftp://ftp.ncbi.nlm.nih.gov/refseq/release/complete/
-prot_acc2taxid                            ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/
+interproscan                   ?          https://github.com/ebi-pf-team/interproscan/wiki/HowToDownload
+SwissProt/TrEMBL               ?          ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/
+Uniprot idmapping file         ?          ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/
+UNIPARC                        ?          ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/
+TCDB                           ?          http://www.tcdb.org/download.php
+PDB                            ?          ftp://ftp.wwpdb.org/pub/pdb/derived_data/
+RefSeq                         ?          ftp://ftp.ncbi.nlm.nih.gov/refseq/release/complete/
+prot_acc2taxid                 ?          ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/
 linear NCBI taxonomy           ?          https://github.com/tpillone/ncbitax2lin
-kegg KO profiles database                 ftp://ftp.genome.jp/pub/db/kofam/
-UNIPARC interpro annotations   Yes        ftp://ftp.ebi.ac.uk/pub/databases/interpro/uniparc_match.tar.gz
-paperBLAST                                https://github.com/morgannprice/PaperBLAST#download
-STRING                                    https://stringdb-static.org/download/items_schema.v11.0.sql.gz, https://stringdb-static.org/download/evidence_schema.v11.0.sql.gz
-PRIAM                                     http://priam.prabi.fr/REL_JAN18/Distribution.zip
+kegg KO profiles database      ?          ftp://ftp.genome.jp/pub/db/kofam/
+UNIPARC interpro annotations   ?          ftp://ftp.ebi.ac.uk/pub/databases/interpro/uniparc_match.tar.gz
+paperBLAST                     ?          https://github.com/morgannprice/PaperBLAST#download
+STRING                         ?          https://stringdb-static.org/download/items_schema.v11.0.sql.gz, https://stringdb-static.org/download/evidence_schema.v11.0.sql.gz
+PRIAM                          ?          http://priam.prabi.fr/REL_JAN18/Distribution.zip
 =============================  =========  =================================================
 
 
