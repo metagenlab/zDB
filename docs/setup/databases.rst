@@ -259,7 +259,7 @@ PATH                                                   Description
 ====================================================== ==================================
 interproscan/annotated_uniparc/uniparc_match.db        Index of InterPro annotations for the entire UNIPARC database
 uniprot/uniparc/uniparc.db                             Indexed UNIPARC database
-uniprot/idmapping/uniprot_sprot_trembl.db              Index Unirpot database (annotations)
+uniprot/idmapping/uniprot_sprot_trembl.db              Index UniProt database (annotations)
 refseq/merged_refseq.db                                Indexed RefSeq database
 ncbi-taxonomy/prot_accession2taxid.db                  Correspondance between RefSeq accession and NCBI taxids
 ncbi-taxonomy/linear_taxonomy.db                       Linear NCBI taxnonomy database  
