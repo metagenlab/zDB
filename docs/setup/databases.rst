@@ -160,7 +160,7 @@ Configuration file
 Source databases
 ================
 
-List of public databases needed to perform the annotation. 
+List of public databases and files needed to perform the annotation. 
 Most databases are optional depending of the annotation that are configured in the config file.
 
 =============================  =========  =================================================
