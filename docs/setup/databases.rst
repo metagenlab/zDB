@@ -378,8 +378,8 @@ Orthogroups + RefSeq BBH pyhlogenies (1/group)
 ===========================================================   ==================================
 PATH                                                          Comment
 ===========================================================   ==================================
-annotation/diamond_refseq_BBH_phylogenies/OG*faa              Faa of each orthologous groups + 4 top RefSeq hits of each sequence
-orthology/orthogroups_refseq_diamond_BBH_alignments/OG*faa    Mafft alignment of each orthologous groups + 4 top RefSeq hits of each sequence
+annotation/diamond_refseq_BBH_phylogenies/OG*faa              Faa of each orthologous group + 4 top RefSeq hits of each sequence
+orthology/orthogroups_refseq_diamond_BBH_alignments/OG*faa    Mafft alignment of each orthologous group + 4 top RefSeq hits of each sequence
 orthology/orthogroups_refseq_diamond_BBH_phylogenies/OG*nwk   FastTree phylogeny of each orthologous groups + 4 top RefSeq hits of each sequence
 ===========================================================   ==================================
 
@@ -390,7 +390,7 @@ orthology/orthogroups_refseq_diamond_BBH_phylogenies/OG*nwk   FastTree phylogeny
 STRING
 ======
 
-STRING can be downloaded as postgresql database dump. We have to load it than extract the information of interest:
+STRING can be downloaded as postgresql database dump. We have to load it to extract:
 
 - PMID associations from textmining (DONE)
 - predicted protein-protein interactions (TODO)
@@ -399,7 +399,7 @@ STRING can be downloaded as postgresql database dump. We have to load it than ex
 Database setup
 ==============
 
-Multiple scripts are used to import all the annotations and compareative data into a MySQL database. `Scripts are here`_
+Multiple scripts are used to import annotations and compareative data into a MySQL database. `Scripts are here`_
 They need to be executed in a specific order (e.g load gbk files and only then the annotations, orthology & phylogenies). 
 
 - TODO: automate setup `with this nextflow workflow`_
