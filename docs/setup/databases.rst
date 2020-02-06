@@ -199,11 +199,185 @@ sqlite_ databases. The annotation workflow retrieve annotations either by
 .. note::
     Please note that downloading and indexing these databases can take between few hours to days.
 
+Snakemake command to download major databases:
+
+.. code-block:: bash
+
+    snakemake --use-conda --conda-prefix ~/miniconda3/ -j 8 --restart-times 0 
+    --snakefile $REPO_PATH/databases_setup/Snakefile_databases 
+    update_main
+
+
+Overview of executed tasks:
+
+.. code-block:: bash
+
+    Job counts:
+        count	jobs
+        1	download_accession2taxid
+        1	download_goa
+        1	download_idmapping
+        1	download_kofam
+        1	download_ncbi_taxonomy
+        1	download_paperblast_db
+        1	download_paperblast_seqs
+        1	download_pdb
+        2003	download_refseq_single_file
+        1	download_tcdb
+        1	download_uniparc
+        1	download_uniprotkb_interpro_annotation
+        1	extract_ncbi_taxonomy
+        1	format_refseq_blast
+        1	format_refseq_diamond
+        1	formatdb_paperblast
+        1	formatdb_pdb
+        1	formatdb_tcdb
+        1	get_linear_taxonomy
+        1	index_accession2taxid
+        1	index_id_mapping
+        1	index_interproscan
+        1	index_pdb
+        1	index_tcdb
+        1	index_uniparc
+        1	index_uniprotkb_goa
+        1	merge_refseq
+        1	setup_taxonomy_db
+        1	uncompress_koafam
+        1	update_main
+        2032
+
+
+Essential files
++++++++++++++++
+
+====================================================== ==================================
+PATH                                                   Description
+====================================================== ==================================
+interproscan/annotated_uniparc/uniparc_match.db        Index of InterPro annotations for the entire UNIPARC database
+uniprot/uniparc/uniparc.db                             Indexed UNIPARC database
+uniprot/idmapping/uniprot_sprot_trembl.db              Index Unirpot database (annotations)
+refseq/merged_refseq.db                                Indexed RefSeq database
+ncbi-taxonomy/prot_accession2taxid.db                  Correspondance between RefSeq accession and NCBI taxids
+ncbi-taxonomy/linear_taxonomy.db                       Linear NCBI taxnonomy database  
+databases/refseq/merged_refseq.dmnd                    RefSeq Diamond database
+databases/goa/goa_uniprot.db                           GOA database index
+databases/pdb/pdb_seqres.faa.*                         PBD BLASTp database
+databases/TCDB/tcdb.faa.*                              TCDB  BLASTp database
+databases/kegg/profiles/*                              HMM profiles for KO annotation
+====================================================== ==================================
+
 
 Output files
 ============
 
+- in order to accelerate protein annotation, identical proteins are annotated only once
+- identical protein are identified with their sequence hash through the whole annotation workflow
 
+====================================================== ==================================
+PATH                                                   Comment
+====================================================== ==================================
+data/nr_mapping.tab                                    Correspondance table between locus_tag and sequence-hash
+data/nr.faa                                            Non-redundant fasta file (amino acid sequences)
+data/filtered_sequences.faa                            Protein sequences larger than 10aa, amibiguous aa replaced by "X"
+data/refseq_corresp/refseq_corresp.tab                 Correspondance with RefSeq protein accession & locus_tags
+data/checkm/checkm_results.tab                         CheckM results (genome completeness & contamination)
+data/gbk_ncbi/*                                        Downloaded GBK files
+data/gbk_edited/*                                      Edited gbk files (contigs concatenated, cleaned description, check if all CDS have a locus_tag,... see gbk_check()) 
+data/faa_locus/*                                       faa files with CDS locus tag as header
+annotation/uniparc_mapping/no_uniparc_mapping.faa      Sequences that could not be mapped to uniparc
+annotation/uniparc_mapping/uniparc_mapping.faa         Sequences that could be mapped to uniparc
+annotation/uniparc_crossreferences.tab                 Cross reference to many databases extracted from uniparc db                     
+====================================================== ==================================
+
+Protein annotation
+++++++++++++++++++
+
+- annotations. Generally in tabular format
+
+====================================================== ==================================
+PATH                                                   Comment
+====================================================== ==================================
+annotation/COG/blast_COG.tab                           RPSBLAST results vs cdd COG profiles
+annotation/interproscan/*xml,tsv,stml/svg              Interproscan results (extracted from db or de novo)
+annotation/KO/chunk*                                   KofamScan results 
+annotation/paperblast/                                 TODO BLASTp vs DB
+annotation/pdb_mapping/blast_results.tab               BLASTp results vs PDB
+annotation/PRIAM/sequenceECs.txt                       Ezyme (EC) annotation from PRIAM
+annotation/psortb/chunk*                               Subcellular localization from psortB 
+annotation/string/string_mapping_PMID.tab              TODO: switch to blast vs db
+annotation/T3SS_effectors/BPBAac_results.tab           BPBAac results (T3SS effectors)
+annotation/T3SS_effectors/DeepT3_results.tab           DeepT3 results (T3SS effectors)
+annotation/T3SS_effectors/effectiveT3_results.tab      effectiveT3 results (T3SS effectors)
+annotation/T3SS_effectors/T3_MM_results.tab            T3_MM results (T3SS effectors)
+annotation/tcdb_mapping/TCDB_RESULTS*                  TCDB results (transporters)
+====================================================== ==================================
+
+
+Orthology
+++++++++++
+
+Orthogroups + pyhlogenies (1/group)
+....................................
+
+- fasta files, alignments and phylogenies
+
+====================================================== ==================================
+PATH                                                   Comment
+====================================================== ==================================
+orthology.db                                           Sqlite for fast retrieval and filtering: locus_tag2orthogroup, sequence_hash2aa_sequence, locus_tag2sequence_hash
+orthogroups_fasta/OG*faa                               Orthogroup faa files 
+orthogroups_alignments/OG*faa                          Orthogroup mafft alignments 
+orthogroups_phylogenies_fasttree/*nwk                  Orthogroup FastTree phylogenies 
+====================================================== ==================================
+
+Species phylogeny
+..................
+
+- core single copy orthogroups, concatenated alignment and species phylogeny
+
+================================================================== ==================================
+PATH                                                               Comment
+================================================================== ==================================
+orthology/core_groups/group*                                       Single copy core groups
+orthology/core_alignment_and_phylogeny/msa.faa                     Concatenated alignment of core groups (missing data are replaced by gaps)
+orthology/core_alignment_and_phylogeny/core_genome_phylogeny.nwk   Reference species phylogeny reconstructed based on the concatenated alignment with FasTree 
+orthology/core_alignment_and_phylogeny/corresp_table.tab           Table of core groups
+================================================================== ==================================
+
+
+
+Homology search + phylogenies
+++++++++++++++++++++++++++++++
+
+
+SwissProt & RefSeq homologs
+...........................
+
+- closest SwissProt & RefSeq homologs, sqlite db for fasta data retrieval
+
+========================================================   ==================================
+PATH                                                       Comment
+========================================================   ==================================
+annotation/blast_swissprot/chunk*                          BLASTp results vs SwissProt
+annotation/diamond_refseq/chunk*                           Diamond results vs RefSeq
+annotation/diamond_refseq/nr_refseq_hits.tab               Non redundant list of hits
+annotation/diamond_refseq/diamond_refseq.db                Sqlite database of diamond hits for fast retrival and filtering
+annotation/diamond_refseq/refseq_taxonomy.db               Sqlite database with accession to ncbi taxon id correspondance
+========================================================   ==================================
+
+
+Orthogroups + RefSeq BBH pyhlogenies (1/group)
+...............................................
+
+- orthogroups fasta with closest RefSeq homologs, alignments and phylogenies
+
+===========================================================   ==================================
+PATH                                                          Comment
+===========================================================   ==================================
+annotation/diamond_refseq_BBH_phylogenies/OG*faa              Faa of each orthologous groups + 4 top RefSeq hits of each sequence
+orthology/orthogroups_refseq_diamond_BBH_alignments/OG*faa    Mafft alignment of each orthologous groups + 4 top RefSeq hits of each sequence
+orthology/orthogroups_refseq_diamond_BBH_phylogenies/OG*nwk   FastTree phylogeny of each orthologous groups + 4 top RefSeq hits of each sequence
+===========================================================   ==================================
 
 
 
