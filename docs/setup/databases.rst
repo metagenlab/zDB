@@ -239,7 +239,6 @@ Overview of executed tasks:
         1	get_linear_taxonomy
         1	index_accession2taxid
         1	index_id_Source databases
-================mapping
         1	index_interproscan
         1	index_pdb
         1	index_tcdb
