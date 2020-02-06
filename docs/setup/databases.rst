@@ -302,7 +302,7 @@ Protein annotation
 PATH                                                   Comment
 ====================================================== ==================================
 annotation/COG/blast_COG.tab                           RPSBLAST results vs cdd COG profiles
-annotation/interproscan/*xml,tsv,stml/svg              Interproscan results (extracted from db or de novo)
+annotation/interproscan/*xml,tsv,html/svg              Interproscan results (extracted from db or de novo)
 annotation/KO/chunk*                                   KofamScan results 
 annotation/paperblast/                                 TODO BLASTp vs DB
 annotation/pdb_mapping/blast_results.tab               BLASTp results vs PDB
