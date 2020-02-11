@@ -163,29 +163,31 @@ Source databases
 List of public databases and files needed to perform the annotation. 
 Most databases are optional depending of the annotation that are configured in the config file.
 
-=============================  ========= ========  =================================================
-Name                           Mandatory Size      Path
-=============================  ========= ========  =================================================
-interproscan                   ?         74G       https://github.com/ebi-pf-team/interproscan/wiki/HowToDownload
-UNIPARC interpro annotations   ?         164G      ftp://ftp.ebi.ac.uk/pub/databases/interpro/uniparc_match.tar.gz
-SwissProt/TrEMBL               ?         30G       ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/
-Uniprot idmapping file         ?         94G       ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/
-UNIPARC                        ?         152G      ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/
-TCDB                           ?         10M       http://www.tcdb.org/download.php
-PDB                            ?         150M      ftp://ftp.wwpdb.org/pub/pdb/derived_data/
-RefSeq                         ?         54G+14G   ftp://ftp.ncbi.nlm.nih.gov/refseq/release/complete/
-prot_acc2taxid                 ?         32G       ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/
-linear NCBI taxonomy           ?         539M      https://github.com/tpillone/ncbitax2lin
-kegg KO profiles database      ?         4.8G      ftp://ftp.genome.jp/pub/db/kofam/
-paperBLAST                     ?         2.3G      https://github.com/morgannprice/PaperBLAST#download
-STRING                         ?         54G+13G   https://stringdb-static.org/download/items_schema.v11.0.sql.gz, https://stringdb-static.org/download/evidence_schema.v11.0.sql.gz
-PRIAM                          ?         3.4G      http://priam.prabi.fr/REL_JAN18/Distribution.zip
-=============================  ========= ========  =================================================
+=============================  =========  ==============  ==============  =================================================
+Name                           Mandatory  Size (06.2019)  Size (01.2020)  Path
+=============================  =========  ==============  ==============  =================================================
+InterproScan                   ?          74G             ?               https://github.com/ebi-pf-team/interproscan/wiki/HowToDownload
+UNIPARC                        ?          152G            215G (index?)   ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/
+SwissProt/TrEMBL               ?          30G             ?               ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/
+UNIPARC interpro annotations   ?          164G            ?               ftp://ftp.ebi.ac.uk/pub/databases/interpro/uniparc_match.tar.gz
+Uniprot idmapping file         ?          94G             113G            ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/
+TCDB                           ?          10M             24M             http://www.tcdb.org/download.php
+PDB                            ?          150M            404M            ftp://ftp.wwpdb.org/pub/pdb/derived_data/
+RefSeq                         ?          180G            221G (BL+Dmd)   ftp://ftp.ncbi.nlm.nih.gov/refseq/release/complete/
+prot_acc2taxid                 ?          32G             36G             ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/
+linear NCBI taxonomy           ?          539M            539M            https://github.com/tpillone/ncbitax2lin
+kegg KO profiles database      ?          4.8G            5.8G            ftp://ftp.genome.jp/pub/db/kofam/
+paperBLAST                     ?          -               2.3G            https://github.com/morgannprice/PaperBLAST#download
+STRING                         ?          -               54G+13G         https://stringdb-static.org/download/items_schema.v11.0.sql.gz, https://stringdb-static.org/download/evidence_schema.v11.0.sql.gz
+PRIAM                          ?          3.4G            idem            http://priam.prabi.fr/REL_JAN18/Distribution.zip
+Uniprot GOA                    no         30G             50G             ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gaf.gz
+TOTAL                                     ~765            ?
+=============================  =========  ==============  ==============  =================================================
 
 
 .. note::
 
-    Approximatively ``700Gb`` of disk space (TODO: remove temporary/unnecessary files, set them as temp snakemake outputs)
+    At least ``800Gb`` of disk space needed (TODO: remove temporary/unnecessary files, set them as temp snakemake outputs)
 
 
 Download & indexing of source databases
@@ -203,7 +205,7 @@ sqlite_ databases. The annotation workflow retrieve annotations either by
 .. note::
     Please note that downloading and indexing these databases can take between few hours to days.
 
-Snakemake command to download major databases:
+Snakemake command to download and index most databases except interproscan:
 
 .. code-block:: bash
 
@@ -248,8 +250,32 @@ Overview of executed tasks:
         1	setup_taxonomy_db
         1	uncompress_koafam
         1	update_main
-        2032
+        1	download_and_uncompress_uniprot_swissprot_fasta
+        1	download_swissprot_xml
+        1	download_trembl_xml
+        1	format_swissprot
+        1	index_swissprot_xml
+        2038
 
+
+Snakemake command to download the letest interproscan version:
+
+.. code-block:: bash
+
+    snakemake --use-conda --conda-prefix ~/miniconda3/ -j 10 
+    --snakefile $REPO_PATH/databases_setup/Snakefile_databases interproscan
+
+Overview of executed tasks:
+
+.. code-block:: bash
+
+    Job counts:
+        count	jobs
+        1	copy_missing_executables
+        1	download_interproscan
+        1	interproscan
+        1	uncompress_interproscan
+        4
 
 Essential files
 +++++++++++++++
@@ -349,7 +375,6 @@ orthology/core_alignment_and_phylogeny/corresp_table.tab           Table of core
 ================================================================== ==================================
 
 
-
 Homology search + phylogenies
 ++++++++++++++++++++++++++++++
 
@@ -384,17 +409,19 @@ orthology/orthogroups_refseq_diamond_BBH_phylogenies/OG*nwk   FastTree phylogeny
 ===========================================================   ==================================
 
 
-
-
-
 STRING
 ======
 
 STRING can be downloaded as postgresql database dump. We have to load it to extract:
 
-- PMID associations from textmining (DONE)
+- PMID associations from textmining (DONE, see ``setup_string_paper_db.py``)
 - predicted protein-protein interactions (TODO)
+- load into database with ``chlamdb-load-string-pmid-mapping.py``.
 
+PaperBlast
+==========
+
+Not yet integrated into the pipeline. Process blast results with ``chlamdb-load-paperblast.py``.
 
 Database setup
 ==============
@@ -403,8 +430,6 @@ Multiple scripts are used to import annotations and compareative data into a MyS
 They need to be executed in a specific order (e.g load gbk files and only then the annotations, orthology & phylogenies). 
 
 - TODO: automate setup `with this nextflow workflow`_
-
-
 
 
 
