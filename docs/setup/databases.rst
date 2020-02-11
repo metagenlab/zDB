@@ -431,6 +431,73 @@ They need to be executed in a specific order (e.g load gbk files and only then t
 
 - TODO: automate setup `with this nextflow workflow`_
 
+Setup biosqldb
+++++++++++++++
+
+- see ``chlamdb_setup.nf`` for initial setup of the sql database
+
+Setup Scripts
++++++++++++++
+
+=====================================================  =============================== ========================================
+Name                                                   Group                           Description
+=====================================================  =============================== ========================================
+chlamdb-setup-blast-databases.py
+chlamdb-setup-COG.py
+chlamdb-setup-comparative-tables.py
+chlamdb-setup-door2-operons.py
+chlamdb-setup-enzyme-kegg.py
+chlamdb-setup-gc-content-tables.py
+chlamdb-setup-genomes-statistics.py
+chlamdb-setup-linear-taxonomy.py
+chlamdb-setup-old_locus-table.py
+chlamdb-setup-pathway_ko_associations.py
+chlamdb-setup-sqldb.py
+chlamdb-setup_string-paper-db.py
+chlamdb-setup-TCDB.py
+chlamdb_setup_utils.py
+=====================================================  =============================== ========================================
+
+Load Scripts
+++++++++++++
+
+=====================================================  =============================== ========================================
+Name                                                   Group                           Description
+=====================================================  =============================== ========================================
+chlamdb-load-gbk.py                                    primary data                    Load edited GBK files. Be careful that each gbk has a unique taxid in table ``biosqldb.bioentry``.   
+chlamdb-load-interproscan.py                           annotations
+chlamdb-add-locus_tag.py
+chlamdb-find-conserved-neighborhood.py                 interactions
+chlamdb-get-consensus-orthogroup-annotation.py                                         Consensus annotations for gene, product,... (nb of occurence)
+chlamdb-get-orthogroup-profiles-euclidian-dist.py
+chlamdb-get-prot-params.py
+chlamdb-get-species-table.py
+chlamdb-load-alignments.py
+chlamdb-load-checkM.py
+chlamdb-load-COG.py
+chlamdb-load-cross-references.py
+chlamdb-load-effector-pred.py
+chlamdb-load-hash2locus.py
+chlamdb-load-KO.py
+chlamdb-load-orthofinder.py
+chlamdb-load-paperblast.py
+chlamdb-load-paperblast-snippets.py
+chlamdb-load-pdb.py
+chlamdb-load-phylogenies-BBH.py
+chlamdb-load-phylogenies.py
+chlamdb-load-PMID.py
+chlamdb-load-PRIAM.py
+chlamdb-load-psortdb.py
+chlamdb-load-reference-phylogeny.py
+chlamdb-load-refseq-homology-search.py
+chlamdb-load-string-pmid-mapping.py
+chlamdb-load-swissprot-homology-search.py
+chlamdb-load-TCDB.py
+chlamdb-load-uniprot-annotations.py
+=====================================================  =============================== ========================================
+
+
+
 
 
 .. _Nextflow : https://www.nextflow.io/
