@@ -150,6 +150,8 @@ if(params.ncbi_sample_sheet == false) {
   // TODO: create a single query to the database
   process download_assembly_refseq {
 
+    container "$params.annotation_container"
+
     publishDir 'data/refseq_corresp', mode: 'copy', overwrite: true
 
     maxForks 2
