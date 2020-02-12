@@ -1,3 +1,8 @@
+
+# Documentation
+
+- https://annotation-pipeline-nextflow.readthedocs.io/en/latest/contents.html
+
 # Config file
 
 - the default config file is located in the default_config directory
