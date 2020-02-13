@@ -143,7 +143,10 @@ for record in records:
         cursor.execute(sql, (checksum,))
         hits = cursor.fetchall()
 
-        # some uniparc entries wont have any interpro annotation
+        # some uniparc entries wont have any interpro annotation 
+        # ATTENTION: should be the same uniparc release: if uniparc release is more recent than the 
+        # annotated uniparc release from InterPro, new uniparc entries could be missing from the 
+        # interpro annotation
         if len(hits) != 0:
           for hit in hits:
             lines.append("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t\\n" % (record.id,
