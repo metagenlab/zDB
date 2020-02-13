@@ -747,7 +747,7 @@ process diamond_refseq {
 
   n = seq.name
   """
-  diamond blastp -p ${task.cpus} -d $params.databases_dir/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
+  diamond blastp -p ${task.cpus} -d $params.databases_dir/databases/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
   """
 }
 
@@ -793,7 +793,7 @@ process get_uniparc_mapping {
   """
 	#!/usr/bin/env python
 	import annotations
-	annotations.get_uniparc_mapping("${params.databases_dir}", "$fasta_file")
+	annotations.get_uniparc_mapping("${params.databases_dir}" + "/databases", "$fasta_file")
   """
 }
 
@@ -879,87 +879,82 @@ process get_string_mapping {
 	#!/usr/bin/env python
 	import annotations
 	annotations.get_string_mapping("${fasta_file}", "${params.databases_dir}")
-  """
+    """
 }
 
 process get_string_PMID_mapping {
 
-  container "$params.annotation_container"
+    container "$params.annotation_container"
 
-  publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
+    publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
 
-  when:
-  params.string == true
+    when:
+    params.string
 
-  input:
-  file(string_map) from string_mapping
+    input:
+    file(string_map) from string_mapping
 
 
-  output:
-  file 'string_mapping_PMID.tab' into string_mapping_BMID
+    output:
+    file 'string_mapping_PMID.tab' into string_mapping_BMID
 
-  script:
+    script:
 
-  """
-	#!/usr/bin/env python
-	import annotations
-	annotations.get_string_PMID_mapping("${string_map}")
-  """
+    """
+    #!/usr/bin/env python
+    import annotations
+    annotations.get_string_PMID_mapping("${string_map}")
+    """
 }
 
 
 process get_PMID_data {
+    container "$params.annotation_container"
 
-  container "$params.annotation_container"
+    publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
 
-  publishDir 'annotation/string_mapping/', mode: 'copy', overwrite: true
+    when:
+    params.string
 
-  when:
-  params.string == true
+    input:
+    file 'string_mapping_PMID.tab' from string_mapping_BMID
 
-  input:
-  file 'string_mapping_PMID.tab' from string_mapping_BMID
+    output:
+    file 'string_mapping_PMID.db' into PMID_db
 
-
-  output:
-  file 'string_mapping_PMID.db' into PMID_db
-
-  script:
-
-  """
-	#!/usr/bin/env python
-	import annotations
-	annotations.get_PMID_data()
-
-  """
+    script:
+    """
+    #!/usr/bin/env python
+    import annotations
+    annotations.get_PMID_data()
+    """
 }
 
 
 process get_tcdb_mapping {
 
-  container "$params.annotation_container"
+    container "$params.annotation_container"
 
-  publishDir 'annotation/tcdb_mapping/', mode: 'copy', overwrite: true
+    publishDir 'annotation/tcdb_mapping/', mode: 'copy', overwrite: true
 
-  when:
-  params.tcdb == true
+    when:
+    params.tcdb
 
-  input:
-  file(seq) from merged_faa3
+    input:
+    file(seq) from merged_faa3
 
+    output:
+    file 'tcdb_mapping.tab' into tcdb_mapping
+    file 'no_tcdb_mapping.faa' into no_tcdb_mapping
 
-  output:
-  file 'tcdb_mapping.tab' into tcdb_mapping
-  file 'no_tcdb_mapping.faa' into no_tcdb_mapping
+    script:
+    fasta_file = seq.name
+    """
+    #!/usr/bin/env python
 
-  script:
-  fasta_file = seq.name
-  """
-	#!/usr/bin/env python
-	
-	import annotations
-	annotations.get_tcdb_mapping("${fasta_file}", "${params.databases_dir}")
-  """
+    import annotations
+    annotations.get_tcdb_mapping("${fasta_file}", "${params.databases_dir}" + "/databases/")
+    """
 }
 
 no_tcdb_mapping.splitFasta( by: 1000, file: "chunk" )
@@ -967,82 +962,81 @@ no_tcdb_mapping.splitFasta( by: 1000, file: "chunk" )
 
 process tcdb_gblast3 {
 
-  container "$params.chlamdb_container"
+    container "$params.chlamdb_container"
 
-  publishDir 'annotation/tcdb_mapping', mode: 'copy', overwrite: true
+    publishDir 'annotation/tcdb_mapping', mode: 'copy', overwrite: true
 
-  cpus 1
-  maxForks 20
+    cpus 1
+    maxForks 20
 
-  echo false
+    echo false
 
-  when:
-  params.tcdb_gblast == true
+    when:
+    params.tcdb_gblast
 
-  input:
-  file(seq) from faa_tcdb_chunks
+    input:
+    file(seq) from faa_tcdb_chunks
 
-  output:
-  file 'TCDB_RESULTS_*' into tcdb_results
+    output:
+    file 'TCDB_RESULTS_*' into tcdb_results
 
-  script:
-
-  n = seq.name
-  """
-  /usr/local/bin/BioVx/scripts/gblast3.py -i ${seq} -o TCDB_RESULTS_${seq} --db_path /usr/local/bin/tcdb_db/
-  """
+    script:
+    n = seq.name
+    """
+    /usr/local/bin/BioVx/scripts/gblast3.py -i ${seq} -o TCDB_RESULTS_${seq} --db_path /usr/local/bin/tcdb_db/
+    """
 }
 
 process get_pdb_mapping {
 
-  container "$params.annotation_container"
+    container "$params.annotation_container"
 
-  publishDir 'annotation/pdb_mapping/', mode: 'copy', overwrite: true
+    publishDir 'annotation/pdb_mapping/', mode: 'copy', overwrite: true
 
-  when:
-  params.pdb == true
+    when:
+    params.pdb
 
-  input:
-  file(seq) from merged_faa4
+    input:
+    file(seq) from merged_faa4
 
 
-  output:
-  file 'pdb_mapping.tab' into pdb_mapping
-  file 'no_pdb_mapping.faa' into no_pdb_mapping
+    output:
+    file 'pdb_mapping.tab' into pdb_mapping
+    file 'no_pdb_mapping.faa' into no_pdb_mapping
 
-  script:
-  fasta_file = seq.name
-  """
-	#!/usr/bin/env python
-	import annotations
-	annotations.get_pdb_mapping("${fasta_file}", "${params.databases_dir}")
-  """
+    script:
+    fasta_file = seq.name
+    """
+    #!/usr/bin/env python
+    import annotations
+    annotations.get_pdb_mapping("${fasta_file}", "${params.databases_dir}" + "/databases/")
+    """
 }
 
 process get_oma_mapping {
 
-  container "$params.annotation_container"
+    container "$params.annotation_container"
 
-  publishDir 'annotation/oma_mapping/', mode: 'copy', overwrite: true
+    publishDir 'annotation/oma_mapping/', mode: 'copy', overwrite: true
 
-  when:
-  params.oma == true
+    when:
+    params.oma
 
-  input:
-  file(seq) from merged_faa5
+    input:
+    file(seq) from merged_faa5
 
 
-  output:
-  file 'oma_mapping.tab' into oma_mapping
-  file 'no_oma_mapping.faa' into no_oma_mapping
+    output:
+    file 'oma_mapping.tab' into oma_mapping
+    file 'no_oma_mapping.faa' into no_oma_mapping
 
-  script:
-  fasta_file = seq.name
-  """
-	#!/usr/bin/env python
-	import annotations
-	annotations.get_oma_mapping("${params.databases_dir}", "$fasta_file")
-  """
+    script:
+    fasta_file = seq.name
+    """
+    #!/usr/bin/env python
+    import annotations
+    annotations.get_oma_mapping("${params.databases_dir}", "$fasta_file")
+    """
 }
 
 process execute_interproscan_no_uniparc_matches {
@@ -1128,7 +1122,7 @@ process execute_kofamscan {
 
   // Hack for now
   """
-  ${params.databases_dir}/kegg/exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
+  ${params.databases_dir}/databases/kegg/exec_annotation ${n} -p ${params.databases_dir}/databases/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
   """
 }
 
@@ -1478,8 +1472,30 @@ process execute_macsyfinder_T3SS {
   """
 }
 
-// inclusion membrane T3SS effector prediction
+// inclusion membrane T3SS effector prediction,
+// based on membrane domains as detected by interproscan
+/*
+process T3SS_inc_protein_prediction_interproscan_domains {
+  container "$params.annotation_container"
+  publishDir "annotation/T3SS_inc_effectors/", mode: "copy", overwrite: true
 
+  input:
+
+  output:
+
+  when:
+
+  script:
+  """
+  #!/usr/bin/env python
+    
+  import annotations
+  
+  """
+}
+*/
+
+// inclusion membrane T3SS effector prediction
 process execute_T3SS_inc_protein_prediction {
   container "$params.annotation_container"
 
@@ -1550,7 +1566,7 @@ process blast_pdb {
 
   n = seq.name
   """
-  blastp -db $params.databases_dir/pdb/pdb_seqres.faa -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}.tab
+  blastp -db $params.databases_dir/databases/pdb/pdb_seqres.faa -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}.tab
   """
 }
 
@@ -1574,7 +1590,7 @@ process get_uniparc_crossreferences {
   """
 	#!/usr/bin/env python
 	import annotations
-	annotations.get_uniparc_crossreferences("${params.databases_dir}" , "${table}")
+	annotations.get_uniparc_crossreferences("${params.databases_dir}" + "/databases/", "${table}")
   """
 }
 

@@ -147,6 +147,9 @@ def T3SS_inc_proteins_detection(fasta_file, out_file):
         hydrophobic_plot_file.write(f">{domain[0]}-{domain[1]}\n")
         hydrophobic_plot_file.write("\n".join(string_val) + "\n")
 
+
+# def T3SS_inc_protein_interproscan_based(interpro_output_files, out_file):
+
 def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i+n]
@@ -774,7 +777,7 @@ def string_id2pubmed_id_list(accession):
     link = 'http://string-db.org/api/tsv/abstractsList?identifiers=%s' % accession
     try:
         data = urllib.request.urlopen(link).read().rstrip().decode('utf-8').split('\\n')[1:]
-    except urllib.URLError:
+    except urllib.error.URLError:
         return False
     pid_list = [row.split(':')[1] for row in data]
     return pid_list
