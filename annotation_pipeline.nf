@@ -749,7 +749,7 @@ process diamond_refseq {
 
   n = seq.name
   """
-  diamond blastp -p ${task.cpus} -d $params.databases_dir/databases/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
+  diamond blastp -p ${task.cpus} -d $params.databases_dir/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
   """
 }
 
@@ -829,34 +829,35 @@ process get_uniprot_data {
 
   script:
   	"""
-	#!/usr/bin/env python3.6
+	#!/usr/bin/env python
 	import annotations
 	annotations.get_uniprot_data("${params.databases_dir}", "${table}")
 	"""
 }
 
 
-process get_uniprot_proteome_data {
 
-  container "$params.annotation_container"
+//process get_uniprot_proteome_data {
 
-  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
-  echo true
+//  container "$params.annotation_container"
 
-  when:
-  params.uniprot_data == true
+//  publishDir 'annotation/uniparc_mapping/', mode: 'copy', overwrite: true
+//  echo true
 
-  input:
-  file "uniprot_data.tab" from uniprot_data
+//  when:
+////  params.uniprot_data == true
 
-  output:
-  file 'uniprot_match_annotations.db' into uniprot_db
+//  input:
+//  file "uniprot_data.tab" from uniprot_data
 
-  script:
-  """
-  uniprot_annotations.py
-  """
-}
+//  output:
+//  file 'uniprot_match_annotations.db' into uniprot_db
+
+//  script:
+//  """
+//  uniprot_annotations.py
+//  """
+//}
 
 
 process get_string_mapping {
@@ -955,7 +956,7 @@ process get_tcdb_mapping {
     #!/usr/bin/env python
 
     import annotations
-    annotations.get_tcdb_mapping("${fasta_file}", "${params.databases_dir}" + "/databases/")
+    annotations.get_tcdb_mapping("${fasta_file}", "${params.databases_dir}")
     """
 }
 
@@ -1011,7 +1012,7 @@ process get_pdb_mapping {
     """
     #!/usr/bin/env python
     import annotations
-    annotations.get_pdb_mapping("${fasta_file}", "${params.databases_dir}" + "/databases/")
+    annotations.get_pdb_mapping("${fasta_file}", "${params.databases_dir}")
     """
 }
 
@@ -1124,7 +1125,7 @@ process execute_kofamscan {
 
   // Hack for now
   """
-  ${params.databases_dir}/databases/kegg/exec_annotation ${n} -p ${params.databases_dir}/databases/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
+  ${params.databases_dir}/kegg/exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
   """
 }
 
@@ -1568,7 +1569,7 @@ process blast_pdb {
 
   n = seq.name
   """
-  blastp -db $params.databases_dir/databases/pdb/pdb_seqres.faa -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}.tab
+  blastp -db $params.databases_dir/pdb/pdb_seqres.faa -query ${n} -outfmt 6 -evalue 0.001  -num_threads ${task.cpus} > ${n}.tab
   """
 }
 
