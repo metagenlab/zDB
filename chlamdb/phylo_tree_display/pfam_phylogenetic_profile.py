@@ -256,7 +256,7 @@ def lead_reference_genome_table_into_database(genome_refseq_file=False):
             cursor.execute(sql,)
             conn.commit()
             # check if taxon id are in blastnr_taxonomy
-            sql = 'select taxon_id from blastnr.blastnr_taxonomy where taxon_id=%s'
+            sql = 'select taxon_id from blastnr_blastnr_taxonomy where taxon_id=%s'
             cursor.execute(sql % taxid,)
             try:
                 taxob_id = cursor.fetchall()[0][0]

@@ -3454,7 +3454,7 @@ def venn_candidate_effectors(request):
     sql = 'select species, count(*) as n from (' \
           ' select t1.locus_tag,t2.subject_taxon_id from annotation.seqfeature_id2locus_%s t1 ' \
           ' left join blastnr.blastnr_best_non_self_phylum_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-          ' where locus_tag in (%s)) A left join blastnr.blastnr_taxonomy B on  A.subject_taxon_id=taxon_id ' \
+          ' where locus_tag in (%s)) A left join blastnr_blastnr_taxonomy B on  A.subject_taxon_id=taxon_id ' \
           ' group by family order by n DESC;' % (biodb, biodb,
                                                  '"'+'","'.join(interpro_or_pfam_not_in_blastnr)+'"')
 
@@ -4183,7 +4183,7 @@ def sunburst(request, locus):
 
         sql1 = 'select t3.superkingdom,  t3.phylum,  t3.order,  t3.family,  t3.genus,  t3.species  from ' \
                    ' blastnr.blastnr_hits_%s_%s as t1' \
-                   ' inner join blastnr.blastnr_taxonomy as t3 on ' \
+                   ' inner join blastnr_blastnr_taxonomy as t3 on ' \
                    ' t1.subject_taxid = t3.taxon_id inner join blastnr.blastnr_hsps_%s_%s as t4 ' \
                    ' on t1.nr_hit_id=t4.nr_hit_id where t1.locus_tag="%s"' % (biodb, accession, biodb, accession, locus)
 
@@ -4191,7 +4191,7 @@ def sunburst(request, locus):
             '''
             sql1 = 'select t3.superkingdom,  t3.phylum,  t3.order,  t3.family,  t3.genus,  t3.species  from ' \
                    ' blastnr.blastnr_hits_%s_%s as t1  inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s ' \
-                   ' as t2 on t1.nr_hit_id = t2.nr_hit_id  inner join blastnr.blastnr_taxonomy as t3 on ' \
+                   ' as t2 on t1.nr_hit_id = t2.nr_hit_id  inner join blastnr_blastnr_taxonomy as t3 on ' \
                    ' t2.subject_taxon_id = t3.taxon_id inner join blastnr.blastnr_hsps_%s_%s as t4 ' \
                    ' on t1.nr_hit_id=t4.nr_hit_id where t1.locus_tag="%s"' % (biodb, accession, biodb, accession, biodb, accession, locus)
             '''
@@ -5900,7 +5900,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
     #print 'biodb', biodb
     if counttype == 'Majority':
         sql = 'select B.locus_tag, A.%s ,A.n from (select seqfeature_id,%s, count(*) as n from blastnr.blastnr_%s A ' \
-              ' inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id where hit_number<=%s and query_bioentry_id=%s ' \
+              ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id where hit_number<=%s and query_bioentry_id=%s ' \
               ' group by seqfeature_id, %s order by seqfeature_id,n DESC) A ' \
               ' inner join custom_tables.locus2seqfeature_id_%s B on A.seqfeature_id=B.seqfeature_id' % (rank,
                                                                                                          rank,
@@ -5927,7 +5927,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
     elif counttype == 'BBH':
         sql = ' select locus_tag from (select t2.*,t1.locus_tag from custom_tables.locus2seqfeature_id_%s t1 ' \
               ' inner join blastnr.blastnr_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
-              ' where hit_number=1) A inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id ' \
+              ' where hit_number=1) A inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id ' \
               ' where %s="%s"  and query_bioentry_id=%s;' % (biodb, biodb, rank, taxon, accession)
         print(sql)
         locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -5939,7 +5939,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
     ' (select t2.*,t1.locus_tag from custom_tables.locus2seqfeature_id_%s t1 ' \
     ' inner join blastnr.blastnr_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
     ' where locus_tag in ("%s")) A' \
-    ' inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id  group by locus_tag,superkingdom;' % (biodb, biodb, '","'.join(locus_list))
+    ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id  group by locus_tag,superkingdom;' % (biodb, biodb, '","'.join(locus_list))
 
     superkingdom_data = server.adaptor.execute_and_fetchall(sql_superkingdom,)
     locus2superkingdom_counts = {}
@@ -6551,12 +6551,12 @@ def get_BBH_non_chlamydiae_taxonomy(request):
     filter = ','.join(taxon_list)
 
     sql = 'select seqfeature_id,query_taxon_id,hit_number,subject_taxid,t2.superkingdom, t2.phylum ' \
-          ' from blastnr.blastnr_%s t1 inner join blastnr.blastnr_taxonomy t2 on t1.subject_taxid=taxon_id ' \
+          ' from blastnr.blastnr_%s t1 inner join blastnr_blastnr_taxonomy t2 on t1.subject_taxid=taxon_id ' \
           ' where t1.query_taxon_id!=127 and phylum!="Chlamydiae" order by hit_number' % biodb
 
     sql = 'select seqfeature_id,query_taxon_id,hit_number,subject_taxid,' \
           ' t2.superkingdom, t2.kingdom,t2.order, t2.phylum ' \
-          ' from blastnr.blastnr_%s t1 inner join blastnr.blastnr_taxonomy t2 on t1.subject_taxid=taxon_id ' \
+          ' from blastnr.blastnr_%s t1 inner join blastnr_blastnr_taxonomy t2 on t1.subject_taxid=taxon_id ' \
           ' where t1.query_taxon_id in (%s) and phylum!="Chlamydiae" order by hit_number' % (biodb, filter)
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -6825,11 +6825,11 @@ def blastnr_euk(request):
 
     '''
     sql_best_hit_euk = 'select t1.query_taxon_id, count(*) from blastnr.blastnr_%s t1 ' \
-                       ' inner join blastnr.blastnr_taxonomy t2 on t1.subject_taxid=t2.taxon_id ' \
+                       ' inner join blastnr_blastnr_taxonomy t2 on t1.subject_taxid=t2.taxon_id ' \
                        ' where t2.superkingdom = "Eukaryota" and t1.hit_number=1 group by t1.query_taxon_id;' % biodb
     '''
     sql_any_hit_euk = 'select A.query_taxon_id, count(*) from (select t1.query_taxon_id, t1.seqfeature_id ' \
-                      ' from blastnr.blastnr_%s t1 inner join blastnr.blastnr_taxonomy t2 on t1.subject_taxid=t2.taxon_id ' \
+                      ' from blastnr.blastnr_%s t1 inner join blastnr_blastnr_taxonomy t2 on t1.subject_taxid=t2.taxon_id ' \
                       ' where t2.superkingdom = "Eukaryota" group by t1.query_taxon_id, t1.seqfeature_id) A ' \
                       ' group by A.query_taxon_id;' % biodb
 
@@ -7476,7 +7476,7 @@ def blastnr_top_non_phylum(request):
             if selection == 'all':
                 sql = 'select t4.locus_tag,t5.product,t5.gene,t1.hit_number,t1.percent_identity,t3.kingdom,t3.class,' \
                       ' t3.order,t3.family,t3.species,t1.subject_accession,t1.subject_title from blastnr.blastnr_best_non_self_phylum_%s t1' \
-                      ' inner join blastnr.blastnr_taxonomy t3 on t1.subject_taxon_id=t3.taxon_id ' \
+                      ' inner join blastnr_blastnr_taxonomy t3 on t1.subject_taxon_id=t3.taxon_id ' \
                       ' inner join custom_tables.locus2seqfeature_id_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
                       ' inner join biosqldb.orthology_detail_%s t5 on t4.locus_tag=t5.locus_tag  ' \
                       'where t1.superkingdom="Eukaryota"' \
@@ -7489,7 +7489,7 @@ def blastnr_top_non_phylum(request):
                 sql = 'select t4.locus_tag,t5.product,t5.gene,t1.hit_number,t1.percent_identity,t3.kingdom,t3.class,' \
                       't3.order,t3.family,t3.species,t1.subject_accession,t1.subject_title from blastnr.blastnr_best_non_self_phylum_%s t1 ' \
                       ' inner join custom_tables.seqfeature_id2n_species_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-                      ' inner join blastnr.blastnr_taxonomy t3 on t1.subject_taxon_id=t3.taxon_id ' \
+                      ' inner join blastnr_blastnr_taxonomy t3 on t1.subject_taxon_id=t3.taxon_id ' \
                       ' inner join custom_tables.locus2seqfeature_id_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
                       ' inner join biosqldb.orthology_detail_%s t5 on t4.locus_tag=t5.locus_tag  ' \
                       ' where t1.superkingdom="Eukaryota" and n_species=1  and t1.query_taxon_id in (%s);' % (biodb,
@@ -7532,7 +7532,7 @@ def blastnr_barchart(request):
 
                 if counttype == 'Majority':
                     sql = 'select seqfeature_id,%s, count(*) as n from blastnr.blastnr_%s A ' \
-                          ' inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id where query_bioentry_id=%s and hit_number<=%s' \
+                          ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id where query_bioentry_id=%s and hit_number<=%s' \
                           ' group by seqfeature_id,%s order by seqfeature_id, n DESC' % (rank,
                                                                                          biodb,
                                                                                          accession,
@@ -7561,7 +7561,7 @@ def blastnr_barchart(request):
                     #print "data",data
                 elif counttype == 'BBH':
                     sql = ' select %s, count(*) as n from (select * from blastnr.blastnr_%s' \
-                          ' where query_bioentry_id=%s and hit_number=1) A inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id ' \
+                          ' where query_bioentry_id=%s and hit_number=1) A inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id ' \
                           ' group by %s;' % (rank,
                                              biodb,
                                              accession,
@@ -8334,7 +8334,7 @@ def blastswissprot(request, locus_tag):
         sql = 'select A.*, B.phylum, B.order, B.family from (select %s from custom_tables.locus2seqfeature_id_%s t1 ' \
               ' inner join blastnr.blast_swissprot_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where locus_tag="%s") A ' \
-              ' inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id' % (columns,biodb, biodb,locus_tag)
+              ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id' % (columns,biodb, biodb,locus_tag)
         blast_data = server.adaptor.execute_and_fetchall(sql,)
 
         if len(blast_data) > 0:
@@ -8379,7 +8379,7 @@ def blastnr(request, locus_tag):
         sql = 'select hit_number,subject_accession,superkingdom,subject_scientific_name,subject_taxid,subject_title,evalue,bit_score,percent_identity,gaps, length,' \
               ' B.phylum, B.order, B.family from (select %s from custom_tables.locus2seqfeature_id_%s t1 inner join blastnr.blastnr_%s t2' \
               ' on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s" order by hit_number) A ' \
-              ' inner join blastnr.blastnr_taxonomy B on A.subject_taxid=B.taxon_id;' % (columns, biodb, biodb, locus_tag)
+              ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id;' % (columns, biodb, biodb, locus_tag)
         #print sql
         blast_data = list(server.adaptor.execute_and_fetchall(sql))
         #blast_data = [i for i in ]
@@ -9273,20 +9273,20 @@ def get_pfam_hit_list(request,
         sql = 'select t4.superkingdom,t4.phylum,t4.order,t4.family,t4.genus,t2.assembly_accession,t2.organism_name,t1.protein_id,t1.evalue_full,t1.score_full from pfam.refseq_ref_repres_genomes_domains_pfam_31 t1 ' \
               ' inner join pfam.refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
               ' inner join pfam.pfam_summary_version_31 t3 on t1.pfam_id=t3.hmm_id ' \
-              ' inner join blastnr.blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
+              ' inner join blastnr_blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
               ' where t3.hmm_accession like "%s%%%%" ' % (pfam_domain)
     elif phylum is False:
         sql = 'select t4.superkingdom,t4.phylum,t4.order,t4.family,t4.genus,t2.assembly_accession,t2.organism_name,t1.protein_id,t1.evalue_full,t1.score_full from pfam.refseq_ref_repres_genomes_domains_pfam_31 t1 ' \
               ' inner join pfam.refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
               ' inner join pfam.pfam_summary_version_31 t3 on t1.pfam_id=t3.hmm_id ' \
-              ' inner join blastnr.blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
+              ' inner join blastnr_blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
               ' where t3.hmm_accession like "%s%%%%" ' \
               ' and t4.superkingdom="%s" '  % (pfam_domain, superkingdom)
     elif order is False:
         sql = 'select t4.superkingdom,t4.phylum,t4.order,t4.family,t4.genus,t2.assembly_accession,t2.organism_name,t1.protein_id,t1.evalue_full,t1.score_full from pfam.refseq_ref_repres_genomes_domains_pfam_31 t1 ' \
               ' inner join pfam.refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
               ' inner join pfam.pfam_summary_version_31 t3 on t1.pfam_id=t3.hmm_id ' \
-              ' inner join blastnr.blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
+              ' inner join blastnr_blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
               ' where t3.hmm_accession like "%s%%%%" ' \
               ' and t4.superkingdom="%s" ' \
               ' and t4.phylum="%s" ' % (pfam_domain, superkingdom, phylum)
@@ -9294,7 +9294,7 @@ def get_pfam_hit_list(request,
         sql = 'select t4.superkingdom,t4.phylum,t4.order,t4.family,t4.genus,t2.assembly_accession,t2.organism_name,t1.protein_id,t1.evalue_full,t1.score_full from pfam.refseq_ref_repres_genomes_domains_pfam_31 t1 ' \
               ' inner join pfam.refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
               ' inner join pfam.pfam_summary_version_31 t3 on t1.pfam_id=t3.hmm_id ' \
-              ' inner join blastnr.blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
+              ' inner join blastnr_blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
               ' where t3.hmm_accession like "%s%%%%" ' \
               ' and t4.superkingdom="%s" ' \
               ' and t4.phylum="%s" ' \
@@ -9303,7 +9303,7 @@ def get_pfam_hit_list(request,
         sql = 'select t4.superkingdom,t4.phylum,t4.order,t4.family,t4.genus,t2.assembly_accession,t2.organism_name,t1.protein_id,t1.evalue_full,t1.score_full from pfam.refseq_ref_repres_genomes_domains_pfam_31 t1 ' \
               ' inner join pfam.refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
               ' inner join pfam.pfam_summary_version_31 t3 on t1.pfam_id=t3.hmm_id ' \
-              ' inner join blastnr.blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
+              ' inner join blastnr_blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
               ' where t3.hmm_accession like "%s%%%%" ' \
               ' and t4.superkingdom="%s" ' \
               ' and t4.phylum="%s" ' \
@@ -9313,7 +9313,7 @@ def get_pfam_hit_list(request,
         sql = 'select t4.superkingdom,t4.phylum,t4.order,t4.family,t4.genus,t2.assembly_accession,t2.organism_name,t1.protein_id,t1.evalue_full,t1.score_full from pfam.refseq_ref_repres_genomes_domains_pfam_31 t1 ' \
               ' inner join pfam.refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
               ' inner join pfam.pfam_summary_version_31 t3 on t1.pfam_id=t3.hmm_id ' \
-              ' inner join blastnr.blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
+              ' inner join blastnr_blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
               ' where t3.hmm_accession like "%s%%%%" ' \
               ' and t4.superkingdom="%s" ' \
               ' and t4.phylum="%s" ' \
@@ -9334,7 +9334,7 @@ def get_pfam_taxon_table(request, pfam_domain):
           ' pfam.refseq_ref_repres_genomes_domains_pfam_31 t1 ' \
           ' inner join pfam.refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
           ' inner join pfam.pfam_summary_version_31 t3 on t1.pfam_id=t3.hmm_id ' \
-          ' inner join blastnr.blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
+          ' inner join blastnr_blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
           ' where t3.hmm_accession like "%s%%%%" ' \
           ' group by t4.superkingdom,t4.phylum,t4.family,t4.genus order by superkingdom,n DESC' % (pfam_domain)
     #print sql
@@ -10302,7 +10302,7 @@ def search_taxonomy(request):
                           ' t3.taxon_id ' \
                           ' from blastnr.blastnr_hits_%s_%s as t1 ' \
                           ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
-                          ' inner join blastnr.blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
+                          ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
                           ' where t1.hit_number=%s"' % (biodb,
                                                          genome_accession,
@@ -10331,7 +10331,7 @@ def search_taxonomy(request):
                           ' t3.taxon_id ' \
                           ' from blastnr.blastnr_hits_%s_%s as t1 ' \
                           ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
-                          ' inner join blastnr.blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
+                          ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
                           ' where t1.hit_number=%s and t3.superkingdom="%s"' % (biodb,
                                                                          genome_accession,
@@ -10370,7 +10370,7 @@ def search_taxonomy(request):
                           ' t3.taxon_id ' \
                           ' from blastnr.blastnr_hits_%s_%s as t1 ' \
                           ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
-                          ' inner join blastnr.blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
+                          ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
                           ' where t1.hit_number=%s and t3.superkingdom="%s"' % (biodb,
                                                                          genome_accession,
@@ -10400,7 +10400,7 @@ def search_taxonomy(request):
                           ' t3.superkingdom' \
                           ' from blastnr.blastnr_hits_%s_%s as t1 ' \
                           ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
-                          ' inner join blastnr.blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
+                          ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
                           ' where t1.hit_number=%s and t3.superkingdom="%s" and t3.phylum="%s";' % (biodb,
                                                                          genome_accession,

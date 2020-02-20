@@ -22,7 +22,7 @@ def get_pfam_freq(db_version):
     # get overall taxonomy statistics
 
     sql = 'select superkingdom, count(*) from refseq_ref_repres_genomes t1 ' \
-          ' inner join blastnr.blastnr_taxonomy t2 on t1.taxid=t2.taxon_id group by superkingdom;'
+          ' inner join blastnr_blastnr_taxonomy t2 on t1.taxid=t2.taxon_id group by superkingdom;'
     cursor.execute(sql, )
     superkingdom2count = manipulate_biosqldb.to_dict(cursor.fetchall())
 
@@ -51,7 +51,7 @@ def get_pfam_freq(db_version):
               ' (select t1.assembly_id, taxid from refseq_ref_repres_genomes_domains_pfam_%s t1 ' \
               ' inner join refseq_ref_repres_genomes t2 on t1.assembly_id=t2.assembly_id ' \
               ' where pfam_id=%s group by t1.assembly_id) A ' \
-              ' inner join blastnr.blastnr_taxonomy B on A.taxid=B.taxon_id group by B.superkingdom;' % (db_version,
+              ' inner join blastnr_blastnr_taxonomy B on A.taxid=B.taxon_id group by B.superkingdom;' % (db_version,
                                                                                                          pfam)
         cursor.execute(sql, )
         superkingdom2count_domain = manipulate_biosqldb.to_dict(cursor.fetchall())

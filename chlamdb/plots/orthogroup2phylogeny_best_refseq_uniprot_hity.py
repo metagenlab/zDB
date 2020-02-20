@@ -394,7 +394,7 @@ if __name__ == '__main__':
         sql2 = 'select orthogroup, count(*) from ' \
                ' (select locus_tag, count(*) as n from custom_tables.locus2seqfeature_id_%s t1 ' \
                ' inner join blastnr.blastnr_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-               ' inner join blastnr.blastnr_taxonomy t3 on t2.subject_taxid=t3.taxon_id ' \
+               ' inner join blastnr_blastnr_taxonomy t3 on t2.subject_taxid=t3.taxon_id ' \
                ' where t3.phylum not in (%s) group by t1.seqfeature_id) A ' \
                ' inner join biosqldb.orthology_detail_%s B on A.locus_tag=B.locus_tag ' \
                ' group by orthogroup;' % (args.biodb,
@@ -407,7 +407,7 @@ if __name__ == '__main__':
         sql3 = 'select orthogroup, count(*) from ' \
                ' (select locus_tag, count(*) as n from custom_tables.locus2seqfeature_id_%s t1 ' \
                ' inner join blastnr.blast_swissprot_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-               ' inner join blastnr.blastnr_taxonomy t3 on t2.subject_taxid=t3.taxon_id ' \
+               ' inner join blastnr_blastnr_taxonomy t3 on t2.subject_taxid=t3.taxon_id ' \
                ' where t3.phylum not in (%s) group by t1.seqfeature_id) A ' \
                ' inner join biosqldb.orthology_detail_%s B on A.locus_tag=B.locus_tag ' \
                ' group by orthogroup;' % (args.biodb,

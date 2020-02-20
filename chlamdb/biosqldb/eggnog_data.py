@@ -38,7 +38,7 @@ def insert_NOG_members_into_table(NOG_id, NOG_list, egggnog_version=451):
         # check if taxon_id is already into the database
         # if not add it to the list to add
         protein_taxon_id, protein_accession = protein.split('.', 1) # split on the first occurence of '.'
-        sql = 'select taxon_id from blastnr.blastnr_taxonomy where taxon_id=%s'
+        sql = 'select taxon_id from blastnr_blastnr_taxonomy where taxon_id=%s'
         cursor.execute(sql % protein_taxon_id,)
         try:
             protein_taxon_id = cursor.fetchall()[0][0]

@@ -727,7 +727,7 @@ def make_blastnr_form(biodb):
     for accession in accession_list:
         accession_choices.append((accession[0], accession[1]))
 
-    sql = 'show columns from blastnr.blastnr_taxonomy;'
+    sql = 'show columns from blastnr_blastnr_taxonomy;'
     ranks = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
     rank_choices = []
 

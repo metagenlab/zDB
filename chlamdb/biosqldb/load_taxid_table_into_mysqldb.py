@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     '''
 
-    sql = 'create table blastnr.blastnr_taxonomy(taxon_id INT,' \
+    sql = 'create table blastnr_blastnr_taxonomy(taxon_id INT,' \
           ' superkingdom varchar(400),' \
           ' kingdom varchar(400),' \
           ' superphylum varchar(400),' \
@@ -135,7 +135,7 @@ if __name__ == '__main__':
                 print '%s' % (n)
             species_edit = re.sub('"', '', row[7])
             species = re.sub("'", "", species_edit)
-            sql = 'insert into blastnr.blastnr_taxonomy values (%s, "%s", "%s", ' \
+            sql = 'insert into blastnr_blastnr_taxonomy values (%s, "%s", "%s", ' \
                   ' "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")' % (row[0],
                                                                                     row[1],
                                                                                     row[12],

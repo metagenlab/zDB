@@ -190,7 +190,7 @@ def create_species_curated_taxonomy(biodb):
     # get mot frequent classification for each species defined at 97% median identity
     sql = 'select t5.species_id,t3.phylum,t3.order,t3.family,t3.genus,t3.species, count(*) as n from bioentry2assembly t1 ' \
           ' inner join assembly_metadata t2 on t1.assembly_id=t2.assembly_id ' \
-          ' inner join blastnr.blastnr_taxonomy t3 on t2.taxid=t3.taxon_id ' \
+          ' inner join blastnr_blastnr_taxonomy t3 on t2.taxid=t3.taxon_id ' \
           ' inner join bioentry t4 on t1.bioentry_id=t4.bioentry_id ' \
           ' inner join taxid2species t5 on t4.taxon_id=t5.taxon_id ' \
           ' group by t5.species_id,t3.phylum,t3.order,t3.family,t3.genus,t3.species order by n DESC;'

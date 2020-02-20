@@ -563,7 +563,7 @@ def run_circos(reference_taxon, target_taxons):
             sql = 'select locus_tag from blastnr.blastnr_%s t1 ' \
               ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
               ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
-              ' inner join blastnr.blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
+              ' inner join blastnr_blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
               ' inner join custom_tables.locus2seqfeature_id_%s t5 ' \
               ' on t1.seqfeature_id=t5.seqfeature_id ' \
               ' where t1.hit_number=1 and t3.name="%s" and t4.phylum!="%s" and t1.query_taxon_id=%s;' % (biodb,
@@ -583,7 +583,7 @@ def run_circos(reference_taxon, target_taxons):
                 sql = 'select locus_tag from blastnr.blastnr_%s t1 ' \
                   ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
                   ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
-                  ' inner join blastnr.blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
+                  ' inner join blastnr_blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
                   ' inner join custom_tables.locus2seqfeature_id_%s t5 ' \
                   ' on t1.seqfeature_id=t5.seqfeature_id ' \
                   ' where t1.hit_number=2 and t3.name="%s" and t4.phylum!="%s" and t1.query_taxon_id=%s;' % (biodb,

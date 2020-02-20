@@ -177,7 +177,7 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
 
             all_taxid = [str(accession2annotation[i][0]) for i in accession2annotation]
 
-            sql = 'select taxon_id from blastnr.blastnr_taxonomy;'
+            sql = 'select taxon_id from blastnr_blastnr_taxonomy;'
             taxid_in_db = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
             missing_taxons = list(set(all_taxid)-set(taxid_in_db))
 
@@ -185,7 +185,7 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
             plastnr2sqltable.insert_taxons_into_sqldb(missing_taxons, mysql_pwd=mysql_pwd)
 
             print ("getting taxid2superkingdom")
-            sql = 'select taxon_id,superkingdom from blastnr.blastnr_taxonomy'
+            sql = 'select taxon_id,superkingdom from blastnr_blastnr_taxonomy'
             cursor.execute(sql,)
             taxon_id2superkingdom = manipulate_biosqldb.to_dict(cursor.fetchall())
 

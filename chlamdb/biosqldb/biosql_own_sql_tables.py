@@ -164,7 +164,7 @@ def locus_tag2best_hit(db_name, accession, hit_number=1, rank=False, taxon_name=
                           ' t4.query_end ' \
                           ' from blastnr.blastnr_hits_%s_%s as t1 ' \
                           ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
-                          ' inner join blastnr.blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
+                          ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
                           ' where t1.hit_number=%s and t3.%s = "%s";' % (db_name,
                                                                          accession,
@@ -206,7 +206,7 @@ def locus_tag2best_hit(db_name, accession, hit_number=1, rank=False, taxon_name=
                           ' t4.query_end ' \
                           ' from blastnr.blastnr_hits_%s_%s as t1 ' \
                           ' inner join blastnr.blastnr_hits_taxonomy_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
-                          ' inner join blastnr.blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
+                          ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
                           ' where t1.hit_number=%s' % (db_name,
                                                        accession,
@@ -587,7 +587,7 @@ def accession2coding_density(biodb, sqlite=False):
         sql = 'select locus_tag from blastnr.blastnr_%s t1 ' \
               ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
               ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
-              ' inner join blastnr.blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
+              ' inner join blastnr_blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
               ' inner join custom_tables.locus2seqfeature_id_%s t5 ' \
               ' on t1.seqfeature_id=t5.seqfeature_id ' \
               ' where t1.hit_number=1 and t3.name="%s" and t4.phylum="Chlamydiae" and t2.accession="%s";' % (biodb,
@@ -727,7 +727,7 @@ def taxonomical_form(db_name, hit_number=1):
         sql2 = 'select t3.superkingdom ' \
               ' from blastnr.blastnr_hits_%s_%s as t1 ' \
               ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
-              ' inner join blastnr.blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
+              ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
               '  where t1.hit_number=%s group by t3.superkingdom' % (db_name, accession[0],db_name, accession[0], hit_number)
 
         #print sql2
@@ -751,7 +751,7 @@ def taxonomical_form(db_name, hit_number=1):
         sql3 = 'select distinct t3.superkingdom, t3.phylum ' \
               ' from blastnr.blastnr_hits_%s_%s as t1 ' \
               ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
-              ' inner join blastnr.blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
+              ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
               ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
               ' where t1.hit_number=%s' % (db_name, accession[0],db_name, accession[0], db_name, accession[0], hit_number)
         #print sql3
@@ -823,7 +823,7 @@ def clean_multispecies_blastnr_record(db_name, create_new_sql_tables = False):
 
             sql = 'select  t3.locus_tag, t1.nr_hit_id, t1.subject_taxon_id,  t2.phylum, t2.order, t2.family, t2.genus, t2.species, t2.superkingdom, t3.hit_number, t3.subject_title from blastnr.blastnr_hits_taxonomy_%s_%s as t1 ' \
                   ' inner join blastnr.blastnr_hits_%s_%s as t3 on t1.nr_hit_id=t3.nr_hit_id ' \
-                  ' inner join blastnr.blastnr_taxonomy as t2 on t1.subject_taxon_id=t2.taxon_id ' \
+                  ' inner join blastnr_blastnr_taxonomy as t2 on t1.subject_taxon_id=t2.taxon_id ' \
                   ' where t1.nr_hit_id=%s' % (db_name, accession, db_name, accession, blast_id)
             one_blastnr_taxons = server.adaptor.execute_and_fetchall(sql,)
             #print 'blast_id', blast_id, 'n taxons', len(one_blastnr_taxons)
@@ -1060,7 +1060,7 @@ def clean_multispecies_blastnr_record(db_name, create_new_sql_tables = False):
 
 
 def get_best_hit_excluding_one_family():
-    sql='select t3.subject_taxon_id,t4.no_rank, t4.phylum, t4.order, t4.family, B.* from (select * from biosqldb.orthology_detail_chlamydia_03_15 as t1 where t1.accession="NC_015713") A left join (select t2.nr_hit_id,t2.locus_tag,t2.subject_kingdom,t2.subject_accession from blastnr.blastnr_hits_chlamydia_03_15_NC_015713 as t2) B on A.locus_tag=B.locus_tag inner join blastnr.blastnr_hits_taxonomy_chlamydia_03_15_NC_015713 as t3 on B.nr_hit_id=t3.nr_hit_id inner join blastnr.blastnr_taxonomy as t4 on t3.subject_taxon_id=t4.taxon_id where t4.family !="Simkaniaceae";'
+    sql='select t3.subject_taxon_id,t4.no_rank, t4.phylum, t4.order, t4.family, B.* from (select * from biosqldb.orthology_detail_chlamydia_03_15 as t1 where t1.accession="NC_015713") A left join (select t2.nr_hit_id,t2.locus_tag,t2.subject_kingdom,t2.subject_accession from blastnr.blastnr_hits_chlamydia_03_15_NC_015713 as t2) B on A.locus_tag=B.locus_tag inner join blastnr.blastnr_hits_taxonomy_chlamydia_03_15_NC_015713 as t3 on B.nr_hit_id=t3.nr_hit_id inner join blastnr_blastnr_taxonomy as t4 on t3.subject_taxon_id=t4.taxon_id where t4.family !="Simkaniaceae";'
 
 def locus_tag2n_nr_hits(db_name, genome_accession, exclude_family = False):
     #print 'exclude family', exclude_family
@@ -1079,7 +1079,7 @@ def locus_tag2n_nr_hits(db_name, genome_accession, exclude_family = False):
         sql = 'select  A.locus_tag, B.n_hits from (select * from biosqldb.orthology_detail_%s as t1 where t1.accession="%s") A ' \
               ' left join (select t2.nr_hit_id,t2.locus_tag,t2.subject_kingdom,t2.subject_accession, count(t2.locus_tag) as n_hits ' \
               ' from blastnr.blastnr_hits_%s_%s as t2 inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t3 on t3.nr_hit_id=t2.nr_hit_id' \
-              ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id where t4.family!="%s"' \
+              ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id where t4.family!="%s"' \
               ' group by locus_tag) B on A.locus_tag=B.locus_tag;' % (db_name,
                                                                      genome_accession,
                                                                      db_name,
@@ -1259,7 +1259,7 @@ def best_hit_classification(db_name, accession):
           ' from (select locus_tag, TM, SP, gene, product from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
           ' left join (select t2.nr_hit_id, locus_tag from blastnr.blastnr_hits_%s_%s as t2  where hit_number=1) B on A.locus_tag=B.locus_tag' \
           ' left join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
-          ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id;' % (db_name,
+          ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id;' % (db_name,
                                                                                                                         accession,
                                                                                                                         db_name,
                                                                                                                         accession,                                                                                                              db_name,
@@ -1278,7 +1278,7 @@ def best_hit_phylum_and_protein_length(db_name, accession):
           ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
           ' left join (select t2.nr_hit_id, locus_tag from blastnr.blastnr_hits_%s_%s as t2  where hit_number=1) B on A.locus_tag=B.locus_tag' \
           ' left join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
-          ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id;' % (db_name,
+          ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id;' % (db_name,
                                                                                                                         accession,
                                                                                                                         db_name,
                                                                                                                         accession,                                                                                                              db_name,
@@ -1299,7 +1299,7 @@ def locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", 
               ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
               ' left join (select t2.nr_hit_id, locus_tag from blastnr.blastnr_hits_%s_%s as t2) B on A.locus_tag=B.locus_tag' \
               ' left join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
-              ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
+              ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
               ' where t4.superkingdom="%s" group by locus_tag;' % (db_name,
                                                                         accession,
                                                                         db_name,
@@ -1309,7 +1309,7 @@ def locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", 
         sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
               ' inner join blastnr.blastnr_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
               ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
-              ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
+              ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
               'where t3.accession="%s" and t4.superkingdom="%s" group by locus_tag;' % (db_name,
                                                                                         db_name,
                                                                                         accession,
@@ -1320,7 +1320,7 @@ def locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", 
               ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
               ' left join (select t2.nr_hit_id, locus_tag from blastnr.blastnr_hits_%s_%s as t2) B on A.locus_tag=B.locus_tag' \
               ' left join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
-              ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
+              ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
               ' where t4.superkingdom="%s" and t4.family!="%s" group by locus_tag;' % (db_name,
                                                                         accession,
                                                                         db_name,
@@ -1342,7 +1342,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                   ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
                   ' left join (select t2.nr_hit_id, locus_tag from blastnr.blastnr_hits_%s_%s as t2) B on A.locus_tag=B.locus_tag' \
                   ' left join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
-                  ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
+                  ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
                   ' where t4.superkingdom="Bacteria" and t4.phylum="%s" group by locus_tag;' % (db_name,
                                                                             accession,
                                                                             db_name,
@@ -1352,7 +1352,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
             sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
                   ' inner join blastnr.blastnr_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                   ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
-                  ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
+                  ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
                   'where t3.accession="%s" and t4.phylum="%s" group by locus_tag;' % (db_name,
                                                                                         db_name,
                                                                                         accession,
@@ -1362,7 +1362,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                   ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
                   ' left join (select t2.nr_hit_id, locus_tag from blastnr.blastnr_hits_%s_%s as t2) B on A.locus_tag=B.locus_tag' \
                   ' left join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
-                  ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
+                  ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
                   ' where t4.superkingdom="Bacteria" and t4.phylum="%s" and t4.family!="%s" group by locus_tag;' % (db_name,
                                                                             accession,
                                                                             db_name,
@@ -1376,7 +1376,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                   ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
                   ' left join (select t2.nr_hit_id, locus_tag from blastnr.blastnr_hits_%s_%s as t2) B on A.locus_tag=B.locus_tag' \
                   ' left join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
-                  ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
+                  ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
                   ' where t4.superkingdom="Bacteria" and t4.phylum !="%s" group by locus_tag;' % (db_name,
                                                                             accession,
                                                                             db_name,
@@ -1387,7 +1387,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
             sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
                   ' inner join blastnr.blastnr_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                   ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
-                  ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
+                  ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
                   'where t3.accession="%s" and t4.superkingdom="Bacteria" and t4.phylum !="%s" group by locus_tag;' % (db_name,
                                                                                         db_name,
                                                                                         accession,
@@ -1397,7 +1397,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                   ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
                   ' left join (select t2.nr_hit_id, locus_tag from blastnr.blastnr_hits_%s_%s as t2) B on A.locus_tag=B.locus_tag' \
                   ' left join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
-                  ' left join blastnr.blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
+                  ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
                   ' where t4.superkingdom="Bacteria" and t4.phylum !="%s" and t4.family!="%s" group by locus_tag;' % (db_name,
                                                                             accession,
                                                                             db_name,
