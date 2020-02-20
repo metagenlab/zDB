@@ -7058,8 +7058,8 @@ def blastnr_overview(request):
 
     set2taxon2value = {} #, column_names = hmm_heatmap.get_set_data(biodb, score_cutoff=20)
 
-    sql_checkm_completeness = 'select taxon_id, completeness from custom_tables.checkm_%s;' % biodb
-    sql_checkm_n_duplicated = 'select taxon_id,n_total from custom_tables.checkm_%s;' % biodb
+    sql_checkm_completeness = 'select taxon_id, completeness from custom_tables_checkm;' % biodb
+    sql_checkm_n_duplicated = 'select taxon_id,n_total from custom_tables_checkm;' % biodb
     sql_n_contigs = 'select taxon_id,n_contigs from genomes_info_%s t1 ' \
                               ' inner join bioentry t2 on t1.accession=t2.accession ' \
                               ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \

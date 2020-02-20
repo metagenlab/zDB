@@ -719,8 +719,8 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
            ' inner join bioentry as t2 on t1.accession=t2.accession ' \
            ' where t2.biodatabase_id=%s and t1.description not like "%%%%plasmid%%%%";' % (biodb, db_id)
            
-    sql_checkm_completeness = 'select taxon_id, completeness from custom_tables.checkm_%s;' % biodb
-    sql_checkm_contamination = 'select taxon_id,contamination from custom_tables.checkm_%s;' % biodb
+    sql_checkm_completeness = 'select taxon_id, completeness from custom_tables_checkm;' % biodb
+    sql_checkm_contamination = 'select taxon_id,contamination from custom_tables_checkm;' % biodb
 
     try:
         taxon_id2completeness = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_checkm_completeness))
