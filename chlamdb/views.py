@@ -9769,7 +9769,7 @@ def api_vs_16S_identity(request):
 
     sql = 'select t1.taxon_1, t1.taxon_2, median_identity,identity from ' \
           ' comparative_tables_reciprocal_BBH_average_identity t1 ' \
-          ' inner join custom_tables.identity_16S_%s t2 ' \
+          ' inner join custom_tables_identity_16S t2 ' \
           ' on t1.taxon_1=t2.taxon_1 and t1.taxon_2=t2.taxon_2;' % (biodb, biodb)
     data = server.adaptor.execute_and_fetchall(sql)
 
@@ -9835,7 +9835,7 @@ def api_vs_16S_identity(request):
     sql = 'select B.order_description,A.%s,identity from' \
           ' (select t1.taxon_1, t1.taxon_2, %s,identity ' \
           ' from comparative_tables_reciprocal_BBH_average_identity t1 ' \
-          ' inner join custom_tables.identity_16S_%s t2 on t1.taxon_1=t2.taxon_1 ' \
+          ' inner join custom_tables_identity_16S t2 on t1.taxon_1=t2.taxon_1 ' \
           ' and t1.taxon_2=t2.taxon_2) A ' \
           ' inner join custom_tables_taxonomy B ' \
           ' on A.taxon_1=B.taxon_id ' \
@@ -9862,7 +9862,7 @@ def api_vs_16S_identity(request):
     sql = 'select B.order_description,A.%s,identity from' \
           ' (select t1.taxon_1, t1.taxon_2, %s,identity ' \
           ' from comparative_tables_reciprocal_BBH_average_identity t1 ' \
-          ' inner join custom_tables.identity_16S_%s t2 on t1.taxon_1=t2.taxon_1 ' \
+          ' inner join custom_tables_identity_16S t2 on t1.taxon_1=t2.taxon_1 ' \
           ' and t1.taxon_2=t2.taxon_2) A ' \
           ' inner join custom_tables_taxonomy B ' \
           ' on A.taxon_1=B.taxon_id ' \
@@ -9882,7 +9882,7 @@ def api_vs_16S_identity(request):
     sql = 'select B.order_description,A.%s,identity from' \
           ' (select t1.taxon_1, t1.taxon_2, %s,identity ' \
           ' from comparative_tables_reciprocal_BBH_average_identity t1 ' \
-          ' inner join custom_tables.identity_16S_%s t2 on t1.taxon_1=t2.taxon_1 ' \
+          ' inner join custom_tables_identity_16S t2 on t1.taxon_1=t2.taxon_1 ' \
           ' and t1.taxon_2=t2.taxon_2) A ' \
           ' inner join custom_tables_taxonomy B ' \
           ' on A.taxon_1=B.taxon_id ' \
@@ -9908,7 +9908,7 @@ def api_vs_16S_identity(request):
     sql0 = 'select B.order_description,A.%s,identity from' \
           ' (select t1.taxon_1, t1.taxon_2, %s,identity ' \
           ' from comparative_tables_reciprocal_BBH_average_identity t1 ' \
-          ' inner join custom_tables.identity_16S_%s t2 on t1.taxon_1=t2.taxon_1 ' \
+          ' inner join custom_tables_identity_16S t2 on t1.taxon_1=t2.taxon_1 ' \
           ' and t1.taxon_2=t2.taxon_2) A ' \
           ' inner join custom_tables_taxonomy B ' \
           ' on A.taxon_1=B.taxon_id ' \
@@ -9924,7 +9924,7 @@ def api_vs_16S_identity(request):
     sql = 'select B.order_description,A.%s,identity from' \
           ' (select t1.taxon_1, t1.taxon_2, %s,identity ' \
           ' from comparative_tables_reciprocal_BBH_average_identity t1 ' \
-          ' inner join custom_tables.identity_16S_%s t2 on t1.taxon_1=t2.taxon_1 ' \
+          ' inner join custom_tables_identity_16S t2 on t1.taxon_1=t2.taxon_1 ' \
           ' and t1.taxon_2=t2.taxon_2 where t1.taxon_1 in (%s) and t1.taxon_2 in (%s)) A ' \
           ' inner join custom_tables_taxonomy B ' \
           ' on A.taxon_1=B.taxon_id ' \
@@ -9951,7 +9951,7 @@ def api_vs_16S_identity(request):
     sql = 'select B.phylum_description,A.%s,identity from' \
           ' (select t1.taxon_1, t1.taxon_2, %s,identity ' \
           ' from comparative_tables_reciprocal_BBH_average_identity t1 ' \
-          ' inner join custom_tables.identity_16S_%s t2 on t1.taxon_1=t2.taxon_1 ' \
+          ' inner join custom_tables_identity_16S t2 on t1.taxon_1=t2.taxon_1 ' \
           ' and t1.taxon_2=t2.taxon_2) A ' \
           ' inner join custom_tables_taxonomy B ' \
           ' on A.taxon_1=B.taxon_id ' \
