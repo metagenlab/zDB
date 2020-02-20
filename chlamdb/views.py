@@ -1336,7 +1336,7 @@ def extract_EC(request):
             biodb_id = server.adaptor.execute_and_fetchall('select biodatabase_id from biodatabase where name="%s"' % biodb,)[0][0]
 
             #print extract_result
-            locus_list_sql = 'select locus_tag from (select taxon_id,locus_tag,ec_id from enzyme.locus2ec_%s as t1  ' \
+            locus_list_sql = 'select locus_tag from (select taxon_id,locus_tag,ec_id from enzyme_locus2ec_%s as t1  ' \
                              ' inner join biosqldb.bioentry as t2 on t1.accession=t2.accession ' \
                              ' where biodatabase_id=%s) A inner join enzyme.enzymes as B on A.ec_id=B.enzyme_id' \
                              ' where A.taxon_id=%s and B.ec in (%s);' % (biodb,
@@ -1355,7 +1355,7 @@ def extract_EC(request):
             # get phylogenetic profile of match if not too big
             if len(match_groups) < 50:
                 from chlamdb.phylo_tree_display import ete_motifs
-                sql = 'select distinct ec,orthogroup from enzyme.locus2ec_%s as t1 ' \
+                sql = 'select distinct ec,orthogroup from enzyme_locus2ec_%s as t1 ' \
                       ' inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id where ec in (%s);' % (biodb,
                                                                   '"' + '","'.join(match_groups) + '"')
                 orthogroup_data = server.adaptor.execute_and_fetchall(sql,)
@@ -3061,7 +3061,7 @@ def fam(request, fam, type):
             except IndexError:
                 valid_id = False
         elif type == 'EC':
-            sql1 = 'select seqfeature_id from (select locus_tag from enzyme.locus2ec_%s as t1 ' \
+            sql1 = 'select seqfeature_id from (select locus_tag from enzyme_locus2ec_%s as t1 ' \
                    ' inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id ' \
                    ' where ec="%s" group by locus_tag) A ' \
                    ' inner join annotation.seqfeature_id2locus_%s B on A.locus_tag=B.locus_tag group by seqfeature_id;' % (biodb,
@@ -3165,7 +3165,7 @@ def fam(request, fam, type):
                                                                               [fam],
                                                                               'EC')
             sql3 = 'select distinct taxon_id,t1.orthogroup,t2.ec ' \
-                   'from (select orthogroup,locus_tag,ec_id from enzyme.locus2ec_%s ' \
+                   'from (select orthogroup,locus_tag,ec_id from enzyme_locus2ec_%s ' \
                    'where orthogroup in (%s)) t1 ' \
                    'left join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id ' \
                    'left join biosqldb.orthology_detail_%s as t3 ' \
@@ -4110,7 +4110,7 @@ def KEGG_mapp(request, map_name):
         enzyme_list_found_in_db = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
         # get list of all orthogroups with corresponding EC
-        sql = 'select distinct ec,orthogroup from enzyme.locus2ec_%s as t1 ' \
+        sql = 'select distinct ec,orthogroup from enzyme_locus2ec_%s as t1 ' \
               ' inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id where ec in (%s);' % (biodb,
                                                           '"' + '","'.join(enzyme_list_found_in_db) + '"')
         orthogroup_data = server.adaptor.execute_and_fetchall(sql,)
@@ -9423,7 +9423,7 @@ def annotation_overview(request):
     taxon_id2CDS_with_COG = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_COG,))
 
     sql_PRIAM = 'select A.taxon_id,count(*) from (select t2.taxon_id,t1.locus_tag,ec_id ' \
-              ' from enzyme.locus2ec_%s t1 ' \
+              ' from enzyme_locus2ec_%s t1 ' \
               ' inner join biosqldb.bioentry t2 on t1.accession=t2.accession ' \
               ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
               ' where t3.name="%s" group by t2.taxon_id,t1.locus_tag,ec_id) A group by A.taxon_id;' % (biodb, biodb)
@@ -14136,7 +14136,7 @@ def metabo_overview(request):
     #print 'db id', database_id
 
     sql_pathway_count = 'select PATH2.pathway_name,PATH2.n,PATH1.n,PATH1.n/PATH2.n from (select pathway_name,count(*) as n ' \
-                        ' from (select distinct pathway_name,t4.ec_id from enzyme.locus2ec_%s as t3 ' \
+                        ' from (select distinct pathway_name,t4.ec_id from enzyme_locus2ec_%s as t3 ' \
                         ' inner join enzyme_kegg2ec as t4 on t3.ec_id=t4.ec_id inner join enzyme_kegg_pathway as t5 ' \
                         ' on t4.pathway_id=t5.pathway_id where pathway_category!="1.0 Global and overview maps") A ' \
                         ' group by pathway_name) ' \
@@ -14151,7 +14151,7 @@ def metabo_overview(request):
 
     sql = 'select C.pathway_category,taxon_id, A.pathway_name,A.n_enzymes, C.description from ' \
           '( select distinct taxon_id,pathway_name, count(*) as n_enzymes from (' \
-          'select distinct taxon_id, ec_id  from enzyme.locus2ec_%s as b1 ' \
+          'select distinct taxon_id, ec_id  from enzyme_locus2ec_%s as b1 ' \
           'inner join biosqldb.bioentry as b2 on b1.accession=b2.accession where biodatabase_id=%s) ' \
           't1 inner join enzyme_kegg2ec as t2  on t1.ec_id=t2.ec_id ' \
           'inner join enzyme_kegg_pathway as t3 on t2.pathway_id=t3.pathway_id ' \
@@ -14240,7 +14240,7 @@ def metabo_comparison(request):
 
 
             sql_pathway_count = 'select PATH2.pathway_name,PATH2.n,PATH1.n,PATH1.n/PATH2.n from (select pathway_name,count(*) as n ' \
-                                ' from (select distinct pathway_name,t4.ec_id from enzyme.locus2ec_%s as t3 ' \
+                                ' from (select distinct pathway_name,t4.ec_id from enzyme_locus2ec_%s as t3 ' \
                                 ' inner join enzyme_kegg2ec as t4 on t3.ec_id=t4.ec_id inner join enzyme_kegg_pathway as t5 ' \
                                 ' on t4.pathway_id=t5.pathway_id where pathway_category!="1.0 Global and overview maps") A ' \
                                 ' group by pathway_name) ' \
@@ -14276,7 +14276,7 @@ def metabo_comparison(request):
                 biodatabase_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
 
                 sql = 'select PATH2.pathway_name,PATH1.n from (select pathway_name,count(*) as n from ' \
-                      ' (select distinct pathway_name,t4.ec_id from enzyme.locus2ec_%s as t3 ' \
+                      ' (select distinct pathway_name,t4.ec_id from enzyme_locus2ec_%s as t3 ' \
                       ' inner join enzyme_kegg2ec as t4 on t3.ec_id=t4.ec_id inner join enzyme_kegg_pathway as t5 ' \
                       ' on t4.pathway_id=t5.pathway_id inner join biosqldb.bioentry as t6 on t3.accession=t6.accession ' \
                       ' where biodatabase_id=%s and pathway_category!="1.0 Global and overview maps" and t6.taxon_id=%s) A ' \
