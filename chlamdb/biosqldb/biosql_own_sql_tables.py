@@ -433,7 +433,7 @@ def group2cog(biodb, group_list, rank_limit=2):
 
     server, db = manipulate_biosqldb.load_db(biodb)
     group_filter = '","'.join(group_list)
-    sql = 'select orthogroup_name,COG_name,t3.description,count,code,t5.description from orthology.orthogroup2cog_%s t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id inner join COG.cog_names_2014 t3 on t1.COG_id=t3.COG_id inner join COG.cog_id2cog_category t4 on t1.COG_id=t4.COG_id inner join COG.code2category t5 on t4.category_id=t5.category_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
+    sql = 'select orthogroup_name,COG_name,t3.description,count,code,t5.description from orthology.orthogroup2cog_%s t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id inner join COG_cog_names_2014 t3 on t1.COG_id=t3.COG_id inner join COG.cog_id2cog_category t4 on t1.COG_id=t4.COG_id inner join COG.code2category t5 on t4.category_id=t5.category_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
     data = server.adaptor.execute_and_fetchall(sql,)
     ortho2cog = {}
 
@@ -1493,8 +1493,8 @@ def orthogroup2cog(db_name, accession=False, group_list=False): # group_list,
               'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
     '''
     if not accession:
-        sql =  'select orthogroup_name,COG_name from COG_seqfeature_id2best_COG_hit t1 inner join COG.cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology.seqfeature_id2orthogroup_%s t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology.orthogroup_%s t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
-        sql = 'select orthogroup_name,COG_name from COG_seqfeature_id2best_COG_hit t1 inner join COG.cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology.seqfeature_id2orthogroup_%s t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology.orthogroup_%s t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
+        sql =  'select orthogroup_name,COG_name from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology.seqfeature_id2orthogroup_%s t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology.orthogroup_%s t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
+        sql = 'select orthogroup_name,COG_name from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology.seqfeature_id2orthogroup_%s t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology.orthogroup_%s t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
         sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join COG_locus_tag2gi_hit ' \
               'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
     else:
@@ -1526,7 +1526,7 @@ def orthogroup2cog_id(db_name, accession=False): # group_list,
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql = 'select t4.orthogroup_name,hit_cog_id from COG_seqfeature_id2best_COG_hit t1 inner join COG.cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology.seqfeature_id2orthogroup_%s t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology.orthogroup_%s t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
+    sql = 'select t4.orthogroup_name,hit_cog_id from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology.seqfeature_id2orthogroup_%s t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology.orthogroup_%s t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
