@@ -2189,7 +2189,7 @@ def locusx(request, locus=None, menu=True):
                 print("echec synonymous table")
                 
                 
-                sql0 = 'select locus_tag from custom_tables.seqfeature_id2old_locus_tag_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where old_locus_tag="%s" ' % (biodb, biodb, locus)
+                sql0 = 'select locus_tag from custom_tables_seqfeature_id2old_locus_tag t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where old_locus_tag="%s" ' % (biodb, biodb, locus)
 
                 try:
                     data = server.adaptor.execute_and_fetchall(sql0, )[0][0]
@@ -2218,7 +2218,7 @@ def locusx(request, locus=None, menu=True):
         sql2 = 'select %s from orthology_detail_%s where %s="%s"' % (columns, biodb, input_type, locus)
         data = list(server.adaptor.execute_and_fetchall(sql2, )[0])
         orthogroup = data[0] 
-        sql_old = 'select old_locus_tag from custom_tables.seqfeature_id2old_locus_tag_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s" ' % (biodb, biodb, data[1])
+        sql_old = 'select old_locus_tag from custom_tables_seqfeature_id2old_locus_tag t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s" ' % (biodb, biodb, data[1])
         try:
             data_old = server.adaptor.execute_and_fetchall(sql_old, )[0][0]
             old_locus_tag = data_old

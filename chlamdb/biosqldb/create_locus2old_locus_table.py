@@ -4,7 +4,7 @@ def create_locus2old_locus_table(biodb):
     from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
-    sql = 'create table custom_tables.seqfeature_id2old_locus_tag_%s (seqfeature_id INT, old_locus_tag varchar(300), index seqfeature_id(seqfeature_id))' % biodb
+    sql = 'create table custom_tables_seqfeature_id2old_locus_tag (seqfeature_id INT, old_locus_tag varchar(300), index seqfeature_id(seqfeature_id))' % biodb
     server.adaptor.execute(sql,)
     #locus2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, biodb)
 
@@ -16,7 +16,7 @@ def create_locus2old_locus_table(biodb):
           ' inner join term as t6 on t2.type_term_id=t6.term_id where t6.name="CDS" and t5.name="%s" and t4.name="old_locus_tag"' % biodb
     seq_feature_id2old_locus_tag = server.adaptor.execute_and_fetchall(sql,)
     for row in seq_feature_id2old_locus_tag:
-        sql = 'insert into custom_tables.seqfeature_id2old_locus_tag_%s values(%s,"%s")' % (biodb,
+        sql = 'insert into custom_tables_seqfeature_id2old_locus_tag values(%s,"%s")' % (biodb,
                                                                                             row[0],
                                                                                             row[1])
         server.adaptor.execute(sql,)
