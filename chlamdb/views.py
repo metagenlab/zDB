@@ -6035,7 +6035,7 @@ def identity_heatmap(request):
                                                                        taxon_filter,
                                                                        taxon_filter)
             if plot_type == 'core_msa_identity':
-                sql2 = 'select taxon_1, taxon_2, identity from comparative_tables.core_orthogroups_identity_msa_%s ' \
+                sql2 = 'select taxon_1, taxon_2, identity from comparative_tables_core_orthogroups_identity_msa ' \
                        'where taxon_1 in (%s) and taxon_2 in (%s);' % (biodb, taxon_filter, taxon_filter)
             if plot_type == 'n_RBBH':
                 sql2 = 'select taxon_1, taxon_2, n_pairs from comparative_tables_reciprocal_BBH_average_identity ' \
@@ -6432,7 +6432,7 @@ def pairwiseid(request):
                                          genome_1)
             data = server.adaptor.execute_and_fetchall(sql,)
 
-            sql2 = 'select taxon_2, identity from comparative_tables.core_orthogroups_identity_msa_%s ' \
+            sql2 = 'select taxon_2, identity from comparative_tables_core_orthogroups_identity_msa ' \
                    'where taxon_1=%s;' % (biodb, genome_1)
             #   taxon2core_msa_identity = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
@@ -9991,7 +9991,7 @@ def circos_main(request):
         
         if len(target_taxons) == 0:
             try:
-                sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
+                sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
                 ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
                 target_taxons = ordered_taxons[0:10]
             except:
@@ -10015,7 +10015,7 @@ def circos_main(request):
         if request.GET.getlist('t')[0] == '':
             # if no target list given, get the 10 closest genomes
             try:
-                sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
+                sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
                 ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
                 target_taxons = ordered_taxons[0:10]
             except:
@@ -12862,7 +12862,7 @@ def hmm2circos(request):
                         ' union select taxon_2,median_identity from comparative_tables.shared_og_av_id_%s ' \
                         ' where taxon_1=%s order by median_identity DESC) A;' % (biodb, reference_taxon, biodb, reference_taxon)
             try:
-                sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
+                sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
 
                 ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
             except:

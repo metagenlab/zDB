@@ -505,7 +505,7 @@ def run_circos(reference_taxon, target_taxons):
                 ' union select taxon_2,median_identity from comparative_tables.shared_og_av_id_%s ' \
                 ' where taxon_1=%s order by median_identity DESC) A;' % (biodb, reference_taxon, biodb, reference_taxon)
     try:
-        sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
+        sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
         #print sql_order
         ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
         #print 'msa core identity order!'
@@ -760,7 +760,7 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
                 ' union select taxon_2,median_identity from comparative_tables.shared_og_av_id_%s ' \
                 ' where taxon_1=%s order by median_identity DESC) A;' % (biodb, reference_taxon, biodb, reference_taxon)
     try:
-        sql_order = 'select taxon_2 from comparative_tables.core_orthogroups_identity_msa_%s where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
+        sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
 
         ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
     except:
