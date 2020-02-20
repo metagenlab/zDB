@@ -4044,13 +4044,13 @@ def kegg_multi(request, map_name, ko_name):
 
         ko2freq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-        sql = 'select node_id from enzyme.pathway2ortholog_associations t1 ' \
+        sql = 'select node_id from enzyme_pathway2ortholog_associations t1 ' \
               ' inner join enzyme_kegg_pathway  t2 on t1.pathway_id=t2.pathway_id ' \
               ' where pathway_name="%s" and ko_id="%s";' % (map_name, ko_name)
         print(sql)
         node_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
 
-        sql2 = 'select ko_id from enzyme.pathway2ortholog_associations t1 ' \
+        sql2 = 'select ko_id from enzyme_pathway2ortholog_associations t1 ' \
                ' inner join enzyme_kegg_pathway  t2 on t1.pathway_id=t2.pathway_id ' \
                ' where pathway_name="%s" and node_id=%s;' % (map_name, node_id)
 
