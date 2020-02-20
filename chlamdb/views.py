@@ -2293,7 +2293,7 @@ def locusx(request, locus=None, menu=True):
               ' on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s";' % (biodb, biodb, locus)
 
             sql16 = 'select count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
-              ' inner join blastnr.blast_swissprot_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
+              ' inner join blastnr_blast_swissprot t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where locus_tag="%s";' % (biodb, biodb, locus)
 
             sql17 = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s"' % (biodb, orthogroup)
@@ -8332,7 +8332,7 @@ def blastswissprot(request, locus_tag):
         columns = 'hit_number,subject_accession,subject_kingdom,subject_scientific_name,subject_taxid,' \
                   ' subject_title,evalue,bit_score,percent_identity,gaps,query_cov,genes,annot_score'
         sql = 'select A.*, B.phylum, B.order, B.family from (select %s from custom_tables.locus2seqfeature_id_%s t1 ' \
-              ' inner join blastnr.blast_swissprot_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
+              ' inner join blastnr_blast_swissprot t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where locus_tag="%s") A ' \
               ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id' % (columns,biodb, biodb,locus_tag)
         blast_data = server.adaptor.execute_and_fetchall(sql,)
@@ -9441,7 +9441,7 @@ def annotation_overview(request):
           ' where t3.name="%s" group by taxon_id;' % (biodb, biodb)
     taxon_id2n_CDS = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql_swiss = 'select query_taxon_id, count(*) from (select * from blastnr.blast_swissprot_%s ' \
+    sql_swiss = 'select query_taxon_id, count(*) from (select * from blastnr_blast_swissprot ' \
                 ' group by query_taxon_id,seqfeature_id) A group by A.query_taxon_id;' % biodb
 
     taxon_id2n_swiss_hits = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_swiss,))
