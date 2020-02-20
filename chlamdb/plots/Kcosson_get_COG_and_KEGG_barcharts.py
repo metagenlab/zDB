@@ -161,7 +161,7 @@ def get_COG_data(locus_list):
     sql = 'select t4.code, t4.description, count(*) as n from COG.locus_tag2gi_hit_2017_03_30_kcosson t1 ' \
            'inner join COG_cog_names_2014 t2 on t1.COG_id=t2.COG_name ' \
            'inner join COG.cog_id2cog_category t3 on t2.COG_id=t3.COG_id ' \
-           'inner join COG.code2category t4 on t3.category_id=t4.category_id' \
+           'inner join COG_code2category t4 on t3.category_id=t4.category_id' \
            ' where t1.locus_tag in (%s) group by t4.code,t4.description;' % filter
     data = server.adaptor.execute_and_fetchall(sql,)
     print sql
@@ -175,7 +175,7 @@ def get_COG_data_ind(locus_list):
         sql = 'select locus_tag, COG_name, t2.description,t4.code, t4.description as n from COG.locus_tag2gi_hit_2017_03_30_kcosson t1 ' \
                'inner join COG_cog_names_2014 t2 on t1.COG_id=t2.COG_name ' \
                'inner join COG.cog_id2cog_category t3 on t2.COG_id=t3.COG_id ' \
-               'inner join COG.code2category t4 on t3.category_id=t4.category_id' \
+               'inner join COG_code2category t4 on t3.category_id=t4.category_id' \
                ' where t1.locus_tag in ("%s");' % locus
         data = server.adaptor.execute_and_fetchall(sql,)
         #i = [n[0] for n in data]
