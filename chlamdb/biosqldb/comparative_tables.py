@@ -632,7 +632,7 @@ def identity_closest_homolog(db_name):
     locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql1,))
 
 
-    sql2 = "CREATE TABLE comparative_tables.identity_closest_homolog2_%s(taxon_1 INT NOT NULL," \
+    sql2 = "CREATE TABLE comparative_tables_identity_closest_homolog2(taxon_1 INT NOT NULL," \
           " taxon_2 INT NOT NULL," \
           " locus_1 INT NOT NULL," \
           " locus_2 INT NOT NULL," \
@@ -656,7 +656,7 @@ def identity_closest_homolog(db_name):
                 try:
                     #print taxon_1, taxon_2, locus, locus2identity[locus][long(taxon_2)][1], locus2identity[locus][long(taxon_2)][0]
                     sys.stdout.write("%s\t%s\n" % (taxon_1, taxon_2))
-                    sql = 'insert into comparative_tables.identity_closest_homolog2_%s(taxon_1, taxon_2, locus_1, locus_2, identity) ' \
+                    sql = 'insert into comparative_tables_identity_closest_homolog2(taxon_1, taxon_2, locus_1, locus_2, identity) ' \
                           ' VALUES ("%s", "%s", "%s", "%s", %s)' % (db_name,
                                                                     taxon_1,
                                                                     taxon_2,
@@ -693,7 +693,7 @@ def shared_orthogroups_average_identity(db_name):
     all_taxons = taxon2description.keys()
     for i, taxon_1 in enumerate(all_taxons):
         for taxon_2 in all_taxons[i+1:]:
-            data_sql = 'select identity from comparative_tables.identity_closest_homolog2_%s where taxon_1=%s and taxon_2=%s' % (db_name,
+            data_sql = 'select identity from comparative_tables_identity_closest_homolog2 where taxon_1=%s and taxon_2=%s' % (db_name,
                                                                                                              taxon_1,
                                                                                                              taxon_2)
             data = list([i[0] for i in server.adaptor.execute_and_fetchall(data_sql,)])

@@ -8599,7 +8599,7 @@ def plot_region(request):
                 locus_tag = data[1]
                 if closest_only:
                     sql = 'select B.locus_tag,taxon_2,identity from (select * from custom_tables.locus2seqfeature_id_%s t1 ' \
-                          ' inner join comparative_tables.identity_closest_homolog2_%s t2 on t1.seqfeature_id=t2.locus_1 ' \
+                          ' inner join comparative_tables_identity_closest_homolog2 t2 on t1.seqfeature_id=t2.locus_1 ' \
                           ' where t1.locus_tag="%s") A ' \
                           ' inner join custom_tables.locus2seqfeature_id_%s B on A.locus_2=B.seqfeature_id ' \
                           ' order by identity DESC;' % (biodb, biodb, locus_tag, biodb)
@@ -12512,7 +12512,7 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
         taxon_id = data[1]
 
         sql2 = 'select taxon_2,B.locus_tag,identity from (select * from custom_tables.locus2seqfeature_id_%s t1 ' \
-               ' inner join comparative_tables.identity_closest_homolog2_%s t2 on t1.seqfeature_id=t2.locus_1 ' \
+               ' inner join comparative_tables_identity_closest_homolog2 t2 on t1.seqfeature_id=t2.locus_1 ' \
                ' where locus_tag="%s") A inner join custom_tables.locus2seqfeature_id_%s B on A.locus_2=B.seqfeature_id;' % (biodb,
                                                                                                                              biodb,
                                                                                                                              orthogroup_or_locus,

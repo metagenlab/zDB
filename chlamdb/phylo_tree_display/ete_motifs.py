@@ -151,7 +151,7 @@ def get_locus2taxon2identity(biodb, locus_tag_list):
             # pseudogene
             continue
     filter = ','.join(all_id)
-    sql = 'select taxon_2,locus_1,identity from comparative_tables.identity_closest_homolog2_%s where locus_1 in (%s) ;' % (biodb,
+    sql = 'select taxon_2,locus_1,identity from comparative_tables_identity_closest_homolog2 where locus_1 in (%s) ;' % (biodb,
                                                                                                                       filter)
 
     identity_data = server.adaptor.execute_and_fetchall(sql, )

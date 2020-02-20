@@ -297,7 +297,7 @@ def circos_locus2taxon_highest_identity(biodb,
         #print '------------------', locus2locus_identity.keys()[0], locus2locus_identity[locus2locus_identity.keys()[0]]
 
     else:
-        sql = 'select t2.locus_tag, t3.locus_tag, identity, taxon_2 from comparative_tables.identity_closest_homolog2_%s t1 ' \
+        sql = 'select t2.locus_tag, t3.locus_tag, identity, taxon_2 from comparative_tables_identity_closest_homolog2 t1 ' \
               ' inner join custom_tables.locus2seqfeature_id_%s t2 on t1.locus_1=t2.seqfeature_id ' \
               ' inner join custom_tables.locus2seqfeature_id_%s t3 on t1.locus_2=t3.seqfeature_id ' \
               ' where taxon_1=%s' % (biodb, biodb, biodb, reference_taxon_id)

@@ -65,7 +65,7 @@ def get_pairwise_connexions(accession_1, accession_2, biodb):
     accession2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
     comp1_sql = 'select locus_1,locus_2,identity from (select * from ' \
-                ' comparative_tables.identity_closest_homolog2_%s where taxon_1=%s and taxon_2=%s) A ' \
+                ' comparative_tables_identity_closest_homolog2 where taxon_1=%s and taxon_2=%s) A ' \
                 ' inner join biosqldb.orthology_detail_%s B on A.locus_1=B.seqfeature_id;' % (biodb,
                                                                                               accession2taxon_id[accession_1],
                                                                                               accession2taxon_id[accession_2],
