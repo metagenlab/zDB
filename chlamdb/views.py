@@ -2274,7 +2274,7 @@ def locusx(request, locus=None, menu=True):
             sql11 = 'select db_xref_name,db_accession from custom_tables_locus2seqfeature_id as t1 ' \
                     ' inner join custom_tables_uniprot_id2seqfeature_id as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                     ' inner join custom_tables_uniprot_db_xref as t3 on t2.uniprot_id=t3.uniprot_id ' \
-                    ' inner join custom_tables.db_xref as t4 on t3.db_xref_id=t4.db_xref_id ' \
+                    ' inner join custom_tables_db_xref as t4 on t3.db_xref_id=t4.db_xref_id ' \
                     ' where locus_tag="%s" and db_xref_name not in ("GO","InterPro", "Pfam");' % (biodb,biodb,biodb,locus)
 
             sql12 = 'select uniprot_status,annotation_score,gene,recommendedName_fullName,comment_function,ec_number,' \
@@ -9453,7 +9453,7 @@ def annotation_overview(request):
 
     sql_string_mapping = 'select taxon_id, count(*) from custom_tables_uniprot_id2seqfeature_id t0 ' \
                          ' inner join custom_tables_uniprot_db_xref t1 on t0.uniprot_id=t1.uniprot_id ' \
-                         ' inner join custom_tables.db_xref t2 on t1.db_xref_id=t2.db_xref_id ' \
+                         ' inner join custom_tables_db_xref t2 on t1.db_xref_id=t2.db_xref_id ' \
                          ' inner join custom_tables_locus2seqfeature_id t3 on t0.seqfeature_id=t3.seqfeature_id ' \
                          ' where db_xref_name="string" group by taxon_id;' % (biodb, biodb, biodb)
 
