@@ -2162,8 +2162,8 @@ def locusx(request, locus=None, menu=True):
             # try searchin synonymous table
             try:
                 sql = f'select t1.db_name,t1.accession,t2.orthogroup,t2.locus_tag,t2.start,t2.stop,t2.strand,t2.gene, t2.orthogroup_size,t2.n_genomes,t2.TM,t2.SP,t2.product,t2.organism ' \
-                      f' from biosqldb.cross_references_{biodb} t1 ' \
-                      f' inner join orthology_detail_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                      f' from biosqldb.cross_references t1 ' \
+                      f' inner join orthology_detail t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                       f' where match(t1.accession) AGAINST ("{locus}" IN BOOLEAN MODE) ' \
                       f' and db_name not in ("STRING", "KEGG", "KO", "eggNOG") group by t1.seqfeature_id limit 200;'
                 print(sql)
