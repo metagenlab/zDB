@@ -2336,16 +2336,16 @@ def locusx(request, locus=None, menu=True):
 
             interpro_hash = server.adaptor.execute_and_fetchall(sql24,)[0][0]
 
-            sql25 = f'select distinct t2.effectors,SVM_value from annotation.seqfeature_id2locus_{biodb} t1' \
+            sql25 = f'select distinct t2.effectors,SVM_value from annotation_seqfeature_id2locus_{biodb} t1' \
                     f' left join effectors.predicted_BPBAac_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
-            sql26 = f'select distinct effectors from annotation.seqfeature_id2locus_{biodb} t1' \
+            sql26 = f'select distinct effectors from annotation_seqfeature_id2locus_{biodb} t1' \
                     f' left join effectors.predicted_DeepT3_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
-            sql27 = f'select distinct effectors,probability from annotation.seqfeature_id2locus_{biodb} t1' \
+            sql27 = f'select distinct effectors,probability from annotation_seqfeature_id2locus_{biodb} t1' \
                     f' left join effectors.predicted_T3MM_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
-            sql28 = f'select distinct t2.effectors,score from annotation.seqfeature_id2locus_{biodb} t1' \
+            sql28 = f'select distinct t2.effectors,score from annotation_seqfeature_id2locus_{biodb} t1' \
                     f' left join effectors.predicted_effectiveT3_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
 
-            sql29 = f'select final_prediction,score from annotation.seqfeature_id2locus_{biodb} t1' \
+            sql29 = f'select final_prediction,score from annotation_seqfeature_id2locus_{biodb} t1' \
                     f' inner join custom_tables_seqfeature_id2psortb t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
 
             sql30 = 'select paperblast_id from string.seqfeature_id2paperblast where seqfeature_id=%s;' % (seqfeature_id)
@@ -5830,11 +5830,11 @@ def genome_annotation(request, accession):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = f'select t1.seqfeature_id,locus_tag,start,stop,t2.name,product from annotation.seqfeature_id2locus_{biodb} t1 ' \
+    sql = f'select t1.seqfeature_id,locus_tag,start,stop,t2.name,product from annotation_seqfeature_id2locus_{biodb} t1 ' \
           f' inner join biosqldb.term t2 on t1.feature_type_id=t2.term_id ' \
           f' inner join annotation_seqfeature_id2RNA_annotation t3 on t1.seqfeature_id=t3.seqfeature_id ' \
           f' inner join biosqldb.bioentry t4 on t1.bioentry_id=t4.bioentry_id where t4.accession="{accession}" ' \
-          f' union select t1.seqfeature_id,locus_tag,start,stop,t2.name,product from annotation.seqfeature_id2locus_{biodb} t1 ' \
+          f' union select t1.seqfeature_id,locus_tag,start,stop,t2.name,product from annotation_seqfeature_id2locus_{biodb} t1 ' \
           f' inner join biosqldb.term t2 on t1.feature_type_id=t2.term_id ' \
           f' inner join annotation.seqfeature_id2CDS_annotation_{biodb} t3 on t1.seqfeature_id=t3.seqfeature_id ' \
           f' inner join biosqldb.bioentry t4 on t1.bioentry_id=t4.bioentry_id ' \
@@ -7729,7 +7729,7 @@ def effector_pred(request):
     sql = 'select taxon_id, count(*) as n from (select distinct t5.taxon_id,t1.pfam_id,t5.locus_tag from interpro_interpro_signature2pfam_id t1 ' \
          ' inner join interpro_interpro t2 on t1.signature_id=t2.signature_id ' \
          ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id  inner join interpro_signature t4 on t1.signature_id=t4.signature_id ' \
-         ' inner join annotation.seqfeature_id2locus_chlamydia_04_16 t5 on t2.seqfeature_id=t5.seqfeature_id where bacteria_freq<=0.02 and eukaryota_freq>=0.1) BBB group by taxon_id;'
+         ' inner join annotation_seqfeature_id2locus t5 on t2.seqfeature_id=t5.seqfeature_id where bacteria_freq<=0.02 and eukaryota_freq>=0.1) BBB group by taxon_id;'
 
     taxon2pfam_refseq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -7737,7 +7737,7 @@ def effector_pred(request):
     sql = 'select taxon_id, count(*) as n from (select distinct t5.taxon_id,t1.pfam_id from interpro_interpro_signature2pfam_id t1 ' \
          ' inner join interpro_interpro t2 on t1.signature_id=t2.signature_id ' \
          ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id  inner join interpro_signature t4 on t1.signature_id=t4.signature_id ' \
-         ' inner join annotation.seqfeature_id2locus_chlamydia_04_16 t5 on t2.seqfeature_id=t5.seqfeature_id where bacteria_freq<=0.02 and eukaryota_freq>=0.1) BBB group by taxon_id;'
+         ' inner join annotation_seqfeature_id2locus t5 on t2.seqfeature_id=t5.seqfeature_id where bacteria_freq<=0.02 and eukaryota_freq>=0.1) BBB group by taxon_id;'
 
     taxon2pfam_refseq_uniq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -9129,7 +9129,7 @@ def download_all_COG(request):
                                 passwd=mysql_pwd,
                                 db=mysql_db)
     sql = f'select t3.accession,t3.description,locus_tag,start,stop,strand,gene,protein_id,product,t6.COG_name,t6.description ' \
-          f' from annotation.seqfeature_id2locus_{biodb} t1 ' \
+          f' from annotation_seqfeature_id2locus_{biodb} t1 ' \
           f' inner join annotation.seqfeature_id2CDS_annotation_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           f' inner join biosqldb.bioentry t3 on t1.bioentry_id=t3.bioentry_id ' \
           f' inner join biosqldb.biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \
