@@ -2280,7 +2280,7 @@ def locusx(request, locus=None, menu=True):
             sql12 = 'select uniprot_status,annotation_score,gene,recommendedName_fullName,comment_function,ec_number,' \
                     ' comment_similarity,comment_subunit,comment_catalyticactivity,proteinExistence,uniprot_accession ' \
                     ' from custom_tables_locus2seqfeature_id as t1 inner join custom_tables_uniprot_id2seqfeature_id as t2 ' \
-                    ' on t1.seqfeature_id=t2.seqfeature_id inner join custom_tables.uniprot_annotation_%s as t3 ' \
+                    ' on t1.seqfeature_id=t2.seqfeature_id inner join custom_tables_uniprot_annotation as t3 ' \
                     ' on t2.seqfeature_id=t3.seqfeature_id where locus_tag="%s";' % (biodb,biodb,biodb,locus)
 
 
@@ -8272,7 +8272,7 @@ def homologs(request, orthogroup, locus_tag=False):
                     ' from (select locus_tag, gene,product,organism,orthogroup_size,n_genomes,TM,SP from ' \
                     ' biosqldb.orthology_detail_%s where orthogroup="%s") A ' \
                     ' inner join custom_tables_locus2seqfeature_id B on A.locus_tag=B.locus_tag ' \
-                    ' left join custom_tables.uniprot_annotation_%s as C on B.seqfeature_id=C.seqfeature_id ' \
+                    ' left join custom_tables_uniprot_annotation as C on B.seqfeature_id=C.seqfeature_id ' \
                     ' left join custom_tables_uniprot_id2seqfeature_id as D on B.seqfeature_id=D.seqfeature_id;' % (biodb,
                                                                                                                        orthogroup,
                                                                                                                        biodb,
