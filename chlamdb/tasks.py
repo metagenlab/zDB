@@ -1524,7 +1524,7 @@ def KEGG_map_ko_task(biodb,
     ko_list = [i[4] for i in map_data]
 
     # fetch ko pylogenetic profiles
-    sql = 'select id from comparative_tables.ko_%s where id in (%s);' % (biodb,
+    sql = 'select id from comparative_tables_ko where id in (%s);' % (biodb,
                                                         '"' + '","'.join(ko_list) + '"')
 
     ko_list_found_in_db = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -1790,7 +1790,7 @@ def KEGG_map_ko_organism_task(biodb,
 
     ko_list = [i[4] for i in map_data]
 
-    sql = 'select id from comparative_tables.ko_%s where id in (%s);' % (biodb,
+    sql = 'select id from comparative_tables_ko where id in (%s);' % (biodb,
                                                         '"' + '","'.join(ko_list) + '"')
     ko_list_found_in_db = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 

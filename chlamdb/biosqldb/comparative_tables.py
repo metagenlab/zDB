@@ -344,7 +344,7 @@ def collect_ko(db_name):
 
     taxon_id_list = manipulate_biosqldb.get_taxon_id_list(server, db_name)
 
-    sql_head = 'INSERT INTO comparative_tables.ko_%s (id,' % db_name
+    sql_head = 'INSERT INTO comparative_tables_ko (id,' % db_name
 
     for taxon in taxon_id_list:
         sql_head += '`%s`,' % taxon

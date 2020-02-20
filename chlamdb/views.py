@@ -1885,7 +1885,7 @@ def venn_ko(request):
             taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
             for target in targets:
                 template_serie = '{name: "%s", data: %s}'
-                sql ='select id from comparative_tables.ko_%s where `%s` > 0' % (biodb, target)
+                sql ='select id from comparative_tables_ko where `%s` > 0' % (biodb, target)
                 #print sql
                 cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
                 all_cog_list += cogs
@@ -4574,7 +4574,7 @@ def ko_venn_subset(request, category):
     taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
     for target in targets:
         template_serie = '{name: "%s", data: %s}'
-        sql = 'select A.id from (select id from comparative_tables.ko_%s where `%s` > 0) A' \
+        sql = 'select A.id from (select id from comparative_tables_ko where `%s` > 0) A' \
               ' inner join enzyme_module2ko_v1 as t2 on A.id=t2.ko_id inner JOIN ' \
               ' enzyme_kegg_module_v1 as t3 on t2.module_id=t3.module_id where module_sub_sub_cat="%s";' % (biodb, target, category)
         #sql ='select id from comparative_tables_COG where `%s` > 0' % (biodb, target)
@@ -4922,7 +4922,7 @@ def ko_subset_barchart(request, type):
 
     # on récupère tous les KO de tous les génomes inclus pour faire une comparaison
     filter = '`' + '`>0 or `'.join(include) + '`>0'
-    sql = 'select id from comparative_tables.ko_%s where (%s)' % (biodb, filter)
+    sql = 'select id from comparative_tables_ko where (%s)' % (biodb, filter)
 
     match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
@@ -10735,7 +10735,7 @@ def search(request):
                     # CREATE FULLTEXT INDEX koaf ON enzyme_ko_annotation_v1(definition);
                     # filter KO absent from DB
                     sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme_ko_annotation_v1 ' \
-                          'WHERE MATCH(definition) AGAINST("%s" IN NATURAL LANGUAGE MODE)) A inner join comparative_tables.ko_%s as B on A.ko_id=B.id' % (search_term, biodb)
+                          'WHERE MATCH(definition) AGAINST("%s" IN NATURAL LANGUAGE MODE)) A inner join comparative_tables_ko as B on A.ko_id=B.id' % (search_term, biodb)
                     try:
                         raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
                     except:
@@ -14529,7 +14529,7 @@ def ko_comparison(request):
 
             ko2total_count= manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-            sql = 'select id,%s from comparative_tables.ko_%s where %s' % (columns, biodb, filter)
+            sql = 'select id,%s from comparative_tables_ko where %s' % (columns, biodb, filter)
             #print sql
 
             ko2counts = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
