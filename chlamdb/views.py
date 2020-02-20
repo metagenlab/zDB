@@ -2346,7 +2346,7 @@ def locusx(request, locus=None, menu=True):
                     f' left join effectors.predicted_effectiveT3_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
 
             sql29 = f'select final_prediction,score from annotation.seqfeature_id2locus_{biodb} t1' \
-                    f' inner join custom_tables.seqfeature_id2psortb_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
+                    f' inner join custom_tables_seqfeature_id2psortb t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
 
             sql30 = 'select paperblast_id from string.seqfeature_id2paperblast where seqfeature_id=%s;' % (seqfeature_id)
 
@@ -2490,9 +2490,9 @@ def locusx(request, locus=None, menu=True):
                 try:
                     sqlo = 'select C.locus_tag' \
                            ' from (select operon_id from custom_tables_locus2seqfeature_id t1 ' \
-                           ' inner join custom_tables.ofs_operons_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                           ' inner join custom_tables_ofs_operons t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                            ' where t1.locus_tag="%s") A ' \
-                           ' inner join custom_tables.ofs_operons_%s B on A.operon_id=B.operon_id ' \
+                           ' inner join custom_tables_ofs_operons B on A.operon_id=B.operon_id ' \
                            ' inner join custom_tables_locus2seqfeature_id C on B.seqfeature_id=C.seqfeature_id' % (biodb,
                                                                                               biodb,
                                                                                               locus,

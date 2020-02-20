@@ -895,9 +895,9 @@ def plot_neighborhood_task(biodb, target_locus, region_size):
             try:
                 sqlo = 'select C.locus_tag' \
                         ' from (select operon_id from custom_tables_locus2seqfeature_id t1 ' \
-                        ' inner join custom_tables.ofs_operons_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                        ' inner join custom_tables_ofs_operons t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                         ' where t1.locus_tag="%s") A ' \
-                        ' inner join custom_tables.ofs_operons_%s B on A.operon_id=B.operon_id ' \
+                        ' inner join custom_tables_ofs_operons B on A.operon_id=B.operon_id ' \
                         ' inner join custom_tables_locus2seqfeature_id C on B.seqfeature_id=C.seqfeature_id' % (biodb,
                                                                                             biodb,
                                                                                             target_locus,
