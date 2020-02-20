@@ -2263,7 +2263,7 @@ def locusx(request, locus=None, menu=True):
                                                                                                          locus)
 
             sql9 = 'select mol_weight,isoelectric_point,aromaticity,instability_index,fraction_helix,fraction_turn,' \
-                   ' fraction_sheet from custom_tables.locus2pepstats_%s where locus_tag="%s";' % (biodb, locus)
+                   ' fraction_sheet from custom_tables_locus2pepstats where locus_tag="%s";' % (biodb, locus)
 
             sql10 = 'select operon_id from custom_tables_locus2seqfeature_id t1 ' \
                     ' inner join custom_tables.DOOR2_operons_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
