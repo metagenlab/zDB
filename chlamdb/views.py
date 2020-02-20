@@ -2239,7 +2239,7 @@ def locusx(request, locus=None, menu=True):
                    ' join COG_code2category t4 on t3.category_id=t4.category_id inner join annotation.seqfeature_id2locus_%s t6 on t1.seqfeature_id=t6.seqfeature_id ' \
                    ' where locus_tag="%s";' % (biodb, biodb, locus)
 
-            sql4 = 'select A.analysis_name,A.signature_accession, A.signature_description, start, stop,score, B.name,B.description from (select t1.*,t2.signature_accession,t2.signature_description,t2.interpro_id,t3.* from interpro_interpro t1 inner join interpro_signature t2 on t1.signature_id=t2.signature_id inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id inner join annotation.seqfeature_id2locus_%s t4 on t1.seqfeature_id=t4.seqfeature_id where locus_tag="%s") A left join interpro_entry B on A.interpro_id=B.interpro_id;' % (biodb, biodb, locus)
+            sql4 = 'select A.analysis_name,A.signature_accession, A.signature_description, start, stop,score, B.name,B.description from (select t1.*,t2.signature_accession,t2.signature_description,t2.interpro_id,t3.* from interpro_interpro t1 inner join interpro_signature t2 on t1.signature_id=t2.signature_id inner join interpro_analysis t3 on t2.analysis_id=t3.analysis_id inner join annotation.seqfeature_id2locus_%s t4 on t1.seqfeature_id=t4.seqfeature_id where locus_tag="%s") A left join interpro_entry B on A.interpro_id=B.interpro_id;' % (biodb, biodb, locus)
             print(sql4)
 
             sql5 = 'select t3.ko_accession, t3.name, t3.definition, t3.pathways, t3.modules, t2.thrshld, t2.score, t2.evalue from ' \
@@ -2672,7 +2672,7 @@ def locusx(request, locus=None, menu=True):
                                                                                                                     locus)
             sql_group5 = f'select distinct t1.seqfeature_id,start,stop,signature_accession,signature_description from interpro.interpro_{biodb} t1 ' \
                          f' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
-                         f' inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id ' \
+                         f' inner join interpro_analysis t3 on t2.analysis_id=t3.analysis_id ' \
                          f' inner join orthology.seqfeature_id2orthogroup_{biodb} t4 on t1.seqfeature_id=t4.seqfeature_id ' \
                          f' inner join orthology.orthogroup_{biodb} t5 on t4.orthogroup_id=t5.orthogroup_id ' \
                          f' where t5.orthogroup_name="{locus}" and analysis_name="Pfam" order by start;'
@@ -10755,7 +10755,7 @@ def search(request):
                     # CREATE FULLTEXT INDEX ipf ON interpro_signature(signature_description);
                     # CREATE FULLTEXT INDEX ipf ON interpro_entry(description);
                     sql = 'select analysis_name,signature_accession,signature_description,t3.name,t3.description from interpro_signature t1 ' \
-                          ' inner join interpro.analysis t2 on t1.analysis_id=t2.analysis_id ' \
+                          ' inner join interpro_analysis t2 on t1.analysis_id=t2.analysis_id ' \
                           ' left join interpro_entry t3 on t1.interpro_id=t3.interpro_id ' \
                           ' WHERE MATCH(t3.description) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (search_term)
                     raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)

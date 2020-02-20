@@ -243,7 +243,7 @@ def update_analysis_dico(server):
 
     from chlamdb.biosqldb import manipulate_biosqldb
 
-    sql = 'select analysis_name, analysis_id from interpro.analysis'
+    sql = 'select analysis_name, analysis_id from interpro_analysis'
 
     analysis_nam2analysis_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -274,7 +274,7 @@ def interpro2biosql(server,
     :return:
     '''
 
-    sql = 'CREATE TABLE if not exists interpro.analysis(analysis_id INT AUTO_INCREMENT PRIMARY KEY, ' \
+    sql = 'CREATE TABLE if not exists interpro_analysis(analysis_id INT AUTO_INCREMENT PRIMARY KEY, ' \
           ' analysis_name varchar(400),' \
           ' index analysis_name(analysis_name))'
 
@@ -352,7 +352,7 @@ def interpro2biosql(server,
                     analysis_id = analysis2analysis_id[analysis]
                 except KeyError:
                     print ('New analysis:', analysis)
-                    sql = 'insert into interpro.analysis (analysis_name) values ("%s")' % analysis
+                    sql = 'insert into interpro_analysis (analysis_name) values ("%s")' % analysis
                     server.adaptor.execute(sql)
                     server.adaptor.commit()
                     analysis2analysis_id = update_analysis_dico(server)
