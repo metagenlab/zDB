@@ -12,10 +12,10 @@ def biodb2pairwise_dist_phylogenies(biodb):
     sql = 'select phylogeny from biosqldb_phylogenies.%s' % biodb
     all_phylogenies = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
-    sql = 'select seqfeature_id, taxon_id from custom_tables.locus2seqfeature_id_%s' % biodb
+    sql = 'select seqfeature_id, taxon_id from custom_tables_locus2seqfeature_id' % biodb
     seqfeature_id2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+    sql = 'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id' % biodb
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     sql = 'create table if not exists biosqldb_phylogenies.pairwise_leaf_dist_%s (taxon_1 INT, ' \
@@ -155,7 +155,7 @@ def get_orthogroup_median_dist(biodb):
         else:
             orthogroup2locus_list[row[0]].append(row[1])
 
-    sql = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+    sql = 'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id' % biodb
 
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

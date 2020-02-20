@@ -19,7 +19,7 @@ def import_silix(silix_output, biodb, silix_cutoff):
     # 1 seqfeature_id
     # 2 silix_family_id
 
-    sql = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+    sql = 'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id' % biodb
     locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     sql = 'select locus_tag, taxon_id from biosqldb.orthology_detail_%s' % biodb
     locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))

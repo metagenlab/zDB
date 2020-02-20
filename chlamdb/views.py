@@ -699,7 +699,7 @@ def locus_annotation(request, display_form):
             # left join COG on seqfeature_id
             sql = 'select t1.locus_tag, t2.accession, t2.start, t2.stop, t2.gene, t2.product, t2.n_genomes, t2.orthogroup, ' \
                   ' CHAR_LENGTH(t2.translation), t4.COG_name,t6.code,t4.description, t2.taxon_id ' \
-                  ' from custom_tables.locus2seqfeature_id_%s t1 ' \
+                  ' from custom_tables_locus2seqfeature_id t1 ' \
                   ' inner join biosqldb.orthology_detail_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
                   ' left join COG_seqfeature_id2best_COG_hit t3 on t1.seqfeature_id=t3.seqfeature_id' \
                   ' left join COG_cog_names_2014 t4 on t3.hit_COG_id=t4.COG_id' \
@@ -2144,7 +2144,7 @@ def locusx(request, locus=None, menu=True):
             # check if exact match to seqfeature_id
             try:
                 locus = int(locus)
-                sql = 'select locus_tag from custom_tables.locus2seqfeature_id_%s where seqfeature_id=%s' % (biodb,
+                sql = 'select locus_tag from custom_tables_locus2seqfeature_id where seqfeature_id=%s' % (biodb,
                                                                                                              locus)
                 locus = server.adaptor.execute_and_fetchall(sql,)[0][0]
             except:
@@ -2243,7 +2243,7 @@ def locusx(request, locus=None, menu=True):
             print(sql4)
 
             sql5 = 'select t3.ko_accession, t3.name, t3.definition, t3.pathways, t3.modules, t2.thrshld, t2.score, t2.evalue from ' \
-                   ' custom_tables.locus2seqfeature_id_%s t1 ' \
+                   ' custom_tables_locus2seqfeature_id t1 ' \
                    ' inner join enzyme_seqfeature_id2ko t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                    ' inner join enzyme_ko_annotation t3 on t2.ko_id=t3.ko_id where t1.locus_tag="%s";' % (biodb,
                                                                                                      biodb,
@@ -2255,7 +2255,7 @@ def locusx(request, locus=None, menu=True):
                    ' where locus_tag="%s") A inner join enzyme_pathway2ko_v1 B on A.ko_id=B.ko_id ' \
                    ' inner join enzyme_kegg_pathway C on B.pathway_id=C.pathway_id where pathway_category !="1.0 Global and overview maps";' % (biodb, locus)
 
-            sql8 = 'select t4.module_name, t4.module_sub_sub_cat, t4.description from custom_tables.locus2seqfeature_id_%s t1  ' \
+            sql8 = 'select t4.module_name, t4.module_sub_sub_cat, t4.description from custom_tables_locus2seqfeature_id t1  ' \
                    ' inner join enzyme_seqfeature_id2ko t2 on t1.seqfeature_id=t2.seqfeature_id' \
                    ' inner join enzyme_module2ko t3 on t2.ko_id=t3.ko_id ' \
                    ' inner join enzyme_kegg_module t4 on t3.module_id=t4.module_id where t1.locus_tag="%s";' % (biodb,
@@ -2265,13 +2265,13 @@ def locusx(request, locus=None, menu=True):
             sql9 = 'select mol_weight,isoelectric_point,aromaticity,instability_index,fraction_helix,fraction_turn,' \
                    ' fraction_sheet from custom_tables.locus2pepstats_%s where locus_tag="%s";' % (biodb, locus)
 
-            sql10 = 'select operon_id from custom_tables.locus2seqfeature_id_%s t1 ' \
+            sql10 = 'select operon_id from custom_tables_locus2seqfeature_id t1 ' \
                     ' inner join custom_tables.DOOR2_operons_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
                     ' where t1.locus_tag="%s"' % (biodb,
                                                                              biodb,
                                                                             locus)
 
-            sql11 = 'select db_xref_name,db_accession from custom_tables.locus2seqfeature_id_%s as t1 ' \
+            sql11 = 'select db_xref_name,db_accession from custom_tables_locus2seqfeature_id as t1 ' \
                     ' inner join custom_tables.uniprot_id2seqfeature_id_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                     ' inner join custom_tables.uniprot_db_xref_%s as t3 on t2.uniprot_id=t3.uniprot_id ' \
                     ' inner join custom_tables.db_xref as t4 on t3.db_xref_id=t4.db_xref_id ' \
@@ -2279,20 +2279,20 @@ def locusx(request, locus=None, menu=True):
 
             sql12 = 'select uniprot_status,annotation_score,gene,recommendedName_fullName,comment_function,ec_number,' \
                     ' comment_similarity,comment_subunit,comment_catalyticactivity,proteinExistence,uniprot_accession ' \
-                    ' from custom_tables.locus2seqfeature_id_%s as t1 inner join custom_tables.uniprot_id2seqfeature_id_%s as t2 ' \
+                    ' from custom_tables_locus2seqfeature_id as t1 inner join custom_tables.uniprot_id2seqfeature_id_%s as t2 ' \
                     ' on t1.seqfeature_id=t2.seqfeature_id inner join custom_tables.uniprot_annotation_%s as t3 ' \
                     ' on t2.seqfeature_id=t3.seqfeature_id where locus_tag="%s";' % (biodb,biodb,biodb,locus)
 
 
             sql13 = 'select go_term_id, term_type, go_description from (select go_term_id, go_description ' \
-                    ' from custom_tables.locus2seqfeature_id_%s as t1  ' \
+                    ' from custom_tables_locus2seqfeature_id as t1  ' \
                     'inner join custom_tables.uniprot_go_terms_%s as t2 on t1.seqfeature_id=t2.seqfeature_id  ' \
                     ' where t1.locus_tag="%s") A inner join gene_ontology.term as B on A.go_term_id=B.acc;' % (biodb, biodb, locus)
 
-            sql15 = 'select count(*) from custom_tables.locus2seqfeature_id_%s t1 inner join blastnr_blastnr t2' \
+            sql15 = 'select count(*) from custom_tables_locus2seqfeature_id t1 inner join blastnr_blastnr t2' \
               ' on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s";' % (biodb, biodb, locus)
 
-            sql16 = 'select count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
+            sql16 = 'select count(*) from custom_tables_locus2seqfeature_id t1 ' \
               ' inner join blastnr_blast_swissprot t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where locus_tag="%s";' % (biodb, biodb, locus)
 
@@ -2309,7 +2309,7 @@ def locusx(request, locus=None, menu=True):
                     ' t2.query_cov, t2.hit_cov,t4.tc_name as transporter_name, t4.description as transporter_description, ' \
                     ' t5.tc_name as superfamily, t5.description as superfamily_description, ' \
                     ' t6.tc_name as family_name, t6.description as family_description, t7.tc_name as subfamily_name, ' \
-                    ' t7.description as subfamily_description, t8.tcdb_description, t8.organism  from custom_tables.locus2seqfeature_id_%s t1 ' \
+                    ' t7.description as subfamily_description, t8.tcdb_description, t8.organism  from custom_tables_locus2seqfeature_id t1 ' \
                     ' inner join transporters.transporters_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                     ' inner join transporters.transporter_table t3 on t2.transporter_id=t3.transporter_id ' \
                     ' inner join transporters.tc_table t4 on t3.transporter_id=t4.tc_id ' \
@@ -2319,7 +2319,7 @@ def locusx(request, locus=None, menu=True):
                     ' inner join transporters.uniprot_table t8 on t2.hit_uniprot_id=t8.uniprot_id ' \
                     ' where t1.locus_tag="%s";' % (biodb, biodb, locus)
 
-            sql21 = 'select seqfeature_id, taxon_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s"' % (biodb,
+            sql21 = 'select seqfeature_id, taxon_id from custom_tables_locus2seqfeature_id where locus_tag="%s"' % (biodb,
                                                                                                                        locus)
 
             seqfeature_data = server.adaptor.execute_and_fetchall(sql21,)[0]
@@ -2482,18 +2482,18 @@ def locusx(request, locus=None, menu=True):
             try:
                 operon_id = server.adaptor.execute_and_fetchall(sql10, )[0][0]
                 sqlo = 'select operon_id,gi,locus_tag,old_locus_tag,COG_number,product from custom_tables.DOOR2_operons_%s t1 ' \
-                       ' left join custom_tables.locus2seqfeature_id_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                       ' left join custom_tables_locus2seqfeature_id t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                        ' where operon_id=%s;' % (biodb, biodb, operon_id)
                 operon = server.adaptor.execute_and_fetchall(sqlo, )
                 operon_locus = [i[2] for i in operon]
             except (IndexError, server.module.ProgrammingError):
                 try:
                     sqlo = 'select C.locus_tag' \
-                           ' from (select operon_id from custom_tables.locus2seqfeature_id_%s t1 ' \
+                           ' from (select operon_id from custom_tables_locus2seqfeature_id t1 ' \
                            ' inner join custom_tables.ofs_operons_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                            ' where t1.locus_tag="%s") A ' \
                            ' inner join custom_tables.ofs_operons_%s B on A.operon_id=B.operon_id ' \
-                           ' inner join custom_tables.locus2seqfeature_id_%s C on B.seqfeature_id=C.seqfeature_id' % (biodb,
+                           ' inner join custom_tables_locus2seqfeature_id C on B.seqfeature_id=C.seqfeature_id' % (biodb,
                                                                                               biodb,
                                                                                               locus,
                                                                                               biodb,
@@ -2903,7 +2903,7 @@ def aa_comp_locus(request, locus_tag):
     import numpy
     server, db = manipulate_biosqldb.load_db("%s" % biodb)
 
-    sql1 = 'select t2.taxon_id, t2.seqfeature_id from custom_tables.locus2seqfeature_id_%s t1 ' \
+    sql1 = 'select t2.taxon_id, t2.seqfeature_id from custom_tables_locus2seqfeature_id t1 ' \
            ' inner join custom_tables.aa_usage_count_%s t2 ' \
            ' on t1.seqfeature_id=t2.seqfeature_id where t1.locus_tag="%s"' % (biodb, biodb, locus_tag)
 
@@ -2931,7 +2931,7 @@ def rnaseq_class(request, temporal_class, taxon_id):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db("%s" % biodb)
 
-    sql2 = 'select t1.*, t2.locus_tag from rnaseq.%s_%s t1  left join custom_tables.locus2seqfeature_id_%s t2 ' \
+    sql2 = 'select t1.*, t2.locus_tag from rnaseq.%s_%s t1  left join custom_tables_locus2seqfeature_id t2 ' \
            ' on t1.seqfeature_id=t2.seqfeature_id where temporal_class="%s"' % (biodb,
                                                                             taxon_id,
                                                                                 biodb,
@@ -2952,7 +2952,7 @@ def gc_locus(request, locus_tag):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql1 = 'select t2.taxon_id, t2.seqfeature_id, t2.gc_percent, t2.gc_1, t2.gc_2, t2.gc_3 from custom_tables.locus2seqfeature_id_%s t1 ' \
+    sql1 = 'select t2.taxon_id, t2.seqfeature_id, t2.gc_percent, t2.gc_1, t2.gc_2, t2.gc_3 from custom_tables_locus2seqfeature_id t1 ' \
            ' inner join custom_tables.gc_content_%s t2 ' \
            ' on t1.seqfeature_id=t2.seqfeature_id where t1.locus_tag="%s"' % (biodb, biodb, locus_tag)
 
@@ -5902,7 +5902,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
         sql = 'select B.locus_tag, A.%s ,A.n from (select seqfeature_id,%s, count(*) as n from blastnr_blastnr A ' \
               ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id where hit_number<=%s and query_bioentry_id=%s ' \
               ' group by seqfeature_id, %s order by seqfeature_id,n DESC) A ' \
-              ' inner join custom_tables.locus2seqfeature_id_%s B on A.seqfeature_id=B.seqfeature_id' % (rank,
+              ' inner join custom_tables_locus2seqfeature_id B on A.seqfeature_id=B.seqfeature_id' % (rank,
                                                                                                          rank,
                                                                                                          biodb,
                                                                                                          top_n,
@@ -5925,7 +5925,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
         locus_list = majority_locus_list
         #print "locus list",locus_list
     elif counttype == 'BBH':
-        sql = ' select locus_tag from (select t2.*,t1.locus_tag from custom_tables.locus2seqfeature_id_%s t1 ' \
+        sql = ' select locus_tag from (select t2.*,t1.locus_tag from custom_tables_locus2seqfeature_id t1 ' \
               ' inner join blastnr_blastnr t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where hit_number=1) A inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id ' \
               ' where %s="%s"  and query_bioentry_id=%s;' % (biodb, biodb, rank, taxon, accession)
@@ -5936,7 +5936,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
 
     # get number of hits for each kingdom
     sql_superkingdom = 'select locus_tag,superkingdom, count(*) as n from' \
-    ' (select t2.*,t1.locus_tag from custom_tables.locus2seqfeature_id_%s t1 ' \
+    ' (select t2.*,t1.locus_tag from custom_tables_locus2seqfeature_id t1 ' \
     ' inner join blastnr_blastnr t2 on t1.seqfeature_id=t2.seqfeature_id' \
     ' where locus_tag in ("%s")) A' \
     ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id  group by locus_tag,superkingdom;' % (biodb, biodb, '","'.join(locus_list))
@@ -6405,7 +6405,7 @@ def pairwiseid(request):
 
             sql = 'select orthogroup_1,blast_identity_a_vs_b from (select seqfeature_id_1,blast_identity_a_vs_b,orthogroup_1 ' \
                   ' from comparative_tables_reciprocal_BBH where orthogroup_1=orthogroup_2 and taxon_1 in (%s,%s) ' \
-                  ' and taxon_2 in (%s,%s)) A inner join custom_tables.locus2seqfeature_id_%s t2 ' \
+                  ' and taxon_2 in (%s,%s)) A inner join custom_tables_locus2seqfeature_id t2 ' \
                   ' on A.seqfeature_id_1=t2.seqfeature_id;' % (biodb,
                                                                genome_1,
                                                                genome_2,
@@ -6792,13 +6792,13 @@ def blastnr_euk(request):
 
 
     #print 'seqfeature_id2s_species...'
-    sql = 'select seqfeature_id, locus_tag from custom_tables.locus2seqfeature_id_%s' % biodb
+    sql = 'select seqfeature_id, locus_tag from custom_tables_locus2seqfeature_id' % biodb
 
     seqfeature_id2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     #print 'locus2n_species...'
     sql = 'select locus_tag,n_species from custom_tables.seqfeature_id2n_species_%s t1 ' \
-          ' inner join custom_tables.locus2seqfeature_id_%s t2 on t1.seqfeature_id=t2.seqfeature_id;' % (biodb, biodb)
+          ' inner join custom_tables_locus2seqfeature_id t2 on t1.seqfeature_id=t2.seqfeature_id;' % (biodb, biodb)
 
     locus_tag2n_species = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -7477,7 +7477,7 @@ def blastnr_top_non_phylum(request):
                 sql = 'select t4.locus_tag,t5.product,t5.gene,t1.hit_number,t1.percent_identity,t3.kingdom,t3.class,' \
                       ' t3.order,t3.family,t3.species,t1.subject_accession,t1.subject_title from blastnr_blastnr_best_non_self_phylum t1' \
                       ' inner join blastnr_blastnr_taxonomy t3 on t1.subject_taxon_id=t3.taxon_id ' \
-                      ' inner join custom_tables.locus2seqfeature_id_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
+                      ' inner join custom_tables_locus2seqfeature_id t4 on t1.seqfeature_id=t4.seqfeature_id ' \
                       ' inner join biosqldb.orthology_detail_%s t5 on t4.locus_tag=t5.locus_tag  ' \
                       'where t1.superkingdom="Eukaryota"' \
                       ' and query_taxon_id in (%s)' % (biodb,
@@ -7490,7 +7490,7 @@ def blastnr_top_non_phylum(request):
                       't3.order,t3.family,t3.species,t1.subject_accession,t1.subject_title from blastnr_blastnr_best_non_self_phylum t1 ' \
                       ' inner join custom_tables.seqfeature_id2n_species_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                       ' inner join blastnr_blastnr_taxonomy t3 on t1.subject_taxon_id=t3.taxon_id ' \
-                      ' inner join custom_tables.locus2seqfeature_id_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
+                      ' inner join custom_tables_locus2seqfeature_id t4 on t1.seqfeature_id=t4.seqfeature_id ' \
                       ' inner join biosqldb.orthology_detail_%s t5 on t4.locus_tag=t5.locus_tag  ' \
                       ' where t1.superkingdom="Eukaryota" and n_species=1  and t1.query_taxon_id in (%s);' % (biodb,
                                                                                    biodb,
@@ -7842,7 +7842,7 @@ def effector_pred(request):
     sql = 'select C.orthogroup from (select t1.taxon_id, t1.seqfeature_id from effectors.predicted_effectiveT3_%s t1 ' \
           ' inner join effectors.predicted_BPBAac_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' inner join effectors.predicted_T3MM_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
-          ' group by t1.taxon_id, t1.seqfeature_id) A inner join custom_tables.locus2seqfeature_id_%s B ' \
+          ' group by t1.taxon_id, t1.seqfeature_id) A inner join custom_tables_locus2seqfeature_id B ' \
           ' on A.seqfeature_id=B.seqfeature_id inner join biosqldb.orthology_detail_%s C on ' \
           ' B.locus_tag=C.locus_tag group by C.orthogroup;' % (biodb,
                                                              biodb,
@@ -8063,7 +8063,7 @@ def interpro_taxonomy(request):
                 sql = 'select C.orthogroup from (select t1.taxon_id, t1.seqfeature_id from effectors.predicted_effectiveT3_%s t1 ' \
                       ' inner join effectors.predicted_BPBAac_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                       ' inner join effectors.predicted_T3MM_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
-                      ' group by t1.taxon_id, t1.seqfeature_id) A inner join custom_tables.locus2seqfeature_id_%s B ' \
+                      ' group by t1.taxon_id, t1.seqfeature_id) A inner join custom_tables_locus2seqfeature_id B ' \
                       ' on A.seqfeature_id=B.seqfeature_id inner join biosqldb.orthology_detail_%s C on ' \
                       ' B.locus_tag=C.locus_tag group by C.orthogroup;' % (biodb,
                                                                          biodb,
@@ -8271,7 +8271,7 @@ def homologs(request, orthogroup, locus_tag=False):
         sql_groups = 'select A.*,C.comment_function,C.gene,D.annotation_score,D.uniprot_status,C.recommendedName_fullName ' \
                     ' from (select locus_tag, gene,product,organism,orthogroup_size,n_genomes,TM,SP from ' \
                     ' biosqldb.orthology_detail_%s where orthogroup="%s") A ' \
-                    ' inner join custom_tables.locus2seqfeature_id_%s B on A.locus_tag=B.locus_tag ' \
+                    ' inner join custom_tables_locus2seqfeature_id B on A.locus_tag=B.locus_tag ' \
                     ' left join custom_tables.uniprot_annotation_%s as C on B.seqfeature_id=C.seqfeature_id ' \
                     ' left join custom_tables.uniprot_id2seqfeature_id_%s as D on B.seqfeature_id=D.seqfeature_id;' % (biodb,
                                                                                                                        orthogroup,
@@ -8331,7 +8331,7 @@ def blastswissprot(request, locus_tag):
 
         columns = 'hit_number,subject_accession,subject_kingdom,subject_scientific_name,subject_taxid,' \
                   ' subject_title,evalue,bit_score,percent_identity,gaps,query_cov,genes,annot_score'
-        sql = 'select A.*, B.phylum, B.order, B.family from (select %s from custom_tables.locus2seqfeature_id_%s t1 ' \
+        sql = 'select A.*, B.phylum, B.order, B.family from (select %s from custom_tables_locus2seqfeature_id t1 ' \
               ' inner join blastnr_blast_swissprot t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where locus_tag="%s") A ' \
               ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id' % (columns,biodb, biodb,locus_tag)
@@ -8377,7 +8377,7 @@ def blastnr(request, locus_tag):
         columns = 'hit_number, subject_accession, subject_kingdom, subject_scientific_name, ' \
                   ' subject_taxid, subject_title, evalue, bit_score, percent_identity, gaps, length'
         sql = 'select hit_number,subject_accession,superkingdom,subject_scientific_name,subject_taxid,subject_title,evalue,bit_score,percent_identity,gaps, length,' \
-              ' B.phylum, B.order, B.family from (select %s from custom_tables.locus2seqfeature_id_%s t1 inner join blastnr_blastnr t2' \
+              ' B.phylum, B.order, B.family from (select %s from custom_tables_locus2seqfeature_id t1 inner join blastnr_blastnr t2' \
               ' on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s" order by hit_number) A ' \
               ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id;' % (columns, biodb, biodb, locus_tag)
         #print sql
@@ -8598,10 +8598,10 @@ def plot_region(request):
             if valid_id:
                 locus_tag = data[1]
                 if closest_only:
-                    sql = 'select B.locus_tag,taxon_2,identity from (select * from custom_tables.locus2seqfeature_id_%s t1 ' \
+                    sql = 'select B.locus_tag,taxon_2,identity from (select * from custom_tables_locus2seqfeature_id t1 ' \
                           ' inner join comparative_tables_identity_closest_homolog2 t2 on t1.seqfeature_id=t2.locus_1 ' \
                           ' where t1.locus_tag="%s") A ' \
-                          ' inner join custom_tables.locus2seqfeature_id_%s B on A.locus_2=B.seqfeature_id ' \
+                          ' inner join custom_tables_locus2seqfeature_id B on A.locus_2=B.seqfeature_id ' \
                           ' order by identity DESC;' % (biodb, biodb, locus_tag, biodb)
                     #print sql
                     #print genomes
@@ -9454,11 +9454,11 @@ def annotation_overview(request):
     sql_string_mapping = 'select taxon_id, count(*) from custom_tables.uniprot_id2seqfeature_id_%s t0 ' \
                          ' inner join custom_tables.uniprot_db_xref_%s t1 on t0.uniprot_id=t1.uniprot_id ' \
                          ' inner join custom_tables.db_xref t2 on t1.db_xref_id=t2.db_xref_id ' \
-                         ' inner join custom_tables.locus2seqfeature_id_%s t3 on t0.seqfeature_id=t3.seqfeature_id ' \
+                         ' inner join custom_tables_locus2seqfeature_id t3 on t0.seqfeature_id=t3.seqfeature_id ' \
                          ' where db_xref_name="string" group by taxon_id;' % (biodb, biodb, biodb)
 
     sql_uniprot_mapping = 'select taxon_id, count(*) from custom_tables.uniprot_id2seqfeature_id_%s t0 ' \
-                         ' inner join custom_tables.locus2seqfeature_id_%s t3 on t0.seqfeature_id=t3.seqfeature_id ' \
+                         ' inner join custom_tables_locus2seqfeature_id t3 on t0.seqfeature_id=t3.seqfeature_id ' \
                          ' group by taxon_id;' % (biodb, biodb)
 
 
@@ -9488,7 +9488,7 @@ def annotation_overview(request):
     taxon2set2value_heatmap = {}
 
     sql = 'select taxon_id,operon_id from custom_tables.DOOR2_operons_%s t1 ' \
-          ' right join custom_tables.locus2seqfeature_id_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+          ' right join custom_tables_locus2seqfeature_id t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' where taxon_id is not NULL group by taxon_id;' % (biodb, biodb)
 
     sql_string_taxons = 'select taxon_id from string.interactions_%s where taxon_id is not NULL group by taxon_id;' % biodb
@@ -12181,7 +12181,7 @@ def interactions(request, locus_tag):
         profile_match = True
 
     if biodb != 'chlamydia_04_16':
-        sql = 'select seqfeature_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s"' % (biodb,
+        sql = 'select seqfeature_id from custom_tables_locus2seqfeature_id where locus_tag="%s"' % (biodb,
                                                                                                        locus_tag)
 
         seqfeature_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
@@ -12308,7 +12308,7 @@ def neig_interactions(request, locus_tag):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     if biodb != 'chlamydia_04_16':
-        sql = 'select seqfeature_id from custom_tables.locus2seqfeature_id_%s where locus_tag="%s"' % (biodb,
+        sql = 'select seqfeature_id from custom_tables_locus2seqfeature_id where locus_tag="%s"' % (biodb,
                                                                                                        locus_tag)
 
         seqfeature_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
@@ -12323,7 +12323,7 @@ def neig_interactions(request, locus_tag):
         if biodb != 'chlamydia_04_16':
             locus_tag_list = [str(i) for i in locus_tag_list]
             filter_seqfeatures = ','.join(locus_tag_list)
-            sql = 'select locus_tag from custom_tables.locus2seqfeature_id_%s where seqfeature_id in (%s)' % (biodb, filter_seqfeatures)
+            sql = 'select locus_tag from custom_tables_locus2seqfeature_id where seqfeature_id in (%s)' % (biodb, filter_seqfeatures)
             locus_tag_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
         #print 'locus list', locus_tag_list
         #match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(all_groups, biodb)
@@ -12511,9 +12511,9 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
         orthogroup = data[0]
         taxon_id = data[1]
 
-        sql2 = 'select taxon_2,B.locus_tag,identity from (select * from custom_tables.locus2seqfeature_id_%s t1 ' \
+        sql2 = 'select taxon_2,B.locus_tag,identity from (select * from custom_tables_locus2seqfeature_id t1 ' \
                ' inner join comparative_tables_identity_closest_homolog2 t2 on t1.seqfeature_id=t2.locus_1 ' \
-               ' where locus_tag="%s") A inner join custom_tables.locus2seqfeature_id_%s B on A.locus_2=B.seqfeature_id;' % (biodb,
+               ' where locus_tag="%s") A inner join custom_tables_locus2seqfeature_id B on A.locus_2=B.seqfeature_id;' % (biodb,
                                                                                                                              biodb,
                                                                                                                              orthogroup_or_locus,
                                                                                                                              biodb)
@@ -12796,7 +12796,7 @@ def hmm2circos(request):
             sql = 'select locus_tag from hmm.hmm_sets t1 ' \
                   ' inner join hmm.hmm_sets_entry t2 on t1.set_id=t2.set_id ' \
                   ' inner join hmm.hmm_hits_annotated_genome_%s t3 on t2.hmm_id=t3.hmm_id' \
-                  ' inner join custom_tables.locus2seqfeature_id_%s t4 on t3.seqfeature_id=t4.seqfeature_id ' \
+                  ' inner join custom_tables_locus2seqfeature_id t4 on t3.seqfeature_id=t4.seqfeature_id ' \
                   ' where t1.name="%s" and t3.taxon_id=%s and bitscore>=%s ' \
                   ' and query_coverage>=%s order by bitscore;' % (biodb,
                                                                    biodb,
@@ -12811,7 +12811,7 @@ def hmm2circos(request):
             sql2 = 'select locus_tag,t5.name  from hmm.hmm_sets t1 ' \
                   ' inner join hmm.hmm_sets_entry t2 on t1.set_id=t2.set_id ' \
                   ' inner join hmm.hmm_hits_annotated_genome_%s t3 on t2.hmm_id=t3.hmm_id' \
-                  ' inner join custom_tables.locus2seqfeature_id_%s t4 on t3.seqfeature_id=t4.seqfeature_id ' \
+                  ' inner join custom_tables_locus2seqfeature_id t4 on t3.seqfeature_id=t4.seqfeature_id ' \
                   ' inner join hmm.hmm_profiles t5 on t2.hmm_id=t5.hmm_id' \
                   ' where t1.name="%s" and t3.taxon_id=%s and bitscore>=%s ' \
                    ' and query_coverage>=%s order by bitscore;;' % (biodb, biodb, hmm_set, reference_taxon, score_cutoff, query_coverage_cutoff)
@@ -12946,7 +12946,7 @@ def transporters_list(request):
                       ' inner join transporters.tc_table t5 on t2.subfamily=t5.tc_id ' \
                       ' inner join transporters.tc_table t6 on t2.transporter_id=t6.tc_id ' \
                       ' inner join transporters.uniprot_table t7 on t1.hit_uniprot_id=t7.uniprot_id ' \
-                      ' inner join custom_tables.locus2seqfeature_id_%s t8 on t1.seqfeature_id=t8.seqfeature_id ' \
+                      ' inner join custom_tables_locus2seqfeature_id t8 on t1.seqfeature_id=t8.seqfeature_id ' \
                       ' where query_cov>=%s and hit_cov>=%s and evalue<=%s and bitscore_first_hsp>=%s ' \
                       ' and t1.taxon_id=%s;' % (biodb,
                                                 biodb,
@@ -12975,9 +12975,9 @@ def transporters_list(request):
                       ' inner join transporters.tc_table t4 on t2.superfamily=t4.tc_id ' \
                       ' inner join transporters.tc_table t5 on t2.subfamily=t5.tc_id ' \
                       ' inner join transporters.tc_table t6 on t2.transporter_id=t6.tc_id ' \
-                      ' inner join custom_tables.locus2seqfeature_id_%s t6 on t1.seqfeature_id=t6.seqfeature_id ' \
+                      ' inner join custom_tables_locus2seqfeature_id t6 on t1.seqfeature_id=t6.seqfeature_id ' \
                       ' inner join transporters.uniprot_table t7 on t1.hit_uniprot_id=t7.uniprot_id ' \
-                      ' inner join custom_tables.locus2seqfeature_id_%s t8 on t1.seqfeature_id=t8.seqfeature_id ' \
+                      ' inner join custom_tables_locus2seqfeature_id t8 on t1.seqfeature_id=t8.seqfeature_id ' \
                       ' where query_cov>=%s and hit_cov>=%s and evalue<=%s and bitscore_first_hsp>=%s ' \
                       ' and t4.description="%s" ' \
                       ' and t1.taxon_id=%s;' % (biodb,

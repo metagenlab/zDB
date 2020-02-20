@@ -564,7 +564,7 @@ def run_circos(reference_taxon, target_taxons):
               ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
               ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
               ' inner join blastnr_blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
-              ' inner join custom_tables.locus2seqfeature_id_%s t5 ' \
+              ' inner join custom_tables_locus2seqfeature_id t5 ' \
               ' on t1.seqfeature_id=t5.seqfeature_id ' \
               ' where t1.hit_number=1 and t3.name="%s" and t4.phylum!="%s" and t1.query_taxon_id=%s;' % (biodb,
                                                                                                          biodb,
@@ -573,7 +573,7 @@ def run_circos(reference_taxon, target_taxons):
                                                                                                          reference_taxon)
             BBH_color = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
-            sql2 = 'select locus_tag from custom_tables.locus2seqfeature_id_%s t1 ' \
+            sql2 = 'select locus_tag from custom_tables_locus2seqfeature_id t1 ' \
                    ' left join blastnr_blastnr t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                    ' where taxon_id=%s and t2.seqfeature_id is NULL;' % (biodb, biodb, reference_taxon)
                    
@@ -584,7 +584,7 @@ def run_circos(reference_taxon, target_taxons):
                   ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
                   ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
                   ' inner join blastnr_blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
-                  ' inner join custom_tables.locus2seqfeature_id_%s t5 ' \
+                  ' inner join custom_tables_locus2seqfeature_id t5 ' \
                   ' on t1.seqfeature_id=t5.seqfeature_id ' \
                   ' where t1.hit_number=2 and t3.name="%s" and t4.phylum!="%s" and t1.query_taxon_id=%s;' % (biodb,
                                                                                                              biodb,
@@ -879,7 +879,7 @@ def plot_neighborhood_task(biodb, target_locus, region_size):
         temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
         name = 'temp/' + os.path.basename(temp_file.name)
 
-        sql10 = 'select operon_id from custom_tables.locus2seqfeature_id_%s t1 ' \
+        sql10 = 'select operon_id from custom_tables_locus2seqfeature_id t1 ' \
                 ' inner join custom_tables.DOOR2_operons_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
                 ' where t1.locus_tag="%s"' % (biodb,
                                                 biodb,
@@ -887,18 +887,18 @@ def plot_neighborhood_task(biodb, target_locus, region_size):
         try:
             operon_id = server.adaptor.execute_and_fetchall(sql10, )[0][0]
             sqlo = 'select operon_id,gi,locus_tag,old_locus_tag,COG_number,product from custom_tables.DOOR2_operons_%s t1 ' \
-                    ' left join custom_tables.locus2seqfeature_id_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                    ' left join custom_tables_locus2seqfeature_id t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                     ' where operon_id=%s;' % (biodb, biodb, operon_id)
             operon = server.adaptor.execute_and_fetchall(sqlo, )
             operon_locus = [i[2] for i in operon]
         except IndexError:
             try:
                 sqlo = 'select C.locus_tag' \
-                        ' from (select operon_id from custom_tables.locus2seqfeature_id_%s t1 ' \
+                        ' from (select operon_id from custom_tables_locus2seqfeature_id t1 ' \
                         ' inner join custom_tables.ofs_operons_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                         ' where t1.locus_tag="%s") A ' \
                         ' inner join custom_tables.ofs_operons_%s B on A.operon_id=B.operon_id ' \
-                        ' inner join custom_tables.locus2seqfeature_id_%s C on B.seqfeature_id=C.seqfeature_id' % (biodb,
+                        ' inner join custom_tables_locus2seqfeature_id C on B.seqfeature_id=C.seqfeature_id' % (biodb,
                                                                                             biodb,
                                                                                             target_locus,
                                                                                             biodb,

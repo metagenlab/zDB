@@ -10,7 +10,7 @@ def create_locus_tag2seqfeature_table(biodb, locus2seqfeature_id=False, locus2ta
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'CREATE TABLE IF NOT EXISTS custom_tables.locus2seqfeature_id_%s (locus_tag varchar(400), ' \
+    sql = 'CREATE TABLE IF NOT EXISTS custom_tables_locus2seqfeature_id (locus_tag varchar(400), ' \
           ' seqfeature_id INT, ' \
           ' taxon_id INT,' \
           ' index locus_tag (locus_tag), ' \
@@ -26,13 +26,13 @@ def create_locus_tag2seqfeature_table(biodb, locus2seqfeature_id=False, locus2ta
 
     for locus in locus2seqfeature_id:
         try:
-            sql = 'insert into custom_tables.locus2seqfeature_id_%s values ("%s", %s, %s)' % (biodb, locus,
+            sql = 'insert into custom_tables_locus2seqfeature_id values ("%s", %s, %s)' % (biodb, locus,
                                                                                               locus2seqfeature_id[locus],
                                                                                               locus2taxon_id[locus])
             server.adaptor.execute(sql)
         except:
             # pseudogenes
-            sql = 'insert into custom_tables.locus2seqfeature_id_%s values ("%s", %s, %s)' % (biodb,
+            sql = 'insert into custom_tables_locus2seqfeature_id values ("%s", %s, %s)' % (biodb,
                                                                                               locus,
                                                                                               locus2seqfeature_id[locus],
                                                                                               "NULL")

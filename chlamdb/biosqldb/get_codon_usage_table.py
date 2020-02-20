@@ -26,7 +26,7 @@ def biodb2aa_usage(biodb):
 
     sql1 = 'select distinct accession from orthology_detail_%s' % biodb
     sql2 = 'select locus_tag, taxon_id from orthology_detail_%s' % biodb
-    sql3 = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+    sql3 = 'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id' % biodb
 
     accession_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql1,)]
 

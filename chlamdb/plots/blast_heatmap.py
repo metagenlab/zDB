@@ -26,7 +26,7 @@ def get_multiple_set_profiles(biodb,
           ' inner join blast.blast_sets_entry t2 on t1.set_id=t2.set_id ' \
           ' inner join blast.blast_hits_annotated_genome_%s t3 on t2.seq_id=t3.seq_id ' \
           ' inner join blast.blast_db t4 on t2.seq_id=t4.seq_id ' \
-          ' inner join custom_tables.locus2seqfeature_id_%s t5 on t3.seqfeature_id=t5.seqfeature_id' \
+          ' inner join custom_tables_locus2seqfeature_id t5 on t3.seqfeature_id=t5.seqfeature_id' \
           ' where t1.name in (%s) and bitscore>=%s and query_coverage>=%s and hit_coverage>=%s order by bitscore;' % (column,
                                                                             biodb,
                                                                             biodb,

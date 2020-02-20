@@ -298,8 +298,8 @@ def circos_locus2taxon_highest_identity(biodb,
 
     else:
         sql = 'select t2.locus_tag, t3.locus_tag, identity, taxon_2 from comparative_tables_identity_closest_homolog2 t1 ' \
-              ' inner join custom_tables.locus2seqfeature_id_%s t2 on t1.locus_1=t2.seqfeature_id ' \
-              ' inner join custom_tables.locus2seqfeature_id_%s t3 on t1.locus_2=t3.seqfeature_id ' \
+              ' inner join custom_tables_locus2seqfeature_id t2 on t1.locus_1=t2.seqfeature_id ' \
+              ' inner join custom_tables_locus2seqfeature_id t3 on t1.locus_2=t3.seqfeature_id ' \
               ' where taxon_1=%s' % (biodb, biodb, biodb, reference_taxon_id)
         data = server.adaptor.execute_and_fetchall(sql,)
         locus2locus_identity = {}
@@ -588,7 +588,7 @@ def accession2coding_density(biodb, sqlite=False):
               ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
               ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
               ' inner join blastnr_blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
-              ' inner join custom_tables.locus2seqfeature_id_%s t5 ' \
+              ' inner join custom_tables_locus2seqfeature_id t5 ' \
               ' on t1.seqfeature_id=t5.seqfeature_id ' \
               ' where t1.hit_number=1 and t3.name="%s" and t4.phylum="Chlamydiae" and t2.accession="%s";' % (biodb,
                                                                                                              biodb,
@@ -1071,7 +1071,7 @@ def locus_tag2n_nr_hits(db_name, genome_accession, exclude_family = False):
               ' from blastnr_blastnr_hits_%s as t2 ' \
               ' group by locus_tag) B on A.locus_tag=B.locus_tag;' %(db_name, genome_accession, db_name, genome_accession)
 
-        sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
+        sql = 'select locus_tag, count(*) from custom_tables_locus2seqfeature_id t1 ' \
               ' left join blastnr_blastnr as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
               ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
               ' where t3.accession="%s" group by locus_tag;' % (db_name, db_name,genome_accession)
@@ -1306,7 +1306,7 @@ def locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", 
                                                                         accession,                                                                                                              db_name,
                                                                         accession,
                                                                         superkingdom)
-        sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
+        sql = 'select locus_tag, count(*) from custom_tables_locus2seqfeature_id t1 ' \
               ' inner join blastnr_blastnr as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
               ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
               ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
@@ -1349,7 +1349,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                                                                             accession,                                                                                                              db_name,
                                                                             accession,
                                                                             phylum)
-            sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
+            sql = 'select locus_tag, count(*) from custom_tables_locus2seqfeature_id t1 ' \
                   ' inner join blastnr_blastnr as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                   ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
                   ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
@@ -1384,7 +1384,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                                                                             accession,
                                                                             phylum)
 
-            sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
+            sql = 'select locus_tag, count(*) from custom_tables_locus2seqfeature_id t1 ' \
                   ' inner join blastnr_blastnr as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                   ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
                   ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \

@@ -360,7 +360,7 @@ def seqfeature_id2n_species_chlamydiae_only(biodb, chlamydiae_taxon_list):
         else:
             orthogroup2locus_list[row[1]].append(row[0])
 
-    sql2 = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+    sql2 = 'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id' % biodb
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
     sql3 = 'select taxon_id, species_id from species_%s' % biodb
@@ -404,7 +404,7 @@ def seqfeature_id2n_species(biodb):
             orthogroup2locus_list[row[1]] = [row[0]]
         else:
             orthogroup2locus_list[row[1]].append(row[0])
-    sql2 = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+    sql2 = 'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id' % biodb
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
     sql3 = 'select taxon_id, species_id from species_%s' % biodb

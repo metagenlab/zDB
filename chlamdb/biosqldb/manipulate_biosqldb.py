@@ -165,7 +165,7 @@ def get_bioentry_and_seqfeature_id_from_locus_tag_list(server, locus_tag_list, b
 
     filter = '"'+'","'.join(locus_tag_list)+'"'
 
-    sql = 'select accession,t1.seqfeature_id from custom_tables.locus2seqfeature_id_%s t1 ' \
+    sql = 'select accession,t1.seqfeature_id from custom_tables_locus2seqfeature_id t1 ' \
           ' inner join biosqldb.seqfeature t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' inner join biosqldb.bioentry t3 on t2.bioentry_id=t3.bioentry_id ' \
           ' inner join biosqldb.biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \

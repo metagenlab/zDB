@@ -17,7 +17,7 @@ def biodb2aa_usage(biodb):
 
     sql1 = 'select locus_tag, translation from orthology_detail_%s' % biodb
     sql2 = 'select locus_tag, taxon_id from orthology_detail_%s' % biodb
-    sql3 = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+    sql3 = 'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id' % biodb
 
     locus2translation = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql1,))
     locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))

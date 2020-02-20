@@ -628,7 +628,7 @@ def identity_closest_homolog(db_name):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql1 = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % db_name
+    sql1 = 'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id' % db_name
     locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql1,))
 
 

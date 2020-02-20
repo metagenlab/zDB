@@ -541,8 +541,8 @@ def generate_network_string(biodb,
     server, db = manipulate_biosqldb.load_db(biodb)
     filter = '"' + '","'.join(locus_tag_list) + '"'
     sql = 'select t2.locus_tag,t3.locus_tag,t1.label_1,t1.label_2,t1.global_score ' \
-          ' from string.interactions_%s t1 inner join custom_tables.locus2seqfeature_id_%s t2 ' \
-          ' on t1.seqfeature_id_1=t2.seqfeature_id inner join custom_tables.locus2seqfeature_id_%s t3 ' \
+          ' from string.interactions_%s t1 inner join custom_tables_locus2seqfeature_id t2 ' \
+          ' on t1.seqfeature_id_1=t2.seqfeature_id inner join custom_tables_locus2seqfeature_id t3 ' \
           ' on t1.seqfeature_id_2=t3.seqfeature_id where t1.taxon_id=%s and global_score>=%s and t2.locus_tag in (%s)' \
           ' and t3.locus_tag in (%s) ;' % (biodb,
                                                                                                   biodb,
