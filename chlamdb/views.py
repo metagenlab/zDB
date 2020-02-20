@@ -1141,7 +1141,7 @@ def extract_ko(request):
                     sum_group = len(match_groups)
 
             sql = 'select ec, value, pathway_name, pathway_category, description from ' \
-            ' (select enzyme_id, ec,value from enzyme.enzymes as t1 inner join enzyme.enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id ' \
+            ' (select enzyme_id, ec,value from enzyme_enzymes as t1 inner join enzyme_enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id ' \
             ' where line="description") A left join enzyme_kegg2ec as B on A.enzyme_id=B.ec_id ' \
             ' left join enzyme_kegg_pathway on B.pathway_id=kegg_pathway.pathway_id;'
 
@@ -1308,7 +1308,7 @@ def extract_EC(request):
 
 
             sql = 'select ec, value, pathway_name, pathway_category, description from ' \
-            ' (select enzyme_id, ec,value from enzyme.enzymes as t1 inner join enzyme.enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id ' \
+            ' (select enzyme_id, ec,value from enzyme_enzymes as t1 inner join enzyme_enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id ' \
             ' where line="description") A left join enzyme_kegg2ec as B on A.enzyme_id=B.ec_id ' \
             ' left join enzyme_kegg_pathway on B.pathway_id=kegg_pathway.pathway_id;'
             ec2description_raw = server.adaptor.execute_and_fetchall(sql,)
@@ -1338,7 +1338,7 @@ def extract_EC(request):
             #print extract_result
             locus_list_sql = 'select locus_tag from (select taxon_id,locus_tag,ec_id from enzyme_locus2ec_%s as t1  ' \
                              ' inner join biosqldb.bioentry as t2 on t1.accession=t2.accession ' \
-                             ' where biodatabase_id=%s) A inner join enzyme.enzymes as B on A.ec_id=B.enzyme_id' \
+                             ' where biodatabase_id=%s) A inner join enzyme_enzymes as B on A.ec_id=B.enzyme_id' \
                              ' where A.taxon_id=%s and B.ec in (%s);' % (biodb,
                                                                          biodb_id,
                                                                          reference_taxon,
@@ -1356,7 +1356,7 @@ def extract_EC(request):
             if len(match_groups) < 50:
                 from chlamdb.phylo_tree_display import ete_motifs
                 sql = 'select distinct ec,orthogroup from enzyme_locus2ec_%s as t1 ' \
-                      ' inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id where ec in (%s);' % (biodb,
+                      ' inner join enzyme_enzymes as t2 on t1.ec_id=t2.enzyme_id where ec in (%s);' % (biodb,
                                                                   '"' + '","'.join(match_groups) + '"')
                 orthogroup_data = server.adaptor.execute_and_fetchall(sql,)
                 ec2orthogroups = {}
@@ -1510,7 +1510,7 @@ def venn_EC(request):
 
             ec2description = ''
             sql = 'select ec, value, pathway_name, pathway_category, description from ' \
-                  ' (select enzyme_id, ec,value from enzyme.enzymes as t1 inner join enzyme.enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id ' \
+                  ' (select enzyme_id, ec,value from enzyme_enzymes as t1 inner join enzyme_enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id ' \
                   ' where line="description") A left join enzyme_kegg2ec as B on A.enzyme_id=B.ec_id ' \
                   ' left join enzyme_kegg_pathway on B.pathway_id=kegg_pathway.pathway_id;'
             ec2description_raw = server.adaptor.execute_and_fetchall(sql,)
@@ -3062,18 +3062,18 @@ def fam(request, fam, type):
                 valid_id = False
         elif type == 'EC':
             sql1 = 'select seqfeature_id from (select locus_tag from enzyme_locus2ec_%s as t1 ' \
-                   ' inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id ' \
+                   ' inner join enzyme_enzymes as t2 on t1.ec_id=t2.enzyme_id ' \
                    ' where ec="%s" group by locus_tag) A ' \
                    ' inner join annotation.seqfeature_id2locus_%s B on A.locus_tag=B.locus_tag group by seqfeature_id;' % (biodb,
                                                                                                                            fam,
                                                                                                                            biodb)
-            sql2 = 'select line,value from (select * from enzyme.enzymes where ec="%s") t1 ' \
-                   ' inner join enzyme.enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id;' % (fam)
+            sql2 = 'select line,value from (select * from enzyme_enzymes where ec="%s") t1 ' \
+                   ' inner join enzyme_enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id;' % (fam)
             path = fam.split('.')
             external_link = 'http://www.chem.qmul.ac.uk/iubmb/enzyme/EC%s/%s/%s/%s.html' % (path[0], path[1], path[2], path[3])
 
             sql_pathways = 'select pathway_name,pathway_category,description ' \
-                           ' from (select * from enzyme.enzymes where ec = "%s") t1 ' \
+                           ' from (select * from enzyme_enzymes where ec = "%s") t1 ' \
                            ' inner join enzyme_kegg2ec as t2 on t2.ec_id=t1.enzyme_id ' \
                            ' inner join enzyme_kegg_pathway as t3 on t2.pathway_id=t3.pathway_id' \
                            ' where pathway_category !="1.0 Global and overview maps";' % (fam)
@@ -3167,7 +3167,7 @@ def fam(request, fam, type):
             sql3 = 'select distinct taxon_id,t1.orthogroup,t2.ec ' \
                    'from (select orthogroup,locus_tag,ec_id from enzyme_locus2ec_%s ' \
                    'where orthogroup in (%s)) t1 ' \
-                   'left join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id ' \
+                   'left join enzyme_enzymes as t2 on t1.ec_id=t2.enzyme_id ' \
                    'left join biosqldb.orthology_detail_%s as t3 ' \
                    'on t1.locus_tag=t3.locus_tag;' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"', biodb)
 
@@ -4095,7 +4095,7 @@ def KEGG_mapp(request, map_name):
         sql = 'select pathway_name,pathway_category,description,ec,value from ' \
               '(select pathway_name,pathway_category,description,ec_id from enzyme_kegg_pathway as t1 ' \
               'inner join enzyme_kegg2ec as t2 on t1.pathway_id=t2.pathway_id where pathway_name="%s") A ' \
-              'inner join enzyme.enzymes as B on A.ec_id=B.enzyme_id inner join enzyme.enzymes_dat on enzymes_dat.enzyme_dat_id=enzyme_id ' \
+              'inner join enzyme_enzymes as B on A.ec_id=B.enzyme_id inner join enzyme_enzymes_dat on enzymes_dat.enzyme_dat_id=enzyme_id ' \
               'where line="description";' % (map_name)
 
         map_data = server.adaptor.execute_and_fetchall(sql,)
@@ -4111,7 +4111,7 @@ def KEGG_mapp(request, map_name):
 
         # get list of all orthogroups with corresponding EC
         sql = 'select distinct ec,orthogroup from enzyme_locus2ec_%s as t1 ' \
-              ' inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id where ec in (%s);' % (biodb,
+              ' inner join enzyme_enzymes as t2 on t1.ec_id=t2.enzyme_id where ec in (%s);' % (biodb,
                                                           '"' + '","'.join(enzyme_list_found_in_db) + '"')
         orthogroup_data = server.adaptor.execute_and_fetchall(sql,)
         ec2orthogroups = {}
@@ -10596,7 +10596,7 @@ def search(request):
                                                                                                                                search_term)
                 raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
 
-                sql = 'select ec,line,value from enzyme.enzymes_dat as t1 inner join enzymes as t2 ' \
+                sql = 'select ec,line,value from enzyme_enzymes_dat as t1 inner join enzymes as t2 ' \
                       ' on t1.enzyme_dat_id=enzyme_id WHERE value REGEXP "%s"' % (search_term)
                       
                 raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
@@ -10723,8 +10723,8 @@ def search(request):
                         locus_list.append(one_hit[1])
                         n+=1
 
-                    # CREATE FULLTEXT INDEX ezf ON enzyme.enzymes_dat(value);
-                    sql = 'select A.ec, A.value from (select ec,value from enzyme.enzymes_dat as t1 inner join enzyme.enzymes as t2 ' \
+                    # CREATE FULLTEXT INDEX ezf ON enzyme_enzymes_dat(value);
+                    sql = 'select A.ec, A.value from (select ec,value from enzyme_enzymes_dat as t1 inner join enzyme_enzymes as t2 ' \
                           ' on t1.enzyme_dat_id=enzyme_id WHERE MATCH(value) AGAINST("%s" IN NATURAL LANGUAGE MODE) group by ec) A inner join comparative_tables.EC_%s' \
                           ' as B on A.ec=B.id' % (search_term, biodb)
                     print(sql)

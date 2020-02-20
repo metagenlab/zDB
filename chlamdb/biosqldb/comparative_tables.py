@@ -449,7 +449,7 @@ def collect_EC(db_name):
         sql_head += '`%s`,' % taxon
     sql_head = sql_head[0:-1] + ') values ('
 
-    all_EC_ids_sql = 'select distinct ec from enzyme_locus2ec_%s as t1 inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id;' % (db_name)
+    all_EC_ids_sql = 'select distinct ec from enzyme_locus2ec_%s as t1 inner join enzyme_enzymes as t2 on t1.ec_id=t2.enzyme_id;' % (db_name)
 
     all_ec_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_EC_ids_sql,)]
 
@@ -460,7 +460,7 @@ def collect_EC(db_name):
 
         sql = 'select taxon_id, count(*) from (select taxon_id, t1.accession, ec_id from enzyme_locus2ec_%s as t1 ' \
                      ' inner join biosqldb.bioentry as t2 on t1.accession=t2.accession where biodatabase_id=%s) A ' \
-                     ' inner join enzyme.enzymes as B on A.ec_id=B.enzyme_id where ec="%s" group by taxon_id;' % (db_name, biodb_id, accession)
+                     ' inner join enzyme_enzymes as B on A.ec_id=B.enzyme_id where ec="%s" group by taxon_id;' % (db_name, biodb_id, accession)
 
         print sql
         #sql= 'select taxon_id, count(*) from enzyme_locus2ec_%s ' \
@@ -494,7 +494,7 @@ def collect_EC_accession(db_name):
         sql_head += '%s,' % accession
     sql_head = sql_head[0:-1] + ') values ('
 
-    all_EC_ids_sql = 'select distinct ec from enzyme_locus2ec_%s as t1 inner join enzyme.enzymes as t2 on t1.ec_id=t2.enzyme_id;' % (db_name)
+    all_EC_ids_sql = 'select distinct ec from enzyme_locus2ec_%s as t1 inner join enzyme_enzymes as t2 on t1.ec_id=t2.enzyme_id;' % (db_name)
 
     all_ec_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_EC_ids_sql,)]
 
@@ -503,7 +503,7 @@ def collect_EC_accession(db_name):
         print i,'/', len(all_ec_ids), accession
         i+=1
 
-        sql = 'select t1.accession, count(*) as n from enzyme_locus2ec_%s as t1 inner join enzyme.enzymes as t2 ' \
+        sql = 'select t1.accession, count(*) as n from enzyme_locus2ec_%s as t1 inner join enzyme_enzymes as t2 ' \
               ' on t1.ec_id=t2.enzyme_id where ec="%s" group by accession;' % (db_name, accession)
 
         print sql

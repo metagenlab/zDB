@@ -448,7 +448,7 @@ def collect_EC(db_name):
     sql_head = sql_head[0:-1] + ') values ('
 
     all_EC_ids_sql = 'select distinct ec from enzyme_seqfeature_id2ec t1 ' \
-                     ' inner join  enzyme.enzymes t2 on t1.ec_id=t2.enzyme_id;' % (db_name)
+                     ' inner join  enzyme_enzymes t2 on t1.ec_id=t2.enzyme_id;' % (db_name)
 
     all_ec_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_EC_ids_sql,)]
 
@@ -491,7 +491,7 @@ def collect_EC_accession(db_name):
     sql_head = sql_head[0:-1] + ') values ('
 
     all_EC_ids_sql = 'select distinct ec from enzyme_seqfeature_id2ec t1 ' \
-                     ' inner join  enzyme.enzymes t2 on t1.ec_id=t2.enzyme_id;'
+                     ' inner join  enzyme_enzymes t2 on t1.ec_id=t2.enzyme_id;'
 
     all_ec_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_EC_ids_sql,)]
 

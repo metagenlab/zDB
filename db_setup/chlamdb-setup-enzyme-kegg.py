@@ -118,8 +118,8 @@ def load_enzyme_nomenclature_table(biodb):
     '''
 
     download all SIB enzyme nomenclature from FTP (ftp://ftp.expasy.org/databases/enzyme/)
-    create the enzyme.enzymes table with the list of all EC with associated description
-    create the enzyme.enzymes_dat with detailed information about each EC
+    create the enzyme_enzymes table with the list of all EC with associated description
+    create the enzyme_enzymes_dat with detailed information about each EC
     todo: remove existing tables for uptade if rerun
 
     :return: nothing
@@ -823,7 +823,7 @@ def get_ko2ec(biodb):
                 continue
 
             try:
-                sql_ec_id = 'select enzyme_id from enzyme.enzymes where ec="%s";' % ec_name
+                sql_ec_id = 'select enzyme_id from enzyme_enzymes where ec="%s";' % ec_name
                 cursor.execute(sql_ec_id,)
                 ec_id = cursor.fetchall()[0][0]
 

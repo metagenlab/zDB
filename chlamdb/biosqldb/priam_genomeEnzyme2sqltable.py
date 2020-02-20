@@ -85,7 +85,7 @@ def locus2ec_table(locus_tag2ec_dico, biodatabase):
     for locus in locus_tag2ec_dico:
         for ec_data in locus_tag2ec_dico[locus]:
 
-            sql = 'select enzyme_id from enzyme.enzymes where ec="%s"' % ec_data[0]
+            sql = 'select enzyme_id from enzyme_enzymes where ec="%s"' % ec_data[0]
             ec_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
             seqfeature_id = locus_tag2seqfeature_id[locus]
             sql = 'insert into enzyme.seqfeature_id2ec_%s (seqfeature_id, ec_id) values (%s, %s)' % (biodatabase,
