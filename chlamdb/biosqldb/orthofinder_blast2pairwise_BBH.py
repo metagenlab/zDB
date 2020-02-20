@@ -392,7 +392,7 @@ def seqfeature_id2n_species(biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql0 = 'create table if not exists custom_tables.seqfeature_id2n_species_%s (seqfeature_id INT primary KEY, n_species INT, INDEX n_species(n_species))' % biodb
+    sql0 = 'create table if not exists custom_tables_seqfeature_id2n_species (seqfeature_id INT primary KEY, n_species INT, INDEX n_species(n_species))' % biodb
 
     server.adaptor.execute(sql0,)
 
@@ -420,7 +420,7 @@ def seqfeature_id2n_species(biodb):
         print (group, 'n species:', len(species))
         for one_locus in orthogroup2locus_list[group]:
             seqfeature_id = locus_tag2seqfeature_id[one_locus]
-            sql = 'insert into custom_tables.seqfeature_id2n_species_%s values (%s, %s)' % (biodb, seqfeature_id, len(species))
+            sql = 'insert into custom_tables_seqfeature_id2n_species values (%s, %s)' % (biodb, seqfeature_id, len(species))
             server.adaptor.execute(sql,)
         server.commit()
 
