@@ -890,7 +890,7 @@ def venn_orthogroup(request):
                 if not accessions:
                     sql ='select orthogroup from comparative_tables_orthology where `%s` > 0' % (biodb, target)
                 else:
-                    sql ='select id from comparative_tables.orthology_accessions_%s where %s > 0' % (biodb, target)
+                    sql ='select id from comparative_tables_orthology_accessions where %s > 0' % (biodb, target)
                 #print sql
                 orthogroups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
                 all_orthogroups_list += orthogroups

@@ -530,7 +530,7 @@ def collect_orthogroup_accession(db_name):
 
     accession_list = get_all_accessions(db_name)
 
-    sql_head = 'INSERT INTO comparative_tables.orthology_accessions_%s (id,' % db_name
+    sql_head = 'INSERT INTO comparative_tables_orthology_accessions (id,' % db_name
 
     for accession in accession_list:
         sql_head += '%s,' % accession
