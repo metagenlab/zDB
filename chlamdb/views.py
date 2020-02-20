@@ -1142,7 +1142,7 @@ def extract_ko(request):
 
             sql = 'select ec, value, pathway_name, pathway_category, description from ' \
             ' (select enzyme_id, ec,value from enzyme.enzymes as t1 inner join enzyme.enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id ' \
-            ' where line="description") A left join enzyme.kegg2ec as B on A.enzyme_id=B.ec_id ' \
+            ' where line="description") A left join enzyme_kegg2ec as B on A.enzyme_id=B.ec_id ' \
             ' left join enzyme_kegg_pathway on B.pathway_id=kegg_pathway.pathway_id;'
 
             sql = 'select ko_accession, name, definition, EC, pathways, modules from enzyme_ko_annotation;'
@@ -1309,7 +1309,7 @@ def extract_EC(request):
 
             sql = 'select ec, value, pathway_name, pathway_category, description from ' \
             ' (select enzyme_id, ec,value from enzyme.enzymes as t1 inner join enzyme.enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id ' \
-            ' where line="description") A left join enzyme.kegg2ec as B on A.enzyme_id=B.ec_id ' \
+            ' where line="description") A left join enzyme_kegg2ec as B on A.enzyme_id=B.ec_id ' \
             ' left join enzyme_kegg_pathway on B.pathway_id=kegg_pathway.pathway_id;'
             ec2description_raw = server.adaptor.execute_and_fetchall(sql,)
             #print sql
@@ -1511,7 +1511,7 @@ def venn_EC(request):
             ec2description = ''
             sql = 'select ec, value, pathway_name, pathway_category, description from ' \
                   ' (select enzyme_id, ec,value from enzyme.enzymes as t1 inner join enzyme.enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id ' \
-                  ' where line="description") A left join enzyme.kegg2ec as B on A.enzyme_id=B.ec_id ' \
+                  ' where line="description") A left join enzyme_kegg2ec as B on A.enzyme_id=B.ec_id ' \
                   ' left join enzyme_kegg_pathway on B.pathway_id=kegg_pathway.pathway_id;'
             ec2description_raw = server.adaptor.execute_and_fetchall(sql,)
             #print sql
@@ -3074,7 +3074,7 @@ def fam(request, fam, type):
 
             sql_pathways = 'select pathway_name,pathway_category,description ' \
                            ' from (select * from enzyme.enzymes where ec = "%s") t1 ' \
-                           ' inner join enzyme.kegg2ec as t2 on t2.ec_id=t1.enzyme_id ' \
+                           ' inner join enzyme_kegg2ec as t2 on t2.ec_id=t1.enzyme_id ' \
                            ' inner join enzyme_kegg_pathway as t3 on t2.pathway_id=t3.pathway_id' \
                            ' where pathway_category !="1.0 Global and overview maps";' % (fam)
 
@@ -4094,7 +4094,7 @@ def KEGG_mapp(request, map_name):
 
         sql = 'select pathway_name,pathway_category,description,ec,value from ' \
               '(select pathway_name,pathway_category,description,ec_id from enzyme_kegg_pathway as t1 ' \
-              'inner join enzyme.kegg2ec as t2 on t1.pathway_id=t2.pathway_id where pathway_name="%s") A ' \
+              'inner join enzyme_kegg2ec as t2 on t1.pathway_id=t2.pathway_id where pathway_name="%s") A ' \
               'inner join enzyme.enzymes as B on A.ec_id=B.enzyme_id inner join enzyme.enzymes_dat on enzymes_dat.enzyme_dat_id=enzyme_id ' \
               'where line="description";' % (map_name)
 
@@ -14137,11 +14137,11 @@ def metabo_overview(request):
 
     sql_pathway_count = 'select PATH2.pathway_name,PATH2.n,PATH1.n,PATH1.n/PATH2.n from (select pathway_name,count(*) as n ' \
                         ' from (select distinct pathway_name,t4.ec_id from enzyme.locus2ec_%s as t3 ' \
-                        ' inner join enzyme.kegg2ec as t4 on t3.ec_id=t4.ec_id inner join enzyme_kegg_pathway as t5 ' \
+                        ' inner join enzyme_kegg2ec as t4 on t3.ec_id=t4.ec_id inner join enzyme_kegg_pathway as t5 ' \
                         ' on t4.pathway_id=t5.pathway_id where pathway_category!="1.0 Global and overview maps") A ' \
                         ' group by pathway_name) ' \
                         ' PATH1 right join ' \
-                        ' (select pathway_name,count(*) as n from enzyme.kegg2ec as t1 ' \
+                        ' (select pathway_name,count(*) as n from enzyme_kegg2ec as t1 ' \
                         ' inner join enzyme_kegg_pathway as t2 on t1.pathway_id=t2.pathway_id ' \
                         '  group by pathway_name) ' \
                         ' PATH2 on PATH2.pathway_name=PATH1.pathway_name;' % biodb # where pathway_category!="1.0 Global and overview maps"
@@ -14153,7 +14153,7 @@ def metabo_overview(request):
           '( select distinct taxon_id,pathway_name, count(*) as n_enzymes from (' \
           'select distinct taxon_id, ec_id  from enzyme.locus2ec_%s as b1 ' \
           'inner join biosqldb.bioentry as b2 on b1.accession=b2.accession where biodatabase_id=%s) ' \
-          't1 inner join enzyme.kegg2ec as t2  on t1.ec_id=t2.ec_id ' \
+          't1 inner join enzyme_kegg2ec as t2  on t1.ec_id=t2.ec_id ' \
           'inner join enzyme_kegg_pathway as t3 on t2.pathway_id=t3.pathway_id ' \
           'group by taxon_id,pathway_name) A ' \
           'inner join enzyme_kegg_pathway as C  on A.pathway_name=C.pathway_name;' % (biodb, database_id)
@@ -14241,11 +14241,11 @@ def metabo_comparison(request):
 
             sql_pathway_count = 'select PATH2.pathway_name,PATH2.n,PATH1.n,PATH1.n/PATH2.n from (select pathway_name,count(*) as n ' \
                                 ' from (select distinct pathway_name,t4.ec_id from enzyme.locus2ec_%s as t3 ' \
-                                ' inner join enzyme.kegg2ec as t4 on t3.ec_id=t4.ec_id inner join enzyme_kegg_pathway as t5 ' \
+                                ' inner join enzyme_kegg2ec as t4 on t3.ec_id=t4.ec_id inner join enzyme_kegg_pathway as t5 ' \
                                 ' on t4.pathway_id=t5.pathway_id where pathway_category!="1.0 Global and overview maps") A ' \
                                 ' group by pathway_name) ' \
                                 ' PATH1 right join ' \
-                                ' (select pathway_name,count(*) as n from enzyme.kegg2ec as t1 ' \
+                                ' (select pathway_name,count(*) as n from enzyme_kegg2ec as t1 ' \
                                 ' inner join enzyme_kegg_pathway as t2 on t1.pathway_id=t2.pathway_id ' \
                                 ' where pathway_category!="1.0 Global and overview maps" group by pathway_name) ' \
                                 ' PATH2 on PATH2.pathway_name=PATH1.pathway_name;' % biodb
@@ -14254,7 +14254,7 @@ def metabo_comparison(request):
             #print 'map2count', map2count
             category2maps = {}
 
-            sql_category2maps = 'select pathway_category,pathway_name,description from  enzyme.kegg2ec as t1 ' \
+            sql_category2maps = 'select pathway_category,pathway_name,description from  enzyme_kegg2ec as t1 ' \
                                 ' inner join enzyme_kegg_pathway as t2 on t1.pathway_id=t2.pathway_id ' \
                                 ' where pathway_category!="1.0 Global and overview maps" group by pathway_name;'
 
@@ -14277,11 +14277,11 @@ def metabo_comparison(request):
 
                 sql = 'select PATH2.pathway_name,PATH1.n from (select pathway_name,count(*) as n from ' \
                       ' (select distinct pathway_name,t4.ec_id from enzyme.locus2ec_%s as t3 ' \
-                      ' inner join enzyme.kegg2ec as t4 on t3.ec_id=t4.ec_id inner join enzyme_kegg_pathway as t5 ' \
+                      ' inner join enzyme_kegg2ec as t4 on t3.ec_id=t4.ec_id inner join enzyme_kegg_pathway as t5 ' \
                       ' on t4.pathway_id=t5.pathway_id inner join biosqldb.bioentry as t6 on t3.accession=t6.accession ' \
                       ' where biodatabase_id=%s and pathway_category!="1.0 Global and overview maps" and t6.taxon_id=%s) A ' \
                       ' group by pathway_name) PATH1 right join (select pathway_name,count(*) as n ' \
-                      ' from enzyme.kegg2ec as t1 inner join enzyme_kegg_pathway as t2 on t1.pathway_id=t2.pathway_id ' \
+                      ' from enzyme_kegg2ec as t1 inner join enzyme_kegg_pathway as t2 on t1.pathway_id=t2.pathway_id ' \
                       ' where pathway_category!="1.0 Global and overview maps" ' \
                       ' group by pathway_name) PATH2 on PATH2.pathway_name=PATH1.pathway_name order by n;' % (biodb, biodatabase_id, taxon)
                 map2count_taxon = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
