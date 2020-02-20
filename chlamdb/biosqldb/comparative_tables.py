@@ -603,7 +603,7 @@ def n_shared_orthogroup_table(db_name):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql = "CREATE TABLE comparative_tables.shared_orthogroups_%s(taxon_1 INT NOT NULL," \
+    sql = "CREATE TABLE comparative_tables_shared_orthogroups(taxon_1 INT NOT NULL," \
           " taxon_2 INT NOT NULL," \
           " n_shared_orthogroups INT)" % (db_name)
 
@@ -614,7 +614,7 @@ def n_shared_orthogroup_table(db_name):
     for taxon_1 in orthodico.keys():
         for taxon_2 in orthodico.keys():
             sys.stdout.write("%s\t%s\n" % (taxon_1, taxon_2))
-            sql = 'insert into comparative_tables.shared_orthogroups_%s(taxon_1, taxon_2, n_shared_orthogroups) ' \
+            sql = 'insert into comparative_tables_shared_orthogroups(taxon_1, taxon_2, n_shared_orthogroups) ' \
                   ' VALUES ("%s", "%s", %s)' % (db_name, taxon_1, taxon_2, orthodico[taxon_1][taxon_2])
             server.adaptor.execute(sql)
             server.adaptor.commit()

@@ -6048,7 +6048,7 @@ def identity_heatmap(request):
                                                                       taxon_filter,
                                                                       taxon_filter)
             if plot_type == 'n_shared_orthogroups':
-                sql2 = 'select taxon_1, taxon_2, n_shared_orthogroups from comparative_tables.shared_orthogroups_%s ' \
+                sql2 = 'select taxon_1, taxon_2, n_shared_orthogroups from comparative_tables_shared_orthogroups ' \
                        'where taxon_1 in (%s) and taxon_2 in (%s);' % (biodb,
                                                                       taxon_filter,
                                                                       taxon_filter)
@@ -6436,7 +6436,7 @@ def pairwiseid(request):
                    'where taxon_1=%s;' % (biodb, genome_1)
             #   taxon2core_msa_identity = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
-            sql3 = 'select taxon_2, n_shared_orthogroups from comparative_tables.shared_orthogroups_%s ' \
+            sql3 = 'select taxon_2, n_shared_orthogroups from comparative_tables_shared_orthogroups ' \
                    'where taxon_1=%s;' % (biodb, genome_1)
 
             taxon2n_shared_orthogroups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
@@ -9995,7 +9995,7 @@ def circos_main(request):
                 ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
                 target_taxons = ordered_taxons[0:10]
             except:
-                sql_order = 'select taxon_2 from comparative_tables.shared_orthogroups_%s where taxon_1=%s order by n_shared_orthogroups DESC;' % (biodb,
+                sql_order = 'select taxon_2 from comparative_tables_shared_orthogroups where taxon_1=%s order by n_shared_orthogroups DESC;' % (biodb,
                                                                                                                         reference_taxon)
 
                 ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
@@ -10019,7 +10019,7 @@ def circos_main(request):
                 ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
                 target_taxons = ordered_taxons[0:10]
             except:
-                sql_order = 'select taxon_2 from comparative_tables.shared_orthogroups_%s where taxon_1=%s order by n_shared_orthogroups DESC;' % (biodb,
+                sql_order = 'select taxon_2 from comparative_tables_shared_orthogroups where taxon_1=%s order by n_shared_orthogroups DESC;' % (biodb,
                                                                                                                         reference_taxon)
 
                 ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]

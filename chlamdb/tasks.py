@@ -522,7 +522,7 @@ def run_circos(reference_taxon, target_taxons):
                                                                               reference_taxon)
         '''
         # n shared orthogroups
-        sql_order = 'select taxon_2 from comparative_tables.shared_orthogroups_%s where taxon_1=%s order by n_shared_orthogroups DESC;' % (biodb,
+        sql_order = 'select taxon_2 from comparative_tables_shared_orthogroups where taxon_1=%s order by n_shared_orthogroups DESC;' % (biodb,
                                                                                                                   reference_taxon)
         print
         '''
