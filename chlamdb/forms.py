@@ -430,7 +430,7 @@ def make_kegg_form(database_name):
 
     sql_modules = 'select description,description from  enzyme.locus2ko_%s t1 ' \
                   ' inner join  enzyme.module2ko t2 on t1.ko_id = t2.ko_id ' \
-                  ' inner join  enzyme.kegg_module t3 on t3.module_id=t2.module_id group by description;' % database_name
+                  ' inner join  enzyme_kegg_module t3 on t3.module_id=t2.module_id group by description;' % database_name
 
     module_choices = server.adaptor.execute_and_fetchall(sql_modules,)
 
@@ -651,9 +651,9 @@ def make_module_overview_form(database_name, sub_sub_cat=False):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
     if not sub_sub_cat:
-        sql = 'select distinct module_sub_cat from enzyme.kegg_module;'
+        sql = 'select distinct module_sub_cat from enzyme_kegg_module;'
     else:
-        sql = 'select distinct module_sub_sub_cat from enzyme.kegg_module;'
+        sql = 'select distinct module_sub_sub_cat from enzyme_kegg_module;'
     categories = server.adaptor.execute_and_fetchall(sql,)
     CHOICES = [(i[0],i[0]) for i in categories]
     CHOICES.append(('microbial_metabolism', 'microbial_metabolism'))
