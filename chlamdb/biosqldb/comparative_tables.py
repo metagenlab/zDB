@@ -536,7 +536,7 @@ def collect_orthogroup_accession(db_name):
         sql_head += '%s,' % accession
     sql_head = sql_head[0:-1] + ') values ('
 
-    all_orthogroup_ids_sql = 'select distinct orthogroup from orthology_detail_%s;' % (db_name)
+    all_orthogroup_ids_sql = 'select distinct orthogroup from orthology_detail;' % (db_name)
 
     all_orthogroup_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_orthogroup_ids_sql,)]
 
@@ -545,7 +545,7 @@ def collect_orthogroup_accession(db_name):
         print i,'/', len(all_orthogroup_ids), accession
         i+=1
 
-        sql = 'select accession, count(*) as n from orthology_detail_%s ' \
+        sql = 'select accession, count(*) as n from orthology_detail ' \
               ' where orthogroup="%s" group by accession;' % (db_name, accession)
 
         print sql

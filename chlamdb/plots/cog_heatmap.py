@@ -61,7 +61,7 @@ def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by
 
         taxon2count_no_GOG = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-        sql = 'select taxon_id, count(*) from orthology_detail_%s group by taxon_id' % biodb
+        sql = 'select taxon_id, count(*) from orthology_detail group by taxon_id' % biodb
 
         taxon2proteome_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

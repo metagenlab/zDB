@@ -111,7 +111,7 @@ def orthogroup2locus_and_sequences(biodb,orthogroup):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select locus_tag, translation from orthology_detail_%s where orthogroup="%s"' % (biodb, orthogroup)
+    sql = 'select locus_tag, translation from orthology_detail where orthogroup="%s"' % (biodb, orthogroup)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -386,7 +386,7 @@ if __name__ == '__main__':
             tree.render(out_name, tree_style=ts)
     else:
         server, db = manipulate_biosqldb.load_db(args.biodb)
-        sql = 'select orthogroup, count(*) as n from orthology_detail_%s group by orthogroup' % args.biodb
+        sql = 'select orthogroup, count(*) as n from orthology_detail group by orthogroup' % args.biodb
 
         print ('gettig orthogroup2n_hits refseq')
         orthgroup2orthogroup_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))

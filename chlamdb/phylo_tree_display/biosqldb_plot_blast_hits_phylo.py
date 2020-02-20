@@ -36,7 +36,7 @@ def plot_BBH_phylo(query_fasta_record,
           ' where t1.name="%s" and t2.description not like "%%%%plasmid%%%%"' % biodb
 
     accession2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    sql = 'select locus_tag, taxon_id from orthology_detail_%s' % biodb
+    sql = 'select locus_tag, taxon_id from orthology_detail' % biodb
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     '''

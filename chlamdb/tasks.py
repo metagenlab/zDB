@@ -155,11 +155,11 @@ def extract_orthogroup_task(biodb,
               'description': "Retrieve reference genome annotation"})
 
         if not accessions:
-            sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and taxon_id=%s' % (biodb,
+            sql = 'select locus_tag from orthology_detail where orthogroup in (%s) and taxon_id=%s' % (biodb,
                                                                                                         '"' + '","'.join(match_groups) + '"',
                                                                                                         reference_taxon)
         else:
-            sql = 'select locus_tag from orthology_detail_%s where orthogroup in (%s) and accession="%s"' % (biodb,
+            sql = 'select locus_tag from orthology_detail where orthogroup in (%s) and accession="%s"' % (biodb,
                                                                                                         '"' + '","'.join(match_groups) + '"',
                                                                                                         reference_taxon)
         locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -862,7 +862,7 @@ def plot_neighborhood_task(biodb, target_locus, region_size):
  
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql2 = 'select orthogroup, taxon_id from orthology_detail_%s where locus_tag = "%s"' % (biodb, target_locus)
+    sql2 = 'select orthogroup, taxon_id from orthology_detail where locus_tag = "%s"' % (biodb, target_locus)
 
     reference_orthogroup = server.adaptor.execute_and_fetchall(sql2, )[0]
     reference_taxid = reference_orthogroup[1]
@@ -1185,7 +1185,7 @@ def pfam_tree_task(biodb,
     #print ('pfam tree %s -- %s' % (biodb, orthogroup))
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    #sql_locus2protein_id = 'select locus_tag, protein_id from orthology_detail_%s where orthogroup="%s"' % (biodb, orthogroup)
+    #sql_locus2protein_id = 'select locus_tag, protein_id from orthology_detail where orthogroup="%s"' % (biodb, orthogroup)
 
     #locus2protein_id= manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_locus2protein_id,))
 

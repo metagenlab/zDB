@@ -145,7 +145,7 @@ def get_orthogroup_median_dist(biodb):
     server.adaptor.execute(sql,)
     server.commit()
 
-    sql = 'select orthogroup, locus_tag from orthology_detail_%s' % biodb
+    sql = 'select orthogroup, locus_tag from orthology_detail' % biodb
 
     data = server.adaptor.execute_and_fetchall(sql,)
     orthogroup2locus_list = {}

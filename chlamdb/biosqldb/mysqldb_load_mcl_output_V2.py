@@ -457,7 +457,7 @@ def get_all_orthogroup_protein_fasta(server, biodatabase_name, out_dir):
 
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodatabase_name)
-    sql = 'select orthogroup from orthology_detail_%s group by orthogroup' % biodatabase_name
+    sql = 'select orthogroup from orthology_detail group by orthogroup' % biodatabase_name
 
 
     all_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)] # get_all_orthogroup_size(server, biodatabase_name).keys()
@@ -757,7 +757,7 @@ def locus_tag2nucl_sequence_dict(server, db, biodb_name):
 
 def locus_tag2aa_sequence_dict(server, db, biodb_name):
 
-    sql = 'select locus_tag, translation from orthology_detail_%s' % biodb_name
+    sql = 'select locus_tag, translation from orthology_detail' % biodb_name
 
     return manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

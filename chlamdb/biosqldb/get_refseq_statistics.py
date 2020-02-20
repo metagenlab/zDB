@@ -242,7 +242,7 @@ def count_less_than_n_hits(biodb, cutoff=100):
         else:
             taxon2n_less_than_100[row[0]]+=1
 
-    sql = 'select taxon_id, count(*) from orthology_detail_%s group by taxon_id' % biodb
+    sql = 'select taxon_id, count(*) from orthology_detail group by taxon_id' % biodb
 
     taxon2n_proteins = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

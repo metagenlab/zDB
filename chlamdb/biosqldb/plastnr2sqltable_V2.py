@@ -416,12 +416,12 @@ def blastnr2biosql( locus_tag2seqfeature_id,
     server.adaptor.execute(sql,)
 
     print 'get locus2taxon_id'
-    sql = 'select locus_tag, taxon_id from orthology_detail_%s' % db_name
+    sql = 'select locus_tag, taxon_id from orthology_detail' % db_name
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     print 'get locus2bioentry'
     sql2 = 'select locus_tag,bioentry_id from biodatabase t1 ' \
            ' inner join bioentry as t2 on t1.biodatabase_id=t2.biodatabase_id' \
-           ' inner join orthology_detail_%s t3 on t2.accession=t3.accession where t1.name="%s"' % (db_name,db_name)
+           ' inner join orthology_detail t3 on t2.accession=t3.accession where t1.name="%s"' % (db_name,db_name)
 
 
     locus_tag2bioentry_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))

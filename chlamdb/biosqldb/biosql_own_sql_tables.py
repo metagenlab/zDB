@@ -240,7 +240,7 @@ def locus_tag2best_hit_n_taxon_ids(db_name, accession):
 
 def get_locus2plasmid_or_not(biodb):
 
-    sql = 'SELECT locus_tag, IF(organism like "%%%%plasmid%%%%", "True", "False") AS NewResult from orthology_detail_%s;' % biodb
+    sql = 'SELECT locus_tag, IF(organism like "%%%%plasmid%%%%", "True", "False") AS NewResult from orthology_detail;' % biodb
     #print sql
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -262,9 +262,9 @@ def circos_locus2taxon_highest_identity(biodb,
     server, db = manipulate_biosqldb.load_db(biodb)
 
     if not use_identity_closest_homolog2_table:
-        sql = 'select locus_tag, orthogroup from orthology_detail_%s where taxon_id = %s' % (biodb,
+        sql = 'select locus_tag, orthogroup from orthology_detail where taxon_id = %s' % (biodb,
                                                                                              reference_taxon_id)
-        sql2 = 'select locus_tag, taxon_id from orthology_detail_%s' % (biodb)
+        sql2 = 'select locus_tag, taxon_id from orthology_detail' % (biodb)
 
         # get all locus tags and orthogroups from reference genome
         reference_orthogroup2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -336,7 +336,7 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
     match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
     sys.stdout.write("N single copy core orthogroups: %s\n" % len(match_groups))
     sys.stdout.write("getting locus tag 2 taxon_id\n")
-    sql2 = 'select locus_tag, taxon_id from orthology_detail_%s' % (biodb)
+    sql2 = 'select locus_tag, taxon_id from orthology_detail' % (biodb)
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
     if type == "nucleotide":
@@ -347,7 +347,7 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
 
         sys.stdout.write("writing one fasta/group\n")
         for group in match_groups:
-            sql = 'select locus_tag from orthology_detail_%s where orthogroup="%s" and taxon_id in (%s)' % (biodb,
+            sql = 'select locus_tag from orthology_detail where orthogroup="%s" and taxon_id in (%s)' % (biodb,
                                                                                                                         group,
                                                                                                                         ','.join([str(i) for i in taxon_list]))
             locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -368,7 +368,7 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
 
         #print 'Number of core groups: %s' % len(match_groups)
         for group in match_groups:
-            sql = 'select locus_tag from orthology_detail_%s where orthogroup="%s" and taxon_id in (%s)' % (biodb,
+            sql = 'select locus_tag from orthology_detail where orthogroup="%s" and taxon_id in (%s)' % (biodb,
                                                                                                            group,
                                                                                                            ','.join([str(i) for i in taxon_list]))
             locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -485,19 +485,19 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
     columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
               'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
     if not taxon_filter:
-        sql_2 = 'select %s from orthology_detail_%s where orthogroup in (%s)' % (columns, biodb, group_filter)
+        sql_2 = 'select %s from orthology_detail where orthogroup in (%s)' % (columns, biodb, group_filter)
     else:
         if not accessions:
             taxon_filter = [str(i) for i in taxon_filter]
             taxon_f = ','.join(taxon_filter)
-            sql_2 = 'select %s from orthology_detail_%s where orthogroup in (%s) and taxon_id in (%s)' % (columns,
+            sql_2 = 'select %s from orthology_detail where orthogroup in (%s) and taxon_id in (%s)' % (columns,
                                                                                                           biodb,
                                                                                                           group_filter,
                                                                                                           taxon_f)
         else:
             taxon_filter = [str(i) for i in taxon_filter]
             taxon_f = '"'+'","'.join(taxon_filter)+'"'
-            sql_2 = 'select %s from orthology_detail_%s where orthogroup in (%s) and accession in (%s)' % (columns,
+            sql_2 = 'select %s from orthology_detail where orthogroup in (%s) and accession in (%s)' % (columns,
                                                                                                            biodb,
                                                                                                            group_filter,
                                                                                                            taxon_f)
@@ -1419,7 +1419,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
 def locus_tag2orthogroup(db_name):
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql = 'select locus_tag, orthogroup from orthology_detail_%s group by locus_tag, orthogroup' % db_name
+    sql = 'select locus_tag, orthogroup from orthology_detail group by locus_tag, orthogroup' % db_name
 
     return manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -1454,9 +1454,9 @@ def orthogroup2gene(db_name, accession=False):
     server, db = manipulate_biosqldb.load_db(db_name)
 
     if not accession:
-        sql =  'select orthogroup, gene from orthology_detail_%s' % db_name
+        sql =  'select orthogroup, gene from orthology_detail' % db_name
     else:
-        sql = 'select orthogroup, gene from orthology_detail_%s where accession="%s"' % (db_name, accession)
+        sql = 'select orthogroup, gene from orthology_detail where accession="%s"' % (db_name, accession)
 
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -1676,9 +1676,9 @@ def orthogroup2product(db_name, accession=False):
     server, db = manipulate_biosqldb.load_db(db_name)
 
     if not accession:
-        sql =  'select orthogroup, product from orthology_detail_%s' % db_name
+        sql =  'select orthogroup, product from orthology_detail' % db_name
     else:
-        sql = 'select orthogroup, product from orthology_detail_%s where accession="%s"' % (db_name, accession)
+        sql = 'select orthogroup, product from orthology_detail where accession="%s"' % (db_name, accession)
 
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -1728,8 +1728,8 @@ def calculate_average_protein_identity(db_name):
             identity_values = []
             #print 'y taxon', y_taxon
             for group in all_groups:
-                sql_ref = 'select locus_tag from orthology_detail_%s where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[i_taxon], group)
-                sql_query = 'select locus_tag from orthology_detail_%s where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[y_taxon], group)
+                sql_ref = 'select locus_tag from orthology_detail where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[i_taxon], group)
+                sql_query = 'select locus_tag from orthology_detail where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[y_taxon], group)
                 locus_ref = server.adaptor.execute_and_fetchall(sql_ref,)[0][0]
                 locus_query = server.adaptor.execute_and_fetchall(sql_query,)[0][0]
 
@@ -1769,8 +1769,8 @@ def calculate_average_protein_identity_new_tables(db_name):
             for i, group in enumerate(all_groups):
                 if i%500 == 0:
                     print ("%s/%s" % (i, len(all_groups)))
-                sql_ref = 'select locus_tag from orthology_detail_%s where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[i_taxon], group)
-                sql_query = 'select locus_tag from orthology_detail_%s where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[y_taxon], group)
+                sql_ref = 'select locus_tag from orthology_detail where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[i_taxon], group)
+                sql_query = 'select locus_tag from orthology_detail where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[y_taxon], group)
                 locus_ref = server.adaptor.execute_and_fetchall(sql_ref,)[0][0]
                 locus_query = server.adaptor.execute_and_fetchall(sql_query,)[0][0]
 
@@ -1839,7 +1839,7 @@ def locus_list2nucleotide_fasta(biodb,locus_list):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     filter = '"' + '","'.join(locus_list) + '"'
-    sql = 'select locus_tag, accession, start, stop, strand, organism from orthology_detail_%s' \
+    sql = 'select locus_tag, accession, start, stop, strand, organism from orthology_detail' \
           ' where locus_tag in (%s)' % (biodb, filter)
 
 
@@ -1882,7 +1882,7 @@ def locus_list2nucleotide_fasta(biodb,locus_list):
 def orthogroup2protein_id_list(db_name):
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql1 = 'select orthogroup, protein_id, locus_tag from orthology_detail_%s;' % db_name
+    sql1 = 'select orthogroup, protein_id, locus_tag from orthology_detail;' % db_name
 
     data1 = server.adaptor.execute_and_fetchall(sql1)
 

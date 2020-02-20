@@ -540,7 +540,7 @@ if __name__ == '__main__':
 
     sql_pfam = 'select taxon_id, count(*) from interpro_chlamydia_03_15 where analysis="Pfam" and signature_accession="PF00137" group by taxon_id;'
 
-    sql_grp = 'select taxon_id,count(*) from  orthology_detail_%s where orthogroup="%s" group by organism;' % (biodb, orthogroup)
+    sql_grp = 'select taxon_id,count(*) from  orthology_detail where orthogroup="%s" group by organism;' % (biodb, orthogroup)
 
     sql_cog = 'select t1.taxon_id, count(*) from (select * from COG.locus_tag2gi_hit_chlamydia_03_15 where COG_id="COG2911") A inner join biosqldb.orthology_detail_chlamydia_03_15 as t1 on A.locus_tag=t1.locus_tag group by t1.taxon_id;'
 

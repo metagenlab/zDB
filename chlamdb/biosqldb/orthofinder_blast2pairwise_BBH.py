@@ -151,7 +151,7 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
 
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select locus_tag, orthogroup from orthology_detail_%s' % biodb
+    sql = 'select locus_tag, orthogroup from orthology_detail' % biodb
 
     try:
         locus_tag2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -351,7 +351,7 @@ def seqfeature_id2n_species_chlamydiae_only(biodb, chlamydiae_taxon_list):
 
     server.adaptor.execute(sql0,)
 
-    sql1 ='select locus_tag, orthogroup from orthology_detail_%s' % biodb
+    sql1 ='select locus_tag, orthogroup from orthology_detail' % biodb
 
     orthogroup2locus_list = {}
     for row in server.adaptor.execute_and_fetchall(sql1,):
@@ -367,7 +367,7 @@ def seqfeature_id2n_species_chlamydiae_only(biodb, chlamydiae_taxon_list):
 
     taxon_id2species_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
 
-    sql4 = 'select locus_tag, taxon_id from orthology_detail_%s' % biodb
+    sql4 = 'select locus_tag, taxon_id from orthology_detail' % biodb
 
     locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql4,))
 
@@ -396,7 +396,7 @@ def seqfeature_id2n_species(biodb):
 
     server.adaptor.execute(sql0,)
 
-    sql1 ='select locus_tag, orthogroup from orthology_detail_%s' % biodb
+    sql1 ='select locus_tag, orthogroup from orthology_detail' % biodb
 
     orthogroup2locus_list = {}
     for row in server.adaptor.execute_and_fetchall(sql1,):
@@ -411,7 +411,7 @@ def seqfeature_id2n_species(biodb):
 
     taxon_id2species_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
 
-    sql4 = 'select locus_tag, taxon_id from orthology_detail_%s' % biodb
+    sql4 = 'select locus_tag, taxon_id from orthology_detail' % biodb
 
     locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql4,))
 

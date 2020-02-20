@@ -18,7 +18,7 @@ def accession2dna_seg_genome(accession, biodb):
     import pandas
 
     server, db = manipulate_biosqldb.load_db(biodb)
-    sql = 'select locus_tag, start, stop, strand from orthology_detail_%s where accession="%s"' % (biodb, accession)
+    sql = 'select locus_tag, start, stop, strand from orthology_detail where accession="%s"' % (biodb, accession)
 
     data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
     columns = ['name', 'start', 'end', 'strand']

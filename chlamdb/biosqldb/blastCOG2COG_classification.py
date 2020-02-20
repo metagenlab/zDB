@@ -158,7 +158,7 @@ def load_locus2cog_into_sqldb(input_blast_files, biodb):
           ' inner join biosqldb.bioentry as t2 on t1.accession=t2.accession ' \
           ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
           ' where t3.name="%s"' % (biodb, biodb)
-    sql2 = 'select protein_id, locus_tag from orthology_detail_%s' % biodb
+    sql2 = 'select protein_id, locus_tag from orthology_detail' % biodb
     sql3 = 'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id' % biodb
     sql4 = 'select protein_id,COG_id from COG.cog_2014'
     server, db = manipulate_biosqldb.load_db(biodb)

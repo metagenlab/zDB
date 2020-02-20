@@ -66,8 +66,8 @@ def locus2ec_table(locus_tag2ec_dico, biodatabase):
 
     server, db = manipulate_biosqldb.load_db(biodatabase)
 
-    #sql = 'select locus_tag, accession from orthology_detail_%s' % biodatabase
-    #sql2 = 'select locus_tag, orthogroup from orthology_detail_%s' % biodatabase
+    #sql = 'select locus_tag, accession from orthology_detail' % biodatabase
+    #sql2 = 'select locus_tag, orthogroup from orthology_detail' % biodatabase
     #locus2bioentry_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
     #locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
 

@@ -152,13 +152,13 @@ def find_clusters_of_orthogroups(db_name, identity_cutoff, distance_cutoff=10000
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql_locus = 'select locus_tag from orthology_detail_%s' % db_name
+    sql_locus = 'select locus_tag from orthology_detail' % db_name
     all_locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql_locus,)]
 
-    sql = 'select locus_tag, orthogroup from orthology_detail_%s' % db_name
+    sql = 'select locus_tag, orthogroup from orthology_detail' % db_name
     locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select locus_tag, start, stop from orthology_detail_%s' % db_name
+    sql = 'select locus_tag, start, stop from orthology_detail' % db_name
 
     locus2start_end = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     orthogroup2locus_list = {}
@@ -177,7 +177,7 @@ def find_clusters_of_orthogroups(db_name, identity_cutoff, distance_cutoff=10000
             taxon2taxon_median_id[row[0]][row[1]] = row[2]
         else:
             taxon2taxon_median_id[row[0]][row[1]] = row[2]
-    sql = 'select locus_tag, accession from orthology_detail_%s' % db_name
+    sql = 'select locus_tag, accession from orthology_detail' % db_name
     locus2accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     accession_list = set(locus2accession.values())
     accession2record = {}
@@ -367,13 +367,13 @@ def find_clusters_of_locus(db_name, identity_cutoff, distance_cutoff=20000):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql_locus = 'select locus_tag from orthology_detail_%s' % db_name
+    sql_locus = 'select locus_tag from orthology_detail' % db_name
     all_locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql_locus,)]
 
-    sql = 'select locus_tag, orthogroup from orthology_detail_%s' % db_name
+    sql = 'select locus_tag, orthogroup from orthology_detail' % db_name
     locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select locus_tag, start, stop from orthology_detail_%s' % db_name
+    sql = 'select locus_tag, start, stop from orthology_detail' % db_name
 
     locus2start_end = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     orthogroup2locus_list = {}
@@ -392,7 +392,7 @@ def find_clusters_of_locus(db_name, identity_cutoff, distance_cutoff=20000):
             taxon2taxon_median_id[row[0]][row[1]] = row[2]
         else:
             taxon2taxon_median_id[row[0]][row[1]] = row[2]
-    sql = 'select locus_tag, accession from orthology_detail_%s' % db_name
+    sql = 'select locus_tag, accession from orthology_detail' % db_name
     locus2accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     accession_list = set(locus2accession.values())
     accession2record = {}
