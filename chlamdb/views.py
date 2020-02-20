@@ -6100,13 +6100,13 @@ def pan_genome(request, type):
 
             filter = '`'+'`,`'.join(taxon_list)+'`'
             if type == 'orthology':
-                sql = 'select  orthogroup from comparative_tables.%s_%s' % (type, biodb)
+                sql = 'select  orthogroup from comparative_tables_%s' % (type, biodb)
                 group_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
             else:
-                sql = 'select  id from comparative_tables.%s_%s' % (type, biodb)
+                sql = 'select  id from comparative_tables_%s' % (type, biodb)
                 group_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
-            sql = 'select %s from comparative_tables.%s_%s' % (filter, type, biodb)
+            sql = 'select %s from comparative_tables_%s' % (filter, type, biodb)
 
             data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
 
@@ -6183,11 +6183,11 @@ def core_genome_missing(request, type):
 
             filter = '`'+'`,`'.join(taxon_list)+'`'
 
-            sql = 'select  orthogroup from comparative_tables.%s_%s' % (type, biodb)
+            sql = 'select  orthogroup from comparative_tables_%s' % (type, biodb)
             group_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
 
-            sql = 'select %s from comparative_tables.%s_%s' % (filter, type, biodb)
+            sql = 'select %s from comparative_tables_%s' % (filter, type, biodb)
 
             data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
             #print 'grp', len(group_list)

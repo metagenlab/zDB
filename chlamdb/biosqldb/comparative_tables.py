@@ -11,7 +11,7 @@ def create_comparative_tables(db_name, table_name):
 
     taxon_id_list = manipulate_biosqldb.get_taxon_id_list(server, db_name)
 
-    sql = "CREATE TABLE comparative_tables.%s_%s(id VARCHAR(100) NOT NULL" % (table_name, db_name)
+    sql = "CREATE TABLE comparative_tables_%s(id VARCHAR(100) NOT NULL" % (table_name, db_name)
     for i in taxon_id_list:
         sql+=" ,`%s` INT" % i
     sql+=")"
@@ -579,7 +579,7 @@ def get_mysql_table(db_name, table_name):
         sql_taxons += ' `%s`,' % all_taxons_id[i]
     sql_taxons += ' `%s`' % all_taxons_id[-1]
 
-    sql = "select %s from comparative_tables.%s_%s" % (sql_taxons, table_name, db_name)
+    sql = "select %s from comparative_tables_%s" % (sql_taxons, table_name, db_name)
     #print sql
     mat = np.array(server.adaptor.execute_and_fetchall(sql,))
     #np.chararray

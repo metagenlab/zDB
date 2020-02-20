@@ -46,9 +46,9 @@ def get_taxon2name2count(biodb, id_list, type="COG", taxon_filter=False):
             ordered_taxons = taxon_filter
         else:
             col_filter = '*'
-            sql = 'show columns from comparative_tables.%s_%s' % (type, biodb)
+            sql = 'show columns from comparative_tables_%s' % (type, biodb)
             ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
-        sql = 'select %s from comparative_tables.%s_%s where id in (%s)' % (col_filter, type, biodb, ortho_sql)
+        sql = 'select %s from comparative_tables_%s where id in (%s)' % (col_filter, type, biodb, ortho_sql)
     else:
         if taxon_filter:
             col_filter = 'orthogroup,`' + '`,`'.join(taxon_filter) + '`'
