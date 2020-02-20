@@ -29,7 +29,7 @@ def import_rnaseq(rnaseq_table, biodb, taxon_id):
     # 20 extracellular_2
     # 21 extracellular_3
 
-    sql = 'select old_locus_tag, operon_id from custom_tables.DOOR2_operons_%s' % biodb
+    sql = 'select old_locus_tag, operon_id from custom_tables_DOOR2_operons' % biodb
 
     old_locus2operon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

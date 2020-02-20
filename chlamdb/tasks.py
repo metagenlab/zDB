@@ -880,13 +880,13 @@ def plot_neighborhood_task(biodb, target_locus, region_size):
         name = 'temp/' + os.path.basename(temp_file.name)
 
         sql10 = 'select operon_id from custom_tables_locus2seqfeature_id t1 ' \
-                ' inner join custom_tables.DOOR2_operons_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
+                ' inner join custom_tables_DOOR2_operons t2 on t1.seqfeature_id=t2.seqfeature_id' \
                 ' where t1.locus_tag="%s"' % (biodb,
                                                 biodb,
                                                 target_locus)
         try:
             operon_id = server.adaptor.execute_and_fetchall(sql10, )[0][0]
-            sqlo = 'select operon_id,gi,locus_tag,old_locus_tag,COG_number,product from custom_tables.DOOR2_operons_%s t1 ' \
+            sqlo = 'select operon_id,gi,locus_tag,old_locus_tag,COG_number,product from custom_tables_DOOR2_operons t1 ' \
                     ' left join custom_tables_locus2seqfeature_id t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                     ' where operon_id=%s;' % (biodb, biodb, operon_id)
             operon = server.adaptor.execute_and_fetchall(sqlo, )
