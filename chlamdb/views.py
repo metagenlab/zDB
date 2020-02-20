@@ -1944,7 +1944,7 @@ def venn_cog(request, accessions=False):
                 if not accessions:
                     sql ='select id from comparative_tables_COG where `%s` > 0' % (biodb, target)
                 else:
-                    sql ='select id from comparative_tables.COG_accessions_%s where `%s` > 0' % (biodb, target)
+                    sql ='select id from comparative_tables_COG_accessions where `%s` > 0' % (biodb, target)
                 #print sql
                 cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
                 all_cog_list += cogs
@@ -5065,7 +5065,7 @@ def cog_subset_barchart(request, accessions=False):
     if not accessions:
         sql = 'select id from comparative_tables_COG where (%s)' % (biodb, filter)
     else:
-        sql = 'select id from comparative_tables.COG_accessions_%s where (%s)' % (biodb, filter)
+        sql = 'select id from comparative_tables_COG_accessions where (%s)' % (biodb, filter)
     match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
     sql = 'select t3.code, count(*) from COG_cog_names_2014 t1 ' \

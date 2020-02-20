@@ -201,7 +201,7 @@ def collect_COGs_accession(db_name):
 
     accession_list = get_all_accessions(db_name)
 
-    sql_head = 'INSERT INTO comparative_tables.COG_accessions_%s (id,' % db_name
+    sql_head = 'INSERT INTO comparative_tables_COG_accessions (id,' % db_name
 
     for accession in accession_list:
         sql_head += '%s,' % accession
