@@ -2953,7 +2953,7 @@ def gc_locus(request, locus_tag):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql1 = 'select t2.taxon_id, t2.seqfeature_id, t2.gc_percent, t2.gc_1, t2.gc_2, t2.gc_3 from custom_tables_locus2seqfeature_id t1 ' \
-           ' inner join custom_tables.gc_content_%s t2 ' \
+           ' inner join custom_tables_gc_content t2 ' \
            ' on t1.seqfeature_id=t2.seqfeature_id where t1.locus_tag="%s"' % (biodb, biodb, locus_tag)
 
     data = server.adaptor.execute_and_fetchall(sql1,)[0]
@@ -2965,7 +2965,7 @@ def gc_locus(request, locus_tag):
     gc_3_locus = data[5]
 
 
-    sql2 = 'select gc_percent, gc_1, gc_2, gc_3 from custom_tables.gc_content_%s where taxon_id=%s' % (biodb, taxon_id)
+    sql2 = 'select gc_percent, gc_1, gc_2, gc_3 from custom_tables_gc_content where taxon_id=%s' % (biodb, taxon_id)
 
     data = server.adaptor.execute_and_fetchall(sql2,)
     gc_all = []
