@@ -2249,7 +2249,7 @@ def locusx(request, locus=None, menu=True):
                                                                                                      biodb,
                                                                                                      locus)
 
-            sql6 = 'select uniprot_id from locus_tag2uniprot_hit_%s where locus_tag="%s";' % (biodb, locus)
+            sql6 = 'select uniprot_id from locus_tag2uniprot_hit where locus_tag="%s";' % (biodb, locus)
 
             sql7 = 'select A.ko_id,pathway_name,pathway_category,description from (select ko_id from enzyme_locus2ko' \
                    ' where locus_tag="%s") A inner join enzyme_pathway2ko_v1 B on A.ko_id=B.ko_id ' \

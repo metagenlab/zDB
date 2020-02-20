@@ -6,7 +6,7 @@ def locus2inference_table(biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'CREATE TABLE locus_tag2uniprot_hit_%s (locus_tag varchar(400),' \
+    sql = 'CREATE TABLE locus_tag2uniprot_hit (locus_tag varchar(400),' \
           ' uniprot_id varchar(400), index locus_tag(locus_tag))' % biodb
 
     server.adaptor.execute(sql,)
@@ -17,7 +17,7 @@ def locus2inference_table(biodb):
         sql = 'select value from seqfeature_qualifier_value where seqfeature_id=%s and value like "%%%%UniProtKB%%%%"' % (locus2seqfeature_id[locus])
         try:
             data = server.adaptor.execute_and_fetchall(sql,)[0][0]
-            sql2 = 'insert into locus_tag2uniprot_hit_%s values ("%s", "%s")' %(biodb, locus, data.split(':')[2])
+            sql2 = 'insert into locus_tag2uniprot_hit values ("%s", "%s")' %(biodb, locus, data.split(':')[2])
             try:
                 server.adaptor.execute(sql2,)
                 server.commit()
