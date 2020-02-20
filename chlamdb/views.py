@@ -2670,7 +2670,7 @@ def locusx(request, locus=None, menu=True):
                          ' inner join enzyme_ko_annotation t3 on t1.ko_id=t3.ko_id where t2.orthogroup_name="%s";' % (biodb, 
                                                                                                                     biodb, 
                                                                                                                     locus)
-            sql_group5 = f'select distinct t1.seqfeature_id,start,stop,signature_accession,signature_description from interpro.interpro_{biodb} t1 ' \
+            sql_group5 = f'select distinct t1.seqfeature_id,start,stop,signature_accession,signature_description from interpro_interpro t1 ' \
                          f' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
                          f' inner join interpro_analysis t3 on t2.analysis_id=t3.analysis_id ' \
                          f' inner join orthology.seqfeature_id2orthogroup_{biodb} t4 on t1.seqfeature_id=t4.seqfeature_id ' \
@@ -3374,7 +3374,7 @@ def venn_candidate_effectors(request):
     pfam_eukaryota_freq_cutoff = '0'
     interpro_euk_cutoff='95'
 
-    sql_locus_tag_pfam = 'select distinct t5.locus_tag from interpro.interpro_signature2pfam_id_%s t1  ' \
+    sql_locus_tag_pfam = 'select distinct t5.locus_tag from interpro_interpro_signature2pfam_id t1  ' \
                          ' inner join interpro_interpro t2 on t1.signature_id=t2.signature_id ' \
                          ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id ' \
                          ' inner join interpro_signature t4 on t1.signature_id=t4.signature_id ' \
@@ -3555,7 +3555,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
                       '1279497']
         '''
         sql = 'select distinct signature_accession,signature_description from ' \
-              ' (select t4.*,t5.* from interpro.interpro_signature2pfam_id_%s t1 ' \
+              ' (select t4.*,t5.* from interpro_interpro_signature2pfam_id t1 ' \
               ' inner join interpro_interpro t2 on t1.signature_id=t2.signature_id ' \
               ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id ' \
               ' inner join interpro_signature t4 on t1.signature_id=t4.signature_id ' \
@@ -3591,7 +3591,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
 
 
         # get list of all orthogroups with corresponding interpro entry
-        sql = 'select signature_accession, t7.orthogroup_name from interpro.interpro_signature2pfam_id_%s t1 ' \
+        sql = 'select signature_accession, t7.orthogroup_name from interpro_interpro_signature2pfam_id t1 ' \
               ' inner join interpro_interpro t2 on t1.signature_id=t2.signature_id ' \
               ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id ' \
               ' inner join interpro_signature t4 on t1.signature_id=t4.signature_id ' \
