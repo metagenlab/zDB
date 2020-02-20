@@ -5832,7 +5832,7 @@ def genome_annotation(request, accession):
 
     sql = f'select t1.seqfeature_id,locus_tag,start,stop,t2.name,product from annotation.seqfeature_id2locus_{biodb} t1 ' \
           f' inner join biosqldb.term t2 on t1.feature_type_id=t2.term_id ' \
-          f' inner join annotation.seqfeature_id2RNA_annotation_{biodb} t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+          f' inner join annotation_seqfeature_id2RNA_annotation t3 on t1.seqfeature_id=t3.seqfeature_id ' \
           f' inner join biosqldb.bioentry t4 on t1.bioentry_id=t4.bioentry_id where t4.accession="{accession}" ' \
           f' union select t1.seqfeature_id,locus_tag,start,stop,t2.name,product from annotation.seqfeature_id2locus_{biodb} t1 ' \
           f' inner join biosqldb.term t2 on t1.feature_type_id=t2.term_id ' \

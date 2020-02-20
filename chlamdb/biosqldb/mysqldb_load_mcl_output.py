@@ -127,7 +127,7 @@ def create_orthogroup_table(server,
 
     server.adaptor.execute(sql2)
 
-    sql3 = 'CREATE TABLE if not exists annotation.seqfeature_id2RNA_annotation_%s(seqfeature_id INT,' \
+    sql3 = 'CREATE TABLE if not exists annotation_seqfeature_id2RNA_annotation(seqfeature_id INT,' \
           ' product TEXT NOT NULL,' \
           ' INDEX seqfeature_id(seqfeature_id))' % biodatabase_name
 
@@ -217,7 +217,7 @@ def create_orthogroup_table(server,
                     product = seqfeature_id2product_dico[str(seqfeature_id)]
                 except KeyError:
                     product = "-"
-                sql = 'insert into annotation.seqfeature_id2RNA_annotation_%s ' \
+                sql = 'insert into annotation_seqfeature_id2RNA_annotation ' \
                       ' (seqfeature_id, product)' \
                       ' values (%s, "%s")' % (biodatabase_name,
                                               seqfeature_id,
