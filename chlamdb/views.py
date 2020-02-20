@@ -1499,7 +1499,7 @@ def venn_EC(request):
             taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
             for target in targets:
                 template_serie = '{name: "%s", data: %s}'
-                sql ='select id from comparative_tables.EC_%s where `%s` > 0' % (biodb, target)
+                sql ='select id from comparative_tables_EC where `%s` > 0' % (biodb, target)
                 #print sql
                 ec_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
                 all_ec_list += ec_list
@@ -4105,7 +4105,7 @@ def KEGG_mapp(request, map_name):
 
         enzyme_list = [i[3] for i in map_data]
 
-        sql = 'select id from comparative_tables.EC_%s where id in (%s);' % (biodb,
+        sql = 'select id from comparative_tables_EC where id in (%s);' % (biodb,
                                                           '"' + '","'.join(enzyme_list) + '"')
         enzyme_list_found_in_db = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
@@ -10725,7 +10725,7 @@ def search(request):
 
                     # CREATE FULLTEXT INDEX ezf ON enzyme_enzymes_dat(value);
                     sql = 'select A.ec, A.value from (select ec,value from enzyme_enzymes_dat as t1 inner join enzyme_enzymes as t2 ' \
-                          ' on t1.enzyme_dat_id=enzyme_id WHERE MATCH(value) AGAINST("%s" IN NATURAL LANGUAGE MODE) group by ec) A inner join comparative_tables.EC_%s' \
+                          ' on t1.enzyme_dat_id=enzyme_id WHERE MATCH(value) AGAINST("%s" IN NATURAL LANGUAGE MODE) group by ec) A inner join comparative_tables_EC' \
                           ' as B on A.ec=B.id' % (search_term, biodb)
                     print(sql)
                     raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
