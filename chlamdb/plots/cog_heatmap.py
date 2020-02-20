@@ -30,12 +30,12 @@ def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by
     else:
         if not group_by_cog_id:
             sql = 'select taxon_id,functon,count(*) as n ' \
-                  ' from COG.locus_tag2gi_hit_%s t1 ' \
+                  ' from COG_locus_tag2gi_hit t1 ' \
                   ' inner join COG.cog_names_2014 t2 on t1.COG_id=t2.COG_id ' \
                   ' inner join biosqldb.bioentry as t3 on t1.accession=t3.accession ' \
                   ' where biodatabase_id=%s group by taxon_id,functon' % (biodb, db_id)
         else:
-            sql = ' select A.taxon_id,B.functon,count(*) from (select t1.COG_id, t3.taxon_id from COG.locus_tag2gi_hit_%s t1 ' \
+            sql = ' select A.taxon_id,B.functon,count(*) from (select t1.COG_id, t3.taxon_id from COG_locus_tag2gi_hit t1 ' \
                   ' inner join biosqldb.orthology_detail_%s t3 on t1.locus_tag=t3.locus_tag ' \
                   ' group by taxon_id,t1.COG_id) A inner join COG.cog_names_2014 B on A.COG_id=B.COG_id ' \
                   ' group by A.taxon_id,B.functon;' % (biodb, biodb)
@@ -56,7 +56,7 @@ def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by
         cog_list = []
 
     else:
-        sql = 'select taxon_id, count(*) from biosqldb.orthology_detail_%s t1 left join COG.locus_tag2gi_hit_%s t2 ' \
+        sql = 'select taxon_id, count(*) from biosqldb.orthology_detail_%s t1 left join COG_locus_tag2gi_hit t2 ' \
               ' on t1.locus_tag=t2.locus_tag where COG_id is NULL group by t1.taxon_id;' % (biodb,  biodb)
 
         taxon2count_no_GOG = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))

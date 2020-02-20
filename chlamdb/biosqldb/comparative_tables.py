@@ -154,7 +154,7 @@ def collect_COGs(db_name):
         sql_head += '`%s`,' % taxon
     sql_head = sql_head[0:-1] + ') values ('
 
-    all_cogs_ids_sql = 'select COG_id from COG.locus_tag2gi_hit_%s group by COG_id;' % db_name
+    all_cogs_ids_sql = 'select COG_id from COG_locus_tag2gi_hit group by COG_id;' % db_name
 
     all_cogs_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_cogs_ids_sql,)]
 
@@ -165,7 +165,7 @@ def collect_COGs(db_name):
         print i,'/', len(all_cogs_ids), accession
         i+=1
         sql = 'select B.taxon_id, A.count from (select accession,count(*) as count from ' \
-             'COG.locus_tag2gi_hit_%s ' \
+             'COG_locus_tag2gi_hit ' \
              'where COG_id = "%s" group by accession) A ' \
              'left join biosqldb.bioentry as B on A.accession=B.accession and biodatabase_id = %s;' % (db_name, accession, database_id)
         print sql
@@ -207,7 +207,7 @@ def collect_COGs_accession(db_name):
         sql_head += '%s,' % accession
     sql_head = sql_head[0:-1] + ') values ('
 
-    all_cogs_ids_sql = 'select COG_id from COG.locus_tag2gi_hit_%s group by COG_id;' % db_name
+    all_cogs_ids_sql = 'select COG_id from COG_locus_tag2gi_hit group by COG_id;' % db_name
 
     all_cogs_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_cogs_ids_sql,)]
 
@@ -218,7 +218,7 @@ def collect_COGs_accession(db_name):
         print i,'/', len(all_cogs_ids), accession
         i+=1
         sql= 'select accession,count(*) as c from ' \
-             'COG.locus_tag2gi_hit_%s ' \
+             'COG_locus_tag2gi_hit ' \
              'where COG_id="%s" group by accession' % (db_name, accession)
 
         print sql
