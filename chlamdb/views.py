@@ -2286,7 +2286,7 @@ def locusx(request, locus=None, menu=True):
 
             sql13 = 'select go_term_id, term_type, go_description from (select go_term_id, go_description ' \
                     ' from custom_tables_locus2seqfeature_id as t1  ' \
-                    'inner join custom_tables.uniprot_go_terms_%s as t2 on t1.seqfeature_id=t2.seqfeature_id  ' \
+                    'inner join custom_tables_uniprot_go_terms as t2 on t1.seqfeature_id=t2.seqfeature_id  ' \
                     ' where t1.locus_tag="%s") A inner join gene_ontology.term as B on A.go_term_id=B.acc;' % (biodb, biodb, locus)
 
             sql15 = 'select count(*) from custom_tables_locus2seqfeature_id t1 inner join blastnr_blastnr t2' \
