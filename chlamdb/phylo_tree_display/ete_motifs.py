@@ -199,11 +199,11 @@ def get_locus2taxon2n_paralogs(biodb, locus_tag_list):
 
     for locus in locus_tag_list:
 
-        orthogroup_sql = 'select orthogroup from chlamdb.biosqldb.orthology_detail_%s where locus_tag="%s";' % (biodb,locus)
+        orthogroup_sql = 'select orthogroup from chlamdb.orthology_detail where locus_tag="%s";' % (biodb,locus)
 
         orthogroup = server.adaptor.execute_and_fetchall(orthogroup_sql,)[0][0]
 
-        sql = 'select taxon_id,count(*) from chlamdb.biosqldb.orthology_detail_%s where orthogroup="%s" group by taxon_id;' % (biodb,
+        sql = 'select taxon_id,count(*) from chlamdb.orthology_detail where orthogroup="%s" group by taxon_id;' % (biodb,
                                                                                                                        orthogroup)
         taxon_id2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

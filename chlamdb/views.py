@@ -700,7 +700,7 @@ def locus_annotation(request, display_form):
             sql = 'select t1.locus_tag, t2.accession, t2.start, t2.stop, t2.gene, t2.product, t2.n_genomes, t2.orthogroup, ' \
                   ' CHAR_LENGTH(t2.translation), t4.COG_name,t6.code,t4.description, t2.taxon_id ' \
                   ' from custom_tables_locus2seqfeature_id t1 ' \
-                  ' inner join biosqldb.orthology_detail_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
+                  ' inner join orthology_detail t2 on t1.seqfeature_id=t2.seqfeature_id' \
                   ' left join COG_seqfeature_id2best_COG_hit t3 on t1.seqfeature_id=t3.seqfeature_id' \
                   ' left join COG_cog_names_2014 t4 on t3.hit_COG_id=t4.COG_id' \
                   ' left join COG_cog_id2cog_category t5 on t4.COG_id=t5.COG_id' \
@@ -2761,7 +2761,7 @@ def locusx(request, locus=None, menu=True):
             else:
                 length_distrib = False
             
-            sql = 'select TM from biosqldb.orthology_detail_%s where orthogroup="%s";' % (biodb, locus)
+            sql = 'select TM from orthology_detail where orthogroup="%s";' % (biodb, locus)
             TM_counts = Counter([int(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)])
             
             for i in range(max(TM_counts.keys())):
@@ -3149,7 +3149,7 @@ def fam(request, fam, type):
                                                                               'COG')
 
             sql3='select distinct taxon_id,orthogroup,COG_id from (select taxon_id,locus_tag,orthogroup ' \
-                 ' from biosqldb.orthology_detail_%s where orthogroup in (%s)) A ' \
+                 ' from orthology_detail where orthogroup in (%s)) A ' \
                  ' inner join COG_locus_tag2gi_hit as B on A.locus_tag=B.locus_tag;' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"', biodb)
 
         elif type == 'interpro':
@@ -3168,7 +3168,7 @@ def fam(request, fam, type):
                    'from (select orthogroup,locus_tag,ec_id from enzyme_locus2ec_%s ' \
                    'where orthogroup in (%s)) t1 ' \
                    'left join enzyme_enzymes as t2 on t1.ec_id=t2.enzyme_id ' \
-                   'left join biosqldb.orthology_detail_%s as t3 ' \
+                   'left join orthology_detail as t3 ' \
                    'on t1.locus_tag=t3.locus_tag;' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"', biodb)
 
         elif type == 'ko':
@@ -3177,7 +3177,7 @@ def fam(request, fam, type):
                                                                               'ko')
 
             sql3 = 'select t1.taxon_id, t1.orthogroup, t3.ko_accession ' \
-                   ' from biosqldb.orthology_detail_%s t1 ' \
+                   ' from orthology_detail t1 ' \
                    ' inner join enzyme_seqfeature_id2ko t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                    ' inner join enzyme_ko_annotation t3 on t2.ko_id=t3.ko_id ' \
                    ' where t1.orthogroup in (%s);' % (biodb,
@@ -3189,7 +3189,7 @@ def fam(request, fam, type):
                                                                               [fam],
                                                                               'ko')
             sql3 = 'select distinct A.taxon_id,A.orthogroup,B.ko_id from (' \
-                   ' select locus_tag,orthogroup,taxon_id from biosqldb.orthology_detail_%s ' \
+                   ' select locus_tag,orthogroup,taxon_id from orthology_detail ' \
                    ' where orthogroup in (%s)) A inner join enzyme_locus2ko as B ' \
                    ' on A.locus_tag=B.locus_tag;' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"', biodb)
 
@@ -3962,7 +3962,7 @@ def KEGG_module_map(request, module_name):
               ' inner join enzyme_module2ko t2 on t1.module_id=t2.module_id ' \
               ' inner join enzyme_ko_annotation t3 on t2.ko_id=t3.ko_id ' \
               ' inner join enzyme_seqfeature_id2ko t4 on t3.ko_id=t4.ko_id ' \
-              ' inner join biosqldb.orthology_detail_%s t5 on t4.seqfeature_id=t5.seqfeature_id ' \
+              ' inner join orthology_detail t5 on t4.seqfeature_id=t5.seqfeature_id ' \
               ' where t1.module_name="%s";' % (biodb,
                                                biodb,
                                                module_name)
@@ -4388,7 +4388,7 @@ def get_orthogroup_multiple_cog(request, category):
     #print "match_groups_subset" , match_groups_subset
     # get list of all orthogroup with at least one hit in the specified category
     filter = '"' + '","'.join(match_groups_subset) + '"'
-    sql = 'select orthogroup from (select orthogroup,locus_tag from biosqldb.orthology_detail_%s ' \
+    sql = 'select orthogroup from (select orthogroup,locus_tag from orthology_detail ' \
           ' where orthogroup in (%s)) A left join COG_locus_tag2gi_hit as B ' \
           ' on A.locus_tag=B.locus_tag left join COG_cog_names_2014 as C on B.COG_id=C.COG_id ' \
           'where function="%s" group by orthogroup;' % (biodb,
@@ -4400,7 +4400,7 @@ def get_orthogroup_multiple_cog(request, category):
     filter2 = '"' + '","'.join(orthogroup_subset) + '"'
     # get detailed COG annotation of all match groups
     annot_grp = ' select A.*,B.COG_id,C.* from (select orthogroup,locus_tag ' \
-                ' from biosqldb.orthology_detail_%s where orthogroup in (%s)) A left join COG_locus_tag2gi_hit ' \
+                ' from orthology_detail where orthogroup in (%s)) A left join COG_locus_tag2gi_hit ' \
                 ' as B on A.locus_tag=B.locus_tag left join COG_cog_names_2014 as C on B.COG_id=C.COG_id;' % (biodb,
                                                                                                               filter2,
                                                                                                               biodb)
@@ -4693,7 +4693,7 @@ def module_barchart(request):
             # on regroupe les locus tags car un KO peut être dans plusieurs modules d'une meme categorie
             sql = 'select D.taxon_id,bb.module_sub_sub_cat, count(*) as n from (select A.*,B.module_id, C.module_sub_sub_cat from enzyme_locus2ko A inner join' \
                   ' enzyme_module2ko_v1 as B on A.ko_id=B.ko_id inner join enzyme_kegg_module_v1 as C ' \
-                  ' on B.module_id=C.module_id group by A.locus_tag, C.module_sub_sub_cat) bb inner join biosqldb.orthology_detail_%s as D on bb.locus_tag=D.locus_tag ' \
+                  ' on B.module_id=C.module_id group by A.locus_tag, C.module_sub_sub_cat) bb inner join orthology_detail as D on bb.locus_tag=D.locus_tag ' \
                   ' where D.taxon_id in (%s) group by taxon_id,bb.module_sub_sub_cat;' % (biodb, biodb,','.join(target_taxons))
             # merge des ko par taxon (on ne compte qu'une fois un taxon)
             sql = 'select bb.taxon_id,bb.module_sub_sub_cat, count(*) as n from (select A.*,B.module_id, C.module_sub_sub_cat from enzyme_locus2ko A inner join' \
@@ -5228,7 +5228,7 @@ def orthogroup2cog_series(biodb, orthogroup_list, reference_taxon=None, accessio
 
 
     if not accessions:
-        sql = 'select A.orthogroup,C.function, count(*) from (select * from biosqldb.orthology_detail_%s as t1 ' \
+        sql = 'select A.orthogroup,C.function, count(*) from (select * from orthology_detail as t1 ' \
               ' where orthogroup in (%s) and taxon_id=%s) A left join COG_locus_tag2gi_hit as B on A.locus_tag=B.locus_tag ' \
               ' inner join COG_cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,function;' % (biodb,
                                                                                                          '"' + '","'.join(orthogroup_list) + '"',
@@ -5236,7 +5236,7 @@ def orthogroup2cog_series(biodb, orthogroup_list, reference_taxon=None, accessio
                                                                                                          biodb)
         print (sql)
     else:
-        sql = 'select A.orthogroup,C.function, count(*) from (select * from biosqldb.orthology_detail_%s as t1 ' \
+        sql = 'select A.orthogroup,C.function, count(*) from (select * from orthology_detail as t1 ' \
               ' where orthogroup in (%s) and accession="%s") A left join COG_locus_tag2gi_hit as B on A.locus_tag=B.locus_tag ' \
               ' inner join COG_cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,function;' % (biodb,
                                                                                                          '"' + '","'.join(orthogroup_list) + '"',
@@ -5297,18 +5297,18 @@ def orthogroup2cog_series(biodb, orthogroup_list, reference_taxon=None, accessio
 
     # get data for the whole reference genome
     if not reference_taxon:
-        sql = 'select A.orthogroup,C.function, count(*) as n from (select * from biosqldb.orthology_detail_%s as t1) A ' \
+        sql = 'select A.orthogroup,C.function, count(*) as n from (select * from orthology_detail as t1) A ' \
               ' left join COG_locus_tag2gi_hit as B on A.locus_tag=B.locus_tag ' \
               ' inner join COG_cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,function;' % (biodb, biodb)
         print(sql)
 
     else:
         if not accessions:
-            sql = 'select A.orthogroup,C.function, count(*) as n from (select * from biosqldb.orthology_detail_%s as t1 where taxon_id=%s) A ' \
+            sql = 'select A.orthogroup,C.function, count(*) as n from (select * from orthology_detail as t1 where taxon_id=%s) A ' \
                   ' left join COG_locus_tag2gi_hit as B on A.locus_tag=B.locus_tag ' \
                   ' inner join COG_cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,function;' % (biodb, reference_taxon, biodb)
         else:
-            sql = 'select A.orthogroup,C.function, count(*) as n from (select * from biosqldb.orthology_detail_%s as t1 where accession="%s") A ' \
+            sql = 'select A.orthogroup,C.function, count(*) as n from (select * from orthology_detail as t1 where accession="%s") A ' \
                   ' left join COG_locus_tag2gi_hit as B on A.locus_tag=B.locus_tag ' \
                   ' inner join COG_cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,function;' % (biodb, reference_taxon, biodb)
     # same counts as previously, but with the whole genome
@@ -5456,13 +5456,13 @@ def locus_tag2cog_series(biodb, locus_tag_list, reference_taxon=None):
     for category in cog_category2count:
         cog_category2fraction[category] = (cog_category2count[category]/float(total))*100
 
-    sql = 'select A.locus_tag,C.function, count(*) as n from (select * from biosqldb.orthology_detail_%s as t1 where taxon_id=%s) A ' \
+    sql = 'select A.locus_tag,C.function, count(*) as n from (select * from orthology_detail as t1 where taxon_id=%s) A ' \
           ' left join COG_locus_tag2gi_hit as B on A.locus_tag=B.locus_tag ' \
           ' inner join COG_cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,function;' % (biodb,
                                                                                                       reference_taxon,
                                                                                                       biodb)
     # attention!!!! Pourquoi group by orthogroup ci-dessus???????!!!!!!!
-    sql = 'select A.locus_tag,code, count(*) as n from (select * from biosqldb.orthology_detail_%s as t1 where taxon_id=%s) A ' \
+    sql = 'select A.locus_tag,code, count(*) as n from (select * from orthology_detail as t1 where taxon_id=%s) A ' \
           ' left join COG_seqfeature_id2best_COG_hit as B on A.seqfeature_id=B.seqfeature_id ' \
           ' inner join COG_cog_names_2014 as C on B.hit_cog_id=C.COG_id ' \
           ' inner join COG_cog_id2cog_category D on C.COG_id=D.COG_id ' \
@@ -5836,7 +5836,7 @@ def genome_annotation(request, accession):
           f' inner join biosqldb.bioentry t4 on t1.bioentry_id=t4.bioentry_id where t4.accession="{accession}" ' \
           f' union select t1.seqfeature_id,locus_tag,start,stop,t2.name,product from annotation_seqfeature_id2locus_{biodb} t1 ' \
           f' inner join biosqldb.term t2 on t1.feature_type_id=t2.term_id ' \
-          f' inner join annotation.seqfeature_id2CDS_annotation_{biodb} t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+          f' inner join annotation_seqfeature_id2CDS_annotation t3 on t1.seqfeature_id=t3.seqfeature_id ' \
           f' inner join biosqldb.bioentry t4 on t1.bioentry_id=t4.bioentry_id ' \
           f' where t4.accession="{accession}" order by start ASC;'
 
@@ -6698,7 +6698,7 @@ def pairwiseCDS_length(request):
 
             taxid2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
-            sql = 'select CHAR_LENGTH(translation)*3 from biosqldb.orthology_detail_%s where taxon_id =%s;' % (biodb,
+            sql = 'select CHAR_LENGTH(translation)*3 from orthology_detail where taxon_id =%s;' % (biodb,
                                                                                                                genome_1)
 
             data1 = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -6710,7 +6710,7 @@ def pairwiseCDS_length(request):
             data_list = [data1]
             label_list = ["%s" % taxid2description[genome_1]]
             if genome_2 != 'None':
-                sql = 'select CHAR_LENGTH(translation)*3 from biosqldb.orthology_detail_%s where taxon_id =%s;' % (biodb,
+                sql = 'select CHAR_LENGTH(translation)*3 from orthology_detail where taxon_id =%s;' % (biodb,
                                                                                                                genome_2)
 
                 data2 = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -6720,7 +6720,7 @@ def pairwiseCDS_length(request):
                                                  round((sum(i <= 400 for i in data2)/float(len(data2)))*100,2)])
 
             if genome_3 != 'None':
-                sql = 'select CHAR_LENGTH(translation)*3 from biosqldb.orthology_detail_%s where taxon_id =%s;' % (biodb,
+                sql = 'select CHAR_LENGTH(translation)*3 from orthology_detail where taxon_id =%s;' % (biodb,
                                                                                                                genome_3)
 
                 data3 = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -6732,7 +6732,7 @@ def pairwiseCDS_length(request):
             if genome_4 != 'None':
 
                 #print genome_4 == 'None'
-                sql = 'select CHAR_LENGTH(translation)*3 from biosqldb.orthology_detail_%s where taxon_id =%s;' % (biodb,
+                sql = 'select CHAR_LENGTH(translation)*3 from orthology_detail where taxon_id =%s;' % (biodb,
                                                                                                                genome_4)
 
                 data4 = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -7182,14 +7182,14 @@ def blastnr_overview(request):
         # group by orthogroup ==> even if one prot has multiple homologs, count only one
         sql_complex = 'select C.taxon_id, count(*) as n from (select distinct A.category, A.orthogroup, B.taxon_id ' \
               ' from (select distinct t1.category,t2.orthogroup from custom_tables_annot_table t1 ' \
-              ' inner join biosqldb.orthology_detail_%s t2 on t1.locus_tag=t2.locus_tag ' \
-              ' where category="%s") A inner join biosqldb.orthology_detail_%s B ' \
+              ' inner join orthology_detail t2 on t1.locus_tag=t2.locus_tag ' \
+              ' where category="%s") A inner join orthology_detail B ' \
               ' on A.orthogroup=B.orthogroup) C group by C.category,C.taxon_id;'
         # not group by orthogroup
         sql_simple = 'select C.taxon_id, count(*) as n from (select A.category, A.orthogroup, B.taxon_id ' \
               ' from (select distinct t1.category,t2.orthogroup from custom_tables_annot_table t1 ' \
-              ' inner join biosqldb.orthology_detail_%s t2 on t1.locus_tag=t2.locus_tag ' \
-              ' where category="%s") A inner join biosqldb.orthology_detail_%s B ' \
+              ' inner join orthology_detail t2 on t1.locus_tag=t2.locus_tag ' \
+              ' where category="%s") A inner join orthology_detail B ' \
               ' on A.orthogroup=B.orthogroup) C group by C.category,C.taxon_id;'
 
         c_list = ["chemosensory",
@@ -7478,7 +7478,7 @@ def blastnr_top_non_phylum(request):
                       ' t3.order,t3.family,t3.species,t1.subject_accession,t1.subject_title from blastnr_blastnr_best_non_self_phylum t1' \
                       ' inner join blastnr_blastnr_taxonomy t3 on t1.subject_taxon_id=t3.taxon_id ' \
                       ' inner join custom_tables_locus2seqfeature_id t4 on t1.seqfeature_id=t4.seqfeature_id ' \
-                      ' inner join biosqldb.orthology_detail_%s t5 on t4.locus_tag=t5.locus_tag  ' \
+                      ' inner join orthology_detail t5 on t4.locus_tag=t5.locus_tag  ' \
                       'where t1.superkingdom="Eukaryota"' \
                       ' and query_taxon_id in (%s)' % (biodb,
                                                        biodb,
@@ -7491,7 +7491,7 @@ def blastnr_top_non_phylum(request):
                       ' inner join custom_tables_seqfeature_id2n_species t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                       ' inner join blastnr_blastnr_taxonomy t3 on t1.subject_taxon_id=t3.taxon_id ' \
                       ' inner join custom_tables_locus2seqfeature_id t4 on t1.seqfeature_id=t4.seqfeature_id ' \
-                      ' inner join biosqldb.orthology_detail_%s t5 on t4.locus_tag=t5.locus_tag  ' \
+                      ' inner join orthology_detail t5 on t4.locus_tag=t5.locus_tag  ' \
                       ' where t1.superkingdom="Eukaryota" and n_species=1  and t1.query_taxon_id in (%s);' % (biodb,
                                                                                    biodb,
                                                                                    biodb,
@@ -7843,7 +7843,7 @@ def effector_pred(request):
           ' inner join effectors.predicted_BPBAac_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' inner join effectors.predicted_T3MM_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
           ' group by t1.taxon_id, t1.seqfeature_id) A inner join custom_tables_locus2seqfeature_id B ' \
-          ' on A.seqfeature_id=B.seqfeature_id inner join biosqldb.orthology_detail_%s C on ' \
+          ' on A.seqfeature_id=B.seqfeature_id inner join orthology_detail C on ' \
           ' B.locus_tag=C.locus_tag group by C.orthogroup;' % (biodb,
                                                              biodb,
                                                              biodb,
@@ -8064,7 +8064,7 @@ def interpro_taxonomy(request):
                       ' inner join effectors.predicted_BPBAac_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                       ' inner join effectors.predicted_T3MM_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
                       ' group by t1.taxon_id, t1.seqfeature_id) A inner join custom_tables_locus2seqfeature_id B ' \
-                      ' on A.seqfeature_id=B.seqfeature_id inner join biosqldb.orthology_detail_%s C on ' \
+                      ' on A.seqfeature_id=B.seqfeature_id inner join orthology_detail C on ' \
                       ' B.locus_tag=C.locus_tag group by C.orthogroup;' % (biodb,
                                                                          biodb,
                                                                          biodb,
@@ -8148,7 +8148,7 @@ def interpro_taxonomy(request):
                 sql3 = 'select B.* from ' \
                        ' (select locus_tag from biosqldb.interpro_%s ' \
                        ' where interpro_accession in (%s) and taxon_id in (%s) group by locus_tag) A ' \
-                       ' inner join biosqldb.orthology_detail_%s B on A.locus_tag=B.locus_tag ' % (biodb,
+                       ' inner join orthology_detail B on A.locus_tag=B.locus_tag ' % (biodb,
                                                                                                    filter2,
                                                                                                    filter,
                                                                                                    biodb)
@@ -8270,7 +8270,7 @@ def homologs(request, orthogroup, locus_tag=False):
 
         sql_groups = 'select A.*,C.comment_function,C.gene,D.annotation_score,D.uniprot_status,C.recommendedName_fullName ' \
                     ' from (select locus_tag, gene,product,organism,orthogroup_size,n_genomes,TM,SP from ' \
-                    ' biosqldb.orthology_detail_%s where orthogroup="%s") A ' \
+                    ' orthology_detail where orthogroup="%s") A ' \
                     ' inner join custom_tables_locus2seqfeature_id B on A.locus_tag=B.locus_tag ' \
                     ' left join custom_tables_uniprot_annotation as C on B.seqfeature_id=C.seqfeature_id ' \
                     ' left join custom_tables_uniprot_id2seqfeature_id as D on B.seqfeature_id=D.seqfeature_id;' % (biodb,
@@ -8812,7 +8812,7 @@ def module2fasta():
     sql = 'select t4.locus_tag, organism, gene,product, translation from ' \
           ' (select module_name,module_id from kegg_module_v1 where module_name="M00009") t1 ' \
           ' inner join module2ko_v1 as t2 on t1.module_id=t2.module_id inner join locus2ko_%s as t3 ' \
-          ' on t2.ko_id=t3.ko_id inner join biosqldb.orthology_detail_%s as t4 ' \
+          ' on t2.ko_id=t3.ko_id inner join orthology_detail as t4 ' \
           ' on t3.locus_tag=t4.locus_tag where t4.taxon_id in (64);'
 
 
@@ -8857,12 +8857,12 @@ def ko2fasta(request, ko_id, include_orthologs=False):
     if not include_orthologs:
         sql = 'select B.locus_tag, organism, B.product, translation from (' \
               ' select t1.ko_id, locus_tag,ko_description from enzyme_locus2ko as t1 inner join enzyme_module2ko_v1 as t2 ' \
-              ' on t1.ko_id=t2.ko_id where t1.ko_id="%s") A inner join biosqldb.orthology_detail_%s as B ' \
+              ' on t1.ko_id=t2.ko_id where t1.ko_id="%s") A inner join orthology_detail as B ' \
               ' on A.locus_tag=B.locus_tag;' % (biodb, ko_id, biodb)
     else:
         sql = 'select distinct orthogroup from (' \
               ' select t1.ko_id, locus_tag, ko_description from enzyme_locus2ko as t1 inner join enzyme_module2ko_v1 as t2 ' \
-              ' on t1.ko_id=t2.ko_id where t1.ko_id="%s") A inner join biosqldb.orthology_detail_%s as B ' \
+              ' on t1.ko_id=t2.ko_id where t1.ko_id="%s") A inner join orthology_detail as B ' \
               ' on A.locus_tag=B.locus_tag;' % (biodb, ko_id, biodb)
         #print sql
         orthogroup_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -9553,7 +9553,7 @@ def orthogroup_KO_COG(request):
 
     sql = 'select orthogroup,count(*) as n from (select orthogroup,COG_id from ' \
           ' COG_locus_tag2gi_hit t1 ' \
-          ' inner join biosqldb.orthology_detail_%s t2 on t1.locus_tag=t2.locus_tag ' \
+          ' inner join orthology_detail t2 on t1.locus_tag=t2.locus_tag ' \
           ' group by orthogroup,COG_id) A group by A.orthogroup' % (biodb, biodb)
 
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -12362,7 +12362,7 @@ def neig_interactions(request, locus_tag):
         asset_path = '/temp/ortho_tree.svg'
         tree.render(path, dpi=500, tree_style=style)
 
-        sql = 'select taxon_id from biosqldb.orthology_detail_%s where locus_tag ="%s" group by taxon_id' % (biodb, locus_tag)
+        sql = 'select taxon_id from orthology_detail where locus_tag ="%s" group by taxon_id' % (biodb, locus_tag)
 
         taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
 
@@ -13521,7 +13521,7 @@ def hmm(request):
 
             if hmm_set == 'all':
                  sql = 'select t1.*,t2.orthogroup from custom_tables_annot_table as t1 inner ' \
-                         ' join biosqldb.orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag;' % (biodb,
+                         ' join orthology_detail as t2 on t1.locus_tag=t2.locus_tag;' % (biodb,
                                                                                                      biodb)
             else:
 
@@ -13621,13 +13621,13 @@ def locus_int(request):
 
             if category == 'all':
                  sql = 'select t1.*,t2.orthogroup from custom_tables_annot_table as t1 inner ' \
-                         ' join biosqldb.orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag;' % (biodb,
+                         ' join orthology_detail as t2 on t1.locus_tag=t2.locus_tag;' % (biodb,
                                                                                                      biodb)
 
             else:
 
                  sql = 'select t1.*,t2.orthogroup from custom_tables_annot_table as t1 inner ' \
-                         ' join biosqldb.orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag ' \
+                         ' join orthology_detail as t2 on t1.locus_tag=t2.locus_tag ' \
                          ' where category="%s";' % (biodb,
                                                     biodb,
                                                     category) # where pathway_category!="1.0 Global and overview maps"

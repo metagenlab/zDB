@@ -1537,7 +1537,7 @@ def KEGG_map_ko_task(biodb,
             ' inner join enzyme_ko_annotation as C on B.ko_id=C.ko_id  ' \
             ' inner join enzyme_seqfeature_id2ko E on B.ko_id=E.ko_id ' \
             ' group by B.ko_id, E.seqfeature_id) aa ' \
-            ' inner join biosqldb.orthology_detail_%s bb on aa.seqfeature_id=bb.seqfeature_id;' % (pathway_id,
+            ' inner join orthology_detail bb on aa.seqfeature_id=bb.seqfeature_id;' % (pathway_id,
                                                                                                     biodb,
                                                                                                     biodb)
     #print sql
@@ -1850,7 +1850,7 @@ def KEGG_map_ko_organism_task(biodb,
     sql = 'select ko_accession from enzyme_seqfeature_id2ko t1 ' \
             ' inner join enzyme_pathway2ko t2 on t1.ko_id=t2.ko_id ' \
             ' inner join enzyme_kegg_pathway t3 on t2.pathway_id=t3.pathway_id ' \
-            ' inner join biosqldb.orthology_detail_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
+            ' inner join orthology_detail t4 on t1.seqfeature_id=t4.seqfeature_id ' \
             ' inner join enzyme_ko_annotation t5 on t1.ko_id=t5.ko_id' \
             ' where taxon_id=%s and pathway_name="%s";' % (biodb,
                                                             biodb,

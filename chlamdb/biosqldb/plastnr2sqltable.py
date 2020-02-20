@@ -579,7 +579,7 @@ def create_sql_blastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_
                             ' subject_scientific_name TEXT(2000000), ' \
                             ' subject_taxid TEXT(2000000),' \
                             ' subject_title VARCHAR(2000),' \
-                            ' FOREIGN KEY (locus_tag) REFERENCES biosqldb.orthology_detail_%s(locus_tag),' \
+                            ' FOREIGN KEY (locus_tag) REFERENCES orthology_detail(locus_tag),' \
                             ' INDEX locus_tag (locus_tag))' % (db_name, accession, db_name)
 
 

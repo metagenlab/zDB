@@ -546,7 +546,7 @@ def get_orthology_matrix_merging_plasmids_biosqldb(server, biodatabase_name):
 
     all_orthogroups = get_all_orthogroup_size(server, biodatabase_name)
     #server, db = manipulate_biosqldb.load_db(biodatabase_name)
-    #sql='select orthogroup, count(*) from biosqldb.orthology_detail_%s group by orthogroup' % biodatabase_name
+    #sql='select orthogroup, count(*) from orthology_detail group by orthogroup' % biodatabase_name
 
     # based on the new orthology detail table
     #all_orthogroups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))

@@ -23,7 +23,7 @@ def orthogroup2blast_hits(biodb,
     exclude_filter = '"' + '","'.join(exclude_phylum) + '"'
 
 
-    sql = 'select t1.locus_tag,subject_accession from biosqldb.orthology_detail_%s t1 ' \
+    sql = 'select t1.locus_tag,subject_accession from orthology_detail t1 ' \
               ' inner join custom_tables_locus2seqfeature_id t2 ' \
               ' on t1.locus_tag=t2.locus_tag ' \
               ' inner join %s_%s t3 on t2.seqfeature_id=t3.seqfeature_id ' \
@@ -228,7 +228,7 @@ def plot_tree(ete3_tree,
     sql1 = 'select subject_accession,subject_scientific_name,t2.phylum from blast_swissprot_%s t1 ' \
           ' inner join blastnr_taxonomy as t2 on t1.subject_taxid=t2.taxon_id where subject_accession in (%s);' % (biodb,
                                                                                                                    filter)
-    sql1 = 'select subject_accession,subject_scientific_name,t4.phylum from biosqldb.orthology_detail_%s t1 ' \
+    sql1 = 'select subject_accession,subject_scientific_name,t4.phylum from orthology_detail t1 ' \
               ' inner join custom_tables_locus2seqfeature_id t2 ' \
               ' on t1.locus_tag=t2.locus_tag ' \
               ' inner join blast_swissprot_%s t3 on t2.seqfeature_id=t3.seqfeature_id ' \
@@ -240,7 +240,7 @@ def plot_tree(ete3_tree,
     print ('get refseq taxonomy')
     cursor.execute(sql1,)
     accession2name_and_phylum = manipulate_biosqldb.to_dict(cursor.fetchall())
-    sql2 = 'select subject_accession,subject_scientific_name,t4.phylum from biosqldb.orthology_detail_%s t1 ' \
+    sql2 = 'select subject_accession,subject_scientific_name,t4.phylum from orthology_detail t1 ' \
               ' inner join custom_tables_locus2seqfeature_id t2 ' \
               ' on t1.locus_tag=t2.locus_tag ' \
               ' inner join blastnr_%s t3 on t2.seqfeature_id=t3.seqfeature_id ' \
@@ -257,7 +257,7 @@ def plot_tree(ete3_tree,
     print ('plotting tree')
     phylum_list = list(set([accession2name_and_phylum[i][1] for i in accession2name_and_phylum.keys()]))
 
-    sql = 'select locus_tag, organism from biosqldb.orthology_detail_%s' % biodb
+    sql = 'select locus_tag, organism from orthology_detail' % biodb
     cursor.execute(sql,)
     locus2organism = manipulate_biosqldb.to_dict(cursor.fetchall())
 
@@ -396,7 +396,7 @@ if __name__ == '__main__':
                ' inner join blastnr_blastnr as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                ' inner join blastnr_blastnr_taxonomy t3 on t2.subject_taxid=t3.taxon_id ' \
                ' where t3.phylum not in (%s) group by t1.seqfeature_id) A ' \
-               ' inner join biosqldb.orthology_detail_%s B on A.locus_tag=B.locus_tag ' \
+               ' inner join orthology_detail B on A.locus_tag=B.locus_tag ' \
                ' group by orthogroup;' % (args.biodb,
                                           args.biodb,
                                           filter,
@@ -409,7 +409,7 @@ if __name__ == '__main__':
                ' inner join blastnr_blast_swissprot as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                ' inner join blastnr_blastnr_taxonomy t3 on t2.subject_taxid=t3.taxon_id ' \
                ' where t3.phylum not in (%s) group by t1.seqfeature_id) A ' \
-               ' inner join biosqldb.orthology_detail_%s B on A.locus_tag=B.locus_tag ' \
+               ' inner join orthology_detail B on A.locus_tag=B.locus_tag ' \
                ' group by orthogroup;' % (args.biodb,
                                           args.biodb,
                                           filter,

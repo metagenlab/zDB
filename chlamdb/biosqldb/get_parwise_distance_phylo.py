@@ -655,7 +655,7 @@ def get_most_conserved(biodb):
     filter = '"'+'","'.join(grp_list)+'"'
 
     sql = 'select A.*, B.locus_tag, B.gene, B.product from (select * from biosqldb_phylogenies.orthogroup2median_distance_%s where orthogroup in (%s) ' \
-          ' order by median_norm_dist limit 550) A inner join biosqldb.orthology_detail_%s B on A.orthogroup=B.orthogroup ' \
+          ' order by median_norm_dist limit 550) A inner join orthology_detail B on A.orthogroup=B.orthogroup ' \
           ' where locus_tag like "%%%%WCW%%%%" order by median_norm_dist' % (biodb, filter, biodb)
     data = server.adaptor.execute_and_fetchall(sql)
 

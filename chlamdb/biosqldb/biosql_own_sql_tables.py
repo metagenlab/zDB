@@ -6,7 +6,7 @@ from chlamdb.plots import gbk2circos
 def locus_tag2orthogroup_size(db_name):
 
     server, db = manipulate_biosqldb.load_db(db_name)
-    sql='select locus_tag, count(*) from biosqldb.orthology_detail_%s group by orthogroup'
+    sql='select locus_tag, count(*) from orthology_detail group by orthogroup'
 
     return manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -17,7 +17,7 @@ def get_orthology_matrix_merging_plasmids(server, biodatabase_name, taxon_list=F
 
 
     server, db = manipulate_biosqldb.load_db(biodatabase_name)
-    sql='select orthogroup, count(*) from biosqldb.orthology_detail_%s group by orthogroup' % biodatabase_name
+    sql='select orthogroup, count(*) from orthology_detail group by orthogroup' % biodatabase_name
 
     all_orthogroups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -1066,7 +1066,7 @@ def locus_tag2n_nr_hits(db_name, genome_accession, exclude_family = False):
     #print 'exclude family', exclude_family
     server, db = manipulate_biosqldb.load_db(db_name)
     if not exclude_family:
-        sql = 'select  A.locus_tag, B.n_hits from (select * from biosqldb.orthology_detail_%s as t1 where t1.accession="%s") A ' \
+        sql = 'select  A.locus_tag, B.n_hits from (select * from orthology_detail as t1 where t1.accession="%s") A ' \
               ' left join (select t2.nr_hit_id,t2.locus_tag,t2.subject_kingdom,t2.subject_accession,count(t2.locus_tag) as n_hits ' \
               ' from blastnr_blastnr_hits_%s as t2 ' \
               ' group by locus_tag) B on A.locus_tag=B.locus_tag;' %(db_name, genome_accession, db_name, genome_accession)
@@ -1076,7 +1076,7 @@ def locus_tag2n_nr_hits(db_name, genome_accession, exclude_family = False):
               ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
               ' where t3.accession="%s" group by locus_tag;' % (db_name, db_name,genome_accession)
     else:
-        sql = 'select  A.locus_tag, B.n_hits from (select * from biosqldb.orthology_detail_%s as t1 where t1.accession="%s") A ' \
+        sql = 'select  A.locus_tag, B.n_hits from (select * from orthology_detail as t1 where t1.accession="%s") A ' \
               ' left join (select t2.nr_hit_id,t2.locus_tag,t2.subject_kingdom,t2.subject_accession, count(t2.locus_tag) as n_hits ' \
               ' from blastnr_blastnr_hits_%s as t2 inner join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=t2.nr_hit_id' \
               ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id where t4.family!="%s"' \
@@ -1256,7 +1256,7 @@ def get_comparative_subtable(biodb,
     
 def best_hit_classification(db_name, accession):
     sql = 'select A.*, t4.superkingdom, t4.kingdom, t4.phylum, t4.order, t4.family, t4.genus, t4.species' \
-          ' from (select locus_tag, TM, SP, gene, product from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
+          ' from (select locus_tag, TM, SP, gene, product from orthology_detail as t1 where t1.accession="%s" group by locus_tag) A' \
           ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2  where hit_number=1) B on A.locus_tag=B.locus_tag' \
           ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
           ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id;' % (db_name,
@@ -1275,7 +1275,7 @@ def best_hit_classification(db_name, accession):
 
 def best_hit_phylum_and_protein_length(db_name, accession):
     sql = 'select A.locus_tag, char_length(A.translation), t4.superkingdom' \
-          ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
+          ' from (select locus_tag, translation from orthology_detail as t1 where t1.accession="%s" group by locus_tag) A' \
           ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2  where hit_number=1) B on A.locus_tag=B.locus_tag' \
           ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
           ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id;' % (db_name,
@@ -1296,7 +1296,7 @@ def best_hit_phylum_and_protein_length(db_name, accession):
 def locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", exclude_family=False):
     if not exclude_family:
         sql = 'select A.locus_tag, count(*)' \
-              ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
+              ' from (select locus_tag, translation from orthology_detail as t1 where t1.accession="%s" group by locus_tag) A' \
               ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2) B on A.locus_tag=B.locus_tag' \
               ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
               ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
@@ -1317,7 +1317,7 @@ def locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", 
     else:
 
         sql = 'select A.locus_tag, count(*)' \
-              ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
+              ' from (select locus_tag, translation from orthology_detail as t1 where t1.accession="%s" group by locus_tag) A' \
               ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2) B on A.locus_tag=B.locus_tag' \
               ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
               ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
@@ -1339,7 +1339,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
     if not reverse:
         if not exclude_family:
             sql = 'select A.locus_tag, count(*)' \
-                  ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
+                  ' from (select locus_tag, translation from orthology_detail as t1 where t1.accession="%s" group by locus_tag) A' \
                   ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2) B on A.locus_tag=B.locus_tag' \
                   ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
                   ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
@@ -1359,7 +1359,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                                                                                         phylum)
         else:
             sql = 'select A.locus_tag, count(*)' \
-                  ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
+                  ' from (select locus_tag, translation from orthology_detail as t1 where t1.accession="%s" group by locus_tag) A' \
                   ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2) B on A.locus_tag=B.locus_tag' \
                   ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
                   ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
@@ -1373,7 +1373,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
     else:
         if not exclude_family:
             sql = 'select A.locus_tag, count(*)' \
-                  ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
+                  ' from (select locus_tag, translation from orthology_detail as t1 where t1.accession="%s" group by locus_tag) A' \
                   ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2) B on A.locus_tag=B.locus_tag' \
                   ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
                   ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
@@ -1394,7 +1394,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                                                                                         phylum)
         else:
             sql = 'select A.locus_tag, count(*)' \
-                  ' from (select locus_tag, translation from biosqldb.orthology_detail_%s as t1 where t1.accession="%s" group by locus_tag) A' \
+                  ' from (select locus_tag, translation from orthology_detail as t1 where t1.accession="%s" group by locus_tag) A' \
                   ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2) B on A.locus_tag=B.locus_tag' \
                   ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
                   ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
@@ -1444,7 +1444,7 @@ def locus_tag2n_paralogs(db_name, genome_accession):
     server, db = manipulate_biosqldb.load_db(db_name)
 
     sql = 'select orthogroup, count(*) as paralogs ' \
-          ' from biosqldb.orthology_detail_%s ' \
+          ' from orthology_detail ' \
           ' where accession="%s" group by orthogroup order by paralogs DESC;' % (db_name, genome_accession)
 
     return server.adaptor.execute_and_fetchall(sql,)
@@ -1485,20 +1485,20 @@ def orthogroup2cog(db_name, accession=False, group_list=False): # group_list,
     #group_list_form = '"' + '","'.join(group_list) + '"'
     '''
     if not accession:
-        sql =  'select t1.orthogroup, t2.cog_id from (select * from biosqldb.orthology_detail_%s ' \
+        sql =  'select t1.orthogroup, t2.cog_id from (select * from orthology_detail ' \
                ' where orthogroup in (%s)) t1 left join COG_locus_tag2gi_hit ' \
                'as t2 on t1.locus_tag=t2.locus_tag;' % (db_name, group_list_form, db_name)
     else:
-        sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join COG_locus_tag2gi_hit ' \
+        sql = 'select t1.orthogroup, t2.cog_id from orthology_detail as t1 left join COG_locus_tag2gi_hit ' \
               'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
     '''
     if not accession:
         sql =  'select orthogroup_name,COG_name from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology.seqfeature_id2orthogroup_%s t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology.orthogroup_%s t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
         sql = 'select orthogroup_name,COG_name from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology.seqfeature_id2orthogroup_%s t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology.orthogroup_%s t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
-        sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join COG_locus_tag2gi_hit ' \
+        sql = 'select t1.orthogroup, t2.cog_id from orthology_detail as t1 left join COG_locus_tag2gi_hit ' \
               'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
     else:
-        sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join COG_locus_tag2gi_hit ' \
+        sql = 'select t1.orthogroup, t2.cog_id from orthology_detail as t1 left join COG_locus_tag2gi_hit ' \
               'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
 
 
@@ -1553,7 +1553,7 @@ def orthogroup2pfam(db_name, accession=False):
         sql =  'select orthogroup, signature_accession from biosqldb.interpro_%s ' \
                ' where analysis="Pfam"' % (db_name, )
     else:
-        sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join (COG_locus_tag2gi_hit ' \
+        sql = 'select t1.orthogroup, t2.cog_id from orthology_detail as t1 left join (COG_locus_tag2gi_hit ' \
               'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
 
     #print 'df', sql
@@ -1653,7 +1653,7 @@ def pfam2description(db_name, accession=False):
         sql =  'select signature_accession, signature_description from biosqldb.interpro_%s ' \
                ' where analysis="Pfam" group by signature_accession' % (db_name)
     else:
-        sql = 'select t1.orthogroup, t2.cog_id from biosqldb.orthology_detail_%s as t1 left join COG_locus_tag2gi_hit ' \
+        sql = 'select t1.orthogroup, t2.cog_id from orthology_detail as t1 left join COG_locus_tag2gi_hit ' \
               'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
 
 

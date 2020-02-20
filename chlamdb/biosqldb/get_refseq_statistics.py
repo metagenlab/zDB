@@ -120,7 +120,7 @@ def best_blast_hit_majority_species(biodb):
     server.adaptor.execute(sql,)
     server.commit()
 
-    sql = 'select taxon_id, count(*) as n from biosqldb.orthology_detail_%s group by taxon_id' % (biodb)
+    sql = 'select taxon_id, count(*) as n from orthology_detail group by taxon_id' % (biodb)
     taxon_id2n_CDS = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     for one_taxon in taxon_list:

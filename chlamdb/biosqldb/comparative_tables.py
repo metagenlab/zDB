@@ -405,7 +405,7 @@ def collect_ko_accession(db_name):
         i+=1
 
         sql = 'select B.accession, count(*) as n from (select locus_tag, ko_id from enzyme_locus2ko ' \
-              ' where ko_id="%s") A inner join biosqldb.orthology_detail_%s as B on A.locus_tag=B.locus_tag ' \
+              ' where ko_id="%s") A inner join orthology_detail as B on A.locus_tag=B.locus_tag ' \
               ' group by accession;' % (db_name,
                                         accession,
                                         db_name)

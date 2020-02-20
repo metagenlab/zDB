@@ -154,7 +154,7 @@ def load_locus2cog_into_sqldb(input_blast_files, biodb):
 
     cursor.execute(sql)
     conn.commit()
-    sql = 'select locus_tag,bioentry_id from biosqldb.orthology_detail_%s t1 ' \
+    sql = 'select locus_tag,bioentry_id from orthology_detail t1 ' \
           ' inner join biosqldb.bioentry as t2 on t1.accession=t2.accession ' \
           ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
           ' where t3.name="%s"' % (biodb, biodb)

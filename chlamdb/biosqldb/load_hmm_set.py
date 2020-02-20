@@ -13,7 +13,7 @@ def load_hmm_data(biodb, database_name, table_name, hmm_tab_files):
 
     server.adaptor.execute_and_fetchall(sql,)
 
-    sql = 'select locus_tag, taxon_id from biosqldb.orthology_detail_%s' % biodb
+    sql = 'select locus_tag, taxon_id from orthology_detail' % biodb
 
     locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

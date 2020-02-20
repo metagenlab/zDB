@@ -21,7 +21,7 @@ def import_silix(silix_output, biodb, silix_cutoff):
 
     sql = 'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id' % biodb
     locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    sql = 'select locus_tag, taxon_id from biosqldb.orthology_detail_%s' % biodb
+    sql = 'select locus_tag, taxon_id from orthology_detail' % biodb
     locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     sql = 'create table IF NOT EXISTS comparative_tables_silix_%s (taxon_id INT, ' \
           ' seqfeature_id INT, ' \

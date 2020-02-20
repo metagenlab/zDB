@@ -190,7 +190,7 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
             taxon_id2superkingdom = manipulate_biosqldb.to_dict(cursor.fetchall())
 
             print ("getting locus2protein_length")
-            sql = 'select locus_tag,char_length(translation) from biosqldb.orthology_detail_%s' % biodb
+            sql = 'select locus_tag,char_length(translation) from orthology_detail' % biodb
             cursor.execute(sql,)
             locus_tag2protein_length = manipulate_biosqldb.to_dict(cursor.fetchall())
 
