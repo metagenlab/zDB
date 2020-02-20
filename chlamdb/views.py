@@ -703,7 +703,7 @@ def locus_annotation(request, display_form):
                   ' inner join biosqldb.orthology_detail_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
                   ' left join COG_seqfeature_id2best_COG_hit t3 on t1.seqfeature_id=t3.seqfeature_id' \
                   ' left join COG_cog_names_2014 t4 on t3.hit_COG_id=t4.COG_id' \
-                  ' left join COG.cog_id2cog_category t5 on t4.COG_id=t5.COG_id' \
+                  ' left join COG_cog_id2cog_category t5 on t4.COG_id=t5.COG_id' \
                   ' left join COG_code2category t6 on t5.category_id=t6.category_id' \
                   ' where t1.locus_tag in (%s)' % (biodb, biodb, biodb, filter)
 
@@ -1798,7 +1798,7 @@ def extract_cog(request):
                 cog_data = []
                 for i in match_groups:
                     sql = 'select COG_name,t3.code, t3.description, t1.description ' \
-                          ' from COG_cog_names_2014 t1 inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
+                          ' from COG_cog_names_2014 t1 inner join COG_cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
                           ' inner join COG_code2category t3 on t2.category_id=t3.category_id where COG_name ="%s"' % i
                     try:
                         tmp = list(server.adaptor.execute_and_fetchall(sql,)[0])
@@ -1961,7 +1961,7 @@ def venn_cog(request, accessions=False):
 
             cog2description = []
             sql = 'select COG_name, t3.code,t3.description,A.description from COG_cog_names_2014 A ' \
-                  ' inner join COG.cog_id2cog_category t2 on A.COG_id=t2.COG_id ' \
+                  ' inner join COG_cog_id2cog_category t2 on A.COG_id=t2.COG_id ' \
                   ' inner join COG_code2category t3 on t2.category_id=t3.category_id;'
 
             data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -2235,7 +2235,7 @@ def locusx(request, locus=None, menu=True):
             genome_accession = server.adaptor.execute_and_fetchall(sql4,)[0][0]
 
             sql3 = 'select COG_name,code,t2.description,t1.query_start,t1.query_end, t1.hit_start, t1.hit_end, t1.query_coverage, t1.hit_coverage, t1.identity, t1.evalue, t1.bitscore from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_cog_id=t2.COG_id ' \
-                   ' inner join COG.cog_id2cog_category t3 on t2.COG_id=t3.COG_id inner ' \
+                   ' inner join COG_cog_id2cog_category t3 on t2.COG_id=t3.COG_id inner ' \
                    ' join COG_code2category t4 on t3.category_id=t4.category_id inner join annotation.seqfeature_id2locus_%s t6 on t1.seqfeature_id=t6.seqfeature_id ' \
                    ' where locus_tag="%s";' % (biodb, biodb, locus)
 
@@ -2661,7 +2661,7 @@ def locusx(request, locus=None, menu=True):
             sql_group3 = 'select rank, COG_name, t3.description, count, code, t5.description from orthology.orthogroup2cog_%s t1 ' \
                          ' inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id ' \
                          ' inner join COG_cog_names_2014 t3 on t1.COG_id=t3.COG_id ' \
-                         ' inner join COG.cog_id2cog_category t4 on t3.COG_id=t4.COG_id' \
+                         ' inner join COG_cog_id2cog_category t4 on t3.COG_id=t4.COG_id' \
                          ' inner join COG_code2category t5 on t4.category_id=t5.category_id where t2.orthogroup_name="%s";' % (biodb, 
                                                                                                                             biodb, 
                                                                                                                             locus)
@@ -4292,7 +4292,7 @@ def get_cog(request, taxon, category):
           ' select description,locus_tag,COG_id from COG_locus_tag2gi_hit as t1 inner join biosqldb.bioentry as t2 ' \
           ' on t1.accession=t2.accession where biodatabase_id=%s and taxon_id=%s) A ' \
           ' inner join COG_cog_names_2014 as B on A.COG_id=B.COG_name ' \
-          ' inner join COG.cog_id2cog_category C on B.COG_id=C.COG_id ' \
+          ' inner join COG_cog_id2cog_category C on B.COG_id=C.COG_id ' \
           ' inner join COG_code2category D on C.category_id=D.category_id where D.code="%s";' % (biodb,
                                                                         biodb_id,
                                                                         taxon,
@@ -4362,7 +4362,7 @@ def get_cog_multiple(request, category, accessions=False):
     match_groups_subset = mat.index.tolist()
     filter = '"' + '","'.join(match_groups_subset) + '"'
     sql = 'select COG_name, t3.code,t3.description,A.description from (select * from COG_cog_names_2014 where COG_name in (%s)) A ' \
-          ' inner join COG.cog_id2cog_category t2 on A.COG_id=t2.COG_id ' \
+          ' inner join COG_cog_id2cog_category t2 on A.COG_id=t2.COG_id ' \
           ' inner join COG_code2category t3 on t2.category_id=t3.category_id where t3.code="%s";' % (filter, category)
     print(sql)
 
@@ -5053,7 +5053,7 @@ def cog_subset_barchart(request, accessions=False):
 
 
     sql = 'select t3.code, count(*) from COG_cog_names_2014 t1 ' \
-          ' inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
+          ' inner join COG_cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
           ' inner join COG_code2category t3 on t2.category_id=t3.category_id ' \
           ' where COG_name in (%s) group by t3.description;' % ('"'+'","'.join(match_groups_subset)+'"')
     print (sql)
@@ -5069,7 +5069,7 @@ def cog_subset_barchart(request, accessions=False):
     match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
     sql = 'select t3.code, count(*) from COG_cog_names_2014 t1 ' \
-          ' inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
+          ' inner join COG_cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
           ' inner join COG_code2category t3 on t2.category_id=t3.category_id ' \
           ' where COG_name in (%s) group by t3.description;' % ('"'+'","'.join(match_groups)+'"')
     data_all_include = server.adaptor.execute_and_fetchall(sql,)
@@ -5465,7 +5465,7 @@ def locus_tag2cog_series(biodb, locus_tag_list, reference_taxon=None):
     sql = 'select A.locus_tag,code, count(*) as n from (select * from biosqldb.orthology_detail_%s as t1 where taxon_id=%s) A ' \
           ' left join COG_seqfeature_id2best_COG_hit as B on A.seqfeature_id=B.seqfeature_id ' \
           ' inner join COG_cog_names_2014 as C on B.hit_cog_id=C.COG_id ' \
-          ' inner join COG.cog_id2cog_category D on C.COG_id=D.COG_id ' \
+          ' inner join COG_cog_id2cog_category D on C.COG_id=D.COG_id ' \
           ' inner join COG_code2category E on D.category_id=E.category_id group by locus_tag,code;' % (biodb,
                                                                                                       reference_taxon,
                                                                                                       biodb)
@@ -5605,7 +5605,7 @@ def cog_barchart(request):
                   ' inner join biosqldb.bioentry as t2 on t1.accession=t2.accession ' \
                   ' where biodatabase_id=%s and  taxon_id in (%s)) A ' \
                   ' inner join COG_cog_names_2014 as B on A.COG_id=B.COG_name ' \
-                  ' inner join COG.cog_id2cog_category C on B.COG_id=C.COG_id ' \
+                  ' inner join COG_cog_id2cog_category C on B.COG_id=C.COG_id ' \
                   ' inner join COG_code2category D on C.category_id=D.category_id ' \
                   ' group by taxon_id,D.category_id;' % (biodb, biodb_id,','.join(target_taxons))
             print (sql)
@@ -5741,7 +5741,7 @@ def get_locus_annotations(biodb, locus_list):
 
     sql = 'select A.locus_tag, t3.code from (select locus_tag, COG_id from COG_locus_tag2gi_hit ' \
            ' where locus_tag in (%s)) A inner JOIN COG_cog_names_2014 B on A.COG_id=B.COG_name ' \
-           ' inner join COG.cog_id2cog_category t2 on B.COG_id=t2.COG_id ' \
+           ' inner join COG_cog_id2cog_category t2 on B.COG_id=t2.COG_id ' \
            ' inner join COG_code2category t3 on t2.category_id=t3.category_id;' % (biodb,
                                                              '"' + '","'.join(locus_list) + '"')
     print (sql)
@@ -7359,7 +7359,7 @@ def blastnr_overview(request):
 
     sql = 'select taxon_id, count(*) from COG_seqfeature_id2best_COG_hit t1 ' \
           ' inner join COG_cog_names_2014 t2 on t1.hit_cog_id=t2.COG_id ' \
-          ' inner join COG.cog_id2cog_category ta on t1.hit_cog_id=ta.COG_id' \
+          ' inner join COG_cog_id2cog_category ta on t1.hit_cog_id=ta.COG_id' \
           ' inner join COG_code2category tb on ta.category_id=tb.category_id' \
           ' inner join annotation.seqfeature_id2locus_%s tc on t1.seqfeature_id=tc.seqfeature_id' \
           ' where tb.code="X" group by taxon_id;' % (biodb, biodb)
@@ -10745,7 +10745,7 @@ def search(request):
 
                     # CREATE FULLTEXT INDEX cogf ON COG_cog_names_2014(description);
                     sql = ' select COG_name,code,t3.description,t1.description from COG_cog_names_2014 t1 ' \
-                          ' inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
+                          ' inner join COG_cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
                           ' inner join COG_code2category t3 on t2.category_id=t3.category_id ' \
                           ' WHERE MATCH(t1.description) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (search_term)
                     raw_data_cog = []# :TODO server.adaptor.execute_and_fetchall(sql,)
@@ -13155,7 +13155,7 @@ def transporters_family(request, family):
           ' from COG_seqfeature_id2best_COG_hit t1 ' \
           ' inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' inner join COG_cog_names_2014 t3 on t1.hit_cog_id=t3.cog_id ' \
-          ' inner join COG.cog_id2cog_category t4 on t3.cog_id=t4.cog_id ' \
+          ' inner join COG_cog_id2cog_category t4 on t3.cog_id=t4.cog_id ' \
           ' inner join COG_code2category t5 on t4.category_id=t5.category_id where locus_tag in (%s);' % (biodb, 
                                                                                                       biodb, 
                                                                                                       filter)
