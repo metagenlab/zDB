@@ -2683,7 +2683,7 @@ def locusx(request, locus=None, menu=True):
             sql_group7 = f'select uniprot_accession,uniprot_status,annotation_score,gene,recommendedName_fullName from orthology.orthogroup_{biodb} t1 ' \
                          f' inner join orthology.seqfeature_id2orthogroup_{biodb} t2 on t1.orthogroup_id=t2.orthogroup_id ' \
                          f' left join custom_tables_uniprot_id2seqfeature_id t3 on t2.seqfeature_id=t3.seqfeature_id ' \
-                         f' left join custom_tables.uniprot_annotation_{biodb} t4 on t2.seqfeature_id=t4.seqfeature_id ' \
+                         f' left join custom_tables_uniprot_annotation t4 on t2.seqfeature_id=t4.seqfeature_id ' \
                          f' where orthogroup_name="{locus}";'
             
             
@@ -2904,14 +2904,14 @@ def aa_comp_locus(request, locus_tag):
     server, db = manipulate_biosqldb.load_db("%s" % biodb)
 
     sql1 = 'select t2.taxon_id, t2.seqfeature_id from custom_tables_locus2seqfeature_id t1 ' \
-           ' inner join custom_tables.aa_usage_count_%s t2 ' \
+           ' inner join custom_tables_aa_usage_count t2 ' \
            ' on t1.seqfeature_id=t2.seqfeature_id where t1.locus_tag="%s"' % (biodb, biodb, locus_tag)
 
     data = server.adaptor.execute_and_fetchall(sql1,)[0]
     taxon_id = data[0]
     seqfeature_id = data[1]
 
-    sql2 = 'select * from custom_tables.aa_usage_count_%s where taxon_id=%s' % (biodb, taxon_id)
+    sql2 = 'select * from custom_tables_aa_usage_count where taxon_id=%s' % (biodb, taxon_id)
     data = [i for i in server.adaptor.execute_and_fetchall(sql2,)]
 
     for n, row in enumerate(data):
@@ -6657,7 +6657,7 @@ def multipleGC(request):
                 taxon_id_list.append(genome_4)
 
             taxon_id_filrter = '"'+'","'.join(taxon_id_list)+'"'
-            sql2 = 'select t2.description, t1.* from custom_tables.aa_usage_count_%s t1  inner join bioentry t2 on t1.taxon_id=t2.taxon_id' \
+            sql2 = 'select t2.description, t1.* from custom_tables_aa_usage_count t1  inner join bioentry t2 on t1.taxon_id=t2.taxon_id' \
                    ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
                    ' where t3.name="%s" and t2.description not like "%%%%plasmid%%%%" and t1.taxon_id in (%s)' % (biodb, biodb, taxon_id_filrter)
             data = [i for i in server.adaptor.execute_and_fetchall(sql2,)]
