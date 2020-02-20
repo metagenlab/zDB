@@ -5160,16 +5160,16 @@ def compare_homologs(request):
         if form.is_valid():
             target_taxons = form.cleaned_data['targets']
             target_taxons = target_taxons[0:2]
-            sql = 'select locus_1,locus_2 from comparative_tables.identity_closest_homolog_%s ' \
+            sql = 'select locus_1,locus_2 from comparative_tables_identity_closest_homolog ' \
                   ' where (taxon_1=%s and taxon_2=%s) ' \
-                  ' UNION select locus_2,locus_1 from comparative_tables.identity_closest_homolog_%s ' \
+                  ' UNION select locus_2,locus_1 from comparative_tables_identity_closest_homolog ' \
                   ' where (taxon_1=%s and taxon_2=%s)' % (biodb,
                                                            target_taxons[0],
                                                            target_taxons[1],
                                                            biodb,
                                                            target_taxons[1],
                                                            target_taxons[0])
-            sql = 'select locus_1,locus_2 from comparative_tables.identity_closest_homolog_%s ' \
+            sql = 'select locus_1,locus_2 from comparative_tables_identity_closest_homolog ' \
                   ' where (taxon_1=%s and taxon_2=%s)' % (biodb,
                                                            target_taxons[0],
                                                            target_taxons[1])

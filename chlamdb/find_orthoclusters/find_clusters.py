@@ -183,7 +183,7 @@ def find_clusters_of_orthogroups(db_name, identity_cutoff, distance_cutoff=10000
     accession2record = {}
 
     locus2closest_locus_list = {}
-    sql = 'select locus_1,locus_2 from comparative_tables.identity_closest_homolog_%s' % db_name
+    sql = 'select locus_1,locus_2 from comparative_tables_identity_closest_homolog' % db_name
     data = server.adaptor.execute_and_fetchall(sql,)
     for i in data:
         if i[0] not in locus2closest_locus_list:
@@ -398,7 +398,7 @@ def find_clusters_of_locus(db_name, identity_cutoff, distance_cutoff=20000):
     accession2record = {}
 
     locus2closest_locus_list = {}
-    sql = 'select locus_1,locus_2 from comparative_tables.identity_closest_homolog_%s' % db_name
+    sql = 'select locus_1,locus_2 from comparative_tables_identity_closest_homolog' % db_name
     data = server.adaptor.execute_and_fetchall(sql,)
     for i in data:
         if i[0] not in locus2closest_locus_list:
