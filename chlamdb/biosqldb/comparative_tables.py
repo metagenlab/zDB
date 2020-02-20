@@ -680,7 +680,7 @@ def shared_orthogroups_average_identity(db_name):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql = "CREATE TABLE comparative_tables.shared_og_av_id_%s(taxon_1 INT NOT NULL," \
+    sql = "CREATE TABLE comparative_tables_shared_og_av_id(taxon_1 INT NOT NULL," \
           " taxon_2 INT NOT NULL," \
           " average_identity FLOAT," \
           " median_identity FLOAT," \
@@ -698,7 +698,7 @@ def shared_orthogroups_average_identity(db_name):
                                                                                                              taxon_2)
             data = list([i[0] for i in server.adaptor.execute_and_fetchall(data_sql,)])
 
-            sql = 'insert into comparative_tables.shared_og_av_id_%s(taxon_1, taxon_2, average_identity,' \
+            sql = 'insert into comparative_tables_shared_og_av_id(taxon_1, taxon_2, average_identity,' \
                   ' median_identity, n_pairs) values (%s, %s, %s, %s, %s)' % (db_name,
                                                                               taxon_1,
                                                                               taxon_2,

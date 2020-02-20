@@ -12858,15 +12858,15 @@ def hmm2circos(request):
 
             #sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
-            sql_order1 = 'select A.taxon_1 from (select taxon_1,median_identity from comparative_tables.shared_og_av_id_%s where taxon_2=%s ' \
-                        ' union select taxon_2,median_identity from comparative_tables.shared_og_av_id_%s ' \
+            sql_order1 = 'select A.taxon_1 from (select taxon_1,median_identity from comparative_tables_shared_og_av_id where taxon_2=%s ' \
+                        ' union select taxon_2,median_identity from comparative_tables_shared_og_av_id ' \
                         ' where taxon_1=%s order by median_identity DESC) A;' % (biodb, reference_taxon, biodb, reference_taxon)
             try:
                 sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
 
                 ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
             except:
-                sql_order2 = 'select taxon_2 from comparative_tables.shared_og_av_id_%s where taxon_1=%s order by median_identity desc;' % (biodb, reference_taxon)
+                sql_order2 = 'select taxon_2 from comparative_tables_shared_og_av_id where taxon_1=%s order by median_identity desc;' % (biodb, reference_taxon)
 
                 ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order1)]
 

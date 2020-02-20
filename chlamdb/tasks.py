@@ -501,8 +501,8 @@ def run_circos(reference_taxon, target_taxons):
 
     #sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
-    sql_order = 'select A.taxon_1 from (select taxon_1, median_identity from comparative_tables.shared_og_av_id_%s where taxon_2=%s ' \
-                ' union select taxon_2,median_identity from comparative_tables.shared_og_av_id_%s ' \
+    sql_order = 'select A.taxon_1 from (select taxon_1, median_identity from comparative_tables_shared_og_av_id where taxon_2=%s ' \
+                ' union select taxon_2,median_identity from comparative_tables_shared_og_av_id ' \
                 ' where taxon_1=%s order by median_identity DESC) A;' % (biodb, reference_taxon, biodb, reference_taxon)
     try:
         sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
@@ -514,8 +514,8 @@ def run_circos(reference_taxon, target_taxons):
 
         # median identity
         sql_order = 'select taxon from (select taxon_2 as taxon, median_identity ' \
-                    ' from comparative_tables.shared_og_av_id_%s where taxon_1=%s union ' \
-                    ' select taxon_1, median_identity as taxon from comparative_tables.shared_og_av_id_%s' \
+                    ' from comparative_tables_shared_og_av_id where taxon_1=%s union ' \
+                    ' select taxon_1, median_identity as taxon from comparative_tables_shared_og_av_id' \
                     '  where taxon_2=%s) A order by median_identity desc;' % (biodb,
                                                                               reference_taxon,
                                                                               biodb,
@@ -756,15 +756,15 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
 
     #sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
-    sql_order1 = 'select A.taxon_1 from (select taxon_1,median_identity from comparative_tables.shared_og_av_id_%s where taxon_2=%s ' \
-                ' union select taxon_2,median_identity from comparative_tables.shared_og_av_id_%s ' \
+    sql_order1 = 'select A.taxon_1 from (select taxon_1,median_identity from comparative_tables_shared_og_av_id where taxon_2=%s ' \
+                ' union select taxon_2,median_identity from comparative_tables_shared_og_av_id ' \
                 ' where taxon_1=%s order by median_identity DESC) A;' % (biodb, reference_taxon, biodb, reference_taxon)
     try:
         sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (biodb, reference_taxon)
 
         ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
     except:
-        sql_order2 = 'select taxon_2 from comparative_tables.shared_og_av_id_%s where taxon_1=%s order by median_identity desc;' % (biodb, reference_taxon)
+        sql_order2 = 'select taxon_2 from comparative_tables_shared_og_av_id where taxon_1=%s order by median_identity desc;' % (biodb, reference_taxon)
 
         ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order1)]
 
