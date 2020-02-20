@@ -165,7 +165,7 @@ def locus_tag2best_hit(db_name, accession, hit_number=1, rank=False, taxon_name=
                           ' from blastnr_blastnr_hits_%s as t1 ' \
                           ' inner join blastnr_blastnr_hits_taxonomy_filtered_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
                           ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
-                          ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
+                          ' inner join blastnr_blastnr_hsps_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
                           ' where t1.hit_number=%s and t3.%s = "%s";' % (db_name,
                                                                          accession,
                                                                          db_name,
@@ -207,7 +207,7 @@ def locus_tag2best_hit(db_name, accession, hit_number=1, rank=False, taxon_name=
                           ' from blastnr_blastnr_hits_%s as t1 ' \
                           ' inner join blastnr.blastnr_hits_taxonomy_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
                           ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
-                          ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
+                          ' inner join blastnr_blastnr_hsps_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
                           ' where t1.hit_number=%s' % (db_name,
                                                        accession,
                                                        db_name,
@@ -752,7 +752,7 @@ def taxonomical_form(db_name, hit_number=1):
               ' from blastnr_blastnr_hits_%s as t1 ' \
               ' inner join blastnr_blastnr_hits_taxonomy_filtered_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
               ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
-              ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
+              ' inner join blastnr_blastnr_hsps_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
               ' where t1.hit_number=%s' % (db_name, accession[0],db_name, accession[0], db_name, accession[0], hit_number)
         #print sql3
         phylums = server.adaptor.execute_and_fetchall(sql3,)
