@@ -2682,7 +2682,7 @@ def locusx(request, locus=None, menu=True):
             # protein length distribution
             sql_group7 = f'select uniprot_accession,uniprot_status,annotation_score,gene,recommendedName_fullName from orthology.orthogroup_{biodb} t1 ' \
                          f' inner join orthology.seqfeature_id2orthogroup_{biodb} t2 on t1.orthogroup_id=t2.orthogroup_id ' \
-                         f' left join custom_tables.uniprot_id2seqfeature_id_{biodb} t3 on t2.seqfeature_id=t3.seqfeature_id ' \
+                         f' left join custom_tables_uniprot_id2seqfeature_id t3 on t2.seqfeature_id=t3.seqfeature_id ' \
                          f' left join custom_tables.uniprot_annotation_{biodb} t4 on t2.seqfeature_id=t4.seqfeature_id ' \
                          f' where orthogroup_name="{locus}";'
             
