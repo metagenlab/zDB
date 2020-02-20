@@ -205,7 +205,7 @@ def locus_tag2best_hit(db_name, accession, hit_number=1, rank=False, taxon_name=
                           ' t4.query_start, ' \
                           ' t4.query_end ' \
                           ' from blastnr_blastnr_hits_%s as t1 ' \
-                          ' inner join blastnr.blastnr_hits_taxonomy_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
+                          ' inner join blastnr_blastnr_hits_taxonomy_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
                           ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr_blastnr_hsps_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
                           ' where t1.hit_number=%s' % (db_name,
@@ -231,7 +231,7 @@ def locus_tag2best_hit(db_name, accession, hit_number=1, rank=False, taxon_name=
 
 def locus_tag2best_hit_n_taxon_ids(db_name, accession):
     server, db = manipulate_biosqldb.load_db(db_name)
-    sql = 'select t3.locus_tag, count(*) as n_taxons from blastnr.blastnr_hits_taxonomy_%s_%s as t1 ' \
+    sql = 'select t3.locus_tag, count(*) as n_taxons from blastnr_blastnr_hits_taxonomy_%s as t1 ' \
           ' inner join blastnr_blastnr_hits_%s as t3 on t1.nr_hit_id=t3.nr_hit_id ' \
           ' where t3.hit_number=1 group by t3.nr_hit_id' % (db_name, accession, db_name, accession)
     #print sql
@@ -821,7 +821,7 @@ def clean_multispecies_blastnr_record(db_name, create_new_sql_tables = False):
         for blast_id in all_blastnr_hit_ids:
             blast_id = int(blast_id[0])
 
-            sql = 'select  t3.locus_tag, t1.nr_hit_id, t1.subject_taxon_id,  t2.phylum, t2.order, t2.family, t2.genus, t2.species, t2.superkingdom, t3.hit_number, t3.subject_title from blastnr.blastnr_hits_taxonomy_%s_%s as t1 ' \
+            sql = 'select  t3.locus_tag, t1.nr_hit_id, t1.subject_taxon_id,  t2.phylum, t2.order, t2.family, t2.genus, t2.species, t2.superkingdom, t3.hit_number, t3.subject_title from blastnr_blastnr_hits_taxonomy_%s as t1 ' \
                   ' inner join blastnr_blastnr_hits_%s as t3 on t1.nr_hit_id=t3.nr_hit_id ' \
                   ' inner join blastnr_blastnr_taxonomy as t2 on t1.subject_taxon_id=t2.taxon_id ' \
                   ' where t1.nr_hit_id=%s' % (db_name, accession, db_name, accession, blast_id)
