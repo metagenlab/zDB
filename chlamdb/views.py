@@ -2454,7 +2454,7 @@ def locusx(request, locus=None, menu=True):
                     sql14 = 'select t4.acc,t4.term_type,t4.name from (select interpro_accession from biosqldb.interpro_%s ' \
                           ' where locus_tag="%s" and interpro_accession != "0" group by interpro_accession) t1 ' \
                           ' inner join interpro_entry as t2 on t1.interpro_accession=t2.name ' \
-                          ' inner join interpro.interpro2gene_ontology as t3 on t2.interpro_id=t3.interpro_id ' \
+                          ' inner join interpro_interpro2gene_ontology as t3 on t2.interpro_id=t3.interpro_id ' \
                           ' inner join gene_ontology.term as t4 on t3.go_id=t4.id group by acc;' % (biodb, locus)
 
                     interpro_go_terms = server.adaptor.execute_and_fetchall(sql14, )
