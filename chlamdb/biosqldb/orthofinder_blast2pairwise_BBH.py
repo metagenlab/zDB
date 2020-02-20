@@ -162,10 +162,10 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     if not sqlite3:
-        sql = 'select seqfeature_id,char_length(translation) from annotation.seqfeature_id2CDS_annotation_%s' % biodb
+        sql = 'select seqfeature_id,char_length(translation) from annotation_seqfeature_id2CDS_annotation' % biodb
     else:
         # sqlite use LENGTH to return the number of characters (return the size in bite in MySQL)
-        sql = 'select seqfeature_id,LENGTH(translation) from annotation.seqfeature_id2CDS_annotation_%s' % biodb
+        sql = 'select seqfeature_id,LENGTH(translation) from annotation_seqfeature_id2CDS_annotation' % biodb
 
     seqfeature_id2sequence_length = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

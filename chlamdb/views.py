@@ -2332,7 +2332,7 @@ def locusx(request, locus=None, menu=True):
 
             sql23 = 'select pmid from string.seqfeature_id2pmid_%s where seqfeature_id=%s;' % (biodb, seqfeature_id)
 
-            sql24 = 'select hash from annotation.hash2seqfeature_id_%s t1 inner join annotation_seqfeature_id2locus t2 on t1.seqfeature_id=t2.seqfeature_id where t2.locus_tag="%s";' % (biodb, biodb, locus)
+            sql24 = 'select hash from annotation_hash2seqfeature_id t1 inner join annotation_seqfeature_id2locus t2 on t1.seqfeature_id=t2.seqfeature_id where t2.locus_tag="%s";' % (biodb, biodb, locus)
 
             interpro_hash = server.adaptor.execute_and_fetchall(sql24,)[0][0]
 
@@ -8825,7 +8825,7 @@ def pfam2fasta(request, pfam_id):
 
     sql = 'select protein_id,product,translation from interpro_interpro t1 ' \
           ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
-          ' inner join annotation.seqfeature_id2CDS_annotation_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+          ' inner join annotation_seqfeature_id2CDS_annotation t3 on t1.seqfeature_id=t3.seqfeature_id ' \
           ' where signature_accession="%s";' % (biodb, biodb, pfam_id)
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -9129,8 +9129,8 @@ def download_all_COG(request):
                                 passwd=mysql_pwd,
                                 db=mysql_db)
     sql = f'select t3.accession,t3.description,locus_tag,start,stop,strand,gene,protein_id,product,t6.COG_name,t6.description ' \
-          f' from annotation_seqfeature_id2locus_{biodb} t1 ' \
-          f' inner join annotation.seqfeature_id2CDS_annotation_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+          f' from annotation_seqfeature_id2locus t1 ' \
+          f' inner join annotation_seqfeature_id2CDS_annotation t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           f' inner join biosqldb.bioentry t3 on t1.bioentry_id=t3.bioentry_id ' \
           f' inner join biosqldb.biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \
           f' inner join COG_seqfeature_id2best_COG_hit t5 on t1.seqfeature_id=t5.seqfeature_id ' \

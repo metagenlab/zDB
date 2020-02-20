@@ -116,7 +116,7 @@ def create_orthogroup_table(server,
           ' INDEX taxon_id(taxon_id))' % biodatabase_name
     server.adaptor.execute(sql1)
 
-    sql2 = 'CREATE TABLE if not exists annotation.seqfeature_id2CDS_annotation_%s(seqfeature_id INT,' \
+    sql2 = 'CREATE TABLE if not exists annotation_seqfeature_id2CDS_annotation(seqfeature_id INT,' \
           ' gene VARCHAR(100) NOT NULL, ' \
           ' protein_id VARCHAR(100) NOT NULL, ' \
           ' product TEXT NOT NULL, ' \
@@ -199,7 +199,7 @@ def create_orthogroup_table(server,
                 except KeyError:
                     product = "-"
 
-                sql = 'insert into annotation.seqfeature_id2CDS_annotation_%s (seqfeature_id, ' \
+                sql = 'insert into annotation_seqfeature_id2CDS_annotation (seqfeature_id, ' \
                       ' gene, protein_id, product, translation, SP, TM) ' \
                       ' values (%s, "%s", "%s", "%s", "%s", %s, %s)' % (biodatabase_name,
                                                                 seqfeature_id,
