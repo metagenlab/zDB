@@ -101,7 +101,7 @@ def create_orthogroup_table(server,
 
     server.adaptor.execute(sql0)
 
-    sql1 = 'CREATE TABLE if not exists annotation.seqfeature_id2locus_%s(seqfeature_id INT,' \
+    sql1 = 'CREATE TABLE if not exists annotation_seqfeature_id2locus(seqfeature_id INT,' \
           ' feature_type_id INT,' \
           ' taxon_id INT,' \
           ' pseudogene INT, ' \
@@ -161,7 +161,7 @@ def create_orthogroup_table(server,
 
         seqfeature_type_id = seqfeature_id2feature_type_id[seqfeature_id]
 
-        sql = 'insert into annotation.seqfeature_id2locus_%s (seqfeature_id, feature_type_id, taxon_id, ' \
+        sql = 'insert into annotation_seqfeature_id2locus (seqfeature_id, feature_type_id, taxon_id, ' \
               ' pseudogene, bioentry_id, locus_tag, start, stop, strand) ' \
               ' values (%s, %s, %s, %s, %s, "%s", %s, %s, %s)' % (biodatabase_name,
                                                                 seqfeature_id,

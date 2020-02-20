@@ -18,7 +18,7 @@ def locus2ko_table(locus_tag2ko_dico,
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodatabase)
 
-    sql2 = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % biodatabase
+    sql2 = 'select locus_tag, seqfeature_id from annotation_seqfeature_id2locus' % biodatabase
 
     locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
 
@@ -78,7 +78,7 @@ def locus2ec_table(locus_tag2ec_dico, biodatabase):
 
     server.adaptor.execute_and_fetchall(sql2,)
 
-    sql = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % biodatabase
+    sql = 'select locus_tag, seqfeature_id from annotation_seqfeature_id2locus' % biodatabase
 
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

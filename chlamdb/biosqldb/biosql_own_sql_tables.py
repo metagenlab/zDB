@@ -1103,7 +1103,7 @@ def collect_genome_statistics(biodb, sqlite=False):
 
     accession2genome_sequence = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select t3.accession,t3.description, count(*) from annotation.seqfeature_id2locus_%s t1 ' \
+    sql = 'select t3.accession,t3.description, count(*) from annotation_seqfeature_id2locus t1 ' \
            ' inner join annotation.seqfeature_id2CDS_annotation_%s t2 ' \
            ' on t1.seqfeature_id=t2.seqfeature_id inner join bioentry t3 on t1.bioentry_id=t3.bioentry_id ' \
            ' inner join biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \

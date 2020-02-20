@@ -1973,7 +1973,7 @@ def get_TM_data(biodb,
         sql2 = 'select locus_tag, char_length(translation), organism from orthology_detail_%s where orthogroup="%s";' % (biodb, orthogroup)
 
         sql_signalp = 'select locus_tag, t2.start, t2.stop, t6.description, sequence_length, signature_accession, signature_description' \
-                       ' from annotation.seqfeature_id2locus_%s t1' \
+                       ' from annotation_seqfeature_id2locus t1' \
                        ' inner join interpro_interpro t2 on t1.seqfeature_id=t2.seqfeature_id' \
                        ' inner join interpro_signature t3 on t2.signature_id=t3.signature_id' \
                        ' inner join orthology.seqfeature_id2orthogroup_%s t4 on t1.seqfeature_id=t4.seqfeature_id' \

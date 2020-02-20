@@ -38,7 +38,7 @@ def pathway_list2profile_dico(biodb, pathway_list, taxon_id_list=[], group_by_KO
             print ('grouping')
             sql = 'select taxon_id, description, count(*) from (select distinct taxon_id,description,t4.ko_accession ' \
                   ' from enzyme_seqfeature_id2ko t1 ' \
-                  ' inner join annotation.seqfeature_id2locus_%s tb on t1.seqfeature_id=tb.seqfeature_id ' \
+                  ' inner join annotation_seqfeature_id2locus tb on t1.seqfeature_id=tb.seqfeature_id ' \
                   ' inner join enzyme_pathway2ko t2 on t1.ko_id=t2.ko_id  inner join enzyme_kegg_pathway as t3 on t2.pathway_id=t3.pathway_id' \
                   ' inner join enzyme_ko_annotation t4 on t1.ko_id=t4.ko_id where pathway_name in (%s) ) A ' \
                   ' group by A.taxon_id, A.description;;' % (biodb,

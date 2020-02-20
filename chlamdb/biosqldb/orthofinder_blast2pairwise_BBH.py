@@ -24,7 +24,7 @@ def parse_orthofinder_blast_files(biodb,
     else:
         server, db = manipulate_biosqldb.load_db(biodb, sqlite3)
 
-    sql = 'select locus_tag, taxon_id from annotation.seqfeature_id2locus_%s' % biodb
+    sql = 'select locus_tag, taxon_id from annotation_seqfeature_id2locus' % biodb
 
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -147,7 +147,7 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
     server.adaptor.execute(sql,)
     server.commit()
 
-    sql = 'select locus_tag, taxon_id from annotation.seqfeature_id2locus_%s' % biodb
+    sql = 'select locus_tag, taxon_id from annotation_seqfeature_id2locus' % biodb
 
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -157,7 +157,7 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
         locus_tag2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     except:
         locus_tag2orthogroup = False
-    sql = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % biodb
+    sql = 'select locus_tag, seqfeature_id from annotation_seqfeature_id2locus' % biodb
 
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

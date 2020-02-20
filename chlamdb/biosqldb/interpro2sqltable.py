@@ -472,7 +472,7 @@ if __name__ == '__main__':
     #print seqfeature_id2locus_tag.keys()[1:10]
     if not args.v2_table:
 
-        sql = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % biodb
+        sql = 'select locus_tag, seqfeature_id from annotation_seqfeature_id2locus' % biodb
         locus_tag2seqfeature_id =manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
         interpro2biosql(server,
