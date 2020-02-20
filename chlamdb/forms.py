@@ -421,7 +421,7 @@ def make_kegg_form(database_name):
     server, db = manipulate_biosqldb.load_db(database_name)
 
     sql_pathways = 'select description,description from enzyme.locus2ko_%s t1 ' \
-                   ' inner join  enzyme.pathway2ko t2 ' \
+                   ' inner join  enzyme_pathway2ko t2 ' \
                    ' on t1.ko_id = t2.ko_id ' \
                    ' inner join  enzyme.kegg_pathway t3 ' \
                    ' on t3.pathway_id=t2.pathway_id group by description;' % (database_name)
