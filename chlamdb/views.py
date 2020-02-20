@@ -7921,15 +7921,15 @@ def interpro_taxonomy(request):
                 from chlamdb.plots import hmm_heatmap
 
                 # counts eukaryotic domains
-                sql = 'select taxon_id, eukaryote_count from interpro.taxonomy_summary_50_%s ;' % (biodb)
+                sql = 'select taxon_id, eukaryote_count from interpro_taxonomy_summary_50_%s ;' % (biodb)
 
                 taxon2values = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-                sql = 'select taxon_id, eukaryote_count from interpro.taxonomy_summary_90_%s ;' % (biodb)
+                sql = 'select taxon_id, eukaryote_count from interpro_taxonomy_summary_90_%s ;' % (biodb)
 
                 taxon2values_90 = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-                sql = 'select taxon_id, eukaryote_count from interpro.taxonomy_summary_98_%s ;' % (biodb)
+                sql = 'select taxon_id, eukaryote_count from interpro_taxonomy_summary_98_%s ;' % (biodb)
 
                 taxon2values_98 = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

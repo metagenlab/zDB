@@ -176,7 +176,7 @@ def get_biodb_summary_statistics(biodb, cutoff=50):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'create table if not exists interpro.taxonomy_summary_%s_%s(taxon_id INT, eukaryote_count INT, ' \
+    sql = 'create table if not exists interpro_taxonomy_summary_%s_%s(taxon_id INT, eukaryote_count INT, ' \
           ' bacteria_count INT, archae_count INT, virus_count INT)' % (cutoff, biodb)
 
     server.adaptor.execute(sql,)
@@ -212,7 +212,7 @@ def get_biodb_summary_statistics(biodb, cutoff=50):
         count_archae = server.adaptor.execute_and_fetchall(sql_archae,)[0][0]
         count_bact = server.adaptor.execute_and_fetchall(sql_bact,)[0][0]
 
-        sql = 'insert into interpro.taxonomy_summary_%s_%s values (%s,%s,%s,%s,%s)' % (cutoff,
+        sql = 'insert into interpro_taxonomy_summary_%s_%s values (%s,%s,%s,%s,%s)' % (cutoff,
                                                                                        biodb,
                                                                                        taxon,
                                                                                        count_euk,
