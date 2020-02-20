@@ -1894,7 +1894,7 @@ def venn_ko(request):
             series = series[0:-1] + ']'
 
             cog2description = []
-            sql = 'select * from enzyme.ko_annotation_v1'
+            sql = 'select * from enzyme_ko_annotation_v1'
             data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
             for i in data:
                 if i in all_cog_list:
@@ -4589,7 +4589,7 @@ def ko_venn_subset(request, category):
     #h['Marilyn Monroe'] = 1;
 
     cog2description = []
-    sql = 'select * from enzyme.ko_annotation_v1 as t1 inner join enzyme.module2ko_v1 as t2 on t1.ko_id=t2.ko_id inner JOIN ' \
+    sql = 'select * from enzyme_ko_annotation_v1 as t1 inner join enzyme.module2ko_v1 as t2 on t1.ko_id=t2.ko_id inner JOIN ' \
               ' enzyme.kegg_module_v1 as t3 on t2.module_id=t3.module_id where module_sub_sub_cat="%s"' % category
     data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     for i in data:
@@ -4907,11 +4907,11 @@ def ko_subset_barchart(request, type):
     match_groups_subset = mat.index.tolist()
 
     if type == 'module':
-        sql = 'select module_sub_sub_cat,count(*) as n from (select * from enzyme.ko_annotation_v1 where ko_id in ' \
+        sql = 'select module_sub_sub_cat,count(*) as n from (select * from enzyme_ko_annotation_v1 where ko_id in ' \
               ' (%s)) A inner join enzyme.module2ko_v1 as B on A.ko_id=B.ko_id ' \
               ' inner join enzyme.kegg_module_v1 as C on B.module_id=C.module_id group by module_sub_sub_cat;' % ('"'+'","'.join(match_groups_subset)+'"')
     if type == 'pathway':
-        sql = 'select description,count(*) as n from (select * from enzyme.ko_annotation_v1 where ko_id in  ' \
+        sql = 'select description,count(*) as n from (select * from enzyme_ko_annotation_v1 where ko_id in  ' \
               ' (%s)) A inner join enzyme.pathway2ko_v1 as B on A.ko_id=B.ko_id  inner join enzyme.kegg_pathway as C' \
               ' on B.pathway_id=C.pathway_id where pathway_category != "1.0 Global and overview maps"' \
               ' group by description;' % ('"'+'","'.join(match_groups_subset)+'"')
@@ -4927,11 +4927,11 @@ def ko_subset_barchart(request, type):
     match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
     if type == 'module':
-        sql = 'select module_sub_sub_cat,count(*) as n from (select * from enzyme.ko_annotation_v1 where ko_id in ' \
+        sql = 'select module_sub_sub_cat,count(*) as n from (select * from enzyme_ko_annotation_v1 where ko_id in ' \
               ' (%s)) A inner join enzyme.module2ko_v1 as B on A.ko_id=B.ko_id ' \
               ' inner join enzyme.kegg_module_v1 as C on B.module_id=C.module_id group by module_sub_sub_cat;' % ('"'+'","'.join(match_groups)+'"')
     if type == 'pathway':
-        sql = 'select description,count(*) as n from (select * from enzyme.ko_annotation_v1 where ko_id in ' \
+        sql = 'select description,count(*) as n from (select * from enzyme_ko_annotation_v1 where ko_id in ' \
               ' (%s)) A inner join enzyme.pathway2ko_v1 as B on A.ko_id=B.ko_id ' \
               ' inner join enzyme.kegg_pathway as C on B.pathway_id=C.pathway_id where pathway_category != "1.0 Global and overview maps"' \
               ' group by description;' % ('"'+'","'.join(match_groups)+'"')
@@ -5779,7 +5779,7 @@ def get_locus_annotations(biodb, locus_list):
         if locus not in locus2interpro:
             locus2interpro[locus] = [('-', '-')]
 
-    sql4 = 'select ko_id,pathways,modules from enzyme.ko_annotation_v1 where ko_id in (%s); ' % ('"' + '","'.join(locus_tag2ko.values()) + '"')
+    sql4 = 'select ko_id,pathways,modules from enzyme_ko_annotation_v1 where ko_id in (%s); ' % ('"' + '","'.join(locus_tag2ko.values()) + '"')
 
     ko_data = server.adaptor.execute_and_fetchall(sql4,)
 
@@ -10732,9 +10732,9 @@ def search(request):
                     if len(raw_data_EC) == 0:
                         raw_data_EC = False
 
-                    # CREATE FULLTEXT INDEX koaf ON enzyme.ko_annotation_v1(definition);
+                    # CREATE FULLTEXT INDEX koaf ON enzyme_ko_annotation_v1(definition);
                     # filter KO absent from DB
-                    sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme.ko_annotation_v1 ' \
+                    sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme_ko_annotation_v1 ' \
                           'WHERE MATCH(definition) AGAINST("%s" IN NATURAL LANGUAGE MODE)) A inner join comparative_tables.ko_%s as B on A.ko_id=B.id' % (search_term, biodb)
                     try:
                         raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
@@ -14534,7 +14534,7 @@ def ko_comparison(request):
 
             ko2counts = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-            sql = 'select ko_id,definition from enzyme.ko_annotation_v1'
+            sql = 'select ko_id,definition from enzyme_ko_annotation_v1'
 
             ko2annot = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
