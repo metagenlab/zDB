@@ -4182,7 +4182,7 @@ def sunburst(request, locus):
         #print accession
 
         sql1 = 'select t3.superkingdom,  t3.phylum,  t3.order,  t3.family,  t3.genus,  t3.species  from ' \
-                   ' blastnr.blastnr_hits_%s_%s as t1' \
+                   ' blastnr.blastnr_hits_%s as t1' \
                    ' inner join blastnr_blastnr_taxonomy as t3 on ' \
                    ' t1.subject_taxid = t3.taxon_id inner join blastnr.blastnr_hsps_%s_%s as t4 ' \
                    ' on t1.nr_hit_id=t4.nr_hit_id where t1.locus_tag="%s"' % (biodb, accession, biodb, accession, locus)
@@ -4190,7 +4190,7 @@ def sunburst(request, locus):
         try:
             '''
             sql1 = 'select t3.superkingdom,  t3.phylum,  t3.order,  t3.family,  t3.genus,  t3.species  from ' \
-                   ' blastnr.blastnr_hits_%s_%s as t1  inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s ' \
+                   ' blastnr.blastnr_hits_%s as t1  inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s ' \
                    ' as t2 on t1.nr_hit_id = t2.nr_hit_id  inner join blastnr_blastnr_taxonomy as t3 on ' \
                    ' t2.subject_taxon_id = t3.taxon_id inner join blastnr.blastnr_hsps_%s_%s as t4 ' \
                    ' on t1.nr_hit_id=t4.nr_hit_id where t1.locus_tag="%s"' % (biodb, accession, biodb, accession, biodb, accession, locus)
@@ -10300,7 +10300,7 @@ def search_taxonomy(request):
                           ' t4.query_end, ' \
                           ' t1.subject_title, ' \
                           ' t3.taxon_id ' \
-                          ' from blastnr.blastnr_hits_%s_%s as t1 ' \
+                          ' from blastnr.blastnr_hits_%s as t1 ' \
                           ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
                           ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
@@ -10329,7 +10329,7 @@ def search_taxonomy(request):
                           ' t4.query_end, ' \
                           ' t1.subject_title, ' \
                           ' t3.taxon_id ' \
-                          ' from blastnr.blastnr_hits_%s_%s as t1 ' \
+                          ' from blastnr.blastnr_hits_%s as t1 ' \
                           ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
                           ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
@@ -10368,7 +10368,7 @@ def search_taxonomy(request):
                           ' t4.query_end, ' \
                           ' t1.subject_title, ' \
                           ' t3.taxon_id ' \
-                          ' from blastnr.blastnr_hits_%s_%s as t1 ' \
+                          ' from blastnr.blastnr_hits_%s as t1 ' \
                           ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
                           ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
@@ -10398,7 +10398,7 @@ def search_taxonomy(request):
                           ' t1.subject_title, ' \
                           ' t3.taxon_id,' \
                           ' t3.superkingdom' \
-                          ' from blastnr.blastnr_hits_%s_%s as t1 ' \
+                          ' from blastnr.blastnr_hits_%s as t1 ' \
                           ' inner join blastnr.blastnr_hits_taxonomy_filtered_%s_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
                           ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr.blastnr_hsps_%s_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
