@@ -89,7 +89,7 @@ def get_parwise_genome_median_identity_table(biodb, sqlite3=False):
           ' where t1.name="%s" group by taxon_id' % biodb
     taxon_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
-    sql = 'CREATE table if not exists comparative_tables.reciprocal_BBH_average_identity_%s (taxon_1 INT, taxon_2 INT, ' \
+    sql = 'CREATE table if not exists comparative_tables_reciprocal_BBH_average_identity (taxon_1 INT, taxon_2 INT, ' \
           ' average_identity FLOAT, median_identity FLOAT, n_pairs INT)' % biodb
     server.adaptor.execute(sql,)
     server.commit()
@@ -114,7 +114,7 @@ def get_parwise_genome_median_identity_table(biodb, sqlite3=False):
             ''')
             max_density = robjects.r('max_density')
 
-            sql = 'insert into comparative_tables.reciprocal_BBH_average_identity_%s values(%s, %s, %s, %s, %s, %s)' % (biodb,
+            sql = 'insert into comparative_tables_reciprocal_BBH_average_identity values(%s, %s, %s, %s, %s, %s)' % (biodb,
                                                                                                                         taxon_1,
                                                                                                                         taxon_2,
                                                                                                                         round(mean_id, 2),
@@ -307,7 +307,7 @@ def median_RBBH2species(biodb):
                 ' where t1.name="%s" and t2.description not like "%%%%plasmid%%%%"' % biodb
     taxon_id_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql_taxon,)]
 
-    sql2 = 'select taxon_1,taxon_2,median_identity from comparative_tables.reciprocal_BBH_average_identity_%s;' % biodb
+    sql2 = 'select taxon_1,taxon_2,median_identity from comparative_tables_reciprocal_BBH_average_identity;' % biodb
 
     taxon2taxon2identity = {}
     for row in server.adaptor.execute_and_fetchall(sql2,):

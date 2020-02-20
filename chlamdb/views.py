@@ -6030,7 +6030,7 @@ def identity_heatmap(request):
 
 
             if plot_type == 'blast_identity':
-                sql2 = 'select taxon_1, taxon_2, median_identity from comparative_tables.reciprocal_BBH_average_identity_%s ' \
+                sql2 = 'select taxon_1, taxon_2, median_identity from comparative_tables_reciprocal_BBH_average_identity ' \
                        'where taxon_1 in (%s) and taxon_2 in (%s);' % (biodb,
                                                                        taxon_filter,
                                                                        taxon_filter)
@@ -6038,9 +6038,9 @@ def identity_heatmap(request):
                 sql2 = 'select taxon_1, taxon_2, identity from comparative_tables.core_orthogroups_identity_msa_%s ' \
                        'where taxon_1 in (%s) and taxon_2 in (%s);' % (biodb, taxon_filter, taxon_filter)
             if plot_type == 'n_RBBH':
-                sql2 = 'select taxon_1, taxon_2, n_pairs from comparative_tables.reciprocal_BBH_average_identity_%s ' \
+                sql2 = 'select taxon_1, taxon_2, n_pairs from comparative_tables_reciprocal_BBH_average_identity ' \
                       ' where taxon_1 in (%s) and taxon_2 in (%s) UNION select taxon_1, taxon_2, n_pairs ' \
-                      ' from comparative_tables.reciprocal_BBH_average_identity_%s' \
+                      ' from comparative_tables_reciprocal_BBH_average_identity' \
                       ' where taxon_2 in (%s) and taxon_1 in (%s)' % (biodb,
                                                                       taxon_filter,
                                                                       taxon_filter,
@@ -6423,9 +6423,9 @@ def pairwiseid(request):
 
             #pairwiseid_plots.basic_plot(genome_count_list, identity_list)
 
-            sql = 'select taxon_2, median_identity, average_identity,n_pairs from comparative_tables.reciprocal_BBH_average_identity_%s ' \
+            sql = 'select taxon_2, median_identity, average_identity,n_pairs from comparative_tables_reciprocal_BBH_average_identity ' \
                   ' where taxon_1=%s UNION select taxon_1, median_identity, average_identity,n_pairs ' \
-                  ' from comparative_tables.reciprocal_BBH_average_identity_%s' \
+                  ' from comparative_tables_reciprocal_BBH_average_identity' \
                   ' where taxon_2=%s' % (biodb,
                                          genome_1,
                                          biodb,
@@ -9768,7 +9768,7 @@ def api_vs_16S_identity(request):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'select t1.taxon_1, t1.taxon_2, median_identity,identity from ' \
-          ' comparative_tables.reciprocal_BBH_average_identity_%s t1 ' \
+          ' comparative_tables_reciprocal_BBH_average_identity t1 ' \
           ' inner join custom_tables.identity_16S_%s t2 ' \
           ' on t1.taxon_1=t2.taxon_1 and t1.taxon_2=t2.taxon_2;' % (biodb, biodb)
     data = server.adaptor.execute_and_fetchall(sql)
@@ -9834,7 +9834,7 @@ def api_vs_16S_identity(request):
 
     sql = 'select B.order_description,A.%s,identity from' \
           ' (select t1.taxon_1, t1.taxon_2, %s,identity ' \
-          ' from comparative_tables.reciprocal_BBH_average_identity_%s t1 ' \
+          ' from comparative_tables_reciprocal_BBH_average_identity t1 ' \
           ' inner join custom_tables.identity_16S_%s t2 on t1.taxon_1=t2.taxon_1 ' \
           ' and t1.taxon_2=t2.taxon_2) A ' \
           ' inner join custom_tables.taxonomy_%s B ' \
@@ -9861,7 +9861,7 @@ def api_vs_16S_identity(request):
 
     sql = 'select B.order_description,A.%s,identity from' \
           ' (select t1.taxon_1, t1.taxon_2, %s,identity ' \
-          ' from comparative_tables.reciprocal_BBH_average_identity_%s t1 ' \
+          ' from comparative_tables_reciprocal_BBH_average_identity t1 ' \
           ' inner join custom_tables.identity_16S_%s t2 on t1.taxon_1=t2.taxon_1 ' \
           ' and t1.taxon_2=t2.taxon_2) A ' \
           ' inner join custom_tables.taxonomy_%s B ' \
@@ -9881,7 +9881,7 @@ def api_vs_16S_identity(request):
     # inter family same order
     sql = 'select B.order_description,A.%s,identity from' \
           ' (select t1.taxon_1, t1.taxon_2, %s,identity ' \
-          ' from comparative_tables.reciprocal_BBH_average_identity_%s t1 ' \
+          ' from comparative_tables_reciprocal_BBH_average_identity t1 ' \
           ' inner join custom_tables.identity_16S_%s t2 on t1.taxon_1=t2.taxon_1 ' \
           ' and t1.taxon_2=t2.taxon_2) A ' \
           ' inner join custom_tables.taxonomy_%s B ' \
@@ -9907,7 +9907,7 @@ def api_vs_16S_identity(request):
 
     sql0 = 'select B.order_description,A.%s,identity from' \
           ' (select t1.taxon_1, t1.taxon_2, %s,identity ' \
-          ' from comparative_tables.reciprocal_BBH_average_identity_%s t1 ' \
+          ' from comparative_tables_reciprocal_BBH_average_identity t1 ' \
           ' inner join custom_tables.identity_16S_%s t2 on t1.taxon_1=t2.taxon_1 ' \
           ' and t1.taxon_2=t2.taxon_2) A ' \
           ' inner join custom_tables.taxonomy_%s B ' \
@@ -9923,7 +9923,7 @@ def api_vs_16S_identity(request):
 
     sql = 'select B.order_description,A.%s,identity from' \
           ' (select t1.taxon_1, t1.taxon_2, %s,identity ' \
-          ' from comparative_tables.reciprocal_BBH_average_identity_%s t1 ' \
+          ' from comparative_tables_reciprocal_BBH_average_identity t1 ' \
           ' inner join custom_tables.identity_16S_%s t2 on t1.taxon_1=t2.taxon_1 ' \
           ' and t1.taxon_2=t2.taxon_2 where t1.taxon_1 in (%s) and t1.taxon_2 in (%s)) A ' \
           ' inner join custom_tables.taxonomy_%s B ' \
@@ -9950,7 +9950,7 @@ def api_vs_16S_identity(request):
 
     sql = 'select B.phylum_description,A.%s,identity from' \
           ' (select t1.taxon_1, t1.taxon_2, %s,identity ' \
-          ' from comparative_tables.reciprocal_BBH_average_identity_%s t1 ' \
+          ' from comparative_tables_reciprocal_BBH_average_identity t1 ' \
           ' inner join custom_tables.identity_16S_%s t2 on t1.taxon_1=t2.taxon_1 ' \
           ' and t1.taxon_2=t2.taxon_2) A ' \
           ' inner join custom_tables.taxonomy_%s B ' \
