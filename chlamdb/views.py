@@ -7384,7 +7384,7 @@ def blastnr_overview(request):
             except:
                 set2taxon2value_new[set][taxon] = 0
 
-    sql = 'select taxon_id, n_no_hits, n_less_100_hits, n_100_hits from blastnr.count_n_blast_%s order by n_no_hits;' % biodb
+    sql = 'select taxon_id, n_no_hits, n_less_100_hits, n_100_hits from blastnr_count_n_blast order by n_no_hits;' % biodb
 
     # blast_hits_taxonomy_overview
     sql2 = 'select * from blastnr.BBH_taxo_hit_number_1_%s;' % biodb

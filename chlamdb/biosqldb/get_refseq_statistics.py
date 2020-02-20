@@ -224,7 +224,7 @@ def count_less_than_n_hits(biodb, cutoff=100):
     # n 1-99 hits
     # n 100 hits
 
-    sql = 'CREATE TABLE blastnr.count_n_blast_%s (taxon_id INT, total INT, n_no_hits INT, n_100_hits INT, n_less_100_hits INT)' % biodb
+    sql = 'CREATE TABLE blastnr_count_n_blast (taxon_id INT, total INT, n_no_hits INT, n_100_hits INT, n_less_100_hits INT)' % biodb
 
     server.adaptor.execute(sql)
 
@@ -250,7 +250,7 @@ def count_less_than_n_hits(biodb, cutoff=100):
         total = taxon2n_proteins[taxon]
         n_100 = taxon2n_100[int(taxon)]
         n_less_than_100 = taxon2n_less_than_100[int(taxon)]
-        sql = 'insert into blastnr.count_n_blast_%s values (%s,%s,%s,%s, %s)' % (biodb,
+        sql = 'insert into blastnr_count_n_blast values (%s,%s,%s,%s, %s)' % (biodb,
                                                                                taxon,
                                                                                total,
                                                                                total-n_100-n_less_than_100,
