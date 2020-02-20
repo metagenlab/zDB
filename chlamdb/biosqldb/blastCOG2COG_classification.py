@@ -138,7 +138,7 @@ def load_locus2cog_into_sqldb(input_blast_files, biodb):
     # 19 stitle
 
     # locus_tag2gi_hit_
-    sql = 'create table COG.seqfeature_id2best_COG_hit_%s (bioentry_id INT, ' \
+    sql = 'create table COG_seqfeature_id2best_COG_hit (bioentry_id INT, ' \
           ' seqfeature_id INT, ' \
           ' hit_cog_id INT,' \
           ' hit_protein_id INT, ' \

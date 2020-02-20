@@ -701,7 +701,7 @@ def locus_annotation(request, display_form):
                   ' CHAR_LENGTH(t2.translation), t4.COG_name,t6.code,t4.description, t2.taxon_id ' \
                   ' from custom_tables.locus2seqfeature_id_%s t1 ' \
                   ' inner join biosqldb.orthology_detail_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
-                  ' left join COG.seqfeature_id2best_COG_hit_%s t3 on t1.seqfeature_id=t3.seqfeature_id' \
+                  ' left join COG_seqfeature_id2best_COG_hit t3 on t1.seqfeature_id=t3.seqfeature_id' \
                   ' left join COG.cog_names_2014 t4 on t3.hit_COG_id=t4.COG_id' \
                   ' left join COG.cog_id2cog_category t5 on t4.COG_id=t5.COG_id' \
                   ' left join COG.code2category t6 on t5.category_id=t6.category_id' \
@@ -2234,7 +2234,7 @@ def locusx(request, locus=None, menu=True):
             sql4 = 'select accession from orthology_detail_%s where locus_tag="%s" limit 1' % (biodb, locus)
             genome_accession = server.adaptor.execute_and_fetchall(sql4,)[0][0]
 
-            sql3 = 'select COG_name,code,t2.description,t1.query_start,t1.query_end, t1.hit_start, t1.hit_end, t1.query_coverage, t1.hit_coverage, t1.identity, t1.evalue, t1.bitscore from COG.seqfeature_id2best_COG_hit_%s t1 inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.COG_id ' \
+            sql3 = 'select COG_name,code,t2.description,t1.query_start,t1.query_end, t1.hit_start, t1.hit_end, t1.query_coverage, t1.hit_coverage, t1.identity, t1.evalue, t1.bitscore from COG_seqfeature_id2best_COG_hit t1 inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.COG_id ' \
                    ' inner join COG.cog_id2cog_category t3 on t2.COG_id=t3.COG_id inner ' \
                    ' join COG.code2category t4 on t3.category_id=t4.category_id inner join annotation.seqfeature_id2locus_%s t6 on t1.seqfeature_id=t6.seqfeature_id ' \
                    ' where locus_tag="%s";' % (biodb, biodb, locus)
@@ -3038,11 +3038,11 @@ def fam(request, fam, type):
             except:
                 valid_id = False
         elif type == 'cog':
-            sql1 = 'select seqfeature_id from COG.seqfeature_id2best_COG_hit_%s t1 ' \
+            sql1 = 'select seqfeature_id from COG_seqfeature_id2best_COG_hit t1 ' \
                    ' inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.cog_id ' \
                    ' where COG_name="%s"' % (biodb,
                                            fam)
-            sql2 = 'select t2.description from COG.seqfeature_id2best_COG_hit_%s t1 ' \
+            sql2 = 'select t2.description from COG_seqfeature_id2best_COG_hit t1 ' \
                    ' inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.cog_id where t2.COG_name="%s";' % (biodb,
                                                                                                             fam)
             print (sql1)
@@ -5418,7 +5418,7 @@ def locus_tag2cog_series(biodb, locus_tag_list, reference_taxon=None):
                                                                               '"' + '","'.join(locus_tag_list) + '"',
                                                                               biodb)
 
-    sql = 'select locus_tag, taxon_id from COG.seqfeature_id2best_COG_hit_%s t1 ' \
+    sql = 'select locus_tag, taxon_id from COG_seqfeature_id2best_COG_hit t1 ' \
           ' inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' where locus_tag in (%s) group by locus_tag;' % (biodb,
                                          biodb,
@@ -5463,7 +5463,7 @@ def locus_tag2cog_series(biodb, locus_tag_list, reference_taxon=None):
                                                                                                       biodb)
     # attention!!!! Pourquoi group by orthogroup ci-dessus???????!!!!!!!
     sql = 'select A.locus_tag,code, count(*) as n from (select * from biosqldb.orthology_detail_%s as t1 where taxon_id=%s) A ' \
-          ' left join COG.seqfeature_id2best_COG_hit_%s as B on A.seqfeature_id=B.seqfeature_id ' \
+          ' left join COG_seqfeature_id2best_COG_hit as B on A.seqfeature_id=B.seqfeature_id ' \
           ' inner join COG.cog_names_2014 as C on B.hit_cog_id=C.COG_id ' \
           ' inner join COG.cog_id2cog_category D on C.COG_id=D.COG_id ' \
           ' inner join COG.code2category E on D.category_id=E.category_id group by locus_tag,code;' % (biodb,
@@ -7357,7 +7357,7 @@ def blastnr_overview(request):
     my_sets.append('Lipid metabolism')
 
 
-    sql = 'select taxon_id, count(*) from COG.seqfeature_id2best_COG_hit_%s t1 ' \
+    sql = 'select taxon_id, count(*) from COG_seqfeature_id2best_COG_hit t1 ' \
           ' inner join COG.cog_names_2014 t2 on t1.hit_cog_id=t2.COG_id ' \
           ' inner join COG.cog_id2cog_category ta on t1.hit_cog_id=ta.COG_id' \
           ' inner join COG.code2category tb on ta.category_id=tb.category_id' \
@@ -9133,7 +9133,7 @@ def download_all_COG(request):
           f' inner join annotation.seqfeature_id2CDS_annotation_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           f' inner join biosqldb.bioentry t3 on t1.bioentry_id=t3.bioentry_id ' \
           f' inner join biosqldb.biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \
-          f' inner join COG.seqfeature_id2best_COG_hit_{biodb} t5 on t1.seqfeature_id=t5.seqfeature_id ' \
+          f' inner join COG_seqfeature_id2best_COG_hit t5 on t1.seqfeature_id=t5.seqfeature_id ' \
           f' inner join COG.cog_names_2014 t6 on t5.hit_cog_id=t6.cog_id where t4.name="{biodb}" order by t3.accession'
     
     df = pandas.read_sql(sql, conn)
@@ -13152,7 +13152,7 @@ def transporters_family(request, family):
     locus_annot = [list(i) for i in server.adaptor.execute_and_fetchall(sql,)]
 
     sql = 'select locus_tag,t3.COG_name,t5.code,t3.description ' \
-          ' from COG.seqfeature_id2best_COG_hit_%s t1 ' \
+          ' from COG_seqfeature_id2best_COG_hit t1 ' \
           ' inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' inner join COG.cog_names_2014 t3 on t1.hit_cog_id=t3.cog_id ' \
           ' inner join COG.cog_id2cog_category t4 on t3.cog_id=t4.cog_id ' \
