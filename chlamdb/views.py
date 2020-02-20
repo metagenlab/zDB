@@ -2272,14 +2272,14 @@ def locusx(request, locus=None, menu=True):
                                                                             locus)
 
             sql11 = 'select db_xref_name,db_accession from custom_tables_locus2seqfeature_id as t1 ' \
-                    ' inner join custom_tables.uniprot_id2seqfeature_id_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-                    ' inner join custom_tables.uniprot_db_xref_%s as t3 on t2.uniprot_id=t3.uniprot_id ' \
+                    ' inner join custom_tables_uniprot_id2seqfeature_id as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                    ' inner join custom_tables_uniprot_db_xref as t3 on t2.uniprot_id=t3.uniprot_id ' \
                     ' inner join custom_tables.db_xref as t4 on t3.db_xref_id=t4.db_xref_id ' \
                     ' where locus_tag="%s" and db_xref_name not in ("GO","InterPro", "Pfam");' % (biodb,biodb,biodb,locus)
 
             sql12 = 'select uniprot_status,annotation_score,gene,recommendedName_fullName,comment_function,ec_number,' \
                     ' comment_similarity,comment_subunit,comment_catalyticactivity,proteinExistence,uniprot_accession ' \
-                    ' from custom_tables_locus2seqfeature_id as t1 inner join custom_tables.uniprot_id2seqfeature_id_%s as t2 ' \
+                    ' from custom_tables_locus2seqfeature_id as t1 inner join custom_tables_uniprot_id2seqfeature_id as t2 ' \
                     ' on t1.seqfeature_id=t2.seqfeature_id inner join custom_tables.uniprot_annotation_%s as t3 ' \
                     ' on t2.seqfeature_id=t3.seqfeature_id where locus_tag="%s";' % (biodb,biodb,biodb,locus)
 
@@ -8273,7 +8273,7 @@ def homologs(request, orthogroup, locus_tag=False):
                     ' biosqldb.orthology_detail_%s where orthogroup="%s") A ' \
                     ' inner join custom_tables_locus2seqfeature_id B on A.locus_tag=B.locus_tag ' \
                     ' left join custom_tables.uniprot_annotation_%s as C on B.seqfeature_id=C.seqfeature_id ' \
-                    ' left join custom_tables.uniprot_id2seqfeature_id_%s as D on B.seqfeature_id=D.seqfeature_id;' % (biodb,
+                    ' left join custom_tables_uniprot_id2seqfeature_id as D on B.seqfeature_id=D.seqfeature_id;' % (biodb,
                                                                                                                        orthogroup,
                                                                                                                        biodb,
                                                                                                                        biodb,
@@ -9451,13 +9451,13 @@ def annotation_overview(request):
 
     taxon_id2n_Pfam = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_Pfam,))
 
-    sql_string_mapping = 'select taxon_id, count(*) from custom_tables.uniprot_id2seqfeature_id_%s t0 ' \
-                         ' inner join custom_tables.uniprot_db_xref_%s t1 on t0.uniprot_id=t1.uniprot_id ' \
+    sql_string_mapping = 'select taxon_id, count(*) from custom_tables_uniprot_id2seqfeature_id t0 ' \
+                         ' inner join custom_tables_uniprot_db_xref t1 on t0.uniprot_id=t1.uniprot_id ' \
                          ' inner join custom_tables.db_xref t2 on t1.db_xref_id=t2.db_xref_id ' \
                          ' inner join custom_tables_locus2seqfeature_id t3 on t0.seqfeature_id=t3.seqfeature_id ' \
                          ' where db_xref_name="string" group by taxon_id;' % (biodb, biodb, biodb)
 
-    sql_uniprot_mapping = 'select taxon_id, count(*) from custom_tables.uniprot_id2seqfeature_id_%s t0 ' \
+    sql_uniprot_mapping = 'select taxon_id, count(*) from custom_tables_uniprot_id2seqfeature_id t0 ' \
                          ' inner join custom_tables_locus2seqfeature_id t3 on t0.seqfeature_id=t3.seqfeature_id ' \
                          ' group by taxon_id;' % (biodb, biodb)
 
