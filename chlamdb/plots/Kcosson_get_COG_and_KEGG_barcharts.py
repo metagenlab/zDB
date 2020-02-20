@@ -205,12 +205,12 @@ def get_COG_data_ind(locus_list):
 def get_KEGG_data(locus_list):
     filter = '"' + '","'.join(locus_list) + '"'
     sql = 'select t1.locus_tag,t1.ko_id, t2.definition, t4.* from enzyme.locus2ko_2017_03_30_kcosson t1 ' \
-           'inner join enzyme.ko_annotation t2 on t1.ko_id=t2.ko_accession ' \
+           'inner join enzyme_ko_annotation t2 on t1.ko_id=t2.ko_accession ' \
            'inner join enzyme.module2ko t3 on t2.ko_id=t3.ko_id ' \
            'inner join enzyme.kegg_module t4 on t3.module_id=t4.module_id ' \
            'where t1.locus_tag in (%s);' % filter
     sql = 'select module_sub_sub_cat,description, count(*) as n from enzyme.locus2ko_2017_03_30_kcosson t1 ' \
-           'inner join enzyme.ko_annotation t2 on t1.ko_id=t2.ko_accession ' \
+           'inner join enzyme_ko_annotation t2 on t1.ko_id=t2.ko_accession ' \
            'inner join enzyme.module2ko t3 on t2.ko_id=t3.ko_id ' \
            'inner join enzyme.kegg_module t4 on t3.module_id=t4.module_id ' \
            'where t1.locus_tag in (%s) group by module_sub_sub_cat, description;' % filter

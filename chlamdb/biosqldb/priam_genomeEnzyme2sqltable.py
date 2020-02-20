@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
     if args.ko_table:
         server, db = manipulate_biosqldb.load_db(args.database_name)
-        sql = 'select ko_accession, ko_id from enzyme.ko_annotation'
+        sql = 'select ko_accession, ko_id from enzyme_ko_annotation'
         ko_accession2ko_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
         locus2ko = parse_blast_koala_output(args.ko_table)
         locus2ko_table(locus2ko,

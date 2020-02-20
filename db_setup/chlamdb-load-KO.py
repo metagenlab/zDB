@@ -123,7 +123,7 @@ if __name__ == '__main__':
     hash2locus_list = chlamdb_setup_utils.get_hash2locus_list(args.corresp_table)
 
     server, db = manipulate_biosqldb.load_db(args.database_name)
-    sql = 'select ko_accession, ko_id from enzyme.ko_annotation'
+    sql = 'select ko_accession, ko_id from enzyme_ko_annotation'
     ko_accession2ko_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     hash2ko = parse_kofamscan_output(args.ko_table_list)

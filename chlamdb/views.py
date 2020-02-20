@@ -1145,7 +1145,7 @@ def extract_ko(request):
             ' where line="description") A left join enzyme.kegg2ec as B on A.enzyme_id=B.ec_id ' \
             ' left join enzyme.kegg_pathway on B.pathway_id=kegg_pathway.pathway_id;'
 
-            sql = 'select ko_accession, name, definition, EC, pathways, modules from enzyme.ko_annotation;'
+            sql = 'select ko_accession, name, definition, EC, pathways, modules from enzyme_ko_annotation;'
             #print sql
             ko2description_raw = server.adaptor.execute_and_fetchall(sql,)
 
@@ -2245,7 +2245,7 @@ def locusx(request, locus=None, menu=True):
             sql5 = 'select t3.ko_accession, t3.name, t3.definition, t3.pathways, t3.modules, t2.thrshld, t2.score, t2.evalue from ' \
                    ' custom_tables.locus2seqfeature_id_%s t1 ' \
                    ' inner join enzyme_seqfeature_id2ko t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-                   ' inner join enzyme.ko_annotation t3 on t2.ko_id=t3.ko_id where t1.locus_tag="%s";' % (biodb,
+                   ' inner join enzyme_ko_annotation t3 on t2.ko_id=t3.ko_id where t1.locus_tag="%s";' % (biodb,
                                                                                                      biodb,
                                                                                                      locus)
 
@@ -2667,7 +2667,7 @@ def locusx(request, locus=None, menu=True):
                                                                                                                             locus)
             sql_group4 = 'select rank,ko_accession,count,name,definition,EC,pathways,modules from orthology.orthogroup2ko_%s t1 ' \
                          ' inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id ' \
-                         ' inner join enzyme.ko_annotation t3 on t1.ko_id=t3.ko_id where t2.orthogroup_name="%s";' % (biodb, 
+                         ' inner join enzyme_ko_annotation t3 on t1.ko_id=t3.ko_id where t2.orthogroup_name="%s";' % (biodb, 
                                                                                                                     biodb, 
                                                                                                                     locus)
             sql_group5 = f'select distinct t1.seqfeature_id,start,stop,signature_accession,signature_description from interpro.interpro_{biodb} t1 ' \
@@ -3085,15 +3085,15 @@ def fam(request, fam, type):
                 valid_id = False
         elif type == 'ko':
             sql1 = 'select distinct seqfeature_id from enzyme_seqfeature_id2ko t1 ' \
-                   ' inner join enzyme.ko_annotation t2 on t1.ko_id=t2.ko_id where t2.ko_accession="%s";' % (biodb,
+                   ' inner join enzyme_ko_annotation t2 on t1.ko_id=t2.ko_id where t2.ko_accession="%s";' % (biodb,
                                                                                                              fam)
 
-            sql2 = 'select * from enzyme.ko_annotation where ko_accession="%s"' % (fam)
+            sql2 = 'select * from enzyme_ko_annotation where ko_accession="%s"' % (fam)
             try:
                 ko_data = server.adaptor.execute_and_fetchall(sql2,)[0]
                 external_link = 'http://www.genome.jp/dbget-bin/www_bget?%s' % (fam)
 
-                sql_modules = 'select pathways, modules from enzyme.ko_annotation where ko_accession="%s";' % (fam)
+                sql_modules = 'select pathways, modules from enzyme_ko_annotation where ko_accession="%s";' % (fam)
                 data = server.adaptor.execute_and_fetchall(sql_modules,)[0]
 
                 if data[0] != '-':
@@ -3179,7 +3179,7 @@ def fam(request, fam, type):
             sql3 = 'select t1.taxon_id, t1.orthogroup, t3.ko_accession ' \
                    ' from biosqldb.orthology_detail_%s t1 ' \
                    ' inner join enzyme_seqfeature_id2ko t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-                   ' inner join enzyme.ko_annotation t3 on t2.ko_id=t3.ko_id ' \
+                   ' inner join enzyme_ko_annotation t3 on t2.ko_id=t3.ko_id ' \
                    ' where t1.orthogroup in (%s);' % (biodb,
                                                         biodb,
                                                         '"'+'","'.join(set(orthogroup_list))+'"')
@@ -3949,7 +3949,7 @@ def KEGG_module_map(request, module_name):
         sql = 'select module_sub_cat,module_sub_sub_cat,description,t3.ko_accession,t3.definition ' \
               ' from enzyme.module2ko as t1 ' \
               ' inner join enzyme.kegg_module as t2 on t1.module_id=t2.module_id ' \
-              ' inner join enzyme.ko_annotation t3 on t1.ko_id=t3.ko_id where module_name="%s";' % (module_name)
+              ' inner join enzyme_ko_annotation t3 on t1.ko_id=t3.ko_id where module_name="%s";' % (module_name)
 
         map_data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -3960,7 +3960,7 @@ def KEGG_module_map(request, module_name):
         # get list of all orthogroups with corresponding ko
         sql = 'select distinct orthogroup,ko_accession from enzyme.kegg_module t1 ' \
               ' inner join enzyme.module2ko t2 on t1.module_id=t2.module_id ' \
-              ' inner join enzyme.ko_annotation t3 on t2.ko_id=t3.ko_id ' \
+              ' inner join enzyme_ko_annotation t3 on t2.ko_id=t3.ko_id ' \
               ' inner join enzyme_seqfeature_id2ko t4 on t3.ko_id=t4.ko_id ' \
               ' inner join biosqldb.orthology_detail_%s t5 on t4.seqfeature_id=t5.seqfeature_id ' \
               ' where t1.module_name="%s";' % (biodb,
@@ -4037,7 +4037,7 @@ def kegg_multi(request, map_name, ko_name):
         sql = 'select bb.ko_accession, count(*) from (select C.ko_accession, E.seqfeature_id from  ' \
               ' (select * from enzyme.kegg_pathway  where pathway_name="%s") A ' \
               ' inner join enzyme.pathway2ko as B  on A.pathway_id=B.pathway_id ' \
-              ' inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id ' \
+              ' inner join enzyme_ko_annotation as C on B.ko_id=C.ko_id ' \
               ' inner join enzyme_seqfeature_id2ko E on B.ko_id=E.ko_id ' \
               ' group by B.ko_id,seqfeature_id) bb group by ko_accession;' % (map_name, biodb)
 
@@ -4056,7 +4056,7 @@ def kegg_multi(request, map_name, ko_name):
 
         ko_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql2,)]
         ko_filter = '"'+ '","'.join(ko_list)+'"'
-        sql = 'select ko_accession,name,definition,modules,pathways from enzyme.ko_annotation where ko_accession in (%s)' % (ko_filter)
+        sql = 'select ko_accession,name,definition,modules,pathways from enzyme_ko_annotation where ko_accession in (%s)' % (ko_filter)
         ko_data = server.adaptor.execute_and_fetchall(sql,)
 
 
@@ -4485,10 +4485,10 @@ def get_ko_multiple(request, type, category):
     filter = '"' + '","'.join(match_groups_subset) + '"'
     if type == 'module':
         sql = 'select A.ko_accession,name,definition,pathways,modules,module_name, module_sub_cat,description ' \
-              ' from (select * from enzyme.ko_annotation where ko_accession in (%s)) A inner join enzyme.module2ko as B ' \
+              ' from (select * from enzyme_ko_annotation where ko_accession in (%s)) A inner join enzyme.module2ko as B ' \
               ' on A.ko_id=B.ko_id inner join enzyme.kegg_module as C on B.module_id=C.module_id where module_sub_sub_cat="%s";' % (filter, category)
     if type == 'pathway':
-        sql = 'select A.ko_accession,name,definition,pathway_name,pathway_category,description from (select * from enzyme.ko_annotation ' \
+        sql = 'select A.ko_accession,name,definition,pathway_name,pathway_category,description from (select * from enzyme_ko_annotation ' \
               'where ko_accession in  (%s)) A inner join enzyme.pathway2ko as B on A.ko_id=B.ko_id  ' \
               ' inner join enzyme.kegg_pathway as C on B.pathway_id=C.pathway_id' \
               ' where description="%s";' % (filter, category)
@@ -12400,7 +12400,7 @@ def similarity_network(request, orthogroup, annotation):
               ' inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
               ' inner join orthology.orthogroup_%s t3 on t2.orthogroup_id=t3.orthogroup_id ' \
               ' inner join enzyme_seqfeature_id2ko t4 on t1.seqfeature_id=t4.seqfeature_id ' \
-              ' inner join enzyme.ko_annotation t5 on t4.ko_id=t5.ko_id where t3.orthogroup_name="%s";' % (biodb, 
+              ' inner join enzyme_ko_annotation t5 on t4.ko_id=t5.ko_id where t3.orthogroup_name="%s";' % (biodb, 
                                                                                                            biodb, 
                                                                                                            biodb, 
                                                                                                            biodb, 

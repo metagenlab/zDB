@@ -1271,7 +1271,7 @@ if __name__ == '__main__':
         #get_complete_ko_table(args.db_name)
         print('load_enzyme_nomenclature_table map2category...')
         #load_enzyme_nomenclature_table(args.db_name)
-        sql = 'select ko_accession, ko_id from enzyme.ko_annotation'
+        sql = 'select ko_accession, ko_id from enzyme_ko_annotation'
         cursor.execute(sql,)
         ko_accession2ko_id = manipulate_biosqldb.to_dict(cursor.fetchall())
         print('getting pathway table...')
