@@ -4848,7 +4848,7 @@ def add_locus_int(request):
                 raise("locus already present")
 
             else:
-                sql = 'insert into custom_tables.annot_table_%s (category,gene,locus_tag, description, ' \
+                sql = 'insert into custom_tables_annot_table (category,gene,locus_tag, description, ' \
                       ' reference, date) values("%s", "%s", "%s","%s","%s", "%s")' % (biodb,
                                                                           category,
                                                                           gene,
@@ -6521,7 +6521,7 @@ def multiple_codon_usage(request):
                 taxon_id_list.append(genome_4)
 
             taxon_id_filrter = '"'+'","'.join(taxon_id_list)+'"'
-            sql2 = 'select t2.description, t1.* from custom_tables.codon_usage_percent_%s t1  inner join bioentry t2 on t1.taxon_id=t2.taxon_id' \
+            sql2 = 'select t2.description, t1.* from custom_tables_codon_usage_percent t1  inner join bioentry t2 on t1.taxon_id=t2.taxon_id' \
                    ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
                    ' where t3.name="%s" and t2.description not like "%%%%plasmid%%%%" and t1.taxon_id in (%s)' % (biodb, biodb, taxon_id_filrter)
             data = [i for i in server.adaptor.execute_and_fetchall(sql2,)]
@@ -7181,13 +7181,13 @@ def blastnr_overview(request):
     try:
         # group by orthogroup ==> even if one prot has multiple homologs, count only one
         sql_complex = 'select C.taxon_id, count(*) as n from (select distinct A.category, A.orthogroup, B.taxon_id ' \
-              ' from (select distinct t1.category,t2.orthogroup from custom_tables.annot_table_%s t1 ' \
+              ' from (select distinct t1.category,t2.orthogroup from custom_tables_annot_table t1 ' \
               ' inner join biosqldb.orthology_detail_%s t2 on t1.locus_tag=t2.locus_tag ' \
               ' where category="%s") A inner join biosqldb.orthology_detail_%s B ' \
               ' on A.orthogroup=B.orthogroup) C group by C.category,C.taxon_id;'
         # not group by orthogroup
         sql_simple = 'select C.taxon_id, count(*) as n from (select A.category, A.orthogroup, B.taxon_id ' \
-              ' from (select distinct t1.category,t2.orthogroup from custom_tables.annot_table_%s t1 ' \
+              ' from (select distinct t1.category,t2.orthogroup from custom_tables_annot_table t1 ' \
               ' inner join biosqldb.orthology_detail_%s t2 on t1.locus_tag=t2.locus_tag ' \
               ' where category="%s") A inner join biosqldb.orthology_detail_%s B ' \
               ' on A.orthogroup=B.orthogroup) C group by C.category,C.taxon_id;'
@@ -13520,7 +13520,7 @@ def hmm(request):
 
 
             if hmm_set == 'all':
-                 sql = 'select t1.*,t2.orthogroup from custom_tables.annot_table_%s as t1 inner ' \
+                 sql = 'select t1.*,t2.orthogroup from custom_tables_annot_table as t1 inner ' \
                          ' join biosqldb.orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag;' % (biodb,
                                                                                                      biodb)
             else:
@@ -13620,13 +13620,13 @@ def locus_int(request):
 
 
             if category == 'all':
-                 sql = 'select t1.*,t2.orthogroup from custom_tables.annot_table_%s as t1 inner ' \
+                 sql = 'select t1.*,t2.orthogroup from custom_tables_annot_table as t1 inner ' \
                          ' join biosqldb.orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag;' % (biodb,
                                                                                                      biodb)
 
             else:
 
-                 sql = 'select t1.*,t2.orthogroup from custom_tables.annot_table_%s as t1 inner ' \
+                 sql = 'select t1.*,t2.orthogroup from custom_tables_annot_table as t1 inner ' \
                          ' join biosqldb.orthology_detail_%s as t2 on t1.locus_tag=t2.locus_tag ' \
                          ' where category="%s";' % (biodb,
                                                     biodb,

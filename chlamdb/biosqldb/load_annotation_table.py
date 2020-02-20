@@ -15,7 +15,7 @@ def import_annot(annot_file, biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'create table IF NOT EXISTS custom_tables.annot_table_%s (category varchar(100), ' \
+    sql = 'create table IF NOT EXISTS custom_tables_annot_table (category varchar(100), ' \
           ' gene varchar(400),' \
           ' locus_tag varchar(400),' \
           ' description TEXT,' \
@@ -33,7 +33,7 @@ def import_annot(annot_file, biodb):
             print data
             print len(data)
             if len(data) == 5:
-                sql = 'insert into  custom_tables.annot_table_%s (category, gene, locus_tag, description,' \
+                sql = 'insert into  custom_tables_annot_table (category, gene, locus_tag, description,' \
                       ' reference, date) values ("%s", "%s", "%s", "%s", "%s", "%s");' % (biodb,
                                                                                                   data[0],
                                                                                                   data[1],

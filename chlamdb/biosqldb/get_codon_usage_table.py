@@ -43,7 +43,7 @@ def biodb2aa_usage(biodb):
 
     server.adaptor.execute(sql_head,)
 
-    sql_head = 'create table IF NOT EXISTS custom_tables.codon_usage_percent_%s (taxon_id INT, ' \
+    sql_head = 'create table IF NOT EXISTS custom_tables_codon_usage_percent (taxon_id INT, ' \
           ' seqfeature_id INT,' \
           ' seq_length INT,' % biodb
     for aa in CodonsDict.keys():
@@ -90,7 +90,7 @@ def biodb2aa_usage(biodb):
                 server.adaptor.execute(sql,)
                 n_codons = float(len(dna_sequence)/3)
                 values = ','.join([str(codon_count[i]/n_codons) for i in codon_list])
-                sql = 'insert into  custom_tables.codon_usage_percent_%s (taxon_id, seqfeature_id, seq_length, %s' \
+                sql = 'insert into  custom_tables_codon_usage_percent (taxon_id, seqfeature_id, seq_length, %s' \
                       ' ) values (%s, %s, %s, %s);' % (biodb,
                                                        columns,
                                                        locus2taxon_id[locus],

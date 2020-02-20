@@ -490,7 +490,7 @@ def locus_int_form(database_name):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
 
-    sql = 'select distinct category from custom_tables.annot_table_%s;' % database_name
+    sql = 'select distinct category from custom_tables_annot_table;' % database_name
     categories = server.adaptor.execute_and_fetchall(sql,)
     CHOICES = [(i[0],i[0]) for i in categories]
     CHOICES.append(("all","all"))
