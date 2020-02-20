@@ -646,7 +646,7 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
     else:
         taxon_list = [str(i) for i in taxon_list]
         filter = '`' + '`,`'.join(taxon_list) + '`'
-        sql = 'select orthogroup,%s from comparative_tables.orthology_%s' % (filter,db_name)
+        sql = 'select orthogroup,%s from comparative_tables_orthology' % (filter,db_name)
 
         data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
         count_df = pandas.DataFrame(data, columns=['orthogroup'] + taxon_list)

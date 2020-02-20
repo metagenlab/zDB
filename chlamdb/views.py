@@ -888,7 +888,7 @@ def venn_orthogroup(request):
             for target in targets:
                 template_serie = '{name: "%s", data: %s}'
                 if not accessions:
-                    sql ='select orthogroup from comparative_tables.orthology_%s where `%s` > 0' % (biodb, target)
+                    sql ='select orthogroup from comparative_tables_orthology where `%s` > 0' % (biodb, target)
                 else:
                     sql ='select id from comparative_tables.orthology_accessions_%s where %s > 0' % (biodb, target)
                 #print sql
@@ -11867,12 +11867,12 @@ def multiple_orthogroup_heatmap(request, reference_orthogroup, max_distance=2.2)
             raise 'Error: unexpected combination of groups'
     ordered_distances = sorted(distances)
 
-    sql = 'show columns from comparative_tables.orthology_%s' % biodb
+    sql = 'show columns from comparative_tables_orthology' % biodb
     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
 
     ortho_sql = '"' + '","'.join(orthogroup2distance.keys()) + '"' + ',"%s"' % reference_orthogroup
 
-    sql = 'select * from comparative_tables.orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
+    sql = 'select * from comparative_tables_orthology where orthogroup in (%s)' % (biodb, ortho_sql)
 
     profile_tuples = list(server.adaptor.execute_and_fetchall(sql,))
 
@@ -14470,7 +14470,7 @@ def orthogroup_comparison(request):
 
             orthogroups2total_count= manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-            sql = 'select orthogroup,%s from comparative_tables.orthology_%s where %s' % (columns, biodb, filter)
+            sql = 'select orthogroup,%s from comparative_tables_orthology where %s' % (columns, biodb, filter)
             #print sql
 
             orthogroups2counts = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))

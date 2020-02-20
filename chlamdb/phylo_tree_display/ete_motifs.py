@@ -55,9 +55,9 @@ def get_taxon2name2count(biodb, id_list, type="COG", taxon_filter=False):
             ordered_taxons = taxon_filter
         else:
             col_filter = '*'
-            sql = 'show columns from comparative_tables.orthology_%s' % (biodb)
+            sql = 'show columns from comparative_tables_orthology' % (biodb)
             ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
-        sql = 'select %s from comparative_tables.orthology_%s where orthogroup in (%s)' % (col_filter, biodb, ortho_sql)
+        sql = 'select %s from comparative_tables_orthology where orthogroup in (%s)' % (col_filter, biodb, ortho_sql)
     #print sql
     profile_tuples = list(server.adaptor.execute_and_fetchall(sql,))
 
@@ -87,13 +87,13 @@ def get_taxon2orthogroup2count(biodb, orthogroup_id_list):
 
     #print "orthogroup_id_list", orthogroup_id_list
 
-    sql = 'show columns from comparative_tables.orthology_%s' % (biodb)
+    sql = 'show columns from comparative_tables_orthology' % (biodb)
 
     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
 
     ortho_sql = '"' + '","'.join(orthogroup_id_list) + '"'
 
-    sql = 'select * from comparative_tables.orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
+    sql = 'select * from comparative_tables_orthology where orthogroup in (%s)' % (biodb, ortho_sql)
 
     profile_tuples = list(server.adaptor.execute_and_fetchall(sql,))
 
@@ -123,7 +123,7 @@ def get_locus2taxon2identity(biodb, locus_tag_list):
 
 
 
-    sql = 'show columns from comparative_tables.orthology_%s' % (biodb)
+    sql = 'show columns from comparative_tables_orthology' % (biodb)
 
     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
 
@@ -188,7 +188,7 @@ def get_locus2taxon2n_paralogs(biodb, locus_tag_list):
 
     #print 'get_locus2taxon2n_paralogs!!!!!!!!!!!!!!!!'
 
-    sql = 'show columns from comparative_tables.orthology_%s' % (biodb)
+    sql = 'show columns from comparative_tables_orthology' % (biodb)
 
     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
 
@@ -1820,14 +1820,14 @@ def multiple_orthogroup_heatmap(biodb, reference_orthogroup, max_distance=2.2):
             raise 'Error: unexpected combination of groups'
     ordered_distances = sorted(distances)
 
-    sql = 'show columns from comparative_tables.orthology_%s' % biodb
+    sql = 'show columns from comparative_tables_orthology' % biodb
     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
 
     #print 'taxons!', ordered_taxons
 
     ortho_sql = '"' + '","'.join(orthogroup2distance.keys()) + '"' + ',"%s"' % reference_orthogroup
 
-    sql = 'select * from comparative_tables.orthology_%s where orthogroup in (%s)' % (biodb, ortho_sql)
+    sql = 'select * from comparative_tables_orthology where orthogroup in (%s)' % (biodb, ortho_sql)
 
     profile_tuples = list(server.adaptor.execute_and_fetchall(sql,))
     #print "profile_tuples", profile_tuples

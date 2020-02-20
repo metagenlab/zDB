@@ -378,7 +378,7 @@ def create_orthology_mysql_table(server, orthogroup2detailed_count, biodatabase_
     print 
     taxon_id_list = orthogroup2detailed_count[orthogroup2detailed_count.keys()[0]].keys()
     
-    sql = "CREATE TABLE comparative_tables.orthology_%s(orthogroup VARCHAR(100) NOT NULL" % biodatabase_name
+    sql = "CREATE TABLE comparative_tables_orthology(orthogroup VARCHAR(100) NOT NULL" % biodatabase_name
     for i in taxon_id_list:
         sql+=" ,`%s` INT" % i
     sql+=")"
@@ -393,7 +393,7 @@ def create_orthology_mysql_table(server, orthogroup2detailed_count, biodatabase_
             columns+="`%s`, " % taxons[i]
         values += "%s" % orthogroup2detailed_count[group][taxons[-1]]
         columns += "`%s`" % taxons[-1]
-        sql = "INSERT INTO comparative_tables.orthology_%s (%s) values (%s);" %  (biodatabase_name, columns, values)
+        sql = "INSERT INTO comparative_tables_orthology (%s) values (%s);" %  (biodatabase_name, columns, values)
         #print sql
         server.adaptor.execute(sql)
         server.adaptor.commit()

@@ -339,7 +339,7 @@ def plot_orthogroup_size_distrib(server, biodatabase_name, out_name = "orthogrou
         #print all_taxons
         all_data = {}
         for taxon in all_taxons:
-            sql = 'select orthogroup,`%s` from comparative_tables.orthology_%s where `%s` >0' % (taxon, biodatabase_name, taxon)
+            sql = 'select orthogroup,`%s` from comparative_tables_orthology where `%s` >0' % (taxon, biodatabase_name, taxon)
             result = manipulate_biosqldb._to_dict(server.adaptor.execute_and_fetchall(sql, ))
             all_data[taxon] = Counter(result.values())
 
@@ -538,7 +538,7 @@ def create_orthology_mysql_table(server, orthogroup2detailed_count, biodatabase_
     #print
     taxon_id_list = orthogroup2detailed_count[orthogroup2detailed_count.keys()[0]].keys()
 
-    sql = "CREATE TABLE comparative_tables.orthology_%s(orthogroup VARCHAR(100) NOT NULL" % biodatabase_name
+    sql = "CREATE TABLE comparative_tables_orthology(orthogroup VARCHAR(100) NOT NULL" % biodatabase_name
     for i in taxon_id_list:
         sql+=" ,`%s` INT" % i
     sql+=")"
@@ -553,7 +553,7 @@ def create_orthology_mysql_table(server, orthogroup2detailed_count, biodatabase_
             columns+="`%s`, " % taxons[i]
         values += "%s" % orthogroup2detailed_count[group][taxons[-1]]
         columns += "`%s`" % taxons[-1]
-        sql = "INSERT INTO comparative_tables.orthology_%s (%s) values (%s);" %  (biodatabase_name, columns, values)
+        sql = "INSERT INTO comparative_tables_orthology (%s) values (%s);" %  (biodatabase_name, columns, values)
         #print sql
         server.adaptor.execute(sql)
         server.adaptor.commit()
@@ -844,7 +844,7 @@ def get_conserved_core_groups(server, biodatabase_name):
         sql_taxons += ' `%s` = 1 and' % all_taxons_id[i]
     sql_taxons += ' `%s` = 1' % all_taxons_id[-1]
 
-    sql = "select orthogroup from comparative_tables.orthology_%s where %s;" % (biodatabase_name, sql_taxons)
+    sql = "select orthogroup from comparative_tables_orthology where %s;" % (biodatabase_name, sql_taxons)
     #print sql
     result = server.adaptor.execute_and_fetchall(sql,)
 
@@ -1254,7 +1254,7 @@ if __name__ == '__main__':
             for i in range(0, len(taxon_ids)-1):
                 sql_include += ' `%s` = 1 and ' % taxon_ids[i]
             sql_include+='`%s` = 1' % taxon_ids[-1]
-        sql ='select orthogroup from comparative_tables.orthology_%s where %s' % (args.db_name, sql_include)
+        sql ='select orthogroup from comparative_tables_orthology where %s' % (args.db_name, sql_include)
         print sql
         group_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
         locus_or_protein_id2taxon_id = manipulate_biosqldb.locus_or_protein_id2taxon_id(server, args.db_name)

@@ -242,7 +242,7 @@ class Orthogroup_Identity_DB:
         server, db = manipulate_biosqldb.load_db(biodatabase_name)
 
         #print 'get orthogroups'
-        sql = 'select orthogroup from comparative_tables.orthology_%s' % biodatabase_name
+        sql = 'select orthogroup from comparative_tables_orthology' % biodatabase_name
         try:
             #print 'adding column'
             self._create_orthogroup_average_identity_column(server, biodatabase_name)

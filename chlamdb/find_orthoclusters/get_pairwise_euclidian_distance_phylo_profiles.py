@@ -69,9 +69,9 @@ def euclidian_dist_orthogroups(biodb, merge_taxons=False):
     except:
         print ('problem creating the sql table')
 
-    sql = 'select * from comparative_tables.orthology_%s' % biodb
+    sql = 'select * from comparative_tables_orthology' % biodb
 
-    sql2 = 'show columns from comparative_tables.orthology_%s' % biodb
+    sql2 = 'show columns from comparative_tables_orthology' % biodb
 
 
     # get matrix as pantas table: orthogroups as rows, genomes as columns
