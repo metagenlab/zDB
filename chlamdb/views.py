@@ -7388,7 +7388,7 @@ def blastnr_overview(request):
 
     # blast_hits_taxonomy_overview
     sql2 = 'select * from blastnr_BBH_taxo_hit_number_1;' % biodb
-    sql3 = 'select * from blastnr.BBH_taxo_hit_number_2_%s;' % biodb
+    sql3 = 'select * from blastnr_BBH_taxo_hit_number_2;' % biodb
 
 
     sql4 = 'select t2.taxon_id, sum(n_CDS) from genomes_info_%s t1 ' \
