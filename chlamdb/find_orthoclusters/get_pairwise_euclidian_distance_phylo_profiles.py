@@ -237,7 +237,7 @@ def euclidian_dist_cogs(biodb):
     except:
         print ('problem creating the sql table')
 
-    sql = 'select * from comparative_tables.COG_%s' % biodb
+    sql = 'select * from comparative_tables_COG' % biodb
     cog2profile = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     combinations = []

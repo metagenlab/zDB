@@ -148,7 +148,7 @@ def collect_COGs(db_name):
 
     taxon_id_list = manipulate_biosqldb.get_taxon_id_list(server, db_name)
 
-    sql_head = 'INSERT INTO comparative_tables.COG_%s (id,' % db_name
+    sql_head = 'INSERT INTO comparative_tables_COG (id,' % db_name
 
     for taxon in taxon_id_list:
         sql_head += '`%s`,' % taxon

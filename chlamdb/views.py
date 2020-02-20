@@ -1942,7 +1942,7 @@ def venn_cog(request, accessions=False):
             for target in targets:
                 template_serie = '{name: "%s", data: %s}'
                 if not accessions:
-                    sql ='select id from comparative_tables.COG_%s where `%s` > 0' % (biodb, target)
+                    sql ='select id from comparative_tables_COG where `%s` > 0' % (biodb, target)
                 else:
                     sql ='select id from comparative_tables.COG_accessions_%s where `%s` > 0' % (biodb, target)
                 #print sql
@@ -4523,9 +4523,9 @@ def cog_venn_subset(request, category):
     taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
     for target in targets:
         template_serie = '{name: "%s", data: %s}'
-        sql = 'select A.id from (select id from comparative_tables.COG_%s where `%s` > 0) A' \
+        sql = 'select A.id from (select id from comparative_tables_COG where `%s` > 0) A' \
               ' inner join COG_cog_names_2014 as t2 on A.id=t2.COG_id where function="%s";' % (biodb, target, category)
-        #sql ='select id from comparative_tables.COG_%s where `%s` > 0' % (biodb, target)
+        #sql ='select id from comparative_tables_COG where `%s` > 0' % (biodb, target)
         #print sql
         cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
         all_cog_list += cogs
@@ -4577,7 +4577,7 @@ def ko_venn_subset(request, category):
         sql = 'select A.id from (select id from comparative_tables.ko_%s where `%s` > 0) A' \
               ' inner join enzyme_module2ko_v1 as t2 on A.id=t2.ko_id inner JOIN ' \
               ' enzyme_kegg_module_v1 as t3 on t2.module_id=t3.module_id where module_sub_sub_cat="%s";' % (biodb, target, category)
-        #sql ='select id from comparative_tables.COG_%s where `%s` > 0' % (biodb, target)
+        #sql ='select id from comparative_tables_COG where `%s` > 0' % (biodb, target)
         #print sql
         cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
         all_cog_list += cogs
@@ -5063,7 +5063,7 @@ def cog_subset_barchart(request, accessions=False):
     # on récupère tous les cogs des génomes inclus pour faire une comparaison
     filter = '`' + '`>0 or `'.join(include) + '`>0'
     if not accessions:
-        sql = 'select id from comparative_tables.COG_%s where (%s)' % (biodb, filter)
+        sql = 'select id from comparative_tables_COG where (%s)' % (biodb, filter)
     else:
         sql = 'select id from comparative_tables.COG_accessions_%s where (%s)' % (biodb, filter)
     match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -11663,14 +11663,14 @@ def multiple_COGs_heatmap(request):
     taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
 
-    sql = 'show columns from comparative_tables.COG_%s' % biodb
+    sql = 'show columns from comparative_tables_COG' % biodb
     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
 
     #print 'taxons!', ordered_taxons
 
     ortho_sql = '"' + '","'.join(cog_list) + '"'
 
-    sql = 'select * from comparative_tables.COG_%s where id in (%s)' % (biodb, ortho_sql)
+    sql = 'select * from comparative_tables_COG where id in (%s)' % (biodb, ortho_sql)
 
     profile_tuples = list(server.adaptor.execute_and_fetchall(sql,))
 
