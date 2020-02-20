@@ -19,7 +19,7 @@ def get_module_count_all_db(biodb, category=False):
     if category:
 
         sql_pathway_count = 'select BB.module_name,count_all,count_db,count_db/count_all from (select module_id, count(*) ' \
-                            ' as count_db from (select distinct ko_id from enzyme.locus2ko_%s) as t1' \
+                            ' as count_db from (select distinct ko_id from enzyme_locus2ko) as t1' \
                             ' inner join enzyme_module2ko as t2 on t1.ko_id=t2.ko_id group by module_id) AA ' \
                             ' right join (select t1.module_id,module_name, count_all from (select module_id, count(*) as count_all ' \
                             'from enzyme_module2ko group by module_id) t1 inner join enzyme_kegg_module as t2 ' \
@@ -28,7 +28,7 @@ def get_module_count_all_db(biodb, category=False):
         # select distinct KO
         # join with module
         sql_pathway_count = 'select BB.module_name,count_all,count_db,count_db/count_all from (select module_id, count(*) ' \
-                            ' as count_db from (select distinct ko_id from enzyme.locus2ko_%s) as t1' \
+                            ' as count_db from (select distinct ko_id from enzyme_locus2ko) as t1' \
                             ' inner join enzyme_module2ko as t2 on t1.ko_id=t2.ko_id group by module_id) AA ' \
                             ' right join (select t1.module_id,module_name, count_all from (select module_id, count(*) as count_all ' \
                             'from enzyme_module2ko group by module_id) t1 inner join enzyme_kegg_module as t2 ' \
@@ -60,13 +60,13 @@ def get_module_count_per_genome(biodb, category=False):
         # join with module to get counts/modules
         sql = 'select B.module_sub_cat,A.taxon_id,B.module_name,A.n,B.description from ' \
                             ' (select taxon_id, module_id, count(*) as n from ' \
-                            ' (select distinct taxon_id,ko_id from enzyme.locus2ko_%s) t1 ' \
+                            ' (select distinct taxon_id,ko_id from enzyme_locus2ko) t1 ' \
                             ' inner join enzyme_module2ko as t2 on t1.ko_id=t2.ko_id group by taxon_id, module_id) A ' \
                             ' inner join enzyme_kegg_module as B on A.module_id=B.module_id where module_sub_cat="%s";' % (biodb, category)
     else:
         sql = 'select B.module_sub_cat,A.taxon_id,B.module_name,A.n,B.description from ' \
                             ' (select taxon_id, module_id, count(*) as n from ' \
-                            ' (select distinct taxon_id,ko_id from enzyme.locus2ko_%s) t1 ' \
+                            ' (select distinct taxon_id,ko_id from enzyme_locus2ko) t1 ' \
                             ' inner join enzyme_module2ko as t2 on t1.ko_id=t2.ko_id group by taxon_id, module_id) A ' \
                             ' inner join enzyme_kegg_module as B on A.module_id=B.module_id;' % (biodb)
 
@@ -110,13 +110,13 @@ def taxon2module2count(biodb, category=False):
         # join with module to get counts/modules
         sql = 'select B.module_sub_cat,A.taxon_id,B.module_name,A.n,B.description from ' \
                             ' (select taxon_id, module_id, count(*) as n from ' \
-                            ' (select distinct taxon_id,ko_id from enzyme.locus2ko_%s) t1 ' \
+                            ' (select distinct taxon_id,ko_id from enzyme_locus2ko) t1 ' \
                             ' inner join enzyme_module2ko as t2 on t1.ko_id=t2.ko_id group by taxon_id, module_id) A ' \
                             ' inner join enzyme_kegg_module as B on A.module_id=B.module_id where module_sub_cat="%s";' % (biodb, category)
     else:
         sql = 'select B.module_sub_cat,A.taxon_id,B.module_name,A.n,B.description from ' \
                             ' (select taxon_id, module_id, count(*) as n from ' \
-                            ' (select distinct taxon_id,ko_id from enzyme.locus2ko_%s) t1 ' \
+                            ' (select distinct taxon_id,ko_id from enzyme_locus2ko) t1 ' \
                             ' inner join enzyme_module2ko as t2 on t1.ko_id=t2.ko_id group by taxon_id, module_id) A ' \
                             ' inner join enzyme_kegg_module as B on A.module_id=B.module_id;' % (biodb)
 

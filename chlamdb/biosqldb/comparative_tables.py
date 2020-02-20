@@ -350,7 +350,7 @@ def collect_ko(db_name):
         sql_head += '`%s`,' % taxon
     sql_head = sql_head[0:-1] + ') values ('
 
-    all_ko_ids_sql = 'select distinct ko_id from enzyme.locus2ko_%s;' % (db_name)
+    all_ko_ids_sql = 'select distinct ko_id from enzyme_locus2ko;' % (db_name)
 
     all_ko_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_ko_ids_sql,)]
 
@@ -359,7 +359,7 @@ def collect_ko(db_name):
         print i,'/', len(all_ko_ids), accession
         i+=1
 
-        sql = 'select taxon_id, count(*) from enzyme.locus2ko_%s where ko_id="%s" group by taxon_id;' % (db_name, accession)
+        sql = 'select taxon_id, count(*) from enzyme_locus2ko where ko_id="%s" group by taxon_id;' % (db_name, accession)
 
         print sql
 
@@ -395,7 +395,7 @@ def collect_ko_accession(db_name):
         sql_head += '%s,' % accession
     sql_head = sql_head[0:-1] + ') values ('
 
-    all_ko_ids_sql = 'select distinct ko_id from enzyme.locus2ko_%s;' % (db_name)
+    all_ko_ids_sql = 'select distinct ko_id from enzyme_locus2ko;' % (db_name)
 
     all_ko_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_ko_ids_sql,)]
 
@@ -404,7 +404,7 @@ def collect_ko_accession(db_name):
         print i,'/', len(all_ko_ids), accession
         i+=1
 
-        sql = 'select B.accession, count(*) as n from (select locus_tag, ko_id from enzyme.locus2ko_%s ' \
+        sql = 'select B.accession, count(*) as n from (select locus_tag, ko_id from enzyme_locus2ko ' \
               ' where ko_id="%s") A inner join biosqldb.orthology_detail_%s as B on A.locus_tag=B.locus_tag ' \
               ' group by accession;' % (db_name,
                                         accession,

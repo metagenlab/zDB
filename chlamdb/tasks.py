@@ -1795,7 +1795,7 @@ def KEGG_map_ko_organism_task(biodb,
     ko_list_found_in_db = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
     # get list of all orthogroups with corresponding KO
-    sql = 'select distinct ko_id,orthogroup from enzyme.locus2ko_%s as t1 ' \
+    sql = 'select distinct ko_id,orthogroup from enzyme_locus2ko as t1 ' \
             ' where ko_id in (%s);' % (biodb,
                                         '"' + '","'.join(ko_list_found_in_db) + '"')
     orthogroup_data = server.adaptor.execute_and_fetchall(sql,)

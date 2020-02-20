@@ -20,7 +20,7 @@ def pathway_list2profile_dico(biodb, pathway_list, taxon_id_list=[], group_by_KO
 
 
         sql = 'select taxon_id, description, count(*) from (select distinct taxon_id,description,t3.pathway_id,t1.ko_id ' \
-              ' from enzyme.locus2ko_%s t1 inner join enzyme_pathway2ko t2 on t1.ko_id=t2.ko_id ' \
+              ' from enzyme_locus2ko t1 inner join enzyme_pathway2ko t2 on t1.ko_id=t2.ko_id ' \
               ' inner join enzyme_kegg_pathway as t3 on t2.pathway_id=t3.pathway_id ' \
               ' where t3.pathway_name in (%s) and taxon_id in (%s)) A group by taxon_id,pathway_id;' % (biodb,
                                                                                            filter_2,
@@ -30,7 +30,7 @@ def pathway_list2profile_dico(biodb, pathway_list, taxon_id_list=[], group_by_KO
         if not group_by_KO:
             print ('not grouping')
             sql = 'select taxon_id,description,count(*) from (select distinct taxon_id,description,t3.pathway_id,t1.ko_id ' \
-                  ' from enzyme.locus2ko_%s t1 inner join enzyme_pathway2ko t2 on t1.ko_id=t2.ko_id ' \
+                  ' from enzyme_locus2ko t1 inner join enzyme_pathway2ko t2 on t1.ko_id=t2.ko_id ' \
                   ' inner join enzyme_kegg_pathway as t3 on t2.pathway_id=t3.pathway_id ' \
                   ' where t3.pathway_name in (%s)) A group by taxon_id,pathway_id;' % (biodb,
                                                                                                filter_2)
