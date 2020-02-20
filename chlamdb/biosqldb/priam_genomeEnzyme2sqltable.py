@@ -22,7 +22,7 @@ def locus2ko_table(locus_tag2ko_dico,
 
     locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme.seqfeature_id2ko_%s (seqfeature_id INT,' \
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_seqfeature_id2ko (seqfeature_id INT,' \
            ' ko_id INT, ' \
            ' index ko_id (ko_id),' \
            ' index seqid (seqfeature_id));' % (biodatabase)
@@ -34,7 +34,7 @@ def locus2ko_table(locus_tag2ko_dico,
         ko_id = ko_accession2ko_id[ko]
         seqfeature_id = locus2seqfeature_id[locus]
 
-        sql = 'insert into enzyme.seqfeature_id2ko_%s (seqfeature_id, ko_id) values (%s, %s)' % (biodatabase,
+        sql = 'insert into enzyme_seqfeature_id2ko (seqfeature_id, ko_id) values (%s, %s)' % (biodatabase,
                                                                                                  seqfeature_id,
                                                                                                  ko_id)
 

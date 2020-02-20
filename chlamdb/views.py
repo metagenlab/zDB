@@ -2244,7 +2244,7 @@ def locusx(request, locus=None, menu=True):
 
             sql5 = 'select t3.ko_accession, t3.name, t3.definition, t3.pathways, t3.modules, t2.thrshld, t2.score, t2.evalue from ' \
                    ' custom_tables.locus2seqfeature_id_%s t1 ' \
-                   ' inner join enzyme.seqfeature_id2ko_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                   ' inner join enzyme_seqfeature_id2ko t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                    ' inner join enzyme.ko_annotation t3 on t2.ko_id=t3.ko_id where t1.locus_tag="%s";' % (biodb,
                                                                                                      biodb,
                                                                                                      locus)
@@ -2256,7 +2256,7 @@ def locusx(request, locus=None, menu=True):
                    ' inner join enzyme.kegg_pathway C on B.pathway_id=C.pathway_id where pathway_category !="1.0 Global and overview maps";' % (biodb, locus)
 
             sql8 = 'select t4.module_name, t4.module_sub_sub_cat, t4.description from custom_tables.locus2seqfeature_id_%s t1  ' \
-                   ' inner join enzyme.seqfeature_id2ko_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
+                   ' inner join enzyme_seqfeature_id2ko t2 on t1.seqfeature_id=t2.seqfeature_id' \
                    ' inner join enzyme.module2ko t3 on t2.ko_id=t3.ko_id ' \
                    ' inner join enzyme.kegg_module t4 on t3.module_id=t4.module_id where t1.locus_tag="%s";' % (biodb,
                                                                                                          biodb,
@@ -3084,7 +3084,7 @@ def fam(request, fam, type):
             except:
                 valid_id = False
         elif type == 'ko':
-            sql1 = 'select distinct seqfeature_id from enzyme.seqfeature_id2ko_%s t1 ' \
+            sql1 = 'select distinct seqfeature_id from enzyme_seqfeature_id2ko t1 ' \
                    ' inner join enzyme.ko_annotation t2 on t1.ko_id=t2.ko_id where t2.ko_accession="%s";' % (biodb,
                                                                                                              fam)
 
@@ -3178,7 +3178,7 @@ def fam(request, fam, type):
 
             sql3 = 'select t1.taxon_id, t1.orthogroup, t3.ko_accession ' \
                    ' from biosqldb.orthology_detail_%s t1 ' \
-                   ' inner join enzyme.seqfeature_id2ko_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                   ' inner join enzyme_seqfeature_id2ko t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                    ' inner join enzyme.ko_annotation t3 on t2.ko_id=t3.ko_id ' \
                    ' where t1.orthogroup in (%s);' % (biodb,
                                                         biodb,
@@ -3961,7 +3961,7 @@ def KEGG_module_map(request, module_name):
         sql = 'select distinct orthogroup,ko_accession from enzyme.kegg_module t1 ' \
               ' inner join enzyme.module2ko t2 on t1.module_id=t2.module_id ' \
               ' inner join enzyme.ko_annotation t3 on t2.ko_id=t3.ko_id ' \
-              ' inner join enzyme.seqfeature_id2ko_%s t4 on t3.ko_id=t4.ko_id ' \
+              ' inner join enzyme_seqfeature_id2ko t4 on t3.ko_id=t4.ko_id ' \
               ' inner join biosqldb.orthology_detail_%s t5 on t4.seqfeature_id=t5.seqfeature_id ' \
               ' where t1.module_name="%s";' % (biodb,
                                                biodb,
@@ -4038,7 +4038,7 @@ def kegg_multi(request, map_name, ko_name):
               ' (select * from enzyme.kegg_pathway  where pathway_name="%s") A ' \
               ' inner join enzyme.pathway2ko as B  on A.pathway_id=B.pathway_id ' \
               ' inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id ' \
-              ' inner join enzyme.seqfeature_id2ko_%s E on B.ko_id=E.ko_id ' \
+              ' inner join enzyme_seqfeature_id2ko E on B.ko_id=E.ko_id ' \
               ' group by B.ko_id,seqfeature_id) bb group by ko_accession;' % (map_name, biodb)
 
 
@@ -11608,7 +11608,7 @@ def string_page(request, cog_id, genome_accession):
 
             try:
                 sql = 'select * from COG_locus_tag2gi_hit where COG_id="%s" limit 1;' % (biodb,cog)
-                sql2 = 'select * from COG.locus_tag2gi_hit_chlamydia_12_15 where COG_id="%s" and accession="%s" limit 1;' % (cog, genome_accession)
+                sql2 = 'select * from COG_locus_tag2gi_hit where COG_id="%s" and accession="%s" limit 1;' % (cog, genome_accession)
                 #print sql2
                 #print "############################"
                 data = server.adaptor.execute_and_fetchall(sql)
@@ -12399,7 +12399,7 @@ def similarity_network(request, orthogroup, annotation):
         sql = 'select locus_tag,t5.ko_accession from annotation.seqfeature_id2locus_%s t1 ' \
               ' inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
               ' inner join orthology.orthogroup_%s t3 on t2.orthogroup_id=t3.orthogroup_id ' \
-              ' inner join enzyme.seqfeature_id2ko_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
+              ' inner join enzyme_seqfeature_id2ko t4 on t1.seqfeature_id=t4.seqfeature_id ' \
               ' inner join enzyme.ko_annotation t5 on t4.ko_id=t5.ko_id where t3.orthogroup_name="%s";' % (biodb, 
                                                                                                            biodb, 
                                                                                                            biodb, 

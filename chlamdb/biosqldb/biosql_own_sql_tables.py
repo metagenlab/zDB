@@ -1601,7 +1601,7 @@ def orthogroup2ko_id(db_name, accession=False):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql =  'select t3.orthogroup_name,ko_id from enzyme.seqfeature_id2ko_%s t1 inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology.orthogroup_%s t3 on t2.orthogroup_id=t3.orthogroup_id;' % (db_name, db_name, db_name)
+    sql =  'select t3.orthogroup_name,ko_id from enzyme_seqfeature_id2ko t1 inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology.orthogroup_%s t3 on t2.orthogroup_id=t3.orthogroup_id;' % (db_name, db_name, db_name)
 
     #print 'df', sql
     data = server.adaptor.execute_and_fetchall(sql,)

@@ -1535,7 +1535,7 @@ def KEGG_map_ko_task(biodb,
             ' (select * from enzyme.kegg_pathway  where pathway_id=%s) A ' \
             ' inner join enzyme.pathway2ko as B  on A.pathway_id=B.pathway_id  ' \
             ' inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id  ' \
-            ' inner join enzyme.seqfeature_id2ko_%s E on B.ko_id=E.ko_id ' \
+            ' inner join enzyme_seqfeature_id2ko E on B.ko_id=E.ko_id ' \
             ' group by B.ko_id, E.seqfeature_id) aa ' \
             ' inner join biosqldb.orthology_detail_%s bb on aa.seqfeature_id=bb.seqfeature_id;' % (pathway_id,
                                                                                                     biodb,
@@ -1591,7 +1591,7 @@ def KEGG_map_ko_task(biodb,
             ' (select * from enzyme.kegg_pathway  where pathway_name="%s") A ' \
             ' inner join enzyme.pathway2ko as B  on A.pathway_id=B.pathway_id ' \
             ' inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id ' \
-            ' inner join enzyme.seqfeature_id2ko_%s E on B.ko_id=E.ko_id ' \
+            ' inner join enzyme_seqfeature_id2ko E on B.ko_id=E.ko_id ' \
             ' group by B.ko_id,seqfeature_id) bb group by ko_accession;' % (map_name, biodb)
     #print sql
 
@@ -1842,12 +1842,12 @@ def KEGG_map_ko_organism_task(biodb,
             ' (select * from enzyme.kegg_pathway  where pathway_name="%s") A ' \
             ' inner join enzyme.pathway2ko as B  on A.pathway_id=B.pathway_id ' \
             ' inner join enzyme.ko_annotation as C on B.ko_id=C.ko_id ' \
-            ' inner join enzyme.seqfeature_id2ko_%s E on B.ko_id=E.ko_id ' \
+            ' inner join enzyme_seqfeature_id2ko E on B.ko_id=E.ko_id ' \
             ' group by B.ko_id,seqfeature_id) bb group by ko_accession;' % (map_name, biodb)
 
     ko2freq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select ko_accession from enzyme.seqfeature_id2ko_%s t1 ' \
+    sql = 'select ko_accession from enzyme_seqfeature_id2ko t1 ' \
             ' inner join enzyme.pathway2ko t2 on t1.ko_id=t2.ko_id ' \
             ' inner join enzyme.kegg_pathway t3 on t2.pathway_id=t3.pathway_id ' \
             ' inner join biosqldb.orthology_detail_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
