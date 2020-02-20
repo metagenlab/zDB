@@ -331,7 +331,7 @@ def euclidian_dist_interpro(biodb):
     except:
         print ('problem creating the sql table')
 
-    sql = 'select * from comparative_tables.interpro_%s' % biodb
+    sql = 'select * from comparative_tables_interpro' % biodb
     interpro2profile = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     combinations = []

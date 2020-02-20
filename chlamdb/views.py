@@ -1699,7 +1699,7 @@ def venn_interpro(request):
             taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
             for target in targets:
                 template_serie = '{name: "%s", data: %s}'
-                sql ='select id from comparative_tables.interpro_%s where `%s` > 0' % (biodb, target)
+                sql ='select id from comparative_tables_interpro where `%s` > 0' % (biodb, target)
                 #print sql
                 cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
                 all_pfam_list += cogs
@@ -7121,9 +7121,9 @@ def blastnr_overview(request):
 
     header3 = ['gc', 'size', 'complet.' ]
 
-    sql_ntt_transporters = 'select * from comparative_tables.interpro_%s where id="IPR004667";' % biodb
+    sql_ntt_transporters = 'select * from comparative_tables_interpro where id="IPR004667";' % biodb
     ntt_data = list(server.adaptor.execute_and_fetchall(sql_ntt_transporters)[0])
-    sql_headers = 'show columns from  comparative_tables.interpro_%s' % biodb
+    sql_headers = 'show columns from  comparative_tables_interpro' % biodb
     ntt_taxid = [i[0] for i in server.adaptor.execute_and_fetchall(sql_headers)]
     #print ntt_taxid
     #print ntt_data
