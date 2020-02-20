@@ -30,7 +30,7 @@ def import_taxonomy(annot_file, biodb):
 
     accession2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'create table IF NOT EXISTS custom_tables.taxonomy_%s (taxon_id INT, ' \
+    sql = 'create table IF NOT EXISTS custom_tables_taxonomy (taxon_id INT, ' \
           ' phylum_id INT,' \
           ' phylum_description TEXT,' \
           ' subphylum_id INT,' \
@@ -57,7 +57,7 @@ def import_taxonomy(annot_file, biodb):
                     taxon_id = accession2taxon_id[data[0]]
                 except:
                     IOError('invalid accssion/taxon_id')
-            sql = 'insert into  custom_tables.taxonomy_%s values (%s, %s, "%s", %s,"%s", %s, "%s", %s, "%s", %s, "%s", %s, "%s");' % (biodb,
+            sql = 'insert into  custom_tables_taxonomy values (%s, %s, "%s", %s,"%s", %s, "%s", %s, "%s", %s, "%s", %s, "%s");' % (biodb,
                                                                                                                       taxon_id,
                                                                                                                       data[1],
                                                                                                                       data[2],
