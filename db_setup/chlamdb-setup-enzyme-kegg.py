@@ -581,7 +581,7 @@ def get_kegg_module_hierarchy():
 
 def get_ec2get_pathway_table(biodb):
     '''
-    1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme.kegg_pathway table
+    1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme_kegg_pathway table
     2. get all ec associated for each pathway => create enzyme.kegg2ec table
     todo: remove existing tables for uptade if rerun
 

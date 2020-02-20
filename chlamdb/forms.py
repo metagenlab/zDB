@@ -423,7 +423,7 @@ def make_kegg_form(database_name):
     sql_pathways = 'select description,description from enzyme.locus2ko_%s t1 ' \
                    ' inner join  enzyme_pathway2ko t2 ' \
                    ' on t1.ko_id = t2.ko_id ' \
-                   ' inner join  enzyme.kegg_pathway t3 ' \
+                   ' inner join  enzyme_kegg_pathway t3 ' \
                    ' on t3.pathway_id=t2.pathway_id group by description;' % (database_name)
 
     pathway_choices = server.adaptor.execute_and_fetchall(sql_pathways,)
@@ -665,7 +665,7 @@ def make_module_overview_form(database_name, sub_sub_cat=False):
 def make_pathway_overview_form(database_name):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
-    sql = 'select distinct pathway_category from enzyme.kegg_pathway where pathway_category_short not in ("drug","disease","organismal") ' \
+    sql = 'select distinct pathway_category from enzyme_kegg_pathway where pathway_category_short not in ("drug","disease","organismal") ' \
           ' order by pathway_category;'
 
     categories = server.adaptor.execute_and_fetchall(sql,)

@@ -109,7 +109,7 @@ def edit_svg_map(map_path, keep_ko_list, biodb_name, map_name,taxon_id=False):
 
     server, db = manipulate_biosqldb.load_db(biodb_name)
 
-    sql = 'select description,pathway_name from enzyme.kegg_pathway;'
+    sql = 'select description,pathway_name from enzyme_kegg_pathway;'
 
     description2map = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

@@ -1499,7 +1499,7 @@ def KEGG_map_ko_task(biodb,
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'select pathway_name,pathway_category,description,C.EC, C.ko_accession, D.definition, A.pathway_id from ' \
-            ' (select * from enzyme.kegg_pathway where pathway_name="%s") A inner join enzyme_pathway2ko as B ' \
+            ' (select * from enzyme_kegg_pathway where pathway_name="%s") A inner join enzyme_pathway2ko as B ' \
             ' on A.pathway_id=B.pathway_id inner join enzyme_ko_annotation as C on B.ko_id=C.ko_id ' \
             ' inner join enzyme_ko_annotation as D on B.ko_id=D.ko_id;' % (map_name)
 
@@ -1532,7 +1532,7 @@ def KEGG_map_ko_task(biodb,
     # get list of all orthogroups with corresponding KO
     sql = 'select distinct aa.ko_accession, bb.orthogroup from ' \
             ' (select C.ko_accession, E.seqfeature_id from   ' \
-            ' (select * from enzyme.kegg_pathway  where pathway_id=%s) A ' \
+            ' (select * from enzyme_kegg_pathway  where pathway_id=%s) A ' \
             ' inner join enzyme_pathway2ko as B  on A.pathway_id=B.pathway_id  ' \
             ' inner join enzyme_ko_annotation as C on B.ko_id=C.ko_id  ' \
             ' inner join enzyme_seqfeature_id2ko E on B.ko_id=E.ko_id ' \
@@ -1588,7 +1588,7 @@ def KEGG_map_ko_task(biodb,
         tree2.render(path2, dpi=800, tree_style=style2)
 
     sql = 'select bb.ko_accession, count(*) from (select C.ko_accession, E.seqfeature_id from  ' \
-            ' (select * from enzyme.kegg_pathway  where pathway_name="%s") A ' \
+            ' (select * from enzyme_kegg_pathway  where pathway_name="%s") A ' \
             ' inner join enzyme_pathway2ko as B  on A.pathway_id=B.pathway_id ' \
             ' inner join enzyme_ko_annotation as C on B.ko_id=C.ko_id ' \
             ' inner join enzyme_seqfeature_id2ko E on B.ko_id=E.ko_id ' \
@@ -1782,7 +1782,7 @@ def KEGG_map_ko_organism_task(biodb,
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'select pathway_name,pathway_category,description,C.EC, C.ko_accession, D.definition, A.pathway_id from ' \
-            ' (select * from enzyme.kegg_pathway where pathway_name="%s") A inner join enzyme_pathway2ko as B ' \
+            ' (select * from enzyme_kegg_pathway where pathway_name="%s") A inner join enzyme_pathway2ko as B ' \
             ' on A.pathway_id=B.pathway_id inner join enzyme_ko_annotation as C on B.ko_id=C.ko_id ' \
             ' inner join enzyme_ko_annotation as D on B.ko_id=D.ko_id;' % (map_name)
 
@@ -1839,7 +1839,7 @@ def KEGG_map_ko_organism_task(biodb,
         tree2.render(path2, dpi=800, tree_style=style2)
 
     sql = 'select bb.ko_accession, count(*) from (select C.ko_accession, E.seqfeature_id from  ' \
-            ' (select * from enzyme.kegg_pathway  where pathway_name="%s") A ' \
+            ' (select * from enzyme_kegg_pathway  where pathway_name="%s") A ' \
             ' inner join enzyme_pathway2ko as B  on A.pathway_id=B.pathway_id ' \
             ' inner join enzyme_ko_annotation as C on B.ko_id=C.ko_id ' \
             ' inner join enzyme_seqfeature_id2ko E on B.ko_id=E.ko_id ' \
@@ -1849,7 +1849,7 @@ def KEGG_map_ko_organism_task(biodb,
 
     sql = 'select ko_accession from enzyme_seqfeature_id2ko t1 ' \
             ' inner join enzyme_pathway2ko t2 on t1.ko_id=t2.ko_id ' \
-            ' inner join enzyme.kegg_pathway t3 on t2.pathway_id=t3.pathway_id ' \
+            ' inner join enzyme_kegg_pathway t3 on t2.pathway_id=t3.pathway_id ' \
             ' inner join biosqldb.orthology_detail_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
             ' inner join enzyme_ko_annotation t5 on t1.ko_id=t5.ko_id' \
             ' where taxon_id=%s and pathway_name="%s";' % (biodb,
