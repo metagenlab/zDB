@@ -10,7 +10,9 @@ def gbk2taxid(gbk_files, db_name):
 
     for gbk in gbk_files:
         records = [i for i in SeqIO.parse(gbk, 'genbank')]
-        sql = 'select taxon_id from biosqldb.bioentry t1 inner join biosqldb.biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t1.accession="%s" and t2.name="%s";' % (records[0].name, db_name)
+        sql = 'select taxon_id from bioentry t1 ' \
+              ' inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
+              ' where t1.accession="%s" and t2.name="%s";' % (records[0].name, db_name)
         print(sql)
         file_name2taxid[gbk.split("/")[-1].split(".")[0]] = int(server.adaptor.execute_and_fetchall(sql,)[0][0])
     return file_name2taxid
@@ -28,7 +30,7 @@ def import_checkm(checkm_file,
     file_name2taxid = gbk2taxid(gbk_files, biodb)
 
     #   Bin Id             Marker lineage   # genomes   # markers   # marker sets   0     1    2    3   4   5+   Completeness   Contamination   Strain heterogeneity
-    sql = 'create table IF NOT EXISTS custom_tables.checkm_%s (taxon_id INT, ' \
+    sql = 'create table IF NOT EXISTS custom_tables_checkm (taxon_id INT, ' \
           ' n_missing INT,' \
           ' n_1 INT,' \
           ' n_2 INT,' \
@@ -38,7 +40,7 @@ def import_checkm(checkm_file,
           ' n_total INT,' \
           ' completeness FLOAT,' \
           ' contamination FLOAT,' \
-          ' heterogeneity FLOAT);' % biodb
+          ' heterogeneity FLOAT);'
           
     server.adaptor.execute(sql,)
     with open(checkm_file, 'r') as f:
@@ -88,18 +90,17 @@ def import_checkm(checkm_file,
                 heterogeneity = data[7]
                 n_sum = int(n_2) + int(n_3)+ int(n_4) + int(n_5_plus)
 
-                sql = 'insert into  custom_tables.checkm_%s values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);' % (biodb,
-                                                                                                                     file_name2taxid[accession],
-                                                                                                                     n_missing,
-                                                                                                                     n_1,
-                                                                                                                     n_2,
-                                                                                                                     n_3,
-                                                                                                                     n_4,
-                                                                                                                     n_5_plus,
-                                                                                                                     n_sum,
-                                                                                                                     completeness,
-                                                                                                                     contamination,
-                                                                                                                     heterogeneity)
+                sql = 'insert into  custom_tables_checkm values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);' % (file_name2taxid[accession],
+                                                                                                                  n_missing,
+                                                                                                                  n_1,
+                                                                                                                  n_2,
+                                                                                                                  n_3,
+                                                                                                                  n_4,
+                                                                                                                  n_5_plus,
+                                                                                                                  n_sum,
+                                                                                                                  completeness,
+                                                                                                                  contamination,
+                                                                                                                  heterogeneity)
 
                 server.adaptor.execute(sql,)
         server.commit()

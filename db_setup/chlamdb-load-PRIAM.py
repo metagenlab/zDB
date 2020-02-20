@@ -13,26 +13,25 @@ def locus2ec_table(hash2ec_dico, biodatabase, hash2locus_list):
 
     server, db = manipulate_biosqldb.load_db(biodatabase)
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme.seqfeature_id2ec_%s (enzyme_id INT AUTO_INCREMENT PRIMARY KEY,' \
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_seqfeature_id2ec (enzyme_id INT AUTO_INCREMENT PRIMARY KEY,' \
            ' seqfeature_id INT,' \
            ' ec_id INT,' \
-           ' FOREIGN KEY(ec_id) REFERENCES enzymes(enzyme_id));' % (biodatabase)
+           ' FOREIGN KEY(ec_id) REFERENCES enzymes(enzyme_id));'
 
     server.adaptor.execute_and_fetchall(sql2,)
 
-    sql = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % biodatabase
+    sql = 'select locus_tag, seqfeature_id from annotation_seqfeature_id2locus'
 
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     for hash in hash2ec_dico:
         for ec_data in hash2ec_dico[hash]:
             for locus in hash2locus_list[hash]:
-                sql = 'select enzyme_id from enzyme.enzymes where ec="%s"' % ec_data[0]
+                sql = 'select enzyme_id from enzyme_enzymes where ec="%s"' % ec_data[0]
                 ec_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
                 seqfeature_id = locus_tag2seqfeature_id[locus]
-                sql = 'insert into enzyme.seqfeature_id2ec_%s (seqfeature_id, ec_id) values (%s, %s)' % (biodatabase,
-                                                                                                         seqfeature_id,
-                                                                                                         ec_id)
+                sql = 'insert into enzyme_seqfeature_id2ec (seqfeature_id, ec_id) values (%s, %s)' % (seqfeature_id,
+                                                                                                      ec_id)
                 server.adaptor.execute(sql,)
     server.commit()
     
@@ -45,18 +44,18 @@ def locus2ec_table_legacy(hash2ec_dico,
 
     server, db = manipulate_biosqldb.load_db(biodatabase)
 
-    sql = 'select locus_tag, accession from orthology_detail_%s' % biodatabase
-    sql2 = 'select locus_tag, orthogroup from orthology_detail_%s' % biodatabase
-
+    sql = 'select locus_tag, accession from orthology_detail'
+    sql2 = 'select locus_tag, orthogroup from orthology_detail'
+    
     locus2accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
     locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme.locus2ec_%s (enzyme_id INT AUTO_INCREMENT PRIMARY KEY,' \
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_locus2ec (enzyme_id INT AUTO_INCREMENT PRIMARY KEY,' \
             ' accession varchar(60),'\
             ' locus_tag VARCHAR(20),' \
             ' orthogroup varchar(20),' \
             ' ec_id INT,' \
-            ' FOREIGN KEY(ec_id) REFERENCES enzymes(enzyme_id));' % (biodatabase)
+            ' FOREIGN KEY(ec_id) REFERENCES enzymes(enzyme_id));'
 
     server.adaptor.execute_and_fetchall(sql2,)
 
@@ -64,14 +63,13 @@ def locus2ec_table_legacy(hash2ec_dico,
         for ec_data in hash2ec_dico[hash]:
             for locus in hash2locus_list[hash]:
     
-                sql = 'select enzyme_id from enzyme.enzymes where ec="%s"' % ec_data[0]
+                sql = 'select enzyme_id from enzyme_enzymes where ec="%s"' % ec_data[0]
                 ec_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
     
-                sql = 'insert into enzyme.locus2ec_%s (accession, locus_tag, orthogroup, ec_id) values ("%s", "%s", "%s", %s)' % (biodatabase,
-                                                                                                                                    locus2accession[locus],
-                                                                                                                                    locus,
-                                                                                                                                    locus2orthogroup[locus],
-                                                                                                                                    ec_id)
+                sql = 'insert into enzyme_locus2ec (accession, locus_tag, orthogroup, ec_id) values ("%s", "%s", "%s", %s)' % (locus2accession[locus],
+                                                                                                                               locus,
+                                                                                                                               locus2orthogroup[locus],
+                                                                                                                               ec_id)
                 server.adaptor.execute(sql,)
                 server.commit()
 

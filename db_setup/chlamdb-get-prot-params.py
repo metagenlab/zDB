@@ -31,11 +31,11 @@ def pepstats2sql(biodb, locus2pepstats, aa_list):
     import re
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select locus_tag, taxon_id from orthology_detail_%s' % biodb
+    sql = 'select locus_tag, taxon_id from orthology_detail'
 
     locus2taxon = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql1 = 'CREATE table custom_tables.locus2pepstats_%s (locus_tag varchar(300),' \
+    sql1 = 'CREATE table custom_tables_locus2pepstats (locus_tag varchar(300),' \
            ' taxon_id INT,' \
            ' mol_weight float,' \
            ' isoelectric_point float,' \
@@ -45,15 +45,13 @@ def pepstats2sql(biodb, locus2pepstats, aa_list):
            ' fraction_turn float,' \
            ' fraction_sheet float,' \
            ' index taxon_id(taxon_id),' \
-           ' index locus_tag(locus_tag))' % (biodb)
+           ' index locus_tag(locus_tag))'
 
 
 
     columns = 'locus_tag varchar(300),taxon_id INT,' + ' float,'.join(aa_list) + ' float,'
-    sql2 = 'CREATE table custom_tables.locus2aa_freq_%s (%s index taxon_id(taxon_id),index locus_tag(locus_tag))' % (biodb,
-                                                                                                                     columns)
-    sql3 = 'CREATE table custom_tables.locus2aa_counts_%s (%s index taxon_id(taxon_id),index locus_tag(locus_tag))' % (biodb,
-                                                                                                                     columns)
+    sql2 = 'CREATE table custom_tables_locus2aa_freq (%s index taxon_id(taxon_id),index locus_tag(locus_tag))' % (columns)
+    sql3 = 'CREATE table custom_tables_locus2aa_counts (%s index taxon_id(taxon_id),index locus_tag(locus_tag))' % (columns)
 
 
 
@@ -70,19 +68,20 @@ def pepstats2sql(biodb, locus2pepstats, aa_list):
         instability_index = locus2pepstats[locus].instability_index()
         secondary_structure_fraction = locus2pepstats[locus].secondary_structure_fraction() # The list contains 3 values: [Helix, Turn, Sheet].
 
-        sql = 'insert into custom_tables.locus2pepstats_%s values ("%s",%s,%s,%s,%s,%s,%s,%s,%s)' % (biodb,
-                                                                                                       locus,
-                                                                                                       locus2taxon[locus],
-                                                                                                       mol_weight,
-                                                                                                       isoelectric_point,
-                                                                                                       aromaticity,
-                                                                                                       instability_index,
-                                                                                                       secondary_structure_fraction[0],
-                                                                                                       secondary_structure_fraction[1],
-                                                                                                       secondary_structure_fraction[2])
+        sql = 'insert into custom_tables_locus2pepstats values ("%s",%s,%s,%s,%s,%s,%s,%s,%s)' % (locus,
+                                                                                                  locus2taxon[locus],
+                                                                                                  mol_weight,
+                                                                                                  isoelectric_point,
+                                                                                                  aromaticity,
+                                                                                                  instability_index,
+                                                                                                  secondary_structure_fraction[0],
+                                                                                                  secondary_structure_fraction[1],
+                                                                                                  secondary_structure_fraction[2])
 
-        sql_freq = 'insert into custom_tables.locus2aa_freq_%s values ("%s",%s,' % (biodb,locus, locus2taxon[locus])
-        sql_counts = 'insert into custom_tables.locus2aa_counts_%s values ("%s",%s,' % (biodb,locus, locus2taxon[locus])
+        sql_freq = 'insert into custom_tables_locus2aa_freq values ("%s",%s,' % (locus, 
+                                                                                 locus2taxon[locus])
+        sql_counts = 'insert into custom_tables_locus2aa_counts values ("%s",%s,' % (locus, 
+                                                                                     locus2taxon[locus])
         for aa in aa_list:
             try:
                 sql_freq+= '%s,' % aa_percent[aa]
@@ -123,7 +122,7 @@ if __name__ == '__main__':
         from chlamdb.biosqldb import manipulate_biosqldb
         server, db = manipulate_biosqldb.load_db(args.biodb)
 
-        sql = 'select locus_tag, translation from orthology_detail_%s' % args.biodb
+        sql = 'select locus_tag, translation from orthology_detail'
 
         locus2seq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

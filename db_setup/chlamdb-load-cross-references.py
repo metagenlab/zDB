@@ -27,7 +27,7 @@ def create_db(biodatabase):
     server, db = manipulate_biosqldb.load_db(biodatabase)
 
     # create crossrefs table
-    sql = f'CREATE TABLE IF NOT EXISTS biosqldb.cross_references_{biodatabase} (seqfeature_id INT,'\
+    sql = f'CREATE TABLE IF NOT EXISTS cross_references (seqfeature_id INT,'\
           f' db_name VARCHAR(200),' \
           f' accession varchar(200),' \
           f' index seqfeature_id (seqfeature_id), index accession (accession));'
@@ -35,7 +35,7 @@ def create_db(biodatabase):
     server.adaptor.execute_and_fetchall(sql,)
 
     # disallow ducpliucate seqfeature id - accession pairs
-    sql = f'ALTER TABLE biosqldb.cross_references_{biodatabase} ADD UNIQUE (seqfeature_id, accession);'
+    sql = f'ALTER TABLE cross_references ADD UNIQUE (seqfeature_id, accession);'
     server.adaptor.execute_and_fetchall(sql,) 
      
 
@@ -50,11 +50,11 @@ def unirpot_crossrefs(biodatabase,
     create_db(biodatabase)
     
     # get uniprot accession list and locus2seqfeature_id dictionnary
-    sql2 = f'select seqfeature_id,uniprot_accession from custom_tables.uniprot_id2seqfeature_id_{biodatabase};'
-    sql3 = f'select locus_tag,seqfeature_id from annotation.seqfeature_id2locus_{biodatabase};'
-    sql4 = f'select seqfeature_id,protein_id from annotation.seqfeature_id2CDS_annotation_{biodatabase}'
-    sql5 = f'select protein_id, seqfeature_id from annotation.seqfeature_id2CDS_annotation_{biodatabase}'
-    sql6 = f'select accession, db_name from biosqldb.cross_references_{biodatabase} where db_name in ("RefSeq","RefSeq locus_tag")'
+    sql2 = f'select seqfeature_id,uniprot_accession from custom_tables_uniprot_id2seqfeature_id;'
+    sql3 = f'select locus_tag,seqfeature_id from annotation_seqfeature_id2locus;'
+    sql4 = f'select seqfeature_id,protein_id from annotation_seqfeature_id2CDS_annotation'
+    sql5 = f'select protein_id, seqfeature_id from annotation_seqfeature_id2CDS_annotation'
+    sql6 = f'select accession, db_name from biosqldb_cross_references where db_name in ("RefSeq","RefSeq locus_tag")'
 
     seqfeature_id2uniprot_accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3))
@@ -76,23 +76,23 @@ def unirpot_crossrefs(biodatabase,
         for locus in list(set(hash2locus_list[hash])):
             seqfeature_id = locus_tag2seqfeature_id[locus]
             # add seqfeature_id itself
-            sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "seqfeature_id", "{seqfeature_id}")'
+            sql = f'insert into cross_references (seqfeature_id, db_name, accession) values ({seqfeature_id}, "seqfeature_id", "{seqfeature_id}")'
             server.adaptor.execute(sql,)          
             # add locus
-            sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "Locus tag", "{locus}")'
+            sql = f'insert into cross_references (seqfeature_id, db_name, accession) values ({seqfeature_id}, "Locus tag", "{locus}")'
             server.adaptor.execute(sql,)
             # add protein accession
             prot = seqfeature_id2protein_accession[str(seqfeature_id)]
             
             # can happen with prokka annotation
             if prot != locus:
-                sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "Protein Accession", "{prot}")'
+                sql = f'insert into cross_references (seqfeature_id, db_name, accession) values ({seqfeature_id}, "Protein Accession", "{prot}")'
                 server.adaptor.execute(sql,)
                 prot_accession_and_version = prot.split(".")
                 # add accession without version number
                 if len(prot_accession_and_version) == 2:
                     prot_accession_no_version = prot_accession_and_version[0]
-                    sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "Protein Accession", "{prot_accession_no_version}")'
+                    sql = f'insert into cross_references (seqfeature_id, db_name, accession) values ({seqfeature_id}, "Protein Accession", "{prot_accession_no_version}")'
                     try:
                         server.adaptor.execute(sql,)
                     except:
@@ -124,7 +124,7 @@ def unirpot_crossrefs(biodatabase,
                 if db_acc in refseq_accession2db:
                     continue
 
-                sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "{db_name}", "{db_acc}")'
+                sql = f'insert into cross_references (seqfeature_id, db_name, accession) values ({seqfeature_id}, "{db_name}", "{db_acc}")'
                 try:
                     server.adaptor.execute(sql,)
                 except:
@@ -133,7 +133,7 @@ def unirpot_crossrefs(biodatabase,
                 accession_and_version = db_acc.split(".")
                 if len(accession_and_version) == 2 and db_name != "STRING":
                     accession_no_version = accession_and_version[0]
-                    sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "{db_name}", "{accession_no_version}")'
+                    sql = f'insert into cross_references (seqfeature_id, db_name, accession) values ({seqfeature_id}, "{db_name}", "{accession_no_version}")'
                     try:
                         server.adaptor.execute(sql,)
                     except:
@@ -141,7 +141,7 @@ def unirpot_crossrefs(biodatabase,
                         continue
             # add uniprot accession itself
             try:
-                sql = f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "UniProtKB-Accession", "{uniprot_accession}")'
+                sql = f'insert into cross_references (seqfeature_id, db_name, accession) values ({seqfeature_id}, "UniProtKB-Accession", "{uniprot_accession}")'
                 server.adaptor.execute(sql,)
             except:
                 pass
@@ -161,7 +161,7 @@ def refseq_crossrefs(biodatabase,
     create_db(biodatabase)
 
     # get locus2seqfeature_id dictionnary
-    sql = f'select locus_tag,seqfeature_id from annotation.seqfeature_id2locus_{biodatabase};'
+    sql = f'select locus_tag,seqfeature_id from annotation_seqfeature_id2locus;'
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
 
     with open(refseq_table, "r") as f:
@@ -177,9 +177,9 @@ def refseq_crossrefs(biodatabase,
             refseq_protein_accession = data[2]
             refseq_protein_accession_no_version = data[2].split(".")[0]
             
-            sql1 =  f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "RefSeq locus_tag", "{refseq_locus}")'
-            sql2 =  f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "RefSeq", "{refseq_protein_accession}")'
-            sql3 =  f'insert into biosqldb.cross_references_{biodatabase} (seqfeature_id, db_name, accession) values ({seqfeature_id}, "RefSeq", "{refseq_protein_accession_no_version}")'
+            sql1 =  f'insert into cross_references (seqfeature_id, db_name, accession) values ({seqfeature_id}, "RefSeq locus_tag", "{refseq_locus}")'
+            sql2 =  f'insert into cross_references (seqfeature_id, db_name, accession) values ({seqfeature_id}, "RefSeq", "{refseq_protein_accession}")'
+            sql3 =  f'insert into cross_references (seqfeature_id, db_name, accession) values ({seqfeature_id}, "RefSeq", "{refseq_protein_accession_no_version}")'
             try:
                 server.adaptor.execute(sql1,)
             except:

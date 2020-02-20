@@ -68,7 +68,8 @@ def query_yes_no(question, default="yes"):
                              "(or 'y' or 'n').\n")
 
 
-def load_db(db_name=False, sqlite=False):
+def load_db(db_name, 
+            sqlite=False):
     import os
     sqlpsw = os.environ['SQLPSW']
 
@@ -77,7 +78,7 @@ def load_db(db_name=False, sqlite=False):
                                               user="root",
                                               passwd = sqlpsw, 
                                               host = "127.0.0.1", 
-                                              db="biosqldb", 
+                                              db=db_name, 
                                               charset='utf8',
                                               use_unicode=True)
     else:

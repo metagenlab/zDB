@@ -15,17 +15,15 @@ from chlamdb.biosqldb import blastswiss2sqltable
 
 
 class TCDB():
-    def __init__(self):
+    def __init__(self, biodb):
 
         sqlpsw = os.environ['SQLPSW']
         self.conn = MySQLdb.connect(host="localhost",
                                     user="root",
-                                    passwd=sqlpsw)
+                                    passwd=sqlpsw,
+                                    db=biodb)
         self.cursor = self.conn.cursor()
-        sql = 'create database if not exists transporters'
-        self.cursor.execute(sql,)
-        sql = 'use transporters'
-        self.cursor.execute(sql,)
+
         self.conn.set_character_set('utf8mb4')
         self.cursor.execute('SET NAMES utf8mb4;')
         self.cursor.execute('SET CHARACTER SET utf8mb4;')
@@ -34,17 +32,17 @@ class TCDB():
         self.cursor.execute('SET character_set_server=utf8mb4;')
         self.conn.commit()
 
-        sql = 'CREATE table if not exists transporter_table (transporter_id INT primary key, tc1 INT, superfamily INT,' \
+        sql = 'CREATE table if not exists transporters_transporter_table (transporter_id INT primary key, tc1 INT, superfamily INT,' \
               ' family INT, subfamily INT, index tc1 (tc1), index superfamily (superfamily),' \
               ' index family (family), index subfamily (subfamily))'
         self.cursor.execute(sql,)
         self.conn.commit()
 
-        sql2 = 'CREATE table if not EXISTS tc_table (tc_id INT primary key AUTO_INCREMENT, tc_name varchar(400), description TEXT)'
+        sql2 = 'CREATE table if not EXISTS transporters_tc_table (tc_id INT primary key AUTO_INCREMENT, tc_name varchar(400), description TEXT)'
         self.cursor.execute(sql2,)
         self.conn.commit()
 
-        sql = 'CREATE TABLE if not exists uniprot_table (uniprot_id INT primary key AUTO_INCREMENT, uniprot_accession varchar(400)' \
+        sql = 'CREATE TABLE if not exists transporters_uniprot_table (uniprot_id INT primary key AUTO_INCREMENT, uniprot_accession varchar(400)' \
               ' ,substrate TEXT, taxon_id INT, ' \
               ' uniprot_description TEXT, tcdb_description TEXT, organism TEXT, uniprot_gene TEXT, uniprot_annotation_score INT)'
         self.cursor.execute(sql,)
@@ -56,11 +54,11 @@ class TCDB():
         if not tc_db_id:
             print ('%s not into database!' % tc_id)
             description = re.sub('"', '', tcdb_utils.accession2family(tc_id))
-            sql = 'insert into tc_table(tc_name, description) values (%s, %s)'
+            sql = 'insert into transporters_tc_table(tc_name, description) values (%s, %s)'
             print(sql % (tc_id, description))
             self.cursor.execute(sql, (tc_id, description))
             self.conn.commit()
-            sql3 = 'select tc_id from tc_table where tc_name="%s"' % tc_id
+            sql3 = 'select tc_id from transporters_tc_table where tc_name="%s"' % tc_id
             self.cursor.execute(sql3,)
             return self.cursor.fetchall()[0][0]
         else:
@@ -85,13 +83,13 @@ class TCDB():
             id_family = self.add_one_tc_id(id_family)
             id_subfamily = self.add_one_tc_id(id_subfamily)
             id_complete = self.add_one_tc_id(id_complete)
-        sql = 'select transporter_id from transporter_table where transporter_id=%s' % id_complete
+        sql = 'select transporter_id from transporters_transporter_table where transporter_id=%s' % id_complete
         try:
             self.cursor.execute(sql,)
             id = self.cursor.fetchall()[0][0]
             return id
         except:
-            sql = 'insert into transporter_table (transporter_id, tc1,superfamily, family, subfamily) values ("%s",' \
+            sql = 'insert into transporters_transporter_table (transporter_id, tc1,superfamily, family, subfamily) values ("%s",' \
                   ' "%s","%s","%s","%s")' % (id_complete, id_id1, id_superfamily, id_family, id_subfamily)
             self.cursor.execute(sql,)
             self.conn.commit()
@@ -99,7 +97,7 @@ class TCDB():
 
     def check_if_tc_accession_already_in_db(self, tc_name):
 
-        sql3 = 'select tc_id from tc_table where tc_name="%s"' % tc_name
+        sql3 = 'select tc_id from transporters_tc_table where tc_name="%s"' % tc_name
         try:
             self.cursor.execute(sql3,)
             tc_id = self.cursor.fetchall()[0][0]
@@ -108,7 +106,7 @@ class TCDB():
             return False
 
     def check_if_uniprot_accession_already_in_db(self, tc_name):
-        sql3 = 'select uniprot_id from uniprot_table where uniprot_accession="%s"' % tc_name
+        sql3 = 'select uniprot_id from transporters_uniprot_table where uniprot_accession="%s"' % tc_name
         try:
             self.cursor.execute(sql3,)
             uniprot_id = self.cursor.fetchall()[0][0]
@@ -118,7 +116,7 @@ class TCDB():
 
     def insert_uniprot_in_db(self, uniprot_accession, tc_id, tcdb_description):
 
-        sql2 = 'select uniprot_id from uniprot_table where uniprot_accession="%s"' % (uniprot_accession)
+        sql2 = 'select uniprot_id from transporters_uniprot_table where uniprot_accession="%s"' % (uniprot_accession)
 
         try:
             self.cursor.execute(sql2,)
@@ -174,7 +172,7 @@ class TCDB():
 
             uniprot_description = re.sub('"', '', uniprot_description)
             substrate = tcdb_utils.accession2substrate(uniprot_accession, tc_id)
-            sql = 'insert into uniprot_table (uniprot_accession,taxon_id, substrate, uniprot_description, tcdb_description, organism, ' \
+            sql = 'insert into transporters_uniprot_table (uniprot_accession,taxon_id, substrate, uniprot_description, tcdb_description, organism, ' \
                   ' uniprot_gene, uniprot_annotation_score) values ("%s", %s, "%s", "%s","%s","%s","%s",%s)' % (uniprot_accession,
                                                                                                            taxon_id,
                                                                                                            substrate,
@@ -185,7 +183,7 @@ class TCDB():
                                                                                                            annot_score)
             self.cursor.execute(sql,)
             self.conn.commit()
-            sql2 = 'select uniprot_id from uniprot_table where uniprot_accession="%s"' % (uniprot_accession)
+            sql2 = 'select uniprot_id from transporters_uniprot_table where uniprot_accession="%s"' % (uniprot_accession)
             self.cursor.execute(sql2,)
             return self.cursor.fetchall()[0][0]
 
@@ -239,8 +237,11 @@ if __name__ == '__main__':
     parser.add_argument("-u", '--update', action='store_true', help="update DB (add missing entries)")
     parser.add_argument("-r", '--replace', action='store_true', help="replace existing tables")
     parser.add_argument("-f", '--fasta_file', help="Fasta file (download from TCDB.org if not provided)")
+    parser.add_argument("-d", '--db_name', type=str, help="db name", required=True)
 
     args = parser.parse_args()
 
-    t = TCDB()
-    t.import_annot(update=args.update, replace=args.replace, db_fasta=args.fasta_file)
+    t = TCDB(args.db_name)
+    t.import_annot(update=args.update, 
+                   replace=args.replace, 
+                   db_fasta=args.fasta_file)

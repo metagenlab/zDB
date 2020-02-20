@@ -9,8 +9,8 @@ def create_DOOR_operon_table(biodb):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     # OperonID	GI	Synonym	Start	End	Strand	Length	COG_number	Product
-    sql = 'CREATE TABLE IF NOT EXISTS custom_tables.DOOR2_operons_%s (operon_id INT, gi INT, seqfeature_id INT, old_locus_tag varchar(400), COG_number ' \
-          ' varchar(400), product TEXT, index seqfeature_id (seqfeature_id), index old_locus_tag(old_locus_tag), index operon_id(operon_id))' % biodb
+    sql = 'CREATE TABLE IF NOT EXISTS custom_tables_DOOR2_operons (operon_id INT, gi INT, seqfeature_id INT, old_locus_tag varchar(400), COG_number ' \
+          ' varchar(400), product TEXT, index seqfeature_id (seqfeature_id), index old_locus_tag(old_locus_tag), index operon_id(operon_id))'
     server.adaptor.execute(sql)
     server.commit()
 
@@ -52,9 +52,9 @@ def accession2operon_table(biodb):
     accession_list = [i[0] for i in server.adaptor.execute_and_fetchall(accession_list_sql,)]
 
     # get full join
-    sql = 'select old_locus_tag,t1.seqfeature_id from custom_tables.locus2seqfeature_id_%s t1' \
-          ' inner join custom_tables.seqfeature_id2old_locus_tag_%s t2 ' \
-          ' on t1.seqfeature_id=t2.seqfeature_id;' % (biodb, biodb)
+    sql = 'select old_locus_tag,t1.seqfeature_id from custom_tables_locus2seqfeature_id t1' \
+          ' inner join custom_tables_seqfeature_id2old_locus_tag t2 ' \
+          ' on t1.seqfeature_id=t2.seqfeature_id;'
     print (sql)
 
     try:
@@ -62,7 +62,7 @@ def accession2operon_table(biodb):
     except:
         old_locus2seqfeature_id = {}
     print ("old_locus2seqfeature_id", old_locus2seqfeature_id)
-    sql = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+    sql = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id'
 
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     #print locus_tag2seqfeature_id
@@ -71,7 +71,7 @@ def accession2operon_table(biodb):
 
     for accession in accession_list:
         print("accession", accession)
-        door_id_sql = 'select door_id from custom_tables.DOOR2_operon_accessions where accession="%s"' % accession
+        door_id_sql = 'select door_id from custom_tables_DOOR2_operon_accessions where accession="%s"' % accession
 
         try:
             door_id = server.adaptor.execute_and_fetchall(door_id_sql,)[0][0]
@@ -96,13 +96,12 @@ def accession2operon_table(biodb):
                 except KeyError:
                     print (door_entry[2])
                     new_locus_seqfeature_id = 0
-            sql = 'INSERT INTO custom_tables.DOOR2_operons_%s values (%s, %s, %s, "%s", "%s", "%s")' % (biodb,
-                                                                                                         door_entry[0],
-                                                                                                         door_entry[1],
-                                                                                                         new_locus_seqfeature_id,
-                                                                                                         door_entry[2],
-                                                                                                         door_entry[7],
-                                                                                                         door_entry[8])
+            sql = 'INSERT INTO custom_tables_DOOR2_operons values (%s, %s, %s, "%s", "%s", "%s")' % (door_entry[0],
+                                                                                                     door_entry[1],
+                                                                                                     new_locus_seqfeature_id,
+                                                                                                     door_entry[2],
+                                                                                                     door_entry[7],
+                                                                                                     door_entry[8])
 
             server.adaptor.execute(sql,)
             server.commit()

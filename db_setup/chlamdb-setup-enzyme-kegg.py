@@ -1,21 +1,18 @@
 #!/usr/bin/env python
 
 
-def connect_db():
+def connect_db(biodb):
     import MySQLdb
     import os
     import re
     from chlamdb.biosqldb import manipulate_biosqldb
     sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw) # name of the data base
+                           user="root", # your username
+                           passwd=sqlpsw,
+                           db=biodb) # name of the data base
 
     cursor = conn.cursor()
-    sql_db = 'CREATE DATABASE IF NOT EXISTS enzyme;'
-    cursor.execute(sql_db,)
-    conn.commit()
-    cursor.execute("use enzyme;",)
 
     conn.set_character_set('utf8')
     cursor.execute('SET NAMES utf8;')
@@ -25,12 +22,12 @@ def connect_db():
     return conn, cursor
 
 
-def get_complete_ko_table():
+def get_complete_ko_table(biodb):
     import urllib.request
     import re
-    conn, cursor = connect_db()
+    conn, cursor = connect_db(biodb)
 
-    sql = 'CREATE TABLE IF NOT EXISTS enzyme.ko_annotation (ko_id INT AUTO_INCREMENT PRIMARY KEY, ' \
+    sql = 'CREATE TABLE IF NOT EXISTS enzyme_ko_annotation (ko_id INT AUTO_INCREMENT PRIMARY KEY, ' \
           ' ko_accession VARCHAR(20),' \
           ' name varchar(60),' \
           ' definition TEXT,' \
@@ -45,7 +42,7 @@ def get_complete_ko_table():
     url = 'http://rest.kegg.jp/list/ko'
     data = urllib.request.urlopen(url).read().decode('utf-8').split('\n')
 
-    sql = 'select ko_accession from ko_annotation;'
+    sql = 'select ko_accession from enzyme_ko_annotation;'
     cursor.execute(sql,)
 
     ko_already_in_db = [i[0] for i in cursor.fetchall()]
@@ -102,7 +99,7 @@ def get_complete_ko_table():
         else:
             pathways = '-'
 
-        sql = 'insert into enzyme.ko_annotation (ko_accession, name, definition, EC, pathways, modules, dbxrefs)' \
+        sql = 'insert into enzyme_ko_annotation (ko_accession, name, definition, EC, pathways, modules, dbxrefs)' \
               ' values ("%s", "%s", "%s","%s", "%s", "%s", "%s")' % (ko,
                                                                 name,
                                                                 definition,
@@ -115,7 +112,7 @@ def get_complete_ko_table():
         conn.commit()
 
 
-def load_enzyme_nomenclature_table():
+def load_enzyme_nomenclature_table(biodb):
 
 
     '''
@@ -137,7 +134,7 @@ def load_enzyme_nomenclature_table():
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
                                 passwd=sqlpsw, # your password
-                                db="enzyme") # name of the data base
+                                db=biodb) # name of the data base
     cursor = conn.cursor()
     conn.set_character_set('utf8')
     cursor.execute('SET NAMES utf8;')
@@ -161,10 +158,10 @@ def load_enzyme_nomenclature_table():
 
     data = urllib.request.urlopen(enzyme_file).read().decode('utf-8')
 
-    sql1 = 'CREATE TABLE IF NOT EXISTS enzymes (enzyme_id INT AUTO_INCREMENT PRIMARY KEY,' \
+    sql1 = 'CREATE TABLE IF NOT EXISTS enzyme_enzymes (enzyme_id INT AUTO_INCREMENT PRIMARY KEY,' \
           ' ec VARCHAR(200));'
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS enzymes_dat (enzyme_dat_id INT,' \
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_enzymes_dat (enzyme_dat_id INT,' \
           ' line VARCHAR(20),' \
           ' value LONG,' \
            ' CONSTRAINT fk_enzyme_id' \
@@ -181,7 +178,7 @@ def load_enzyme_nomenclature_table():
     for n, data in enumerate(Enzyme.parse(StringIO(data))):
         enzyme = data['ID']
         # insert enzyme id into primary TABLE
-        sql = 'INSERT into enzymes (ec) values ("%s");' % enzyme
+        sql = 'INSERT into enzyme_enzymes (ec) values ("%s");' % enzyme
 
         print(n, sql)
 
@@ -194,11 +191,11 @@ def load_enzyme_nomenclature_table():
         id = cursor.fetchall()[0][0]
 
         # description
-        sql = 'INSERT into enzymes_dat (enzyme_dat_id, line, value) values (%s, "description", "%s");' % (id, data['DE'])
+        sql = 'INSERT into enzyme_enzymes_dat (enzyme_dat_id, line, value) values (%s, "description", "%s");' % (id, data['DE'])
         cursor.execute(sql,)
         # alternative names
         for i in data['AN']:
-            sql = 'INSERT into enzymes_dat (enzyme_dat_id,line, value) values(%s, "alternative name", "%s");' % (id, i)
+            sql = 'INSERT into enzyme_enzymes_dat (enzyme_dat_id,line, value) values(%s, "alternative name", "%s");' % (id, i)
             cursor.execute(sql,)
 
         # Catalytic activity
@@ -206,16 +203,16 @@ def load_enzyme_nomenclature_table():
         cursor.execute(sql,)
 
         # Cofactors
-        sql = 'INSERT into enzymes_dat (enzyme_dat_id,line, value) values(%s, "cofactors", "%s");' % (id, data['CF'])
+        sql = 'INSERT into enzyme_enzymes_dat (enzyme_dat_id,line, value) values(%s, "cofactors", "%s");' % (id, data['CF'])
         cursor.execute(sql,)
 
         # prosite crossref
         for i in data['PR']:
-            sql = 'INSERT into enzymes_dat (enzyme_dat_id,line, value) values(%s, "prosite", "%s");' % (id, i)
+            sql = 'INSERT into enzyme_enzymes_dat (enzyme_dat_id,line, value) values(%s, "prosite", "%s");' % (id, i)
             cursor.execute(sql,)
         # comments
         for i in data['CC']:
-            sql = 'INSERT into enzymes_dat (enzyme_dat_id,line, value) values(%s, "comment", "%s");' % (id, i)
+            sql = 'INSERT into enzyme_enzymes_dat (enzyme_dat_id,line, value) values(%s, "comment", "%s");' % (id, i)
             cursor.execute(sql,)
 
         conn.commit()
@@ -281,7 +278,8 @@ def get_kegg_pathway_classification():
 
 
 
-def get_pathay_table(map2category):
+def get_pathay_table(map2category, 
+                     biodb):
     import MySQLdb
     import urllib.request
     import sys
@@ -290,10 +288,10 @@ def get_pathay_table(map2category):
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
                                 passwd=sqlpsw, # your password
-                                db="enzyme") # name of the data base
+                                db=biodb) # name of the data base
     cursor = conn.cursor()
 
-    sql1 = 'CREATE TABLE IF NOT EXISTS enzyme.kegg_pathway (pathway_id INT AUTO_INCREMENT PRIMARY KEY,' \
+    sql1 = 'CREATE TABLE IF NOT EXISTS enzyme_kegg_pathway (pathway_id INT AUTO_INCREMENT PRIMARY KEY,' \
            ' pathway_name VARCHAR(200),' \
            ' pathway_category_short VARCHAR(200),' \
            ' pathway_category VARCHAR(200),' \
@@ -324,7 +322,7 @@ def get_pathay_table(map2category):
         except:
             cat = 'uncategorized'
             cat_short = 'uncategorized'
-        sql = 'INSERT into enzyme.kegg_pathway (pathway_name, description,' \
+        sql = 'INSERT into enzyme_kegg_pathway (pathway_name, description,' \
               ' pathway_category_short, pathway_category) values ("%s", "%s", "%s", "%s");' % (map,
                                                                                                description,
                                                                                                cat_short,
@@ -334,7 +332,8 @@ def get_pathay_table(map2category):
         conn.commit()
 
 
-def get_pathway2ko(ko_accession2ko_id):
+def get_pathway2ko(ko_accession2ko_id, 
+                   biodb):
     '''
     1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme.kegg_module table
     2. get all KO associated for each pathway => create enzyme.pathway2ko table
@@ -353,12 +352,12 @@ def get_pathway2ko(ko_accession2ko_id):
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
                                 passwd=sqlpsw, # your password
-                                db="enzyme") # name of the data base
+                                db=biodb) # name of the data base
     cursor = conn.cursor()
 
 
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS pathway2ko (pathway_id INT,' \
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_pathway2ko (pathway_id INT,' \
            ' ko_id INT,' \
            ' index pathway_id(pathway_id),' \
            ' index ko_id(ko_id));'
@@ -367,7 +366,7 @@ def get_pathway2ko(ko_accession2ko_id):
     cursor.execute(sql2,)
     conn.commit()
 
-    sql = 'select pathway_name, pathway_id from enzyme.kegg_pathway'
+    sql = 'select pathway_name, pathway_id from enzyme_kegg_pathway'
     cursor.execute(sql,)
     pathway_name2pathway_id = manipulate_biosqldb.to_dict(cursor.fetchall())
 
@@ -408,7 +407,7 @@ def get_pathway2ko(ko_accession2ko_id):
                 print ('PROBLEM with KO %s?' % ko)
                 continue
             try:
-                sql = 'INSERT into pathway2ko (pathway_id, ko_id) values (%s,%s);' % (pathway_id,
+                sql = 'INSERT into enzyme_pathway2ko (pathway_id, ko_id) values (%s,%s);' % (pathway_id,
                                                                                        ko_id)
                 cursor.execute(sql,)
             except:
@@ -419,7 +418,8 @@ def get_pathway2ko(ko_accession2ko_id):
 
 
 def get_module_table(module2category,
-                     ko_accession2ko_id):
+                     ko_accession2ko_id,
+                     biodb):
     '''
     1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme.kegg_module table
     2. get all KO associated for each module => create enzyme.module2ko table
@@ -438,10 +438,10 @@ def get_module_table(module2category,
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
                                 passwd=sqlpsw, # your password
-                                db="enzyme") # name of the data base
+                                db=biodb) # name of the data base
     cursor = conn.cursor()
 
-    sql1 = 'CREATE TABLE IF NOT EXISTS kegg_module (module_id INT AUTO_INCREMENT PRIMARY KEY,' \
+    sql1 = 'CREATE TABLE IF NOT EXISTS enzyme_kegg_module (module_id INT AUTO_INCREMENT PRIMARY KEY,' \
            ' module_name VARCHAR(200),' \
            ' module_cat VARCHAR(200),' \
            ' module_sub_cat VARCHAR(200),' \
@@ -455,27 +455,25 @@ def get_module_table(module2category,
     print (sql1)
     cursor.execute(sql1,)
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS module2ko (module_id INT,' \
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_module2ko (module_id INT,' \
            ' ko_id INT,' \
            ' index ko_id(ko_id),' \
            ' index module_id(module_id));'
 
-    sqlm = 'select module_name from kegg_module'
+    sqlm = 'select module_name from enzyme_kegg_module'
     cursor.execute(sqlm,)
     module_in_db = [i[0] for i in cursor.fetchall()]
 
 
     sql3 = ' CONSTRAINT fk_pathway_id' \
-           ' FOREIGN KEY(pathway_id) REFERENCES kegg_pathway(id)' \
+           ' FOREIGN KEY(pathway_id) REFERENCES enzyme_kegg_pathway(id)' \
            ' ON DELETE CASCADE,' \
            ' CONSTRAINT fk_ec_id' \
-           ' FOREIGN KEY(ec_id) REFERENCES enzymes(id)' \
+           ' FOREIGN KEY(ec_id) REFERENCES enzyme_enzymes(id)' \
            ' ON DELETE CASCADE);'
 
     print (sql2)
     cursor.execute(sql2,)
-
-
 
     module_file_file = 'http://rest.kegg.jp/list/module'
     data = urllib.request.urlopen(module_file_file).read().decode('utf-8').split("\n")
@@ -498,7 +496,7 @@ def get_module_table(module2category,
             cat_short = 'uncategorized'
             print ('------------------------------------------------')
 
-        sql = 'INSERT into kegg_module (module_name, module_cat,module_sub_cat, module_sub_sub_cat, description) ' \
+        sql = 'INSERT into enzyme_kegg_module (module_name, module_cat,module_sub_cat, module_sub_sub_cat, description) ' \
               'values ("%s", "%s", "%s", "%s", "%s");' % (module,
                                                           cat,
                                                           sub_cat,
@@ -581,7 +579,7 @@ def get_kegg_module_hierarchy():
     return module2category
 
 
-def get_ec2get_pathway_table():
+def get_ec2get_pathway_table(biodb):
     '''
     1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme.kegg_pathway table
     2. get all ec associated for each pathway => create enzyme.kegg2ec table
@@ -600,20 +598,20 @@ def get_ec2get_pathway_table():
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
                                 passwd=sqlpsw, # your password
-                                db="enzyme") # name of the data base
+                                db=biodb) # name of the data base
     cursor = conn.cursor()
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme.kegg2ec (pathway_id INT,' \
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_kegg2ec (pathway_id INT,' \
            ' ec_id INT,' \
-           ' FOREIGN KEY(pathway_id) REFERENCES kegg_pathway(pathway_id),' \
-           ' FOREIGN KEY(ec_id) REFERENCES enzymes(enzyme_id))' \
+           ' FOREIGN KEY(pathway_id) REFERENCES enzyme_kegg_pathway(pathway_id),' \
+           ' FOREIGN KEY(ec_id) REFERENCES enzyme_enzymes(enzyme_id))' \
 
 
     sql3 = ' CONSTRAINT fk_pathway_id' \
-           ' FOREIGN KEY(pathway_id) REFERENCES kegg_pathway(id)' \
+           ' FOREIGN KEY(pathway_id) REFERENCES enzyme_kegg_pathway(id)' \
            ' ON DELETE CASCADE,' \
            ' CONSTRAINT fk_ec_id' \
-           ' FOREIGN KEY(ec_id) REFERENCES enzymes(id)' \
+           ' FOREIGN KEY(ec_id) REFERENCES enzyme_enzymes(id)' \
            ' ON DELETE CASCADE);'
 
     print (sql2)
@@ -621,7 +619,7 @@ def get_ec2get_pathway_table():
     conn.commit()
 
 
-    sql = 'select pathway_name,pathway_id from enzyme.kegg_pathway;'
+    sql = 'select pathway_name,pathway_id from enzyme_kegg_pathway;'
     cursor.execute(sql,)
     map2id = manipulate_biosqldb.to_dict(cursor.fetchall())
     for map in map2id:
@@ -643,7 +641,7 @@ def get_ec2get_pathway_table():
                 continue
             else:
                 ec = ec[3:]
-                sql_ec = 'select enzyme_id from enzymes where ec="%s"' % ec
+                sql_ec = 'select enzyme_id from enzyme_enzymes where ec="%s"' % ec
                 cursor.execute(sql_ec, )
                 try:
                     ec_id = cursor.fetchall()[0][0]
@@ -656,7 +654,7 @@ def get_ec2get_pathway_table():
                         sys.stdout.write("NO DATA FOR %s\n" % ec)
                         continue
 
-                sql = 'INSERT into kegg2ec (pathway_id, ec_id) values (%s,"%s");' % (id, ec_id)
+                sql = 'INSERT into enzyme_kegg2ec (pathway_id, ec_id) values (%s,"%s");' % (id, ec_id)
                 cursor.execute(sql,)
         conn.commit()
 
@@ -685,7 +683,7 @@ def get_module2ko_data(cursor, ko_data, module_id, ko_accession2ko_id):
                 ko_data = urllib.request.urlopen(ko_url).read().decode('utf-8').split("\n")
                 definition = ko2definition(ko_data)
                 ko_id = ko_accession2ko_id[ko]
-                sql = 'INSERT into module2ko (module_id, ko_id) values (%s,%s);' % (module_id,
+                sql = 'INSERT into enzyme_module2ko (module_id, ko_id) values (%s,%s);' % (module_id,
                                                                                     ko_id)
                 print (sql)
                 cursor.execute(sql,)
@@ -695,7 +693,8 @@ def get_module2ko_data(cursor, ko_data, module_id, ko_accession2ko_id):
                 sys.exit()
 
 
-def get_ec_data_from_IUBMB(ec):
+def get_ec_data_from_IUBMB(ec, 
+                           biodb):
     import urllib.request
     import re
     import MySQLdb
@@ -705,7 +704,7 @@ def get_ec_data_from_IUBMB(ec):
     conn = MySQLdb.connect(host="localhost",
                                 user="root",
                                 passwd=sqlpsw,
-                                db="enzyme")
+                                db=biodb)
     cursor = conn.cursor()
 
     name_m = re.compile(u".*Accepted name.*")
@@ -756,7 +755,7 @@ def get_ec_data_from_IUBMB(ec):
         else:
             continue
 
-    sql_new = 'INSERT into enzymes (ec) values ("%s");' % ec
+    sql_new = 'INSERT into enzyme_enzymes (ec) values ("%s");' % ec
     cursor.execute(sql_new, )
     conn.commit()
 
@@ -765,34 +764,34 @@ def get_ec_data_from_IUBMB(ec):
     id = int(cursor.fetchall()[0][0])
     print (id)
 
-    sql = 'INSERT into enzymes_dat (enzyme_dat_id, line, value) values (%s, "description", "%s");' % (id, name)
+    sql = 'INSERT into enzyme_enzymes_dat (enzyme_dat_id, line, value) values (%s, "description", "%s");' % (id, name)
     cursor.execute(sql,)
     # alternative names
     for i in altname:
-        sql = 'INSERT into enzymes_dat (enzyme_dat_id,line, value) values(%s, "alternative name", "%s");' % (id, re.sub("<[a-z\/]+>", "", i))
+        sql = 'INSERT into enzyme_enzymes_dat (enzyme_dat_id,line, value) values(%s, "alternative name", "%s");' % (id, re.sub("<[a-z\/]+>", "", i))
         cursor.execute(sql,)
 
     # Catalytic activity
     for i in reaction_list:
-        sql = 'INSERT into enzymes_dat (enzyme_dat_id,line, value) values(%s,"catalytic activity", "%s");' % (id, re.sub("<[a-z\/]+>", "", i))
+        sql = 'INSERT into enzyme_enzymes_dat (enzyme_dat_id,line, value) values(%s,"catalytic activity", "%s");' % (id, re.sub("<[a-z\/]+>", "", i))
         cursor.execute(sql,)
 
     # comments
     for i in cc:
         #i = re.sub("\r\r<b>Reaction:</b> ","",i)
-        sql = 'INSERT into enzymes_dat (enzyme_dat_id,line, value) values(%s, "comment", "%s");' % (id, re.sub("<[ =\"A-Za-z0-9\/\.]+>", "", i))
+        sql = 'INSERT into enzyme_enzymes_dat (enzyme_dat_id,line, value) values(%s, "comment", "%s");' % (id, re.sub("<[ =\"A-Za-z0-9\/\.]+>", "", i))
         cursor.execute(sql,)
 
     conn.commit()
     return id
 
 
-def get_ko2ec():
+def get_ko2ec(biodb):
     import urllib.request
     import re
-    conn, cursor =connect_db()
+    conn, cursor =connect_db(biodb)
 
-    sql = 'CREATE TABLE IF NOT EXISTS enzyme.ko2ec (ko_id VARCHAR(20),' \
+    sql = 'CREATE TABLE IF NOT EXISTS enzyme_ko2ec (ko_id VARCHAR(20),' \
            ' enzyme_id INT,' \
            ' index enzyme_id (enzyme_id), ' \
            ' index ko_id (ko_id));'
@@ -929,7 +928,7 @@ def ko2definition(ko_record):
 
 
 
-def get_module_table_legacy(module2category):
+def get_module_table_legacy(module2category, biodb):
     '''
     1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme.kegg_module table
     2. get all KO associated for each module => create enzyme.module2ko table
@@ -950,10 +949,10 @@ def get_module_table_legacy(module2category):
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
                                 passwd=sqlpsw, # your password
-                                db="enzyme") # name of the data base
+                                db=biodb) # name of the data base
     cursor = conn.cursor()
 
-    sql1 = 'CREATE TABLE IF NOT EXISTS kegg_module_v1 (module_id INT AUTO_INCREMENT PRIMARY KEY,' \
+    sql1 = 'CREATE TABLE IF NOT EXISTS enzyme_kegg_module_v1 (module_id INT AUTO_INCREMENT PRIMARY KEY,' \
            ' module_name VARCHAR(200),' \
            ' module_cat VARCHAR(200),' \
            ' module_sub_cat VARCHAR(200),' \
@@ -963,13 +962,13 @@ def get_module_table_legacy(module2category):
     print (sql1)
     cursor.execute(sql1,)
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS module2ko_v1 (module_id INT,' \
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_module2ko_v1 (module_id INT,' \
            ' ko_id VARCHAR(200),' \
            ' ko_description TEXT);'
 
 
     sql3 = ' CONSTRAINT fk_pathway_id' \
-           ' FOREIGN KEY(pathway_id) REFERENCES kegg_pathway_v1(id)' \
+           ' FOREIGN KEY(pathway_id) REFERENCES enzyme_kegg_pathway_v1(id)' \
            ' ON DELETE CASCADE,' \
            ' CONSTRAINT fk_ec_id' \
            ' FOREIGN KEY(ec_id) REFERENCES enzymes(id)' \
@@ -997,7 +996,7 @@ def get_module_table_legacy(module2category):
             cat = 'uncategorized'
             cat_short = 'uncategorized'
             print ('------------------------------------------------')
-        sql = 'INSERT into kegg_module_v1 (module_name, module_cat,module_sub_cat, module_sub_sub_cat, description) ' \
+        sql = 'INSERT into enzyme_kegg_module_v1 (module_name, module_cat,module_sub_cat, module_sub_sub_cat, description) ' \
               'values ("%s", "%s", "%s", "%s", "%s");' % (module,
                                                           cat,
                                                           sub_cat,
@@ -1028,7 +1027,7 @@ def get_module_table_legacy(module2category):
                 ko_url = "http://rest.kegg.jp/get/%s" % ko
                 ko_data = urllib.request.urlopen(ko_url).read().decode('utf-8').split('\n')
                 definition = ko2definition(ko_data)
-                sql = 'INSERT into module2ko_v1 (module_id, ko_id, ko_description) values ("%s","%s", "%s");' % (module_id,
+                sql = 'INSERT into enzyme_module2ko_v1 (module_id, ko_id, ko_description) values ("%s","%s", "%s");' % (module_id,
                                                                                                               ko,
                                                                                                               re.sub('"',
                                                                                                               '',
@@ -1042,7 +1041,7 @@ def get_module_table_legacy(module2category):
         conn.commit()
 
 
-def get_pathway2ko_legacy():
+def get_pathway2ko_legacy(biodb):
     '''
     1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme.kegg_module table
     2. get all KO associated for each pathway => create enzyme.pathway2ko table
@@ -1060,12 +1059,12 @@ def get_pathway2ko_legacy():
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
                                 passwd="estrella3", # your password
-                                db="enzyme") # name of the data base
+                                db=biodb) # name of the data base
     cursor = conn.cursor()
 
 
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS pathway2ko_v1 (pathway_id INT,' \
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_pathway2ko_v1 (pathway_id INT,' \
            ' ko_id VARCHAR(200),' \
            ' index pathway_id(pathway_id),' \
            ' index ko_id(ko_id));'
@@ -1086,7 +1085,7 @@ def get_pathway2ko_legacy():
         pathway = raw[0][5:]
         description = raw[1]
         print ('pathway', pathway)
-        sql = 'select pathway_id from kegg_pathway_v1 where pathway_name="%s";' % pathway
+        sql = 'select pathway_id from enzyme_kegg_pathway_v1 where pathway_name="%s";' % pathway
         print (sql)
 
         cursor.execute(sql)
@@ -1111,7 +1110,7 @@ def get_pathway2ko_legacy():
                 print ('No Ko for pathway %s?' % pathway)
                 continue
             try:
-                sql = 'INSERT into pathway2ko_v1 (pathway_id, ko_id) values (%s,"%s");' % (pathway_id,
+                sql = 'INSERT into enzyme_pathway2ko_v1 (pathway_id, ko_id) values (%s,"%s");' % (pathway_id,
                                                                                        ko)
                 cursor.execute(sql,)
             except:
@@ -1121,7 +1120,7 @@ def get_pathway2ko_legacy():
         conn.commit()
 
 
-def get_pathay_table_legacy(map2category):
+def get_pathay_table_legacy(map2category, biodb):
     import MySQLdb
     import urllib
     import sys
@@ -1129,10 +1128,10 @@ def get_pathay_table_legacy(map2category):
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
                                 passwd="estrella3", # your password
-                                db="enzyme") # name of the data base
+                                db=biodb) # name of the data base
     cursor = conn.cursor()
 
-    sql1 = 'CREATE TABLE IF NOT EXISTS kegg_pathway_v1 (pathway_id INT AUTO_INCREMENT PRIMARY KEY,' \
+    sql1 = 'CREATE TABLE IF NOT EXISTS enzyme_kegg_pathway_v1 (pathway_id INT AUTO_INCREMENT PRIMARY KEY,' \
            ' pathway_name VARCHAR(200),' \
            ' pathway_category_short VARCHAR(200),' \
            ' pathway_category VARCHAR(200),' \
@@ -1158,7 +1157,7 @@ def get_pathay_table_legacy(map2category):
         except:
             cat = 'uncategorized'
             cat_short = 'uncategorized'
-        sql = 'INSERT into kegg_pathway_v1 (pathway_name, description,pathway_category_short, pathway_category) values ("%s", "%s", "%s", "%s");' % (map,
+        sql = 'INSERT into enzyme_kegg_pathway_v1 (pathway_name, description,pathway_category_short, pathway_category) values ("%s", "%s", "%s", "%s");' % (map,
                                                                                                                                                   description,
                                                                                                                                                   cat_short,
                                                                                                                                                   cat)
@@ -1173,7 +1172,7 @@ def get_complete_ko_table_legacy(biodb):
     import re
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'CREATE TABLE IF NOT EXISTS enzyme.ko_annotation_v1 (ko_id VARCHAR(20),' \
+    sql = 'CREATE TABLE IF NOT EXISTS enzyme_ko_annotation_v1 (ko_id VARCHAR(20),' \
            ' name varchar(200),' \
            ' definition TEXT,' \
            ' EC TEXT,' \
@@ -1182,7 +1181,7 @@ def get_complete_ko_table_legacy(biodb):
            ' dbxrefs TEXT, index ko_id (ko_id));'
     server.adaptor.execute_and_fetchall(sql)
 
-    sql = 'select ko_id from enzyme.ko_annotation_v1'
+    sql = 'select ko_id from enzyme_ko_annotation_v1'
 
     ko_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql)]
     print(ko_list)
@@ -1237,7 +1236,7 @@ def get_complete_ko_table_legacy(biodb):
         else:
             pathways = '-'
 
-        sql = 'insert into enzyme.ko_annotation_v1 (ko_id, name, definition, EC, pathways, modules, dbxrefs)' \
+        sql = 'insert into enzyme_ko_annotation_v1 (ko_id, name, definition, EC, pathways, modules, dbxrefs)' \
               ' values ("%s", "%s", "%s","%s", "%s", "%s", "%s")' % (ko,
                                                                 name,
                                                                 definition,
@@ -1258,41 +1257,42 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-u", '--updated', action="store_true", help="Setup updated tables")
     parser.add_argument("-l", '--legacy', action="store_true", help="Setup legacy tables")
+    parser.add_argument("-d", '--db_name', help="Biodb name")
 
     args = parser.parse_args()
 
-    conn, cursor = connect_db()
+    conn, cursor = connect_db(args.db_name)
 
     print('getting map2category...')
     map2category = get_kegg_pathway_classification()
 
     if args.updated:
         print('getting complete_ko_table...')
-        #get_complete_ko_table()
+        #get_complete_ko_table(args.db_name)
         print('load_enzyme_nomenclature_table map2category...')
-        #load_enzyme_nomenclature_table()
+        #load_enzyme_nomenclature_table(args.db_name)
         sql = 'select ko_accession, ko_id from enzyme.ko_annotation'
         cursor.execute(sql,)
         ko_accession2ko_id = manipulate_biosqldb.to_dict(cursor.fetchall())
         print('getting pathway table...')
-        #get_pathay_table(map2category)
+        #get_pathay_table(map2category, args.db_name)
         print('getting ko2pathway...')
-        #get_pathway2ko(ko_accession2ko_id)
+        #get_pathway2ko(ko_accession2ko_id, args.db_name)
         print('getting module2ko...')
         #module_hierarchy = get_kegg_module_hierarchy()
-        #get_module_table(module_hierarchy, ko_accession2ko_id)
+        #get_module_table(module_hierarchy, ko_accession2ko_id, args.db_name)
         #print('getting get_ec2get_pathway_table...')
-        #get_ec2get_pathway_table()
+        #get_ec2get_pathway_table(args.db_name)
         #print('getting get_microbial_metabolism_in_diverse_environments_kegg01120...')
         #get_microbial_metabolism_in_diverse_environments_kegg01120()
         print('getting get_ko2ec...')
-        get_ko2ec()
+        get_ko2ec(args.db_name)
 
         #get_ec_data_from_IUBMB("3.2.1.196")
         #get_ec_data_from_IUBMB("1.14.13.217")
         #get_ec_data_from_IUBMB("1.1.1.1")
     if args.legacy:
-        get_complete_ko_table_legacy("2019_06_chlamydia")
+        get_complete_ko_table_legacy(args.db_name)
         get_pathay_table_legacy(map2category)
         get_pathway2ko_legacy()
         get_module_table_legacy(get_kegg_module_hierarchy())

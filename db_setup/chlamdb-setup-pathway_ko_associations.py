@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-def get_pathway_ko_association_table():
+def get_pathway_ko_association_table(biodb):
     import os
     import MySQLdb
     from chlamdb.biosqldb import manipulate_biosqldb
@@ -13,15 +13,15 @@ def get_pathway_ko_association_table():
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                 user="root", # your username
                                 passwd=sqlpsw, # your password
-                                db="enzyme") # name of the data base
+                                db=biodb) # name of the data base
     cursor = conn.cursor()
 
-    sql = 'create table enzyme.pathway2ortholog_associations (pathway_id INT, node_id INT, ko_id varchar(200), ' \
+    sql = 'create table enzyme_pathway2ortholog_associations (pathway_id INT, node_id INT, ko_id varchar(200), ' \
           ' index pathway_id(pathway_id), index node_id(node_id), index ko_id(ko_id));'
     cursor.execute(sql,)
     conn.commit()
 
-    sql2 = 'select pathway_name,pathway_id from enzyme.kegg_pathway'
+    sql2 = 'select pathway_name,pathway_id from enzyme_kegg_pathway'
     cursor.execute(sql2,)
 
     pathway2pathway_id = manipulate_biosqldb.to_dict(cursor.fetchall())
@@ -46,10 +46,10 @@ def get_pathway_ko_association_table():
             ko_temp_list = list(set([i.rstrip() for i in o.name.split('ko:')]))
             ko_temp_list = filter(None, ko_temp_list)
             for ko in ko_temp_list:
-                sql = 'insert into enzyme.pathway2ortholog_associations values(%s, %s, "%s")' % (pathway2pathway_id[pathway],
-                                                                                               o.id,
-                                                                                               ko)
+                sql = 'insert into enzyme_pathway2ortholog_associations values(%s, %s, "%s")' % (pathway2pathway_id[pathway],
+                                                                                                 o.id,
+                                                                                                 ko)
                 cursor.execute(sql,)
         conn.commit()
 
-get_pathway_ko_association_table()
+get_pathway_ko_association_table(biodb)

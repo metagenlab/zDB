@@ -201,19 +201,19 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
     all_taxid = [str(accession2annotation[i][0]) for i in accession2annotation]
 
     print ("getting taxid2superkingdom")
-    sql = 'select taxon_id,superkingdom from blastnr.blastnr_taxonomy'
+    sql = 'select taxon_id,superkingdom from blastnr_blastnr_taxonomy'
     cursor.execute(sql,)
     taxon_id2superkingdom = manipulate_biosqldb.to_dict(cursor.fetchall())
 
     print ("getting locus2protein_length")
-    sql = 'select locus_tag,char_length(translation) from biosqldb.orthology_detail_%s' % biodb
+    sql = 'select locus_tag,char_length(translation) from orthology_detail' % biodb
     cursor.execute(sql,)
     locus_tag2protein_length = manipulate_biosqldb.to_dict(cursor.fetchall())
 
     print ('loading blast results into database...')
 
 
-    sql_template = 'insert into blast_swissprot_%s ' % biodb
+    sql_template = 'insert into blastnr_blast_swissprot'
     sql_template += 'values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'
 
     deleted_accession2annotation = {}
@@ -382,7 +382,7 @@ def create_sql_blast_swissprot_tables(db_name, mysql_host, mysql_user, mysql_pwd
     21 annot score
     '''
 
-    sql_plast = 'CREATE TABLE IF NOT EXISTS blast_swissprot_%s (query_taxon_id INT,' \
+    sql_plast = 'CREATE TABLE IF NOT EXISTS blastnr_blast_swissprot_%s (query_taxon_id INT,' \
                 ' query_bioentry_id INT,' \
                 ' seqfeature_id INT,' \
                 ' hit_number int,' \
@@ -489,7 +489,7 @@ if __name__ == '__main__':
     mysql_user = 'root'
 
     mysql_pwd = os.environ['SQLPSW']
-    mysql_db = 'blastnr'
+    mysql_db = args.mysql_database
 
     biodb = args.mysql_database
 

@@ -54,7 +54,9 @@ def load_blastnr_file_into_db(locus_tag2taxon_id,
     sqlite3_cursor.execute(sql1)
     sqlite3_cursor.execute(sql2)
 
-    sql3 = 'select t1.*,t2.*,t3.superkingdom from diamond_refseq t1 inner join refseq_taxonomy.refseq_hits t2 on t1.sseqid=t2.accession inner join linear_taxonomy.ncbi_taxonomy t3 on t2.taxid=t3.tax_id'
+    sql3 = 'select t1.*,t2.*,t3.superkingdom from diamond_refseq t1 ' \
+           ' inner join refseq_taxonomy_refseq_hits t2 on t1.sseqid=t2.accession ' \
+           'inner join linear_taxonomy_ncbi_taxonomy t3 on t2.taxid=t3.tax_id'
 
     n = 0
     for row in sqlite3_cursor.execute(sql3):
@@ -257,14 +259,13 @@ if __name__ == '__main__':
                               mysql_db)
 
     print('get locus2taxon_id')
-    sql = 'select locus_tag, taxon_id from orthology_detail_%s' % db_name
+    sql = 'select locus_tag, taxon_id from orthology_detail'
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     print('get locus2bioentry')
     sql2 = 'select locus_tag,bioentry_id from biodatabase t1 ' \
            ' inner join bioentry as t2 on t1.biodatabase_id=t2.biodatabase_id' \
-           ' inner join orthology_detail_%s t3 on t2.accession=t3.accession where t1.name="%s"' % (db_name,
-                                                                                                   db_name)
+           ' inner join orthology_detail t3 on t2.accession=t3.accession where t1.name="%s"' % (db_name)
 
     locus_tag2bioentry_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 

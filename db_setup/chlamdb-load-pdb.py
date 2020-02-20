@@ -46,13 +46,13 @@ def load_pdb_data(blast_output_files,
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(db_name)
     
-    sql = f'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_{db_name}'
+    sql = f'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id'
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     
-    sql = f'create table if not exists custom_tables.seqfeature_id2pdb_BBH_{db_name} (seqfeature_id INT, pdb_accession varchar(200), header TEXT, compound TEXT, source TEXT, resolution FLOAT, method TEXT, identity FLOAT, score FLOAT, evalue FLOAT)'
+    sql = f'create table if not exists custom_tables_seqfeature_id2pdb_BBH (seqfeature_id INT, pdb_accession varchar(200), header TEXT, compound TEXT, source TEXT, resolution FLOAT, method TEXT, identity FLOAT, score FLOAT, evalue FLOAT)'
     server.adaptor.execute(sql,)
     
-    sql_template = f'insert into custom_tables.seqfeature_id2pdb_BBH_{db_name} values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+    sql_template = f'insert into custom_tables_seqfeature_id2pdb_BBH values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
     
     pdb2data = retrieve_pdb_data()
     
@@ -103,7 +103,7 @@ def load_pdb_data(blast_output_files,
                                                  score,
                                                  e_value))
                     
-    sql = f'create index sfp on custom_tables.seqfeature_id2pdb_BBH_{db_name}(seqfeature_id)'                 
+    sql = f'create index sfp on custom_tables_seqfeature_id2pdb_BBH (seqfeature_id)'                 
     server.adaptor.execute(sql,)
     server.commit()
 

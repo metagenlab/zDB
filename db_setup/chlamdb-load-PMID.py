@@ -17,14 +17,14 @@ def load_PMID(PMID_db_path, hash2locus_list, db_name):
     
     server, db = manipulate_biosqldb.load_db(db_name)
     
-    sql1 = 'create table string.seqfeature_id2pmid_%s (seqfeature_id INTEGER, pmid INTEGER);' % db_name
-    sql2 = 'create table if not exists string.pmid2data (pmid INTEGER, title TEXT, authors TEXT, source TEXT, abstract TEXT);'
+    sql1 = 'create table string_seqfeature_id2pmid (seqfeature_id INTEGER, pmid INTEGER);'
+    sql2 = 'create table if not exists string_pmid2data (pmid INTEGER, title TEXT, authors TEXT, source TEXT, abstract TEXT);'
     
     server.adaptor.execute(sql1,)
     server.adaptor.execute(sql2,)
     
     # get locus_tag2seqfeaute_id dictionnary
-    sql = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % db_name
+    sql = 'select locus_tag, seqfeature_id from annotation_seqfeature_id2locus'
     locus_tag2seqfeaure_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     # retrieve existing pmid data (if any)
     sql = 'select pmid from string.pmid2data '
@@ -36,8 +36,8 @@ def load_PMID(PMID_db_path, hash2locus_list, db_name):
     sql = 'select * from pmid2data'
     pmid2data = manipulate_biosqldb.to_dict(sqlite_cursor.execute(sql,).fetchall())
     
-    template1 = 'insert into string.pmid2data values (%s, %s, %s, %s, %s)'
-    template2 = 'insert into string.seqfeature_id2pmid_%s' % db_name + ' values(%s, %s)'
+    template1 = 'insert into string_pmid2data values (%s, %s, %s, %s, %s)'
+    template2 = 'insert into string_seqfeature_id2pmid values(%s, %s)'
     for n, row in enumerate(hash_and_pmid):
         hash, pmid = row 
         locus_list = hash2locus_list[hash]
@@ -51,9 +51,9 @@ def load_PMID(PMID_db_path, hash2locus_list, db_name):
             server.adaptor.execute(template2,[locus_tag2seqfeaure_id[locus_tag], pmid])
     server.commit()
 
-    sql1 = 'create index sf on string.seqfeature_id2pmid_%s(seqfeature_id)' % db_name
-    sql2 = 'create index pm1 on string.seqfeature_id2pmid_%s(pmid)' % db_name
-    sql3 = 'create index pm2 on string.pmid2data (pmid)'
+    sql1 = 'create index sf on string_seqfeature_id2pmid (seqfeature_id)'
+    sql2 = 'create index pm1 on string_seqfeature_id2pmid (pmid)'
+    sql3 = 'create index pm2 on string_pmid2data (pmid)'
     
     server.adaptor.execute(sql1,)
     server.adaptor.execute(sql2,)

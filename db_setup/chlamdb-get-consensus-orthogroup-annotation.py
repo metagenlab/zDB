@@ -8,7 +8,7 @@ def orthogroup_consensus_annotation(biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select orthogroup_name,orthogroup_id from orthology.orthogroup_%s;' % biodb
+    sql = 'select orthogroup_name,orthogroup_id from orthology_orthogroup;'
     group_name2group_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     print('Get orthogroup2gene')
@@ -24,12 +24,12 @@ def orthogroup_consensus_annotation(biodb):
     print('Get orthogroup2ko_id')
     orthogroup2ko = biosql_own_sql_tables.orthogroup2ko_id(biodb)
 
-    sql1 = 'create table if not exists orthology.orthogroup2gene_%s (group_id INTEGER, rank INTEGER, count INTEGER, description TEXT);' % biodb
-    sql2 = 'create table if not exists orthology.orthogroup2product_%s (group_id INTEGER, rank INTEGER, count INTEGER, description TEXT);' % biodb
-    sql3 = 'create table if not exists orthology.orthogroup2cog_%s (group_id INTEGER, rank INTEGER, count INTEGER, COG_id INTEGER);' % biodb
-    sql4 = 'create table if not exists orthology.orthogroup2pfam_%s (group_id INTEGER, rank INTEGER, count INTEGER, signature_id INTEGER);' % biodb
-    sql5 = 'create table if not exists orthology.orthogroup2interpro_%s (group_id INTEGER, rank INTEGER, count INTEGER, interpro_id INTEGER);' % biodb
-    sql6 = 'create table if not exists orthology.orthogroup2ko_%s (group_id INTEGER, rank INTEGER, count INTEGER, ko_id INTEGER);' % biodb
+    sql1 = 'create table if not exists orthology_orthogroup2gene (group_id INTEGER, rank INTEGER, count INTEGER, description TEXT);'
+    sql2 = 'create table if not exists orthology_orthogroup2product (group_id INTEGER, rank INTEGER, count INTEGER, description TEXT);'
+    sql3 = 'create table if not exists orthology_orthogroup2cog (group_id INTEGER, rank INTEGER, count INTEGER, COG_id INTEGER);'
+    sql4 = 'create table if not exists orthology_orthogroup2pfam (group_id INTEGER, rank INTEGER, count INTEGER, signature_id INTEGER);'
+    sql5 = 'create table if not exists orthology_orthogroup2interpro (group_id INTEGER, rank INTEGER, count INTEGER, interpro_id INTEGER);'
+    sql6 = 'create table if not exists orthology_orthogroup2ko (group_id INTEGER, rank INTEGER, count INTEGER, ko_id INTEGER);'
 
     server.adaptor.execute(sql1,)
     server.adaptor.execute(sql2,)
@@ -38,12 +38,12 @@ def orthogroup_consensus_annotation(biodb):
     server.adaptor.execute(sql5,)
     server.adaptor.execute(sql6,)
 
-    template1 = 'insert into orthology.orthogroup2gene_%s' % biodb + ' values (%s, %s, %s, %s)'
-    template2 = 'insert into orthology.orthogroup2product_%s' % biodb + ' values (%s, %s, %s, %s)'
-    template3 = 'insert into orthology.orthogroup2cog_%s' % biodb + ' values (%s, %s, %s, %s)'
-    template4 = 'insert into orthology.orthogroup2pfam_%s' % biodb + ' values (%s, %s, %s, %s)'
-    template5 = 'insert into orthology.orthogroup2interpro_%s' % biodb + ' values (%s, %s, %s, %s)'
-    template6 = 'insert into orthology.orthogroup2ko_%s' % biodb + ' values (%s, %s, %s, %s)'
+    template1 = 'insert into orthology_orthogroup2gene' + ' values (%s, %s, %s, %s)'
+    template2 = 'insert into orthology_orthogroup2product' + ' values (%s, %s, %s, %s)'
+    template3 = 'insert into orthology_orthogroup2cog' + ' values (%s, %s, %s, %s)'
+    template4 = 'insert into orthology_orthogroup2pfam' + ' values (%s, %s, %s, %s)'
+    template5 = 'insert into orthology_orthogroup2interpro' + ' values (%s, %s, %s, %s)'
+    template6 = 'insert into orthology_orthogroup2ko' + ' values (%s, %s, %s, %s)'
 
     for n, group in enumerate(group_name2group_id):
         print(n, group)
@@ -92,16 +92,16 @@ def orthogroup_consensus_annotation(biodb):
             continue
 
     server.adaptor.commit()
-    sql1 = 'create index gg on orthology.orthogroup2gene_%s(group_id)' % biodb
-    sql2 = 'create index gpr on orthology.orthogroup2product_%s(group_id)' % biodb
-    sql3 = 'create index gc on orthology.orthogroup2cog_%s(group_id)' % biodb
-    sql4 = 'create index gpf on orthology.orthogroup2pfam_%s(group_id)' % biodb
-    sql5 = 'create index gpf on orthology.orthogroup2interpro_%s(group_id)' % biodb
-    sql6 = 'create index gpf on orthology.orthogroup2ko_%s(group_id)' % biodb
-    sql7 = 'create index id1 on orthology.orthogroup2cog_%s(cog_id)' % biodb
-    sql8 = 'create index id2 on orthology.orthogroup2pfam_%s(signature_id)' % biodb
-    sql9 = 'create index id3 on orthology.orthogroup2interpro_%s(interpro_id)' % biodb
-    sql10 = 'create index id4 on orthology.orthogroup2ko_%s(ko_id)' % biodb
+    sql1 = 'create index gg on orthology_orthogroup2gene(group_id)'
+    sql2 = 'create index gpr on orthology_orthogroup2product(group_id)'
+    sql3 = 'create index gc on orthology_orthogroup2cog(group_id)'
+    sql4 = 'create index gpf on orthology_orthogroup2pfam(group_id)'
+    sql5 = 'create index gpf on orthology_orthogroup2interpro(group_id)'
+    sql6 = 'create index gpf on orthology_orthogroup2ko(group_id)'
+    sql7 = 'create index id1 on orthology_orthogroup2cog(cog_id)'
+    sql8 = 'create index id2 on orthology_orthogroup2pfam(signature_id)'
+    sql9 = 'create index id3 on orthology_orthogroup2interpro(interpro_id)'
+    sql10 = 'create index id4 on orthology_orthogroup2ko(ko_id)'
     server.adaptor.execute(sql1,)
     server.adaptor.execute(sql2,)
     server.adaptor.execute(sql3,)

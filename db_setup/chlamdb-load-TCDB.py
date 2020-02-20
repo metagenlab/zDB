@@ -47,7 +47,7 @@ def import_annot(gblast_file,
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'create table IF NOT EXISTS transporters.transporters_%s (seqfeature_id INT primary key,' \
+    sql = 'create table IF NOT EXISTS transporters_transporters (seqfeature_id INT primary key,' \
           ' taxon_id INT,' \
           ' hit_uniprot_id INT,' \
           ' transporter_id INT,' \
@@ -64,13 +64,13 @@ def import_annot(gblast_file,
           ' query_cov FLOAT,' \
           ' hit_cov FLOAT,' \
           ' index transporter_id(transporter_id),' \
-          ' index hit_uniprot_id(hit_uniprot_id));' % biodb
+          ' index hit_uniprot_id(hit_uniprot_id));'
 
     server.adaptor.execute(sql,)
     server.commit()
 
-    sql1 = 'select locus_tag, taxon_id from orthology_detail_%s' % biodb
-    sql2 = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+    sql1 = 'select locus_tag, taxon_id from orthology_detail'
+    sql2 = 'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id'
 
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql1,))
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
@@ -141,12 +141,12 @@ def import_annot(gblast_file,
                     n_hsps = len(blast_data[hash].alignments[0].hsps)
                     bitscore_first_hsp = first_hsp.bits
 
-                    sql = 'select tc_id from transporters.tc_table where tc_name="%s";' % hit_tcid
+                    sql = 'select tc_id from transporters_tc_table where tc_name="%s";' % hit_tcid
                     transporter_id = server.adaptor.execute_and_fetchall(sql)[0][0]
-                    sql = 'select uniprot_id from transporters.uniprot_table where uniprot_accession like "%s%%%%";' % hit_uniprot_accession
+                    sql = 'select uniprot_id from transporters_uniprot_table where uniprot_accession like "%s%%%%";' % hit_uniprot_accession
                     hit_uniprot_id = server.adaptor.execute_and_fetchall(sql)[0][0]
 
-                    sql = 'insert into transporters.transporters_%s (seqfeature_id,' \
+                    sql = 'insert into transporters_transporters (seqfeature_id,' \
                           ' taxon_id,' \
                           ' hit_uniprot_id,' \
                           ' transporter_id,' \
@@ -161,8 +161,7 @@ def import_annot(gblast_file,
                           ' query_len,' \
                           ' hit_len,' \
                           ' query_cov,' \
-                          ' hit_cov) values (%s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % (biodb,
-                                                                                                        locus_tag2seqfeature_id[locus_tag],
+                          ' hit_cov) values (%s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % (locus_tag2seqfeature_id[locus_tag],
                                                                                                         locus_tag2taxon_id[locus_tag],
                                                                                                         hit_uniprot_id,
                                                                                                         transporter_id,

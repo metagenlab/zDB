@@ -15,17 +15,17 @@ def locus2ko_table(hash2ko_dico,
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodatabase)
 
-    sql2 = 'select locus_tag, seqfeature_id from annotation.seqfeature_id2locus_%s' % biodatabase
+    sql2 = 'select locus_tag, seqfeature_id from annotation_seqfeature_id2locus'
 
     locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme.seqfeature_id2ko_%s (seqfeature_id INT,' \
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_seqfeature_id2ko (seqfeature_id INT,' \
            ' ko_id INT, ' \
            ' thrshld FLOAT, ' \
            ' score FLOAT, ' \
            ' evalue FLOAT, ' \
            ' index ko_id (ko_id),' \
-           ' index seqid (seqfeature_id));' % (biodatabase)
+           ' index seqid (seqfeature_id));'
 
     server.adaptor.execute_and_fetchall(sql2,)
 
@@ -41,12 +41,11 @@ def locus2ko_table(hash2ko_dico,
                 ko_id = ko_accession2ko_id[ko]
                 seqfeature_id = locus2seqfeature_id[locus_tag]
 
-                sql = 'insert into enzyme.seqfeature_id2ko_%s (seqfeature_id, ko_id, thrshld, score, evalue) values (%s, %s, %s, %s, %s)' % (biodatabase,
-                                                                                                                                             seqfeature_id,
-                                                                                                                                             ko_id,
-                                                                                                                                             thrshld,
-                                                                                                                                             score,
-                                                                                                                                             evalue)
+                sql = 'insert into enzyme_seqfeature_id2ko (seqfeature_id, ko_id, thrshld, score, evalue) values (%s, %s, %s, %s, %s)' % (seqfeature_id,
+                                                                                                                                          ko_id,
+                                                                                                                                          thrshld,
+                                                                                                                                          score,
+                                                                                                                                          evalue)
 
 
                 server.adaptor.execute(sql,)
@@ -65,27 +64,26 @@ def locus2ko_table_legacy(biodatabase, hash2ko, hash2locus_list):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodatabase)
 
-    sql = 'select locus_tag, taxon_id from orthology_detail_%s' % biodatabase
-    sql2 = 'select locus_tag, orthogroup from orthology_detail_%s' % biodatabase
+    sql = 'select locus_tag, taxon_id from orthology_detail'
+    sql2 = 'select locus_tag, orthogroup from orthology_detail'
 
     locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
     locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme.locus2ko_%s (taxon_id INT,'\
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_locus2ko (taxon_id INT,'\
            ' locus_tag VARCHAR(200),' \
            ' orthogroup varchar(200),' \
-           ' ko_id VARCHAR(200), index taxon_id (taxon_id), index ko_id (ko_id));' % (biodatabase)
+           ' ko_id VARCHAR(200), index taxon_id (taxon_id), index ko_id (ko_id));'
 
     server.adaptor.execute_and_fetchall(sql2,)
     for hash in hash2ko:
         for locus in hash2locus_list[hash]:
             ko = hash2ko[hash]["KO"]
 
-            sql = 'insert into enzyme.locus2ko_%s (taxon_id, locus_tag, orthogroup, ko_id) values ("%s", "%s", "%s", "%s")' % (biodatabase,
-                                                                                                                               locus2taxon_id[locus],
-                                                                                                                               locus,
-                                                                                                                               locus2orthogroup[locus],
-                                                                                                                               ko)
+            sql = 'insert into enzyme_locus2ko (taxon_id, locus_tag, orthogroup, ko_id) values ("%s", "%s", "%s", "%s")' % (locus2taxon_id[locus],
+                                                                                                                            locus,
+                                                                                                                            locus2orthogroup[locus],
+                                                                                                                            ko)
 
             server.adaptor.execute(sql,)
         server.commit()

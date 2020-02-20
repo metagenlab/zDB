@@ -44,18 +44,18 @@ class Uniprot_annot():
         conn = MySQLdb.connect(host="localhost", 
                                     user="root", 
                                     passwd=sqlpsw,
-                                    db="custom_tables")
+                                    db=self.biodb)
         
         cursor = conn.cursor()
 
-        sql1 = 'CREATE TABLE IF NOT EXISTS uniprot_id2seqfeature_id_%s (seqfeature_id INT UNIQUE, uniprot_id INT AUTO_INCREMENT,' \
-               ' uniprot_accession varchar(400), uniprot_status varchar(400), annotation_score INT, proteome varchar(200), insert_date varchar(300), INDEX uniprot_id(uniprot_id))' % self.biodb
+        sql1 = 'CREATE TABLE IF NOT EXISTS custom_tables_uniprot_id2seqfeature_id (seqfeature_id INT UNIQUE, uniprot_id INT AUTO_INCREMENT,' \
+               ' uniprot_accession varchar(400), uniprot_status varchar(400), annotation_score INT, proteome varchar(200), insert_date varchar(300), INDEX uniprot_id(uniprot_id))'
 
 
-        sql5 = 'CREATE TABLE IF NOT EXISTS uniprot_annotation_%s (seqfeature_id INT, comment_function TEXT,' \
+        sql5 = 'CREATE TABLE IF NOT EXISTS custom_tables_uniprot_annotation (seqfeature_id INT, comment_function TEXT,' \
                ' ec_number TEXT,comment_similarity TEXT,comment_catalyticactivity TEXT,comment_pathway TEXT,keywords TEXT,' \
                ' comment_subunit TEXT, gene TEXT, recommendedName_fullName TEXT, proteinExistence TEXT, ' \
-               ' developmentalstage TEXT, index seqfeature_id(seqfeature_id))' % self.biodb
+               ' developmentalstage TEXT, index seqfeature_id(seqfeature_id))'
 
         #sql6 = 'CREATE TABLE IF NOT EXISTS uniprot_keywords_%s (seqfeature_id INT, uniprot_accession varchar(200), keyword TEXT)' % self.biodb
 
@@ -64,7 +64,7 @@ class Uniprot_annot():
         #cursor.execute(sql6, )
         conn.commit()
 
-        sql1 = 'select locus_tag, seqfeature_id from locus2seqfeature_id_%s' % self.biodb
+        sql1 = 'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id'
 
         cursor.execute(sql1, )
         locus2seqfeature_id = manipulate_biosqldb.to_dict(cursor.fetchall())
@@ -138,7 +138,7 @@ class Uniprot_annot():
             now = datetime.now()
             str_date = "%s-%s-%s" % (now.year, now.month, now.day)
 
-            sql = 'insert into uniprot_id2seqfeature_id_%s' % self.biodb
+            sql = 'insert into custom_tables_uniprot_id2seqfeature_id'
             sql += '(seqfeature_id, uniprot_accession, uniprot_status, annotation_score, proteome, insert_date) ' \
                    ' values (%s, %s, %s, %s, %s, %s)'
             cursor.execute(sql, (seqfeature_id,
@@ -149,7 +149,7 @@ class Uniprot_annot():
                                str_date))
 
             # add annotation
-            sql = 'insert into uniprot_annotation_%s' % self.biodb
+            sql = 'insert into custom_tables_uniprot_annotation'
             sql += '(seqfeature_id, comment_function,' \
                    ' ec_number,comment_similarity,comment_catalyticactivity,comment_pathway,keywords,' \
                    ' comment_subunit, gene, recommendedName_fullName, proteinExistence,developmentalstage) values' \
@@ -174,7 +174,7 @@ class Uniprot_annot():
         # import taxid2locus_tag
         sql1 = 'create table taxid2locus_tag (taxid INT, locus_tag varchar(200))'
         self.sqlite_cursor.execute(sql1,)
-        sql2 = 'select taxon_id, locus_tag from biosqldb.orthology_detail_%s' % self.biodb
+        sql2 = 'select taxon_id, locus_tag from orthology_detail'
         data = self.mysql_server.adaptor.execute_and_fetchall(sql2,)
         sql = 'insert into taxid2locus_tag values (?, ?)'
         for row in data:

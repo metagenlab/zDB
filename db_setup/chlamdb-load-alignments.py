@@ -37,7 +37,9 @@ class Orthogroup_Identity_DB:
         self.conn.commit()
         self.count = 0
 
-        sql = 'select locus_tag,orthogroup_name from orthology.seqfeature_id2orthogroup_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology.orthogroup_%s t3 on t1.orthogroup_id=t3.orthogroup_id' % (database_name,database_name,database_name)
+        sql = 'select locus_tag,orthogroup_name from orthology_seqfeature_id2orthogroup t1 ' \
+              ' inner join annotation_seqfeature_id2locus t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+              ' inner join orthology_orthogroup t3 on t1.orthogroup_id=t3.orthogroup_id'
         self.cursor.execute(sql,)
         self.locus_tag2orthogroup = {}
         for row in self.cursor.fetchall():
@@ -202,7 +204,7 @@ class Orthogroup_Identity_DB:
         server, db = manipulate_biosqldb.load_db(biodatabase_name)
 
         #print 'get orthogroups'
-        sql = 'select orthogroup from comparative_tables.orthology_%s' % biodatabase_name
+        sql = 'select orthogroup from comparative_tables_orthology'
         try:
             #print 'adding column'
             self._create_orthogroup_average_identity_column(server, biodatabase_name)
@@ -344,7 +346,7 @@ def heatmap_presence_absence(biodb_name, group_name):
 
     #print "template", template
 
-    sql = 'select %s from orthology_%s where orthogroup = "%s"' % (template, biodb_name, group_name)
+    sql = 'select %s from orthology where orthogroup = "%s"' % (template, group_name)
 
     result = [int(i) for i in server.adaptor.execute_and_fetchall(sql,)[0]]
     #print result

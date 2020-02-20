@@ -13,7 +13,7 @@ def setup_blastdb(biodb, static_dir_path):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql1 = 'select distinct accession from orthology_detail_%s' % biodb
+    sql1 = 'select distinct accession from orthology_detail'
 
     accession_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql1,)]
 

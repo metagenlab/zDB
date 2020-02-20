@@ -6,12 +6,9 @@ def create_locus_link_table(biodb):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'create database if not exists interactions'
-    server.adaptor.execute(sql,)
-
-    sql = 'create table interactions.colocalization_table_locus_%s (locus_1 varchar(200), locus_2 varchar(200), n_links INT,' \
+    sql = 'create table interactions_colocalization_table_locus (locus_1 varchar(200), locus_2 varchar(200), n_links INT,' \
           'n_comparisons INT, ratio float, index locus_1 (locus_1), index locus_2 (locus_2), index n_links (n_links),' \
-          ' index n_comparisons (n_comparisons), index ratio (ratio))' % biodb
+          ' index n_comparisons (n_comparisons), index ratio (ratio))'
 
     server.adaptor.execute(sql,)
 
@@ -21,9 +18,9 @@ def create_taxon_link_table_locus(biodb):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'create table interactions.colocalization_taxons_table_locus_%s (locus_1  varchar(200), ' \
+    sql = 'create table interactions_colocalization_taxons_table_locus (locus_1  varchar(200), ' \
           ' locus_2 varchar(200), group_1 varchar(200), group_2 varchar(200), taxon_1 INT,' \
-          'taxon_2 INT)' % biodb
+          'taxon_2 INT)'
 
     server.adaptor.execute(sql,)
 
@@ -36,9 +33,8 @@ def insert_locus_links_into_mysql(biodb, locus2links):
     pair_done = []
     for locus_a in locus2links:
         for locus_b in locus2links[locus_a]:
-            sql = 'insert into interactions.colocalization_table_locus_%s (locus_1, locus_2, n_links, n_comparisons, ratio)' \
-                  ' values ("%s","%s",%s,%s,%s)' % (biodb,
-                                                    locus_a,
+            sql = 'insert into interactions_colocalization_table_locus (locus_1, locus_2, n_links, n_comparisons, ratio)' \
+                  ' values ("%s","%s",%s,%s,%s)' % (locus_a,
                                                     locus_b,
                                                     locus2links[locus_a][locus_b][0],
                                                     locus2links[locus_a][locus_b][1],
@@ -52,15 +48,14 @@ def insert_taxon_links_into_mysql_locus(biodb, locus2taxons):
     for locus_1 in locus2taxons:
         for locus_2 in locus2taxons[locus_1]:
             for one_taxon_pair in locus2taxons[locus_1][locus_2]:
-                    sql = 'insert into interactions.colocalization_taxons_table_locus_%s (locus_1, locus_2, group_1, ' \
+                    sql = 'insert into interactions_colocalization_taxons_table_locus (locus_1, locus_2, group_1, ' \
                           ' group_2, taxon_1, taxon_2)' \
-                          ' values ("%s","%s","%s","%s", %s, %s)' % (biodb,
-                                                            locus_1,
-                                                            locus_2,
-                                                            one_taxon_pair[0],
-                                                            one_taxon_pair[1],
-                                                            one_taxon_pair[2],
-                                                            one_taxon_pair[3])
+                          ' values ("%s","%s","%s","%s", %s, %s)' % (locus_1,
+                                                                     locus_2,
+                                                                     one_taxon_pair[0],
+                                                                     one_taxon_pair[1],
+                                                                     one_taxon_pair[2],
+                                                                     one_taxon_pair[3])
                     server.adaptor.execute_and_fetchall(sql,)
     server.adaptor.commit()
 
@@ -72,8 +67,8 @@ def create_group_link_table(biodb):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'create table interactions.colocalization_table_%s (group_1 varchar(200), group_2 varchar(200), n_links INT,' \
-          'n_comparisons INT, ratio float)' % biodb
+    sql = 'create table interactions_colocalization_table (group_1 varchar(200), group_2 varchar(200), n_links INT,' \
+          'n_comparisons INT, ratio float)'
 
     server.adaptor.execute(sql,)
 
@@ -82,13 +77,13 @@ def create_taxon_link_table(biodb):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'create table interactions.colocalization_taxons_table_%s (group_1 varchar(200), group_2 varchar(200), taxon_1 INT,' \
-          'taxon_2 INT)' % biodb
+    sql = 'create table interactions_colocalization_taxons_table (group_1 varchar(200), group_2 varchar(200), taxon_1 INT,' \
+          'taxon_2 INT)'
 
     server.adaptor.execute(sql,)
 
 def insert_group_links_into_mysql(biodb,
-                      group2links):
+                                  group2links):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     pair_done = []
@@ -99,9 +94,8 @@ def insert_group_links_into_mysql(biodb,
             else:
                 pair_done.append([i, x])
                 pair_done.append([x, i])
-                sql = 'insert into interactions.colocalization_table_%s (group_1, group_2, n_links, n_comparisons, ratio)' \
-                      ' values ("%s","%s",%s,%s,%s)' % (biodb,
-                                                        i,
+                sql = 'insert into interactions_colocalization_table (group_1, group_2, n_links, n_comparisons, ratio)' \
+                      ' values ("%s","%s",%s,%s,%s)' % (i,
                                                         x,
                                                         group2links[i][x][0],
                                                         group2links[i][x][1],
@@ -116,12 +110,11 @@ def insert_taxon_links_into_mysql(biodb,
     for i in group2taxons:
         for x in group2taxons[i]:
             for one_taxon_pair in group2taxons[i][x]:
-                    sql = 'insert into interactions.colocalization_taxons_table_%s (group_1, group_2, taxon_1, taxon_2)' \
-                          ' values ("%s","%s",%s,%s)' % (biodb,
-                                                            i,
-                                                            x,
-                                                            one_taxon_pair[0],
-                                                            one_taxon_pair[1])
+                    sql = 'insert into interactions_colocalization_taxons_table (group_1, group_2, taxon_1, taxon_2)' \
+                          ' values ("%s","%s",%s,%s)' % (i,
+                                                         x,
+                                                         one_taxon_pair[0],
+                                                         one_taxon_pair[1])
                     server.adaptor.execute_and_fetchall(sql,)
     server.adaptor.commit()
 
@@ -155,16 +148,16 @@ def find_clusters_of_orthogroups(db_name, identity_cutoff, distance_cutoff=10000
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql_locus = 'select seqfeature_id from orthology_detail_%s' % db_name
+    sql_locus = 'select seqfeature_id from orthology_detail'
     all_locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql_locus,)]
 
-    sql = 'select seqfeature_id, orthogroup from orthology_detail_%s' % db_name
+    sql = 'select seqfeature_id, orthogroup from orthology_detail'
     locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select locus_tag,seqfeature_id from orthology_detail_%s' % db_name
+    sql = 'select locus_tag,seqfeature_id from orthology_detail'
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select seqfeature_id, start, stop from orthology_detail_%s' % db_name
+    sql = 'select seqfeature_id, start, stop from orthology_detail'
 
     locus2start_end = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     orthogroup2locus_list = {}
@@ -174,7 +167,7 @@ def find_clusters_of_orthogroups(db_name, identity_cutoff, distance_cutoff=10000
         else:
             orthogroup2locus_list[locus2orthogroup[locus]].append(locus)
 
-    sql_identity = 'select taxon_1, taxon_2, median_identity from comparative_tables.shared_og_av_id_%s' % db_name
+    sql_identity = 'select taxon_1, taxon_2, median_identity from comparative_tables_shared_og_av_id'
     taxon2taxon_median_id = {}
 
     for row in server.adaptor.execute_and_fetchall(sql_identity,):
@@ -183,13 +176,13 @@ def find_clusters_of_orthogroups(db_name, identity_cutoff, distance_cutoff=10000
             taxon2taxon_median_id[row[0]][row[1]] = row[2]
         else:
             taxon2taxon_median_id[row[0]][row[1]] = row[2]
-    sql = 'select seqfeature_id, accession from orthology_detail_%s' % db_name
+    sql = 'select seqfeature_id, accession from orthology_detail'
     locus2accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     accession_list = set(locus2accession.values())
     accession2record = {}
 
     locus2closest_locus_list = {}
-    sql = 'select locus_1,locus_2 from comparative_tables.identity_closest_homolog_%s' % db_name
+    sql = 'select locus_1,locus_2 from comparative_tables_identity_closest_homolog'
     data = server.adaptor.execute_and_fetchall(sql,)
     for i in data:
         if str(i[0]) not in locus2closest_locus_list:
@@ -375,19 +368,19 @@ def find_clusters_of_locus(db_name, identity_cutoff, distance_cutoff=20000):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql_locus = 'select seqfeature_id from orthology_detail_%s' % db_name
+    sql_locus = 'select seqfeature_id from orthology_detail'
     all_locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql_locus,)]
 
-    sql = 'select seqfeature_id, orthogroup from orthology_detail_%s' % db_name
+    sql = 'select seqfeature_id, orthogroup from orthology_detail'
     locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select taxon_id,description from biosqldb.bioentry;'
+    sql = 'select taxon_id,description from bioentry;'
     taxon_id2genome_description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select locus_tag,seqfeature_id from orthology_detail_%s' % db_name
+    sql = 'select locus_tag,seqfeature_id from orthology_detail'
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select seqfeature_id, start, stop from orthology_detail_%s' % db_name
+    sql = 'select seqfeature_id, start, stop from orthology_detail'
 
     locus2start_end = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     orthogroup2locus_list = {}
@@ -397,7 +390,7 @@ def find_clusters_of_locus(db_name, identity_cutoff, distance_cutoff=20000):
         else:
             orthogroup2locus_list[locus2orthogroup[locus]].append(locus)
 
-    sql_identity = 'select taxon_1, taxon_2, median_identity from comparative_tables.shared_og_av_id_%s' % db_name
+    sql_identity = 'select taxon_1, taxon_2, median_identity from comparative_tables_shared_og_av_id'
     taxon2taxon_median_id = {}
 
     for row in server.adaptor.execute_and_fetchall(sql_identity,):
@@ -406,13 +399,13 @@ def find_clusters_of_locus(db_name, identity_cutoff, distance_cutoff=20000):
             taxon2taxon_median_id[row[0]][row[1]] = row[2]
         else:
             taxon2taxon_median_id[row[0]][row[1]] = row[2]
-    sql = 'select seqfeature_id, accession from orthology_detail_%s' % db_name
+    sql = 'select seqfeature_id, accession from orthology_detail'
     locus2accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     accession_list = set(locus2accession.values())
     accession2record = {}
 
     locus2closest_locus_list = {}
-    sql = 'select locus_1, locus_2 from comparative_tables.identity_closest_homolog2_%s' % db_name
+    sql = 'select locus_1, locus_2 from comparative_tables_identity_closest_homolog2'
     data = server.adaptor.execute_and_fetchall(sql,)
     for i in data:
         if str(i[0]) not in locus2closest_locus_list:
@@ -574,9 +567,8 @@ def find_clusters_of_locus(db_name, identity_cutoff, distance_cutoff=20000):
                 for locus_b in tmp_dico[locus_a]:
                     # only add minimum of 50% links
                     if tmp_dico[locus_a][locus_b][0]/float(tmp_dico[locus_a][locus_b][1]) > 0.5:
-                        sql = 'insert into interactions.colocalization_table_locus_%s (locus_1, locus_2, n_links, n_comparisons, ratio)' \
-                              ' values ("%s","%s",%s,%s,%s)' % (db_name,
-                                                                locus_a,
+                        sql = 'insert into interactions_colocalization_table_locus (locus_1, locus_2, n_links, n_comparisons, ratio)' \
+                              ' values ("%s","%s",%s,%s,%s)' % (locus_a,
                                                                 locus_b,
                                                                 tmp_dico[locus_a][locus_b][0],
                                                                 tmp_dico[locus_a][locus_b][1],

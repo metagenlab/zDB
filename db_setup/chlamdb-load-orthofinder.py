@@ -68,28 +68,25 @@ def create_orthogroup_table(server,
                             seqfeature_id2feature_type_id,
                             pseudogene_feature_list):
 
-    sql = 'create database if not exists orthology'
-    server.adaptor.execute(sql)
-
-    sql = 'CREATE TABLE if not exists orthology.orthogroup_%s (orthogroup_id INT AUTO_INCREMENT PRIMARY KEY,' \
+    sql = 'CREATE TABLE if not exists orthology_orthogroup (orthogroup_id INT AUTO_INCREMENT PRIMARY KEY,' \
           ' orthogroup_name varchar(400),' \
           ' orthogroup_size INT,' \
           ' n_genomes INT,' \
-          ' INDEX orthogroup(orthogroup_name))' % biodatabase_name
+          ' INDEX orthogroup(orthogroup_name))'
 
     server.adaptor.execute(sql)
 
-    sql0 = 'CREATE TABLE if not exists orthology.seqfeature_id2orthogroup_%s (seqfeature_id INT,' \
+    sql0 = 'CREATE TABLE if not exists orthology_seqfeature_id2orthogroup (seqfeature_id INT,' \
            ' orthogroup_id INT,' \
            ' INDEX seqfeature_id(seqfeature_id),' \
-           ' INDEX orthogroup_id(orthogroup_id))' % biodatabase_name
+           ' INDEX orthogroup_id(orthogroup_id))'
 
     server.adaptor.execute(sql0)
 
     sql = 'create database if not exists annotation'
     server.adaptor.execute(sql)
 
-    sql1 = 'CREATE TABLE if not exists annotation.seqfeature_id2locus_%s(seqfeature_id INT,' \
+    sql1 = 'CREATE TABLE if not exists annotation_seqfeature_id2locus(seqfeature_id INT,' \
           ' feature_type_id INT,' \
           ' taxon_id INT,' \
           ' pseudogene INT, ' \
@@ -101,23 +98,23 @@ def create_orthogroup_table(server,
           ' INDEX seqfeature_id(seqfeature_id),' \
           ' INDEX bioentry_id(bioentry_id),' \
           ' INDEX locus(locus_tag),' \
-          ' INDEX taxon_id(taxon_id))' % biodatabase_name
+          ' INDEX taxon_id(taxon_id))'
     server.adaptor.execute(sql1)
 
-    sql2 = 'CREATE TABLE if not exists annotation.seqfeature_id2CDS_annotation_%s(seqfeature_id INT,' \
+    sql2 = 'CREATE TABLE if not exists annotation_seqfeature_id2CDS_annotation (seqfeature_id INT,' \
           ' gene VARCHAR(100) NOT NULL, ' \
           ' protein_id VARCHAR(100) NOT NULL, ' \
           ' product TEXT NOT NULL, ' \
           ' translation TEXT NOT NULL, ' \
           ' SP INT,' \
           ' TM INT,' \
-          ' INDEX seqfeature_id(seqfeature_id))' % biodatabase_name
+          ' INDEX seqfeature_id(seqfeature_id))'
 
     server.adaptor.execute(sql2)
 
-    sql3 = 'CREATE TABLE if not exists annotation.seqfeature_id2RNA_annotation_%s(seqfeature_id INT,' \
+    sql3 = 'CREATE TABLE if not exists annotation.seqfeature_id2RNA_annotation (seqfeature_id INT,' \
           ' product TEXT NOT NULL,' \
-          ' INDEX seqfeature_id(seqfeature_id))' % biodatabase_name
+          ' INDEX seqfeature_id(seqfeature_id))'
 
     server.adaptor.execute(sql3)
 
@@ -134,7 +131,7 @@ def create_orthogroup_table(server,
 
     for n, locus_tag in enumerate(locus_tag2seqfeature_id_dico):
         if n % 5000 == 0:
-            print("annotation.seqfeature_id2locus: %s / %s" % (n, len(locus_tag2seqfeature_id_dico)))
+            print("annotation_seqfeature_id2locus: %s / %s" % (n, len(locus_tag2seqfeature_id_dico)))
         seqfeature_id = locus_tag2seqfeature_id_dico[locus_tag]
         taxon_id = locus_tag2taxon_dico[locus_tag]
         start = seqfeature2location_dico[seqfeature_id][0]
@@ -154,10 +151,9 @@ def create_orthogroup_table(server,
         else:
             pseudo = 1
 
-        sql = 'insert into annotation.seqfeature_id2locus_%s (seqfeature_id, feature_type_id, taxon_id, ' \
+        sql = 'insert into annotation_seqfeature_id2locus (seqfeature_id, feature_type_id, taxon_id, ' \
               ' pseudogene, bioentry_id, locus_tag, start, stop, strand) ' \
-              ' values (%s, %s, %s, %s, %s, "%s", %s, %s, %s)' % (biodatabase_name,
-                                                                  seqfeature_id,
+              ' values (%s, %s, %s, %s, %s, "%s", %s, %s, %s)' % (seqfeature_id,
                                                                   seqfeature_type_id,
                                                                   taxon_id,
                                                                   pseudo,
@@ -187,16 +183,15 @@ def create_orthogroup_table(server,
                 except KeyError:
                     product = "-"
 
-                sql = 'insert into annotation.seqfeature_id2CDS_annotation_%s (seqfeature_id, ' \
+                sql = 'insert into annotation_seqfeature_id2CDS_annotation (seqfeature_id, ' \
                       ' gene, protein_id, product, translation, SP, TM) ' \
-                      ' values (%s, "%s", "%s", "%s", "%s", %s, %s)' % (biodatabase_name,
-                                                                seqfeature_id,
-                                                                gene,
-                                                                protein_id,
-                                                                product,
-                                                                translation,
-                                                                0,
-                                                                0)
+                      ' values (%s, "%s", "%s", "%s", "%s", %s, %s)' % (seqfeature_id,
+                                                                        gene,
+                                                                        protein_id,
+                                                                        product,
+                                                                        translation,
+                                                                        0,
+                                                                        0)
                 ##print sql
                 server.adaptor.execute(sql,)
 
@@ -205,10 +200,9 @@ def create_orthogroup_table(server,
                     product = seqfeature_id2product_dico[str(seqfeature_id)]
                 except KeyError:
                     product = "-"
-                sql = 'insert into annotation.seqfeature_id2RNA_annotation_%s ' \
+                sql = 'insert into annotation_seqfeature_id2RNA_annotation ' \
                       ' (seqfeature_id, product)' \
-                      ' values (%s, "%s")' % (biodatabase_name,
-                                              seqfeature_id,
+                      ' values (%s, "%s")' % (seqfeature_id,
                                               product)
                 server.adaptor.execute(sql,)
             else:
@@ -230,9 +224,8 @@ def create_orthogroup_table(server,
             continue
         n_genomes = group2family_size[group]
 
-        sql = 'insert into orthology.orthogroup_%s (orthogroup_name, orthogroup_size, n_genomes) ' \
-              ' values ("%s", %s, %s)' % (biodatabase_name,
-                                          group,
+        sql = 'insert into orthology_orthogroup (orthogroup_name, orthogroup_size, n_genomes) ' \
+              ' values ("%s", %s, %s)' % (group,
                                           orthogroup_size,
                                           n_genomes)
 
@@ -242,7 +235,7 @@ def create_orthogroup_table(server,
 
     # get orthogroup ids
 
-    sql = 'select orthogroup_name, orthogroup_id from orthology.orthogroup_%s' % biodatabase_name
+    sql = 'select orthogroup_name, orthogroup_id from orthology_orthogroup'
 
     orthogroup2orthogroup_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -261,9 +254,8 @@ def create_orthogroup_table(server,
             # if the protein has no protein id (and a locus tag only => prokka annotation)
             seqfeature_id = locus_tag2seqfeature_id_dico[locus_tag]
 
-            sql = 'INSERT INTO orthology.seqfeature_id2orthogroup_%s(seqfeature_id, orthogroup_id) ' \
-                  ' values(%s,%s);' % (biodatabase_name,
-                                       seqfeature_id,
+            sql = 'INSERT INTO orthology_seqfeature_id2orthogroup_%s(seqfeature_id, orthogroup_id) ' \
+                  ' values(%s,%s);' % (seqfeature_id,
                                        orthogroup_id)
 
             server.adaptor.execute(sql)
@@ -305,26 +297,27 @@ def get_family_size(server, biodatabase_name):
     return groupid2family_size
 
 
-def create_orthogroup_table_legacy(server, biodatabase_name,
-                                orthomcl_groups2locus_tag_list,
-                                locus_tag2seqfeature_id_dico,
-                                protein_id2seqfeature_id_dico,
-                                locus_tag2taxon_dico,
-                                protein_id2taxon_dico,
-                                locus_tag2accession_dico,
-                                protein_id2accession_dico,
-                                seqfeature_id2locus_tag_dico,
-                                seqfeature_id2protein_id_dico,
-                                seqfeature_id2gene_dico,
-                                seqfeature_id2product_dico,
-                                seqfeature_id2translation_dico,
-                                seqfeature_id2organism_dico,
-                                seqfeature2location_dico,
-                                group2orthogroup_size,
-                                group2family_size):
+def create_orthogroup_table_legacy(server, 
+                                   biodatabase_name,
+                                   orthomcl_groups2locus_tag_list,
+                                   locus_tag2seqfeature_id_dico,
+                                   protein_id2seqfeature_id_dico,
+                                   locus_tag2taxon_dico,
+                                   protein_id2taxon_dico,
+                                   locus_tag2accession_dico,
+                                   protein_id2accession_dico,
+                                   seqfeature_id2locus_tag_dico,
+                                   seqfeature_id2protein_id_dico,
+                                   seqfeature_id2gene_dico,
+                                   seqfeature_id2product_dico,
+                                   seqfeature_id2translation_dico,
+                                   seqfeature_id2organism_dico,
+                                   seqfeature2location_dico,
+                                   group2orthogroup_size,
+                                   group2family_size):
     import re
 
-    sql = 'CREATE TABLE orthology_detail_%s(orthogroup VARCHAR(100) NOT NULL, ' \
+    sql = 'CREATE TABLE orthology_detail (orthogroup VARCHAR(100) NOT NULL, ' \
           ' taxon_id INT, ' \
           ' accession VARCHAR(100) NOT NULL, ' \
           ' locus_tag VARCHAR(100) NOT NULL, ' \
@@ -342,7 +335,7 @@ def create_orthogroup_table_legacy(server, biodatabase_name,
           ' INDEX orthogroup(orthogroup),' \
           ' INDEX taxon_id(taxon_id),' \
           ' INDEX locus_tag(locus_tag),' \
-          ' INDEX seqfeature_id(seqfeature_id))' % biodatabase_name
+          ' INDEX seqfeature_id(seqfeature_id))'
 
     server.adaptor.execute(sql)
 
@@ -390,10 +383,9 @@ def create_orthogroup_table_legacy(server, biodatabase_name,
             except KeyError:
                 protein_id = locus_tag
 
-            sql = 'INSERT INTO orthology_detail_%s(orthogroup, taxon_id, accession, locus_tag, protein_id, start, ' \
+            sql = 'INSERT INTO orthology_detail (orthogroup, taxon_id, accession, locus_tag, protein_id, start, ' \
                   'stop, strand, gene, product, translation, organism, orthogroup_size, n_genomes, seqfeature_id) ' \
-                  ' values ("%s", %s, "%s", "%s", "%s", %s, %s, %s, "%s", "%s", "%s", "%s", %s, %s, %s);' % (biodatabase_name,
-                                                                                                             group, taxon_id,
+                  ' values ("%s", %s, "%s", "%s", "%s", %s, %s, %s, "%s", "%s", "%s", "%s", %s, %s, %s);' % (group, taxon_id,
                                                                                                              accession,
                                                                                                              locus_tag,
                                                                                                              protein_id,
@@ -436,7 +428,8 @@ def plot_orthogroup_size_distrib(server, biodatabase_name, out_name = "orthogrou
         #print all_taxons
         all_data = {}
         for taxon in all_taxons:
-            sql = 'select orthogroup,`%s` from comparative_tables.orthology_%s where `%s` >0' % (taxon, biodatabase_name, taxon)
+            sql = 'select orthogroup,`%s` from comparative_tables_orthology where `%s` >0' % (taxon, 
+                                                                                              taxon)
             result = manipulate_biosqldb._to_dict(server.adaptor.execute_and_fetchall(sql, ))
             all_data[taxon] = Counter(result.values())
 
@@ -502,7 +495,7 @@ def plot_orthogroup_size_distrib(server, biodatabase_name, out_name = "orthogrou
 
         # plot all genomes group size distribution
         #server, db = manipulate_biosqldb.load_db(db_name)
-        sql='select orthogroup, count(*) from biosqldb.orthology_detail_%s group by orthogroup' % biodatabase_name
+        sql='select orthogroup, count(*) from biosqldb_orthology_detail_%s group by orthogroup' % biodatabase_name
 
         # based on the new orthology detail table
         all_grp_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -592,7 +585,7 @@ def get_orthology_matrix_merging_plasmids_own_tables(server, biodatabase_name):
 
     #all_orthogroups = get_all_orthogroup_size(server, biodatabase_name)
     server, db = manipulate_biosqldb.load_db(biodatabase_name)
-    sql='select orthogroup, count(*) from biosqldb.orthology_detail_%s group by orthogroup' % biodatabase_name
+    sql='select orthogroup, count(*) from biosqldb_orthology_detail group by orthogroup'
 
     # based on the new orthology detail table
     all_orthogroups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -638,7 +631,7 @@ def create_orthology_mysql_table(server, orthogroup2detailed_count, biodatabase_
     sql = 'create database if not exists comparative_tables'
     server.adaptor.execute(sql,)
 
-    sql = "CREATE TABLE comparative_tables.orthology_%s(orthogroup VARCHAR(100) NOT NULL" % biodatabase_name
+    sql = "CREATE TABLE comparative_tables_orthology (orthogroup VARCHAR(100) NOT NULL"
     for i in taxon_id_list:
         sql+=" ,`%s` INT" % i
     sql+=")"
@@ -653,7 +646,7 @@ def create_orthology_mysql_table(server, orthogroup2detailed_count, biodatabase_
             columns+="`%s`, " % taxons[i]
         values += "%s" % orthogroup2detailed_count[group][taxons[-1]]
         columns += "`%s`" % taxons[-1]
-        sql = "INSERT INTO comparative_tables.orthology_%s (%s) values (%s);" %  (biodatabase_name, columns, values)
+        sql = "INSERT INTO comparative_tables_orthology_%s (%s) values (%s);" %  (columns, values)
         #print sql
         server.adaptor.execute(sql)
         server.adaptor.commit()
@@ -679,7 +672,7 @@ def _chunks(l, n):
 def get_non_protein_coding_locus(server, biodb,term_list=["rRNA","tRNA","assembly_gap"]):
 
 
-    sql0 = 'CREATE table non_protein_coding_locus_%s (seqfeature_id INT, ' \
+    sql0 = 'CREATE table non_protein_coding_locus (seqfeature_id INT, ' \
            ' taxon_id INT, ' \
            ' bioentry_id INT, ' \
            ' accession varchar(200), ' \
@@ -748,17 +741,16 @@ def get_non_protein_coding_locus(server, biodb,term_list=["rRNA","tRNA","assembl
             product = '-'
         start, stop, strand = seqfeature_id2location[seqfeature_id]
 
-        sql = 'insert into non_protein_coding_locus_%s values (%s,%s,%s,"%s","%s","%s","%s",%s,%s,%s)' % (biodb,
-                                                                                                  seqfeature_id,
-                                                                                                  taxon_id,
-                                                                                                  bioentry_id,
-                                                                                                  accession,
-                                                                                                  name,
-                                                                                                  locus_tag,
-                                                                                                  product,
-                                                                                                  start,
-                                                                                                  stop,
-                                                                                                  strand)
+        sql = 'insert into non_protein_coding_locus values (%s,%s,%s,"%s","%s","%s","%s",%s,%s,%s)' % (seqfeature_id,
+                                                                                                       taxon_id,
+                                                                                                       bioentry_id,
+                                                                                                       accession,
+                                                                                                       name,
+                                                                                                       locus_tag,
+                                                                                                       product,
+                                                                                                       start,
+                                                                                                       stop,
+                                                                                                       strand)
 
         server.adaptor.execute(sql,)
         server.adaptor.commit()

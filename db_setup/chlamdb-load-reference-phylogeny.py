@@ -9,7 +9,8 @@ def gbk2taxid(gbk_files, db_name):
 
     for gbk in gbk_files:
         records = [i for i in SeqIO.parse(gbk, 'genbank')]
-        sql = 'select taxon_id from biosqldb.bioentry t1 inner join biosqldb.biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t1.accession="%s" and t2.name="%s";' % (records[0].name, db_name)
+        sql = 'select taxon_id from bioentry t1 ' \
+              ' inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t1.accession="%s" and t2.name="%s";' % (records[0].name, db_name)
         print(sql)
         file_name2taxid[gbk.split("/")[-1].split(".")[0]] = int(server.adaptor.execute_and_fetchall(sql,)[0][0])
     return file_name2taxid

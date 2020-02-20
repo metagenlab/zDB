@@ -6,7 +6,7 @@ def median_RBBH2species(biodb, cutoff=97):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'create table if not exists taxid2species_%s (taxon_id INT, species_id INT)' % biodb
+    sql = 'create table if not exists taxid2species (taxon_id INT, species_id INT)'
     server.adaptor.execute(sql,)
     server.commit()
 
@@ -14,7 +14,7 @@ def median_RBBH2species(biodb, cutoff=97):
                 ' where t1.name="%s" and t2.description not like "%%%%plasmid%%%%"' % biodb
     taxon_id_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql_taxon,)]
 
-    sql2 = 'select taxon_1,taxon_2,median_identity from comparative_tables.shared_og_av_id_%s;' % biodb
+    sql2 = 'select taxon_1,taxon_2,median_identity from comparative_tables_shared_og_av_id;'
 
     taxon2taxon2identity = {}
     for row in server.adaptor.execute_and_fetchall(sql2,):
@@ -43,7 +43,7 @@ def median_RBBH2species(biodb, cutoff=97):
                     species_list.append(taxon_2)
         for taxon in species_list:
             taxons_classified.append(taxon)
-            sql = 'insert into taxid2species_%s values(%s,%s)' % (biodb, taxon, species_index)
+            sql = 'insert into taxid2species values(%s,%s)' % (taxon, species_index)
             server.adaptor.execute(sql,)
         server.commit()
         species_index+=1
@@ -67,14 +67,14 @@ def bioentry_metadata(biodb):
                 
     accession2bioentry_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_accessions,))
 
-    sql = 'create table assembly_metadata_%s (assembly_id INT AUTO_INCREMENT PRIMARY KEY, AssemblyAccession varchar(200), ReleaseLevel TEXT, PartialGenomeRepresentation varchar(20), LastUpdateDate varchar(200), ' \
+    sql = 'create table assembly_metadata (assembly_id INT AUTO_INCREMENT PRIMARY KEY, AssemblyAccession varchar(200), ReleaseLevel TEXT, PartialGenomeRepresentation varchar(20), LastUpdateDate varchar(200), ' \
           ' RefSeq_category varchar(40), SpeciesTaxid INTEGER, BioSampleAccn varchar(200), ' \
           ' SubmitterOrganization TEXT, Taxid INTEGER, FtpPath_GenBank TEXT, ExclFromRefSeq TEXT, AsmReleaseDate_GenBank varchar(400), ' \
-          ' FtpPath_RefSeq TEXT, AssemblyName varchar(400), SpeciesName TEXT, AnomalousList TEXT, AssemblyStatus varchar(200), Coverage INTEGER, Organism TEXT)' % biodb
+          ' FtpPath_RefSeq TEXT, AssemblyName varchar(400), SpeciesName TEXT, AnomalousList TEXT, AssemblyStatus varchar(200), Coverage INTEGER, Organism TEXT)'
     print(sql)
     server.adaptor.execute(sql,)
     
-    sql2 = 'create table bioentry2assembly_%s (bioentry_id INTEGER, assembly_id INTEGER);' % biodb
+    sql2 = 'create table bioentry2assembly (bioentry_id INTEGER, assembly_id INTEGER);'
     server.adaptor.execute(sql2,)
     
     assembly2data = {}
@@ -142,7 +142,7 @@ def bioentry_metadata(biodb):
                 
     for assembly_accession in assembly2data:
         print(assembly_accession)
-        sql = 'insert into assembly_metadata_%s' % biodb + ' (AssemblyAccession, ReleaseLevel, PartialGenomeRepresentation, LastUpdateDate, RefSeq_category, ' \
+        sql = 'insert into assembly_metadata (AssemblyAccession, ReleaseLevel, PartialGenomeRepresentation, LastUpdateDate, RefSeq_category, ' \
               ' SpeciesTaxid, BioSampleAccn, SubmitterOrganization, Taxid, FtpPath_GenBank, ExclFromRefSeq, AsmReleaseDate_GenBank, FtpPath_RefSeq,' \
               ' AssemblyName, SpeciesName, AnomalousList, AssemblyStatus,Coverage, Organism) ' \
               ' values (%s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' 
@@ -169,13 +169,13 @@ def bioentry_metadata(biodb):
         server.adaptor.execute(sql, values)
     server.commit()
     
-    sql = 'select AssemblyAccession, assembly_id from assembly_metadata_%s' % biodb
+    sql = 'select AssemblyAccession, assembly_id from assembly_metadata'
     assembly_accession2assembly_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     
     for bioentry_id in bioentry_id2assembly_accession:
         assembly_accession = bioentry_id2assembly_accession[bioentry_id]
         assembly_id = assembly_accession2assembly_id[assembly_accession]
-        sql = 'insert into bioentry2assembly_%s values (%s, %s)' % (biodb, bioentry_id, assembly_id)
+        sql = 'insert into bioentry2assembly values (%s, %s)' % (bioentry_id, assembly_id)
         server.adaptor.execute(sql,)
     server.commit()
 
@@ -185,32 +185,33 @@ def create_species_curated_taxonomy(biodb):
     
     server, fb = manipulate_biosqldb.load_db(biodb)
     
-    sql1 = 'select distinct species_id from taxid2species_%s' % biodb
+    sql1 = 'select distinct species_id from taxid2species'
     species_id_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql1,)]
     # get mot frequent classification for each species defined at 97% median identity
-    sql = 'select t5.species_id,t3.phylum,t3.order,t3.family,t3.genus,t3.species, count(*) as n from bioentry2assembly_%s t1 ' \
-          ' inner join assembly_metadata_%s t2 on t1.assembly_id=t2.assembly_id ' \
+    sql = 'select t5.species_id,t3.phylum,t3.order,t3.family,t3.genus,t3.species, count(*) as n from bioentry2assembly t1 ' \
+          ' inner join assembly_metadata t2 on t1.assembly_id=t2.assembly_id ' \
           ' inner join blastnr.blastnr_taxonomy t3 on t2.taxid=t3.taxon_id ' \
           ' inner join bioentry t4 on t1.bioentry_id=t4.bioentry_id ' \
-          ' inner join taxid2species_%s t5 on t4.taxon_id=t5.taxon_id ' \
-          ' group by t5.species_id,t3.phylum,t3.order,t3.family,t3.genus,t3.species order by n DESC;' % (biodb, biodb, biodb)
+          ' inner join taxid2species t5 on t4.taxon_id=t5.taxon_id ' \
+          ' group by t5.species_id,t3.phylum,t3.order,t3.family,t3.genus,t3.species order by n DESC;'
+          
     data = server.adaptor.execute_and_fetchall(sql,)
     species_id2most_frequent_taxonomy = {}
     for row in data:
         if row[0] not in species_id2most_frequent_taxonomy:
             species_id2most_frequent_taxonomy[row[0]] = row
     
-    sql = 'create table species_curated_taxonomy_%s (species_id INTEGER, phylum varchar(200), `order` varchar(200), family varchar(200), genus varchar(200), species varchar(600))' % biodb
+    sql = 'create table species_curated_taxonomy (species_id INTEGER, phylum varchar(200), `order` varchar(200), family varchar(200), genus varchar(200), species varchar(600))'
     server.adaptor.execute(sql)
     for species_id in species_id_list:
         if species_id not in species_id2most_frequent_taxonomy:
-            sql = 'select description from bioentry t1 inner join taxid2species_%s t2 on t1.taxon_id=t2.taxon_id where species_id=%s and description not like "%%%%plasmid%%%%" limit 1;' % (biodb, species_id)
+            sql = 'select description from bioentry t1 inner join taxid2species t2 on t1.taxon_id=t2.taxon_id where species_id=%s and description not like "%%%%plasmid%%%%" limit 1;' % (species_id)
             description = server.adaptor.execute_and_fetchall(sql,)[0][0]
-            sql = 'insert into species_curated_taxonomy_%s' % biodb + ' values (%s,%s,%s,%s,%s,%s)'
+            sql = 'insert into species_curated_taxonomy values (%s,%s,%s,%s,%s,%s)'
             values = [species_id, "-","-","-","-",description]
             server.adaptor.execute(sql, values)
         else:
-            sql = 'insert into species_curated_taxonomy_%s' % biodb + ' values (%s,%s,%s,%s,%s,%s)'
+            sql = 'insert into species_curated_taxonomy values (%s,%s,%s,%s,%s,%s)'
             values = [species_id,
                     species_id2most_frequent_taxonomy[species_id][1],
                     species_id2most_frequent_taxonomy[species_id][2],

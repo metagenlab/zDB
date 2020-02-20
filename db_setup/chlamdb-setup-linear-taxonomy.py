@@ -7,19 +7,21 @@ import re
 
 
 class MySQLDB():
-    def __init__(self, dbname='blastnr'):
+    def __init__(self, biodb):
 
         sqlpsw = os.environ['SQLPSW']
+        self.biodb = biodb
         self.mysql_conn = MySQLdb.connect(host="localhost",
                                user="root",
-                               passwd=sqlpsw)
+                               passwd=sqlpsw,
+                               db=biodb)
         self.mysql_cursor = self.mysql_conn.cursor()
-        sql_db = 'CREATE DATABASE IF NOT EXISTS %s;' % dbname
-        self.mysql_cursor.execute(sql_db,)
-        self.mysql_conn.commit()
-        self.mysql_cursor.execute("use %s;" % dbname,)
 
-    def importFromCSV(self, csvfilename, tablename, separator=","):
+
+    def importFromCSV(self, 
+                      csvfilename, 
+                      tablename, 
+                      separator=","):
         with gzip.open(csvfilename, 'rt') as fh:
             dr = DictReader(fh, delimiter=separator)
             fieldlist_header = ''
@@ -46,7 +48,7 @@ class MySQLDB():
                 self.db.execute(ins, v)
 
         self.db.commit()
-        sql2 = 'create index ncbit on ncbi_taxonomy(tax_id);'
+        sql2 = 'create index ncbit on blastrn_ncbi_taxonomy(tax_id);'
         self.db.execute(sql2)
         self.db.commit()
 
@@ -58,7 +60,7 @@ class MySQLDB():
         sqlite_conn = sqlite3.connect(sqlite_db_path)
         sqlite_cursor = sqlite_conn.cursor()
 
-        sql_header = 'PRAGMA table_info(ncbi_taxonomy);'
+        sql_header = 'PRAGMA table_info(blastnr_ncbi_taxonomy);'
         sqlite_cursor.execute(sql_header)
         columns = sqlite_cursor.fetchall()
         column_index = []
@@ -81,11 +83,11 @@ class MySQLDB():
 
         column_index[0] = 'taxon_id'
 
-        sql_header_crate = 'create table if not exists blastnr.blastnr_taxonomy (%s)' % ','.join(columns_def)
+        sql_header_crate = 'create table if not exists blastnr_blastnr_taxonomy (%s)' % ','.join(columns_def)
         print(sql_header_crate)
         self.mysql_cursor.execute(sql_header_crate)
 
-        sql = 'insert into blastnr.blastnr_taxonomy (%s) values (' % ','.join(column_index)
+        sql = 'insert into blastnr_blastnr_taxonomy (%s) values (' % ','.join(column_index)
         sql += ','.join(["%s"]*len(column_index))
         sql += ')'
         for n, row in enumerate(taxonomy_data):
@@ -95,10 +97,10 @@ class MySQLDB():
             row = [i if (i != '') else None for i in row]
             self.mysql_cursor.execute(sql, row)
         self.mysql_conn.commit()
-        sql1 = 'CREATE INDEX taxid ON blastnr.blastnr_taxonomy(`taxon_id`);'
+        sql1 = 'CREATE INDEX taxid ON blastnr_blastnr_taxonomy(`taxon_id`);'
         # _mysql_exceptions.OperationalError: (1170, "BLOB/TEXT column 'phylum' used in key specification without a key length")
-        sql2 = 'CREATE INDEX ph ON blastnr.blastnr_taxonomy(`phylum`);'
-        sql3 = 'CREATE INDEX phid ON blastnr.blastnr_taxonomy(`phylum_taxid`);'
+        sql2 = 'CREATE INDEX ph ON blastnr_blastnr_taxonomy(`phylum`);'
+        sql3 = 'CREATE INDEX phid ON blastnr_blastnr_taxonomy(`phylum_taxid`);'
 
         self.mysql_cursor.execute(sql1)
         self.mysql_cursor.execute(sql2)
@@ -113,7 +115,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--linear_taxonomy_file', type=str, help='Linear taxonomy file')
     parser.add_argument('-s', '--linear_taxonomy_sqlite', type=str, help='Linear taxonomy sqlite3 file')
-    parser.add_argument('-d', '--db_name', type=str, help='DB name', default='blastnr')
+    parser.add_argument('-d', '--db_name', type=str, help='DB name', default='Biodb name')
 
     args = parser.parse_args()
 

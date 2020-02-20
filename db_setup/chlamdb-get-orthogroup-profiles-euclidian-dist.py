@@ -24,10 +24,9 @@ def sql_euclidian_dist_orthogroups(biodb, one_list, orthogroup2profile):
         #print ("%s/%s" % (i,n))
         dist = euclidean(orthogroup2profile[one_pair[0]], orthogroup2profile[one_pair[1]])
         if dist <= 2.5:
-            sql = 'insert into interactions.phylo_profiles_eucl_dist_%s values ("%s", "%s", %s);' % (biodb,
-                                                                                                        one_pair[0],
-                                                                                                        one_pair[1],
-                                                                                                        dist)
+            sql = 'insert into interactions_phylo_profiles_eucl_dist values ("%s", "%s", %s);' % (one_pair[0],
+                                                                                                  one_pair[1],
+                                                                                                  dist)
             server.adaptor.execute(sql,)
     server.adaptor.commit()
 
@@ -42,10 +41,9 @@ def sql_jaccard_dist_orthogroups(biodb, one_list, orthogroup2profile):
         dist = jaccard(orthogroup2profile[one_pair[0]], orthogroup2profile[one_pair[1]])
         # scale between 0 and 1
         if dist <= 0.5:
-            sql = 'insert into interactions.phylo_profiles_jac_dist_%s values ("%s", "%s", %s);' % (biodb,
-                                                                                                        one_pair[0],
-                                                                                                        one_pair[1],
-                                                                                                        dist)
+            sql = 'insert into interactions_phylo_profiles_jac_dist values ("%s", "%s", %s);' % (one_pair[0],
+                                                                                                 one_pair[1],
+                                                                                                 dist)
             server.adaptor.execute(sql,)
     server.adaptor.commit()
 
@@ -68,8 +66,8 @@ def create_ortogroup_dist_table(biodb, table_name='phylo_profiles_eucl_dist'):
     
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql_profiles_table = 'CREATE TABLE IF NOT EXISTS interactions.%s_%s (group_1 varchar(100), ' \
-                         ' group_2 varchar(100), euclidian_dist FLOAT, INDEX group_1 (group_1), INDEX group_2 (group_2))' % (table_name, biodb)
+    sql_profiles_table = 'CREATE TABLE IF NOT EXISTS interactions_%s (group_1 varchar(100), ' \
+                         ' group_2 varchar(100), euclidian_dist FLOAT, INDEX group_1 (group_1), INDEX group_2 (group_2))' % (table_name)
                                         
     try:
         print (sql_profiles_table)
@@ -97,9 +95,9 @@ def get_reduced_orthogroup_matrix(biodb, jaccard=True):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select * from comparative_tables.orthology_%s' % biodb
+    sql = 'select * from comparative_tables_orthology'
 
-    sql2 = 'show columns from comparative_tables.orthology_%s' % biodb
+    sql2 = 'show columns from comparative_tables_orthology'
 
 
     # get matrix as numpy arraw: orthogroups as rows, genomes as columns
@@ -123,7 +121,7 @@ def get_reduced_orthogroup_matrix(biodb, jaccard=True):
     # cluster taxons based on identity of core genome aligment
     # default clustering_ hight of 30
 
-    sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
+    sql = 'select biodatabase_id from biodatabase where name="%s"'
 
     biodb_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
 
@@ -138,9 +136,9 @@ def get_reduced_orthogroup_matrix(biodb, jaccard=True):
 
     con <- dbConnect(MySQL(),
              user="root", password="%s",
-             dbname="comparative_tables", host="localhost")
+             dbname="%s", host="localhost")
 
-    rs1 <- dbSendQuery(con, 'select taxon_1,taxon_2, median_identity from shared_og_av_id_%s union select taxon_2, taxon_1, median_identity from shared_og_av_id_%s;')
+    rs1 <- dbSendQuery(con, 'select taxon_1,taxon_2, median_identity from comparative_tables_shared_og_av_id union select taxon_2, taxon_1, median_identity from comparative_tables_shared_og_av_id;')
     pairwise_identity<- dbFetch(rs1, n=-1)
     rs2 <- dbSendQuery(con, 'select taxon_id,description from biosqldb.bioentry where biodatabase_id=%s and description not like "%%plasmid%%";')
     taxon2description<- dbFetch(rs2, n=-1)
@@ -156,7 +154,9 @@ def get_reduced_orthogroup_matrix(biodb, jaccard=True):
     clusterCut <- cutree(hc,h=30)
     taxons <- names(clusterCut)
 
-    """ % (sqlpsw, biodb, biodb, biodb_id))
+    """ % (sqlpsw, 
+           biodb, 
+           biodb_id))
 
     clusters = robjects.r["clusterCut"]
     taxons = robjects.r["taxons"]
@@ -303,10 +303,9 @@ def sql_euclidian_dist_cogs(biodb, one_list, orthogroup2profile):
 
         dist = euclidean(list1, list2)
         if dist <= 2.5:
-            sql = 'insert into comparative_tables.cogs_profiles_euclidian_distance_%s values ("%s", "%s", %s);' % (biodb,
-                                                                                                        one_pair[0],
-                                                                                                        one_pair[1],
-                                                                                                        dist)
+            sql = 'insert into comparative_tables_cogs_profiles_euclidian_distance values ("%s", "%s", %s);' % (one_pair[0],
+                                                                                                                one_pair[1],
+                                                                                                                dist)
             server.adaptor.execute(sql,)
             server.adaptor.commit()
 
@@ -319,15 +318,15 @@ def euclidian_dist_cogs(biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql_profiles_table = 'CREATE TABLE IF NOT EXISTS comparative_tables.cogs_profiles_euclidian_distance_%s (cog_1 varchar(100), ' \
-                         ' cog_2 varchar(100), euclidian_dist FLOAT, INDEX cog_1 (cog_1), INDEX cog_2 (cog_2))' % (biodb)
+    sql_profiles_table = 'CREATE TABLE IF NOT EXISTS comparative_tables_cogs_profiles_euclidian_distance (cog_1 varchar(100), ' \
+                         ' cog_2 varchar(100), euclidian_dist FLOAT, INDEX cog_1 (cog_1), INDEX cog_2 (cog_2))'
     try:
         print (sql_profiles_table)
         server.adaptor.execute(sql_profiles_table)
     except:
         print ('problem creating the sql table')
 
-    sql = 'select * from comparative_tables.COG_%s' % biodb
+    sql = 'select * from comparative_tables_COG_%s'
     cog2profile = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     combinations = []
@@ -397,10 +396,9 @@ def sql_euclidian_dist_interpro(biodb, one_list, interpro2profile):
 
         dist = euclidean(list1, list2)
         if dist <= 2.5:
-            sql = 'insert into comparative_tables.interpro_profiles_euclidian_distance_%s values ("%s", "%s", %s);' % (biodb,
-                                                                                                        one_pair[0],
-                                                                                                        one_pair[1],
-                                                                                                        dist)
+            sql = 'insert into comparative_tables_interpro_profiles_euclidian_distance_%s values ("%s", "%s", %s);' % (one_pair[0],
+                                                                                                                       one_pair[1],
+                                                                                                                       dist)
             server.adaptor.execute(sql,)
             server.adaptor.commit()
 
@@ -413,15 +411,15 @@ def euclidian_dist_interpro(biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql_profiles_table = 'CREATE TABLE IF NOT EXISTS comparative_tables.interpro_profiles_euclidian_distance_%s (interpro_1 varchar(100), ' \
-                         ' interpro_2 varchar(100), euclidian_dist FLOAT, INDEX interpro_1 (interpro_1), INDEX interpro_2 (interpro_2))' % (biodb)
+    sql_profiles_table = 'CREATE TABLE IF NOT EXISTS comparative_tables_interpro_profiles_euclidian_distance (interpro_1 varchar(100), ' \
+                         ' interpro_2 varchar(100), euclidian_dist FLOAT, INDEX interpro_1 (interpro_1), INDEX interpro_2 (interpro_2))'
     try:
         print (sql_profiles_table)
         server.adaptor.execute(sql_profiles_table)
     except:
         print ('problem creating the sql table')
 
-    sql = 'select * from comparative_tables.interpro_%s' % biodb
+    sql = 'select * from comparative_tables_interpro'
     interpro2profile = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     combinations = []

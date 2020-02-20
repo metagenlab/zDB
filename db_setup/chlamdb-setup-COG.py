@@ -10,14 +10,9 @@ def create_COG_tables():
                            passwd=sqlpsw) # name of the data base
     cursor = conn.cursor()
 
-    sql_db = 'CREATE DATABASE IF NOT EXISTS COG;'
 
-    cursor.execute(sql_db,)
-    conn.commit()
 
-    cursor.execute("use COG;",)
-
-    sql1 = 'CREATE TABLE cog_2014 (domain_id varchar(100),' \
+    sql1 = 'CREATE TABLE COG_cog_2014 (domain_id varchar(100),' \
                             ' genome_name varchar(200),' \
                             ' protein_id INT,' \
                             ' protein_length INT,' \
@@ -28,18 +23,18 @@ def create_COG_tables():
                             ' index COG_id(COG_id),' \
                             ' index protein_id(protein_id))'
 
-    sql2 = 'CREATE table cog_names_2014 (COG_id INT,' \
+    sql2 = 'CREATE table COG_cog_names_2014 (COG_id INT,' \
                                  ' COG_name varchar(100),' \
                                  ' description varchar(200),' \
                                  ' index COG_id(COG_id))'
 
-    sql3 = 'CREATE table cog_id2cog_category (COG_id INT,' \
+    sql3 = 'CREATE table COG_cog_id2cog_category (COG_id INT,' \
                                  ' category_id int,' \
                                  ' index COG_id(COG_id),' \
                                  ' index category_id(category_id))'
 
 
-    sql4 = 'create table COG.code2category (code varchar(5),' \
+    sql4 = 'create table COG_code2category (code varchar(5),' \
                                            ' description TEXT,' \
                                            ' category_id INT unsigned primary KEY AUTO_INCREMENT);'
 
@@ -77,6 +72,7 @@ def load_cog_tables(cognames_2014, cog_2014, cog_categories):
     :param cog_2014:
     :return:
     '''
+    
     import MySQLdb
     import os
     import re
@@ -93,7 +89,7 @@ def load_cog_tables(cognames_2014, cog_2014, cog_categories):
     cursor.execute('SET character_set_connection=utf8;')
 
     with open(cog_categories, 'r') as f:
-        sql = 'insert into code2category (code, description) values (%s, %s)'
+        sql = 'insert into COG_code2category (code, description) values (%s, %s)'
         for row in f:
             if row[0] == '#':
                 continue
@@ -101,11 +97,11 @@ def load_cog_tables(cognames_2014, cog_2014, cog_categories):
             cursor.execute(sql, (data[0], data[1]))
     conn.commit()
 
-    sql2 = 'select code, category_id from COG.code2category'
+    sql2 = 'select code, category_id from COG_code2category'
     cursor.execute(sql2,)
     cog_category2cog_category_id = manipulate_biosqldb.to_dict(cursor.fetchall())
 
-    sql3 = 'select description, category_id from COG.code2category'
+    sql3 = 'select description, category_id from COG_code2category'
     cursor.execute(sql3,)
     cog_description2cog_category_id = manipulate_biosqldb.to_dict(cursor.fetchall())
 
@@ -125,18 +121,18 @@ def load_cog_tables(cognames_2014, cog_2014, cog_categories):
             # split multiple function and insert one row/function
             fonctions = list(data[1])
             for fonction in fonctions:
-                sql = 'insert into COG.cog_id2cog_category values (%s, %s)' % (n,
-                                                                           cog_category2cog_category_id[fonction])
+                sql = 'insert into COG_cog_id2cog_category values (%s, %s)' % (n,
+                                                                               cog_category2cog_category_id[fonction])
                 cursor.execute(sql,)
 
-            sql = 'insert into COG.cog_names_2014(COG_id, COG_name, description) values(%s,"%s","%s")' % (n,
+            sql = 'insert into COG_cog_names_2014(COG_id, COG_name, description) values(%s,"%s","%s")' % (n,
                                                                                                           data[0],
                                                                                                           re.sub('"','',data[2]))
             cursor.execute(sql,)
             n+=1
     conn.commit()
 
-    sql = 'select COG_name, COG_id from COG.cog_names_2014'
+    sql = 'select COG_name, COG_id from COG_cog_names_2014'
 
     cursor.execute(sql,)
     cog_name2cog_id = manipulate_biosqldb.to_dict(cursor.fetchall())
@@ -151,7 +147,7 @@ def load_cog_tables(cognames_2014, cog_2014, cog_categories):
             if data[0][0] == '#':
                 continue
             try:
-                sql = 'insert into COG.cog_2014(COG_id, ' \
+                sql = 'insert into COG_cog_2014(COG_id, ' \
                       ' domain_id, ' \
                       ' genome_name, ' \
                       ' protein_id,' \
@@ -179,7 +175,7 @@ def load_cog_tables(cognames_2014, cog_2014, cog_categories):
                 categories = cog_web_data[1]
 
                 # get last COG id
-                sql = 'select COG_id from cog_names_2014 order by COG_id DESC limit 1'
+                sql = 'select COG_id from COG_cog_names_2014 order by COG_id DESC limit 1'
                 cursor.execute(sql,)
                 COG_id = int(cursor.fetchall()[0][0]) + 1
                 cog_name2cog_id[data[6]] = COG_id
@@ -187,20 +183,20 @@ def load_cog_tables(cognames_2014, cog_2014, cog_categories):
                     if cat in categories:
                         print ('category present!', cat)
                         category_id = cog_description2cog_category_id[cat]
-                        sql = 'insert into COG.cog_id2cog_category values (%s, %s)' % (COG_id,
+                        sql = 'insert into COG_cog_id2cog_category values (%s, %s)' % (COG_id,
                                                                                        category_id)
                         cursor.execute(sql,)
                         conn.commit()
 
                 # insert COG name
-                sql = 'insert into COG.cog_names_2014(COG_id, COG_name, description) values(%s,"%s","%s")' % (cog_name2cog_id[data[6]],
+                sql = 'insert into COG_cog_names_2014(COG_id, COG_name, description) values(%s,"%s","%s")' % (cog_name2cog_id[data[6]],
                                                                                                               data[6],
                                                                                                               description)
                 cursor.execute(sql,)
                 conn.commit()
 
                 # insert entry
-                sql = 'insert into COG.cog_2014(COG_id, ' \
+                sql = 'insert into COG_cog_2014(COG_id, ' \
                       ' domain_id, ' \
                       ' genome_name, ' \
                       ' protein_id,' \

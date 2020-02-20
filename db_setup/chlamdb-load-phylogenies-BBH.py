@@ -16,7 +16,7 @@ def import_phylo(phylo_list, biodb):
     import re
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'create table IF NOT EXISTS biosqldb_phylogenies.BBH_%s (orthogroup varchar(100), phylogeny text, INDEX orthogroup (orthogroup));' % biodb
+    sql = 'create table IF NOT EXISTS phylogenies_BBH (orthogroup varchar(100), phylogeny text, INDEX orthogroup (orthogroup));'
     server.adaptor.execute(sql,)
 
     locuslag2orthogroup = biosql_own_sql_tables.locus_tag2orthogroup(biodb)
@@ -31,7 +31,7 @@ def import_phylo(phylo_list, biodb):
                 break
             except:
                 continue
-        sql = 'insert into biosqldb_phylogenies.BBH_%s values ("%s", "%s");' % (biodb, orthogroup, t.write())
+        sql = 'insert into phylogenies_BBH values ("%s", "%s");' % (orthogroup, t.write())
         try:
             server.adaptor.execute(sql,)
         except:

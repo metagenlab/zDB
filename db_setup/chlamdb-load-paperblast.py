@@ -34,13 +34,13 @@ class PaperBlast():
         # check if some data were already inserted
         sql = 'select pmId,doi,title,journal,year from (select distinct pmId,doi,title,journal,year from GenePaper) A;'
         self.pmid2article_data = manipulate_biosqldb.to_dict(self.paperblast_cursor.execute(sql,).fetchall())
-        sql = f'select distinct hash from string.seqfeature_id2paperblast t1 inner join annotation.hash2seqfeature_id_{db_name} t2 on t1.seqfeature_id=t2.seqfeature_id;'
+        sql = f'select distinct hash from string_seqfeature_id2paperblast t1 inner join annotation.hash2seqfeature_id_{db_name} t2 on t1.seqfeature_id=t2.seqfeature_id;'
         self.hash_in_db =set([i[0] for i in self.server.adaptor.execute_and_fetchall(sql,)])
-        sql = 'select pmid from string.pmid2data_paperblast'
+        sql = 'select pmid from string_pmid2data_paperblast'
         self.pmid_in_db = [i[0] for i in self.server.adaptor.execute_and_fetchall(sql,)]
-        sql = 'select pmid from string.pmid2gene_rif_comment'
+        sql = 'select pmid from string_pmid2gene_rif_comment'
         self.gene_rif_in_db = [i[0] for i in self.server.adaptor.execute_and_fetchall(sql,)]
-        sql = 'select accession,id from string.paperblast_entry'
+        sql = 'select accession,id from string_paperblast_entry'
         self.paperblast_accession2paperblast_id = manipulate_biosqldb.to_dict(self.server.adaptor.execute_and_fetchall(sql,))
         sql_desc_gene_curated = 'select protId,organism,desc,comment from CuratedGene'
         sql_desc_gene = 'select geneId,organism,desc from Gene'
@@ -49,11 +49,11 @@ class PaperBlast():
         
 
     def create_tables(self):
-        sql1 = 'create table if not exists string.seqfeature_id2paperblast (seqfeature_id INT, paperblast_id INT, query_cov FLOAT, hit_cov FLOAT, identity FLOAT, evalue FLOAT, score FLOAT)'
-        sql2 = 'create table if not exists string.paperblast2pmid (paperblast_id INT, PMID BIGINT)'
-        sql3 = 'create table if not exists string.pmid2data_paperblast(pmid BIGINT, title TEXT, journal TEXT, year varchar(200))'
-        sql4 = 'create table if not exists string.paperblast_entry (id INT AUTO_INCREMENT PRIMARY KEY, accession varchar(200), db_name varchar(200), organism TEXT, description TEXT, comment TEXT)'
-        sql5 = 'create table if not exists string.pmid2gene_rif_comment (pmid BIGINT, comment TEXT)'
+        sql1 = 'create table if not exists string_seqfeature_id2paperblast (seqfeature_id INT, paperblast_id INT, query_cov FLOAT, hit_cov FLOAT, identity FLOAT, evalue FLOAT, score FLOAT)'
+        sql2 = 'create table if not exists string_paperblast2pmid (paperblast_id INT, PMID BIGINT)'
+        sql3 = 'create table if not exists string_pmid2data_paperblast(pmid BIGINT, title TEXT, journal TEXT, year varchar(200))'
+        sql4 = 'create table if not exists string_paperblast_entry (id INT AUTO_INCREMENT PRIMARY KEY, accession varchar(200), db_name varchar(200), organism TEXT, description TEXT, comment TEXT)'
+        sql5 = 'create table if not exists string_pmid2gene_rif_comment (pmid BIGINT, comment TEXT)'
         self.server.adaptor.execute(sql1)
         self.server.adaptor.execute(sql2)
         self.server.adaptor.execute(sql3)
@@ -151,7 +151,7 @@ class PaperBlast():
                 title = data[pmid]["title"]
                 journal = data[pmid]["journal"]
                 year = data[pmid]["year"]
-                sql2 = f'insert into string.pmid2data_paperblast (pmid, title, journal, year) values (%s, %s, %s, %s)'
+                sql2 = f'insert into string_pmid2data_paperblast (pmid, title, journal, year) values (%s, %s, %s, %s)'
                 self.server.adaptor.execute(sql2, (pmid,title,journal, year))
                 self.pmid_in_db.append(pmid)
             except KeyError:
@@ -226,7 +226,7 @@ class PaperBlast():
                         if pmid == "":
                             continue
                         if pmid not in self.gene_rif_in_db:
-                            sql = 'insert into string.pmid2gene_rif_comment (pmid, comment) values (%s, %s)'
+                            sql = 'insert into string_pmid2gene_rif_comment (pmid, comment) values (%s, %s)'
                             self.server.adaptor.execute(sql, (pmid, comment))
                             self.gene_rif_in_db.append(pmid)
 
@@ -245,15 +245,15 @@ class PaperBlast():
                         else:
                             organism, desc = paperblast_data
                             comment = '-'
-                        sql = f'insert into string.paperblast_entry (accession, db_name, organism, description, comment) values (%s, %s, %s, %s, %s)'
+                        sql = f'insert into string_paperblast_entry (accession, db_name, organism, description, comment) values (%s, %s, %s, %s, %s)'
                         self.server.adaptor.execute(sql, (hit_accession, db, organism, desc, comment))
-                        paperblast_id = self.server.adaptor.last_id("string.paperblast_entry")
+                        paperblast_id = self.server.adaptor.last_id("string_paperblast_entry")
                         self.paperblast_accession2paperblast_id[hit_accession] = paperblast_id
                         for pmid in nr_pmid_list:
                             # skip missing pmid 
                             if pmid == "":
                                 continue
-                            sql = f'insert into string.paperblast2pmid (paperblast_id, pmid) values ({paperblast_id}, {pmid})'
+                            sql = f'insert into string_paperblast2pmid (paperblast_id, pmid) values ({paperblast_id}, {pmid})'
                             self.server.adaptor.execute(sql,)
                             # insert data if not already present in db 
                             if pmid not in self.pmid_in_db:
@@ -261,7 +261,7 @@ class PaperBlast():
                                 try:
                                     article_data = self.pmid2article_data[pmid]
                                     doi,title,journal,year = article_data
-                                    sql2 = f'insert into string.pmid2data_paperblast (pmid, title, journal, year, comment) values (%s, %s, %s, %s, "-")'
+                                    sql2 = f'insert into string_pmid2data_paperblast (pmid, title, journal, year, comment) values (%s, %s, %s, %s, "-")'
                                     self.server.adaptor.execute(sql2, (pmid,title,journal, year))
                                     self.pmid_in_db.append(pmid)
                                 except:
@@ -273,7 +273,7 @@ class PaperBlast():
                     for locus_tag in self.hash2locus_list[query_hash]:
                         seqfeature_id = locus_tag2seqfeature_id[locus_tag] 
                         # insert Match 
-                        sql = f'insert into string.seqfeature_id2paperblast (seqfeature_id, paperblast_id, query_cov, hit_cov, identity, evalue, score)' \
+                        sql = f'insert into string_seqfeature_id2paperblast (seqfeature_id, paperblast_id, query_cov, hit_cov, identity, evalue, score)' \
                               f' values ({seqfeature_id}, {paperblast_id}, {query_cov}, {hit_cov}, {identity}, {evalue} ,{score})'
                         self.server.adaptor.execute(sql,)
         self.server.adaptor.commit()  

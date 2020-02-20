@@ -7,19 +7,19 @@ def biodb2cds_gc(biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql1 = 'select distinct accession from orthology_detail_%s' % biodb
-    sql2 = 'select locus_tag, taxon_id from orthology_detail_%s' % biodb
-    sql3 = 'select locus_tag, seqfeature_id from custom_tables.locus2seqfeature_id_%s' % biodb
+    sql1 = 'select distinct accession from orthology_detail'
+    sql2 = 'select locus_tag, taxon_id from orthology_detail'
+    sql3 = 'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id'
 
     accession_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql1,)]
 
     locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
     locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
 
-    sql_head = 'create table IF NOT EXISTS custom_tables.gc_content_%s (taxon_id INT, ' \
+    sql_head = 'create table IF NOT EXISTS custom_tables_gc_content (taxon_id INT, ' \
           ' seqfeature_id INT,' \
           ' seq_length INT, gc_percent FLOAT, gc_1 FLOAT, gc_2 FLOAT, gc_3 FLOAT, ' \
-               ' INDEX seqfeature_id(seqfeature_id), index taxon_id(taxon_id))' % biodb
+               ' INDEX seqfeature_id(seqfeature_id), index taxon_id(taxon_id))'
 
     server.adaptor.execute(sql_head,)
 
@@ -35,14 +35,14 @@ def biodb2cds_gc(biodb):
                 locus = feature.qualifiers['locus_tag'][0]
 
                 gc, gc1, gc2, gc3 = GC123(str(dna_sequence))
-                sql = 'insert into  custom_tables.gc_content_%s values (%s, %s, %s, %s, %s, %s, %s);' % (biodb,
-                                                                                                          locus2taxon_id[locus],
-                                                                                                          locus2seqfeature_id[locus],
-                                                                                                          len(dna_sequence),
-                                                                                                          round(gc,2),
-                                                                                                          round(gc1),
-                                                                                                          round(gc2),
-                                                                                                          round(gc3))
+                sql = 'insert into  custom_tables_gc_content values (%s, %s, %s, %s, %s, %s, %s);' % (biodb,
+                                                                                                      locus2taxon_id[locus],
+                                                                                                      locus2seqfeature_id[locus],
+                                                                                                      len(dna_sequence),
+                                                                                                      round(gc,2),
+                                                                                                      round(gc1),
+                                                                                                      round(gc2),
+                                                                                                      round(gc3))
                 server.adaptor.execute(sql,)
         server.commit()
 

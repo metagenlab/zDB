@@ -1,6 +1,5 @@
 
 def get_hash2locus_list(hash2locus_tag):
-    print("parsing hash2locus_tag")
     hash2locus_list = {}
     with open(hash2locus_tag, 'r') as f:
         for row in f:
