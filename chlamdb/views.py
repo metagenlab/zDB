@@ -2239,7 +2239,7 @@ def locusx(request, locus=None, menu=True):
                    ' join COG_code2category t4 on t3.category_id=t4.category_id inner join annotation.seqfeature_id2locus_%s t6 on t1.seqfeature_id=t6.seqfeature_id ' \
                    ' where locus_tag="%s";' % (biodb, biodb, locus)
 
-            sql4 = 'select A.analysis_name,A.signature_accession, A.signature_description, start, stop,score, B.name,B.description from (select t1.*,t2.signature_accession,t2.signature_description,t2.interpro_id,t3.* from interpro.interpro_%s t1 inner join interpro_signature t2 on t1.signature_id=t2.signature_id inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id inner join annotation.seqfeature_id2locus_%s t4 on t1.seqfeature_id=t4.seqfeature_id where locus_tag="%s") A left join interpro_entry B on A.interpro_id=B.interpro_id;' % (biodb, biodb, locus)
+            sql4 = 'select A.analysis_name,A.signature_accession, A.signature_description, start, stop,score, B.name,B.description from (select t1.*,t2.signature_accession,t2.signature_description,t2.interpro_id,t3.* from interpro_interpro t1 inner join interpro_signature t2 on t1.signature_id=t2.signature_id inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id inner join annotation.seqfeature_id2locus_%s t4 on t1.seqfeature_id=t4.seqfeature_id where locus_tag="%s") A left join interpro_entry B on A.interpro_id=B.interpro_id;' % (biodb, biodb, locus)
             print(sql4)
 
             sql5 = 'select t3.ko_accession, t3.name, t3.definition, t3.pathways, t3.modules, t2.thrshld, t2.score, t2.evalue from ' \
@@ -2844,7 +2844,7 @@ def locusx(request, locus=None, menu=True):
         # check if one of the homolog has TM(s) domains
         sql_TM_SP = 'select count(*) from orthology.seqfeature_id2orthogroup_%s t1 ' \
               ' inner join orthology.orthogroup_%s t2 on t1.orthogroup_id=t2.orthogroup_id ' \
-              ' inner join interpro.interpro_%s t3 on t1.seqfeature_id=t3.seqfeature_id' \
+              ' inner join interpro_interpro t3 on t1.seqfeature_id=t3.seqfeature_id' \
               ' inner join interpro_signature t4 on t3.signature_id=t4.signature_id ' \
               ' where signature_accession in ("TRANSMEMBRANE", "SIGNAL_PEPTIDE_C_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_N_REGION") and t2.orthogroup_name="%s" ; ' % (biodb,
                                                                                                                                                                           biodb,
@@ -3030,7 +3030,7 @@ def fam(request, fam, type):
         #sql1 = 'SELECT column_name FROM information_schema.columns WHERE table_name="orthology_detail_chlamydia_03_15"'
         if type =='pfam':
             sql1 =   'select seqfeature_id from interpro_signature t1 ' \
-                     ' inner join interpro.interpro_%s t2 on t1.signature_id=t2.signature_id ' \
+                     ' inner join interpro_interpro t2 on t1.signature_id=t2.signature_id ' \
                      ' where t1.signature_accession="%s" group by seqfeature_id;' % (biodb, fam)
             sql2 = 'select signature_description from interpro_%s where signature_accession="%s" limit 1' % (biodb, fam)
             try:
@@ -3053,7 +3053,7 @@ def fam(request, fam, type):
                 valid_id = False
         elif type == 'interpro':
             sql1 =   'select seqfeature_id from interpro_entry t1 inner join interpro_signature t2 on t1.interpro_id=t2.interpro_id ' \
-                     ' inner join interpro.interpro_%s t3 on t2.signature_id=t3.signature_id ' \
+                     ' inner join interpro_interpro t3 on t2.signature_id=t3.signature_id ' \
                      ' where name="%s" group by seqfeature_id;;' % (biodb, fam)
             sql2 = 'select signature_description from interpro_%s where interpro_accession="%s" limit 1' % (biodb, fam)
             try:
@@ -3375,7 +3375,7 @@ def venn_candidate_effectors(request):
     interpro_euk_cutoff='95'
 
     sql_locus_tag_pfam = 'select distinct t5.locus_tag from interpro.interpro_signature2pfam_id_%s t1  ' \
-                         ' inner join interpro.interpro_%s t2 on t1.signature_id=t2.signature_id ' \
+                         ' inner join interpro_interpro t2 on t1.signature_id=t2.signature_id ' \
                          ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id ' \
                          ' inner join interpro_signature t4 on t1.signature_id=t4.signature_id ' \
                          ' inner join annotation.seqfeature_id2locus_%s t5 on t2.seqfeature_id=t5.seqfeature_id' \
@@ -3389,7 +3389,7 @@ def venn_candidate_effectors(request):
     locus_tag_list_pfam = [i[0] for i in server.adaptor.execute_and_fetchall(sql_locus_tag_pfam,)]
 
 
-    sql_locus_tag_interpro = 'select distinct locus_tag from interpro.interpro_%s t1 ' \
+    sql_locus_tag_interpro = 'select distinct locus_tag from interpro_interpro t1 ' \
                              ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
                              ' inner join interpro_interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id ' \
                              ' inner join annotation.seqfeature_id2locus_%s t5 on t1.seqfeature_id=t5.seqfeature_id ' \
@@ -3556,7 +3556,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
         '''
         sql = 'select distinct signature_accession,signature_description from ' \
               ' (select t4.*,t5.* from interpro.interpro_signature2pfam_id_%s t1 ' \
-              ' inner join interpro.interpro_%s t2 on t1.signature_id=t2.signature_id ' \
+              ' inner join interpro_interpro t2 on t1.signature_id=t2.signature_id ' \
               ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id ' \
               ' inner join interpro_signature t4 on t1.signature_id=t4.signature_id ' \
               ' inner join annotation.seqfeature_id2locus_%s t5 on t2.seqfeature_id=t5.seqfeature_id ' \
@@ -3577,7 +3577,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
         # number of groups with identified signature domains
         sql = 'select name,n from (select AA.interpro_id, count(*) as n from ' \
               ' (select distinct A.interpro_id, B.orthogroup_id from ' \
-              ' (select distinct seqfeature_id,t2.interpro_id from interpro.interpro_%s t1 ' \
+              ' (select distinct seqfeature_id,t2.interpro_id from interpro_interpro t1 ' \
               ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
               ' inner join interpro_interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
               ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
@@ -3592,7 +3592,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
 
         # get list of all orthogroups with corresponding interpro entry
         sql = 'select signature_accession, t7.orthogroup_name from interpro.interpro_signature2pfam_id_%s t1 ' \
-              ' inner join interpro.interpro_%s t2 on t1.signature_id=t2.signature_id ' \
+              ' inner join interpro_interpro t2 on t1.signature_id=t2.signature_id ' \
               ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id ' \
               ' inner join interpro_signature t4 on t1.signature_id=t4.signature_id ' \
               ' inner join annotation.seqfeature_id2locus_%s t5 on t2.seqfeature_id=t5.seqfeature_id' \
@@ -3802,7 +3802,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
         # number of groups with identified signature domains
         sql = 'select name,n from (select AA.interpro_id, count(*) as n from ' \
               ' (select distinct A.interpro_id, B.orthogroup_id from ' \
-              ' (select distinct seqfeature_id,t2.interpro_id from interpro.interpro_%s t1 ' \
+              ' (select distinct seqfeature_id,t2.interpro_id from interpro_interpro t1 ' \
               ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
               ' inner join interpro_interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
               ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
@@ -3817,7 +3817,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
 
         # get list of all orthogroups with corresponding interpro entry
         sql = 'select name,orthogroup_name from (select distinct A.interpro_id, C.orthogroup_name from ' \
-              '(select distinct seqfeature_id,t2.interpro_id from interpro.interpro_%s t1 ' \
+              '(select distinct seqfeature_id,t2.interpro_id from interpro_interpro t1 ' \
               ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
               ' inner join interpro_interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
               ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
@@ -8188,7 +8188,7 @@ def interpro_taxonomy(request):
                 # number of groups with identified signature domains
                 sql = 'select name,n from (select AA.interpro_id, count(*) as n from ' \
                       ' (select distinct A.interpro_id, B.orthogroup_id from ' \
-                      ' (select distinct seqfeature_id,t2.interpro_id from interpro.interpro_%s t1 ' \
+                      ' (select distinct seqfeature_id,t2.interpro_id from interpro_interpro t1 ' \
                       ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
                       ' inner join interpro_interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
                       ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
@@ -8823,7 +8823,7 @@ def pfam2fasta(request, pfam_id):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select protein_id,product,translation from interpro.interpro_%s t1 ' \
+    sql = 'select protein_id,product,translation from interpro_interpro t1 ' \
           ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
           ' inner join annotation.seqfeature_id2CDS_annotation_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
           ' where signature_accession="%s";' % (biodb, biodb, pfam_id)
@@ -11762,7 +11762,7 @@ def phylogeny(request, orthogroup):
 
     sql_TM_SP = 'select count(*) from orthology.seqfeature_id2orthogroup_%s t1 ' \
             ' inner join orthology.orthogroup_%s t2 on t1.orthogroup_id=t2.orthogroup_id ' \
-            ' inner join interpro.interpro_%s t3 on t1.seqfeature_id=t3.seqfeature_id' \
+            ' inner join interpro_interpro t3 on t1.seqfeature_id=t3.seqfeature_id' \
             ' inner join interpro_signature t4 on t3.signature_id=t4.signature_id ' \
             ' where signature_accession in ("TRANSMEMBRANE", "SIGNAL_PEPTIDE_C_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_N_REGION") and t2.orthogroup_name="%s" ; ' % (biodb,
                                                                                                                                                                         biodb,

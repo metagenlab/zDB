@@ -136,7 +136,7 @@ def interpro2biosqlV2(server,
     :return:
     '''
 
-    sql = 'CREATE TABLE interpro.interpro_%s (accession VARCHAR(100),' \
+    sql = 'CREATE TABLE interpro_interpro (accession VARCHAR(100),' \
           ' seqfeature_id INT, ' \
           ' organism VARCHAR(200),  ' \
           ' taxon_id INT,' \
@@ -211,7 +211,7 @@ def interpro2biosqlV2(server,
                 #print organism
                 locus_tag = seqfeature_id2locus_tag[str(seqfeature_id)]
 
-                sql = 'INSERT INTO interpro.interpro_%s(accession, locus_tag, organism, taxon_id,' \
+                sql = 'INSERT INTO interpro_interpro(accession, locus_tag, organism, taxon_id,' \
                       ' sequence_length, analysis, signature_accession, signature_description, start, ' \
                       ' stop, score, interpro_accession, interpro_description, GO_terms, pathways) ' \
                       ' values ("%s", "%s", "%s", %s, %s, "%s", "%s", "%s", %s, %s, "%s", "%s", "%s", "%s", "%s");' % (db_name,
@@ -293,7 +293,7 @@ def interpro2biosql(server,
 
     server.adaptor.execute(sql2,)
 
-    sql3 = 'CREATE TABLE if not exists interpro.interpro_%s (seqfeature_id INT,' \
+    sql3 = 'CREATE TABLE if not exists interpro_interpro (seqfeature_id INT,' \
           ' sequence_length INT, ' \
           ' signature_id INT, ' \
           ' start INT, ' \
@@ -411,7 +411,7 @@ def interpro2biosql(server,
 
                 seqfeature_id = locus_tag2seqfeature_id[accession]
 
-                sql = 'INSERT INTO interpro.interpro_%s(seqfeature_id,' \
+                sql = 'INSERT INTO interpro_interpro(seqfeature_id,' \
                       ' signature_id,' \
                       ' sequence_length, ' \
                       ' start, ' \
