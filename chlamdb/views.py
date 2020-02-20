@@ -2588,7 +2588,7 @@ def locusx(request, locus=None, menu=True):
                 interpro2taxononmy = {}
                 for one_entry in interpro_data:
                     sql = 'select p_bacteria,p_eukaryote,p_archae,p_virus, bacteria,eukaryote,archae,virus ' \
-                          ' from interpro_entry t1 inner join interpro.interpro_taxonomy_v_60 t2 on t1.interpro_id=t2.interpro_id ' \
+                          ' from interpro_entry t1 inner join interpro_interpro_taxonomy_v_60 t2 on t1.interpro_id=t2.interpro_id ' \
                           ' where name="%s";' % one_entry[0]
                     interpro2taxononmy[one_entry[0]] = server.adaptor.execute_and_fetchall(sql,)[0]
 
@@ -3391,7 +3391,7 @@ def venn_candidate_effectors(request):
 
     sql_locus_tag_interpro = 'select distinct locus_tag from interpro.interpro_%s t1 ' \
                              ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
-                             ' inner join interpro.interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id ' \
+                             ' inner join interpro_interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id ' \
                              ' inner join annotation.seqfeature_id2locus_%s t5 on t1.seqfeature_id=t5.seqfeature_id ' \
                              ' where p_eukaryote>%s and taxon_id in (%s);' % (biodb,
                                                                               biodb,
@@ -3579,7 +3579,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
               ' (select distinct A.interpro_id, B.orthogroup_id from ' \
               ' (select distinct seqfeature_id,t2.interpro_id from interpro.interpro_%s t1 ' \
               ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
-              ' inner join interpro.interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
+              ' inner join interpro_interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
               ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
               ' inner join orthology.orthogroup_%s C on B.orthogroup_id=C.orthogroup_id) AA ' \
               ' group by AA.interpro_id) BB inner join interpro_entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
@@ -3787,7 +3787,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
         '''
         sql = 'select * from (select distinct interpro_accession from biosqldb.interpro_%s where ' \
               ' interpro_accession!="0" and taxon_id in (%s))A inner join interpro_entry B on A.interpro_accession=B.name ' \
-              ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where %s>=%s;' % (biodb,
+              ' inner join interpro_interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where %s>=%s;' % (biodb,
                                                                                                               ','.join(
                                                                                                                   taxid_list),
                                                                                                               domain,
@@ -3804,7 +3804,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
               ' (select distinct A.interpro_id, B.orthogroup_id from ' \
               ' (select distinct seqfeature_id,t2.interpro_id from interpro.interpro_%s t1 ' \
               ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
-              ' inner join interpro.interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
+              ' inner join interpro_interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
               ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
               ' inner join orthology.orthogroup_%s C on B.orthogroup_id=C.orthogroup_id) AA ' \
               ' group by AA.interpro_id) BB inner join interpro_entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
@@ -3819,7 +3819,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
         sql = 'select name,orthogroup_name from (select distinct A.interpro_id, C.orthogroup_name from ' \
               '(select distinct seqfeature_id,t2.interpro_id from interpro.interpro_%s t1 ' \
               ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
-              ' inner join interpro.interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
+              ' inner join interpro_interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
               ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
               ' inner join annotation.seqfeature_id2locus_%s D on A.seqfeature_id=D.seqfeature_id' \
               ' inner join orthology.orthogroup_%s C on B.orthogroup_id=C.orthogroup_id where D.taxon_id in (%s)) BB ' \
@@ -8126,7 +8126,7 @@ def interpro_taxonomy(request):
 
                 sql = 'select * from (select distinct interpro_accession from biosqldb.interpro_%s where ' \
                       ' interpro_accession!="0" and taxon_id in (%s))A inner join interpro_entry B on A.interpro_accession=B.name ' \
-                      ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where %s>=%s;' % (biodb,
+                      ' inner join interpro_interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where %s>=%s;' % (biodb,
                                                                                                                       filter,
                                                                                                                       kingdom,
                                                                                                                       percentage_cutoff)
@@ -8190,7 +8190,7 @@ def interpro_taxonomy(request):
                       ' (select distinct A.interpro_id, B.orthogroup_id from ' \
                       ' (select distinct seqfeature_id,t2.interpro_id from interpro.interpro_%s t1 ' \
                       ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
-                      ' inner join interpro.interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
+                      ' inner join interpro_interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
                       ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
                       ' inner join orthology.orthogroup_%s C on B.orthogroup_id=C.orthogroup_id) AA ' \
                       ' group by AA.interpro_id) BB inner join interpro_entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
