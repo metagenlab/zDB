@@ -19,7 +19,7 @@ def module_list2profile_dico(biodb, module_list, taxon_id_list=[]):
 
         sql = 'select taxon_id, description, count(*) from (select distinct taxon_id,t1.ko_id,module_name,description ' \
               ' from enzyme_seqfeature_id2ko t1' \
-              ' inner join enzyme.module2ko t2 on t1.ko_id=t2.ko_id ' \
+              ' inner join enzyme_module2ko t2 on t1.ko_id=t2.ko_id ' \
               ' inner join enzyme_kegg_module as t3 on t2.module_id=t3.module_id ' \
               ' inner join annotation.seqfeature_id2locus_%s t4 ' \
               ' on t1.seqfeature_id=t4.seqfeature_id' \
@@ -30,7 +30,7 @@ def module_list2profile_dico(biodb, module_list, taxon_id_list=[]):
     else:
         sql = 'select taxon_id, description, count(*) from (select distinct taxon_id,t1.ko_id,module_name,description ' \
               ' from enzyme_seqfeature_id2ko t1' \
-              ' inner join enzyme.module2ko t2 on t1.ko_id=t2.ko_id ' \
+              ' inner join enzyme_module2ko t2 on t1.ko_id=t2.ko_id ' \
               ' inner join enzyme_kegg_module as t3 on t2.module_id=t3.module_id ' \
               ' inner join annotation.seqfeature_id2locus_%s t4 ' \
               ' on t1.seqfeature_id=t4.seqfeature_id' \

@@ -2257,7 +2257,7 @@ def locusx(request, locus=None, menu=True):
 
             sql8 = 'select t4.module_name, t4.module_sub_sub_cat, t4.description from custom_tables.locus2seqfeature_id_%s t1  ' \
                    ' inner join enzyme_seqfeature_id2ko t2 on t1.seqfeature_id=t2.seqfeature_id' \
-                   ' inner join enzyme.module2ko t3 on t2.ko_id=t3.ko_id ' \
+                   ' inner join enzyme_module2ko t3 on t2.ko_id=t3.ko_id ' \
                    ' inner join enzyme_kegg_module t4 on t3.module_id=t4.module_id where t1.locus_tag="%s";' % (biodb,
                                                                                                          biodb,
                                                                                                          locus)
@@ -3947,7 +3947,7 @@ def KEGG_module_map(request, module_name):
         server, db = manipulate_biosqldb.load_db(biodb)
 
         sql = 'select module_sub_cat,module_sub_sub_cat,description,t3.ko_accession,t3.definition ' \
-              ' from enzyme.module2ko as t1 ' \
+              ' from enzyme_module2ko as t1 ' \
               ' inner join enzyme_kegg_module as t2 on t1.module_id=t2.module_id ' \
               ' inner join enzyme_ko_annotation t3 on t1.ko_id=t3.ko_id where module_name="%s";' % (module_name)
 
@@ -3959,7 +3959,7 @@ def KEGG_module_map(request, module_name):
 
         # get list of all orthogroups with corresponding ko
         sql = 'select distinct orthogroup,ko_accession from enzyme_kegg_module t1 ' \
-              ' inner join enzyme.module2ko t2 on t1.module_id=t2.module_id ' \
+              ' inner join enzyme_module2ko t2 on t1.module_id=t2.module_id ' \
               ' inner join enzyme_ko_annotation t3 on t2.ko_id=t3.ko_id ' \
               ' inner join enzyme_seqfeature_id2ko t4 on t3.ko_id=t4.ko_id ' \
               ' inner join biosqldb.orthology_detail_%s t5 on t4.seqfeature_id=t5.seqfeature_id ' \
@@ -4485,7 +4485,7 @@ def get_ko_multiple(request, type, category):
     filter = '"' + '","'.join(match_groups_subset) + '"'
     if type == 'module':
         sql = 'select A.ko_accession,name,definition,pathways,modules,module_name, module_sub_cat,description ' \
-              ' from (select * from enzyme_ko_annotation where ko_accession in (%s)) A inner join enzyme.module2ko as B ' \
+              ' from (select * from enzyme_ko_annotation where ko_accession in (%s)) A inner join enzyme_module2ko as B ' \
               ' on A.ko_id=B.ko_id inner join enzyme_kegg_module as C on B.module_id=C.module_id where module_sub_sub_cat="%s";' % (filter, category)
     if type == 'pathway':
         sql = 'select A.ko_accession,name,definition,pathway_name,pathway_category,description from (select * from enzyme_ko_annotation ' \
@@ -4575,7 +4575,7 @@ def ko_venn_subset(request, category):
     for target in targets:
         template_serie = '{name: "%s", data: %s}'
         sql = 'select A.id from (select id from comparative_tables.ko_%s where `%s` > 0) A' \
-              ' inner join enzyme.module2ko_v1 as t2 on A.id=t2.ko_id inner JOIN ' \
+              ' inner join enzyme_module2ko_v1 as t2 on A.id=t2.ko_id inner JOIN ' \
               ' enzyme_kegg_module_v1 as t3 on t2.module_id=t3.module_id where module_sub_sub_cat="%s";' % (biodb, target, category)
         #sql ='select id from comparative_tables.COG_%s where `%s` > 0' % (biodb, target)
         #print sql
@@ -4589,7 +4589,7 @@ def ko_venn_subset(request, category):
     #h['Marilyn Monroe'] = 1;
 
     cog2description = []
-    sql = 'select * from enzyme_ko_annotation_v1 as t1 inner join enzyme.module2ko_v1 as t2 on t1.ko_id=t2.ko_id inner JOIN ' \
+    sql = 'select * from enzyme_ko_annotation_v1 as t1 inner join enzyme_module2ko_v1 as t2 on t1.ko_id=t2.ko_id inner JOIN ' \
               ' enzyme_kegg_module_v1 as t3 on t2.module_id=t3.module_id where module_sub_sub_cat="%s"' % category
     data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     for i in data:
@@ -4638,7 +4638,7 @@ def module_cat_info(request, taxon, category):
     # description, locus, KO, KO name, KO description
     sql = 'select B.description, A.locus_tag,A.ko_id, A.ko_description from ' \
           ' (select t1.locus_tag,t1.ko_id,t3.module_sub_sub_cat, t3.description,t1.taxon_id,t2.ko_description ' \
-          ' from enzyme.locus2ko_%s t1 inner join enzyme.module2ko_v1 as t2 on t1.ko_id=t2.ko_id ' \
+          ' from enzyme.locus2ko_%s t1 inner join enzyme_module2ko_v1 as t2 on t1.ko_id=t2.ko_id ' \
           ' inner join enzyme_kegg_module_v1 as t3 on t2.module_id=t3.module_id ' \
           ' where module_sub_sub_cat="%s" and taxon_id=%s) A inner join ' \
           ' (select taxon_id, description from biosqldb.bioentry where biodatabase_id=%s and ' \
@@ -4692,12 +4692,12 @@ def module_barchart(request):
             # il faut encore regrouper par taxon, ko id car si on a plein de paralogues, ça va biaiser le résutat
             # on regroupe les locus tags car un KO peut être dans plusieurs modules d'une meme categorie
             sql = 'select D.taxon_id,bb.module_sub_sub_cat, count(*) as n from (select A.*,B.module_id, C.module_sub_sub_cat from enzyme.locus2ko_%s A inner join' \
-                  ' enzyme.module2ko_v1 as B on A.ko_id=B.ko_id inner join enzyme_kegg_module_v1 as C ' \
+                  ' enzyme_module2ko_v1 as B on A.ko_id=B.ko_id inner join enzyme_kegg_module_v1 as C ' \
                   ' on B.module_id=C.module_id group by A.locus_tag, C.module_sub_sub_cat) bb inner join biosqldb.orthology_detail_%s as D on bb.locus_tag=D.locus_tag ' \
                   ' where D.taxon_id in (%s) group by taxon_id,bb.module_sub_sub_cat;' % (biodb, biodb,','.join(target_taxons))
             # merge des ko par taxon (on ne compte qu'une fois un taxon)
             sql = 'select bb.taxon_id,bb.module_sub_sub_cat, count(*) as n from (select A.*,B.module_id, C.module_sub_sub_cat from enzyme.locus2ko_%s A inner join' \
-                  ' enzyme.module2ko_v1 as B on A.ko_id=B.ko_id inner join enzyme_kegg_module_v1 as C ' \
+                  ' enzyme_module2ko_v1 as B on A.ko_id=B.ko_id inner join enzyme_kegg_module_v1 as C ' \
                   ' on B.module_id=C.module_id where A.taxon_id in (%s) group by taxon_id,ko_id,module_sub_sub_cat) bb group by bb.taxon_id,bb.module_sub_sub_cat;' % (biodb, ','.join(target_taxons))
             #print sql
 
@@ -4908,7 +4908,7 @@ def ko_subset_barchart(request, type):
 
     if type == 'module':
         sql = 'select module_sub_sub_cat,count(*) as n from (select * from enzyme_ko_annotation_v1 where ko_id in ' \
-              ' (%s)) A inner join enzyme.module2ko_v1 as B on A.ko_id=B.ko_id ' \
+              ' (%s)) A inner join enzyme_module2ko_v1 as B on A.ko_id=B.ko_id ' \
               ' inner join enzyme_kegg_module_v1 as C on B.module_id=C.module_id group by module_sub_sub_cat;' % ('"'+'","'.join(match_groups_subset)+'"')
     if type == 'pathway':
         sql = 'select description,count(*) as n from (select * from enzyme_ko_annotation_v1 where ko_id in  ' \
@@ -4928,7 +4928,7 @@ def ko_subset_barchart(request, type):
 
     if type == 'module':
         sql = 'select module_sub_sub_cat,count(*) as n from (select * from enzyme_ko_annotation_v1 where ko_id in ' \
-              ' (%s)) A inner join enzyme.module2ko_v1 as B on A.ko_id=B.ko_id ' \
+              ' (%s)) A inner join enzyme_module2ko_v1 as B on A.ko_id=B.ko_id ' \
               ' inner join enzyme_kegg_module_v1 as C on B.module_id=C.module_id group by module_sub_sub_cat;' % ('"'+'","'.join(match_groups)+'"')
     if type == 'pathway':
         sql = 'select description,count(*) as n from (select * from enzyme_ko_annotation_v1 where ko_id in ' \
@@ -8856,12 +8856,12 @@ def ko2fasta(request, ko_id, include_orthologs=False):
     server, db = manipulate_biosqldb.load_db(biodb)
     if not include_orthologs:
         sql = 'select B.locus_tag, organism, B.product, translation from (' \
-              ' select t1.ko_id, locus_tag,ko_description from enzyme.locus2ko_%s as t1 inner join enzyme.module2ko_v1 as t2 ' \
+              ' select t1.ko_id, locus_tag,ko_description from enzyme.locus2ko_%s as t1 inner join enzyme_module2ko_v1 as t2 ' \
               ' on t1.ko_id=t2.ko_id where t1.ko_id="%s") A inner join biosqldb.orthology_detail_%s as B ' \
               ' on A.locus_tag=B.locus_tag;' % (biodb, ko_id, biodb)
     else:
         sql = 'select distinct orthogroup from (' \
-              ' select t1.ko_id, locus_tag, ko_description from enzyme.locus2ko_%s as t1 inner join enzyme.module2ko_v1 as t2 ' \
+              ' select t1.ko_id, locus_tag, ko_description from enzyme.locus2ko_%s as t1 inner join enzyme_module2ko_v1 as t2 ' \
               ' on t1.ko_id=t2.ko_id where t1.ko_id="%s") A inner join biosqldb.orthology_detail_%s as B ' \
               ' on A.locus_tag=B.locus_tag;' % (biodb, ko_id, biodb)
         #print sql
@@ -13800,7 +13800,7 @@ def kegg_module_subcat(request):
                 modules = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
             else:
                 sql = 'select t1.module_name ' \
-                      ' from enzyme.microbial_metabolism_map01120 t1 inner join enzyme_kegg_module_v1 t2 on t1.module_name=t2.module_name ' \
+                      ' from enzyme_microbial_metabolism_map01120 t1 inner join enzyme_kegg_module_v1 t2 on t1.module_name=t2.module_name ' \
                       ' order by module_sub_cat,module_sub_sub_cat;'
                 modules = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
@@ -13857,9 +13857,9 @@ def kegg_module(request):
 
             sql_pathway_count = 'select BB.module_name,count_all,count_db,count_db/count_all from (select module_id, count(*) ' \
                                 ' as count_db from (select distinct ko_id from enzyme.locus2ko_%s) as t1' \
-                                ' inner join enzyme.module2ko_v1 as t2 on t1.ko_id=t2.ko_id group by module_id) AA ' \
+                                ' inner join enzyme_module2ko_v1 as t2 on t1.ko_id=t2.ko_id group by module_id) AA ' \
                                 ' right join (select t1.module_id,module_name, count_all from (select module_id, count(*) as count_all ' \
-                                'from enzyme.module2ko_v1 group by module_id) t1 inner join enzyme_kegg_module_v1 as t2 ' \
+                                'from enzyme_module2ko_v1 group by module_id) t1 inner join enzyme_kegg_module_v1 as t2 ' \
                                 'on t1.module_id=t2.module_id where module_sub_cat="%s")BB on AA.module_id=BB.module_id;' % (biodb, category) # where pathway_category!="1.0 Global and overview maps"
 
             map2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_pathway_count,))
@@ -13869,7 +13869,7 @@ def kegg_module(request):
             sql = 'select B.module_sub_cat,A.taxon_id,B.module_name,A.n,B.description from ' \
                                 ' (select taxon_id, module_id, count(*) as n from ' \
                                 ' (select distinct taxon_id,ko_id from enzyme.locus2ko_%s) t1 ' \
-                                ' inner join enzyme.module2ko_v1 as t2 on t1.ko_id=t2.ko_id group by taxon_id, module_id) A ' \
+                                ' inner join enzyme_module2ko_v1 as t2 on t1.ko_id=t2.ko_id group by taxon_id, module_id) A ' \
                                 ' inner join enzyme_kegg_module_v1 as B on A.module_id=B.module_id where module_sub_cat="%s";' % (biodb, category)
 
             #print sql
@@ -14073,9 +14073,9 @@ def module_comparison(request):
 
             sql_pathway_count = 'select BB.module_name,count_all,count_db,count_db/count_all from (select module_id, count(*) ' \
                         ' as count_db from (select distinct ko_id from enzyme.locus2ko_%s) as t1' \
-                        ' inner join enzyme.module2ko_v1 as t2 on t1.ko_id=t2.ko_id group by module_id) AA ' \
+                        ' inner join enzyme_module2ko_v1 as t2 on t1.ko_id=t2.ko_id group by module_id) AA ' \
                         ' right join (select t1.module_id,module_name, count_all from (select module_id, count(*) as count_all ' \
-                        'from enzyme.module2ko_v1 group by module_id) t1 inner join enzyme_kegg_module_v1 as t2 ' \
+                        'from enzyme_module2ko_v1 group by module_id) t1 inner join enzyme_kegg_module_v1 as t2 ' \
                         'on t1.module_id=t2.module_id)BB on AA.module_id=BB.module_id;' % (biodb)
 
             map2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_pathway_count,))
@@ -14103,7 +14103,7 @@ def module_comparison(request):
 
                 sql = 'select module_name, n from (select B.module_id,count(*) as n from ' \
                       ' (select * from enzyme.locus2ko_%s where taxon_id=%s) A ' \
-                      ' left join enzyme.module2ko_v1 as B on A.ko_id=B.ko_id group by module_id) AA ' \
+                      ' left join enzyme_module2ko_v1 as B on A.ko_id=B.ko_id group by module_id) AA ' \
                       ' right join enzyme_kegg_module_v1 as BB on AA.module_id=BB.module_id;' % (biodb, taxon)
 
                 #print sql

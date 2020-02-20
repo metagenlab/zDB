@@ -422,7 +422,7 @@ def get_module_table(module2category,
                      biodb):
     '''
     1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme_kegg_module table
-    2. get all KO associated for each module => create enzyme.module2ko table
+    2. get all KO associated for each module => create enzyme_module2ko table
     todo: remove existing tables for uptade if rerun
 
     :return: nothing
@@ -931,7 +931,7 @@ def ko2definition(ko_record):
 def get_module_table_legacy(module2category, biodb):
     '''
     1. get all kegg pathways from API (http://rest.kegg.jp/) => create enzyme_kegg_module table
-    2. get all KO associated for each module => create enzyme.module2ko table
+    2. get all KO associated for each module => create enzyme_module2ko table
     todo: remove existing tables for uptade if rerun
 
     :return: nothing

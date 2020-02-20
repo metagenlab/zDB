@@ -429,7 +429,7 @@ def make_kegg_form(database_name):
     pathway_choices = server.adaptor.execute_and_fetchall(sql_pathways,)
 
     sql_modules = 'select description,description from  enzyme.locus2ko_%s t1 ' \
-                  ' inner join  enzyme.module2ko t2 on t1.ko_id = t2.ko_id ' \
+                  ' inner join  enzyme_module2ko t2 on t1.ko_id = t2.ko_id ' \
                   ' inner join  enzyme_kegg_module t3 on t3.module_id=t2.module_id group by description;' % database_name
 
     module_choices = server.adaptor.execute_and_fetchall(sql_modules,)
