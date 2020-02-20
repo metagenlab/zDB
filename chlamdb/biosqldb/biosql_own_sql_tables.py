@@ -456,7 +456,7 @@ def group2pfam(biodb, group_list, rank_limit=2):
 
     server, db = manipulate_biosqldb.load_db(biodb)
     group_filter = '","'.join(group_list)
-    sql = 'select orthogroup_name,signature_accession,signature_description,count from orthology.orthogroup2pfam_%s t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id inner join interpro.signature t3 on t1.signature_id=t3.signature_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
+    sql = 'select orthogroup_name,signature_accession,signature_description,count from orthology.orthogroup2pfam_%s t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id inner join interpro_signature t3 on t1.signature_id=t3.signature_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
     data = server.adaptor.execute_and_fetchall(sql,)
     ortho2pfam = {}
 
@@ -1578,7 +1578,7 @@ def orthogroup2pfam_id(db_name):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql = 'select A.orthogroup_name,A.signature_id from (select distinct t1.seqfeature_id,t3.orthogroup_name,t4.signature_id from interpro.interpro_%s t1 inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology.orthogroup_%s t3 on t2.orthogroup_id=t3.orthogroup_id inner join interpro.signature t4 on t1.signature_id=t4.signature_id inner join interpro.analysis t5 on t4.analysis_id=t5.analysis_id where t5.analysis_name="Pfam") A;' % (db_name, db_name,db_name)
+    sql = 'select A.orthogroup_name,A.signature_id from (select distinct t1.seqfeature_id,t3.orthogroup_name,t4.signature_id from interpro.interpro_%s t1 inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology.orthogroup_%s t3 on t2.orthogroup_id=t3.orthogroup_id inner join interpro_signature t4 on t1.signature_id=t4.signature_id inner join interpro.analysis t5 on t4.analysis_id=t5.analysis_id where t5.analysis_name="Pfam") A;' % (db_name, db_name,db_name)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -1625,7 +1625,7 @@ def orthogroup2interpro_id(db_name):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql = 'select A.orthogroup_name,A.interpro_id from (select distinct t1.seqfeature_id,t3.orthogroup_name,t4.interpro_id from interpro.interpro_%s t1 inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology.orthogroup_%s t3 on t2.orthogroup_id=t3.orthogroup_id inner join interpro.signature t4 on t1.signature_id=t4.signature_id) A;' % (db_name, db_name, db_name)
+    sql = 'select A.orthogroup_name,A.interpro_id from (select distinct t1.seqfeature_id,t3.orthogroup_name,t4.interpro_id from interpro.interpro_%s t1 inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology.orthogroup_%s t3 on t2.orthogroup_id=t3.orthogroup_id inner join interpro_signature t4 on t1.signature_id=t4.signature_id) A;' % (db_name, db_name, db_name)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 

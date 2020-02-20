@@ -280,7 +280,7 @@ def interpro2biosql(server,
 
     server.adaptor.execute(sql,)
 
-    sql2 = 'CREATE TABLE if not exists interpro.signature (signature_id INT AUTO_INCREMENT PRIMARY KEY, ' \
+    sql2 = 'CREATE TABLE if not exists interpro_signature (signature_id INT AUTO_INCREMENT PRIMARY KEY, ' \
            ' signature_accession varchar(400),' \
            ' signature_description TEXT,' \
            ' analysis_id INT,' \
@@ -305,7 +305,7 @@ def interpro2biosql(server,
     server.adaptor.execute(sql3)
 
     analysis2analysis_id = update_analysis_dico(server)
-    sql = 'select signature_accession, signature_id from interpro.signature'
+    sql = 'select signature_accession, signature_id from interpro_signature'
     signature2signature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     sql = 'select name, interpro_id from interpro.entry'
     interpro_entry2interpro_entry_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -360,7 +360,7 @@ def interpro2biosql(server,
 
                 signature_accession = data[4]
 
-                #sql = 'select signature_id from interpro.signature where signature_accession="%s"' % signature_accession
+                #sql = 'select signature_id from interpro_signature where signature_accession="%s"' % signature_accession
 
                 try:
                     signature_id = signature2signature_id[signature_accession]#server.adaptor.execute_and_fetchall(sql,)[0][0]
@@ -387,7 +387,7 @@ def interpro2biosql(server,
                             # update dictionnray
                             interpro_entry2interpro_entry_id[interpro_accession] = interpro_id
 
-                    sql2 = 'insert into interpro.signature (signature_accession, signature_description, ' \
+                    sql2 = 'insert into interpro_signature (signature_accession, signature_description, ' \
                           ' analysis_id, interpro_id, GO_terms, pathways) values ("%s", "%s", %s, %s, "%s", "%s")' % (signature_accession,
                                                                                                      signature_description,
                                                                                                      analysis_id,
@@ -397,7 +397,7 @@ def interpro2biosql(server,
 
                     server.adaptor.execute(sql2,)
                     server.adaptor.commit()
-                    sql = 'select signature_id from interpro.signature where signature_accession="%s"' % signature_accession
+                    sql = 'select signature_id from interpro_signature where signature_accession="%s"' % signature_accession
                     signature_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
                     # update dictionnary
                     signature2signature_id[signature_accession] = signature_id

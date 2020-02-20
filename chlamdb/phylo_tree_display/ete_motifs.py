@@ -1975,7 +1975,7 @@ def get_TM_data(biodb,
         sql_signalp = 'select locus_tag, t2.start, t2.stop, t6.description, sequence_length, signature_accession, signature_description' \
                        ' from annotation.seqfeature_id2locus_%s t1' \
                        ' inner join interpro.interpro_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
-                       ' inner join interpro.signature t3 on t2.signature_id=t3.signature_id' \
+                       ' inner join interpro_signature t3 on t2.signature_id=t3.signature_id' \
                        ' inner join orthology.seqfeature_id2orthogroup_%s t4 on t1.seqfeature_id=t4.seqfeature_id' \
                        ' inner join orthology.orthogroup_%s t5 on t4.orthogroup_id=t5.orthogroup_id' \
                        ' inner join biosqldb.bioentry t6 on t1.bioentry_id=t6.bioentry_id' \
