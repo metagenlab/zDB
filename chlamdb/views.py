@@ -1447,7 +1447,7 @@ def venn_pfam(request):
             taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
             for target in targets:
                 template_serie = '{name: "%s", data: %s}'
-                sql ='select id from comparative_tables.Pfam_%s where `%s` > 0' % (biodb, target)
+                sql ='select id from comparative_tables_Pfam where `%s` > 0' % (biodb, target)
                 #print sql
                 cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
                 all_pfam_list += cogs
@@ -14400,7 +14400,7 @@ def pfam_comparison(request):
             filter = '(`' + '`>0 or`'.join(taxon_list) + '`>0)'
 
 
-            sql = 'select * from (select id from comparative_tables.Pfam_%s where %s group by id) A' \
+            sql = 'select * from (select id from comparative_tables_Pfam where %s group by id) A' \
                   ' inner join (select distinct signature_accession,signature_description,count(*) as n ' \
                   ' from interpro_%s where analysis="Pfam" group by signature_accession) B on A.id = B.signature_accession' % (biodb,filter, biodb)
 

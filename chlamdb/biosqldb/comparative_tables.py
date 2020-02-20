@@ -56,7 +56,7 @@ def collect_pfam(db_name):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(db_name)
     taxon_id_list = manipulate_biosqldb.get_taxon_id_list(server, db_name)
-    sql_head = 'INSERT INTO comparative_tables.Pfam_%s (id,' % db_name
+    sql_head = 'INSERT INTO comparative_tables_Pfam (id,' % db_name
 
     for taxon in taxon_id_list:
         sql_head += '`%s`,' % taxon
