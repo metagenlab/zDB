@@ -1337,7 +1337,7 @@ def extract_EC(request):
 
             #print extract_result
             locus_list_sql = 'select locus_tag from (select taxon_id,locus_tag,ec_id from enzyme_locus2ec_%s as t1  ' \
-                             ' inner join biosqldb.bioentry as t2 on t1.accession=t2.accession ' \
+                             ' inner join bioentry as t2 on t1.accession=t2.accession ' \
                              ' where biodatabase_id=%s) A inner join enzyme_enzymes as B on A.ec_id=B.enzyme_id' \
                              ' where A.taxon_id=%s and B.ec in (%s);' % (biodb,
                                                                          biodb_id,
@@ -1812,7 +1812,7 @@ def extract_cog(request):
 
                 if not accessions:
                     locus_list_sql = 'select locus_tag from (select taxon_id,locus_tag,COG_id from COG_locus_tag2gi_hit as t1 ' \
-                                     ' inner join biosqldb.bioentry as t2 on t1.accession=t2.accession ' \
+                                     ' inner join bioentry as t2 on t1.accession=t2.accession ' \
                                      ' where biodatabase_id=%s) A ' \
                                      ' where A.taxon_id=%s and A.COG_id in (%s);' % (biodb,
                                                                                     biodb_id,
@@ -2162,7 +2162,7 @@ def locusx(request, locus=None, menu=True):
             # try searchin synonymous table
             try:
                 sql = f'select t1.db_name,t1.accession,t2.orthogroup,t2.locus_tag,t2.start,t2.stop,t2.strand,t2.gene, t2.orthogroup_size,t2.n_genomes,t2.TM,t2.SP,t2.product,t2.organism ' \
-                      f' from biosqldb.cross_references t1 ' \
+                      f' from cross_references t1 ' \
                       f' inner join orthology_detail t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                       f' where match(t1.accession) AGAINST ("{locus}" IN BOOLEAN MODE) ' \
                       f' and db_name not in ("STRING", "KEGG", "KO", "eggNOG") group by t1.seqfeature_id limit 200;'
@@ -4289,7 +4289,7 @@ def get_cog(request, taxon, category):
     biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
 
     sql = 'select A.description,locus_tag,COG_name, B.description, D.description from (' \
-          ' select description,locus_tag,COG_id from COG_locus_tag2gi_hit as t1 inner join biosqldb.bioentry as t2 ' \
+          ' select description,locus_tag,COG_id from COG_locus_tag2gi_hit as t1 inner join bioentry as t2 ' \
           ' on t1.accession=t2.accession where biodatabase_id=%s and taxon_id=%s) A ' \
           ' inner join COG_cog_names_2014 as B on A.COG_id=B.COG_name ' \
           ' inner join COG_cog_id2cog_category C on B.COG_id=C.COG_id ' \
@@ -4641,7 +4641,7 @@ def module_cat_info(request, taxon, category):
           ' from enzyme_locus2ko t1 inner join enzyme_module2ko_v1 as t2 on t1.ko_id=t2.ko_id ' \
           ' inner join enzyme_kegg_module_v1 as t3 on t2.module_id=t3.module_id ' \
           ' where module_sub_sub_cat="%s" and taxon_id=%s) A inner join ' \
-          ' (select taxon_id, description from biosqldb.bioentry where biodatabase_id=%s and ' \
+          ' (select taxon_id, description from bioentry where biodatabase_id=%s and ' \
           ' description not like "%%%%plasmid%%%%") B on A.taxon_id=B.taxon_id group by locus_tag,ko_id;' % (biodb, category, taxon, biodb_id)
 
     #print sql
@@ -5602,7 +5602,7 @@ def cog_barchart(request):
 
             sql = 'select A.taxon_id,D.code,D.description, count(*) as n from (select t1.*,t2.taxon_id ' \
                   ' from COG_locus_tag2gi_hit as t1 ' \
-                  ' inner join biosqldb.bioentry as t2 on t1.accession=t2.accession ' \
+                  ' inner join bioentry as t2 on t1.accession=t2.accession ' \
                   ' where biodatabase_id=%s and  taxon_id in (%s)) A ' \
                   ' inner join COG_cog_names_2014 as B on A.COG_id=B.COG_name ' \
                   ' inner join COG_cog_id2cog_category C on B.COG_id=C.COG_id ' \
@@ -5831,13 +5831,13 @@ def genome_annotation(request, accession):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = f'select t1.seqfeature_id,locus_tag,start,stop,t2.name,product from annotation_seqfeature_id2locus_{biodb} t1 ' \
-          f' inner join biosqldb.term t2 on t1.feature_type_id=t2.term_id ' \
+          f' inner join term t2 on t1.feature_type_id=t2.term_id ' \
           f' inner join annotation_seqfeature_id2RNA_annotation t3 on t1.seqfeature_id=t3.seqfeature_id ' \
-          f' inner join biosqldb.bioentry t4 on t1.bioentry_id=t4.bioentry_id where t4.accession="{accession}" ' \
+          f' inner join bioentry t4 on t1.bioentry_id=t4.bioentry_id where t4.accession="{accession}" ' \
           f' union select t1.seqfeature_id,locus_tag,start,stop,t2.name,product from annotation_seqfeature_id2locus_{biodb} t1 ' \
-          f' inner join biosqldb.term t2 on t1.feature_type_id=t2.term_id ' \
+          f' inner join term t2 on t1.feature_type_id=t2.term_id ' \
           f' inner join annotation_seqfeature_id2CDS_annotation t3 on t1.seqfeature_id=t3.seqfeature_id ' \
-          f' inner join biosqldb.bioentry t4 on t1.bioentry_id=t4.bioentry_id ' \
+          f' inner join bioentry t4 on t1.bioentry_id=t4.bioentry_id ' \
           f' where t4.accession="{accession}" order by start ASC;'
 
     ordered_data = server.adaptor.execute_and_fetchall(sql,)
@@ -9131,8 +9131,8 @@ def download_all_COG(request):
     sql = f'select t3.accession,t3.description,locus_tag,start,stop,strand,gene,protein_id,product,t6.COG_name,t6.description ' \
           f' from annotation_seqfeature_id2locus t1 ' \
           f' inner join annotation_seqfeature_id2CDS_annotation t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-          f' inner join biosqldb.bioentry t3 on t1.bioentry_id=t3.bioentry_id ' \
-          f' inner join biosqldb.biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \
+          f' inner join bioentry t3 on t1.bioentry_id=t3.bioentry_id ' \
+          f' inner join biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \
           f' inner join COG_seqfeature_id2best_COG_hit t5 on t1.seqfeature_id=t5.seqfeature_id ' \
           f' inner join COG_cog_names_2014 t6 on t5.hit_cog_id=t6.cog_id where t4.name="{biodb}" order by t3.accession'
     
@@ -9416,16 +9416,16 @@ def annotation_overview(request):
 
     sql_COG = 'select A.taxon_id,count(*) from (select t2.taxon_id,t1.locus_tag,COG_id ' \
               ' from COG_locus_tag2gi_hit t1 ' \
-              ' inner join biosqldb.bioentry t2 on t1.accession=t2.accession ' \
-              ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
+              ' inner join bioentry t2 on t1.accession=t2.accession ' \
+              ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
               ' where t3.name="%s" group by t2.taxon_id,t1.locus_tag,COG_id) A group by A.taxon_id;' % (biodb, biodb)
 
     taxon_id2CDS_with_COG = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_COG,))
 
     sql_PRIAM = 'select A.taxon_id,count(*) from (select t2.taxon_id,t1.locus_tag,ec_id ' \
               ' from enzyme_locus2ec_%s t1 ' \
-              ' inner join biosqldb.bioentry t2 on t1.accession=t2.accession ' \
-              ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
+              ' inner join bioentry t2 on t1.accession=t2.accession ' \
+              ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
               ' where t3.name="%s" group by t2.taxon_id,t1.locus_tag,ec_id) A group by A.taxon_id;' % (biodb, biodb)
 
     taxon_id2CDS_with_EC = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_PRIAM,))
@@ -14152,7 +14152,7 @@ def metabo_overview(request):
     sql = 'select C.pathway_category,taxon_id, A.pathway_name,A.n_enzymes, C.description from ' \
           '( select distinct taxon_id,pathway_name, count(*) as n_enzymes from (' \
           'select distinct taxon_id, ec_id  from enzyme_locus2ec_%s as b1 ' \
-          'inner join biosqldb.bioentry as b2 on b1.accession=b2.accession where biodatabase_id=%s) ' \
+          'inner join bioentry as b2 on b1.accession=b2.accession where biodatabase_id=%s) ' \
           't1 inner join enzyme_kegg2ec as t2  on t1.ec_id=t2.ec_id ' \
           'inner join enzyme_kegg_pathway as t3 on t2.pathway_id=t3.pathway_id ' \
           'group by taxon_id,pathway_name) A ' \
@@ -14278,7 +14278,7 @@ def metabo_comparison(request):
                 sql = 'select PATH2.pathway_name,PATH1.n from (select pathway_name,count(*) as n from ' \
                       ' (select distinct pathway_name,t4.ec_id from enzyme_locus2ec_%s as t3 ' \
                       ' inner join enzyme_kegg2ec as t4 on t3.ec_id=t4.ec_id inner join enzyme_kegg_pathway as t5 ' \
-                      ' on t4.pathway_id=t5.pathway_id inner join biosqldb.bioentry as t6 on t3.accession=t6.accession ' \
+                      ' on t4.pathway_id=t5.pathway_id inner join bioentry as t6 on t3.accession=t6.accession ' \
                       ' where biodatabase_id=%s and pathway_category!="1.0 Global and overview maps" and t6.taxon_id=%s) A ' \
                       ' group by pathway_name) PATH1 right join (select pathway_name,count(*) as n ' \
                       ' from enzyme_kegg2ec as t1 inner join enzyme_kegg_pathway as t2 on t1.pathway_id=t2.pathway_id ' \
