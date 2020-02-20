@@ -307,7 +307,7 @@ def interpro2biosql(server,
     analysis2analysis_id = update_analysis_dico(server)
     sql = 'select signature_accession, signature_id from interpro_signature'
     signature2signature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    sql = 'select name, interpro_id from interpro.entry'
+    sql = 'select name, interpro_id from interpro_entry'
     interpro_entry2interpro_entry_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     for one_interpro_file in input_files:
@@ -366,7 +366,7 @@ def interpro2biosql(server,
                     signature_id = signature2signature_id[signature_accession]#server.adaptor.execute_and_fetchall(sql,)[0][0]
                 except KeyError:
                     print ('New signature', signature_accession, signature_description)
-                    #sql1 = 'select interpro_id from interpro.entry where name="%s"' % (interpro_accession)
+                    #sql1 = 'select interpro_id from interpro_entry where name="%s"' % (interpro_accession)
 
                     try:
                         interpro_id = interpro_entry2interpro_entry_id[interpro_accession]#server.adaptor.execute_and_fetchall(sql1,)[0][0]
@@ -377,12 +377,12 @@ def interpro2biosql(server,
                         else:
                             print ('New Interpro entry', interpro_accession, interpro_description)
 
-                            sql1b = 'insert into interpro.entry(name, description) values("%s","%s")' % (interpro_accession,
+                            sql1b = 'insert into interpro_entry(name, description) values("%s","%s")' % (interpro_accession,
                                                                                                          interpro_description)
                             print (sql1b)
                             server.adaptor.execute(sql1b,)
                             server.adaptor.commit()
-                            sql1 = 'select interpro_id from interpro.entry where name="%s"' % (interpro_accession)
+                            sql1 = 'select interpro_id from interpro_entry where name="%s"' % (interpro_accession)
                             interpro_id = server.adaptor.execute_and_fetchall(sql1,)[0][0]
                             # update dictionnray
                             interpro_entry2interpro_entry_id[interpro_accession] = interpro_id
@@ -483,7 +483,7 @@ if __name__ == '__main__':
     else:
 
 
-        sql = 'select name,interpro_id from interpro.entry'
+        sql = 'select name,interpro_id from interpro_entry'
 
         interpro_accession2interpro_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

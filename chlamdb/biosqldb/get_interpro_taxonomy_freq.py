@@ -146,7 +146,7 @@ def get_whole_db_interpro_taxonomy():
 
     create_interpro_taxonomy_table(interpro_vesrion)
 
-    sql = 'select name,interpro_id from interpro.entry'
+    sql = 'select name,interpro_id from interpro_entry'
     cursor.execute(sql,)
     interpro_accession2interpro_id = manipulate_biosqldb.to_dict(cursor.fetchall())
     for i, interpro_accession in enumerate(interpro_accession2interpro_id):
@@ -192,19 +192,19 @@ def get_biodb_summary_statistics(biodb, cutoff=50):
         print taxon
         sql_euk = 'select count(*) from (select interpro_accession from interpro_%s ' \
                   ' where taxon_id=%s and interpro_accession!="0" group by locus_tag,interpro_accession) A ' \
-                  ' inner join interpro.entry B on A.interpro_accession=B.name  ' \
+                  ' inner join interpro_entry B on A.interpro_accession=B.name  ' \
                   ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_eukaryote>=%s;' % (biodb,taxon, cutoff)
         sql_virus = 'select count(*) from (select interpro_accession from interpro_%s ' \
                   ' where taxon_id=%s and interpro_accession!="0" group by locus_tag,interpro_accession) A ' \
-                  ' inner join interpro.entry B on A.interpro_accession=B.name  ' \
+                  ' inner join interpro_entry B on A.interpro_accession=B.name  ' \
                   ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_virus>=%s;'  % (biodb,taxon, cutoff)
         sql_archae = 'select count(*) from (select interpro_accession from interpro_%s ' \
                   ' where taxon_id=%s and interpro_accession!="0" group by locus_tag,interpro_accession) A ' \
-                  ' inner join interpro.entry B on A.interpro_accession=B.name  ' \
+                  ' inner join interpro_entry B on A.interpro_accession=B.name  ' \
                   ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_archae>=%s;' % (biodb,taxon, cutoff)
         sql_bact = 'select count(*) from (select interpro_accession from interpro_%s ' \
                   ' where taxon_id=%s and interpro_accession!="0" group by locus_tag,interpro_accession) A ' \
-                  ' inner join interpro.entry B on A.interpro_accession=B.name  ' \
+                  ' inner join interpro_entry B on A.interpro_accession=B.name  ' \
                   ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where p_bacteria>=%s;' % (biodb,taxon, cutoff)
 
         count_euk = server.adaptor.execute_and_fetchall(sql_euk,)[0][0]

@@ -2239,7 +2239,7 @@ def locusx(request, locus=None, menu=True):
                    ' join COG_code2category t4 on t3.category_id=t4.category_id inner join annotation.seqfeature_id2locus_%s t6 on t1.seqfeature_id=t6.seqfeature_id ' \
                    ' where locus_tag="%s";' % (biodb, biodb, locus)
 
-            sql4 = 'select A.analysis_name,A.signature_accession, A.signature_description, start, stop,score, B.name,B.description from (select t1.*,t2.signature_accession,t2.signature_description,t2.interpro_id,t3.* from interpro.interpro_%s t1 inner join interpro_signature t2 on t1.signature_id=t2.signature_id inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id inner join annotation.seqfeature_id2locus_%s t4 on t1.seqfeature_id=t4.seqfeature_id where locus_tag="%s") A left join interpro.entry B on A.interpro_id=B.interpro_id;' % (biodb, biodb, locus)
+            sql4 = 'select A.analysis_name,A.signature_accession, A.signature_description, start, stop,score, B.name,B.description from (select t1.*,t2.signature_accession,t2.signature_description,t2.interpro_id,t3.* from interpro.interpro_%s t1 inner join interpro_signature t2 on t1.signature_id=t2.signature_id inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id inner join annotation.seqfeature_id2locus_%s t4 on t1.seqfeature_id=t4.seqfeature_id where locus_tag="%s") A left join interpro_entry B on A.interpro_id=B.interpro_id;' % (biodb, biodb, locus)
             print(sql4)
 
             sql5 = 'select t3.ko_accession, t3.name, t3.definition, t3.pathways, t3.modules, t2.thrshld, t2.score, t2.evalue from ' \
@@ -2453,7 +2453,7 @@ def locusx(request, locus=None, menu=True):
                     # go terms from interpro data
                     sql14 = 'select t4.acc,t4.term_type,t4.name from (select interpro_accession from biosqldb.interpro_%s ' \
                           ' where locus_tag="%s" and interpro_accession != "0" group by interpro_accession) t1 ' \
-                          ' inner join interpro.entry as t2 on t1.interpro_accession=t2.name ' \
+                          ' inner join interpro_entry as t2 on t1.interpro_accession=t2.name ' \
                           ' inner join interpro.interpro2gene_ontology as t3 on t2.interpro_id=t3.interpro_id ' \
                           ' inner join gene_ontology.term as t4 on t3.go_id=t4.id group by acc;' % (biodb, locus)
 
@@ -2588,7 +2588,7 @@ def locusx(request, locus=None, menu=True):
                 interpro2taxononmy = {}
                 for one_entry in interpro_data:
                     sql = 'select p_bacteria,p_eukaryote,p_archae,p_virus, bacteria,eukaryote,archae,virus ' \
-                          ' from interpro.entry t1 inner join interpro.interpro_taxonomy_v_60 t2 on t1.interpro_id=t2.interpro_id ' \
+                          ' from interpro_entry t1 inner join interpro.interpro_taxonomy_v_60 t2 on t1.interpro_id=t2.interpro_id ' \
                           ' where name="%s";' % one_entry[0]
                     interpro2taxononmy[one_entry[0]] = server.adaptor.execute_and_fetchall(sql,)[0]
 
@@ -3052,7 +3052,7 @@ def fam(request, fam, type):
             except:
                 valid_id = False
         elif type == 'interpro':
-            sql1 =   'select seqfeature_id from interpro.entry t1 inner join interpro_signature t2 on t1.interpro_id=t2.interpro_id ' \
+            sql1 =   'select seqfeature_id from interpro_entry t1 inner join interpro_signature t2 on t1.interpro_id=t2.interpro_id ' \
                      ' inner join interpro.interpro_%s t3 on t2.signature_id=t3.signature_id ' \
                      ' where name="%s" group by seqfeature_id;;' % (biodb, fam)
             sql2 = 'select signature_description from interpro_%s where interpro_accession="%s" limit 1' % (biodb, fam)
@@ -3582,7 +3582,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
               ' inner join interpro.interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
               ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
               ' inner join orthology.orthogroup_%s C on B.orthogroup_id=C.orthogroup_id) AA ' \
-              ' group by AA.interpro_id) BB inner join interpro.entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
+              ' group by AA.interpro_id) BB inner join interpro_entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
                                                                                                                domain,
                                                                                                                percentage,
                                                                                                                biodb,
@@ -3786,7 +3786,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
                       '1279497']
         '''
         sql = 'select * from (select distinct interpro_accession from biosqldb.interpro_%s where ' \
-              ' interpro_accession!="0" and taxon_id in (%s))A inner join interpro.entry B on A.interpro_accession=B.name ' \
+              ' interpro_accession!="0" and taxon_id in (%s))A inner join interpro_entry B on A.interpro_accession=B.name ' \
               ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where %s>=%s;' % (biodb,
                                                                                                               ','.join(
                                                                                                                   taxid_list),
@@ -3807,7 +3807,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
               ' inner join interpro.interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
               ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
               ' inner join orthology.orthogroup_%s C on B.orthogroup_id=C.orthogroup_id) AA ' \
-              ' group by AA.interpro_id) BB inner join interpro.entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
+              ' group by AA.interpro_id) BB inner join interpro_entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
                                                                                                                domain,
                                                                                                                percentage,
                                                                                                                biodb,
@@ -3823,7 +3823,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
               ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
               ' inner join annotation.seqfeature_id2locus_%s D on A.seqfeature_id=D.seqfeature_id' \
               ' inner join orthology.orthogroup_%s C on B.orthogroup_id=C.orthogroup_id where D.taxon_id in (%s)) BB ' \
-              ' inner join interpro.entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
+              ' inner join interpro_entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
                                                                           domain,
                                                                           percentage,
                                                                           biodb,
@@ -8125,7 +8125,7 @@ def interpro_taxonomy(request):
                 #p_eukaryote | p_archae | p_virus
 
                 sql = 'select * from (select distinct interpro_accession from biosqldb.interpro_%s where ' \
-                      ' interpro_accession!="0" and taxon_id in (%s))A inner join interpro.entry B on A.interpro_accession=B.name ' \
+                      ' interpro_accession!="0" and taxon_id in (%s))A inner join interpro_entry B on A.interpro_accession=B.name ' \
                       ' inner join interpro.interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where %s>=%s;' % (biodb,
                                                                                                                       filter,
                                                                                                                       kingdom,
@@ -8193,7 +8193,7 @@ def interpro_taxonomy(request):
                       ' inner join interpro.interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
                       ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
                       ' inner join orthology.orthogroup_%s C on B.orthogroup_id=C.orthogroup_id) AA ' \
-                      ' group by AA.interpro_id) BB inner join interpro.entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
+                      ' group by AA.interpro_id) BB inner join interpro_entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
                                                                                                                 kingdom,
                                                                                                                 percentage_cutoff,
                                                                                                                 biodb,
@@ -10753,10 +10753,10 @@ def search(request):
                         raw_data_cog = False
                     print("COG", raw_data_cog)
                     # CREATE FULLTEXT INDEX ipf ON interpro_signature(signature_description);
-                    # CREATE FULLTEXT INDEX ipf ON interpro.entry(description);
+                    # CREATE FULLTEXT INDEX ipf ON interpro_entry(description);
                     sql = 'select analysis_name,signature_accession,signature_description,t3.name,t3.description from interpro_signature t1 ' \
                           ' inner join interpro.analysis t2 on t1.analysis_id=t2.analysis_id ' \
-                          ' left join interpro.entry t3 on t1.interpro_id=t3.interpro_id ' \
+                          ' left join interpro_entry t3 on t1.interpro_id=t3.interpro_id ' \
                           ' WHERE MATCH(t3.description) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (search_term)
                     raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_interpro) == 0:
