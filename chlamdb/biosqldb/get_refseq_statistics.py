@@ -7,7 +7,7 @@ def get_best_non_top_phylum_hit(biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr.blastnr_majority_phylum_%s' \
+    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr_blastnr_majority_phylum' \
           ' group by taxon_id,best_hit_phylum order by taxon_id,n DESC;' % biodb
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -170,7 +170,7 @@ def majority_phylum(biodb, n_hits):
     taxon_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
     print taxon_list
-    sql = 'CREATE table blastnr.blastnr_majority_phylum_%s (taxon_id INT, seqfeature_id INT, best_hit_phylum varchar(400), majority_phylum varchar(400))' % biodb
+    sql = 'CREATE table blastnr_blastnr_majority_phylum (taxon_id INT, seqfeature_id INT, best_hit_phylum varchar(400), majority_phylum varchar(400))' % biodb
 
     server.adaptor.execute(sql,)
     server.commit()
@@ -198,7 +198,7 @@ def majority_phylum(biodb, n_hits):
                         if row[2] == data_majority[n+1][0]:
                             print 'equality!!!!!!!!!!!!!!!!!!!!'
                         seqfeature2phylum[row[0]] = row[1]
-                        sql = 'insert into blastnr.blastnr_majority_phylum_%s values(%s,%s,"%s", "%s")' % (biodb,
+                        sql = 'insert into blastnr_blastnr_majority_phylum values(%s,%s,"%s", "%s")' % (biodb,
                                                                                                            one_taxon,
                                                                                                            row[0],
                                                                                                            seqfeature2best_hit_phylum[str(row[0])],
@@ -279,7 +279,7 @@ def count_majority_phylum(biodb, hit_number=1):
     server.adaptor.execute(sql,)
     server.commit()
 
-    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr.blastnr_majority_phylum_%s' \
+    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr_blastnr_majority_phylum' \
           ' group by taxon_id,best_hit_phylum order by taxon_id,n DESC;' % biodb
     print sql
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -410,7 +410,7 @@ def count_majority_excluding_self_species(biodb):
     server.adaptor.execute(sql,)
     server.commit()
 
-    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr.blastnr_majority_phylum_%s' \
+    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr_blastnr_majority_phylum' \
           ' group by taxon_id,best_hit_phylum order by taxon_id,n DESC;' % biodb
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -560,7 +560,7 @@ def count_majority_phylum_non_identical(biodb, accession2expluded_taxon_id):
     taxon_id2genome_accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql),)
     print taxon_id2genome_accession
 
-    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr.blastnr_majority_phylum_%s' \
+    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr_blastnr_majority_phylum' \
           ' group by taxon_id,best_hit_phylum order by taxon_id,n DESC;' % biodb
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -719,7 +719,7 @@ def count_majority_phylum_consensus(biodb):
     server.adaptor.execute(sql,)
     server.commit()
 
-    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr.blastnr_majority_phylum_%s' \
+    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr_blastnr_majority_phylum' \
           ' group by taxon_id,best_hit_phylum order by taxon_id,n DESC;' % biodb
     print sql
     data = server.adaptor.execute_and_fetchall(sql,)

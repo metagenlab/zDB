@@ -6780,7 +6780,7 @@ def blastnr_euk(request):
     server, db = manipulate_biosqldb.load_db(biodb)
 
 
-    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr.blastnr_majority_phylum_%s' \
+    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr_blastnr_majority_phylum' \
           ' group by taxon_id,best_hit_phylum order by taxon_id,n DESC;' % biodb
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -7417,10 +7417,10 @@ def blastnr_overview(request):
     header_list = ['nr_n_hits', "nr_tax.1","nr_tax.2"]
 
 
-    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr.blastnr_majority_phylum_%s' \
+    sql = 'select taxon_id, count(*) as n, best_hit_phylum from blastnr_blastnr_majority_phylum' \
           ' group by taxon_id,best_hit_phylum order by taxon_id,n DESC;' % biodb
 
-    sql2 = 'select taxon_id, count(*) as n, majority_phylum from blastnr.blastnr_majority_phylum_%s ' \
+    sql2 = 'select taxon_id, count(*) as n, majority_phylum from blastnr_blastnr_majority_phylum ' \
            ' group by taxon_id,majority_phylum order by taxon_id,n DESC;' % biodb
 
     data = server.adaptor.execute_and_fetchall(sql,)
