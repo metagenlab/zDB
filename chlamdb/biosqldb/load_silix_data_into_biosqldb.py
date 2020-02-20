@@ -23,7 +23,7 @@ def import_silix(silix_output, biodb, silix_cutoff):
     locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     sql = 'select locus_tag, taxon_id from biosqldb.orthology_detail_%s' % biodb
     locus2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    sql = 'create table IF NOT EXISTS comparative_tables.silix_%s_%s (taxon_id INT, ' \
+    sql = 'create table IF NOT EXISTS comparative_tables_silix_%s (taxon_id INT, ' \
           ' seqfeature_id INT, ' \
           ' silix_id INT,' \
           ' INDEX seqfeature_id (seqfeature_id), index taxon_id(taxon_id), index silix_id(silix_id));' % (biodb, silix_cutoff)
@@ -44,7 +44,7 @@ def import_silix(silix_output, biodb, silix_cutoff):
             seqfeature_id = locus2seqfeature_id[locus_tag]
             print family_index, locus_tag
 
-            sql = 'insert into comparative_tables.silix_%s_%s values (%s,  %s, %s);' % (biodb,
+            sql = 'insert into comparative_tables_silix_%s values (%s,  %s, %s);' % (biodb,
                                                                  silix_cutoff,
                                                                  taxon_id,
                                                                  seqfeature_id,

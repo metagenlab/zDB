@@ -9595,13 +9595,13 @@ def paralogs(request):
     R = tree.get_midpoint_outgroup()
     tree.set_outgroup(R)
     tree.ladderize()
-    sql = 'select taxon_id, count(*) as n from comparative_tables.silix_%s_35 group by taxon_id, silix_id' % biodb
+    sql = 'select taxon_id, count(*) as n from comparative_tables_silix_35 group by taxon_id, silix_id' % biodb
     data = server.adaptor.execute_and_fetchall(sql,)
-    sql = 'select taxon_id, count(*) as n from comparative_tables.silix_%s_50 group by taxon_id, silix_id' % biodb
+    sql = 'select taxon_id, count(*) as n from comparative_tables_silix_50 group by taxon_id, silix_id' % biodb
     data2 = server.adaptor.execute_and_fetchall(sql,)
-    sql = 'select taxon_id, count(*) as n from comparative_tables.silix_%s_80 group by taxon_id, silix_id' % biodb
+    sql = 'select taxon_id, count(*) as n from comparative_tables_silix_80 group by taxon_id, silix_id' % biodb
     data3 = server.adaptor.execute_and_fetchall(sql,)
-    sql = 'select taxon_id, count(*) as n from comparative_tables.silix_%s_98 group by taxon_id, silix_id' % biodb
+    sql = 'select taxon_id, count(*) as n from comparative_tables_silix_98 group by taxon_id, silix_id' % biodb
     data4 = server.adaptor.execute_and_fetchall(sql,)
     taxon_id2n_paralogs = {}
 
