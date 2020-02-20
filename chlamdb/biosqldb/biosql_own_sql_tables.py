@@ -1550,7 +1550,7 @@ def orthogroup2pfam(db_name, accession=False):
     server, db = manipulate_biosqldb.load_db(db_name)
 
     if not accession:
-        sql =  'select orthogroup, signature_accession from biosqldb.interpro_%s ' \
+        sql =  'select orthogroup, signature_accession from interpro ' \
                ' where analysis="Pfam"' % (db_name, )
     else:
         sql = 'select t1.orthogroup, t2.cog_id from orthology_detail as t1 left join (COG_locus_tag2gi_hit ' \
@@ -1650,7 +1650,7 @@ def pfam2description(db_name, accession=False):
 
 
     if not accession:
-        sql =  'select signature_accession, signature_description from biosqldb.interpro_%s ' \
+        sql =  'select signature_accession, signature_description from interpro ' \
                ' where analysis="Pfam" group by signature_accession' % (db_name)
     else:
         sql = 'select t1.orthogroup, t2.cog_id from orthology_detail as t1 left join COG_locus_tag2gi_hit ' \

@@ -2451,7 +2451,7 @@ def locusx(request, locus=None, menu=True):
             if not uniprot_go_terms or len(uniprot_go_terms) == 0:
                 try:
                     # go terms from interpro data
-                    sql14 = 'select t4.acc,t4.term_type,t4.name from (select interpro_accession from biosqldb.interpro_%s ' \
+                    sql14 = 'select t4.acc,t4.term_type,t4.name from (select interpro_accession from interpro ' \
                           ' where locus_tag="%s" and interpro_accession != "0" group by interpro_accession) t1 ' \
                           ' inner join interpro_entry as t2 on t1.interpro_accession=t2.name ' \
                           ' inner join interpro_interpro2gene_ontology as t3 on t2.interpro_id=t3.interpro_id ' \
@@ -3785,7 +3785,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
                       '1280020',
                       '1279497']
         '''
-        sql = 'select * from (select distinct interpro_accession from biosqldb.interpro_%s where ' \
+        sql = 'select * from (select distinct interpro_accession from interpro where ' \
               ' interpro_accession!="0" and taxon_id in (%s))A inner join interpro_entry B on A.interpro_accession=B.name ' \
               ' inner join interpro_interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where %s>=%s;' % (biodb,
                                                                                                               ','.join(
@@ -8124,7 +8124,7 @@ def interpro_taxonomy(request):
 
                 #p_eukaryote | p_archae | p_virus
 
-                sql = 'select * from (select distinct interpro_accession from biosqldb.interpro_%s where ' \
+                sql = 'select * from (select distinct interpro_accession from interpro where ' \
                       ' interpro_accession!="0" and taxon_id in (%s))A inner join interpro_entry B on A.interpro_accession=B.name ' \
                       ' inner join interpro_interpro_taxonomy_v_60 C on B.interpro_id=C.interpro_id where %s>=%s;' % (biodb,
                                                                                                                       filter,
@@ -8139,14 +8139,14 @@ def interpro_taxonomy(request):
                 interpro_accession_list = [i[0] for i in data]
                 filter2 = '"' + '","'.join(interpro_accession_list) + '"'
                 sql2 = 'select taxon_id, interpro_accession, count(*) from ' \
-                       ' (select taxon_id,locus_tag,interpro_accession from biosqldb.interpro_%s ' \
+                       ' (select taxon_id,locus_tag,interpro_accession from interpro ' \
                        ' where interpro_accession in (%s) group by taxon_id,locus_tag,interpro_accession) A ' \
                        ' group by A.taxon_id,A.interpro_accession' % (biodb, filter2)
 
                 data_counts = server.adaptor.execute_and_fetchall(sql2,)
 
                 sql3 = 'select B.* from ' \
-                       ' (select locus_tag from biosqldb.interpro_%s ' \
+                       ' (select locus_tag from interpro ' \
                        ' where interpro_accession in (%s) and taxon_id in (%s) group by locus_tag) A ' \
                        ' inner join orthology_detail B on A.locus_tag=B.locus_tag ' % (biodb,
                                                                                                    filter2,

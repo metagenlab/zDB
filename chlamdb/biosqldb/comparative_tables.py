@@ -71,7 +71,7 @@ def collect_pfam(db_name):
     for accession in all_pfam_ids:
         print i,'/', len(all_pfam_ids), accession
         i+=1
-        sql= 'select taxon_id, count(*) from biosqldb.interpro_%s ' \
+        sql= 'select taxon_id, count(*) from interpro ' \
              ' where analysis="Pfam" and signature_accession="%s" group by taxon_id;' % (db_name, accession)
 
         data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -123,7 +123,7 @@ def collect_Pfam_accession(db_name):
     for accession in all_pfam_ids:
         print i,'/', len(all_pfam_ids), accession
         i+=1
-        sql= 'select organism, count(*) from biosqldb.interpro_%s ' \
+        sql= 'select organism, count(*) from interpro ' \
              ' where analysis="Pfam" and signature_accession="%s" group by organism;' % (db_name, accession)
 
         data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -256,7 +256,7 @@ def collect_interpro(db_name):
     import sys
     #sys.exit()
 
-    all_interpro_ids_sql = 'select interpro_accession from biosqldb.interpro_%s ' \
+    all_interpro_ids_sql = 'select interpro_accession from interpro ' \
                        ' where interpro_accession != "0" group by interpro_accession;' % db_name
 
     all_interpro_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_interpro_ids_sql,)]
@@ -266,7 +266,7 @@ def collect_interpro(db_name):
         print i,'/', len(all_interpro_ids), accession
         i+=1
         sql= 'select A.taxon_id, count(*) as n from (select taxon_id, locus_tag, interpro_accession ' \
-             ' from biosqldb.interpro_%s where interpro_accession="%s" group by locus_tag) A group by taxon_id;' % (db_name, accession)
+             ' from interpro where interpro_accession="%s" group by locus_tag) A group by taxon_id;' % (db_name, accession)
 
         data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -301,7 +301,7 @@ def collect_interpro_accession(db_name):
     sql_head = sql_head[0:-1] + ') values ('
 
 
-    all_interpro_ids_sql = 'select interpro_accession from biosqldb.interpro_%s ' \
+    all_interpro_ids_sql = 'select interpro_accession from interpro ' \
                        ' where interpro_accession != "0" group by interpro_accession;' % db_name
 
     all_interpro_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_interpro_ids_sql,)]
@@ -312,7 +312,7 @@ def collect_interpro_accession(db_name):
         i+=1
         # group first by locus then by organism (mu.tiple occurances in a single locus_tag count as 1)
         sql= 'select A.organism, count(*) as n from (select organism, locus_tag, count(*) as n ' \
-             ' from biosqldb.interpro_%s where interpro_accession="%s" group by organism, locus_tag) A group by organism;' % (db_name, accession)
+             ' from interpro where interpro_accession="%s" group by organism, locus_tag) A group by organism;' % (db_name, accession)
 
         data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
