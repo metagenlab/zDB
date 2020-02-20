@@ -560,7 +560,7 @@ def run_circos(reference_taxon, target_taxons):
         #print(reference_phylum)
         
         try:
-            sql = 'select locus_tag from blastnr.blastnr_%s t1 ' \
+            sql = 'select locus_tag from blastnr_blastnr t1 ' \
               ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
               ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
               ' inner join blastnr_blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
@@ -574,13 +574,13 @@ def run_circos(reference_taxon, target_taxons):
             BBH_color = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
             sql2 = 'select locus_tag from custom_tables.locus2seqfeature_id_%s t1 ' \
-                   ' left join blastnr.blastnr_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                   ' left join blastnr_blastnr t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                    ' where taxon_id=%s and t2.seqfeature_id is NULL;' % (biodb, biodb, reference_taxon)
                    
             no_BBH_hit_color = [i[0] for i in server.adaptor.execute_and_fetchall(sql2,)]
             
             if len(BBH_color) < 20:
-                sql = 'select locus_tag from blastnr.blastnr_%s t1 ' \
+                sql = 'select locus_tag from blastnr_blastnr t1 ' \
                   ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
                   ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
                   ' inner join blastnr_blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \

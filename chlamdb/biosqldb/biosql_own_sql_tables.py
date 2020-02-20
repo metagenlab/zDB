@@ -584,7 +584,7 @@ def accession2coding_density(biodb, sqlite=False):
         print(n, accession)
 
         # get list of BBH chlamydiae
-        sql = 'select locus_tag from blastnr.blastnr_%s t1 ' \
+        sql = 'select locus_tag from blastnr_blastnr t1 ' \
               ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
               ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
               ' inner join blastnr_blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
@@ -1072,7 +1072,7 @@ def locus_tag2n_nr_hits(db_name, genome_accession, exclude_family = False):
               ' group by locus_tag) B on A.locus_tag=B.locus_tag;' %(db_name, genome_accession, db_name, genome_accession)
 
         sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
-              ' left join blastnr.blastnr_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+              ' left join blastnr_blastnr as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
               ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
               ' where t3.accession="%s" group by locus_tag;' % (db_name, db_name,genome_accession)
     else:
@@ -1307,7 +1307,7 @@ def locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", 
                                                                         accession,
                                                                         superkingdom)
         sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
-              ' inner join blastnr.blastnr_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+              ' inner join blastnr_blastnr as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
               ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
               ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
               'where t3.accession="%s" and t4.superkingdom="%s" group by locus_tag;' % (db_name,
@@ -1350,7 +1350,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                                                                             accession,
                                                                             phylum)
             sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
-                  ' inner join blastnr.blastnr_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                  ' inner join blastnr_blastnr as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                   ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
                   ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
                   'where t3.accession="%s" and t4.phylum="%s" group by locus_tag;' % (db_name,
@@ -1385,7 +1385,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                                                                             phylum)
 
             sql = 'select locus_tag, count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
-                  ' inner join blastnr.blastnr_%s as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                  ' inner join blastnr_blastnr as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                   ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
                   ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
                   'where t3.accession="%s" and t4.superkingdom="Bacteria" and t4.phylum !="%s" group by locus_tag;' % (db_name,

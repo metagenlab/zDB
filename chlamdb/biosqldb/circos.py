@@ -1952,7 +1952,7 @@ class CircosAccession2blastnr_plot():
         #print record_list
 
         if highlight_BBH:
-            sql = 'select locus_tag from blastnr.blastnr_%s t1 ' \
+            sql = 'select locus_tag from blastnr_blastnr t1 ' \
               ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
               ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
               ' inner join blastnr_blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \

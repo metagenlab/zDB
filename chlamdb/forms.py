@@ -731,7 +731,7 @@ def make_blastnr_form(biodb):
     ranks = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
     rank_choices = []
 
-    sql2 = 'select max(hit_number) from blastnr.blastnr_%s;' % biodb
+    sql2 = 'select max(hit_number) from blastnr_blastnr ;' % biodb
 
     max_nr_hits = server.adaptor.execute_and_fetchall(sql2,)[0][0]
 

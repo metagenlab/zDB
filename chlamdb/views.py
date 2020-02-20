@@ -2289,7 +2289,7 @@ def locusx(request, locus=None, menu=True):
                     'inner join custom_tables.uniprot_go_terms_%s as t2 on t1.seqfeature_id=t2.seqfeature_id  ' \
                     ' where t1.locus_tag="%s") A inner join gene_ontology.term as B on A.go_term_id=B.acc;' % (biodb, biodb, locus)
 
-            sql15 = 'select count(*) from custom_tables.locus2seqfeature_id_%s t1 inner join blastnr.blastnr_%s t2' \
+            sql15 = 'select count(*) from custom_tables.locus2seqfeature_id_%s t1 inner join blastnr_blastnr t2' \
               ' on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s";' % (biodb, biodb, locus)
 
             sql16 = 'select count(*) from custom_tables.locus2seqfeature_id_%s t1 ' \
@@ -5899,7 +5899,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
     biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
     #print 'biodb', biodb
     if counttype == 'Majority':
-        sql = 'select B.locus_tag, A.%s ,A.n from (select seqfeature_id,%s, count(*) as n from blastnr.blastnr_%s A ' \
+        sql = 'select B.locus_tag, A.%s ,A.n from (select seqfeature_id,%s, count(*) as n from blastnr_blastnr A ' \
               ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id where hit_number<=%s and query_bioentry_id=%s ' \
               ' group by seqfeature_id, %s order by seqfeature_id,n DESC) A ' \
               ' inner join custom_tables.locus2seqfeature_id_%s B on A.seqfeature_id=B.seqfeature_id' % (rank,
@@ -5926,7 +5926,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
         #print "locus list",locus_list
     elif counttype == 'BBH':
         sql = ' select locus_tag from (select t2.*,t1.locus_tag from custom_tables.locus2seqfeature_id_%s t1 ' \
-              ' inner join blastnr.blastnr_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
+              ' inner join blastnr_blastnr t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where hit_number=1) A inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id ' \
               ' where %s="%s"  and query_bioentry_id=%s;' % (biodb, biodb, rank, taxon, accession)
         print(sql)
@@ -5937,7 +5937,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
     # get number of hits for each kingdom
     sql_superkingdom = 'select locus_tag,superkingdom, count(*) as n from' \
     ' (select t2.*,t1.locus_tag from custom_tables.locus2seqfeature_id_%s t1 ' \
-    ' inner join blastnr.blastnr_%s t2 on t1.seqfeature_id=t2.seqfeature_id' \
+    ' inner join blastnr_blastnr t2 on t1.seqfeature_id=t2.seqfeature_id' \
     ' where locus_tag in ("%s")) A' \
     ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id  group by locus_tag,superkingdom;' % (biodb, biodb, '","'.join(locus_list))
 
@@ -5984,7 +5984,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
     locus_filter = '"' + '","'.join(locus_list) + '"'
     sql = 'select locus_tag,subject_accession,subject_kingdom,subject_scientific_name,subject_taxid,evalue,percent_identity ' \
           ' from custom_tables. locus2seqfeature_id_%s t1 ' \
-          ' inner join blastnr.blastnr_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+          ' inner join blastnr_blastnr t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' where t1.locus_tag in (%s) and hit_number=1;' % (biodb, biodb, locus_filter)
 
     locus_tag2blastnr_BBH = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -6551,12 +6551,12 @@ def get_BBH_non_chlamydiae_taxonomy(request):
     filter = ','.join(taxon_list)
 
     sql = 'select seqfeature_id,query_taxon_id,hit_number,subject_taxid,t2.superkingdom, t2.phylum ' \
-          ' from blastnr.blastnr_%s t1 inner join blastnr_blastnr_taxonomy t2 on t1.subject_taxid=taxon_id ' \
+          ' from blastnr_blastnr t1 inner join blastnr_blastnr_taxonomy t2 on t1.subject_taxid=taxon_id ' \
           ' where t1.query_taxon_id!=127 and phylum!="Chlamydiae" order by hit_number' % biodb
 
     sql = 'select seqfeature_id,query_taxon_id,hit_number,subject_taxid,' \
           ' t2.superkingdom, t2.kingdom,t2.order, t2.phylum ' \
-          ' from blastnr.blastnr_%s t1 inner join blastnr_blastnr_taxonomy t2 on t1.subject_taxid=taxon_id ' \
+          ' from blastnr_blastnr t1 inner join blastnr_blastnr_taxonomy t2 on t1.subject_taxid=taxon_id ' \
           ' where t1.query_taxon_id in (%s) and phylum!="Chlamydiae" order by hit_number' % (biodb, filter)
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -6824,12 +6824,12 @@ def blastnr_euk(request):
     taxon_id2n_CDS = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_genome_size,))
 
     '''
-    sql_best_hit_euk = 'select t1.query_taxon_id, count(*) from blastnr.blastnr_%s t1 ' \
+    sql_best_hit_euk = 'select t1.query_taxon_id, count(*) from blastnr_blastnr t1 ' \
                        ' inner join blastnr_blastnr_taxonomy t2 on t1.subject_taxid=t2.taxon_id ' \
                        ' where t2.superkingdom = "Eukaryota" and t1.hit_number=1 group by t1.query_taxon_id;' % biodb
     '''
     sql_any_hit_euk = 'select A.query_taxon_id, count(*) from (select t1.query_taxon_id, t1.seqfeature_id ' \
-                      ' from blastnr.blastnr_%s t1 inner join blastnr_blastnr_taxonomy t2 on t1.subject_taxid=t2.taxon_id ' \
+                      ' from blastnr_blastnr t1 inner join blastnr_blastnr_taxonomy t2 on t1.subject_taxid=t2.taxon_id ' \
                       ' where t2.superkingdom = "Eukaryota" group by t1.query_taxon_id, t1.seqfeature_id) A ' \
                       ' group by A.query_taxon_id;' % biodb
 
@@ -7531,7 +7531,7 @@ def blastnr_barchart(request):
             for accession in target_accessions:
 
                 if counttype == 'Majority':
-                    sql = 'select seqfeature_id,%s, count(*) as n from blastnr.blastnr_%s A ' \
+                    sql = 'select seqfeature_id,%s, count(*) as n from blastnr_blastnr A ' \
                           ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id where query_bioentry_id=%s and hit_number<=%s' \
                           ' group by seqfeature_id,%s order by seqfeature_id, n DESC' % (rank,
                                                                                          biodb,
@@ -7560,7 +7560,7 @@ def blastnr_barchart(request):
                     data = zip(category2count.keys(), category2count.values())
                     #print "data",data
                 elif counttype == 'BBH':
-                    sql = ' select %s, count(*) as n from (select * from blastnr.blastnr_%s' \
+                    sql = ' select %s, count(*) as n from (select * from blastnr_blastnr ' \
                           ' where query_bioentry_id=%s and hit_number=1) A inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id ' \
                           ' group by %s;' % (rank,
                                              biodb,
@@ -8377,7 +8377,7 @@ def blastnr(request, locus_tag):
         columns = 'hit_number, subject_accession, subject_kingdom, subject_scientific_name, ' \
                   ' subject_taxid, subject_title, evalue, bit_score, percent_identity, gaps, length'
         sql = 'select hit_number,subject_accession,superkingdom,subject_scientific_name,subject_taxid,subject_title,evalue,bit_score,percent_identity,gaps, length,' \
-              ' B.phylum, B.order, B.family from (select %s from custom_tables.locus2seqfeature_id_%s t1 inner join blastnr.blastnr_%s t2' \
+              ' B.phylum, B.order, B.family from (select %s from custom_tables.locus2seqfeature_id_%s t1 inner join blastnr_blastnr t2' \
               ' on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s" order by hit_number) A ' \
               ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id;' % (columns, biodb, biodb, locus_tag)
         #print sql
