@@ -6319,7 +6319,7 @@ def pairwiseid(request):
 
             taxid2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
-            sql = 'select blast_identity_a_vs_b from comparative_tables.reciprocal_BBH_%s where taxon_1 in (%s,%s) ' \
+            sql = 'select blast_identity_a_vs_b from comparative_tables_reciprocal_BBH where taxon_1 in (%s,%s) ' \
                   'and taxon_2 in (%s,%s);' % (biodb,
                                 genome_1,
                                 genome_2,
@@ -6331,7 +6331,7 @@ def pairwiseid(request):
             data_list = [data1]
             label_list = ["%s" %(taxid2description[genome_2])]
             if genome_3 != 'None':
-                sql = 'select blast_identity_a_vs_b from comparative_tables.reciprocal_BBH_%s where taxon_1 in (%s,%s) ' \
+                sql = 'select blast_identity_a_vs_b from comparative_tables_reciprocal_BBH where taxon_1 in (%s,%s) ' \
                       'and taxon_2 in (%s,%s);' % (biodb,
                                     genome_1,
                                     genome_3,
@@ -6345,7 +6345,7 @@ def pairwiseid(request):
             if genome_4 != 'None':
                 #print 'genome 4!!!', genome_4
                 #print genome_4 == 'None'
-                sql = 'select blast_identity_a_vs_b from comparative_tables.reciprocal_BBH_%s where taxon_1 in (%s,%s) ' \
+                sql = 'select blast_identity_a_vs_b from comparative_tables_reciprocal_BBH where taxon_1 in (%s,%s) ' \
                       'and taxon_2 in (%s,%s);' % (biodb,
                                     genome_1,
                                     genome_4,
@@ -6359,7 +6359,7 @@ def pairwiseid(request):
             if genome_5 != 'None':
                 #print 'genome 5!!!', genome_5
                 #print genome_5 == 'None'
-                sql = 'select blast_identity_a_vs_b from comparative_tables.reciprocal_BBH_%s where taxon_1 in (%s,%s) ' \
+                sql = 'select blast_identity_a_vs_b from comparative_tables_reciprocal_BBH where taxon_1 in (%s,%s) ' \
                       'and taxon_2 in (%s,%s);' % (biodb,
                                     genome_1,
                                     genome_5,
@@ -6373,7 +6373,7 @@ def pairwiseid(request):
             if genome_6 != 'None':
                 #print 'genome 5!!!', genome_6
                 #print genome_5 == 'None'
-                sql = 'select blast_identity_a_vs_b from comparative_tables.reciprocal_BBH_%s where taxon_1 in (%s,%s) ' \
+                sql = 'select blast_identity_a_vs_b from comparative_tables_reciprocal_BBH where taxon_1 in (%s,%s) ' \
                       'and taxon_2 in (%s,%s);' % (biodb,
                                     genome_1,
                                     genome_6,
@@ -6404,7 +6404,7 @@ def pairwiseid(request):
             group2n_organisms = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
             sql = 'select orthogroup_1,blast_identity_a_vs_b from (select seqfeature_id_1,blast_identity_a_vs_b,orthogroup_1 ' \
-                  ' from comparative_tables.reciprocal_BBH_%s where orthogroup_1=orthogroup_2 and taxon_1 in (%s,%s) ' \
+                  ' from comparative_tables_reciprocal_BBH where orthogroup_1=orthogroup_2 and taxon_1 in (%s,%s) ' \
                   ' and taxon_2 in (%s,%s)) A inner join custom_tables.locus2seqfeature_id_%s t2 ' \
                   ' on A.seqfeature_id_1=t2.seqfeature_id;' % (biodb,
                                                                genome_1,

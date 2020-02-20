@@ -96,7 +96,7 @@ def get_parwise_genome_median_identity_table(biodb, sqlite3=False):
     for n, taxon_1 in enumerate(taxon_list):
         print ("%s / %s" % (n, len(taxon_list)))
         for taxon_2 in taxon_list[n+1:len(taxon_list)]:
-            sql = 'select blast_identity_a_vs_b from comparative_tables.reciprocal_BBH_%s where taxon_1 =%s ' \
+            sql = 'select blast_identity_a_vs_b from comparative_tables_reciprocal_BBH where taxon_1 =%s ' \
                   'and taxon_2=%s;' % (biodb,
                                 taxon_1,
                                 taxon_2)
@@ -139,7 +139,7 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
         server, db = manipulate_biosqldb.load_db(biodb,
                                                  sqlite=sqlite3)
 
-    sql = 'create table if not exists comparative_tables.reciprocal_BBH_%s (taxon_1 INT, taxon_2 INT, seqfeature_id_1 INT, seqfeature_id_2 INT,' \
+    sql = 'create table if not exists comparative_tables_reciprocal_BBH (taxon_1 INT, taxon_2 INT, seqfeature_id_1 INT, seqfeature_id_2 INT,' \
           ' blast_evalue_a_vs_b FLOAT, blast_evalue_b_vs_a FLOAT,' \
           ' blast_score_a_vs_b FLOAT, blast_score_b_vs_a FLOAT, blast_identity_a_vs_b FLOAT, blast_identity_b_vs_a FLOAT, ' \
           ' mean_blast_identity FLOAT, msa_identity FLOAT, orthogroup_1 varchar(400), orthogroup_2 varchar(400))' % biodb
@@ -254,7 +254,7 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
                     group_1 = '-'
                     group_2 = '-'
 
-                sql = 'insert into comparative_tables.reciprocal_BBH_%s values (%s,%s,%s,%s,%s,%s,%s,%s' \
+                sql = 'insert into comparative_tables_reciprocal_BBH values (%s,%s,%s,%s,%s,%s,%s,%s' \
                         ',%s,%s,%s,%s,"%s","%s")' % (biodb,
                                                 taxon_1,
                                                 taxon_2,
@@ -283,9 +283,9 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
             #    print sql
             #    continue
     server.commit()
-    sql2 = 'CREATE INDEX taxid1 ON comparative_tables.reciprocal_BBH_%s (taxon_1);' % (biodb, biodb)
-    sql3 = 'CREATE INDEX taxid2 ON comparative_tables.reciprocal_BBH_%s (taxon_2);' % (biodb, biodb)
-    sql4 = 'CREATE INDEX sfid1 ON comparative_tables.reciprocal_BBH_%s (seqfeature_id_1);' % (biodb, biodb)
+    sql2 = 'CREATE INDEX taxid1 ON comparative_tables_reciprocal_BBH (taxon_1);' % (biodb, biodb)
+    sql3 = 'CREATE INDEX taxid2 ON comparative_tables_reciprocal_BBH (taxon_2);' % (biodb, biodb)
+    sql4 = 'CREATE INDEX sfid1 ON comparative_tables_reciprocal_BBH (seqfeature_id_1);' % (biodb, biodb)
     sql5 = 'CREATE INDEX sfid2 ON reciprocal_BBH_%s (seqfeature_id_2);' % (biodb, biodb)
     server.adaptor.execute(sql2,)
     server.adaptor.execute(sql3,)
