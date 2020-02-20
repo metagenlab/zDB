@@ -17,7 +17,7 @@ def get_best_non_top_phylum_hit(biodb):
         if row[0] not in taxon2most_freq_phylum:
             taxon2most_freq_phylum[row[0]] = row[2]
 
-    sql = 'create table blastnr.blastnr_best_non_self_phylum_%s (query_taxon_id INT, ' \
+    sql = 'create table blastnr_blastnr_best_non_self_phylum (query_taxon_id INT, ' \
           ' seqfeature_id INT, ' \
           ' hit_number INT, ' \
           ' superkingdom varchar(200),' \
@@ -64,7 +64,7 @@ def get_best_non_top_phylum_hit(biodb):
                 print "%s / %s" % (n, len(data))
             if n == 0:
 
-                sql = 'insert into blastnr.blastnr_best_non_self_phylum_%s values (%s, %s, %s, "%s", %s, %s, "%s", "%s")' % (biodb,
+                sql = 'insert into blastnr_blastnr_best_non_self_phylum values (%s, %s, %s, "%s", %s, %s, "%s", "%s")' % (biodb,
                                                                                                                  query_taxon_id,
                                                                                                                 seqfeature_id,
                                                                                                                 hit_number,
@@ -80,7 +80,7 @@ def get_best_non_top_phylum_hit(biodb):
             else:
                 # if new feature
                 if row[1] != data[n-1][1]:
-                    sql = 'insert into blastnr.blastnr_best_non_self_phylum_%s values (%s, %s, %s, "%s", %s, %s, "%s", "%s")' % (biodb,
+                    sql = 'insert into blastnr_blastnr_best_non_self_phylum values (%s, %s, %s, "%s", %s, %s, "%s", "%s")' % (biodb,
                                                                                                                      query_taxon_id,
                                                                                                                     seqfeature_id,
                                                                                                                     hit_number,

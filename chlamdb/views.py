@@ -3402,7 +3402,7 @@ def venn_candidate_effectors(request):
 
 
 
-    sql_locus_tag_blast_refseq = 'select distinct locus_tag from blastnr.blastnr_best_non_self_phylum_%s t1' \
+    sql_locus_tag_blast_refseq = 'select distinct locus_tag from blastnr_blastnr_best_non_self_phylum t1' \
                       ' inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                       ' where superkingdom="Eukaryota" and t1.query_taxon_id in (%s);' % (biodb,
                                                                                     biodb,
@@ -3453,7 +3453,7 @@ def venn_candidate_effectors(request):
 
     sql = 'select species, count(*) as n from (' \
           ' select t1.locus_tag,t2.subject_taxon_id from annotation.seqfeature_id2locus_%s t1 ' \
-          ' left join blastnr.blastnr_best_non_self_phylum_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+          ' left join blastnr_blastnr_best_non_self_phylum t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' where locus_tag in (%s)) A left join blastnr_blastnr_taxonomy B on  A.subject_taxon_id=taxon_id ' \
           ' group by family order by n DESC;' % (biodb, biodb,
                                                  '"'+'","'.join(interpro_or_pfam_not_in_blastnr)+'"')
@@ -6840,14 +6840,14 @@ def blastnr_euk(request):
     print 'taxon_id2any_hit_euk...'
     taxon_id2n_any_hits_euk = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_any_hit_euk,))
     '''
-    sql_best_non_self_euk = 'select query_taxon_id, count(*) as n from blastnr.blastnr_best_non_self_phylum_%s ' \
+    sql_best_non_self_euk = 'select query_taxon_id, count(*) as n from blastnr_blastnr_best_non_self_phylum ' \
                       ' where superkingdom="Eukaryota" group by query_taxon_id;' % biodb
     '''
-    sql_best_non_self_euk_50 = 'select query_taxon_id, count(*) as n from blastnr.blastnr_best_non_self_phylum_%s ' \
+    sql_best_non_self_euk_50 = 'select query_taxon_id, count(*) as n from blastnr_blastnr_best_non_self_phylum ' \
                       ' where superkingdom="Eukaryota" and percent_identity>=50 group by query_taxon_id;' % biodb
     '''
 
-    sql_best_non_self_euk_species_specific = 'select query_taxon_id, count(*) as n from blastnr.blastnr_best_non_self_phylum_%s t1' \
+    sql_best_non_self_euk_species_specific = 'select query_taxon_id, count(*) as n from blastnr_blastnr_best_non_self_phylum t1' \
                                              ' inner join custom_tables.seqfeature_id2n_species_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                                              ' where superkingdom="Eukaryota" and n_species=1 group by query_taxon_id;' % (biodb, biodb)
     #print 'best non self euk...'
@@ -7475,7 +7475,7 @@ def blastnr_top_non_phylum(request):
 
             if selection == 'all':
                 sql = 'select t4.locus_tag,t5.product,t5.gene,t1.hit_number,t1.percent_identity,t3.kingdom,t3.class,' \
-                      ' t3.order,t3.family,t3.species,t1.subject_accession,t1.subject_title from blastnr.blastnr_best_non_self_phylum_%s t1' \
+                      ' t3.order,t3.family,t3.species,t1.subject_accession,t1.subject_title from blastnr_blastnr_best_non_self_phylum t1' \
                       ' inner join blastnr_blastnr_taxonomy t3 on t1.subject_taxon_id=t3.taxon_id ' \
                       ' inner join custom_tables.locus2seqfeature_id_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
                       ' inner join biosqldb.orthology_detail_%s t5 on t4.locus_tag=t5.locus_tag  ' \
@@ -7487,7 +7487,7 @@ def blastnr_top_non_phylum(request):
 
             if selection == 'specific':
                 sql = 'select t4.locus_tag,t5.product,t5.gene,t1.hit_number,t1.percent_identity,t3.kingdom,t3.class,' \
-                      't3.order,t3.family,t3.species,t1.subject_accession,t1.subject_title from blastnr.blastnr_best_non_self_phylum_%s t1 ' \
+                      't3.order,t3.family,t3.species,t1.subject_accession,t1.subject_title from blastnr_blastnr_best_non_self_phylum t1 ' \
                       ' inner join custom_tables.seqfeature_id2n_species_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                       ' inner join blastnr_blastnr_taxonomy t3 on t1.subject_taxon_id=t3.taxon_id ' \
                       ' inner join custom_tables.locus2seqfeature_id_%s t4 on t1.seqfeature_id=t4.seqfeature_id ' \
