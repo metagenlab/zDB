@@ -928,7 +928,7 @@ def del_blastnr_table_content(db_name):
         sql1 = 'DROP TABLE IF EXISTS blastnr.blastnr_hsps_%s_%s' % (db_name, accession)
         sql2 = 'DROP TABLE IF EXISTS blastnr_blastnr_hits_%s' % (db_name, accession)
         sql3 = 'DROP TABLE IF EXISTS blastnr.blastnr_hits_taxonomy_%s_%s' % (db_name, accession)
-        sql4 = 'DROP TABLE IF EXISTS blastnr.blastnr_hits_taxonomy_filtered_%s_%s' % (db_name, accession)
+        sql4 = 'DROP TABLE IF EXISTS blastnr_blastnr_hits_taxonomy_filtered_%s' % (db_name, accession)
 
 
         print (sql1)
