@@ -3434,7 +3434,7 @@ def venn_candidate_effectors(request):
 
     locus_tag_list_effective_BPBAac = [i[0] for i in server.adaptor.execute_and_fetchall(sql_locus_tag_BPBAac, )]
 
-    sql_locus_tag_ELD = 'select distinct t2.locus_tag from effectors.predicted_ELD_%s t1 ' \
+    sql_locus_tag_ELD = 'select distinct t2.locus_tag from effectors_predicted_ELD t1 ' \
                                            'inner join annotation_seqfeature_id2locus t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                                            'where t1.taxon_id in (%s) and score >=10;' % (biodb,
                                                                            biodb,
@@ -7708,7 +7708,7 @@ def effector_pred(request):
     taxon2values_T3MM = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     # T4SEpre_bpbAac
-    sql = 'select taxon_id, count(*) from effectors.predicted_T4SEpre_bpbAac_%s where SVM_value>0 group by taxon_id;' % biodb
+    sql = 'select taxon_id, count(*) from effectors_predicted_T4SEpre_bpbAac where SVM_value>0 group by taxon_id;' % biodb
     taxon2values_T4SEpre_bpbAac = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     # T4SEpre_psAac
@@ -7720,7 +7720,7 @@ def effector_pred(request):
     taxon2values_chaperones = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     # ELD
-    sql = 'select A.taxon_id, count(*) from (select * from effectors.predicted_ELD_%s ' \
+    sql = 'select A.taxon_id, count(*) from (select * from effectors_predicted_ELD ' \
           ' where score >9 group by seqfeature_id) A group by A.taxon_id;' % biodb
 
     taxon2values_eld = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -7947,7 +7947,7 @@ def interpro_taxonomy(request):
 
                 header_list = ['euk_50', 'euk_90', 'euk_98', 'ELD']
 
-                sql = 'select A.taxon_id, count(*) from (select * from effectors.predicted_ELD_%s ' \
+                sql = 'select A.taxon_id, count(*) from (select * from effectors_predicted_ELD ' \
                       ' where score >9 group by seqfeature_id) A group by A.taxon_id;' % biodb
 
                 taxon2values_eld = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -7999,7 +7999,7 @@ def interpro_taxonomy(request):
                 taxon2values_T3MM = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
                 # T4SEpre_bpbAac
-                sql = 'select taxon_id, count(*) from effectors.predicted_T4SEpre_bpbAac_%s where SVM_value>0 group by taxon_id;' % biodb
+                sql = 'select taxon_id, count(*) from effectors_predicted_T4SEpre_bpbAac where SVM_value>0 group by taxon_id;' % biodb
                 taxon2values_T4SEpre_bpbAac = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
                 # T4SEpre_psAac
