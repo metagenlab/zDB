@@ -2328,9 +2328,9 @@ def locusx(request, locus=None, menu=True):
 
             sql22 = 'select temporal_class, EB_proteome, eggNOG, comment, hpi_2_1,hpi_2_2, ' \
                     ' hpi_2_3, hpi_48_1,hpi_48_2,hpi_48_3,hpi_96_1,hpi_96_2,hpi_96_3, extracellular_1, ' \
-                    ' extracellular_2, extracellular_3 from rnaseq_%s_%s where seqfeature_id=%s' % (biodb, taxon_id, seqfeature_id)
+                    ' extracellular_2, extracellular_3 from rnaseq_%s where seqfeature_id=%s' % (taxon_id, seqfeature_id)
 
-            sql23 = 'select pmid from string_seqfeature_id2pmid where seqfeature_id=%s;' % (biodb, seqfeature_id)
+            sql23 = 'select pmid from string_seqfeature_id2pmid where seqfeature_id=%s;' % (seqfeature_id)
 
             sql24 = 'select hash from annotation_hash2seqfeature_id t1 inner join annotation_seqfeature_id2locus t2 on t1.seqfeature_id=t2.seqfeature_id where t2.locus_tag="%s";' % (biodb, biodb, locus)
 
@@ -2931,7 +2931,7 @@ def rnaseq_class(request, temporal_class, taxon_id):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db("%s" % biodb)
 
-    sql2 = 'select t1.*, t2.locus_tag from rnaseq_%s_%s t1  left join custom_tables_locus2seqfeature_id t2 ' \
+    sql2 = 'select t1.*, t2.locus_tag from rnaseq_%s t1  left join custom_tables_locus2seqfeature_id t2 ' \
            ' on t1.seqfeature_id=t2.seqfeature_id where temporal_class="%s"' % (biodb,
                                                                             taxon_id,
                                                                                 biodb,
