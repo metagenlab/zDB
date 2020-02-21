@@ -10393,15 +10393,12 @@ def search_taxonomy(request):
                           ' inner join blastnr_blastnr_hits_taxonomy_filtered_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
                           ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr_blastnr_hsps_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
-                          ' where t1.hit_number=%s and t3.superkingdom="%s" and t3.phylum="%s";' % (biodb,
-                                                                         genome_accession,
-                                                                         biodb,
-                                                                         genome_accession,
-                                                                         biodb,
-                                                                         genome_accession,
-                                                                         1,
-                                                                         superkingdom,
-                                                                         phylum)
+                          ' where t1.hit_number=%s and t3.superkingdom="%s" and t3.phylum="%s";' % (genome_accession,
+                                                                                                    genome_accession,
+                                                                                                    genome_accession,
+                                                                                                    1,
+                                                                                                    superkingdom,
+                                                                                                    phylum)
         #print sql
         raw_data = server.adaptor.execute_and_fetchall(sql, )
 
@@ -11819,7 +11816,7 @@ def multiple_orthogroup_heatmap(request, reference_orthogroup, max_distance=2.2)
     taxon_id2organism_name = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
 
-    sql = 'select * from interactions.phylo_profiles_eucl_dist_%s' \
+    sql = 'select * from interactions_phylo_profiles_eucl_dist' \
           ' where (group_1="%s" or group_2="%s") and euclidian_dist <=%s limit 40;' % (biodb,
                                                                           reference_orthogroup,
                                                                           reference_orthogroup,
