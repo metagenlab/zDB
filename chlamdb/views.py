@@ -2673,7 +2673,7 @@ def locusx(request, locus=None, menu=True):
             sql_group5 = f'select distinct t1.seqfeature_id,start,stop,signature_accession,signature_description from interpro_interpro t1 ' \
                          f' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
                          f' inner join interpro_analysis t3 on t2.analysis_id=t3.analysis_id ' \
-                         f' inner join orthology.seqfeature_id2orthogroup_{biodb} t4 on t1.seqfeature_id=t4.seqfeature_id ' \
+                         f' inner join orthology_seqfeature_id2orthogroup t4 on t1.seqfeature_id=t4.seqfeature_id ' \
                          f' inner join orthology.orthogroup_{biodb} t5 on t4.orthogroup_id=t5.orthogroup_id ' \
                          f' where t5.orthogroup_name="{locus}" and analysis_name="Pfam" order by start;'
             
@@ -2681,7 +2681,7 @@ def locusx(request, locus=None, menu=True):
         
             # protein length distribution
             sql_group7 = f'select uniprot_accession,uniprot_status,annotation_score,gene,recommendedName_fullName from orthology.orthogroup_{biodb} t1 ' \
-                         f' inner join orthology.seqfeature_id2orthogroup_{biodb} t2 on t1.orthogroup_id=t2.orthogroup_id ' \
+                         f' inner join orthology_seqfeature_id2orthogroup t2 on t1.orthogroup_id=t2.orthogroup_id ' \
                          f' left join custom_tables_uniprot_id2seqfeature_id t3 on t2.seqfeature_id=t3.seqfeature_id ' \
                          f' left join custom_tables_uniprot_annotation t4 on t2.seqfeature_id=t4.seqfeature_id ' \
                          f' where orthogroup_name="{locus}";'
