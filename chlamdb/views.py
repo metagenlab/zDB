@@ -301,7 +301,7 @@ def curated_taxonomy(request):
             ' inner join taxid2species t2 on t1.taxon_id=t2.taxon_id ' \
             ' inner join species_curated_taxonomy t3 on t2.species_id=t3.species_id ' \
             ' left join bioentry2assembly t4 on t1.bioentry_id=t4.bioentry_id ' \
-            ' left join assembly_metadata_%s t5 on t4.assembly_id=t5.assembly_id;' % (biodb, biodb, biodb, biodb)
+            ' left join assembly_metadata t5 on t4.assembly_id=t5.assembly_id;' % (biodb, biodb, biodb, biodb)
             
     data = server.adaptor.execute_and_fetchall(sql,)
 
