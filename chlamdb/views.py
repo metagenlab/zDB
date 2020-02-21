@@ -2836,13 +2836,13 @@ def locusx(request, locus=None, menu=True):
         #sql3 = 'select %s from orthology_detail where orthogroup = "%s" ' % (columns, biodb, orthogroup)
 
         #homologues = list(server.adaptor.execute_and_fetchall(sql3, ))
-        sql_groups = 'select count(*) from orthology.seqfeature_id2orthogroup_%s t1 ' \
+        sql_groups = 'select count(*) from orthology_seqfeature_id2orthogroup t1 ' \
                      ' inner join orthology_orthogroup t2 on t1.orthogroup_id=t2.orthogroup_id where t2.orthogroup_name="%s";' % (biodb, biodb, orthogroup)
 
         homologues = server.adaptor.execute_and_fetchall(sql_groups, )[0][0]
 
         # check if one of the homolog has TM(s) domains
-        sql_TM_SP = 'select count(*) from orthology.seqfeature_id2orthogroup_%s t1 ' \
+        sql_TM_SP = 'select count(*) from orthology_seqfeature_id2orthogroup t1 ' \
               ' inner join orthology_orthogroup t2 on t1.orthogroup_id=t2.orthogroup_id ' \
               ' inner join interpro_interpro t3 on t1.seqfeature_id=t3.seqfeature_id' \
               ' inner join interpro_signature t4 on t3.signature_id=t4.signature_id ' \
@@ -3580,7 +3580,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
               ' (select distinct seqfeature_id,t2.interpro_id from interpro_interpro t1 ' \
               ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
               ' inner join interpro_interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
-              ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
+              ' inner join orthology_seqfeature_id2orthogroup B on A.seqfeature_id=B.seqfeature_id ' \
               ' inner join orthology_orthogroup C on B.orthogroup_id=C.orthogroup_id) AA ' \
               ' group by AA.interpro_id) BB inner join interpro_entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
                                                                                                                domain,
@@ -3596,7 +3596,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
               ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id ' \
               ' inner join interpro_signature t4 on t1.signature_id=t4.signature_id ' \
               ' inner join annotation_seqfeature_id2locus t5 on t2.seqfeature_id=t5.seqfeature_id' \
-              ' inner join orthology.seqfeature_id2orthogroup_%s t6 on t2.seqfeature_id=t6.seqfeature_id ' \
+              ' inner join orthology_seqfeature_id2orthogroup t6 on t2.seqfeature_id=t6.seqfeature_id ' \
               ' inner join orthology_orthogroup t7 on t6.orthogroup_id=t7.orthogroup_id' \
               ' where bacteria_freq<=%s and eukaryota_freq>%s and taxon_id in (%s) ' \
               ' group by signature_description, t7.orthogroup_name;' % (biodb,
@@ -3805,7 +3805,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
               ' (select distinct seqfeature_id,t2.interpro_id from interpro_interpro t1 ' \
               ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
               ' inner join interpro_interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
-              ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
+              ' inner join orthology_seqfeature_id2orthogroup B on A.seqfeature_id=B.seqfeature_id ' \
               ' inner join orthology_orthogroup C on B.orthogroup_id=C.orthogroup_id) AA ' \
               ' group by AA.interpro_id) BB inner join interpro_entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
                                                                                                                domain,
@@ -3820,7 +3820,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
               '(select distinct seqfeature_id,t2.interpro_id from interpro_interpro t1 ' \
               ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
               ' inner join interpro_interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
-              ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
+              ' inner join orthology_seqfeature_id2orthogroup B on A.seqfeature_id=B.seqfeature_id ' \
               ' inner join annotation_seqfeature_id2locus D on A.seqfeature_id=D.seqfeature_id' \
               ' inner join orthology_orthogroup C on B.orthogroup_id=C.orthogroup_id where D.taxon_id in (%s)) BB ' \
               ' inner join interpro_entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
@@ -8191,7 +8191,7 @@ def interpro_taxonomy(request):
                       ' (select distinct seqfeature_id,t2.interpro_id from interpro_interpro t1 ' \
                       ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
                       ' inner join interpro_interpro_taxonomy_v_60 t3 on t2.interpro_id=t3.interpro_id where %s>=%s) A ' \
-                      ' inner join orthology.seqfeature_id2orthogroup_%s B on A.seqfeature_id=B.seqfeature_id ' \
+                      ' inner join orthology_seqfeature_id2orthogroup B on A.seqfeature_id=B.seqfeature_id ' \
                       ' inner join orthology_orthogroup C on B.orthogroup_id=C.orthogroup_id) AA ' \
                       ' group by AA.interpro_id) BB inner join interpro_entry CC on BB.interpro_id=CC.interpro_id;' % (biodb,
                                                                                                                 kingdom,
@@ -11755,12 +11755,12 @@ def phylogeny(request, orthogroup):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql_groups = 'select count(*) from orthology.seqfeature_id2orthogroup_%s t1 ' \
+    sql_groups = 'select count(*) from orthology_seqfeature_id2orthogroup t1 ' \
                     ' inner join orthology_orthogroup t2 on t1.orthogroup_id=t2.orthogroup_id where t2.orthogroup_name="%s";' % (biodb, biodb, orthogroup)
 
     homologues = server.adaptor.execute_and_fetchall(sql_groups, )[0][0]
 
-    sql_TM_SP = 'select count(*) from orthology.seqfeature_id2orthogroup_%s t1 ' \
+    sql_TM_SP = 'select count(*) from orthology_seqfeature_id2orthogroup t1 ' \
             ' inner join orthology_orthogroup t2 on t1.orthogroup_id=t2.orthogroup_id ' \
             ' inner join interpro_interpro t3 on t1.seqfeature_id=t3.seqfeature_id' \
             ' inner join interpro_signature t4 on t3.signature_id=t4.signature_id ' \
@@ -12397,7 +12397,7 @@ def similarity_network(request, orthogroup, annotation):
 
     if annotation == 'ko':
         sql = 'select locus_tag,t5.ko_accession from annotation_seqfeature_id2locus t1 ' \
-              ' inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+              ' inner join orthology_seqfeature_id2orthogroup t2 on t1.seqfeature_id=t2.seqfeature_id ' \
               ' inner join orthology_orthogroup t3 on t2.orthogroup_id=t3.orthogroup_id ' \
               ' inner join enzyme_seqfeature_id2ko t4 on t1.seqfeature_id=t4.seqfeature_id ' \
               ' inner join enzyme_ko_annotation t5 on t4.ko_id=t5.ko_id where t3.orthogroup_name="%s";' % (biodb, 
@@ -13096,7 +13096,7 @@ def transporters_family(request, family):
           ' inner join transporters.tc_table t4 on t2.family=t4.tc_id ' \
           ' where query_cov>=%s and hit_cov>=%s and evalue<=%s and bitscore_first_hsp>=%s and t4.tc_name in (%s))A ' \
           ' inner join annotation_seqfeature_id2locus B on A.seqfeature_id=B.seqfeature_id' \
-          ' inner join orthology.seqfeature_id2orthogroup_%s C on A.seqfeature_id=C.seqfeature_id' \
+          ' inner join orthology_seqfeature_id2orthogroup C on A.seqfeature_id=C.seqfeature_id' \
           ' inner join orthology_orthogroup D on C.orthogroup_id=D.orthogroup_id;' % (biodb,
                                                                                          query_coverage_cutoff,
                                                                                          hit_coverage_cutoff,

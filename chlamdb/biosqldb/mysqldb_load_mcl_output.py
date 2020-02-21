@@ -94,7 +94,7 @@ def create_orthogroup_table(server,
 
     server.adaptor.execute(sql)
 
-    sql0 = 'CREATE TABLE if not exists orthology.seqfeature_id2orthogroup_%s (seqfeature_id INT,' \
+    sql0 = 'CREATE TABLE if not exists orthology_seqfeature_id2orthogroup (seqfeature_id INT,' \
            ' orthogroup_id INT,' \
            ' INDEX seqfeature_id(seqfeature_id),' \
            ' INDEX orthogroup_id(orthogroup_id))' % biodatabase_name
@@ -271,7 +271,7 @@ def create_orthogroup_table(server,
             # if the protein has no protein id (and a locus tag only => prokka annotation)
             seqfeature_id = locus_tag2seqfeature_id_dico[locus_tag]
 
-            sql = 'INSERT INTO orthology.seqfeature_id2orthogroup_%s(seqfeature_id, orthogroup_id) ' \
+            sql = 'INSERT INTO orthology_seqfeature_id2orthogroup(seqfeature_id, orthogroup_id) ' \
                   ' values(%s,%s);' % (biodatabase_name,
                                        seqfeature_id,
                                        orthogroup_id)

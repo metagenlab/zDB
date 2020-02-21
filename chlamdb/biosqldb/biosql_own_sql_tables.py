@@ -1493,8 +1493,8 @@ def orthogroup2cog(db_name, accession=False, group_list=False): # group_list,
               'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
     '''
     if not accession:
-        sql =  'select orthogroup_name,COG_name from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology.seqfeature_id2orthogroup_%s t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology_orthogroup t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
-        sql = 'select orthogroup_name,COG_name from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology.seqfeature_id2orthogroup_%s t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology_orthogroup t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
+        sql =  'select orthogroup_name,COG_name from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology_seqfeature_id2orthogroup t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology_orthogroup t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
+        sql = 'select orthogroup_name,COG_name from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology_seqfeature_id2orthogroup t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology_orthogroup t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
         sql = 'select t1.orthogroup, t2.cog_id from orthology_detail as t1 left join COG_locus_tag2gi_hit ' \
               'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
     else:
@@ -1526,7 +1526,7 @@ def orthogroup2cog_id(db_name, accession=False): # group_list,
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql = 'select t4.orthogroup_name,hit_cog_id from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology.seqfeature_id2orthogroup_%s t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology_orthogroup t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
+    sql = 'select t4.orthogroup_name,hit_cog_id from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology_seqfeature_id2orthogroup t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology_orthogroup t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -1578,7 +1578,7 @@ def orthogroup2pfam_id(db_name):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql = 'select A.orthogroup_name,A.signature_id from (select distinct t1.seqfeature_id,t3.orthogroup_name,t4.signature_id from interpro_interpro t1 inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology_orthogroup t3 on t2.orthogroup_id=t3.orthogroup_id inner join interpro_signature t4 on t1.signature_id=t4.signature_id inner join interpro_analysis t5 on t4.analysis_id=t5.analysis_id where t5.analysis_name="Pfam") A;' % (db_name, db_name,db_name)
+    sql = 'select A.orthogroup_name,A.signature_id from (select distinct t1.seqfeature_id,t3.orthogroup_name,t4.signature_id from interpro_interpro t1 inner join orthology_seqfeature_id2orthogroup t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology_orthogroup t3 on t2.orthogroup_id=t3.orthogroup_id inner join interpro_signature t4 on t1.signature_id=t4.signature_id inner join interpro_analysis t5 on t4.analysis_id=t5.analysis_id where t5.analysis_name="Pfam") A;' % (db_name, db_name,db_name)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -1601,7 +1601,7 @@ def orthogroup2ko_id(db_name, accession=False):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql =  'select t3.orthogroup_name,ko_id from enzyme_seqfeature_id2ko t1 inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology_orthogroup t3 on t2.orthogroup_id=t3.orthogroup_id;' % (db_name, db_name, db_name)
+    sql =  'select t3.orthogroup_name,ko_id from enzyme_seqfeature_id2ko t1 inner join orthology_seqfeature_id2orthogroup t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology_orthogroup t3 on t2.orthogroup_id=t3.orthogroup_id;' % (db_name, db_name, db_name)
 
     #print 'df', sql
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -1625,7 +1625,7 @@ def orthogroup2interpro_id(db_name):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql = 'select A.orthogroup_name,A.interpro_id from (select distinct t1.seqfeature_id,t3.orthogroup_name,t4.interpro_id from interpro_interpro t1 inner join orthology.seqfeature_id2orthogroup_%s t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology_orthogroup t3 on t2.orthogroup_id=t3.orthogroup_id inner join interpro_signature t4 on t1.signature_id=t4.signature_id) A;' % (db_name, db_name, db_name)
+    sql = 'select A.orthogroup_name,A.interpro_id from (select distinct t1.seqfeature_id,t3.orthogroup_name,t4.interpro_id from interpro_interpro t1 inner join orthology_seqfeature_id2orthogroup t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology_orthogroup t3 on t2.orthogroup_id=t3.orthogroup_id inner join interpro_signature t4 on t1.signature_id=t4.signature_id) A;' % (db_name, db_name, db_name)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
