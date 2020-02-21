@@ -9497,7 +9497,7 @@ def annotation_overview(request):
     taxon_id2door = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
 
-    sql_string_pmid = 'select taxon_id,count(*) from(select * from string.seqfeature_id2string_pmid_%s ' \
+    sql_string_pmid = 'select taxon_id,count(*) from(select * from string_seqfeature_id2string_pmid ' \
                       ' group by seqfeature_id) A where taxon_id is not NULL group by taxon_id;' % biodb
     taxon_id2count_pmid = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_string_pmid,))
 
