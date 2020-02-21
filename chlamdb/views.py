@@ -298,7 +298,7 @@ def curated_taxonomy(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)    
     sql = 'select distinct t5.AssemblyAccession,t1.accession,t1.taxon_id as assembly_id,t1.description,t3.* from bioentry t1' \
-            ' inner join taxid2species_%s t2 on t1.taxon_id=t2.taxon_id ' \
+            ' inner join taxid2species t2 on t1.taxon_id=t2.taxon_id ' \
             ' inner join species_curated_taxonomy_%s t3 on t2.species_id=t3.species_id ' \
             ' left join bioentry2assembly_%s t4 on t1.bioentry_id=t4.bioentry_id ' \
             ' left join assembly_metadata_%s t5 on t4.assembly_id=t5.assembly_id;' % (biodb, biodb, biodb, biodb)
@@ -2310,7 +2310,7 @@ def locusx(request, locus=None, menu=True):
                     ' t5.tc_name as superfamily, t5.description as superfamily_description, ' \
                     ' t6.tc_name as family_name, t6.description as family_description, t7.tc_name as subfamily_name, ' \
                     ' t7.description as subfamily_description, t8.tcdb_description, t8.organism  from custom_tables_locus2seqfeature_id t1 ' \
-                    ' inner join transporters.transporters_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                    ' inner join transporters_transporters t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                     ' inner join transporters.transporter_table t3 on t2.transporter_id=t3.transporter_id ' \
                     ' inner join transporters.tc_table t4 on t3.transporter_id=t4.tc_id ' \
                     ' inner join transporters.tc_table t5 on t3.superfamily=t5.tc_id ' \
@@ -12927,7 +12927,7 @@ def transporters_list(request):
             if transporter_superfamily == 'all':
                 sql = 'select t8.locus_tag,t3.description,t1.n_hsps, t1.evalue, t1.bitscore_first_hsp, ' \
                       ' t1.identity, t1.query_TMS, t1.hit_TMS, t1.query_cov, t1.hit_cov,t7.uniprot_accession, ' \
-                      ' t7.substrate, t7.uniprot_description, t5.description,t6.description, t3.tc_name from transporters.transporters_%s t1 ' \
+                      ' t7.substrate, t7.uniprot_description, t5.description,t6.description, t3.tc_name from transporters_transporters t1 ' \
                       ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
                       ' inner join transporters.tc_table t3 on t2.family=t3.tc_id ' \
                       ' inner join transporters.tc_table t4 on t2.superfamily=t4.tc_id ' \
@@ -12957,7 +12957,7 @@ def transporters_list(request):
             else:
                 sql = 'select t8.locus_tag,t3.description,t1.n_hsps, t1.evalue, t1.bitscore_first_hsp, ' \
                       ' t1.identity, t1.query_TMS, t1.hit_TMS, t1.query_cov, t1.hit_cov,t7.uniprot_accession, ' \
-                      ' t7.substrate, t7.uniprot_description, t5.description,t6.description, t3.tc_name from transporters.transporters_%s t1 ' \
+                      ' t7.substrate, t7.uniprot_description, t5.description,t6.description, t3.tc_name from transporters_transporters t1 ' \
                       ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
                       ' inner join transporters.tc_table t3 on t2.family=t3.tc_id ' \
                       ' inner join transporters.tc_table t4 on t2.superfamily=t4.tc_id ' \
@@ -13078,7 +13078,7 @@ def transporters_family(request, family):
     #family_filter = '"','","'.join([family]),'"'
     family_filter = '"%s"' % family
     sql = 'select locus_tag,orthogroup_name, A.taxon_id from (' \
-          ' select t1.taxon_id,t3.description,t1.seqfeature_id from transporters.transporters_%s t1  ' \
+          ' select t1.taxon_id,t3.description,t1.seqfeature_id from transporters_transporters t1  ' \
           ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
           ' inner join transporters.tc_table t3 on t2.family=t3.tc_id ' \
           ' inner join transporters.tc_table t4 on t2.family=t4.tc_id ' \

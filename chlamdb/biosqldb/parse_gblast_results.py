@@ -230,7 +230,7 @@ def import_annot(gblast_file, biodb, fasta_file_query, fasta_file_db, xml_dir):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'create table IF NOT EXISTS transporters.transporters_%s (seqfeature_id INT primary key,' \
+    sql = 'create table IF NOT EXISTS transporters_transporters (seqfeature_id INT primary key,' \
           ' taxon_id INT,' \
           ' hit_uniprot_id INT,' \
           ' transporter_id INT,' \
@@ -309,7 +309,7 @@ def import_annot(gblast_file, biodb, fasta_file_query, fasta_file_db, xml_dir):
                 hit_uniprot_id = insert_uniprot_in_db(biodb, hit_uniprot_accession, hit_tcid)
 
 
-                sql = 'insert into transporters.transporters_%s (seqfeature_id,' \
+                sql = 'insert into transporters_transporters (seqfeature_id,' \
                       ' taxon_id,' \
                       ' hit_uniprot_id,' \
                       ' transporter_id,' \

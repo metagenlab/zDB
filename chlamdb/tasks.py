@@ -550,7 +550,7 @@ def run_circos(reference_taxon, target_taxons):
     if highlight_BBH:
           
         sql_phylum = 'select phylum from biodatabase t1 inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id ' \
-                     ' inner join taxid2species_%s t3 on t2.taxon_id=t3.taxon_id ' \
+                     ' inner join taxid2species t3 on t2.taxon_id=t3.taxon_id ' \
                      ' inner join species_curated_taxonomy_%s t4 on t3.species_id=t4.species_id ' \
                      ' where t1.name="%s" and t2.taxon_id=%s limit 1; ' % (biodb,
                                                                            biodb,

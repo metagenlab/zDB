@@ -5,7 +5,7 @@ def transporter_all_superfamily_heatmap(biodb, evalue, bitscore, query_cov, hit_
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select t1.taxon_id,t3.description, count(*) as n from transporters.transporters_%s t1 ' \
+    sql = 'select t1.taxon_id,t3.description, count(*) as n from transporters_transporters t1 ' \
           ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
           ' inner join transporters.tc_table t3 on t2.superfamily=t3.tc_id ' \
           ' where query_cov>=%s and hit_cov>=%s and evalue<=%s and bitscore_first_hsp>=%s' \
@@ -43,7 +43,7 @@ def transporter_family_heatmap(biodb, family_list,evalue, bitscore, query_cov, h
 
     family_filter = '"'+'","'.join(family_list)+'"'
 
-    sql = 'select t1.taxon_id,t3.description, count(*) as n from transporters.transporters_%s t1 ' \
+    sql = 'select t1.taxon_id,t3.description, count(*) as n from transporters_transporters t1 ' \
           ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
           ' inner join transporters.tc_table t3 on t2.family=t3.tc_id ' \
           ' inner join transporters.tc_table t4 on t2.family=t4.tc_id ' \
@@ -84,7 +84,7 @@ def transporter_superfamily_heatmap(biodb, family,evalue, bitscore, query_cov, h
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select t1.taxon_id,t3.description, count(*) as n, t3.tc_name from transporters.transporters_%s t1 ' \
+    sql = 'select t1.taxon_id,t3.description, count(*) as n, t3.tc_name from transporters_transporters t1 ' \
           ' inner join transporters.transporter_table t2 on t1.transporter_id=t2.transporter_id ' \
           ' inner join transporters.tc_table t3 on t2.family=t3.tc_id ' \
           ' inner join transporters.tc_table t4 on t2.superfamily=t4.tc_id ' \
