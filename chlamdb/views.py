@@ -8792,7 +8792,7 @@ def get_newick_tree(request, orthogroup, refseq_BBH_phylogeny):
 
     if refseq_BBH_phylogeny == "False":
         print("group phylo")
-        sql_tree = 'select phylogeny from biosqldb_phylogenies_%s where orthogroup="%s"' % (biodb, orthogroup)
+        sql_tree = 'select phylogeny from biosqldb_phylogenies where orthogroup="%s"' % (biodb, orthogroup)
     else:
         sql_tree = 'select phylogeny from biosqldb_phylogenies_BBH where orthogroup="%s";' % (biodb, orthogroup)
     try:

@@ -16,7 +16,7 @@ def import_phylo(phylo_list, biodb):
     import re
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'create table IF NOT EXISTS biosqldb_phylogenies_%s (orthogroup varchar(100), phylogeny longtext);' % biodb
+    sql = 'create table IF NOT EXISTS biosqldb_phylogenies (orthogroup varchar(100), phylogeny longtext);' % biodb
     server.adaptor.execute(sql,)
 
     locuslag2orthogroup = biosql_own_sql_tables.locus_tag2orthogroup(biodb)
@@ -27,7 +27,7 @@ def import_phylo(phylo_list, biodb):
         leaves = [i for i in t.iter_leaves()]
         orthogroup = locuslag2orthogroup[leaves[0].name]
         #print t.write()
-        sql = 'insert into biosqldb_phylogenies_%s values ("%s", "%s");' % (biodb, orthogroup, t.write())
+        sql = 'insert into biosqldb_phylogenies values ("%s", "%s");' % (biodb, orthogroup, t.write())
         #print sql
         server.adaptor.execute(sql,)
     server.commit()

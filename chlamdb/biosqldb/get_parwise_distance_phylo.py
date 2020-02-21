@@ -9,7 +9,7 @@ def biodb2pairwise_dist_phylogenies(biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select phylogeny from biosqldb_phylogenies_%s' % biodb
+    sql = 'select phylogeny from biosqldb_phylogenies' % biodb
     all_phylogenies = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
     sql = 'select seqfeature_id, taxon_id from custom_tables_locus2seqfeature_id' % biodb
