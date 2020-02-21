@@ -2677,7 +2677,7 @@ def locusx(request, locus=None, menu=True):
                          f' inner join orthology_orthogroup t5 on t4.orthogroup_id=t5.orthogroup_id ' \
                          f' where t5.orthogroup_name="{locus}" and analysis_name="Pfam" order by start;'
             
-            sql_group6 = f'select char_length(translation) as len from orthology_detail_{biodb} where orthogroup="{locus}"'
+            sql_group6 = f'select char_length(translation) as len from orthology_detail where orthogroup="{locus}"'
         
             # protein length distribution
             sql_group7 = f'select uniprot_accession,uniprot_status,annotation_score,gene,recommendedName_fullName from orthology_orthogroup t1 ' \
