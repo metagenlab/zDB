@@ -318,7 +318,7 @@ def make_species_curation_form(database_name, species_id):
     
     server, db = load_db(database_name)
     
-    sql = 'select phylum, `order`, family, genus, species from species_curated_taxonomy_%s where species_id=%s;' % (database_name, species_id)
+    sql = 'select phylum, `order`, family, genus, species from species_curated_taxonomy where species_id=%s;' % (database_name, species_id)
     print(sql)
     data = server.adaptor.execute_and_fetchall(sql,)[0]
     print(data)

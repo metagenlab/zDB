@@ -299,7 +299,7 @@ def curated_taxonomy(request):
     server, db = manipulate_biosqldb.load_db(biodb)    
     sql = 'select distinct t5.AssemblyAccession,t1.accession,t1.taxon_id as assembly_id,t1.description,t3.* from bioentry t1' \
             ' inner join taxid2species t2 on t1.taxon_id=t2.taxon_id ' \
-            ' inner join species_curated_taxonomy_%s t3 on t2.species_id=t3.species_id ' \
+            ' inner join species_curated_taxonomy t3 on t2.species_id=t3.species_id ' \
             ' left join bioentry2assembly_%s t4 on t1.bioentry_id=t4.bioentry_id ' \
             ' left join assembly_metadata_%s t5 on t4.assembly_id=t5.assembly_id;' % (biodb, biodb, biodb, biodb)
             
@@ -361,11 +361,11 @@ def edit_species_taxonomy(request, species_id):
             genus = form.cleaned_data['genus']
             species = form.cleaned_data['species']
             
-            sql1 = 'update species_curated_taxonomy_%s set phylum="%s" where species_id=%s' % (biodb, phylum, species_id)
-            sql2 = 'update species_curated_taxonomy_%s set `order`="%s" where species_id=%s' % (biodb, order, species_id)
-            sql3 = 'update species_curated_taxonomy_%s set family="%s" where species_id=%s' % (biodb, family, species_id)
-            sql4 = 'update species_curated_taxonomy_%s set genus="%s" where species_id=%s' % (biodb, genus, species_id)
-            sql5 = 'update species_curated_taxonomy_%s set species="%s" where species_id=%s' % (biodb, species, species_id)
+            sql1 = 'update species_curated_taxonomy set phylum="%s" where species_id=%s' % (biodb, phylum, species_id)
+            sql2 = 'update species_curated_taxonomy set `order`="%s" where species_id=%s' % (biodb, order, species_id)
+            sql3 = 'update species_curated_taxonomy set family="%s" where species_id=%s' % (biodb, family, species_id)
+            sql4 = 'update species_curated_taxonomy set genus="%s" where species_id=%s' % (biodb, genus, species_id)
+            sql5 = 'update species_curated_taxonomy set species="%s" where species_id=%s' % (biodb, species, species_id)
             
             server.adaptor.execute(sql1,)
             server.adaptor.execute(sql2,)
