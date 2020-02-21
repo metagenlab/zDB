@@ -37,7 +37,7 @@ def import_rnaseq(rnaseq_table, biodb, taxon_id):
 
     locus2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'create table IF NOT EXISTS rnaseq.%s_%s (seqfeature_id INT, ' \
+    sql = 'create table IF NOT EXISTS rnaseq_%s_%s (seqfeature_id INT, ' \
           ' old_locus_tag varchar(400), ' \
           ' operon_id INT,' \
           ' gene_name TEXT,' \
@@ -121,7 +121,7 @@ def import_rnaseq(rnaseq_table, biodb, taxon_id):
                 extracellular_3 = 'NULL'
 
 
-            sql = 'insert into rnaseq.%s_%s values (%s, "%s",%s, "%s", "%s", %s, "%s", "%s", "%s", %s, %s' \
+            sql = 'insert into rnaseq_%s_%s values (%s, "%s",%s, "%s", "%s", %s, "%s", "%s", "%s", %s, %s' \
                   ' , %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);' % (biodb,
                                                                  taxon_id,
                                                                  seqfeature_id,

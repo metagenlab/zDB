@@ -301,7 +301,7 @@ def curated_taxonomy(request):
             ' inner join taxid2species t2 on t1.taxon_id=t2.taxon_id ' \
             ' inner join species_curated_taxonomy t3 on t2.species_id=t3.species_id ' \
             ' left join bioentry2assembly t4 on t1.bioentry_id=t4.bioentry_id ' \
-            ' left join assembly_metadata t5 on t4.assembly_id=t5.assembly_id;' % (biodb, biodb, biodb, biodb)
+            ' left join assembly_metadata t5 on t4.assembly_id=t5.assembly_id;'
             
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -2328,7 +2328,7 @@ def locusx(request, locus=None, menu=True):
 
             sql22 = 'select temporal_class, EB_proteome, eggNOG, comment, hpi_2_1,hpi_2_2, ' \
                     ' hpi_2_3, hpi_48_1,hpi_48_2,hpi_48_3,hpi_96_1,hpi_96_2,hpi_96_3, extracellular_1, ' \
-                    ' extracellular_2, extracellular_3 from rnaseq.%s_%s where seqfeature_id=%s' % (biodb, taxon_id, seqfeature_id)
+                    ' extracellular_2, extracellular_3 from rnaseq_%s_%s where seqfeature_id=%s' % (biodb, taxon_id, seqfeature_id)
 
             sql23 = 'select pmid from string.seqfeature_id2pmid_%s where seqfeature_id=%s;' % (biodb, seqfeature_id)
 
@@ -2931,7 +2931,7 @@ def rnaseq_class(request, temporal_class, taxon_id):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db("%s" % biodb)
 
-    sql2 = 'select t1.*, t2.locus_tag from rnaseq.%s_%s t1  left join custom_tables_locus2seqfeature_id t2 ' \
+    sql2 = 'select t1.*, t2.locus_tag from rnaseq_%s_%s t1  left join custom_tables_locus2seqfeature_id t2 ' \
            ' on t1.seqfeature_id=t2.seqfeature_id where temporal_class="%s"' % (biodb,
                                                                             taxon_id,
                                                                                 biodb,
