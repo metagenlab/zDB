@@ -1021,7 +1021,7 @@ def basic_tree_task(biodb,
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
+    sql_tree = 'select phylogeny from biosqldb_phylogenies_%s where orthogroup="%s"' % (biodb, orthogroup)
     tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
 
     sql = f'select distinct locus_tag,t4.description from orthology_orthogroup t1 ' \
@@ -1109,7 +1109,7 @@ def TM_tree_task(biodb,
         locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False, signal_peptide=True)
     else:
         locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False, signal_peptide=True)
-    sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
+    sql_tree = 'select phylogeny from biosqldb_phylogenies_%s where orthogroup="%s"' % (biodb, orthogroup)
     tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
 
     print(locus2TM_data)
@@ -1214,7 +1214,7 @@ def pfam_tree_task(biodb,
                 print ("motif", motif)
 
     #print("get tree")
-    sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
+    sql_tree = 'select phylogeny from biosqldb_phylogenies_%s where orthogroup="%s"' % (biodb, orthogroup)
 
     try:
         tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]

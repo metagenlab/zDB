@@ -7921,15 +7921,15 @@ def interpro_taxonomy(request):
                 from chlamdb.plots import hmm_heatmap
 
                 # counts eukaryotic domains
-                sql = 'select taxon_id, eukaryote_count from interpro_taxonomy_summary_50_%s ;' % (biodb)
+                sql = 'select taxon_id, eukaryote_count from interpro_taxonomy_summary_50 ;' % (biodb)
 
                 taxon2values = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-                sql = 'select taxon_id, eukaryote_count from interpro_taxonomy_summary_90_%s ;' % (biodb)
+                sql = 'select taxon_id, eukaryote_count from interpro_taxonomy_summary_90 ;' % (biodb)
 
                 taxon2values_90 = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-                sql = 'select taxon_id, eukaryote_count from interpro_taxonomy_summary_98_%s ;' % (biodb)
+                sql = 'select taxon_id, eukaryote_count from interpro_taxonomy_summary_98 ;' % (biodb)
 
                 taxon2values_98 = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -7979,7 +7979,7 @@ def interpro_taxonomy(request):
                             set2taxon2value_new[set][taxon] = 0
 
                 sql = 'select taxon_id,n_CDS from biodatabase t1 inner join bioentry t2 on ' \
-                      ' t1.biodatabase_id=t2.biodatabase_id inner join genomes_info_%s t3 ' \
+                      ' t1.biodatabase_id=t2.biodatabase_id inner join genomes_info t3 ' \
                       ' on t3.ACCESSION=t2.accession where t1.name="%s" ' \
                       ' and t3.description not like "%%%%plasmid%%%%";' % (biodb, biodb)
 
@@ -8792,7 +8792,7 @@ def get_newick_tree(request, orthogroup, refseq_BBH_phylogeny):
 
     if refseq_BBH_phylogeny == "False":
         print("group phylo")
-        sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
+        sql_tree = 'select phylogeny from biosqldb_phylogenies_%s where orthogroup="%s"' % (biodb, orthogroup)
     else:
         sql_tree = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s";' % (biodb, orthogroup)
     try:
