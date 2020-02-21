@@ -94,7 +94,7 @@ def load_effectiveT3_table(table_file, biodb='chlamydia_04_16'):
     sql = 'select locus_tag, taxon_id from orthology_detail' % biodb
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'CREATE table IF NOT EXISTS effectors.predicted_effectiveT3_%s (seqfeature_id INT primary key,taxon_id INT,score FLOAT,effectors INT,' \
+    sql = 'CREATE table IF NOT EXISTS effectors_predicted_effectiveT3 (seqfeature_id INT primary key,taxon_id INT,score FLOAT,effectors INT,' \
           ' INDEX taxon_id (taxon_id))' % biodb
 
     server.adaptor.execute(sql,)
@@ -115,7 +115,7 @@ def load_effectiveT3_table(table_file, biodb='chlamydia_04_16'):
                     print 'unknown result', data
 
                 # Id; Description; Score; is Effective
-                sql = 'insert into effectors.predicted_effectiveT3_%s values (%s,%s,%s,%s)' % (biodb,
+                sql = 'insert into effectors_predicted_effectiveT3 values (%s,%s,%s,%s)' % (biodb,
                                                                                             locus_tag2seqfeature_id[data[0]],
                                                                                             locus_tag2taxon_id[data[0]],
                                                                                             data[2],

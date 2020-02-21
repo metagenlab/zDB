@@ -2336,16 +2336,16 @@ def locusx(request, locus=None, menu=True):
 
             interpro_hash = server.adaptor.execute_and_fetchall(sql24,)[0][0]
 
-            sql25 = f'select distinct t2.effectors,SVM_value from annotation_seqfeature_id2locus_{biodb} t1' \
-                    f' left join effectors.predicted_BPBAac_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
-            sql26 = f'select distinct effectors from annotation_seqfeature_id2locus_{biodb} t1' \
-                    f' left join effectors.predicted_DeepT3_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
-            sql27 = f'select distinct effectors,probability from annotation_seqfeature_id2locus_{biodb} t1' \
-                    f' left join effectors.predicted_T3MM_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
-            sql28 = f'select distinct t2.effectors,score from annotation_seqfeature_id2locus_{biodb} t1' \
-                    f' left join effectors.predicted_effectiveT3_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
+            sql25 = f'select distinct t2.effectors,SVM_value from annotation_seqfeature_id2locus t1' \
+                    f' left join effectors_predicted_BPBAac t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
+            sql26 = f'select distinct effectors from annotation_seqfeature_id2locus t1' \
+                    f' left join effectors_predicted_DeepT3 t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
+            sql27 = f'select distinct effectors,probability from annotation_seqfeature_id2locus t1' \
+                    f' left join effectors_predicted_T3MM t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
+            sql28 = f'select distinct t2.effectors,score from annotation_seqfeature_id2locus t1' \
+                    f' left join effectors_predicted_effectiveT3 t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
 
-            sql29 = f'select final_prediction,score from annotation_seqfeature_id2locus_{biodb} t1' \
+            sql29 = f'select final_prediction,score from annotation_seqfeature_id2locus t1' \
                     f' inner join custom_tables_seqfeature_id2psortb t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
 
             sql30 = 'select paperblast_id from string.seqfeature_id2paperblast where seqfeature_id=%s;' % (seqfeature_id)
@@ -3410,7 +3410,7 @@ def venn_candidate_effectors(request):
 
     locus_tag_list_blastnr = [i[0] for i in server.adaptor.execute_and_fetchall(sql_locus_tag_blast_refseq, )]
 
-    sql_locus_tag_effectiveT3 = 'select distinct t2.locus_tag from effectors.predicted_effectiveT3_%s t1 ' \
+    sql_locus_tag_effectiveT3 = 'select distinct t2.locus_tag from effectors_predicted_effectiveT3 t1 ' \
                                            'inner join annotation_seqfeature_id2locus t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                                            'where t1.taxon_id in (%s);' % (biodb,
                                                                            biodb,
@@ -7696,7 +7696,7 @@ def effector_pred(request):
 
     # effector prediction data
     # effective T3
-    sql = 'select taxon_id, count(*) from effectors.predicted_effectiveT3_%s where score>0 group by taxon_id;' % biodb
+    sql = 'select taxon_id, count(*) from effectors_predicted_effectiveT3 where score>0 group by taxon_id;' % biodb
     taxon2values_effectiveT3 = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     # BPBAac
@@ -7743,7 +7743,7 @@ def effector_pred(request):
 
 
     # mex 3 algo
-    sql = 'select A.taxon_id, count(*) from (select t1.taxon_id, t1.seqfeature_id from effectors.predicted_effectiveT3_%s t1 ' \
+    sql = 'select A.taxon_id, count(*) from (select t1.taxon_id, t1.seqfeature_id from effectors_predicted_effectiveT3 t1 ' \
           ' inner join effectors.predicted_BPBAac_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' inner join effectors.predicted_T3MM_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
           ' group by t1.taxon_id, t1.seqfeature_id) A group by A.taxon_id;' % (biodb, biodb, biodb)
@@ -7839,7 +7839,7 @@ def effector_pred(request):
           ' group by orthogroup,taxon_id) A  GROUP BY orthogroup' % biodb
     group2n_organisms = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'select C.orthogroup from (select t1.taxon_id, t1.seqfeature_id from effectors.predicted_effectiveT3_%s t1 ' \
+    sql = 'select C.orthogroup from (select t1.taxon_id, t1.seqfeature_id from effectors_predicted_effectiveT3 t1 ' \
           ' inner join effectors.predicted_BPBAac_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' inner join effectors.predicted_T3MM_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
           ' group by t1.taxon_id, t1.seqfeature_id) A inner join custom_tables_locus2seqfeature_id B ' \
@@ -7987,7 +7987,7 @@ def interpro_taxonomy(request):
 
                 # effector prediction data
                 # effective T3
-                sql = 'select taxon_id, count(*) from effectors.predicted_effectiveT3_%s where score>0 group by taxon_id;' % biodb
+                sql = 'select taxon_id, count(*) from effectors_predicted_effectiveT3 where score>0 group by taxon_id;' % biodb
                 taxon2values_effectiveT3 = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
                 # BPBAac
@@ -8011,7 +8011,7 @@ def interpro_taxonomy(request):
                 taxon2values_chaperones = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
                 # mex 3 algo
-                sql = 'select A.taxon_id, count(*) from (select t1.taxon_id, t1.seqfeature_id from effectors.predicted_effectiveT3_%s t1 ' \
+                sql = 'select A.taxon_id, count(*) from (select t1.taxon_id, t1.seqfeature_id from effectors_predicted_effectiveT3 t1 ' \
                       ' inner join effectors.predicted_BPBAac_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                       ' inner join effectors.predicted_T3MM_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
                       ' group by t1.taxon_id, t1.seqfeature_id) A group by A.taxon_id;' % (biodb, biodb, biodb)
@@ -8060,7 +8060,7 @@ def interpro_taxonomy(request):
                       ' group by orthogroup,taxon_id) A  GROUP BY orthogroup' % biodb
                 group2n_organisms = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-                sql = 'select C.orthogroup from (select t1.taxon_id, t1.seqfeature_id from effectors.predicted_effectiveT3_%s t1 ' \
+                sql = 'select C.orthogroup from (select t1.taxon_id, t1.seqfeature_id from effectors_predicted_effectiveT3 t1 ' \
                       ' inner join effectors.predicted_BPBAac_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                       ' inner join effectors.predicted_T3MM_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
                       ' group by t1.taxon_id, t1.seqfeature_id) A inner join custom_tables_locus2seqfeature_id B ' \
