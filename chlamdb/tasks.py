@@ -1321,7 +1321,7 @@ def phylogeny_task(biodb,
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s";' % (biodb, orthogroup)
+    sql = 'select phylogeny from biosqldb_phylogenies_BBH where orthogroup="%s";' % (biodb, orthogroup)
 
     ete3_tree = Tree(server.adaptor.execute_and_fetchall(sql,)[0][0])
 

@@ -2296,7 +2296,7 @@ def locusx(request, locus=None, menu=True):
               ' inner join blastnr_blast_swissprot t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where locus_tag="%s";' % (biodb, biodb, locus)
 
-            sql17 = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s"' % (biodb, orthogroup)
+            sql17 = 'select phylogeny from biosqldb_phylogenies_BBH where orthogroup="%s"' % (biodb, orthogroup)
 
             sql18 = 'select signature_accession,start,stop from interpro_%s where analysis="Phobius" and locus_tag="%s" ' \
                     ' and signature_accession in ("TRANSMEMBRANE",' \
@@ -2687,7 +2687,7 @@ def locusx(request, locus=None, menu=True):
                          f' where orthogroup_name="{locus}";'
             
             
-            sql_group8 = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s"' % (biodb, locus)
+            sql_group8 = 'select phylogeny from biosqldb_phylogenies_BBH where orthogroup="%s"' % (biodb, locus)
             # TM domains 
             
             # Signal Peptide
@@ -8794,7 +8794,7 @@ def get_newick_tree(request, orthogroup, refseq_BBH_phylogeny):
         print("group phylo")
         sql_tree = 'select phylogeny from biosqldb_phylogenies_%s where orthogroup="%s"' % (biodb, orthogroup)
     else:
-        sql_tree = 'select phylogeny from biosqldb_phylogenies.BBH_%s where orthogroup="%s";' % (biodb, orthogroup)
+        sql_tree = 'select phylogeny from biosqldb_phylogenies_BBH where orthogroup="%s";' % (biodb, orthogroup)
     try:
         print("BBH phylo")
         tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
