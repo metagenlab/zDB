@@ -2655,7 +2655,7 @@ def locusx(request, locus=None, menu=True):
             sql_group1 = 'select rank,count,description from orthology_orthogroup2gene t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id where t2.orthogroup_name="%s";' % (biodb, 
                                                                                                                                                                                                       biodb, 
                                                                                                                                                                                                       locus)
-            sql_group2 = 'select rank,count,description from orthology.orthogroup2product_%s t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id where t2.orthogroup_name="%s";' % (biodb, 
+            sql_group2 = 'select rank,count,description from orthology_orthogroup2product t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id where t2.orthogroup_name="%s";' % (biodb, 
                                                                                                                                                                                                       biodb, 
                                                                                                                                                                                                       locus)
             sql_group3 = 'select rank, COG_name, t3.description, count, code, t5.description from orthology.orthogroup2cog_%s t1 ' \
