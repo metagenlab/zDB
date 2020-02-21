@@ -9491,7 +9491,7 @@ def annotation_overview(request):
           ' right join custom_tables_locus2seqfeature_id t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' where taxon_id is not NULL group by taxon_id;' % (biodb, biodb)
 
-    sql_string_taxons = 'select taxon_id from string.interactions_%s where taxon_id is not NULL group by taxon_id;' % biodb
+    sql_string_taxons = 'select taxon_id from string_interactions where taxon_id is not NULL group by taxon_id;' % biodb
     string_taxons = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql_string_taxons,)]
     taxon_id2string = {}
     taxon_id2door = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
