@@ -12783,7 +12783,7 @@ def hmm2circos(request):
 
             sql = 'select locus_tag from hmm.hmm_sets t1 ' \
                   ' inner join hmm.hmm_sets_entry t2 on t1.set_id=t2.set_id ' \
-                  ' inner join hmm.hmm_hits_annotated_genome_%s t3 on t2.hmm_id=t3.hmm_id' \
+                  ' inner join hmm_hmm_hits_annotated_genome t3 on t2.hmm_id=t3.hmm_id' \
                   ' inner join custom_tables_locus2seqfeature_id t4 on t3.seqfeature_id=t4.seqfeature_id ' \
                   ' where t1.name="%s" and t3.taxon_id=%s and bitscore>=%s ' \
                   ' and query_coverage>=%s order by bitscore;' % (biodb,
@@ -12798,7 +12798,7 @@ def hmm2circos(request):
 
             sql2 = 'select locus_tag,t5.name  from hmm.hmm_sets t1 ' \
                   ' inner join hmm.hmm_sets_entry t2 on t1.set_id=t2.set_id ' \
-                  ' inner join hmm.hmm_hits_annotated_genome_%s t3 on t2.hmm_id=t3.hmm_id' \
+                  ' inner join hmm_hmm_hits_annotated_genome t3 on t2.hmm_id=t3.hmm_id' \
                   ' inner join custom_tables_locus2seqfeature_id t4 on t3.seqfeature_id=t4.seqfeature_id ' \
                   ' inner join hmm.hmm_profiles t5 on t2.hmm_id=t5.hmm_id' \
                   ' where t1.name="%s" and t3.taxon_id=%s and bitscore>=%s ' \

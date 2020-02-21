@@ -20,7 +20,7 @@ def get_single_set_data(biodb, set_name,column="bitscore", bitscore_cutoff=0, qu
 
     sql = 'select t3.taxon_id,t4.name,%s from hmm.hmm_sets t1 ' \
           ' inner join hmm.hmm_sets_entry t2 on t1.set_id=t2.set_id ' \
-          ' inner join hmm.hmm_hits_annotated_genome_%s t3 on t2.hmm_id=t3.hmm_id ' \
+          ' inner join hmm_hmm_hits_annotated_genome t3 on t2.hmm_id=t3.hmm_id ' \
           ' inner join hmm.hmm_profiles t4 on t2.hmm_id=t4.hmm_id ' \
           ' inner join custom_tables_locus2seqfeature_id t5 on t3.seqfeature_id=t5.seqfeature_id' \
           ' where t1.name="%s" and bitscore>=%s and query_coverage>=%s order by bitscore;' % (column,
