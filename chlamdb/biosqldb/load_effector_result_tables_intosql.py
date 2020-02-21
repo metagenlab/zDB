@@ -179,7 +179,7 @@ def load_T4SEpre_psAac_table(table_file, biodb='chlamydia_04_16'):
     sql = 'select locus_tag, taxon_id from orthology_detail' % biodb
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'CREATE table IF NOT EXISTS effectors.predicted_T4SEpre_psAac_%s (seqfeature_id INT primary key,taxon_id INT,SVM_value FLOAT,effectors INT,' \
+    sql = 'CREATE table IF NOT EXISTS effectors_predicted_T4SEpre_psAac (seqfeature_id INT primary key,taxon_id INT,SVM_value FLOAT,effectors INT,' \
           ' INDEX taxon_id (taxon_id))' % biodb
 
     server.adaptor.execute(sql,)
@@ -201,7 +201,7 @@ def load_T4SEpre_psAac_table(table_file, biodb='chlamydia_04_16'):
 
                 #Protein,SVM-Value,T4S protein or not
                 #locus = re.sub('"', "", data[0])
-                sql = 'insert into effectors.predicted_T4SEpre_psAac_%s values (%s,%s,%s,%s)' % (biodb,
+                sql = 'insert into effectors_predicted_T4SEpre_psAac values (%s,%s,%s,%s)' % (biodb,
                                                                                             locus_tag2seqfeature_id[data[0]],
                                                                                             locus_tag2taxon_id[data[0]],
                                                                                             data[1],

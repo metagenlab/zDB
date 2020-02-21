@@ -7712,7 +7712,7 @@ def effector_pred(request):
     taxon2values_T4SEpre_bpbAac = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     # T4SEpre_psAac
-    sql = 'select taxon_id, count(*) from effectors.predicted_T4SEpre_psAac_%s where SVM_value>0 group by taxon_id;' % biodb
+    sql = 'select taxon_id, count(*) from effectors_predicted_T4SEpre_psAac where SVM_value>0 group by taxon_id;' % biodb
     taxon2values_T4SEpre_psAac = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     # chapeones
@@ -8003,7 +8003,7 @@ def interpro_taxonomy(request):
                 taxon2values_T4SEpre_bpbAac = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
                 # T4SEpre_psAac
-                sql = 'select taxon_id, count(*) from effectors.predicted_T4SEpre_psAac_%s where SVM_value>0 group by taxon_id;' % biodb
+                sql = 'select taxon_id, count(*) from effectors_predicted_T4SEpre_psAac where SVM_value>0 group by taxon_id;' % biodb
                 taxon2values_T4SEpre_psAac = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
                 # chapeones
