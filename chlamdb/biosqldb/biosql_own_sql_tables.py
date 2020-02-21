@@ -393,7 +393,7 @@ def group2gene(biodb, group_list, rank_limit=2):
 
     server, db = manipulate_biosqldb.load_db(biodb)
     group_filter = '","'.join(group_list)
-    sql = 'select orthogroup_name,description,count from orthology.orthogroup2gene_%s t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
+    sql = 'select orthogroup_name,description,count from orthology_orthogroup2gene t1 inner join orthology.orthogroup_%s t2 on t1.group_id=t2.orthogroup_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
     data = server.adaptor.execute_and_fetchall(sql,)
     ortho2gene = {}
 
