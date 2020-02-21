@@ -86,7 +86,7 @@ def create_orthogroup_table(server,
                             pseudogene_feature_list):
 
 
-    sql = 'CREATE TABLE if not exists orthology.orthogroup_%s (orthogroup_id INT AUTO_INCREMENT PRIMARY KEY,' \
+    sql = 'CREATE TABLE if not exists orthology_orthogroup (orthogroup_id INT AUTO_INCREMENT PRIMARY KEY,' \
           ' orthogroup_name varchar(400),' \
           ' orthogroup_size INT,' \
           ' n_genomes INT,' \
@@ -241,7 +241,7 @@ def create_orthogroup_table(server,
             continue
         n_genomes = group2family_size[group]
 
-        sql = 'insert into orthology.orthogroup_%s (orthogroup_name, orthogroup_size, n_genomes) ' \
+        sql = 'insert into orthology_orthogroup (orthogroup_name, orthogroup_size, n_genomes) ' \
               ' values ("%s", %s, %s)' % (biodatabase_name,
                                           group,
                                           orthogroup_size,
@@ -253,7 +253,7 @@ def create_orthogroup_table(server,
 
     # get orthogroup ids
 
-    sql = 'select orthogroup_name, orthogroup_id from orthology.orthogroup_%s' % biodatabase_name
+    sql = 'select orthogroup_name, orthogroup_id from orthology_orthogroup' % biodatabase_name
 
     orthogroup2orthogroup_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
