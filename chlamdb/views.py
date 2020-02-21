@@ -2187,7 +2187,12 @@ def locusx(request, locus=None, menu=True):
                       f' where match(t1.accession) AGAINST ("{locus}" IN BOOLEAN MODE) ' \
                       f' and db_name not in ("STRING", "KEGG", "KO", "eggNOG") group by t1.seqfeature_id limit 200;'
 
-                raw_search = server.adaptor.execute_and_fetchall(sql,)
+                try:
+                    raw_search = server.adaptor.execute_and_fetchall(sql,)
+                # CASE when no synonymous table was setup
+                except:
+                    raw_search = []
+                
                 if len(raw_search) == 0:
                     print("nomatch synonymous!")
                     raise("nomatch")
@@ -10577,10 +10582,10 @@ def search(request):
 
             if search_type == "no_exact_accession":
 
-                    # CREATE FULLTEXT INDEX GPF1 ON orthology_detail_2019_06_PVC(gene);
-                    # CREATE FULLTEXT INDEX GPF2 ON orthology_detail_2019_06_PVC(product);
-                    # CREATE FULLTEXT INDEX GPF3 ON orthology_detail_2019_06_PVC(organism);
-                    # CREATE FULLTEXT INDEX GPF4 ON orthology_detail_2019_06_PVC(gene,product,organism);
+                    # CREATE FULLTEXT INDEX GPF1 ON orthology_detail(gene);
+                    # CREATE FULLTEXT INDEX GPF2 ON orthology_detail(product);
+                    # CREATE FULLTEXT INDEX GPF3 ON orthology_detail(organism);
+                    # CREATE FULLTEXT INDEX GPF4 ON orthology_detail(gene,product,organism);
                     sql = 'SELECT %s, ' \
                           ' MATCH (gene) AGAINST ("%s") AS rel1, ' \
                           ' MATCH (product) AGAINST ("%s") AS rel2, ' \
@@ -10609,8 +10614,11 @@ def search(request):
                     sql = 'select A.ec, A.value from (select ec,value from enzyme_enzymes_dat as t1 inner join enzyme_enzymes as t2 ' \
                           ' on t1.enzyme_dat_id=enzyme_id WHERE MATCH(value) AGAINST("%s" IN NATURAL LANGUAGE MODE) group by ec) A inner join comparative_tables_EC' \
                           ' as B on A.ec=B.id' % (search_term)
-                    print(sql)
-                    raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
+                    try:
+                        raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
+                    # case when enzyme data were not setup
+                    except:
+                        raw_data_EC = []
                     if len(raw_data_EC) == 0:
                         raw_data_EC = False
 
@@ -10633,14 +10641,18 @@ def search(request):
                     raw_data_cog = []# :TODO server.adaptor.execute_and_fetchall(sql,)
                     if len(raw_data_cog) == 0:
                         raw_data_cog = False
-                    print("COG", raw_data_cog)
+
                     # CREATE FULLTEXT INDEX ipf ON interpro_signature(signature_description);
                     # CREATE FULLTEXT INDEX ipf ON interpro_entry(description);
                     sql = 'select analysis_name,signature_accession,signature_description,t3.name,t3.description from interpro_signature t1 ' \
                           ' inner join interpro_analysis t2 on t1.analysis_id=t2.analysis_id ' \
                           ' left join interpro_entry t3 on t1.interpro_id=t3.interpro_id ' \
                           ' WHERE MATCH(t3.description) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (search_term)
-                    raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
+                    try:
+                        raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
+                    # case whem interor data were not imported
+                    except:
+                        raw_data_interpro = []
                     if len(raw_data_interpro) == 0:
                         raw_data_interpro = False
                     print("interpro", raw_data_interpro)
@@ -10648,7 +10660,11 @@ def search(request):
                     sql = 'select module_name,module_sub_cat,module_sub_sub_cat,description from enzyme_kegg_module_v1 ' \
                           ' where (description REGEXP "%s" or module_sub_cat REGEXP "%s")' % (search_term, 
                                                                                               search_term)
-                    raw_data_module = server.adaptor.execute_and_fetchall(sql,)
+                    try:
+                        raw_data_module = server.adaptor.execute_and_fetchall(sql,)
+                    # case when no kegg data were imported
+                    except:
+                        raw_data_module = []
                     if len(raw_data_module) == 0:
                         raw_data_module = False
 
@@ -10656,7 +10672,11 @@ def search(request):
                     sql = 'select pathway_name,pathway_category,description from enzyme_kegg_pathway ' \
                           ' where (description REGEXP "%s" or pathway_category REGEXP "%s")' % (search_term, 
                                                                                                 search_term)
-                    raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
+                    try:
+                        raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
+                    # case when no kegg data were imported
+                    except:
+                        raw_data_pathway = []
                     if len(raw_data_pathway) == 0:
                         raw_data_pathway = False
                     
