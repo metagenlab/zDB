@@ -17,7 +17,7 @@ def get_orthology_matrix_merging_plasmids(server, biodatabase_name, taxon_list=F
 
 
     server, db = manipulate_biosqldb.load_db(biodatabase_name)
-    sql='select orthogroup, count(*) from orthology_detail group by orthogroup' % biodatabase_name
+    sql='select orthogroup, count(*) from orthology_detail group by orthogroup'
 
     all_orthogroups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -38,7 +38,7 @@ def get_orthology_matrix_merging_plasmids(server, biodatabase_name, taxon_list=F
 
     for taxon_id in all_taxons:
         #print taxon_id
-        sql = "select orthogroup, `%s` from comparative_tables_orthology;" % (taxon_id, biodatabase_name)
+        sql = "select orthogroup, `%s` from comparative_tables_orthology;" % (taxon_id)
         #print sql
         dico = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
         #print dico
@@ -166,11 +166,8 @@ def locus_tag2best_hit(db_name, accession, hit_number=1, rank=False, taxon_name=
                           ' inner join blastnr_blastnr_hits_taxonomy_filtered_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
                           ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr_blastnr_hsps_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
-                          ' where t1.hit_number=%s and t3.%s = "%s";' % (db_name,
+                          ' where t1.hit_number=%s and t3.%s = "%s";' % (accession,
                                                                          accession,
-                                                                         db_name,
-                                                                         accession,
-                                                                         db_name,
                                                                          accession,
                                                                          hit_number,
                                                                          rank,
@@ -208,11 +205,8 @@ def locus_tag2best_hit(db_name, accession, hit_number=1, rank=False, taxon_name=
                           ' inner join blastnr_blastnr_hits_taxonomy_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
                           ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr_blastnr_hsps_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
-                          ' where t1.hit_number=%s' % (db_name,
+                          ' where t1.hit_number=%s' % (accession,
                                                        accession,
-                                                       db_name,
-                                                       accession,
-                                                       db_name,
                                                        accession,
                                                        hit_number)
 
@@ -233,14 +227,14 @@ def locus_tag2best_hit_n_taxon_ids(db_name, accession):
     server, db = manipulate_biosqldb.load_db(db_name)
     sql = 'select t3.locus_tag, count(*) as n_taxons from blastnr_blastnr_hits_taxonomy_%s as t1 ' \
           ' inner join blastnr_blastnr_hits_%s as t3 on t1.nr_hit_id=t3.nr_hit_id ' \
-          ' where t3.hit_number=1 group by t3.nr_hit_id' % (db_name, accession, db_name, accession)
+          ' where t3.hit_number=1 group by t3.nr_hit_id' % (accession, accession)
     #print sql
     all_blastnr_taxons = server.adaptor.execute_and_fetchall(sql,)
 
 
 def get_locus2plasmid_or_not(biodb):
 
-    sql = 'SELECT locus_tag, IF(organism like "%%%%plasmid%%%%", "True", "False") AS NewResult from orthology_detail;' % biodb
+    sql = 'SELECT locus_tag, IF(organism like "%%%%plasmid%%%%", "True", "False") AS NewResult from orthology_detail;'
     #print sql
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -276,11 +270,11 @@ def circos_locus2taxon_highest_identity(biodb,
             i+=1
             sql = 'select locus_b,identity from orth_%s.%s where locus_a ="%s" ' \
                   ' UNION select locus_a,identity from orth_%s.%s where locus_b ="%s";' % (biodb,
-                                                                                          reference_orthogroup2locus_tag[locus_A],
-                                                                                          locus_A,
-                                                                                          biodb,
-                                                                                          reference_orthogroup2locus_tag[locus_A],
-                                                                                          locus_A)
+                                                                                           reference_orthogroup2locus_tag[locus_A],
+                                                                                           locus_A,
+                                                                                           biodb,
+                                                                                           reference_orthogroup2locus_tag[locus_A],
+                                                                                           locus_A)
             try:
                 locus2identity = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
                 locus2locus_identity[locus_A] = {}
@@ -300,7 +294,8 @@ def circos_locus2taxon_highest_identity(biodb,
         sql = 'select t2.locus_tag, t3.locus_tag, identity, taxon_2 from comparative_tables_identity_closest_homolog2 t1 ' \
               ' inner join custom_tables_locus2seqfeature_id t2 on t1.locus_1=t2.seqfeature_id ' \
               ' inner join custom_tables_locus2seqfeature_id t3 on t1.locus_2=t3.seqfeature_id ' \
-              ' where taxon_1=%s' % (biodb, biodb, biodb, reference_taxon_id)
+              ' where taxon_1=%s' % (reference_taxon_id)
+              
         data = server.adaptor.execute_and_fetchall(sql,)
         locus2locus_identity = {}
         for row in data:
@@ -330,13 +325,13 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
             sql_include += ' `%s` = 1 and ' % taxon_list[i]
         sql_include+='`%s` = 1' % taxon_list[-1]
 
-    sql ='select orthogroup from comparative_tables_orthology where %s' % (biodb, sql_include)
+    sql ='select orthogroup from comparative_tables_orthology where %s' % (sql_include)
     #print sql
     sys.stdout.write("getting core orthogroup list\n")
     match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
     sys.stdout.write("N single copy core orthogroups: %s\n" % len(match_groups))
     sys.stdout.write("getting locus tag 2 taxon_id\n")
-    sql2 = 'select locus_tag, taxon_id from orthology_detail' % (biodb)
+    sql2 = 'select locus_tag, taxon_id from orthology_detail'
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
     if type == "nucleotide":
@@ -347,9 +342,8 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
 
         sys.stdout.write("writing one fasta/group\n")
         for group in match_groups:
-            sql = 'select locus_tag from orthology_detail where orthogroup="%s" and taxon_id in (%s)' % (biodb,
-                                                                                                                        group,
-                                                                                                                        ','.join([str(i) for i in taxon_list]))
+            sql = 'select locus_tag from orthology_detail where orthogroup="%s" and taxon_id in (%s)' % (group,
+                                                                                                         ','.join([str(i) for i in taxon_list]))
             locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
             #print group, locus_list
@@ -368,9 +362,8 @@ def taxon_subset2core_orthogroups(biodb, taxon_list, type="nucleotide", mypath="
 
         #print 'Number of core groups: %s' % len(match_groups)
         for group in match_groups:
-            sql = 'select locus_tag from orthology_detail where orthogroup="%s" and taxon_id in (%s)' % (biodb,
-                                                                                                           group,
-                                                                                                           ','.join([str(i) for i in taxon_list]))
+            sql = 'select locus_tag from orthology_detail where orthogroup="%s" and taxon_id in (%s)' % (group,
+                                                                                                         ','.join([str(i) for i in taxon_list]))
             locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
             #print group, locus_list
@@ -393,7 +386,10 @@ def group2gene(biodb, group_list, rank_limit=2):
 
     server, db = manipulate_biosqldb.load_db(biodb)
     group_filter = '","'.join(group_list)
-    sql = 'select orthogroup_name,description,count from orthology_orthogroup2gene t1 inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
+    sql = 'select orthogroup_name,description,count from orthology_orthogroup2gene t1 ' \
+          ' inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id ' \
+          ' where rank<%s and orthogroup_name in ("%s");' % (rank_limit, group_filter)
+          
     data = server.adaptor.execute_and_fetchall(sql,)
     ortho2gene = {}
 
@@ -413,7 +409,10 @@ def group2product(biodb, group_list, rank_limit=2):
 
     server, db = manipulate_biosqldb.load_db(biodb)
     group_filter = '","'.join(group_list)
-    sql = 'select orthogroup_name,description,count from orthology_orthogroup2product t1 inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
+    sql = 'select orthogroup_name,description,count from orthology_orthogroup2product t1 ' \
+          ' inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id ' \
+          ' where rank<%s and orthogroup_name in ("%s");' % (rank_limit, 
+                                                             group_filter)
     data = server.adaptor.execute_and_fetchall(sql,)
     ortho2product = {}
 
@@ -433,7 +432,12 @@ def group2cog(biodb, group_list, rank_limit=2):
 
     server, db = manipulate_biosqldb.load_db(biodb)
     group_filter = '","'.join(group_list)
-    sql = 'select orthogroup_name,COG_name,t3.description,count,code,t5.description from orthology_orthogroup2cog t1 inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id inner join COG_cog_names_2014 t3 on t1.COG_id=t3.COG_id inner join COG_cog_id2cog_category t4 on t1.COG_id=t4.COG_id inner join COG_code2category t5 on t4.category_id=t5.category_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
+    sql = 'select orthogroup_name,COG_name,t3.description,count,code,t5.description from orthology_orthogroup2cog t1 ' \
+          ' inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id ' \
+          ' inner join COG_cog_names_2014 t3 on t1.COG_id=t3.COG_id ' \
+          ' inner join COG_cog_id2cog_category t4 on t1.COG_id=t4.COG_id ' \
+          ' inner join COG_code2category t5 on t4.category_id=t5.category_id where rank<%s and orthogroup_name in ("%s");' % (rank_limit, 
+                                                                                                                              group_filter)
     data = server.adaptor.execute_and_fetchall(sql,)
     ortho2cog = {}
 
@@ -456,7 +460,10 @@ def group2pfam(biodb, group_list, rank_limit=2):
 
     server, db = manipulate_biosqldb.load_db(biodb)
     group_filter = '","'.join(group_list)
-    sql = 'select orthogroup_name,signature_accession,signature_description,count from orthology.orthogroup2pfam_%s t1 inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id inner join interpro_signature t3 on t1.signature_id=t3.signature_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
+    sql = 'select orthogroup_name,signature_accession,signature_description,count from orthology_orthogroup2pfam t1 ' \
+          ' inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id ' \
+          'inner join interpro_signature t3 on t1.signature_id=t3.signature_id where rank<%s and orthogroup_name in ("%s");' % (rank_limit, 
+                                                                                                                                group_filter)
     data = server.adaptor.execute_and_fetchall(sql,)
     ortho2pfam = {}
 
@@ -485,22 +492,20 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
     columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
               'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
     if not taxon_filter:
-        sql_2 = 'select %s from orthology_detail where orthogroup in (%s)' % (columns, biodb, group_filter)
+        sql_2 = 'select %s from orthology_detail where orthogroup in (%s)' % (columns, group_filter)
     else:
         if not accessions:
             taxon_filter = [str(i) for i in taxon_filter]
             taxon_f = ','.join(taxon_filter)
             sql_2 = 'select %s from orthology_detail where orthogroup in (%s) and taxon_id in (%s)' % (columns,
-                                                                                                          biodb,
-                                                                                                          group_filter,
-                                                                                                          taxon_f)
+                                                                                                       group_filter,
+                                                                                                       taxon_f)
         else:
             taxon_filter = [str(i) for i in taxon_filter]
             taxon_f = '"'+'","'.join(taxon_filter)+'"'
             sql_2 = 'select %s from orthology_detail where orthogroup in (%s) and accession in (%s)' % (columns,
-                                                                                                           biodb,
-                                                                                                           group_filter,
-                                                                                                           taxon_f)
+                                                                                                        group_filter,
+                                                                                                        taxon_f)
     raw_data = server.adaptor.execute_and_fetchall(sql_2,)
 
     orthogroup2genes = group2gene(biodb, ordered_orthogroups)
@@ -590,10 +595,7 @@ def accession2coding_density(biodb, sqlite=False):
               ' inner join blastnr_blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
               ' inner join custom_tables_locus2seqfeature_id t5 ' \
               ' on t1.seqfeature_id=t5.seqfeature_id ' \
-              ' where t1.hit_number=1 and t3.name="%s" and t4.phylum="Chlamydiae" and t2.accession="%s";' % (biodb,
-                                                                                                             biodb,
-                                                                                                             biodb,
-                                                                                                             accession)
+              ' where t1.hit_number=1 and t3.name="%s" and t4.phylum="Chlamydiae" and t2.accession="%s";' % (accession)
         try:
             locus_BBH_chlamydiae = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
         except:
@@ -728,7 +730,9 @@ def taxonomical_form(db_name, hit_number=1):
               ' from blastnr_blastnr_hits_%s as t1 ' \
               ' inner join blastnr_blastnr_hits_taxonomy_filtered_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
               ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
-              '  where t1.hit_number=%s group by t3.superkingdom' % (db_name, accession[0],db_name, accession[0], hit_number)
+              '  where t1.hit_number=%s group by t3.superkingdom' % (accession[0],
+                                                                     accession[0], 
+                                                                     hit_number)
 
         #print sql2
 
@@ -779,288 +783,6 @@ def taxonomical_form(db_name, hit_number=1):
     form+='</select></p>\n'
     return form
 
-def clean_multispecies_blastnr_record(db_name, create_new_sql_tables = False):
-
-
-    server, db = manipulate_biosqldb.load_db(db_name)
-    sql = 'select accession from bioentry' \
-      ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id' \
-      ' and biodatabase.name = "%s"' % db_name
-
-    all_accessions = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-    #all_accessions = ['Rhab']
-    if create_new_sql_tables:
-        for accession in all_accessions:
-            sql_drop = 'DROP TABLE IF EXISTS blastnr_blastnr_hits_taxonomy_filtered_%s;' % (db_name, accession)
-            sql_blast_taxonomy = ' CREATE TABLE blastnr_blastnr_hits_taxonomy_filtered_%s (nr_hit_id INT, ' \
-                         ' subject_taxon_id int,' \
-                         ' INDEX subject_taxon_id (subject_taxon_id))' % (db_name, accession)
-
-            sql_blast_taxonomy2 = 'ALTER TABLE blastnr_blastnr_hits_taxonomy_filtered_%s ADD CONSTRAINT fk_blast_hit_id_filter_%s ' \
-                                  'FOREIGN KEY (nr_hit_id) REFERENCES blastnr_blastnr_hits_%s(nr_hit_id);' % (db_name, accession, accession, db_name, accession)
-
-            #print sql_drop
-            server.adaptor.execute(sql_drop,)
-            server.adaptor.commit()
-            #print sql_blast_taxonomy
-            server.adaptor.execute(sql_blast_taxonomy,)
-            server.adaptor.commit()
-            #print sql_blast_taxonomy2
-            server.adaptor.execute(sql_blast_taxonomy2,)
-            server.adaptor.commit()
-
-
-    total_ambiguous_taxons = 0
-    for accession in all_accessions:
-        #print accession, total_ambiguous_taxons
-        sql = 'select nr_hit_id from blastnr_blastnr_hits_%s as t1' % (db_name, accession) #  where hit_number=1
-
-        all_blastnr_hit_ids = server.adaptor.execute_and_fetchall(sql,)
-
-        more_than_one_genus_path = 0
-        for blast_id in all_blastnr_hit_ids:
-            blast_id = int(blast_id[0])
-
-            sql = 'select  t3.locus_tag, t1.nr_hit_id, t1.subject_taxon_id,  t2.phylum, t2.order, t2.family, t2.genus, t2.species, t2.superkingdom, t3.hit_number, t3.subject_title from blastnr_blastnr_hits_taxonomy_%s as t1 ' \
-                  ' inner join blastnr_blastnr_hits_%s as t3 on t1.nr_hit_id=t3.nr_hit_id ' \
-                  ' inner join blastnr_blastnr_taxonomy as t2 on t1.subject_taxon_id=t2.taxon_id ' \
-                  ' where t1.nr_hit_id=%s' % (db_name, accession, db_name, accession, blast_id)
-            one_blastnr_taxons = server.adaptor.execute_and_fetchall(sql,)
-            #print 'blast_id', blast_id, 'n taxons', len(one_blastnr_taxons)
-
-            # build dictionnary
-            one_nr_hit_taxons = {}
-            for i in one_blastnr_taxons:
-                one_nr_hit_taxons[i[2]] = {
-                    'query_locus_tag': i[0],
-                    'nr_hit_id': i[1],
-                    'phylum': i[3],
-                    'order': i[4],
-                    'family': i[5],
-                    'genus': i[6],
-                    'species': i[7],
-                    'superkingdom': i[8],
-                    'hit_number': i[9],
-                    'description': i[10]
-                }
-
-            '''
-            best_classified_path_length = 0
-            for one_taxon in one_blastnr_taxons:
-
-                # flag to check if redundancy was not already observed in the taxon group
-                temp_count = 0
-                for one_rank in one_taxon[3:]:
-                    if one_rank != '-':
-                        temp_count += 1
-                if temp_count > best_classified_path_length:
-                    best_classified_path_length = temp_count
-
-            # equally lon path extraction
-            '''
-            unique_taxon_paths = {}
-            poor_path = {}
-            # iter dictionnary
-            for one_subject_taxon_id in one_nr_hit_taxons:
-
-                # removing data from the phage (small contig identical to the phage)
-                phage = ['Rhab_01766','Rhab_01767','Rhab_01768','Rhab_01769','Rhab_01770','Rhab_01771','Rhab_01772']
-                #print one_nr_hit_taxons[one_subject_taxon_id]
-                if one_nr_hit_taxons[one_subject_taxon_id]['query_locus_tag'] in phage:
-                    break
-
-                # check if phylum, family, genus, species are not null
-                temp_count = 0
-                for one_rank in ['phylum', 'order', 'family', 'genus', 'species', 'superkingdom']:
-                    if one_nr_hit_taxons[one_subject_taxon_id][one_rank] != '-':
-                        temp_count += 1
-                one_nr_hit_taxons[one_subject_taxon_id]['path_completeness'] = temp_count
-
-
-                # check if an idenical subject taxon path is already present in equall_taxon_path
-                # different taxon id can have identical phylum-genus path: i.e strains of the same species, subspecies,..
-                if one_subject_taxon_id not in unique_taxon_paths:
-
-                    counted = False
-                    # check if taxon path with same family and same genus is present
-                    # check if taxon path with same family and no genus ('-') is present
-                    ### => replace it if genus exist in the new path
-                    for unique_taxon_path in unique_taxon_paths.keys():
-                        if (unique_taxon_paths[unique_taxon_path]['family'] == one_nr_hit_taxons[one_subject_taxon_id]['family']
-                            and unique_taxon_paths[unique_taxon_path]['genus'] == one_nr_hit_taxons[one_subject_taxon_id]['genus']) \
-                                or (unique_taxon_paths[unique_taxon_path]['family'] == one_nr_hit_taxons[one_subject_taxon_id]['family']
-                                    and one_nr_hit_taxons[one_subject_taxon_id]['genus'] == '-'):
-                            unique_taxon_paths[unique_taxon_path]['taxon_path_frequency'] += 1
-                            counted = True
-                            # one match, break the loop
-                            break
-                        # if same family as the reference but the reference has no genus and the new taxon has one
-                        elif (unique_taxon_paths[unique_taxon_path]['family'] == one_nr_hit_taxons[one_subject_taxon_id]['family']
-                                and unique_taxon_paths[unique_taxon_path]['genus'] == '-'):
-
-                            # retrieve the count of the uncomplete path, replace it and delete it
-                            unique_taxon_paths[one_subject_taxon_id] = one_nr_hit_taxons[one_subject_taxon_id]
-                            unique_taxon_paths[one_subject_taxon_id]['taxon_path_frequency'] = unique_taxon_paths[unique_taxon_path]['taxon_path_frequency'] + 1
-                            del unique_taxon_paths[unique_taxon_path]
-                            counted = True
-                            # one match break the loop
-                            break
-                    # if no match with any unique path, create a new unique entry with count 1 (new family / genus combination)
-                    if not counted:
-                        unique_taxon_paths[one_subject_taxon_id] = one_nr_hit_taxons[one_subject_taxon_id]
-                        unique_taxon_paths[one_subject_taxon_id]['taxon_path_frequency'] = 1
-                # if two time identical taxon (can not happen, oder?)
-                else:
-                    unique_taxon_paths[one_subject_taxon_id]['taxon_path_frequency']  += 1
-
-            '''
-            # count the most frequent paths and keep all equally frequent path
-            if len(equall_taxon_path) > 1:
-                max_frequency = 0
-                for i in equall_taxon_path:
-                    if equall_taxon_path[i][0] > max_frequency:
-                        max_frequency = equall_taxon_path[i][0]
-
-                keep_frequency = []
-                for i in equall_taxon_path:
-                    if equall_taxon_path[i][0] == max_frequency:
-                        keep_frequency.append(equall_taxon_path[i])
-
-
-                for i in keep_frequency:
-                    print 'frequency:', i[0], 'path length', i[2], i[1][2:]
-            '''
-
-
-
-            poor_path = {}
-            ok_path = {}
-            # if with have path with different family/genus
-            # check if all some are not complete (if only 2 rank/5 are recorded) ('chlamydiae', 'chlamydiales', '-', '-', '-', '-')
-            if len(unique_taxon_paths) > 1:
-
-                for one_path_taxid in unique_taxon_paths:
-                    if unique_taxon_paths[one_path_taxid]['path_completeness'] < 4:
-                        #print 'poor path!', unique_taxon_paths[one_path_taxid]
-                        poor_path[one_path_taxid] = unique_taxon_paths[one_path_taxid]
-                    else:
-                        ok_path[one_path_taxid] = unique_taxon_paths[one_path_taxid]
-                # if we have at least one good path
-
-                if len(ok_path) > 1:
-
-                    # hit associated with different families/genus
-                    more_than_one_genus_path += 1
-                    for taxon_id in ok_path:
-
-                        sql = 'INSERT INTO blastnr_blastnr_hits_taxonomy_filtered_%s (' \
-                        'nr_hit_id, subject_taxon_id) values (%s, %s)'  % (db_name,
-                                                                           accession,
-                                                                           ok_path[taxon_id]['nr_hit_id'],
-                                                                           taxon_id)
-
-                        server.adaptor.execute(sql,)
-                        server.adaptor.commit()
-                        '''
-                        print '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t' % (len(ok_path),
-                                    ok_path[taxon_id]['nr_hit_id'],
-                                    ok_path[taxon_id]['hit_number'],
-                                    ok_path[taxon_id]['description'],
-                                    ok_path[taxon_id]['query_locus_tag'],
-                                    taxon_id,
-                                    ok_path[taxon_id]['superkingdom'],
-                                    ok_path[taxon_id]['phylum'],
-                                    ok_path[taxon_id]['order'],
-                                    ok_path[taxon_id]['family'],
-                                    ok_path[taxon_id]['genus'])
-                        '''
-
-                # if we do not have any good path
-                elif len(ok_path) == 0 and len(poor_path) == 0:
-                    #print 'No path: Impossible!'
-                    import sys
-                    sys.exit()
-                elif len(ok_path) == 1:
-
-                    for taxon_id in ok_path:
-
-                        sql = 'INSERT INTO blastnr_blastnr_hits_taxonomy_filtered_%s (' \
-                        'nr_hit_id, subject_taxon_id) values (%s, %s)'  % (db_name,
-                                                                           accession,
-                                                                           ok_path[taxon_id]['nr_hit_id'],
-                                                                           taxon_id)
-
-                        server.adaptor.execute(sql,)
-                        server.adaptor.commit()
-                else:
-                    # no good path
-                    for taxon_id in poor_path:
-
-                        sql = 'INSERT INTO blastnr_blastnr_hits_taxonomy_filtered_%s (' \
-                        'nr_hit_id, subject_taxon_id) values (%s, %s)'  % (db_name,
-                                                                           accession,
-                                                                           poor_path[taxon_id]['nr_hit_id'],
-                                                                           taxon_id)
-
-                        server.adaptor.execute(sql,)
-                        server.adaptor.commit()
-
-            # only one path
-            else:
-                for taxon_id in unique_taxon_paths:
-
-                    sql = 'INSERT INTO blastnr_blastnr_hits_taxonomy_filtered_%s (' \
-                        'nr_hit_id, subject_taxon_id) values (%s, %s)'  % (db_name,
-                                                                           accession,
-                                                                           unique_taxon_paths[taxon_id]['nr_hit_id'],
-                                                                           taxon_id)
-
-                    server.adaptor.execute(sql,)
-                    server.adaptor.commit()
-
-
-    #print "total_ambiguous_taxons", total_ambiguous_taxons
-
-    '''
-    nr_hit_id |
-    subject_taxon_id |
-    taxon_id |
-
-    no_rank            |
-    superkingdom |
-    kingdom |
-    subkingdom |
-    superphylum |
-    phylum         |
-    subphylum |
-    superclass |
-    class               |
-    subclass |
-    superorder |
-    order           |
-    suborder |
-    superfamily |
-    family           |
-    subfamily |
-    genus         |
-    subgenus |
-    species |
-    species_subgroup |
-    species_group |
-    subspecies |
-    tribe |
-    infraorder |
-    subtribe |
-    forma |
-    infraclass |
-    varietas |
-    parvorder |
-    '''
-
-
-
-def get_best_hit_excluding_one_family():
-    sql='select t3.subject_taxon_id,t4.no_rank, t4.phylum, t4.order, t4.family, B.* from (select * from biosqldb.orthology_detail_chlamydia_03_15 as t1 where t1.accession="NC_015713") A left join (select t2.nr_hit_id,t2.locus_tag,t2.subject_kingdom,t2.subject_accession from blastnr.blastnr_hits_chlamydia_03_15_NC_015713 as t2) B on A.locus_tag=B.locus_tag inner join blastnr.blastnr_hits_taxonomy_chlamydia_03_15_NC_015713 as t3 on B.nr_hit_id=t3.nr_hit_id inner join blastnr_blastnr_taxonomy as t4 on t3.subject_taxon_id=t4.taxon_id where t4.family !="Simkaniaceae";'
 
 def locus_tag2n_nr_hits(db_name, genome_accession, exclude_family = False):
     #print 'exclude family', exclude_family
@@ -1069,24 +791,22 @@ def locus_tag2n_nr_hits(db_name, genome_accession, exclude_family = False):
         sql = 'select  A.locus_tag, B.n_hits from (select * from orthology_detail as t1 where t1.accession="%s") A ' \
               ' left join (select t2.nr_hit_id,t2.locus_tag,t2.subject_kingdom,t2.subject_accession,count(t2.locus_tag) as n_hits ' \
               ' from blastnr_blastnr_hits_%s as t2 ' \
-              ' group by locus_tag) B on A.locus_tag=B.locus_tag;' %(db_name, genome_accession, db_name, genome_accession)
+              ' group by locus_tag) B on A.locus_tag=B.locus_tag;' %(genome_accession, 
+                                                                     genome_accession)
 
         sql = 'select locus_tag, count(*) from custom_tables_locus2seqfeature_id t1 ' \
               ' left join blastnr_blastnr as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
               ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
-              ' where t3.accession="%s" group by locus_tag;' % (db_name, db_name,genome_accession)
+              ' where t3.accession="%s" group by locus_tag;' % (genome_accession)
     else:
         sql = 'select  A.locus_tag, B.n_hits from (select * from orthology_detail as t1 where t1.accession="%s") A ' \
               ' left join (select t2.nr_hit_id,t2.locus_tag,t2.subject_kingdom,t2.subject_accession, count(t2.locus_tag) as n_hits ' \
               ' from blastnr_blastnr_hits_%s as t2 inner join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=t2.nr_hit_id' \
               ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id where t4.family!="%s"' \
-              ' group by locus_tag) B on A.locus_tag=B.locus_tag;' % (db_name,
-                                                                     genome_accession,
-                                                                     db_name,
-                                                                     genome_accession,
-                                                                     db_name,
-                                                                     genome_accession,
-                                                                     exclude_family)
+              ' group by locus_tag) B on A.locus_tag=B.locus_tag;' % (genome_accession,
+                                                                      genome_accession,
+                                                                      genome_accession,
+                                                                      exclude_family)
 
 
     #print sql
@@ -1107,7 +827,7 @@ def collect_genome_statistics(biodb, sqlite=False):
            ' inner join annotation_seqfeature_id2CDS_annotation t2 ' \
            ' on t1.seqfeature_id=t2.seqfeature_id inner join bioentry t3 on t1.bioentry_id=t3.bioentry_id ' \
            ' inner join biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \
-           ' where t4.name="%s" group by t1.bioentry_id;' % (biodb, biodb, biodb)
+           ' where t4.name="%s" group by t1.bioentry_id;' % (biodb)
 
 
     #print 'getting accession2genome_data...'
@@ -1216,14 +936,14 @@ def get_comparative_subtable(biodb,
         count_df = cache.get(cache_id)
 
         if not isinstance(count_df, pandas.DataFrame):
-            sql = f'select * from comparative_tables.{table_name}_{biodb}'
+            sql = f'select * from comparative_tables_{table_name}'
             count_df = pandas.read_sql(sql, conn, index_col=first_col_name)
             cache.set(f"{biodb}_{table_name}", count_df)
     else:
         count_df = cache.get(f"{biodb}_{table_name}_acc")
 
         if not count_df:
-            sql = f'select * from comparative_tables.{table_name}_accessions_{biodb}'
+            sql = f'select * from comparative_tables_{table_name}_accessions'
             count_df = pandas.read_sql(sql, conn,index_col=first_col_name)
             cache.set(f"{biodb}_{table_name}_acc", count_df)      
     
@@ -1259,11 +979,9 @@ def best_hit_classification(db_name, accession):
           ' from (select locus_tag, TM, SP, gene, product from orthology_detail as t1 where t1.accession="%s" group by locus_tag) A' \
           ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2  where hit_number=1) B on A.locus_tag=B.locus_tag' \
           ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
-          ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id;' % (db_name,
-                                                                                                                        accession,
-                                                                                                                        db_name,
-                                                                                                                        accession,                                                                                                              db_name,
-                                                                                                                        accession)
+          ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id;' % (accession,
+                                                                                               accession,                                                                                                              db_name,
+                                                                                               accession)
 
     import pandas
     #print sql
@@ -1278,11 +996,9 @@ def best_hit_phylum_and_protein_length(db_name, accession):
           ' from (select locus_tag, translation from orthology_detail as t1 where t1.accession="%s" group by locus_tag) A' \
           ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2  where hit_number=1) B on A.locus_tag=B.locus_tag' \
           ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
-          ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id;' % (db_name,
-                                                                                                                        accession,
-                                                                                                                        db_name,
-                                                                                                                        accession,                                                                                                              db_name,
-                                                                                                                        accession)
+          ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id;' % (accession,
+                                                                                               accession,                                                                                                              db_name,
+                                                                                               accession)
     #print sql
     import pandas
     server, db = manipulate_biosqldb.load_db(db_name)
@@ -1300,19 +1016,15 @@ def locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", 
               ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2) B on A.locus_tag=B.locus_tag' \
               ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
               ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
-              ' where t4.superkingdom="%s" group by locus_tag;' % (db_name,
-                                                                        accession,
-                                                                        db_name,
-                                                                        accession,                                                                                                              db_name,
-                                                                        accession,
-                                                                        superkingdom)
+              ' where t4.superkingdom="%s" group by locus_tag;' % (accession,
+                                                                   accession,                                                                                                              db_name,
+                                                                   accession,
+                                                                   superkingdom)
         sql = 'select locus_tag, count(*) from custom_tables_locus2seqfeature_id t1 ' \
               ' inner join blastnr_blastnr as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
               ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
               ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
-              'where t3.accession="%s" and t4.superkingdom="%s" group by locus_tag;' % (db_name,
-                                                                                        db_name,
-                                                                                        accession,
+              'where t3.accession="%s" and t4.superkingdom="%s" group by locus_tag;' % (accession,
                                                                                         superkingdom)
     else:
 
@@ -1321,13 +1033,11 @@ def locus_tag2n_blast_superkingdom(db_name, accession, superkingdom="Bacteria", 
               ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2) B on A.locus_tag=B.locus_tag' \
               ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
               ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
-              ' where t4.superkingdom="%s" and t4.family!="%s" group by locus_tag;' % (db_name,
-                                                                        accession,
-                                                                        db_name,
-                                                                        accession,                                                                                                              db_name,
-                                                                        accession,
-                                                                        superkingdom,
-                                                                        exclude_family)
+              ' where t4.superkingdom="%s" and t4.family!="%s" group by locus_tag;' % (accession,
+                                                                                       accession,                                                                                                              db_name,
+                                                                                       accession,
+                                                                                       superkingdom,
+                                                                                       exclude_family)
 
 
     #print sql
@@ -1343,33 +1053,27 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                   ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2) B on A.locus_tag=B.locus_tag' \
                   ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
                   ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
-                  ' where t4.superkingdom="Bacteria" and t4.phylum="%s" group by locus_tag;' % (db_name,
-                                                                            accession,
-                                                                            db_name,
-                                                                            accession,                                                                                                              db_name,
-                                                                            accession,
-                                                                            phylum)
+                  ' where t4.superkingdom="Bacteria" and t4.phylum="%s" group by locus_tag;' % (accession,
+                                                                                                accession,                                                                                                              db_name,
+                                                                                                accession,
+                                                                                                phylum)
             sql = 'select locus_tag, count(*) from custom_tables_locus2seqfeature_id t1 ' \
                   ' inner join blastnr_blastnr as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                   ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
                   ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
-                  'where t3.accession="%s" and t4.phylum="%s" group by locus_tag;' % (db_name,
-                                                                                        db_name,
-                                                                                        accession,
-                                                                                        phylum)
+                  'where t3.accession="%s" and t4.phylum="%s" group by locus_tag;' % (accession,
+                                                                                      phylum)
         else:
             sql = 'select A.locus_tag, count(*)' \
                   ' from (select locus_tag, translation from orthology_detail as t1 where t1.accession="%s" group by locus_tag) A' \
                   ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2) B on A.locus_tag=B.locus_tag' \
                   ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
                   ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
-                  ' where t4.superkingdom="Bacteria" and t4.phylum="%s" and t4.family!="%s" group by locus_tag;' % (db_name,
-                                                                            accession,
-                                                                            db_name,
-                                                                            accession,                                                                                                              db_name,
-                                                                            accession,
-                                                                            phylum,
-                                                                            exclude_family)
+                  ' where t4.superkingdom="Bacteria" and t4.phylum="%s" and t4.family!="%s" group by locus_tag;' % (accession,
+                                                                                                                    accession,                                                                                                              db_name,
+                                                                                                                    accession,
+                                                                                                                    phylum,
+                                                                                                                    exclude_family)
     else:
         if not exclude_family:
             sql = 'select A.locus_tag, count(*)' \
@@ -1377,33 +1081,28 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
                   ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2) B on A.locus_tag=B.locus_tag' \
                   ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
                   ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
-                  ' where t4.superkingdom="Bacteria" and t4.phylum !="%s" group by locus_tag;' % (db_name,
-                                                                            accession,
-                                                                            db_name,
-                                                                            accession,                                                                                                              db_name,
-                                                                            accession,
-                                                                            phylum)
+                  ' where t4.superkingdom="Bacteria" and t4.phylum !="%s" group by locus_tag;' % (accession,
+                                                                                                  accession,                                                                                                              db_name,
+                                                                                                  accession,
+                                                                                                  phylum)
 
             sql = 'select locus_tag, count(*) from custom_tables_locus2seqfeature_id t1 ' \
                   ' inner join blastnr_blastnr as t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                   ' inner join biosqldb.bioentry as t3 on t2.query_bioentry_id=t3.bioentry_id ' \
                   ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t2.subject_taxid ' \
-                  'where t3.accession="%s" and t4.superkingdom="Bacteria" and t4.phylum !="%s" group by locus_tag;' % (db_name,
-                                                                                        db_name,
-                                                                                        accession,
-                                                                                        phylum)
+                  'where t3.accession="%s" and t4.superkingdom="Bacteria" and t4.phylum !="%s" group by locus_tag;' % (accession,
+                                                                                                                       phylum)
         else:
             sql = 'select A.locus_tag, count(*)' \
                   ' from (select locus_tag, translation from orthology_detail as t1 where t1.accession="%s" group by locus_tag) A' \
                   ' left join (select t2.nr_hit_id, locus_tag from blastnr_blastnr_hits_%s as t2) B on A.locus_tag=B.locus_tag' \
                   ' left join blastnr_blastnr_hits_taxonomy_filtered_%s as t3 on t3.nr_hit_id=B.nr_hit_id' \
                   ' left join blastnr_blastnr_taxonomy as t4 on t4.taxon_id = t3.subject_taxon_id' \
-                  ' where t4.superkingdom="Bacteria" and t4.phylum !="%s" and t4.family!="%s" group by locus_tag;' % (db_name,
-                                                                            accession,
-                                                                            db_name,
-                                                                            accession,                                                                                                              db_name,
-                                                                            accession,
-                                                                            phylum, exclude_family)
+                  ' where t4.superkingdom="Bacteria" and t4.phylum !="%s" and t4.family!="%s" group by locus_tag;' % (accession,
+                                                                                                                      accession,                                                                                                              db_name,
+                                                                                                                      accession,
+                                                                                                                      phylum, 
+                                                                                                                      exclude_family)
 
     #print sql
     server, db = manipulate_biosqldb.load_db(db_name)
@@ -1419,7 +1118,7 @@ def locus_tag2n_blast_bacterial_phylum(db_name, accession, phylum="Chlamydiae", 
 def locus_tag2orthogroup(db_name):
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql = 'select locus_tag, orthogroup from orthology_detail group by locus_tag, orthogroup' % db_name
+    sql = 'select locus_tag, orthogroup from orthology_detail group by locus_tag, orthogroup'
 
     return manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -1445,7 +1144,7 @@ def locus_tag2n_paralogs(db_name, genome_accession):
 
     sql = 'select orthogroup, count(*) as paralogs ' \
           ' from orthology_detail ' \
-          ' where accession="%s" group by orthogroup order by paralogs DESC;' % (db_name, genome_accession)
+          ' where accession="%s" group by orthogroup order by paralogs DESC;' % (genome_accession)
 
     return server.adaptor.execute_and_fetchall(sql,)
 
@@ -1454,9 +1153,9 @@ def orthogroup2gene(db_name, accession=False):
     server, db = manipulate_biosqldb.load_db(db_name)
 
     if not accession:
-        sql =  'select orthogroup, gene from orthology_detail' % db_name
+        sql =  'select orthogroup, gene from orthology_detail'
     else:
-        sql = 'select orthogroup, gene from orthology_detail where accession="%s"' % (db_name, accession)
+        sql = 'select orthogroup, gene from orthology_detail where accession="%s"' % (accession)
 
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -1496,10 +1195,10 @@ def orthogroup2cog(db_name, accession=False, group_list=False): # group_list,
         sql =  'select orthogroup_name,COG_name from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology_seqfeature_id2orthogroup t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology_orthogroup t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
         sql = 'select orthogroup_name,COG_name from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology_seqfeature_id2orthogroup t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology_orthogroup t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
         sql = 'select t1.orthogroup, t2.cog_id from orthology_detail as t1 left join COG_locus_tag2gi_hit ' \
-              'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
+              'as t2 on t1.locus_tag=t2.locus_tag'
     else:
         sql = 'select t1.orthogroup, t2.cog_id from orthology_detail as t1 left join COG_locus_tag2gi_hit ' \
-              'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
+              'as t2 on t1.locus_tag=t2.locus_tag'
 
 
 
@@ -1526,7 +1225,10 @@ def orthogroup2cog_id(db_name, accession=False): # group_list,
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql = 'select t4.orthogroup_name,hit_cog_id from COG_seqfeature_id2best_COG_hit t1 inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id inner join orthology_seqfeature_id2orthogroup t3 on t1.seqfeature_id=t3.seqfeature_id inner join orthology_orthogroup t4 on t3.orthogroup_id=t4.orthogroup_id' % (db_name, db_name, db_name)
+    sql = 'select t4.orthogroup_name,hit_cog_id from COG_seqfeature_id2best_COG_hit t1 ' \
+          ' inner join COG_cog_names_2014 t2 on t1.hit_COG_id=t2.COG_id ' \
+          ' inner join orthology_seqfeature_id2orthogroup t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+          ' inner join orthology_orthogroup t4 on t3.orthogroup_id=t4.orthogroup_id'
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -1551,10 +1253,10 @@ def orthogroup2pfam(db_name, accession=False):
 
     if not accession:
         sql =  'select orthogroup, signature_accession from interpro ' \
-               ' where analysis="Pfam"' % (db_name, )
+               ' where analysis="Pfam"'
     else:
         sql = 'select t1.orthogroup, t2.cog_id from orthology_detail as t1 left join (COG_locus_tag2gi_hit ' \
-              'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
+              'as t2 on t1.locus_tag=t2.locus_tag'
 
     #print 'df', sql
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -1578,7 +1280,12 @@ def orthogroup2pfam_id(db_name):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql = 'select A.orthogroup_name,A.signature_id from (select distinct t1.seqfeature_id,t3.orthogroup_name,t4.signature_id from interpro_interpro t1 inner join orthology_seqfeature_id2orthogroup t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology_orthogroup t3 on t2.orthogroup_id=t3.orthogroup_id inner join interpro_signature t4 on t1.signature_id=t4.signature_id inner join interpro_analysis t5 on t4.analysis_id=t5.analysis_id where t5.analysis_name="Pfam") A;' % (db_name, db_name,db_name)
+    sql = 'select A.orthogroup_name,A.signature_id from ' \
+          ' (select distinct t1.seqfeature_id,t3.orthogroup_name,t4.signature_id from interpro_interpro t1 ' \
+          ' inner join orthology_seqfeature_id2orthogroup t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+          ' inner join orthology_orthogroup t3 on t2.orthogroup_id=t3.orthogroup_id inner ' \
+          ' join interpro_signature t4 on t1.signature_id=t4.signature_id ' \
+          ' inner join interpro_analysis t5 on t4.analysis_id=t5.analysis_id where t5.analysis_name="Pfam") A;'
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -1601,7 +1308,9 @@ def orthogroup2ko_id(db_name, accession=False):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql =  'select t3.orthogroup_name,ko_id from enzyme_seqfeature_id2ko t1 inner join orthology_seqfeature_id2orthogroup t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology_orthogroup t3 on t2.orthogroup_id=t3.orthogroup_id;' % (db_name, db_name, db_name)
+    sql =  'select t3.orthogroup_name,ko_id from enzyme_seqfeature_id2ko t1 ' \
+           ' inner join orthology_seqfeature_id2orthogroup t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+           ' inner join orthology_orthogroup t3 on t2.orthogroup_id=t3.orthogroup_id;'
 
     #print 'df', sql
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -1625,7 +1334,11 @@ def orthogroup2interpro_id(db_name):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql = 'select A.orthogroup_name,A.interpro_id from (select distinct t1.seqfeature_id,t3.orthogroup_name,t4.interpro_id from interpro_interpro t1 inner join orthology_seqfeature_id2orthogroup t2 on t1.seqfeature_id=t2.seqfeature_id inner join orthology_orthogroup t3 on t2.orthogroup_id=t3.orthogroup_id inner join interpro_signature t4 on t1.signature_id=t4.signature_id) A;' % (db_name, db_name, db_name)
+    sql = 'select A.orthogroup_name,A.interpro_id from ' \
+          ' (select distinct t1.seqfeature_id,t3.orthogroup_name,t4.interpro_id from interpro_interpro t1 ' \
+          ' inner join orthology_seqfeature_id2orthogroup t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+          ' inner join orthology_orthogroup t3 on t2.orthogroup_id=t3.orthogroup_id ' \
+          ' inner join interpro_signature t4 on t1.signature_id=t4.signature_id) A;'
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -1651,10 +1364,10 @@ def pfam2description(db_name, accession=False):
 
     if not accession:
         sql =  'select signature_accession, signature_description from interpro ' \
-               ' where analysis="Pfam" group by signature_accession' % (db_name)
+               ' where analysis="Pfam" group by signature_accession'
     else:
         sql = 'select t1.orthogroup, t2.cog_id from orthology_detail as t1 left join COG_locus_tag2gi_hit ' \
-              'as t2 on t1.locus_tag=t2.locus_tag' % (db_name, db_name)
+              'as t2 on t1.locus_tag=t2.locus_tag'
 
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -1676,9 +1389,9 @@ def orthogroup2product(db_name, accession=False):
     server, db = manipulate_biosqldb.load_db(db_name)
 
     if not accession:
-        sql =  'select orthogroup, product from orthology_detail' % db_name
+        sql =  'select orthogroup, product from orthology_detail'
     else:
-        sql = 'select orthogroup, product from orthology_detail where accession="%s"' % (db_name, accession)
+        sql = 'select orthogroup, product from orthology_detail where accession="%s"' % (accession)
 
 
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -1723,13 +1436,16 @@ def calculate_average_protein_identity(db_name):
     for i_taxon in range(0,len(all_taxons)):
         #print 'i taxon', i_taxon
         for y_taxon in range(i_taxon+1, len(all_taxons)):
-            shared_groups_sql = 'select orthogroup from comparative_tables_orthology where `%s` =1 and `%s`=1' % (db_name, all_taxons[i_taxon], all_taxons[y_taxon])
+            shared_groups_sql = 'select orthogroup from comparative_tables_orthology where `%s` =1 and `%s`=1' % (all_taxons[i_taxon], 
+                                                                                                                  all_taxons[y_taxon])
             all_groups = [i[0] for i in server.adaptor.execute_and_fetchall(shared_groups_sql,)]
             identity_values = []
             #print 'y taxon', y_taxon
             for group in all_groups:
-                sql_ref = 'select locus_tag from orthology_detail where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[i_taxon], group)
-                sql_query = 'select locus_tag from orthology_detail where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[y_taxon], group)
+                sql_ref = 'select locus_tag from orthology_detail where taxon_id=%s and orthogroup="%s"' % (all_taxons[i_taxon], 
+                                                                                                            group)
+                sql_query = 'select locus_tag from orthology_detail where taxon_id=%s and orthogroup="%s"' % (all_taxons[y_taxon], 
+                                                                                                              group)
                 locus_ref = server.adaptor.execute_and_fetchall(sql_ref,)[0][0]
                 locus_query = server.adaptor.execute_and_fetchall(sql_query,)[0][0]
 
@@ -1762,15 +1478,18 @@ def calculate_average_protein_identity_new_tables(db_name):
     for i_taxon in range(0,len(all_taxons)):
         #print 'i taxon', i_taxon
         for y_taxon in range(i_taxon+1, len(all_taxons)):
-            shared_groups_sql = 'select orthogroup from comparative_tables_orthology where `%s` =1 and `%s`=1' % (db_name, all_taxons[i_taxon], all_taxons[y_taxon])
+            shared_groups_sql = 'select orthogroup from comparative_tables_orthology where `%s` =1 and `%s`=1' % (all_taxons[i_taxon], 
+                                                                                                                  all_taxons[y_taxon])
             all_groups = [i[0] for i in server.adaptor.execute_and_fetchall(shared_groups_sql,)]
             identity_values = []
             #print 'y taxon', y_taxon
             for i, group in enumerate(all_groups):
                 if i%500 == 0:
                     print ("%s/%s" % (i, len(all_groups)))
-                sql_ref = 'select locus_tag from orthology_detail where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[i_taxon], group)
-                sql_query = 'select locus_tag from orthology_detail where taxon_id=%s and orthogroup="%s"' % (db_name, all_taxons[y_taxon], group)
+                sql_ref = 'select locus_tag from orthology_detail where taxon_id=%s and orthogroup="%s"' % (all_taxons[i_taxon], 
+                                                                                                            group)
+                sql_query = 'select locus_tag from orthology_detail where taxon_id=%s and orthogroup="%s"' % (all_taxons[y_taxon], 
+                                                                                                              group)
                 locus_ref = server.adaptor.execute_and_fetchall(sql_ref,)[0][0]
                 locus_query = server.adaptor.execute_and_fetchall(sql_query,)[0][0]
 
@@ -1840,7 +1559,7 @@ def locus_list2nucleotide_fasta(biodb,locus_list):
 
     filter = '"' + '","'.join(locus_list) + '"'
     sql = 'select locus_tag, accession, start, stop, strand, organism from orthology_detail' \
-          ' where locus_tag in (%s)' % (biodb, filter)
+          ' where locus_tag in (%s)' % (filter)
 
 
 
@@ -1882,7 +1601,7 @@ def locus_list2nucleotide_fasta(biodb,locus_list):
 def orthogroup2protein_id_list(db_name):
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql1 = 'select orthogroup, protein_id, locus_tag from orthology_detail;' % db_name
+    sql1 = 'select orthogroup, protein_id, locus_tag from orthology_detail;'
 
     data1 = server.adaptor.execute_and_fetchall(sql1)
 
@@ -1935,12 +1654,12 @@ def add_orthogroup_to_interpro_table(biodb_name):
 
     server, db = manipulate_biosqldb.load_db(biodb_name)
     #sql = 'ALTER TABLE interpro ADD orthogroup VARCHAR(100);' % biodb_name
-    sql = 'select * from interpro;' % biodb_name
+    sql = 'select * from interpro;'
 
     interpro_data = server.adaptor.execute_and_fetchall(sql,)
 
     try:
-        sql = 'drop table interpro' % biodb_name
+        sql = 'drop table interpro'
         server.adaptor.execute(sql,)
         server.adaptor.commit()
     except:

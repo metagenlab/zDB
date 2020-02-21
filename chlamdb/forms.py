@@ -40,6 +40,7 @@ def get_accessions(database_name, all=False, plasmid=False):
              'inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id ' \
              'where biodatabase.name ="%s"' \
              'order by bioentry.description' % database_name
+             
     result = server.adaptor.execute_and_fetchall(sql, )
     accession_list = [i for i in result]
     #print "acc", accession_list
@@ -318,7 +319,7 @@ def make_species_curation_form(database_name, species_id):
     
     server, db = load_db(database_name)
     
-    sql = 'select phylum, `order`, family, genus, species from species_curated_taxonomy where species_id=%s;' % (database_name, species_id)
+    sql = 'select phylum, `order`, family, genus, species from species_curated_taxonomy where species_id=%s;' % (species_id)
     print(sql)
     data = server.adaptor.execute_and_fetchall(sql,)[0]
     print(data)
@@ -424,13 +425,13 @@ def make_kegg_form(database_name):
                    ' inner join  enzyme_pathway2ko t2 ' \
                    ' on t1.ko_id = t2.ko_id ' \
                    ' inner join  enzyme_kegg_pathway t3 ' \
-                   ' on t3.pathway_id=t2.pathway_id group by description;' % (database_name)
+                   ' on t3.pathway_id=t2.pathway_id group by description;'
 
     pathway_choices = server.adaptor.execute_and_fetchall(sql_pathways,)
 
     sql_modules = 'select description,description from  enzyme_locus2ko t1 ' \
                   ' inner join  enzyme_module2ko t2 on t1.ko_id = t2.ko_id ' \
-                  ' inner join  enzyme_kegg_module t3 on t3.module_id=t2.module_id group by description;' % database_name
+                  ' inner join  enzyme_kegg_module t3 on t3.module_id=t2.module_id group by description;'
 
     module_choices = server.adaptor.execute_and_fetchall(sql_modules,)
 
@@ -490,7 +491,7 @@ def locus_int_form(database_name):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(database_name)
 
-    sql = 'select distinct category from custom_tables_annot_table;' % database_name
+    sql = 'select distinct category from custom_tables_annot_table;'
     categories = server.adaptor.execute_and_fetchall(sql,)
     CHOICES = [(i[0],i[0]) for i in categories]
     CHOICES.append(("all","all"))
