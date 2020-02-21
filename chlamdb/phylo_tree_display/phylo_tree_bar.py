@@ -710,12 +710,12 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
     #print "tree", t1
 
     sql1 = 'select taxon_id, description from bioentry where biodatabase_id=%s and description not like "%%%%plasmid%%%%"' % db_id
-    sql2 = 'select t2.taxon_id, t1.GC from genomes_info_%s as t1 inner join bioentry as t2 ' \
+    sql2 = 'select t2.taxon_id, t1.GC from genomes_info as t1 inner join bioentry as t2 ' \
            ' on t1.accession=t2.accession where t2.biodatabase_id=%s and t1.description not like "%%%%plasmid%%%%";' % (biodb, db_id)
-    sql3 = 'select t2.taxon_id, t1.genome_size from genomes_info_%s as t1 ' \
+    sql3 = 'select t2.taxon_id, t1.genome_size from genomes_info as t1 ' \
            ' inner join bioentry as t2 on t1.accession=t2.accession ' \
            ' where t2.biodatabase_id=%s and t1.description not like "%%%%plasmid%%%%";' % (biodb, db_id)
-    sql4 = 'select t2.taxon_id,percent_non_coding from genomes_info_%s as t1 ' \
+    sql4 = 'select t2.taxon_id,percent_non_coding from genomes_info as t1 ' \
            ' inner join bioentry as t2 on t1.accession=t2.accession ' \
            ' where t2.biodatabase_id=%s and t1.description not like "%%%%plasmid%%%%";' % (biodb, db_id)
            

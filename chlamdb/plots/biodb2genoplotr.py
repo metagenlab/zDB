@@ -33,7 +33,7 @@ def get_genome_seg(accession, biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select genome_size from genomes_info_%s where accession="%s";' % (biodb, accession)
+    sql = 'select genome_size from genomes_info where accession="%s";' % (biodb, accession)
 
     genome_size = server.adaptor.execute_and_fetchall(sql,)[0][0]
     data = [(accession, 0, genome_size, '-')]

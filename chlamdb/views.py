@@ -246,7 +246,7 @@ def home(request):
     from ete3 import Tree
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
-    sql = 'select * from genomes_info_%s' % biodb
+    sql = 'select * from genomes_info' % biodb
 
     genomes_data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -6443,7 +6443,7 @@ def pairwiseid(request):
 
             sql = 'select SUM(n_CDS) from biodatabase t1 ' \
                   ' inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id ' \
-                  ' inner join genomes_info_%s t3 on t2.ACCESSION=t3.ACCESSION ' \
+                  ' inner join genomes_info t3 on t2.ACCESSION=t3.ACCESSION ' \
                   ' where t1.name="%s" and taxon_id=%s group by taxon_id;' % (biodb, biodb, genome_1)
             n_CDS = server.adaptor.execute_and_fetchall(sql,)[0][0]
 
@@ -6818,7 +6818,7 @@ def blastnr_euk(request):
     #print 'taxon2n_CDS...'
     sql_genome_size = 'select taxon_id, n_CDS from biodatabase t1 ' \
                       ' inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id ' \
-                      ' inner join genomes_info_%s t3 on t2.accession=t3.accession ' \
+                      ' inner join genomes_info t3 on t2.accession=t3.accession ' \
                       ' where t1.name="%s" and t2.description not like "%%%%plasmid%%%%";' % (biodb, biodb)
 
     taxon_id2n_CDS = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_genome_size,))
@@ -7060,35 +7060,35 @@ def blastnr_overview(request):
 
     sql_checkm_completeness = 'select taxon_id, completeness from custom_tables_checkm;' % biodb
     sql_checkm_n_duplicated = 'select taxon_id,n_total from custom_tables_checkm;' % biodb
-    sql_n_contigs = 'select taxon_id,n_contigs from genomes_info_%s t1 ' \
+    sql_n_contigs = 'select taxon_id,n_contigs from genomes_info t1 ' \
                               ' inner join bioentry t2 on t1.accession=t2.accession ' \
                               ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
                               ' where t3.name="%s" and t2.description not like "%%%%plasmid%%%%" ' \
                               ' group by taxon_id;' % (biodb, biodb)
-    sql_n_no_CDS = 'select taxon_id,n_no_CDS from genomes_info_%s t1 ' \
+    sql_n_no_CDS = 'select taxon_id,n_no_CDS from genomes_info t1 ' \
                               ' inner join bioentry t2 on t1.accession=t2.accession ' \
                               ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
                               ' where t3.name="%s" and t2.description not like "%%%%plasmid%%%%" ' \
                               ' group by taxon_id;' % (biodb, biodb)
-    sql_n_no_BBH_chlamydiae = 'select taxon_id,n_no_BBH_chlamydiae from genomes_info_%s t1 ' \
-                              ' inner join bioentry t2 on t1.accession=t2.accession ' \
-                              ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
-                              ' where t3.name="%s" and t2.description not like "%%%%plasmid%%%%" ' \
-                              ' group by taxon_id;' % (biodb, biodb)
-
-    sql_n_no_BBH_chlamydiae = 'select taxon_id,n_no_BBH_chlamydiae from genomes_info_%s t1 ' \
+    sql_n_no_BBH_chlamydiae = 'select taxon_id,n_no_BBH_chlamydiae from genomes_info t1 ' \
                               ' inner join bioentry t2 on t1.accession=t2.accession ' \
                               ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
                               ' where t3.name="%s" and t2.description not like "%%%%plasmid%%%%" ' \
                               ' group by taxon_id;' % (biodb, biodb)
 
-    sql_GC = 'select taxon_id,GC from genomes_info_%s t1 ' \
+    sql_n_no_BBH_chlamydiae = 'select taxon_id,n_no_BBH_chlamydiae from genomes_info t1 ' \
                               ' inner join bioentry t2 on t1.accession=t2.accession ' \
                               ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
                               ' where t3.name="%s" and t2.description not like "%%%%plasmid%%%%" ' \
                               ' group by taxon_id;' % (biodb, biodb)
 
-    sql_genome_size = 'select taxon_id,genome_size/1000000 from genomes_info_%s t1 ' \
+    sql_GC = 'select taxon_id,GC from genomes_info t1 ' \
+                              ' inner join bioentry t2 on t1.accession=t2.accession ' \
+                              ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
+                              ' where t3.name="%s" and t2.description not like "%%%%plasmid%%%%" ' \
+                              ' group by taxon_id;' % (biodb, biodb)
+
+    sql_genome_size = 'select taxon_id,genome_size/1000000 from genomes_info t1 ' \
                               ' inner join bioentry t2 on t1.accession=t2.accession ' \
                               ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
                               ' where t3.name="%s" and t2.description not like "%%%%plasmid%%%%" ' \
@@ -7391,7 +7391,7 @@ def blastnr_overview(request):
     sql3 = 'select * from blastnr_BBH_taxo_hit_number_2;' % biodb
 
 
-    sql4 = 'select t2.taxon_id, sum(n_CDS) from genomes_info_%s t1 ' \
+    sql4 = 'select t2.taxon_id, sum(n_CDS) from genomes_info t1 ' \
            ' inner join bioentry t2 on t1.ACCESSION=t2.ACCESSION ' \
            ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id where t3.name="%s" group by taxon_id;' % (biodb,
                                                                                                                         biodb)
@@ -7688,7 +7688,7 @@ def effector_pred(request):
                 set2taxon2value_new[set][taxon] = 0
 
     sql = 'select taxon_id,n_CDS from biodatabase t1 inner join bioentry t2 on ' \
-          ' t1.biodatabase_id=t2.biodatabase_id inner join genomes_info_%s t3 ' \
+          ' t1.biodatabase_id=t2.biodatabase_id inner join genomes_info t3 ' \
           ' on t3.ACCESSION=t2.accession where t1.name="%s" ' \
           ' and t3.description not like "%%%%plasmid%%%%";' % (biodb, biodb)
 
@@ -9402,7 +9402,7 @@ def annotation_overview(request):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select * from genomes_info_%s' % biodb
+    sql = 'select * from genomes_info' % biodb
 
     genomes_data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -9435,7 +9435,7 @@ def annotation_overview(request):
 
     taxon_id2CDS_with_KO = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_KO,))
 
-    sql = 'select taxon_id,sum(n_CDS) from genomes_info_%s t1 ' \
+    sql = 'select taxon_id,sum(n_CDS) from genomes_info t1 ' \
           ' inner join bioentry t2 on t1.accession=t2.accession ' \
           ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
           ' where t3.name="%s" group by taxon_id;' % (biodb, biodb)
@@ -9584,7 +9584,7 @@ def paralogs(request):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select * from genomes_info_%s' % biodb
+    sql = 'select * from genomes_info' % biodb
 
     genomes_data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -9620,7 +9620,7 @@ def paralogs(request):
         if int(row[1])>1:
             taxon_id2n_paralogs[row[0]][3] += int(row[1])-1
 
-    sql = 'select taxon_id,sum(n_CDS) from genomes_info_%s t1 ' \
+    sql = 'select taxon_id,sum(n_CDS) from genomes_info t1 ' \
           ' inner join bioentry t2 on t1.accession=t2.accession ' \
           ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
           ' where t3.name="%s" group by taxon_id;' % (biodb, biodb)
@@ -9664,7 +9664,7 @@ def species_specific_groups(request):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select * from genomes_info_%s' % biodb
+    sql = 'select * from genomes_info' % biodb
 
     genomes_data = server.adaptor.execute_and_fetchall(sql,)
 

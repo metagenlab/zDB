@@ -1151,7 +1151,7 @@ def collect_genome_statistics(biodb, sqlite=False):
 
     #['NC_017080', 73.29, 2955L, 1, '3803225', 'Phycisphaera mikurensis NBRC 102666'], ['LVAZ01000000', 67.26, 3793L, 662, '4951698', 'Victivallales bacterium Lenti_02']
     # accession, GC, n_CDS, n_contigs, genome_size, description
-    sql = 'create table if not EXISTS genomes_info_%s (ACCESSION VARCHAR(200), ' \
+    sql = 'create table if not EXISTS genomes_info (ACCESSION VARCHAR(200), ' \
           ' GC FLOAT, n_CDS INT ,n_contigs INT, genome_size INT, ' \
           ' n_tRNA INT, n_16S INT, n_23S INT, n_5S INT, percent_non_coding FLOAT, big_contig_length INT, ' \
           ' n_no_CDS INT,' \
@@ -1161,7 +1161,7 @@ def collect_genome_statistics(biodb, sqlite=False):
     server.adaptor.execute_and_fetchall(sql,)
 
     for one_genome in genomes_data:
-        sql = 'insert into genomes_info_%s values ("%s", %s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s,"%s")' % (biodb,
+        sql = 'insert into genomes_info values ("%s", %s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s,"%s")' % (biodb,
                                                                            one_genome[0],
                                                                            one_genome[1],
                                                                            one_genome[2],
