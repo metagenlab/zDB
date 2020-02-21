@@ -226,7 +226,7 @@ def load_chaperones_table(table_file, biodb='chlamydia_04_16'):
     sql = 'select locus_tag, taxon_id from orthology_detail' % biodb
     locus_tag2taxon_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'CREATE table IF NOT EXISTS effectors.predicted_chaperones_%s (seqfeature_id INT,taxon_id INT,motif varchar(400), info TEXT,' \
+    sql = 'CREATE table IF NOT EXISTS effectors_predicted_chaperones (seqfeature_id INT,taxon_id INT,motif varchar(400), info TEXT,' \
           ' INDEX taxon_id (taxon_id), index seqfeature_id (seqfeature_id))' % biodb
 
     server.adaptor.execute(sql,)
@@ -242,7 +242,7 @@ def load_chaperones_table(table_file, biodb='chlamydia_04_16'):
 
             #Protein,SVM-Value,T4S protein or not
             #locus = re.sub('"', "", data[0])
-            sql = 'insert into effectors.predicted_chaperones_%s values (%s,%s,"%s", "%s")' % (biodb,
+            sql = 'insert into effectors_predicted_chaperones values (%s,%s,"%s", "%s")' % (biodb,
                                                                                         locus_tag2seqfeature_id[data[0]],
                                                                                         locus_tag2taxon_id[data[0]],
                                                                                         motif,

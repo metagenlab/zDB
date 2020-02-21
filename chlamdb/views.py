@@ -7716,7 +7716,7 @@ def effector_pred(request):
     taxon2values_T4SEpre_psAac = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     # chapeones
-    sql = 'select A.taxon_id, count(*) from (select * from effectors.predicted_chaperones_%s group by seqfeature_id,taxon_id) A group by A.taxon_id;' % biodb
+    sql = 'select A.taxon_id, count(*) from (select * from effectors_predicted_chaperones group by seqfeature_id,taxon_id) A group by A.taxon_id;' % biodb
     taxon2values_chaperones = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     # ELD
@@ -8007,7 +8007,7 @@ def interpro_taxonomy(request):
                 taxon2values_T4SEpre_psAac = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
                 # chapeones
-                sql = 'select A.taxon_id, count(*) from (select * from effectors.predicted_chaperones_%s group by seqfeature_id,taxon_id) A group by A.taxon_id;' % biodb
+                sql = 'select A.taxon_id, count(*) from (select * from effectors_predicted_chaperones group by seqfeature_id,taxon_id) A group by A.taxon_id;' % biodb
                 taxon2values_chaperones = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
                 # mex 3 algo
