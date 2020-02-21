@@ -433,7 +433,7 @@ def group2cog(biodb, group_list, rank_limit=2):
 
     server, db = manipulate_biosqldb.load_db(biodb)
     group_filter = '","'.join(group_list)
-    sql = 'select orthogroup_name,COG_name,t3.description,count,code,t5.description from orthology.orthogroup2cog_%s t1 inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id inner join COG_cog_names_2014 t3 on t1.COG_id=t3.COG_id inner join COG_cog_id2cog_category t4 on t1.COG_id=t4.COG_id inner join COG_code2category t5 on t4.category_id=t5.category_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
+    sql = 'select orthogroup_name,COG_name,t3.description,count,code,t5.description from orthology_orthogroup2cog t1 inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id inner join COG_cog_names_2014 t3 on t1.COG_id=t3.COG_id inner join COG_cog_id2cog_category t4 on t1.COG_id=t4.COG_id inner join COG_code2category t5 on t4.category_id=t5.category_id where rank<%s and orthogroup_name in ("%s");' % (biodb, biodb, rank_limit, group_filter)
     data = server.adaptor.execute_and_fetchall(sql,)
     ortho2cog = {}
 
