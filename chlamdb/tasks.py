@@ -543,7 +543,9 @@ def run_circos(reference_taxon, target_taxons):
     ordered_taxons = node_list[reference_index:] + node_list[:reference_index][::-1]
     '''
 
-    highlight_BBH = True
+    # TODO add this option to view
+    highlight_BBH = False
+    
     if highlight_BBH:
           
         sql_phylum = 'select phylum from biodatabase t1 inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id ' \
@@ -873,9 +875,7 @@ def plot_neighborhood_task(biodb, target_locus, region_size):
 
         sql10 = 'select operon_id from custom_tables_locus2seqfeature_id t1 ' \
                 ' inner join custom_tables_DOOR2_operons t2 on t1.seqfeature_id=t2.seqfeature_id' \
-                ' where t1.locus_tag="%s"' % (biodb,
-                                                biodb,
-                                                target_locus)
+                ' where t1.locus_tag="%s"' % (target_locus)
         try:
             operon_id = server.adaptor.execute_and_fetchall(sql10, )[0][0]
             sqlo = 'select operon_id,gi,locus_tag,old_locus_tag,COG_number,product from custom_tables_DOOR2_operons t1 ' \

@@ -15,7 +15,7 @@ def create_locus_tag2seqfeature_table(biodb, locus2seqfeature_id=False, locus2ta
           ' taxon_id INT,' \
           ' index locus_tag (locus_tag), ' \
           ' index seqfeature_id(seqfeature_id), ' \
-          ' index taxon_id (taxon_id))' % biodb
+          ' index taxon_id (taxon_id))'
 
     server.adaptor.execute(sql)
     server.commit()
@@ -26,16 +26,15 @@ def create_locus_tag2seqfeature_table(biodb, locus2seqfeature_id=False, locus2ta
 
     for locus in locus2seqfeature_id:
         try:
-            sql = 'insert into custom_tables_locus2seqfeature_id values ("%s", %s, %s)' % (biodb, locus,
-                                                                                              locus2seqfeature_id[locus],
-                                                                                              locus2taxon_id[locus])
+            sql = 'insert into custom_tables_locus2seqfeature_id values ("%s", %s, %s)' % (locus,
+                                                                                           locus2seqfeature_id[locus],
+                                                                                           locus2taxon_id[locus])
             server.adaptor.execute(sql)
         except:
             # pseudogenes
-            sql = 'insert into custom_tables_locus2seqfeature_id values ("%s", %s, %s)' % (biodb,
-                                                                                              locus,
-                                                                                              locus2seqfeature_id[locus],
-                                                                                              "NULL")
+            sql = 'insert into custom_tables_locus2seqfeature_id values ("%s", %s, %s)' % (locus,
+                                                                                           locus2seqfeature_id[locus],
+                                                                                           "NULL")
             server.adaptor.execute(sql)
         server.commit()
 

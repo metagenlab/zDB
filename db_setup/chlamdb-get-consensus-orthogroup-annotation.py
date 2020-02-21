@@ -24,12 +24,12 @@ def orthogroup_consensus_annotation(biodb):
     print('Get orthogroup2ko_id')
     orthogroup2ko = biosql_own_sql_tables.orthogroup2ko_id(biodb)
 
-    sql1 = 'create table if not exists orthology_orthogroup2gene (group_id INTEGER, rank INTEGER, count INTEGER, description TEXT);'
-    sql2 = 'create table if not exists orthology_orthogroup2product (group_id INTEGER, rank INTEGER, count INTEGER, description TEXT);'
-    sql3 = 'create table if not exists orthology_orthogroup2cog (group_id INTEGER, rank INTEGER, count INTEGER, COG_id INTEGER);'
-    sql4 = 'create table if not exists orthology_orthogroup2pfam (group_id INTEGER, rank INTEGER, count INTEGER, signature_id INTEGER);'
-    sql5 = 'create table if not exists orthology_orthogroup2interpro (group_id INTEGER, rank INTEGER, count INTEGER, interpro_id INTEGER);'
-    sql6 = 'create table if not exists orthology_orthogroup2ko (group_id INTEGER, rank INTEGER, count INTEGER, ko_id INTEGER);'
+    sql1 = 'create table if not exists orthology_orthogroup2gene (group_id INTEGER, `rank` INTEGER, count INTEGER, description TEXT);'
+    sql2 = 'create table if not exists orthology_orthogroup2product (group_id INTEGER, `rank` INTEGER, count INTEGER, description TEXT);'
+    sql3 = 'create table if not exists orthology_orthogroup2cog (group_id INTEGER, `rank` INTEGER, count INTEGER, COG_id INTEGER);'
+    sql4 = 'create table if not exists orthology_orthogroup2pfam (group_id INTEGER, `rank` INTEGER, count INTEGER, signature_id INTEGER);'
+    sql5 = 'create table if not exists orthology_orthogroup2interpro (group_id INTEGER, `rank` INTEGER, count INTEGER, interpro_id INTEGER);'
+    sql6 = 'create table if not exists orthology_orthogroup2ko (group_id INTEGER, `rank` INTEGER, count INTEGER, ko_id INTEGER);'
 
     server.adaptor.execute(sql1,)
     server.adaptor.execute(sql2,)

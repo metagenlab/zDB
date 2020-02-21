@@ -9,7 +9,11 @@ from django.forms import ModelForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, MultiField, Div, Fieldset
 from crispy_forms.bootstrap import AppendedText
-server = load_db()
+from django.conf import settings
+
+biodb = settings.BIODB
+
+server,db = load_db(biodb)
 
 sql ="select accession from bioentry where biodatabase_id = 22"
 result = server.adaptor.execute_and_fetchall(sql, )
@@ -27,7 +31,7 @@ class GenerateRandomUserForm(forms.Form):
 def get_accessions(database_name, all=False, plasmid=False):
 
     from chlamdb.biosqldb import manipulate_biosqldb
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     if not plasmid:
         #print "no plasmid"
         sql ='SELECT bioentry.taxon_id, bioentry.description FROM bioentry ' \

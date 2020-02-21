@@ -256,9 +256,8 @@ def circos_locus2taxon_highest_identity(biodb,
     server, db = manipulate_biosqldb.load_db(biodb)
 
     if not use_identity_closest_homolog2_table:
-        sql = 'select locus_tag, orthogroup from orthology_detail where taxon_id = %s' % (biodb,
-                                                                                             reference_taxon_id)
-        sql2 = 'select locus_tag, taxon_id from orthology_detail' % (biodb)
+        sql = 'select locus_tag, orthogroup from orthology_detail where taxon_id = %s' % (reference_taxon_id)
+        sql2 = 'select locus_tag, taxon_id from orthology_detail'
 
         # get all locus tags and orthogroups from reference genome
         reference_orthogroup2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -595,7 +594,7 @@ def accession2coding_density(biodb, sqlite=False):
               ' inner join blastnr_blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
               ' inner join custom_tables_locus2seqfeature_id t5 ' \
               ' on t1.seqfeature_id=t5.seqfeature_id ' \
-              ' where t1.hit_number=1 and t3.name="%s" and t4.phylum="Chlamydiae" and t2.accession="%s";' % (accession)
+              ' where t1.hit_number=1 and t3.name="%s" and t4.phylum="Chlamydiae" and t2.accession="%s";' % (biodb, accession)
         try:
             locus_BBH_chlamydiae = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
         except:
@@ -876,26 +875,25 @@ def collect_genome_statistics(biodb, sqlite=False):
           ' n_tRNA INT, n_16S INT, n_23S INT, n_5S INT, percent_non_coding FLOAT, big_contig_length INT, ' \
           ' n_no_CDS INT,' \
           ' n_no_BBH_chlamydiae INT,' \
-          ' description VARCHAR (20000))' % biodb
+          ' description TEXT)'
 
     server.adaptor.execute_and_fetchall(sql,)
 
     for one_genome in genomes_data:
-        sql = 'insert into genomes_info values ("%s", %s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s,"%s")' % (biodb,
-                                                                           one_genome[0],
-                                                                           one_genome[1],
-                                                                           one_genome[2],
-                                                                           one_genome[3],
-                                                                           one_genome[4],
-                                                                           accession2n_trna[one_genome[0]],
-                                                                           accession2n_rrna[one_genome[0]][0],
-                                                                           accession2n_rrna[one_genome[0]][1],
-                                                                           accession2n_rrna[one_genome[0]][2],
-                                                                           100-accession2density[one_genome[0]],
-                                                                           accession2big_contig_length[one_genome[0]],
-                                                                           accession2n_contigs_without_cds[one_genome[0]],
-                                                                           accession2n_countigs_without_BBH_chlamydiae[one_genome[0]],
-                                                                           one_genome[5])
+        sql = 'insert into genomes_info values ("%s", %s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s,"%s")' % (one_genome[0],
+                                                                                                            one_genome[1],
+                                                                                                            one_genome[2],
+                                                                                                            one_genome[3],
+                                                                                                            one_genome[4],
+                                                                                                            accession2n_trna[one_genome[0]],
+                                                                                                            accession2n_rrna[one_genome[0]][0],
+                                                                                                            accession2n_rrna[one_genome[0]][1],
+                                                                                                            accession2n_rrna[one_genome[0]][2],
+                                                                                                            100-accession2density[one_genome[0]],
+                                                                                                            accession2big_contig_length[one_genome[0]],
+                                                                                                            accession2n_contigs_without_cds[one_genome[0]],
+                                                                                                            accession2n_countigs_without_BBH_chlamydiae[one_genome[0]],
+                                                                                                            one_genome[5])
         #print sql
         server.adaptor.execute(sql,)
         server.commit()

@@ -60,7 +60,7 @@ class MySQLDB():
         sqlite_conn = sqlite3.connect(sqlite_db_path)
         sqlite_cursor = sqlite_conn.cursor()
 
-        sql_header = 'PRAGMA table_info(blastnr_ncbi_taxonomy);'
+        sql_header = 'PRAGMA table_info(ncbi_taxonomy);'
         sqlite_cursor.execute(sql_header)
         columns = sqlite_cursor.fetchall()
         column_index = []
@@ -77,7 +77,7 @@ class MySQLDB():
                 columns_def.append("`%s` %s" % (col[1], col[2]))
 
         sql = 'select %s from ncbi_taxonomy' % ','.join(column_index)
-
+        print(sql)
         sqlite_cursor.execute(sql)
         taxonomy_data = sqlite_cursor.fetchall()
 
@@ -99,7 +99,8 @@ class MySQLDB():
         self.mysql_conn.commit()
         sql1 = 'CREATE INDEX taxid ON blastnr_blastnr_taxonomy(`taxon_id`);'
         # _mysql_exceptions.OperationalError: (1170, "BLOB/TEXT column 'phylum' used in key specification without a key length")
-        sql2 = 'CREATE INDEX ph ON blastnr_blastnr_taxonomy(`phylum`);'
+        # specifiy a max key length
+        sql2 = 'CREATE INDEX ph ON blastnr_blastnr_taxonomy(`phylum`(255));'
         sql3 = 'CREATE INDEX phid ON blastnr_blastnr_taxonomy(`phylum_taxid`);'
 
         self.mysql_cursor.execute(sql1)

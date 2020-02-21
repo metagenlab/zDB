@@ -37,9 +37,9 @@ class Orthogroup_Identity_DB:
         self.conn.commit()
         self.count = 0
 
-        sql = 'select locus_tag,orthogroup_name from orthology_seqfeature_id2orthogroup t1 ' \
-              ' inner join annotation_seqfeature_id2locus t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-              ' inner join orthology_orthogroup t3 on t1.orthogroup_id=t3.orthogroup_id'
+        sql = f'select locus_tag,orthogroup_name from {database_name}.orthology_seqfeature_id2orthogroup t1 ' \
+              f' inner join {database_name}.annotation_seqfeature_id2locus t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+              f' inner join {database_name}.orthology_orthogroup t3 on t1.orthogroup_id=t3.orthogroup_id'
         self.cursor.execute(sql,)
         self.locus_tag2orthogroup = {}
         for row in self.cursor.fetchall():
@@ -72,7 +72,6 @@ class Orthogroup_Identity_DB:
         server.execute(sql)
 
         locus_list = [i.decode("utf-8") for i in group_matrix[1:,0]]
-        print(type(locus_list[0]))
 
         for x in range(1, len(group_matrix[:,0])):
             for y in range(x, len(group_matrix[:,0])):
@@ -204,7 +203,8 @@ class Orthogroup_Identity_DB:
         server, db = manipulate_biosqldb.load_db(biodatabase_name)
 
         #print 'get orthogroups'
-        sql = 'select orthogroup from comparative_tables_orthology'
+        sql = f'select orthogroup from comparative_tables_orthology'
+        
         try:
             #print 'adding column'
             self._create_orthogroup_average_identity_column(server, biodatabase_name)
@@ -214,17 +214,11 @@ class Orthogroup_Identity_DB:
         #print len(groups)
 
         for group in groups:
-            #print "group %s" % group
-            try:
-                id_table = np.array(get_orthogroup_identity_table(biodatabase_name, group))
-                id_matrix = id_table[:,1:].astype(float)
-                #print np.mean(id_matrix)
-                #print self._get_average_identity_from_identity_matrix(id_matrix)
-                av_id = round(np.mean(id_matrix[np.triu_indices(len(id_matrix), k=1)]), 2)
-                #print av_id
-            except:
-                av_id = 0
-
+            id_table = np.array(get_orthogroup_identity_table(biodatabase_name, group))
+            id_matrix = id_table[:,1:].astype(float)
+            #print np.mean(id_matrix)
+            #print self._get_average_identity_from_identity_matrix(id_matrix)
+            av_id = round(np.mean(id_matrix[np.triu_indices(len(id_matrix), k=1)]), 2)
             sql = 'insert into orth_%s.average_identity values ("%s", %s)' % (biodatabase_name, group, av_id)
             #print sql
             server.adaptor.execute(sql)
@@ -346,7 +340,7 @@ def heatmap_presence_absence(biodb_name, group_name):
 
     #print "template", template
 
-    sql = 'select %s from orthology where orthogroup = "%s"' % (template, group_name)
+    sql = f'select %s from orthology where orthogroup = "%s"' % (template, group_name)
 
     result = [int(i) for i in server.adaptor.execute_and_fetchall(sql,)[0]]
     #print result

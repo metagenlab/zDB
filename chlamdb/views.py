@@ -141,7 +141,8 @@ def extract_alphanumeric(input_string):
 
 
 def choose_db(request):
-    server = manipulate_biosqldb.load_db()
+    
+    server, db = manipulate_biosqldb.load_db(biodb)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form = BiodatabaseForm(request.POST)  # Nous reprenons les données
@@ -488,7 +489,7 @@ def extract_orthogroup(request):
     :return:
     '''
 
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "extract orthogroup %s" % biodb
     extract_form_class = make_extract_form(biodb, plasmid=True)
     #print(request.method)
@@ -565,7 +566,7 @@ def extract_orthogroup(request):
 def locus_list2orthogroups(request):
     biodb = settings.BIODB
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
 
     #print request.method
@@ -608,7 +609,7 @@ def locus_list2orthogroups(request):
 def orthogroup_annotation(request, display_form):
     biodb = settings.BIODB
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
 
     #print request.method
@@ -677,7 +678,7 @@ def test():
 def locus_annotation(request, display_form):
     biodb = settings.BIODB
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
 
     form_class = get_LocusAnnotForm(biodb)
@@ -880,7 +881,7 @@ def venn_orthogroup(request):
     biodb = settings.BIODB
 
     print ("loading db...")
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     print("db loaded...")
     venn_form_class = make_venn_from(biodb, plasmid=True)
     print("method", request.method)
@@ -976,7 +977,7 @@ def extract_pfam(request, classification="taxon_id"):
 
 
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
     extract_form_class = make_extract_form(biodb, label="PFAM domains")
 
@@ -1108,7 +1109,7 @@ def extract_ko(request):
 
 
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
     extract_form_class = make_extract_form(biodb, label="Kegg Orthologs")
 
@@ -1273,7 +1274,7 @@ def extract_EC(request):
 
 
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
     extract_form_class = make_extract_form(biodb, label="EC numbers")
 
@@ -1448,7 +1449,7 @@ def venn_pfam(request):
     biodb = settings.BIODB
 
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
     venn_form_class = make_venn_from(biodb, limit=6)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
@@ -1500,7 +1501,7 @@ def venn_EC(request):
     biodb = settings.BIODB
 
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
     venn_form_class = make_venn_from(biodb, limit=6)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
@@ -1577,7 +1578,7 @@ def extract_interpro(request, classification="taxon_id"):
 
 
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
     extract_form_class = make_extract_form(biodb, label="Interpro entries")
 
@@ -1703,7 +1704,7 @@ def venn_interpro(request):
     biodb = settings.BIODB
 
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
     venn_form_class = make_venn_from(biodb, limit=6)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
@@ -1752,7 +1753,7 @@ def extract_cog(request):
     biodb = settings.BIODB
 
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
 
     extract_form_class = make_extract_form(biodb, 
@@ -1887,7 +1888,7 @@ def venn_ko(request):
     biodb = settings.BIODB
 
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
     venn_form_class = make_venn_from(biodb, limit=6)
     display_form = True
@@ -1942,7 +1943,7 @@ def venn_cog(request, accessions=False):
     display_form = True
 
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
     venn_form_class = make_venn_from(biodb, plasmid=accessions, limit=6, label="COG")
     if request.method == 'POST':  # S'il s'agit d'une requête POST
@@ -2251,7 +2252,7 @@ def locusx(request, locus=None, menu=True):
             print("input type locus tag----------------")
             print("data", data)
 
-            sql4 = 'select accession from orthology_detail where locus_tag="%s" limit 1' % (biodb, locus)
+            sql4 = 'select accession from orthology_detail where locus_tag="%s" limit 1' % (locus)
             genome_accession = server.adaptor.execute_and_fetchall(sql4,)[0][0]
 
             sql3 = 'select COG_name,code,t2.description,t1.query_start,t1.query_end, t1.hit_start, t1.hit_end, t1.query_coverage, t1.hit_coverage, t1.identity, t1.evalue, t1.bitscore ' \
@@ -2260,7 +2261,12 @@ def locusx(request, locus=None, menu=True):
                    ' join COG_code2category t4 on t3.category_id=t4.category_id inner join annotation_seqfeature_id2locus t6 on t1.seqfeature_id=t6.seqfeature_id ' \
                    ' where locus_tag="%s";' % (locus)
 
-            sql4 = 'select A.analysis_name,A.signature_accession, A.signature_description, start, stop,score, B.name,B.description from (select t1.*,t2.signature_accession,t2.signature_description,t2.interpro_id,t3.* from interpro_interpro t1 inner join interpro_signature t2 on t1.signature_id=t2.signature_id inner join interpro_analysis t3 on t2.analysis_id=t3.analysis_id inner join annotation_seqfeature_id2locus t4 on t1.seqfeature_id=t4.seqfeature_id where locus_tag="%s") A left join interpro_entry B on A.interpro_id=B.interpro_id;' % (biodb, biodb, locus)
+            sql4 = 'select A.analysis_name,A.signature_accession, A.signature_description, start, stop,score, B.name,B.description from ' \
+                   ' (select t1.*,t2.signature_accession,t2.signature_description,t2.interpro_id,t3.* from interpro_interpro t1 ' \
+                   ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
+                   ' inner join interpro_analysis t3 on t2.analysis_id=t3.analysis_id ' \
+                   ' inner join annotation_seqfeature_id2locus t4 on t1.seqfeature_id=t4.seqfeature_id where locus_tag="%s") A left join ' \
+                   ' interpro_entry B on A.interpro_id=B.interpro_id;' % (locus)
             print(sql4)
 
             sql5 = 'select t3.ko_accession, t3.name, t3.definition, t3.pathways, t3.modules, t2.thrshld, t2.score, t2.evalue from ' \
@@ -2348,8 +2354,10 @@ def locusx(request, locus=None, menu=True):
 
             sql24 = 'select hash from annotation_hash2seqfeature_id t1 ' \
                     ' inner join annotation_seqfeature_id2locus t2 on t1.seqfeature_id=t2.seqfeature_id where t2.locus_tag="%s";' % (locus)
-
-            interpro_hash = server.adaptor.execute_and_fetchall(sql24,)[0][0]
+            try:
+                interpro_hash = server.adaptor.execute_and_fetchall(sql24,)[0][0]
+            except:
+                interpro_hash = None
 
             sql25 = f'select distinct t2.effectors,SVM_value from annotation_seqfeature_id2locus t1' \
                     f' left join effectors_predicted_BPBAac t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
@@ -2552,26 +2560,27 @@ def locusx(request, locus=None, menu=True):
 
             try:
                 cog_data = server.adaptor.execute_and_fetchall(sql3, )[0]
-
-            except IndexError:
-
+            # TODO: distinguish keyerror from missing table
+            except:
                 cog_data = False
 
             try:
                 interpro_data_detail = server.adaptor.execute_and_fetchall(sql4, )
-            except IndexError:
-                interpro_data_detail= False
+            # TODO: distinguish keyerror from missing table
+            # TODO if missing table, hide interpro tab and domain scheme
+            except:
+                interpro_data_detail= []
 
             try:
                 ko_data = server.adaptor.execute_and_fetchall(sql5, )[0]
             except:
                 ko_data= False
+            # TODO: distinguish keyerror from missing table
             try:
                 ko_pathway_data = server.adaptor.execute_and_fetchall(sql7, )
-            except IndexError:
+            except:
                 ko_pathway_data = False
             try:
-                print(sql8)
                 ko_module_data = server.adaptor.execute_and_fetchall(sql8, )
             except:
                 ko_module_data = False
@@ -2663,7 +2672,7 @@ def locusx(request, locus=None, menu=True):
             
             
             # consensus annotation
-            sql_group1 = 'select rank,count,description from orthology_orthogroup2gene t1 ' \
+            sql_group1 = 'select `rank`,count,description from orthology_orthogroup2gene t1 ' \
                          ' inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id where t2.orthogroup_name="%s";' % (locus)
                          
             sql_group2 = 'select rank,count,description from orthology_orthogroup2product t1 ' \
@@ -2857,7 +2866,10 @@ def locusx(request, locus=None, menu=True):
               ' inner join interpro_signature t4 on t3.signature_id=t4.signature_id ' \
               ' where signature_accession in ("TRANSMEMBRANE", "SIGNAL_PEPTIDE_C_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_N_REGION") ' \
               ' and t2.orthogroup_name="%s" ; ' % (orthogroup)
-        tm_count = server.adaptor.execute_and_fetchall(sql_TM_SP, )[0][0]
+        try:
+            tm_count = server.adaptor.execute_and_fetchall(sql_TM_SP, )[0][0]
+        except:
+            tm_count = 0
         if tm_count > 0:
             show_tm_tree = True
 
@@ -2868,7 +2880,11 @@ def locusx(request, locus=None, menu=True):
 
         sql = 'select t1.locus_tag, t1.annotation from manual_annotation as t1 ' \
               ' inner join orthology_detail as t2 on t1.locus_tag=t2.locus_tag where orthogroup="%s";' % (data[0])
-        cmt = server.adaptor.execute_and_fetchall(sql,)
+        
+        try:
+            cmt = server.adaptor.execute_and_fetchall(sql,)
+        except:
+            cmt = ()
 
         cmt_format = []
         for i in cmt:
@@ -4464,7 +4480,7 @@ def get_ko_multiple(request, type, category):
 def cog_venn_subset(request, category):
     biodb = settings.BIODB
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
 
     targets = [i for i in request.GET.getlist('h')]
@@ -4512,7 +4528,7 @@ def cog_venn_subset(request, category):
 def ko_venn_subset(request, category):
     biodb = settings.BIODB
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
     import re
 
@@ -5842,7 +5858,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
                                                                                                       rank,
                                                                                                       top_n,
                                                                                                       accession,
-                                                                                                      rank
+                                                                                                      rank)
         print (sql)
         data = server.adaptor.execute_and_fetchall(sql,)
         category2count = {}
@@ -8093,7 +8109,7 @@ def interpro_taxonomy(request):
                       ' inner join orthology_seqfeature_id2orthogroup B on A.seqfeature_id=B.seqfeature_id ' \
                       ' inner join orthology_orthogroup C on B.orthogroup_id=C.orthogroup_id) AA ' \
                       ' group by AA.interpro_id) BB inner join interpro_entry CC on BB.interpro_id=CC.interpro_id;' % (kingdom,
-                                                                                                                       percentage_cutoff
+                                                                                                                       percentage_cutoff)
                 print(sql)
                 interpro_accession2n_groups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -8158,7 +8174,7 @@ def homologs(request, orthogroup, locus_tag=False):
 
     from chlamdb.biosqldb import orthogroup_identity_db
     biodb = settings.BIODB
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
 
@@ -8215,7 +8231,7 @@ def blastswissprot(request, locus_tag):
 
     #bioentry_in_memory = cache.get("biodb")
 
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
 
@@ -8252,7 +8268,7 @@ def blastnr(request, locus_tag):
 
     #bioentry_in_memory = cache.get("biodb")
 
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     if request.method == 'GET':  # S'il s'agit d'une requête POST
 
@@ -8299,7 +8315,7 @@ def homology(request):
 
     #bioentry_in_memory = cache.get("biodb")
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
     contact_form_class = make_contact_form(server, biodb)
     #print 'request.method', request.method
@@ -8322,7 +8338,7 @@ def homology(request):
 
 def orthogroup_identity(request, orthogroup, group=False):
     biodb = settings.BIODB
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     print ('orthogroup identity -- %s -- %s' % (biodb, orthogroup))
     #if request.method == 'POST':
     import numpy
@@ -8397,7 +8413,7 @@ def plot_neighborhood(request, target_locus, region_size=23000):
 
     print ("plot region %s -- %s " % (biodb, target_locus))
 
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     task = plot_neighborhood_task.delay(biodb, target_locus, region_size)
     #print("task", task)
@@ -8458,7 +8474,7 @@ def plot_region(request):
 
     #bioentry_in_memory = cache.get("biodb")
     #print "loading db..."
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     #print "db loaded..."
     plot_region_form_class = make_plot_form(biodb)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
@@ -8575,7 +8591,7 @@ def plot_region(request, biodb):
     plot_form_class = make_plot_form(biodb)
 
     print "cache", cache
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
@@ -10137,7 +10153,7 @@ def format_search(count, seqfeature_data):
 def search_taxonomy(request):
     biodb = settings.BIODB
     from collections import Counter
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
@@ -10330,7 +10346,7 @@ def search_taxonomy(request):
 
 def interpro(request):
     biodb = settings.BIODB
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     interproform = make_interpro_from(biodb)
 
@@ -10503,7 +10519,7 @@ def search(request):
             return search_result
 
 
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     print(request.method, "request.method")
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         display_from = 'yes'
@@ -10672,7 +10688,7 @@ def search(request):
 
 def primer_search(request):
     biodb = settings.BIODB
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
         form = PCRForm(request.POST)  # Nous reprenons les données
@@ -10739,7 +10755,7 @@ def motif_search(request):
     biodb = settings.BIODB
     from chlamdb.biosqldb import shell_command
     import os
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     motif_form_class = make_motif_form(biodb)
 
@@ -10800,7 +10816,7 @@ def motif_search(request):
 
 def blast_profile(request):
     biodb = settings.BIODB
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     if request.method == 'POST':  # S'il s'agit d'une requête POST
 
@@ -11139,7 +11155,7 @@ def get_record_from_memory(biodb, cache_obj, record_key, accession):
 
 def mummer(request):
     biodb = settings.BIODB
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     mummer_form_class = make_mummer_form(biodb)
 
 
@@ -11209,7 +11225,7 @@ def circos2genomes(request):
     biodb = settings.BIODB
     from chlamdb.biosqldb import circos
     from chlamdb.biosqldb import shell_command
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     circos2genomes_form_class = make_circos2genomes_form(biodb)
 
 
@@ -11366,7 +11382,7 @@ def crossplot(request):
         #print "creating cache entry"
         cache.set("biodb", {})
     bioentry_in_memory = cache.get("biodb")
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     update_db(server)
 
@@ -12353,9 +12369,9 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
              ' END AS "which_column"'\
              ' FROM' \
              ' orthology_detail where locus_tag="%s" or orthogroup="%s"' % (orthogroup_or_locus,
-                                                                               orthogroup_or_locus
-                                                                               orthogroup_or_locus,
-                                                                               orthogroup_or_locus)
+                                                                            orthogroup_or_locus,    
+                                                                            orthogroup_or_locus,
+                                                                            orthogroup_or_locus)
 
 
     input_type = server.adaptor.execute_and_fetchall(sql1, )[0][0]

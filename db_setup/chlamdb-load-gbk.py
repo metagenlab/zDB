@@ -9,6 +9,7 @@ from BioSQL import BioSeqDatabase
 from chlamdb.biosqldb.manipulate_biosqldb import load_db
 from chlamdb.biosqldb.manipulate_biosqldb import query_yes_no
 from chlamdb.biosqldb import manipulate_biosqldb
+import MySQLdb
 
 
 def import_gbk(gbk_name,
@@ -16,15 +17,14 @@ def import_gbk(gbk_name,
                db_name,
                sqlite=False):
 
-
     records = [i for i in SeqIO.parse(gbk_name, 'genbank')]
 
     if len(records)>1:
         print ("genbank file contains more than one record, is it plasmid(s) and chromosome(s)? (if the assembly contain more than one contig, contactenate contigs into a single record before importing it the the sql database)")
     try:
         db_name.load(records)
-    except:
-        print (gbk_name, "already into db?")
+    except MySQLdb.Error as ee:
+        print (gbk_name, "already into db?", ee)
         pass
     server_name.adaptor.commit()
 
@@ -56,6 +56,8 @@ def create_cds_tables(one_gbk,
     import re
     server, db = manipulate_biosqldb.load_db(biodb_name)
 
+    # TODO add unique constrains to prevent inserting 2 times the same genome
+
     sql_cds = 'CREATE table IF NOT EXISTS feature_tables_genomes_cds (prot_primary_id INT AUTO_INCREMENT PRIMARY KEY,' \
            ' taxon_id INT,' \
            ' genome_accession VARCHAR(40),' \
@@ -83,7 +85,7 @@ def create_cds_tables(one_gbk,
                    ' id_name varchar(40),' \
                    ' INDEX id_name(id_name),' \
                    ' INDEX id_type(id_type),' \
-                   ' FOREIGN KEY (prot_primary_id) REFERENCES genomes_cds(prot_primary_id))'
+                   ' FOREIGN KEY (prot_primary_id) REFERENCES feature_tables_genomes_cds(prot_primary_id))'
 
     server.adaptor.execute(sql_cds,)
     server.adaptor.execute(sql_rrna,)
@@ -94,11 +96,12 @@ def create_cds_tables(one_gbk,
         records = SeqIO.parse(f, 'genbank')
         for record in records:
             accession = record.id.split('.')[0]
-            sql = 'select taxon_id from bioentry as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id ' \
+            
+            sql = 'select taxon_id from bioentry t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
                   ' where t2.name="%s" and t1.accession="%s"' % (biodb_name,
                                                                  accession)
-            taxon_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
 
+            taxon_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
             for feature in record.features:
                 if feature.type == 'CDS' and not 'pseudo' in feature.qualifiers:
                     start = re.sub('>|<','', str(feature.location.start))
@@ -182,7 +185,9 @@ if __name__ == '__main__':
     server, db = load_db(args.db_name, args.sqlite_db)
 
     if args.gbk:
+        sys.stdout.write("Importing Gbk files & Creating CDS tables...\n")
         for gbk in args.gbk:
+            print(gbk)
             import_gbk(gbk, server, db)
             create_cds_tables(gbk, args.db_name)
 

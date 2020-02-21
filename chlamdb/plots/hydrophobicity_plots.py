@@ -13,7 +13,7 @@ def locus2hydrophobicity_plot(biodb, locus):
            'L': 3.8,'K':-3.9,'M': 1.9,'F': 2.8,'P':-1.6,
            'S':-0.8,'T':-0.7,'W':-0.9,'Y':-1.3,'V': 4.2 }
 
-    sql = 'select locus_tag, translation from orthology_detail where locus_tag="%s"' % (biodb, locus)
+    sql = 'select locus_tag, translation from orthology_detail where locus_tag="%s"' % (locus)
     data = server.adaptor.execute_and_fetchall(sql,)[0]
     locus = data[0]
     seq = data[1]
@@ -58,8 +58,11 @@ def locus2hydrophobicity_plot(biodb, locus):
 
     # Draw the known helix and ribbon ranges
 
-    sql2 = 'select start, stop from interpro where locus_tag="%s" and signature_accession="TRANSMEMBRANE"' % (biodb, locus)
-    transmembrane_data = server.adaptor.execute_and_fetchall(sql2,)
+    sql2 = 'select start, stop from interpro where locus_tag="%s" and signature_accession="TRANSMEMBRANE"' % (locus)
+    try:
+        transmembrane_data = server.adaptor.execute_and_fetchall(sql2,)
+    except:
+        transmembrane_data = []
     for transmembrane in transmembrane_data:
         pylab.axvspan(transmembrane[0], transmembrane[1], facecolor="yellow", alpha=0.4) # helix
 

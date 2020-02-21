@@ -646,7 +646,7 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
     else:
         taxon_list = [str(i) for i in taxon_list]
         filter = '`' + '`,`'.join(taxon_list) + '`'
-        sql = 'select orthogroup,%s from comparative_tables_orthology' % (filter,db_name)
+        sql = 'select orthogroup,%s from comparative_tables_orthology' % (filter)
 
         data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
         count_df = pandas.DataFrame(data, columns=['orthogroup'] + taxon_list)
@@ -658,7 +658,7 @@ def print_blasnr_circos_files(record_list, db_name, out_directory, draft_coordin
         #print group2n_genomes
 
         accession_filter = '"'+'","'.join(accessions) + '"'
-        sql = 'select locus_tag, orthogroup from orthology_detail where accession in (%s)' % (db_name, accession_filter)
+        sql = 'select locus_tag, orthogroup from orthology_detail where accession in (%s)' % (accession_filter)
         locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
         locus_tag2n_genomes_dico = {}
         for locus in locus2orthogroup:
@@ -871,7 +871,7 @@ def orthology_circos_files(server,
     all_file_names = {}
     #ortho_size = mysqldb_load_mcl_output.get_all_orthogroup_size(server, biodatabase_name)
 
-    sql = 'select orthogroup, count(*) from orthology_detail group by orthogroup' % biodatabase_name
+    sql = 'select orthogroup, count(*) from orthology_detail group by orthogroup'
     ortho_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     #print 'getting each orthogroup size'
