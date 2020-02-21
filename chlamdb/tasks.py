@@ -1024,7 +1024,7 @@ def basic_tree_task(biodb,
     sql_tree = 'select phylogeny from biosqldb_phylogenies.%s where orthogroup="%s"' % (biodb, orthogroup)
     tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
 
-    sql = f'select distinct locus_tag,t4.description from orthology.orthogroup_{biodb} t1 ' \
+    sql = f'select distinct locus_tag,t4.description from orthology_orthogroup t1 ' \
           f' inner join orthology_seqfeature_id2orthogroup t2 on t1.orthogroup_id=t2.orthogroup_id ' \
           f' inner join annotation_seqfeature_id2locus_{biodb} t3 on t2.seqfeature_id=t3.seqfeature_id ' \
           f' inner join biosqldb.bioentry t4 on t3.bioentry_id=t4.bioentry_id where orthogroup_name="{orthogroup}";'
