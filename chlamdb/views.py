@@ -10304,13 +10304,10 @@ def search_taxonomy(request):
                           ' inner join blastnr_blastnr_hits_taxonomy_filtered_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
                           ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr_blastnr_hsps_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
-                          ' where t1.hit_number=%s"' % (biodb,
-                                                         genome_accession,
-                                                         biodb,
-                                                         genome_accession,
-                                                         biodb,
-                                                         genome_accession,
-                                                         1)
+                          ' where t1.hit_number=%s"' % (genome_accession,
+                                                        genome_accession,
+                                                        genome_accession,
+                                                        1)
 
             else:
                 sql= 'select t1.locus_tag, ' \
@@ -10333,14 +10330,11 @@ def search_taxonomy(request):
                           ' inner join blastnr_blastnr_hits_taxonomy_filtered_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
                           ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr_blastnr_hsps_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
-                          ' where t1.hit_number=%s and t3.superkingdom="%s"' % (biodb,
-                                                                         genome_accession,
-                                                                         biodb,
-                                                                         genome_accession,
-                                                                         biodb,
-                                                                         genome_accession,
-                                                                         1,
-                                                                         superkingdom)
+                          ' where t1.hit_number=%s and t3.superkingdom="%s"' % (genome_accession,
+                                                                                genome_accession,
+                                                                                genome_accession,
+                                                                                1,
+                                                                                superkingdom)
 
         else:
             genome_accession = request.POST['Genome']
@@ -10372,14 +10366,11 @@ def search_taxonomy(request):
                           ' inner join blastnr_blastnr_hits_taxonomy_filtered_%s as t2 on t1.nr_hit_id = t2.nr_hit_id ' \
                           ' inner join blastnr_blastnr_taxonomy as t3 on t2.subject_taxon_id = t3.taxon_id' \
                           ' inner join blastnr_blastnr_hsps_%s as t4 on t1.nr_hit_id=t4.nr_hit_id' \
-                          ' where t1.hit_number=%s and t3.superkingdom="%s"' % (biodb,
-                                                                         genome_accession,
-                                                                         biodb,
-                                                                         genome_accession,
-                                                                         biodb,
-                                                                         genome_accession,
-                                                                         1,
-                                                                         superkingdom)
+                          ' where t1.hit_number=%s and t3.superkingdom="%s"' % (genome_accession,
+                                                                                genome_accession,
+                                                                                genome_accession,
+                                                                                1,
+                                                                                superkingdom)
             else:
                 sql= 'select t1.locus_tag, ' \
                           ' t2.subject_taxon_id,' \
