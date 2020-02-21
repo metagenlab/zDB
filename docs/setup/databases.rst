@@ -399,7 +399,7 @@ STRING can be downloaded as postgresql database dump. We have to load it to extr
 Database setup
 ==============
 
-Multiple scripts are used to import annotations and compareative data into a MySQL database. `Scripts are here`_
+Multiple scripts are used to import annotations and comparative data into a MySQL database. `Scripts are here`_
 They need to be executed in a specific order (e.g load gbk files and only then the annotations, orthology & phylogenies). 
 
 - TODO: automate setup `with this nextflow workflow`_
