@@ -32,7 +32,7 @@ def extract_orthogroup_task(biodb,
     from chlamdb.biosqldb import biosql_own_sql_tables
     from chlamdb.views import get_locus_annotations
     
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     
     
     current_task.update_state(state='PROGRESS',

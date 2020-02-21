@@ -2680,16 +2680,16 @@ def locusx(request, locus=None, menu=True):
             sql_group1 = 'select `rank`,count,description from orthology_orthogroup2gene t1 ' \
                          ' inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id where t2.orthogroup_name="%s";' % (locus)
                          
-            sql_group2 = 'select rank,count,description from orthology_orthogroup2product t1 ' \
+            sql_group2 = 'select `rank`,count,description from orthology_orthogroup2product t1 ' \
                          ' inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id where t2.orthogroup_name="%s";' % (locus)
                          
-            sql_group3 = 'select rank, COG_name, t3.description, count, code, t5.description from orthology_orthogroup2cog t1 ' \
+            sql_group3 = 'select `rank`, COG_name, t3.description, count, code, t5.description from orthology_orthogroup2cog t1 ' \
                          ' inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id ' \
                          ' inner join COG_cog_names_2014 t3 on t1.COG_id=t3.COG_id ' \
                          ' inner join COG_cog_id2cog_category t4 on t3.COG_id=t4.COG_id' \
                          ' inner join COG_code2category t5 on t4.category_id=t5.category_id where t2.orthogroup_name="%s";' % (locus)
                          
-            sql_group4 = 'select rank,ko_accession,count,name,definition,EC,pathways,modules from orthology_orthogroup2ko t1 ' \
+            sql_group4 = 'select `rank`,ko_accession,count,name,definition,EC,pathways,modules from orthology_orthogroup2ko t1 ' \
                          ' inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id ' \
                          ' inner join enzyme_ko_annotation t3 on t1.ko_id=t3.ko_id where t2.orthogroup_name="%s";' % (locus)
                          
@@ -2722,18 +2722,27 @@ def locusx(request, locus=None, menu=True):
             
             gene_annotations = server.adaptor.execute_and_fetchall(sql_group1,)
             product_annotations = server.adaptor.execute_and_fetchall(sql_group2,)
-            COG_annotations = server.adaptor.execute_and_fetchall(sql_group3,)
-            
-            KO_annotations = [list(i) for i in server.adaptor.execute_and_fetchall(sql_group4,)]
-            pfam_annotations = server.adaptor.execute_and_fetchall(sql_group5,)
+            try:
+                COG_annotations = server.adaptor.execute_and_fetchall(sql_group3,)
+            except:
+                COG_annotations = []
+            try:
+                KO_annotations = [list(i) for i in server.adaptor.execute_and_fetchall(sql_group4,)]
+            except:
+                KO_annotations = []
+            try:
+                pfam_annotations = server.adaptor.execute_and_fetchall(sql_group5,)
+            except:
+                pfam_annotations = []
             protein_lengths = [int(i[0]) for i in server.adaptor.execute_and_fetchall(sql_group6,)]
-            uniprot_annotations = server.adaptor.execute_and_fetchall(sql_group7,)
-            print(uniprot_annotations)
-            unreviewed = len([i for i in uniprot_annotations if i[1] == "unreviewed"])
-            reviewed = [i for i in uniprot_annotations if i[1] == "reviewed"]
-            mapped = unreviewed + len(reviewed)
-            unmapped = len([i for i in uniprot_annotations if i[1] == None])
-            print("unreviewed", unreviewed, reviewed, unmapped)
+            try:
+                uniprot_annotations = server.adaptor.execute_and_fetchall(sql_group7,)
+                unreviewed = len([i for i in uniprot_annotations if i[1] == "unreviewed"])
+                reviewed = [i for i in uniprot_annotations if i[1] == "reviewed"]
+                mapped = unreviewed + len(reviewed)
+                unmapped = len([i for i in uniprot_annotations if i[1] == None])
+            except:
+                uniprot_annotations = False
 
             for row in KO_annotations:
                 row[6] = row[6].replace("ko", "map")
@@ -2784,56 +2793,61 @@ def locusx(request, locus=None, menu=True):
             else:
                 length_distrib = False
             
-            sql = 'select TM from orthology_detail where orthogroup="%s";' % (locus)
-            TM_counts = Counter([int(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)])
             
-            for i in range(max(TM_counts.keys())):
-                if i not in TM_counts:
-                    TM_counts[i] = 0
-            
-            print("TM_counts", TM_counts)
-            
-            plot_data = [go.Bar(
-                        x= ["%s TM" % i for i in range(0, len(TM_counts.keys() ) )], #["%s TM" % i for i in TM_counts.keys()],
-                        y=[TM_counts[i] for i in range(0, len(TM_counts.keys() ) )]
-                )]
+            # TM statistics
+            # case when no interpro data loaded
+            try:
+                sql = 'select TM from orthology_detail where orthogroup="%s";' % (locus)
+                TM_counts = Counter([int(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)])
+                
+                for i in range(max(TM_counts.keys())):
+                    if i not in TM_counts:
+                        TM_counts[i] = 0
+                
+                        
+                plot_data = [go.Bar(
+                            x= ["%s TM" % i for i in range(0, len(TM_counts.keys() ) )], #["%s TM" % i for i in TM_counts.keys()],
+                            y=[TM_counts[i] for i in range(0, len(TM_counts.keys() ) )]
+                    )]
 
-            layout = go.Layout(
-                title='',
-                yaxis=go.layout.YAxis(
-                    title=go.layout.yaxis.Title(
-                        text='Number of occurences',
-                        font=dict(
-                            family='Courier New, monospace',
-                            size=15,
-                            color='#7f7f7f'
+                layout = go.Layout(
+                    title='',
+                    yaxis=go.layout.YAxis(
+                        title=go.layout.yaxis.Title(
+                            text='Number of occurences',
+                            font=dict(
+                                family='Courier New, monospace',
+                                size=15,
+                                color='#7f7f7f'
+                            )
                         )
-                    )
-                ),
-                xaxis=go.layout.XAxis(
-                    title=go.layout.xaxis.Title(
-                        text='Number of TM',
-                        font=dict(
-                            family='Courier New, monospace',
-                            size=15,
-                            color='#7f7f7f'
+                    ),
+                    xaxis=go.layout.XAxis(
+                        title=go.layout.xaxis.Title(
+                            text='Number of TM',
+                            font=dict(
+                                family='Courier New, monospace',
+                                size=15,
+                                color='#7f7f7f'
+                            )
                         )
                     )
                 )
-            )
-            plot_width = 120 + (max(TM_counts.keys()) ) * 50
-            fig = go.Figure(data=plot_data, 
-                            layout=layout)
+                plot_width = 120 + (max(TM_counts.keys()) ) * 50
+                fig = go.Figure(data=plot_data, 
+                                layout=layout)
 
-            fig.layout.margin.update({"l": 80,
-                                      "r": 20,
-                                      "b": 40,
-                                      "t": 20,
-                                      "pad": 10,
-                                      })
+                fig.layout.margin.update({"l": 80,
+                                        "r": 20,
+                                        "b": 40,
+                                        "t": 20,
+                                        "pad": 10,
+                                        })
 
-            html_plot = manipulate_biosqldb.make_div(fig, div_id="barplot")
-            
+                html_plot = manipulate_biosqldb.make_div(fig, div_id="barplot")
+            except:
+                html_plot = ''
+                
 
         if data[2] == '-':
             data[2] = data[1]
@@ -5694,6 +5708,7 @@ def get_locus_annotations(biodb, locus_list):
     for i, data in enumerate(all_data):
         locus2annot.append((i,) + data)
 
+    
     sql2 = 'select A.locus_tag, B.COG_name from (select locus_tag, COG_id from COG_locus_tag2gi_hit ' \
           ' where locus_tag in (%s)) A inner JOIN ' \
           ' COG_cog_names_2014 as B on A.COG_id=B.COG_name' % ('"' + '","'.join(locus_list) + '"')
@@ -5703,7 +5718,7 @@ def get_locus_annotations(biodb, locus_list):
            ' where locus_tag in (%s)) A inner JOIN COG_cog_names_2014 B on A.COG_id=B.COG_name ' \
            ' inner join COG_cog_id2cog_category t2 on B.COG_id=t2.COG_id ' \
            ' inner join COG_code2category t3 on t2.category_id=t3.category_id;' % ('"' + '","'.join(locus_list) + '"')
-    print (sql)
+
     sql3 = 'select locus_tag,ko_id from enzyme_locus2ko where locus_tag in (%s) ' % ('"' + '","'.join(locus_list) + '"')
     sql4 = 'select pathway_name,pathway_category from enzyme_kegg_pathway'
     sql5 = 'select module_name,description from enzyme_kegg_module_v1'
@@ -5711,15 +5726,29 @@ def get_locus_annotations(biodb, locus_list):
     sql6 = 'select * from (select distinct locus_tag,interpro_accession,interpro_description ' \
            ' from interpro where locus_tag in (%s)) A where interpro_accession!="0"' % ('"' + '","'.join(locus_list) + '"')
 
-    print (sql)
-    locus_tag2cog_catego = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    locus_tag2cog_name = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
-    locus_tag2ko = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
-    pathway2category = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql4,))
-    module2category = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql5,))
+    try:
+        locus_tag2cog_catego = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        locus_tag2cog_name = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
+    # TODO: deal with missing data (hide columns in tables)
+    # case when missing tables
+    except:
+        locus_tag2cog_catego = {}
+        locus_tag2cog_name = {}
+    try:
+        locus_tag2ko = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
+        pathway2category = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql4,))
+        module2category = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql5,))
+    except:
+        locus_tag2ko = {}
+        pathway2category = {}
+        module2category = {}
 
-
-    interpro_data = server.adaptor.execute_and_fetchall(sql6,)
+    try:
+        interpro_data = server.adaptor.execute_and_fetchall(sql6,)
+    except:
+        # TODO: deal with missing data (hide columns in tables)
+        # case when missing tables
+        interpro_data = []
     locus2interpro = {}
     for row in interpro_data:
         if row[0] not in locus2interpro:
@@ -5738,7 +5767,12 @@ def get_locus_annotations(biodb, locus_list):
 
     sql4 = 'select ko_id,pathways,modules from enzyme_ko_annotation_v1 where ko_id in (%s); ' % ('"' + '","'.join(locus_tag2ko.values()) + '"')
 
-    ko_data = server.adaptor.execute_and_fetchall(sql4,)
+    try:
+        ko_data = server.adaptor.execute_and_fetchall(sql4,)
+    # TODO: deal with missing data (hide columns in tables)
+    # case when missing tables
+    except:
+        ko_data = []
 
     ko2ko_pathways = {}
     ko2ko_modules = {}

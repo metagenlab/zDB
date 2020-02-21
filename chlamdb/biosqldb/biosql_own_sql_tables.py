@@ -387,7 +387,7 @@ def group2gene(biodb, group_list, rank_limit=2):
     group_filter = '","'.join(group_list)
     sql = 'select orthogroup_name,description,count from orthology_orthogroup2gene t1 ' \
           ' inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id ' \
-          ' where rank<%s and orthogroup_name in ("%s");' % (rank_limit, group_filter)
+          ' where `rank`<%s and orthogroup_name in ("%s");' % (rank_limit, group_filter)
           
     data = server.adaptor.execute_and_fetchall(sql,)
     ortho2gene = {}
@@ -410,7 +410,7 @@ def group2product(biodb, group_list, rank_limit=2):
     group_filter = '","'.join(group_list)
     sql = 'select orthogroup_name,description,count from orthology_orthogroup2product t1 ' \
           ' inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id ' \
-          ' where rank<%s and orthogroup_name in ("%s");' % (rank_limit, 
+          ' where `rank`<%s and orthogroup_name in ("%s");' % (rank_limit, 
                                                              group_filter)
     data = server.adaptor.execute_and_fetchall(sql,)
     ortho2product = {}
@@ -435,7 +435,7 @@ def group2cog(biodb, group_list, rank_limit=2):
           ' inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id ' \
           ' inner join COG_cog_names_2014 t3 on t1.COG_id=t3.COG_id ' \
           ' inner join COG_cog_id2cog_category t4 on t1.COG_id=t4.COG_id ' \
-          ' inner join COG_code2category t5 on t4.category_id=t5.category_id where rank<%s and orthogroup_name in ("%s");' % (rank_limit, 
+          ' inner join COG_code2category t5 on t4.category_id=t5.category_id where `rank`<%s and orthogroup_name in ("%s");' % (rank_limit, 
                                                                                                                               group_filter)
     data = server.adaptor.execute_and_fetchall(sql,)
     ortho2cog = {}
@@ -461,7 +461,7 @@ def group2pfam(biodb, group_list, rank_limit=2):
     group_filter = '","'.join(group_list)
     sql = 'select orthogroup_name,signature_accession,signature_description,count from orthology_orthogroup2pfam t1 ' \
           ' inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id ' \
-          'inner join interpro_signature t3 on t1.signature_id=t3.signature_id where rank<%s and orthogroup_name in ("%s");' % (rank_limit, 
+          'inner join interpro_signature t3 on t1.signature_id=t3.signature_id where `rank`<%s and orthogroup_name in ("%s");' % (rank_limit, 
                                                                                                                                 group_filter)
     data = server.adaptor.execute_and_fetchall(sql,)
     ortho2pfam = {}
@@ -509,8 +509,14 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
 
     orthogroup2genes = group2gene(biodb, ordered_orthogroups)
     orthogroup2products = group2product(biodb, ordered_orthogroups)
-    orthogroup2cogs = group2cog(biodb, ordered_orthogroups)
-    orthogroup2pfam = group2pfam(biodb, ordered_orthogroups)
+    try:
+        orthogroup2cogs = group2cog(biodb, ordered_orthogroups)
+    except:
+        orthogroup2cogs = {}
+    try:
+        orthogroup2pfam = group2pfam(biodb, ordered_orthogroups)
+    except:
+        orthogroup2pfam = {}
 
     match_groups_data = []
     for i, group in enumerate(ordered_orthogroups):
@@ -923,7 +929,7 @@ def get_comparative_subtable(biodb,
     mysql_host = 'localhost'
     mysql_user = 'root'
     mysql_pwd = os.environ['SQLPSW']
-    mysql_db = 'comparative_tables'
+    mysql_db = biodb
     conn = MySQLdb.connect(host=mysql_host,
                                 user=mysql_user,
                                 passwd=mysql_pwd,
@@ -940,7 +946,7 @@ def get_comparative_subtable(biodb,
     else:
         count_df = cache.get(f"{biodb}_{table_name}_acc")
 
-        if not count_df:
+        if not isinstance(count_df, pandas.DataFrame):
             sql = f'select * from comparative_tables_{table_name}_accessions'
             count_df = pandas.read_sql(sql, conn,index_col=first_col_name)
             cache.set(f"{biodb}_{table_name}_acc", count_df)      
@@ -1411,12 +1417,12 @@ def orthogroup2product(db_name, accession=False):
 
 '''
 print 'tata'
-locus_tag2best_hit_dico = locus_tag2best_hit("chlamydia_03_15", "Rhab", hit_number=1, rank=False, taxon_name=False)
+locus_tag2best_hit_dico = locus_tag2best_hit("chlamydia_03_15", "Rhab", hit_number=1, `rank`=False, taxon_name=False)
 print
 print locus_tag2best_hit_dico.keys()[0]
 print locus_tag2best_hit_dico[locus_tag2best_hit_dico.keys()[0]]
 
-locus_tag2best_hit_euk = locus_tag2best_hit("chlamydia_03_15", "Rhab", hit_number=1, rank="superkingdom", taxon_name="Eukaryota")
+locus_tag2best_hit_euk = locus_tag2best_hit("chlamydia_03_15", "Rhab", hit_number=1, `rank`="superkingdom", taxon_name="Eukaryota")
 print locus_tag2best_hit_euk
 '''
 

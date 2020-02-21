@@ -40,7 +40,7 @@ def create_comparative_tables_accession(db_name, table_name):
 
     accession_list = get_all_accessions(db_name)
 
-    sql = "CREATE TABLE comparative_tables.%s_accessions_%s(id VARCHAR(100) NOT NULL" % (table_name, db_name)
+    sql = "CREATE TABLE comparative_tables_%s_accessions(id VARCHAR(100) NOT NULL" % (table_name, db_name)
 
     for i in accession_list:
         sql+=" ,%s INT" % i
@@ -105,7 +105,7 @@ def collect_Pfam_accession(db_name):
     server, db = manipulate_biosqldb.load_db(db_name)
 
 
-    sql_head = 'INSERT INTO comparative_tables.Pfam_accessions_%s (id,' % db_name
+    sql_head = 'INSERT INTO comparative_tables_Pfam_accessions (id,'
 
     accession_list = get_all_accessions(db_name)
     sql_head += ','.join(accession_list) + ') values ('
@@ -294,8 +294,8 @@ def collect_interpro_accession(db_name):
 
     accession_list = get_all_accessions(db_name)
 
-    sql_head = 'INSERT INTO comparative_tables.interpro_accessions_%s (id,' % db_name
-
+    sql_head = 'INSERT INTO comparative_tables_interpro_accessions (id,'
+    
     for taxon in accession_list:
         sql_head += '%s,' % taxon
     sql_head = sql_head[0:-1] + ') values ('
@@ -389,7 +389,7 @@ def collect_ko_accession(db_name):
 
     accession_list = get_all_accessions(db_name)
 
-    sql_head = 'INSERT INTO comparative_tables.ko_accessions_%s (id,' % db_name
+    sql_head = 'INSERT INTO comparative_tables_ko_accessions (id,'
 
     for accession in accession_list:
         sql_head += '%s,' % accession
@@ -488,7 +488,7 @@ def collect_EC_accession(db_name):
 
     accession_list = get_all_accessions(db_name)
 
-    sql_head = 'INSERT INTO comparative_tables.EC_accessions_%s (id,' % db_name
+    sql_head = 'INSERT INTO comparative_tables_EC_accessions (id,'
 
     for accession in accession_list:
         sql_head += '%s,' % accession
@@ -530,14 +530,14 @@ def collect_orthogroup_accession(db_name):
 
     accession_list = get_all_accessions(db_name)
 
-    sql_head = 'INSERT INTO comparative_tables_orthology_accessions (id,' % db_name
+    sql_head = 'INSERT INTO comparative_tables_orthology_accessions (id,'
 
     for accession in accession_list:
         sql_head += '%s,' % accession
     sql_head = sql_head[0:-1] + ') values ('
 
-    all_orthogroup_ids_sql = 'select distinct orthogroup from orthology_detail;' % (db_name)
-
+    all_orthogroup_ids_sql = 'select distinct orthogroup from orthology_detail;'
+    
     all_orthogroup_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_orthogroup_ids_sql,)]
 
     i = 0
@@ -579,7 +579,7 @@ def get_mysql_table(db_name, table_name):
         sql_taxons += ' `%s`,' % all_taxons_id[i]
     sql_taxons += ' `%s`' % all_taxons_id[-1]
 
-    sql = "select %s from comparative_tables_%s" % (sql_taxons, table_name, db_name)
+    sql = "select %s from comparative_tables_%s" % (sql_taxons, table_name)
     #print sql
     mat = np.array(server.adaptor.execute_and_fetchall(sql,))
     #np.chararray
@@ -605,7 +605,7 @@ def n_shared_orthogroup_table(db_name):
 
     sql = "CREATE TABLE comparative_tables_shared_orthogroups(taxon_1 INT NOT NULL," \
           " taxon_2 INT NOT NULL," \
-          " n_shared_orthogroups INT)" % (db_name)
+          " n_shared_orthogroups INT)"
 
     server.adaptor.execute(sql)
 
@@ -615,7 +615,7 @@ def n_shared_orthogroup_table(db_name):
         for taxon_2 in orthodico.keys():
             sys.stdout.write("%s\t%s\n" % (taxon_1, taxon_2))
             sql = 'insert into comparative_tables_shared_orthogroups(taxon_1, taxon_2, n_shared_orthogroups) ' \
-                  ' VALUES ("%s", "%s", %s)' % (db_name, taxon_1, taxon_2, orthodico[taxon_1][taxon_2])
+                  ' VALUES ("%s", "%s", %s)' % (taxon_1, taxon_2, orthodico[taxon_1][taxon_2])
             server.adaptor.execute(sql)
             server.adaptor.commit()
 
@@ -637,7 +637,7 @@ def identity_closest_homolog(db_name):
           " locus_1 INT NOT NULL," \
           " locus_2 INT NOT NULL," \
           " identity FLOAT, index locus_1(locus_1)," \
-          " index locus_2(locus_2), index taxon_1(taxon_1), index taxon_2(taxon_2))" % (db_name)
+          " index locus_2(locus_2), index taxon_1(taxon_1), index taxon_2(taxon_2))"
 
     server.adaptor.execute(sql2)
 
@@ -693,14 +693,12 @@ def shared_orthogroups_average_identity(db_name):
     all_taxons = taxon2description.keys()
     for i, taxon_1 in enumerate(all_taxons):
         for taxon_2 in all_taxons[i+1:]:
-            data_sql = 'select identity from comparative_tables_identity_closest_homolog2 where taxon_1=%s and taxon_2=%s' % (db_name,
-                                                                                                             taxon_1,
-                                                                                                             taxon_2)
+            data_sql = 'select identity from comparative_tables_identity_closest_homolog2 where taxon_1=%s and taxon_2=%s' % (taxon_1,
+                                                                                                                              taxon_2)
             data = list([i[0] for i in server.adaptor.execute_and_fetchall(data_sql,)])
 
             sql = 'insert into comparative_tables_shared_og_av_id(taxon_1, taxon_2, average_identity,' \
-                  ' median_identity, n_pairs) values (%s, %s, %s, %s, %s)' % (db_name,
-                                                                              taxon_1,
+                  ' median_identity, n_pairs) values (%s, %s, %s, %s, %s)' % (taxon_1,
                                                                               taxon_2,
                                                                               numpy.average(data),
                                                                               numpy.median(data),
