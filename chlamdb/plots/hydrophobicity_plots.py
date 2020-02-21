@@ -58,7 +58,7 @@ def locus2hydrophobicity_plot(biodb, locus):
 
     # Draw the known helix and ribbon ranges
 
-    sql2 = 'select start, stop from interpro_%s where locus_tag="%s" and signature_accession="TRANSMEMBRANE"' % (biodb, locus)
+    sql2 = 'select start, stop from interpro where locus_tag="%s" and signature_accession="TRANSMEMBRANE"' % (biodb, locus)
     transmembrane_data = server.adaptor.execute_and_fetchall(sql2,)
     for transmembrane in transmembrane_data:
         pylab.axvspan(transmembrane[0], transmembrane[1], facecolor="yellow", alpha=0.4) # helix

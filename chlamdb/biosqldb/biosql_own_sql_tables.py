@@ -1917,7 +1917,7 @@ def update_interpro_table(biodb, locus_list, locus2ortho, i):
     for locus in locus_list:
         y+=1
         #print i,y, len(locus_list), locus
-        sql = 'UPDATE interpro_%s SET orthogroup="%s" WHERE  locus_tag="%s";' % (biodb, locus2ortho[locus], locus)
+        sql = 'UPDATE interpro SET orthogroup="%s" WHERE  locus_tag="%s";' % (biodb, locus2ortho[locus], locus)
         server.adaptor.execute(sql,)
         server.commit()
 
@@ -1934,19 +1934,19 @@ def add_orthogroup_to_interpro_table(biodb_name):
     import time
 
     server, db = manipulate_biosqldb.load_db(biodb_name)
-    #sql = 'ALTER TABLE interpro_%s ADD orthogroup VARCHAR(100);' % biodb_name
-    sql = 'select * from interpro_%s;' % biodb_name
+    #sql = 'ALTER TABLE interpro ADD orthogroup VARCHAR(100);' % biodb_name
+    sql = 'select * from interpro;' % biodb_name
 
     interpro_data = server.adaptor.execute_and_fetchall(sql,)
 
     try:
-        sql = 'drop table interpro_%s' % biodb_name
+        sql = 'drop table interpro' % biodb_name
         server.adaptor.execute(sql,)
         server.adaptor.commit()
     except:
         pass
 
-    sql = 'CREATE TABLE interpro_%s (accession VARCHAR(100),' \
+    sql = 'CREATE TABLE interpro (accession VARCHAR(100),' \
           ' locus_tag VARCHAR(200), ' \
           ' organism VARCHAR(200),  ' \
           ' taxon_id INT,' \
@@ -1972,7 +1972,7 @@ def add_orthogroup_to_interpro_table(biodb_name):
         orthogroup = locus2ortho[one_row[1]]
 
 
-        sql = 'INSERT INTO interpro_%s(accession, locus_tag, organism, taxon_id,' \
+        sql = 'INSERT INTO interpro(accession, locus_tag, organism, taxon_id,' \
               ' sequence_length, analysis, signature_accession, signature_description, start, ' \
               ' stop, score, interpro_accession, interpro_description, GO_terms, pathways, orthogroup) ' \
               ' values ("%s", "%s", "%s", %s, %s, "%s", "%s", "%s", %s, %s, "%s", "%s", "%s", "%s", "%s", "%s");' % (biodb_name,

@@ -132,12 +132,12 @@ def superfamily_data2features_string(superfamily_data):
 from chlamdb.biosqldb import manipulate_biosqldb
 server, db = manipulate_biosqldb.load_db("chlamydia_04_16")
 sql_pfam = 'select signature_accession, signature_description,start,stop' \
-           ' from interpro_%s where locus_tag="%s" ' \
+           ' from interpro where locus_tag="%s" ' \
            ' and analysis="Pfam";' % ("chlamydia_04_16", "WCW_RS07525")
 #pfam_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_pfam, )]
 
 #print intero_data2features_string(pfam_data)
-sql18 = 'select signature_accession,start,stop from interpro_%s where analysis="Phobius" and locus_tag="%s" ' \
+sql18 = 'select signature_accession,start,stop from interpro where analysis="Phobius" and locus_tag="%s" ' \
         ' and signature_accession in ("TRANSMEMBRANE",' \
         ' "SIGNAL_PEPTIDE_C_REGION","SIGNAL_PEPTIDE_N_REGION");' % ("chlamydia_04_16", "BN1013_01691")
 

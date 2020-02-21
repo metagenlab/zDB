@@ -1048,7 +1048,7 @@ def extract_pfam(request, classification="taxon_id"):
 
                     motif_list = '"' + '","'.join(match_groups) + '"'
 
-                    locus_list_sql = 'select locus_tag from interpro_%s where taxon_id=%s ' \
+                    locus_list_sql = 'select locus_tag from interpro where taxon_id=%s ' \
                                  ' and signature_accession in (%s)' % (biodb, reference_taxon, motif_list)
 
                     locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
@@ -1457,7 +1457,7 @@ def venn_pfam(request):
 
 
             pfam2description = ''
-            sql = 'select signature_accession, signature_description, count(*) from interpro_%s where analysis="Pfam" group by signature_accession;' % biodb
+            sql = 'select signature_accession, signature_description, count(*) from interpro where analysis="Pfam" group by signature_accession;' % biodb
             #print sql
             data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -1606,7 +1606,7 @@ def extract_interpro(request, classification="taxon_id"):
 
                 filter = '"' + '","'.join(match_groups) + '"'
 
-                sql2 = 'select interpro_accession, interpro_description from interpro_%s' \
+                sql2 = 'select interpro_accession, interpro_description from interpro' \
                 ' where interpro_accession in (%s) group by interpro_accession;' % (biodb, filter)
 
                 raw_data = list(server.adaptor.execute_and_fetchall(sql2,))
@@ -1648,7 +1648,7 @@ def extract_interpro(request, classification="taxon_id"):
                 interpro_list = '"' + '","'.join(match_groups) + '"'
 
                 #print extract_result
-                locus_list_sql = 'select locus_tag from interpro_%s where taxon_id=%s ' \
+                locus_list_sql = 'select locus_tag from interpro where taxon_id=%s ' \
                              ' and interpro_accession in (%s)' % (biodb, reference_taxon, interpro_list)
 
                 locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
@@ -1709,7 +1709,7 @@ def venn_interpro(request):
 
 
             interpro2description = ''
-            sql = 'select interpro_accession,interpro_description, count(*) from interpro_%s group by interpro_accession;' % biodb
+            sql = 'select interpro_accession,interpro_description, count(*) from interpro group by interpro_accession;' % biodb
             data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
             for i in data:
                 if i in all_pfam_list:
@@ -2298,11 +2298,11 @@ def locusx(request, locus=None, menu=True):
 
             sql17 = 'select phylogeny from biosqldb_phylogenies_BBH where orthogroup="%s"' % (biodb, orthogroup)
 
-            sql18 = 'select signature_accession,start,stop from interpro_%s where analysis="Phobius" and locus_tag="%s" ' \
+            sql18 = 'select signature_accession,start,stop from interpro where analysis="Phobius" and locus_tag="%s" ' \
                     ' and signature_accession in ("TRANSMEMBRANE",' \
                     ' "SIGNAL_PEPTIDE_C_REGION","SIGNAL_PEPTIDE_N_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_H_REGION");' % (biodb, locus)
 
-            sql19 = 'select signature_accession, interpro_description,start, stop from interpro_%s ' \
+            sql19 = 'select signature_accession, interpro_description,start, stop from interpro ' \
                     ' where analysis="SUPERFAMILY" and locus_tag="%s";' % (biodb, locus)
 
             sql20 = 'select t8.uniprot_accession,t2.evalue, t2.bitscore_first_hsp, t2.identity, t2.query_TMS, t2.hit_TMS, ' \
@@ -2580,7 +2580,7 @@ def locusx(request, locus=None, menu=True):
             except:
                 protparams_data = False
             try:
-                sql_interpro = 'select interpro_accession, interpro_description from interpro_%s' \
+                sql_interpro = 'select interpro_accession, interpro_description from interpro' \
                                ' where locus_tag="%s" and interpro_accession !="0"' \
                                ' group by interpro_accession;' % (biodb, locus)
                 interpro_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_interpro, )]
@@ -2598,7 +2598,7 @@ def locusx(request, locus=None, menu=True):
             #print interpro2taxononmy
             try:
                 sql_pfam = 'select signature_accession, signature_description,start,stop' \
-                           ' from interpro_%s where locus_tag="%s" ' \
+                           ' from interpro where locus_tag="%s" ' \
                            ' and analysis="Pfam";' % (biodb, locus)
                 pfam_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_pfam, )]
                 from chlamdb.plots import uniprot_feature_viewer
@@ -2608,7 +2608,7 @@ def locusx(request, locus=None, menu=True):
                 pfam_data = False
 
             try:
-                sql_pathway = 'select locus_tag, pathways, interpro_description from interpro_%s where ' \
+                sql_pathway = 'select locus_tag, pathways, interpro_description from interpro where ' \
                               ' locus_tag="%s" and pathways!="0" group by pathways;'  % (biodb, locus)
 
                 pathway_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_pathway, )]
@@ -3032,7 +3032,7 @@ def fam(request, fam, type):
             sql1 =   'select seqfeature_id from interpro_signature t1 ' \
                      ' inner join interpro_interpro t2 on t1.signature_id=t2.signature_id ' \
                      ' where t1.signature_accession="%s" group by seqfeature_id;' % (biodb, fam)
-            sql2 = 'select signature_description from interpro_%s where signature_accession="%s" limit 1' % (biodb, fam)
+            sql2 = 'select signature_description from interpro where signature_accession="%s" limit 1' % (biodb, fam)
             try:
                 info = server.adaptor.execute_and_fetchall(sql2, )[0]
             except:
@@ -3055,7 +3055,7 @@ def fam(request, fam, type):
             sql1 =   'select seqfeature_id from interpro_entry t1 inner join interpro_signature t2 on t1.interpro_id=t2.interpro_id ' \
                      ' inner join interpro_interpro t3 on t2.signature_id=t3.signature_id ' \
                      ' where name="%s" group by seqfeature_id;;' % (biodb, fam)
-            sql2 = 'select signature_description from interpro_%s where interpro_accession="%s" limit 1' % (biodb, fam)
+            sql2 = 'select signature_description from interpro where interpro_accession="%s" limit 1' % (biodb, fam)
             try:
                 info = server.adaptor.execute_and_fetchall(sql2, )[0]
             except IndexError:
@@ -3139,7 +3139,7 @@ def fam(request, fam, type):
                                                                               [fam],
                                                                               'Pfam')
 
-            sql3= 'select distinct taxon_id,orthogroup,signature_accession from interpro_%s ' \
+            sql3= 'select distinct taxon_id,orthogroup,signature_accession from interpro ' \
                   ' where analysis="Pfam" and orthogroup in (%s);' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"')
 
         elif type == 'cog':
@@ -3158,7 +3158,7 @@ def fam(request, fam, type):
                                                                               'interpro')
 
             sql3 = 'select distinct taxon_id,orthogroup,interpro_accession from ' \
-                   ' interpro_%s where orthogroup in (%s);' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"')
+                   ' interpro where orthogroup in (%s);' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"')
 
         elif type == 'EC':
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
@@ -5751,7 +5751,7 @@ def get_locus_annotations(biodb, locus_list):
     sql5 = 'select module_name,description from enzyme_kegg_module_v1'
 
     sql6 = 'select * from (select distinct locus_tag,interpro_accession,interpro_description ' \
-           ' from interpro_%s where locus_tag in (%s)) A where interpro_accession!="0"' % (biodb,
+           ' from interpro where locus_tag in (%s)) A where interpro_accession!="0"' % (biodb,
                                                              '"' + '","'.join(locus_list) + '"')
 
     print (sql)
@@ -9446,7 +9446,7 @@ def annotation_overview(request):
 
     taxon_id2n_swiss_hits = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_swiss,))
 
-    sql_Pfam = 'select taxon_id, count(*) from (select distinct taxon_id,locus_tag from interpro_%s ' \
+    sql_Pfam = 'select taxon_id, count(*) from (select distinct taxon_id,locus_tag from interpro ' \
                ' where analysis="Pfam") A group by taxon_id;' % biodb
 
     taxon_id2n_Pfam = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_Pfam,))
@@ -10518,17 +10518,17 @@ def interpro(request):
 
                 if search_type == "description":
 
-                    sql = 'select %s from interpro_%s where %s and (interpro_description REGEXP "%s" or signature_description REGEXP "%s")' % (columns, biodb, taxon_limit, search_term, search_term)
+                    sql = 'select %s from interpro where %s and (interpro_description REGEXP "%s" or signature_description REGEXP "%s")' % (columns, biodb, taxon_limit, search_term, search_term)
 
                 if search_type == "GO":
-                    sql = 'select %s from interpro_%s where %s and (GO_terms REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
+                    sql = 'select %s from interpro where %s and (GO_terms REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
 
 
                 if search_type == "EC":
-                    sql = 'select %s from interpro_%s where %s and (pathways REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
+                    sql = 'select %s from interpro where %s and (pathways REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
 
                 if search_type == "interpro_accession":
-                    sql = 'select %s from interpro_%s where %s and (interpro_accession REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
+                    sql = 'select %s from interpro where %s and (interpro_accession REGEXP "%s")' % (columns, biodb, taxon_limit, search_term)
 
 
                 try:
@@ -10611,7 +10611,7 @@ def search(request):
                       ' COG_code2category as t2 on t1.function=t2.code where description REGEXP "%s"' % (search_term)
                 raw_data_cog = server.adaptor.execute_and_fetchall(sql,)
 
-                sql = 'select * from interpro_%s where (signature_description REGEXP "%s"' \
+                sql = 'select * from interpro where (signature_description REGEXP "%s"' \
                       ' or interpro_description REGEXP "%s")' % (biodb, search_term, search_term)
                 raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
 
@@ -12027,7 +12027,7 @@ def interactions_genome(request):
             sql = 'select seqfeature_id, gene, product from orthology_detail where taxon_id="%s"' % (biodb, taxon_id)
             locus2gene_product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-            sql = 'select seqfeature_id,interpro_accession,interpro_description from interpro_%s ' \
+            sql = 'select seqfeature_id,interpro_accession,interpro_description from interpro ' \
                   ' where taxon_id=%s and interpro_accession != "0" group by locus_tag,interpro_accession' % (biodb, taxon_id)
 
             locus2interpro = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -12100,7 +12100,7 @@ def interactions_genome_string(request):
             sql = 'select locus_tag, gene, product from orthology_detail where taxon_id="%s"' % (biodb, taxon_id)
             locus2gene_product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-            sql = 'select locus_tag,interpro_accession,interpro_description from interpro_%s ' \
+            sql = 'select locus_tag,interpro_accession,interpro_description from interpro ' \
                   ' where taxon_id=%s and interpro_accession != "0" group by locus_tag,interpro_accession' % (biodb, taxon_id)
 
             locus2interpro = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -14402,10 +14402,10 @@ def pfam_comparison(request):
 
             sql = 'select * from (select id from comparative_tables_Pfam where %s group by id) A' \
                   ' inner join (select distinct signature_accession,signature_description,count(*) as n ' \
-                  ' from interpro_%s where analysis="Pfam" group by signature_accession) B on A.id = B.signature_accession' % (biodb,filter, biodb)
+                  ' from interpro where analysis="Pfam" group by signature_accession) B on A.id = B.signature_accession' % (biodb,filter, biodb)
 
             sql_pathway_count = 'select distinct signature_accession,signature_description,count(*) as n ' \
-                                ' from interpro_%s where analysis="Pfam" group by signature_accession;' % biodb
+                                ' from interpro where analysis="Pfam" group by signature_accession;' % biodb
 
             pfam_data_raw = server.adaptor.execute_and_fetchall(sql,)
             pfam2data = {}
@@ -14419,7 +14419,7 @@ def pfam_comparison(request):
             for taxon in taxon_list:
 
                 sql = 'select distinct signature_accession,count(*) as n ' \
-                      ' from interpro_%s where analysis="Pfam" and taxon_id=%s ' \
+                      ' from interpro where analysis="Pfam" and taxon_id=%s ' \
                       ' group by signature_accession;' % (biodb,taxon)
 
                 accession2count_taxon = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))

@@ -62,7 +62,7 @@ def collect_pfam(db_name):
         sql_head += '`%s`,' % taxon
     sql_head = sql_head[0:-1] + ') values ('
 
-    all_pfam_ids_sql = 'select signature_accession from interpro_%s where analysis="Pfam" ' \
+    all_pfam_ids_sql = 'select signature_accession from interpro where analysis="Pfam" ' \
                        'group by signature_accession;' % db_name
 
     all_pfam_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_pfam_ids_sql,)]
@@ -110,7 +110,7 @@ def collect_Pfam_accession(db_name):
     accession_list = get_all_accessions(db_name)
     sql_head += ','.join(accession_list) + ') values ('
 
-    all_pfam_ids_sql = 'select signature_accession from interpro_%s where analysis="Pfam" ' \
+    all_pfam_ids_sql = 'select signature_accession from interpro where analysis="Pfam" ' \
                        'group by signature_accession;' % db_name
 
     all_pfam_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_pfam_ids_sql,)]

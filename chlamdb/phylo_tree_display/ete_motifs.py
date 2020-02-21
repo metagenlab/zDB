@@ -1924,13 +1924,13 @@ def get_pfam_data(orthogroup, biodb, aa_alignment=False):
     sql = 'select A.locus_tag, B.start, B.stop, A.organism, A.sequence_length, B.signature_accession, B.signature_description, A.taxon_id ' \
           ' from (select taxon_id, orthogroup,locus_tag, protein_id, organism, length(translation) as sequence_length from orthology_detail ' \
           ' where orthogroup="%s" ) A ' \
-          ' left join (select * from interpro_%s where orthogroup="%s" and analysis="Pfam") B ' \
+          ' left join (select * from interpro where orthogroup="%s" and analysis="Pfam") B ' \
           ' on A.locus_tag=B.locus_tag;' % (biodb, orthogroup, biodb, orthogroup)
     '''
     # correct with filter on join
     sql = 'select t1.locus_tag,t2.start,t2.stop,t1.organism,length(t1.translation),t2.signature_accession,t2.signature_description,t1.taxon_id ' \
           ' from orthology_detail t1 ' \
-          ' left join interpro_%s t2 on t1.seqfeature_id=t2.seqfeature_id and t2.orthogroup="%s" and t2.analysis="Pfam" ' \
+          ' left join interpro t2 on t1.seqfeature_id=t2.seqfeature_id and t2.orthogroup="%s" and t2.analysis="Pfam" ' \
           ' where t1.orthogroup="%s";' % (biodb, biodb, orthogroup, orthogroup)
 
     #print(sql)
@@ -1968,7 +1968,7 @@ def get_TM_data(biodb,
     if orthogroup:
         #print("orthogroup!")
         sql = 'select locus_tag, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
-          ' from interpro_%s as t2 where orthogroup="%s" and analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (biodb, orthogroup)
+          ' from interpro as t2 where orthogroup="%s" and analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (biodb, orthogroup)
 
         sql2 = 'select locus_tag, char_length(translation), organism from orthology_detail where orthogroup="%s";' % (biodb, orthogroup)
 
@@ -1984,7 +1984,7 @@ def get_TM_data(biodb,
         locus2seq_length = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
     else:
         sql = 'select locus_tag, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
-          ' from interpro_%s as t2 where analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (biodb)
+          ' from interpro as t2 where analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (biodb)
     #print(sql)
     data = server.adaptor.execute_and_fetchall(sql,)
 

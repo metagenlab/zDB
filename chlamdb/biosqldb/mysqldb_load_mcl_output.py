@@ -1158,9 +1158,9 @@ if __name__ == '__main__':
         #protein_id2phobius = parse_phobius.parse_short_phobius(*args.phobius_files)
 
         '''
-        sql = 'select accession,count(*) from interpro_%s ' \
+        sql = 'select accession,count(*) from interpro ' \
               ' where analysis="Phobius" and signature_accession="TRANSMEMBRANE" group by locus_tag;' % args.db_name
-        sql2 = 'select accession,count(*) from interpro_%s ' \
+        sql2 = 'select accession,count(*) from interpro ' \
                ' where analysis="Phobius" and signature_accession="SIGNAL_PEPTIDE" group by locus_tag' % args.db_name
 
         server, db = manipulate_biosqldb.load_db(args.db_name)
