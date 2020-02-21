@@ -2665,7 +2665,7 @@ def locusx(request, locus=None, menu=True):
                          ' inner join COG_code2category t5 on t4.category_id=t5.category_id where t2.orthogroup_name="%s";' % (biodb, 
                                                                                                                             biodb, 
                                                                                                                             locus)
-            sql_group4 = 'select rank,ko_accession,count,name,definition,EC,pathways,modules from orthology.orthogroup2ko_%s t1 ' \
+            sql_group4 = 'select rank,ko_accession,count,name,definition,EC,pathways,modules from orthology.orthogroup2ko t1 ' \
                          ' inner join orthology_orthogroup t2 on t1.group_id=t2.orthogroup_id ' \
                          ' inner join enzyme_ko_annotation t3 on t1.ko_id=t3.ko_id where t2.orthogroup_name="%s";' % (biodb, 
                                                                                                                     biodb, 
