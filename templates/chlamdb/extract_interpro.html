@@ -4,29 +4,11 @@
 <html>
     <head>
         {% load custom_tags %}
+        {% load staticfiles %}
+        {% load static %}
         {% load crispy_forms_tags %}
-        <script type="text/javascript" id="js">
-            $(document).ready(function() {
-            // call the tablesorter plugin
-            $("table").tablesorter({
-            // change the default sorting order from 'asc' to 'desc'
-            sortInitialOrder: 1
-            });
-            });
-        </script>
-        <script type="text/javascript">
-            jQuery(document).ready(function ($) {
-                $('#tabs_main').tab();
-            });
-        </script>
-        <script type="text/javascript">
-            jQuery(document).ready(function ($) {
-                $('#tabs1').tab();
-            });
-        </script>
         {% include "chlamdb/header.html" %}
     </head>
-
 
     <div class="container-fluid" id="main_container">
       <div class="row">
@@ -35,8 +17,6 @@
               <div class="row">
                 <div class="col-lg-12">
                    {% include "chlamdb/menu.html" %}
-
-
 
                     <nav>
                         <ul id="tabs_main" class="nav nav-tabs">
@@ -60,186 +40,22 @@
 
 
                         {% block content %}
-                        <form action="{% url "extract_interpro" %}" method="post">
+                        <form action="{% url "extract_interpro" %}" method="post" id="extract-form">
                             {% csrf_token %}
                             {% crispy form %}
                         </form>
                         {% endblock %}
                     </div>
 
-                    {% if wrong_n_missing%}
-
-                    <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                        <div class="panel-heading" style="width:100%">
-                            <h3 class="panel-title">Help</h3>
-                        </div>
-                        <p style="margin: 10px 10px 10px 10px">You cannot set a number of missing data bigger than the number of included genomes</p>
-                    </div>
-
-                    {% elif no_match%}
-
-                    <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
-                        <div class="panel-heading" style="width:100%">
-                            <h3 class="panel-title"></h3>
-                        </div>
-                        <p style="margin: 10px 10px 10px 10px">No match</p>
-                    </div>
-
-                    {% endif %}
-
-                    {% if envoi_extract %}
-
-                        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-                            <li class="active"><a href="#red" data-toggle="tab">Orthogroups</a></li>
-                            <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
-                        </ul>
-
-                        <div id="my-tab-content" class="tab-content">
-
-                            <div class="tab-pane active" id="red">
-
-
-                                <div id="export_bouttons_groups">
-                                <form name="circos_form" id="circos_form" action="{% url 'circos_main' %}" method="post">
-                                {% csrf_token %}
-                                    <input type="hidden" name="reference_taxon" value="{{ reference_taxon }}">
-                                    <input type="hidden" name="target_list" value="{{ target_circos_taxons }}">
-                                    <input type="hidden" name="highlight" value="{{ locus_list }}">
-                                    <button class="btn btn-success">Show on circular map</button>
-                                </form>
-                                    <br/>
-                                </div>
-
-                                <p>Number of Interpro ID: {{ sum_group }} </p>
-
-                                <table class="display" id="interpro_table">
-
-                                    <thead>
-                                        <tr>
-                                          <th>Interpro accession</th>
-                                          <th>Description</th>
-                                          <th>Count (/{{include|length}})</th><th>Count all (/{{max_n}})</th>
-                                        </tr>
-                                    </thead>
-
-                                    {% for values in match_data %}
-                                        <tr>
-                                            <td><a href="{% url 'fam' values.0 'interpro' %}">{{values.0}}</a></td>
-                                            <td>{{values.1}}</td>
-                                            <td>{{values.2}}</td>
-                                            <td>{{values.3}}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </table>
+                    <div class="col-lg-12">
+                            <div id="progress-div" class="row" style="padding-top:5px;height:25px;" class="row"></div>
+          
+                            <div class="progress row" style="width=50%;" id="progress">
+                              <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 20%"></div>
                             </div>
-                            <div class="tab-pane" id="orange">
+                            <div id="results" class="row"></div>
+                      </div>
 
-                            </div>
-
-                            <div class="tab-pane" id="tab2">
-
-                                <h3> Locus annotation </h3>
-                                <div id="export_bouttons_groups">
-                                    <a href="{% url 'get_fasta' %}{{fasta_url_ref}}" class="btn btn-success">Download fasta</a>
-                                <form name="circos_form" id="circos_form" action="{% url 'circos_main' %}" method="post">
-                                {% csrf_token %}
-                                    <input type="hidden" name="reference_taxon" value="{{ reference_taxon }}">
-                                    <input type="hidden" name="target_list" value="{{ target_circos_taxons }}">
-                                    <input type="hidden" name="highlight" value="{{ locus_list }}">
-                                    <button class="btn btn-success">Show on circular map</button>
-                                </form>
-
-                                    <br/>
-                                </div>
-                                <table id="reference_genome" class="display">
-                                    <thead>
-                                        <tr>
-                                            <th></th>
-                                            <th id="entete_locus">Orthogroup</th>
-                                            <th id="entete_locus">Locus</th>
-                                            <th style="width:10px">C</th>
-                                            <th style="width:70px">COGn</th>
-                                            <th style="width:55px">KO</th>
-                                            <th style="width:260px">Pathways</th>
-                                            <th style="width:230px">Modules</th>
-                                            <th style="width:230px">Interpro</th>
-                                            <th id="entete_gene">Gene</th>
-                                            <th id="entete_n">nH</th>
-                                            <th id="entete_n">nG</th>
-                                            <th id="entete_n">TM</th>
-                                            <th id="entete_n">SP</th>
-                                            <th id="entete_product">Product</th>
-
-
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-
-                                        {%for values in locus2annot%}
-                                        <tr>
-                                            <td>{{values.0}}</td>
-                                            <td>{{values.1}}</td>
-                                            <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
-                                            <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
-                                            {% with locus_tag2cog_name|keyvalue:values.2 as name %}
-                                                {% if name == '-' %}
-                                                    <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
-                                                {% else %}
-                                                    <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
-                                                {% endif %}
-                                            {%endwith%}
-                                            {% with locus_tag2ko|keyvalue:values.2 as oneko %}
-                                                {% if oneko == '-' %}
-                                                    <td>{{locus_tag2ko|keyvalue:values.2}}</td>
-                                                    <td>-</td>
-                                                    <td>-</td>
-                                                {% else %}
-                                                    <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
-                                                    {% with ko2ko_pathways|keyvalue:oneko as name %}
-                                                        {% if name == '-' %}
-                                                            <td>-</td>
-                                                        {% else %}
-                                                            <td>{{name|safe}}</td>
-                                                        {% endif %}
-                                                    {%endwith%}
-                                                    {% with ko2ko_modules|keyvalue:oneko as name %}
-                                                        {% if name == '-' %}
-                                                            <td>-</td>
-                                                        {% else %}
-                                                            <td>{{name|safe}}</td>
-                                                        {% endif %}
-                                                    {%endwith%}
-                                                {% endif %}
-
-
-                                            {%endwith%}
-                                            {% with locus2interpro|keyvalue:values.2 as interpro_data %}
-                                            <td>
-                                                {% for one_interpro in interpro_data %}
-                                                {% if one_interpro.0 != '-' %}
-                                                    <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
-                                                {%else%}
-                                                    {{one_interpro.0}}
-                                                {%endif%}
-                                                    {{one_interpro.1}} </br>
-                                                {% endfor %}
-                                                {%endwith%}
-                                            </td>
-                                            <td>{{values.7}}</td>
-                                            <td>{{values.8}}</td>
-                                            <td>{{values.9}}</td>
-                                            <td>{{values.10}}</td>
-                                            <td>{{values.11}}</td>
-                                            <td>{{values.12}}</td>
-
-                                        </tr>
-
-                                        {%endfor%}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    {% endif %}
                 </div>
             </div>
           </div>
@@ -252,74 +68,142 @@
     <div id="footer">
 
     </div>
-    <script type="text/javascript" id="js2">
-      $(document).ready(function() {
 
-          var x=document.getElementById("id_reference");
-          for (var i = 0; i < x.options.length; i++) {
-              $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
-          }
+<script type="text/javascript">
+    $("#progress").hide();
 
-          $("#id_orthologs_in").change(function() {
-              document.getElementById("id_reference").selectedIndex=0;
-              var x=document.getElementById("id_orthologs_in");
-              for (var i = 0; i < x.options.length; i++) {
-                  if(x.options[i].selected ==true){
+    var frm = $('#extract-form');
+    var prg_dv = $('#progress-div');
+    var pgrbar = $('.progress-bar');
+    frm.submit(function () {
+        console.log("submit!!!")
+        $.ajax({
+            type: frm.attr('method'),
+            url: frm.attr('action'),
+            data: frm.serialize(),
+            success: function (data) {
+                console.log("success");
+                console.log(data.task_id);
+                if (data.task_id != null) {
+                    get_task_info(data.task_id);
+                }
+            },
+            error: function (data) {
+                console.log("Something went wrong!");
+            }
+        });
+        return false;
+    });
 
-                  $("#id_reference").children("option[value^=" + x.options[i].value + "]").show()
-                  }else{
-                  $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
+    function get_task_info(task_id) {
+        $.ajax({
+            type: 'get',
+            url: '/get-task-info/',
+            data: {'task_id': task_id},
+            success: function (data) {
+                pgrbar.css('width', 10+'%').attr('aria-valuenow', 10)
+                $("#progress").show();
+                $('#results').html('')
+                if (data.state == 'PENDING') {
+                    prg_dv.html('Please wait...');
+                }
+                else if (data.state == 'PROGRESS') {
+                    pgrbar.css('width', data.result.percent+'%').attr('aria-valuenow', data.result.percent)
+                    console.log(data.result.percent);
+                    prg_dv.html('Step ' + data.result.current + '/' + data.result.total + ': ' + data.result.description);
+                }
+                else if (data.state == 'SUCCESS') {
+                    // pgrbar.hide();
+                    prg_dv.html('Done');
+                    $('#results').html(data.result);
+                    $("#progress").hide();
 
-                  }
-                  }
-          })
+                    
 
-      })
+                    $('#circos_form').append('<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">');
 
+                    $(document).ready(function() {
 
+                var x=document.getElementById("id_reference");
+                for (var i = 0; i < x.options.length; i++) {
+                    $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
+                }
 
-      $(document).ready(function() {
-      $('#interpro_table').DataTable( {
-       dom: 'Bfrtip',
-      "paging":   true,
-      "ordering": true,
-      "info":     false,
-      buttons: [
-      {
-          extend: 'excel',
-          title: 'cog_table'
-      },
-      {
-          extend: 'csv',
-          title: 'cog_table'
-      }
-      ],
-      } );
-      } );
+                $("#id_orthologs_in").change(function() {
+                    document.getElementById("id_reference").selectedIndex=0;
+                    var x=document.getElementById("id_orthologs_in");
+                    for (var i = 0; i < x.options.length; i++) {
+                        if(x.options[i].selected ==true){
 
-      $(document).ready(function() {
-      $('#reference_genome').DataTable( {
-       dom: 'Bfrtip',
-      "paging":   true,
-      "ordering": true,
-      "info":     false,
-      buttons: [
-      {
-          extend: 'excel',
-          title: 'reference_genome_locus_list'
-      },
-      {
-          extend: 'csv',
-          title: 'reference_genome_locus_list'
-      }
-      ],
-      } );
-      } );
+                        $("#id_reference").children("option[value^=" + x.options[i].value + "]").show()
+                        }else{
+                        $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
 
+                        }
+                        }
+                })
 
+                })
 
 
-    </script>
+
+                $(document).ready(function() {
+                $('#interpro_table').DataTable( {
+                dom: 'Bfrtip',
+                "paging":   true,
+                "ordering": true,
+                "info":     false,
+                buttons: [
+                {
+                extend: 'excel',
+                title: 'cog_table'
+                },
+                {
+                extend: 'csv',
+                title: 'cog_table'
+                }
+                ],
+                } );
+                } );
+
+                $(document).ready(function() {
+                $('#reference_genome').DataTable( {
+                dom: 'Bfrtip',
+                "paging":   true,
+                "ordering": true,
+                "info":     false,
+                buttons: [
+                {
+                extend: 'excel',
+                title: 'reference_genome_locus_list'
+                },
+                {
+                extend: 'csv',
+                title: 'reference_genome_locus_list'
+                }
+                ],
+                } );
+                } );
+
+
+                }
+
+                if (data.state != 'SUCCESS') {
+                    setTimeout(function () {
+                        get_task_info(task_id)
+                    }, 1000);
+                }
+            },
+            error: function (data) {
+                prg_dv.html("Something went wrong!");
+            }
+        });
+    }
+</script>
+
+
+
+
     </body>
     <style>
     #div_id_checkbox_single_copy{

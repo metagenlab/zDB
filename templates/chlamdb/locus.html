@@ -592,14 +592,13 @@ function clearBox(elementID)
                                 </div>
                               </div>
                             {%endif%}
+
                             {% if transporter_data%}
-
-
                             <div class="row">
-                              <div style="padding-top:40px;">
+                              <div>
                                   <div class="panel panel-default">
                                     <div class="panel-heading">
-                                      <h3 class="panel-title">TransporterClassification Database  <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Best hit from gBLAST (https://github.com/SaierLaboratory/BioVx)"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
+                                      <h3 class="panel-title">Transporter Classification Database  <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Best hit from gBLAST (https://github.com/SaierLaboratory/BioVx)"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
                                     </div>
 
 
@@ -726,6 +725,112 @@ function clearBox(elementID)
                                 </div>
                               </div>
                             </div>
+
+
+                           {% if pdb_data %} 
+                            <div class="row">
+                              <div class="panel panel-default">
+                                <div class="panel-heading">
+                                  <h3 class="panel-title">PDB 3D Structure (best BLAST hit)</h3>
+                                </div>
+                                <div>
+                                  <div id="div_features" style="margin-top: 1px; width: 800px; margin-left: 20px;"></div>
+
+                                  <table id="panel_table" class="table table-striped" style="width: 100%">
+                                    <thead>
+                                        <tr>
+                                          <th>Accession</th>
+                                          <th>Header</th>
+                                          <th>Compound</th>
+                                          <th>Source</th>
+                                          <th>Resolution</th>
+                                          <th>Method</th>
+                                          <th>Identity</th>
+                                          <th>Evalue</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <td><a href="https://www.rcsb.org/structure/{{pdb_data.1}}">{{pdb_data.1}}</a></td>
+                                        <td>{{pdb_data.2}}</td>
+                                        <td>{{pdb_data.3}}</td>
+                                        <td>{{pdb_data.4}}</td>
+                                        <td>{{pdb_data.5}}</td>
+                                        <td>{{pdb_data.6}}</td>
+                                        <td>{{pdb_data.7}}</td>
+                                        <td>{{pdb_data.9}}</td>
+                                      </tr>
+                                  </tbody>
+
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                            {% endif %} 
+
+
+
+                            {%if ec_priam_data or ec_ko_data %}
+                              <div class="row">
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    <h3 class="panel-title">EC annotations <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Data obtained based on PRIAM and KofamScan"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></h3>
+                                  </div>
+                                  <table class="table table-striped" style="width: 100%">
+                                      <tr>
+                                        <th>Source</th>
+                                        <th>EC</th>
+                                        <th>Description</th>
+                                      </tr>
+
+                                      {%if ec_priam_data %}
+
+                                          {% for ec in ec_priam_data %}
+                                              <tr>
+                                                  <td>PRIAM</td>
+                                                  <td><a href="{% url 'fam' ec.0 "EC" %}" target="_top">{{ec.0}}</a></td>
+                                                  <td>{{ec.1}}</td>
+                                              </tr>
+                                          {% endfor %}
+
+
+                                      {% endif %}
+                                      {%if ec_ko_data %}
+
+                                          {% for ec in ec_ko_data %}
+                                              <tr>
+                                                  <td>KoFamScan</td>
+                                                  <td><a href="{% url 'fam' ec.5 "ko" %}" target="_top">{{ec.0}}</a></td>
+                                                  <td>{{ec.1}}</td>
+                                                  <td><a data-toggle="collapse" href="#multiCollapseEC_{{ec.5}}" role="button" aria-expanded="false" aria-controls="multiCollapseEC_{{ec.5}}"><span class="badge" aria-hidden="true">Score <i class="fa fa-plus"></i></span></a> </td>
+                                                  <tr class="collapse" id="multiCollapseEC_{{ec.5}}">
+                                                      <td colspan="2">
+                                                            <table class="table table" style="width: 100%">
+                                                              <tr bgcolor="#CEFFFE">
+                                                                    <th>Threshold</th>
+                                                                    <td>{{ec.2}}</td>
+                                                              </tr>
+                                                              <tr bgcolor="#CEFFFE">
+                                                                    <th>Score</th>
+                                                                    <td>{{ec.3}}</td>
+                                                              </tr>
+                                                              <tr bgcolor="#CEFFFE">
+                                                                    <th>E-value</th>
+                                                                    <td>{{ec.4}}</td>
+                                                              </tr>
+                                                          </table>
+                                                      <td>
+                                                    </tr>
+                                              </tr>
+                                          {% endfor %}
+                                      {% endif %}
+                                  </table>
+                                </div>
+                              </div>
+
+                            {% endif %}
+
+
 
                             {%if ko_pathway_data or ko_module_data %}
                               <div class="row">
@@ -1121,6 +1226,7 @@ function clearBox(elementID)
 
               <!-- if only group information is asked, homologs tabs become the active tab -->
               {% else %}
+                  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.48.1/plotly.min.js"></script>
                   <div class="tab-pane active" id="tab33">
                     <h3>Orthogroup: {{locus}} -- {{homologues}} members: overview of the annotation</h3>
 

@@ -1,7 +1,7 @@
 
-## CHLAMDB setup
+# CHLAMDB setup
 
-### setup
+## setup priority 1
 
 - [X] setup biosqldb schema
 - [ ] setup kegg tables (ENZYME database)
@@ -20,7 +20,21 @@
   - [X] download faa: setup_transporter table, tc_table and uniprot_table (TODO: rename table)
   - [ ] update table organization (dev), not all entries have uniprot accessions
 
-### annotation results
+## setup priority 2
+
+- [ ] switch to new COG tables
+- [ ] switch to new KEGG tables
+- [ ] setup NOG_table_v5 and NOG_members_v5
+- [ ] setup interpro master table
+- [ ] setup pfam master table
+- [ ] load DOOR2 data
+    - [ ] accession table
+    - [ ] operons data
+- [ ] load RBBH data (for identity distribution plots)
+- [ ] get effectiveT3 "eukaryote" domains
+- [ ] setup alignnments from nucletide sequence with genoplotR (see locus2genoplotr.py)
+
+### loading of annotation tables
 
 - [X] load genomes
   - [X] setup features table
@@ -75,37 +89,88 @@
     - [x] RefSeq locus_tag/protein id
     - [ ] uniparc cross references
 - [ ] load GOA annotation
-- [ ] krona like plots for blast
-- [ ] kronal like plots for 1 blast hit, 2 blast hit,... (choice) 
-- [ ] similarity networks dervied from patristic distances (from RefSeq phylogeny?) ==>better than identity, score or e-value
+- [ ] similarity networks dervied from patristic distances (from RefSeq phylogeny?) ==> better than identity, score or e-value
 
-## priority 2
-
-- [ ] switch to new COG tables
-- [ ] switch to new KEGG tables
-- [ ] setup NOG_table_v5 and NOG_members_v5
-- [ ] setup interpro master table
-- [ ] setup pfam master table
-- [ ] load DOOR2 data
-    - [ ] accession table
-    - [ ] operons data
-- [ ] load RBBH data (for identity distribution plots)
-- [ ] get effectiveT3 "eukaryote" domains
-- [ ] setup alignnments from nucletide sequence with genoplotR (see locus2genoplotr.py)
 
 # Web Interface
 
-## done
+## TODO
 
-- [X] show scores
+### general priority 1
 
-## euk like domains 
+- [X] show confidence scores for PDB, KEGG, COG,... (identity, score, evalue,...)
+- [X] keep comparative tables in memory
+- [X] blast multiple proteins
+- [X] blast link only when blasting locus databases
+- [X] update browse genome view 
+- [X] add formatdb ffn
+- [X] database all for tblastn
+- [X] add effector prediction to locus page
+- [ ] switch to celery task
+    - [X] plot region ==> celery task
+    - [X] extract orthogroup ==> celery task
+    - [X] plot phylogeny
+    - [X] plot orthogroup/COG/KO,... heatmap ==> celery task
+    - [X] extract interpro
+    - [ ] BLAST ==> celery task
+    - [ ] venn orthogroups
+    - [ ] venn interpro
+    - [ ] fam (crash with interpro entries with very large number of proteins) 
+- [X] improve orthogroup table
+    - [X] length distribution
+    - [X] domain organization
+    - [X] mapping to uniprot (n mapped, n reviewed,...)
+
+- [X] 2019_06_PVC: add MSA faa to assets
+- [X] update search using synonymous table single vs multiple matches
+- [X] update to boolean search
+- [X] deal with COG, PFAM,... missing from the database
+- [X] check and update module, pathway, fam profile,... profile figure size
+- [X] add download newick tree on pfam, TM tabs and phylogeny with BBH
+- [ ] add uniprot proteome column (+ percent overlap) to genome table
+- [ ] add explanations for hydropathy plot
+- [ ] improve integration of transporters_family 
+- [ ] orthogroup Venn: use consensus annotation
+- [ ] add a vew "compare_cog" (similar to compare Pfam)
+- [ ] add a vew "compare_interpro" (similar to compare Pfam)
+
+### download page
+
+- [ ] download page - bulk download all genome or for specific genomes 
+  - [ ] KO annotation 
+  - [ ] COG annotation 
+  - [ ] TCDB annotation
+  - [ ] interproscan
+  - [ ] pfam only 
+  - [ ] all phylogenies
+  - [ ] all orthogroup fasta
+  - [ ] orthology table 
+  - [ ] all alignments
+  - [ ] ...
+
+### curated taxnonomy
+
+- [X] setup a new view for manual curation of the taxonomy
+- [ ] switch to curated taxnonomy (ref phylogeny, locus pages,...) 
+- [ ] chose a reference strain for each species?
+- [ ] search: show reference species data first 
+ 
+### species tree display
+
+- [ ] species tree based on curated taxnonomy
+- [ ] phylo profile: display species tree by default 
+    - [ ] show average or median identity as compared to reference locus
+    - [ ] OR only show identity of the reference strain (rely on curated taxnonomy)
+
+### effectors/euk like domains 
 
 - [ ] plot distribution of euk proportion (how is the distribution?). See where to put the cutoff.
+- [X] new view to compare data from the different T3SS effector predictiors: =effector_predictions=, 
+- [ ] see also *venn_candidate_effectors* and *effector_pred*
 
-## user interface
+### user interface
 
-- [ ] gene sets: table allowing redordering (drag and drop )
+- [ ] gene sets: table allowing redordering (drag and drop)
 - [ ] plot distribution normalized identity between species (rate of evolution)
 - [ ] species tree (collapsed)
 - [ ] paralogs tab?
@@ -119,60 +184,17 @@
 - [ ] cross references
 - [ ] go terms
 - [ ] download page
+- [ ] krona like plots for blast
+- [ ] kronal like plots for 1 blast hit, 2 blast hit,... (choice) 
 
-## TODO
-
-### priority 1
-
-- [X] keep comparative tables in memory
-- [X] blast multiple proteins
-- [X] blast link only when blasting locus databases
-- [X] update browse genome view 
-- [X] add formatdb ffn
-- [X] database all for tblastn
-- [X] add effector prediction to locus page
-- [ ] switch to celery task
-    - [X] plot region ==> celery task
-    - [X] extract orthogroup ==> celery task
-    - [X] plot phylogeny
-    - [X] plot orthogroup/COG/KO,... heatmap ==> celery task
-    - [ ] BLAST ==> celery task
-
-- [X] improve orthogroup table
-    - [X] length distribution
-    - [X] domain organization
-    - [X] mapping to uniprot (n mapped, n reviewed,...)
-
-- [X] 2019_06_PVC: add MSA faa to assets
-
-- [ ] download page - bulk download all genome or for specific genomes 
-  - [ ] KO annotation 
-  - [ ] COG annotation 
-  - [ ] TCDB annotation
-  - [ ] interproscan
-  - [ ] pfam only 
-  - [ ] all phylogenies
-  - [ ] all orthogroup fasta
-  - [ ] orthology table 
-  - [ ] all alignments
-  - [ ] ...
-  
-- [ ] update search using synonymous table single vs multiple matches
-- [ ] update to boolean search
+### ideas
 
 
-- [ ] deal with COG, PFAM,... missing from the database
-- [ ] check and update module, pathway, fam profile,... profile figure size
-
-- [ ] add download newick tree on pfam, TM tabs and phylogeny with BBH
-- [ ] add uniprot proteome column (+ percent overlap) to genome table
-- [ ] add explanations for hydropathy plot
-- [ ] improve integration of transporters_family 
-- [ ] orthogroup Venn: use consensus annotation
-
-
-### priority 2
-
+- [ ] HAMAP rules as SPARQL A portable annotation pipeline for genomes and proteomes (https://www.biorxiv.org/content/10.1101/615294v1) 
+- [ ] unifire annotation (UniRule and SAAS from interproscan results): https://gitlab.ebi.ac.uk/uniprot-public/unifire
+  - [ ] https://www.ebi.ac.uk/training/online/sites/ebi.ac.uk.training.online/files/UniFIRE-URML.pdf
+- [ ] kegg pathway => link show on circos
+- [ ] kegg module => link show on circos
 - [ ] integrate genome properties: table with property2steps avec IPP accession
 - [ ] eficaz
 - [ ] enzyme hierarchy
@@ -183,9 +205,8 @@
 - [ ] add uniprot kewords to locus page
 - [ ] get species table 
   - [ ] display on homepage
-  - [ ] use it for phylogenetic profiling?
+  - [ ] use it for phylogenetic profiling rather than all strains (inclomplete genomes)?
 - [ ] deal with search for KO, KEGG, IP absent from genomes included in the database
-- [ ] show confidence scores for PDB, KEGG, COG,... (identity, score, evalue,...)
 - [ ] integration of swissprot keywords (possibility to click on it and get complete list of prot, decsription,...)
 - [ ] add tcdb classification to "fam" (annotation, phylogenetic profile,...). Include all classification levels (superfamilies,...)
 - [ ] idem with EC classification system

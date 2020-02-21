@@ -85,14 +85,14 @@ $(document).ready(function() {
         var svg = svgDoc.querySelector("svg");
 
         var test_match = svg.querySelectorAll('svg text')
-        console.log(test_match);
+        /* console.log(test_match);*/
 
         [].forEach.call(
             svg.querySelectorAll('svg text'),
             function (el) {
-                console.log(el.innerHTML.trim())
+                /* console.log(el.innerHTML.trim())*/
                 if (locus_list.includes(el.innerHTML.trim())) {
-                console.log(el.innerHTML);
+                /* console.log(el.innerHTML); */
                 el.style = "cursor: pointer;";
                 el.setAttribute( "onmouseover", "this.style.fill='blue';this.style['font-weight']='600';this.style['font-size']='12pt';")
                 el.setAttribute( "onmouseout", "this.style.fill='black';this.style['font-weight']='400';this.style['font-size']='11pt'")

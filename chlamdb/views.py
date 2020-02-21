@@ -14,6 +14,7 @@ from Bio.Seq import Seq
 import chlamdb.plots
 import seaborn as sns
 import numpy 
+import re
 # from django.core.cache import cache
 #import pylibmc
 #from django.core.cache import cache
@@ -90,6 +91,7 @@ from chlamdb.forms import GenerateRandomUserForm
 from chlamdb.tasks import run_circos
 from chlamdb.tasks import run_circos_main
 from chlamdb.tasks import extract_orthogroup_task
+from chlamdb.tasks import extract_interpro_task
 from chlamdb.tasks import plot_neighborhood_task
 from chlamdb.tasks import TM_tree_task
 from chlamdb.tasks import pfam_tree_task
@@ -143,16 +145,16 @@ def extract_alphanumeric(input_string):
 def choose_db(request):
     
     server, db = manipulate_biosqldb.load_db(biodb)
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
-        form = BiodatabaseForm(request.POST)  # Nous reprenons les données
+        form = BiodatabaseForm(request.POST)
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
 
             biodb = form.cleaned_data['biodatabase']
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = BiodatabaseForm()  # Nous créons un formulaire vide
+    else:  
+        form = BiodatabaseForm()
 
     return render(request, 'chlamdb/choose_db.html', locals())
 
@@ -187,13 +189,13 @@ def about(request):
          'ENTRYTYPE': 'article', 'ID': 'cock2009biopython'}
 
         """
-        string = ("%s. <b>%s</b> %s, %s(%s):%s, %s" % (  entry["author"],
-                                            re.sub('[{}]','', entry["title"]),
-                                            entry["journal"],
-                                            entry["volume"],
-                                            entry["number"],
-                                            entry["pages"],
-                                            entry["year"],
+        string = ("<b>%s</b></br> %s, %s, %s(%s):%s, %s" % (re.sub('[{}]','', entry["title"]),
+                                                         entry["author"],
+                                                            entry["journal"],
+                                                            entry["volume"],
+                                                            entry["number"],
+                                                            entry["pages"],
+                                                            entry["year"],
                            ))
         url = entry["url"]
         entry_list.append([string, url])
@@ -213,7 +215,6 @@ def chlamdb_login(request):
     error = False
 
     if request.method == "POST":
-        #print "longin!"
         form = ConnexionForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data["username"]
@@ -221,12 +222,11 @@ def chlamdb_login(request):
             user = authenticate(username=username, password=password)  # Nous vérifions si les données sont correctes
             if user:  # Si l'objet renvoyé n'est pas None
                 login(request, user)  # nous connectons l'utilisateur
-                #print user, "logged"
                 #return HttpResponseRedirect("/chlamdb/home")
             else: # sinon une erreur sera affichée
                 error = True
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
 
             biodb = form.cleaned_data['biodatabase']
             envoi = True
@@ -253,7 +253,7 @@ def home(request):
 
     sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
                ' where t2.name="%s";' % biodb
-    print(sql_tree)
+
     server, db = manipulate_biosqldb.load_db(biodb)
     tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
 
@@ -350,18 +350,14 @@ def curated_taxonomy(request):
 def edit_species_taxonomy(request, species_id):
     
     biodb = settings.BIODB
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
 
     curation_form_class = make_species_curation_form(biodb, species_id)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = curation_form_class(request.POST)
-        print("form")
         if form.is_valid():
-            print("valid")
             phylum = form.cleaned_data['phylum']
             order = form.cleaned_data['order']
             family = form.cleaned_data['family']
@@ -396,21 +392,17 @@ def circos_homology(request):
 
     biodb = settings.BIODB
 
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
 
     circos_orthology_form_class = make_circos_orthology_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = circos_orthology_form_class(request.POST)
 
         if form.is_valid():
 
             accession = form.cleaned_data['accession']
-
-            #print "accession", accession
 
             sql = 'select accession from bioentry' \
                   ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id' \
@@ -438,19 +430,14 @@ def circos_homology(request):
 
             target_records = server.adaptor.execute_and_fetchall(sql_targets,)
 
-            #print "ref_record", ref_record
-            #print "target_records", target_records
-
             record_list = []
             for accession in all_accession:
                 if accession == "CP001848" or accession == "BX119912":
                     continue
-                #print "accession", accession
                 biorecord = cache.get(biodb + "_" + accession)
 
 
                 if not biorecord:
-                    #print biodb + "_" + accession, "NOT in memory"
                     new_record = db.lookup(accession=accession)
                     biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
                                                              id=new_record.id, name=new_record.name,
@@ -471,14 +458,13 @@ def circos_homology(request):
             circos_file = "circos/circos_ortho.svg"
             envoi_circos = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = circos_orthology_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = circos_orthology_form_class()
 
     return render(request, 'chlamdb/circos_homology.html', locals())
 
 
 def extract_orthogroup(request):
-    print("extract OG")
     biodb = settings.BIODB
 
     '''
@@ -490,17 +476,17 @@ def extract_orthogroup(request):
     '''
 
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "extract orthogroup %s" % biodb
-    extract_form_class = make_extract_form(biodb, plasmid=True)
-    #print(request.method)
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
 
-        form = extract_form_class(request.POST)  # Nous reprenons les données
+    extract_form_class = make_extract_form(biodb, plasmid=True)
+
+    if request.method == 'POST': 
+
+        form = extract_form_class(request.POST)
         
         if 'locus_list' in request.POST:
-            print("locus list!!!!!!!!!")
+            print("locus list")
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
 
             from chlamdb.biosqldb import biosql_own_sql_tables
 
@@ -531,11 +517,7 @@ def extract_orthogroup(request):
                 reference_taxon = accession2taxon[reference_taxon]
 
 
-
-            #print 'exclude', exclude
             n_missing = form.cleaned_data['frequency']
-
-            #if int(n_missing)>=len(include):
 
             server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -556,8 +538,8 @@ def extract_orthogroup(request):
         else:
             return HttpResponse(json.dumps({'task_id': None}), content_type='application/json')
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = extract_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = extract_form_class()
 
     return render(request, 'chlamdb/extract_orthogroup.html', locals())
 
@@ -565,18 +547,14 @@ def extract_orthogroup(request):
 
 def locus_list2orthogroups(request):
     biodb = settings.BIODB
-    #print "loading db..."
+
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
 
-    #print request.method
+    if request.method == 'POST': 
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+        form = AnnotForm(request.POST)
 
-        form = AnnotForm(request.POST)  # Nous reprenons les données
-
-        #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
             from chlamdb.phylo_tree_display import ete_motifs
             server, db = manipulate_biosqldb.load_db(biodb)
@@ -598,7 +576,7 @@ def locus_list2orthogroups(request):
             total = len(group2count)
 
             envoi_annot = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:  
 
         form = AnnotForm()
 
@@ -608,24 +586,19 @@ def locus_list2orthogroups(request):
 
 def orthogroup_annotation(request, display_form):
     biodb = settings.BIODB
-    #print "loading db..."
+
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
 
-    #print request.method
+    if request.method == 'POST': 
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+        form = AnnotForm(request.POST)
 
-        form = AnnotForm(request.POST)  # Nous reprenons les données
-
-        #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
             from chlamdb.phylo_tree_display import ete_motifs
             server, db = manipulate_biosqldb.load_db(biodb)
 
             match_groups = [i.rstrip() for i in form.cleaned_data['orthogroups'].rstrip().split('\n')]
-            #print 'match groups', match_groups
 
             match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(match_groups, biodb)
             taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, match_groups, type="orthogroup")
@@ -642,7 +615,7 @@ def orthogroup_annotation(request, display_form):
 
             envoi_annot = True
             envoi_annot = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:  
         if display_form == "True":
             form = AnnotForm()
         else:
@@ -654,7 +627,7 @@ def orthogroup_annotation(request, display_form):
             server, db = manipulate_biosqldb.load_db(biodb)
 
             match_groups = target_taxons = [i for i in request.GET.getlist('g')]
-            #print 'match groups', match_groups
+
             match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(match_groups, biodb)
             taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, match_groups, type="orthogroup")
 
@@ -677,19 +650,18 @@ def test():
 
 def locus_annotation(request, display_form):
     biodb = settings.BIODB
-    #print "loading db..."
+
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
 
     form_class = get_LocusAnnotForm(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form = form_class(request.POST)
-        # Nous reprenons les données
+      
 
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
             from chlamdb.phylo_tree_display import ete_motifs
             from ete3 import Tree
@@ -712,8 +684,6 @@ def locus_annotation(request, display_form):
                   ' left join COG_cog_id2cog_category t5 on t4.COG_id=t5.COG_id' \
                   ' left join COG_code2category t6 on t5.category_id=t6.category_id' \
                   ' where t1.locus_tag in (%s)' % (filter)
-
-            print(sql)
 
             locus_annot = [list(i) for i in server.adaptor.execute_and_fetchall(sql,)]
             locus2taxon = {}
@@ -844,7 +814,7 @@ def locus_annotation(request, display_form):
             tree3.render(path2, dpi=800, tree_style=style3)
 
             envoi_annot = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:  
         if display_form == "True":
             form = form_class()
         else:
@@ -880,15 +850,14 @@ def locus_annotation(request, display_form):
 def venn_orthogroup(request):
     biodb = settings.BIODB
 
-    print ("loading db...")
     server, db = manipulate_biosqldb.load_db(biodb)
-    print("db loaded...")
+
     venn_form_class = make_venn_from(biodb, plasmid=True)
-    print("method", request.method)
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+
+    if request.method == 'POST': 
 
         form_venn = venn_form_class(request.POST)
-        print("check", 'venn' in request.POST )
+
         if  form_venn.is_valid():
             targets = form_venn.cleaned_data['targets']
 
@@ -912,7 +881,7 @@ def venn_orthogroup(request):
                     sql ='select orthogroup from comparative_tables_orthology where `%s` > 0' % (target)
                 else:
                     sql ='select id from comparative_tables_orthology_accessions where %s > 0' % (target)
-                #print sql
+
                 orthogroups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
                 all_orthogroups_list += orthogroups
                 data = '"' + '","'.join(orthogroups) + '"'
@@ -956,10 +925,9 @@ def venn_orthogroup(request):
                     orthogroup2description+='h["%s"] = "%s</td><td>%s;"\n' % (i, genes, products)
                 else:
                     continue
-            ##print series
-            print("data", series)
+
             envoi_venn = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:  
         form_venn = venn_form_class()
     return render(request, 'chlamdb/venn_orthogroup.html', locals())
 
@@ -975,20 +943,17 @@ def extract_pfam(request, classification="taxon_id"):
     :return:
     '''
 
-
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
+
     extract_form_class = make_extract_form(biodb, label="PFAM domains")
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
-        form = extract_form_class(request.POST)  # Nous reprenons les données
+        form = extract_form_class(request.POST)
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
-            #print request.POST
-            #print form.cleaned_data.keys()
+
             include = form.cleaned_data['orthologs_in']
             exclude = form.cleaned_data['no_orthologs_in']
             n_missing = form.cleaned_data['frequency']
@@ -1024,8 +989,6 @@ def extract_pfam(request, classification="taxon_id"):
                     pfam2count = dict((mat > 0).sum(axis=1))
                     # get count in complete database
                     pfam2count_all = dict((mat_all > 0).sum(axis=1))
-
-                    #print cog2count_all
                     max_n = max(pfam2count_all.values())
 
                     # GET max frequency for template
@@ -1089,8 +1052,8 @@ def extract_pfam(request, classification="taxon_id"):
                     locus2interpro = get_locus_annotations(biodb, locus_list)
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = extract_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = extract_form_class()
 
     return render(request, 'chlamdb/extract_Pfam.html', locals())
 
@@ -1106,18 +1069,15 @@ def extract_ko(request):
     :return:
     '''
 
-
-
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
+
     extract_form_class = make_extract_form(biodb, label="Kegg Orthologs")
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
-        form = extract_form_class(request.POST)  # Nous reprenons les données
+        form = extract_form_class(request.POST)
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
@@ -1155,7 +1115,6 @@ def extract_ko(request):
                     # get count in complete database
                     ko2count_all = dict((mat_all > 0).sum(axis=1))
 
-                    ##print cog2count_all
                     max_n = max(ko2count_all.values())
 
                     # GET max frequency for template
@@ -1167,7 +1126,7 @@ def extract_ko(request):
             ' left join enzyme_kegg_pathway on B.pathway_id=kegg_pathway.pathway_id;'
 
             sql = 'select ko_accession, name, definition, EC, pathways, modules from enzyme_ko_annotation;'
-            #print sql
+
             ko2description_raw = server.adaptor.execute_and_fetchall(sql,)
 
             ko2description_dico = {}
@@ -1184,7 +1143,6 @@ def extract_ko(request):
 
                 ko2description_dico[i[0]] = [list(i[1:4])]
 
-                #print '--4--', i[4]
                 if i[4] != '-':
                     path_str = ''
                     for path in i[4].split(','):
@@ -1195,7 +1153,7 @@ def extract_ko(request):
                     ko2description_dico[i[0]][0].append(path_str[0:-1])
                 else:
                     ko2description_dico[i[0]][0].append('-')
-                #print '--5--', i[5]
+
                 if i[5] != '-':
                     mod_str = ''
                     for mod in i[5].split(','):
@@ -1204,27 +1162,23 @@ def extract_ko(request):
                 else:
                     ko2description_dico[i[0]][0].append('-')
 
-                ##print ko2description_dico
 
-            ##print 'ko2description_dico[', ko2description_dico
             #enzyme2data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
             match_groups_data = []
 
             for i, ko in enumerate(match_groups):
-                #print i, ko
                 for one_pathway in ko2description_dico[ko]:
                     match_groups_data.append([i, ko, one_pathway, ko2count[ko], ko2count_all[ko]])
 
 
             ko_list = '"' + '","'.join(match_groups) + '"'
 
-            #print extract_result
             locus_list_sql = 'select locus_tag from enzyme_locus2ko where taxon_id=%s and ko_id in (%s);' % (reference_taxon,
                                                                                                              ko_list)
 
             locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-            #print locus_list
+
             circos_url = '?ref=%s&' % reference_taxon
             circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
 
@@ -1252,8 +1206,8 @@ def extract_ko(request):
 
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = extract_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = extract_form_class()
 
     return render(request, 'chlamdb/extract_ko.html', locals())
 
@@ -1270,19 +1224,15 @@ def extract_EC(request):
     :return:
     '''
 
-
-
-
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
+
     extract_form_class = make_extract_form(biodb, label="EC numbers")
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
-        form = extract_form_class(request.POST)  # Nous reprenons les données
+        form = extract_form_class(request.POST)
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
@@ -1320,7 +1270,6 @@ def extract_EC(request):
                     # get count in complete database
                     ec2count_all = dict((mat_all > 0).sum(axis=1))
 
-                    #print cog2count_all
                     max_n = max(ec2count_all.values())
 
                     # GET max frequency for template
@@ -1333,7 +1282,7 @@ def extract_EC(request):
             ' left join enzyme_kegg_pathway on B.pathway_id=kegg_pathway.pathway_id;'
             
             ec2description_raw = server.adaptor.execute_and_fetchall(sql,)
-            #print sql
+
             ec2description_dico = {}
 
             for i in ec2description_raw:
@@ -1356,19 +1305,18 @@ def extract_EC(request):
 
             biodb_id = server.adaptor.execute_and_fetchall('select biodatabase_id from biodatabase where name="%s"' % biodb,)[0][0]
 
-            #print extract_result
             locus_list_sql = 'select locus_tag from (select taxon_id,locus_tag,ec_id from enzyme_locus2ec as t1  ' \
                              ' inner join bioentry as t2 on t1.accession=t2.accession ' \
                              ' where biodatabase_id=%s) A inner join enzyme_enzymes as B on A.ec_id=B.enzyme_id' \
                              ' where A.taxon_id=%s and B.ec in (%s);' % (biodb_id,
                                                                          reference_taxon,
                                                                          EC_list)
-            #print locus_list_sql
+
             locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-            #print locus_list
+
             circos_url = '?ref=%s&' % reference_taxon
             circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
-            #print "circos_url", circos_url
+
             target_circos_taxons = include + exclude
 
 
@@ -1401,7 +1349,6 @@ def extract_EC(request):
 
 
                 if len(labels) > 40:
-                    #print 'BIGGGGGGGGGGG', len(labels)
                     big = True
                     path = settings.BASE_DIR + '/assets/temp/profil_tree.png'
                     asset_path = '/temp/profil_tree.png'
@@ -1410,7 +1357,6 @@ def extract_EC(request):
 
 
                 else:
-                    #print 'not BIGGGGGGGGGG', len(labels)
                     big = False
 
                     path2 = settings.BASE_DIR + '/assets/temp/profil_tree.svg'
@@ -1439,8 +1385,8 @@ def extract_EC(request):
 
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = extract_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = extract_form_class()
 
     return render(request, 'chlamdb/extract_EC.html', locals())
 
@@ -1448,11 +1394,10 @@ def extract_EC(request):
 def venn_pfam(request):
     biodb = settings.BIODB
 
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
+
     venn_form_class = make_venn_from(biodb, limit=6)
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form_venn = venn_form_class(request.POST)
         #form2 = ContactForm(request.POST)
@@ -1467,7 +1412,6 @@ def venn_pfam(request):
             for target in targets:
                 template_serie = '{name: "%s", data: %s}'
                 sql ='select id from comparative_tables_Pfam where `%s` > 0' % (target)
-                #print sql
                 cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
                 all_pfam_list += cogs
                 data = '"' + '","'.join(cogs) + '"'
@@ -1477,21 +1421,16 @@ def venn_pfam(request):
 
             pfam2description = ''
             sql = 'select signature_accession, signature_description, count(*) from interpro where analysis="Pfam" group by signature_accession;'
-            #print sql
             data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
             for i in data:
                 if i in all_pfam_list:
-                    #print 'ok'
                     pfam2description+='h["%s"] = "%s </td><td>%s";' % (i, data[i][0], data[i][1])
                 else:
                     pass
-                    #print 'pas ok'
-            #print pfam2description
-            #print series
 
             envoi_venn = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:  
         form_venn = venn_form_class()
     return render(request, 'chlamdb/venn_Pfam.html', locals())
 
@@ -1500,11 +1439,10 @@ def venn_pfam(request):
 def venn_EC(request):
     biodb = settings.BIODB
 
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
+
     venn_form_class = make_venn_from(biodb, limit=6)
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form_venn = venn_form_class(request.POST)
         #form2 = ContactForm(request.POST)
@@ -1519,7 +1457,6 @@ def venn_EC(request):
             for target in targets:
                 template_serie = '{name: "%s", data: %s}'
                 sql ='select id from comparative_tables_EC where `%s` > 0' % (target)
-                #print sql
                 ec_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
                 all_ec_list += ec_list
                 data = '"' + '","'.join(ec_list) + '"'
@@ -1534,7 +1471,6 @@ def venn_EC(request):
                   ' left join enzyme_kegg_pathway on B.pathway_id=kegg_pathway.pathway_id;'
                   
             ec2description_raw = server.adaptor.execute_and_fetchall(sql,)
-            #print sql
             ec2description_dico = {}
 
             for i in ec2description_raw:
@@ -1556,11 +1492,8 @@ def venn_EC(request):
                 ec2description+='h["%s"] = "%s";' % (one_ec, tmp_str[0:-12])
 
 
-            #print ec2description
-            #print series
-
             envoi_venn = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:  
         form_venn = venn_form_class()
     return render(request, 'chlamdb/venn_EC.html', locals())
 
@@ -1576,18 +1509,17 @@ def extract_interpro(request, classification="taxon_id"):
     :return:
     '''
 
-
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
+
     extract_form_class = make_extract_form(biodb, label="Interpro entries")
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
-        form = extract_form_class(request.POST)  # Nous reprenons les données
+        form = extract_form_class(request.POST)
 
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
+            print("valid form!")
             from chlamdb.biosqldb import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
@@ -1597,117 +1529,50 @@ def extract_interpro(request, classification="taxon_id"):
             if reference_taxon == "None":
                 reference_taxon = include[0]
 
-            if int(n_missing)>=len(include):
-                wrong_n_missing = True
-            else:
-                freq_missing = (len(include)-float(n_missing))/len(include)
-                #print 'freq_missing', freq_missing
+            freq_missing = (len(include)-float(n_missing))/len(include)
 
-                # get sub matrix and complete matrix
-                mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                              "interpro",
-                                                                              "id",
-                                                                              include,
-                                                                              exclude,
-                                                                              freq_missing,
-                                                                              cache=cache)
+            try:
+                accessions = request.POST['checkbox_accessions']
+                accessions = True
+                fasta_url='?a=T'
+            except:
+                accessions = False
+                fasta_url='?a=F'
+                accession2taxon = manipulate_biosqldb.accession2taxon_id(server, biodb)
+                include = [str(accession2taxon[i]) for i in include]
+                exclude = [str(accession2taxon[i]) for i in exclude]
+                reference_taxon = accession2taxon[reference_taxon]
 
-                match_groups = mat.index.tolist()
-                # get count in subgroup
-                interpro2count = dict((mat > 0).sum(axis=1))
-                # get count in complete database
-                interpro2count_all = dict((mat_all > 0).sum(axis=1))
+            
+            print("running task!")
+            task = extract_interpro_task.delay(biodb, 
+                                                include,
+                                                exclude,
+                                                freq_missing,
+                                                reference_taxon,
+                                                accessions,
+                                                n_missing)
+            task_id = task.id
 
-                #print interpro2count_all[interpro2count_all.keys()[0]]
-                max_n = max(list(interpro2count_all.values()))
+            print("task ok!")
 
-                # GET max frequency for template
-                sum_group = len(match_groups)
+            return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
+        else:
+            return HttpResponse(json.dumps({'task_id': None}), content_type='application/json')
 
-                filter = '"' + '","'.join(match_groups) + '"'
-
-                sql2 = 'select interpro_accession, interpro_description from interpro' \
-                ' where interpro_accession in (%s) group by interpro_accession;' % (filter)
-
-                raw_data = list(server.adaptor.execute_and_fetchall(sql2,))
-
-                match_data = []
-                for one_match in raw_data:
-                    match_data.append(list(one_match)+[interpro2count[one_match[0]], interpro2count_all[one_match[0]]])
-
-                #print match_data[0]
-                sql_include = 'taxon_id ='
-                for i in range(0, len(include)-1):
-                    sql_include+='%s or taxon_id =' % include[i]
-                sql_include+=include[-1]
-                n = 1
-                search_result = []
-
-                group_filter = 'where ('
-
-                for i, group in enumerate(match_groups):
-                    if i == 0:
-                        group_filter += 'orthogroup="%s"' % group
-                    else:
-                        group_filter += ' or orthogroup="%s"' % group
-                group_filter+=')'
-
-                columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                          'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-                sql_2 = 'select %s from orthology_detail %s' % (columns, 
-                                                                group_filter)
-
-                raw_data = server.adaptor.execute_and_fetchall(sql_2,)
-
-                n = 1
-                extract_result = []
-                for one_hit in raw_data:
-                    extract_result.append((n,) + one_hit)
-                    n+=1
-
-
-                interpro_list = '"' + '","'.join(match_groups) + '"'
-
-                #print extract_result
-                locus_list_sql = 'select locus_tag from interpro where taxon_id=%s ' \
-                             ' and interpro_accession in (%s)' % (reference_taxon, 
-                                                                  interpro_list)
-
-                locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-
-                circos_url = '?ref=%s&' % reference_taxon
-                circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
-                
-                target_circos_taxons = include + exclude
-
-                envoi_extract = True
-                locus2annot, \
-                locus_tag2cog_catego, \
-                locus_tag2cog_name, \
-                locus_tag2ko, \
-                pathway2category, \
-                module2category, \
-                ko2ko_pathways, \
-                ko2ko_modules,\
-                locus2interpro = get_locus_annotations(biodb, locus_list)
-
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = extract_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = extract_form_class()
 
     return render(request, 'chlamdb/extract_interpro.html', locals())
-
-
-
 
 
 def venn_interpro(request):
     biodb = settings.BIODB
 
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
+
     venn_form_class = make_venn_from(biodb, limit=6)
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
         form_venn = venn_form_class(request.POST)
         #form2 = ContactForm(request.POST)
@@ -1722,7 +1587,6 @@ def venn_interpro(request):
             for target in targets:
                 template_serie = '{name: "%s", data: %s}'
                 sql ='select id from comparative_tables_interpro where `%s` > 0' % (target)
-                #print sql
                 cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
                 all_pfam_list += cogs
                 data = '"' + '","'.join(cogs) + '"'
@@ -1735,15 +1599,12 @@ def venn_interpro(request):
             data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
             for i in data:
                 if i in all_pfam_list:
-                    #print 'ok'
                     interpro2description+='h["%s"] = "%s </td><td>%s";' % (i, data[i][0], data[i][1])
                 else:
                     print ('pas ok')
-            #print interpro2description
-            #print series
 
             envoi_venn = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET  # Nous créons un formulaire vide
+    else:  
         form_venn = venn_form_class()
     return render(request, 'chlamdb/venn_interpro.html', locals())
 
@@ -1752,20 +1613,18 @@ def venn_interpro(request):
 def extract_cog(request):
     biodb = settings.BIODB
 
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
 
     extract_form_class = make_extract_form(biodb, 
                                            plasmid=True, 
                                            label="COG")
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
-        form = extract_form_class(request.POST)  # Nous reprenons les données
+        form = extract_form_class(request.POST)
 
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from chlamdb.biosqldb import biosql_own_sql_tables
 
             include = form.cleaned_data['orthologs_in']
@@ -1805,14 +1664,11 @@ def extract_cog(request):
 
 
                 match_groups = mat.index.tolist()
-                print('matches', match_groups)
                 # get count in subgroup
                 cog2count = dict((mat > 0).sum(axis=1))
-                #print "cog2count", cog2count
                 # get count in complete database
                 cog2count_all = dict((mat_all > 0).sum(axis=1))
 
-                ##print cog2count_all
                 max_n = max(cog2count_all.values())
 
                 # GET max frequency for template
@@ -1829,7 +1685,7 @@ def extract_cog(request):
                     except:
                         tmp = [i, "-", "-", "-"]
                     cog_data.append(tmp+[cog2count[tmp[0]], cog2count_all[tmp[0]]])
-                #print cog_data
+
                 cog_list = '"' + '","'.join(match_groups) + '"'
 
                 biodb_id = server.adaptor.execute_and_fetchall('select biodatabase_id from biodatabase where name="%s"' % biodb,)[0][0]
@@ -1845,9 +1701,6 @@ def extract_cog(request):
                     locus_list_sql = 'select locus_tag from COG_locus_tag2gi_hit' \
                                      ' where accession="%s" and COG_id in (%s);' % (reference_taxon,
                                                                                     cog_list)
-
-                #print locus_list_sql
-
 
                 locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
                 
@@ -1872,8 +1725,8 @@ def extract_cog(request):
 
                 envoi_extract = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = extract_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = extract_form_class()
 
     return render(request, 'chlamdb/extract_cogs.html', locals())
 
@@ -1887,16 +1740,15 @@ def extract_cog(request):
 def venn_ko(request):
     biodb = settings.BIODB
 
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
+
     venn_form_class = make_venn_from(biodb, limit=6)
     display_form = True
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
-        form_venn = venn_form_class(request.POST)  # Nous reprenons les données
-        #form2 = ContactForm(request.POST)
-        if form_venn.is_valid():  # Nous vérifions que les données envoyées sont valides
+        form_venn = venn_form_class(request.POST)
+
+        if form_venn.is_valid():  
 
             targets = form_venn.cleaned_data['targets']
 
@@ -1908,7 +1760,6 @@ def venn_ko(request):
             for target in targets:
                 template_serie = '{name: "%s", data: %s}'
                 sql ='select id from comparative_tables_ko where `%s` > 0' % (target)
-                #print sql
                 cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
                 all_cog_list += cogs
                 data = '"' + '","'.join(cogs) + '"'
@@ -1928,8 +1779,8 @@ def venn_ko(request):
 
             envoi_venn = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form_venn = venn_form_class()  # Nous créons un formulaire vide
+    else:  
+        form_venn = venn_form_class()
 
     return render(request, 'chlamdb/venn_ko.html', locals())
 
@@ -1942,15 +1793,14 @@ def venn_cog(request, accessions=False):
 
     display_form = True
 
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
+
     venn_form_class = make_venn_from(biodb, plasmid=accessions, limit=6, label="COG")
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
-        form_venn = venn_form_class(request.POST)  # Nous reprenons les données
+        form_venn = venn_form_class(request.POST)
 
-        if form_venn.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form_venn.is_valid():  
 
             targets = form_venn.cleaned_data['targets']
 
@@ -1989,53 +1839,172 @@ def venn_cog(request, accessions=False):
             data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
             for i in data:
                 if i in all_cog_list:
-                    ##print 'ok'
-
-                    print(data[i])
                     cog2description.append('h["%s"] = "%s (%s) </td><td>%s";' % (i,
                                                                             data[i][1],
                                                                             data[i][0],
                                                                             data[i][2]))
                 else:
                     pass
-                    ##print 'pas ok'
-            #cog2description = cog2description[0:120000]
-            #print 'COG0755' in all_cog_list
-            #print len(cog2description)
-
-            #print cog2description
-            #print 'all_cog_list', all_cog_list
-            #print series
             envoi_venn = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form_venn = venn_form_class()  # Nous créons un formulaire vide
+    else:  
+        form_venn = venn_form_class()
 
     return render(request, 'chlamdb/venn_cogs.html', locals())
 
 
+def pmid_associations(request, bioentry_id, pmid, data_type):
+    biodb = settings.BIODB
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    if data_type == "PaperBlast":
+        sql = 'select t1.description from biosqldb.bioentry t1 inner join biosqldb.biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t1.bioentry_id=%s and t2.name="%s"' % (bioentry_id, biodb)
+        genome = server.adaptor.execute_and_fetchall(sql,)[0][0]
+
+        sql = 'select title,journal,year from string.pmid2data_paperblast where pmid=%s;' % (pmid)
+        paper_data = server.adaptor.execute_and_fetchall(sql,)[0]
+
+        sql = 'select distinct locus_tag from string.seqfeature_id2paperblast t1 ' \
+            ' inner join string.paperblast2pmid t2 on t1.paperblast_id=t2.paperblast_id ' \
+            ' inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+            ' where PMID=%s and bioentry_id=%s;' % (biodb, pmid, bioentry_id)
+
+    if data_type == "STRING":
+        sql = 'select t1.description from biosqldb.bioentry t1 ' \
+              ' inner join biosqldb.biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t1.bioentry_id=%s and t2.name="%s"' % (bioentry_id, biodb)
+        genome = server.adaptor.execute_and_fetchall(sql,)[0][0]
+
+        sql = 'select title,journal,year from string.pmid2data_stringdb where pmid=%s;' % (pmid)
+        paper_data = server.adaptor.execute_and_fetchall(sql,)[0]
+
+        sql = 'select distinct locus_tag from string.seqfeature_id2string_protein_mapping t1 ' \
+            ' inner join string.string_protein2pmid t2 on t1.string_protein_id=t2.string_protein_id ' \
+            ' inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+            ' where PMID=%s and bioentry_id=%s;' % (biodb, pmid, bioentry_id)
+
+    locus_list =[i[0] for i in server.adaptor.execute_and_fetchall(sql,)] 
+
+    locus2annot, \
+    locus_tag2cog_catego, \
+    locus_tag2cog_name, \
+    locus_tag2ko, \
+    pathway2category, \
+    module2category, \
+    ko2ko_pathways, \
+    ko2ko_modules, \
+    locus2interpro = get_locus_annotations(biodb, locus_list)
+
+
+    return render(request, 'chlamdb/pmid_associations.html', locals())
+
+
+def pmid_associations_orthogroups(request, pmid, data_type):
+    from chlamdb.biosqldb import biosql_own_sql_tables
+
+    biodb = settings.BIODB
+    server, db = manipulate_biosqldb.load_db(biodb)
+
+    if data_type == "PaperBlast":
+        sql = 'select t1.description from biosqldb.bioentry t1 inner join biosqldb.biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t1.bioentry_id=%s and t2.name="%s"' % (bioentry_id, biodb)
+        genome = server.adaptor.execute_and_fetchall(sql,)[0][0]
+
+        sql = 'select title,journal,year from string.pmid2data_paperblast where pmid=%s;' % (pmid)
+        paper_data = server.adaptor.execute_and_fetchall(sql,)[0]
+
+        sql = 'select distinct locus_tag from string.seqfeature_id2paperblast t1 ' \
+            ' inner join string.paperblast2pmid t2 on t1.paperblast_id=t2.paperblast_id ' \
+            ' inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+            ' where PMID=%s and bioentry_id=%s;' % (biodb, pmid, bioentry_id)
+
+    if data_type == "STRING":
+        sql = 'select t1.pmid,orthogroup_name from string.pmid2data_stringdb t1 ' \
+                ' inner join string.string_protein2pmid t2 on t1.pmid=t2.pmid ' \
+                ' inner join string.seqfeature_id2string_protein_mapping t3 on t2.string_protein_id=t3.string_protein_id ' \
+                ' inner join orthology.seqfeature_id2orthogroup_%s t4 on t3.seqfeature_id=t4.seqfeature_id ' \
+                ' inner join orthology.orthogroup_%s t5 on t4.orthogroup_id=t5.orthogroup_id' \
+                ' where t1.pmid in (%s) group by t1.pmid,orthogroup_name' % (biodb, biodb, pmid)
+
+        orthogroups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+        sql2 = 'select title,journal,year from string.pmid2data_stringdb where pmid=%s;' % (pmid)
+        paper_data = server.adaptor.execute_and_fetchall(sql2,)[0]
+
+    orthogroup_list =[i[1] for i in server.adaptor.execute_and_fetchall(sql,)] 
+
+    match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(orthogroup_list,
+                                                                                                  biodb,
+                                                                                                  taxon_filter=False,
+                                                                                                  accessions=False)
+
+
+    return render(request, 'chlamdb/pmid_associations_orthogroups.html', locals())
+
+
+
+
 def pmid(request, seqfeature_id):
     biodb = settings.BIODB
-    extract_region_form_class = make_extract_region_form(biodb)
     server, db = manipulate_biosqldb.load_db(biodb)
 
     sql1 = f'select distinct accession,db_name,organism,description,query_cov,hit_cov,identity,evalue,score,t4.* from string.seqfeature_id2paperblast t1' \
             f' inner join string.paperblast_entry t2 on t1.paperblast_id=t2.id inner join string.paperblast2pmid t3 on t1.paperblast_id=t3.paperblast_id' \
             f' inner join string.pmid2data_paperblast t4 on t3.pmid=t4.pmid where t1.seqfeature_id={seqfeature_id};'
+    
+    print(sql1)
+
     pubmed_count = 0
     try:
         paperblast_data = server.adaptor.execute_and_fetchall(sql1,)
     except:
         paperblast_data = False
 
-    sql2 = f'select t1.pmid,authors,title,abstract,source from string_seqfeature_id2pmid  t1 ' \
-            f' inner join string_pmid2data t2 on t1.pmid=t2.pmid where t1.seqfeature_id={seqfeature_id};'
+    sql1 = f'select bioentry_id,locus_tag from annotation_seqfeature_id2locus where seqfeature_id={seqfeature_id}' 
+
+    data = server.adaptor.execute_and_fetchall(sql1,)[0]
+    bioentry_id = data[0]
+    locus_tag = data[1]
+
+    if paperblast_data:
+        # retrieve bioentry
+
+        pmid_list =[str(i[9]) for i in paperblast_data] 
+        pmid_filter = ','.join(pmid_list)
+
+        sql_2 = 'select pmid,count(*) from (select distinct pmid,t3.seqfeature_id from string_seqfeature_id2paperblast t1 ' \
+                ' inner join string_paperblast2pmid t2 on t1.paperblast_id=t2.paperblast_id ' \
+                ' inner join annotation_seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+                ' where bioentry_id=%s) A where A.pmid in (%s) group by pmid;'  % (bioentry_id, 
+                                                                                   pmid_filter)
+                
+        pmid2n_associated_proteins = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_2,))
+        pmid2n_associated_proteins = {int(k):int(v) for k,v in pmid2n_associated_proteins.items()}
+
+    sql2 = f'select distinct accession,organism,description,query_cov,hit_cov,identity,evalue,score,t4.* ' \
+           f' from string_seqfeature_id2string_protein_mapping t1 ' \
+           f' inner join string_string_protein_entry t2 on t1.string_protein_id=t2.id ' \
+           f' inner join string_string_protein2pmid t3 on t1.string_protein_id=t3.string_protein_id ' \
+           f' inner join string_pmid2data_stringdb t4 on t3.pmid=t4.pmid where t1.seqfeature_id={seqfeature_id};'
+
+    print(sql2)    
     try:
         string_data = server.adaptor.execute_and_fetchall(sql2,)
     except:
         string_data = False
+
+
+    if string_data:
         
-    print("")
+        pmid_list =[str(i[8]) for i in string_data] 
+        pmid_filter = ','.join(pmid_list)
+
+        sql_2 = 'select pmid,count(*) from (select distinct pmid,t3.seqfeature_id from string.seqfeature_id2string_protein_mapping t1 ' \
+                ' inner join string.string_protein2pmid t2 on t1.string_protein_id=t2.string_protein_id ' \
+                ' inner join annotation.seqfeature_id2locus_%s t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+                ' where bioentry_id=%s) A where A.pmid in (%s) group by pmid;'  % (biodb, bioentry_id, pmid_filter)
+        
+        pmid2n_associated_proteins_string = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_2,))
+        pmid2n_associated_proteins_string = {int(k):int(v) for k,v in pmid2n_associated_proteins_string.items()}
+        print(pmid2n_associated_proteins_string)
     return render(request, 'chlamdb/pmid.html', locals())
 
 
@@ -2108,7 +2077,7 @@ def extract_region(request):
 
                 temp_file = os.path.join(settings.BASE_DIR, "assets/temp/%s_region.fa" % genome_accession)
                 temp_location = "temp/%s_region.fa" % genome_accession
-                #print "temp_file", temp_file
+
                 with open(temp_file, 'w') as f:
                     SeqIO.write(record, f, 'fasta')
 
@@ -2144,100 +2113,64 @@ def extract_region(request):
 
 #
 def locusx(request, locus=None, menu=True):
+    
     biodb = settings.BIODB
     print ('-- locus or search term: %s -- biodb %s' % (locus, biodb))
-
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
-        import re
+    print(request.method)
+    if request.method == 'GET': 
 
         server, db = manipulate_biosqldb.load_db(biodb)
-        
+
         if locus == None:
             menu = True
             locus = request.GET.get('accession').strip()
-            
-            # check if Chlamydia trachomatis locus
-            m = re.match("CT([0-9]+)", locus)
-            if m:
-                locus = "CT_%s" % (m.group(1))
-                print("updated_search", locus)
-            
-            # check if exact match to seqfeature_id
-            try:
-                locus = int(locus)
-                sql = 'select locus_tag from custom_tables_locus2seqfeature_id where seqfeature_id=%s' % (locus)
-                locus = server.adaptor.execute_and_fetchall(sql,)[0][0]
-            except:
-                pass
+
+        if locus[-1] == '+':
+            locus = re.sub("\+","",locus)
+        elif "%" in locus:
+            locus = re.sub("%", " ", locus)
         
-        # check if orthogroup
-        m = re.match("group_([0-9]+)", locus)
+        # check if Chlamydia trachomatis locus
+        m = re.match("CT([0-9]+)", locus)
         if m:
-             input_type = 'orthogroup'
-        else:
-            # check if single or multiple search terms
-            if (len(locus.split(" ")) > 1):
-                return search(request)
+            locus = "CT_%s" % (m.group(1))
+            print("updated_search", locus)
+        
+        try:
+            locus = int(locus)
+            sql = 'select locus_tag from custom_tables.locus2seqfeature_id_%s where seqfeature_id=%s' % (biodb,
+                                                                                                            locus)
+            locus = server.adaptor.execute_and_fetchall(sql,)[0][0]
+        except:
+            pass
+        
+        sql0 = 'select locus_tag from custom_tables.seqfeature_id2old_locus_tag_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where old_locus_tag="%s" ' % (biodb, biodb, locus)
 
-            # try searchin synonymous table
+        try:
+            data = server.adaptor.execute_and_fetchall(sql0, )[0][0]
+            old_locus_tag = locus
+            locus = data
+            input_type = 'locus_tag'
+        except IndexError:
+            sql0 = 'select locus_tag from orthology_detail_%s where (locus_tag="%s" or protein_id="%s")' % (biodb,
+                                                                                                            locus,
+                                                                                                            locus)
+        try:
+            locus = server.adaptor.execute_and_fetchall(sql0, )[0][0]
+            input_type = 'locus_tag'
+        except IndexError:
+
+            sql1 = 'select orthogroup from orthology_detail_%s where orthogroup="%s"' % (biodb, locus)
             try:
-                sql = f'select t1.db_name,t1.accession,t2.orthogroup,t2.locus_tag,t2.start,t2.stop,t2.strand,t2.gene, t2.orthogroup_size,t2.n_genomes,t2.TM,t2.SP,t2.product,t2.organism ' \
-                      f' from cross_references t1 ' \
-                      f' inner join orthology_detail t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-                      f' where match(t1.accession) AGAINST ("{locus}" IN BOOLEAN MODE) ' \
-                      f' and db_name not in ("STRING", "KEGG", "KO", "eggNOG") group by t1.seqfeature_id limit 200;'
-
-                try:
-                    raw_search = server.adaptor.execute_and_fetchall(sql,)
-                # CASE when no synonymous table was setup
-                except:
-                    raw_search = []
-                
-                if len(raw_search) == 0:
-                    print("nomatch synonymous!")
-                    raise("nomatch")
-                elif len(raw_search) == 1:
-                    print("single match!")
-                    input_type = 'locus_tag'
-                    locus = raw_search[0][3]
-                    orthogroup = raw_search[0][2]
-                else:
-                    print("return all matches")
-                    n = 1
-                    search_result = []
-                    for one_hit in raw_search:
-                        search_result.append((n,) + one_hit)
-                        n+=1
-                    return render(request, 'chlamdb/search_synonymous.html', locals())
-            except:
-                # no synonymous table, use old method
-                print("echec synonymous table")
-                
-                
-                sql0 = 'select locus_tag from custom_tables_seqfeature_id2old_locus_tag t1 ' \
-                       ' inner join annotation_seqfeature_id2locus t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-                       ' where old_locus_tag="%s" ' % (locus)
-
-                try:
-                    data = server.adaptor.execute_and_fetchall(sql0, )[0][0]
-                    old_locus_tag = locus
-                    locus = data
-                    input_type = 'locus_tag'
-                except IndexError:
-                    sql0 = 'select locus_tag from orthology_detail where (locus_tag="%s" or protein_id="%s")' % (locus, locus)
-                try:
-                    locus = server.adaptor.execute_and_fetchall(sql0, )[0][0]
-                    input_type = 'locus_tag'
-                except IndexError:
-
-                    sql1 = 'select orthogroup from orthology_detail where orthogroup="%s"' % (locus)
-                    try:
-                        locus = server.adaptor.execute_and_fetchall(sql1, )[0][0]
-                        input_type = 'orthogroup'
-                    except IndexError:
-                        print ('not a valid id, trying search')
-                        return search(request)
+                locus = server.adaptor.execute_and_fetchall(sql1, )[0][0]
+                input_type = 'orthogroup'
+            except IndexError:
+                print ('not a valid id, trying search')
+                return search(request)
+        
         valid_id = True
+
+        # retrieve basic data about locus
         columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                 'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
         sql2 = 'select %s from orthology_detail where %s="%s"' % (columns, input_type, locus)
@@ -2250,12 +2183,17 @@ def locusx(request, locus=None, menu=True):
             old_locus_tag = data_old
         except:
             pass
+        # check if orthogroup
+        m = re.match("group_([0-9]+)", locus)
+        if m:
+            input_type = 'orthogroup'
+        else:
+            input_type = 'locus_tag'
 
         if input_type == 'locus_tag':
             from chlamdb.plots import uniprot_feature_viewer
 
-            print("input type locus tag----------------")
-            print("data", data)
+            print("input type locus tag ----------------")
 
             sql4 = 'select accession from orthology_detail where locus_tag="%s" limit 1' % (locus)
             genome_accession = server.adaptor.execute_and_fetchall(sql4,)[0][0]
@@ -2272,7 +2210,6 @@ def locusx(request, locus=None, menu=True):
                    ' inner join interpro_analysis t3 on t2.analysis_id=t3.analysis_id ' \
                    ' inner join annotation_seqfeature_id2locus t4 on t1.seqfeature_id=t4.seqfeature_id where locus_tag="%s") A left join ' \
                    ' interpro_entry B on A.interpro_id=B.interpro_id;' % (locus)
-            print(sql4)
 
             sql5 = 'select t3.ko_accession, t3.name, t3.definition, t3.pathways, t3.modules, t2.thrshld, t2.score, t2.evalue from ' \
                    ' custom_tables_locus2seqfeature_id t1 ' \
@@ -2376,7 +2313,33 @@ def locusx(request, locus=None, menu=True):
             sql29 = f'select final_prediction,score from annotation_seqfeature_id2locus t1' \
                     f' inner join custom_tables_seqfeature_id2psortb t2 on t1.seqfeature_id=t2.seqfeature_id where locus_tag="{locus}";'
 
-            sql30 = 'select paperblast_id from string.seqfeature_id2paperblast where seqfeature_id=%s;' % (seqfeature_id)
+            sql30 = f'select paperblast_id from string.seqfeature_id2paperblast where seqfeature_id={seqfeature_id};'
+
+            sql31 = f'select * from custom_tables.seqfeature_id2pdb_BBH_{biodb} where seqfeature_id={seqfeature_id};'
+
+            sql32 = f'select distinct ec,value from enzyme.seqfeature_id2ec_{biodb} t1 ' \
+                    f' inner join enzyme.enzymes t2 on t1.ec_id=t2.enzyme_id ' \
+                    f' inner join enzyme.enzymes_dat t3 on t1.ec_id=t3.enzyme_dat_id ' \
+                    f' where seqfeature_id="{seqfeature_id}" and line="description";'
+
+            sql33 = f'select EC,definition,thrshld,score,evalue,t2.ko_accession from enzyme.seqfeature_id2ko_{biodb} t1 ' \
+                    f' inner join enzyme.ko_annotation t2 on t1.ko_id=t2.ko_id ' \
+                    f' inner join enzyme.ko2ec t3 on t2.ko_accession=t3.ko_id where seqfeature_id={seqfeature_id}; '
+
+            try:
+                ec_priam_data = server.adaptor.execute_and_fetchall(sql32,)
+            except:
+                ec_priam_data = False
+
+            try:
+                ec_ko_data = server.adaptor.execute_and_fetchall(sql33,)
+            except:
+                ec_ko_data = False
+
+            try:
+                pdb_data = server.adaptor.execute_and_fetchall(sql31,)[0]
+            except:
+                pdb_data = False
 
             try:
                 psort_data = server.adaptor.execute_and_fetchall(sql29,)[0]
@@ -2388,7 +2351,7 @@ def locusx(request, locus=None, menu=True):
                 DeepT3_data = list(server.adaptor.execute_and_fetchall(sql26,)[0])
                 T3MM_data = list(server.adaptor.execute_and_fetchall(sql27,)[0])
                 effectiveT3_data = list(server.adaptor.execute_and_fetchall(sql28,)[0])
-                print("effectors---------", BPBAac_data)
+
                 effector_sum = 0
                 if BPBAac_data[0] == 1:
                     effectors = True
@@ -2401,10 +2364,8 @@ def locusx(request, locus=None, menu=True):
                     effector_sum+=1
                 if effectiveT3_data[0] == 1:
                     effectors = True 
-                    effector_sum+=1
-                print("effector:", effectors)               
+                    effector_sum+=1            
             except:
-                print("NO EFFECTORS")
                 effector_sum = 0
                 effectors = False
             pubmed_count = 0
@@ -2418,10 +2379,7 @@ def locusx(request, locus=None, menu=True):
                 pubmed_count+=len(paperblast_data)
             except:
                 paperblast_data = False
-            
-            
-            print("pubmed_count", pubmed_count)
-            print("litt", string_data, paperblast_data)
+
             try:
                 rnaseq_data = server.adaptor.execute_and_fetchall(sql22,)[0]
             except:
@@ -2433,7 +2391,7 @@ def locusx(request, locus=None, menu=True):
                 transporter_data[17] = transporter_data[17].split("(")[0]
                 # remove species name in case already in description
                 transporter_data[16] = re.sub(transporter_data[17],"",transporter_data[16])
-                print(transporter_data[17])
+
             except:
                 transporter_data = False
 
@@ -2462,8 +2420,7 @@ def locusx(request, locus=None, menu=True):
                 closest_phylo = True
             except:
                 closest_phylo = False
-            print("closest phylo", closest_phylo)
-            print(sql17)
+
             try:
                 n_blastnr_hits = server.adaptor.execute_and_fetchall(sql15, )[0][0]
             except:
@@ -2620,7 +2577,7 @@ def locusx(request, locus=None, menu=True):
 
             except:
                 interpro_data = False
-            #print interpro2taxononmy
+
             try:
                 sql_pfam = 'select signature_accession, signature_description,start,stop' \
                            ' from interpro where locus_tag="%s" ' \
@@ -2652,7 +2609,6 @@ def locusx(request, locus=None, menu=True):
             except:
                 pathways_data = False
 
-        if input_type == 'locus_tag':
             seq_start = int(data[3])
             seq_end = int(data[4])
             strand = int(data[5])
@@ -3058,7 +3014,7 @@ def gc_locus(request, locus_tag):
 
 def fam(request, fam, type):
     biodb = settings.BIODB
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
 
         valid_id = True
 
@@ -3083,8 +3039,6 @@ def fam(request, fam, type):
                    
             sql2 = 'select t2.description from COG_seqfeature_id2best_COG_hit t1 ' \
                    ' inner join COG_cog_names_2014 t2 on t1.hit_cog_id=t2.cog_id where t2.COG_name="%s";' % (fam)
-            print (sql1)
-            print (sql2)
             try:
                 info = server.adaptor.execute_and_fetchall(sql2, )[0]
             except:
@@ -3093,34 +3047,46 @@ def fam(request, fam, type):
             sql1 =   'select seqfeature_id from interpro_entry t1 inner join interpro_signature t2 on t1.interpro_id=t2.interpro_id ' \
                      ' inner join interpro_interpro t3 on t2.signature_id=t3.signature_id ' \
                      ' where name="%s" group by seqfeature_id;;' % (fam)
-            sql2 = 'select signature_description from interpro where interpro_accession="%s" limit 1' % (fam)
+            sql2 = 'select interpro_description from interpro where interpro_accession="%s" limit 1' % (fam)
+            
             try:
                 info = server.adaptor.execute_and_fetchall(sql2, )[0]
             except IndexError:
                 valid_id = False
         elif type == 'EC':
-            sql1 = 'select seqfeature_id from (select locus_tag from enzyme_locus2ec as t1 ' \
-                   ' inner join enzyme_enzymes as t2 on t1.ec_id=t2.enzyme_id ' \
-                   ' where ec="%s" group by locus_tag) A ' \
-                   ' inner join annotation_seqfeature_id2locus B on A.locus_tag=B.locus_tag group by seqfeature_id;' % (fam)
-                   
+            sql1 = f'select distinct seqfeature_id from enzyme_seqfeature_id2ec t1' \
+                   f' inner join enzyme_enzymes t2 on t1.ec_id=t2.enzyme_id where ec="{fam}";' 
+            print(sql1)
             sql2 = 'select line,value from (select * from enzyme_enzymes where ec="%s") t1 ' \
                    ' inner join enzyme_enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id;' % (fam)
             path = fam.split('.')
-            
-            external_link = 'http://www.chem.qmul.ac.uk/iubmb/enzyme/EC%s/%s/%s/%s.html' % (path[0], path[1], path[2], path[3])
+            print(sql2)
+            external_link = 'https://www.qmul.ac.uk/sbcs/iubmb/enzyme/EC%s/%s/%s/%s.html' % (path[0], path[1], path[2], path[3])
 
-            sql_pathways = 'select pathway_name,pathway_category,description ' \
+            sql_pathways = 'select distinct pathway_name,pathway_category,description ' \
                            ' from (select * from enzyme_enzymes where ec = "%s") t1 ' \
                            ' inner join enzyme_kegg2ec as t2 on t2.ec_id=t1.enzyme_id ' \
                            ' inner join enzyme_kegg_pathway as t3 on t2.pathway_id=t3.pathway_id' \
                            ' where pathway_category !="1.0 Global and overview maps";' % (fam)
 
             pathway_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_pathways, )]
+            
             try:
                 info =  server.adaptor.execute_and_fetchall(sql2, )
             except:
                 valid_id = False
+
+            sql_ko = f'select distinct t3.ko_accession,t3.definition from enzyme.ko2ec t1' \
+                     f' inner join enzyme.enzymes t2 on t1.enzyme_id=t2.enzyme_id ' \
+                     f' inner join enzyme.ko_annotation t3 on t1.ko_id=t3.ko_accession where t2.ec="{fam}";'
+            associated_ko = [list(i) for i in server.adaptor.execute_and_fetchall(sql_ko, )]
+            sql_ko_freq = f'select ko_accession,count(*) as n from (select distinct t3.ko_accession,seqfeature_id from enzyme.ko2ec t1 ' \
+                          f' inner join enzyme.enzymes t2 on t1.enzyme_id=t2.enzyme_id' \
+                          f' inner join enzyme.ko_annotation t3 on t1.ko_id=t3.ko_accession ' \
+                          f' inner join enzyme.seqfeature_id2ko_2019_06_PVC t4 on t3.ko_id=t4.ko_id ' \
+                          f'where t2.ec="{fam}") A group by ko_accession;'
+            ko2freq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_ko_freq,))
+
         elif type == 'ko':
             sql1 = 'select distinct seqfeature_id from enzyme_seqfeature_id2ko t1 ' \
                    ' inner join enzyme_ko_annotation t2 on t1.ko_id=t2.ko_id where t2.ko_accession="%s";' % (fam)
@@ -3137,11 +3103,11 @@ def fam(request, fam, type):
                     import re
                     pathway_list = [re.sub('ko', 'map',i) for i in data[0].split(',')]
                     pathway_list = '("' + '","'.join(pathway_list) + '")'
-                    sql = 'select pathway_name,pathway_category,description from enzyme_kegg_pathway where pathway_name in %s' % pathway_list
+                    sql = 'select distinct pathway_name,pathway_category,description from enzyme_kegg_pathway where pathway_name in %s' % pathway_list
                     pathway_data = server.adaptor.execute_and_fetchall(sql,)
                 if data[1] != '-':
                     module_list = '("' + '","'.join(data[1].split(',')) + '")'
-                    sql = 'select module_name,module_sub_sub_cat,description from enzyme_kegg_module where module_name in %s' % module_list
+                    sql = 'select distinct module_name,module_sub_sub_cat,description from enzyme_kegg_module where module_name in %s' % module_list
                     module_data = server.adaptor.execute_and_fetchall(sql,)
             except:
                 valid_id = False
@@ -3158,8 +3124,8 @@ def fam(request, fam, type):
         else:
             columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                       'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-            sql2 = 'select %s from orthology_detail where seqfeature_id in (%s)' % (columns, seqfeature_list_form)
-            print("Seqfeature id list", seqfeature_id_list)
+            sql2 = 'select %s from orthology_detail where seqfeature_id in (%s)' % (columns, biodb, seqfeature_list_form)
+
             all_locus_raw_data = server.adaptor.execute_and_fetchall(sql2, )
             orthogroup_list = [i[0] for i in all_locus_raw_data]
             all_locus_data = []
@@ -3176,18 +3142,17 @@ def fam(request, fam, type):
                                                                               [fam],
                                                                               'Pfam')
 
-            sql3= 'select distinct taxon_id,orthogroup,signature_accession from interpro ' \
-                  ' where analysis="Pfam" and orthogroup in (%s);' % ('"'+'","'.join(set(orthogroup_list))+'"')
+            sql3= 'select distinct taxon_id,orthogroup,signature_accession from interpro_%s ' \
+                  ' where analysis="Pfam" and orthogroup in (%s);' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"')
 
         elif type == 'cog':
-            print("taxon2orthogroup2count_reference", fam)
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
                                                                               [fam],
                                                                               'COG')
 
             sql3='select distinct taxon_id,orthogroup,COG_id from (select taxon_id,locus_tag,orthogroup ' \
-                 ' from orthology_detail where orthogroup in (%s)) A ' \
-                 ' inner join COG_locus_tag2gi_hit as B on A.locus_tag=B.locus_tag;' % ('"'+'","'.join(set(orthogroup_list))+'"', biodb)
+                 ' from biosqldb.orthology_detail_%s where orthogroup in (%s)) A ' \
+                 ' inner join COG.locus_tag2gi_hit_%s as B on A.locus_tag=B.locus_tag;' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"', biodb)
 
         elif type == 'interpro':
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
@@ -3195,18 +3160,21 @@ def fam(request, fam, type):
                                                                               'interpro')
 
             sql3 = 'select distinct taxon_id,orthogroup,interpro_accession from ' \
-                   ' interpro where orthogroup in (%s);' % ('"'+'","'.join(set(orthogroup_list))+'"')
+                   ' interpro_%s where orthogroup in (%s);' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"')
 
         elif type == 'EC':
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
                                                                               [fam],
                                                                               'EC')
-            sql3 = 'select distinct taxon_id,t1.orthogroup,t2.ec ' \
-                   'from (select orthogroup,locus_tag,ec_id from enzyme_locus2ec ' \
-                   'where orthogroup in (%s)) t1 ' \
-                   'left join enzyme_enzymes as t2 on t1.ec_id=t2.enzyme_id ' \
-                   'left join orthology_detail as t3 ' \
-                   'on t1.locus_tag=t3.locus_tag;' % ('"'+'","'.join(set(orthogroup_list))+'"')
+
+            group_filter = '"'+'","'.join(set(orthogroup_list))+'"'   
+
+            sql3 = f'select distinct taxon_id,orthogroup_name,ec from enzyme.seqfeature_id2ec_{biodb} t1 ' \
+                   f' inner join enzyme.enzymes t2 on t1.ec_id=t2.enzyme_id ' \
+                   f' inner join annotation.seqfeature_id2locus_{biodb} t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+                   f' inner join orthology.seqfeature_id2orthogroup_{biodb} t4 on t1.seqfeature_id=t4.seqfeature_id ' \
+                   f' inner join orthology.orthogroup_{biodb} as t5 on t4.orthogroup_id=t5.orthogroup_id ' \
+                   f' where orthogroup_name in ({group_filter});'
 
         elif type == 'ko':
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
@@ -3214,26 +3182,32 @@ def fam(request, fam, type):
                                                                               'ko')
 
             sql3 = 'select t1.taxon_id, t1.orthogroup, t3.ko_accession ' \
-                   ' from orthology_detail t1 ' \
-                   ' inner join enzyme_seqfeature_id2ko t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-                   ' inner join enzyme_ko_annotation t3 on t2.ko_id=t3.ko_id ' \
-                   ' where t1.orthogroup in (%s);' % ('"'+'","'.join(set(orthogroup_list))+'"')
-            #print sql3
+                   ' from biosqldb.orthology_detail_%s t1 ' \
+                   ' inner join enzyme.seqfeature_id2ko_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                   ' inner join enzyme.ko_annotation t3 on t2.ko_id=t3.ko_id ' \
+                   ' where t1.orthogroup in (%s);' % (biodb,
+                                                        biodb,
+                                                        '"'+'","'.join(set(orthogroup_list))+'"')
+
         else:
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
                                                                               [fam],
                                                                               'ko')
             sql3 = 'select distinct A.taxon_id,A.orthogroup,B.ko_id from (' \
-                   ' select locus_tag,orthogroup,taxon_id from orthology_detail ' \
-                   ' where orthogroup in (%s)) A inner join enzyme_locus2ko as B ' \
-                   ' on A.locus_tag=B.locus_tag;' % ('"'+'","'.join(set(orthogroup_list))+'"')
+                   ' select locus_tag,orthogroup,taxon_id from biosqldb.orthology_detail_%s ' \
+                   ' where orthogroup in (%s)) A inner join enzyme.locus2ko_%s as B ' \
+                   ' on A.locus_tag=B.locus_tag;' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"', biodb)
 
+        print(sql3)
         data = server.adaptor.execute_and_fetchall(sql3,)
 
 
         taxon2orthogroup2ec = {}
+        # dico of the form:
+        # taxid: {group: {domain}}
+        # 58: {'group_414': ['PF06723']}, 216: {'group_414': ['PF06723']}, 269: {'group_414': ['PF06723']},
         for one_row in data:
-            taxon = one_row[0]
+            taxon = str(one_row[0])
             group = one_row[1]
             ec = one_row[2]
             if taxon not in taxon2orthogroup2ec:
@@ -3256,12 +3230,152 @@ def fam(request, fam, type):
 
             labels = [fam] + group_count
 
+            print("plotting")
+
+            #print("merged_dico", merged_dico)
+            #print("taxon2orthogroup2ec", taxon2orthogroup2ec)
 
             tree, style = ete_motifs.multiple_profiles_heatmap(biodb,
-                                                        labels,
-                                                        merged_dico,
-                                                        taxon2group2value=taxon2orthogroup2ec,
-                                                        highlight_first_column=True)
+                                                               labels,
+                                                               merged_dico,
+                                                               taxon2group2value=taxon2orthogroup2ec,
+                                                               highlight_first_column=True)
+
+
+            if len(labels) > 30:
+                big = True
+                path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
+                asset_path = '/temp/fam_tree_%s.png' % fam
+                tree.render(path, dpi=300, tree_style=style)
+            else:
+                big = False
+                path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.svg' % fam
+                asset_path = '/temp/fam_tree_%s.svg' % fam
+
+                tree.render(path, dpi=300, tree_style=style)
+
+    return render(request, 'chlamdb/fam.html', locals())
+
+
+def fam_interpro(request, fam, type):
+
+    # flag for template rendering
+    fam_interpro = True
+
+    if type == "Gene3D":
+        Gene3D_acc = fam.split(":")[1]
+
+    '''
+    Same as fam but don't rely on comparative matrix
+    retrieve pattern of presence/absence from interproscan result table
+    '''
+    biodb = settings.BIODB
+    if request.method == 'GET': 
+        from chlamdb.phylo_tree_display import ete_motifs
+
+        valid_id = True
+
+        server, db = manipulate_biosqldb.load_db(biodb)
+
+        print ('-- family request: biodb %s -- type %s -- name %s' % (biodb, type, fam))
+
+        sql1 = f'select distinct t1.seqfeature_id from interpro.interpro_{biodb} t1 ' \
+               f' inner join interpro.signature t2 on t1.signature_id=t2.signature_id ' \
+               f' inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id ' \
+               f' where analysis_name="{type}" and signature_accession="{fam}";'
+
+        sql2 =   f'select signature_accession,signature_description from interpro.interpro_{biodb} t1 ' \
+                 f' inner join interpro.signature t2 on t1.signature_id=t2.signature_id ' \
+                 f' inner join interpro.analysis t3 on t2.analysis_id=t3.analysis_id ' \
+                 f' where analysis_name="{type}" and signature_accession="{fam}" limit 1'
+
+        try:
+            info = server.adaptor.execute_and_fetchall(sql2, )[0]
+        except IndexError:
+            #    valid_id = False
+            no_match = True
+            menu = True
+            return render(request, 'chlamdb/fam.html', locals())
+
+        try:
+            seqfeature_id_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql1, )]
+
+            seqfeature_list_form = '"' + '","'.join(seqfeature_id_list) + '"'
+
+        except IndexError:
+            valid_id = False
+            return render(request, 'chlamdb/fam.html', locals())
+        else:
+
+            # retrieve locus list and their annotations
+            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+            sql2 = 'select %s from orthology_detail_%s where seqfeature_id in (%s)' % (columns, biodb, seqfeature_list_form)
+
+            all_locus_raw_data = server.adaptor.execute_and_fetchall(sql2, )
+            orthogroup_list = [i[0] for i in all_locus_raw_data]
+            all_locus_data = []
+            group_count = []
+            for i in range(0, len(all_locus_raw_data)):
+                 all_locus_data.append([i] + list(all_locus_raw_data[i]))
+                 if all_locus_raw_data[i][0] not in group_count:
+                    group_count.append(all_locus_raw_data[i][0])
+        envoi = True
+        menu = True
+        
+        
+
+        signature2taxon_id2count = ete_motifs.get_interpro2taxon_id2count(biodb,
+                                                                          [fam],
+                                                                          type)
+
+
+        sql3 = 'select distinct taxon_id,orthogroup,signature_accession from ' \
+                ' interpro_%s where orthogroup in (%s) and signature_accession="%s";' % (biodb,
+                                                                                       '"'+'","'.join(set(orthogroup_list))+'"',
+                                                                                       fam)
+
+
+        data = server.adaptor.execute_and_fetchall(sql3,)
+
+        # dico of the form:
+        # taxid: {group: {domain}}
+        # one group can be associated to multiple domains
+        # 58: {'group_414': ['PF06723']}, 216: {'group_414': ['PF06723']}, 269: {'group_414': ['PF06723']},
+
+        taxon2orthogroup2target_domain = {}
+        for one_row in data:
+            taxon = int(one_row[0])
+            group = one_row[1]
+            signature = one_row[2]
+            if taxon not in taxon2orthogroup2target_domain:
+                taxon2orthogroup2target_domain[taxon] = {}
+                taxon2orthogroup2target_domain[taxon][group] = [signature]
+            else:
+                if group not in taxon2orthogroup2target_domain[taxon]:
+                    taxon2orthogroup2target_domain[taxon][group] = [signature]
+                else:
+                    if signature not in taxon2orthogroup2target_domain[taxon][group]:
+                        taxon2orthogroup2target_domain[taxon][group].append(signature)
+
+        if len(taxon2orthogroup2target_domain) == 0:
+            no_match = True
+        else:
+            taxon2orthogroup2count = ete_motifs.get_taxon2orthogroup2count(biodb, group_count)
+            merged_dico = taxon2orthogroup2count
+            for i in signature2taxon_id2count:
+                merged_dico[i] = signature2taxon_id2count[i]
+
+            labels = [fam] + group_count
+
+
+            print("plotting")
+
+            tree, style = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                               labels,
+                                                               merged_dico, # group2taxon2count
+                                                               taxon2group2value=taxon2orthogroup2target_domain,
+                                                               highlight_first_column=True)
 
 
             if len(labels) > 30:
@@ -3283,7 +3397,7 @@ def fam(request, fam, type):
 def COG_phylo_heatmap(request, frequency):
     biodb = settings.BIODB
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
         from ete3 import Tree
         from chlamdb.phylo_tree_display import ete_motifs
         from chlamdb.plots import cog_heatmap
@@ -3303,7 +3417,7 @@ def COG_phylo_heatmap(request, frequency):
         filter = '"' + '","'.join(acc_list) + '"'
         sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
         taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
-        #print "taxon_list", taxon_list
+
         t1 = Tree(tree)
         R = t1.get_midpoint_outgroup()
         t1.set_outgroup(R)
@@ -3334,11 +3448,184 @@ def COG_phylo_heatmap(request, frequency):
     return render(request, 'chlamdb/COG_phylo_heatmap.html', locals())
 
 
-def venn_candidate_effectors(request):
+
+def plot_hist(data, xlab, ylab, title, abline, div_id):
+
+    import plotly.graph_objects as go
+    from collections import Counter
+    import plotly.figure_factory as ff
+
+    plot_data = [go.Histogram(x=data)]
+
+    layout = go.Layout(
+        title=title,
+        yaxis=go.layout.YAxis(
+            title=go.layout.yaxis.Title(
+                text=ylab,
+                font=dict(
+                    family='Courier New, monospace',
+                    size=15,
+                    color='#7f7f7f'
+                )
+            )
+        ),
+        xaxis=go.layout.XAxis(
+            title=go.layout.xaxis.Title(
+                text=xlab,
+                font=dict(
+                    family='Courier New, monospace',
+                    size=15,
+                    color='#7f7f7f'
+                )
+            )
+        )
+    )
+
+    fig = go.Figure()
+
+    fig = go.Figure(data=plot_data, 
+                    layout=layout)
+
+    if abline:
+        # Add abline
+        fig.add_shape(
+                # Line Vertical
+                go.layout.Shape(
+                    type="line",
+                    x0=abline,
+                    y0=0,
+                    x1=abline,
+                    y1=200,
+                    line=dict(
+                        color="RoyalBlue",
+                        width=3
+                    )
+        ))
+
+    fig.layout.margin.update({"l": 80,
+                              "r": 20,
+                              "b": 40,
+                              "t": 80,
+                              "pad": 10,
+                                })
+
+    html_plot = manipulate_biosqldb.make_div(fig, div_id=div_id)
+    return html_plot
+
+
+def effector_predictions(request, genome):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    print('venn_candidate_effectors')
+    sql = f'select taxon_id from biosqldb.bioentry where accession="{genome}"'
+    taxid_list = [str(server.adaptor.execute_and_fetchall(sql,)[0][0])]
+
+    print(taxid_list)
+
+    sql_locus_tag_effectiveT3 = 'select distinct t2.locus_tag from effectors.predicted_effectiveT3_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    locus_tag_list_effective_T3 = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql_locus_tag_effectiveT3, )]
+
+    sql_locus_tag_T3MM = 'select distinct t2.locus_tag from effectors.predicted_T3MM_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s) and probability > 0.5;' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    locus_tag_list_effective_T3MM = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql_locus_tag_T3MM, )]
+
+    sql_locus_tag_BPBAac = 'select distinct t2.locus_tag from effectors.predicted_BPBAac_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    locus_tag_list_effective_BPBAac = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql_locus_tag_BPBAac, )]
+
+
+    sql_locus_tag_DeepT3 = 'select distinct t2.locus_tag from effectors.predicted_DeepT3_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    locus_tag_list_effective_DeepT3 = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql_locus_tag_DeepT3, )]
+
+
+    serie_effective_T3 = '{' + f'name: "effectiveT3", data: {locus_tag_list_effective_T3}'  + '}' 
+    serie_effective_T3MM = '{' + f'name: "T3MM", data: {locus_tag_list_effective_T3MM}'  + '}' 
+    serie_effective_BPBAac = '{' + f'name: "BPBAac", data: {locus_tag_list_effective_BPBAac}'  + '}' 
+    serie_effective_DeepT3 = '{' + f'name: "DeepT3", data: {locus_tag_list_effective_DeepT3}' + '}' 
+
+    #series = [serie_pfam, serie_interpro, serie_blastnr, serie_effective_ELD] # serie_effective_T3, serie_effective_T3MM
+
+    series = [serie_effective_T3, serie_effective_T3MM, serie_effective_BPBAac, serie_effective_DeepT3]
+    series_string = '[%s]' % ','.join(series)
+
+    envoi_venn = True
+
+
+
+    sql_scores_effectiveT3 = 'select score from effectors.predicted_effectiveT3_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    score_list_effective_T3 = [float(i[0]) for i in server.adaptor.execute_and_fetchall(sql_scores_effectiveT3, )]
+
+    
+    sql_scores_T3MM = 'select probability from effectors.predicted_T3MM_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    score_list_T3MM = [float(i[0]) for i in server.adaptor.execute_and_fetchall(sql_scores_T3MM, )]
+
+    
+    sql_scores_BPBAac = 'select SVM_value from effectors.predicted_BPBAac_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    score_list_BPBAac = [float(i[0]) for i in server.adaptor.execute_and_fetchall(sql_scores_BPBAac, )]
+
+    
+    sql_scores_DeepT3 = 'select score from effectors.predicted_DeepT3_%s t1 ' \
+                                           'inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                                           'where t1.taxon_id in (%s);' % (biodb,
+                                                                           biodb,
+                                                                           ','.join(taxid_list))
+
+    # score_list_DeepT3 = [float(i[0]) for i in server.adaptor.execute_and_fetchall(sql_scores_DeepT3, )]
+
+    
+    title = 'Score distribution: effective_T3 (%s hits)' % len(score_list_effective_T3)
+    xlab = 'Score'
+    ylab = 'Density'
+    plot_effective_T3 = plot_hist(score_list_effective_T3, xlab, ylab, title, False, "plot1")
+    title = 'Score distribution: T3MM (%s hits)' % len(score_list_T3MM)
+    plot_T3MM = plot_hist(score_list_T3MM, xlab, ylab, title, False, "plot2")
+    title = 'Score distribution: BPBAac (%s hits)' % len(score_list_BPBAac)
+    plot_BPBAac = plot_hist(score_list_BPBAac, xlab, ylab, title, False, "plot3")    
+    # title = 'Score distribution: DeepT3 (%s hits)' % len(score_list_DeepT3)
+    # plot_DeepT3 = plot_hist(score_list_DeepT3, xlab, ylab, title, False, "plot4")      
+
+
+    
+
+    return render(request, 'chlamdb/venn_effectors.html', locals())
+
+
+def venn_candidate_effectors(request):
+    biodb = settings.BIODB
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     taxid_list = [1279839,1279496,1035343,314,886707,804807,48,283,55,1279822,46,1279815,49,87925,52,1137444,67,1172028,1069693,1172027,307,59,60,313,1069694,62,1143376,293,1279767,1279497,1279774,64,66]
     taxid_list = [str(i) for i in taxid_list]
@@ -3505,7 +3792,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
 
     biodb = settings.BIODB
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
         from chlamdb.phylo_tree_display import ete_motifs
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -3618,10 +3905,8 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
                                                                         taxid_list))
 
 
-
-        print (sql)
         orthogroup_data = server.adaptor.execute_and_fetchall(sql, )
-        # print orthogroup_data
+
         pfam2orthogroups = {}
         orthogroup_list = []
         for i in orthogroup_data:
@@ -3726,7 +4011,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
 
     biodb = settings.BIODB
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
         from chlamdb.phylo_tree_display import ete_motifs
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -3833,7 +4118,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
 
 
         orthogroup_data = server.adaptor.execute_and_fetchall(sql, )
-        # print orthogroup_data
+
         interpro2orthogroups = {}
         orthogroup_list = []
         for i in orthogroup_data:
@@ -3942,7 +4227,7 @@ def KEGG_module_map(request, module_name):
 
     #cache.clear()
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
         from chlamdb.phylo_tree_display import ete_motifs
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -3952,8 +4237,6 @@ def KEGG_module_map(request, module_name):
               ' inner join enzyme_ko_annotation t3 on t1.ko_id=t3.ko_id where module_name="%s";' % (module_name)
 
         map_data = server.adaptor.execute_and_fetchall(sql,)
-
-        #print map_data
 
         ko_list = [i[3] for i in map_data]
 
@@ -3966,7 +4249,7 @@ def KEGG_module_map(request, module_name):
               ' where t1.module_name="%s";' % (module_name)
 
         orthogroup_data = server.adaptor.execute_and_fetchall(sql,)
-        #print orthogroup_data
+
         ko2orthogroups = {}
         orthogroup_list = []
         for i in orthogroup_data:
@@ -4025,7 +4308,7 @@ def kegg_multi(request, map_name, ko_name):
 
     #cache.clear()
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
         from chlamdb.phylo_tree_display import ete_motifs
         from chlamdb.plots import kegg_maps
 
@@ -4045,7 +4328,7 @@ def kegg_multi(request, map_name, ko_name):
         sql = 'select node_id from enzyme_pathway2ortholog_associations t1 ' \
               ' inner join enzyme_kegg_pathway  t2 on t1.pathway_id=t2.pathway_id ' \
               ' where pathway_name="%s" and ko_id="%s";' % (map_name, ko_name)
-        print(sql)
+
         node_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
 
         sql2 = 'select ko_id from enzyme_pathway2ortholog_associations t1 ' \
@@ -4064,7 +4347,7 @@ def kegg_multi(request, map_name, ko_name):
 def KEGG_mapp_ko(request, map_name):
     biodb = settings.BIODB
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
 
         task = KEGG_map_ko_task.delay(biodb, map_name)
         task_id = task.id
@@ -4076,7 +4359,7 @@ def KEGG_mapp_ko(request, map_name):
 def KEGG_mapp_ko_organism(request, map_name, taxon_id):
     biodb = settings.BIODB
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
  
         task = KEGG_map_ko_organism_task.delay(biodb, map_name, taxon_id)
         task_id = task.id
@@ -4086,7 +4369,7 @@ def KEGG_mapp_ko_organism(request, map_name, taxon_id):
 
 def KEGG_mapp(request, map_name):
     biodb = settings.BIODB
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
         from chlamdb.phylo_tree_display import ete_motifs
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -4122,7 +4405,6 @@ def KEGG_mapp(request, map_name):
         taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, orthogroup_list, type="orthogroup")
         taxon2enzyme2count = ete_motifs.get_taxon2name2count(biodb, enzyme_list_found_in_db, type="EC")
 
-        #print taxon2enzyme2count
         labels = enzyme_list_found_in_db
         tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2enzyme2count)
 
@@ -4134,7 +4416,6 @@ def KEGG_mapp(request, map_name):
 
 
         if len(labels) > 40:
-            #print 'BIGGGGGGGGGGG', len(labels)
             big = True
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % map_name
             asset_path = '/temp/KEGG_tree_%s.png' % map_name
@@ -4143,7 +4424,6 @@ def KEGG_mapp(request, map_name):
 
 
         else:
-            #print 'not BIGGGGGGGGGG', len(labels)
             big = False
             path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % map_name
             asset_path = '/temp/KEGG_tree_%s.svg' % map_name
@@ -4167,15 +4447,13 @@ def sunburst(request, locus):
 
     #cache.clear()
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
-        #print 'okkkkkkkkkkkkkkk'
+    if request.method == 'GET': 
         valid_id = True
 
         server, db = manipulate_biosqldb.load_db(biodb)
 
         sql = 'select accession from orthology_detail where locus_tag = "%s"' % (locus)
         accession = server.adaptor.execute_and_fetchall(sql,)[0][0]
-        #print accession
 
         sql1 = 'select t3.superkingdom,  t3.phylum,  t3.order,  t3.family,  t3.genus,  t3.species  from ' \
                    ' blastnr_blastnr_hits_%s as t1' \
@@ -4192,17 +4470,12 @@ def sunburst(request, locus):
                    ' on t1.nr_hit_id=t4.nr_hit_id where t1.locus_tag="%s"' % (accession, accession, accession, locus)
             '''
 
-            ##print sql
             raw_data = server.adaptor.execute_and_fetchall(sql1,)
 
         except:
-            print (sql1)
-
             valid_id = False
-            #print 'valid id', valid_id
             return render(request, 'chlamdb/sunburst.html', locals())
 
-        #print "asdffffffffffffffffffffff", sql1
         dico =  {}
 
         y = 1
@@ -4232,7 +4505,7 @@ def sunburst(request, locus):
         i = 1
 
         tt = settings.BASE_DIR + '/assets/out.tab'
-        #print 'sdsdfsdf', tt
+
         out = open(tt, 'w')
         for superkingdom in dico:
             for phylum in dico[superkingdom]:
@@ -4281,7 +4554,7 @@ def get_cog(request, taxon, category):
     target_taxons = [i for i in request.GET.getlist('h')]
 
     biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
-    #print biodb_id_sql
+
     biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
 
     sql = 'select A.description,locus_tag,COG_name, B.description, D.description from (' \
@@ -4293,7 +4566,6 @@ def get_cog(request, taxon, category):
                                                                                                  taxon,
                                                                                                  category)
 
-    print (sql)
     data = server.adaptor.execute_and_fetchall(sql,)
 
     locus_list = [line[1] for line in data]
@@ -4304,7 +4576,6 @@ def get_cog(request, taxon, category):
     locus2annot = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     circos_url = '?ref=%s&' % taxon
-    #print 'all taxons', target_taxons
     target_taxons.pop(target_taxons.index(taxon))
     circos_url += "t="+('&t=').join((target_taxons)) + '&h=' + ('&h=').join(locus_list)
 
@@ -4316,7 +4587,6 @@ def get_cog_multiple(request, category, accessions=False):
     biodb = settings.BIODB
     if accessions == 'False' or accessions == 'F':
         accessions = False
-    #print 'ac', accessions, type(accessions)
 
     '''
     idem as get_cog but possibility to get more complex requests:
@@ -4325,8 +4595,6 @@ def get_cog_multiple(request, category, accessions=False):
     return the list of match COGs with their annotations
     '''
     from chlamdb.biosqldb import biosql_own_sql_tables
-
-    #print accessions
 
     server, db = manipulate_biosqldb.load_db(biodb)
     include = [i for i in request.GET.getlist('i')]
@@ -4342,9 +4610,8 @@ def get_cog_multiple(request, category, accessions=False):
     biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
     biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
-    #print accessions
-    # get sub matrix and complete matrix
 
+    # get sub matrix and complete matrix
     mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
                                                                   "COG",
                                                                   "id",
@@ -4359,7 +4626,6 @@ def get_cog_multiple(request, category, accessions=False):
     sql = 'select COG_name, t3.code,t3.description,A.description from (select * from COG_cog_names_2014 where COG_name in (%s)) A ' \
           ' inner join COG_cog_id2cog_category t2 on A.COG_id=t2.COG_id ' \
           ' inner join COG_code2category t3 on t2.category_id=t3.category_id where t3.code="%s";' % (filter, category)
-    print(sql)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -4380,7 +4646,7 @@ def get_orthogroup_multiple_cog(request, category):
 
     server, db = manipulate_biosqldb.load_db(biodb)
     match_groups_subset = [i for i in request.GET.getlist('h')]
-    #print "match_groups_subset" , match_groups_subset
+
     # get list of all orthogroup with at least one hit in the specified category
     filter = '"' + '","'.join(match_groups_subset) + '"'
     sql = 'select orthogroup from (select orthogroup,locus_tag from orthology_detail ' \
@@ -4401,7 +4667,7 @@ def get_orthogroup_multiple_cog(request, category):
     code2category[None] = '-'
 
     sql3 = 'select orthogroup, count(*) from orthology_detail where orthogroup in (%s) group by orthogroup' % (filter2)
-    #print sql3
+
     orthogroup2size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
 
 
@@ -4417,7 +4683,7 @@ def get_orthogroup_multiple_cog(request, category):
             locus2count[i[1]] = 1
         else:
             locus2count[i[1]] += 1
-    #print "locus2count", locus2count
+
     for row in data:
         # new group
         if row[0] not in orthogroup2category2count:
@@ -4430,7 +4696,7 @@ def get_orthogroup_multiple_cog(request, category):
             else:
                 # new category
                 orthogroup2category2count[row[0]][row[4]] = (1/float(locus2count[row[1]]))
-    #print orthogroup2category2count
+
     data_type = 'cog'
 
     return render(request, 'chlamdb/get_orthogroup_multiple_cog.html', locals())
@@ -4447,9 +4713,8 @@ def get_ko_multiple(request, type, category):
     import re
 
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print category
+
     category = re.sub('\+', ' ', category)
-    #print 'catego', category
 
     include = [i for i in request.GET.getlist('i')]
     exclude = [i for i in request.GET.getlist('o')]
@@ -4482,7 +4747,7 @@ def get_ko_multiple(request, type, category):
               'where ko_accession in  (%s)) A inner join enzyme_pathway2ko as B on A.ko_id=B.ko_id  ' \
               ' inner join enzyme_kegg_pathway as C on B.pathway_id=C.pathway_id' \
               ' where description="%s";' % (filter, category)
-    print(sql)
+
     data = list(server.adaptor.execute_and_fetchall(sql,))
     if type == 'module':
         for i, info in enumerate(data):
@@ -4498,9 +4763,8 @@ def get_ko_multiple(request, type, category):
 
 def cog_venn_subset(request, category):
     biodb = settings.BIODB
-    #print "loading db..."
+
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
 
     targets = [i for i in request.GET.getlist('h')]
     if len(targets)> 5:
@@ -4515,8 +4779,6 @@ def cog_venn_subset(request, category):
         template_serie = '{name: "%s", data: %s}'
         sql = 'select A.id from (select id from comparative_tables_COG where `%s` > 0) A' \
               ' inner join COG_cog_names_2014 as t2 on A.id=t2.COG_id where function="%s";' % (target, category)
-        #sql ='select id from comparative_tables_COG where `%s` > 0' % (target)
-        #print sql
         cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
         all_cog_list += cogs
         data = '"' + '","'.join(cogs) + '"'
@@ -4531,8 +4793,6 @@ def cog_venn_subset(request, category):
     data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     for i in data:
         if i in all_cog_list:
-
-            ##print 'ok'
             cog2description.append('h["%s"] = "%s </td><td>%s";' % (i, data[i][0], data[i][1]))
         else:
             pass
@@ -4546,9 +4806,8 @@ def cog_venn_subset(request, category):
 
 def ko_venn_subset(request, category):
     biodb = settings.BIODB
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
+
     import re
 
     category = re.sub('\+', ' ', category)
@@ -4567,8 +4826,7 @@ def ko_venn_subset(request, category):
         sql = 'select A.id from (select id from comparative_tables_ko where `%s` > 0) A' \
               ' inner join enzyme_module2ko_v1 as t2 on A.id=t2.ko_id inner JOIN ' \
               ' enzyme_kegg_module_v1 as t3 on t2.module_id=t3.module_id where module_sub_sub_cat="%s";' % (target, category)
-        #sql ='select id from comparative_tables_COG where `%s` > 0' % (target)
-        #print sql
+
         cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
         all_cog_list += cogs
         data = '"' + '","'.join(cogs) + '"'
@@ -4584,7 +4842,6 @@ def ko_venn_subset(request, category):
     data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     for i in data:
         if i in all_cog_list:
-            #print data[i]
             pathways_string = ''
             module_string = ''
             if data[i][3] != '-':
@@ -4619,10 +4876,9 @@ def module_cat_info(request, taxon, category):
 
     target_taxons = [i for i in request.GET.getlist('h')]
 
-    #print 'category', category
     category = re.sub('\+', ' ', category)
     biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
-    #print biodb_id_sql
+
     biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
 
     # description, locus, KO, KO name, KO description
@@ -4634,7 +4890,6 @@ def module_cat_info(request, taxon, category):
           ' (select taxon_id, description from bioentry where biodatabase_id=%s and ' \
           ' description not like "%%%%plasmid%%%%") B on A.taxon_id=B.taxon_id group by locus_tag,ko_id;' % (category, taxon, biodb_id)
 
-    #print sql
     data = server.adaptor.execute_and_fetchall(sql,)
 
     locus_list = [line[1] for line in data]
@@ -4644,7 +4899,7 @@ def module_cat_info(request, taxon, category):
     locus2annot = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     circos_url = '?ref=%s&' % taxon
-    #print 'all taxons', target_taxons
+
     target_taxons.pop(target_taxons.index(taxon))
     circos_url += "t="+('&t=').join((target_taxons)) + '&h=' + ('&h=').join(locus_list)
 
@@ -4690,7 +4945,6 @@ def module_barchart(request):
                   ' enzyme_module2ko_v1 as B on A.ko_id=B.ko_id inner join enzyme_kegg_module_v1 as C ' \
                   ' on B.module_id=C.module_id where A.taxon_id in (%s) group by taxon_id,ko_id,module_sub_sub_cat) bb ' \
                   ' group by bb.taxon_id,bb.module_sub_sub_cat;' % (','.join(target_taxons))
-            #print sql
 
 
             data = server.adaptor.execute_and_fetchall(sql,)
@@ -4733,19 +4987,15 @@ def module_barchart(request):
 
             all_series_templates = []
             for taxon in taxon2category2count:
-                #print 'taxon', taxon
                 one_category_list = []
                 for category in all_categories:
-                    #print 'category', category
                     try:
                         one_category_list.append(taxon2category2count[taxon][category])
                     except:
                         one_category_list.append(0)
                 one_category_list = [str(i) for i in one_category_list]
-                #print one_category_list
                 all_series_templates.append(one_serie_template % (taxon, ','.join(one_category_list)))
 
-            #print 'all series!', all_series_templates
             series = serie_template % ''.join(all_series_templates)
             labels = labels_template % ('"'+'","'.join(all_categories) + '"')
 
@@ -4768,12 +5018,10 @@ def module_barchart(request):
                   values: [31, 28, 14, 8, 15, 21]
                 },]
             '''
-            #print 'labels', labels
-            #print series
 
             circos_url = '?h=' + ('&h=').join(target_taxons)
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = venn_form_class()
     return render(request, 'chlamdb/module_barplot.html', locals())
 
@@ -4788,7 +5036,6 @@ def add_comment(request, locus_tag):
         form = comment_form_class(request.POST)
         if form.is_valid():
             envoi = True
-            #print 'form valid'
             locus_tag = form.cleaned_data['locus']
             comment =  form.cleaned_data['comment']
 
@@ -4905,7 +5152,6 @@ def ko_subset_barchart(request, type):
               ' (%s)) A inner join enzyme_pathway2ko_v1 as B on A.ko_id=B.ko_id  inner join enzyme_kegg_pathway as C' \
               ' on B.pathway_id=C.pathway_id where pathway_category != "1.0 Global and overview maps"' \
               ' group by description;' % ('"'+'","'.join(match_groups_subset)+'"')
-        #print sql
 
     data_subset = server.adaptor.execute_and_fetchall(sql,)
 
@@ -4925,8 +5171,7 @@ def ko_subset_barchart(request, type):
               ' (%s)) A inner join enzyme_pathway2ko_v1 as B on A.ko_id=B.ko_id ' \
               ' inner join enzyme_kegg_pathway as C on B.pathway_id=C.pathway_id where pathway_category != "1.0 Global and overview maps"' \
               ' group by description;' % ('"'+'","'.join(match_groups)+'"')
-        #print sql
-        #print '################################'
+
     data_all_include = server.adaptor.execute_and_fetchall(sql,)
 
     # count total
@@ -4991,7 +5236,6 @@ def ko_subset_barchart(request, type):
 def cog_subset_barchart(request, accessions=False):
     biodb = settings.BIODB
     if accessions == 'False' or accessions == 'F':
-        #print 'baba'
         accessions = False
 
 
@@ -5046,7 +5290,7 @@ def cog_subset_barchart(request, accessions=False):
           ' inner join COG_cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
           ' inner join COG_code2category t3 on t2.category_id=t3.category_id ' \
           ' where COG_name in (%s) group by t3.description;' % ('"'+'","'.join(match_groups_subset)+'"')
-    print (sql)
+
     data_subset = server.adaptor.execute_and_fetchall(sql,)
 
 
@@ -5162,7 +5406,7 @@ def compare_homologs(request):
                                                            target_taxons[1])
 
             locus_list = list(server.adaptor.execute_and_fetchall(sql,))
-            #print 'n locus', len(locus_list)
+
             locus2length = {}
             locus2orthogroup = {}
             for taxon in target_taxons:
@@ -5194,7 +5438,7 @@ def compare_homologs(request):
 
             dataset = dataset_template % data_string
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = venn_form_class()
 
     return render(request, 'chlamdb/prot_length_scatter.html', locals())
@@ -5219,7 +5463,7 @@ def orthogroup2cog_series(orthogroup_list, reference_taxon=None, accessions=Fals
               ' where orthogroup in (%s) and taxon_id=%s) A left join COG_locus_tag2gi_hit as B on A.locus_tag=B.locus_tag ' \
               ' inner join COG_cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,function;' % ('"' + '","'.join(orthogroup_list) + '"',
                                                                                                          reference_taxon)
-        print (sql)
+
     else:
         sql = 'select A.orthogroup,C.function, count(*) from (select * from orthology_detail as t1 ' \
               ' where orthogroup in (%s) and accession="%s") A left join COG_locus_tag2gi_hit as B on A.locus_tag=B.locus_tag ' \
@@ -5240,13 +5484,13 @@ def orthogroup2cog_series(orthogroup_list, reference_taxon=None, accessions=Fals
               ' on t1.biodatabase_id=t2.biodatabase_id where t1.name="%s" ' \
               ' and taxon_id=%s and t2.description not like "%%%%plasmid%%%%";' % (biodb,
                                                                                     reference_taxon)
-        print(sql)
+
     else:
         sql = 'select t2.description from biodatabase as t1 inner join bioentry as t2 ' \
               ' on t1.biodatabase_id=t2.biodatabase_id where t1.name="%s" ' \
               ' and accession="%s";' % (biodb,
                                         reference_taxon)
-    #print sql
+
     genome_reference = server.adaptor.execute_and_fetchall(sql,)[0]
 
 
@@ -5283,7 +5527,6 @@ def orthogroup2cog_series(orthogroup_list, reference_taxon=None, accessions=Fals
         sql = 'select A.orthogroup,C.function, count(*) as n from (select * from orthology_detail as t1) A ' \
               ' left join COG_locus_tag2gi_hit as B on A.locus_tag=B.locus_tag ' \
               ' inner join COG_cog_names_2014 as C on B.COG_id=C.COG_id group by orthogroup,function;'
-        print(sql)
 
     else:
         if not accessions:
@@ -5403,7 +5646,6 @@ def locus_tag2cog_series(locus_tag_list, reference_taxon=None):
           ' inner join annotation_seqfeature_id2locus t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' where locus_tag in (%s) group by locus_tag;' % ('"' + '","'.join(locus_tag_list) + '"')
 
-    print (sql)
     data = server.adaptor.execute_and_fetchall(sql,)
     # non redundant list of locus with associated COG
     locus_with_cog_list = set([i[0] for i in data])
@@ -5426,11 +5668,9 @@ def locus_tag2cog_series(locus_tag_list, reference_taxon=None):
         else:
             cog_category2count[row[1]] += 1
 
-    print(cog_category2count)
-
     # calculating COG categories as percentages of total COG
     total = sum([cog_category2count[i] for i in cog_category2count])
-    #print "total", total
+
     cog_category2fraction = {}
     for category in cog_category2count:
         cog_category2fraction[category] = (cog_category2count[category]/float(total))*100
@@ -5458,15 +5698,12 @@ def locus_tag2cog_series(locus_tag_list, reference_taxon=None):
         else:
             cog_category2count_all[row[1]] += 1
 
-    #print cog_category2count_all
     # getting list of locus without COGs
     n_missing_cog = len(locus_tag_list) - len(locus_with_cog_list)
     missing_cog_list = list(set(locus_tag_list) - locus_with_cog_list)
 
     # claculating fraction of each category
     total = sum([cog_category2count_all[i] for i in cog_category2count_all])
-    #print 'total', total
-
     cog_category2fraction_all = {}
     for category in cog_category2count_all:
         # get count in percent
@@ -5583,7 +5820,7 @@ def cog_barchart(request):
                   ' inner join COG_cog_id2cog_category C on B.COG_id=C.COG_id ' \
                   ' inner join COG_code2category D on C.category_id=D.category_id ' \
                   ' group by taxon_id,D.category_id;' % (biodb_id,','.join(target_taxons))
-            print (sql)
+
             data = server.adaptor.execute_and_fetchall(sql,)
 
 
@@ -5632,19 +5869,16 @@ def cog_barchart(request):
 
             all_series_templates = []
             for taxon in taxon2category2count:
-                #print 'taxon', taxon
                 one_category_list = []
                 for category in all_categories:
-                    #print 'category', category
                     try:
                         one_category_list.append(taxon2category2count[taxon][category])
                     except:
                         one_category_list.append(0)
                 one_category_list = [str(i) for i in one_category_list]
-                #print one_category_list
+
                 all_series_templates.append(one_serie_template % (taxon, ','.join(one_category_list)))
 
-            #print 'all series!', all_series_templates
             series = serie_template % ''.join(all_series_templates)
             labels = labels_template % ('"'+'","'.join(all_categories) + '"')
 
@@ -5667,12 +5901,10 @@ def cog_barchart(request):
                   values: [31, 28, 14, 8, 15, 21]
                 },]
             '''
-            #print 'labels', labels
-            #print series
 
             circos_url = '?h=' + ('&h=').join(target_taxons)
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = venn_form_class()
     return render(request, 'chlamdb/cog_barplot.html', locals())
 
@@ -5835,10 +6067,9 @@ def genome_annotation(request, accession):
 
     locus_list = []
     for i in ordered_data:
-        #print i[4]
         if i[4] == 'CDS':
             locus_list.append(i[1])
-    #print locus_list
+
     biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
     biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
 
@@ -5881,14 +6112,14 @@ def genome_annotation(request, accession):
 def blastnr_cat_info(request, accession, rank, taxon):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
-    print("request get:", request.GET)
+
     target_accessions = [i for i in request.GET.getlist('h')]
     counttype = request.GET.getlist('t')[0]
     top_n = request.GET.getlist('n')[0]
 
     biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
     biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
-    #print 'biodb', biodb
+
     if counttype == 'Majority':
         sql = 'select B.locus_tag, A.%s ,A.n from (select seqfeature_id,%s, count(*) as n from blastnr_blastnr A ' \
               ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id where hit_number<=%s and query_bioentry_id=%s ' \
@@ -5898,7 +6129,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
                                                                                                       top_n,
                                                                                                       accession,
                                                                                                       rank)
-        print (sql)
+
         data = server.adaptor.execute_and_fetchall(sql,)
         category2count = {}
         all_query_locus_list = []
@@ -5912,13 +6143,13 @@ def blastnr_cat_info(request, accession, rank, taxon):
                     majority_locus_list.append(i[0])
                 all_query_locus_list.append(i[0])
         locus_list = majority_locus_list
-        #print "locus list",locus_list
+
     elif counttype == 'BBH':
         sql = ' select locus_tag from (select t2.*,t1.locus_tag from custom_tables_locus2seqfeature_id t1 ' \
               ' inner join blastnr_blastnr t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where hit_number=1) A inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id ' \
               ' where %s="%s"  and query_bioentry_id=%s;' % (rank, taxon, accession)
-        print(sql)
+
         locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
     else:
         raise 'invalide type'
@@ -6041,7 +6272,7 @@ def identity_heatmap(request):
             for row in data:
                 index1 = taxon_list.index(str(row[0]))
                 index2 = taxon_list.index(str(row[1]))
-                ##print index1, index2, float(row[2])
+
                 m[index1][index2] = float(row[2])
                 m[index2][index1] = float(row[2])
             for n in range(0, len(taxon_list)):
@@ -6094,14 +6325,9 @@ def pan_genome(request, type):
 
             data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
 
-            #print 'tt', data[0:5,:]
             count_df = pandas.DataFrame(data, columns=taxon_list, index=group_list)
             t = count_df[(count_df == 1).sum(axis=1) == len(taxon_list)]
             t2 = count_df[(count_df == 1).sum(axis=1) == len(taxon_list)-1]
-            #print 't', t.index.tolist()
-            #print 't', t2.index.tolist()
-            #print 'core single copy', len(t)
-            #print 'core single copy-1', len(t2)
 
             path = settings.BASE_DIR + '/assets/temp/pangenome.svg'
             asset_path = '/temp/pangenome.svg'
@@ -6140,7 +6366,7 @@ def pan_genome(request, type):
             for i, count in enumerate(counts_n_genomes):
                 genome_count_list.append([i+1, count])
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = venn_form_class()
     return render(request, 'chlamdb/pan_genome.html', locals())
 
@@ -6174,8 +6400,7 @@ def core_genome_missing(request, type):
             sql = 'select %s from comparative_tables_%s' % (filter, type)
 
             data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
-            #print 'grp', len(group_list)
-            #print 'tt', data[0:5,:]
+
             count_df = pandas.DataFrame(data, columns=taxon_list, index=group_list)
 
             groups_with_paralogs = count_df[(count_df > 1).sum(axis=1) > 0].index
@@ -6271,7 +6496,7 @@ def core_genome_missing(request, type):
             envoi = True
 
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = venn_form_class()
     return render(request, 'chlamdb/core_genome_missing.html', locals())
 
@@ -6325,8 +6550,6 @@ def pairwiseid(request):
                 label_list.append("%s" %(taxid2description[genome_3]))
 
             if genome_4 != 'None':
-                #print 'genome 4!!!', genome_4
-                #print genome_4 == 'None'
                 sql = 'select blast_identity_a_vs_b from comparative_tables_reciprocal_BBH where taxon_1 in (%s,%s) ' \
                       'and taxon_2 in (%s,%s);' % (
                                     genome_1,
@@ -6339,8 +6562,6 @@ def pairwiseid(request):
                 label_list.append("%s" %(taxid2description[genome_4]))
 
             if genome_5 != 'None':
-                #print 'genome 5!!!', genome_5
-                #print genome_5 == 'None'
                 sql = 'select blast_identity_a_vs_b from comparative_tables_reciprocal_BBH where taxon_1 in (%s,%s) ' \
                       'and taxon_2 in (%s,%s);' % (genome_1,
                                                     genome_5,
@@ -6352,8 +6573,6 @@ def pairwiseid(request):
                 label_list.append("%s" %(taxid2description[genome_5]))
 
             if genome_6 != 'None':
-                #print 'genome 5!!!', genome_6
-                #print genome_5 == 'None'
                 sql = 'select blast_identity_a_vs_b from comparative_tables_reciprocal_BBH where taxon_1 in (%s,%s) ' \
                       'and taxon_2 in (%s,%s);' % (genome_1,
                                                     genome_6,
@@ -6365,7 +6584,7 @@ def pairwiseid(request):
                 label_list.append("%s" %(taxid2description[genome_6]))
 
             path1 = settings.BASE_DIR + '/assets/temp/plot.svg'
-            #print path1
+
             asset_path1 = '/temp/plot.svg'
             pairwiseid_plots.density_plot(data_list,
                                           label_list,
@@ -6397,10 +6616,7 @@ def pairwiseid(request):
             for row in data:
                 identity_list.append(row[1])
 
-                #print group2n_organisms[row[0]]
                 genome_count_list.append(group2n_organisms[row[0]])
-
-            #pairwiseid_plots.basic_plot(genome_count_list, identity_list)
 
             sql = 'select taxon_2, median_identity, average_identity,n_pairs from comparative_tables_reciprocal_BBH_average_identity ' \
                   ' where taxon_1=%s UNION select taxon_1, median_identity, average_identity,n_pairs ' \
@@ -6435,9 +6651,8 @@ def pairwiseid(request):
             taxon2category2id['n_shared_orthogroups'] = {}
             taxon2category2id['n_shared_orthogroups'][str(genome_1)] = n_orthogroups
             #taxon2category2id['core_align'] = {}
-            #print taxon2core_msa_identity
+
             for row in data:
-                #taxon2category2id[str(row[0])] = {}
                 taxon2category2id['mean'][str(row[0])] = row[2]
                 taxon2category2id['median'][str(row[0])] = row[1]
                 taxon2category2id['n_RBBH'][str(row[0])] = int(row[3])
@@ -6456,7 +6671,7 @@ def pairwiseid(request):
             asset_path2 = '/temp/ortho_tree1.svg'
             tree1.render(path2, dpi=800, tree_style=style1)
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = pairwiseid_form_class()
     return render(request, 'chlamdb/pairwise_id.html', locals())
 
@@ -6504,13 +6719,12 @@ def multiple_codon_usage(request):
 
 
             mat = numpy.array([[list(i)[0]] + list(i)[4:68] for i in data])
-            #print mat
             path = settings.BASE_DIR + '/assets/temp/hydro.png'
             asset_path = '/temp/hydro.png'
             pca_seq_composition.multiple_aa_composition_pca(mat, path)
 
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = pairwiseCDS_length_form_class()
     return render(request, 'chlamdb/codons_multiple_pca.html', locals())
 
@@ -6640,13 +6854,12 @@ def multipleGC(request):
 
 
             mat = numpy.array([[list(i)[0]] + list(i)[4:23] for i in data])
-            #print mat
             path = settings.BASE_DIR + '/assets/temp/hydro.png'
             asset_path = '/temp/hydro.png'
             pca_seq_composition.multiple_aa_composition_pca(mat, path)
 
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = pairwiseCDS_length_form_class()
     return render(request, 'chlamdb/aa_multiple_pca.html', locals())
 
@@ -6704,7 +6917,6 @@ def pairwiseCDS_length(request):
                                                  round((sum(i <= 400 for i in data3)/float(len(data3)))*100,2)])
             if genome_4 != 'None':
 
-                #print genome_4 == 'None'
                 sql = 'select CHAR_LENGTH(translation)*3 from orthology_detail where taxon_id =%s;' % (genome_4)
 
                 data4 = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
@@ -6720,7 +6932,7 @@ def pairwiseCDS_length(request):
                 if max(one_list) > m:
                     m=max(one_list)
             path1 = settings.BASE_DIR + '/assets/temp/plot.svg'
-            #print data_list
+
             asset_path1 = '/temp/plot.svg'
             pairwiseid_plots.density_plot(data_list,
                                           label_list,
@@ -6735,7 +6947,7 @@ def pairwiseCDS_length(request):
 
 
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = pairwiseCDS_length_form_class()
     return render(request, 'chlamdb/pairwise_CDS_length.html', locals())
 
@@ -6762,25 +6974,20 @@ def blastnr_euk(request):
         if row[0] not in taxon2most_freq_phylum:
             taxon2most_freq_phylum[row[0]] = row[2]
 
-
-    #print 'seqfeature_id2s_species...'
     sql = 'select seqfeature_id, locus_tag from custom_tables_locus2seqfeature_id'
 
     seqfeature_id2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    #print 'locus2n_species...'
     sql = 'select locus_tag,n_species from custom_tables_seqfeature_id2n_species t1 ' \
           ' inner join custom_tables_locus2seqfeature_id t2 on t1.seqfeature_id=t2.seqfeature_id;'
 
     locus_tag2n_species = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    #print 'tree...'
     sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 ' \
                ' on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
     tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
 
-    #print 'taxon2description...'
     sql_taxon = 'select taxon_id,t2.description from biodatabase t1 inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id ' \
                 ' where t1.name="%s" and t2.description not like "%%%%plasmid%%%%"' % biodb
                 
@@ -6788,7 +6995,6 @@ def blastnr_euk(request):
 
     taxon_list = taxon_id2description.keys()
 
-    #print 'taxon2n_CDS...'
     sql_genome_size = 'select taxon_id, n_CDS from biodatabase t1 ' \
                       ' inner join bioentry t2 on t1.biodatabase_id=t2.biodatabase_id ' \
                       ' inner join genomes_info t3 on t2.accession=t3.accession ' \
@@ -6806,7 +7012,6 @@ def blastnr_euk(request):
                       ' where t2.superkingdom = "Eukaryota" group by t1.query_taxon_id, t1.seqfeature_id) A ' \
                       ' group by A.query_taxon_id;'
 
-    #print 'taxon_id2best_hit_euks...'
     #taxon_id2n_best_hits_euk = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_best_hit_euk,))
 
     '''
@@ -6823,22 +7028,20 @@ def blastnr_euk(request):
     sql_best_non_self_euk_species_specific = 'select query_taxon_id, count(*) as n from blastnr_blastnr_best_non_self_phylum t1' \
                                              ' inner join custom_tables_seqfeature_id2n_species t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                                              ' where superkingdom="Eukaryota" and n_species=1 group by query_taxon_id;'
-    #print 'best non self euk...'
+
     taxon_id2n_best_non_chlamydial_euk = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_best_non_self_euk,))
 
     '''
-    print 'best non self 50'
     taxon_id2n_best_non_chlamydial_euk_50 = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_best_non_self_euk_50,))
     '''
-    #print 'species specific'
+
     taxon_id2n_species_specific = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_best_non_self_euk_species_specific,))
-    #print 'ok'
+
     taxon2values = {}
     set2taxon2values = {}
     taxon_id2n_any_hits_euk_perc = {}
     taxon_id2n_best_non_chlamydial_euk_perc = {}
     for taxon in taxon_list:
-        #print taxon, taxon_id2description[taxon]
         '''
         try:
             n_best_euk = taxon_id2n_best_hits_euk[taxon]
@@ -6967,7 +7170,6 @@ def prot_length_barchart(request):
 
     taxon_id2CDS_length_counts = {}
     for taxon in taxon_id2values:
-        #print 'taxon', taxon
         taxon_data = taxon_id2values[taxon]
 
         len_50_99 = 0
@@ -7076,7 +7278,6 @@ def blastnr_overview(request):
     taxon_id2genome_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_genome_size))
 
     taxon_id2GC['127'] = 50
-    #print 'duplicates', taxon_id2duplicate
     # , 'T6SSi' 'rinke_et_al_2013', 'dupont_et_al_2012', 'eisen_et_al_2013'
     my_sets = ['duplicates', 'contigs','contigs_no_CDS', 'contigs_no_BBH', 'ADP/ATP carrier protein']
 
@@ -7098,10 +7299,9 @@ def blastnr_overview(request):
     ntt_data = list(server.adaptor.execute_and_fetchall(sql_ntt_transporters)[0])
     sql_headers = 'show columns from  comparative_tables_interpro'
     ntt_taxid = [i[0] for i in server.adaptor.execute_and_fetchall(sql_headers)]
-    #print ntt_taxid
-    #print ntt_data
+
     taxon_id2count_ntt = dict(zip(ntt_taxid[1:], ntt_data[1:]))
-    #print 'taxon_id2count_ntt',taxon_id2count_ntt
+
     set2taxon2value['ADP/ATP carrier protein'] = taxon_id2count_ntt
 
     flagellum_data = pathway_heatmap.pathway_list2profile_dico(biodb, ["map02040"])
@@ -7109,8 +7309,6 @@ def blastnr_overview(request):
     purines_data = pathway_heatmap.pathway_list2profile_dico(biodb, ["map00230"])
     pyrim_data = pathway_heatmap.pathway_list2profile_dico(biodb, ["map00240"])
 
-    #print 'flagellum_data', flagellum_data
-    #print flagellum_data[1]['Flagellar assembly']
     set2taxon2value['Flagellum'] = flagellum_data[1]['Flagellar assembly']
     set2taxon2value['Peptidoglycan biosynthesis'] = peptidoglycan_data[1]['Peptidoglycan biosynthesis']
     set2taxon2value['Purine metabolism'] = purines_data[1]['Purine metabolism']
@@ -7118,8 +7316,6 @@ def blastnr_overview(request):
 
     module_list, code2taxon2count_modules = module_heatmap.module_list2profile_dico(biodb, ["M00001","M00004","M00009"])
 
-    print('-----------------')
-    print (code2taxon2count_modules.keys())
     set2taxon2value['gylcolysis'] = code2taxon2count_modules['Glycolysis (Embden-Meyerhof pathway), glucose => pyruvate [PATH:map01200 map00010]']
     set2taxon2value['TCA'] = code2taxon2count_modules['Citrate cycle (TCA cycle, Krebs cycle) [PATH:map01200 map00020]']
     set2taxon2value['PPP'] = code2taxon2count_modules['Pentose phosphate pathway (Pentose phosphate cycle) [PATH:map01200 map00030]']
@@ -7198,8 +7394,7 @@ def blastnr_overview(request):
             #taxon_id2chemo = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_chemo,))
             #taxon_id2futa = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_futa,))
             taxon_id2counts = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-            #print category
-            #print taxon_id2counts
+
             set2taxon2value[category] = taxon_id2counts
             #my_sets.append(category)
             #set2taxon2value['euo'] = taxon_id2euo
@@ -7289,10 +7484,8 @@ def blastnr_overview(request):
         for locus in s_list:
             if locus == 'ntt':
                 continue
-            #print locus, "locus"
             sql_locus = sql_simple % ("2017_06_29b_motile_chlamydiae",locus)
             taxid2locus_count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_locus,))
-            #print taxid2locus_count
             set2taxon2value[locus] = taxid2locus_count
             my_sets.append(locus)
     except:
@@ -7309,7 +7502,7 @@ def blastnr_overview(request):
           ' inner join enzyme_pathway2ko_v1 t2 on t1.ko_id=t2.ko_id ' \
           ' inner join enzyme_kegg_pathway t3 on t2.pathway_id=t3.pathway_id) A ' \
           ' where pathway_category="%s"  group by A.taxon_id,pathway_category;'
-    #print sql
+
     #taxon_id2nucleo = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql % (biodb,"1.4 Nucleotide metabolism",)))
     #set2taxon2value['Nucleotide metabolism'] = taxon_id2nucleo
     #my_sets.append('Nucleotide metabolism')
@@ -7462,11 +7655,11 @@ def blastnr_top_non_phylum(request):
                       ' inner join custom_tables_locus2seqfeature_id t4 on t1.seqfeature_id=t4.seqfeature_id ' \
                       ' inner join orthology_detail t5 on t4.locus_tag=t5.locus_tag  ' \
                       ' where t1.superkingdom="Eukaryota" and n_species=1  and t1.query_taxon_id in (%s);' % (taxon_filter)
-            #print sql
+
             data = server.adaptor.execute_and_fetchall(sql,)
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = blastnr_form_class()
     return render(request, 'chlamdb/blastnr_locus_list.html', locals())
 
@@ -7523,14 +7716,13 @@ def blastnr_barchart(request):
                                 pass
 
                     data = zip(category2count.keys(), category2count.values())
-                    #print "data",data
+
                 elif counttype == 'BBH':
                     sql = ' select %s, count(*) as n from (select * from blastnr_blastnr ' \
                           ' where query_bioentry_id=%s and hit_number=1) A inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id ' \
                           ' group by %s;' % (rank,
                                              accession,
                                              rank)
-                    print(sql)
                     data = server.adaptor.execute_and_fetchall(sql,)
                 else:
                     raise 'invalide type'
@@ -7584,19 +7776,15 @@ def blastnr_barchart(request):
 
             all_series_templates = []
             for taxon in taxon2category2count:
-                #print 'taxon', taxon
                 one_category_list = []
                 for category in data_sort['category']:
-                    #print 'category', category
                     try:
                         one_category_list.append(taxon2category2count[taxon][category])
                     except:
                         one_category_list.append(0)
                 one_category_list = [str(i) for i in one_category_list]
-                #print one_category_list
                 all_series_templates.append(one_serie_template % (taxon, ','.join(one_category_list)))
 
-            #print 'all series!', all_series_templates
             series = serie_template % ''.join(all_series_templates)
             cat_list = [str(i) for i in data_sort['category']]
             labels = labels_template % ('"'+'","'.join(cat_list) + '"')
@@ -7606,7 +7794,7 @@ def blastnr_barchart(request):
 
 
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = blastnr_form_class()
     return render(request, 'chlamdb/blastnr_best_barplot.html', locals())
 
@@ -7628,16 +7816,12 @@ def effector_pred(request):
     t1 = Tree(tree)
     taxon_id_list = [i.name for i in t1.iter_leaves()]
 
-    #print "taxon_id_list", taxon_id_list
-
-
     set2taxon2value, column_names = hmm_heatmap.get_set_data(biodb, score_cutoff=30)
 
     sql = 'select '
 
     my_sets = ['T3SS', 'T6SSi', 'T4SS', 'flagellum', 'rinke_et_al_2013', 'dupont_et_al_2012', 'eisen_et_al_2013']
-    #print column_names
-    #print my_sets
+
     set2taxon2value_new = {}
     for set in my_sets:
         set2taxon2value_new[set] = {}
@@ -7705,8 +7889,6 @@ def effector_pred(request):
 
     taxon2pfam_refseq_uniq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-
-    # mex 3 algo
     sql = 'select A.taxon_id, count(*) from (select t1.taxon_id, t1.seqfeature_id from effectors_predicted_effectiveT3 t1 ' \
           ' inner join effectors_predicted_BPBAac t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' inner join effectors_predicted_T3MM t3 on t1.seqfeature_id=t3.seqfeature_id ' \
@@ -7770,6 +7952,12 @@ def effector_pred(request):
         else:
             taxon2pfam_refseq_uniq[taxon] = [int(taxon2pfam_refseq_uniq[taxon]),
                                        round((float(taxon2pfam_refseq_uniq[taxon])/float(taxon_id2genome_size[taxon]))*100,2)]
+
+        if taxon not in taxon2pfam_refseq:
+            taxon2pfam_refseq[taxon] = [0, 0]
+        else:
+            taxon2pfam_refseq[taxon] = [int(taxon2pfam_refseq[taxon]),
+                                       round((float(taxon2pfam_refseq[taxon])/float(taxon_id2genome_size[taxon]))*100,2)]
 
 
         taxon2values[taxon] = [taxon2values_effectiveT3[taxon][0],
@@ -7875,8 +8063,6 @@ def interpro_taxonomy(request):
             kingdom = form.cleaned_data['kingdom']
             percentage_cutoff = form.cleaned_data['percentage_cutoff']
 
-            print(target_taxons)
-
             if target_taxons[0] == 'all':
                 from chlamdb.phylo_tree_display import phylo_tree_bar
                 from chlamdb.plots import hmm_heatmap
@@ -7924,8 +8110,7 @@ def interpro_taxonomy(request):
                 sql = 'select '
 
                 my_sets = ['T3SS', 'T6SSi', 'T4SS', 'flagellum', 'rinke_et_al_2013', 'dupont_et_al_2012', 'eisen_et_al_2013']
-                #print column_names
-                #print my_sets
+
                 set2taxon2value_new = {}
                 for set in my_sets:
                     set2taxon2value_new[set] = {}
@@ -8013,7 +8198,7 @@ def interpro_taxonomy(request):
                                            taxon2values_T4SEpre_psAac[taxon],
                                            taxon2values_chaperones[taxon],
                                            taxon2values_mix[taxon]]
-                #print taxon2values2
+
                 header_list2 = ['effectiveT3', 'BPBAac', 'T3MM', 'T4SEpre_bpbAac', 'T4SEpre_psAac', 'chaperones', 'intesect']
 
 
@@ -8106,10 +8291,10 @@ def interpro_taxonomy(request):
                        ' where interpro_accession in (%s) and taxon_id in (%s) group by locus_tag) A ' \
                        ' inner join orthology_detail B on A.locus_tag=B.locus_tag ' % (filter2,
                                                                                        filter)
-                #print sql3
+
                 data_locus = server.adaptor.execute_and_fetchall(sql3,)
 
-                # get annotation summary
+                data_locus = server.adaptor.execute_and_fetchall(sql3,)
 
                 product2count = {}
                 for locus in data_locus:
@@ -8149,7 +8334,7 @@ def interpro_taxonomy(request):
                       ' inner join orthology_orthogroup C on B.orthogroup_id=C.orthogroup_id) AA ' \
                       ' group by AA.interpro_id) BB inner join interpro_entry CC on BB.interpro_id=CC.interpro_id;' % (kingdom,
                                                                                                                        percentage_cutoff)
-                print(sql)
+
                 interpro_accession2n_groups = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
                 interpro2taxon2count = {}
@@ -8163,7 +8348,6 @@ def interpro_taxonomy(request):
                         interpro_des = "%s: %s (? groups)" % (row[1], interpro2description[row[1]])
                     if interpro_des not in interpro_list:
                         interpro_list.append(interpro_des)
-                        #print interpro_des, interpro_des.split(':')
                         interpro_id_description.append(interpro_des.split(':'))
                     if row[0] not in taxon2total:
                         taxon2total[row[0]] = 0
@@ -8175,11 +8359,9 @@ def interpro_taxonomy(request):
                             interpro2taxon2count[interpro_des][str(row[0])] = int(row[2])
                     taxon2total[row[0]] += int(row[2])
                 interpro2taxon2count['TOTAL'] = {}
-                #print 'taxon2total', taxon2total
                 for taxon in taxon2total:
                     interpro2taxon2count['TOTAL'][str(taxon)] = taxon2total[taxon]
 
-                #print interpro2taxon2count
                 tree2, style = ete_motifs.multiple_profiles_heatmap(biodb,
                                                             interpro_list,
                                                             interpro2taxon2count,
@@ -8201,7 +8383,7 @@ def interpro_taxonomy(request):
 
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = interpro_form_class()
     return render(request, 'chlamdb/interpro_taxonomy.html', locals())
 
@@ -8215,7 +8397,7 @@ def homologs(request, orthogroup, locus_tag=False):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
 
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -8266,13 +8448,9 @@ def blastswissprot(request, locus_tag):
     print ('blast swissprot %s -- %s' % (biodb, locus_tag))
 
 
-    #cache.clear()
-
-    #bioentry_in_memory = cache.get("biodb")
-
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
+    if request.method == 'GET': 
 
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -8302,16 +8480,9 @@ def blastnr(request, locus_tag):
 
     print ('blastnr hits %s -- %s' % (biodb, locus_tag))
 
-
-    #cache.clear()
-
-    #bioentry_in_memory = cache.get("biodb")
-
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    if request.method == 'GET':  # S'il s'agit d'une requête POST
-
-
+    if request.method == 'GET': 
 
         server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -8327,10 +8498,10 @@ def blastnr(request, locus_tag):
               ' B.phylum, B.order, B.family from (select %s from custom_tables_locus2seqfeature_id t1 inner join blastnr_blastnr t2' \
               ' on t1.seqfeature_id=t2.seqfeature_id where locus_tag="%s" order by hit_number) A ' \
               ' inner join blastnr_blastnr_taxonomy B on A.subject_taxid=B.taxon_id;' % (columns, locus_tag)
-        #print sql
-        blast_data = list(server.adaptor.execute_and_fetchall(sql))
-        #blast_data = [i for i in ]
 
+        blast_data = list(server.adaptor.execute_and_fetchall(sql))
+
+        blast_data = list(server.adaptor.execute_and_fetchall(sql))
 
         if len(blast_data) > 0:
             valid_id = True
@@ -8349,28 +8520,20 @@ def homology(request):
     biodb = settings.BIODB
     from chlamdb.biosqldb import shell_command
 
-    #print "cache", cache
-    #cache.clear()
-
-    #bioentry_in_memory = cache.get("biodb")
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
+
     contact_form_class = make_contact_form(server, biodb)
-    #print 'request.method', request.method
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
 
+    if request.method == 'POST': 
 
-        form = contact_form_class(request.POST)  # Nous reprenons les données
+        form = contact_form_class(request.POST)
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             accession = request.POST['accession']
 
             envoi = True
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        print ('baba')
-
-        form = make_contact_form(server, biodb)  # Nous créons un formulaire vide
+    else:  
+        form = make_contact_form(server, biodb)
     return render(request, 'chlamdb/homology.html', locals())
 
 
@@ -8455,10 +8618,9 @@ def plot_neighborhood(request, target_locus, region_size=23000):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     task = plot_neighborhood_task.delay(biodb, target_locus, region_size)
-    #print("task", task)
+
     task_id = task.id
     
-    #time.sleep(5)
     return render(request, 'chlamdb/plot_region_and_profile.html', locals())
 
 def plot_region_generic(biodb, orthogroup, taxon_list, region_size):
@@ -8473,15 +8635,10 @@ def plot_region_generic(biodb, orthogroup, taxon_list, region_size):
 
     locus_tag_target_genomes = [i[0] for i in server.adaptor.execute_and_fetchall(sql3, )]
 
-    #print "locus_tag_list", locus_tag_target_genomes
     home_dir = os.path.dirname(__file__)
-    #print "home_dir", home_dir
     temp_location = os.path.join(home_dir, "../assets")
-    #print "temp loc", temp_location
     temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-    #print "temp file", temp_file.name
     name = os.path.basename(temp_file.name)
-    #print name.split('.')
     name_png = name.split('.')[0] + '.png'
 
     locus_tags, orthogroup_list = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, 
@@ -8498,7 +8655,7 @@ def plot_region_generic(biodb, orthogroup, taxon_list, region_size):
 def plot_region_direct(request, orthogroup):
     biodb = settings.BIODB
     target_taxons = [str(i) for i in request.GET.getlist('t')]
-    #print 'target', target_taxons
+
     name, name_png, locus_tags, orthogroup_list = plot_region_generic(biodb, 
                                                                       orthogroup, 
                                                                       target_taxons, 
@@ -8509,18 +8666,15 @@ def plot_region_direct(request, orthogroup):
 
 def plot_region(request):
     biodb = settings.BIODB
-    #print "cache", cache
 
-    #bioentry_in_memory = cache.get("biodb")
-    #print "loading db..."
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print "db loaded..."
-    plot_region_form_class = make_plot_form(biodb)
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
 
-        form = plot_region_form_class(request.POST)  # Nous reprenons les données
-        #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+    plot_region_form_class = make_plot_form(biodb)
+    if request.method == 'POST': 
+
+        form = plot_region_form_class(request.POST)
+
+        if form.is_valid():  
             valid_id = True
             import re
 
@@ -8557,10 +8711,8 @@ def plot_region(request):
                           ' where t1.locus_tag="%s") A ' \
                           ' inner join custom_tables_locus2seqfeature_id B on A.locus_2=B.seqfeature_id ' \
                           ' order by identity DESC;' % (locus_tag)
-                    #print sql
-                    #print genomes
+
                     target_locus_data = server.adaptor.execute_and_fetchall(sql,)
-                    #print target_locus_data
                     # keep only the hit with the highest identity
                     genome_hits = []
                     locus_tag_target_genomes=[locus_tag]
@@ -8570,7 +8722,6 @@ def plot_region(request):
                                 genome_hits.append(one_homolog[1])
                                 locus_tag_target_genomes.append(one_homolog[0])
 
-                    #print 'target locus list!', locus_tag_target_genomes
                 else:
                     orthogroup = data[0]
 
@@ -8619,8 +8770,8 @@ def plot_region(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = plot_region_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = plot_region_form_class()
 
     return render(request, 'chlamdb/plot_region.html', locals())
 
@@ -8632,12 +8783,12 @@ def plot_region(request, biodb):
     print "cache", cache
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
 
-        form = plot_form_class(request.POST)  # Nous reprenons les données
+        form = plot_form_class(request.POST)
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
 
 
 
@@ -8646,8 +8797,8 @@ def plot_region(request, biodb):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = plot_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = plot_form_class()
 
     return render(request, 'chlamdb/plot_region.html', locals())
 '''
@@ -8748,12 +8899,10 @@ def get_newick_tree(request, orthogroup, refseq_BBH_phylogeny):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     if refseq_BBH_phylogeny == "False":
-        print("group phylo")
         sql_tree = 'select phylogeny from biosqldb_phylogenies where orthogroup="%s"' % (orthogroup)
     else:
         sql_tree = 'select phylogeny from biosqldb_phylogenies_BBH where orthogroup="%s";' % (orthogroup)
     try:
-        print("BBH phylo")
         tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
     except IndexError:
         tree = 'No tree for orthogroup: %s' % orthogroup
@@ -8821,14 +8970,11 @@ def ko2fasta(request, ko_id, include_orthologs=False):
               ' select t1.ko_id, locus_tag, ko_description from enzyme_locus2ko as t1 inner join enzyme_module2ko_v1 as t2 ' \
               ' on t1.ko_id=t2.ko_id where t1.ko_id="%s") A inner join orthology_detail as B ' \
               ' on A.locus_tag=B.locus_tag;' % (ko_id)
-        #print sql
+
         orthogroup_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
         filter = '"' + '","'.join(orthogroup_list) + '"'
         sql = 'select locus_tag, organism, product, translation from orthology_detail where orthogroup in (%s)' % (filter)
-        #print sql
-        #print orthogroup_list
-
 
     data = server.adaptor.execute_and_fetchall(sql,)
     fasta = []
@@ -8912,7 +9058,6 @@ def get_record(request, accession, seqtype):
         fasta_list = []
         for seq_feature in record.features:
             if seq_feature.type == "CDS":
-                print(seq_feature.qualifiers['locus_tag'])
                 biorecord = SeqRecord(Seq(str(seq_feature.extract(record.seq)), IUPAC.extended_dna),
                                       id=seq_feature.qualifiers['locus_tag'][0],
                                       name=seq_feature.qualifiers['locus_tag'][0],
@@ -8925,7 +9070,6 @@ def get_record(request, accession, seqtype):
         fasta_list = []
         for seq_feature in record.features:
             if seq_feature.type == "CDS":
-                print(seq_feature.qualifiers['locus_tag'])
                 biorecord = SeqRecord(Seq(re.sub('\*$', '', str(seq_feature.extract(record.seq).translate())), IUPAC.protein),
                                       id=seq_feature.qualifiers['locus_tag'][0],
                                       name=seq_feature.qualifiers['locus_tag'][0],
@@ -8984,7 +9128,7 @@ def get_fasta(request):
         single_copy = True
 
     freq_missing = freq_missing-0.001
-    #print 'freq missing-----', freq_missing
+
     if not accessions:
         # get sub matrix and complete matrix
         mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
@@ -9007,10 +9151,9 @@ def get_fasta(request):
                                                                       accessions=accessions,
                                                                       cache=cache)
     match_groups = mat.index.tolist()
-    #print 'match', len(match_groups), match_groups
+
     merged_reference_fasta = ''
     for n, group in enumerate(match_groups):
-        #print n, group
         if not accessions:
             if reference:
                 sql = 'select locus_tag, organism, translation from orthology_detail where taxon_id=%s and orthogroup="%s"' % (reference,
@@ -9061,6 +9204,47 @@ def get_fasta(request):
     #return FileResponse(open('/tmp/groups_fasta.tar.gz', 'rb')) #HttpResponse(request, fasta, content_type='text/plain; charset=utf8')
 
 
+def download_COG(request, accession=False): 
+    import MySQLdb
+    import os
+    import pandas
+    import gzip
+    from io import BytesIO
+    from io import StringIO
+    mysql_host = 'localhost'
+    mysql_user = 'root'
+    mysql_pwd = os.environ['SQLPSW']
+    mysql_db = 'COG'
+    
+    biodb = settings.BIODB
+    
+    conn = MySQLdb.connect(host=mysql_host,
+                                user=mysql_user,
+                                passwd=mysql_pwd,
+                                db=mysql_db)
+
+    sql = f'select t3.accession,t3.description,locus_tag,start,stop,strand,gene,protein_id,product,t6.COG_name,t6.description ' \
+          f' from annotation_seqfeature_id2locus t1 ' \
+          f' inner join annotation_seqfeature_id2CDS_annotation t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+          f' inner join bioentry t3 on t1.bioentry_id=t3.bioentry_id ' \
+          f' inner join biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \
+          f' inner join COG_seqfeature_id2best_COG_hit t5 on t1.seqfeature_id=t5.seqfeature_id ' \
+          f' inner join COG_cog_names_2014 t6 on t5.hit_cog_id=t6.cog_id where t4.name="{biodb}" order by t3.accession'
+    
+    df = pandas.read_sql(sql, conn)
+    zbuf = BytesIO()
+    
+    with gzip.GzipFile(fileobj=zbuf, compresslevel=6, mode='wb') as f:
+        f.write(df.to_csv(sep="\t").encode('utf-8'))
+    
+    zbuf.seek(0)
+
+    response = StreamingHttpResponse(zbuf, content_type='application/x-gzip')
+    response['Content-Disposition'] = 'attachment; filename="COG_annotation.tsv.gz"'
+
+    return response
+
+
 def download_all_COG(request):
     import MySQLdb
     import os
@@ -9079,31 +9263,31 @@ def download_all_COG(request):
                                 user=mysql_user,
                                 passwd=mysql_pwd,
                                 db=mysql_db)
+    
     sql = f'select t3.accession,t3.description,locus_tag,start,stop,strand,gene,protein_id,product,t6.COG_name,t6.description ' \
-          f' from annotation_seqfeature_id2locus t1 ' \
-          f' inner join annotation_seqfeature_id2CDS_annotation t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-          f' inner join bioentry t3 on t1.bioentry_id=t3.bioentry_id ' \
-          f' inner join biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \
-          f' inner join COG_seqfeature_id2best_COG_hit t5 on t1.seqfeature_id=t5.seqfeature_id ' \
-          f' inner join COG_cog_names_2014 t6 on t5.hit_cog_id=t6.cog_id where t4.name="{biodb}" order by t3.accession'
+          f' from annotation.seqfeature_id2locus_{biodb} t1 ' \
+          f' inner join annotation.seqfeature_id2CDS_annotation_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+          f' inner join biosqldb.bioentry t3 on t1.bioentry_id=t3.bioentry_id ' \
+          f' inner join biosqldb.biodatabase t4 on t3.biodatabase_id=t4.biodatabase_id ' \
+          f' inner join COG.seqfeature_id2best_COG_hit_{biodb} t5 on t1.seqfeature_id=t5.seqfeature_id ' \
+          f' inner join COG.cog_names_2014 t6 on t5.hit_cog_id=t6.cog_id where t4.name="{biodb}" order by t3.accession'
     
     df = pandas.read_sql(sql, conn)
-    sio = StringIO()
     zbuf = BytesIO()
     
-    df.to_csv(sio, sep='\t')
+    with gzip.GzipFile(fileobj=zbuf, compresslevel=6, mode='wb') as f:
+        f.write(df.to_csv(sep="\t").encode('utf-8'))
     
-    #tab_file = sio.getvalue()
-    
-    gzip_handler = gzip.GzipFile(fileobj=zbuf,mode='wb')
-    
-    gzip_handler.write(sio.getvalue().encode('utf-8'))
-    
-    gzip_handler.flush()
+    zbuf.seek(0)
 
-    response = StreamingHttpResponse(zbuf.getvalue(), content_type='application/x-gzip')
+    response = StreamingHttpResponse(zbuf, content_type='application/x-gzip')
     response['Content-Disposition'] = 'attachment; filename="COG_annotation.tsv.gz"'
+
     return response
+
+
+
+
 
 
 def get_fasta_all(request):
@@ -9163,7 +9347,6 @@ def get_fasta_all(request):
                                                                        cache=cache)
     match_groups = mat.index.tolist()
 
-    #print 'match', len(match_groups), match_groups
     filter = '"'+'","'.join(match_groups)+'"'
     if not accessions:
         if reference:
@@ -9284,7 +9467,6 @@ def get_pfam_taxon_table(request, pfam_domain):
           ' inner join blastnr_blastnr_taxonomy t4 on t2.species_taxid=t4.taxon_id  ' \
           ' where t3.hmm_accession like "%s%%%%" ' \
           ' group by t4.superkingdom,t4.phylum,t4.family,t4.genus order by superkingdom,n DESC' % (pfam_domain)
-    #print sql
 
     raw_data = server.adaptor.execute_and_fetchall(sql,)
     taxon_data = []
@@ -9344,8 +9526,6 @@ def annotation_overview(request):
     from chlamdb.biosqldb import biosql_own_sql_tables
     from chlamdb.phylo_tree_display import phylo_tree_bar
     from chlamdb.plots import pairwiseid_plots
-
-    print("annot overview")
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -9417,7 +9597,7 @@ def annotation_overview(request):
     for taxon in taxon_id2n_CDS:
         if taxon not in taxon_id2barplot_data:
             taxon_id2barplot_data[taxon] = []
-        #print float(taxon_id2CDS_with_COG[taxon]), float(taxon_id2n_CDS[taxon])
+
         taxon_id2barplot_data[taxon].append(int(taxon_id2n_CDS[taxon]))
         taxon_id2barplot_data[taxon].append(round((float(taxon_id2CDS_with_COG[taxon])/float(taxon_id2n_CDS[taxon]))*100,2))
         taxon_id2barplot_data[taxon].append(round((float(taxon_id2CDS_with_KO[taxon])/float(taxon_id2n_CDS[taxon]))*100,2))
@@ -9448,7 +9628,6 @@ def annotation_overview(request):
                       ' group by seqfeature_id) A where taxon_id is not NULL group by taxon_id;'
     taxon_id2count_pmid = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_string_pmid,))
 
-
     for taxon in taxon_id2door:
         if taxon not in taxon_id2count_pmid:
             taxon_id2count_pmid[taxon] = 0
@@ -9461,11 +9640,11 @@ def annotation_overview(request):
             taxon_id2door[taxon] = 0
         else:
             taxon_id2door[taxon] = 1
-    #print
+
     taxon2set2value_heatmap['Doors'] = taxon_id2door
     taxon2set2value_heatmap['STRING'] = taxon_id2string
     taxon2set2value_heatmap['PMID'] = taxon_id2count_pmid
-    #print taxon_id2door
+
     tree1, style1 = phylo_tree_bar.plot_tree_barplot(tree,
                       taxon_id2barplot_data,
                       ['nCDS','COG', 'KO', 'PRIAM', 'SwissProt', 'Pfam', 'UniProt-mapping','STRING-mapping'],
@@ -9576,13 +9755,10 @@ def paralogs(request):
 
     for row in data:
         taxon_id2n_paralogs[row[0]].append(int(row[1]))
-        #print 'total', float(row[1]), taxon_id2n_paralogs[row[0]][2]
         taxon_id2n_paralogs[row[0]].append(round((taxon_id2n_paralogs[row[0]][0]/float(row[1]))*100,2))
         taxon_id2n_paralogs[row[0]].append(round((taxon_id2n_paralogs[row[0]][1]/float(row[1]))*100,2))
         #taxon_id2n_paralogs[row[0]].append(round((taxon_id2n_paralogs[row[0]][2]/float(row[1]))*100,2))
-    #print taxon_id2n_paralogs
-    #for taxon in taxon_id2n_paralogs:
-    #    print taxon, len(taxon_id2n_paralogs[taxon])
+
     tree1, style1 = phylo_tree_bar.plot_tree_barplot(tree,
                       taxon_id2n_paralogs,
                       ['silix_35','silix_50','silix_80', 'silix_98','TOTAL', 'perc_35', 'perc_50'],
@@ -9633,8 +9809,6 @@ def species_specific_groups(request):
         else:
             species_id2taxon_id[row[0]].append(str(row[1]))
 
-    #print species_id2taxon_id
-
     all_taxons = [str(i.name) for i in tree.iter_leaves()]
     # changing taxon id to species id
     for leaf in tree.iter_leaves():
@@ -9651,11 +9825,9 @@ def species_specific_groups(request):
                 desc_list.remove('')
             except ValueError:
                 pass
-            #print 'desc list',desc_list
             if len(desc_list) != 1:
                 node.name = '%sbb' % n
             else:
-                #print 'renming node!',  desc_list[0]
                 node.name = desc_list[0]
             n+=1
 
@@ -9668,7 +9840,6 @@ def species_specific_groups(request):
             return False
     species_id2count_unique = {}
     for species in species_id2taxon_id:
-        #print species
         if 'Akkermansia' in species:
             species_id2count_unique[species] = [0]
             continue
@@ -9869,13 +10040,10 @@ def api_vs_16S_identity(request):
           
     data_chlam = [list (i) for i in server.adaptor.execute_and_fetchall(sql)]
     data_chlam0 = [list (i) for i in server.adaptor.execute_and_fetchall(sql0)]
-    #print 'number of datapoint:', len(data_chlam0), len(data_chlam)
 
     data_list+=data_chlam
 
     pairwiseid_plots.plot_multiseries_points(data_list, "~/tata5")
-
-    # inter orders proteo
 
     sql = 'select B.phylum_description,A.%s,identity from' \
           ' (select t1.taxon_1, t1.taxon_2, %s,identity ' \
@@ -9935,7 +10103,7 @@ def circos_main(request):
         server, db = manipulate_biosqldb.load_db(biodb)
 
         reference_taxon = int(request.GET.getlist('ref')[0])
-        #print request.GET.getlist('t')
+
         if request.GET.getlist('t')[0] == '':
             # if no target list given, get the 10 closest genomes
             try:
@@ -9982,15 +10150,12 @@ def circos_blastnr(request):
 
             reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb)
 
-            #print "reference_accessions", reference_accessions
             record_list = []
             for accession in reference_accessions:
 
-                #print "reference accession", accession
                 biorecord = cache.get(biodb + "_" + accession)
 
                 if not biorecord:
-                    #print biodb + "_" + accession, "NOT in memory"
                     new_record = db.lookup(accession=accession)
                     biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
                                                              id=new_record.id, name=new_record.name,
@@ -10002,7 +10167,6 @@ def circos_blastnr(request):
                     cache.set(biodb + "_" + record_id, biorecord)
                     record_list.append(biorecord)
                 else:
-                    #print biodb + "_" + accession, "IN memory"
                     record_list.append(biorecord)
 
 
@@ -10052,7 +10216,6 @@ def circos_blastnr(request):
             svg_file = "circos/%s.svg" % ref_name
             #a, b, c = shell_command.shell_command("mv %s %s" % (original_map_file, target_map_file))
             #a, b, c = shell_command.shell_command("cp %s %s" % (original_map_file_svg, target_map_file_svg))
-            #print a,b,c
             map_name = ref_name
             envoi_circos = True
             envoi_region = True
@@ -10071,7 +10234,6 @@ def circos(request):
 
         form = circos_form_class(request.POST)
 
-        print("valid form", form.is_valid())
         if form.is_valid():
             reference_taxon = form.cleaned_data['circos_reference']
             target_taxons = form.cleaned_data['targets']
@@ -10194,15 +10356,11 @@ def search_taxonomy(request):
     from collections import Counter
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
-
-        #print request.POST
+    if request.method == 'POST': 
 
         if len(request.POST['Phylum']) == 0:
             genome_accession = request.POST['Genome']
             superkingdom = request.POST['Superkingdom'].split('_')[-1]
-            #print "genome_accession", genome_accession
-            #print 'sdfsdf', superkingdom[0]
             if 'unclassified' in superkingdom:
                 superkingdom = '-'
 
@@ -10322,7 +10480,7 @@ def search_taxonomy(request):
                                                                                                     1,
                                                                                                     superkingdom,
                                                                                                     phylum)
-        #print sql
+
         raw_data = server.adaptor.execute_and_fetchall(sql, )
 
         n = 1
@@ -10356,8 +10514,6 @@ def search_taxonomy(request):
         else:
             classif_table = dict(Counter(families))
 
-        #print classif_table
-
         '''
         import pandas
         frame = pandas.DataFrame(data, columns= ['n',
@@ -10374,7 +10530,6 @@ def search_taxonomy(request):
                                                  'evalue',
                                                  'percent_identity','query_start','query_end','subject_title','taxon_id'])
 
-        print frame
         '''
         envoi = True
 
@@ -10389,16 +10544,17 @@ def interpro(request):
 
     interproform = make_interpro_from(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
-        form = interproform(request.POST)  # Nous reprenons les données
+        form = interproform(request.POST)
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             invalid_id = False
             # Ici nous pouvons traiter les données du formulaire
             search_type = form.cleaned_data['search_type']
             search_term = form.cleaned_data['search_term']
             taxon_ids = form.cleaned_data['targets']
+
             #biodb = form.cleaned_data['biodatabase']
             server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -10459,269 +10615,80 @@ def interpro(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = interproform()  # Nous créons un formulaire vide
+    else:  
+        form = interproform()
 
     return render(request, 'chlamdb/interpro.html', locals())
 
 
 def search(request):
+
+    import re
+    from chlamdb.biosqldb import search
+
     biodb = settings.BIODB
 
-    def perform_search(search_term, search_type=False, redo=True):
-        server, db = manipulate_biosqldb.load_db(biodb)
-        search_term = search_term.strip()
+    server = manipulate_biosqldb.load_db()
 
-        if not search_type:
-            import re
-            if len(search_term) == len("PF04093") and search_term[0:2] == 'PF':
-                return fam(request,search_term, 'pfam')
-            elif len(search_term) == len('K03652') and search_term[0:1] == 'K':
-                return fam(request, search_term, 'ko')
-            elif len(search_term) == len('COG0001') and search_term[0:3] == 'COG':
-                return fam(request, search_term, 'cog')
-            elif len(search_term) == len('IPR000014') and search_term[0:3] == 'IPR':
-                #request.method = 'GET'
-                return fam(request, search_term, 'interpro')
-            elif len(search_term) == len('M00406') and search_term[0:3] == 'M00':
-                return KEGG_module_map(request, search_term)
-            elif len(search_term) == len('map00550') and search_term[0:3] == 'map':
-                return KEGG_mapp_ko(request, search_term)
-
-            elif re.match("^[0-9\.]+$", search_term) and '\.' in search_term:
-                #print 'ec number!', search_term
-                return fam(request, search_term, 'EC')
-            else:
-                search_type = 'no_exact_accession'
-
-        columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                  'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-        if search_type == "gene":
-            sql = 'select %s from orthology_detail where gene REGEXP "%s"' % (columns, 
-                                                                              search_term)
-            raw_data = server.adaptor.execute_and_fetchall(sql,)
-
-        if search_type == "product":
-            sql = 'select %s from orthology_detail where product REGEXP "%s"' % (columns, 
-                                                                                 search_term)
-            raw_data = server.adaptor.execute_and_fetchall(sql,)
-
-        if search_type == "locus_tag":
-            sql = 'select %s from orthology_detail where locus_tag REGEXP "%s"' % (columns, 
-                                                                                   search_term)
-            raw_data = server.adaptor.execute_and_fetchall(sql,)
-
-        if search_type == "no_exact_accession":
-                print ('YES no_exact_accession')
-
-                sql = 'SELECT * FROM orthology_detail WHERE MATCH(gene,product) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (columns,
-                                                                                                                            search_term)
-                raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
-
-                sql = 'select ec,line,value from enzyme_enzymes_dat as t1 inner join enzymes as t2 ' \
-                      ' on t1.enzyme_dat_id=enzyme_id WHERE value REGEXP "%s"' % (search_term)
-                      
-                raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
-
-                sql = 'select * from ko_annotation_v1 where definition REGEXP "%s"' % (search_term)
-                try:
-                    raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
-                except:
-                    raw_data_ko = False
-
-                sql = 'select COG_id,code,description,name from COG_cog_names_2014 as t1 inner join ' \
-                      ' COG_code2category as t2 on t1.function=t2.code where description REGEXP "%s"' % (search_term)
-                raw_data_cog = server.adaptor.execute_and_fetchall(sql,)
-
-                sql = 'select * from interpro where (signature_description REGEXP "%s"' \
-                      ' or interpro_description REGEXP "%s")' % (search_term, search_term)
-                raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
-
-                sql = 'select * from enzyme_kegg_module_v1 where description REGEXP "%s"' % (search_term)
-                raw_data_module = server.adaptor.execute_and_fetchall(sql,)
-
-                sql = 'select * from enzyme_kegg_pathway where description REGEXP "%s"' % (search_term)
-                raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
-
-
-        else:
-            n = 1
-            search_result = []
-            for one_hit in raw_data:
-                if one_hit[2] != '-':
-                    interpro_id = one_hit[2]
-                else:
-                    interpro_id = one_hit[1]
-                search_result.append((n,) + one_hit + (interpro_id,))
-                n+=1
-
-            return search_result
-
+    print("request type --- ", request.method)
 
     server, db = manipulate_biosqldb.load_db(biodb)
-    print(request.method, "request.method")
+
     if request.method == 'POST':  # S'il s'agit d'une requête POST
         display_from = 'yes'
-        form = SearchForm(request.POST)  # Nous reprenons les données
+        form = SearchForm(request.POST)
         #form2 = ContactForm(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             invalid_id = False
             # Ici nous pouvons traiter les données du formulaire
             search_type = form.cleaned_data['search_type']
             search_term = form.cleaned_data['search_term']
             #biodb = form.cleaned_data['biodatabase']
 
-            search_result = perform_search(search_term, search_type)
+            search_result = search.perform_search(request, search_term)
+
+            if search_result is None:
+                search_echec = True 
+            else:
+                locus_list, 
+                raw_data_gene_raw_data_product, 
+                raw_data_EC,
+                raw_data_ko,
+                raw_data_cog,
+                raw_data_interpro,
+                raw_data_pathway,
+                raw_data_pmid,
+                pmid2n_homologs,
+                pmid_data,
+                search_echec = search_result
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         search_term = request.GET.get('accession').strip()
+        if search_term[-1] == '+':
+            search_term = search_term[0:-1]
+        elif "%" in search_term:
+            import re
+            search_term = re.sub("%", " ", search_term)
+        elif "@" in search_term:
+            import re
+            search_term = re.sub("@", " ", search_term)
 
         if search_term:
 
-            import re
-            if len(search_term) == len("PF04093") and search_term[0:2] == 'PF':
-                return fam(request, search_term, 'pfam')
-            elif len(search_term) == len('K03652') and search_term[0:1] == 'K':
-                return fam(request, search_term, 'ko')
-            elif len(search_term) == len('COG0001') and search_term[0:3] == 'COG':
-                return fam(request, search_term, 'cog')
-            elif len(search_term) == len('IPR000014') and search_term[0:3] == 'IPR':
-                #request.method = 'GET'
-                return fam(request, search_term, 'interpro')
-            elif len(search_term) == len('M00406') and search_term[0:3] == 'M00':
-                return KEGG_module_map(request, search_term)
-            elif len(search_term) == len('map00550') and search_term[0:3] == 'map':
-                return KEGG_mapp_ko(request, search_term)
-            elif re.match("^[0-9\.]+$", search_term) and '\.' in search_term:
-                #print 'ec number!'
-                return fam(request, search_term, 'EC')
+            search_result = search.perform_search(request, biodb, search_term)
+            print(search_result)
+            if search_result is None:
+                search_echec = True 
+            elif isinstance(search_result, HttpResponse):
+                return search_result
+
+            elif len(search_result) == 1:
+                return locusx(request, search_result[0])
             else:
-                search_type = 'no_exact_accession'
+                locus_list, raw_data_EC, raw_data_ko, raw_data_cog, raw_data_interpro, raw_data_pathway, raw_data_pmid, pmid2n_homologs, pmid_data, synonymous = search_result
+            envoi = True
 
-            columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
-                      'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-
-            if search_type == "gene":
-                sql = 'select %s from orthology_detail where gene REGEXP "%s"' % (columns, search_term)
-                raw_data = server.adaptor.execute_and_fetchall(sql,)
-
-            if search_type == "product":
-                sql = 'select %s from orthology_detail where product REGEXP "%s" limit 100' % (columns, search_term)
-                raw_data = server.adaptor.execute_and_fetchall(sql,)
-
-            if search_type == "locus_tag":
-                sql = 'select %s from orthology_detail where locus_tag REGEXP "%s"' % (columns, search_term)
-                raw_data = server.adaptor.execute_and_fetchall(sql,)
-
-            if search_type == "no_exact_accession":
-
-                    # CREATE FULLTEXT INDEX GPF1 ON orthology_detail(gene);
-                    # CREATE FULLTEXT INDEX GPF2 ON orthology_detail(product);
-                    # CREATE FULLTEXT INDEX GPF3 ON orthology_detail(organism);
-                    # CREATE FULLTEXT INDEX GPF4 ON orthology_detail(gene,product,organism);
-                    sql = 'SELECT %s, ' \
-                          ' MATCH (gene) AGAINST ("%s") AS rel1, ' \
-                          ' MATCH (product) AGAINST ("%s") AS rel2, ' \
-                          ' MATCH (organism) AGAINST ("%s") AS rel3 FROM orthology_detail t1 ' \
-                          ' WHERE MATCH (gene,product,organism) AGAINST ("%s") ORDER BY (rel1)+(rel2*0.5)+(rel3*10) DESC limit 100;' % (columns,
-                                                                                                                                        search_term,
-                                                                                                                                        search_term,
-                                                                                                                                        search_term,
-                                                                                                                                        search_term)
-                    print(sql)
-                    raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
-                    print("n hits:", len(raw_data_gene_raw_data_product))
-                    n = 1
-                    search_result = []
-                    locus_list = []
-                    for one_hit in raw_data_gene_raw_data_product:
-                        if one_hit[2] != '-':
-                            interpro_id = one_hit[2]
-                        else:
-                            interpro_id = one_hit[1]
-                        search_result.append((n,) + one_hit + (interpro_id,))
-                        locus_list.append(one_hit[1])
-                        n+=1
-
-                    # CREATE FULLTEXT INDEX ezf ON enzyme_enzymes_dat(value);
-                    sql = 'select A.ec, A.value from (select ec,value from enzyme_enzymes_dat as t1 inner join enzyme_enzymes as t2 ' \
-                          ' on t1.enzyme_dat_id=enzyme_id WHERE MATCH(value) AGAINST("%s" IN NATURAL LANGUAGE MODE) group by ec) A inner join comparative_tables_EC' \
-                          ' as B on A.ec=B.id' % (search_term)
-                    try:
-                        raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
-                    # case when enzyme data were not setup
-                    except:
-                        raw_data_EC = []
-                    if len(raw_data_EC) == 0:
-                        raw_data_EC = False
-
-                    # CREATE FULLTEXT INDEX koaf ON enzyme_ko_annotation_v1(definition);
-                    # filter KO absent from DB
-                    sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme_ko_annotation_v1 ' \
-                          'WHERE MATCH(definition) AGAINST("%s" IN NATURAL LANGUAGE MODE)) A inner join comparative_tables_ko as B on A.ko_id=B.id' % (search_term)
-                    try:
-                        raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
-                    except:
-                        raw_data_ko = []
-                    if len(raw_data_ko) == 0:
-                        raw_data_ko = False
-
-                    # CREATE FULLTEXT INDEX cogf ON COG_cog_names_2014(description);
-                    sql = ' select COG_name,code,t3.description,t1.description from COG_cog_names_2014 t1 ' \
-                          ' inner join COG_cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
-                          ' inner join COG_code2category t3 on t2.category_id=t3.category_id ' \
-                          ' WHERE MATCH(t1.description) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (search_term)
-                    raw_data_cog = []# :TODO server.adaptor.execute_and_fetchall(sql,)
-                    if len(raw_data_cog) == 0:
-                        raw_data_cog = False
-
-                    # CREATE FULLTEXT INDEX ipf ON interpro_signature(signature_description);
-                    # CREATE FULLTEXT INDEX ipf ON interpro_entry(description);
-                    sql = 'select analysis_name,signature_accession,signature_description,t3.name,t3.description from interpro_signature t1 ' \
-                          ' inner join interpro_analysis t2 on t1.analysis_id=t2.analysis_id ' \
-                          ' left join interpro_entry t3 on t1.interpro_id=t3.interpro_id ' \
-                          ' WHERE MATCH(t3.description) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (search_term)
-                    try:
-                        raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
-                    # case whem interor data were not imported
-                    except:
-                        raw_data_interpro = []
-                    if len(raw_data_interpro) == 0:
-                        raw_data_interpro = False
-                    print("interpro", raw_data_interpro)
-                    # CREATE FULLTEXT INDEX modf ON enzyme_kegg_module_v1(description, module_sub_cat);
-                    sql = 'select module_name,module_sub_cat,module_sub_sub_cat,description from enzyme_kegg_module_v1 ' \
-                          ' where (description REGEXP "%s" or module_sub_cat REGEXP "%s")' % (search_term, 
-                                                                                              search_term)
-                    try:
-                        raw_data_module = server.adaptor.execute_and_fetchall(sql,)
-                    # case when no kegg data were imported
-                    except:
-                        raw_data_module = []
-                    if len(raw_data_module) == 0:
-                        raw_data_module = False
-
-                    # CREATE FULLTEXT INDEX kegf ON enzyme_kegg_pathway(description, pathway_category);
-                    sql = 'select pathway_name,pathway_category,description from enzyme_kegg_pathway ' \
-                          ' where (description REGEXP "%s" or pathway_category REGEXP "%s")' % (search_term, 
-                                                                                                search_term)
-                    try:
-                        raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
-                    # case when no kegg data were imported
-                    except:
-                        raw_data_pathway = []
-                    if len(raw_data_pathway) == 0:
-                        raw_data_pathway = False
-                    
-                    if not raw_data_module \
-                            and not raw_data_pathway \
-                            and not raw_data_EC \
-                            and not raw_data_ko \
-                            and not raw_data_cog \
-                            and not raw_data_interpro \
-                            and not raw_data_gene_raw_data_product:
-                        search_echec = True
             envoi = True
             display_form = "no"
             #print "display_form",  display_form
@@ -10732,8 +10699,10 @@ def search(request):
             #    envoi = True
         else:
             display_from = 'yes'
-            form = SearchForm()  # Nous créons un formulaire vide
+            form = SearchForm()
 
+    search_term_edit = re.sub("\-|\+", "", search_term)
+    print("SEARCH:", search_term_edit, search_term)
 
     return render(request, 'chlamdb/search.html', locals())
 
@@ -10743,11 +10712,11 @@ def search(request):
 def primer_search(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
-        form = PCRForm(request.POST)  # Nous reprenons les données
+        form = PCRForm(request.POST)
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from Bio.Blast.Applications import NcbiblastpCommandline
             #from StringIO import StringIO
             from tempfile import NamedTemporaryFile
@@ -10763,13 +10732,11 @@ def primer_search(request):
 
             input_sequence = form.cleaned_data['blast_input']
             input_sequence = ExtractAlphanumeric(input_sequence)
-            #print input_sequence
 
-            #biodb = form.cleaned_data['biodatabase']
             input_sequence = input_sequence.rstrip(os.linesep)
-            #print input_sequence
+
             my_record = SeqRecord(Seq(input_sequence, IUPAC.protein), id="INPUT", description="INPUT")
-            #print my_record
+
             query_file = NamedTemporaryFile()
             SeqIO.write(my_record, query_file, "fasta")
             query_file.flush()
@@ -10779,8 +10746,7 @@ def primer_search(request):
 
             blastp_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=0.001, outfmt=0)
             stdout, stderr = blastp_cline()
-            #print "blast!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-            #print stdout
+
             blast_file = NamedTemporaryFile()
             blast_file.write(stdout)
             mview_cmd = 'mview -in blast -ruler on -html data -css on -coloring identity %s' % blast_file.name
@@ -10788,18 +10754,10 @@ def primer_search(request):
             blast_result = stdout
 
 
-
-            #blast_result = NCBIXML.parse(StringIO(stdout))
-            ##print blast_result
-            #blast_record = next(blast_result)
-            ##print blast_record
-
-
-
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = PCRForm()  # Nous créons un formulaire vide
+    else:  
+        form = PCRForm()
 
     return render(request, 'chlamdb/pcr.html', locals())
 
@@ -10825,14 +10783,10 @@ def motif_search(request):
             input_pattern = form.cleaned_data['motif_input']
             n_missmatch = form.cleaned_data['n_missmatch']
             target_taxon_id = form.cleaned_data['search_in']
-            #print "target", target_taxon_id
 
             if target_taxon_id != "all":
                 accessions = manipulate_biosqldb.taxon_id2accessions(server, target_taxon_id, biodb)
 
-
-            #input_pattern = ExtractAlphanumeric(input_pattern)
-            #print input_pattern
             '''
             fuzzpro -sequence CHUV_chr_and_plasmid.faa
             -rformat gff
@@ -10849,20 +10803,17 @@ def motif_search(request):
                 db_path = os.path.join(PROJECT_ROOT,"../assets/%s/faa/" % biodb +accessions[0] + ".faa")
             else:
                 db_path = os.path.join(PROJECT_ROOT,"../assets/%s/faa/all.faa" % biodb)
-            #print "path", db_path
 
             cmd = 'fuzzpro -sequence %s -pmismatch %s -rformat seqtable -auto -stdout -pattern "%s"' % (db_path ,n_missmatch ,input_pattern)
-            #print cmd
+
             std_out, std_err, code = shell_command.shell_command(cmd)
-            #print std_out
-            #print std_err
             #fuzznuc_cline = FuzznucCommandline(sequence=genome_db, mismatch=n_missmatch, pattern=input_pattern, stdout=True)#, rformat="srspair")
             #stdout,stderr = fuzznuc_cline()
 
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
+    else:  
         form = motif_form_class()  # empty form
 
     return render(request, 'chlamdb/motifs.html', locals())
@@ -10872,11 +10823,11 @@ def blast_profile(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
-        form = BlastProfileForm(request.POST, request.FILES)  # Nous reprenons les données
+        form = BlastProfileForm(request.POST, request.FILES)
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from tempfile import NamedTemporaryFile
             from io import StringIO
             from chlamdb.phylo_tree_display import biosqldb_plot_blast_hits_phylo
@@ -10944,8 +10895,8 @@ def blast_profile(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = BlastProfileForm()  # Nous créons un formulaire vide
+    else:  
+        form = BlastProfileForm()
 
     return render(request, 'chlamdb/blast_profile.html', locals())
 
@@ -10962,15 +10913,16 @@ def blast(request):
 
     blast_form_class = make_blast_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
 
-        form = blast_form_class(request.POST)  # Nous reprenons les données
+        form = blast_form_class(request.POST)
 
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             from Bio.Blast.Applications import NcbiblastpCommandline
             from Bio.Blast.Applications import NcbiblastnCommandline
             from Bio.Blast.Applications import NcbitblastnCommandline
             from Bio.Blast.Applications import NcbiblastxCommandline
+            from Bio.Seq import reverse_complement, translate
             from tempfile import NamedTemporaryFile
             from io import StringIO
             from Bio.Blast import NCBIXML
@@ -10988,9 +10940,8 @@ def blast(request):
             blast_type = form.cleaned_data['blast']
 
 
-            #input_sequence = extract_alphanumeric(input_sequence)
-            #print input_sequence
-            #print '>' in input_sequence
+            unknown_format = False
+
             if '>' in input_sequence:
                 my_record = [i for i in SeqIO.parse(StringIO(input_sequence), 'fasta', alphabet=IUPAC.ambiguous_dna)]
                 seq = my_record[0]
@@ -11015,174 +10966,136 @@ def blast(request):
                         my_record = [SeqRecord(seq, id="INPUT", description="INPUT")]
                     else:
                         unknown_format = True
-            if my_record[0].seq.alphabet == IUPAC.extended_protein and blast_type in ["blastn_ffn", "blastn_fna", "blastx"]:
-                wrong_format = True
-            elif my_record[0].seq.alphabet == IUPAC.ambiguous_dna and blast_type in ["blastp", "tblastn"]:
-                wrong_format = True
-            else:
-                query_file = NamedTemporaryFile(mode='w')
-                SeqIO.write(my_record, query_file, "fasta")
-                query_file.flush()
-
-                if blast_type=='blastn_ffn':
-                    blastType = 'locus'
-                    blastdb = settings.BASE_DIR + "/assets/%s/ffn/%s.ffn" % (biodb, target_accession)
-                    blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
-                if blast_type=='blastn_fna':
-                    blastType = 'genome'
-                    blastdb = settings.BASE_DIR + "/assets/%s/fna/%s.fna" % (biodb, target_accession)
-                    blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
-                if blast_type=='blastp':
-                    blastType = 'locus'
-                    blastdb = settings.BASE_DIR + "/assets/%s/faa/%s.faa" % (biodb, target_accession)
-                    blast_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
-                if blast_type=='tblastn':
-                    blastType = 'genome'
-                    blastdb = settings.BASE_DIR + "/assets/%s/fna/%s.fna" % (biodb, target_accession)
-                    blast_cline = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
-                    blast_cline2 = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=5)
-                if blast_type=='blastx':
-                    blastType = 'locus'
-                    blastdb = settings.BASE_DIR + "/assets/%s/faa/%s.faa" % (biodb, target_accession)
-                    blast_cline = NcbiblastxCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
-
-                blast_stdout, blast_stderr = blast_cline()
-
-                if blast_type=='tblastn':
-                    from Bio.SeqUtils import six_frame_translations
-
-                    blast_stdout2, blast_stderr2 = blast_cline2()
-
-                    blast_records = NCBIXML.parse(StringIO(blast_stdout2))
-                    all_data = []
-                    best_hit_list = []
-                    for record in blast_records:
-                        print(dir(record))
-                        for n, alignment in enumerate(record.alignments):
-                            accession = alignment.title.split(' ')[1]
-                            #accession = 'Rht'
-                            sql = 'select description from bioentry where accession="%s" ' % accession
-
-                            description = server.adaptor.execute_and_fetchall(sql,)[0][0]
-                            print(alignment)
-                            for n2, hsp in enumerate(alignment.hsps):
-                                if n == 0 and n2 == 0:
-                                    best_hit_list.append([record.query, hsp.sbjct_start, hsp.sbjct_end])
-                               
-                                start = hsp.sbjct_start
-                                end = hsp.sbjct_end
-                                if start > end:
-                                    start = hsp.sbjct_end
-                                    end = hsp.sbjct_start
-                                length = end-start
-                                #print 'seq for acc', accession, start, end,
-                                leng = end-start
-                                #print 'end', 'start', end, start, end-start
-                                #accession = 'Rht'
-                                seq = manipulate_biosqldb.location2sequence(server, accession, biodb, start, leng)
-                                print(seq)
-                                #print seq
-                                from Bio.Seq import reverse_complement, translate
-                                anti = reverse_complement(seq)
-                                comp = anti[::-1]
-                                length = len(seq)
-                                frames = {}
-                                for i in range(0, 3):
-                                    fragment_length = 3 * ((length-i) // 3)
-                                    tem1 = translate(seq[i:i+fragment_length], 1)
-                                    frames[i+1] = '<span style="color: #181407;">%s</span><span style="color: #bb60d5;">%s</span><span style="color: #181407;">%s</span>' % (tem1[0:100], tem1[100:len(tem1)-99], tem1[len(tem1)-99:])
-                                    tmp2 = translate(anti[i:i+fragment_length], 1)[::-1]
-                                    frames[-(i+1)] = tmp2
-                                all_data.append([accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq])
-                    if len(best_hit_list) > 0:
-                        fig_list = []
-                        for best_hit in best_hit_list:
-                            accession = best_hit[0]
-                            best_hit_start = best_hit[1]
-                            best_hit_end = best_hit[2]
-                            temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
-                            temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-                            name = 'temp/' + os.path.basename(temp_file.name)
-                            fig_list.append([accession, name])
-                            orthogroup_list = mysqldb_plot_genomic_feature.location2plot(db,
-                                                                                        biodb,
-                                                                                        target_accession,
-                                                                                        temp_file.name,
-                                                                                        best_hit_start-15000,
-                                                                                        best_hit_end+15000,
-                                                                                        cache,
-                                                                                        color_locus_list = [],
-                                                                                        region_highlight=[best_hit_start, best_hit_end])
-
-
-                no_match = re.compile('.* No hits found .*', re.DOTALL)
-
-                if no_match.match(blast_stdout):
-                    print ("no blast hit")
-                    blast_no_hits = blast_stdout
-                elif len(blast_stderr) != 0:
-                    print ("blast error")
-                    blast_err = blast_stderr
+            if not unknown_format:
+                if my_record[0].seq.alphabet == IUPAC.extended_protein and blast_type in ["blastn_ffn", "blastn_fna", "blastx"]:
+                    wrong_format = True
+                elif my_record[0].seq.alphabet == IUPAC.ambiguous_dna and blast_type in ["blastp", "tblastn"]:
+                    wrong_format = True
                 else:
-                    #print "running mview"
-                    #blast_file = NamedTemporaryFile()
+                    query_file = NamedTemporaryFile(mode='w')
+                    SeqIO.write(my_record, query_file, "fasta")
+                    query_file.flush()
 
-                    from Bio import SearchIO
-                    #blast_parser = NCBIStandalone.BlastParser()
-                    blast_record = [i for i  in SearchIO.parse(StringIO(blast_stdout), 'blast-text')]
-                    all_locus_tag = []
-                    print("record", blast_record)
-                    for query in blast_record:
-                        #print alignment.title
-                        for hit in query:
-                            print(dir(hit))
-                            locus_tag = hit.id #split(' ')[1]
+                    if blast_type=='blastn_ffn':
+                        blastType = 'locus'
+                        blastdb = settings.BASE_DIR + "/assets/%s/ffn/%s.ffn" % (biodb, target_accession)
+                        blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+                    if blast_type=='blastn_fna':
+                        blastType = 'genome'
+                        blastdb = settings.BASE_DIR + "/assets/%s/fna/%s.fna" % (biodb, target_accession)
+                        blast_cline = NcbiblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+                    if blast_type=='blastp':
+                        blastType = 'locus'
+                        blastdb = settings.BASE_DIR + "/assets/%s/faa/%s.faa" % (biodb, target_accession)
+                        blast_cline = NcbiblastpCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+                    if blast_type=='tblastn':
+                        blastType = 'genome'
+                        blastdb = settings.BASE_DIR + "/assets/%s/fna/%s.fna" % (biodb, target_accession)
+                        blast_cline = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
+                        blast_cline2 = NcbitblastnCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=5)
+                    if blast_type=='blastx':
+                        blastType = 'locus'
+                        blastdb = settings.BASE_DIR + "/assets/%s/faa/%s.faa" % (biodb, target_accession)
+                        blast_cline = NcbiblastxCommandline(query=query_file.name, db=blastdb, evalue=10, outfmt=0)
 
-                            print("locus", locus_tag)
-                            all_locus_tag.append(locus_tag)
+                    blast_stdout, blast_stderr = blast_cline()
 
-                    locus_filter = '"' + '","'.join(all_locus_tag) + '"'
-                    sql = 'select locus_tag, product from orthology_detail where locus_tag in (%s)' % (locus_filter)
-                    locus2product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+                    if blast_type=='tblastn':
+                        from Bio.SeqUtils import six_frame_translations
 
-                    rand_id = id_generator(6)
+                        blast_stdout2, blast_stderr2 = blast_cline2()
 
-                    blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
-                    f = open(blast_file_l, 'w')
-                    f.write(blast_stdout)
-                    f.close()
+                        blast_records = NCBIXML.parse(StringIO(blast_stdout2))
+                        all_data = []
+                        best_hit_list = []
+                        for record in blast_records:
+                            for n, alignment in enumerate(record.alignments):
+                                accession = alignment.title.split(' ')[1]
 
-                    asset_blast_path = '/assets/temp/%s.xml' % rand_id
-                    js_out = True
-                    #if len(my_record) == 1:
-                    #    js_out = True
-                    #else:
-                    #    js_out = False
-                    #    #print blast_stdout
+                                sql = 'select description from bioentry where accession="%s" ' % accession
 
-                    #blast_file.write(blast_stdout)
-                    #out, err, code = shell_command.shell_command('cat /temp/blast.temp | wc -l')
-                    #print 'n lines', out
-                    #if blast_type=='blastp' or blast_type=='blastn_ffn':
-                    #    mview_cmd = 'mview -in blast -srs on -ruler on -html data -css on -coloring identity /tmp/blast.temp' #% blast_file.name
-                    #else:
-                    #    mview_cmd = 'mview -in blast -ruler on -html data -css on -coloring identity /tmp/blast.temp'
-                    #stdout, stderr, code = shell_command.shell_command(mview_cmd)
+                                description = server.adaptor.execute_and_fetchall(sql,)[0][0]
 
-                    #if len(stdout) == 0:
-                    #    blast_no_hits = blast_stdout
-                    #    blast_result = None
-                    #else:
-                    #    blast_result = stdout
-                #blast_result = NCBIXML.parse(StringIO(stdout))
-                #print blast_result
-                #blast_record = next(blast_result)
-                #print blast_record
+                                for n2, hsp in enumerate(alignment.hsps):
+                                    if n == 0 and n2 == 0:
+                                        best_hit_list.append([record.query, hsp.sbjct_start, hsp.sbjct_end])
+                                
+                                    start = hsp.sbjct_start
+                                    end = hsp.sbjct_end
+                                    if start > end:
+                                        start = hsp.sbjct_end
+                                        end = hsp.sbjct_start
+                                    length = end-start
+                                    leng = end-start
+                                    seq = manipulate_biosqldb.location2sequence(server, accession, biodb, start, leng)
+                                    
+                                    anti = reverse_complement(seq)
+                                    comp = anti[::-1]
+                                    length = len(seq)
+                                    frames = {}
+                                    for i in range(0, 3):
+                                        fragment_length = 3 * ((length-i) // 3)
+                                        tem1 = translate(seq[i:i+fragment_length], 1)
+                                        frames[i+1] = '<span style="color: #181407;">%s</span><span style="color: #bb60d5;">%s</span><span style="color: #181407;">%s</span>' % (tem1[0:100], tem1[100:len(tem1)-99], tem1[len(tem1)-99:])
+                                        tmp2 = translate(anti[i:i+fragment_length], 1)[::-1]
+                                        frames[-(i+1)] = tmp2
+                                    all_data.append([accession, start, end, length, frames[1], frames[2], frames[3], frames[-1], frames[-2], frames[-3], description, seq])
+                        if len(best_hit_list) > 0:
+                            fig_list = []
+                            for best_hit in best_hit_list:
+                                accession = best_hit[0]
+                                best_hit_start = best_hit[1]
+                                best_hit_end = best_hit[2]
+                                temp_location = os.path.join(settings.BASE_DIR, "assets/temp/")
+                                temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
+                                name = 'temp/' + os.path.basename(temp_file.name)
+                                fig_list.append([accession, name])
+                                orthogroup_list = mysqldb_plot_genomic_feature.location2plot(db,
+                                                                                            biodb,
+                                                                                            target_accession,
+                                                                                            temp_file.name,
+                                                                                            best_hit_start-15000,
+                                                                                            best_hit_end+15000,
+                                                                                            cache,
+                                                                                            color_locus_list = [],
+                                                                                            region_highlight=[best_hit_start, best_hit_end])
+
+
+                    no_match = re.compile('.* No hits found .*', re.DOTALL)
+
+                    if no_match.match(blast_stdout):
+                        print ("no blast hit")
+                        blast_no_hits = blast_stdout
+                    elif len(blast_stderr) != 0:
+                        print ("blast error")
+                        blast_err = blast_stderr
+                    else:
+                        from Bio import SearchIO
+                        blast_record = [i for i  in SearchIO.parse(StringIO(blast_stdout), 'blast-text')]
+                        all_locus_tag = []
+                        for query in blast_record:
+                            for hit in query:
+                                locus_tag = hit.id
+                                all_locus_tag.append(locus_tag)
+
+                        locus_filter = '"' + '","'.join(all_locus_tag) + '"'
+                        sql = 'select locus_tag, product from orthology_detail_%s where locus_tag in (%s)' % (biodb, locus_filter)
+                        locus2product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+
+                        rand_id = id_generator(6)
+
+                        blast_file_l = settings.BASE_DIR + '/assets/temp/%s.xml' % rand_id
+                        f = open(blast_file_l, 'w')
+                        f.write(blast_stdout)
+                        f.close()
+
+                        asset_blast_path = '/assets/temp/%s.xml' % rand_id
+                        js_out = True
 
                 envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = blast_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = blast_form_class()
 
     return render(request, 'chlamdb/blast.html', locals())
 
@@ -11191,7 +11104,6 @@ def get_record_from_memory(biodb, cache_obj, record_key, accession):
 
         biorecord = cache_obj.get(record_key)
         if not biorecord:
-            #print record_key, "NOT in memory"
             new_record = biodb.lookup(accession=accession)
             biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
                                                              id=new_record.id, name=new_record.name,
@@ -11212,13 +11124,10 @@ def mummer(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     mummer_form_class = make_mummer_form(biodb)
 
-
-
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
-        #make_circos2genomes_form
+    if request.method == 'POST': 
         plot = True
         form = mummer_form_class(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             server, db = manipulate_biosqldb.load_db(biodb)
             reference_taxon = form.cleaned_data['reference_genome']
             query_taxon = form.cleaned_data['query_genome']
@@ -11226,16 +11135,8 @@ def mummer(request):
             reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb)
             query_accessions = manipulate_biosqldb.taxon_id2accessions(server, query_taxon, biodb)
 
-
             ref_accession = manipulate_biosqldb.taxon_id2chromosome_accession(server, biodb, reference_taxon)
             query_accession = manipulate_biosqldb.taxon_id2chromosome_accession(server, biodb, query_taxon)
-            #result = result[0]
-            #print "mummer acc", ref_accession, query_accession
-
-
-
-
-            #print settings.STATIC_ROOT, type(settings.STATIC_ROOT)
 
             reference_path = settings.BASE_DIR + '/assets/%s/fna/%s.fna' % (biodb, ref_accession)
             query_path = settings.BASE_DIR + '/assets/%s/fna/%s.fna' % (biodb, query_accession)
@@ -11251,8 +11152,6 @@ def mummer(request):
             cmd1 = 'promer -l 2 -p %s %s %s' % (out_delta, reference_path, query_path)
             cmd2 = 'mummerplot -layout -small -png -p %s %s.delta' % (out_plot, out_delta)
 
-            #print cmd1
-
             from chlamdb.biosqldb.shell_command import shell_command
 
             out, err, log = shell_command(cmd1)
@@ -11265,8 +11164,8 @@ def mummer(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = mummer_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = mummer_form_class()
 
     return render(request, 'chlamdb/mummer.html', locals())
 
@@ -11284,11 +11183,11 @@ def circos2genomes(request):
 
 
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         #make_circos2genomes_form
 
         form = circos2genomes_form_class(request.POST)
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             valid_id = True
             server, db = manipulate_biosqldb.load_db(biodb)
             reference_taxon = form.cleaned_data['reference_genome']
@@ -11312,30 +11211,22 @@ def circos2genomes(request):
 
                 query_records.append(get_record_from_memory(db, cache, biodb + "_" + accession, accession))
 
-            #print "genomes", reference_records, query_records
-
             orthogroup_list = []
-            #print "protein_locus_list", protein_locus_list[0], len(protein_locus_list[0])
             if len(protein_locus_list[0]) > 0:
-                #print 'okkkkkkkk'
                 for protein in protein_locus_list:
-                    #print "protein", protein
+
                     sql = 'select orthogroup from orthology_detail where protein_id="%s" or locus_tag="%s"' % (protein, 
                                                                                                                protein)
-                    #print sql
+
                     try:
                         protein_group = server.adaptor.execute_and_fetchall(sql,)[0][0]
                         orthogroup_list.append(protein_group)
                     except IndexError:
                         valid_id = False
 
-                    #protein_group = manipulate_biosqldb.locus_tag2orthogroup_id(server, protein, biodb)
             if valid_id:
-                #print "LOCUS:", orthogroup_list
 
                 #accession2description = manipulate_biosqldb.accession2description_dict(server, biodb)
-
-                #print "reference_genome", reference_genome
                 taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
                 reference_name = taxon_id2description[reference_taxon]
                 query_name = taxon_id2description[query_taxon]
@@ -11352,14 +11243,6 @@ def circos2genomes(request):
 
                 n_shared_orthogroups = manipulate_biosqldb.get_number_of_shared_orthogroups(server, biodb, taxon_id_reference, taxon_id_query)
 
-                #print "n_orthogroups", reference_n_orthogroups, query_n_orthogroups
-                #print "n_proteins", reference_n_proteins, query_n_proteins
-
-                #print "n_shared", n_shared_orthogroups
-
-                #print reference_name, query_name
-
-
                 from chlamdb.biosqldb import circos
 
                 path = settings.BASE_DIR + "/assets/circos"
@@ -11374,8 +11257,8 @@ def circos2genomes(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = circos2genomes_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = circos2genomes_form_class()
 
     return render(request, 'chlamdb/circos2genomes.html', locals())
 
@@ -11389,51 +11272,26 @@ def update_db(server):
     for biodb in biodb_list:
         update_genomes_db(server, biodb)
 
-    #print
-
 def update_genomes_db(server):
     from models import Genome
     from models import Database
     from models import GenDB
     biodb = settings.BIODB
-    #print "updating genome Database"
 
     database = Database.objects.get_or_create(db_name=biodb)[0]
     genome_list = manipulate_biosqldb.get_genome_description_list(server, biodb)
     for genome_description in genome_list:
-        #print "updating", genome_description
         genome = Genome.objects.get_or_create(genome_name=genome_description, database=database)[0]
-        #print "genome", genome
         GenDB.objects.get_or_create(database=database, ref_genome=genome, query_genome=genome, genome_name=genome.genome_name, database_name=database.db_name)
-        #print "OKKKKKKKKKKKK"
-
-
-
-
-#def get_genomes(server, biodb_name):
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 def crossplot(request):
 
-
-    #print "cache", cache
     cache.clear()
     bioentry_in_memory = cache.get('biodb')
-    #print "bioentry_in_memory", bioentry_in_memory
+
     if not bioentry_in_memory:
-        #print "creating cache entry"
         cache.set("biodb", {})
     bioentry_in_memory = cache.get("biodb")
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -11441,56 +11299,35 @@ def crossplot(request):
     update_db(server)
 
     crossplot_form_class = make_crossplot_form("Chlamydia_11_14")
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
-        #make_circos2genomes_form
-
+    if request.method == 'POST': 
         form = DBForm(request.POST) #crossplot_form_class(request.POST)
 
-
-        if form.is_valid():  # Nous vérifions que les données envoyées sont valides
+        if form.is_valid():  
             server, db = manipulate_biosqldb.load_db("Chlamydia_11_14")
 
             update_genomes_db(server, "Chlamydia_11_14")
-
-            #print "form", form
-            #print dir(form)
-            #print form.fields
-            #print "data1", form.cleaned_data
-
 
             reference_genome = str(form.cleaned_data['ref_genome'])
             query_genome = str(form.cleaned_data['query_genome'])
             protein_locus = form.cleaned_data['accession']
             region_size = form.cleaned_data['region_size']
 
-            #print "asdfasfffffffffffff", reference_genome
-
-
             #description2accession = manipulate_biosqldb.description2accession(server, "saureus1")
-
             #reference_accession = description2accession[reference_genome]
             #query_accession = description2accession[query_genome]
 
             orthogroup = manipulate_biosqldb.locus_tag2orthogroup_id(server, protein_locus, "Chlamydia_11_14")
-            #print "orthogroup", orthogroup
             ortho_detail = list(manipulate_biosqldb.orthogroup_id2locus_tag_list(server, orthogroup, "Chlamydia_11_14"))
             locus_tag_list = []
             for i in range(0, len(ortho_detail)):
-                #print "ortho detail", ortho_detail[i]
                 if reference_genome in ortho_detail[i] or query_genome in ortho_detail[i]:
                     locus_tag_list.append(ortho_detail[i][2])
-            #print "locus_lis", locus_tag_list
-
-
             if "Chlamydia_11_14" not in bioentry_in_memory.keys():
                 bioentry_in_memory["Chlamydia_11_14"] = {}
 
             home_dir = os.path.dirname(__file__)
-            #print "home_dir", home_dir
             temp_location = os.path.join(home_dir, "../assets")
-            #print "temp loc", temp_location
             temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-            #print "temp file", temp_file.name
             name = os.path.basename(temp_file.name)
             bioentry_dict = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, "Chlamydia_11_14", locus_tag_list,
                                                                                   temp_file.name, int(region_size),
@@ -11501,8 +11338,8 @@ def crossplot(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = DBForm() #crossplot_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = DBForm() #crossplot_form_class()
         form2 = DBForm()
     return render(request, 'chlamdb/crossplot.html', locals())
 
@@ -11528,7 +11365,6 @@ def string_page(request, cog_id, genome_accession):
                 all_cogs.append(data[2])
             if data[3] not in all_cogs:
                 all_cogs.append(data[3])
-        #print all_cogs
 
         cogs_in_chlamdb = []
         cogs_in_reference = []
@@ -11539,9 +11375,7 @@ def string_page(request, cog_id, genome_accession):
             try:
                 data = list(server.adaptor.execute_and_fetchall(sql1,)[0])
                 cog2description[cog] = "%s (%s)" % (data[1], data[0])
-                #print data
             except:
-                #print server.adaptor.execute_and_fetchall(sql1,), cog
                 cog2description[cog] = "-"
 
 
@@ -11549,11 +11383,9 @@ def string_page(request, cog_id, genome_accession):
                 sql = 'select * from COG_locus_tag2gi_hit where COG_id="%s" limit 1;' % (cog)
                 sql2 = 'select * from COG_locus_tag2gi_hit where COG_id="%s" and accession="%s" limit 1;' % (cog, 
                                                                                                              genome_accession)
-                #print sql2
-                #print "############################"
+
                 data = server.adaptor.execute_and_fetchall(sql)
                 data2 = server.adaptor.execute_and_fetchall(sql2)
-                #print "############data", data
                 if len(data)>0:
                     cogs_in_chlamdb.append(cog)
                 if len(data2)>0:
@@ -11563,7 +11395,6 @@ def string_page(request, cog_id, genome_accession):
         for i, data in enumerate(string_interactions):
             string_interactions[i] = data + [cog2description[data[0]], cog2description[data[1]]]
 
-        #print string_interactions
         cog_url = '?'
         for i in cogs_in_chlamdb:
             cog_url+= 'cog_list=%s&' % i
@@ -11571,7 +11402,6 @@ def string_page(request, cog_id, genome_accession):
     except urllib2.URLError:
         connect = False
 
-    #print "cogs_in_chlamdb", cogs_in_chlamdb
     return render(request, 'chlamdb/string.html', locals())
 
 
@@ -11593,7 +11423,7 @@ def multiple_COGs_heatmap(request):
     sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 
     tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
-    #print tree
+
     t1 = Tree(tree)
 
     R = t1.get_midpoint_outgroup()
@@ -11605,8 +11435,6 @@ def multiple_COGs_heatmap(request):
 
     sql = 'show columns from comparative_tables_COG' % biodb
     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
-
-    #print 'taxons!', ordered_taxons
 
     ortho_sql = '"' + '","'.join(cog_list) + '"'
 
@@ -11628,8 +11456,7 @@ def multiple_COGs_heatmap(request):
         for col, value in enumerate(cog_list):
             if head:
 
-                    'first row, print gene names'
-                    #print 'ok!'
+                    #'first row, print gene names'
                     n = TextFace(' %s ' % str(value))
                     n.rotation= 270
                     n.margin_top = 4
@@ -11680,7 +11507,6 @@ def pfam_tree(request, orthogroup):
     return render(request, 'chlamdb/pfam_tree.html', locals())
 
 def TM_tree(request, orthogroup):
-    print("orthogroup", orthogroup)
     biodb = settings.BIODB
 
     task = TM_tree_task.delay(biodb, 
@@ -11831,11 +11657,9 @@ def multiple_orthogroup_heatmap(request, reference_orthogroup, max_distance=2.2)
         lf.branch_vertical_margin = 0
 
         for col, value in enumerate(ordered_orthogroups):
-            #print 'value', value
             if head:
 
-                    print ('first row, print gene names')
-                    #print 'ok!'
+                    # first row, print gene names
                     n = TextFace(' %s ' % str(value))
                     n.rotation= 270
                     n.margin_top = 4
@@ -11957,11 +11781,8 @@ def interactions_genome(request):
             sql = 'select seqfeature_id from annotation_seqfeature_id2locus where taxon_id="%s"' % (taxon_id)
 
             seqfeature_id_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-            #print len(locus_list)
 
             #all_groups_neig = string_networks.find_links_recusrsive(biodb, locus_list, 0.8, n_comp_cutoff=2)
-
-            #print "all_groups_neig", all_groups_neig
 
             sql = 'select seqfeature_id, gene, product from orthology_detail where taxon_id="%s"' % (taxon_id)
             locus2gene_product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -11971,26 +11792,10 @@ def interactions_genome(request):
 
             locus2interpro = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-            '''
-            target_list = [
-                "RhT_00152",
-                "RhT_00154",
-                "RhT_00155",
-                "RhT_00158",
-                "RhT_00993",
-                "RhT_00994",
-                "RhT_01238",
-                "RhT_01242",
-                "RhT_01249"
-            ]
-            '''
             if len (target_list) > 1:
-                #print 'target list!!!', target_list
                 locus_filter = string_networks.get_subgraph(biodb, seqfeature_id_list, 0.8, target_list)
             else:
                 locus_filter = seqfeature_id_list
-            #print 'locus filter',locus_filter
-            #print 'target list',target_list
             script = string_networks.generate_network(biodb,
                                                       locus_filter,
                                                       target_list,
@@ -12030,11 +11835,8 @@ def interactions_genome_string(request):
             sql = 'select locus_tag from orthology_detail where taxon_id="%s"' % (taxon_id)
 
             locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-            #print len(locus_list)
 
             #all_groups_neig = string_networks.find_links_recusrsive(biodb, locus_list, 0.8, n_comp_cutoff=2)
-
-            #print "all_groups_neig", all_groups_neig
 
             sql = 'select locus_tag, gene, product from orthology_detail where taxon_id="%s"' % (taxon_id)
             locus2gene_product = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -12044,26 +11846,10 @@ def interactions_genome_string(request):
 
             locus2interpro = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-            '''
-            target_list = [
-                "RhT_00152",
-                "RhT_00154",
-                "RhT_00155",
-                "RhT_00158",
-                "RhT_00993",
-                "RhT_00994",
-                "RhT_01238",
-                "RhT_01242",
-                "RhT_01249"
-            ]
-            '''
             if len (target_list) > 1:
-                #print 'target list!!!', target_list
                 locus_filter = string_networks.get_subgraph(biodb, locus_list, 0.8, target_list)
             else:
                 locus_filter = locus_list
-            #print 'locus filter',locus_filter
-            #print 'target list',target_list
             script = string_networks.generate_network_string(biodb,
                                                       locus_filter,
                                                       target_list,
@@ -12208,7 +11994,7 @@ def profile_interactions(request, orthogroup, distance):
         from chlamdb.phylo_tree_display import ete_motifs
         match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(all_groups_profile, biodb)
         match = True
-        #print 'get script'
+
         script = string_networks.generate_network_profile(biodb, 
                                                           all_groups_profile, 
                                                           [orthogroup], 
@@ -12218,15 +12004,12 @@ def profile_interactions(request, orthogroup, distance):
                                                           annot=False,
                                                           distance=distance)
 
-        #print 'script ok, getting orthogroups counts'
-
         taxon2orthogroup2count_all = ete_motifs.get_taxon2orthogroup2count(biodb, all_groups_profile)
 
-        #print 'count ok, making plot'
         labels = all_groups_profile
         orthogroup_n = all_groups_profile.index(orthogroup)
         tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all,reference_column=orthogroup_n)
-        #print 'plot ok, drawing plot'
+
         path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
         asset_path = '/temp/ortho_tree.svg'
         tree.render(path, dpi=500, tree_style=style)
@@ -12262,7 +12045,7 @@ def neig_interactions(request, locus_tag):
             filter_seqfeatures = ','.join(locus_tag_list)
             sql = 'select locus_tag from custom_tables_locus2seqfeature_id where seqfeature_id in (%s)' % (filter_seqfeatures)
             locus_tag_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-        #print 'locus list', locus_tag_list
+
         #match_groups_data, extract_result = biosql_own_sql_tables.orthogroup_list2detailed_annotation(all_groups, biodb)
         locus2annot, \
         locus_tag2cog_catego, \
@@ -12290,10 +12073,8 @@ def neig_interactions(request, locus_tag):
         # plot phylogenetic profile
         taxon2orthogroup2count_all = ete_motifs.get_taxon2orthogroup2count(biodb, all_groups)
         labels = all_groups
-        #print all_groups
-        #print orthogroup
         orthogroup_n = all_groups.index(orthogroup)
-        #print "orthogroup_n", orthogroup_n
+
         tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2orthogroup2count_all, reference_column=orthogroup_n)
         path = settings.BASE_DIR + '/assets/temp/ortho_tree.svg'
         asset_path = '/temp/ortho_tree.svg'
@@ -12308,13 +12089,9 @@ def neig_interactions(request, locus_tag):
         match = True
 
         home_dir = os.path.dirname(__file__)
-        #print "home_dir", home_dir
         temp_location = os.path.join(home_dir, "../assets")
-        #print "temp loc", temp_location
         temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
-        #print "temp file", temp_file.name
         name = os.path.basename(temp_file.name)
-        #print name.split('.')
         name_png = name.split('.')[0] + '.png'
         locus_tags, orthogroup_list = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, [middle_locus_tag],
                                                                           temp_file.name, int(29000),
@@ -12414,7 +12191,6 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
     from chlamdb.network_d3 import string_networks
 
     server, db = manipulate_biosqldb.load_db(biodb)
-    #print 'plot phylo profile -- %s' % orthogroup_or_locus
 
     sql1 =   'SELECT' \
              ' CASE' \
@@ -12444,7 +12220,6 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
         sql2 = 'select taxon_2,B.locus_tag,identity from (select * from custom_tables_locus2seqfeature_id t1 ' \
                ' inner join comparative_tables_identity_closest_homolog2 t2 on t1.seqfeature_id=t2.locus_1 ' \
                ' where locus_tag="%s") A inner join custom_tables_locus2seqfeature_id B on A.locus_2=B.seqfeature_id;' % (orthogroup_or_locus)
-        #print sql2
 
         identity_data = server.adaptor.execute_and_fetchall(sql2, )
         taxon2identity_closest = {}
@@ -12479,14 +12254,12 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
     if len(all_groups_profile_eucl) > 1:
         profile_match_eucl = True
     
-    print(profile_match_jac, profile_match_eucl)
-
     if input_type != 'orthogroup':
         locus_list = list(taxon2locus_tag_closest.values())
 
     asset_path = '/temp/phylo.svg'
     path = settings.BASE_DIR + '/assets/' + asset_path
-    #print 'path', path
+
     a,b,c = shell_command.shell_command("rm %s" % path)
 
 
@@ -12530,19 +12303,14 @@ def priam_kegg(request):
     biodb = settings.BIODB
     priam_form_class = make_priam_form(biodb)
 
-    #print 'request', request.method
-
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
-        #print 'request', request.method
-        form = priam_form_class(request.POST)  # Nous reprenons les données
-        #form2 = ContactForm(request.POST)
-        #print 'priam kegg %s' % biodb
+    if request.method == 'POST': 
+        form = priam_form_class(request.POST)
         if form.is_valid():
 
             server, db = manipulate_biosqldb.load_db(biodb)
 
             genome = form.cleaned_data['genome']
-            #print 'genome %s' % genome
+
             sql = 'select taxon_id from bioentry t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id' \
                   ' where t2.name="%s" and t1.accession="%s"' % (biodb, 
                                                                  genome)
@@ -12566,8 +12334,8 @@ def priam_kegg(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = priam_form_class()  # Nous créons un formulaire vide
+    else:  
+        form = priam_form_class()
 
     return render(request, 'chlamdb/priam_kegg.html', locals())
 
@@ -12583,23 +12351,19 @@ def locus_list2circos(request, target_taxon):
 
     locus_list = [i for i in request.GET.getlist('l')]
 
-    #print 'locus_list', locus_list
-
     # 1. check if locus_list is part of the target genome
     # 2. if not part of the target genome, get orthogroup id
 
     locus_filter = '"'+'","'.join(locus_list)+'"'
     sql = 'select locus_tag, product from orthology_detail where taxon_id=%s and locus_tag in (%s)' % (target_taxon,
                                                                                                        locus_filter)
-    #print sql
-
     data = server.adaptor.execute_and_fetchall(sql,)
     locus_target_genome = [i[0] for i in data]
-    #print data
+
     locus2label = {}
     for row in data:
         locus2label[row[0]] = row[0] #+ "-%s" % re.sub(" ","-",row[1])
-    #print "locus2label", locus2label
+
     locus_other_genomes = []
     for locus in locus_list:
         if locus not in locus_target_genome:
@@ -12616,14 +12380,12 @@ def locus_list2circos(request, target_taxon):
 
     reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, target_taxon, biodb) # ["NC_009648"] NZ_CP009208 NC_016845
 
-    #print "reference_accessions", reference_accessions
     record_list = []
     for accession in reference_accessions:
-        #print "reference accession", accession
+
         biorecord = cache.get(biodb + "_" + accession)
 
         if not biorecord:
-            #print biodb + "_" + accession, "NOT in memory"
             new_record = db.lookup(accession=accession)
             biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
                                                      id=new_record.id, name=new_record.name,
@@ -12635,7 +12397,6 @@ def locus_list2circos(request, target_taxon):
             cache.set(biodb + "_" + record_id, biorecord)
             record_list.append(biorecord)
         else:
-            #print biodb + "_" + accession, "In memory"
             record_list.append(biorecord)
 
     ref_name = ('').join(reference_accessions)
@@ -12649,8 +12410,6 @@ def locus_list2circos(request, target_taxon):
     home_dir = os.path.dirname(__file__)
 
     temp_location = os.path.join(home_dir, "../assets/circos/")
-
-    #print "locus2label", locus2label
 
     myplot = circos.CircosAccession2multiplot(server,
                                               db,
@@ -12680,7 +12439,7 @@ def locus_list2circos(request, target_taxon):
 
 
     circos_new_file = '/assets/circos/circos_clic.html'
-    #print settings.BASE_DIR + circos_new_file
+
     with open(settings.BASE_DIR + circos_new_file, "w") as f:
         f.write(circos_html)
 
@@ -12701,7 +12460,7 @@ def hmm2circos(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     hmm_form = hmm_sets_form_circos(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = hmm_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import hmm_heatmap
@@ -12727,7 +12486,7 @@ def hmm2circos(request):
                                                                   reference_taxon,
                                                                   score_cutoff,
                                                                   query_coverage_cutoff)
-            #print sql
+
             target_locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
 
@@ -12737,25 +12496,23 @@ def hmm2circos(request):
                   ' inner join custom_tables_locus2seqfeature_id t4 on t3.seqfeature_id=t4.seqfeature_id ' \
                   ' inner join hmm.hmm_profiles t5 on t2.hmm_id=t5.hmm_id' \
                   ' where t1.name="%s" and t3.taxon_id=%s and bitscore>=%s ' \
-                   ' and query_coverage>=%s order by bitscore;;' % (hmm_set, 
+                   ' and query_coverage>=%s order by bitscore;' % (hmm_set, 
                                                                     reference_taxon, 
                                                                     score_cutoff, 
                                                                     query_coverage_cutoff)
-            #print sql
+
             locus2label = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
 
             description2accession_dict = manipulate_biosqldb.description2accession_dict(server, biodb)
 
             reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb) # ["NC_009648"] NZ_CP009208 NC_016845
 
-            #print "reference_accessions", reference_accessions
+
             record_list = []
             for accession in reference_accessions:
-                #print "reference accession", accession
                 biorecord = cache.get(biodb + "_" + accession)
 
                 if not biorecord:
-                    #print biodb + "_" + accession, "NOT in memory"
                     new_record = db.lookup(accession=accession)
                     biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
                                                              id=new_record.id, name=new_record.name,
@@ -12767,7 +12524,6 @@ def hmm2circos(request):
                     cache.set(biodb + "_" + record_id, biorecord)
                     record_list.append(biorecord)
                 else:
-                    #print biodb + "_" + accession, "In memory"
                     record_list.append(biorecord)
 
             ref_name = ('').join(reference_accessions)
@@ -12797,8 +12553,6 @@ def hmm2circos(request):
 
                 ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order1)]
 
-            #print 'ordered_taxons', ordered_taxons
-
             myplot = circos.CircosAccession2multiplot(server,
                                                       db,
                                                       biodb,
@@ -12826,7 +12580,7 @@ def hmm2circos(request):
 
 
             circos_new_file = '/assets/circos/circos_clic.html'
-            #print settings.BASE_DIR + circos_new_file
+
             with open(settings.BASE_DIR + circos_new_file, "w") as f:
                 f.write(circos_html)
 
@@ -12837,8 +12591,8 @@ def hmm2circos(request):
 
             envoi_circos = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = hmm_form()  # Nous créons un formulaire vide
+    else:  
+        form = hmm_form()
 
     return render(request, 'chlamdb/hmm2circos.html', locals())
 
@@ -12851,11 +12605,11 @@ def transporters_list(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     transporters_form = transporters_superfam_form(biodb, True)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = transporters_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import blast_heatmap
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
             genome = form.cleaned_data['genome']
             transporter_superfamily = form.cleaned_data['transporter_superfamily'][0]
             score_cutoff = form.cleaned_data['score_cutoff']
@@ -12880,12 +12634,10 @@ def transporters_list(request):
                                                 evalue_cutoff,
                                                 score_cutoff,
                                                 genome)
-                print (sql)
 
                 data = list(server.adaptor.execute_and_fetchall(sql,))
                 for n, row in enumerate(data):
                     data[n] = list(data[n])
-                    #print data[n][-4]
                     data[n][-4] = ','.join(set([i.rstrip().lstrip() for i in data[n][-4].split(',')]))
                     for i in range(0,len(row)):
                         data[n][i] = str(data[n][i])#.decode("latin-1")
@@ -12911,7 +12663,6 @@ def transporters_list(request):
                                                 score_cutoff,
                                                 transporter_superfamily,
                                                 genome)
-                print (sql)
 
                 data = list(server.adaptor.execute_and_fetchall(sql,))
                 for n, row in enumerate(data):
@@ -12922,8 +12673,8 @@ def transporters_list(request):
                 envoi = True
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = transporters_form()  # Nous créons un formulaire vide
+    else:  
+        form = transporters_form()
 
     return render(request, 'chlamdb/transporters_table.html', locals())
 
@@ -12936,7 +12687,7 @@ def transporters_family(request, family):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     from chlamdb.plots import blast_heatmap
-    #if request.method == 'POST':  # S'il s'agit d'une requête POST
+    #if request.method == 'POST': 
 
 
     from ete3 import Tree
@@ -12966,40 +12717,39 @@ def transporters_family(request, family):
     hit_coverage_cutoff = 0.5
 
     transporter_family_list = [ "2.A.15",
-"2.A.111",
-"2.A.12",
-"2.A.17",
-"2.A.19",
-"2.A.2",
-"2.A.20",
-"2.A.21",
-"2.A.22",
-"2.A.23",
-"2.A.25",
-"2.A.26",
-"2.A.27",
-"2.A.28",
-"2.A.3",
-"2.A.30",
-"2.A.33",
-"2.A.35",
-"2.A.36",
-"2.A.37",
-"2.A.39",
-"2.A.4",
-"2.A.40",
-"2.A.41",
-"2.A.47",
-"2.A.55",
-"2.A.58",
-"2.A.6",
-"2.A.62",
-"2.A.63",
-"2.A.66",
-"2.A.7",
-"2.A.83"
-
-]
+                                "2.A.111",
+                                "2.A.12",
+                                "2.A.17",
+                                "2.A.19",
+                                "2.A.2",
+                                "2.A.20",
+                                "2.A.21",
+                                "2.A.22",
+                                "2.A.23",
+                                "2.A.25",
+                                "2.A.26",
+                                "2.A.27",
+                                "2.A.28",
+                                "2.A.3",
+                                "2.A.30",
+                                "2.A.33",
+                                "2.A.35",
+                                "2.A.36",
+                                "2.A.37",
+                                "2.A.39",
+                                "2.A.4",
+                                "2.A.40",
+                                "2.A.41",
+                                "2.A.47",
+                                "2.A.55",
+                                "2.A.58",
+                                "2.A.6",
+                                "2.A.62",
+                                "2.A.63",
+                                "2.A.66",
+                                "2.A.7",
+                                "2.A.83"
+                                ]
 
 
     superfam_list, taxon2code2count = transporters_heatmap.transporter_family_heatmap(biodb,
@@ -13051,11 +12801,8 @@ def transporters_family(request, family):
     merged_dico = taxon2orthogroup2count
     for taxon in taxon2code2count:
         merged_dico[str(taxon)] = taxon2code2count[taxon]
-    #print 'merged dico', merged_dico
-    labels = superfam_list + orthogroup_list
 
-    #for i in merged_dico:
-    #    print i, merged_dico[i]
+    labels = superfam_list + orthogroup_list
 
     tree1, style1 = ete_motifs.multiple_profiles_heatmap(biodb,
                                                 labels,
@@ -13076,7 +12823,7 @@ def transporters_family(request, family):
           ' inner join COG_cog_names_2014 t3 on t1.hit_cog_id=t3.cog_id ' \
           ' inner join COG_cog_id2cog_category t4 on t3.cog_id=t4.cog_id ' \
           ' inner join COG_code2category t5 on t4.category_id=t5.category_id where locus_tag in (%s);' % (filter)
-    #print sql
+
     locus2COG_data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     for one_locus_annot in locus_annot:
         try:
@@ -13098,8 +12845,6 @@ def transporters_family(request, family):
     ko2ko_modules,\
     locus2interpro = get_locus_annotations(biodb, locus_list)
 
-    #print 'locus list', locus_list
-    #print locus2annot
     '''
     tree1, style1 = ete_motifs.multiple_profiles_heatmap(biodb,
                                                 superfam_list,
@@ -13126,11 +12871,11 @@ def transporters(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     transporters_form = transporters_superfam_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = transporters_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import blast_heatmap
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
 
             transporter_superfamily = form.cleaned_data['transporter_superfamily'][0]
             score_cutoff = form.cleaned_data['score_cutoff']
@@ -13163,8 +12908,6 @@ def transporters(request):
 
             if transporter_superfamily == 'all':
 
-                #print 'all---------------'
-
                 from chlamdb.plots import transporters_heatmap
 
                 superfam_list, taxon2code2count = transporters_heatmap.transporter_all_superfamily_heatmap(biodb,
@@ -13189,8 +12932,6 @@ def transporters(request):
                 envoi = True
 
             else:
-                #print 'NOT all---------------'
-
                 from chlamdb.plots import transporters_heatmap
 
                 superfam_list, taxon2code2count = transporters_heatmap.transporter_superfamily_heatmap(biodb,
@@ -13217,8 +12958,8 @@ def transporters(request):
 
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = transporters_form()  # Nous créons un formulaire vide
+    else:  
+        form = transporters_form()
 
     return render(request, 'chlamdb/transporters_superfam.html', locals())
 
@@ -13234,11 +12975,11 @@ def blast_sets(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     sets_form = blast_sets_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = sets_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import blast_heatmap
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
 
             hmm_sets = form.cleaned_data['blast_set']
             score_cutoff = form.cleaned_data['score_cutoff']
@@ -13247,8 +12988,6 @@ def blast_sets(request):
 
             counts = request.POST['counts']
 
-
-            #print 'detailed, counts', counts
             if counts == 'detailed':
                 blast_set_filter = '"'+'","'.join(hmm_sets)+'"'
 
@@ -13261,8 +13000,6 @@ def blast_sets(request):
                 if hmm_sets == 'flagellum':
                     gene_list = ['Flg_fliE','Flg_flgC', 'Flg_flgB','Flg_sctJ_FLG','Flg_sctN_FLG','Flg_sctQ_FLG','Flg_sctR_FLG',
                                  'Flg_sctS_FLG','Flg_sctT_FLG','Flg_sctU_FLG','Flg_sctV_FLG']
-
-                #print gene2taxon2score, gene_list
 
                 sql = 'select accession, t1.name from blast.blast_sets t1 inner join blast.blast_sets_entry t2 on t1.set_id=t2.set_id ' \
                       ' inner join blast.blast_db t3 on t2.seq_id=t3.seq_id where t1.name in (%s) order by t1.name;' % (blast_set_filter)
@@ -13370,17 +13107,17 @@ def blast_sets(request):
                 server, db = manipulate_biosqldb.load_db(biodb)
                 tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
 
-                acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
-                filter = '"' + '","'.join(acc_list) + '"'
-                sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
-                taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
+                #acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
+                #filter = '"' + '","'.join(acc_list) + '"'
+                #sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
+                #taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
                 t1 = Tree(tree)
                 R = t1.get_midpoint_outgroup()
                 t1.set_outgroup(R)
-                try:
-                    t2 = t1.prune(taxon_list)
-                except:
-                    pass
+                #try:
+                #    t2 = t1.prune(taxon_list)
+                #except:
+                #    pass
                 t1.ladderize()
 
                 set2taxon2count = blast_heatmap.get_multiple_set_counts(biodb,
@@ -13390,14 +13127,14 @@ def blast_sets(request):
                                                                         hit_coverage_cutoff)
 
                 tree1, style1 = ete_motifs.multiple_profiles_heatmap(biodb,
-                                                            hmm_sets,
-                                                            set2taxon2count,
+                                                                     hmm_sets,
+                                                                     set2taxon2count,
                                                                      tree=t1,
-                                                            identity_scale=False,
-                                                            show_labels=True,
-                                                            column_scale=True,
-                                                            as_float=False,
-                                                            rotate=True)
+                                                                     identity_scale=False,
+                                                                     show_labels=True,
+                                                                     column_scale=True,
+                                                                     as_float=False,
+                                                                     rotate=True)
                 style1.rotation = 90
                 path1 = settings.BASE_DIR + '/assets/temp/ortho_tree1.svg'
                 asset_path1 = '/temp/ortho_tree1.svg'
@@ -13408,8 +13145,8 @@ def blast_sets(request):
 
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = sets_form()  # Nous créons un formulaire vide
+    else:  
+        form = sets_form()
 
     return render(request, 'chlamdb/blast_sets_profiles.html', locals())
 
@@ -13422,11 +13159,11 @@ def hmm(request):
     server, db = manipulate_biosqldb.load_db(biodb)
     hmm_form = hmm_sets_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = hmm_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import hmm_heatmap
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
@@ -13452,7 +13189,6 @@ def hmm(request):
                     gene_list = ['Flg_fliE','Flg_flgC', 'Flg_flgB','Flg_sctJ_FLG','Flg_sctN_FLG','Flg_sctQ_FLG','Flg_sctR_FLG',
                                  'Flg_sctS_FLG','Flg_sctT_FLG','Flg_sctU_FLG','Flg_sctV_FLG']
 
-                #print gene2taxon2score, gene_list
                 tree1, style1 = ete_motifs.multiple_profiles_heatmap(biodb,
                                                                      gene_list,
                                                                      gene2taxon2score,
@@ -13506,8 +13242,8 @@ def hmm(request):
 
                 envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = hmm_form()  # Nous créons un formulaire vide
+    else:  
+        form = hmm_form()
 
     return render(request, 'chlamdb/hmm_profiles.html', locals())
 
@@ -13515,14 +13251,14 @@ def hmm(request):
 def locus_int(request):
     biodb = settings.BIODB
     from chlamdb.phylo_tree_display import ete_motifs
-    #print 'request', request.method
+
     server, db = manipulate_biosqldb.load_db(biodb)
     module_int_form = locus_int_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = module_int_form(request.POST)
         if form.is_valid():
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' 
 
@@ -13548,12 +13284,11 @@ def locus_int(request):
                          ' where category="%s";' % (category) # where pathway_category!="1.0 Global and overview maps"
 
 
-            #print sql
             data = server.adaptor.execute_and_fetchall(sql,)
 
             orthogroups = set([i[-1] for i in data])
             locus_tag_list = [i[2] for i in data]
-            #print locus_tag_list
+
             locus2gene = {}
             for i in data:
                 locus2gene[i[2]] = i[1]
@@ -13577,7 +13312,6 @@ def locus_int(request):
             for locus_tag in locus_tag_list:
                 new_label = '%s / %s' % (locus_tag, locus2gene[locus_tag])
                 labels2.append(new_label)
-            #print 'test'
             #print 'PC_RS08840 / SdhC' in labels2
             #print locus2taxon2identity_closest['PC_RS08840 / SdhC']
             taxon2orthogroup2count_all = ete_motifs.get_taxon2orthogroup2count(biodb, orthogroups)
@@ -13617,8 +13351,8 @@ def locus_int(request):
                 tree2.render(path2, dpi=800, tree_style=style2)
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = module_int_form()  # Nous créons un formulaire vide
+    else:  
+        form = module_int_form()
 
     return render(request, 'chlamdb/inter_tree.html', locals())
 
@@ -13628,16 +13362,15 @@ def locus_int(request):
 def kegg_pathway_heatmap(request):
     biodb = settings.BIODB
     from chlamdb.phylo_tree_display import ete_motifs
-    #print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
     pathway_form = make_pathway_overview_form(biodb)#get_locus_annotations_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = pathway_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import pathway_heatmap
             from ete3 import Tree
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
@@ -13646,8 +13379,6 @@ def kegg_pathway_heatmap(request):
             category = form.cleaned_data['category']
             sql = 'select pathway_name from enzyme_kegg_pathway where pathway_category="%s";' % (category)
             modules = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-
-            #print 'modules', modules
 
             sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
                        ' where t2.name="%s";' % biodb
@@ -13667,7 +13398,7 @@ def kegg_pathway_heatmap(request):
             #except:
             #    pass
             t1.ladderize()
-            #print modules
+
             tree, style = pathway_heatmap.plot_pathway_heatmap(biodb,
                                                                t1,
                                                                modules,
@@ -13686,8 +13417,8 @@ def kegg_pathway_heatmap(request):
             envoi = True
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = pathway_form()  # Nous créons un formulaire vide
+    else:  
+        form = pathway_form()
 
     return render(request, 'chlamdb/pathway_cat.html', locals())
 
@@ -13696,15 +13427,13 @@ def kegg_pathway_heatmap(request):
 def kegg_module_subcat(request):
     biodb = settings.BIODB
     from chlamdb.phylo_tree_display import ete_motifs
-    #print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
     module_overview_form = make_module_overview_form(biodb, sub_sub_cat=True)#get_locus_annotations_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = module_overview_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import module_heatmap
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
@@ -13719,8 +13448,6 @@ def kegg_module_subcat(request):
                       ' from enzyme_microbial_metabolism_map01120 t1 inner join enzyme_kegg_module_v1 t2 on t1.module_name=t2.module_name ' \
                       ' order by module_sub_cat,module_sub_sub_cat;'
                 modules = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-
-            #print 'modules', modules
 
             sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
                        ' where t2.name="%s";' % biodb
@@ -13746,8 +13473,8 @@ def kegg_module_subcat(request):
             envoi = True
 
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = module_overview_form()  # Nous créons un formulaire vide
+    else:  
+        form = module_overview_form()
 
     return render(request, 'chlamdb/module_subcat.html', locals())
 
@@ -13755,15 +13482,14 @@ def kegg_module_subcat(request):
 def kegg_module(request):
     biodb = settings.BIODB
     from chlamdb.phylo_tree_display import ete_motifs
-    #print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
     module_overview_form = make_module_overview_form(biodb)#get_locus_annotations_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
+    if request.method == 'POST': 
         form = module_overview_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import module_heatmap
-            #if request.method == 'POST':  # S'il s'agit d'une requête POST
+            #if request.method == 'POST': 
 
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
@@ -13779,7 +13505,6 @@ def kegg_module(request):
                                 'on t1.module_id=t2.module_id where module_sub_cat="%s")BB on AA.module_id=BB.module_id;' % (category) # where pathway_category!="1.0 Global and overview maps"
 
             map2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_pathway_count,))
-            #print 'map2count', map2count
 
             # C.pathway_category,taxon_id, A.pathway_name,A.n_enzymes, C.description
             sql = 'select B.module_sub_cat,A.taxon_id,B.module_name,A.n,B.description from ' \
@@ -13788,7 +13513,6 @@ def kegg_module(request):
                                 ' inner join enzyme_module2ko_v1 as t2 on t1.ko_id=t2.ko_id group by taxon_id, module_id) A ' \
                                 ' inner join enzyme_kegg_module_v1 as B on A.module_id=B.module_id where module_sub_cat="%s";' % (category)
 
-            #print sql
             pathway_data = server.adaptor.execute_and_fetchall(sql,)
             all_maps = []
             category2maps = {}
@@ -13845,8 +13569,8 @@ def kegg_module(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = module_overview_form()  # Nous créons un formulaire vide
+    else:  
+        form = module_overview_form()
 
     return render(request, 'chlamdb/module_overview.html', locals())
 
@@ -13857,8 +13581,8 @@ def module2heatmap(request):
 
     comp_metabo_form = make_kegg_form(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
-        form = comp_metabo_form(request.POST)  # Nous reprenons les données
+    if request.method == 'POST': 
+        form = comp_metabo_form(request.POST)
         if form.is_valid():
             from chlamdb.plots import pathway_heatmap
             from chlamdb.biosqldb import biosql_own_sql_tables
@@ -13868,13 +13592,13 @@ def module2heatmap(request):
             pathway_category = form.cleaned_data['pathway_choice']
             pathway_filter = '"' + '","'.join(pathway_category) + '"'
             sql = 'select pathway_name from enzyme_kegg_pathway where description in (%s);' % (pathway_filter)
-            #print sql
+
             pathways = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
             module_category = form.cleaned_data['module_choice']
             module_filter = '"' + '","'.join(module_category) + '"'
             sql = 'select module_name from enzyme_kegg_module_v1 where description in (%s);' % (module_filter)
-            #print sql
+
             modules = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
             sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
@@ -13894,11 +13618,6 @@ def module2heatmap(request):
             except:
                 pass
             t1.ladderize()
-
-
-            #print 'modules', modules
-            #print 'pathays', pathways
-
 
             modules = [
 "M00051",
@@ -13959,8 +13678,8 @@ def module2heatmap(request):
 
             envoi = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = comp_metabo_form()  # Nous créons un formulaire vide
+    else:  
+        form = comp_metabo_form()
 
     return render(request, 'chlamdb/module2heatmap.html', locals())
 
@@ -13972,8 +13691,8 @@ def module_comparison(request):
 
     comp_metabo_form = make_metabo_from(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
-        form = comp_metabo_form(request.POST)  # Nous reprenons les données
+    if request.method == 'POST': 
+        form = comp_metabo_form(request.POST)
         if form.is_valid():
             from chlamdb.biosqldb import biosql_own_sql_tables
             taxon_list = form.cleaned_data['targets']
@@ -13981,8 +13700,6 @@ def module_comparison(request):
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
             database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
-
-            #print ('db id', database_id)
 
             taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
@@ -13995,7 +13712,7 @@ def module_comparison(request):
                         'on t1.module_id=t2.module_id)BB on AA.module_id=BB.module_id;'
 
             map2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_pathway_count,))
-            #print ('map2count', map2count)
+
             category2maps = {}
 
             sql_category2maps = 'select module_sub_cat,module_name,description from enzyme_kegg_module_v1;'
@@ -14007,8 +13724,6 @@ def module_comparison(request):
                     category2maps[one_map[0]] = [[one_map[1], one_map[2]]]
                 else:
                     category2maps[one_map[0]].append([one_map[1], one_map[2]])
-
-            #print "category2maps", category2maps
 
             sql = 'select distinct module_name,module_sub_sub_cat from enzyme_kegg_module_v1;'
             module2sub_category = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -14022,15 +13737,14 @@ def module_comparison(request):
                       ' left join enzyme_module2ko_v1 as B on A.ko_id=B.ko_id group by module_id) AA ' \
                       ' right join enzyme_kegg_module_v1 as BB on AA.module_id=BB.module_id;' % (taxon)
 
-                #print sql
                 map2count_taxon = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
                 taxon_maps.append(map2count_taxon)
 
 
             envoi_comp = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = comp_metabo_form()  # Nous créons un formulaire vide
+    else:  
+        form = comp_metabo_form()
 
     return render(request, 'chlamdb/module_comp.html', locals())
 
@@ -14040,16 +13754,12 @@ def module_comparison(request):
 def metabo_overview(request):
     biodb = settings.BIODB
     from chlamdb.phylo_tree_display import ete_motifs
-    #print 'request', request.method
-    server, db = manipulate_biosqldb.load_db(biodb)
 
-    #if request.method == 'POST':  # S'il s'agit d'une requête POST
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
     database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
-
-    #print 'db id', database_id
 
     sql_pathway_count = 'select PATH2.pathway_name,PATH2.n,PATH1.n,PATH1.n/PATH2.n from (select pathway_name,count(*) as n ' \
                         ' from (select distinct pathway_name,t4.ec_id from enzyme_locus2ec as t3 ' \
@@ -14063,7 +13773,6 @@ def metabo_overview(request):
                         ' PATH2 on PATH2.pathway_name=PATH1.pathway_name;'  # where pathway_category!="1.0 Global and overview maps"
 
     map2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_pathway_count,))
-    #print 'map2count', map2count
 
     sql = 'select C.pathway_category,taxon_id, A.pathway_name,A.n_enzymes, C.description from ' \
           '( select distinct taxon_id,pathway_name, count(*) as n_enzymes from (' \
@@ -14074,7 +13783,6 @@ def metabo_overview(request):
           'group by taxon_id,pathway_name) A ' \
           'inner join enzyme_kegg_pathway as C  on A.pathway_name=C.pathway_name;' % (database_id)
 
-    #print sql
     pathway_data = server.adaptor.execute_and_fetchall(sql,)
     all_maps = []
     category2maps = {}
@@ -14125,8 +13833,8 @@ def metabo_overview(request):
     '''
     envoi = True
 
-    #else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-    #    pass  # Nous créons un formulaire vide
+    #else:  
+    #    pass
 
     return render(request, 'chlamdb/metabo_overview.html', locals())
 
@@ -14134,14 +13842,12 @@ def metabo_overview(request):
 
 def metabo_comparison(request):
     biodb = settings.BIODB
-    #print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
 
     comp_metabo_form = make_metabo_from(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
-        form = comp_metabo_form(request.POST)  # Nous reprenons les données
-        #form2 = ContactForm(request.POST)
+    if request.method == 'POST': 
+        form = comp_metabo_form(request.POST)
         if form.is_valid():
             from chlamdb.biosqldb import biosql_own_sql_tables
             taxon_list = form.cleaned_data['targets']
@@ -14149,8 +13855,6 @@ def metabo_comparison(request):
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
             database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
-
-            #print 'db id', database_id
 
             taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
@@ -14167,7 +13871,7 @@ def metabo_comparison(request):
                                 ' PATH2 on PATH2.pathway_name=PATH1.pathway_name;'
 
             map2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_pathway_count,))
-            #print 'map2count', map2count
+
             category2maps = {}
 
             sql_category2maps = 'select pathway_category,pathway_name,description from  enzyme_kegg2ec as t1 ' \
@@ -14181,8 +13885,6 @@ def metabo_comparison(request):
                     category2maps[one_map[0]] = [[one_map[1], one_map[2]]]
                 else:
                     category2maps[one_map[0]].append([one_map[1], one_map[2]])
-
-            #print "category2maps", category2maps
 
             taxon_maps = []
             for taxon in taxon_list:
@@ -14206,21 +13908,20 @@ def metabo_comparison(request):
 
             envoi_comp = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = comp_metabo_form()  # Nous créons un formulaire vide
+    else:  
+        form = comp_metabo_form()
 
     return render(request, 'chlamdb/metabo_comp.html', locals())
 
 
 def metabo_comparison_ko(request):
     biodb = settings.BIODB
-    #print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
 
     comp_metabo_form = make_metabo_from(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
-        form = comp_metabo_form(request.POST)  # Nous reprenons les données
+    if request.method == 'POST': 
+        form = comp_metabo_form(request.POST)
         #form2 = ContactForm(request.POST)
         if form.is_valid():
             from chlamdb.biosqldb import biosql_own_sql_tables
@@ -14229,8 +13930,6 @@ def metabo_comparison_ko(request):
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
             database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
-
-            #print 'db id', database_id
 
             taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
@@ -14245,10 +13944,9 @@ def metabo_comparison_ko(request):
                                 ' t2 on t1.pathway_id=t2.pathway_id where pathway_category!="1.0 Global and overview maps" ' \
                                 ' group by pathway_name)' \
                                 ' PATH2 on PATH2.pathway_name=PATH1.pathway_name;'
-            #print sql_pathway_count
 
             map2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_pathway_count,))
-            #print 'map2count', map2count
+
             category2maps = {}
 
             sql_category2maps = 'select pathway_category,pathway_name,description from  enzyme_pathway2ko_v1 as t1 ' \
@@ -14262,8 +13960,6 @@ def metabo_comparison_ko(request):
                     category2maps[one_map[0]] = [[one_map[1], one_map[2]]]
                 else:
                     category2maps[one_map[0]].append([one_map[1], one_map[2]])
-
-            #print "category2maps", category2maps
 
             taxon_maps = []
             for taxon in taxon_list:
@@ -14284,21 +13980,20 @@ def metabo_comparison_ko(request):
 
             envoi_comp = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = comp_metabo_form()  # Nous créons un formulaire vide
+    else:  
+        form = comp_metabo_form()
 
     return render(request, 'chlamdb/metabo_comp_ko.html', locals())
 
 
 def pfam_comparison(request):
     biodb = settings.BIODB
-    #print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
 
     comp_metabo_form = make_metabo_from(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
-        form = comp_metabo_form(request.POST)  # Nous reprenons les données
+    if request.method == 'POST': 
+        form = comp_metabo_form(request.POST)
         #form2 = ContactForm(request.POST)
         if form.is_valid():
             from chlamdb.biosqldb import biosql_own_sql_tables
@@ -14307,8 +14002,6 @@ def pfam_comparison(request):
             sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
 
             database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
-
-            #print 'db id', database_id
 
             taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
@@ -14348,8 +14041,8 @@ def pfam_comparison(request):
 
             envoi_comp = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = comp_metabo_form()  # Nous créons un formulaire vide
+    else:  
+        form = comp_metabo_form()
 
     return render(request, 'chlamdb/pfam_comp.html', locals())
 
@@ -14357,13 +14050,12 @@ def pfam_comparison(request):
 
 def orthogroup_comparison(request):
     biodb = settings.BIODB
-    #print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
 
     comp_metabo_form = make_metabo_from(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
-        form = comp_metabo_form(request.POST)  # Nous reprenons les données
+    if request.method == 'POST': 
+        form = comp_metabo_form(request.POST)
         #form2 = ContactForm(request.POST)
         if form.is_valid():
             from chlamdb.biosqldb import biosql_own_sql_tables
@@ -14373,8 +14065,6 @@ def orthogroup_comparison(request):
 
             database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
 
-            #print 'db id', database_id
-
             taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
             columns = '`' + '`,`'.join(taxon_list) + '`'
@@ -14382,13 +14072,10 @@ def orthogroup_comparison(request):
 
 
             sql = 'select orthogroup,count(*) from orthology_detail group by orthogroup'
-            #print sql
-
             orthogroups2total_count= manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
             sql = 'select orthogroup,%s from comparative_tables_orthology where %s' % (columns, 
                                                                                        filter)
-            #print sql
 
             orthogroups2counts = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -14396,7 +14083,6 @@ def orthogroup_comparison(request):
 
             group2annot = {}
             for i in server.adaptor.execute_and_fetchall(sql,):
-                #print i
                 if i[0] not in group2annot:
                     group2annot[i[0]] = [i[1:]]
                 else:
@@ -14409,22 +14095,20 @@ def orthogroup_comparison(request):
                             continue
             envoi_comp = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = comp_metabo_form()  # Nous créons un formulaire vide
+    else:  
+        form = comp_metabo_form()
 
     return render(request, 'chlamdb/ortho_comp.html', locals())
 
 
 def ko_comparison(request):
     biodb = settings.BIODB
-    #print 'request', request.method
     server, db = manipulate_biosqldb.load_db(biodb)
 
     comp_metabo_form = make_metabo_from(biodb)
 
-    if request.method == 'POST':  # S'il s'agit d'une requête POST
-        form = comp_metabo_form(request.POST)  # Nous reprenons les données
-        #form2 = ContactForm(request.POST)
+    if request.method == 'POST': 
+        form = comp_metabo_form(request.POST)
         if form.is_valid():
             from chlamdb.biosqldb import biosql_own_sql_tables
             taxon_list = form.cleaned_data['targets']
@@ -14433,8 +14117,6 @@ def ko_comparison(request):
 
             database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
 
-            #print 'db id', database_id
-
             taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
 
             columns = '`' + '`,`'.join(taxon_list) + '`'
@@ -14442,12 +14124,10 @@ def ko_comparison(request):
 
 
             sql = 'select ko_id, count(*) from enzyme_locus2ko group by ko_id;'
-            #print sql
 
             ko2total_count= manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
             sql = 'select id,%s from comparative_tables_ko where %s' % (columns, filter)
-            #print sql
 
             ko2counts = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -14457,7 +14137,9 @@ def ko_comparison(request):
 
             envoi_comp = True
 
-    else:  # Si ce n'est pas du POST, c'est probablement une requête GET
-        form = comp_metabo_form()  # Nous créons un formulaire vide
+    else:  
+        form = comp_metabo_form()
 
     return render(request, 'chlamdb/ko_comp.html', locals())
+
+

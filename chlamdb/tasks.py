@@ -18,6 +18,341 @@ from django.template import Template, Context
 from django.core.cache import cache
 
 
+
+
+@shared_task
+def extract_interpro_task(biodb, 
+                          include,
+                          exclude,
+                          freq_missing,
+                          reference_taxon,
+                          accessions,
+                          n_missing):
+
+    from chlamdb.biosqldb import biosql_own_sql_tables
+    from chlamdb.views import get_locus_annotations
+    
+    server = manipulate_biosqldb.load_db()
+    
+    
+    current_task.update_state(state='PROGRESS',
+    meta={'current': 1,
+          'total': 3,
+          'percent': 25,
+          'description': "Get InterPro entry list"})
+    
+    if int(n_missing)>=len(include):
+        template = Template('''
+        {% load staticfiles %}
+        {% load static %}
+        <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Help</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">You cannot set a number of missing data bigger than the number of included genomes</p>
+        </div>
+        ''')
+
+        html = template.render(Context(locals()))#render_to_string(template, context=locals())
+        return html   
+
+    # get sub matrix and complete matrix
+    if not accessions:
+        mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
+                                                                    "interpro",
+                                                                    "id",
+                                                                    include,
+                                                                    exclude,
+                                                                    freq_missing,
+                                                                    cache=cache)
+    else:
+        mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
+                                                                  "interpro",
+                                                                  "id",
+                                                                  include,
+                                                                  exclude,
+                                                                  freq_missing,
+                                                                  accessions=accessions,
+                                                                  cache=cache)
+
+
+    match_groups = mat.index.tolist()
+
+    if len(match_groups) == 0:
+        template = Template('''
+        {% load staticfiles %}
+        {% load static %}
+        <div class="panel panel-warning" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+        <div class="panel-heading" style="width:100%">
+            <h3 class="panel-title"></h3>
+        </div>
+        <p style="margin: 10px 10px 10px 10px">No match</p>
+        </div>
+        ''')
+
+        html = template.render(Context(locals()))#render_to_string(template, context=locals())
+ 
+        current_task.update_state(state='SECCESS',
+                              meta={'current': 3,
+                                    'total': 3,
+                                    'percent': 100,
+                                    'description': "Done"})
+ 
+        return html
+    
+
+    # get count in subgroup
+    interpro2count = dict((mat > 0).sum(axis=1))
+    # get count in complete database
+    interpro2count_all = dict((mat_all > 0).sum(axis=1))
+
+    max_n = max(list(interpro2count_all.values()))
+
+    # GET max frequency for template
+    sum_group = len(match_groups)
+
+    current_task.update_state(state='PROGRESS',
+    meta={'current': 2,
+            'total': 3,
+            'percent': 50,
+            'description': "Retrieve annotations"})
+
+    filter = '"' + '","'.join(match_groups) + '"'
+
+    sql2 = 'select interpro_accession, interpro_description from interpro_%s' \
+    ' where interpro_accession in (%s) group by interpro_accession;' % (biodb, filter)
+
+    raw_data = list(server.adaptor.execute_and_fetchall(sql2,))
+
+    match_data = []
+    for one_match in raw_data:
+        match_data.append(list(one_match)+[interpro2count[one_match[0]], interpro2count_all[one_match[0]]])
+
+    sql_include = 'taxon_id ='
+    for i in range(0, len(include)-1):
+        sql_include+='%s or taxon_id =' % include[i]
+    sql_include+=include[-1]
+    n = 1
+    search_result = []
+
+    group_filter = 'where ('
+
+    for i, group in enumerate(match_groups):
+        if i == 0:
+            group_filter += 'orthogroup="%s"' % group
+        else:
+            group_filter += ' or orthogroup="%s"' % group
+    group_filter+=')'
+
+    columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
+                'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+    sql_2 = 'select %s from orthology_detail_%s %s' % (columns, biodb, group_filter)
+
+    raw_data = server.adaptor.execute_and_fetchall(sql_2,)
+
+    n = 1
+    extract_result = []
+    for one_hit in raw_data:
+        extract_result.append((n,) + one_hit)
+        n+=1
+
+
+    interpro_list = '"' + '","'.join(match_groups) + '"'
+
+    locus_list_sql = 'select locus_tag from interpro_%s where taxon_id=%s ' \
+                    ' and interpro_accession in (%s)' % (biodb, reference_taxon, interpro_list)
+
+    locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
+
+    circos_url = '?ref=%s&' % reference_taxon
+    circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
+    
+    target_circos_taxons = include + exclude
+
+    envoi_extract = True
+    locus2annot, \
+    locus_tag2cog_catego, \
+    locus_tag2cog_name, \
+    locus_tag2ko, \
+    pathway2category, \
+    module2category, \
+    ko2ko_pathways, \
+    ko2ko_modules,\
+    locus2interpro = get_locus_annotations(biodb, locus_list)
+
+
+    template = Template('''
+            {% load staticfiles %}
+            {% load static %}
+            {% load custom_tags %}
+
+            <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                <li class="active"><a href="#red" data-toggle="tab">Orthogroups</a></li>
+                <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
+            </ul>
+
+            <div id="my-tab-content" class="tab-content">
+
+                <div class="tab-pane active" id="red">
+
+
+                    <div id="export_bouttons_groups">
+                    <form name="circos_form" id="circos_form" action="{% url 'circos_main' %}" method="post">
+                    {% csrf_token %}
+                        <input type="hidden" name="reference_taxon" value="{{ reference_taxon }}">
+                        <input type="hidden" name="target_list" value="{{ target_circos_taxons }}">
+                        <input type="hidden" name="highlight" value="{{ locus_list }}">
+                        <button class="btn btn-success">Show on circular map</button>
+                    </form>
+                        <br/>
+                    </div>
+
+                    <p>Number of Interpro ID: {{ sum_group }} </p>
+
+                    <table class="display" id="interpro_table">
+
+                        <thead>
+                            <tr>
+                                <th>Interpro accession</th>
+                                <th>Description</th>
+                                <th>Count (/{{include|length}})</th><th>Count all (/{{max_n}})</th>
+                            </tr>
+                        </thead>
+
+                        {% for values in match_data %}
+                            <tr>
+                                <td><a href="{% url 'fam' values.0 'interpro' %}">{{values.0}}</a></td>
+                                <td>{{values.1}}</td>
+                                <td>{{values.2}}</td>
+                                <td>{{values.3}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+                <div class="tab-pane" id="orange">
+
+                </div>
+
+                <div class="tab-pane" id="tab2">
+
+                    <h3> Locus annotation </h3>
+                    <div id="export_bouttons_groups">
+                        <a href="{% url 'get_fasta' %}{{fasta_url_ref}}" class="btn btn-success">Download fasta</a>
+                    <form name="circos_form" id="circos_form" action="{% url 'circos_main' %}" method="post">
+                    {% csrf_token %}
+                        <input type="hidden" name="reference_taxon" value="{{ reference_taxon }}">
+                        <input type="hidden" name="target_list" value="{{ target_circos_taxons }}">
+                        <input type="hidden" name="highlight" value="{{ locus_list }}">
+                        <button class="btn btn-success">Show on circular map</button>
+                    </form>
+
+                        <br/>
+                    </div>
+                    <table id="reference_genome" class="display">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th id="entete_locus">Orthogroup</th>
+                                <th id="entete_locus">Locus</th>
+                                <th style="width:10px">C</th>
+                                <th style="width:70px">COGn</th>
+                                <th style="width:55px">KO</th>
+                                <th style="width:260px">Pathways</th>
+                                <th style="width:230px">Modules</th>
+                                <th style="width:230px">Interpro</th>
+                                <th id="entete_gene">Gene</th>
+                                <th id="entete_n">nH</th>
+                                <th id="entete_n">nG</th>
+                                <th id="entete_n">TM</th>
+                                <th id="entete_n">SP</th>
+                                <th id="entete_product">Product</th>
+
+
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {%for values in locus2annot%}
+                            <tr>
+                                <td>{{values.0}}</td>
+                                <td>{{values.1}}</td>
+                                <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
+                                <td><a href="http://www.ncbi.nlm.nih.gov/protein/{{values.3}}" target="_top">{{locus_tag2cog_catego|keyvalue:values.2}}</a></td>
+                                {% with locus_tag2cog_name|keyvalue:values.2 as name %}
+                                    {% if name == '-' %}
+                                        <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
+                                    {% else %}
+                                        <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
+                                    {% endif %}
+                                {%endwith%}
+                                {% with locus_tag2ko|keyvalue:values.2 as oneko %}
+                                    {% if oneko == '-' %}
+                                        <td>{{locus_tag2ko|keyvalue:values.2}}</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                    {% else %}
+                                        <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
+                                        {% with ko2ko_pathways|keyvalue:oneko as name %}
+                                            {% if name == '-' %}
+                                                <td>-</td>
+                                            {% else %}
+                                                <td>{{name|safe}}</td>
+                                            {% endif %}
+                                        {%endwith%}
+                                        {% with ko2ko_modules|keyvalue:oneko as name %}
+                                            {% if name == '-' %}
+                                                <td>-</td>
+                                            {% else %}
+                                                <td>{{name|safe}}</td>
+                                            {% endif %}
+                                        {%endwith%}
+                                    {% endif %}
+
+
+                                {%endwith%}
+                                {% with locus2interpro|keyvalue:values.2 as interpro_data %}
+                                <td>
+                                    {% for one_interpro in interpro_data %}
+                                    {% if one_interpro.0 != '-' %}
+                                        <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
+                                    {%else%}
+                                        {{one_interpro.0}}
+                                    {%endif%}
+                                        {{one_interpro.1}} </br>
+                                    {% endfor %}
+                                    {%endwith%}
+                                </td>
+                                <td>{{values.7}}</td>
+                                <td>{{values.8}}</td>
+                                <td>{{values.9}}</td>
+                                <td>{{values.10}}</td>
+                                <td>{{values.11}}</td>
+                                <td>{{values.12}}</td>
+
+                            </tr>
+
+                            {%endfor%}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+
+            ''')
+
+    html = template.render(Context(locals()))#render_to_string(template, context=locals())
+
+    current_task.update_state(state='SECCESS',
+                            meta={'current': 3,
+                                'total': 3,
+                                'percent': 100,
+                                'description': "Done"})
+
+    return html
+
+
+
 @shared_task
 def extract_orthogroup_task(biodb, 
                             include,
@@ -56,7 +391,6 @@ def extract_orthogroup_task(biodb,
         html = template.render(Context(locals()))#render_to_string(template, context=locals())
         return html   
     
-    #print("get matrix")
     if not accessions:
         # get sub matrix and complete matrix
         mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
@@ -78,7 +412,7 @@ def extract_orthogroup_task(biodb,
                                                                   single_copy=single_copy,
                                                                   accessions=accessions,
                                                                   cache=cache)
-    #print("matrix OK")
+
     match_groups = mat.index.tolist()
 
     if len(match_groups) == 0:
@@ -109,7 +443,6 @@ def extract_orthogroup_task(biodb,
         # get count in complete database
         orthogroup2count_all = dict((mat_all > 0).sum(axis=1))
 
-        #print cog2count_all
         max_n = max(orthogroup2count_all.values())
 
         # GET max frequency for template
@@ -125,7 +458,6 @@ def extract_orthogroup_task(biodb,
                                                                                                       biodb,
                                                                                                       taxon_filter=include,
                                                                                                       accessions=accessions)
-        #print("done")
 
         if len(include) == 1:
             # get url to get single include taxon fasta
@@ -452,12 +784,9 @@ def run_circos(reference_taxon, target_taxons):
 
     record_list = []
     for accession in reference_accessions:
-
-        #print "reference accession", accession
         biorecord = cache.get(biodb + "_" + accession)
 
         if not biorecord:
-            #print biodb + "_" + accession, "NOT in memory"
             new_record = db.lookup(accession=accession)
             biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
                                                      id=new_record.id, name=new_record.name,
@@ -469,7 +798,6 @@ def run_circos(reference_taxon, target_taxons):
             cache.set(biodb + "_" + record_id, biorecord)
             record_list.append(biorecord)
         else:
-            #print biodb + "_" + accession, "IN memory"
             record_list.append(biorecord)
 
     ref_name = ''
@@ -494,7 +822,6 @@ def run_circos(reference_taxon, target_taxons):
         draft_data.append(gbk2circos.circos_fasta_draft_misc_features(biorecord))
 
     home_dir = os.path.dirname(__file__)
-    #print "home_dir", home_dir
     temp_location = os.path.join(home_dir, "../assets/circos/")
 
     #sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
@@ -505,11 +832,9 @@ def run_circos(reference_taxon, target_taxons):
                                                                          reference_taxon)
     try:
         sql_order = 'select taxon_2 from comparative_tables_core_orthogroups_identity_msa where taxon_1=%s order by identity desc;' % (reference_taxon)
-        #print sql_order
         ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
-        #print 'msa core identity order!'
+
     except:
-        #print('msa orthogroups_average_identity order!')
 
         # median identity
         sql_order = 'select taxon from (select taxon_2 as taxon, median_identity ' \
@@ -521,23 +846,19 @@ def run_circos(reference_taxon, target_taxons):
         # n shared orthogroups
         sql_order = 'select taxon_2 from comparative_tables_shared_orthogroups where taxon_1=%s order by n_shared_orthogroups DESC;' % (biodb,
                                                                                                                   reference_taxon)
-        print
         '''
         ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql_order)]
 
     '''
-    print tree
+
     t1 = ete3.Tree(tree)
 
     R = t1.get_midpoint_outgroup()
     t1.set_outgroup(R)
-    print t1
 
     node_list = []
     for node in t1.iter_leaves():
             node_list.append(node.name)
-
-    print 'original order', node_list
 
     reference_index = node_list.index(reference_taxon)
     ordered_taxons = node_list[reference_index:] + node_list[:reference_index][::-1]
@@ -554,7 +875,6 @@ def run_circos(reference_taxon, target_taxons):
                      ' where t1.name="%s" and t2.taxon_id=%s limit 1; ' % (biodb, 
                                                                            reference_taxon)
         reference_phylum = server.adaptor.execute_and_fetchall(sql_phylum,)[0][0]
-        #print(reference_phylum)
         
         try:
             sql = 'select locus_tag from blastnr_blastnr t1 ' \
@@ -697,14 +1017,11 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
 
     reference_accessions = manipulate_biosqldb.taxon_id2accessions(server, reference_taxon, biodb) # ["NC_009648"] NZ_CP009208 NC_016845
 
-    #print "reference_accessions", reference_accessions
     record_list = []
     for accession in reference_accessions:
-        #print "reference accession", accession
         biorecord = cache.get(biodb + "_" + accession)
 
         if not biorecord:
-            #print biodb + "_" + accession, "NOT in memory"
             new_record = db.lookup(accession=accession)
             biorecord = SeqRecord(Seq(new_record.seq.data, new_record.seq.alphabet),
                                                      id=new_record.id, name=new_record.name,
@@ -716,7 +1033,6 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
             cache.set(biodb + "_" + record_id, biorecord)
             record_list.append(biorecord)
         else:
-            #print biodb + "_" + accession, "In memory"
             record_list.append(biorecord)
 
     ref_name = ('').join(reference_accessions)
@@ -795,7 +1111,6 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
 
 
     circos_new_file = '/assets/circos/circos_clic.html'
-    #print settings.BASE_DIR + circos_new_file
     with open(settings.BASE_DIR + circos_new_file, "w") as f:
         f.write(circos_html)
 
@@ -806,7 +1121,6 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
     svg_file = "circos/%s.svg" % ref_name
     #a, b, c = shell_command.shell_command("mv %s %s" % (original_map_file, target_map_file))
     #a, b, c = shell_command.shell_command("cp %s %s" % (original_map_file_svg, target_map_file_svg))
-    #print a,b,c
     map_name = ref_name
 
     template = Template('''
@@ -1099,8 +1413,6 @@ def TM_tree_task(biodb,
     sql_tree = 'select phylogeny from biosqldb_phylogenies where orthogroup="%s"' % (orthogroup)
     tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
 
-    print(locus2TM_data)
-
     t, ts, leaf_number = ete_motifs.draw_TM_tree(tree, locus2TM_data)
     path = settings.BASE_DIR + '/assets/temp/TM_tree.svg'
     asset_path = '/temp/TM_tree.svg'
@@ -1169,7 +1481,6 @@ def pfam_tree_task(biodb,
                                     'percent': 50,
                                     'description': "Plotting TM tree"})
 
-    #print ('pfam tree %s -- %s' % (biodb, orthogroup))
     server, db = manipulate_biosqldb.load_db(biodb)
 
     #sql_locus2protein_id = 'select locus_tag, protein_id from orthology_detail where orthogroup="%s"' % (biodb, orthogroup)
@@ -1181,14 +1492,14 @@ def pfam_tree_task(biodb,
     home_dir = os.path.dirname(__file__)
 
     alignment_path = os.path.join(home_dir, alignment_fasta)
-    #print("get data")
+
     if os.path.exists(alignment_path):
         #pass
         locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb, aa_alignment=False) # alignment_path
     else:
 
         locus2pfam_data = ete_motifs.get_pfam_data(orthogroup, biodb, aa_alignment=False)
-    #print("done")
+
     motif_count = {}
     for data in locus2pfam_data.values():
         for motif in data:
@@ -1200,7 +1511,6 @@ def pfam_tree_task(biodb,
             except:
                 print ("motif", motif)
 
-    #print("get tree")
     sql_tree = 'select phylogeny from biosqldb_phylogenies where orthogroup="%s"' % (orthogroup)
 
     try:
@@ -1213,7 +1523,7 @@ def pfam_tree_task(biodb,
     #sql = 'select taxon_id, family from genomes_classification;'
 
     #taxon_id2family = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    #print("draw tree")
+
     t, ts, leaf_number = ete_motifs.draw_pfam_tree(tree, locus2pfam_data, False, taxon_id2family=False)
     path = settings.BASE_DIR + '/assets/temp/pfam_tree.svg'
     asset_path = '/temp/pfam_tree.svg'
@@ -1405,7 +1715,7 @@ def plot_heatmap_task(biodb,
                                                                         cache=cache)
         taxon_list = [i.split("_")[1] for i in list(mat.columns.values)]
         labels = [taxon2description[i] for i in taxon_list]
-        #print(labels)
+
     else:
         accession2description = manipulate_biosqldb.accession2description(server,biodb)
         mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
@@ -1416,7 +1726,7 @@ def plot_heatmap_task(biodb,
                                                                     ratio=1/float(len(targets)),
                                                                     single_copy=False,
                                                                     accessions=accessions,
-                                                                        cache=cache)
+                                                                    cache=cache)
         accession_list = list(mat.columns.values)
         labels = [accession2description[i] for i in accession_list]
 
@@ -1524,7 +1834,7 @@ def KEGG_map_ko_task(biodb,
             ' inner join enzyme_seqfeature_id2ko E on B.ko_id=E.ko_id ' \
             ' group by B.ko_id, E.seqfeature_id) aa ' \
             ' inner join orthology_detail bb on aa.seqfeature_id=bb.seqfeature_id;' % (pathway_id)
-    #print sql
+
     orthogroup_data = server.adaptor.execute_and_fetchall(sql,)
     ko2orthogroups = {}
     orthogroup_list = []
@@ -1553,11 +1863,10 @@ def KEGG_map_ko_task(biodb,
         path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % map_name
         asset_path = '/temp/KEGG_tree_%s.png' % map_name
         tree.render(path, dpi=1200, tree_style=style)
-        print (path)
 
         path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.png' % map_name
         asset_path2 = '/temp/KEGG_tree_%s_complete.png' % map_name
-        print (path2)
+
         tree2.render(path2, dpi=800, tree_style=style2)
 
     else:
@@ -1568,7 +1877,6 @@ def KEGG_map_ko_task(biodb,
 
         path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % map_name
         asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % map_name
-        print (path2)
         tree2.render(path2, dpi=800, tree_style=style2)
 
     sql = 'select bb.ko_accession, count(*) from (select C.ko_accession, E.seqfeature_id from  ' \
@@ -1577,7 +1885,6 @@ def KEGG_map_ko_task(biodb,
             ' inner join enzyme_ko_annotation as C on B.ko_id=C.ko_id ' \
             ' inner join enzyme_seqfeature_id2ko E on B.ko_id=E.ko_id ' \
             ' group by B.ko_id,seqfeature_id) bb group by ko_accession;' % (map_name)
-    #print sql
 
     ko2freq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 

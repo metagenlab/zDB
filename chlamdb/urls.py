@@ -8,6 +8,9 @@ from django.conf import settings
 from django.urls import reverse
 from django.contrib.sitemaps import Sitemap
 from django.views import static
+from django.views.generic.base import RedirectView
+
+favicon_view = RedirectView.as_view(url='/assets/favicon.ico', permanent=True)
 
 class ViewSitemap(Sitemap):
     """Reverse 'static' views for XML sitemap."""
@@ -55,6 +58,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^ko2fasta/([a-zA-Z0-9_]+)/', views.ko2fasta, name="ko2fasta"),
                        url(r'^pfam2fasta/([a-zA-Z0-9_]+)/', views.pfam2fasta, name="pfam2fasta"),
                        url(r'^venn_candidate_effectors/$', views.venn_candidate_effectors, name="venn_candidate_effectors"),
+                       url(r'^effector_predictions/([a-zA-Z0-9_]+)', views.effector_predictions, name="effector_predictions"),
                        url(r'^plot_heatmap/([a-zA-Z0-9_\-]+)', views.plot_heatmap, name="plot_heatmap"),
                        url(r'^get_newick_tree/([a-zA-Z0-9_\-]+)/([a-zA-Z0-9_\-]+)', views.get_newick_tree, name="get_newick_tree"),
                        url(r'^get_orthogroup_fasta/([a-zA-Z0-9_\-]+)/([a-zA-Z0-9_\-]+)', views.get_orthogroup_fasta, name="get_orthogroup_fasta"),
@@ -107,6 +111,7 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^pairwiseCDS_length/$', views.pairwiseCDS_length, name="pairwiseCDS_length"),
                        url(r'^sunburst/([a-zA-Z0-9_\.]+)$', views.sunburst, name="sunburst"),
                        url(r'^fam/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)$', views.fam, name="fam"),
+                       url(r'^fam_interpro/([a-zA-Z0-9_\.\:]+)/([a-zA-Z0-9_\.]+)$', views.fam_interpro, name="fam_interpro"),
                        url(r'^blastnr/([a-zA-Z0-9_\.\-]+)$', views.blastnr, name="blastnr"),
                        url(r'^blastswissprot/([a-zA-Z0-9_\.\-]+)$', views.blastswissprot, name="blastswissprot"),
                        url(r'^plot_region/$', views.plot_region, name="plot_region"),
@@ -166,7 +171,9 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^primer_search/$', views.primer_search, name="primer_search"),
                        url(r'^choose_db/$', views.choose_db, name="choose_db"),
                        url(r'^circos2genomes/$', views.circos2genomes, name="circos2genomes"),
-                       url(r'^download_all_COG/$', views.download_all_COG, name="download_all_COG"),
+                       url(r'^download_COG/$', views.download_COG, name="download_COG"),
+                       url(r'^pmid_associations/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)$', views.pmid_associations, name="pmid_associations"),
+                       url(r'^pmid_associations_orthogroups/([a-zA-Z0-9_\.]+)/([a-zA-Z0-9_\.]+)$', views.pmid_associations_orthogroups, name="pmid_associations_orthogroups"),
                        url(r'^metabo_overview/$', views.metabo_overview, name="metabo_overview"),
                        url(r'^kegg_module/$', views.kegg_module, name="kegg_module"),
                        url(r'^kegg_module_subcat$', views.kegg_module_subcat, name="kegg_module_subcat"),
@@ -199,5 +206,6 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^get_record/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', views.get_record, name="get_record"),
                        url(r'^get-task-info/', views.get_task_info),
                        url(r'^docs/(?P<path>.*)$', static.serve, {'document_root': settings.DOCS_ROOT}),
+                       url(r'^favicon\.ico$', favicon_view),
                        url(r'^.*$', views.home, name="home"),
 ]
