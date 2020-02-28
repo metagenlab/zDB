@@ -39,12 +39,16 @@ def perform_search(request,
         
             # try to match synonymous table
             sql_sy = f'select t1.db_name,t1.accession,t2.orthogroup,t2.locus_tag,t2.start,t2.stop,t2.strand,t2.gene, t2.orthogroup_size,t2.n_genomes,t2.TM,t2.SP,t2.product,t2.organism ' \
-                    f' from biosqldb.cross_references_{biodb} t1 ' \
-                    f' inner join orthology_detail_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                    f' from biosqldb_cross_references t1 ' \
+                    f' inner join orthology_detail t2 on t1.seqfeature_id=t2.seqfeature_id ' \
                     f' where t1.accession="{search_term}" ' \
                     f' and db_name not in ("STRING", "KEGG", "KO", "eggNOG") group by t1.seqfeature_id limit 200;'
 
-            raw_search = server.adaptor.execute_and_fetchall(sql_sy)
+            try:
+                raw_search = server.adaptor.execute_and_fetchall(sql_sy)
+            except:
+                # case when no synonymous table was setup
+                raw_search =[]
             if len(raw_search) == 0:
                 synonymous = False
             elif len(raw_search) == 1:
@@ -73,12 +77,11 @@ def perform_search(request,
         sql = 'SELECT %s, ' \
                 ' MATCH (gene) AGAINST ("%s") AS rel1, ' \
                 ' MATCH (product) AGAINST ("%s") AS rel2, ' \
-                ' MATCH (organism) AGAINST ("%s") AS rel3 FROM orthology_detail_%s t1 ' \
+                ' MATCH (organism) AGAINST ("%s") AS rel3 FROM orthology_detail t1 ' \
                 ' WHERE MATCH (gene,product,organism) AGAINST ("%s" IN BOOLEAN MODE) ORDER BY (rel1)+(rel2*0.5)+(rel3*10) DESC limit 100;' % (columns,
                                                                                                                             search_term,
                                                                                                                             search_term,
                                                                                                                             search_term,
-                                                                                                                            biodb,
                                                                                                                             search_term)
 
         raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
@@ -95,19 +98,23 @@ def perform_search(request,
 
 
     # CREATE FULLTEXT INDEX ezf ON enzyme.enzymes_dat(value);
-    sql = 'select A.ec, A.value from (select ec,value from enzyme.enzymes_dat as t1 inner join enzyme.enzymes as t2 ' \
-            ' on t1.enzyme_dat_id=enzyme_id WHERE MATCH(value) AGAINST("%s" IN NATURAL LANGUAGE MODE) group by ec) A inner join comparative_tables.EC_%s' \
-            ' as B on A.ec=B.id' % (search_term, biodb)
-
-    raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
+    sql = 'select A.ec, A.value from (select ec,value from enzyme_enzymes_dat as t1 ' \
+          ' inner join enzyme_enzymes as t2 ' \
+          ' on t1.enzyme_dat_id=enzyme_id WHERE MATCH(value) AGAINST("%s" IN NATURAL LANGUAGE MODE) group by ec) A inner join comparative_tables_EC' \
+          ' as B on A.ec=B.id' % (search_term)
+    try:
+        raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
+    except:
+        # case when no enzyme table was setup
+        raw_data_EC = []
     if len(raw_data_EC) == 0:
         raw_data_EC = False
 
     # CREATE FULLTEXT INDEX koaf ON enzyme.ko_annotation_v1(definition);
     # filter KO absent from DB
     # CREATE FULLTEXT INDEX ko_full ON ko_annotation_v1(ko_id,name,definition,EC);
-    sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme.ko_annotation_v1 ' \
-            'WHERE MATCH(ko_id,name,definition,EC) AGAINST("%s" IN NATURAL LANGUAGE MODE)) A inner join comparative_tables.ko_%s as B on A.ko_id=B.id' % (search_term, biodb)
+    sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme_ko_annotation_v1 ' \
+            'WHERE MATCH(ko_id,name,definition,EC) AGAINST("%s" IN NATURAL LANGUAGE MODE)) A inner join comparative_tables_ko as B on A.ko_id=B.id' % (search_term)
     try:
         raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
     except:
@@ -116,45 +123,66 @@ def perform_search(request,
         raw_data_ko = False
 
     # CREATE FULLTEXT INDEX cogf ON COG.cog_names_2014(description);
-    sql = ' select COG_name,code,t3.description,t1.description from COG.cog_names_2014 t1 ' \
-            ' inner join COG.cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
-            ' inner join COG.code2category t3 on t2.category_id=t3.category_id ' \
+    sql = ' select COG_name,code,t3.description,t1.description from COG_cog_names_2014 t1 ' \
+            ' inner join COG_cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
+            ' inner join COG_code2category t3 on t2.category_id=t3.category_id ' \
             ' WHERE MATCH(t1.description) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (search_term)
-    raw_data_cog = []# :TODO server.adaptor.execute_and_fetchall(sql,)
+    try:
+        raw_data_cog = []# TODO server.adaptor.execute_and_fetchall(sql,)
+    except:
+        # case when no COG table was setup
+        raw_data_cog = []
     if len(raw_data_cog) == 0:
         raw_data_cog = False
 
     # CREATE FULLTEXT INDEX ipf ON interpro.signature(signature_description);
     # CREATE FULLTEXT INDEX ipf ON interpro.entry(description);
-    sql = 'select analysis_name,signature_accession,signature_description,t3.name,t3.description from interpro.signature t1 ' \
-            ' inner join interpro.analysis t2 on t1.analysis_id=t2.analysis_id ' \
-            ' left join interpro.entry t3 on t1.interpro_id=t3.interpro_id ' \
+    sql = 'select analysis_name,signature_accession,signature_description,t3.name,t3.description from interpro_signature t1 ' \
+            ' inner join interpro_analysis t2 on t1.analysis_id=t2.analysis_id ' \
+            ' left join interpro_entry t3 on t1.interpro_id=t3.interpro_id ' \
             ' WHERE MATCH(t3.description) AGAINST("%s" IN NATURAL LANGUAGE MODE) limit 100;' % (search_term)
-    raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
+    try:  
+        raw_data_interpro = server.adaptor.execute_and_fetchall(sql,)
+    except:
+        # case when no interpro data fas imported
+        raw_data_interpro = []
     if len(raw_data_interpro) == 0:
         raw_data_interpro = False
 
     # CREATE FULLTEXT INDEX modf ON enzyme.kegg_module_v1(description, module_sub_cat);
-    sql = 'select module_name,module_sub_cat,module_sub_sub_cat,description from enzyme.kegg_module_v1 ' \
+    sql = 'select module_name,module_sub_cat,module_sub_sub_cat,description from enzyme_kegg_module_v1 ' \
             ' where MATCH(description,module_sub_cat) AGAINST("%s" IN BOOLEAN MODE)' % (search_term)
-    raw_data_module = server.adaptor.execute_and_fetchall(sql,)
+    try:
+        raw_data_module = server.adaptor.execute_and_fetchall(sql,)
+    except:
+        # case when no KO data was setup
+        raw_data_module = []
+        
     if len(raw_data_module) == 0:
         raw_data_module = False
 
     # CREATE FULLTEXT INDEX kegf ON enzyme.kegg_pathway(description, pathway_category);
-    sql = 'select pathway_name,pathway_category,description from enzyme.kegg_pathway ' \
+    sql = 'select pathway_name,pathway_category,description from enzyme_kegg_pathway ' \
             ' where MATCH(description, pathway_category) AGAINST("%s" IN BOOLEAN MODE) ' % (search_term)
-    raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
+    try:
+        raw_data_pathway = server.adaptor.execute_and_fetchall(sql,)
+    except:
+        # case when no KO data was setup
+        raw_data_pathway = []
     if len(raw_data_pathway) == 0:
         raw_data_pathway = False
     
     # ALTER TABLE pmid2data_stringdb ADD FULLTEXT (title,journal,year,authors);;
     sql1 = 'select * from (SELECT pmid,title, MATCH (title) AGAINST ("%s" IN BOOLEAN MODE) as score ' \
-            ' FROM string.pmid2data_paperblast )A where score > 0 order by score DESC limit 20;' % (search_term)
-    sql2 = 'SELECT pmid,title,year,journal,authors from string.pmid2data_stringdb where MATCH(title,journal,year,authors)' \
+            ' FROM string_pmid2data_paperblast )A where score > 0 order by score DESC limit 20;' % (search_term)
+    sql2 = 'SELECT pmid,title,year,journal,authors from string_pmid2data_stringdb where MATCH(title,journal,year,authors)' \
             ' AGAINST ("%s" IN BOOLEAN MODE) > 0 limit 50;' % (search_term)
     #raw_data_pmid_paperblast2title = server.adaptor.execute_and_fetchall(sql1,)
-    raw_data_pmid = list(server.adaptor.execute_and_fetchall(sql2,))
+    try:
+        raw_data_pmid = list(server.adaptor.execute_and_fetchall(sql2,))
+    except:
+        # case when no pmid data was setup
+        raw_data_pmid = []
     for n,row in enumerate(raw_data_pmid):
         raw_data_pmid[n] = [str(i) for i in row]
     pmid2title = {}
@@ -169,11 +197,11 @@ def perform_search(request,
 
         pmid_list = [i[0] for i in raw_data_pmid]
 
-        sql = 'select A.pmid,count(*) as n from (select t1.pmid,orthogroup_id from string.pmid2data_stringdb t1 ' \
-                ' inner join string.string_protein2pmid t2 on t1.pmid=t2.pmid ' \
-                ' inner join string.seqfeature_id2string_protein_mapping t3 on t2.string_protein_id=t3.string_protein_id ' \
-                ' inner join orthology.seqfeature_id2orthogroup_%s t4 on t3.seqfeature_id=t4.seqfeature_id ' \
-                ' where t1.pmid in (%s) group by t1.pmid,orthogroup_id) A group by pmid;' % (biodb, ','.join(pmid_list))
+        sql = 'select A.pmid,count(*) as n from (select t1.pmid,orthogroup_id from string_pmid2data_stringdb t1 ' \
+                ' inner join string_string_protein2pmid t2 on t1.pmid=t2.pmid ' \
+                ' inner join string_seqfeature_id2string_protein_mapping t3 on t2.string_protein_id=t3.string_protein_id ' \
+                ' inner join orthology_seqfeature_id2orthogroup_%s t4 on t3.seqfeature_id=t4.seqfeature_id ' \
+                ' where t1.pmid in (%s) group by t1.pmid,orthogroup_id) A group by pmid;' % (','.join(pmid_list))
 
         pmid2n_homologs = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
