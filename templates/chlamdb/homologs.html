@@ -43,17 +43,25 @@
                                           
                                           <th>Locus tag</th>
                                           {% if locus_tag %}
-                                            <th>ID(%)</th>
+                                              <th>ID(%)</th>
                                           {% endif %}
-                                          <th>Uniprot Status</th>
-                                          <th>Annot. score</th>
-                                          <th>Gene (uniprot/refseq)</th>
+                                          {% if locus2uniprot_annotation %}
+                                              <th>Uniprot Status</th>
+                                              <th>Annot. score</th>
+                                              <th>Gene (uniprot/refseq)</th>
+                                          {% else %}
+                                              <th>Gene</th>
+                                          {% endif %}
                                           <th>TM</th>
                                           <th>SP</th>
                                           <th>Organism</th>
-                                          <th>Product (uniprot/refseq)</th>
-                                          <th>Function</th>
-
+                                          {% if locus2uniprot_annotation %}
+                                              <th>Product (uniprot/refseq)</th>
+                                              <th>Function</th>
+                                          {% else %}
+                                              <th>Product</th>
+                                          {% endif %}                        
+                                          
                                       </tr>
                                   </thead>
                                   <tbody>
@@ -67,26 +75,33 @@
                                               <td>{{values.0}}</td>
                                               <td><a href="{% url 'locusx' values.1 True %}" target="_top">{{values.1}}</a></td>
                                               {% if locus_tag %}
-                                                  <td>{{values.14}}</td> <!-- identity -->
+                                                  <td>{{values.9}}</td> <!-- identity -->
                                               {% endif %}
-                                              {% if values.12 == 'reviewed' or values.12 == '1' %}
-                                                  <td style="color:red">RW </td>  <!-- review <img src="{{ STATIC_URL }}scales/reviewed.gif" id="rw">-->
-                                              {%else%}
-                                                  <td>UR </td> <!-- review <img src="{{ STATIC_URL }}scales/unreviewed.gif" id="uw">-->
-                                              {%endif%}
-                                              <td>{{values.11}}</td> <!-- annotation score -->
-
-
-                                              <td>{{values.2}} <br> {{values.10}}</td> <!-- gene -->
+                                              {% if locus2uniprot_annotation %}
+                                                  {% if values.12 == 'reviewed' or values.12 == '1' %}
+                                                      <td style="color:red">RW </td>  <!-- review <img src="{{ STATIC_URL }}scales/reviewed.gif" id="rw">-->
+                                                  {%else%}
+                                                      <td>UR</td> <!-- review <img src="{{ STATIC_URL }}scales/unreviewed.gif" id="uw">-->
+                                                  {%endif%}
+                                                  <td>{{values.11}}</td> <!-- annotation score -->
+                                              {%endif%}    
+                                              
+                                              {% if locus2uniprot_annotation %}
+                                                  <td>{{values.2}} <br> {{values.10}}</td> <!-- gene -->
+                                              {%else%} <!-- only basic anotation-->
+                                                  <td>{{values.2}} <br>
+                                              {% endif %}
                                               <td>{{values.7}}</td> <!-- tm -->
                                               <td>{{values.8}}</td> <!-- sp -->
                                               <td>{{values.4}}</td> <!-- organism -->
-                                              <td>{{values.13}} <br> {{values.3}}</td> <!-- gene -->
-                                              <td>{{values.9}}</td> <!-- gene -->
+                                              {% if locus2uniprot_annotation %}
+                                                  <td>{{values.3}} <br> {{values.13}}</td> <!-- gene -->
+                                                  <td>{{values.9}}</td> <!-- gene -->
+                                              {%else%} <!-- only basic anotation-->
+                                                  <td>{{values.3}} <br>
+                                              {% endif %}
+                                              
                                           </tr>
-
-                                          
-
 
                                       {% endfor %}
                                   </tbody>

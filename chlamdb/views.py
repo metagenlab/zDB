@@ -2138,13 +2138,13 @@ def locusx(request, locus=None, menu=True):
         
         try:
             locus = int(locus)
-            sql = 'select locus_tag from custom_tables.locus2seqfeature_id_%s where seqfeature_id=%s' % (biodb,
-                                                                                                            locus)
+            sql = 'select locus_tag from custom_tables_locus2seqfeature_id where seqfeature_id=%s' % (locus)
             locus = server.adaptor.execute_and_fetchall(sql,)[0][0]
         except:
             pass
         
-        sql0 = 'select locus_tag from custom_tables.seqfeature_id2old_locus_tag_%s t1 inner join annotation.seqfeature_id2locus_%s t2 on t1.seqfeature_id=t2.seqfeature_id where old_locus_tag="%s" ' % (biodb, biodb, locus)
+        sql0 = 'select locus_tag from custom_tables_seqfeature_id2old_locus_tag t1 ' \
+               ' inner join annotation_seqfeature_id2locus t2 on t1.seqfeature_id=t2.seqfeature_id where old_locus_tag="%s" ' % (locus)
 
         try:
             data = server.adaptor.execute_and_fetchall(sql0, )[0][0]
@@ -2152,15 +2152,14 @@ def locusx(request, locus=None, menu=True):
             locus = data
             input_type = 'locus_tag'
         except IndexError:
-            sql0 = 'select locus_tag from orthology_detail_%s where (locus_tag="%s" or protein_id="%s")' % (biodb,
-                                                                                                            locus,
-                                                                                                            locus)
+            sql0 = 'select locus_tag from orthology_detail where (locus_tag="%s" or protein_id="%s")' % (locus,
+                                                                                                         locus)
         try:
             locus = server.adaptor.execute_and_fetchall(sql0, )[0][0]
             input_type = 'locus_tag'
         except IndexError:
 
-            sql1 = 'select orthogroup from orthology_detail_%s where orthogroup="%s"' % (biodb, locus)
+            sql1 = 'select orthogroup from orthology_detail where orthogroup="%s"' % (locus)
             try:
                 locus = server.adaptor.execute_and_fetchall(sql1, )[0][0]
                 input_type = 'orthogroup'
@@ -2315,7 +2314,7 @@ def locusx(request, locus=None, menu=True):
 
             sql30 = f'select paperblast_id from string.seqfeature_id2paperblast where seqfeature_id={seqfeature_id};'
 
-            sql31 = f'select * from custom_tables.seqfeature_id2pdb_BBH_{biodb} where seqfeature_id={seqfeature_id};'
+            sql31 = f'select * from custom_tables_seqfeature_id2pdb_BBH where seqfeature_id={seqfeature_id};'
 
             sql32 = f'select distinct ec,value from enzyme.seqfeature_id2ec_{biodb} t1 ' \
                     f' inner join enzyme.enzymes t2 on t1.ec_id=t2.enzyme_id ' \
@@ -8401,21 +8400,31 @@ def homologs(request, orthogroup, locus_tag=False):
 
         server, db = manipulate_biosqldb.load_db(biodb)
 
-        sql_groups = 'select A.*,C.comment_function,C.gene,D.annotation_score,D.uniprot_status,C.recommendedName_fullName ' \
-                    ' from (select locus_tag, gene,product,organism,orthogroup_size,n_genomes,TM,SP from ' \
-                    ' orthology_detail where orthogroup="%s") A ' \
-                    ' inner join custom_tables_locus2seqfeature_id B on A.locus_tag=B.locus_tag ' \
-                    ' left join custom_tables_uniprot_annotation as C on B.seqfeature_id=C.seqfeature_id ' \
-                    ' left join custom_tables_uniprot_id2seqfeature_id as D on B.seqfeature_id=D.seqfeature_id;' % (orthogroup)
+        sql_main_annot = 'select locus_tag, gene,product,organism,orthogroup_size,n_genomes,TM,SP from ' \
+                         ' orthology_detail where orthogroup="%s"' % (orthogroup)
 
-        homologues = list(server.adaptor.execute_and_fetchall(sql_groups, ))
+        sql_uniprot_annot =  'select C.comment_function,C.gene,D.annotation_score,D.uniprot_status,C.recommendedName_fullName ' \
+                             ' from (select locus_tag from ' \
+                             ' orthology_detail where orthogroup="%s") A ' \
+                             ' inner join custom_tables_locus2seqfeature_id B on A.locus_tag=B.locus_tag ' \
+                             ' left join custom_tables_uniprot_annotation as C on B.seqfeature_id=C.seqfeature_id ' \
+                             ' left join custom_tables_uniprot_id2seqfeature_id as D on B.seqfeature_id=D.seqfeature_id;' % (orthogroup)
+                             
+        sql_uniprot_annot = 'select * from orthology_orthogroup t1 ' \
+                            ' inner join orthology_seqfeature_id2orthogroup t2 on t1.orthogroup_id=t2.orthogroup_id ' \
+                            ' left join custom_tables_uniprot_annotation t3 on t2.seqfeature_id=t3.seqfeature_id ' \
+                            ' left join custom_tables_uniprot_id2seqfeature_id as t4 on t2.seqfeature_id=t4.seqfeature_id'
+
+        homologues = list(server.adaptor.execute_and_fetchall(sql_main_annot, ))
+        
+        try:
+            locus2uniprot_annotation = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_uniprot_annot, ))
+        except:
+            locus2uniprot_annotation = False
+        
         for i, row in enumerate(homologues):
             homologues[i] = ['-' if v is None else v for v in list(row)]
 
-
-        homologues = list(server.adaptor.execute_and_fetchall(sql_groups, ))
-        for i, row in enumerate(homologues):
-            homologues[i] = ['-' if v is None else v for v in list(row)]
 
         if locus_tag:
             # add identity column
@@ -10627,10 +10636,6 @@ def search(request):
     from chlamdb.biosqldb import search
 
     biodb = settings.BIODB
-
-    server = manipulate_biosqldb.load_db()
-
-    print("request type --- ", request.method)
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
