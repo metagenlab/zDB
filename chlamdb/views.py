@@ -8409,7 +8409,8 @@ def homologs(request, orthogroup, locus_tag=False):
                              ' inner join custom_tables_locus2seqfeature_id B on A.locus_tag=B.locus_tag ' \
                              ' left join custom_tables_uniprot_annotation as C on B.seqfeature_id=C.seqfeature_id ' \
                              ' left join custom_tables_uniprot_id2seqfeature_id as D on B.seqfeature_id=D.seqfeature_id;' % (orthogroup)
-                             
+        
+        # TODO: deal with uniprot data properly  
         sql_uniprot_annot = 'select * from orthology_orthogroup t1 ' \
                             ' inner join orthology_seqfeature_id2orthogroup t2 on t1.orthogroup_id=t2.orthogroup_id ' \
                             ' left join custom_tables_uniprot_annotation t3 on t2.seqfeature_id=t3.seqfeature_id ' \
@@ -12236,22 +12237,27 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
         taxon2locus_tag_closest[str(taxon_id)] = orthogroup_or_locus
         taxon2identity_closest[str(taxon_id)] = 100
 
-    all_groups_profile_eucl, cutoff_eucl, too_much_hits_eucl = string_networks.successive_cutof_search(biodb,
-                                                                                                        "eucl",
+    try: # TODO deal with missing interactions tables
+        all_groups_profile_eucl, cutoff_eucl, too_much_hits_eucl = string_networks.successive_cutof_search(biodb,
+                                                                                                            "eucl",
+                                                                                                            orthogroup,
+                                                                                                            2.2,
+                                                                                                            2,
+                                                                                                            1,
+                                                                                                            0)
+    except:
+        all_groups_profile_eucl, cutoff_eucl, too_much_hits_eucl = [], None, None
+    try: # TODO deal with missing interactions tables
+        all_groups_profile_jac, cutoff_jac, too_much_hits_jac = string_networks.successive_cutof_search(biodb,
+                                                                                                        "jac",
                                                                                                         orthogroup,
-                                                                                                        2.2,
-                                                                                                        2,
-                                                                                                        1,
+                                                                                                        0.15,
+                                                                                                        0.1,
+                                                                                                        0.05,
                                                                                                         0)
-
-    all_groups_profile_jac, cutoff_jac, too_much_hits_jac = string_networks.successive_cutof_search(biodb,
-                                                                                                    "jac",
-                                                                                                    orthogroup,
-                                                                                                    0.15,
-                                                                                                    0.1,
-                                                                                                    0.05,
-                                                                                                    0)
-    
+    except:
+        all_groups_profile_jac, cutoff_jac, too_much_hits_jac = [], None, None
+        
     profile_match_jac = False
     profile_match_eucl = False
     if len(all_groups_profile_jac) > 1:
