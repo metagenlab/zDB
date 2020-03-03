@@ -9818,6 +9818,10 @@ def paralogs(request):
 
 
 def species_specific_groups(request):
+    
+    print("species_specific_groups -------------")
+    
+    
     biodb = settings.BIODB
 
     from ete3 import Tree,TreeStyle
@@ -9838,9 +9842,16 @@ def species_specific_groups(request):
     R = tree.get_midpoint_outgroup()
     tree.set_outgroup(R)
 
-    sql = 'select taxon_id, family_description from custom_tables.taxonomy_%s' % biodb
-    sql2 = 'select family_description, taxon_id from custom_tables.taxonomy_%s' % biodb
+    print("sql")
+    sql = 'select distinct taxon_id,species from taxid2species_%s t1 ' \
+          ' inner join species_curated_taxonomy_%s t2 on t1.species_id=t2.species_id;' % (biodb, 
+                                                                                          biodb)
+    sql2 = 'select species, taxon_id from custom_tables.taxonomy_%s' % biodb
+    sql2 = 'select distinct family,taxon_id from taxid2species_%s t1 ' \
+          ' inner join species_curated_taxonomy_%s t2 on t1.species_id=t2.species_id;' % (biodb, 
+                                                                                          biodb)
     taxon_id2species_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    print("ok")
     species_id2taxon_id = {}
     data = server.adaptor.execute_and_fetchall(sql2,)
     for row in data:
@@ -9871,46 +9882,59 @@ def species_specific_groups(request):
                 node.name = desc_list[0]
             n+=1
 
+    
+    
     node2labels = tree.get_cached_content(store_attr="name")
+    print("node2labels", node2labels)
 
     def collapsed_leaf(node):
         if len(node2labels[node]) == 1:
             return True
         else:
             return False
+    
     species_id2count_unique = {}
+    
+    print("loop dico")
+    
     for species in species_id2taxon_id:
-        if 'Akkermansia' in species:
-            species_id2count_unique[species] = [0]
-            continue
+        #if 'Akkermansia' in species:
+        #    species_id2count_unique[species] = [0]
+        #    continue
         species_taxons = species_id2taxon_id[species]
         other_taxons = set(all_taxons) - set(species_taxons)
+        print("extract subtable")
+        '''
         mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                  "orthology",
-                                                                  "orthogroup",
-                                                                  species_taxons,
-                                                                  other_taxons,
-                                                                  ratio=1/float(len(species_taxons)),
-                                                                  single_copy=False,
-                                                                  accessions=False,
-                                                                              cache=cache)
+                                                                     "orthology",
+                                                                     "orthogroup",
+                                                                     species_taxons,
+                                                                     other_taxons,
+                                                                     ratio=1/float(len(species_taxons)),
+                                                                     single_copy=False,
+                                                                     accessions=False,
+                                                                     cache=cache)
 
-        species_id2count_unique[species] = [len(mat)]
+        '''
+        species_id2count_unique[species] = [1]
 
+    print("writing modified tree")
+    print("species_id2count_unique", species_id2count_unique)
 
     t2 = Tree(tree.write(is_leaf_fn=collapsed_leaf))
 
+    print("plotting tree")
 
     tree1, style1 = phylo_tree_bar.plot_tree_barplot(t2,
-                      species_id2count_unique,
-                      ['unique'],
-                      taxon2set2value_heatmap=False,
-                      header_list2=False,
-                      presence_only=True,
-                      biodb="chlamydia_04_16",
-                      column_scale=True,
-                      general_max=False)
-
+                    species_id2count_unique,
+                    ['unique'],
+                    taxon2set2value_heatmap=False,
+                    header_list2=False,
+                    presence_only=True,
+                    biodb=biodb,
+                    column_scale=True,
+                    general_max=False)
+    print("ok")
     #t.render("test2.svg", tree_style=ts)
     path = settings.BASE_DIR + '/assets/temp/tree.svg'
     asset_path = '/temp/tree.svg'

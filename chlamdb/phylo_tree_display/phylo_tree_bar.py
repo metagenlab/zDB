@@ -580,7 +580,10 @@ def plot_tree_barplot(tree_file,
         try:
             val_list = taxon2value_list_barplot[lf.name]
         except:
-            val_list = taxon2value_list_barplot[int(lf.name)]
+            try:
+                val_list = taxon2value_list_barplot[int(lf.name)]
+            except:
+                val_list = [0]
         col_add=0
         for col, value in enumerate(val_list):
 
