@@ -243,12 +243,13 @@ def get_locus2taxon2n_paralogs(biodb, locus_tag_list):
 
     for locus in locus_tag_list:
 
-        orthogroup_sql = 'select orthogroup from chlamdb.biosqldb.orthology_detail_%s where locus_tag="%s";' % (biodb,locus)
+        orthogroup_sql = 'select orthogroup from orthology_detail_%s where locus_tag="%s";' % (biodb,locus)
 
         orthogroup = server.adaptor.execute_and_fetchall(orthogroup_sql,)[0][0]
 
-        sql = 'select taxon_id,count(*) from chlamdb.biosqldb.orthology_detail_%s where orthogroup="%s" group by taxon_id;' % (biodb,
-                                                                                                                       orthogroup)
+        sql = 'select taxon_id,count(*) from orthology_detail_%s where orthogroup="%s" group by taxon_id;' % (biodb,
+                                                                                                              orthogroup)
+        print(sql)
         taxon_id2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
         for taxon in ordered_taxons:
@@ -1177,7 +1178,10 @@ def multiple_profiles_heatmap(biodb,
             lf.add_face(n, col, position="aligned")
 
         #lf.name = taxon_id2organism_name[lf.name]
-        n = TextFace(taxon_id2organism_name[lf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
+        try:
+            n = TextFace(taxon_id2organism_name[lf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
+        except:
+            n = TextFace(lf.name, fgcolor = "black", fsize = 12, fstyle = 'italic')
         lf.add_face(n, 0)
         head=False
     for n in t1.traverse():
