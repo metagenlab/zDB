@@ -9821,81 +9821,27 @@ def species_specific_groups(request):
     
     print("species_specific_groups -------------")
     
-    
     biodb = settings.BIODB
 
     from ete3 import Tree,TreeStyle
     from chlamdb.biosqldb import manipulate_biosqldb
     from chlamdb.biosqldb import biosql_own_sql_tables
     from chlamdb.phylo_tree_display import phylo_tree_bar
+    from chlamdb.phylo_tree_display import species_tree
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
+    # table data
     sql = 'select * from genomes_info_%s' % biodb
-
     genomes_data = server.adaptor.execute_and_fetchall(sql,)
 
-    sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
-               ' where t2.name="%s";' % biodb
-    server, db = manipulate_biosqldb.load_db(biodb)
-    tree = Tree(server.adaptor.execute_and_fetchall(sql_tree,)[0][0])
-    R = tree.get_midpoint_outgroup()
-    tree.set_outgroup(R)
-
-    print("sql")
-    sql = 'select distinct taxon_id,species from taxid2species_%s t1 ' \
-          ' inner join species_curated_taxonomy_%s t2 on t1.species_id=t2.species_id;' % (biodb, 
-                                                                                          biodb)
-    sql2 = 'select species, taxon_id from custom_tables.taxonomy_%s' % biodb
-    sql2 = 'select distinct family,taxon_id from taxid2species_%s t1 ' \
-          ' inner join species_curated_taxonomy_%s t2 on t1.species_id=t2.species_id;' % (biodb, 
-                                                                                          biodb)
-    taxon_id2species_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    print("ok")
-    species_id2taxon_id = {}
-    data = server.adaptor.execute_and_fetchall(sql2,)
-    for row in data:
-        if row[0] not in species_id2taxon_id:
-            species_id2taxon_id[row[0]] = [str(row[1])]
-        else:
-            species_id2taxon_id[row[0]].append(str(row[1]))
-
-    all_taxons = [str(i.name) for i in tree.iter_leaves()]
-    # changing taxon id to species id
-    for leaf in tree.iter_leaves():
-        #print '%s --> %s' % (leaf.name, str(taxon_id2species_id[str(leaf.name)]))
-        leaf.name = "%s" % str(taxon_id2species_id[str(leaf.name)])
-
-    # attributing unique id to each node
-    # if all node descendant have the same name, use that name as node name
-    n = 0
-    for node in tree.traverse():
-        if node.name=='':
-            desc_list = list(set([i.name for i in node.iter_descendants()]))
-            try:
-                desc_list.remove('')
-            except ValueError:
-                pass
-            if len(desc_list) != 1:
-                node.name = '%sbb' % n
-            else:
-                node.name = desc_list[0]
-            n+=1
-
+    # retrieve species tree
+    tree_complete, tree_species = species_tree.get_species_tree(biodb)
     
-    
-    node2labels = tree.get_cached_content(store_attr="name")
-    print("node2labels", node2labels)
-
-    def collapsed_leaf(node):
-        if len(node2labels[node]) == 1:
-            return True
-        else:
-            return False
-    
+    # premare dictionnary of metadata
+    all_taxons = [str(i.name) for i in tree_complete.iter_leaves()]
+    species_id2taxon_id = species_tree.species2taxon_id(biodb)  
     species_id2count_unique = {}
-    
-    print("loop dico")
     
     for species in species_id2taxon_id:
         #if 'Akkermansia' in species:
@@ -9917,15 +9863,9 @@ def species_specific_groups(request):
 
         '''
         species_id2count_unique[species] = [1]
-
-    print("writing modified tree")
-    print("species_id2count_unique", species_id2count_unique)
-
-    t2 = Tree(tree.write(is_leaf_fn=collapsed_leaf))
-
-    print("plotting tree")
-
-    tree1, style1 = phylo_tree_bar.plot_tree_barplot(t2,
+   
+    # plot tree
+    tree1, style1 = phylo_tree_bar.plot_tree_barplot(tree_species,
                     species_id2count_unique,
                     ['unique'],
                     taxon2set2value_heatmap=False,
@@ -9934,12 +9874,12 @@ def species_specific_groups(request):
                     biodb=biodb,
                     column_scale=True,
                     general_max=False)
-    print("ok")
-    #t.render("test2.svg", tree_style=ts)
-    path = settings.BASE_DIR + '/assets/temp/tree.svg'
-    asset_path = '/temp/tree.svg'
+
+    path = settings.BASE_DIR + '/assets/temp/stree.svg'
+    asset_path = '/temp/stree.svg'
 
     tree1.render(path, dpi=800, tree_style=style1)
+    
     return render(request, 'chlamdb/species_specific.html', locals())
 
 
