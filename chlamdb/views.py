@@ -826,7 +826,7 @@ def locus_annotation(request, display_form):
                                                                  match_locus,
                                                                  locus2taxon2identity,
                                                                  identity_scale=True,
-                                                                 show_labels=False,
+                                                                 show_labels=True,
                                                                  reference_taxon=False,
                                                                  tree=tree_species, 
                                                                  rotate=False)
