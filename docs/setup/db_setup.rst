@@ -157,10 +157,10 @@ Aptional utilities/annotations
 
     chlamdb-load-phylogenies.py
 
-4. Load additional annotations
+3. Load additional annotations
 ------------------------------
 
-4.1 Load INTERPRO data
+3.1 Load INTERPRO data
 +++++++++++++++++++++++
 
 Setup chlamdb-load-hash2locus.py
@@ -171,51 +171,51 @@ chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -i # interpro
 chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -k # ko
 
 
-4.2 Load COG data
+3.2 Load COG data
 +++++++++++++++++
 
 chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -c # COG
 
-4.3 Load Kegg data
+3.3 Load Kegg data
 +++++++++++++++++++
 
 
 
-4.4 Load PRIAM data (EC annotation)
+3.4 Load PRIAM data (EC annotation)
 +++++++++++++++++++++++++++++++++++
 
 chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
  
 
-4.5 Load TCDB data (transporters)
+3.5 Load TCDB data (transporters)
 +++++++++++++++++++++++++++++++++
 
 
-4.6 Load psortb data (subcellular localization)
+3.6 Load psortb data (subcellular localization)
 +++++++++++++++++++++++++++++++++++++++++++++++
 
-4.7 Load T3SS effector data
+3.7 Load T3SS effector data
 +++++++++++++++++++++++++++
 
 
-4.8 Load PDB data
+3.8 Load PDB data
 ++++++++++++++++++
 
 
-6. Load BLAST results & phylogenies 
+4. Load BLAST results & phylogenies 
 ------------------------------------
 
-6.1 BLAST vs RefSeq
+4.1 BLAST vs RefSeq
 +++++++++++++++++++
 
-6.2 BLAST vs SwissProt
+4.2 BLAST vs SwissProt
 ++++++++++++++++++++++
 
-6.3 Load BBH phylogenies
+4.3 Load BBH phylogenies
 ++++++++++++++++++++++++
 
 
-7. Add GC content statistics
+5. Add GC content statistics
 ------------------------------
 
 .. code-block:: bash
@@ -223,17 +223,17 @@ chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
 	chlamdb-setup-gc-content-tables.py
 
 
-8. Identification of conserved gene clusters
+6. Identification of conserved gene clusters
 ---------------------------------------------
 
 .. code-block:: bash
 
 	chlamdb-find-conserved-neighborhood.py -d 2019_06_PVC
 
-9. Basic Phylogenetic profiling
+7. Basic Phylogenetic profiling
 --------------------------------
 
-10. add synonymous table (allow to search for RefSeq, Uniprot, uniparc accessions,...)
+8. add synonymous table (allow to search for RefSeq, Uniprot, uniparc accessions,...)
 ---------------------------------------------------------------------------------------
 
 - match to uniprot, refseq, accessions to facilitate search
