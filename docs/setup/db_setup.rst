@@ -239,6 +239,50 @@ chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
 - match to uniprot, refseq, accessions to facilitate search
 
 
+
+Config optional data
+======================
+
+Table with the list of main data. We could add a check that will show an error message is mandatory data is missing.
+
+================================  ================  =============================================
+name                              type              status 
+================================  ================  =============================================
+gbk_files                         mandatory         FALSE
+orthology_data                    mandatory         FALSE
+orthology_comparative             mandatory         FALSE
+orthology_consensus_annotation    mandatory         FALSE
+orthogroup_alignments             mandatory         FALSE
+old_locus_table                   mandatory         FALSE
+reference_phylogeny               mandatory         FALSE
+taxnonomy_table                   mandatory         FALSE
+genome_statistics                 mandatory         FALSE
+BLAST_database                    optional          FALSE
+gene phylogenies                  optional          FALSE
+interpro_data                     optional          FALSE
+interpro_comparative              optional          FALSE
+priam_data                        optional          FALSE
+priam_comparative                 optional          FALSE
+COG_data                          optional          FALSE
+COG_comparative                   optional          FALSE
+KEGG_data                         optional          FALSE
+KEGG_comparative                  optional          FALSE
+TCDB_data                         optional          FALSE
+psortb_data                       optional          FALSE
+T3SS_data                         optional          FALSE
+PDB_data                          optional          FALSE
+BLAST_refseq                      optional          FALSE 
+BLAST_swissprot                   optional          FALSE
+BBH_phylogenies                   optional          FALSE
+GC_statistics                     optional          FALSE 
+gene_clusters                     optional          FALSE 
+phylogenetic_profile              optional          FALSE
+synonymous_table                  optional          FALSE
+================================  ================  =============================================
+
+
+
+
 UNCLEAR PEPENDANCIES
 ====================
 
