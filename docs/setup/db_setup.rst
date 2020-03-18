@@ -30,8 +30,6 @@ Minimal SETUP
     - Plot local alignments relying on orthology informations
     - Blast the database using the various blast flavours
 
-TODO: Setup BLAST
-
 DB setup: download and import biosql schema
 ----------------------------------------------
 
@@ -143,64 +141,113 @@ Bsed on linear_taxonomy.db sqlite database (see snakemake pipeline).
 
     chlamdb-setup-genomes-statistics.py -d 2020_chlamydia_test
 
-Load gene phylogenies
-======================
+Aptional utilities/annotations
+===============================
+
+1. Setup BLAST databases
+------------------------
+
+
+
+2. Load gene phylogenies
+------------------------
+
 
 .. code-block:: bash
 
     chlamdb-load-phylogenies.py
 
-Load additional annotations
-===========================
+4. Load additional annotations
+------------------------------
 
+4.1 Load INTERPRO data
++++++++++++++++++++++++
 
-Interproscan
-        Setup chlamdb-load-hash2locus.py
+Setup chlamdb-load-hash2locus.py
 
-D attitional comparative data
-chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -c # COG
 chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -p # pfam
 chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -i # interpro
+
 chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -k # ko
-    OK chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
 
 
-BBH data 
-=========
+4.2 Load COG data
++++++++++++++++++
 
-BBH phylogenies
-================
+chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -c # COG
+
+4.3 Load Kegg data
++++++++++++++++++++
 
 
-GC content statistics
-=======================
+
+4.4 Load PRIAM data (EC annotation)
++++++++++++++++++++++++++++++++++++
+
+chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
+ 
+
+4.5 Load TCDB data (transporters)
++++++++++++++++++++++++++++++++++
+
+
+4.6 Load psortb data (subcellular localization)
++++++++++++++++++++++++++++++++++++++++++++++++
+
+4.7 Load T3SS effector data
++++++++++++++++++++++++++++
+
+
+4.8 Load PDB data
+++++++++++++++++++
+
+
+6. Load BLAST results & phylogenies 
+===================================
+
+6.1 BAST vs RefSeq
++++++++++++++++++++
+
+6.2 BLAST vs SwissProt
+++++++++++++++++++++++
+
+6.3 Load BBH phylogenies
+++++++++++++++++++++++++
+
+
+
+7. Add GC content statistics
+=========================
 
 .. code-block:: bash
 
 	chlamdb-setup-gc-content-tables.py
 
-Identification of conserved gene clusters (operons)
-=====================================================
+8. Identification of conserved gene clusters
+============================================
 
 .. code-block:: bash
 
 	chlamdb-find-conserved-neighborhood.py -d 2019_06_PVC
 
-Basic Phylogenetic profiling
-=============================
+9. Basic Phylogenetic profiling
+===============================
 
-ADD synonymous table
-=====================
+10. add synonymous table (allow to search for RefSeq, Uniprot, uniparc accessions,...)
+======================================================================================
 
 - match to uniprot, refseq, accessions to facilitate search
+
 
 UNCLEAR PEPENDANCIES
 ====================
 
 - chlamdb-setup-linear-taxonomy.py
 
+
 DIVERS & TODO
 =============
+
 
 - Circos plot: possibility to highligh BBH phylum (highlight_BBH= true)
 - Taxnonomy circos plots
