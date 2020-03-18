@@ -203,9 +203,9 @@ chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
 
 
 6. Load BLAST results & phylogenies 
-===================================
+------------------------------------
 
-6.1 BAST vs RefSeq
+6.1 BLAST vs RefSeq
 +++++++++++++++++++
 
 6.2 BLAST vs SwissProt
@@ -215,13 +215,13 @@ chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
 ++++++++++++++++++++++++
 
 
-
 7. Add GC content statistics
 ------------------------------
 
 .. code-block:: bash
 
 	chlamdb-setup-gc-content-tables.py
+
 
 8. Identification of conserved gene clusters
 ---------------------------------------------
