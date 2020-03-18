@@ -217,24 +217,24 @@ chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
 
 
 7. Add GC content statistics
-=========================
+------------------------------
 
 .. code-block:: bash
 
 	chlamdb-setup-gc-content-tables.py
 
 8. Identification of conserved gene clusters
-============================================
+---------------------------------------------
 
 .. code-block:: bash
 
 	chlamdb-find-conserved-neighborhood.py -d 2019_06_PVC
 
 9. Basic Phylogenetic profiling
-===============================
+--------------------------------
 
 10. add synonymous table (allow to search for RefSeq, Uniprot, uniparc accessions,...)
-======================================================================================
+---------------------------------------------------------------------------------------
 
 - match to uniprot, refseq, accessions to facilitate search
 
