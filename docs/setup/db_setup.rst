@@ -14,7 +14,7 @@ Quick hack:
 
 Edit file: BioSQL/BioSeqDatabase.py: disable "SET sql_mode='ANSI_QUOTES';"
 
-Edit file: BioSQL/Loader.py: change double quote to `` `rank` ``
+Edit file: BioSQL/Loader.py: replace double quote "rank" by `rank`
 
 Minimal SETUP
 ==============
