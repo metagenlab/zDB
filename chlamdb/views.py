@@ -1434,7 +1434,7 @@ def venn_pfam(request):
 
 
             pfam2description = ''
-            sql = 'select signature_accession, signature_description, count(*) from interpro where analysis="Pfam" group by signature_accession;'
+            sql = 'select signature_accession, signature_description, count(*) from interpro where analysis="Pfam" group by signature_accession, signature_description;'
             data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
             for i in data:
@@ -3137,7 +3137,7 @@ def fam(request, fam, type):
         else:
             columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                       'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-            sql2 = 'select %s from orthology_detail where seqfeature_id in (%s)' % (columns, biodb, seqfeature_list_form)
+            sql2 = 'select %s from orthology_detail where seqfeature_id in (%s)' % (columns, seqfeature_list_form)
 
             all_locus_raw_data = server.adaptor.execute_and_fetchall(sql2, )
             orthogroup_list = [i[0] for i in all_locus_raw_data]
@@ -3155,8 +3155,8 @@ def fam(request, fam, type):
                                                                               [fam],
                                                                               'Pfam')
 
-            sql3= 'select distinct taxon_id,orthogroup,signature_accession from interpro_%s ' \
-                  ' where analysis="Pfam" and orthogroup in (%s);' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"')
+            sql3= 'select distinct taxon_id,orthogroup,signature_accession from interpro ' \
+                  ' where analysis="Pfam" and orthogroup in (%s);' % ('"'+'","'.join(set(orthogroup_list))+'"')
 
         elif type == 'cog':
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
@@ -3164,8 +3164,8 @@ def fam(request, fam, type):
                                                                               'COG')
 
             sql3='select distinct taxon_id,orthogroup,COG_id from (select taxon_id,locus_tag,orthogroup ' \
-                 ' from biosqldb.orthology_detail_%s where orthogroup in (%s)) A ' \
-                 ' inner join COG.locus_tag2gi_hit_%s as B on A.locus_tag=B.locus_tag;' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"', biodb)
+                 ' from biosqldb_orthology_detail where orthogroup in (%s)) A ' \
+                 ' inner join COG_locus_tag2gi_hit as B on A.locus_tag=B.locus_tag;' % ('"'+'","'.join(set(orthogroup_list))+'"')
 
         elif type == 'interpro':
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
@@ -3173,7 +3173,7 @@ def fam(request, fam, type):
                                                                               'interpro')
 
             sql3 = 'select distinct taxon_id,orthogroup,interpro_accession from ' \
-                   ' interpro_%s where orthogroup in (%s);' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"')
+                   ' interpro where orthogroup in (%s);' % ('"'+'","'.join(set(orthogroup_list))+'"')
 
         elif type == 'EC':
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
@@ -3344,8 +3344,7 @@ def fam_interpro(request, fam, type):
 
 
         sql3 = 'select distinct taxon_id,orthogroup,signature_accession from ' \
-                ' interpro_%s where orthogroup in (%s) and signature_accession="%s";' % (biodb,
-                                                                                       '"'+'","'.join(set(orthogroup_list))+'"',
+                ' interpro where orthogroup in (%s) and signature_accession="%s";' % ('"'+'","'.join(set(orthogroup_list))+'"',
                                                                                        fam)
 
 
@@ -14036,10 +14035,10 @@ def pfam_comparison(request):
 
             sql = 'select * from (select id from comparative_tables_Pfam where %s group by id) A' \
                   ' inner join (select distinct signature_accession,signature_description,count(*) as n ' \
-                  ' from interpro where analysis="Pfam" group by signature_accession) B on A.id = B.signature_accession' % (filter)
+                  ' from interpro where analysis="Pfam" group by signature_accession,signature_description) B on A.id = B.signature_accession' % (filter)
 
             sql_pathway_count = 'select distinct signature_accession,signature_description,count(*) as n ' \
-                                ' from interpro where analysis="Pfam" group by signature_accession;'
+                                ' from interpro where analysis="Pfam" group by signature_accession,signature_description;'
 
             pfam_data_raw = server.adaptor.execute_and_fetchall(sql,)
             pfam2data = {}
