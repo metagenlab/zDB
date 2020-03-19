@@ -1198,7 +1198,7 @@ def plot_neighborhood_task(biodb, target_locus, region_size):
                     
             operon = server.adaptor.execute_and_fetchall(sqlo, )
             operon_locus = [i[2] for i in operon]
-        except IndexError:
+        except:
             try:
                 sqlo = 'select C.locus_tag' \
                         ' from (select operon_id from custom_tables_locus2seqfeature_id t1 ' \
@@ -1209,7 +1209,8 @@ def plot_neighborhood_task(biodb, target_locus, region_size):
                         
                 operon_ofs = server.adaptor.execute_and_fetchall(sqlo, )
                 operon_locus = [i[0] for i in operon_ofs]
-
+            # case when no operon
+            # or no operon table
             except:
                 operon_locus = []
                 operon_ofs = False
@@ -1322,8 +1323,23 @@ def basic_tree_task(biodb,
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql_tree = 'select phylogeny from biosqldb_phylogenies where orthogroup="%s"' % (orthogroup)
-    tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
+    sql_tree = 'select phylogeny from phylogenies where orthogroup="%s"' % (orthogroup)
+    
+    try:
+        tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
+    except IndexError:
+        template = Template('''
+        {% load staticfiles %}
+        {% load static %}
+        <div class="panel panel-danger" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Warning</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">No tree</p>
+        </div>
+        ''')
+        html = template.render(Context(locals()))#render_to_string(template, context=locals())
+        return html
 
     sql = f'select distinct locus_tag,t4.description from orthology_orthogroup t1 ' \
           f' inner join orthology_seqfeature_id2orthogroup t2 on t1.orthogroup_id=t2.orthogroup_id ' \
@@ -1410,8 +1426,23 @@ def TM_tree_task(biodb,
         locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False, signal_peptide=True)
     else:
         locus2TM_data = ete_motifs.get_TM_data(biodb, orthogroup, aa_alignment=False, signal_peptide=True)
-    sql_tree = 'select phylogeny from biosqldb_phylogenies where orthogroup="%s"' % (orthogroup)
-    tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
+    sql_tree = 'select phylogeny from phylogenies where orthogroup="%s"' % (orthogroup)
+    
+    try:
+        tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
+    except IndexError:
+        template = Template('''
+        {% load staticfiles %}
+        {% load static %}
+        <div class="panel panel-danger" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Warning</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">No tree</p>
+        </div>
+        ''')
+        html = template.render(Context(locals()))#render_to_string(template, context=locals())
+        return html
 
     t, ts, leaf_number = ete_motifs.draw_TM_tree(tree, locus2TM_data)
     path = settings.BASE_DIR + '/assets/temp/TM_tree.svg'
@@ -1467,7 +1498,7 @@ def TM_tree_task(biodb,
 
 @shared_task
 def pfam_tree_task(biodb, 
-                 orthogroup):
+                   orthogroup):
 
     from chlamdb.phylo_tree_display import ete_motifs
     from tempfile import NamedTemporaryFile
@@ -1511,14 +1542,24 @@ def pfam_tree_task(biodb,
             except:
                 print ("motif", motif)
 
-    sql_tree = 'select phylogeny from biosqldb_phylogenies where orthogroup="%s"' % (orthogroup)
+    sql_tree = 'select phylogeny from phylogenies where orthogroup="%s"' % (orthogroup)
 
     try:
         tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
     except IndexError:
         no_tree = True
-        return render(request, 'chlamdb/pfam_tree.html', locals())
-
+        template = Template('''
+        {% load staticfiles %}
+        {% load static %}
+        <div class="panel panel-danger" style="width:500px ; top: 200px; margin: 10px 10px 10px 10px">
+            <div class="panel-heading" style="width:100%">
+                <h3 class="panel-title">Warning</h3>
+            </div>
+            <p style="margin: 10px 10px 10px 10px">No tree</p>
+        </div>
+        ''')
+        html = template.render(Context(locals()))#render_to_string(template, context=locals())
+        return html
 
     #sql = 'select taxon_id, family from genomes_classification;'
 
@@ -1618,7 +1659,7 @@ def phylogeny_task(biodb,
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select phylogeny from biosqldb_phylogenies_BBH where orthogroup="%s";' % (orthogroup)
+    sql = 'select phylogeny from phylogenies_BBH where orthogroup="%s";' % (orthogroup)
 
     ete3_tree = Tree(server.adaptor.execute_and_fetchall(sql,)[0][0])
 
