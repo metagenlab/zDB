@@ -333,9 +333,17 @@ def add_TM_and_SP_columns(db_name):
     server, db = manipulate_biosqldb.load_db(db_name)
 
     sql = 'ALTER TABLE orthology_detail ADD COLUMN SP INT AFTER seqfeature_id;'
-    server.adaptor.execute(sql,)
+    try:
+        server.adaptor.execute(sql,)
+    except:
+        # _mysql_exceptions.OperationalError: ==> column already exist
+        pass
     sql = 'ALTER TABLE orthology_detail ADD COLUMN TM BOOLEAN not null default 0 AFTER SP;'
-    server.adaptor.execute(sql,)
+    try:
+        server.adaptor.execute(sql,)
+    except:
+        # # _mysql_exceptions.OperationalError: ==> column already exist
+        pass
 
     sql = 'select seqfeature_id, count(*) as n from interpro_interpro t1 ' \
           ' inner join interpro_signature t2 on t1.signature_id=t2.signature_id ' \
@@ -346,11 +354,15 @@ def add_TM_and_SP_columns(db_name):
            ' inner join interpro_analysis t3 on t2.analysis_id=t3.analysis_id ' \
            ' where analysis_name="Phobius" and signature_accession="SIGNAL_PEPTIDE" group by seqfeature_id;'
 
+    print(sql2)
     seqfeature_id2TM = server.adaptor.execute_and_fetchall(sql,)
-    for row in seqfeature_id2TM:
-        sql = 'update orthology_detail set SP=%s where seqfeature_id=%s' % (1, row[0])
-        server.adaptor.execute(sql,)
     seqfeature_id2signal_peptide = server.adaptor.execute_and_fetchall(sql2,)
+    
+    for row in seqfeature_id2signal_peptide:
+        sql = 'update orthology_detail set SP=%s where seqfeature_id=%s' % (1, row[0])
+        #print(sql)
+        server.adaptor.execute(sql,)
+        
     for row in seqfeature_id2TM:
         sql = 'update orthology_detail set TM=%s where seqfeature_id=%s' % (row[1], row[0])
         server.adaptor.execute(sql,)
