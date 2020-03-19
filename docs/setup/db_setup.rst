@@ -30,7 +30,7 @@ Minimal SETUP
     - Plot local alignments relying on orthology informations
     - Blast the database using the various blast flavours
 
-DB setup: download and import biosql schema
+1. DB setup: download and import biosql schema
 ----------------------------------------------
 
 .. code-block:: bash
@@ -39,7 +39,13 @@ DB setup: download and import biosql schema
 
 Create a new MySQL database in setup the BioSQL scheme. Assume that mysql password is stored in `SQLWPD` env variable.
 
-Load genbank files
+.. note::
+
+    It also create the table `biodb_config` listing data type and if they are mandatory or not for a functionnal database. 
+    Can then be use to check if the database was setup properly, eg. check if needed data were already loaded (dependancies). 
+    TODO: Can also be used in the django app to display only menus,... for available data.
+
+2. Load genbank files
 ----------------------
 
 .. code-block:: bash
@@ -54,7 +60,7 @@ Load genbank files
     - product
     - seqfeature id (primary key for CDS)
 
-load orthology data
+3. load orthology data
 -----------------------
 
 .. code-block:: bash
@@ -68,7 +74,7 @@ load orthology data
 	- create orthology_detail tablke (deprecoiated but still mandatory)
 
 
-Setup comparative basic tables
+4. Setup comparative basic tables
 ----------------------------------
 
 .. code-block:: bash
@@ -81,7 +87,7 @@ Setup comparative basic tables
 	chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -o -a
 	identity_closest_homolog
 
-orthogroups consensus annotation
+5. orthogroups consensus annotation
 ---------------------------------
 
 .. code-block:: bash
@@ -98,12 +104,16 @@ Statistics for:
 - domains
 
 
-Setup old locus table
+6. Setup old locus table
 ----------------------
 
 Mandatory by depreciated since synonymous table can be build at the end
 
-Load alignments
+.. code-block:: bash
+
+    chlamdb-setup-old_locus-table.py -d 2020_chlamydia_test
+
+7. Load alignments
 -----------------
 
 .. code-block:: bash
@@ -116,14 +126,14 @@ Load alignments
 
 TODO: merge individual group tables into one table
 
-6. chlamdb-load-reference-phylogeny.py
+chlamdb-load-reference-phylogeny.py
 --------------------------------------
 
 .. code-block:: bash
 
     chlamdb-load-reference-phylogeny.py -r core_genome_phylogeny.nwk -d 2020_chlamydia_test -g  ../../data/gbk_edited/*gbk
 
-7. setup taxonomy table
+setup taxonomy table
 ------------------------
 
 .. code-block:: bash
@@ -141,21 +151,25 @@ Bsed on linear_taxonomy.db sqlite database (see snakemake pipeline).
 
     chlamdb-setup-genomes-statistics.py -d 2020_chlamydia_test
 
+
 Aptional utilities/annotations
 ===============================
 
 1. Setup BLAST databases
 ------------------------
 
+.. code-block:: bash
+    # -p asset path
+    chlamdb-setup-blast-databases.py -d 2020_chlamydia_test -p /home/tpillone/work/dev/metagenlab/chlamdb/assets
 
 
 2. Load gene phylogenies
 ------------------------
 
-
 .. code-block:: bash
 
-    chlamdb-load-phylogenies.py
+    chlamdb-load-phylogenies.py -t orthology/orthogroups_phylogenies_fasttree/*nwk -d 2020_chlamydia_test
+
 
 3. Load additional annotations
 ------------------------------
@@ -163,28 +177,63 @@ Aptional utilities/annotations
 3.1 Load INTERPRO data
 +++++++++++++++++++++++
 
-Setup chlamdb-load-hash2locus.py
 
-chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -p # pfam
-chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -i # interpro
+.. code-block:: bash
 
-chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -k # ko
+    # setup interpro entry table
+    chlamdb-setup-interpro.py -d 2020_chlamydia_test -v 73.0
 
+    # load interpro results
+    chlamdb-load-interproscan.py -u data/nr_mapping.tab -i annotation/interproscan/*tsv -d 2020_chlamydia_test
+
+    # setup legacy table
+    chlamdb-load-interproscan.py -u data/nr_mapping.tab -i annotation/interproscan/*tsv -d 2020_chlamydia_test -l
+
+    # update TM et SP columns
+    chlamdb-load-interproscan.py -u data/nr_mapping.tab -i annotation/interproscan/*tsv -d 2020_chlamydia_test -l
+
+    # correspondance between sequence hash and locus tag
+    chlamdb-load-hash2locus.py -u data/nr_mapping.tab -d 2020_chlamydia_test
+
+    # setup comparative tables
+    chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -p # pfam
+    chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -i # interpro
+    
+    # setup comparative tables for accessons (distinction between chromosome % plasmids)
+    chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -p -a # pfam
+    chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -i -a # interpro
+    
 
 3.2 Load COG data
 +++++++++++++++++
 
-chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -c # COG
+.. code-block:: bash
+
+    chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -c # COG
+    chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -c -a # COG
 
 3.3 Load Kegg data
 +++++++++++++++++++
+
+
+.. code-block:: bash
+
+
+
+
+.. code-block:: bash
+
+    chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -k # ko
+    chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -k -a # ko
 
 
 
 3.4 Load PRIAM data (EC annotation)
 +++++++++++++++++++++++++++++++++++
 
-chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
+.. code-block:: bash
+
+    chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
  
 
 3.5 Load TCDB data (transporters)
@@ -220,7 +269,7 @@ chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
 
 .. code-block:: bash
 
-	chlamdb-setup-gc-content-tables.py
+	chlamdb-setup-gc-content-tables.py -d 2020_chlamydia_test
 
 
 6. Identification of conserved gene clusters
