@@ -407,11 +407,13 @@ UNCLEAR PEPENDANCIES
 DIVERS & TODO
 =============
 
-
+- examples should not be hard coded (plot region, CT_013, K00024)
+- news should be more generic
+- content of the database should be dyamically generated based on the config table
 - Circos plot: possibility to highligh BBH phylum (highlight_BBH= true)
 - Taxnonomy circos plots
 
-- If we don’t want to load interpro annotation, add mandatory 	column to orthology_detail 
+- If we don’t want to load interpro annotation, add mandatory columns to orthology_detail 
     - ALTER TABLE orthology_detail ADD TM varchar(10) DEFAULT 'n/a';
     - ALTER TABLE orthology_detail ADD SP varchar(10) DEFAULT 'n/a';
 
