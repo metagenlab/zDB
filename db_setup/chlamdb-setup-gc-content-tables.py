@@ -35,8 +35,7 @@ def biodb2cds_gc(biodb):
                 locus = feature.qualifiers['locus_tag'][0]
 
                 gc, gc1, gc2, gc3 = GC123(str(dna_sequence))
-                sql = 'insert into  custom_tables_gc_content values (%s, %s, %s, %s, %s, %s, %s);' % (biodb,
-                                                                                                      locus2taxon_id[locus],
+                sql = 'insert into  custom_tables_gc_content values (%s, %s, %s, %s, %s, %s, %s);' % (locus2taxon_id[locus],
                                                                                                       locus2seqfeature_id[locus],
                                                                                                       len(dna_sequence),
                                                                                                       round(gc,2),
@@ -48,9 +47,13 @@ def biodb2cds_gc(biodb):
 
 if __name__ == '__main__':
     import argparse
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", '--db_name', type=str, help="db name", required=True)
 
     args = parser.parse_args()
 
     biodb2cds_gc(args.db_name)
+    
+    manipulate_biosqldb.update_config_table(args.database_name, "GC_statistics")
