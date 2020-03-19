@@ -223,6 +223,8 @@ Running the app
     python manage.py runserver --nothreading 0.0.0.0:8001
 
 
+The app can then be accessed in the browser: 127.0.0.1:8001_
+
 Aptional utilities/annotations
 ===============================
 
