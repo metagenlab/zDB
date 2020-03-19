@@ -102,6 +102,15 @@ from chlamdb.tasks import KEGG_map_ko_organism_task
 from chlamdb.tasks import basic_tree_task
 from chlamdb.celeryapp import app as celery_app
 
+biodb = settings.BIODB
+optional2status, missing_mandatory = manipulate_biosqldb.check_config(biodb)
+
+def my_locals(local_dico):
+    local_dico["optional2status"] = optional2status
+    local_dico["missing_mandatory"] = missing_mandatory
+    return local_dico
+    
+
 @celery_app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
@@ -156,11 +165,11 @@ def choose_db(request):
     else:  
         form = BiodatabaseForm()
 
-    return render(request, 'chlamdb/choose_db.html', locals())
+    return render(request, 'chlamdb/choose_db.html', my_locals(locals()))
 
 def help(request):
 
-    return render(request, 'chlamdb/help.html', locals())
+    return render(request, 'chlamdb/help.html', my_locals(locals()))
 
 
 def about(request):
@@ -200,7 +209,7 @@ def about(request):
         url = entry["url"]
         entry_list.append([string, url])
 
-    return render(request, 'chlamdb/credits.html', locals())
+    return render(request, 'chlamdb/credits.html', my_locals(locals()))
 
 def create_user(username, mail, password, first_name, last_name, staff=True):
     from django.contrib.auth.models import User
@@ -233,17 +242,18 @@ def chlamdb_login(request):
     else:
         form = ConnexionForm()
 
-    return render(request, 'chlamdb/login.html', locals())
+    return render(request, 'chlamdb/login.html', my_locals(locals()))
 
 def logout_view(request):
     logout(request)
-    return render(request, 'chlamdb/logout.html', locals())
-    return render(request, 'chlamdb/logout.html', locals())
+    return render(request, 'chlamdb/logout.html', my_locals(locals()))
+    return render(request, 'chlamdb/logout.html', my_locals(locals()))
 
 
 def home(request):
     from ete3 import TreeStyle
     from chlamdb.phylo_tree_display import phylo_tree_bar
+    from chlamdb.biosqldb import manipulate_biosqldb
     from ete3 import Tree
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -295,7 +305,11 @@ def home(request):
 
     n_genomes = server.adaptor.execute_and_fetchall(sql_n_genomes,)[0][0]
 
-    return render(request, 'chlamdb/home.html', locals())
+    print(my_locals(locals()))
+    print("-------------")
+    print(my_locals(my_locals(locals())))
+
+    return render(request, 'chlamdb/home.html', my_locals(locals()))
 
 
 def curated_taxonomy(request):
@@ -344,7 +358,7 @@ def curated_taxonomy(request):
     asset_path1 = '/temp/interpro_tree2.svg'
     tree.render(path1, dpi=550, tree_style=style)
 
-    return render(request, 'chlamdb/curated_taxonomy.html', locals())
+    return render(request, 'chlamdb/curated_taxonomy.html', my_locals(locals()))
 
 
 def edit_species_taxonomy(request, species_id):
@@ -385,7 +399,7 @@ def edit_species_taxonomy(request, species_id):
     else: 
         form = curation_form_class()  
 
-    return render(request, 'chlamdb/edit_species_taxonomy.html', locals())
+    return render(request, 'chlamdb/edit_species_taxonomy.html', my_locals(locals()))
 
 
 def circos_homology(request):
@@ -461,7 +475,7 @@ def circos_homology(request):
     else:  
         form = circos_orthology_form_class()
 
-    return render(request, 'chlamdb/circos_homology.html', locals())
+    return render(request, 'chlamdb/circos_homology.html', my_locals(locals()))
 
 
 def extract_orthogroup(request):
@@ -541,7 +555,7 @@ def extract_orthogroup(request):
     else:  
         form = extract_form_class()
 
-    return render(request, 'chlamdb/extract_orthogroup.html', locals())
+    return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
 
 
@@ -580,7 +594,7 @@ def locus_list2orthogroups(request):
 
         form = AnnotForm()
 
-    return render(request, 'chlamdb/locus_list2orthogroups.html', locals())
+    return render(request, 'chlamdb/locus_list2orthogroups.html', my_locals(locals()))
 
 
 
@@ -643,7 +657,7 @@ def orthogroup_annotation(request, display_form):
 
             envoi_annot = True
 
-    return render(request, 'chlamdb/orthogroup_annotation.html', locals())
+    return render(request, 'chlamdb/orthogroup_annotation.html', my_locals(locals()))
 
 def test():
     from chlamdb.plots import plot_genomic_feature
@@ -843,7 +857,7 @@ def locus_annotation(request, display_form):
 
             envoi_annot = True
 
-    return render(request, 'chlamdb/locus_annotation.html', locals())
+    return render(request, 'chlamdb/locus_annotation.html', my_locals(locals()))
 
 
 
@@ -929,7 +943,7 @@ def venn_orthogroup(request):
             envoi_venn = True
     else:  
         form_venn = venn_form_class()
-    return render(request, 'chlamdb/venn_orthogroup.html', locals())
+    return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
 
 
 
@@ -1055,7 +1069,7 @@ def extract_pfam(request, classification="taxon_id"):
     else:  
         form = extract_form_class()
 
-    return render(request, 'chlamdb/extract_Pfam.html', locals())
+    return render(request, 'chlamdb/extract_Pfam.html', my_locals(locals()))
 
 
 
@@ -1209,7 +1223,7 @@ def extract_ko(request):
     else:  
         form = extract_form_class()
 
-    return render(request, 'chlamdb/extract_ko.html', locals())
+    return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
 
 
 
@@ -1388,7 +1402,7 @@ def extract_EC(request):
     else:  
         form = extract_form_class()
 
-    return render(request, 'chlamdb/extract_EC.html', locals())
+    return render(request, 'chlamdb/extract_EC.html', my_locals(locals()))
 
 
 def venn_pfam(request):
@@ -1432,7 +1446,7 @@ def venn_pfam(request):
             envoi_venn = True
     else:  
         form_venn = venn_form_class()
-    return render(request, 'chlamdb/venn_Pfam.html', locals())
+    return render(request, 'chlamdb/venn_Pfam.html', my_locals(locals()))
 
 
 
@@ -1495,7 +1509,7 @@ def venn_EC(request):
             envoi_venn = True
     else:  
         form_venn = venn_form_class()
-    return render(request, 'chlamdb/venn_EC.html', locals())
+    return render(request, 'chlamdb/venn_EC.html', my_locals(locals()))
 
 
 
@@ -1563,7 +1577,7 @@ def extract_interpro(request, classification="taxon_id"):
     else:  
         form = extract_form_class()
 
-    return render(request, 'chlamdb/extract_interpro.html', locals())
+    return render(request, 'chlamdb/extract_interpro.html', my_locals(locals()))
 
 
 def venn_interpro(request):
@@ -1606,7 +1620,7 @@ def venn_interpro(request):
             envoi_venn = True
     else:  
         form_venn = venn_form_class()
-    return render(request, 'chlamdb/venn_interpro.html', locals())
+    return render(request, 'chlamdb/venn_interpro.html', my_locals(locals()))
 
 
 
@@ -1728,7 +1742,7 @@ def extract_cog(request):
     else:  
         form = extract_form_class()
 
-    return render(request, 'chlamdb/extract_cogs.html', locals())
+    return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
 
 
 
@@ -1782,7 +1796,7 @@ def venn_ko(request):
     else:  
         form_venn = venn_form_class()
 
-    return render(request, 'chlamdb/venn_ko.html', locals())
+    return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
 
 
 
@@ -1850,7 +1864,7 @@ def venn_cog(request, accessions=False):
     else:  
         form_venn = venn_form_class()
 
-    return render(request, 'chlamdb/venn_cogs.html', locals())
+    return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
 
 
 def pmid_associations(request, bioentry_id, pmid, data_type):
@@ -1895,7 +1909,7 @@ def pmid_associations(request, bioentry_id, pmid, data_type):
     locus2interpro = get_locus_annotations(biodb, locus_list)
 
 
-    return render(request, 'chlamdb/pmid_associations.html', locals())
+    return render(request, 'chlamdb/pmid_associations.html', my_locals(locals()))
 
 
 def pmid_associations_orthogroups(request, pmid, data_type):
@@ -1937,7 +1951,7 @@ def pmid_associations_orthogroups(request, pmid, data_type):
                                                                                                   accessions=False)
 
 
-    return render(request, 'chlamdb/pmid_associations_orthogroups.html', locals())
+    return render(request, 'chlamdb/pmid_associations_orthogroups.html', my_locals(locals()))
 
 
 
@@ -2005,7 +2019,7 @@ def pmid(request, seqfeature_id):
         pmid2n_associated_proteins_string = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_2,))
         pmid2n_associated_proteins_string = {int(k):int(v) for k,v in pmid2n_associated_proteins_string.items()}
         print(pmid2n_associated_proteins_string)
-    return render(request, 'chlamdb/pmid.html', locals())
+    return render(request, 'chlamdb/pmid.html', my_locals(locals()))
 
 
 def extract_region(request):
@@ -2049,7 +2063,7 @@ def extract_region(request):
                     raw_data = server.adaptor.execute_and_fetchall(sql2, )
                 except IndexError:
                     valid_id = False
-                    return render(request, 'chlamdb/extract_region.html', locals())
+                    return render(request, 'chlamdb/extract_region.html', my_locals(locals()))
                 if not raw_data:
                         valid_id = False
                 else:
@@ -2108,7 +2122,7 @@ def extract_region(request):
 
     else:
         form = extract_region_form_class()
-    return render(request, 'chlamdb/extract_region.html', locals())
+    return render(request, 'chlamdb/extract_region.html', my_locals(locals()))
 
 
 #
@@ -2258,7 +2272,7 @@ def locusx(request, locus=None, menu=True):
               ' inner join blastnr_blast_swissprot t2 on t1.seqfeature_id=t2.seqfeature_id' \
               ' where locus_tag="%s";' % (locus)
 
-            sql17 = 'select phylogeny from biosqldb_phylogenies_BBH where orthogroup="%s"' % (orthogroup)
+            sql17 = 'select phylogeny from phylogenies_BBH where orthogroup="%s"' % (orthogroup)
 
             sql18 = 'select signature_accession,start,stop from interpro where analysis="Phobius" and locus_tag="%s" ' \
                     ' and signature_accession in ("TRANSMEMBRANE",' \
@@ -2665,7 +2679,7 @@ def locusx(request, locus=None, menu=True):
                          f' where orthogroup_name="{locus}";'
             
             
-            sql_group8 = 'select phylogeny from biosqldb_phylogenies_BBH where orthogroup="%s"' % (locus)
+            sql_group8 = 'select phylogeny from phylogenies_BBH where orthogroup="%s"' % (locus)
             # TM domains 
             
             # Signal Peptide
@@ -2874,8 +2888,8 @@ def locusx(request, locus=None, menu=True):
 
         envoi = True
 
-
-    return render(request, 'chlamdb/locus.html', locals())
+    print(my_locals(locals())["optional2status"])
+    return render(request, 'chlamdb/locus.html', my_locals(locals()))
 
 
 def hydropathy(request, locus):
@@ -2890,7 +2904,7 @@ def hydropathy(request, locus):
     fig.savefig(path,dpi=500)
     asset_path = '/temp/hydro.png'
 
-    return render(request, 'chlamdb/hydropathy.html', locals())
+    return render(request, 'chlamdb/hydropathy.html', my_locals(locals()))
 
 
 
@@ -2920,7 +2934,7 @@ def aa_comp_locus(request, locus_tag):
     pca_seq_composition.aa_composition_pca(mat, target_feature, path)
 
 
-    return render(request, 'chlamdb/aa_pca_locus.html', locals())
+    return render(request, 'chlamdb/aa_pca_locus.html', my_locals(locals()))
 
 
 
@@ -2933,7 +2947,7 @@ def rnaseq_class(request, temporal_class, taxon_id):
 
     data = server.adaptor.execute_and_fetchall(sql2,)
 
-    return render(request, 'chlamdb/rnaseq_temporal_class.html', locals())
+    return render(request, 'chlamdb/rnaseq_temporal_class.html', my_locals(locals()))
 
 
 
@@ -3008,7 +3022,7 @@ def gc_locus(request, locus_tag):
                                   show_median=False,
                                   max_value=1)
 
-    return render(request, 'chlamdb/gc_locus.html', locals())
+    return render(request, 'chlamdb/gc_locus.html', my_locals(locals()))
 
 
 def fam(request, fam, type):
@@ -3112,14 +3126,14 @@ def fam(request, fam, type):
                 valid_id = False
         else:
             valid_id = False
-            return render(request, 'chlamdb/fam.html', locals())
+            return render(request, 'chlamdb/fam.html', my_locals(locals()))
         try:
             seqfeature_id_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql1, )]
 
             seqfeature_list_form = '"' + '","'.join(seqfeature_id_list) + '"'
         except IndexError:
             valid_id = False
-            return render(request, 'chlamdb/fam.html', locals())
+            return render(request, 'chlamdb/fam.html', my_locals(locals()))
         else:
             columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                       'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
@@ -3253,7 +3267,7 @@ def fam(request, fam, type):
 
                 tree.render(path, dpi=300, tree_style=style)
 
-    return render(request, 'chlamdb/fam.html', locals())
+    return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
 
 def fam_interpro(request, fam, type):
@@ -3294,7 +3308,7 @@ def fam_interpro(request, fam, type):
             #    valid_id = False
             no_match = True
             menu = True
-            return render(request, 'chlamdb/fam.html', locals())
+            return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
         try:
             seqfeature_id_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql1, )]
@@ -3303,7 +3317,7 @@ def fam_interpro(request, fam, type):
 
         except IndexError:
             valid_id = False
-            return render(request, 'chlamdb/fam.html', locals())
+            return render(request, 'chlamdb/fam.html', my_locals(locals()))
         else:
 
             # retrieve locus list and their annotations
@@ -3389,7 +3403,7 @@ def fam_interpro(request, fam, type):
 
                 tree.render(path, dpi=300, tree_style=style)
 
-    return render(request, 'chlamdb/fam.html', locals())
+    return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
 
 
@@ -3444,7 +3458,7 @@ def COG_phylo_heatmap(request, frequency):
         path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
         asset_path = '/temp/COG_tree.svg'
 
-    return render(request, 'chlamdb/COG_phylo_heatmap.html', locals())
+    return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
 
 
 
@@ -3619,7 +3633,7 @@ def effector_predictions(request, genome):
 
     
 
-    return render(request, 'chlamdb/venn_effectors.html', locals())
+    return render(request, 'chlamdb/venn_effectors.html', my_locals(locals()))
 
 
 def venn_candidate_effectors(request):
@@ -3781,7 +3795,7 @@ def venn_candidate_effectors(request):
     series_string = '[%s]' % ','.join(series)
     pfam2description = {}
     envoi_venn = True
-    return render(request, 'chlamdb/venn_euk_domains.html', locals())
+    return render(request, 'chlamdb/venn_euk_domains.html', my_locals(locals()))
 
 
 def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
@@ -4000,7 +4014,7 @@ def pfam_taxonomy_with_homologs(request, bacteria_freq, eukaryote_freq):
         menu = True
         valid_id = True
 
-    return render(request, 'chlamdb/interpro_taxonomy_homologs.html', locals())
+    return render(request, 'chlamdb/interpro_taxonomy_homologs.html', my_locals(locals()))
 
 
 def interpro_taxonomy_with_homologs(request, domain, percentage):
@@ -4216,7 +4230,7 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
         menu = True
         valid_id = True
 
-    return render(request, 'chlamdb/interpro_taxonomy_homologs.html', locals())
+    return render(request, 'chlamdb/interpro_taxonomy_homologs.html', my_locals(locals()))
 
 
 
@@ -4297,7 +4311,7 @@ def KEGG_module_map(request, module_name):
         valid_id = True
 
 
-    return render(request, 'chlamdb/KEGG_module_map.html', locals())
+    return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
 
 
 
@@ -4340,7 +4354,7 @@ def kegg_multi(request, map_name, ko_name):
         ko_data = server.adaptor.execute_and_fetchall(sql,)
 
 
-    return render(request, 'chlamdb/KEGG_map_multi.html', locals())
+    return render(request, 'chlamdb/KEGG_map_multi.html', my_locals(locals()))
 
 
 def KEGG_mapp_ko(request, map_name):
@@ -4351,7 +4365,7 @@ def KEGG_mapp_ko(request, map_name):
         task = KEGG_map_ko_task.delay(biodb, map_name)
         task_id = task.id
 
-    return render(request, 'chlamdb/KEGG_map_ko.html', locals())
+    return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(locals()))
 
 
 
@@ -4363,7 +4377,7 @@ def KEGG_mapp_ko_organism(request, map_name, taxon_id):
         task = KEGG_map_ko_organism_task.delay(biodb, map_name, taxon_id)
         task_id = task.id
 
-    return render(request, 'chlamdb/KEGG_map_ko.html', locals())
+    return render(request, 'chlamdb/KEGG_map_ko.html', my_locals(locals()))
 
 
 def KEGG_mapp(request, map_name):
@@ -4437,7 +4451,7 @@ def KEGG_mapp(request, map_name):
         valid_id = True
 
 
-    return render(request, 'chlamdb/KEGG_map.html', locals())
+    return render(request, 'chlamdb/KEGG_map.html', my_locals(locals()))
 
 
 def sunburst(request, locus):
@@ -4473,7 +4487,7 @@ def sunburst(request, locus):
 
         except:
             valid_id = False
-            return render(request, 'chlamdb/sunburst.html', locals())
+            return render(request, 'chlamdb/sunburst.html', my_locals(locals()))
 
         dico =  {}
 
@@ -4532,7 +4546,7 @@ def sunburst(request, locus):
         menu = True
 
 
-    return render(request, 'chlamdb/sunburst.html', locals())
+    return render(request, 'chlamdb/sunburst.html', my_locals(locals()))
 
 def get_cog(request, taxon, category):
     biodb = settings.BIODB
@@ -4580,7 +4594,7 @@ def get_cog(request, taxon, category):
 
     data_type = 'cog'
 
-    return render(request, 'chlamdb/cog_info.html', locals())
+    return render(request, 'chlamdb/cog_info.html', my_locals(locals()))
 
 def get_cog_multiple(request, category, accessions=False):
     biodb = settings.BIODB
@@ -4630,7 +4644,7 @@ def get_cog_multiple(request, category, accessions=False):
 
     data_type = 'cog'
 
-    return render(request, 'chlamdb/cog_info_multiple.html', locals())
+    return render(request, 'chlamdb/cog_info_multiple.html', my_locals(locals()))
 
 
 def get_orthogroup_multiple_cog(request, category):
@@ -4698,7 +4712,7 @@ def get_orthogroup_multiple_cog(request, category):
 
     data_type = 'cog'
 
-    return render(request, 'chlamdb/get_orthogroup_multiple_cog.html', locals())
+    return render(request, 'chlamdb/get_orthogroup_multiple_cog.html', my_locals(locals()))
 
 def get_ko_multiple(request, type, category):
     biodb = settings.BIODB
@@ -4758,7 +4772,7 @@ def get_ko_multiple(request, type, category):
 
     data_type = 'ko'
 
-    return render(request, 'chlamdb/ko_info_multiple.html', locals())
+    return render(request, 'chlamdb/ko_info_multiple.html', my_locals(locals()))
 
 def cog_venn_subset(request, category):
     biodb = settings.BIODB
@@ -4800,7 +4814,7 @@ def cog_venn_subset(request, category):
 
 
 
-    return render(request, 'chlamdb/venn_cogs.html', locals())
+    return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
 
 
 def ko_venn_subset(request, category):
@@ -4863,7 +4877,7 @@ def ko_venn_subset(request, category):
 
 
 
-    return render(request, 'chlamdb/venn_ko.html', locals())
+    return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
 
 
 
@@ -4904,7 +4918,7 @@ def module_cat_info(request, taxon, category):
 
     data_type = 'ko'
 
-    return render(request, 'chlamdb/cog_info.html', locals())
+    return render(request, 'chlamdb/cog_info.html', my_locals(locals()))
 
 
 
@@ -5022,7 +5036,7 @@ def module_barchart(request):
             envoi = True
     else:  
         form = venn_form_class()
-    return render(request, 'chlamdb/module_barplot.html', locals())
+    return render(request, 'chlamdb/module_barplot.html', my_locals(locals()))
 
 def add_comment(request, locus_tag):
     biodb = settings.BIODB
@@ -5051,7 +5065,7 @@ def add_comment(request, locus_tag):
             server.commit()
     else:
         form = comment_form_class()
-    return render(request, 'chlamdb/comment_form.html', locals())
+    return render(request, 'chlamdb/comment_form.html', my_locals(locals()))
 
 
 def add_locus_int(request):
@@ -5097,7 +5111,7 @@ def add_locus_int(request):
             server.commit()
     else:
         form = LocusInt()
-    return render(request, 'chlamdb/add_inter_form.html', locals())
+    return render(request, 'chlamdb/add_inter_form.html', my_locals(locals()))
 
 def ko_subset_barchart(request, type):
     biodb = settings.BIODB
@@ -5230,7 +5244,7 @@ def ko_subset_barchart(request, type):
 
 
 
-    return render(request, 'chlamdb/ko_subset_barchart.html', locals())
+    return render(request, 'chlamdb/ko_subset_barchart.html', my_locals(locals()))
 
 def cog_subset_barchart(request, accessions=False):
     biodb = settings.BIODB
@@ -5370,7 +5384,7 @@ def cog_subset_barchart(request, accessions=False):
     taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
     taxon_out_url = "&o="+("&o=").join(exclude)
 
-    return render(request, 'chlamdb/cog_subset_barchart.html', locals())
+    return render(request, 'chlamdb/cog_subset_barchart.html', my_locals(locals()))
 
 
 def compare_homologs(request):
@@ -5440,7 +5454,7 @@ def compare_homologs(request):
     else:  
         form = venn_form_class()
 
-    return render(request, 'chlamdb/prot_length_scatter.html', locals())
+    return render(request, 'chlamdb/prot_length_scatter.html', my_locals(locals()))
 
 
 def orthogroup2cog_series(orthogroup_list, reference_taxon=None, accessions=False):
@@ -5787,7 +5801,7 @@ def orthogroup_list_cog_barchart(request, accessions=False):
     no_cogs_url = "?g=" + ('&g=').join(missing_cog_list)
     orthogroups_url = '?h=' + ('&h=').join(orthogroup_list)
 
-    return render(request, 'chlamdb/orthogroup_list_cog_barchart.html', locals())
+    return render(request, 'chlamdb/orthogroup_list_cog_barchart.html', my_locals(locals()))
 
 
 def cog_barchart(request):
@@ -5905,7 +5919,7 @@ def cog_barchart(request):
             envoi = True
     else:  
         form = venn_form_class()
-    return render(request, 'chlamdb/cog_barplot.html', locals())
+    return render(request, 'chlamdb/cog_barplot.html', my_locals(locals()))
 
 def get_locus_annotations(biodb, locus_list):
 
@@ -6104,7 +6118,7 @@ def genome_annotation(request, accession):
     missing_cog_list = locus_tag2cog_series(biodb, locus_list, reference_taxon=None)
     '''
 
-    return render(request, 'chlamdb/genome_annotation.html', locals())
+    return render(request, 'chlamdb/genome_annotation.html', my_locals(locals()))
 
 
 
@@ -6222,7 +6236,7 @@ def blastnr_cat_info(request, accession, rank, taxon):
     '''
 
 
-    return render(request, 'chlamdb/blastnr_info.html', locals())
+    return render(request, 'chlamdb/blastnr_info.html', my_locals(locals()))
 
 def identity_heatmap(request):
     biodb = settings.BIODB
@@ -6242,7 +6256,7 @@ def identity_heatmap(request):
 
             if len(taxon_list) < 3:
                 wrong_count = True
-                return render(request, 'chlamdb/identity_heatmap.html', locals())
+                return render(request, 'chlamdb/identity_heatmap.html', my_locals(locals()))
 
             plot_type = form_venn.cleaned_data['plot']
             taxon_filter = '"'+'","'.join(taxon_list)+'"'
@@ -6293,7 +6307,7 @@ def identity_heatmap(request):
 
     else:
         form_venn = form_class()
-    return render(request, 'chlamdb/identity_heatmap.html', locals())
+    return render(request, 'chlamdb/identity_heatmap.html', my_locals(locals()))
 
 
 def pan_genome(request, type):
@@ -6367,7 +6381,7 @@ def pan_genome(request, type):
             envoi = True
     else:  
         form = venn_form_class()
-    return render(request, 'chlamdb/pan_genome.html', locals())
+    return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
 
 
 
@@ -6497,7 +6511,7 @@ def core_genome_missing(request, type):
             envoi = True
     else:  
         form = venn_form_class()
-    return render(request, 'chlamdb/core_genome_missing.html', locals())
+    return render(request, 'chlamdb/core_genome_missing.html', my_locals(locals()))
 
 
 
@@ -6672,7 +6686,7 @@ def pairwiseid(request):
             envoi = True
     else:  
         form = pairwiseid_form_class()
-    return render(request, 'chlamdb/pairwise_id.html', locals())
+    return render(request, 'chlamdb/pairwise_id.html', my_locals(locals()))
 
 def multiple_codon_usage(request):
     biodb = settings.BIODB
@@ -6725,7 +6739,7 @@ def multiple_codon_usage(request):
             envoi = True
     else:  
         form = pairwiseCDS_length_form_class()
-    return render(request, 'chlamdb/codons_multiple_pca.html', locals())
+    return render(request, 'chlamdb/codons_multiple_pca.html', my_locals(locals()))
 
 def get_BBH_non_chlamydiae_taxonomy(request):
     biodb = settings.BIODB
@@ -6860,7 +6874,7 @@ def multipleGC(request):
             envoi = True
     else:  
         form = pairwiseCDS_length_form_class()
-    return render(request, 'chlamdb/aa_multiple_pca.html', locals())
+    return render(request, 'chlamdb/aa_multiple_pca.html', my_locals(locals()))
 
 def pairwiseCDS_length(request):
     biodb = settings.BIODB
@@ -6948,7 +6962,7 @@ def pairwiseCDS_length(request):
             envoi = True
     else:  
         form = pairwiseCDS_length_form_class()
-    return render(request, 'chlamdb/pairwise_CDS_length.html', locals())
+    return render(request, 'chlamdb/pairwise_CDS_length.html', my_locals(locals()))
 
 
 
@@ -7138,7 +7152,7 @@ def blastnr_euk(request):
     #pairwiseid_plots.basic_plot(identity_values, count_n_species, output_path="~/tata.svg")
     #pairwiseid_plots.basic_plot(count_n_species, output_path="~/tata2.svg")
 
-    return render(request, 'chlamdb/blastnr_euk.html', locals())
+    return render(request, 'chlamdb/blastnr_euk.html', my_locals(locals()))
 
 def prot_length_barchart(request):
     biodb = settings.BIODB
@@ -7208,7 +7222,7 @@ def prot_length_barchart(request):
     path1 = settings.BASE_DIR + '/assets/temp/CDS_length.svg'
     asset_path1 = '/temp/CDS_length.svg'
     tree1.render(path1, dpi=600, tree_style=style1)
-    return render(request, 'chlamdb/CDS_length.html', locals())
+    return render(request, 'chlamdb/CDS_length.html', my_locals(locals()))
 
 
 def blastnr_overview(request):
@@ -7616,7 +7630,7 @@ def blastnr_overview(request):
     path1 = settings.BASE_DIR + '/assets/temp/interpro_tree2.svg'
     asset_path1 = '/temp/interpro_tree2.svg'
     tree1.render(path1, dpi=600, tree_style=style1)
-    return render(request, 'chlamdb/blastnr_overview.html', locals())
+    return render(request, 'chlamdb/blastnr_overview.html', my_locals(locals()))
 
 
 
@@ -7660,7 +7674,7 @@ def blastnr_top_non_phylum(request):
 
     else:  
         form = blastnr_form_class()
-    return render(request, 'chlamdb/blastnr_locus_list.html', locals())
+    return render(request, 'chlamdb/blastnr_locus_list.html', my_locals(locals()))
 
 def blastnr_barchart(request):
     biodb = settings.BIODB
@@ -7795,7 +7809,7 @@ def blastnr_barchart(request):
             envoi = True
     else:  
         form = blastnr_form_class()
-    return render(request, 'chlamdb/blastnr_best_barplot.html', locals())
+    return render(request, 'chlamdb/blastnr_best_barplot.html', my_locals(locals()))
 
 
 
@@ -8041,7 +8055,7 @@ def effector_pred(request):
 
     all=True
 
-    return render(request, 'chlamdb/effector_pred.html', locals())
+    return render(request, 'chlamdb/effector_pred.html', my_locals(locals()))
 
 
 
@@ -8384,7 +8398,7 @@ def interpro_taxonomy(request):
 
     else:  
         form = interpro_form_class()
-    return render(request, 'chlamdb/interpro_taxonomy.html', locals())
+    return render(request, 'chlamdb/interpro_taxonomy.html', my_locals(locals()))
 
 
 
@@ -8443,9 +8457,9 @@ def homologs(request, orthogroup, locus_tag=False):
                 value = list(value)
                 homologues[count] = [count+1] + value
 
-        return render(request, 'chlamdb/homologs.html', locals())
+        return render(request, 'chlamdb/homologs.html', my_locals(locals()))
 
-    return render(request, 'chlamdb/homologs.html', locals())
+    return render(request, 'chlamdb/homologs.html', my_locals(locals()))
 
 
 
@@ -8479,10 +8493,10 @@ def blastswissprot(request, locus_tag):
 
 
 
-        return render(request, 'chlamdb/blastswiss.html', locals())
+        return render(request, 'chlamdb/blastswiss.html', my_locals(locals()))
 
 
-    return render(request, 'chlamdb/blastswiss.html', locals())
+    return render(request, 'chlamdb/blastswiss.html', my_locals(locals()))
 
 
 def blastnr(request, locus_tag):
@@ -8519,10 +8533,10 @@ def blastnr(request, locus_tag):
             blast_query_protein_id = blast_data[0][2]
 
 
-        return render(request, 'chlamdb/blastnr.html', locals())
+        return render(request, 'chlamdb/blastnr.html', my_locals(locals()))
 
 
-    return render(request, 'chlamdb/blastnr.html', locals())
+    return render(request, 'chlamdb/blastnr.html', my_locals(locals()))
 
 
 
@@ -8544,7 +8558,7 @@ def homology(request):
             envoi = True
     else:  
         form = make_contact_form(server, biodb)
-    return render(request, 'chlamdb/homology.html', locals())
+    return render(request, 'chlamdb/homology.html', my_locals(locals()))
 
 
 
@@ -8588,7 +8602,7 @@ def orthogroup_identity(request, orthogroup, group=False):
     homologs = True
     #except:
     #    homologs = False
-    #    return render(request, 'chlamdb/orthogroup_identity.html', locals())
+    #    return render(request, 'chlamdb/orthogroup_identity.html', my_locals(locals()))
     locus_list_filter = '"' + '","'.join(locus_list) + '"'
 
     sql2 = 'select locus_tag, organism from orthology_detail where locus_tag in (%s)' % (locus_list_filter)
@@ -8610,11 +8624,11 @@ def orthogroup_identity(request, orthogroup, group=False):
     with open(path, 'w') as f:
         f.write(frame.to_json(orient="split"))
 
-    return render(request, 'chlamdb/orthogroup_identity.html', locals())
+    return render(request, 'chlamdb/orthogroup_identity.html', my_locals(locals()))
 
 
 def ortho_id_plot(request, group):
-    return render(request, 'chlamdb/orthogroup_identity_plot.html', locals())
+    return render(request, 'chlamdb/orthogroup_identity_plot.html', my_locals(locals()))
 
 
 
@@ -8631,7 +8645,7 @@ def plot_neighborhood(request, target_locus, region_size=23000):
 
     task_id = task.id
     
-    return render(request, 'chlamdb/plot_region_and_profile.html', locals())
+    return render(request, 'chlamdb/plot_region_and_profile.html', my_locals(locals()))
 
 def plot_region_generic(biodb, orthogroup, taxon_list, region_size):
 
@@ -8671,7 +8685,7 @@ def plot_region_direct(request, orthogroup):
                                                                       target_taxons, 
                                                                       18000)
 
-    return render(request, 'chlamdb/plot_region_simple.html', locals())
+    return render(request, 'chlamdb/plot_region_simple.html', my_locals(locals()))
 
 
 def plot_region(request):
@@ -8783,7 +8797,7 @@ def plot_region(request):
     else:  
         form = plot_region_form_class()
 
-    return render(request, 'chlamdb/plot_region.html', locals())
+    return render(request, 'chlamdb/plot_region.html', my_locals(locals()))
 
 '''
 
@@ -8810,7 +8824,7 @@ def plot_region(request, biodb):
     else:  
         form = plot_form_class()
 
-    return render(request, 'chlamdb/plot_region.html', locals())
+    return render(request, 'chlamdb/plot_region.html', my_locals(locals()))
 '''
 
 
@@ -8839,7 +8853,7 @@ def orthogroups(request):
     else:
         form = BiodatabaseForm()
 
-    return render(request, 'chlamdb/orthogroups.html', locals())
+    return render(request, 'chlamdb/orthogroups.html', my_locals(locals()))
 
 
 def sitemap(request):
@@ -8909,9 +8923,9 @@ def get_newick_tree(request, orthogroup, refseq_BBH_phylogeny):
     server, db = manipulate_biosqldb.load_db(biodb)
 
     if refseq_BBH_phylogeny == "False":
-        sql_tree = 'select phylogeny from biosqldb_phylogenies where orthogroup="%s"' % (orthogroup)
+        sql_tree = 'select phylogeny from phylogenies where orthogroup="%s"' % (orthogroup)
     else:
-        sql_tree = 'select phylogeny from biosqldb_phylogenies_BBH where orthogroup="%s";' % (orthogroup)
+        sql_tree = 'select phylogeny from phylogenies_BBH where orthogroup="%s";' % (orthogroup)
     try:
         tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
     except IndexError:
@@ -9463,7 +9477,7 @@ def get_pfam_hit_list(request,
 
     taxon_data = server.adaptor.execute_and_fetchall(sql,)
 
-    return render(request, 'chlamdb/pfam_taxon_detail.html', locals())
+    return render(request, 'chlamdb/pfam_taxon_detail.html', my_locals(locals()))
 
 def get_pfam_taxon_table(request, pfam_domain):
 
@@ -9494,7 +9508,7 @@ def get_pfam_taxon_table(request, pfam_domain):
             row[4] = '-'
         taxon_data.append(row)
 
-    return render(request, 'chlamdb/pfam_taxon_table.html', locals())
+    return render(request, 'chlamdb/pfam_taxon_table.html', my_locals(locals()))
 
 
 def pfam_profile(request, pfam_domain, rank):
@@ -9511,7 +9525,7 @@ def pfam_profile(request, pfam_domain, rank):
     tree, style = pfam_phylogenetic_profile.plot_phylum_counts(pf_id,rank)
 
     tree.render(path, tree_style=style, dpi=800)
-    return render(request, 'chlamdb/pfam_profile.html', locals())
+    return render(request, 'chlamdb/pfam_profile.html', my_locals(locals()))
 
 def eggnog_profile(request, eggnog_id, rank):
     biodb = settings.BIODB
@@ -9527,7 +9541,7 @@ def eggnog_profile(request, eggnog_id, rank):
     tree, style = eggnog_data.plot_phylum_counts(eggnog_id, rank=rank,colapse_low_species_counts=0)
 
     tree.render(path, tree_style=style) # dpi=800,
-    return render(request, 'chlamdb/eggnog_profile.html', locals())
+    return render(request, 'chlamdb/eggnog_profile.html', my_locals(locals()))
 
 def annotation_overview(request):
     biodb = settings.BIODB
@@ -9681,7 +9695,7 @@ def annotation_overview(request):
     pairwiseid_plots.plot_multiseries_points(proportions,output_path="/home/tpillone/ko2size.svg")
 
     tree1.render(path, dpi=800, tree_style=style1)
-    return render(request, 'chlamdb/species_specific.html', locals())
+    return render(request, 'chlamdb/species_specific.html', my_locals(locals()))
 
 def orthogroup_KO_COG(request):
     biodb = settings.BIODB
@@ -9708,7 +9722,7 @@ def orthogroup_KO_COG(request):
 
     pairwiseid_plots.basic_plot(group2n_KO.values(),output_path="/home/tpillone/test2.svg")
 
-    return render(request, 'chlamdb/species_specific.html', locals())
+    return render(request, 'chlamdb/species_specific.html', my_locals(locals()))
 
 def paralogs(request):
     biodb = settings.BIODB
@@ -9784,7 +9798,7 @@ def paralogs(request):
     asset_path = '/temp/tree.svg'
 
     tree1.render(path, dpi=800, tree_style=style1)
-    return render(request, 'chlamdb/species_specific.html', locals())
+    return render(request, 'chlamdb/species_specific.html', my_locals(locals()))
 
 
 def species_specific_groups(request):
@@ -9886,7 +9900,7 @@ def species_specific_groups(request):
     asset_path = '/temp/tree.svg'
 
     tree1.render(path, dpi=800, tree_style=style1)
-    return render(request, 'chlamdb/species_specific.html', locals())
+    return render(request, 'chlamdb/species_specific.html', my_locals(locals()))
 
 
 def api_vs_16S_identity(request):
@@ -10078,7 +10092,7 @@ def api_vs_16S_identity(request):
 
     pairwiseid_plots.plot_multiseries_points(data_list, "~/inter_orders")
 
-    return render(request, 'chlamdb/species_specific.html', locals())
+    return render(request, 'chlamdb/species_specific.html', my_locals(locals()))
 
 
 def circos_main(request):
@@ -10139,7 +10153,7 @@ def circos_main(request):
 
         #return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
 
-    return render(request, 'chlamdb/circos_main.html', locals())
+    return render(request, 'chlamdb/circos_main.html', my_locals(locals()))
 
 
 def circos_blastnr(request):
@@ -10231,7 +10245,7 @@ def circos_blastnr(request):
             envoi_region = True
     else:
         form = circos_form_class()
-    return render(request, 'chlamdb/circos_blastnr.html', locals())
+    return render(request, 'chlamdb/circos_blastnr.html', my_locals(locals()))
 
 
 def circos(request):
@@ -10262,7 +10276,7 @@ def alignment(request, input_fasta):
     handle = open(input_fasta, "rU")
     for record in SeqIO.parse(handle, "fasta"):
         pass
-    return render(request, 'chlamdb/alignment.html', locals())
+    return render(request, 'chlamdb/alignment.html', my_locals(locals()))
 
 
 
@@ -10544,7 +10558,7 @@ def search_taxonomy(request):
         envoi = True
 
 
-    return render(request, 'chlamdb/search_taxonomy.html', locals())
+    return render(request, 'chlamdb/search_taxonomy.html', my_locals(locals()))
 
 
 
@@ -10628,7 +10642,7 @@ def interpro(request):
     else:  
         form = interproform()
 
-    return render(request, 'chlamdb/interpro.html', locals())
+    return render(request, 'chlamdb/interpro.html', my_locals(locals()))
 
 
 def search(request):
@@ -10710,7 +10724,7 @@ def search(request):
     search_term_edit = re.sub("\-|\+", "", search_term)
     print("SEARCH:", search_term_edit, search_term)
 
-    return render(request, 'chlamdb/search.html', locals())
+    return render(request, 'chlamdb/search.html', my_locals(locals()))
 
 
 
@@ -10765,7 +10779,7 @@ def primer_search(request):
     else:  
         form = PCRForm()
 
-    return render(request, 'chlamdb/pcr.html', locals())
+    return render(request, 'chlamdb/pcr.html', my_locals(locals()))
 
 
 
@@ -10822,7 +10836,7 @@ def motif_search(request):
     else:  
         form = motif_form_class()  # empty form
 
-    return render(request, 'chlamdb/motifs.html', locals())
+    return render(request, 'chlamdb/motifs.html', my_locals(locals()))
 
 
 def blast_profile(request):
@@ -10904,7 +10918,7 @@ def blast_profile(request):
     else:  
         form = BlastProfileForm()
 
-    return render(request, 'chlamdb/blast_profile.html', locals())
+    return render(request, 'chlamdb/blast_profile.html', my_locals(locals()))
 
 
 
@@ -11103,7 +11117,7 @@ def blast(request):
     else:  
         form = blast_form_class()
 
-    return render(request, 'chlamdb/blast.html', locals())
+    return render(request, 'chlamdb/blast.html', my_locals(locals()))
 
 
 def get_record_from_memory(biodb, cache_obj, record_key, accession):
@@ -11173,7 +11187,7 @@ def mummer(request):
     else:  
         form = mummer_form_class()
 
-    return render(request, 'chlamdb/mummer.html', locals())
+    return render(request, 'chlamdb/mummer.html', my_locals(locals()))
 
 
 
@@ -11266,11 +11280,11 @@ def circos2genomes(request):
     else:  
         form = circos2genomes_form_class()
 
-    return render(request, 'chlamdb/circos2genomes.html', locals())
+    return render(request, 'chlamdb/circos2genomes.html', my_locals(locals()))
 
 
 def circos2genomes_main(request):
-    return render(request, 'chlamdb/circos2genomes_main.html', locals())
+    return render(request, 'chlamdb/circos2genomes_main.html', my_locals(locals()))
 
 
 def update_db(server):
@@ -11347,7 +11361,7 @@ def crossplot(request):
     else:  
         form = DBForm() #crossplot_form_class()
         form2 = DBForm()
-    return render(request, 'chlamdb/crossplot.html', locals())
+    return render(request, 'chlamdb/crossplot.html', my_locals(locals()))
 
 
 
@@ -11408,7 +11422,7 @@ def string_page(request, cog_id, genome_accession):
     except urllib2.URLError:
         connect = False
 
-    return render(request, 'chlamdb/string.html', locals())
+    return render(request, 'chlamdb/string.html', my_locals(locals()))
 
 
 def multiple_COGs_heatmap(request):
@@ -11500,7 +11514,7 @@ def multiple_COGs_heatmap(request):
 
         t1.render(path, dpi=800)
 
-    return render(request, 'chlamdb/cog_tree.html', locals())
+    return render(request, 'chlamdb/cog_tree.html', my_locals(locals()))
 
 def pfam_tree(request, orthogroup):
     biodb = settings.BIODB
@@ -11510,7 +11524,7 @@ def pfam_tree(request, orthogroup):
     print("task", task)
     task_id = task.id
 
-    return render(request, 'chlamdb/pfam_tree.html', locals())
+    return render(request, 'chlamdb/pfam_tree.html', my_locals(locals()))
 
 def TM_tree(request, orthogroup):
     biodb = settings.BIODB
@@ -11520,7 +11534,7 @@ def TM_tree(request, orthogroup):
     print("task", task)
     task_id = task.id
 
-    return render(request, 'chlamdb/TM_tree.html', locals())
+    return render(request, 'chlamdb/TM_tree.html', my_locals(locals()))
 
 def phylogeny(request, orthogroup):
     biodb = settings.BIODB
@@ -11549,7 +11563,7 @@ def phylogeny(request, orthogroup):
 
     task_id = task.id
 
-    return render(request, 'chlamdb/phylogeny.html', locals())
+    return render(request, 'chlamdb/phylogeny.html', my_locals(locals()))
 
 
 def refseq_swissprot_tree(request, orthogroup):
@@ -11560,7 +11574,7 @@ def refseq_swissprot_tree(request, orthogroup):
     print("refseq_swissprot_tree task", task)
     task_id = task.id
 
-    return render(request, 'chlamdb/best_refseq_swissprot_tree.html', locals())
+    return render(request, 'chlamdb/best_refseq_swissprot_tree.html', my_locals(locals()))
 
 def multiple_orthogroup_heatmap(request, reference_orthogroup, max_distance=2.2):
     biodb = settings.BIODB
@@ -11713,7 +11727,7 @@ def multiple_orthogroup_heatmap(request, reference_orthogroup, max_distance=2.2)
     match_groups_data, raw_data = biosql_own_sql_tables.orthogroup_list2detailed_annotation(ordered_orthogroups, biodb)
 
 
-    return render(request, 'chlamdb/profile_tree.html', locals())
+    return render(request, 'chlamdb/profile_tree.html', my_locals(locals()))
 
 def locus2locus(request):
     biodb = settings.BIODB
@@ -11764,7 +11778,7 @@ def locus2locus(request):
                     orthogroup2locus_list_corresp[group] = ['-']
     else:
         form = NetForm()
-    return render(request, 'chlamdb/locus2locus.html', locals())
+    return render(request, 'chlamdb/locus2locus.html', my_locals(locals()))
 
 def interactions_genome(request):
     biodb = settings.BIODB
@@ -11815,7 +11829,7 @@ def interactions_genome(request):
 
     else:
         form = NetForm()
-    return render(request, 'chlamdb/interactions_genome.html', locals())
+    return render(request, 'chlamdb/interactions_genome.html', my_locals(locals()))
 
 
 
@@ -11869,7 +11883,7 @@ def interactions_genome_string(request):
 
     else:
         form = NetForm()
-    return render(request, 'chlamdb/interactions_genome_string.html', locals())
+    return render(request, 'chlamdb/interactions_genome_string.html', my_locals(locals()))
 
 
 
@@ -11924,7 +11938,7 @@ def interactions(request, locus_tag):
     else:
         neig_match = True
 
-    return render(request, 'chlamdb/interactions.html', locals())
+    return render(request, 'chlamdb/interactions.html', my_locals(locals()))
 
 def plot_heatmap(request, type):
     biodb = settings.BIODB
@@ -11959,7 +11973,7 @@ def plot_heatmap(request, type):
 
     else:
         form_venn = form_class()
-    return render(request, 'chlamdb/plot_heatmap.html', locals())
+    return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
 
 
@@ -12021,7 +12035,7 @@ def profile_interactions(request, orthogroup, distance):
         tree.render(path, dpi=500, tree_style=style)
 
 
-    return render(request, 'chlamdb/profile_interactions.html', locals())
+    return render(request, 'chlamdb/profile_interactions.html', my_locals(locals()))
 
 def neig_interactions(request, locus_tag):
     biodb = settings.BIODB
@@ -12107,7 +12121,7 @@ def neig_interactions(request, locus_tag):
         seqfeature_id_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
     script = string_networks.generate_network(biodb, seqfeature_id_list, [locus_tag], 0.7, scale_link=True)
 
-    return render(request, 'chlamdb/neig_interactions.html', locals())
+    return render(request, 'chlamdb/neig_interactions.html', my_locals(locals()))
 
 
 def similarity_network(request, orthogroup, annotation):
@@ -12173,7 +12187,7 @@ def similarity_network(request, orthogroup, annotation):
     '''
     envoi = True
 
-    return render(request, 'chlamdb/similarity_network.html', locals())
+    return render(request, 'chlamdb/similarity_network.html', my_locals(locals()))
 
 
 
@@ -12307,7 +12321,7 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
               dpi=300, 
               w=800)
 
-    return render(request, 'chlamdb/orthogroup_conservation.html', locals())
+    return render(request, 'chlamdb/orthogroup_conservation.html', my_locals(locals()))
 
 
 def priam_kegg(request):
@@ -12348,7 +12362,7 @@ def priam_kegg(request):
     else:  
         form = priam_form_class()
 
-    return render(request, 'chlamdb/priam_kegg.html', locals())
+    return render(request, 'chlamdb/priam_kegg.html', my_locals(locals()))
 
 
 
@@ -12462,7 +12476,7 @@ def locus_list2circos(request, target_taxon):
     envoi_circos = True
 
 
-    return render(request, 'chlamdb/locus2circos.html', locals())
+    return render(request, 'chlamdb/locus2circos.html', my_locals(locals()))
 
 
 def hmm2circos(request):
@@ -12605,7 +12619,7 @@ def hmm2circos(request):
     else:  
         form = hmm_form()
 
-    return render(request, 'chlamdb/hmm2circos.html', locals())
+    return render(request, 'chlamdb/hmm2circos.html', my_locals(locals()))
 
 
 
@@ -12687,7 +12701,7 @@ def transporters_list(request):
     else:  
         form = transporters_form()
 
-    return render(request, 'chlamdb/transporters_table.html', locals())
+    return render(request, 'chlamdb/transporters_table.html', my_locals(locals()))
 
 
 def transporters_family(request, family):
@@ -12873,7 +12887,7 @@ def transporters_family(request, family):
     tree1.render(path1, dpi=800, tree_style=style1)
     envoi = True
 
-    return render(request, 'chlamdb/transporters_families.html', locals())
+    return render(request, 'chlamdb/transporters_families.html', my_locals(locals()))
 
 
 def transporters(request):
@@ -12972,7 +12986,7 @@ def transporters(request):
     else:  
         form = transporters_form()
 
-    return render(request, 'chlamdb/transporters_superfam.html', locals())
+    return render(request, 'chlamdb/transporters_superfam.html', my_locals(locals()))
 
 
 
@@ -13159,7 +13173,7 @@ def blast_sets(request):
     else:  
         form = sets_form()
 
-    return render(request, 'chlamdb/blast_sets_profiles.html', locals())
+    return render(request, 'chlamdb/blast_sets_profiles.html', my_locals(locals()))
 
 
 
@@ -13256,7 +13270,7 @@ def hmm(request):
     else:  
         form = hmm_form()
 
-    return render(request, 'chlamdb/hmm_profiles.html', locals())
+    return render(request, 'chlamdb/hmm_profiles.html', my_locals(locals()))
 
 
 def locus_int(request):
@@ -13365,7 +13379,7 @@ def locus_int(request):
     else:  
         form = module_int_form()
 
-    return render(request, 'chlamdb/inter_tree.html', locals())
+    return render(request, 'chlamdb/inter_tree.html', my_locals(locals()))
 
 
 
@@ -13431,7 +13445,7 @@ def kegg_pathway_heatmap(request):
     else:  
         form = pathway_form()
 
-    return render(request, 'chlamdb/pathway_cat.html', locals())
+    return render(request, 'chlamdb/pathway_cat.html', my_locals(locals()))
 
 
 
@@ -13487,7 +13501,7 @@ def kegg_module_subcat(request):
     else:  
         form = module_overview_form()
 
-    return render(request, 'chlamdb/module_subcat.html', locals())
+    return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
 
 
 def kegg_module(request):
@@ -13583,7 +13597,7 @@ def kegg_module(request):
     else:  
         form = module_overview_form()
 
-    return render(request, 'chlamdb/module_overview.html', locals())
+    return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
 
 
 def module2heatmap(request):
@@ -13692,7 +13706,7 @@ def module2heatmap(request):
     else:  
         form = comp_metabo_form()
 
-    return render(request, 'chlamdb/module2heatmap.html', locals())
+    return render(request, 'chlamdb/module2heatmap.html', my_locals(locals()))
 
 
 
@@ -13757,7 +13771,7 @@ def module_comparison(request):
     else:  
         form = comp_metabo_form()
 
-    return render(request, 'chlamdb/module_comp.html', locals())
+    return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
 
 
 
@@ -13847,7 +13861,7 @@ def metabo_overview(request):
     #else:  
     #    pass
 
-    return render(request, 'chlamdb/metabo_overview.html', locals())
+    return render(request, 'chlamdb/metabo_overview.html', my_locals(locals()))
 
 
 
@@ -13922,7 +13936,7 @@ def metabo_comparison(request):
     else:  
         form = comp_metabo_form()
 
-    return render(request, 'chlamdb/metabo_comp.html', locals())
+    return render(request, 'chlamdb/metabo_comp.html', my_locals(locals()))
 
 
 def metabo_comparison_ko(request):
@@ -13994,7 +14008,7 @@ def metabo_comparison_ko(request):
     else:  
         form = comp_metabo_form()
 
-    return render(request, 'chlamdb/metabo_comp_ko.html', locals())
+    return render(request, 'chlamdb/metabo_comp_ko.html', my_locals(locals()))
 
 
 def pfam_comparison(request):
@@ -14055,7 +14069,7 @@ def pfam_comparison(request):
     else:  
         form = comp_metabo_form()
 
-    return render(request, 'chlamdb/pfam_comp.html', locals())
+    return render(request, 'chlamdb/pfam_comp.html', my_locals(locals()))
 
 
 
@@ -14109,7 +14123,7 @@ def orthogroup_comparison(request):
     else:  
         form = comp_metabo_form()
 
-    return render(request, 'chlamdb/ortho_comp.html', locals())
+    return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
 
 
 def ko_comparison(request):
@@ -14151,6 +14165,6 @@ def ko_comparison(request):
     else:  
         form = comp_metabo_form()
 
-    return render(request, 'chlamdb/ko_comp.html', locals())
+    return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
 
 
