@@ -3,7 +3,7 @@ Minimal SETUP
 ==============
 
 0. Setup env with conda 
-====================
+------------------------
 
 - TODO test with latest versions and add constrains if necessary
 
@@ -31,7 +31,7 @@ Edit file: BioSQL/Loader.py: replace double quote "rank" by `rank`
 
 
 1. Mysql setup
-==============
+---------------
 
 The environment variable `SQLPSW` is used to pass the root MySQL password to the various scripts. Setup MySQL and the root password and export the variable.
 
