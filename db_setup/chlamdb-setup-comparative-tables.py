@@ -120,7 +120,7 @@ def collect_Pfam_accession(db_name):
     server, db = manipulate_biosqldb.load_db(db_name)
 
 
-    sql_head = 'INSERT INTO comparative_tables.Pfam_accessions (id,'
+    sql_head = 'INSERT INTO comparative_tables_Pfam_accessions (id,'
 
     accession_list = get_all_accessions(db_name)
     sql_head += ','.join(accession_list) + ') values ('
@@ -266,7 +266,7 @@ def collect_interpro(db_name):
     import sys
     #sys.exit()
 
-    all_interpro_ids_sql = 'select interpro_accession from biosqldb_interpro ' \
+    all_interpro_ids_sql = 'select interpro_accession from interpro ' \
                        ' where interpro_accession != "0" group by interpro_accession;'
 
     all_interpro_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_interpro_ids_sql,)]
@@ -276,7 +276,7 @@ def collect_interpro(db_name):
         print (i,'/', len(all_interpro_ids), accession)
         i+=1
         sql= 'select A.taxon_id, count(*) as n from (select taxon_id, locus_tag, interpro_accession ' \
-             ' from interpro where interpro_accession="%s" group by locus_tag) A group by taxon_id;' % (accession)
+             ' from interpro where interpro_accession="%s" group by taxon_id, locus_tag, interpro_accession) A group by taxon_id;' % (accession)
 
         data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -715,35 +715,43 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-
-
     if args.accessions:
         if args.orthology:
             create_comparative_tables_accession(args.database_name, "orthology")
             collect_orthogroup_accession(args.database_name)
+            # update config table
+            manipulate_biosqldb.update_config_table(args.database_name, "orthology_comparative_accession")
 
         if args.cog:
             create_comparative_tables_accession(args.database_name, "COG")
             collect_COGs_accession(args.database_name)
-
+            # update config table
+            manipulate_biosqldb.update_config_table(args.database_name, "COG_comparative_accession")
 
         if args.pfam:
             create_comparative_tables_accession(args.database_name, 'Pfam')
             collect_Pfam_accession(args.database_name)
-
+            # update config table
+            manipulate_biosqldb.update_config_table(args.database_name, "pfam_comparative_accession")
+                       
         if args.ec:
             create_comparative_tables_accession(args.database_name, "EC")
             collect_EC_accession(args.database_name)
-
+            # update config table
+            manipulate_biosqldb.update_config_table(args.database_name, "priam_comparative_accession")
+            
         if args.interpro:
             create_comparative_tables_accession(args.database_name, "interpro")
             collect_interpro_accession(args.database_name)
-
+            # update config table
+            manipulate_biosqldb.update_config_table(args.database_name, "interpro_comparative_accession")
 
         if args.ko:
             create_comparative_tables_accession(args.database_name, "ko")
             collect_ko_accession(args.database_name)
-
+            # update config table
+            manipulate_biosqldb.update_config_table(args.database_name, "KEGG_comparative_accession")
+            
     if not args.accessions:
         if args.orthology:
             print("identity_closest_homolog")
@@ -752,24 +760,31 @@ if __name__ == '__main__':
             n_shared_orthogroup_table(args.database_name)
             print("shared_orthogroups_average_identity")
             shared_orthogroups_average_identity(args.database_name)
+            
+            manipulate_biosqldb.update_config_table(args.database_name, "orthology_comparative")
 
         if args.cog:
             create_comparative_tables(args.database_name, "COG")
             collect_COGs(args.database_name)
+            manipulate_biosqldb.update_config_table(args.database_name, "COG_comparative")
 
         if args.pfam:
             create_comparative_tables(args.database_name, "Pfam")
             collect_pfam(args.database_name)
+            manipulate_biosqldb.update_config_table(args.database_name, "pfam_comparative")
 
         if args.ec:
 
             create_comparative_tables(args.database_name, "EC")
             collect_EC(args.database_name)
+            manipulate_biosqldb.update_config_table(args.database_name, "priam_comparative")
 
         if args.interpro:
             create_comparative_tables(args.database_name, "interpro")
             collect_interpro(args.database_name)
+            manipulate_biosqldb.update_config_table(args.database_name, "interpro_comparative")
 
         if args.ko:
             create_comparative_tables(args.database_name, "ko")
             collect_ko(args.database_name)
+            manipulate_biosqldb.update_config_table(args.database_name, "KEGG_comparative")
