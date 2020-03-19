@@ -17,7 +17,18 @@ Edit file: BioSQL/BioSeqDatabase.py: disable "SET sql_mode='ANSI_QUOTES';"
 Edit file: BioSQL/Loader.py: change double quote to "`rank`"
 
 Minimal SETUP
-================
+==============
+
+
+0. Mysql setup
+==============
+
+The environment variable `SQLPSW` is used to pass the root MySQL password to the various scripts. Setup MySQL and the root password and export the variable.
+
+.. code-block:: bash
+    
+    export SQLPSW='my password'
+
 
 .. note::
 
@@ -126,14 +137,14 @@ Mandatory by depreciated since synonymous table can be build at the end
 
 TODO: merge individual group tables into one table
 
-chlamdb-load-reference-phylogeny.py
+8. chlamdb-load-reference-phylogeny.py
 --------------------------------------
 
 .. code-block:: bash
 
     chlamdb-load-reference-phylogeny.py -r core_genome_phylogeny.nwk -d 2020_chlamydia_test -g  ../../data/gbk_edited/*gbk
 
-setup taxonomy table
+9. setup taxonomy table
 ------------------------
 
 .. code-block:: bash
@@ -144,12 +155,65 @@ Might not be strictly necessary (primarily useful to manage the taxnonomy of
 RefSEq and SwissProt hits) but currently necessary for genome statistics.
 Bsed on linear_taxonomy.db sqlite database (see snakemake pipeline).
 
-7. chlamdb-setup-genomes-statistics.py
+10. chlamdb-setup-genomes-statistics.py
 --------------------------------------
 
 .. code-block:: bash
 
     chlamdb-setup-genomes-statistics.py -d 2020_chlamydia_test
+
+
+Django app
+==========
+
+At this point the django app should be functional. 
+
+
+Caching
+--------
+
+To speedup the app, some data are cached in the memory using django cache framework. 
+Django support multiple cche backend including memcached and redis. Redis is recommended. 
+This can be setup in `settings.py`.
+
+.. note:: 
+
+    # exemple 
+    CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
+        }
+    }
+
+Celery
+-------
+
+Some pages use celery_ to deal with request which need a relative long processing time (e.g circular plots with circos). 
+celery_ can execute asynchronous tasks and uses RabbitMQ for messaging. 
+
+settings.py
+------------
+
+- update PROJECT_DIR?
+- other edits needed?
+
+Running the app
+----------------
+
+.. code-block:: bash
+
+    # run celery 
+    celery -A chlamdb.celeryapp worker -l info --without-gossip
+
+    # run django
+    python manage.py runserver --nothreading 0.0.0.0:8001
+    
+
+
 
 
 Aptional utilities/annotations
@@ -174,9 +238,10 @@ Aptional utilities/annotations
 3. Load additional annotations
 ------------------------------
 
+- TODO: check dependancies between data
+
 3.1 Load INTERPRO data
 +++++++++++++++++++++++
-
 
 .. code-block:: bash
 
@@ -189,10 +254,10 @@ Aptional utilities/annotations
     # setup legacy table
     chlamdb-load-interproscan.py -u data/nr_mapping.tab -i annotation/interproscan/*tsv -d 2020_chlamydia_test -l
 
-    # update TM et SP columns
-    chlamdb-load-interproscan.py -u data/nr_mapping.tab -i annotation/interproscan/*tsv -d 2020_chlamydia_test -l
+    # update TM et SP columns from legacy `ortho_detail` table
+    chlamdb-load-interproscan.py -u data/nr_mapping.tab -d 2020_chlamydia_test -l
 
-    # correspondance between sequence hash and locus tag
+    # correspondance between sequence hash and locus tag (deeded to display interproscan html pages)
     chlamdb-load-hash2locus.py -u data/nr_mapping.tab -d 2020_chlamydia_test
 
     # setup comparative tables
@@ -214,12 +279,6 @@ Aptional utilities/annotations
 
 3.3 Load Kegg data
 +++++++++++++++++++
-
-
-.. code-block:: bash
-
-
-
 
 .. code-block:: bash
 
@@ -357,3 +416,6 @@ Missing indexes
 - CREATE FULLTEXT INDEX GPF3 ON orthology_detail(organism);
 - CREATE FULLTEXT INDEX GPF4 ON orthology_detail(gene,product,organism);
 
+http://www.celeryproject.org/
+
+.. _celery : http://www.celeryproject.org/
