@@ -417,6 +417,8 @@ def orthogroup2average_identity(biodatabase_name):
 
 if __name__ == '__main__':
     import argparse
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-a",'--align_files', type=str, help="aliphment files", nargs='+')
@@ -430,3 +432,6 @@ if __name__ == '__main__':
     tata.import_alignments(tata.cursor, args.align_files)
     print("add_average_orthogroup_identity")
     tata.add_average_orthogroup_identity(args.db_name)
+    
+    manipulate_biosqldb.update_config_table(args.db_name, "orthogroup_alignments")
+    
