@@ -9,7 +9,7 @@ def biodb2pairwise_dist_phylogenies(biodb):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'select phylogeny from biosqldb_phylogenies' % biodb
+    sql = 'select phylogeny from phylogenies' % biodb
     all_phylogenies = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
     sql = 'select seqfeature_id, taxon_id from custom_tables_locus2seqfeature_id' % biodb
@@ -18,7 +18,7 @@ def biodb2pairwise_dist_phylogenies(biodb):
     sql = 'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id' % biodb
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    sql = 'create table if not exists biosqldb_phylogenies.pairwise_leaf_dist_%s (taxon_1 INT, ' \
+    sql = 'create table if not exists phylogenies.pairwise_leaf_dist_%s (taxon_1 INT, ' \
           ' taxon_2 INT, ' \
           ' seqfeature_1 INT, ' \
           ' seqfeature_2 INT, ' \
@@ -43,7 +43,7 @@ def biodb2pairwise_dist_phylogenies(biodb):
                 taxon_1 = seqfeature_id2taxon_id[str(seqid_1)]
                 taxon_2 = seqfeature_id2taxon_id[str(seqid_2)]
 
-                sql = 'insert into biosqldb_phylogenies.pairwise_leaf_dist_%s values (%s, %s, %s, %s, %s)' % (biodb,
+                sql = 'insert into phylogenies.pairwise_leaf_dist_%s values (%s, %s, %s, %s, %s)' % (biodb,
                                                                                                               taxon_1,
                                                                                                               taxon_2,
                                                                                                               seqid_1,
@@ -65,7 +65,7 @@ def get_normalized_pairwise_dist(biodb, sub=False):
     taxon_id_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
     if sub:
-        sql = 'create table if not exists biosqldb_phylogenies.pairwise_leaf_dist_norm_sub_%s (taxon_1 INT, ' \
+        sql = 'create table if not exists phylogenies.pairwise_leaf_dist_norm_sub_%s (taxon_1 INT, ' \
               ' taxon_2 INT, ' \
               ' seqfeature_1 INT, ' \
               ' seqfeature_2 INT, ' \
@@ -76,7 +76,7 @@ def get_normalized_pairwise_dist(biodb, sub=False):
               ' index seqfeature_2(seqfeature_2), ' \
               ' index distance_median_norm(distance_median_norm))' % (biodb)
     else:
-        sql = 'create table if not exists biosqldb_phylogenies.pairwise_leaf_dist_norm_%s (taxon_1 INT, ' \
+        sql = 'create table if not exists phylogenies.pairwise_leaf_dist_norm_%s (taxon_1 INT, ' \
               ' taxon_2 INT, ' \
               ' seqfeature_1 INT, ' \
               ' seqfeature_2 INT, ' \
@@ -93,9 +93,9 @@ def get_normalized_pairwise_dist(biodb, sub=False):
         for taxon_id_2 in taxon_id_list[n+1:]:
             print 'taxons: %s-%s' % (taxon_id_1, taxon_id_2)
 
-            sql = 'select taxon_1, taxon_2, seqfeature_1, seqfeature_2, distance from biosqldb_phylogenies.pairwise_leaf_dist_%s ' \
+            sql = 'select taxon_1, taxon_2, seqfeature_1, seqfeature_2, distance from phylogenies.pairwise_leaf_dist_%s ' \
                   ' where taxon_1=%s and taxon_2=%s UNION select taxon_2, taxon_1, seqfeature_2, seqfeature_1, distance ' \
-                  ' from biosqldb_phylogenies.pairwise_leaf_dist_%s  where taxon_1=%s and taxon_2=%s' % (biodb,
+                  ' from phylogenies.pairwise_leaf_dist_%s  where taxon_1=%s and taxon_2=%s' % (biodb,
                                                                    taxon_id_1,
                                                                    taxon_id_2,
                                                                    biodb,
@@ -114,7 +114,7 @@ def get_normalized_pairwise_dist(biodb, sub=False):
                 seqfeature_2 = row[3]
                 if sub:
                     norm_dist = float(row[4])-dist_median
-                    sql = 'insert into biosqldb_phylogenies.pairwise_leaf_dist_norm_sub_%s values (%s, %s, %s, %s, %s)' % (biodb,
+                    sql = 'insert into phylogenies.pairwise_leaf_dist_norm_sub_%s values (%s, %s, %s, %s, %s)' % (biodb,
                                                                                                                 taxon_1,
                                                                                                                 taxon_2,
                                                                                                                 seqfeature_1,
@@ -122,7 +122,7 @@ def get_normalized_pairwise_dist(biodb, sub=False):
                                                                                                                 norm_dist)
                 else:
                     norm_dist = float(row[4])/dist_median
-                    sql = 'insert into biosqldb_phylogenies.pairwise_leaf_dist_norm_%s values (%s, %s, %s, %s, %s)' % (biodb,
+                    sql = 'insert into phylogenies.pairwise_leaf_dist_norm_%s values (%s, %s, %s, %s, %s)' % (biodb,
                                                                                                                 taxon_1,
                                                                                                                 taxon_2,
                                                                                                                 seqfeature_1,
@@ -139,7 +139,7 @@ def get_orthogroup_median_dist(biodb):
     import numpy
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'create table if not exists biosqldb_phylogenies.orthogroup2median_distance_%s (orthogroup varchar(200),' \
+    sql = 'create table if not exists phylogenies.orthogroup2median_distance_%s (orthogroup varchar(200),' \
           ' median_norm_dist FLOAT, index orthogroup(orthogroup))' % biodb
     print sql
     server.adaptor.execute(sql,)
@@ -171,7 +171,7 @@ def get_orthogroup_median_dist(biodb):
         for l1, locus_1 in enumerate(locus_list):
             for l2, locus_2 in enumerate(locus_list[l1+1:]):
 
-                sql = 'select distance_median_norm from biosqldb_phylogenies.pairwise_leaf_dist_norm_sub_%s ' \
+                sql = 'select distance_median_norm from phylogenies.pairwise_leaf_dist_norm_sub_%s ' \
                       ' where (seqfeature_1 =%s and seqfeature_2=%s or ' \
                       '  seqfeature_1 =%s and seqfeature_2=%s)' % (biodb,
                                                                        locus_tag2seqfeature_id[locus_1],
@@ -191,7 +191,7 @@ def get_orthogroup_median_dist(biodb):
 
         if len(dist_list) > 0:
             median_dist = numpy.median(dist_list)
-            sql = 'insert into biosqldb_phylogenies.orthogroup2median_distance_%s values ("%s", %s)' % (biodb,
+            sql = 'insert into phylogenies.orthogroup2median_distance_%s values ("%s", %s)' % (biodb,
                                                                                                         one_group,
                                                                                                         str(median_dist))
             print sql
@@ -654,7 +654,7 @@ def get_most_conserved(biodb):
 
     filter = '"'+'","'.join(grp_list)+'"'
 
-    sql = 'select A.*, B.locus_tag, B.gene, B.product from (select * from biosqldb_phylogenies.orthogroup2median_distance_%s where orthogroup in (%s) ' \
+    sql = 'select A.*, B.locus_tag, B.gene, B.product from (select * from phylogenies.orthogroup2median_distance_%s where orthogroup in (%s) ' \
           ' order by median_norm_dist limit 550) A inner join orthology_detail B on A.orthogroup=B.orthogroup ' \
           ' where locus_tag like "%%%%WCW%%%%" order by median_norm_dist' % (biodb, filter, biodb)
     data = server.adaptor.execute_and_fetchall(sql)
