@@ -1,5 +1,18 @@
-PROBLEMS
-========
+
+Minimal SETUP
+==============
+
+0. Setup env with conda 
+====================
+
+- TODO test with latest version  and add constrains in necessary
+
+.. code-block:: bash
+
+    conda env create -f chlamdb.yaml
+
+    conda activate chlamdb
+
 
 .. warning::
 
@@ -16,11 +29,8 @@ Edit file: BioSQL/BioSeqDatabase.py: disable "SET sql_mode='ANSI_QUOTES';"
 
 Edit file: BioSQL/Loader.py: replace double quote "rank" by `rank`
 
-Minimal SETUP
-==============
 
-
-0. Mysql setup
+1. Mysql setup
 ==============
 
 The environment variable `SQLPSW` is used to pass the root MySQL password to the various scripts. Setup MySQL and the root password and export the variable.
@@ -41,7 +51,7 @@ The environment variable `SQLPSW` is used to pass the root MySQL password to the
     - Plot local alignments relying on orthology informations
     - Blast the database using the various blast flavours
 
-1. DB setup: download and import biosql schema
+2. DB setup: download and import biosql schema
 ----------------------------------------------
 
 .. code-block:: bash
@@ -56,7 +66,7 @@ Create a new MySQL database in setup the BioSQL scheme. Assume that mysql passwo
     Can then be use to check if the database was setup properly, eg. check if needed data were already loaded (dependancies). 
     TODO: Can also be used in the django app to display only menus,... for available data.
 
-2. Load genbank files
+3. Load genbank files
 ----------------------
 
 .. code-block:: bash
@@ -71,7 +81,8 @@ Create a new MySQL database in setup the BioSQL scheme. Assume that mysql passwo
     - product
     - seqfeature id (primary key for CDS)
 
-3. load orthology data
+
+4. load orthology data
 -----------------------
 
 .. code-block:: bash
@@ -85,7 +96,7 @@ Create a new MySQL database in setup the BioSQL scheme. Assume that mysql passwo
 	- create orthology_detail tablke (deprecoiated but still mandatory)
 
 
-4. Setup comparative basic tables
+5. Setup comparative basic tables
 ----------------------------------
 
 .. code-block:: bash
@@ -98,7 +109,7 @@ Create a new MySQL database in setup the BioSQL scheme. Assume that mysql passwo
 	chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -o -a
 	identity_closest_homolog
 
-5. orthogroups consensus annotation
+6. orthogroups consensus annotation
 ---------------------------------
 
 .. code-block:: bash
@@ -115,7 +126,7 @@ Statistics for:
 - domains
 
 
-6. Setup old locus table
+7. Setup old locus table
 ----------------------
 
 Mandatory by depreciated since synonymous table can be build at the end
@@ -124,7 +135,7 @@ Mandatory by depreciated since synonymous table can be build at the end
 
     chlamdb-setup-old_locus-table.py -d 2020_chlamydia_test
 
-7. Load alignments
+8. Load alignments
 -----------------
 
 .. code-block:: bash
@@ -137,14 +148,14 @@ Mandatory by depreciated since synonymous table can be build at the end
 
 TODO: merge individual group tables into one table
 
-8. chlamdb-load-reference-phylogeny.py
+9. chlamdb-load-reference-phylogeny.py
 --------------------------------------
 
 .. code-block:: bash
 
     chlamdb-load-reference-phylogeny.py -r core_genome_phylogeny.nwk -d 2020_chlamydia_test -g  ../../data/gbk_edited/*gbk
 
-9. setup taxonomy table
+10. setup taxonomy table
 ------------------------
 
 .. code-block:: bash
@@ -155,7 +166,7 @@ Might not be strictly necessary (primarily useful to manage the taxnonomy of
 RefSEq and SwissProt hits) but currently necessary for genome statistics.
 Bsed on linear_taxonomy.db sqlite database (see snakemake pipeline).
 
-10. chlamdb-setup-genomes-statistics.py
+11. chlamdb-setup-genomes-statistics.py
 --------------------------------------
 
 .. code-block:: bash
@@ -166,19 +177,17 @@ Bsed on linear_taxonomy.db sqlite database (see snakemake pipeline).
 Django app
 ==========
 
-At this point the django app should be functional. 
-
+At this point the django app should functional. 
 
 Caching
 --------
 
 To speedup the app, some data are cached in the memory using django cache framework. 
-Django support multiple cche backend including memcached and redis. Redis is recommended. 
+Django support multiple cache backends including memcached and redis. Redis is recommended. 
 This can be setup in `settings.py`.
 
-.. note:: 
+.. note:: exemple
 
-    # exemple 
     CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -189,10 +198,11 @@ This can be setup in `settings.py`.
         }
     }
 
+
 Celery
 -------
 
-Some pages use celery_ to deal with request which need a relative long processing time (e.g circular plots with circos). 
+Some pages use celery_ to deal with request with a relative long processing time (e.g generation of circular plots with circos). 
 celery_ can execute asynchronous tasks and uses RabbitMQ for messaging. 
 
 settings.py
