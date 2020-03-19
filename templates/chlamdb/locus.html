@@ -57,7 +57,9 @@ function clearBox(elementID)
                 {%if input_type != 'orthogroup' %}
                 <li class="active" id="main_overview"><a href="#tab1" data-toggle="tab">Overview</a></li>
                 <li><a href="#tab3" data-toggle="tab">Sequences</a></li>
-                <li><a href="#tab2" data-toggle="tab">InterproScan</a></li>
+                {% if optional2status|keyvalue:"interpro_data"%}
+                    <li><a href="#tab2" data-toggle="tab">InterproScan</a></li>
+                {% endif %}
                 <li><a href="#12" data-toggle="tab" onclick="window.open('{% url 'homologs' data.0 data.1 %}', 'frame12'); return false">Homologs <span class="badge">{{homologues}}</span><br></a></li>
                 {% else %}
                      <li class="active"><a href="#tab33" data-toggle="tab">Overview<br></a></li>
@@ -81,20 +83,30 @@ function clearBox(elementID)
 
                 {% if input_type != 'orthogroup' %}
                     <li><a href="#5" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' data.1 %}', 'frame5'); return false">Region</a></li>
-                    <li><a href="#6" data-toggle="tab" onclick="window.open('{% url 'blastnr' data.1 %}', 'frame6'); return false">RefSeq homologs <span class="badge">{{n_blastnr_hits}}</span></a></li>
-                    <li><a href="#7" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' data.1 %}', 'frame7'); return false">SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span></a></li>
-                    <li><a href="#8" data-toggle="tab" onclick="window.open('{% url 'interactions' data.1 %}', 'frame8'); return false">Interactions</a></li>
+                    {% if optional2status|keyvalue:"BLAST_refseq"%}
+                        <li><a href="#6" data-toggle="tab" onclick="window.open('{% url 'blastnr' data.1 %}', 'frame6'); return false">RefSeq homologs <span class="badge">{{n_blastnr_hits}}</span></a></li>
+                    {% endif %}
+                    {% if optional2status|keyvalue:"BLAST_refseq"%}
+                        <li><a href="#7" data-toggle="tab" onclick="window.open('{% url 'blastswissprot' data.1 %}', 'frame7'); return false">SwissProt homologs <span class="badge">{{n_swissprot_hits}}</span></a></li>
+                    {% endif %}
+                    {% if optional2status|keyvalue:"phylogenetic_profile" or optional2status|keyvalue:"gene_clusters" %}
+                        <li><a href="#8" data-toggle="tab" onclick="window.open('{% url 'interactions' data.1 %}', 'frame8'); return false">Interactions</a></li>
+                    {% endif %}
                 {% endif %}
                 {% if input_type != 'orthogroup' %}
                     <li><a href="#10" data-toggle="tab" onclick="window.open('{% url 'hydropathy' data.1 %}', 'frame10'); return false">Hydropathy plot</a></li>
                     <!--<li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'aa_comp_locus' data.1 %}', 'orthoIDframe'); return false">AA composition PCA</a></li>-->
-                    <li><a href="#11" data-toggle="tab" onclick="window.open('{% url 'gc_locus' data.1 %}', 'frame11'); return false">GC</a></li>
+                    {% if optional2status|keyvalue:"GC_statistics"%}
+                        <li><a href="#11" data-toggle="tab" onclick="window.open('{% url 'gc_locus' data.1 %}', 'frame11'); return false">GC</a></li>
+                    {% endif %}
                     {% if paperblast_data or string_data  %}
                         <li><a href="#13" data-toggle="tab" onclick="window.open('{% url 'pmid' seqfeature_id %}', 'frame13'); return false">Pubmed <span class="badge">{{pubmed_count}}</span></a></li>
                     {% endif %}
                 {% endif %}
 
+                {% if homologues > 2 or optional2status|keyvalue:"BBH_phylogenies" %}
                 <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'phylogeny' data.0 %}', 'frame9'); return false">Orthogroup phylogeny</a></li>
+                {% endif %}
 
                 {% if closest_phylo %}
                     <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' data.0 %}', 'frame9'); return false">Best hit phylogeny</a></li>
@@ -144,11 +156,12 @@ function clearBox(elementID)
                                           <th>Length</th>
                                           <td>{{ nucl_length }} (nucleotides) / {{aa_length}} (amino acids)</td>
                                       </tr>
-
-                                      <tr>
-                                          <th>Subcellular localization</th>
-                                          <td>{{psort_data.0}} (score: {{psort_data.1}})</td>
-                                      </tr>
+                                      {% if psort_data %}
+                                          <tr>
+                                              <th>Subcellular localization</th>
+                                              <td>{{psort_data.0}} (score: {{psort_data.1}})</td>
+                                          </tr>
+                                      {% endif %}
 
                                       
                                   </table>
@@ -164,8 +177,13 @@ function clearBox(elementID)
                                   <div style="width: 100%;padding-left:20px">
                                       <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' data.0 "aa"%}'">fasta aa</button>
                                       <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_orthogroup_fasta' data.0 "nucl"%}'">fasta nucl</button>
-                                      <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_newick_tree' data.0 False %}'">newick tree</button>
-                                      <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% static alignment_fasta %}'">MSA</button>
+                                          {% if optional2status|keyvalue:"gene_phylogenies" %}
+                                              <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% url 'get_newick_tree' data.0 False %}'">newick tree</button>
+                                          {% endif %}
+                                          {% if optional2status|keyvalue:"orthogroup_MSA" %}
+                                              <button type="button" class="btn btn-primary btn-xs" onclick="location.href='{% static alignment_fasta %}'">MSA</button>
+                                          {% endif %}
+
                                   </div>
                                 </div>
                               </div>
@@ -280,74 +298,75 @@ function clearBox(elementID)
 
                            
 
+                          {% if optional2status|keyvalue:"T3SS_data"%}
+                              <div class="row">
+                                <div class="panel panel-default">
+                                  <div class="panel-heading">
+                                    <h3 class="panel-title">T3SS effectors prediction: {{effector_sum}}/4</h3>
+                                  </div>
+                                  {% if effectors %}
+                                  <div class="panel-body">
+                                    
+                                        <table class="table table-striped" style="width: 100%">
 
-                            <div class="row">
-                              <div class="panel panel-default">
-                                <div class="panel-heading">
-                                  <h3 class="panel-title">T3SS effectors prediction: {{effector_sum}}/4</h3>
+                                          <thead>
+                                          <tr>
+                                            <th>Predictor</th>
+                                            <th>Score</th>
+                                            <th>Effector</th>
+                                          </tr>
+
+                                          </thead>
+                                          <tbody>
+                                            <tr>
+                                                <td>Effective T3</td>
+                                                {% if effectiveT3_data.0 == 1 %}
+                                                  <td>{{effectiveT3_data.1}}</td>
+                                                  <td>YES</td>
+                                                {% else %}
+                                                  <td>-</td>  
+                                                  <td>NO</td>
+                                                {% endif %}
+                                            </tr>
+                                            <tr>
+                                                <td>DeepT3</td>
+                                                {% if DeepT3_data.0 == 1 %}
+                                                  <td>-</td>
+                                                  <td>YES</td>
+                                                {% else %}
+                                                  <td>-</td>  
+                                                  <td>NO</td>
+                                                {% endif %}
+                                            </tr>
+                                            <tr>
+                                                <td>BPBAac</td>
+                                                {% if BPBAac_data.0 == 1 %}
+                                                  <td>{{BPBAac_data.1}}</td>
+                                                  <td>YES</td>
+                                                {% else %}
+                                                  <td>-</td>  
+                                                  <td>NO</td>
+                                                {% endif %}
+                                            </tr>
+                                            <tr>
+                                                <td>T3MM</td>
+                                                {% if T3MM_data.0 == 1 %}
+                                                  <td>{{T3MM_data.1}}</td>
+                                                  <td>YES</td>
+                                                {% else %}
+                                                  <td>-</td>   
+                                                  <td>NO</td>
+                                                {% endif %}
+                                            </tr>
+                                          </tbody>  
+
+                                        </table>
+                                    
+                                  </div>
+                                {% endif %} 
                                 </div>
-                                {% if effectors %}
-                                <div class="panel-body">
-                                  
-                                      <table class="table table-striped" style="width: 100%">
-
-                                        <thead>
-                                        <tr>
-                                          <th>Predictor</th>
-                                          <th>Score</th>
-                                          <th>Effector</th>
-                                        </tr>
-
-                                        </thead>
-                                        <tbody>
-                                          <tr>
-                                              <td>Effective T3</td>
-                                              {% if effectiveT3_data.0 == 1 %}
-                                                <td>{{effectiveT3_data.1}}</td>
-                                                <td>YES</td>
-                                              {% else %}
-                                                <td>-</td>  
-                                                <td>NO</td>
-                                              {% endif %}
-                                          </tr>
-                                          <tr>
-                                              <td>DeepT3</td>
-                                              {% if DeepT3_data.0 == 1 %}
-                                                <td>-</td>
-                                                <td>YES</td>
-                                              {% else %}
-                                                <td>-</td>  
-                                                <td>NO</td>
-                                              {% endif %}
-                                          </tr>
-                                          <tr>
-                                              <td>BPBAac</td>
-                                              {% if BPBAac_data.0 == 1 %}
-                                                <td>{{BPBAac_data.1}}</td>
-                                                <td>YES</td>
-                                              {% else %}
-                                                <td>-</td>  
-                                                <td>NO</td>
-                                              {% endif %}
-                                          </tr>
-                                          <tr>
-                                              <td>T3MM</td>
-                                              {% if T3MM_data.0 == 1 %}
-                                                <td>{{T3MM_data.1}}</td>
-                                                <td>YES</td>
-                                              {% else %}
-                                                <td>-</td>   
-                                                <td>NO</td>
-                                              {% endif %}
-                                          </tr>
-                                        </tbody>  
-
-                                      </table>
-                                  
-                                </div>
-                               {% endif %} 
                               </div>
-                            </div>
+                          {% endif %}
 
                            
 
@@ -673,59 +692,60 @@ function clearBox(elementID)
                             </div>
 
                             {% endif %}
-                            <div class="row">
-                              <div class="panel panel-default">
-                                <div class="panel-heading">
-                                  <h3 class="panel-title">Domains</h3>
-                                </div>
-                                <div>
-                                  <div id="div_features" style="margin-top: 1px; width: 800px; margin-left: 20px;"></div>
+                            {% if optional2status|keyvalue:"interpro_data"%}
+                                <div class="row">
+                                  <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">Domains</h3>
+                                    </div>
+                                    <div>
+                                      <div id="div_features" style="margin-top: 1px; width: 800px; margin-left: 20px;"></div>
 
-                                  <table id="panel_table" class="table table-striped" style="width: 100%">
-                                      {%if interpro_data %}
-                                         <tr>
-                                              <td style="width:70px"></td>
-                                              <td style="width:300px"></td>
-                                              <td style="width:90px">Bacteria <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of bacterial sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                              <td style="width:80px">Euk. <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of eukaryotic sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                              <td style="width:80px">Archae <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of archaeal sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                              <td style="width:80px">Virus <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of virus sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                          </tr>
-                                      {% endif %}
-                                      {%if pfam_data %}
-                                          {% for values in pfam_data %}
-                                              <tr>
-                                                  <th ><a href="{% url 'fam' values.0 'pfam' %}" target="_top">PF: {{values.0}} <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this PFAM domain in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></th>
-                                                  <td>{{values.1}}</td>
+                                      <table id="panel_table" class="table table-striped" style="width: 100%">
+                                          {%if interpro_data %}
+                                            <tr>
+                                                  <td style="width:70px"></td>
+                                                  <td style="width:300px"></td>
+                                                  <td style="width:90px">Bacteria <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of bacterial sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                                  <td style="width:80px">Euk. <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of eukaryotic sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                                  <td style="width:80px">Archae <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of archaeal sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                                  <td style="width:80px">Virus <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of virus sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
                                               </tr>
+                                          {% endif %}
+                                          {%if pfam_data %}
+                                              {% for values in pfam_data %}
+                                                  <tr>
+                                                      <th ><a href="{% url 'fam' values.0 'pfam' %}" target="_top">PF: {{values.0}} <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this PFAM domain in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></th>
+                                                      <td>{{values.1}}</td>
+                                                  </tr>
 
-                                          {% endfor %}
-                                      {% endif %}
+                                              {% endfor %}
+                                          {% endif %}
 
-                                      {%if interpro_data %}
-                                          {% for values in interpro_data %}
-                                              {% with interpro2taxononmy|keyvalue:values.0 as taxo %}
-                                              <tr>
-                                                  <th ><a href="{% url 'fam' values.0 'interpro' %}" target="_top">IP: {{values.0}} <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Interpro entry in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></th>
-                                                  <td>{{values.1}} </td>
-                                                  {% if taxo.4 > taxo.5 %}
-                                                      <td style="color:blue;">{{taxo.4}} ({{taxo.0}}%)</td>
-                                                      <td>{{taxo.5}} ({{taxo.1}}%)</td>
-                                                  {% else %}
-                                                      <td>{{taxo.4}} ({{taxo.0}}%)</td>
-                                                      <td style="color:red;">{{taxo.5}} ({{taxo.1}}%)</td>
-                                                  {% endif %}
-                                                  <td>{{taxo.6}} ({{taxo.2}}%)</td>
-                                                  <td>{{taxo.7}} ({{taxo.3}}%)</td>
-                                              </tr>
-                                              {% endwith %}
-                                          {% endfor %}
-                                      {% endif %}
-                                  </table>
+                                          {%if interpro_data %}
+                                              {% for values in interpro_data %}
+                                                  {% with interpro2taxononmy|keyvalue:values.0 as taxo %}
+                                                  <tr>
+                                                      <th ><a href="{% url 'fam' values.0 'interpro' %}" target="_top">IP: {{values.0}} <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Interpro entry in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></th>
+                                                      <td>{{values.1}} </td>
+                                                      {% if taxo.4 > taxo.5 %}
+                                                          <td style="color:blue;">{{taxo.4}} ({{taxo.0}}%)</td>
+                                                          <td>{{taxo.5}} ({{taxo.1}}%)</td>
+                                                      {% else %}
+                                                          <td>{{taxo.4}} ({{taxo.0}}%)</td>
+                                                          <td style="color:red;">{{taxo.5}} ({{taxo.1}}%)</td>
+                                                      {% endif %}
+                                                      <td>{{taxo.6}} ({{taxo.2}}%)</td>
+                                                      <td>{{taxo.7}} ({{taxo.3}}%)</td>
+                                                  </tr>
+                                                  {% endwith %}
+                                              {% endfor %}
+                                          {% endif %}
+                                      </table>
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                            </div>
-
+                           {% endif %}
 
                            {% if pdb_data %} 
                             <div class="row">
@@ -1070,49 +1090,50 @@ function clearBox(elementID)
 
                               </div>
                             {%endif%}
+                            {% if optional2status|keyvalue:"interpro_data"%}
+                                <div class="row">
+                                  <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                      <h3 class="panel-title">Pathway data (interpro)</h3>
+                                    </div>
+                                    <table>
+                                        {%if pathway_data %}
+                                            {% for key, values in all_path.items %}
+                                              {% for v in values %}
+                                                {% if key == 'KEGG' %}
+                                                    <tr>
+                                                    <td>{{key}} (IP based)</td>
+                                                    <td><a href="http://www.genome.jp/kegg-bin/show_pathway?ec{{v}}">{{v}}</a></td>
+                                                    </tr>
+                                                {% elif key == 'UniPathway' %}
+                                                    <tr>
+                                                    <td>{{key}} (IP based)</td>
+                                                    <td><a href="http://www.unipathway.org//upa?upid={{v}}">{{v}}</a></td>
+                                                    </tr>
+                                                {% elif key == 'Reactome' %}
+                                                    <tr>
+                                                    <td>{{key}} (IP based)</td>
+                                                    <td><a href="http://www.reactome.org/content/detail/{{v}}">{{v}}</a></td>
+                                                    </tr>
+                                                {% elif key == 'MetaCyc' %}
+                                                    <tr>
+                                                    <td>{{key}} (IP based)</td>
+                                                    <td><a href="http://metacyc.org/META/NEW-IMAGE?type=NIL&object={{v}}">{{v}}</a></td>
+                                                    </tr>
+                                                {% else %}
+                                                    <tr>
+                                                    <td>{{key}} (IP based)</td>
+                                                    <td>{{v}}</td>
+                                                    </tr>
+                                                {% endif %}
 
-                            <div class="row">
-                              <div class="panel panel-default">
-                                <div class="panel-heading">
-                                  <h3 class="panel-title">Pathway data (interpro)</h3>
+                                            {% endfor %}
+                                          {% endfor %}
+                                      {% endif %}
+                                    </table>
+                                  </div>
                                 </div>
-                                <table>
-                                    {%if pathway_data %}
-                                        {% for key, values in all_path.items %}
-                                          {% for v in values %}
-                                            {% if key == 'KEGG' %}
-                                                <tr>
-                                                <td>{{key}} (IP based)</td>
-                                                <td><a href="http://www.genome.jp/kegg-bin/show_pathway?ec{{v}}">{{v}}</a></td>
-                                                </tr>
-                                            {% elif key == 'UniPathway' %}
-                                                <tr>
-                                                <td>{{key}} (IP based)</td>
-                                                <td><a href="http://www.unipathway.org//upa?upid={{v}}">{{v}}</a></td>
-                                                </tr>
-                                            {% elif key == 'Reactome' %}
-                                                <tr>
-                                                <td>{{key}} (IP based)</td>
-                                                <td><a href="http://www.reactome.org/content/detail/{{v}}">{{v}}</a></td>
-                                                </tr>
-                                            {% elif key == 'MetaCyc' %}
-                                                <tr>
-                                                <td>{{key}} (IP based)</td>
-                                                <td><a href="http://metacyc.org/META/NEW-IMAGE?type=NIL&object={{v}}">{{v}}</a></td>
-                                                </tr>
-                                            {% else %}
-                                                <tr>
-                                                <td>{{key}} (IP based)</td>
-                                                <td>{{v}}</td>
-                                                </tr>
-                                            {% endif %}
-
-                                        {% endfor %}
-                                      {% endfor %}
-                                  {% endif %}
-                                </table>
-                              </div>
-                            </div>
+                            {% endif %}
 
                     </div> <!-- second column -->
                 </div> <!-- first tab -->
