@@ -10267,7 +10267,11 @@ def circos(request):
             return HttpResponse(json.dumps({'task_id': None}), content_type='application/json')
     else:
         form = circos_form_class()
-    return render(request, 'chlamdb/circos.html', {'form': form})
+    
+    local_vars = my_locals(locals())
+    local_vars["form"] = form
+    
+    return render(request, 'chlamdb/circos.html', local_vars)
 
 
 def alignment(request, input_fasta):
