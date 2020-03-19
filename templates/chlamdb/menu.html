@@ -1,7 +1,7 @@
 
 
 {% load staticfiles %}
-
+{% load custom_tags %}
 
 
 
@@ -69,7 +69,9 @@
                     <div class="sidebar-submenu" style="display:block;">
                       <ul id="submenu-2" class="panel-collapse collapse panel-switch" role="menu">
                           <!--<li class="item"><a href="{% url 'search' %}">Keyword Search</a></li>-->
-                          <li class="item"><a href="{% url 'blast' %}">Blast</a></li>
+                          {% if optional2status|keyvalue:"BLAST_database"%}
+                              <li class="item"><a href="{% url 'blast' %}">Blast</a></li>
+                          {% endif %}
                           <!--<li class="item6"><a href="{% url 'motif_search' %}">Motif search</a>-->
                           <!--</li>-->
                           <!--<li class="item6"><a href="{% url 'interpro' %}">Interpro search</a>-->
@@ -87,14 +89,25 @@
                     <div class="sidebar-submenu" style="display:block;">
                       <ul id="submenu-3" class="panel-collapse collapse panel-switch in" role="menu">
                           <li class="item"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a></li>
-                          <li class="item"><a href="{% url 'extract_cog' %}">COGs</a></li>
-                          <li class="item"><a href="{% url 'extract_pfam' %}">Pfam domains</a></li>
-                          <li class="item"><a href="{% url 'extract_interpro' %}">Interpro entries</a></li>
-                          <!--<li class="item"><a href="{% url 'extract_EC' %}">EC numbers</a></li>-->
-                          <li class="item"><a href="{% url 'extract_ko' %}">Kegg Orthologs</a></li>
+                          {% if optional2status|keyvalue:"COG_comparative"%}
+                              <li class="item"><a href="{% url 'extract_cog' %}">COGs</a></li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"pfam_comparative" %}
+                              <li class="item"><a href="{% url 'extract_pfam' %}">Pfam domains</a></li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"interpro_comparative" %}
+                              <li class="item"><a href="{% url 'extract_interpro' %}">Interpro entries</a></li>
+                          {% endif %}
+                          {% if optional2status|keyvalue:"KEGG_comparative" %}
+                              <!--<li class="item"><a href="{% url 'extract_EC' %}">EC numbers</a></li>-->
+                              <li class="item"><a href="{% url 'extract_ko' %}">Kegg Orthologs</a></li>
+                          {% endif %}
                       </ul>
                     </div>
                 </li>
+
+            
+
 
             <li class="sidebar-dropdown">
                 <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-6" aria-expanded="false">
@@ -114,16 +127,18 @@
             </li>
 
 
-            <li class="sidebar-dropdown">
-                <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-4" aria-expanded="false">
-                    <span class="sidebar-title"> Transporters</span>
-                </a>
-                <div class="sidebar-submenu" style="display:block;">
-                    <ul id="submenu-4" class="panel-collapse collapse panel-switch" role="menu">
-                      <li class="item"><a href="{% url 'transporters' %}">TCDB annotation</a></li>
-                    </ul>
-                </div>
-            </li>
+            {% if optional2status|keyvalue:"TCDB_data" %}
+                <li class="sidebar-dropdown">
+                    <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-4" aria-expanded="false">
+                        <span class="sidebar-title"> Transporters</span>
+                    </a>
+                    <div class="sidebar-submenu" style="display:block;">
+                        <ul id="submenu-4" class="panel-collapse collapse panel-switch" role="menu">
+                          <li class="item"><a href="{% url 'transporters' %}">TCDB annotation</a></li>
+                        </ul>
+                    </div>
+                </li>
+            {% endif %}
 
 <!--            <li class="sidebar-dropdown"> -->
 <!--                <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-5" aria-expanded="false"> -->
@@ -138,18 +153,21 @@
 <!--                </div> -->
 <!--            </li> -->
 
-            <li class="sidebar-dropdown">
-                <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-7" aria-expanded="false">
-                    <span class="sidebar-title"> Metabolism</span>
-                </a>
-                <div class="sidebar-submenu" style="display:block;">
-                  <ul id="submenu-7" class="panel-collapse collapse panel-switch" role="menu">
-                    <li class="item"><a href="{% url 'priam_kegg' %}">Kegg maps</a></li>
-                    <!--<li class="item"><a href="{% url 'metabo_overview' %}">Metabo comparisons</a></li>-->
-                    <li class="item"><a href="{% url 'kegg_module' %}">Kegg modules</a></li>
-                  </ul>
-                </div>
-            </li>
+            {% if optional2status|keyvalue:"KEGG_comparative" %}
+
+                <li class="sidebar-dropdown">
+                    <a id="separator" class="accordion-toggle collapsed toggle-switch" data-toggle="collapse" href="#submenu-7" aria-expanded="false">
+                        <span class="sidebar-title"> Metabolism</span>
+                    </a>
+                    <div class="sidebar-submenu" style="display:block;">
+                      <ul id="submenu-7" class="panel-collapse collapse panel-switch" role="menu">
+                        <li class="item"><a href="{% url 'priam_kegg' %}">Kegg maps</a></li>
+                        <!--<li class="item"><a href="{% url 'metabo_overview' %}">Metabo comparisons</a></li>-->
+                        <li class="item"><a href="{% url 'kegg_module' %}">Kegg modules</a></li>
+                      </ul>
+                    </div>
+                </li>
+            {% endif %}
 
 
 	    {% if biodb in 'chlamydia_04_16,2017_06_29b_motile_chlamydiae,2017_06_29_parilichlamydiae'|slice:',' %}
