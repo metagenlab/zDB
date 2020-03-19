@@ -447,7 +447,9 @@ def make_kegg_form(database_name):
     return KeggForm
 
 
-def make_extract_form(database_name, plasmid=False, label="Orthologs"):
+def make_extract_form(database_name, 
+                      plasmid=False, 
+                      label="Orthologs"):
 
     if not plasmid:
         accession_choices = get_accessions(database_name)

@@ -957,6 +957,9 @@ def get_comparative_subtable(biodb,
     count_df.columns = ["taxid_%s" % i for i in list(count_df)]
 
     include_cols = ["taxid_%s" % i for i in taxon_list]
+    
+    print(count_df.head())
+    
     if len(exclude_taxon_list) > 0:
         # apply exclude filter
         exclude_string = ' & '.join(["taxid_%s==0" % i for i in exclude_taxon_list])       
@@ -1368,7 +1371,7 @@ def pfam2description(db_name, accession=False):
 
     if not accession:
         sql =  'select signature_accession, signature_description from interpro ' \
-               ' where analysis="Pfam" group by signature_accession'
+               ' where analysis="Pfam" group by signature_accession, signature_description'
     else:
         sql = 'select t1.orthogroup, t2.cog_id from orthology_detail as t1 left join COG_locus_tag2gi_hit ' \
               'as t2 on t1.locus_tag=t2.locus_tag'

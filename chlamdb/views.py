@@ -1026,6 +1026,7 @@ def extract_pfam(request, classification="taxon_id"):
 
                     columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                               'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
+                              
                     sql_2 = 'select %s from orthology_detail %s' % (columns, group_filter)
 
                     raw_data = server.adaptor.execute_and_fetchall(sql_2,)
@@ -1525,7 +1526,7 @@ def extract_interpro(request, classification="taxon_id"):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    extract_form_class = make_extract_form(biodb, label="Interpro entries")
+    extract_form_class = make_extract_form(biodb, label="Interpro entries", plasmid=True)
 
     if request.method == 'POST': 
 
@@ -1550,11 +1551,14 @@ def extract_interpro(request, classification="taxon_id"):
                 accessions = True
                 fasta_url='?a=T'
             except:
+                print("accessions = False")
                 accessions = False
                 fasta_url='?a=F'
                 accession2taxon = manipulate_biosqldb.accession2taxon_id(server, biodb)
+                
                 include = [str(accession2taxon[i]) for i in include]
                 exclude = [str(accession2taxon[i]) for i in exclude]
+                
                 reference_taxon = accession2taxon[reference_taxon]
 
             
@@ -1609,7 +1613,7 @@ def venn_interpro(request):
 
 
             interpro2description = ''
-            sql = 'select interpro_accession,interpro_description, count(*) from interpro group by interpro_accession;'
+            sql = 'select interpro_accession,interpro_description, count(*) from interpro group by interpro_accession,interpro_description;'
             data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
             for i in data:
                 if i in all_pfam_list:

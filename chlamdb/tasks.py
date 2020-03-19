@@ -32,7 +32,7 @@ def extract_interpro_task(biodb,
     from chlamdb.biosqldb import biosql_own_sql_tables
     from chlamdb.views import get_locus_annotations
     
-    server = manipulate_biosqldb.load_db()
+    server, db = manipulate_biosqldb.load_db(biodb)
     
     
     current_task.update_state(state='PROGRESS',
@@ -119,8 +119,8 @@ def extract_interpro_task(biodb,
 
     filter = '"' + '","'.join(match_groups) + '"'
 
-    sql2 = 'select interpro_accession, interpro_description from interpro_%s' \
-    ' where interpro_accession in (%s) group by interpro_accession;' % (biodb, filter)
+    sql2 = 'select interpro_accession, interpro_description from interpro' \
+    ' where interpro_accession in (%s) group by interpro_accession,interpro_description;' % (filter)
 
     raw_data = list(server.adaptor.execute_and_fetchall(sql2,))
 
@@ -146,7 +146,7 @@ def extract_interpro_task(biodb,
 
     columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                 'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-    sql_2 = 'select %s from orthology_detail_%s %s' % (columns, biodb, group_filter)
+    sql_2 = 'select %s from orthology_detail %s' % (columns, group_filter)
 
     raw_data = server.adaptor.execute_and_fetchall(sql_2,)
 
@@ -159,8 +159,8 @@ def extract_interpro_task(biodb,
 
     interpro_list = '"' + '","'.join(match_groups) + '"'
 
-    locus_list_sql = 'select locus_tag from interpro_%s where taxon_id=%s ' \
-                    ' and interpro_accession in (%s)' % (biodb, reference_taxon, interpro_list)
+    locus_list_sql = 'select locus_tag from interpro where taxon_id=%s ' \
+                    ' and interpro_accession in (%s)' % (reference_taxon, interpro_list)
 
     locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
 
