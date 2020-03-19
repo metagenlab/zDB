@@ -13,6 +13,38 @@ from chlamdb.biosqldb import mysqldb_load_mcl_output
 # get_genome_id_from_locus_tag
 
 
+def update_config_table(db_name, table_name):
+    
+    server, db = load_db(db_name)
+    
+    # update config table
+    sql = 'update biodb_config set status=1 where name="%s";' % table_name
+    server.adaptor.execute(sql,)
+    server.commit()
+
+
+def check_config(db_name):
+    
+    server, db = load_db(db_name)
+    
+    sql = 'select * from biodb_config'
+    
+    data = server.adaptor.execute_and_fetchall(sql,)
+    
+    missing_mandatory = []
+    optional2status = {}
+    
+    for row in data:
+        name, mandatory_or_optional, status = row 
+        if mandatory_or_optional == "mandatory":
+            if status == 0:
+                missing_mandatory.append(name)
+        else:
+            optional2status[name] = status
+            
+    return optional2status, missing_mandatory
+
+
 def make_div(figure_or_data, include_plotlyjs=False, show_link=False, div_id=None):
     from plotly import offline
     div = offline.plot(
