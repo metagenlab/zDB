@@ -8,13 +8,13 @@ PROBLEMS
     filtering strings. TODO check for a solution. 
 
     Reason: Rank is a reserved word in MySQL 8.0.2 onwards, but frequently used in the BIoSQL scheme.
-    The solution the Biopython community chose is causinge the escape of double quotes in SQL queries.
+    The solution the Biopython community chose is causing the escape of double quotes in SQL queries.
 
 Quick hack:
 
 Edit file: BioSQL/BioSeqDatabase.py: disable "SET sql_mode='ANSI_QUOTES';"
 
-Edit file: BioSQL/Loader.py: change double quote to "`rank`"
+Edit file: BioSQL/Loader.py: change double quote to "\`rank\`"
 
 Minimal SETUP
 ==============
@@ -211,9 +211,6 @@ Running the app
 
     # run django
     python manage.py runserver --nothreading 0.0.0.0:8001
-    
-
-
 
 
 Aptional utilities/annotations
