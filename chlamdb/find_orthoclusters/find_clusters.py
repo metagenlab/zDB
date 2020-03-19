@@ -6,7 +6,7 @@ def create_locus_link_table(biodb):
     import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql = 'create table interactions.colocalization_table_locus_%s (locus_1 varchar(200), locus_2 varchar(200), n_links INT,' \
+    sql = 'create table interactions_colocalization_table_locus (locus_1 varchar(200), locus_2 varchar(200), n_links INT,' \
           'n_comparisons INT, ratio float, index locus_1 (locus_1), index locus_2 (locus_2), index n_links (n_links),' \
           ' index n_comparisons (n_comparisons), index ratio (ratio))' % biodb
 
@@ -33,7 +33,7 @@ def insert_locus_links_into_mysql(biodb, locus2links):
     pair_done = []
     for locus_a in locus2links:
         for locus_b in locus2links[locus_a]:
-            sql = 'insert into interactions.colocalization_table_locus_%s (locus_1, locus_2, n_links, n_comparisons, ratio)' \
+            sql = 'insert into interactions_colocalization_table_locus (locus_1, locus_2, n_links, n_comparisons, ratio)' \
                   ' values ("%s","%s",%s,%s,%s)' % (biodb,
                                                     locus_a,
                                                     locus_b,
@@ -560,7 +560,7 @@ def find_clusters_of_locus(db_name, identity_cutoff, distance_cutoff=20000):
                 for locus_b in tmp_dico[locus_a]:
                     # only add minimum of 50% links
                     if tmp_dico[locus_a][locus_b][0]/float(tmp_dico[locus_a][locus_b][1]) > 0.5:
-                        sql = 'insert into interactions.colocalization_table_locus_%s (locus_1, locus_2, n_links, n_comparisons, ratio)' \
+                        sql = 'insert into interactions_colocalization_table_locus (locus_1, locus_2, n_links, n_comparisons, ratio)' \
                               ' values ("%s","%s",%s,%s,%s)' % (db_name,
                                                                 locus_a,
                                                                 locus_b,
