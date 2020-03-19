@@ -5,7 +5,7 @@ Minimal SETUP
 0. Setup env with conda 
 ====================
 
-- TODO test with latest version  and add constrains in necessary
+- TODO test with latest versions and add constrains if necessary
 
 .. code-block:: bash
 
