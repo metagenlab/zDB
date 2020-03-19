@@ -23,6 +23,8 @@ def create_locus2old_locus_table(biodb):
 
 if __name__ == '__main__':
     import argparse
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-d", '--db_name', type=str, help="db name", required=True)
@@ -31,3 +33,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     create_locus2old_locus_table(args.db_name)
+    
+    # update config
+    manipulate_biosqldb.update_config_table(args.db_name, "old_locus_table")

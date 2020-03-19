@@ -35,6 +35,8 @@ def import_phylo(phylo_list, biodb):
 
 if __name__ == '__main__':
     import argparse
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", '--trees', type=str, help="tree files", nargs='+')
     parser.add_argument("-d", '--db_name', type=str, help="db name", required=True)
@@ -42,3 +44,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     import_phylo(args.trees, args.db_name)
+    
+    manipulate_biosqldb.update_config_table(args.db_name, "gene_phylogenies")

@@ -130,6 +130,8 @@ def orthogroup_consensus_annotation(biodb, COG=False, interpro=False, KO=False):
 
 if __name__ == '__main__':
     import argparse
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", '--db_name', type=str, help="db name", required=True)
     parser.add_argument("-c", '--COG', action="store_true", help="db name")
@@ -142,3 +144,6 @@ if __name__ == '__main__':
                                     args.COG,
                                     args.interpro,
                                     args.KO)
+    
+    # update config
+    manipulate_biosqldb.update_config_table(args.db_name, "orthology_consensus_annotation")

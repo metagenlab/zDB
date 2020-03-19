@@ -56,3 +56,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     load_reference_phylogeny(args.database_name, args.reference_phylogeny, args.gbk_files)
+    
+    
+    manipulate_biosqldb.update_config_table(args.database_name, "reference_phylogeny")

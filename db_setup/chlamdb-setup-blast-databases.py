@@ -78,6 +78,8 @@ def setup_blastdb(biodb, static_dir_path):
 
 if __name__ == '__main__':
     import argparse
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", '--db_name', type=str, help="db name", required=True)
     parser.add_argument("-p", '--asset_path', type=str, help="asset path (e.g /webapps/biodb/chlamdb/assets/)")
@@ -89,3 +91,6 @@ if __name__ == '__main__':
     #accession2coding_density("2017_06_29_parilichlamydiae","/webapps/biodb/chlamdb/assets/")
     #accession2coding_density("2017_05_11_proteobacteria","/webapps/biodb/chlamdb/assets/")
     setup_blastdb(args.db_name, args.asset_path)
+    manipulate_biosqldb.update_config_table(args.database_name, "BLAST_database")
+    
+    
