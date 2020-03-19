@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 
 
-def load_hash2locus(hash2locus_list, biodb):
+def load_hash2locus(hash2locus_list, 
+                    biodb):
     import MySQLdb
     import os
     from chlamdb.biosqldb import manipulate_biosqldb
     sqlpsw = os.environ['SQLPSW']
     conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                            user="root", # your username
-                           passwd=sqlpsw) # name of the data base
+                           passwd=sqlpsw,
+                           db=biodb) # name of the data base
     cursor = conn.cursor()
 
     sql = 'select locus_tag, seqfeature_id from annotation_seqfeature_id2locus'
@@ -24,8 +26,8 @@ def load_hash2locus(hash2locus_list, biodb):
             cursor.execute('insert into annotation_hash2seqfeature_id values ("%s", "%s")' % (hash, 
                                                                                               locus_tag2seqfeature_id[locus]))
     conn.commit()
-    sql1 = 'create index h1 ON annotation.hash2seqfeature_id(hash)'
-    sql2 = 'create index h2 ON annotation.hash2seqfeature_id(seqfeature_id)'
+    sql1 = 'create index h1 ON annotation_hash2seqfeature_id(hash)'
+    sql2 = 'create index h2 ON annotation_hash2seqfeature_id(seqfeature_id)'
     cursor.execute(sql1,)
     cursor.execute(sql2,)
     conn.commit()
