@@ -27,7 +27,7 @@ Quick hack:
 
 Edit file: BioSQL/BioSeqDatabase.py: disable "SET sql_mode='ANSI_QUOTES';"
 
-Edit file: BioSQL/Loader.py: replace double quote "rank" by `rank`
+Edit file: BioSQL/Loader.py: replace double quote "rank" by \\`rank`
 
 
 1. Mysql setup
