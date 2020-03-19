@@ -900,3 +900,6 @@ if __name__ == '__main__':
                                    seqfeature_id2seqfeature_location,
                                    group2group_size,
                                    group2family_size)
+
+    # update config
+    manipulate_biosqldb.update_config_table(args.db_name, "orthology_data")
