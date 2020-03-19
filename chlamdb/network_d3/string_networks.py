@@ -44,14 +44,14 @@ def find_links_recusrsive(biodb, all_connected_seqfeatures, ratio_cutoff=0.5, n_
     if biodb == 'chlamydia_04_16':
         filter = '"' + '","'.join(all_connected_seqfeatures) + '"'
 
-        sql = 'select locus_1, locus_2 from interactions.colocalization_table_locus_%s where (locus_1 in (%s) or locus_2 in (%s)) and ' \
-              ' (ratio >= %s and n_comparisons >= %s)' % (biodb, filter, filter, ratio_cutoff, n_comp_cutoff)
+        sql = 'select locus_1, locus_2 from interactions_colocalization_table_locus where (locus_1 in (%s) or locus_2 in (%s)) and ' \
+              ' (ratio >= %s and n_comparisons >= %s)' % (filter, filter, ratio_cutoff, n_comp_cutoff)
     else:
         all_connected_seqfeatures = [str(i) for i in all_connected_seqfeatures]
         filter = ','.join(all_connected_seqfeatures)
 
-        sql = 'select locus_1, locus_2 from interactions.colocalization_table_locus_%s where (locus_1 in (%s) or locus_2 in (%s)) and ' \
-              ' (ratio >= %s and n_comparisons >= %s)' % (biodb, filter, filter, ratio_cutoff, n_comp_cutoff)
+        sql = 'select locus_1, locus_2 from interactions_colocalization_table_locus where (locus_1 in (%s) or locus_2 in (%s)) and ' \
+              ' (ratio >= %s and n_comparisons >= %s)' % (filter, filter, ratio_cutoff, n_comp_cutoff)
 
         #print sql
     data = server.adaptor.execute_and_fetchall(sql,)
@@ -88,9 +88,8 @@ def find_profile_links_recusrsive(biodb,
     server, db = manipulate_biosqldb.load_db(biodb)
 
     filter = '"' + '","'.join(all_connected_groups) + '"'
-    sql = 'select * from interactions.phylo_profiles_%s_dist_%s where (group_1 in (%s) or group_2 in (%s)) and ' \
+    sql = 'select * from interactions_phylo_profiles_%s_dist where (group_1 in (%s) or group_2 in (%s)) and ' \
           ' (euclidian_dist <= %s)' % (distance,
-                                       biodb, 
                                        filter, 
                                        filter, 
                                        max_dist)
@@ -299,7 +298,7 @@ def generate_network(biodb,
 
     server, db = manipulate_biosqldb.load_db(biodb)
     filter =  ','.join([str(i) for i in seqfeature_id_list])
-    sql = 'select * from interactions.colocalization_table_locus_%s where (locus_1 in (%s) or locus_2 in (%s)) and ratio>=%s;' % (biodb, filter, filter, ratio_limit)
+    sql = 'select * from interactions_colocalization_table_locus where (locus_1 in (%s) or locus_2 in (%s)) and ratio>=%s;' % (filter, filter, ratio_limit)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -544,13 +543,10 @@ def generate_network_string(biodb,
           ' from string_interactions t1 inner join custom_tables_locus2seqfeature_id t2 ' \
           ' on t1.seqfeature_id_1=t2.seqfeature_id inner join custom_tables_locus2seqfeature_id t3 ' \
           ' on t1.seqfeature_id_2=t3.seqfeature_id where t1.taxon_id=%s and global_score>=%s and t2.locus_tag in (%s)' \
-          ' and t3.locus_tag in (%s) ;' % (biodb,
-                                                                                                  biodb,
-                                                                                                  biodb,
-                                                                                                  taxon_id,
-                                                                                                  ratio_limit,
-                                                                                                  filter,
-                                                                                                  filter,)
+          ' and t3.locus_tag in (%s) ;' % (taxon_id,
+                                           ratio_limit,
+                                           filter,
+                                           filter,)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -795,11 +791,10 @@ def generate_network_profile(biodb,
     server, db = manipulate_biosqldb.load_db(biodb)
     filter = '"' + '","'.join(group_list) + '"'
     # group_1     | group_2     | euclidian_dist
-    sql = 'select * from interactions.phylo_profiles_%s_dist_%s where (group_1 in (%s) and group_2 in (%s)) and euclidian_dist<=%s;' % (distance,
-                                                                                                                                        biodb, 
-                                                                                                                                        filter, 
-                                                                                                                                        filter, 
-                                                                                                                                        euclidian_distance_limit)
+    sql = 'select * from interactions_phylo_profiles_%s_dist where (group_1 in (%s) and group_2 in (%s)) and euclidian_dist<=%s;' % (distance,
+                                                                                                                                      filter, 
+                                                                                                                                      filter, 
+                                                                                                                                      euclidian_distance_limit)
 
     data = server.adaptor.execute_and_fetchall(sql,)
 
@@ -1028,7 +1023,7 @@ def get_subgraph(biodb, seqfeature_id_list, ratio_limit, target_locus):
 
     server, db = manipulate_biosqldb.load_db(biodb)
     myfilter =  ','.join([str(i) for i in seqfeature_id_list])
-    sql = 'select * from interactions.colocalization_table_locus_%s where (locus_1 in (%s) or locus_2 in (%s)) and ratio>=%s;' % (biodb, myfilter, myfilter, ratio_limit)
+    sql = 'select * from interactions_colocalization_table_locus where (locus_1 in (%s) or locus_2 in (%s)) and ratio>=%s;' % (myfilter, myfilter, ratio_limit)
 
     data = server.adaptor.execute_and_fetchall(sql,)
     #print 'ex', data[0]
