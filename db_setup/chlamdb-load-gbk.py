@@ -190,6 +190,8 @@ if __name__ == '__main__':
             print(gbk)
             import_gbk(gbk, server, db)
             create_cds_tables(gbk, args.db_name)
+        sys.stdout.write("Update config table...\n")
+        manipulate_biosqldb.update_config_table(args.db_name, "gbk_files")
 
     if args.remove_db:
         if query_yes_no("Remove databse %s?" % args.remove_db):
