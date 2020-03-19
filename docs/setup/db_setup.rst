@@ -368,6 +368,7 @@ name                              type              status
 gbk_files                         mandatory         FALSE
 orthology_data                    mandatory         FALSE
 orthology_comparative             mandatory         FALSE
+orthology_comparative_accession   mandatory         FALSE
 orthology_consensus_annotation    mandatory         FALSE
 orthogroup_alignments             mandatory         FALSE
 old_locus_table                   mandatory         FALSE
@@ -378,12 +379,16 @@ BLAST_database                    optional          FALSE
 gene phylogenies                  optional          FALSE
 interpro_data                     optional          FALSE
 interpro_comparative              optional          FALSE
+interpro_comparative_accession    optional          FALSE
 priam_data                        optional          FALSE
 priam_comparative                 optional          FALSE
+priam_comparative_accession       optional          FALSE
 COG_data                          optional          FALSE
 COG_comparative                   optional          FALSE
+COG_comparative_accession         optional          FALSE
 KEGG_data                         optional          FALSE
 KEGG_comparative                  optional          FALSE
+KEGG_comparative_accession        optional          FALSE
 TCDB_data                         optional          FALSE
 psortb_data                       optional          FALSE
 T3SS_data                         optional          FALSE
@@ -430,3 +435,4 @@ Missing indexes
 http://www.celeryproject.org/
 
 .. _celery : http://www.celeryproject.org/
+.. _127.0.0.1:8001 : http://127.0.0.1:8001
