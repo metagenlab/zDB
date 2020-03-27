@@ -9234,23 +9234,17 @@ def get_fasta(request):
 
 
 def download_COG(request, accession=False): 
-    import MySQLdb
+
     import os
     import pandas
     import gzip
     from io import BytesIO
     from io import StringIO
-    mysql_host = 'localhost'
-    mysql_user = 'root'
-    mysql_pwd = os.environ['SQLPSW']
-    mysql_db = 'COG'
     
     biodb = settings.BIODB
     
-    conn = MySQLdb.connect(host=mysql_host,
-                                user=mysql_user,
-                                passwd=mysql_pwd,
-                                db=mysql_db)
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
 
     sql = f'select t3.accession,t3.description,locus_tag,start,stop,strand,gene,protein_id,product,t6.COG_name,t6.description ' \
           f' from annotation_seqfeature_id2locus t1 ' \
@@ -9275,24 +9269,17 @@ def download_COG(request, accession=False):
 
 
 def download_all_COG(request):
-    import MySQLdb
     import os
     import pandas
     import gzip
     from io import BytesIO
     from io import StringIO
-    mysql_host = 'localhost'
-    mysql_user = 'root'
-    mysql_pwd = os.environ['SQLPSW']
-    mysql_db = 'COG'
-    
+
     biodb = settings.BIODB
     
-    conn = MySQLdb.connect(host=mysql_host,
-                                user=mysql_user,
-                                passwd=mysql_pwd,
-                                db=mysql_db)
-    
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+
     sql = f'select t3.accession,t3.description,locus_tag,start,stop,strand,gene,protein_id,product,t6.COG_name,t6.description ' \
           f' from annotation.seqfeature_id2locus_{biodb} t1 ' \
           f' inner join annotation.seqfeature_id2CDS_annotation_{biodb} t2 on t1.seqfeature_id=t2.seqfeature_id ' \

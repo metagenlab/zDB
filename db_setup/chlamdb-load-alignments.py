@@ -8,42 +8,46 @@ from multiprocessing import Process, Queue
 import time
 from multiprocessing import cpu_count
 import os
-import MySQLdb
+
 from chlamdb.biosqldb import manipulate_biosqldb
 import pickle
 import time
 
 class Orthogroup_Identity_DB:
     def __init__(self, database_name, ncpus):
-        import os
-        sqlpsw = os.environ['SQLPSW']
+
         self.n_cpus = ncpus
-        try:
-            self.conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="orth_%s" % database_name) # name of the data base
-            self.cursor = self.conn.cursor()
-        except:
-            conn = MySQLdb.connect(host="localhost", user="root", passwd=sqlpsw)
-            sql = 'CREATE DATABASE orth_%s' % database_name
-            cursor = conn.cursor()
-            cursor.execute(sql)
-            self.conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="orth_%s" % database_name) # name of the data base
-            self.cursor = self.conn.cursor()
-        self.conn.commit()
+
+        from chlamdb.biosqldb import manipulate_biosqldb
+
+        self.server, self.db = manipulate_biosqldb.load_db(database_name)
+        self.conn = self.server.adaptor.conn
+        self.cursor = self.server.adaptor.cursor
+
         self.count = 0
 
-        sql = f'select locus_tag,orthogroup_name from {database_name}.orthology_seqfeature_id2orthogroup t1 ' \
-              f' inner join {database_name}.annotation_seqfeature_id2locus t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-              f' inner join {database_name}.orthology_orthogroup t3 on t1.orthogroup_id=t3.orthogroup_id'
+
+        sql = 'CREATE TABLE if not exists orthology_identity (' \
+                   ' id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,' \
+                   ' orthogroup varchar(200),' \
+                   ' locus_a VARCHAR(30) NOT NULL,' \
+                   ' locus_b VARCHAR(30) NOT NULL,' \
+                   ' identity FLOAT(5) )'
+
+        self.cursor.execute(sql)
+
+        sql = f'select locus_tag,orthogroup_name from orthology_seqfeature_id2orthogroup t1 ' \
+              f' inner join annotation_seqfeature_id2locus t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+              f' inner join orthology_orthogroup t3 on t1.orthogroup_id=t3.orthogroup_id'
+              
         self.cursor.execute(sql,)
         self.locus_tag2orthogroup = {}
         for row in self.cursor.fetchall():
             self.locus_tag2orthogroup[row[0]] = row[1]
+
+        sql = 'CREATE TABLE if not exists orthology_average_identity (orthogroup varchar(100), identity float(5))'
+        self.server.adaptor.execute(sql)       
+        self.server.commit()
 
     def import_alignments(self, cursor, alignment_files):
         import sys
@@ -56,6 +60,18 @@ class Orthogroup_Identity_DB:
             self._add_identity_data(cursor, all_matrix[one_matrix], one_matrix)
             self.conn.commit()
 
+
+    def index_identity_table(self):
+        
+        sql1 = 'create index oidla on orthology_identity(locus_a)'
+        sql2 = 'create index oidlb on orthology_identity(locus_b)'
+        sql3 = 'create index oidlg on orthology_identity(orthogroup)'
+        
+        self.cursor.execute(sql1,)
+        self.cursor.execute(sql2,)
+        self.cursor.execute(sql3,)
+        
+
     def _add_identity_data(self, server, group_matrix, group_name):
         '''
         # old approach creating tables of the size n locus vs n locus
@@ -63,29 +79,21 @@ class Orthogroup_Identity_DB:
         # ==> use two columns tables: locus 1, locus 1, identity
         '''
 
-        sql = 'CREATE TABLE %s (' \
-                   ' id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,' \
-                   ' locus_a VARCHAR(30) NOT NULL,' \
-                   ' locus_b VARCHAR(30) NOT NULL,' \
-                   ' identity FLOAT(5) )' % (group_name)
-
-        server.execute(sql)
-
         locus_list = [i.decode("utf-8") for i in group_matrix[1:,0]]
 
         for x in range(1, len(group_matrix[:,0])):
             for y in range(x, len(group_matrix[:,0])):
                 if group_matrix[x,y] != 0:
-                    sql = 'INSERT INTO %s (locus_a, locus_b, identity) VALUES ("%s", "%s", %s)'  % (group_name,
-                                                                                                    locus_list[x-1],
-                                                                                                    locus_list[y-1],
-                                                                                                    float(group_matrix[x,y]))
+                    sql = 'INSERT INTO orthology_identity (orthogroup, locus_a, locus_b, identity) VALUES ("%s", "%s", "%s", %s)'  % (group_name,
+                                                                                                                                      locus_list[x-1],
+                                                                                                                                      locus_list[y-1],
+                                                                                                                                      float(group_matrix[x,y]))
                 else:
-                    sql = 'INSERT INTO %s (locus_a, locus_b, identity) VALUES ("%s", "%s", NULL)'  % (group_name,
-                                                                                                      locus_list[x-1],
-                                                                                                      locus_list[y-1]
-                                                                                                      )
-                server.execute(sql)
+                    sql = 'INSERT INTO orthology_identity (orthogroup, locus_a, locus_b, identity) VALUES ("%s", "%s", "%s", NULL)'  % (group_name,
+                                                                                                                     locus_list[x-1],
+                                                                                                                     locus_list[y-1]
+                                                                                                                     )
+                self.cursor.execute(sql)
 
     def _chunks(self, l, n):
         import random
@@ -192,58 +200,32 @@ class Orthogroup_Identity_DB:
         return np.mean(all_id)
 
 
-    def _create_orthogroup_average_identity_column(self, server, biodatabase_name):
-        sql = 'CREATE TABLE orth_%s.average_identity (orthogroup varchar(100), identity float(5))' % biodatabase_name
-        server.adaptor.execute(sql)
-        server.commit()
+    def add_average_orthogroup_identity(self):
 
-
-    def add_average_orthogroup_identity(self, biodatabase_name):
-        #print 'adding average id to orthology table'
-        server, db = manipulate_biosqldb.load_db(biodatabase_name)
-
-        #print 'get orthogroups'
         sql = f'select orthogroup from comparative_tables_orthology'
-        
-        try:
-            #print 'adding column'
-            self._create_orthogroup_average_identity_column(server, biodatabase_name)
-        except:
-            print ("column already created?")
-        groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql, )]
+                   
+        groups = [i[0] for i in self.server.adaptor.execute_and_fetchall(sql, )]
         #print len(groups)
 
         for group in groups:
-            id_table = np.array(get_orthogroup_identity_table(biodatabase_name, group))
-            id_matrix = id_table[:,1:].astype(float)
-            #print np.mean(id_matrix)
-            #print self._get_average_identity_from_identity_matrix(id_matrix)
-            av_id = round(np.mean(id_matrix[np.triu_indices(len(id_matrix), k=1)]), 2)
-            sql = 'insert into orth_%s.average_identity values ("%s", %s)' % (biodatabase_name, group, av_id)
-            #print sql
-            server.adaptor.execute(sql)
-        server.commit()
+            id_values = self.get_orthogroup_identity_table(group)
+            if len(id_values) > 0:
+                av_id = round(np.mean(id_values), 2)
+                
+                sql = 'insert into orthology_average_identity values ("%s", %s)' % (group, av_id)
+
+                self.server.adaptor.execute(sql)
+        self.server.commit()
 
 
-def get_orthogroup_identity_table(biodb_name, orthogroup):
-    import os
-    sqlpsw = os.environ['SQLPSW']
+    def get_orthogroup_identity_table(self, orthogroup):
+        import os
 
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="orth_%s" % biodb_name) # name of the data base
-    cursor = conn.cursor()
-    sql = 'SELECT * FROM %s' % orthogroup
-    cursor.execute(sql)
-    rows = cursor.fetchall()
-    return [row[1:] for row in rows]
+        sql = 'SELECT identity FROM orthology_identity where orthogroup="%s"' % orthogroup
 
+        values = [float(i[0]) for i in self.server.adaptor.execute_and_fetchall(sql,)]
+        return values
 
-def get_identity_matrix_all_genomes(orthogroup, biodb_namd):
-    identity_table = get_orthogroup_identity_table("saureus_01_15", "group_444")
-    #for row in identity_table:
-    #    print row
 
 
 def locus_tag2identity_best_hit_all_genomes(biodb_name, locus, group_name, locus_tag2taxonomic_id_dict = ""):
@@ -342,7 +324,7 @@ def heatmap_presence_absence(biodb_name, group_name):
 
     sql = f'select %s from orthology where orthogroup = "%s"' % (template, group_name)
 
-    result = [int(i) for i in server.adaptor.execute_and_fetchall(sql,)[0]]
+    result = [int(i) for i in self.server.adaptor.execute_and_fetchall(sql,)[0]]
     #print result
     taxon2presence_absence = {}
     for x, y in zip(genomes, result):
@@ -410,8 +392,8 @@ def locus_list2presence_absence_all_genomes(locus_list, biodb_name):
 
 def orthogroup2average_identity(biodatabase_name):
     server, db = manipulate_biosqldb.load_db(biodatabase_name)
-    sql = 'select orthogroup,average_identity from orth_%s.average_identity' % biodatabase_name
-    result = server.adaptor.execute_and_fetchall(sql)
+    sql = 'select orthogroup, average_identity from orthology_average_identity'
+    result = self.server.adaptor.execute_and_fetchall(sql)
     return manipulate_biosqldb.to_dict(result)
 
 
@@ -429,9 +411,11 @@ if __name__ == '__main__':
 
     tata = Orthogroup_Identity_DB(args.db_name, args.cpus)
     print("importing alignments...")
-    tata.import_alignments(tata.cursor, args.align_files)
+    #tata.import_alignments(tata.cursor, args.align_files)  
+    print("Index table")
+    #tata.index_identity_table()
     print("add_average_orthogroup_identity")
-    tata.add_average_orthogroup_identity(args.db_name)
+    tata.add_average_orthogroup_identity()
     
     manipulate_biosqldb.update_config_table(args.db_name, "orthogroup_alignments")
     

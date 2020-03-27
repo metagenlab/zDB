@@ -69,20 +69,12 @@ def blast2COG(blast_file, coverage_cutoff=50, identity_cutoff=20):
 
 
 def gi2COG(*protein_gi):
-    import MySQLdb
+    from chlamdb.biosqldb import manipulate_biosqldb
     import os
 
-    mysql_host = 'localhost'
-    mysql_user = 'root'
-    mysql_pwd = os.environ['SQLPSW']
-    mysql_db = 'COG'
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
 
-
-    conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
-                                user=mysql_user, # your username
-                                passwd=mysql_pwd, # your password
-                                db=mysql_db) # name of the data base
-    cursor = conn.cursor()
 
 
 

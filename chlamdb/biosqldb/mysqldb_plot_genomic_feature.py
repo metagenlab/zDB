@@ -224,15 +224,12 @@ def plot_multiple_regions_crosslink(target_protein_list,
     cmap = cm.Blues
     m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
+    from chlamdb.biosqldb import manipulate_biosqldb
 
+    server, db = manipulate_biosqldb.load_db(biodb_name)
 
-    conn = MySQLdb.connect(host="127.0.0.1", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="orth_%s" % biodb_name) # name of the data base
-    cursor = conn.cursor()
-
-
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     gd_diagram = GenomeDiagram.Diagram("geomic_region")
     feature_sets = []

@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-def insert_NOG_members_into_table(NOG_id, NOG_list, egggnog_version=451):
+def insert_NOG_members_into_table(biodb,
+                                  NOG_id, 
+                                  NOG_list, 
+                                  egggnog_version=451):
 
     '''
 
@@ -12,14 +15,11 @@ def insert_NOG_members_into_table(NOG_id, NOG_list, egggnog_version=451):
     '''
 
     from plastnr2sqltable import insert_taxons_into_sqldb
-    import MySQLdb
-    import os
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="interpro") # name of the data base
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     # create NOG table if not exist
     sql = 'create table if not exists eggnog.NOG_members_v%s (NOG_id INT,' \
@@ -56,22 +56,23 @@ def insert_NOG_members_into_table(NOG_id, NOG_list, egggnog_version=451):
         cursor.execute(sql,)
     conn.commit()
     print ('n update taxon:', len(taxon_update_list), 'out of:', count)
-    insert_taxons_into_sqldb(taxon_update_list, 300, mysql_pwd=sqlpsw)
+    
+    insert_taxons_into_sqldb(taxon_update_list, 300)
 
 
 
 
-def load_eggnog_members_table(table_file, egggnog_version=451):
+def load_eggnog_members_table(biodb,
+                              table_file, 
+                              egggnog_version=451):
 
 
-    import MySQLdb
-    import os
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="interpro") # name of the data base
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     # ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/assembly_summary_refseq.txt
 
@@ -116,7 +117,10 @@ def load_eggnog_members_table(table_file, egggnog_version=451):
                                                                                     group_name)
             cursor.execute(sql,)
             NOG_id = cursor.fetchall()[0][0]
-            insert_NOG_members_into_table(NOG_id, ProteinIDs, egggnog_version=egggnog_version)
+            insert_NOG_members_into_table(biodb,
+                                          NOG_id, 
+                                          ProteinIDs, 
+                                          egggnog_version=egggnog_version)
 
 
 def get_rank_summary_statistics(rank='phylum'):
@@ -130,18 +134,14 @@ def get_rank_summary_statistics(rank='phylum'):
     :return:
     '''
 
-    import MySQLdb
-    import os
+    from chlamdb.biosqldb import manipulate_biosqldb
+
     from ete3 import NCBITaxa, Tree, TextFace,TreeStyle, StackedBarFace
     ncbi = NCBITaxa()
 
-
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="eggnog") # name of the data base
-    cursor = conn.cursor()
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     sql = 'create table if not exists eggnog.phylogeny (rank varchar(400), phylogeny TEXT)'
     cursor.execute(sql,)
@@ -237,19 +237,18 @@ def get_rank_summary_statistics(rank='phylum'):
     conn.commit()
 
 
-def get_NOG_taxonomy(NOG_id, rank='phylum'):
-    import MySQLdb
-    import os
+def get_NOG_taxonomy(biodb, 
+                     NOG_id, 
+                     rank='phylum'):
     from ete3 import NCBITaxa, Tree, TextFace,TreeStyle, StackedBarFace
     ncbi = NCBITaxa()
 
 
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="eggnog") # name of the data base
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
 
     sql_domain_taxonomy = 'select distinct taxon_id from eggnog.NOG_members_v451 t1 ' \
@@ -284,7 +283,8 @@ def get_NOG_taxonomy(NOG_id, rank='phylum'):
     return leaf_taxon2n_species_with_domain
 
 
-def plot_phylum_counts(NOG_id,
+def plot_phylum_counts(biodb,
+                       NOG_id,
                        rank='phylum',
                        colapse_low_species_counts=4,
                        remove_unlassified=True):
@@ -304,25 +304,22 @@ def plot_phylum_counts(NOG_id,
 
     '''
 
-    import MySQLdb
-    import os
     from chlamdb.biosqldb import manipulate_biosqldb
     from ete3 import NCBITaxa, Tree, TextFace,TreeStyle, StackedBarFace
     ncbi = NCBITaxa()
 
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="eggnog") # name of the data base
-    cursor = conn.cursor()
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     sql = 'select * from eggnog.leaf2n_genomes_%s' % rank
 
     cursor.execute(sql,)
     leaf_taxon2n_species = manipulate_biosqldb.to_dict(cursor.fetchall())
 
-    leaf_taxon2n_species_with_domain = get_NOG_taxonomy(NOG_id, rank)
+    leaf_taxon2n_species_with_domain = get_NOG_taxonomy(biodb,
+                                                        NOG_id, 
+                                                        rank)
 
     sql = 'select phylogeny from eggnog.phylogeny where rank="%s"' % (rank)
 
@@ -473,11 +470,17 @@ if __name__ == '__main__':
     from chlamdb.biosqldb import manipulate_biosqldb
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", '--table',type=str,help="eggnog members table")
+    parser.add_argument("-d", '--biodb',type=str,help="biodb name")
 
     args = parser.parse_args()
 
-    #load_eggnog_members_table(args.table)
+    #load_eggnog_members_table(args.biodb,
+    #                          args.table)
     #get_rank_summary_statistics(rank='order')
-    tree, style = plot_phylum_counts("COG4789", rank='order',colapse_low_species_counts=0)
+    
+    tree, style = plot_phylum_counts(biodb,
+                                     "COG4789", 
+                                     rank='order',
+                                     colapse_low_species_counts=0)
 
     tree.render("test.svg", tree_style=style)
