@@ -57,6 +57,7 @@ The environment variable `SQLPSW` is used to pass the root MySQL password to the
 .. code-block:: bash
 
     chlamdb-setup-sqldb.py -d <db_name>
+    # sqlite OK
 
 Create a new MySQL database in setup the BioSQL scheme. Assume that mysql password is stored in `SQLWPD` env variable.
 
@@ -72,6 +73,7 @@ Create a new MySQL database in setup the BioSQL scheme. Assume that mysql passwo
 .. code-block:: bash
 
     chlamdb-load-gbk.py -g gbk_edited/*gbk -d 2020_chlamydia_test
+    # sqlite OK
 
 - Load gbk sequences & features into the biosql schema
 - Create features_* tables for faster access to 
@@ -81,13 +83,13 @@ Create a new MySQL database in setup the BioSQL scheme. Assume that mysql passwo
     - product
     - seqfeature id (primary key for CDS)
 
-
 4. load orthology data
 -----------------------
 
 .. code-block:: bash
 
     chlamdb-load-orthofinder.py -m Orthogroups.txt -d 2020_chlamydia_test
+    # sqlite ok
 
 - add “orthogroup” to sqldb *term* table
 - add orthogroup for all locus in the seqfeature_qualifier_value table
@@ -96,7 +98,22 @@ Create a new MySQL database in setup the BioSQL scheme. Assume that mysql passwo
 	- create orthology_detail tablke (deprecoiated but still mandatory)
 
 
-5. Setup comparative basic tables
+5. Load alignments
+-----------------
+
+.. code-block:: bash
+
+    chlamdb-load-alignments.py -a *faa -d 2020_chlamydia_test -c 
+    # sqlite ok
+
+- Calculate identity between pair of sequences
+- Create one table/group into orth_<db name>
+- Create mean indentity table (obsolete, not working)
+
+TODO: merge individual group tables into one table
+
+
+6. Setup comparative basic tables
 ----------------------------------
 
 .. code-block:: bash
@@ -104,18 +121,25 @@ Create a new MySQL database in setup the BioSQL scheme. Assume that mysql passwo
 	# minimal comparative tables
 	# orthology matrix
 	chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -o
+    # sqlite ok
 	
 	# orthology matrix: distinguish plasmids from genomes
 	chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -o -a
+    # sqlite ok
 	identity_closest_homolog
 
-6. orthogroups consensus annotation
+7. orthogroups consensus annotation
 ---------------------------------
+
+.. note::
+
+    Need to be updated if we load KEGG, COG and INterpro annotations
 
 .. code-block:: bash
 
     # TODO allow to make statistics for any subset of those data
-    chlamdb-get-consensus-orthogroup-annotation.py
+    chlamdb-get-consensus-orthogroup-annotation.py -d 2020_chlamydia_test
+    # sqlite3 ok
 
 Statistics for:
 
@@ -126,7 +150,7 @@ Statistics for:
 - domains
 
 
-7. Setup old locus table
+8. Setup old locus table
 ----------------------
 
 Mandatory by depreciated since synonymous table can be build at the end
@@ -134,19 +158,8 @@ Mandatory by depreciated since synonymous table can be build at the end
 .. code-block:: bash
 
     chlamdb-setup-old_locus-table.py -d 2020_chlamydia_test
+    # sqlite ok
 
-8. Load alignments
------------------
-
-.. code-block:: bash
-
-    chlamdb-load-alignments.py -a *faa -d 2020_chlamydia_test -c 6
-
-- Calculate identity between pair of sequences
-- Create one table/group into orth_<db name>
-- Create mean indentity table (obsolete, not working)
-
-TODO: merge individual group tables into one table
 
 9. chlamdb-load-reference-phylogeny.py
 --------------------------------------
@@ -154,6 +167,7 @@ TODO: merge individual group tables into one table
 .. code-block:: bash
 
     chlamdb-load-reference-phylogeny.py -r core_genome_phylogeny.nwk -d 2020_chlamydia_test -g  ../../data/gbk_edited/*gbk
+    # sqlite ok
 
 10. setup taxonomy table
 ------------------------
@@ -161,6 +175,8 @@ TODO: merge individual group tables into one table
 .. code-block:: bash
 
     chlamdb-setup-linear-taxonomy.py -d 2020_chlamydia_test -s linear_taxonomy.db
+    # if sqlite db, add one arg
+    chlamdb-setup-linear-taxonomy.py -d 2020_chlamydia_test -s linear_taxonomy.db -sf
 
 Might not be strictly necessary (primarily useful to manage the taxnonomy of 
 RefSEq and SwissProt hits) but currently necessary for genome statistics.
@@ -414,13 +430,15 @@ UNCLEAR PEPENDANCIES
 DIVERS & TODO
 =============
 
-- examples should not be hard coded (plot region, CT_013, K00024)
-- news should be more generic
-- content of the database should be dyamically generated based on the config table
-- Circos plot: possibility to highligh BBH phylum (highlight_BBH= true)
-- Taxnonomy circos plots
+- [ ] only use lead_db to connect to db ==> facilitate switch from mysql to sqlite
+- [ ] orthology_identity table: remove orthogroup column, replace locus_tag by seqfeature_id
+- [ ] examples should not be hard coded (plot region, CT_013, K00024)
+- [ ] news should be more generic
+- [ ] content of the database should be dyamically generated based on the config table
+- [ ] Circos plot: possibility to highligh BBH phylum (highlight_BBH= true)
+- [ ] Taxnonomy circos plots
 
-- If we don’t want to load interpro annotation, add mandatory columns to orthology_detail 
+- [ ] if we don’t want to load interpro annotation, add mandatory columns to orthology_detail 
     - ALTER TABLE orthology_detail ADD TM varchar(10) DEFAULT 'n/a';
     - ALTER TABLE orthology_detail ADD SP varchar(10) DEFAULT 'n/a';
 
