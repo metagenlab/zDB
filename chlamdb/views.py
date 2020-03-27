@@ -8572,16 +8572,18 @@ def orthogroup_identity(request, orthogroup, group=False):
     #if request.method == 'POST':
     import numpy
     import pandas as pd
-    sql = 'SELECT locus_a, locus_b, identity FROM orth_%s.%s;' % (biodb, orthogroup)
-    sql2 = 'select locus_a from orth_%s.%s UNION select locus_b from orth_%s.%s;' % (biodb,
-                                                                                     orthogroup,
-                                                                                     biodb,
-                                                                                     orthogroup)
+    sql = 'SELECT locus_a, locus_b, identity FROM orthology_identity where orthogroup="%s";' % (orthogroup)
+    
+    
+    sql2 = 'select locus_a, locus_b from orthology_identity where orthogroup in ("%s")' % (orthogroup)
 
     #try:
         # numpy.array()
     data = [list(i) for i in server.adaptor.execute_and_fetchall(sql,)]
-    locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql2,)]
+    locus_list_of_list = server.adaptor.execute_and_fetchall(sql2,)
+    # get nr list of locus
+    locus_list = list(set([locus for locus_list in locus_list_of_list for locus in locus_list]))
+
     # create dictionnary
     locus2locus2identity = {}
     for row in data:
@@ -12151,7 +12153,8 @@ def similarity_network(request, orthogroup, annotation):
     for n, value in enumerate(unique_annotations):
         annotation2group[value] = n
     
-    sql = 'select * from orth_%s.%s where identity!=0;' % (orthogroup)
+    sql = 'select orthogroup, locus_a, locus_b, identity from orthology_identity where identity!=0 and orthogroup="%s";' % (orthogroup)
+    
     data = [i for i in server.adaptor.execute_and_fetchall(sql,)]
 
     edge_list = []

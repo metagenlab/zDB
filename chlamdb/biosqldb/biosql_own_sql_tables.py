@@ -266,7 +266,11 @@ def circos_locus2taxon_highest_identity(biodb,
         i = 0
         # for each locus tag, get highest identity in each other taxons
         for locus_A in reference_orthogroup2locus_tag:
+            
+            orthogroup = reference_orthogroup2locus_tag[locus_A]
+            
             i+=1
+            '''
             sql = 'select locus_b,identity from orth_%s.%s where locus_a ="%s" ' \
                   ' UNION select locus_a,identity from orth_%s.%s where locus_b ="%s";' % (biodb,
                                                                                            reference_orthogroup2locus_tag[locus_A],
@@ -274,6 +278,9 @@ def circos_locus2taxon_highest_identity(biodb,
                                                                                            biodb,
                                                                                            reference_orthogroup2locus_tag[locus_A],
                                                                                            locus_A)
+            '''
+            sql = 'select locus_b, identity from orthology_identity where orthogroup="%s" and locus_a="%s"' \
+                  ' UNION select locus_a,identity from orthology_identity where orthogroup="%s" and locus_b="%s";' % (orthogroup, locus_A, orthogroup, locus_A)
             try:
                 locus2identity = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
                 locus2locus_identity[locus_A] = {}
@@ -1429,47 +1436,6 @@ locus_tag2best_hit_euk = locus_tag2best_hit("chlamydia_03_15", "Rhab", hit_numbe
 print locus_tag2best_hit_euk
 '''
 
-def calculate_average_protein_identity(db_name):
-
-    server, db = manipulate_biosqldb.load_db(db_name)
-
-    sql = 'select taxon_id from bioentry' \
-          ' inner join biodatabase on bioentry.biodatabase_id=biodatabase.biodatabase_id where biodatabase.name="%s" group by taxon_id' % db_name
-
-    all_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-
-
-    average_id = {}
-    for i_taxon in range(0,len(all_taxons)):
-        #print 'i taxon', i_taxon
-        for y_taxon in range(i_taxon+1, len(all_taxons)):
-            shared_groups_sql = 'select orthogroup from comparative_tables_orthology where `%s` =1 and `%s`=1' % (all_taxons[i_taxon], 
-                                                                                                                  all_taxons[y_taxon])
-            all_groups = [i[0] for i in server.adaptor.execute_and_fetchall(shared_groups_sql,)]
-            identity_values = []
-            #print 'y taxon', y_taxon
-            for group in all_groups:
-                sql_ref = 'select locus_tag from orthology_detail where taxon_id=%s and orthogroup="%s"' % (all_taxons[i_taxon], 
-                                                                                                            group)
-                sql_query = 'select locus_tag from orthology_detail where taxon_id=%s and orthogroup="%s"' % (all_taxons[y_taxon], 
-                                                                                                              group)
-                locus_ref = server.adaptor.execute_and_fetchall(sql_ref,)[0][0]
-                locus_query = server.adaptor.execute_and_fetchall(sql_query,)[0][0]
-
-                sql_id = 'select `%s` from orth_%s.%s where locus_tag="%s"' % (locus_ref, db_name, group, locus_query)
-
-                id_value = server.adaptor.execute_and_fetchall(sql_id,)[0][0]
-
-                identity_values.append(id_value)
-            one_average_id = sum(identity_values) / float(len(identity_values))
-            if not all_taxons[i_taxon] in average_id:
-                average_id[all_taxons[i_taxon]] = {}
-            average_id[all_taxons[i_taxon]][all_taxons[y_taxon]] = [one_average_id, len(identity_values)]
-            #print "one_average_id",all_taxons[i_taxon],all_taxons[y_taxon], one_average_id, len(identity_values)
-    #import json
-    #with open('genome_identity_dico.json', 'wb') as fp:
-    #    json.dump(average_id, fp)
-    return average_id
 
 def calculate_average_protein_identity_new_tables(db_name):
 
@@ -1500,12 +1466,10 @@ def calculate_average_protein_identity_new_tables(db_name):
                 locus_ref = server.adaptor.execute_and_fetchall(sql_ref,)[0][0]
                 locus_query = server.adaptor.execute_and_fetchall(sql_query,)[0][0]
 
-                sql_id = 'select identity from orth_%s.%s where (locus_a="%s" and locus_b="%s") or (locus_a="%s" and locus_b="%s")' % (db_name,
-                                                                                                                                       group,
-                                                                                                                                       locus_ref,
-                                                                                                                                       locus_query,
-                                                                                                                                       locus_query,
-                                                                                                                                       locus_ref)
+                sql_id = 'select identity from orthology_identity where (locus_a="%s" and locus_b="%s") or (locus_a="%s" and locus_b="%s")' % (locus_ref,
+                                                                                                                                               locus_query,
+                                                                                                                                               locus_query,
+                                                                                                                                               locus_ref)
                 id_value = server.adaptor.execute_and_fetchall(sql_id,)[0][0]
 
                 identity_values.append(id_value)

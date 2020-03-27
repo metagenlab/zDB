@@ -240,7 +240,7 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
                     if group_1 != group_2:
                         msa_identity = "NULL"
                     else:
-                        sql = 'select identity from orth_%s.%s where locus_a in ("%s", "%s") ' \
+                        sql = 'select identity from orthology_identity where locus_a in ("%s", "%s") ' \
                                 ' and locus_b in ("%s","%s") and locus_a!=locus_b;' % (biodb,
                                                                                         group_1,
                                                                                         locus_1,
