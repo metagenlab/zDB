@@ -241,12 +241,10 @@ def get_reciproval_BBH_table(biodb, locus2taxon2best_hit_id, sqlite3=False):
                         msa_identity = "NULL"
                     else:
                         sql = 'select identity from orthology_identity where locus_a in ("%s", "%s") ' \
-                                ' and locus_b in ("%s","%s") and locus_a!=locus_b;' % (biodb,
-                                                                                        group_1,
-                                                                                        locus_1,
-                                                                                        locus_2,
-                                                                                        locus_1,
-                                                                                        locus_2)
+                                ' and locus_b in ("%s","%s") and locus_a!=locus_b;' % (locus_1,
+                                                                                       locus_2,
+                                                                                       locus_1,
+                                                                                       locus_2)
 
                         msa_identity = server.adaptor.execute_and_fetchall(sql,)[0][0]
                 else:

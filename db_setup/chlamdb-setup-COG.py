@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 
 
-def create_COG_tables():
-    import MySQLdb
-    import os
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                           user="root", # your username
-                           passwd=sqlpsw) # name of the data base
-    cursor = conn.cursor()
+def parse_table(table_path):
+    with 
+
+
+def create_COG_tables(biodb):
+    from chlamdb.biosqldb import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
 
 
@@ -57,7 +58,10 @@ def COG_id2cog_data_from_website(GOG_id):
     category = title.text.split('[')[1].split(']')[0]
     return [description, category]
 
-def load_cog_tables(cognames_2014, cog_2014, cog_categories):
+def load_cog_tables(biodb,
+                    cognames_2014, 
+                    cog_2014, 
+                    cog_categories):
     '''
 
     COG names
@@ -77,12 +81,10 @@ def load_cog_tables(cognames_2014, cog_2014, cog_categories):
     import os
     import re
     from chlamdb.biosqldb import manipulate_biosqldb
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="COG") # name of the data base
-    cursor = conn.cursor()
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
+    
     conn.set_character_set('utf8')
     cursor.execute('SET NAMES utf8;')
     cursor.execute('SET CHARACTER SET utf8;')
@@ -221,11 +223,36 @@ def load_cog_tables(cognames_2014, cog_2014, cog_categories):
 if __name__ == '__main__':
     import argparse
     from Bio import SeqIO
+    import urllib.request
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--cognames_2014', type=str, help="cognames2003-2014.tab")
     parser.add_argument("-c", '--cog_2014', type=str, help="cog2003-2014.csv")
     parser.add_argument("-f", '--functions_2014', type=str, help="fun2003-2014.tab")
+    parser.add_argument("-d", '--biodb', type=str, help="Biodb name")
+    
 
     args = parser.parse_args()
-    create_COG_tables()
-    load_cog_tables(args.cognames_2014, args.cog_2014, args.functions_2014)
+    create_COG_tables(args.biodb)
+    
+    cognames = 'ftp://ftp.ncbi.nlm.nih.gov/pub/COG/COG2014/data/cognames2003-2014.tab'
+    cog_2014 = 'ftp://ftp.ncbi.nlm.nih.gov/pub/COG/COG2014/data/cog2003-2014.csv'
+    cog_functions = 'ftp://ftp.ncbi.nlm.nih.gov/pub/COG/COG2014/data/fun2003-2014.tab'
+    
+    if args.download:
+        print("Downloading ftp://ftp.ncbi.nlm.nih.gov/pub/COG/COG2014/data/cognames2003-2014.tab")
+        cog_functions_data = urllib.request.Request(cog_functions).read().decode('utf-8').split('\n')
+        print(cog_functions_data)
+        print("Downloading ftp://ftp.ncbi.nlm.nih.gov/pub/COG/COG2014/data/cognames2003-2014.tab...")
+        cognames_data = urllib.request.Request(cognames).read().decode('utf-8').split('\n')
+        print("Downloading... ftp://ftp.ncbi.nlm.nih.gov/pub/COG/COG2014/data/fun2003-2014.tab")
+        cog_2014_data = urllib.request.Request(cog_2014).read().decode('utf-8').split('\n')
+        load_cog_tables(args.biodb,
+                        download=True)
+
+    else:
+        load_cog_tables(args.biodb,
+                        args.cognames_2014, 
+                        args.cog_2014, 
+                        args.functions_2014, 
+                        download=False)

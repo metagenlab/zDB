@@ -2,17 +2,13 @@
 
 
 def connect_db(biodb):
-    import MySQLdb
     import os
     import re
     from chlamdb.biosqldb import manipulate_biosqldb
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                           user="root", # your username
-                           passwd=sqlpsw,
-                           db=biodb) # name of the data base
-
-    cursor = conn.cursor()
+    server, db = manipulate_biosqldb.load_db(biodb)
+    
+    conn = server.adaptor.cursor
+    cursor = server.adaptor.cursor
 
     conn.set_character_set('utf8')
     cursor.execute('SET NAMES utf8;')
@@ -128,14 +124,12 @@ def load_enzyme_nomenclature_table(biodb):
     from Bio.ExPASy import Enzyme
     import MySQLdb
     import urllib.request
-    import os
     from io import StringIO
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db=biodb) # name of the data base
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
+
     conn.set_character_set('utf8')
     cursor.execute('SET NAMES utf8;')
     cursor.execute('SET CHARACTER SET utf8;')
@@ -280,17 +274,13 @@ def get_kegg_pathway_classification():
 
 def get_pathay_table(map2category, 
                      biodb):
-    import MySQLdb
     import urllib.request
     import sys
-    import os
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db=biodb) # name of the data base
-    cursor = conn.cursor()
-
+    from chlamdb.biosqldb import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
+    
     sql1 = 'CREATE TABLE IF NOT EXISTS enzyme_kegg_pathway (pathway_id INT AUTO_INCREMENT PRIMARY KEY,' \
            ' pathway_name VARCHAR(200),' \
            ' pathway_category_short VARCHAR(200),' \
@@ -342,18 +332,14 @@ def get_pathway2ko(ko_accession2ko_id,
     :return: nothing
     '''
 
-
-    import MySQLdb
     import urllib.request
     import re
     import sys
-    import os
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db=biodb) # name of the data base
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
 
 
@@ -428,18 +414,14 @@ def get_module_table(module2category,
     :return: nothing
     '''
 
-
-    import MySQLdb
     import urllib.request
     import re
     import sys
-    import os
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db=biodb) # name of the data base
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     sql1 = 'CREATE TABLE IF NOT EXISTS enzyme_kegg_module (module_id INT AUTO_INCREMENT PRIMARY KEY,' \
            ' module_name VARCHAR(200),' \
@@ -593,13 +575,9 @@ def get_ec2get_pathway_table(biodb):
     import urllib.request
     import sys
     from chlamdb.biosqldb import manipulate_biosqldb
-    import os
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db=biodb) # name of the data base
-    cursor = conn.cursor()
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_kegg2ec (pathway_id INT,' \
            ' ec_id INT,' \
@@ -699,13 +677,11 @@ def get_ec_data_from_IUBMB(ec,
     import re
     import MySQLdb
     from bs4 import BeautifulSoup
-    import os
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost",
-                                user="root",
-                                passwd=sqlpsw,
-                                db=biodb)
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     name_m = re.compile(u".*Accepted name.*")
     alname = re.compile(u".*Other name.*")
@@ -942,15 +918,11 @@ def get_module_table_legacy(module2category, biodb):
     import urllib.request
     import re
     import sys
-    import os
-
-    sqlpsw = os.environ['SQLPSW']
-
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db=biodb) # name of the data base
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     sql1 = 'CREATE TABLE IF NOT EXISTS enzyme_kegg_module_v1 (module_id INT AUTO_INCREMENT PRIMARY KEY,' \
            ' module_name VARCHAR(200),' \
@@ -1055,13 +1027,11 @@ def get_pathway2ko_legacy(biodb):
     import urllib
     import re
     import sys
-
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd="estrella3", # your password
-                                db=biodb) # name of the data base
-    cursor = conn.cursor()
-
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
 
     sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_pathway2ko_v1 (pathway_id INT,' \
@@ -1121,15 +1091,13 @@ def get_pathway2ko_legacy(biodb):
 
 
 def get_pathay_table_legacy(map2category, biodb):
-    import MySQLdb
     import urllib
     import sys
-
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd="estrella3", # your password
-                                db=biodb) # name of the data base
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     sql1 = 'CREATE TABLE IF NOT EXISTS enzyme_kegg_pathway_v1 (pathway_id INT AUTO_INCREMENT PRIMARY KEY,' \
            ' pathway_name VARCHAR(200),' \

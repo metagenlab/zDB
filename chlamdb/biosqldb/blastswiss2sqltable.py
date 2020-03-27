@@ -131,12 +131,10 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
     n_file = 0
     for one_blast_file in input_blast_files:
         n_file +=1
-        conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
-                               user=mysql_user, # your username
-                               passwd=mysql_pwd, # your password
-                               db=mysql_db) # name of the data base
-        cursor = conn.cursor()
 
+        server, db = manipulate_biosqldb.load_db(biodb)
+        conn = server.adaptor.conn
+        cursor = server.adaptor.cursor
 
         with open(one_blast_file, 'r') as f:
             print ('Loading', n_file, one_blast_file, '...')
@@ -292,13 +290,11 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
                     print (sql)
 
 def create_sql_blast_swissprot_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_db='blastnr'):
-    import MySQLdb
+    from chlamdb.biosqldb import manipulate_biosqldb
 
-    conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
-                                user=mysql_user, # your username
-                                passwd=mysql_pwd, # your password
-                                db=mysql_db) # name of the data base
-    cursor = conn.cursor()
+    server, db = manipulate_biosqldb.load_db(db_name)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     '''
     1 query_taxon_id int

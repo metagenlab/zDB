@@ -1,20 +1,15 @@
 #!/usr/bin/env python
 
 def get_pathway_ko_association_table(biodb):
-    import os
-    import MySQLdb
     from chlamdb.biosqldb import manipulate_biosqldb
     import urllib
     from Bio.KEGG.KGML import KGML_parser
     import re
-
-    sqlpsw = os.environ['SQLPSW']
-
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db=biodb) # name of the data base
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     sql = 'create table enzyme_pathway2ortholog_associations (pathway_id INT, node_id INT, ko_id varchar(200), ' \
           ' index pathway_id(pathway_id), index node_id(node_id), index ko_id(ko_id));'

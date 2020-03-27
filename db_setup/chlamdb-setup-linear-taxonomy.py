@@ -9,14 +9,13 @@ import re
 class MySQLDB():
     def __init__(self, biodb):
 
-        sqlpsw = os.environ['SQLPSW']
-        self.biodb = biodb
-        self.mysql_conn = MySQLdb.connect(host="localhost",
-                               user="root",
-                               passwd=sqlpsw,
-                               db=biodb)
-        self.mysql_cursor = self.mysql_conn.cursor()
+        from chlamdb.biosqldb import manipulate_biosqldb
+        
+        server, db = manipulate_biosqldb.load_db(biodb)
+        self.mysql_conn = server.adaptor.conn
+        self.mysql_cursor = server.adaptor.cursor
 
+        self.biodb = biodb
 
     def importFromCSV(self, 
                       csvfilename, 

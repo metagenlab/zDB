@@ -931,16 +931,11 @@ def get_comparative_subtable(biodb,
     '''
     
     import MySQLdb
-    import os
-    import pandas
-    mysql_host = 'localhost'
-    mysql_user = 'root'
-    mysql_pwd = os.environ['SQLPSW']
-    mysql_db = biodb
-    conn = MySQLdb.connect(host=mysql_host,
-                                user=mysql_user,
-                                passwd=mysql_pwd,
-                                db=mysql_db)
+    from chlamdb.biosqldb import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
     
     if not accessions:
         cache_id = f"{biodb}_{table_name}2"   

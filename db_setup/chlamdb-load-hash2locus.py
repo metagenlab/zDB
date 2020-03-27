@@ -6,12 +6,9 @@ def load_hash2locus(hash2locus_list,
     import MySQLdb
     import os
     from chlamdb.biosqldb import manipulate_biosqldb
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                           user="root", # your username
-                           passwd=sqlpsw,
-                           db=biodb) # name of the data base
-    cursor = conn.cursor()
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     sql = 'select locus_tag, seqfeature_id from annotation_seqfeature_id2locus'
     cursor.execute(sql,)

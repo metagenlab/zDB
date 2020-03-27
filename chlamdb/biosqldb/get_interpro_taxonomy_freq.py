@@ -112,16 +112,16 @@ def get_interpro_version():
         if 'version_title_main' in line:
             return float(line.split('>')[1].split('<')[0].split(' ')[1])
 
-def create_interpro_taxonomy_table(interpro_version):
+def create_interpro_taxonomy_table(biodb, 
+                                   interpro_version):
 
     import MySQLdb
     import os
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="interpro") # name of the data base
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+
+    server, db = manipulate_biosqldb.load_db(db_name)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
 
     sql = 'CREATE table IF NOT EXISTS interpro_taxonomy_v_%s (interpro_id INT, eukaryote INT, bacteria INT, ' \
@@ -130,21 +130,18 @@ def create_interpro_taxonomy_table(interpro_version):
     cursor.execute(sql,)
     conn.commit()
 
-def get_whole_db_interpro_taxonomy():
+def get_whole_db_interpro_taxonomy(biodb):
     import MySQLdb
     from chlamdb.biosqldb import manipulate_biosqldb
-    import os
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="interpro") # name of the data base
-    cursor = conn.cursor()
 
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     interpro_vesrion = get_interpro_version()
 
-    create_interpro_taxonomy_table(interpro_vesrion)
+    create_interpro_taxonomy_table(biodb, 
+                                   interpro_vesrion)
 
     sql = 'select name,interpro_id from interpro_entry'
     cursor.execute(sql,)
@@ -233,7 +230,7 @@ if __name__ == '__main__':
 
 
     args = parser.parse_args()
-    #get_whole_db_interpro_taxonomy()
+    #get_whole_db_interpro_taxonomy(args.biodb)
     #get_biodb_summary_statistics(args.biodb, 98)
     #get_biodb_summary_statistics(args.biodb, 50)
     #get_biodb_summary_statistics(args.biodb, 90)

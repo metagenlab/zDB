@@ -1,20 +1,17 @@
 #! /usr/bin/env python
 
 
-def get_pfam_freq(db_version):
+def get_pfam_freq(biodb, 
+                  db_version):
 
     import MySQLdb
     import os
     from chlamdb.biosqldb import manipulate_biosqldb
-    sqlpsw = os.environ['SQLPSW']
 
-
-    conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                user="root", # your username
-                                passwd=sqlpsw, # your password
-                                db="pfam") # name of the data base
-
-    cursor = conn.cursor()
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
+    
     sql_pfam_list = 'select hmm_id from pfam_summary_version_%s' % (db_version)
     cursor.execute(sql_pfam_list,)
     pfam_list = [i[0] for i in cursor.fetchall()]
@@ -152,8 +149,10 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", '--pfam_db_version', type=str, help="pfam db version number", required=True)
+    parser.add_argument("-n", '--biodb', type=str, help="biodb name", required=True)
 
     args = parser.parse_args()
 
     create_pfam_interpro_signature2pfam_id('2017_06_29b_motile_chlamydiae', args.pfam_db_version)
-    #get_pfam_freq(args.pfam_db_version)
+    #get_pfam_freq(args.biodb,
+    #               args.pfam_db_version)

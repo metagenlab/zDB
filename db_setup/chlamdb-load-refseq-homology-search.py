@@ -12,10 +12,6 @@ def load_blastnr_file_into_db(locus_tag2taxon_id,
                               locus_tag2seqfeature_id,
                               protein_id2seqfeature_id,
                               locus_tag2bioentry_id,
-                              mysql_host,
-                              mysql_user,
-                              mysql_pwd,
-                              mysql_db,
                               biodb,
                               hash2locus_list,
                               linear_taxonomy,
@@ -36,14 +32,11 @@ def load_blastnr_file_into_db(locus_tag2taxon_id,
 
 
     import time
-    import MySQLdb
     import sqlite3
-
-    mysql_conn = MySQLdb.connect(host=mysql_host,
-                                 user=mysql_user,
-                                 passwd=mysql_pwd,
-                                 db=mysql_db)
-    mysql_cursor = mysql_conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodb)
+    mysql_conn = server.adaptor.conn
+    mysql_cursor = server.adaptor.cursor
 
     sqlite3_conn = sqlite3.connect(diamond_refseq)
     sqlite3_cursor = sqlite3_conn.cursor()
@@ -165,15 +158,12 @@ def load_blastnr_file_into_db(locus_tag2taxon_id,
             mysql_cursor.execute(sql,)
 
 
-def create_sql_plastnr_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_db='blastnr'):
-    import MySQLdb
-
-    conn = MySQLdb.connect(host=mysql_host,
-                           user=mysql_user,
-                           passwd=mysql_pwd,
-                           db=mysql_db)
-    cursor = conn.cursor()
-
+def create_sql_plastnr_tables(db_name):
+    from chlamdb.biosqldb import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
+    
     sql_plast = 'CREATE TABLE IF NOT EXISTS blastnr_%s (query_taxon_id INT,' \
                 ' query_bioentry_id INT,' \
                 ' seqfeature_id INT,' \
@@ -252,11 +242,7 @@ if __name__ == '__main__':
     sys.stdout.write("creating protein_id2seqfeature_id")
     protein_id2seqfeature_id = manipulate_biosqldb.protein_id2seqfeature_id_dict(server, biodb)
 
-    create_sql_plastnr_tables(db_name,
-                              mysql_host,
-                              mysql_user,
-                              mysql_pwd,
-                              mysql_db)
+    create_sql_plastnr_tables(db_name)
 
     print('get locus2taxon_id')
     sql = 'select locus_tag, taxon_id from orthology_detail'
@@ -273,10 +259,6 @@ if __name__ == '__main__':
                               locus_tag2seqfeature_id,
                               protein_id2seqfeature_id,
                               locus_tag2bioentry_id,
-                              mysql_host,
-                              mysql_user,
-                              mysql_pwd,
-                              mysql_db,
                               db_name,
                               hash2locus_list,
                               args.linear_taxonomy,

@@ -1,24 +1,19 @@
 #!/usr/bin/python
 
 def orthogroup2blast_hits(biodb,
-                            orthogroup,
-                            max_n_hits=10,
-                            exclude_phylum=["Chlamydiae", 'Verrucomicrobia', 'Planctomycetes'],
-                            mysql_host="localhost",
-                            mysql_user="root",
-                            mysql_pwd="baba",
-                            mysql_db="blastnr",
-                            database='blast_swissprot'):
+                          orthogroup,
+                          max_n_hits=10,
+                          exclude_phylum=["Chlamydiae", 'Verrucomicrobia', 'Planctomycetes'],
+                          database='blast_swissprot'):
 
     # get max n hits for each homolog of <orthogroup> from  other phyla
     # remove redundancy
     # return fasta file
-    import MySQLdb
-    conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
-                                user=mysql_user, # your username
-                                passwd=mysql_pwd, # your password
-                                db=mysql_db) # name of the data base
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     exclude_filter = '"' + '","'.join(exclude_phylum) + '"'
 
@@ -127,8 +122,7 @@ def orthogroup2alignment_closest(orthogroup,
                                  swissprot=True,
                                  refseq=True):
     from promer2circos import chunks
-    import os
-    sqlpsw = os.environ['SQLPSW']
+
     if swissprot:
         print ('getting swissprot best hits...')
         # get uniprot record of the <max_n_hits_uniprot> best hits of each <orthogroup> locus
@@ -136,8 +130,7 @@ def orthogroup2alignment_closest(orthogroup,
                                                              orthogroup,
                                                              max_n_hits=max_n_hits_uniprot,
                                                              exclude_phylum=exclude_phylum,
-                                                             database='blast_swissprot',
-                                                             mysql_pwd=sqlpsw)
+                                                             database='blast_swissprot')
         if len(locus2uniprot_accession_list) == 0:
             uniprot_sequence_records = []
             swissprot = False
@@ -153,11 +146,10 @@ def orthogroup2alignment_closest(orthogroup,
         print ('getting refseq best hits...')
         # get refseq record of the <max_n_hits_refseq> best hits of each <orthogroup> locus
         locus2refseq_accession_list = orthogroup2blast_hits(biodb,
-                                                               orthogroup,
-                                                               max_n_hits=max_n_hits_refseq,
-                                                               exclude_phylum=exclude_phylum,
-                                                               mysql_pwd=sqlpsw,
-                                                               database='blastnr')
+                                                            orthogroup,
+                                                            max_n_hits=max_n_hits_refseq,
+                                                            exclude_phylum=exclude_phylum,
+                                                            database='blastnr')
         if len(locus2refseq_accession_list) == 0:
             refseq_sequence_records = []
             refseq = False
@@ -203,22 +195,14 @@ def get_spaced_colors(n):
 
 def plot_tree(ete3_tree,
               orthogroup,
-              biodb,
-              mysql_host="localhost",
-              mysql_user="root",
-              mysql_pwd="baba",
-              mysql_db="blastnr"):
+              biodb):
 
-    import MySQLdb
-    from chlamdb.biosqldb import manipulate_biosqldb
     from ete3 import Tree, TreeStyle, faces, AttrFace
-
-    conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
-                           user=mysql_user, # your username
-                           passwd=mysql_pwd, # your password
-                           db=mysql_db) # name of the data base
-
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     locus_list = [lf.name for lf in ete3_tree.iter_leaves()]
 
@@ -381,7 +365,7 @@ if __name__ == '__main__':
         if alignment:
             t = aafasta2phylogeny("%s_swiss_homologs.faa" % grp)
 
-            tree, ts = plot_tree(t, grp,"chlamydia_04_16", mysql_pwd=sqlpsw)
+            tree, ts = plot_tree(t, grp,"chlamydia_04_16")
             out_name = "%s.svg" % grp
             tree.render(out_name, tree_style=ts)
     else:

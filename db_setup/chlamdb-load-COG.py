@@ -92,15 +92,9 @@ def load_locus2cog_into_sqldb(input_blast_files,
     import MySQLdb
     import os
     from chlamdb.biosqldb import manipulate_biosqldb
-    mysql_host = 'localhost'
-    mysql_user = 'root'
-    mysql_pwd = os.environ['SQLPSW']
-    mysql_db = biodb
-    conn = MySQLdb.connect(host=mysql_host,
-                                user=mysql_user,
-                                passwd=mysql_pwd,
-                                db=mysql_db)
-    cursor = conn.cursor()
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     '''
     locus2data[locus]["hit_cdd_id"] = hit_cdd_id
@@ -203,16 +197,9 @@ def load_locus2cog_into_sqldb_legacy(input_blast_files,
     import MySQLdb
     import os
     from chlamdb.biosqldb import manipulate_biosqldb
-
-    mysql_host = 'localhost'
-    mysql_user = 'root'
-    mysql_pwd = os.environ['SQLPSW']
-    mysql_db = biodb
-    conn = MySQLdb.connect(host=mysql_host,
-                           user=mysql_user,
-                           passwd=mysql_pwd,
-                           db=mysql_db)
-    cursor = conn.cursor()
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     sql = 'create table COG_locus_tag2gi_hit (accession varchar(100), locus_tag varchar(100), gi INT, COG_id varchar(100),' \
           'index locus_tag (locus_tag), index accession (accession))'

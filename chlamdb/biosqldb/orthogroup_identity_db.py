@@ -13,6 +13,29 @@ import MySQLdb
 from chlamdb.biosqldb import manipulate_biosqldb
 
 
+
+def heatmap_presence_absence(biodb_name, group_name):
+    server, db = manipulate_biosqldb.load_db(biodb_name)
+
+    genomes = manipulate_biosqldb.get_genome_taxons_list(server, biodb_name)
+
+    template = ''
+    for i in range(0, len(genomes)):
+        template += '`%s`, ' % genomes[i]
+    template += '`%s`' % genomes[-1]
+
+    #print "template", template
+
+    sql = 'select %s from orthology_%s where orthogroup = "%s"' % (template, biodb_name, group_name)
+
+    result = [int(i) for i in server.adaptor.execute_and_fetchall(sql,)[0]]
+    #print result
+    taxon2presence_absence = {}
+    for x, y in zip(genomes, result):
+        taxon2presence_absence[x] = y
+    return taxon2presence_absence
+
+
 def orthogroup2identity_dico(biodb_name, orthogroup):
     server, db = manipulate_biosqldb.load_db(biodb_name)
     sql = 'select locus_a, locus_b, identity from orthology_identity where orthogroup="%s"' % orthogroup

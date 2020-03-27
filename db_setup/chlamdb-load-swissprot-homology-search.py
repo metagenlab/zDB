@@ -139,10 +139,6 @@ def deleted_uniprot2new_identical_sequence(accession_list):
 def load_blastswissprot_file_into_db(locus_tag2taxon_id,
                                 locus_tag2seqfeature_id,
                                 locus_tag2bioentry_id,
-                                mysql_host,
-                                mysql_user,
-                                mysql_pwd,
-                                mysql_db,
                                 input_blast_files,
                                 biodb,
                                 hash2locus_list):
@@ -152,11 +148,10 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
     from chlamdb.biosqldb import manipulate_biosqldb
     import time
 
-    conn = MySQLdb.connect(host=mysql_host,
-                           user=mysql_user,
-                           passwd=mysql_pwd,
-                           db=mysql_db)
-    cursor = conn.cursor()
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
+
 
     n_file = 0
     sp_accessions = []
@@ -349,14 +344,13 @@ def load_blastswissprot_file_into_db(locus_tag2taxon_id,
         conn.commit()
 
 
-def create_sql_blast_swissprot_tables(db_name, mysql_host, mysql_user, mysql_pwd, mysql_db='blastnr'):
-    import MySQLdb
+def create_sql_blast_swissprot_tables(db_name):
+    
+    from chlamdb.biosqldb import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
-    conn = MySQLdb.connect(host=mysql_host, # your host, usually localhost
-                                user=mysql_user, # your username
-                                passwd=mysql_pwd, # your password
-                                db=mysql_db) # name of the data base
-    cursor = conn.cursor()
 
     '''
     1 query_taxon_id int
@@ -422,20 +416,18 @@ def create_sql_blast_swissprot_tables(db_name, mysql_host, mysql_user, mysql_pwd
 def blastswiss2biosql( locus_tag2seqfeature_id,
                     db_name,
                     n_procs,
-                    mysql_host,
-                    mysql_user,
-                    mysql_pwd,
-                    mysql_db,
                     hash2locus_list,
                     *input_blast_files):
 
     import numpy
     from multiprocessing import Process
+    from chlamdb.biosqldb import manipulate_biosqldb
+    server, db = manipulate_biosqldb.load_db(db_name)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
-    create_sql_blast_swissprot_tables(db_name,
-                                      mysql_host,
-                                      mysql_user,
-                                      mysql_pwd,mysql_db)
+
+    create_sql_blast_swissprot_tables(db_name)
 
 
     print ('get locus2taxon_id')
@@ -451,10 +443,6 @@ def blastswiss2biosql( locus_tag2seqfeature_id,
     load_blastswissprot_file_into_db(locus_tag2taxon_id,
                             locus_tag2seqfeature_id,
                             locus_tag2bioentry_id,
-                            mysql_host,
-                            mysql_user,
-                            mysql_pwd,
-                            mysql_db,
                             input_blast_files,
                             biodb,
                             hash2locus_list)
@@ -508,9 +496,5 @@ if __name__ == '__main__':
         blastswiss2biosql(locus_tag2seqfeature_id,
                         biodb,
                         args.n_procs,
-                        mysql_host,
-                        mysql_user,
-                        mysql_pwd,
-                        mysql_db,
                         hash2locus_list,
                         *args.input_blast)

@@ -5,12 +5,11 @@ import MySQLdb
     
 def create_data_table(biodb):
 
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost",
-                        user="root",
-                        passwd=sqlpsw,
-                        db=biodb)
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
+    server, db = manipulate_biosqldb.load_db(biodb)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     entry_list = [
         ("gbk_files", "mandatory", False),
@@ -72,12 +71,11 @@ def setup_biodb(biodb_name):
     import urllib.request
     import sys
     from subprocess import Popen, PIPE
-
-    sqlpsw = os.environ['SQLPSW']
-    conn = MySQLdb.connect(host="localhost",
-                        user="root",
-                        passwd=sqlpsw)
-    cursor = conn.cursor()
+    from chlamdb.biosqldb import manipulate_biosqldb
+    
+    server, db = manipulate_biosqldb.load_db(biodb_name)
+    conn = server.adaptor.conn
+    cursor = server.adaptor.cursor
 
     sys.stdout.write("Creating mysql database...\n")
 

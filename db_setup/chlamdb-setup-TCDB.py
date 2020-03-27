@@ -16,13 +16,11 @@ from chlamdb.biosqldb import blastswiss2sqltable
 
 class TCDB():
     def __init__(self, biodb):
-
-        sqlpsw = os.environ['SQLPSW']
-        self.conn = MySQLdb.connect(host="localhost",
-                                    user="root",
-                                    passwd=sqlpsw,
-                                    db=biodb)
-        self.cursor = self.conn.cursor()
+        from chlamdb.biosqldb import manipulate_biosqldb
+        
+        server, db = manipulate_biosqldb.load_db(biodb)
+        self.conn = server.adaptor.conn
+        self.cursor = server.adaptor.cursor
 
         self.conn.set_character_set('utf8mb4')
         self.cursor.execute('SET NAMES utf8mb4;')

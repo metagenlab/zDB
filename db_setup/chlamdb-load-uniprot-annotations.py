@@ -39,14 +39,13 @@ class Uniprot_annot():
         from chlamdb.biosqldb import manipulate_biosqldb
         import re
         import os
-        sqlpsw = os.environ['SQLPSW']
+
         from tempfile import NamedTemporaryFile
-        conn = MySQLdb.connect(host="localhost", 
-                                    user="root", 
-                                    passwd=sqlpsw,
-                                    db=self.biodb)
-        
-        cursor = conn.cursor()
+
+        server, db = manipulate_biosqldb.load_db(self.biodb)
+        conn = server.adaptor.conn
+        cursor = server.adaptor.cursor
+
 
         sql1 = 'CREATE TABLE IF NOT EXISTS custom_tables_uniprot_id2seqfeature_id (seqfeature_id INT UNIQUE, uniprot_id INT AUTO_INCREMENT,' \
                ' uniprot_accession varchar(400), uniprot_status varchar(400), annotation_score INT, proteome varchar(200), insert_date varchar(300), INDEX uniprot_id(uniprot_id))'
