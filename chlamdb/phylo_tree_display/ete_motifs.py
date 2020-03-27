@@ -126,12 +126,18 @@ def get_taxon2orthogroup2count(biodb, orthogroup_id_list):
     '''
 
     from chlamdb.biosqldb import manipulate_biosqldb
+    from django.conf import settings
+    
+    db_driver = settings.DB_DRIVER
 
     server, db =manipulate_biosqldb.load_db(biodb)
 
-    #print "orthogroup_id_list", orthogroup_id_list
-
-    sql = 'show columns from comparative_tables_orthology'
+    if db_driver == 'mysql':
+        sql = 'show columns from comparative_tables_orthology'
+    elif db_driver == 'sqlite':
+        sql = 'PRAGMA table_info(comparative_tables_orthology);'
+    else:
+        raise IOError("Unknown db driver %s" % db_driver)
 
     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
 
@@ -152,6 +158,7 @@ def get_taxon2orthogroup2count(biodb, orthogroup_id_list):
 
 def get_locus2taxon2identity(biodb, locus_tag_list):
 
+
     '''
     get presence/absence of pfam domain(s) in all organisms of database "biodb"
     return it as a dictionnary taxon[pfam_id] --> count
@@ -162,12 +169,18 @@ def get_locus2taxon2identity(biodb, locus_tag_list):
     '''
 
     from chlamdb.biosqldb import manipulate_biosqldb
+    from django.conf import settings
+    
+    db_driver = settings.DB_DRIVER
 
     server, db =manipulate_biosqldb.load_db(biodb)
 
-
-
-    sql = 'show columns from comparative_tables_orthology'
+    if db_driver == 'mysql':
+        sql = 'show columns from comparative_tables_orthology'
+    elif db_driver == 'sqlite':
+        sql = 'PRAGMA table_info(comparative_tables_orthology);'
+    else:
+        raise IOError("Unknown db driver %s" % db_driver)
 
     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
 
@@ -910,7 +923,7 @@ def multiple_profiles_heatmap(biodb,
             else:
                 column2max[column] = max(values)
 
-    server, db = manipulate_biosqldb.load_db(biodb, sqlite=sqlite3)
+    server, db = manipulate_biosqldb.load_db(biodb)
     if not tree:
         sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
 

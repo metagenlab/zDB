@@ -102,6 +102,7 @@ from chlamdb.tasks import KEGG_map_ko_organism_task
 from chlamdb.tasks import basic_tree_task
 from chlamdb.celeryapp import app as celery_app
 
+db_driver = settings.DB_DRIVER
 biodb = settings.BIODB
 optional2status, missing_mandatory = manipulate_biosqldb.check_config(biodb)
 
@@ -2488,7 +2489,7 @@ def locusx(request, locus=None, menu=True):
                        ' where operon_id=%s;' % (operon_id)
                 operon = server.adaptor.execute_and_fetchall(sqlo, )
                 operon_locus = [i[2] for i in operon]
-            except (IndexError, server.module.ProgrammingError):
+            except:
                 try:
                     sqlo = 'select C.locus_tag' \
                            ' from (select operon_id from custom_tables_locus2seqfeature_id t1 ' \
@@ -2673,7 +2674,10 @@ def locusx(request, locus=None, menu=True):
                          f' inner join orthology_orthogroup t5 on t4.orthogroup_id=t5.orthogroup_id ' \
                          f' where t5.orthogroup_name="{locus}" and analysis_name="Pfam" order by start;'
             
-            sql_group6 = f'select char_length(translation) as len from orthology_detail where orthogroup="{locus}"'
+            if db_driver == 'mysql':
+                sql_group6 = f'select char_length(translation) as len from orthology_detail where orthogroup="{locus}"'
+            if db_driver == 'sqlite':
+                sql_group6 = f'select length(translation) as len from orthology_detail where orthogroup="{locus}"'
         
             # protein length distribution
             sql_group7 = f'select uniprot_accession,uniprot_status,annotation_score,gene,recommendedName_fullName from orthology_orthogroup t1 ' \
@@ -12209,27 +12213,16 @@ def orthogroup_conservation_tree(request, orthogroup_or_locus):
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
-    sql1 =   'SELECT' \
-             ' CASE' \
-             '   WHEN locus_tag = "%s" THEN "locus_tag"' \
-             '   WHEN orthogroup = "%s" THEN "orthogroup"'\
-             ' END AS "which_column"'\
-             ' FROM' \
-             ' orthology_detail where locus_tag="%s" or orthogroup="%s"' % (orthogroup_or_locus,
-                                                                            orthogroup_or_locus,    
-                                                                            orthogroup_or_locus,
-                                                                            orthogroup_or_locus)
-
-
-    input_type = server.adaptor.execute_and_fetchall(sql1, )[0][0]
-
-    if input_type == 'orthogroup':
+    if orthogroup_or_locus.startswith("group_"):
+        input_type = 'orthogroup'
         orthogroup = orthogroup_or_locus
         taxon2identity_closest = False
         taxon2locus_tag_closest = False
         taxon_id = False
     else:
+        input_type = 'locus_tag'
         sql = 'select orthogroup, taxon_id from orthology_detail where locus_tag="%s"' % (orthogroup_or_locus)
+        print(sql)
         data = server.adaptor.execute_and_fetchall(sql, )[0]
         orthogroup = data[0]
         taxon_id = data[1]

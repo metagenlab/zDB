@@ -101,9 +101,10 @@ def query_yes_no(question, default="yes"):
 
 
 def load_db(db_name, 
-            sqlite=False):
+            sqlite=True):
     import os
     sqlpsw = os.environ['SQLPSW']
+    home_folder = os.environ['HOME']
 
     if not sqlite:
         server = BioSeqDatabase.open_database(driver="MySQLdb", 
@@ -114,16 +115,11 @@ def load_db(db_name,
                                               charset='utf8',
                                               use_unicode=True)
     else:
-        server = BioSeqDatabase.open_database(driver="sqlite3", user="root",
-                           passwd = sqlpsw, host = "127.0.0.1", db=sqlite)
-
-        sql1 = 'attach "%s/annotation.db" as annotation;' % os.path.dirname(sqlite)
-        #print sql1
-        server.adaptor.execute(sql1,)
-        sql2 = 'attach "%s/comparative_tables.db" as comparative_tables;' % os.path.dirname(sqlite)
-        #print sql2
-        server.adaptor.execute(sql2,)
-        server.commit()
+        server = BioSeqDatabase.open_database(driver="sqlite3", 
+                                              user="root",
+                                              passwd = sqlpsw, 
+                                              host = "127.0.0.1",
+                                              db=f"{home_folder}/{db_name}.db")
 
     if db_name:
         try:
@@ -509,13 +505,13 @@ def pseudogene_seqfeature_list(server, biodatabase_name):
 
 def protein_id2seqfeature_id_dict(server, biodatabase_name):
 
-    sql_protein_id2_seqfeature_id_table = "select value, seqfeature.seqfeature_id from seqfeature_qualifier_value" \
-    " inner join term on seqfeature_qualifier_value.term_id = term.term_id and name = %s" \
-    " inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id" \
-    " inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id" \
-    " inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = %s"
+    sql_protein_id2_seqfeature_id_table = 'select value, seqfeature.seqfeature_id from seqfeature_qualifier_value' \
+    ' inner join term on seqfeature_qualifier_value.term_id = term.term_id and term.name = "%s"' \
+    ' inner join seqfeature on seqfeature_qualifier_value.seqfeature_id = seqfeature.seqfeature_id' \
+    ' inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id' \
+    ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = "%s"' % ("protein_id", biodatabase_name)
 
-    result = server.adaptor.execute_and_fetchall(sql_protein_id2_seqfeature_id_table, ("protein_id", biodatabase_name))
+    result = server.adaptor.execute_and_fetchall(sql_protein_id2_seqfeature_id_table,)
     protein_id2seqfeature_id = {}
     for protein in result:
        ##print "protein", protein
@@ -978,7 +974,7 @@ def taxon_id2orthogroup_size(server, biodatabase_name, taxon_id):
 
     # get number of proteins for each orthogroup of taxon_id 4
     sql = 'select value, count(value) from seqfeature_qualifier_value as ortho_table' \
-    ' inner join term on ortho_table.term_id = term.term_id and name = "orthogroup"' \
+    ' inner join term on ortho_table.term_id = term.term_id and term.name = "orthogroup"' \
     ' inner join seqfeature on ortho_table.seqfeature_id = seqfeature.seqfeature_id' \
     ' inner join bioentry on seqfeature.bioentry_id = bioentry.bioentry_id' \
     ' inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id and biodatabase.name = %s' \
@@ -1217,10 +1213,23 @@ where value ="CP0034";
 
 
 def location2sequence(server, accession, biodb, start, end):
-    sql = 'select substring(seq, %s, %s) from biosequence ' \
-          'inner join bioentry on bioentry.bioentry_id=biosequence.bioentry_id ' \
-          'inner join biodatabase on bioentry.biodatabase_id=biodatabase.biodatabase_id ' \
-          'where accession="%s" and biodatabase.name="%s"' % (start, end, accession, biodb)
+    
+    from django.conf import settings
+    
+    db_driver = settings.DB_DRIVER
+    
+    if db_driver == 'mysql':
+        sql = 'select substring(seq, %s, %s) from biosequence ' \
+            'inner join bioentry on bioentry.bioentry_id=biosequence.bioentry_id ' \
+            'inner join biodatabase on bioentry.biodatabase_id=biodatabase.biodatabase_id ' \
+            'where accession="%s" and biodatabase.name="%s"' % (start, end, accession, biodb)
+    elif db_driver == 'sqlite':
+        sql = 'select substr(seq, %s, %s) from biosequence ' \
+            'inner join bioentry on bioentry.bioentry_id=biosequence.bioentry_id ' \
+            'inner join biodatabase on bioentry.biodatabase_id=biodatabase.biodatabase_id ' \
+            'where accession="%s" and biodatabase.name="%s"' % (start, end, accession, biodb)   
+    else:
+        raise IOError("Unknown db driver %s" % db_driver)     
     ##print sql
     sequence = server.adaptor.execute_and_fetchall(sql,)
     return sequence[0][0]

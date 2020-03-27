@@ -1,15 +1,24 @@
 #!/usr/bin/env python
 
-import os
-import MySQLdb
-    
-def create_data_table(biodb):
 
-    from chlamdb.biosqldb import manipulate_biosqldb
+def create_data_table(biodb, sqlite):
+
+    if sqlite:
+        import sqlite3
+
+        conn = sqlite3.connect(sqlite)
+        cursor = conn.cursor()
     
-    server, db = manipulate_biosqldb.load_db(biodb)
-    conn = server.adaptor.conn
-    cursor = server.adaptor.cursor
+    else:
+        import os
+        import MySQLdb
+        sqlpsw = os.environ['SQLPSW']
+
+        conn = MySQLdb.connect(host="localhost", # your host, usually localhost
+                                    user="root", # your username
+                                    passwd=sqlpsw, # your password
+                                    db=biodb) # name of the data base
+        cursor = conn.cursor()
 
     entry_list = [
         ("gbk_files", "mandatory", False),
@@ -56,9 +65,10 @@ def create_data_table(biodb):
     cursor.execute(sql)
     conn.commit()
     
-    sql = 'insert into biodb_config values (%s, %s, %s)'
+    sql = 'insert into biodb_config values ("%s", "%s", %s)'
     for row in entry_list:
-        cursor.execute(sql, row)
+        
+        cursor.execute(sql % (row[0], row[1], row[2]),)
     
     conn.commit()  
     
@@ -67,35 +77,55 @@ def create_data_table(biodb):
 
 
 
-def setup_biodb(biodb_name):
+def setup_biodb(biodb_name,
+                sqlite=False):
     import urllib.request
     import sys
+    import os
     from subprocess import Popen, PIPE
-    from chlamdb.biosqldb import manipulate_biosqldb
     
-    server, db = manipulate_biosqldb.load_db(biodb_name)
-    conn = server.adaptor.conn
-    cursor = server.adaptor.cursor
+    if sqlite:
+        import sqlite3
 
-    sys.stdout.write("Creating mysql database...\n")
+        conn = sqlite3.connect(sqlite)
+        cursor = conn.cursor()
+    
+    else:
+        import MySQLdb
+        
+        sqlpsw = os.environ['SQLPSW']
 
-    sql_db = f'CREATE DATABASE IF NOT EXISTS {biodb_name};'
-    cursor.execute(sql_db,)
-    conn.commit()
-    cursor.execute(f"use {biodb_name};",)
+        conn = MySQLdb.connect(host="localhost", # your host, usually localhost
+                                    user="root", # your username
+                                    passwd=sqlpsw) # name of the data base
+        cursor = conn.cursor()
 
-    url_mysql_biosql_scheme = 'https://raw.githubusercontent.com/biosql/biosql/master/sql/biosqldb-mysql.sql'
+        sys.stdout.write("Creating mysql database...\n")
 
-    sys.stdout.write('Downloading Biosql scheme from %s ...\n' % url_mysql_biosql_scheme)
-    request = urllib.request.Request(url_mysql_biosql_scheme)
+        sql_db = f'CREATE DATABASE IF NOT EXISTS {biodb_name};'
+        cursor.execute(sql_db,)
+        conn.commit()
+        cursor.execute(f"use {biodb_name};",)
+
+
+    if not sqlite:
+        url_biosql_scheme = 'https://raw.githubusercontent.com/biosql/biosql/master/sql/biosqldb-mysql.sql'
+    else:
+        url_biosql_scheme = 'https://raw.githubusercontent.com/biosql/biosql/master/sql/biosqldb-sqlite.sql'
+
+    sys.stdout.write('Downloading Biosql scheme from %s ...\n' % url_biosql_scheme)
+    request = urllib.request.Request(url_biosql_scheme)
     page = urllib.request.urlopen(request)
     
-    with open("/tmp/biosqldb-mysql.sql", "wb") as f:
+    with open("/tmp/biosql.sql", "wb") as f:
         content = page.read()
         f.write(content)
 
     sys.stdout.write("Importing Biosql schema...\n")
-    err_code = os.system(f"mysql -uroot -p{sqlpsw} {biodb_name} < /tmp/biosqldb-mysql.sql")
+    if not sqlite:
+        err_code = os.system(f"mysql -uroot -p{sqlpsw} {biodb_name} < /tmp/biosql.sql")
+    else:
+        err_code = os.system(f"sqlite3 {sqlite} < /tmp/biosql.sql")
     if err_code == 0:
         sys.stdout.write("OK")
     else:
@@ -105,12 +135,24 @@ def setup_biodb(biodb_name):
         
 if __name__ == '__main__':
     import argparse
+    import os 
+        
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-d", '--db_name', type=str, help="db name", required=True)
+    parser.add_argument("-s", '--sqlite', action='store_true', help="Use sqlite rather than MySQL")
 
 
     args = parser.parse_args()
 
-    #setup_biodb(args.db_name)
-    create_data_table(args.db_name)
+    if args.sqlite:
+        home_folder = os.environ['HOME']
+        sqlite_path = f"{home_folder}/{args.db_name}.db"
+    else:
+        sqlite_path = False
+
+    setup_biodb(args.db_name, 
+                sqlite_path)
+
+    create_data_table(args.db_name, 
+                      sqlite_path)

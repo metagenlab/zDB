@@ -28,7 +28,7 @@ class Orthogroup_Identity_DB:
 
 
         sql = 'CREATE TABLE if not exists orthology_identity (' \
-                   ' id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,' \
+                   ' id INTEGER PRIMARY KEY,' \
                    ' orthogroup varchar(200),' \
                    ' locus_a VARCHAR(30) NOT NULL,' \
                    ' locus_b VARCHAR(30) NOT NULL,' \
@@ -411,9 +411,10 @@ if __name__ == '__main__':
 
     tata = Orthogroup_Identity_DB(args.db_name, args.cpus)
     print("importing alignments...")
-    #tata.import_alignments(tata.cursor, args.align_files)  
+    
+    tata.import_alignments(tata.cursor, args.align_files)  
     print("Index table")
-    #tata.index_identity_table()
+    tata.index_identity_table()
     print("add_average_orthogroup_identity")
     tata.add_average_orthogroup_identity()
     

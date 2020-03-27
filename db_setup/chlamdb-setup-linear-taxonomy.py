@@ -52,7 +52,10 @@ class MySQLDB():
         self.db.commit()
 
 
-    def import_from_sqlite3(self, sqlite_db_path, table_name):
+    def import_from_sqlite3(self, 
+                            sqlite_db_path, 
+                            table_name,
+                            sqlite_format=False):
 
         import sqlite3
 
@@ -87,7 +90,11 @@ class MySQLDB():
         self.mysql_cursor.execute(sql_header_crate)
 
         sql = 'insert into blastnr_blastnr_taxonomy (%s) values (' % ','.join(column_index)
-        sql += ','.join(["%s"]*len(column_index))
+        if not sqlite_format:
+            sql += ','.join(["%s"]*len(column_index))
+        else:
+            # use sqlite syntax
+            sql += ','.join(["?"]*len(column_index))
         sql += ')'
         for n, row in enumerate(taxonomy_data):
             if n % 10000 == 0:
@@ -99,7 +106,11 @@ class MySQLDB():
         sql1 = 'CREATE INDEX taxid ON blastnr_blastnr_taxonomy(`taxon_id`);'
         # _mysql_exceptions.OperationalError: (1170, "BLOB/TEXT column 'phylum' used in key specification without a key length")
         # specifiy a max key length
-        sql2 = 'CREATE INDEX ph ON blastnr_blastnr_taxonomy(`phylum`(255));'
+        if not sqlite_format:
+            # need to constrain index size for mysql
+            sql2 = 'CREATE INDEX ph ON blastnr_blastnr_taxonomy(`phylum`(255));'
+        else:
+            sql2 = 'CREATE INDEX ph ON blastnr_blastnr_taxonomy(phylum);'
         sql3 = 'CREATE INDEX phid ON blastnr_blastnr_taxonomy(`phylum_taxid`);'
 
         self.mysql_cursor.execute(sql1)
@@ -116,6 +127,7 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--linear_taxonomy_file', type=str, help='Linear taxonomy file')
     parser.add_argument('-s', '--linear_taxonomy_sqlite', type=str, help='Linear taxonomy sqlite3 file')
     parser.add_argument('-d', '--db_name', type=str, help='DB name', default='Biodb name')
+    parser.add_argument('-sf', '--sqlitef', action='store_true', help='Data stored in sqlite rather than MySQL (need to adapt inserts)')
 
     args = parser.parse_args()
 
@@ -131,6 +143,8 @@ if __name__ == '__main__':
         
     if args.linear_taxonomy_sqlite:
         db = MySQLDB(args.db_name)
-        db.import_from_sqlite3(args.linear_taxonomy_sqlite, args.db_name)
+        db.import_from_sqlite3(args.linear_taxonomy_sqlite, 
+                               args.db_name, 
+                               args.sqlitef)
         
     

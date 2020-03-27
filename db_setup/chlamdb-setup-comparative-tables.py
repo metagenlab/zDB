@@ -626,8 +626,7 @@ def identity_closest_homolog(db_name):
           " taxon_2 INT NOT NULL," \
           " locus_1 INT NOT NULL," \
           " locus_2 INT NOT NULL," \
-          " identity FLOAT, index locus_1(locus_1)," \
-          " index locus_2(locus_2), index taxon_1(taxon_1), index taxon_2(taxon_2))"
+          " identity FLOAT)"
 
     server.adaptor.execute(sql2)
 
@@ -636,10 +635,9 @@ def identity_closest_homolog(db_name):
                                                                         biodatabase_name=db_name)
 
     all_taxons = taxon2description.keys()
+
     for i, taxon_1 in enumerate(all_taxons):
-
         locus2identity = biosql_own_sql_tables.circos_locus2taxon_highest_identity(db_name, taxon_1)
-
         for taxon_2 in all_taxons:
             if taxon_1 == taxon_2:
                 continue
@@ -660,6 +658,16 @@ def identity_closest_homolog(db_name):
                     # no homologs
                     continue
         server.adaptor.commit()
+    sql_index1 = 'create index ctichl1 on comparative_tables_identity_closest_homolog2(locus_1)'
+    sql_index2 = 'create index ctichl2 on comparative_tables_identity_closest_homolog2(locus_2)'
+    sql_index3 = 'create index cticht1 on comparative_tables_identity_closest_homolog2(taxon_1)'
+    sql_index4 = 'create index cticht2 on comparative_tables_identity_closest_homolog2(taxon_2)'
+    server.adaptor.execute(sql_index1)
+    server.adaptor.execute(sql_index2)
+    server.adaptor.execute(sql_index3)
+    server.adaptor.execute(sql_index4)
+    server.adaptor.commit()
+    
 
 
 def shared_orthogroups_average_identity(db_name):

@@ -9,6 +9,9 @@ def perform_search(request,
     from chlamdb.views import fam, KEGG_module_map, KEGG_mapp_ko, locusx
     import re
     from django.shortcuts import render
+    from django.conf import settings
+    
+    db_driver = settings.DB_DRIVER
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -74,16 +77,24 @@ def perform_search(request,
         # CREATE FULLTEXT INDEX GPF4 ON orthology_detail_2019_06_PVC(gene,product,organism);
         columns = 'orthogroup, locus_tag, protein_id, start, stop, ' \
                             'strand, gene, orthogroup_size, n_genomes, TM, SP, product, organism, translation'
-        sql = 'SELECT %s, ' \
-                ' MATCH (gene) AGAINST ("%s") AS rel1, ' \
-                ' MATCH (product) AGAINST ("%s") AS rel2, ' \
-                ' MATCH (organism) AGAINST ("%s") AS rel3 FROM orthology_detail t1 ' \
-                ' WHERE MATCH (gene,product,organism) AGAINST ("%s" IN BOOLEAN MODE) ORDER BY (rel1)+(rel2*0.5)+(rel3*10) DESC limit 100;' % (columns,
-                                                                                                                            search_term,
-                                                                                                                            search_term,
-                                                                                                                            search_term,
-                                                                                                                            search_term)
-
+                            
+        if db_driver == 'mysql':
+            sql = 'SELECT %s, ' \
+                    ' MATCH (gene) AGAINST ("%s") AS rel1, ' \
+                    ' MATCH (product) AGAINST ("%s") AS rel2, ' \
+                    ' MATCH (organism) AGAINST ("%s") AS rel3 FROM orthology_detail t1 ' \
+                    ' WHERE MATCH (gene,product,organism) AGAINST ("%s" IN BOOLEAN MODE) ORDER BY (rel1)+(rel2*0.5)+(rel3*10) DESC limit 100;' % (columns,
+                                                                                                                                                  search_term,
+                                                                                                                                                  search_term,
+                                                                                                                                                  search_term,
+                                                                                                                                                  search_term)
+        elif db_driver == 'sqlite':
+            # CREATE VIRTUAL TABLE orthology_detail USING fts5(gene,product,organism);
+            sql = 'select %s from (SELECT seqfeature_id FROM orthology_detail_search ' \
+                  ' WHERE orthology_detail_search MATCH "%s") A inner join orthology_detail B on A.seqfeature_id=B.seqfeature_id;' % (columns, search_term)
+            
+        else:
+            raise IOError("Invalid db driver: %s" % (db_driver))
         raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
 
         n = 1

@@ -29,7 +29,7 @@ def load_reference_phylogeny(db_name, newick_file, gbk_files):
 
     db_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
 
-    sql = 'create table if not exists reference_phylogeny (biodatabase_id INT, tree TEXT)'
+    sql = 'create table if not exists reference_phylogeny (biodatabase_id INTEGER, tree TEXT)'
 
     server.adaptor.execute(sql,)
 

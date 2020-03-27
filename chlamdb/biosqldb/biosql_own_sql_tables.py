@@ -281,6 +281,7 @@ def circos_locus2taxon_highest_identity(biodb,
             '''
             sql = 'select locus_b, identity from orthology_identity where orthogroup="%s" and locus_a="%s"' \
                   ' UNION select locus_a,identity from orthology_identity where orthogroup="%s" and locus_b="%s";' % (orthogroup, locus_A, orthogroup, locus_A)
+            print(sql)
             try:
                 locus2identity = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
                 locus2locus_identity[locus_A] = {}
@@ -565,11 +566,11 @@ def orthogroup_list2detailed_annotation(ordered_orthogroups, biodb, taxon_filter
     return match_groups_data, extract_result
 
 
-def accession2coding_density(biodb, sqlite=False):
+def accession2coding_density(biodb):
     from chlamdb.biosqldb import manipulate_biosqldb
     from Bio.SeqUtils import GC123
 
-    server, db = manipulate_biosqldb.load_db(biodb, sqlite=sqlite)
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     # gc content genes
     sql1 = 'select distinct accession from bioentry t1 ' \
@@ -824,9 +825,9 @@ def locus_tag2n_nr_hits(db_name, genome_accession, exclude_family = False):
     #print sql
     return manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-def collect_genome_statistics(biodb, sqlite=False):
+def collect_genome_statistics(biodb):
     from Bio.SeqUtils import GC
-    server, db = manipulate_biosqldb.load_db(biodb,sqlite=sqlite)
+    server, db = manipulate_biosqldb.load_db(biodb)
 
     sql = 'select accession, seq as length from bioentry as t1 ' \
           ' inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id ' \
@@ -852,7 +853,7 @@ def collect_genome_statistics(biodb, sqlite=False):
     accession2n_rrna, \
     accession2big_contig_length, \
     accession2n_countigs_without_BBH_chlamydiae, \
-    accession2n_contigs_without_cds = accession2coding_density(biodb, sqlite=sqlite)
+    accession2n_contigs_without_cds = accession2coding_density(biodb)
 
     #print '<td colspan="6"><table width="800" border=0  class=table_genomes>'
 
@@ -910,6 +911,7 @@ def collect_genome_statistics(biodb, sqlite=False):
         #print sql
         server.adaptor.execute(sql,)
         server.commit()
+
 
 def get_comparative_subtable(biodb,
                              table_name,

@@ -4,8 +4,9 @@ def create_locus2old_locus_table(biodb):
     from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(biodb)
-    sql = 'create table custom_tables_seqfeature_id2old_locus_tag (seqfeature_id INT, old_locus_tag varchar(300), index seqfeature_id(seqfeature_id))'
+    sql = 'create table custom_tables_seqfeature_id2old_locus_tag (seqfeature_id INT, old_locus_tag varchar(300))'
     server.adaptor.execute(sql,)
+       
     #locus2seqfeature_id = manipulate_biosqldb.locus_tag2seqfeature_id_dict(server, biodb)
 
     sql = 'select t2.seqfeature_id,t3.value from bioentry t1 ' \
@@ -20,6 +21,11 @@ def create_locus2old_locus_table(biodb):
                                                                                          row[1])
         server.adaptor.execute(sql,)
         server.commit()
+
+    sql = 'create index ctsol on custom_tables_seqfeature_id2old_locus_tag(seqfeature_id)'
+    server.adaptor.execute(sql,)
+    server.commit()
+    
 
 if __name__ == '__main__':
     import argparse
