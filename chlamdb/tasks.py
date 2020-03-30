@@ -769,6 +769,7 @@ def run_circos(reference_taxon, target_taxons):
     from chlamdb.biosqldb import shell_command
     import ete3
     from chlamdb.plots import gbk2circos
+    from tempfile import NamedTemporaryFile
 
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -800,10 +801,6 @@ def run_circos(reference_taxon, target_taxons):
         else:
             record_list.append(biorecord)
 
-    ref_name = ''
-    for i in reference_accessions:
-        ref_name += i
-    circos_file = "circos/%s.svg" % ref_name
 
     current_task.update_state(state='PROGRESS',
                               meta={'current': 2,
@@ -920,6 +917,21 @@ def run_circos(reference_taxon, target_taxons):
                                     'percent': 75,
                                     'description': "Plotting with circos..."})
 
+
+    temp_location = os.path.join(settings.BASE_DIR, "assets/circos/")
+    temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
+    circos_file = 'circos/' + os.path.basename(temp_file.name)
+    base_file_name = os.path.basename(temp_file.name).split(".svg")[0]
+
+    circos_svg_file = "circos/%s.svg" % base_file_name
+    circos_png_file = "circos/%s.png" % base_file_name
+    original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % base_file_name
+    map_file = "circos/%s.html" % base_file_name
+    svg_file = "circos/%s.svg" % base_file_name
+    map_name = base_file_name
+
+    original_map_file = settings.BASE_DIR + "/assets/circos/%s.html" % base_file_name
+
     myplot = circos.CircosAccession2multiplot(server,
                                               db,
                                               biodb,
@@ -930,9 +942,12 @@ def run_circos(reference_taxon, target_taxons):
                                               out_directory=temp_location,
                                               draft_fasta=draft_data,
                                               href="/chlamdb/locusx/",
-                                              ordered_taxons=ordered_taxons)
+                                              ordered_taxons=ordered_taxons,
+                                              outfile_prefix=base_file_name)
 
-    original_map_file = settings.BASE_DIR + "/assets/circos/%s.html" % ref_name
+    
+    
+    
     with open(original_map_file, "r") as f:
         map_string = ''.join([line for line in f.readlines()])
 
@@ -940,11 +955,11 @@ def run_circos(reference_taxon, target_taxons):
                   ' <html>\n' \
                   ' <body>\n' \
                   ' %s\n' \
-                  ' <img src="%s.svg" usemap="#%s">' \
+                  ' <img src="%s" usemap="#%s">' \
                   ' </body>\n' \
-                  ' </html>\n' % (map_string, ref_name, ref_name)
+                  ' </html>\n' % (map_string, os.path.basename(temp_file.name), base_file_name)
 
-    circos_new_file = '/assets/circos/circos_clic.html'
+    circos_new_file = '/assets/circos/circos_clic_%s.html' % base_file_name
 
 
     current_task.update_state(state='PROGRESS',
@@ -956,12 +971,6 @@ def run_circos(reference_taxon, target_taxons):
     with open(settings.BASE_DIR + circos_new_file, "w") as f:
         f.write(circos_html)
 
-    circos_svg_file = "circos/%s.svg" % ref_name
-    circos_png_file = "circos/%s.png" % ref_name
-    original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % ref_name
-    map_file = "circos/%s.html" % ref_name
-    svg_file = "circos/%s.svg" % ref_name
-    map_name = ref_name
 
     template = Template('''
             {% load staticfiles %}
@@ -1002,6 +1011,7 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
     from chlamdb.biosqldb import shell_command
     import ete3
     from chlamdb.plots import gbk2circos
+    from tempfile import NamedTemporaryFile
 
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -1084,6 +1094,19 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
                                     'percent': 75,
                                     'description': "Plotting with circos..."})
 
+
+    temp_location = os.path.join(settings.BASE_DIR, "assets/circos/")
+    temp_file = NamedTemporaryFile(delete=False, dir=temp_location, suffix=".svg")
+    
+    circos_file = 'circos/' + os.path.basename(temp_file.name)
+    base_file_name = os.path.basename(temp_file.name).split(".svg")[0]
+    original_map_file = settings.BASE_DIR + "/assets/circos/%s.html" % base_file_name
+    #original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % base_file_name
+    #map_file = "circos/%s.html" % base_file_name
+    circos_svg_file = "circos/%s.svg" % base_file_name
+    circos_png_file = "circos/%s.png" % base_file_name
+    #map_name = ref_name
+        
     myplot = circos.CircosAccession2multiplot(server,
                               db,
                               biodb,
@@ -1093,11 +1116,11 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
                               out_directory=temp_location,
                               draft_fasta=draft_data,
                               href="/chlamdb/locusx/",
-                              ordered_taxons = ordered_taxons)
+                              ordered_taxons = ordered_taxons,
+                              outfile_prefix=base_file_name)
 
 
-
-    original_map_file = settings.BASE_DIR + "/assets/circos/%s.html" % ref_name
+    # read original map file generated by circos
     with open(original_map_file, "r") as f:
         map_string = ''.join([line for line in f.readlines()])
 
@@ -1107,21 +1130,12 @@ def run_circos_main(reference_taxon, target_taxons, highlight):
                   ' %s\n' \
                   ' <img src="%s.svg" usemap="#%s">' \
                   ' </body>\n' \
-                  ' </html>\n' % (map_string, ref_name, ref_name)
+                  ' </html>\n' % (map_string, base_file_name, base_file_name)
 
-
-    circos_new_file = '/assets/circos/circos_clic.html'
+    # write a new html file including svg + mapping data
+    circos_new_file = '/assets/circos/_%s.html' % base_file_name
     with open(settings.BASE_DIR + circos_new_file, "w") as f:
         f.write(circos_html)
-
-    #target_map_file = settings.BASE_DIR + "/templates/circos/%s.html" % ref_name
-    original_map_file_svg = settings.BASE_DIR + "/assets/circos/%s.svg" % ref_name
-    #target_map_file_svg = settings.BASE_DIR + "/templates/circos/%s.svg" % ref_name
-    map_file = "circos/%s.html" % ref_name
-    svg_file = "circos/%s.svg" % ref_name
-    #a, b, c = shell_command.shell_command("mv %s %s" % (original_map_file, target_map_file))
-    #a, b, c = shell_command.shell_command("cp %s %s" % (original_map_file_svg, target_map_file_svg))
-    map_name = ref_name
 
     template = Template('''
             {% load staticfiles %}
