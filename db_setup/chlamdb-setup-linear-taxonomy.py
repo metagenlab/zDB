@@ -138,13 +138,14 @@ if __name__ == '__main__':
         db = MySQLDB(args.db_name)
         db.importFromCSV(args.linear_taxonomy, args.db_name)
         
-        manipulate_biosqldb.update_config_table(args.db_name, "taxonomy_table")     
-        
-        
+        manipulate_biosqldb.update_config_table(args.db_name, "taxonomy_table")  
+           
+            
     if args.linear_taxonomy_sqlite:
         db = MySQLDB(args.db_name)
         db.import_from_sqlite3(args.linear_taxonomy_sqlite, 
                                args.db_name, 
                                args.sqlitef)
-        
+    
+        manipulate_biosqldb.update_config_table(args.db_name, "taxonomy_table")  
     
