@@ -2533,9 +2533,14 @@ def locusx(request, locus=None, menu=True):
             else:
                 lst = []
 
-            locus_tags, orthogroup_list = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, db, biodb, [locus],
-                                                                              temp_file.name, 15000,
-                                                                              cache, color_locus_list=lst)
+            locus_tags, orthogroup_list = mysqldb_plot_genomic_feature.proteins_id2cossplot(server, 
+                                                                                            db, 
+                                                                                            biodb, 
+                                                                                            [locus],
+                                                                                            temp_file.name, 
+                                                                                            15000,
+                                                                                            cache, 
+                                                                                            color_locus_list=lst)
 
 
             try:
@@ -4639,7 +4644,7 @@ def get_cog_multiple(request, category, accessions=False):
                                                                   exclude,
                                                                   freq_missing,
                                                                   accessions=accessions,
-                                                                              cache=cache)
+                                                                  cache=cache)
 
     match_groups_subset = mat.index.tolist()
     filter = '"' + '","'.join(match_groups_subset) + '"'
@@ -11546,20 +11551,28 @@ def phylogeny(request, orthogroup):
 
     homologues = server.adaptor.execute_and_fetchall(sql_groups, )[0][0]
 
-    sql_TM_SP = 'select count(*) from orthology_seqfeature_id2orthogroup t1 ' \
-            ' inner join orthology_orthogroup t2 on t1.orthogroup_id=t2.orthogroup_id ' \
-            ' inner join interpro_interpro t3 on t1.seqfeature_id=t3.seqfeature_id' \
-            ' inner join interpro_signature t4 on t3.signature_id=t4.signature_id ' \
-            ' where signature_accession in ("TRANSMEMBRANE", "SIGNAL_PEPTIDE_C_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_N_REGION") ' \
-            ' and t2.orthogroup_name="%s" ; ' % (orthogroup)
-            
-    tm_count = server.adaptor.execute_and_fetchall(sql_TM_SP, )[0][0]
-    
-    if tm_count > 0:
-        show_tm_tree = True
 
-    task = pfam_tree_task.delay(biodb, 
-                                orthogroup)
+
+    if optional2status["interpro_data"]:
+        sql_TM_SP = 'select count(*) from orthology_seqfeature_id2orthogroup t1 ' \
+                ' inner join orthology_orthogroup t2 on t1.orthogroup_id=t2.orthogroup_id ' \
+                ' inner join interpro_interpro t3 on t1.seqfeature_id=t3.seqfeature_id' \
+                ' inner join interpro_signature t4 on t3.signature_id=t4.signature_id ' \
+                ' where signature_accession in ("TRANSMEMBRANE", "SIGNAL_PEPTIDE_C_REGION", "SIGNAL_PEPTIDE", "SIGNAL_PEPTIDE_N_REGION") ' \
+                ' and t2.orthogroup_name="%s" ; ' % (orthogroup)
+                
+        tm_count = server.adaptor.execute_and_fetchall(sql_TM_SP, )[0][0]
+        
+        if tm_count > 0:
+            show_tm_tree = True
+
+
+        task = pfam_tree_task.delay(biodb, 
+                                    orthogroup)
+    else:
+        show_tm_tree = False
+        task = basic_tree_task.delay(biodb, 
+                                    orthogroup)
 
     task_id = task.id
 
