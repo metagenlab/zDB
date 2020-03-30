@@ -304,14 +304,14 @@ def plot_multiple_regions_crosslink(target_protein_list,
         set_X = feature_sets[x]
         set_Y = feature_sets[x+1]
         for feature_1 in features_X:
-
-
+           
             if feature_1.type != "CDS":
                 continue
 
             for feature_2 in features_Y:
                 if feature_2.type != "CDS":
                     continue
+
                 try:
 
                     group1 = feature_1.qualifiers["orthogroup"][0]
@@ -332,7 +332,7 @@ def plot_multiple_regions_crosslink(target_protein_list,
                         identity = 0
                         print ("problem with identity table %s and locus %s %s" % (group1,
                                                                                   feature_1.qualifiers["locus_tag"][0],
-                                                                                  feature_1.qualifiers["locus_tag"][0]))
+                                                                                  feature_2.qualifiers["locus_tag"][0]))
 
 
                     color2 = colors.HexColor(rgb2hex(m.to_rgba(float(identity))))
