@@ -234,7 +234,8 @@ def locus_tag2best_hit_n_taxon_ids(db_name, accession):
 
 def get_locus2plasmid_or_not(biodb):
 
-    sql = 'SELECT locus_tag, IF(organism like "%%%%plasmid%%%%", "True", "False") AS NewResult from orthology_detail;'
+    #sql = 'SELECT locus_tag, IF(organism like "%%%%plasmid%%%%", "True", "False") AS NewResult from orthology_detail;'
+    sql = 'select locus_tag,case when organism like "%%%%plasmid%%%%" then "True" else "False" end as f from orthology_detail;'
     #print sql
     server, db = manipulate_biosqldb.load_db(biodb)
 
