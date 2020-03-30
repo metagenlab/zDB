@@ -13,6 +13,20 @@ import MySQLdb
 from chlamdb.biosqldb import manipulate_biosqldb
 
 
+def check_identity(cursor, 
+                   orthogroup, 
+                   locus1, 
+                   locus2):
+
+    sql = 'select identity from orthology_identity where (locus_a = "%s" and locus_b = "%s") or (locus_a ="%s" and locus_b="%s")'  % (locus1, 
+                                                                                                                                      locus2, 
+                                                                                                                                      locus1, 
+                                                                                                                                      locus2)
+    print(sql)
+    cursor.execute(sql)
+    identity = int(cursor.fetchone()[0])
+    return identity
+
 
 def heatmap_presence_absence(biodb_name, group_name):
     server, db = manipulate_biosqldb.load_db(biodb_name)
