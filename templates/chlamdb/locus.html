@@ -104,7 +104,7 @@ function clearBox(elementID)
                     {% endif %}
                 {% endif %}
 
-                {% if homologues > 2 or optional2status|keyvalue:"BBH_phylogenies" %}
+                {% if homologues > 2 and optional2status|keyvalue:"gene_phylogenies" or optional2status|keyvalue:"BBH_phylogenies" %}
                 <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'phylogeny' data.0 %}', 'frame9'); return false">Orthogroup phylogeny</a></li>
                 {% endif %}
 
