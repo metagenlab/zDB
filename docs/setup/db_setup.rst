@@ -176,7 +176,8 @@ Mandatory by depreciated since synonymous table can be build at the end
 
     chlamdb-setup-linear-taxonomy.py -d 2020_chlamydia_test -s linear_taxonomy.db
     # if sqlite db, add one arg
-    chlamdb-setup-linear-taxonomy.py -d 2020_chlamydia_test -s linear_taxonomy.db -sf
+    chlamdb-setup-linear-taxonomy.py -d 2020_chlamydia_test -s linear_taxonomy.db -
+    # sqlite ok
 
 Might not be strictly necessary (primarily useful to manage the taxnonomy of 
 RefSEq and SwissProt hits) but currently necessary for genome statistics.
@@ -188,6 +189,7 @@ Bsed on linear_taxonomy.db sqlite database (see snakemake pipeline).
 .. code-block:: bash
 
     chlamdb-setup-genomes-statistics.py -d 2020_chlamydia_test
+    # sqlite ok
 
 
 Django app
@@ -250,6 +252,7 @@ Aptional utilities/annotations
 .. code-block:: bash
     # -p asset path
     chlamdb-setup-blast-databases.py -d 2020_chlamydia_test -p /home/tpillone/work/dev/metagenlab/chlamdb/assets
+    # sqlite ok
 
 
 2. Load gene phylogenies
@@ -257,7 +260,8 @@ Aptional utilities/annotations
 
 .. code-block:: bash
 
-    chlamdb-load-phylogenies.py -t orthology/orthogroups_phylogenies_fasttree/*nwk -d 2020_chlamydia_test
+    chlamdb-load-phylogenies.py -t orthology/orthogroups_phylogenies_fasttree/*nwk -d 2020_chlamydia_test 
+    # sqlite ok
 
 
 3. Load additional annotations
@@ -268,10 +272,20 @@ Aptional utilities/annotations
 3.1 Load INTERPRO data
 +++++++++++++++++++++++
 
+To setup interpro database, we need the interpro entry table of the interpro version that was used to annotate the genomes. 
+To retrieve this table from the internet, run the following script:
+
+
 .. code-block:: bash
 
     # setup interpro entry table
     chlamdb-setup-interpro.py -d 2020_chlamydia_test -v 73.0
+
+
+We can then load interpro annotations. For backward compatibility issues, this command needs to be executed twice. 
+
+
+.. code-block:: bash
 
     # load interpro results
     chlamdb-load-interproscan.py -u data/nr_mapping.tab -i annotation/interproscan/*tsv -d 2020_chlamydia_test
@@ -279,11 +293,23 @@ Aptional utilities/annotations
     # setup legacy table
     chlamdb-load-interproscan.py -u data/nr_mapping.tab -i annotation/interproscan/*tsv -d 2020_chlamydia_test -l
 
+
+Update TM/SP columns, load hash correspondance 
+
+
+.. code-block:: bash
+
+
     # update TM et SP columns from legacy `ortho_detail` table
     chlamdb-load-interproscan.py -u data/nr_mapping.tab -d 2020_chlamydia_test -l
 
-    # correspondance between sequence hash and locus tag (deeded to display interproscan html pages)
+    # correspondance between sequence hash and locus tag (needed to display interproscan html pages)
     chlamdb-load-hash2locus.py -u data/nr_mapping.tab -d 2020_chlamydia_test
+
+Finally setup comparative tables
+
+
+.. code-block:: bash
 
     # setup comparative tables
     chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -p # pfam
@@ -297,35 +323,91 @@ Aptional utilities/annotations
 3.2 Load COG data
 +++++++++++++++++
 
+Setup COG reference tables (downloaded from NCBI FTP website)
+
+.. code-block:: bash
+
+    chlamdb-setup-COG.py -b chlamdb_test2 -d
+
+Load COG annotation results
+
+.. code-block:: bash
+
+    chlamdb-load-COG.py -i annotation/COG/blast_COG.tab -d 2020_chlamydia_test -u data/nr_mapping.tab -cc annotation/COG/cog_corresp.tab -cl annotation/COG/cog_length.tab
+
+Setup comparative tables
+
 .. code-block:: bash
 
     chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -c # COG
     chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -c -a # COG
 
+
 3.3 Load Kegg data
 +++++++++++++++++++
+
+We first have to retrieve some data from the KEGG database using the KEGG API (https://www.kegg.jp/kegg/rest/keggapi.html)
+It will retrieve 
+    - complete pathway list
+    - complete module list
+    - complete KO list
+    - mapping of Kegg Orthologs (KO) to Kegg pathways
+    - mapping of KO to kegg modules 
+
+
+.. code-block:: bash
+
+    # setup necessary table (~10 minutes)
+    chlamdb-setup-enzyme-kegg.py -d chlamdb_test2
+
+
+We can then load kofamscan results 
+
+.. code-block:: bash
+
+    chlamdb-load-KO.py -k chunk*.tab -d 2019_06_chlamydia -c ../../data/nr_mapping.tab
+
+Setup comparative tables
 
 .. code-block:: bash
 
     chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -k # ko
-    chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -k -a # ko
+    chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -k -a # ko accession
 
+Optional: Add consensus orthogroup KEGG annotation (homogeneity of the annotation within orthogroup)
 
+.. code-block:: bash
+
+    chlamdb-get-consensus-orthogroup-annotation.py -d chlamdb_test2 -k
 
 3.4 Load PRIAM data (EC annotation)
 +++++++++++++++++++++++++++++++++++
 
 .. code-block:: bash
 
+    chlamdb-load-PRIAM.py -l -c ../../data/nr_mapping.tab -d 2019_06_chlamydia -i sequenceECs.txt
+
+Setup comparative tables
+
+.. code-block:: bash
+
     chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
+    chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e -a # EC PRIAM accession
  
 
 3.5 Load TCDB data (transporters)
 +++++++++++++++++++++++++++++++++
 
+.. code-block:: bash
+
+    for i in {1..10}; do echo $i; chlamdb-load-TCDB.py -d 2019_06_chlamydia -b tcdb -f all.faa -x TCDB_RESULTS_chunk.$i/xml/ -t TCDB_RESULTS_chunk.$i/results.html -c ../../data/nr_mapping.tab; done
 
 3.6 Load psortb data (subcellular localization)
 +++++++++++++++++++++++++++++++++++++++++++++++
+
+.. code-block:: bash
+
+    chlamdb-load-psortdb.py -t psortb_chunk_.* -d 2019_06_chlamydia -c ../../data/nr_mapping.tab 
 
 3.7 Load T3SS effector data
 +++++++++++++++++++++++++++
