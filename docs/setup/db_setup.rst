@@ -2,6 +2,17 @@
 Minimal SETUP
 ==============
 
+.. note::
+
+    This minimal setup include annotations from input GenBank files + comparative data from OrthoFinder.
+    It allows to:
+
+    - search and browse annotations
+    - perform comparative analysis based on OrthoFinder orthologous groups
+    - Plot interactive circular genome maps with circos
+    - Plot local alignments relying on orthology informations
+    - Blast the database using the various blast flavours
+
 0. Setup env with conda 
 ------------------------
 
@@ -30,8 +41,8 @@ Edit file: BioSQL/BioSeqDatabase.py: disable "SET sql_mode='ANSI_QUOTES';"
 Edit file: BioSQL/Loader.py: replace double quote "rank" by \\`rank`
 
 
-1. Mysql setup
----------------
+1.A Mysql setup
+----------------
 
 The environment variable `SQLPSW` is used to pass the root MySQL password to the various scripts. Setup MySQL and the root password and export the variable.
 
@@ -39,17 +50,22 @@ The environment variable `SQLPSW` is used to pass the root MySQL password to the
     
     export SQLPSW='my password'
 
+In addition, DB_DRIVER has to be set to 'mysql' in ``setings.py``
 
 .. note::
 
-    This minimal setup include annotations from input GenBank files + comparative data from OrthoFinder.
-    It allows to:
+    DB_DRIVER = 'mysql'
 
-    - search and browse annotations
-    - perform comparative analysis based on OrthoFinder orthologous groups
-    - Plot interactive circular genome maps with circos
-    - Plot local alignments relying on orthology informations
-    - Blast the database using the various blast flavours
+
+1.B Sqlite3 setup
+-----------------
+
+Alternatively, we can use sqlite to store data. For that, we have to update the django ``setings.py`` and set:
+
+.. note::
+
+    DB_DRIVER = 'sqlite'
+
 
 2. DB setup: download and import biosql schema
 ----------------------------------------------
@@ -413,21 +429,30 @@ Setup comparative tables
 +++++++++++++++++++++++++++
 
 
+
 3.8 Load PDB data
 ++++++++++++++++++
+
 
 
 4. Load BLAST results & phylogenies 
 ------------------------------------
 
+
+
 4.1 BLAST vs RefSeq
 +++++++++++++++++++
+
+
 
 4.2 BLAST vs SwissProt
 ++++++++++++++++++++++
 
+
+
 4.3 Load BBH phylogenies
 ++++++++++++++++++++++++
+
 
 
 5. Add GC content statistics
@@ -447,6 +472,11 @@ Setup comparative tables
 
 7. Basic Phylogenetic profiling
 --------------------------------
+
+8. PaperBLAST and STRING links to litterature
+----------------------------------------------
+
+
 
 8. add synonymous table (allow to search for RefSeq, Uniprot, uniparc accessions,...)
 ---------------------------------------------------------------------------------------
