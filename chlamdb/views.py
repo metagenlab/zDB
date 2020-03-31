@@ -2708,6 +2708,7 @@ def locusx(request, locus=None, menu=True):
                 COG_annotations = server.adaptor.execute_and_fetchall(sql_group3,)
             except:
                 COG_annotations = []
+            server.adaptor.execute_and_fetchall(sql_group4,)
             try:
                 KO_annotations = [list(i) for i in server.adaptor.execute_and_fetchall(sql_group4,)]
             except:
@@ -3177,7 +3178,7 @@ def fam(request, fam, type):
                                                                               'COG')
 
             sql3='select distinct taxon_id,orthogroup,COG_id from (select taxon_id,locus_tag,orthogroup ' \
-                 ' from biosqldb_orthology_detail where orthogroup in (%s)) A ' \
+                 ' from orthology_detail where orthogroup in (%s)) A ' \
                  ' inner join COG_locus_tag2gi_hit as B on A.locus_tag=B.locus_tag;' % ('"'+'","'.join(set(orthogroup_list))+'"')
 
         elif type == 'interpro':
@@ -3195,11 +3196,11 @@ def fam(request, fam, type):
 
             group_filter = '"'+'","'.join(set(orthogroup_list))+'"'   
 
-            sql3 = f'select distinct taxon_id,orthogroup_name,ec from enzyme.seqfeature_id2ec_{biodb} t1 ' \
-                   f' inner join enzyme.enzymes t2 on t1.ec_id=t2.enzyme_id ' \
-                   f' inner join annotation.seqfeature_id2locus_{biodb} t3 on t1.seqfeature_id=t3.seqfeature_id ' \
-                   f' inner join orthology.seqfeature_id2orthogroup_{biodb} t4 on t1.seqfeature_id=t4.seqfeature_id ' \
-                   f' inner join orthology.orthogroup_{biodb} as t5 on t4.orthogroup_id=t5.orthogroup_id ' \
+            sql3 = f'select distinct taxon_id,orthogroup_name,ec from enzyme_seqfeature_id2ec t1 ' \
+                   f' inner join enzyme_enzymes t2 on t1.ec_id=t2.enzyme_id ' \
+                   f' inner join annotation_seqfeature_id2locus t3 on t1.seqfeature_id=t3.seqfeature_id ' \
+                   f' inner join orthology_seqfeature_id2orthogroup t4 on t1.seqfeature_id=t4.seqfeature_id ' \
+                   f' inner join orthology_orthogroup as t5 on t4.orthogroup_id=t5.orthogroup_id ' \
                    f' where orthogroup_name in ({group_filter});'
 
         elif type == 'ko':
@@ -3208,21 +3209,19 @@ def fam(request, fam, type):
                                                                               'ko')
 
             sql3 = 'select t1.taxon_id, t1.orthogroup, t3.ko_accession ' \
-                   ' from biosqldb.orthology_detail_%s t1 ' \
-                   ' inner join enzyme.seqfeature_id2ko_%s t2 on t1.seqfeature_id=t2.seqfeature_id ' \
-                   ' inner join enzyme.ko_annotation t3 on t2.ko_id=t3.ko_id ' \
-                   ' where t1.orthogroup in (%s);' % (biodb,
-                                                        biodb,
-                                                        '"'+'","'.join(set(orthogroup_list))+'"')
+                   ' from orthology_detail t1 ' \
+                   ' inner join enzyme_seqfeature_id2ko t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                   ' inner join enzyme_ko_annotation t3 on t2.ko_id=t3.ko_id ' \
+                   ' where t1.orthogroup in (%s);' % ('"'+'","'.join(set(orthogroup_list))+'"')
 
         else:
             taxon2orthogroup2count_reference = ete_motifs.get_taxon2name2count(biodb,
                                                                               [fam],
                                                                               'ko')
             sql3 = 'select distinct A.taxon_id,A.orthogroup,B.ko_id from (' \
-                   ' select locus_tag,orthogroup,taxon_id from biosqldb.orthology_detail_%s ' \
-                   ' where orthogroup in (%s)) A inner join enzyme.locus2ko_%s as B ' \
-                   ' on A.locus_tag=B.locus_tag;' % (biodb,'"'+'","'.join(set(orthogroup_list))+'"', biodb)
+                   ' select locus_tag,orthogroup,taxon_id from orthology_detail ' \
+                   ' where orthogroup in (%s)) A inner join enzyme_locus2ko as B ' \
+                   ' on A.locus_tag=B.locus_tag;' % ('"'+'","'.join(set(orthogroup_list))+'"')
 
         print(sql3)
         data = server.adaptor.execute_and_fetchall(sql3,)
@@ -3260,7 +3259,7 @@ def fam(request, fam, type):
 
             #print("merged_dico", merged_dico)
             #print("taxon2orthogroup2ec", taxon2orthogroup2ec)
-
+            print("taxon2orthogroup2count_reference", taxon2orthogroup2count_reference)
             tree, style = ete_motifs.multiple_profiles_heatmap(biodb,
                                                                labels,
                                                                merged_dico,
