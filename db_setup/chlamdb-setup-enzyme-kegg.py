@@ -570,7 +570,6 @@ def get_module_table(biodb,
            ' FOREIGN KEY(ec_id) REFERENCES enzyme_enzymes(id)' \
            ' ON DELETE CASCADE);'
 
-    print (sql2)
     cursor.execute(sql2,)
 
     module_file_file = 'http://rest.kegg.jp/list/module'
@@ -656,7 +655,6 @@ def get_multimodule(module):
     module_data = urllib.request.urlopen(module_link).read().decode('utf-8').split("\n")
     definition = ko2definition(module_data)
     module_list = definition2module_list(definition)
-    print ('Modules:', module_list)
     ko_list = []
     for n, m in enumerate(module_list):
         ko_list += module2ko[m]
@@ -676,7 +674,6 @@ def get_module2ko(biodb,
         except KeyError:
             print ('MODULE MADE OF SUBMODULES----------')
             ko_list = get_multimodule(module)
-            print("KO list:", ko_list)
         
         module_id = module_name2module_id[module]
 
@@ -713,7 +710,6 @@ def get_module2ko_legacy(biodb,
         except KeyError:
             print ('MODULE MADE OF SUBMODULES----------')
             ko_list = get_multimodule(module)
-            print("KO list:", ko_list)
 
         for ko in ko_list:       
             
@@ -836,7 +832,13 @@ def setup_kegg_pathway2ec(biodb,
             except KeyError:
                 # commit to avoid sqlite lock
                 conn.commit()
-                ec_id = get_ec_data_from_IUBMB(ec, biodb)
+                try:
+                    ec_id = get_ec_data_from_IUBMB(ec, biodb)
+                    # update dictionnary
+                    ec2ec_id[ec_name] = ec_id
+                except:
+                    print("FAIL ==> might be a wrong EC mumber, slipping")
+                    continue
             sql = 'INSERT into enzyme_kegg2ec (pathway_id, ec_id) values (%s,"%s");' % (id, ec_id)
             cursor.execute(sql,)
             
@@ -872,6 +874,7 @@ def get_ec_data_from_IUBMB(ec,
     ec_sep = ec.split('.')
 
     adress = "https://www.qmul.ac.uk/sbcs/iubmb/enzyme/EC%s/%s/%s/%s.html" % (ec_sep[0], ec_sep[1], ec_sep[2], ec_sep[3])
+    print(adress)
 
     html = urllib.request.urlopen(adress).read().decode('utf-8')
 
@@ -881,13 +884,17 @@ def get_ec_data_from_IUBMB(ec,
     html = str(soup.encode('utf-8'))#.encode('latin-1') #encode('utf-8') # prettify()
 
     #all_data = soup.find_all("p")#[i.get_text() for i in soup.find_all("p")]
-
+    # empty list in case no match was found
+    altname = []
+    reaction_list = []
+    cc = []
+    
     for i, data in enumerate(list(html.split('<p>'))):
-
         if re.match(name_m, data):
             name = data.split("</b>")[-1]
             #name = re.sub("&alpha;","", name)
         elif re.match(alname, data):
+            print("altname")
             altname = data.split("):</b>")[1].split(';')
         elif re.match(reaction, data):
             rr = data.split("<br>")
@@ -945,9 +952,7 @@ def get_ko2ec_table(biodb,
     cursor.execute(sql,)
     
     ec2ec_id = manipulate_biosqldb.to_dict(cursor.fetchall())    
-    
-    print(ec2ec_id)
-    
+       
     for n, ko_id in enumerate(ko2ec):
 
         ec_list = ko2ec[ko_id]
@@ -961,8 +966,10 @@ def get_ko2ec_table(biodb,
                 print ('Trying to add ec data from IUBMB')
                 try:
                     ec_id = get_ec_data_from_IUBMB(ec_name, biodb)
+                    # update dictionnary
+                    ec2ec_id[ec_name] = ec_id
                 except:
-                    print ('FAIL')
+                    print ('FAIL ==> might be a wrong EC number, skipping')
                     
             sql = 'INSERT INTO enzyme_ko2ec(ko_id, enzyme_id) VALUES ("%s", %s);' % (ko_id, ec_id)
 
@@ -1004,7 +1011,6 @@ def get_module_table_legacy(module2category,
            ' module_sub_sub_cat VARCHAR(200),' \
            ' description LONG);'
 
-    print (sql1)
     cursor.execute(sql1,)
 
     sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_module2ko_v1 (module_id INT,' \
@@ -1239,6 +1245,8 @@ if __name__ == '__main__':
 
     conn, cursor = connect_db(args.db_name)
 
+    '''
+    
     print('Retrieve ko2name, ko2definition...')
     # complete ko list
     ko2name, ko2description = get_ko2data()
@@ -1352,5 +1360,8 @@ if __name__ == '__main__':
                             module_name2module_id,
                             ko2description)
     
-    
+    '''
         
+    get_ec_data_from_IUBMB("2.4.1.373", args.db_name)
+        
+    get_ec_data_from_IUBMB("7.2.4.8", args.db_name)
