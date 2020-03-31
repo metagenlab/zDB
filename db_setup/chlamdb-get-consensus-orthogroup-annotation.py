@@ -101,27 +101,27 @@ def orthogroup_consensus_annotation(biodb, COG=False, interpro=False, KO=False):
                 continue
 
     server.adaptor.commit()
-    sql1 = 'create index gg on orthology_orthogroup2gene(group_id)'
-    sql2 = 'create index gpr on orthology_orthogroup2product(group_id)'
+    sql1 = 'create index ooggid on orthology_orthogroup2gene(group_id)'
+    sql2 = 'create index oopgid on orthology_orthogroup2product(group_id)'
     server.adaptor.execute(sql1,)
     server.adaptor.execute(sql2,)
     if COG:
-        sql3 = 'create index gc on orthology_orthogroup2cog(group_id)'
-        sql7 = 'create index id1 on orthology_orthogroup2cog(cog_id)'
+        sql3 = 'create index oocgid on orthology_orthogroup2cog(group_id)'
+        sql7 = 'create index ooccid on orthology_orthogroup2cog(cog_id)'
         server.adaptor.execute(sql3,)
         server.adaptor.execute(sql7,)
     if interpro:
-        sql4 = 'create index gpf on orthology_orthogroup2pfam(group_id)'
-        sql5 = 'create index gpf on orthology_orthogroup2interpro(group_id)'
-        sql8 = 'create index id2 on orthology_orthogroup2pfam(signature_id)'
-        sql9 = 'create index id3 on orthology_orthogroup2interpro(interpro_id)'
+        sql4 = 'create index oopgid on orthology_orthogroup2pfam(group_id)'
+        sql5 = 'create index ooigid on orthology_orthogroup2interpro(group_id)'
+        sql8 = 'create index oopsid on orthology_orthogroup2pfam(signature_id)'
+        sql9 = 'create index ooiiid on orthology_orthogroup2interpro(interpro_id)'
         server.adaptor.execute(sql4,)
         server.adaptor.execute(sql5,)
         server.adaptor.execute(sql8,)
         server.adaptor.execute(sql9,)
     if KO:
-        sql6 = 'create index gpf on orthology_orthogroup2ko(group_id)'
-        sql10 = 'create index id4 on orthology_orthogroup2ko(ko_id)'  
+        sql6 = 'create index ookgid on orthology_orthogroup2ko(group_id)'
+        sql10 = 'create index ookkid on orthology_orthogroup2ko(ko_id)'  
         server.adaptor.execute(sql6,)
         server.adaptor.execute(sql10,)
 
