@@ -91,6 +91,6 @@ if __name__ == '__main__':
     #accession2coding_density("2017_06_29_parilichlamydiae","/webapps/biodb/chlamdb/assets/")
     #accession2coding_density("2017_05_11_proteobacteria","/webapps/biodb/chlamdb/assets/")
     setup_blastdb(args.db_name, args.asset_path)
-    manipulate_biosqldb.update_config_table(args.database_name, "BLAST_database")
+    manipulate_biosqldb.update_config_table(args.db_name, "BLAST_database")
     
     
