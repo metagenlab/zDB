@@ -8,7 +8,9 @@ from ete3 import Tree, SeqMotifFace, TreeStyle, add_face_to_node, TextFace
 import numpy as np
 import colorsys
 import matplotlib.colors as pcolors
+from django.conf import settings
 
+db_driver = settings.DB_DRIVER
 
 def _get_colors(num_colors):
     colors=[]
@@ -67,7 +69,10 @@ def get_interpro2taxon_id2count(biodb,
 
 
 
-def get_taxon2name2count(biodb, id_list, type="COG", taxon_filter=False):
+def get_taxon2name2count(biodb, 
+                         id_list, 
+                         type="COG", 
+                         taxon_filter=False):
 
     '''
     get presence/absence of pfam domain(s) in all organisms of database "biodb"
@@ -90,7 +95,11 @@ def get_taxon2name2count(biodb, id_list, type="COG", taxon_filter=False):
             ordered_taxons = taxon_filter
         else:
             col_filter = '*'
-            sql = 'show columns from comparative_tables_%s' % (type)
+            if db_driver == 'mysql':
+                sql = 'show columns from comparative_tables_%s' % (type)
+            elif db_driver == 'sqlite':
+                sql = 'PRAGMA table_info(comparative_tables_%s)' % (type)
+            
             ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
         sql = 'select %s from comparative_tables_%s where id in (%s)' % (col_filter, type, ortho_sql)
     else:
@@ -100,6 +109,10 @@ def get_taxon2name2count(biodb, id_list, type="COG", taxon_filter=False):
         else:
             col_filter = '*'
             sql = 'show columns from comparative_tables_orthology'
+            if db_driver == 'mysql':
+                sql = 'show columns from comparative_tables_orthology'
+            elif db_driver == 'sqlite':
+                sql = 'PRAGMA table_info(comparative_tables_orthology)'
             ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
         sql = 'select %s from comparative_tables_orthology where orthogroup in (%s)' % (col_filter, ortho_sql)
     #print sql
@@ -109,7 +122,7 @@ def get_taxon2name2count(biodb, id_list, type="COG", taxon_filter=False):
     for i, tuple in enumerate(profile_tuples):
         taxon2group2n_homologs[tuple[0]] = {}
         for i, taxon in enumerate(ordered_taxons):
-            taxon2group2n_homologs[tuple[0]][taxon] = tuple[i+1]
+            taxon2group2n_homologs[tuple[0]][str(taxon)] = tuple[i+1]
 
     return taxon2group2n_homologs
 
@@ -126,9 +139,6 @@ def get_taxon2orthogroup2count(biodb, orthogroup_id_list):
     '''
 
     from chlamdb.biosqldb import manipulate_biosqldb
-    from django.conf import settings
-    
-    db_driver = settings.DB_DRIVER
 
     server, db =manipulate_biosqldb.load_db(biodb)
 
@@ -151,7 +161,7 @@ def get_taxon2orthogroup2count(biodb, orthogroup_id_list):
     for i, tuple in enumerate(profile_tuples):
         taxon2group2n_homologs[tuple[0]] = {}
         for i, taxon in enumerate(ordered_taxons):
-            taxon2group2n_homologs[tuple[0]][taxon] = tuple[i+1]
+            taxon2group2n_homologs[tuple[0]][str(taxon)] = tuple[i+1]
 
     return taxon2group2n_homologs
 
@@ -244,7 +254,10 @@ def get_locus2taxon2n_paralogs(biodb, locus_tag_list):
 
     #print 'get_locus2taxon2n_paralogs!!!!!!!!!!!!!!!!'
 
-    sql = 'show columns from comparative_tables_orthology'
+    if db_driver == 'mysql':
+        sql = 'show columns from comparative_tables_orthology'
+    elif db_driver == 'sqlite':
+        sql = 'PRAGMA table_info(comparative_tables_orthology);'
 
     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
 
@@ -1883,7 +1896,11 @@ def multiple_orthogroup_heatmap(biodb, reference_orthogroup, max_distance=2.2):
             raise 'Error: unexpected combination of groups'
     ordered_distances = sorted(distances)
 
-    sql = 'show columns from comparative_tables_orthology' % biodb
+    if db_driver == 'mysql':
+        sql = 'show columns from comparative_tables_orthology'
+    elif db_driver == 'sqlite':
+        sql = 'PRAGMA table_info(comparative_tables_orthology);'
+        
     ordered_taxons = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)][1:]
 
     #print 'taxons!', ordered_taxons
@@ -1907,7 +1924,7 @@ def multiple_orthogroup_heatmap(biodb, reference_orthogroup, max_distance=2.2):
         # get colum of taxon i
         taxon2group2n_homologs[tuple[0]] = {}
         for i, taxon in enumerate(ordered_taxons):
-            taxon2group2n_homologs[tuple[0]][taxon] = tuple[i+1]
+            taxon2group2n_homologs[tuple[0]][str(taxon)] = tuple[i+1]
     #print taxon2group2n_homologs
     # and set it as tree outgroup
     head = True
