@@ -7,13 +7,17 @@ def connect_db(biodb):
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     
-    conn = server.adaptor.cursor
+    conn = server.adaptor.conn
     cursor = server.adaptor.cursor
 
-    conn.set_character_set('utf8')
-    cursor.execute('SET NAMES utf8;')
-    cursor.execute('SET CHARACTER SET utf8;')
-    cursor.execute('SET character_set_connection=utf8;')
+    try:
+        conn.set_character_set('utf8')
+        cursor.execute('SET NAMES utf8;')
+        cursor.execute('SET CHARACTER SET utf8;')
+        cursor.execute('SET character_set_connection=utf8;')
+    except:
+        cursor.execute('PRAGMA encoding="UTF-8";')
+
 
     return conn, cursor
 
@@ -30,10 +34,16 @@ def get_complete_ko_table(biodb):
           ' EC TEXT,' \
           ' pathways TEXT,' \
           ' modules TEXT, ' \
-          ' dbxrefs TEXT, ' \
-          ' index ko_id (ko_id),' \
-          ' index koa(ko_accession));'
+          ' dbxrefs TEXT);'
     cursor.execute(sql)
+
+    sql_index1 = 'create index ekaki on enzyme_ko_annotation(ko_id);'
+    sql_index2 = 'create index ekaka on enzyme_ko_annotation(ko_accession);'
+    
+    cursor.execute(sql_index1)
+    cursor.execute(sql_index2)
+    conn.commit()
+
 
     url = 'http://rest.kegg.jp/list/ko'
     data = urllib.request.urlopen(url).read().decode('utf-8').split('\n')
@@ -122,18 +132,20 @@ def load_enzyme_nomenclature_table(biodb):
     '''
 
     from Bio.ExPASy import Enzyme
-    import MySQLdb
     import urllib.request
     from io import StringIO
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
     conn = server.adaptor.conn
     cursor = server.adaptor.cursor
-
-    conn.set_character_set('utf8')
-    cursor.execute('SET NAMES utf8;')
-    cursor.execute('SET CHARACTER SET utf8;')
-    cursor.execute('SET character_set_connection=utf8;')
+    
+    try:
+        conn.set_character_set('utf8')
+        cursor.execute('SET NAMES utf8;')
+        cursor.execute('SET CHARACTER SET utf8;')
+        cursor.execute('SET character_set_connection=utf8;')
+    except:
+        cursor.execute('PRAGMA encoding="UTF-8";')
 
     '''
     ID  Identification                         (Begins each entry; 1 per entry)
@@ -278,6 +290,7 @@ def get_pathay_table(map2category,
     import sys
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)
+    
     conn = server.adaptor.conn
     cursor = server.adaptor.cursor
     
@@ -285,12 +298,18 @@ def get_pathay_table(map2category,
            ' pathway_name VARCHAR(200),' \
            ' pathway_category_short VARCHAR(200),' \
            ' pathway_category VARCHAR(200),' \
-           ' description LONG,' \
-           ' index pn(pathway_name),' \
-           ' index pcs(pathway_category_short),' \
-           ' index pc(pathway_category));'
+           ' description LONG);'
 
     cursor.execute(sql1,)
+    conn.commit()
+
+    sql_index1 = 'create index ekpp on enzyme_kegg_pathway(pathway_name);'
+    sql_index2 = 'create index ekppcs on enzyme_kegg_pathway(pathway_category_short);'
+    sql_index3 = 'create index ekppc on enzyme_kegg_pathway(pathway_category);'
+    
+    server.adaptor.execute(sql_index1)
+    server.adaptor.execute(sql_index2)
+    server.adaptor.execute(sql_index3)
     conn.commit()
 
     pathway_file_file = 'http://rest.kegg.jp/list/pathway'
@@ -344,13 +363,18 @@ def get_pathway2ko(ko_accession2ko_id,
 
 
     sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_pathway2ko (pathway_id INT,' \
-           ' ko_id INT,' \
-           ' index pathway_id(pathway_id),' \
-           ' index ko_id(ko_id));'
+           ' ko_id INT);'
 
-    print (sql2)
     cursor.execute(sql2,)
     conn.commit()
+
+    sql_index1 = 'create index ekpppid on enzyme_pathway2ko(pathway_id);'
+    sql_index2 = 'create index ekpkid on enzyme_pathway2ko(ko_id);'
+    
+    server.adaptor.execute(sql_index1)
+    server.adaptor.execute(sql_index2)
+    conn.commit()
+
 
     sql = 'select pathway_name, pathway_id from enzyme_kegg_pathway'
     cursor.execute(sql,)
@@ -428,19 +452,32 @@ def get_module_table(module2category,
            ' module_cat VARCHAR(200),' \
            ' module_sub_cat VARCHAR(200),' \
            ' module_sub_sub_cat VARCHAR(200),' \
-           ' description LONG,' \
-           ' index mdn(module_name),' \
-           ' index mdc(module_cat),' \
-           ' index mdsc(module_sub_cat),' \
-           ' index mdssc(module_sub_sub_cat));'
+           ' description LONG);'
 
-    print (sql1)
     cursor.execute(sql1,)
 
+    sql_index1 = 'create index ekmdn on enzyme_kegg_module(module_name);'
+    sql_index2 = 'create index ekmdc on enzyme_kegg_module(module_cat);'
+    sql_index3 = 'create index ekmdsc on enzyme_kegg_module(module_sub_cat);'
+    sql_index4 = 'create index ekmdssc on enzyme_kegg_module(module_sub_sub_cat);'
+    
+    server.adaptor.execute(sql_index1)
+    server.adaptor.execute(sql_index2)
+    server.adaptor.execute(sql_index3)
+    server.adaptor.execute(sql_index4)
+    
+    conn.commit()
+
     sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_module2ko (module_id INT,' \
-           ' ko_id INT,' \
-           ' index ko_id(ko_id),' \
-           ' index module_id(module_id));'
+           ' ko_id INT);'
+
+    sql_index1 = 'create index emkkid on enzyme_module2ko(ko_id);'
+    sql_index2 = 'create index emkmid on enzyme_module2ko(module_id);'
+
+    server.adaptor.execute(sql_index1)
+    server.adaptor.execute(sql_index2)
+    
+    conn.commit()
 
     sqlm = 'select module_name from enzyme_kegg_module'
     cursor.execute(sqlm,)
@@ -571,7 +608,6 @@ def get_ec2get_pathway_table(biodb):
     '''
 
 
-    import MySQLdb
     import urllib.request
     import sys
     from chlamdb.biosqldb import manipulate_biosqldb
@@ -675,7 +711,6 @@ def get_ec_data_from_IUBMB(ec,
                            biodb):
     import urllib.request
     import re
-    import MySQLdb
     from bs4 import BeautifulSoup
     from chlamdb.biosqldb import manipulate_biosqldb
     
@@ -688,10 +723,13 @@ def get_ec_data_from_IUBMB(ec,
     reaction = re.compile(u".*Reaction:\<\/b\>.*")
     comments = re.compile(u".*Comments.*")
 
-    conn.set_character_set('utf8')
-    cursor.execute('SET NAMES utf8;')
-    cursor.execute('SET CHARACTER SET utf8;')
-    cursor.execute('SET character_set_connection=utf8;')
+    try:
+        conn.set_character_set('utf8')
+        cursor.execute('SET NAMES utf8;')
+        cursor.execute('SET CHARACTER SET utf8;')
+        cursor.execute('SET character_set_connection=utf8;')
+    except:
+        cursor.execute('PRAGMA encoding="UTF-8";')
 
     ec_sep = ec.split('.')
 
@@ -768,11 +806,16 @@ def get_ko2ec(biodb):
     conn, cursor =connect_db(biodb)
 
     sql = 'CREATE TABLE IF NOT EXISTS enzyme_ko2ec (ko_id VARCHAR(20),' \
-           ' enzyme_id INT,' \
-           ' index enzyme_id (enzyme_id), ' \
-           ' index ko_id (ko_id));'
+           ' enzyme_id INT);'
     cursor.execute(sql)
+    
+    sql_index1 = 'create index ekeceid on enzyme_ko2ec(enzyme_id);'
+    sql_index2 = 'create index ekeckid on enzyme_ko2ec(ko_id);'
 
+    server.adaptor.execute(sql_index1)
+    server.adaptor.execute(sql_index2)
+    
+    conn.commit()
 
     url = 'http://rest.kegg.jp/list/ko'
     data = [line for line in urllib.request.urlopen(url).read().decode('utf-8').split("\n")]
@@ -913,8 +956,6 @@ def get_module_table_legacy(module2category, biodb):
     :return: nothing
     '''
 
-
-    import MySQLdb
     import urllib.request
     import re
     import sys
@@ -1022,8 +1063,6 @@ def get_pathway2ko_legacy(biodb):
     :return: nothing
     '''
 
-
-    import MySQLdb
     import urllib
     import re
     import sys
@@ -1035,17 +1074,18 @@ def get_pathway2ko_legacy(biodb):
 
 
     sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_pathway2ko_v1 (pathway_id INT,' \
-           ' ko_id VARCHAR(200),' \
-           ' index pathway_id(pathway_id),' \
-           ' index ko_id(ko_id));'
+           ' ko_id VARCHAR(200));'
 
-
-
-    print (sql2)
     cursor.execute(sql2,)
 
+    sql_index1 = 'create index epakov1pid on enzyme_pathway2ko_v1(pathway_id);'
+    sql_index2 = 'create index epakov1kid on enzyme_pathway2ko_v1(ko_id);'
 
-
+    server.adaptor.execute(sql_index1)
+    server.adaptor.execute(sql_index2)
+    
+    conn.commit()
+    
     pathway_file = 'http://rest.kegg.jp/list/pathway'
     data = urllib.request.urlopen(pathway_file).read().decode('utf-8').split('\n')
     for line in data:
@@ -1146,8 +1186,14 @@ def get_complete_ko_table_legacy(biodb):
            ' EC TEXT,' \
            ' pathways TEXT,' \
            ' modules TEXT, ' \
-           ' dbxrefs TEXT, index ko_id (ko_id));'
-    server.adaptor.execute_and_fetchall(sql)
+           ' dbxrefs TEXT);'
+    server.adaptor.execute(sql)
+    
+    sql_index = 'create index ekav1k on enzyme_ko_annotation_v1(ko_id);'
+    
+    server.adaptor.execute(sql_index)
+    conn.commit()
+    
 
     sql = 'select ko_id from enzyme_ko_annotation_v1'
 
@@ -1231,26 +1277,26 @@ if __name__ == '__main__':
 
     conn, cursor = connect_db(args.db_name)
 
-    print('getting map2category...')
+    print('getting pathway classification...')
     map2category = get_kegg_pathway_classification()
 
     if args.updated:
         print('getting complete_ko_table...')
-        #get_complete_ko_table(args.db_name)
-        print('load_enzyme_nomenclature_table map2category...')
-        #load_enzyme_nomenclature_table(args.db_name)
+        get_complete_ko_table(args.db_name)
+        print('setup enzyme nomenclature table...')
+        load_enzyme_nomenclature_table(args.db_name)
         sql = 'select ko_accession, ko_id from enzyme_ko_annotation'
         cursor.execute(sql,)
         ko_accession2ko_id = manipulate_biosqldb.to_dict(cursor.fetchall())
         print('getting pathway table...')
-        #get_pathay_table(map2category, args.db_name)
+        get_pathay_table(map2category, args.db_name)
         print('getting ko2pathway...')
-        #get_pathway2ko(ko_accession2ko_id, args.db_name)
+        get_pathway2ko(ko_accession2ko_id, args.db_name)
         print('getting module2ko...')
-        #module_hierarchy = get_kegg_module_hierarchy()
-        #get_module_table(module_hierarchy, ko_accession2ko_id, args.db_name)
-        #print('getting get_ec2get_pathway_table...')
-        #get_ec2get_pathway_table(args.db_name)
+        module_hierarchy = get_kegg_module_hierarchy()
+        get_module_table(module_hierarchy, ko_accession2ko_id, args.db_name)
+        print('getting get_ec2pathway table...')
+        get_ec2get_pathway_table(args.db_name)
         #print('getting get_microbial_metabolism_in_diverse_environments_kegg01120...')
         #get_microbial_metabolism_in_diverse_environments_kegg01120()
         print('getting get_ko2ec...')
