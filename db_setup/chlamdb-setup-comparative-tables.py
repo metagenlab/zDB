@@ -230,8 +230,8 @@ def collect_COGs_accession(db_name):
         print (i,'/', len(all_cogs_ids), accession)
         i+=1
         sql= 'select accession,count(*) as c from ' \
-             'COG_locus_tag2gi_hit_%s ' \
-             'where COG_id="%s" group by accession' % (db_name, accession)
+             'COG_locus_tag2gi_hit ' \
+             'where COG_id="%s" group by accession' % (accession)
 
         data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -354,7 +354,7 @@ def collect_ko(db_name):
 
     taxon_id_list = manipulate_biosqldb.get_taxon_id_list(server, db_name)
 
-    sql_head = 'INSERT INTO comparative_tables_ko_%s (id,'
+    sql_head = 'INSERT INTO comparative_tables_ko (id,'
 
     for taxon in taxon_id_list:
         sql_head += '`%s`,' % taxon
@@ -441,7 +441,7 @@ def collect_EC(db_name):
 
     taxon_id_list = manipulate_biosqldb.get_taxon_id_list(server, db_name)
 
-    sql_head = 'INSERT INTO comparative_tables_EC_%s (id,' % db_name
+    sql_head = 'INSERT INTO comparative_tables_EC (id,' % db_name
 
     for taxon in taxon_id_list:
         sql_head += '`%s`,' % taxon
