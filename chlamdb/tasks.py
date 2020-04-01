@@ -875,8 +875,8 @@ def run_circos(reference_taxon, target_taxons):
         
         try:
             sql = 'select locus_tag from blastnr_blastnr t1 ' \
-              ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
-              ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
+              ' inner join bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
+              ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
               ' inner join blastnr_blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
               ' inner join custom_tables_locus2seqfeature_id t5 ' \
               ' on t1.seqfeature_id=t5.seqfeature_id ' \
@@ -893,8 +893,8 @@ def run_circos(reference_taxon, target_taxons):
             
             if len(BBH_color) < 20:
                 sql = 'select locus_tag from blastnr_blastnr t1 ' \
-                  ' inner join biosqldb.bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
-                  ' inner join biosqldb.biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
+                  ' inner join bioentry t2 on t1.query_bioentry_id=t2.bioentry_id ' \
+                  ' inner join biodatabase t3 on t2.biodatabase_id=t3.biodatabase_id ' \
                   ' inner join blastnr_blastnr_taxonomy t4 on t1.subject_taxid=t4.taxon_id ' \
                   ' inner join custom_tables_locus2seqfeature_id t5 ' \
                   ' on t1.seqfeature_id=t5.seqfeature_id ' \
@@ -1358,7 +1358,7 @@ def basic_tree_task(biodb,
     sql = f'select distinct locus_tag,t4.description from orthology_orthogroup t1 ' \
           f' inner join orthology_seqfeature_id2orthogroup t2 on t1.orthogroup_id=t2.orthogroup_id ' \
           f' inner join annotation_seqfeature_id2locus t3 on t2.seqfeature_id=t3.seqfeature_id ' \
-          f' inner join biosqldb.bioentry t4 on t3.bioentry_id=t4.bioentry_id where orthogroup_name="{orthogroup}";'
+          f' inner join bioentry t4 on t3.bioentry_id=t4.bioentry_id where orthogroup_name="{orthogroup}";'
     
     locus2organism = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql, ))
 
@@ -2262,7 +2262,7 @@ def KEGG_map_ko_organism_task(biodb,
                                 <tbody>
                                 {% for values in map_data%}
                                     <tr>
-                                        {%if not ' ' in values.3 and not '-' in values.3 %}
+                                        {%if not ' ' in values.3 and not '-' in values.3 and not ',' in values.3 %}
                                             <td><a href="{% url 'fam'  values.3 'EC' %}" target="_top">{{values.3}}</a></td>
                                         {% else %}
                                             <td>{{values.3}}</td>
