@@ -9,6 +9,7 @@
     {% load staticfiles %}
     {% load static %}
     {% get_static_prefix as STATIC_PREFIX %}
+    {% load custom_tags %}
 
     <script type="text/javascript" src="{% static 'js/tableExport.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/jquery.base64.js' %}"></script>
@@ -33,14 +34,16 @@
 <body height="2000px">
 <h3>Phylogeny of the orthologous group {{orthogroup}}</h3>
 
+        {% if optional2status|keyvalue:"interpro_data"%}
+            <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+                
+                <li class="active"><a href="#tab1" data-toggle="tab">Pfam domains</a></li>           
 
-        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-            <li class="active"><a href="#tab1" data-toggle="tab">Pfam domains</a></li>
-            {% if show_tm_tree %}
-            <li><a href="#tab3" data-toggle="tab" onclick="window.open('{% url 'TM_tree' orthogroup %}', 'thePhyloFrame2'); return false">TM domains</a></li>
-            {% endif %}
-        </ul>
-
+                {% if show_tm_tree %}
+                <   li><a href="#tab3" data-toggle="tab" onclick="window.open('{% url 'TM_tree' orthogroup %}', 'thePhyloFrame2'); return false">TM domains</a></li>
+                {% endif %}
+            </ul>
+        {% endif %}
         <div id="my-tab-content" class="tab-content">
 
                 <div class="tab-pane active" id="tab1" style="height:8800px">
