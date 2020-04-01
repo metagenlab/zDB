@@ -40,7 +40,7 @@
                 <li class="active"><a href="#tab1" data-toggle="tab">Pfam domains</a></li>           
 
                 {% if show_tm_tree %}
-                <   li><a href="#tab3" data-toggle="tab" onclick="window.open('{% url 'TM_tree' orthogroup %}', 'thePhyloFrame2'); return false">TM domains</a></li>
+                    <li><a href="#tab3" data-toggle="tab" onclick="window.open('{% url 'TM_tree' orthogroup %}', 'thePhyloFrame2'); return false">TM domains</a></li>
                 {% endif %}
             </ul>
         {% endif %}
