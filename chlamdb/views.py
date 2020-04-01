@@ -13531,6 +13531,16 @@ def kegg_module(request):
                                 'from enzyme_module2ko_v1 group by module_id) t1 inner join enzyme_kegg_module_v1 as t2 ' \
                                 'on t1.module_id=t2.module_id where module_sub_cat="%s")BB on AA.module_id=BB.module_id;' % (category) # where pathway_category!="1.0 Global and overview maps"
 
+            sql_pathway_count = '''
+            select A.module_name,A.n_ko,BB.n_ko_db,ROUND(CAST(BB.n_ko_db AS FLOAT)/A.n_ko*100, 2) from (select t1.module_id,module_name,count(*) as n_ko from enzyme_kegg_module t1 
+            inner join enzyme_module2ko t2 on t1.module_id=t2.module_id 
+            where module_sub_cat="%s"
+            group by t1.module_id) A 
+            left join 
+            (select B.module_id,count(*) as n_ko_db from (select distinct tt1.ko_id,tt2.module_id from enzyme_seqfeature_id2ko tt1 
+            inner join enzyme_module2ko tt2 on tt1.ko_id=tt2.ko_id) B group by B.module_id) BB on A.module_id=BB.module_id;
+            '''  % (category)
+            
             map2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_pathway_count,))
 
             # C.pathway_category,taxon_id, A.pathway_name,A.n_enzymes, C.description
