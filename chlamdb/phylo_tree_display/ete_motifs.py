@@ -1201,7 +1201,10 @@ def multiple_profiles_heatmap(biodb,
             lf.add_face(n, col, position="aligned")
 
         #lf.name = taxon_id2organism_name[lf.name]
-        n = TextFace(taxon_id2organism_name[lf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
+        try:
+            n = TextFace(taxon_id2organism_name[lf.name], fgcolor = "black", fsize = 12, fstyle = 'italic')
+        except:
+            n = TextFace(lf.name, fgcolor = "black", fsize = 12, fstyle = 'italic')
         lf.add_face(n, 0)
         head=False
     for n in t1.traverse():

@@ -687,6 +687,8 @@ def locus_annotation(request, display_form):
             match_locus = [i.rstrip() for i in form.cleaned_data['locus_list'].rstrip().split('\n')]
             circos_target = form.cleaned_data['circos_target']
 
+            print("match_locus", match_locus)
+
             filter = '"'+'","'.join(match_locus)+'"'
             # inner join orthology_detail_
             # left join COG on seqfeature_id
@@ -775,13 +777,14 @@ def locus_annotation(request, display_form):
                                                         identity_scale=True,
                                                         show_labels=False,
                                                         reference_taxon=locus2taxon,
-                                                        tree=t1, rotate=True)
+                                                        tree=t1, 
+                                                        rotate=False)
 
 
             big = False
             path = settings.BASE_DIR + '/assets/temp/tree.svg'
             asset_path = '/temp/tree.svg'
-            style2.rotation = 90
+            #style2.rotation = 90
             tree2.render(path, dpi=800, tree_style=style2)
 
 
@@ -811,24 +814,115 @@ def locus_annotation(request, display_form):
                                                                            match_locus)
 
             tree3, style3 = ete_motifs.multiple_profiles_heatmap(biodb,
-                                                        labels,
-                                                        taxon2locus2n_paralogs,
-                                                        reference_taxon=locus2taxon,
-                                                        tree=t1,
-                                                        identity_scale=False,
-                                                        show_labels=True,
-                                                        column_scale=True,
-                                                        as_float=False,
-                                                        rotate=True)
+                                                                 labels,
+                                                                 taxon2locus2n_paralogs,
+                                                                 reference_taxon=locus2taxon,
+                                                                 tree=t1,
+                                                                 identity_scale=False,
+                                                                 show_labels=True,
+                                                                 column_scale=True,
+                                                                 as_float=False,
+                                                                 rotate=False)
 
             show_on_circos_url = "/%s?" % circos_target +  '&l='.join(locus2taxon.keys())
 
             path2 = settings.BASE_DIR + '/assets/temp/tree2.svg'
             asset_path2 = '/temp/tree2.svg'
-            style3.rotation = 90
+            #style3.rotation = 90
             tree3.render(path2, dpi=800, tree_style=style3)
 
             envoi_annot = True
+            
+            # plot species tree
+            # retrieve species tree
+            from chlamdb.phylo_tree_display import species_tree
+            
+            tree_complete, tree_species = species_tree.get_species_tree(biodb)
+            
+            sql = 'select A.locus_tag,t6.species,AVG(A.identity) from (select t1.*,t2.locus_tag ' \
+                  ' from comparative_tables.identity_closest_homolog2_2019_06_PVC t1' \
+                  ' inner join annotation.seqfeature_id2locus_2019_06_PVC t2 on t1.locus_1=t2.seqfeature_id ' \
+                  ' where t2.locus_tag in ("%s")) A' \
+                  ' inner join biosqldb.taxid2species_2019_06_PVC t4 on A.taxon_2=t4.taxon_id ' \
+                  ' inner join biosqldb.species_curated_taxonomy_2019_06_PVC t6 on t4.species_id=t6.species_id ' \
+                  ' group by A.locus_tag,t6.species; ' % '","'.join(match_locus)
+            print(sql)
+            data = server.adaptor.execute_and_fetchall(sql,)
+            
+            locus2taxon2identity = {}
+            for row in data:
+                locus_tag, species, average_identity = row
+                if locus_tag not in locus2taxon2identity:
+                    locus2taxon2identity[locus_tag] = {}
+                locus2taxon2identity[locus_tag][species] = round(average_identity, 2)
+            # group2taxon2count        
+            tree2, style2 = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                                 match_locus,
+                                                                 locus2taxon2identity,
+                                                                 identity_scale=True,
+                                                                 show_labels=True,
+                                                                 reference_taxon=False,
+                                                                 tree=tree_species, 
+                                                                 rotate=False)
+
+
+            big = False
+            path = settings.BASE_DIR + '/assets/temp/tree.svg'
+            asset_path = '/temp/tree.svg'
+            #style2.rotation = 90
+            tree2.render(path, dpi=800, tree_style=style2)
+            
+            tree_complete, tree_species = species_tree.get_species_tree(biodb)
+            
+            sql = 'select orthogroup_id, locus_tag from annotation.seqfeature_id2locus_2019_06_PVC t1 ' \
+                  ' inner join orthology.seqfeature_id2orthogroup_2019_06_PVC t2 on t1.seqfeature_id=t2.seqfeature_id' \
+                  ' where locus_tag in ("%s");' % '","'.join(match_locus)
+            print(sql)
+                  
+            group_id2locus_tag = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+            
+            sql = 'select A.orthogroup_id,A.species, max(n_paralogs) as max_paralogs from' \
+                  ' (select t2.orthogroup_id,t4.species,t1.taxon_id,count(*) as n_paralogs ' \
+                  ' from annotation.seqfeature_id2locus_2019_06_PVC t1  ' \
+                  ' inner join orthology.seqfeature_id2orthogroup_2019_06_PVC t2 on t1.seqfeature_id=t2.seqfeature_id ' \
+                  ' inner join biosqldb.taxid2species_2019_06_PVC t3 on t1.taxon_id=t3.taxon_id ' \
+                  ' inner join biosqldb.species_curated_taxonomy_2019_06_PVC t4 on t3.species_id=t4.species_id ' \
+                  ' where t2.orthogroup_id in (%s) group by t2.orthogroup_id,t4.species,t1.taxon_id) A' \
+                  ' group by A.orthogroup_id,A.species;' % (','.join(group_id2locus_tag.keys()))
+            print(sql)
+
+            locus2taxon2n_paralogs = {}
+            
+            
+            label_list = []
+            for row in server.adaptor.execute_and_fetchall(sql,):
+                orthogroup_id, species, max_paralog = row 
+                locus_tag = "%s (%s)" % (orthogroup_id, group_id2locus_tag[str(orthogroup_id)])
+                if locus_tag not in label_list:
+                    label_list.append(locus_tag)
+                if locus_tag not in locus2taxon2n_paralogs:
+                    locus2taxon2n_paralogs[locus_tag] = {}
+                locus2taxon2n_paralogs[locus_tag][species] = max_paralog
+                
+
+            tree3, style3 = ete_motifs.multiple_profiles_heatmap(biodb,
+                                                                 label_list,
+                                                                 locus2taxon2n_paralogs,
+                                                                 reference_taxon=False,
+                                                                 tree=tree_species,
+                                                                 identity_scale=False,
+                                                                 show_labels=True,
+                                                                 column_scale=True,
+                                                                 as_float=False,
+                                                                 rotate=False)
+
+            show_on_circos_url = "/%s?" % circos_target +  '&l='.join(locus2taxon.keys())
+
+            path2 = settings.BASE_DIR + '/assets/temp/tree2.svg'
+            asset_path2 = '/temp/tree2.svg'
+            #style3.rotation = 90
+            tree3.render(path2, dpi=800, tree_style=style3)
+
     else:  
         if display_form == "True":
             form = form_class()
@@ -847,7 +941,9 @@ def locus_annotation(request, display_form):
             taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, match_groups, type="orthogroup")
 
             labels = match_groups
-            tree, style = ete_motifs.multiple_profiles_heatmap(biodb, match_groups,taxon2orthogroup2count)
+            tree, style = ete_motifs.multiple_profiles_heatmap(biodb, 
+                                                               match_groups,
+                                                               taxon2orthogroup2count)
 
 
             big = False
@@ -7901,7 +7997,7 @@ def effector_pred(request):
     sql = 'select taxon_id, count(*) as n from (select distinct t5.taxon_id,t1.pfam_id,t5.locus_tag from interpro_interpro_signature2pfam_id t1 ' \
          ' inner join interpro_interpro t2 on t1.signature_id=t2.signature_id ' \
          ' inner join pfam.pfam2superkingdom_frequency_31 t3 on t1.pfam_id=t3.pfam_id  inner join interpro_signature t4 on t1.signature_id=t4.signature_id ' \
-         ' inner join annotation_seqfeature_id2locus t5 on t2.seqfeature_id=t5.seqfeature_id where bacteria_freq<=0.02 and eukaryota_freq>=0.1) BBB group by taxon_id;'
+         ' inner join annotation_seqfeature_id2locus t5 on t2.seqfeature_id=t5.seqfeature_id where bacteria_freq<=0.02 and eukaryota_count>5) BBB group by taxon_id;'
 
     taxon2pfam_refseq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
@@ -7917,6 +8013,7 @@ def effector_pred(request):
           ' inner join effectors_predicted_BPBAac t2 on t1.seqfeature_id=t2.seqfeature_id ' \
           ' inner join effectors_predicted_T3MM t3 on t1.seqfeature_id=t3.seqfeature_id ' \
           ' group by t1.taxon_id, t1.seqfeature_id) A group by A.taxon_id;'
+
     taxon2values_mix = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
     # counts
@@ -9802,12 +9899,16 @@ def paralogs(request):
 
 
 def species_specific_groups(request):
+    
+    print("species_specific_groups -------------")
+    
     biodb = settings.BIODB
 
     from ete3 import Tree,TreeStyle
     from chlamdb.biosqldb import manipulate_biosqldb
     from chlamdb.biosqldb import biosql_own_sql_tables
     from chlamdb.phylo_tree_display import phylo_tree_bar
+    from chlamdb.phylo_tree_display import species_tree
 
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -9863,41 +9964,41 @@ def species_specific_groups(request):
         else:
             return False
     species_id2count_unique = {}
+    
     for species in species_id2taxon_id:
-        if 'Akkermansia' in species:
-            species_id2count_unique[species] = [0]
-            continue
+        #if 'Akkermansia' in species:
+        #    species_id2count_unique[species] = [0]
+        #    continue
         species_taxons = species_id2taxon_id[species]
         other_taxons = set(all_taxons) - set(species_taxons)
+        print("extract subtable")
+        '''
         mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                  "orthology",
-                                                                  "orthogroup",
-                                                                  species_taxons,
-                                                                  other_taxons,
-                                                                  ratio=1/float(len(species_taxons)),
-                                                                  single_copy=False,
-                                                                  accessions=False,
-                                                                              cache=cache)
+                                                                     "orthology",
+                                                                     "orthogroup",
+                                                                     species_taxons,
+                                                                     other_taxons,
+                                                                     ratio=1/float(len(species_taxons)),
+                                                                     single_copy=False,
+                                                                     accessions=False,
+                                                                     cache=cache)
 
-        species_id2count_unique[species] = [len(mat)]
+        '''
+        species_id2count_unique[species] = [1]
+   
+    # plot tree
+    tree1, style1 = phylo_tree_bar.plot_tree_barplot(tree_species,
+                    species_id2count_unique,
+                    ['unique'],
+                    taxon2set2value_heatmap=False,
+                    header_list2=False,
+                    presence_only=True,
+                    biodb=biodb,
+                    column_scale=True,
+                    general_max=False)
 
-
-    t2 = Tree(tree.write(is_leaf_fn=collapsed_leaf))
-
-
-    tree1, style1 = phylo_tree_bar.plot_tree_barplot(t2,
-                      species_id2count_unique,
-                      ['unique'],
-                      taxon2set2value_heatmap=False,
-                      header_list2=False,
-                      presence_only=True,
-                      biodb="chlamydia_04_16",
-                      column_scale=True,
-                      general_max=False)
-
-    #t.render("test2.svg", tree_style=ts)
-    path = settings.BASE_DIR + '/assets/temp/tree.svg'
-    asset_path = '/temp/tree.svg'
+    path = settings.BASE_DIR + '/assets/temp/stree.svg'
+    asset_path = '/temp/stree.svg'
 
     tree1.render(path, dpi=800, tree_style=style1)
     return render(request, 'chlamdb/species_specific.html', my_locals(locals()))
