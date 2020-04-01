@@ -1244,8 +1244,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     conn, cursor = connect_db(args.db_name)
-
-    '''
     
     print('Retrieve ko2name, ko2definition...')
     # complete ko list
@@ -1360,8 +1358,4 @@ if __name__ == '__main__':
                             module_name2module_id,
                             ko2description)
     
-    '''
-        
-    get_ec_data_from_IUBMB("2.4.1.373", args.db_name)
-        
-    get_ec_data_from_IUBMB("7.2.4.8", args.db_name)
+
