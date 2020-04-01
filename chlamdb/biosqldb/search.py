@@ -89,7 +89,8 @@ def perform_search(request,
                                                                                                                                                   search_term,
                                                                                                                                                   search_term)
         elif db_driver == 'sqlite':
-            # CREATE VIRTUAL TABLE orthology_detail USING fts5(gene,product,organism);
+            # CREATE VIRTUAL TABLE orthology_detail_search USING fts5(seqfeature_id,gene,product,organism);
+            # insert into orthology_detail_search SELECT seqfeature_id,gene,product,organism FROM orthology_detail;
             sql = 'select %s from (SELECT seqfeature_id FROM orthology_detail_search ' \
                   ' WHERE orthology_detail_search MATCH "%s") A inner join orthology_detail B on A.seqfeature_id=B.seqfeature_id;' % (columns, search_term)
             
@@ -108,7 +109,7 @@ def perform_search(request,
             n+=1
 
 
-    # CREATE FULLTEXT INDEX ezf ON enzyme.enzymes_dat(value);
+    # CREATE FULLTEXT INDEX ezf ON enzyme_enzymes_dat(value);
     sql = 'select A.ec, A.value from (select ec,value from enzyme_enzymes_dat as t1 ' \
           ' inner join enzyme_enzymes as t2 ' \
           ' on t1.enzyme_dat_id=enzyme_id WHERE MATCH(value) AGAINST("%s" IN NATURAL LANGUAGE MODE) group by ec) A inner join comparative_tables_EC' \
@@ -121,7 +122,7 @@ def perform_search(request,
     if len(raw_data_EC) == 0:
         raw_data_EC = False
 
-    # CREATE FULLTEXT INDEX koaf ON enzyme.ko_annotation_v1(definition);
+    # CREATE FULLTEXT INDEX koaf ON enzyme_ko_annotation_v1(definition);
     # filter KO absent from DB
     # CREATE FULLTEXT INDEX ko_full ON ko_annotation_v1(ko_id,name,definition,EC);
     sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme_ko_annotation_v1 ' \
@@ -133,21 +134,35 @@ def perform_search(request,
     if len(raw_data_ko) == 0:
         raw_data_ko = False
 
-    # CREATE FULLTEXT INDEX cogf ON COG.cog_names_2014(description);
-    sql = ' select COG_name,code,t3.description,t1.description from COG_cog_names_2014 t1 ' \
-            ' inner join COG_cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
-            ' inner join COG_code2category t3 on t2.category_id=t3.category_id ' \
-            ' WHERE MATCH(t1.description) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (search_term)
+    # CREATE FULLTEXT INDEX cogf ON COG_cog_names_2014(description);
+    if db_driver == 'mysql':
+        sql = ' select COG_name,code,t3.description,t1.description from COG_cog_names_2014 t1 ' \
+                ' inner join COG_cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
+                ' inner join COG_code2category t3 on t2.category_id=t3.category_id ' \
+                ' WHERE MATCH(t1.description) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (search_term)
+    elif db_driver == 'sqlite':
+        # CREATE VIRTUAL TABLE COG_search USING fts5(COG_name,code,t3.description,t1.description);
+        # INSERT INTO COG_search select select COG_name,code,t3.description,t1.description from COG_cog_names_2014 t1 inner join COG_cog_id2cog_category t2 on t1.COG_id=t2.COG_id inner join COG_code2category t3 on t2.category_id=t3.category_id
+        
+        sql = ' select COG_name,code,t3.description,t1.description from COG_cog_names_2014 t1 ' \
+                ' inner join COG_cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
+                ' inner join COG_code2category t3 on t2.category_id=t3.category_id ' \
+                ' WHERE MATCH(t1.description) AGAINST("%s" IN NATURAL LANGUAGE MODE);' % (search_term)
+        
+        sql = 'SELECT * FROM COG_search WHERE COG_search MATCH "%s";' % (search_term)
+
+    else:
+        raise IOError("Invalid db driver: %s" % (db_driver))
     try:
-        raw_data_cog = []# TODO server.adaptor.execute_and_fetchall(sql,)
+        raw_data_cog = server.adaptor.execute_and_fetchall(sql,) # TODO server.adaptor.execute_and_fetchall(sql,)
     except:
         # case when no COG table was setup
         raw_data_cog = []
     if len(raw_data_cog) == 0:
         raw_data_cog = False
 
-    # CREATE FULLTEXT INDEX ipf ON interpro.signature(signature_description);
-    # CREATE FULLTEXT INDEX ipf ON interpro.entry(description);
+    # CREATE FULLTEXT INDEX ipf ON interpro_signature(signature_description);
+    # CREATE FULLTEXT INDEX ipf ON interpro_entry(description);
     sql = 'select analysis_name,signature_accession,signature_description,t3.name,t3.description from interpro_signature t1 ' \
             ' inner join interpro_analysis t2 on t1.analysis_id=t2.analysis_id ' \
             ' left join interpro_entry t3 on t1.interpro_id=t3.interpro_id ' \
