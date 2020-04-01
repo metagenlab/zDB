@@ -281,4 +281,4 @@ if __name__ == '__main__':
                                         cdd_id2cog_id,
                                         hash2locus_list)
 
-    manipulate_biosqldb.update_config_table(args.database_name, "KEGG_data")
+    manipulate_biosqldb.update_config_table(args.database_name, "COG_data")
