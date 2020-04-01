@@ -48,10 +48,9 @@ def interpro2biosqlV2(server,
           ' score VARCHAR(20) NOT NULL, ' \
           ' interpro_id INT, ' \
           ' GO_terms varchar(10000),' \
-          ' pathways varchar(10000),' \
-          ' INDEX seqfeature_id (seqfeature_id),' \
-          ' INDEX interpro_id (interpro_id),' \
-          ' INDEX ia (interpro_accession))'
+          ' pathways varchar(10000))'
+          
+   
     try:
         server.adaptor.execute(sql)
     except:
@@ -130,6 +129,14 @@ def interpro2biosqlV2(server,
                         import sys
                         sys.exit()
 
+    sql_index1 = 'create index iisid on interpro_interpro(seqfeature_id)'
+    sql_index2 = 'create index iiid on interpro_interpro(interpro_id)'
+    sql_index3 = 'create index iiia on interpro_interpro(interpro_accession)'
+    server.adaptor.execute(sql_index1)
+    server.adaptor.execute(sql_index2)
+    server.adaptor.execute(sql_index3)
+    server.adaptor.commit()
+    
 
 def update_analysis_dico(server):
 
@@ -168,22 +175,18 @@ def interpro2biosql(server,
     :return:
     '''
 
-    sql = 'CREATE TABLE if not exists interpro_analysis (analysis_id INT AUTO_INCREMENT PRIMARY KEY, ' \
-          ' analysis_name varchar(400),' \
-          ' index analysis_name(analysis_name))'
+    sql = 'CREATE TABLE if not exists interpro_analysis (analysis_id INTEGER PRIMARY KEY, ' \
+          ' analysis_name varchar(400))'
 
     server.adaptor.execute(sql,)
 
-    sql2 = 'CREATE TABLE if not exists interpro_signature (signature_id INT AUTO_INCREMENT PRIMARY KEY, ' \
+    sql2 = 'CREATE TABLE if not exists interpro_signature (signature_id INTEGER PRIMARY KEY, ' \
            ' signature_accession varchar(400),' \
            ' signature_description TEXT,' \
            ' analysis_id INT,' \
            ' interpro_id INT, ' \
            ' GO_terms TEXT,' \
-           ' pathways TEXT,' \
-           ' INDEX analysis_id (analysis_id),' \
-           ' index signature_accession(signature_accession),' \
-           ' index interpro_id(interpro_id))' \
+           ' pathways TEXT)' \
 
     server.adaptor.execute(sql2,)
 
@@ -192,10 +195,8 @@ def interpro2biosql(server,
           ' signature_id INT, ' \
           ' start INT, ' \
           ' stop INT, ' \
-          ' score TEXT,' \
-          ' INDEX signature_id (signature_id),' \
-          ' INDEX seqfeature(seqfeature_id))'
-
+          ' score TEXT)'
+             
     server.adaptor.execute(sql3)
 
     analysis2analysis_id = update_analysis_dico(server)
@@ -245,7 +246,6 @@ def interpro2biosql(server,
                 try:
                     analysis_id = analysis2analysis_id[analysis]
                 except KeyError:
-                    print ('New analysis:', analysis)
                     sql = 'insert into interpro_analysis (analysis_name) values ("%s")' % analysis
                     server.adaptor.execute(sql)
                     server.adaptor.commit()
@@ -259,21 +259,21 @@ def interpro2biosql(server,
                 try:
                     signature_id = signature2signature_id[signature_accession]#server.adaptor.execute_and_fetchall(sql,)[0][0]
                 except KeyError:
-                    print ('New signature', signature_accession, signature_description)
+                    #print ('New signature', signature_accession, signature_description)
                     #sql1 = 'select interpro_id from interpro_entry where name="%s"' % (interpro_accession)
 
                     try:
                         interpro_id = interpro_entry2interpro_entry_id[interpro_accession]#server.adaptor.execute_and_fetchall(sql1,)[0][0]
                     except KeyError:
                         if interpro_accession == 0:
-                            print('No interpro-accession for ', signature_accession, signature_description)
+                            #print('No interpro-accession for ', signature_accession, signature_description)
                             interpro_id="NULL"
                         else:
-                            print('New Interpro entry', interpro_accession, interpro_description)
+                            #print('New Interpro entry', interpro_accession, interpro_description)
 
                             sql1b = 'insert into interpro_entry(name, description) values("%s","%s")' % (interpro_accession,
                                                                                                          interpro_description)
-                            print (sql1b)
+
                             server.adaptor.execute(sql1b,)
                             server.adaptor.commit()
                             sql1 = 'select interpro_id from interpro_entry where name="%s"' % (interpro_accession)
@@ -283,11 +283,12 @@ def interpro2biosql(server,
 
                     sql2 = 'insert into interpro_signature (signature_accession, signature_description, ' \
                           ' analysis_id, interpro_id, GO_terms, pathways) values ("%s", "%s", %s, %s, "%s", "%s")' % (signature_accession,
-                                                                                                     signature_description,
-                                                                                                     analysis_id,
-                                                                                                     interpro_id,
-                                                                                                     GO_terms,
-                                                                                                     pathways)
+                                                                                                                      signature_description,
+                                                                                                                      analysis_id,
+                                                                                                                      interpro_id,
+                                                                                                                      GO_terms,
+                                                                                                                      pathways)
+
 
                     server.adaptor.execute(sql2,)
                     server.adaptor.commit()
@@ -327,6 +328,23 @@ def interpro2biosql(server,
                         sys.exit()
             server.adaptor.commit()
 
+    sql_index1 = 'create index iaan on interpro_analysis(analysis_name)'
+    
+    sql_index2 = 'create index isaid on interpro_signature(analysis_id)'
+    sql_index3 = 'create index issa on interpro_signature(signature_accession)'
+    sql_index4 = 'create index isiid on interpro_signature(interpro_id)'
+    
+    sql_index5 = 'create index iisid on interpro_interpro(signature_id)'
+    sql_index6 = 'create index iisqid on interpro_interpro(seqfeature_id)'
+    
+    server.adaptor.execute(sql_index1)
+    server.adaptor.execute(sql_index2)
+    server.adaptor.execute(sql_index3)
+    server.adaptor.execute(sql_index4)
+    server.adaptor.execute(sql_index5)
+    server.adaptor.execute(sql_index6)
+    server.adaptor.commit()
+    
 
 def add_TM_and_SP_columns(db_name):
 
@@ -354,7 +372,6 @@ def add_TM_and_SP_columns(db_name):
            ' inner join interpro_analysis t3 on t2.analysis_id=t3.analysis_id ' \
            ' where analysis_name="Phobius" and signature_accession="SIGNAL_PEPTIDE" group by seqfeature_id;'
 
-    print(sql2)
     seqfeature_id2TM = server.adaptor.execute_and_fetchall(sql,)
     seqfeature_id2signal_peptide = server.adaptor.execute_and_fetchall(sql2,)
     
@@ -420,7 +437,7 @@ def interpro2biosql_legacy(server,
           ' pathways TEXT,' \
           ' orthogroup varchar(400),' \
           ' seqfeature_id INT)'
-    print(sql)
+
     server.adaptor.execute(sql)
 
     sql_template = 'INSERT INTO interpro'
@@ -508,17 +525,16 @@ def interpro2biosql_legacy(server,
                         import sys
                         sys.exit()
         if n % 10 == 0:
-            print("Commit", n)
             server.adaptor.commit()
 
-    sql1 = 'create index lc ON interpro (locus_tag)'
-    sql2 = 'create index ana ON interpro (analysis)'
-    sql3 = 'create index tx ON interpro (taxon_id)'
-    sql4 = 'create index og ON interpro (organism)'
-    sql5 = 'create index ac ON interpro (accession)'
-    sql6 = 'create index sf ON interpro (seqfeature_id)'
-    sql7 = 'create index ia ON interpro (interpro_accession)'
-    sql8 = 'create index sa on interpro(signature_accession);'
+    sql1 = 'create index ilc ON interpro(locus_tag)'
+    sql2 = 'create index iana ON interpro(analysis)'
+    sql3 = 'create index itx ON interpro(taxon_id)'
+    sql4 = 'create index iog ON interpro(organism)'
+    sql5 = 'create index iac ON interpro(accession)'
+    sql6 = 'create index isf ON interpro(seqfeature_id)'
+    sql7 = 'create index iia ON interpro(interpro_accession)'
+    sql8 = 'create index isa on interpro(signature_accession);'
     server.adaptor.execute(sql1)
     server.adaptor.execute(sql2)
     server.adaptor.execute(sql3)
@@ -600,6 +616,7 @@ if __name__ == '__main__':
 
             sql = 'select seqfeature_id,orthogroup_name from orthology_seqfeature_id2orthogroup t1 ' \
                   ' inner join orthology_orthogroup t2 on t1.orthogroup_id=t2.orthogroup_id'
+                  
             seqfeature_id2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
             interpro2biosql_legacy(server,
