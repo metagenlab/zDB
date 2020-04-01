@@ -31,6 +31,9 @@ def import_phylo(phylo_list, biodb):
         #print sql
         server.adaptor.execute(sql,)
     server.commit()
+    sql_index1 = 'create index p on phylogenies(orthogroup)'
+    server.adaptor.execute(sql_index1,)
+    server.commit()
 
 
 if __name__ == '__main__':
