@@ -13537,11 +13537,12 @@ def kegg_module(request):
             map2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_pathway_count,))
 
             # C.pathway_category,taxon_id, A.pathway_name,A.n_enzymes, C.description
+            # TODO update to use new tables
             sql = 'select B.module_sub_cat,A.taxon_id,B.module_name,A.n,B.description from ' \
-                                ' (select taxon_id, module_id, count(*) as n from ' \
-                                ' (select distinct taxon_id,ko_id from enzyme_locus2ko) t1 ' \
-                                ' inner join enzyme_module2ko_v1 as t2 on t1.ko_id=t2.ko_id group by taxon_id, module_id) A ' \
-                                ' inner join enzyme_kegg_module_v1 as B on A.module_id=B.module_id where module_sub_cat="%s";' % (category)
+                  ' (select taxon_id, module_id, count(*) as n from ' \
+                  ' (select distinct taxon_id,ko_id from enzyme_locus2ko) t1 ' \
+                  ' inner join enzyme_module2ko_v1 as t2 on t1.ko_id=t2.ko_id group by taxon_id, module_id) A ' \
+                  ' inner join enzyme_kegg_module_v1 as B on A.module_id=B.module_id where module_sub_cat="%s";' % (category)
 
             pathway_data = server.adaptor.execute_and_fetchall(sql,)
             all_maps = []
