@@ -13524,13 +13524,6 @@ def kegg_module(request):
 
             category = form.cleaned_data['category']
 
-            sql_pathway_count = 'select BB.module_name,count_all,count_db,count_db/count_all from (select module_id, count(*) ' \
-                                ' as count_db from (select distinct ko_id from enzyme_locus2ko) as t1' \
-                                ' inner join enzyme_module2ko_v1 as t2 on t1.ko_id=t2.ko_id group by module_id) AA ' \
-                                ' right join (select t1.module_id,module_name, count_all from (select module_id, count(*) as count_all ' \
-                                'from enzyme_module2ko_v1 group by module_id) t1 inner join enzyme_kegg_module_v1 as t2 ' \
-                                'on t1.module_id=t2.module_id where module_sub_cat="%s")BB on AA.module_id=BB.module_id;' % (category) # where pathway_category!="1.0 Global and overview maps"
-
             sql_pathway_count = '''
             select A.module_name,A.n_ko,BB.n_ko_db,ROUND(CAST(BB.n_ko_db AS FLOAT)/A.n_ko*100, 2) from (select t1.module_id,module_name,count(*) as n_ko from enzyme_kegg_module t1 
             inner join enzyme_module2ko t2 on t1.module_id=t2.module_id 
