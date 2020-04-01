@@ -96,6 +96,7 @@ def perform_search(request,
             
         else:
             raise IOError("Invalid db driver: %s" % (db_driver))
+        
         raw_data_gene_raw_data_product = server.adaptor.execute_and_fetchall(sql,)
 
         n = 1
@@ -108,12 +109,19 @@ def perform_search(request,
             locus_list.append((n,) + one_hit + (interpro_id,))
             n+=1
 
+    if db_driver == 'mysql':
+        # CREATE FULLTEXT INDEX ezf ON enzyme_enzymes_dat(value);
+        sql = 'select A.ec, A.value from (select ec,value from enzyme_enzymes_dat as t1 ' \
+            ' inner join enzyme_enzymes as t2 ' \
+            ' on t1.enzyme_dat_id=enzyme_id WHERE MATCH(value) AGAINST("%s" IN NATURAL LANGUAGE MODE) group by ec) A inner join comparative_tables_EC' \
+            ' as B on A.ec=B.id' % (search_term)
+            
+    elif db_driver == 'sqlite':
+        # CREATE VIRTUAL TABLE enzyme_search USING fts5(enzyme_id, value);
+        # INSERT INTO enzyme_search select enzyme_dat_id,value from enzyme_enzymes_dat;
+        
+        sql = 'SELECT t2.ec,t1.value from (select * FROM enzyme_search WHERE enzyme_search MATCH "%s") t1 inner join enzyme_enzymes t2 on t1.enzyme_id=t2.enzyme_id;' % (search_term)
 
-    # CREATE FULLTEXT INDEX ezf ON enzyme_enzymes_dat(value);
-    sql = 'select A.ec, A.value from (select ec,value from enzyme_enzymes_dat as t1 ' \
-          ' inner join enzyme_enzymes as t2 ' \
-          ' on t1.enzyme_dat_id=enzyme_id WHERE MATCH(value) AGAINST("%s" IN NATURAL LANGUAGE MODE) group by ec) A inner join comparative_tables_EC' \
-          ' as B on A.ec=B.id' % (search_term)
     try:
         raw_data_EC = server.adaptor.execute_and_fetchall(sql,)
     except:
@@ -122,11 +130,18 @@ def perform_search(request,
     if len(raw_data_EC) == 0:
         raw_data_EC = False
 
-    # CREATE FULLTEXT INDEX koaf ON enzyme_ko_annotation_v1(definition);
-    # filter KO absent from DB
-    # CREATE FULLTEXT INDEX ko_full ON ko_annotation_v1(ko_id,name,definition,EC);
-    sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme_ko_annotation_v1 ' \
-            'WHERE MATCH(ko_id,name,definition,EC) AGAINST("%s" IN NATURAL LANGUAGE MODE)) A inner join comparative_tables_ko as B on A.ko_id=B.id' % (search_term)
+    if db_driver == 'mysql':
+        # CREATE FULLTEXT INDEX koaf ON enzyme_ko_annotation_v1(definition);
+        # filter KO absent from DB
+        # CREATE FULLTEXT INDEX ko_full ON ko_annotation_v1(ko_id,name,definition,EC);
+        sql = 'select A.ko_id,A.name,A.definition from (select ko_id,name,definition from enzyme_ko_annotation_v1 ' \
+                'WHERE MATCH(ko_id,name,definition,EC) AGAINST("%s" IN NATURAL LANGUAGE MODE)) A inner join comparative_tables_ko as B on A.ko_id=B.id' % (search_term)
+    elif db_driver == 'sqlite':
+        # CREATE VIRTUAL TABLE enzyme_KO_search USING fts5(ko_accession,name,definition,EC);
+        # INSERT INTO enzyme_KO_search select ko_accession,name,definition, EC from enzyme_ko_annotation;
+        
+        sql = 'select ko_accession,name,definition FROM enzyme_KO_search WHERE enzyme_KO_search MATCH "%s"' % (search_term)
+
     try:
         raw_data_ko = server.adaptor.execute_and_fetchall(sql,)
     except:
