@@ -2052,9 +2052,10 @@ def get_TM_data(biodb,
         #print("orthogroup!")
         sql = 'select locus_tag, start, stop, organism, sequence_length, signature_accession, signature_description  ' \
           ' from interpro as t2 where orthogroup="%s" and analysis="Phobius" and signature_accession="TRANSMEMBRANE"' % (orthogroup)
-
-        sql2 = 'select locus_tag, char_length(translation), organism from orthology_detail where orthogroup="%s";' % (orthogroup)
-
+        if db_driver == 'mysql':
+            sql2 = 'select locus_tag, char_length(translation), organism from orthology_detail where orthogroup="%s";' % (orthogroup)
+        if db_driver == 'sqlite':
+            sql2 = 'select locus_tag, length(translation), organism from orthology_detail where orthogroup="%s";' % (orthogroup)
         sql_signalp = 'select locus_tag, t2.start, t2.stop, t6.description, sequence_length, signature_accession, signature_description' \
                        ' from annotation_seqfeature_id2locus t1' \
                        ' inner join interpro_interpro t2 on t1.seqfeature_id=t2.seqfeature_id' \
