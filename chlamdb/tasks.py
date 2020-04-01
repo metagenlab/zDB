@@ -1996,7 +1996,7 @@ def KEGG_map_ko_task(biodb,
                                   <tbody>
                                   {% for values in map_data%}
                                       <tr>
-                                          {%if not ' ' in values.3 and not '-' in values.3 %}
+                                          {%if not ' ' in values.3 and not '-' in values.3 and not ',' in values.3 %}
                                               <td><a href="{% url 'fam'  values.3 'EC' %}" target="_top">{{values.3}}</a></td>
                                           {% else %}
                                               <td>{{values.3}}</td>
