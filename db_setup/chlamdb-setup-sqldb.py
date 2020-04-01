@@ -58,6 +58,9 @@ def create_data_table(biodb, sqlite):
         ("gene_clusters", "optional", False),
         ("phylogenetic_profile", "optional", False),
         ("synonymous_table", "optional", False),
+        ("interpro_taxonomy", "optional", False) # interpro taxnonomy statistics
+        ("pfam_taxonomy", "optional", False) #  taxnonomy statistics
+        ("COG_taxonomy", "optional", False) # COG taxnonomy statistics
     ]
     
     sql = 'create table biodb_config (name varchar(200), type varchar(200), status BOOLEAN)'
