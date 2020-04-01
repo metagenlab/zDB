@@ -23,9 +23,7 @@ def module_list2profile_dico(biodb, module_list, taxon_id_list=[]):
               ' inner join enzyme_kegg_module as t3 on t2.module_id=t3.module_id ' \
               ' inner join annotation_seqfeature_id2locus t4 ' \
               ' on t1.seqfeature_id=t4.seqfeature_id' \
-              ' where module_name in (%s) and taxon_id in (%s)) A group by A.taxon_id,A.module_name;' % (biodb,
-                                                                                                         biodb,
-                                                                                                         filter_2,
+              ' where module_name in (%s) and taxon_id in (%s)) A group by A.taxon_id,A.module_name;' % (filter_2,
                                                                                                          filter)
     else:
         sql = 'select taxon_id, description, count(*) from (select distinct taxon_id,t1.ko_id,module_name,description ' \
@@ -34,9 +32,7 @@ def module_list2profile_dico(biodb, module_list, taxon_id_list=[]):
               ' inner join enzyme_kegg_module as t3 on t2.module_id=t3.module_id ' \
               ' inner join annotation_seqfeature_id2locus t4 ' \
               ' on t1.seqfeature_id=t4.seqfeature_id' \
-              ' where module_name in (%s)) A group by A.taxon_id,A.module_name;' % (biodb,
-                                                                                                         biodb,
-                                                                                                         filter_2)
+              ' where module_name in (%s)) A group by A.taxon_id,A.module_name;' % (filter_2)
     print (sql)
     data = server.adaptor.execute_and_fetchall(sql,)
 
