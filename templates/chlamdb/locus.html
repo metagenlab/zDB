@@ -706,17 +706,24 @@ function clearBox(elementID)
                                             <tr>
                                                   <td style="width:70px"></td>
                                                   <td style="width:300px"></td>
-                                                  <td style="width:90px">Bacteria <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of bacterial sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                                  <td style="width:80px">Euk. <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of eukaryotic sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                                  <td style="width:80px">Archae <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of archaeal sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
-                                                  <td style="width:80px">Virus <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of virus sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                                  {% if optional2status|keyvalue:"interpro_taxonomy"%}
+                                                      <td style="width:90px">Bacteria <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of bacterial sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                                      <td style="width:80px">Euk. <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of eukaryotic sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                                      <td style="width:80px">Archae <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of archaeal sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                                      <td style="width:80px">Virus <a href="#" data-delay='{"show":"50", "hide":"3000"}' data-toggle="tooltip" title="Number/fraction of virus sequences in Interproscan V.60 exhibiting this domain"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></td>
+                                                  {% endif %}
                                               </tr>
                                           {% endif %}
                                           {%if pfam_data %}
                                               {% for values in pfam_data %}
                                                   <tr>
-                                                      <th ><a href="{% url 'fam' values.0 'pfam' %}" target="_top">PF: {{values.0}} <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this PFAM domain in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></th>
+                                                      {% if optional2status|keyvalue:"pfam_comparative"%}
+                                                         <th ><a href="{% url 'fam' values.0 'pfam' %}" target="_top">{{values.0}} <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this PFAM domain in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></th>
+                                                      {% else %}
+                                                          <th ><a href="https://pfam.xfam.org/family/{{values.0}}" target="_top">{{values.0}} <i class="fa fa-external-link"></i></a></th>
+                                                       {% endif %}
                                                       <td>{{values.1}}</td>
+
                                                   </tr>
 
                                               {% endfor %}
@@ -726,17 +733,25 @@ function clearBox(elementID)
                                               {% for values in interpro_data %}
                                                   {% with interpro2taxononmy|keyvalue:values.0 as taxo %}
                                                   <tr>
-                                                      <th ><a href="{% url 'fam' values.0 'interpro' %}" target="_top">IP: {{values.0}} <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Interpro entry in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></th>
-                                                      <td>{{values.1}} </td>
-                                                      {% if taxo.4 > taxo.5 %}
-                                                          <td style="color:blue;">{{taxo.4}} ({{taxo.0}}%)</td>
-                                                          <td>{{taxo.5}} ({{taxo.1}}%)</td>
+                                                     {% if optional2status|keyvalue:"pfam_comparative"%}
+                                                          <th ><a href="{% url 'fam' values.0 'interpro' %}" target="_top">{{values.0}} <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title="Click to see the occurence of this Interpro entry in the database."><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></a></th>
                                                       {% else %}
-                                                          <td>{{taxo.4}} ({{taxo.0}}%)</td>
-                                                          <td style="color:red;">{{taxo.5}} ({{taxo.1}}%)</td>
+                                                          <th ><a href="https://www.ebi.ac.uk/interpro/entry/InterPro/{{values.0}}" target="_top">{{values.0}} <i class="fa fa-external-link"></i></a></th>
                                                       {% endif %}
-                                                      <td>{{taxo.6}} ({{taxo.2}}%)</td>
-                                                      <td>{{taxo.7}} ({{taxo.3}}%)</td>
+                                                      <td>{{values.1}} </td>
+
+                                                      {% if optional2status|keyvalue:"interpro_taxonomy"%}
+
+                                                          {% if taxo.4 > taxo.5 %}
+                                                              <td style="color:blue;">{{taxo.4}} ({{taxo.0}}%)</td>
+                                                              <td>{{taxo.5}} ({{taxo.1}}%)</td>
+                                                          {% else %}
+                                                              <td>{{taxo.4}} ({{taxo.0}}%)</td>
+                                                              <td style="color:red;">{{taxo.5}} ({{taxo.1}}%)</td>
+                                                          {% endif %}
+                                                          <td>{{taxo.6}} ({{taxo.2}}%)</td>
+                                                          <td>{{taxo.7}} ({{taxo.3}}%)</td>
+                                                      {% endif %}
                                                   </tr>
                                                   {% endwith %}
                                               {% endfor %}
