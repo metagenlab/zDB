@@ -692,16 +692,26 @@ def locus_annotation(request, display_form):
             filter = '"'+'","'.join(match_locus)+'"'
             # inner join orthology_detail_
             # left join COG on seqfeature_id
-            sql = 'select t1.locus_tag, t2.accession, t2.start, t2.stop, t2.gene, t2.product, t2.n_genomes, t2.orthogroup, ' \
-                  ' CHAR_LENGTH(t2.translation), t4.COG_name,t6.code,t4.description, t2.taxon_id ' \
-                  ' from custom_tables_locus2seqfeature_id t1 ' \
-                  ' inner join orthology_detail t2 on t1.seqfeature_id=t2.seqfeature_id' \
-                  ' left join COG_seqfeature_id2best_COG_hit t3 on t1.seqfeature_id=t3.seqfeature_id' \
-                  ' left join COG_cog_names_2014 t4 on t3.hit_COG_id=t4.COG_id' \
-                  ' left join COG_cog_id2cog_category t5 on t4.COG_id=t5.COG_id' \
-                  ' left join COG_code2category t6 on t5.category_id=t6.category_id' \
-                  ' where t1.locus_tag in (%s)' % (filter)
-
+            if db_driver == 'mysql':
+                sql = 'select t1.locus_tag, t2.accession, t2.start, t2.stop, t2.gene, t2.product, t2.n_genomes, t2.orthogroup, ' \
+                    ' CHAR_LENGTH(t2.translation), t4.COG_name,t6.code,t4.description, t2.taxon_id ' \
+                    ' from custom_tables_locus2seqfeature_id t1 ' \
+                    ' inner join orthology_detail t2 on t1.seqfeature_id=t2.seqfeature_id' \
+                    ' left join COG_seqfeature_id2best_COG_hit t3 on t1.seqfeature_id=t3.seqfeature_id' \
+                    ' left join COG_cog_names_2014 t4 on t3.hit_COG_id=t4.COG_id' \
+                    ' left join COG_cog_id2cog_category t5 on t4.COG_id=t5.COG_id' \
+                    ' left join COG_code2category t6 on t5.category_id=t6.category_id' \
+                    ' where t1.locus_tag in (%s)' % (filter)
+            if db_driver == 'sqlite':
+                sql = 'select t1.locus_tag, t2.accession, t2.start, t2.stop, t2.gene, t2.product, t2.n_genomes, t2.orthogroup, ' \
+                    ' LENGTH(t2.translation), t4.COG_name,t6.code,t4.description, t2.taxon_id ' \
+                    ' from custom_tables_locus2seqfeature_id t1 ' \
+                    ' inner join orthology_detail t2 on t1.seqfeature_id=t2.seqfeature_id' \
+                    ' left join COG_seqfeature_id2best_COG_hit t3 on t1.seqfeature_id=t3.seqfeature_id' \
+                    ' left join COG_cog_names_2014 t4 on t3.hit_COG_id=t4.COG_id' \
+                    ' left join COG_cog_id2cog_category t5 on t4.COG_id=t5.COG_id' \
+                    ' left join COG_code2category t6 on t5.category_id=t6.category_id' \
+                    ' where t1.locus_tag in (%s)' % (filter)                
             locus_annot = [list(i) for i in server.adaptor.execute_and_fetchall(sql,)]
             locus2taxon = {}
             for row in locus_annot:
@@ -5535,7 +5545,10 @@ def compare_homologs(request):
             locus2orthogroup = {}
             for taxon in target_taxons:
                 sql1 = 'select locus_tag, orthogroup from orthology_detail where taxon_id=%s' % (taxon)
-                sql2 = 'select locus_tag, char_length(translation) as len from orthology_detail where taxon_id=%s' % (taxon)
+                if db_driver == 'mysql':
+                    sql2 = 'select locus_tag, char_length(translation) as len from orthology_detail where taxon_id=%s' % (taxon)
+                if db_driver == 'sqlite':
+                    sql2 = 'select locus_tag, length(translation) as len from orthology_detail where taxon_id=%s' % (taxon)
                 tmp1 = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql1,))
                 tmp2 = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
                 locus2length.update(tmp2)
@@ -7010,8 +7023,10 @@ def pairwiseCDS_length(request):
             genome_4 = form.cleaned_data['genome_4']
 
             taxid2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
-
-            sql = 'select CHAR_LENGTH(translation)*3 from orthology_detail where taxon_id =%s;' % (genome_1)
+            if db_driver == 'mysql':
+                sql = 'select CHAR_LENGTH(translation)*3 from orthology_detail where taxon_id =%s;' % (genome_1)
+            if db_driver == 'sqlite':
+                sql = 'select LENGTH(translation)*3 from orthology_detail where taxon_id =%s;' % (genome_1)
 
             data1 = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
 
@@ -7022,7 +7037,10 @@ def pairwiseCDS_length(request):
             data_list = [data1]
             label_list = ["%s" % taxid2description[genome_1]]
             if genome_2 != 'None':
-                sql = 'select CHAR_LENGTH(translation)*3 from orthology_detail where taxon_id =%s;' % (genome_2)
+                if db_driver == 'mysql':
+                    sql = 'select CHAR_LENGTH(translation)*3 from orthology_detail where taxon_id =%s;' % (genome_2)
+                if db_driver == 'sqlite':
+                    sql = 'select LENGTH(translation)*3 from orthology_detail where taxon_id =%s;' % (genome_2)
 
                 data2 = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
                 data_list.append(data2)
@@ -7040,8 +7058,10 @@ def pairwiseCDS_length(request):
                                                  numpy.mean(data3),
                                                  round((sum(i <= 400 for i in data3)/float(len(data3)))*100,2)])
             if genome_4 != 'None':
-
-                sql = 'select CHAR_LENGTH(translation)*3 from orthology_detail where taxon_id =%s;' % (genome_4)
+                if db_driver == 'mysql':
+                    sql = 'select CHAR_LENGTH(translation)*3 from orthology_detail where taxon_id =%s;' % (genome_4)
+                if db_driver == 'sqlite':
+                    sql = 'select LENGTH(translation)*3 from orthology_detail where taxon_id =%s;' % (genome_4)
 
                 data4 = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
                 data_list.append(data4)
@@ -7277,8 +7297,10 @@ def prot_length_barchart(request):
 
     from chlamdb.phylo_tree_display import phylo_tree_bar
 
-
-    sql = 'select taxon_id, CHAR_LENGTH(translation) from orthology_detail;'
+    if db_driver == 'mysql':
+        sql = 'select taxon_id, CHAR_LENGTH(translation) from orthology_detail;'
+    if db_driver == 'sqlite':
+        sql = 'select taxon_id, LENGTH(translation) from orthology_detail;'
     # blast_hits_taxonomy_overview
 
     CDS_length_data = server.adaptor.execute_and_fetchall(sql,)
@@ -12944,9 +12966,14 @@ def transporters_family(request, family):
 
 
     filter = '"'+'","'.join(locus_list)+'"'
-    sql = 'select locus_tag, accession, start, stop, gene, product, n_genomes, orthogroup, ' \
-          ' CHAR_LENGTH(translation) from orthology_detail ' \
-          ' where locus_tag in (%s)' % (filter)
+    if db_driver == 'mysql':
+        sql = 'select locus_tag, accession, start, stop, gene, product, n_genomes, orthogroup, ' \
+            ' CHAR_LENGTH(translation) from orthology_detail ' \
+            ' where locus_tag in (%s)' % (filter)
+    if db_driver == 'sqlite':
+        sql = 'select locus_tag, accession, start, stop, gene, product, n_genomes, orthogroup, ' \
+           ' LENGTH(translation) from orthology_detail ' \
+           ' where locus_tag in (%s)' % (filter)       
     locus_annot = [list(i) for i in server.adaptor.execute_and_fetchall(sql,)]
 
     sql = 'select locus_tag,t3.COG_name,t5.code,t3.description ' \
