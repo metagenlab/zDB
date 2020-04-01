@@ -2686,16 +2686,20 @@ def locusx(request, locus=None, menu=True):
                                ' group by interpro_accession;' % (locus)
                 interpro_data = [list(i) for i in server.adaptor.execute_and_fetchall(sql_interpro, )]
 
+            except:
+                interpro_data = False
+
+            if interpro_data:
                 interpro2taxononmy = {}
                 for one_entry in interpro_data:
                     sql = 'select p_bacteria,p_eukaryote,p_archae,p_virus, bacteria,eukaryote,archae,virus ' \
                           ' from interpro_entry t1 inner join interpro_interpro_taxonomy_v_60 t2 on t1.interpro_id=t2.interpro_id ' \
                           ' where name="%s";' % one_entry[0]
-                    interpro2taxononmy[one_entry[0]] = server.adaptor.execute_and_fetchall(sql,)[0]
+                    try:
+                        interpro2taxononmy[one_entry[0]] = server.adaptor.execute_and_fetchall(sql,)[0]
+                    except:
+                        pass
 
-
-            except:
-                interpro_data = False
 
             try:
                 sql_pfam = 'select signature_accession, signature_description,start,stop' \
@@ -3169,7 +3173,7 @@ def fam(request, fam, type):
         elif type == 'interpro':
             sql1 =   'select seqfeature_id from interpro_entry t1 inner join interpro_signature t2 on t1.interpro_id=t2.interpro_id ' \
                      ' inner join interpro_interpro t3 on t2.signature_id=t3.signature_id ' \
-                     ' where name="%s" group by seqfeature_id;;' % (fam)
+                     ' where name="%s" group by seqfeature_id;' % (fam)
             sql2 = 'select interpro_description from interpro where interpro_accession="%s" limit 1' % (fam)
             
             try:
@@ -3239,8 +3243,8 @@ def fam(request, fam, type):
             return render(request, 'chlamdb/fam.html', my_locals(locals()))
         try:
             seqfeature_id_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql1, )]
-
             seqfeature_list_form = '"' + '","'.join(seqfeature_id_list) + '"'
+            
         except IndexError:
             valid_id = False
             return render(request, 'chlamdb/fam.html', my_locals(locals()))
