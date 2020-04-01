@@ -1,6 +1,10 @@
 #! /usr/bin/env python
 
-def orthogroup_consensus_annotation(biodb, COG=False, interpro=False, KO=False):
+def orthogroup_consensus_annotation(biodb, 
+                                    COG=False, 
+                                    interpro=False, 
+                                    KO=False,
+                                    gene=False):
 
     from chlamdb.biosqldb import manipulate_biosqldb
     from chlamdb.biosqldb import biosql_own_sql_tables
@@ -11,10 +15,11 @@ def orthogroup_consensus_annotation(biodb, COG=False, interpro=False, KO=False):
     sql = 'select orthogroup_name,orthogroup_id from orthology_orthogroup;'
     group_name2group_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
 
-    print('Get orthogroup2gene')
-    orthogroup2genes = biosql_own_sql_tables.orthogroup2gene(biodb)
-    print('Get orthogroup2product')
-    orthogroup2products = biosql_own_sql_tables.orthogroup2product(biodb)
+    if gene:
+        print('Get orthogroup2gene')
+        orthogroup2genes = biosql_own_sql_tables.orthogroup2gene(biodb)
+        print('Get orthogroup2product')
+        orthogroup2products = biosql_own_sql_tables.orthogroup2product(biodb)
     if COG:
         print('Get orthogroup2cog_id')
         orthogroup2cogs = biosql_own_sql_tables.orthogroup2cog_id(biodb)
@@ -27,10 +32,11 @@ def orthogroup_consensus_annotation(biodb, COG=False, interpro=False, KO=False):
         print('Get orthogroup2ko_id')
         orthogroup2ko = biosql_own_sql_tables.orthogroup2ko_id(biodb)
 
-    sql1 = 'create table if not exists orthology_orthogroup2gene (group_id INTEGER, `rank` INTEGER, count INTEGER, description TEXT);'
-    sql2 = 'create table if not exists orthology_orthogroup2product (group_id INTEGER, `rank` INTEGER, count INTEGER, description TEXT);'
-    server.adaptor.execute(sql1,)
-    server.adaptor.execute(sql2,)
+    if gene:
+        sql1 = 'create table if not exists orthology_orthogroup2gene (group_id INTEGER, `rank` INTEGER, count INTEGER, description TEXT);'
+        sql2 = 'create table if not exists orthology_orthogroup2product (group_id INTEGER, `rank` INTEGER, count INTEGER, description TEXT);'
+        server.adaptor.execute(sql1,)
+        server.adaptor.execute(sql2,)
     if COG:
         sql3 = 'create table if not exists orthology_orthogroup2cog (group_id INTEGER, `rank` INTEGER, count INTEGER, COG_id INTEGER);'
         server.adaptor.execute(sql3,)
@@ -99,22 +105,22 @@ def orthogroup_consensus_annotation(biodb, COG=False, interpro=False, KO=False):
                     server.adaptor.execute(template6, [group_id, n, count, ko])
             except KeyError:
                 continue
-
-    server.adaptor.commit()
-    sql1 = 'create index ooggid on orthology_orthogroup2gene(group_id)'
-    sql2 = 'create index oopgid on orthology_orthogroup2product(group_id)'
-    server.adaptor.execute(sql1,)
-    server.adaptor.execute(sql2,)
+    if gene:
+        server.adaptor.commit()
+        sql1 = 'create index ooggid on orthology_orthogroup2gene(group_id)'
+        sql2 = 'create index oopgid on orthology_orthogroup2product(group_id)'
+        server.adaptor.execute(sql1,)
+        server.adaptor.execute(sql2,)
     if COG:
         sql3 = 'create index oocgid on orthology_orthogroup2cog(group_id)'
         sql7 = 'create index ooccid on orthology_orthogroup2cog(cog_id)'
         server.adaptor.execute(sql3,)
         server.adaptor.execute(sql7,)
     if interpro:
-        sql4 = 'create index oopgid on orthology_orthogroup2pfam(group_id)'
+        sql4 = 'create index oopfgid on orthology_orthogroup2pfam(group_id)'
         sql5 = 'create index ooigid on orthology_orthogroup2interpro(group_id)'
         sql8 = 'create index oopsid on orthology_orthogroup2pfam(signature_id)'
-        sql9 = 'create index ooiiid on orthology_orthogroup2interpro(interpro_id)'
+        sql9 = 'create index ooipiid on orthology_orthogroup2interpro(interpro_id)'
         server.adaptor.execute(sql4,)
         server.adaptor.execute(sql5,)
         server.adaptor.execute(sql8,)
@@ -134,6 +140,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", '--db_name', type=str, help="db name", required=True)
+    parser.add_argument("-g", '--gene', action="store_true", help="Gene and product")
     parser.add_argument("-c", '--COG', action="store_true", help="db name")
     parser.add_argument("-i", '--interpro', action="store_true", help="db name")
     parser.add_argument("-k", '--KO', action="store_true", help="db name")
@@ -143,7 +150,8 @@ if __name__ == '__main__':
     orthogroup_consensus_annotation(args.db_name,
                                     args.COG,
                                     args.interpro,
-                                    args.KO)
+                                    args.KO,
+                                    args.gene)
     
     # update config
     manipulate_biosqldb.update_config_table(args.db_name, "orthology_consensus_annotation")
