@@ -111,7 +111,7 @@ def load_pdb_data(blast_output_files,
                                                  score,
                                                  e_value))
                     
-    sql = f'create index sfp on custom_tables_seqfeature_id2pdb_BBH (seqfeature_id)'                 
+    sql = f'create index ctsipsid on custom_tables_seqfeature_id2pdb_BBH (seqfeature_id)'                 
     server.adaptor.execute(sql,)
     server.commit()
     print(len(problem_list), problem_list)
@@ -136,3 +136,5 @@ if __name__ == '__main__':
     load_pdb_data(args.blast_output, 
                     args.db_name,
                     hash2locus_list)
+    
+    manipulate_biosqldb.update_config_table(args.db_name, "PDB_data")
