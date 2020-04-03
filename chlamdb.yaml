@@ -36,7 +36,7 @@ dependencies:
  - lxml
  - conda-build
  - reportlab
- - biopython
+ - biopython=1.76
  - django-crispy-forms
  - mysqlclient
  - rpy2
