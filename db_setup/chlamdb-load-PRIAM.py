@@ -13,10 +13,10 @@ def locus2ec_table(hash2ec_dico, biodatabase, hash2locus_list):
 
     server, db = manipulate_biosqldb.load_db(biodatabase)
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_seqfeature_id2ec (enzyme_id INT AUTO_INCREMENT PRIMARY KEY,' \
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_seqfeature_id2ec (enzyme_id INTEGER PRIMARY KEY,' \
            ' seqfeature_id INT,' \
            ' ec_id INT,' \
-           ' FOREIGN KEY(ec_id) REFERENCES enzymes(enzyme_id));'
+           ' FOREIGN KEY(ec_id) REFERENCES enzyme_enzymes(enzyme_id));'
 
     server.adaptor.execute_and_fetchall(sql2,)
 
@@ -27,7 +27,7 @@ def locus2ec_table(hash2ec_dico, biodatabase, hash2locus_list):
     for hash in hash2ec_dico:
         for ec_data in hash2ec_dico[hash]:
             for locus in hash2locus_list[hash]:
-                sql = 'select enzyme_id from enzyme_enzymes where ec="%s"' % ec_data[0]
+                sql = 'select enzyme_id from enzyme_enzymes where ec="%s"' % ec_data[0].strip()
                 ec_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
                 seqfeature_id = locus_tag2seqfeature_id[locus]
                 sql = 'insert into enzyme_seqfeature_id2ec (seqfeature_id, ec_id) values (%s, %s)' % (seqfeature_id,
@@ -50,12 +50,12 @@ def locus2ec_table_legacy(hash2ec_dico,
     locus2accession = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql))
     locus2orthogroup = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2))
 
-    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_locus2ec (enzyme_id INT AUTO_INCREMENT PRIMARY KEY,' \
+    sql2 = 'CREATE TABLE IF NOT EXISTS enzyme_locus2ec (enzyme_id INTEGER PRIMARY KEY,' \
             ' accession varchar(60),'\
             ' locus_tag VARCHAR(20),' \
             ' orthogroup varchar(20),' \
             ' ec_id INT,' \
-            ' FOREIGN KEY(ec_id) REFERENCES enzymes(enzyme_id));'
+            ' FOREIGN KEY(ec_id) REFERENCES enzyme_enzymes(enzyme_id));'
 
     server.adaptor.execute_and_fetchall(sql2,)
 
@@ -63,7 +63,8 @@ def locus2ec_table_legacy(hash2ec_dico,
         for ec_data in hash2ec_dico[hash]:
             for locus in hash2locus_list[hash]:
     
-                sql = 'select enzyme_id from enzyme_enzymes where ec="%s"' % ec_data[0]
+                sql = 'select enzyme_id from enzyme_enzymes where ec="%s"' % ec_data[0].strip()
+
                 ec_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
     
                 sql = 'insert into enzyme_locus2ec (accession, locus_tag, orthogroup, ec_id) values ("%s", "%s", "%s", %s)' % (locus2accession[locus],
@@ -121,6 +122,8 @@ if __name__ == '__main__':
         locus2ec_table(hash2ec,
                    args.database_name,
                    hash2locus_list)
+        
+    manipulate_biosqldb.update_config_table(args.db_name, "priam_data")
     
     
         
