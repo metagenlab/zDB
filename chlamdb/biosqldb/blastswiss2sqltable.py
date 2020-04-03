@@ -84,8 +84,9 @@ def get_swissprot_annotation(accession_list):
     import urllib
     from urllib.error import URLError
 
-    link = "http://www.uniprot.org/uniprot/?query=id:%s&columns=id,taxon,annotation score,protein names,genes,organism&format=tab" % (','.join(accession_list))
+    link = "http://www.uniprot.org/uniprot/?query=id:%s&columns=id,taxon,annotation score,protein names,genes,organism&format=tab" % ('+OR+'.join(accession_list))
     link = link.replace(' ', '%20')
+
     req = urllib.request.Request(link)
     try:
         page = urllib.request.urlopen(req)
