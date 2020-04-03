@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 def import_annot(gblast_file,
                  biodb,
                  fasta_file_query,
@@ -26,7 +25,6 @@ def import_annot(gblast_file,
     TC avec description, family id, family et substrats
     TCDB hit (accession)
     hits_chlamydia_04_16 avec details du hit (score,...)
-
     '''
 
     with open(fasta_file_db, 'r') as f:
@@ -46,11 +44,20 @@ def import_annot(gblast_file,
             blast_data[locus] = record
 
     server, db = manipulate_biosqldb.load_db(biodb)
+    
+    sql = 'select protein_accession, protein_id from transporters_protein_entry'
+    
+    protein_accession2protein_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+    
+    # add accession without version to the dictionnary
+    for protein in list(protein_accession2protein_id.keys()):
+        if '.' in protein:
+            accession_no_version = protein.split(".")[0]
+            protein_accession2protein_id[accession_no_version] = protein_accession2protein_id[protein]
 
-    sql = 'create table IF NOT EXISTS transporters_transporters (seqfeature_id INT primary key,' \
+    sql = 'create table IF NOT EXISTS transporters_transporters_BBH (seqfeature_id INTEGER primary key,' \
           ' taxon_id INT,' \
-          ' hit_uniprot_id INT,' \
-          ' transporter_id INT,' \
+          ' hit_protein_id INT,' \
           ' align_length INT,' \
           ' n_hsps INT,' \
           ' evalue FLOAT,' \
@@ -62,9 +69,8 @@ def import_annot(gblast_file,
           ' query_len INT,' \
           ' hit_len INT,' \
           ' query_cov FLOAT,' \
-          ' hit_cov FLOAT,' \
-          ' index transporter_id(transporter_id),' \
-          ' index hit_uniprot_id(hit_uniprot_id));'
+          ' hit_cov FLOAT);'
+
 
     server.adaptor.execute(sql,)
     server.commit()
@@ -111,7 +117,7 @@ def import_annot(gblast_file,
 
                 hash = cols[0]
                 hit_uniprot_accession = cols[1]
-                hit_tcid = cols[2]
+                #hit_tcid = cols[2]
                 hit_description = re.sub('"', '', cols[3])
                 hit_accession = hit_description.split(' ')[1]
 
@@ -121,6 +127,7 @@ def import_annot(gblast_file,
                 query_TMS = cols[11]
                 hit_TMS = cols[12]
                 TM_overlap_score = cols[13]
+                
                 if TM_overlap_score == "None":
                     TM_overlap_score = 0
                 family_abrv = cols[14]
@@ -128,9 +135,6 @@ def import_annot(gblast_file,
                 for locus_tag in hash2locus_list[hash]:
 
                     first_hsp = blast_data[hash].alignments[0].hsps[0]
-
-                    #print blast_data[locus_tag].effective_query_length
-                    #print blast_data[locus_tag].effective_database_length
                     query_align_length = first_hsp.query_end-first_hsp.query_start
                     query_length = len(query_accession2record[locus_tag])
                     hit_length = len(db_accession2record[hit_accession])
@@ -140,31 +144,33 @@ def import_annot(gblast_file,
                     hit_cov = round(hit_align_length/float(hit_length), 2)
                     n_hsps = len(blast_data[hash].alignments[0].hsps)
                     bitscore_first_hsp = first_hsp.bits
+                    
+                    print(baba)
+                    
+                    
+                    try:
+                        hit_protein_id = protein_accession2protein_id[hit_uniprot_accession]
+                    except KeyError:
+                        print("WARNING accession %s was not found in the database, might have been removed from TCDB, skipping" % hit_uniprot_accession)
+                        continue
 
-                    sql = 'select tc_id from transporters_tc_table where tc_name="%s";' % hit_tcid
-                    transporter_id = server.adaptor.execute_and_fetchall(sql)[0][0]
-                    sql = 'select uniprot_id from transporters_uniprot_table where uniprot_accession like "%s%%%%";' % hit_uniprot_accession
-                    hit_uniprot_id = server.adaptor.execute_and_fetchall(sql)[0][0]
-
-                    sql = 'insert into transporters_transporters (seqfeature_id,' \
-                          ' taxon_id,' \
-                          ' hit_uniprot_id,' \
-                          ' transporter_id,' \
-                          ' align_length,' \
-                          ' n_hsps,' \
-                          ' evalue,' \
-                          ' bitscore_first_hsp,' \
-                          ' identity,' \
-                          ' query_TMS,' \
-                          ' hit_TMS,' \
-                          ' TM_overlap_score,' \
-                          ' query_len,' \
-                          ' hit_len,' \
-                          ' query_cov,' \
-                          ' hit_cov) values (%s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s)' % (locus_tag2seqfeature_id[locus_tag],
+                    sql = 'insert into transporters_transporters_BBH (seqfeature_id,' \
+                            ' taxon_id,' \
+                            ' hit_protein_id,' \
+                            ' align_length,' \
+                            ' n_hsps,' \
+                            ' evalue,' \
+                            ' bitscore_first_hsp,' \
+                            ' identity,' \
+                            ' query_TMS,' \
+                            ' hit_TMS,' \
+                            ' TM_overlap_score,' \
+                            ' query_len,' \
+                            ' hit_len,' \
+                            ' query_cov,' \
+                            ' hit_cov) values (%s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s,%s,%s,%s)' % (locus_tag2seqfeature_id[locus_tag],
                                                                                                         locus_tag2taxon_id[locus_tag],
-                                                                                                        hit_uniprot_id,
-                                                                                                        transporter_id,
+                                                                                                        hit_protein_id,
                                                                                                         align_length,
                                                                                                         n_hsps,
                                                                                                         evalue,
@@ -178,10 +184,18 @@ def import_annot(gblast_file,
                                                                                                         query_cov,
                                                                                                         hit_cov)
 
-
                     server.adaptor.execute(sql,)
-        server.commit()
-        sql = ''
+    server.commit()
+    sql_index1 = 'create index tttid on transporters_transporters_BBH(hit_protein_id)'
+    sql_index2 = 'create index ttthuid on transporters_transporters_BBH(hit_protein_id)'
+    try:
+        server.adaptor.execute(sql_index1,)
+        server.adaptor.execute(sql_index2,)
+    except:
+        pass
+    server.commit()
+
+
 
 if __name__ == '__main__':
     import argparse
