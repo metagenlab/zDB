@@ -11,7 +11,6 @@ Minimal SETUP
     - perform comparative analysis based on OrthoFinder orthologous groups
     - Plot interactive circular genome maps with circos
     - Plot local alignments relying on orthology informations
-    - Blast the database using the various blast flavours
 
 0. Setup env with conda 
 ------------------------
@@ -41,8 +40,13 @@ Edit file: BioSQL/BioSeqDatabase.py: disable "SET sql_mode='ANSI_QUOTES';"
 Edit file: BioSQL/Loader.py: replace double quote "rank" by \\`rank`
 
 
-1.A Mysql setup
-----------------
+1. database setup
+------------------
+
+We can use either MySQL or Sqlite3
+
+1.A MySQL
+++++++++++
 
 The environment variable `SQLPSW` is used to pass the root MySQL password to the various scripts. Setup MySQL and the root password and export the variable.
 
@@ -57,15 +61,14 @@ In addition, DB_DRIVER has to be set to 'mysql' in ``setings.py``
     DB_DRIVER = 'mysql'
 
 
-1.B Sqlite3 setup
------------------
+1.B Sqlite3 
++++++++++++
 
 Alternatively, we can use sqlite to store data. For that, we have to update the django ``setings.py`` and set:
 
 .. note::
 
     DB_DRIVER = 'sqlite'
-
 
 2. DB setup: download and import biosql schema
 ----------------------------------------------
@@ -291,11 +294,17 @@ Aptional utilities/annotations
 To setup interpro database, we need the interpro entry table of the interpro version that was used to annotate the genomes. 
 To retrieve this table from the internet, run the following script:
 
+.. note:: Interpro version can be found in xml files (in the folder annotation/interproscan)
+
+    # interpro version=last numbers of the interproscan version, eg. 73.0 here
+    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <protein-matches xmlns="http://www.ebi.ac.uk/interpro/resources/schemas/interproscan5" interproscan-version="5.34-73.0">
 
 .. code-block:: bash
 
     # setup interpro entry table
     chlamdb-setup-interpro.py -d 2020_chlamydia_test -v 73.0
+    # sqlite ok
 
 
 We can then load interpro annotations. For backward compatibility issues, this command needs to be executed twice. 
@@ -312,29 +321,44 @@ We can then load interpro annotations. For backward compatibility issues, this c
 
 Update TM/SP columns, load hash correspondance 
 
-
 .. code-block:: bash
 
-
     # update TM et SP columns from legacy `ortho_detail` table
-    chlamdb-load-interproscan.py -u data/nr_mapping.tab -d 2020_chlamydia_test -l
+    chlamdb-load-interproscan.py -u data/nr_mapping.tab -d 2020_chlamydia_test -a
+    # sqlite ok
 
     # correspondance between sequence hash and locus tag (needed to display interproscan html pages)
     chlamdb-load-hash2locus.py -u data/nr_mapping.tab -d 2020_chlamydia_test
+    # sqlite ok 
+
+Extract interpro ``*html`` files into the assets directors
+
+.. code-block:: bash
+
+    mkdir ~/work/dev/metagenlab/chlamdb/assets/chlamdb_test2/interpro
+    for i in ls annotation/interproscan/*.html.tar.gz; do tar -xvzf $i -C ~/work/dev/metagenlab/chlamdb/assets/chlamdb_test2/interpro; done
 
 Finally setup comparative tables
-
 
 .. code-block:: bash
 
     # setup comparative tables
     chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -p # pfam
     chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -i # interpro
-    
+    # sqlite ok
+
     # setup comparative tables for accessons (distinction between chromosome % plasmids)
     chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -p -a # pfam
     chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -i -a # interpro
-    
+    # sqlite ok
+
+Setup consensus orthogroup interpro annotation (homogeneity of the annotation within orthogroup)
+
+.. code-block:: bash
+
+    chlamdb-get-consensus-orthogroup-annotation.py -d chlamdb_test2 -i
+    # sqlite ok
+
 
 3.2 Load COG data
 +++++++++++++++++
@@ -344,12 +368,15 @@ Setup COG reference tables (downloaded from NCBI FTP website)
 .. code-block:: bash
 
     chlamdb-setup-COG.py -b chlamdb_test2 -d
+    # sqlite ok
 
 Load COG annotation results
 
 .. code-block:: bash
 
+    # TODO put cog_corresp.tab & cog_length.tab into chlamdb or annotation pipeline repo
     chlamdb-load-COG.py -i annotation/COG/blast_COG.tab -d 2020_chlamydia_test -u data/nr_mapping.tab -cc annotation/COG/cog_corresp.tab -cl annotation/COG/cog_length.tab
+    # sqlite ok
 
 Setup comparative tables
 
@@ -357,7 +384,15 @@ Setup comparative tables
 
     chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -c # COG
     chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -c -a # COG
+    # sqlite ok
 
+
+Setup consensus orthogroup COG annotation (homogeneity of the annotation within orthogroup)
+
+.. code-block:: bash
+
+    chlamdb-get-consensus-orthogroup-annotation.py -d chlamdb_test2 -c
+    # sqlite ok
 
 3.3 Load Kegg data
 +++++++++++++++++++
@@ -375,6 +410,7 @@ It will retrieve
 
     # setup necessary table (~10 minutes)
     chlamdb-setup-enzyme-kegg.py -d chlamdb_test2
+    # sqlite ok
 
 
 We can then load kofamscan results 
@@ -382,6 +418,7 @@ We can then load kofamscan results
 .. code-block:: bash
 
     chlamdb-load-KO.py -k chunk*.tab -d 2019_06_chlamydia -c ../../data/nr_mapping.tab
+    # sqlite ok
 
 Setup comparative tables
 
@@ -389,19 +426,24 @@ Setup comparative tables
 
     chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -k # ko
     chlamdb-setup-comparative-tables.py -d 2020_chlamydia_test -k -a # ko accession
+    # sqlite ok
 
-Optional: Add consensus orthogroup KEGG annotation (homogeneity of the annotation within orthogroup)
+Setup consensus orthogroup KEGG annotation (homogeneity of the annotation within orthogroup)
 
 .. code-block:: bash
 
     chlamdb-get-consensus-orthogroup-annotation.py -d chlamdb_test2 -k
+    # sqlite ok
 
 3.4 Load PRIAM data (EC annotation)
 +++++++++++++++++++++++++++++++++++
 
 .. code-block:: bash
 
-    chlamdb-load-PRIAM.py -l -c ../../data/nr_mapping.tab -d 2019_06_chlamydia -i sequenceECs.txt
+    chlamdb-load-PRIAM.py -c data/nr_mapping.tab -d chlamdb_test2 -i annotation/PRIAM/sequenceECs.txt
+    # legacy table
+    chlamdb-load-PRIAM.py -l -c data/nr_mapping.tab -d 2019_06_chlamydia -i annotation/PRIAM/sequenceECs.txt
+    # sqlite ok
 
 Setup comparative tables
 
@@ -409,14 +451,32 @@ Setup comparative tables
 
     chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e # EC PRIAM
     chlamdb-setup-comparative-tables.py -d 2019_06_chlamydia -e -a # EC PRIAM accession
+    # sqlite ok
  
 
 3.5 Load TCDB data (transporters)
 +++++++++++++++++++++++++++++++++
 
+First setup TCDB reference tables
+
+
 .. code-block:: bash
 
-    for i in {1..10}; do echo $i; chlamdb-load-TCDB.py -d 2019_06_chlamydia -b tcdb -f all.faa -x TCDB_RESULTS_chunk.$i/xml/ -t TCDB_RESULTS_chunk.$i/results.html -c ../../data/nr_mapping.tab; done
+    # ~15min to download and setup tables
+    chlamdb-setup-TCDB.py -d chlamdb_test2
+    # sqlite ok
+
+Then we can load gblast results. We need
+
+    - complete faa file with locus_tag as header (we can concatenate aa from ``data/faa_locus``)
+    - tcdb fasta file (in home directory or database folder?)
+    - mapping file
+    - tcdb html files
+
+.. code-block:: bash
+    cat data/faa_locus/*faa > all.faa
+    for i in {1..10}; do echo $i; chlamdb-load-TCDB.py -d 2019_06_chlamydia -b tcdb -f all.faa -x annotation/tcdb_mapping/TCDB_RESULTS_chunk.$i/xml/ -t annotation/tcdb_mapping/TCDB_RESULTS_chunk.$i/results.html -c data/nr_mapping.tab; done
+    # sqlite ok
 
 3.6 Load psortb data (subcellular localization)
 +++++++++++++++++++++++++++++++++++++++++++++++
@@ -424,15 +484,19 @@ Setup comparative tables
 .. code-block:: bash
 
     chlamdb-load-psortdb.py -t psortb_chunk_.* -d 2019_06_chlamydia -c ../../data/nr_mapping.tab 
+    # sqlite ok
 
 3.7 Load T3SS effector data
 +++++++++++++++++++++++++++
 
-
+.. code-block:: bash
+    todo
 
 3.8 Load PDB data
 ++++++++++++++++++
 
+.. code-block:: bash
+    todo
 
 
 4. Load BLAST results & phylogenies 
@@ -452,6 +516,7 @@ Setup comparative tables
 
 4.3 Load BBH phylogenies
 ++++++++++++++++++++++++
+
 
 
 
@@ -488,7 +553,7 @@ Setup comparative tables
 Config optional data
 ======================
 
-Table with the list of main data. We could add a check that will show an error message is mandatory data is missing.
+Table with the list of main datasets. Internal check will show an error message if mandatory data is missing.
 
 ================================  ================  =============================================
 name                              type              status 
