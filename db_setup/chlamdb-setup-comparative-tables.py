@@ -348,10 +348,6 @@ def collect_ko(db_name):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql_db_id = 'select biodatabase_id from biodatabase where name="%s"' % db_name
-
-    biodb_id = server.adaptor.execute_and_fetchall(sql_db_id,)[0][0]
-
     taxon_id_list = manipulate_biosqldb.get_taxon_id_list(server, db_name)
 
     sql_head = 'INSERT INTO comparative_tables_ko (id,'
@@ -390,10 +386,6 @@ def collect_ko_accession(db_name):
     from chlamdb.biosqldb import manipulate_biosqldb
 
     server, db = manipulate_biosqldb.load_db(db_name)
-
-    sql_db_id = 'select biodatabase_id from biodatabase where name="%s"' % db_name
-
-    biodb_id = server.adaptor.execute_and_fetchall(sql_db_id,)[0][0]
 
     accession_list = get_all_accessions(db_name)
 
@@ -435,20 +427,16 @@ def collect_EC(db_name):
 
     server, db = manipulate_biosqldb.load_db(db_name)
 
-    sql_db_id = 'select biodatabase_id from biodatabase where name="%s"' % db_name
-
-    biodb_id = server.adaptor.execute_and_fetchall(sql_db_id,)[0][0]
-
     taxon_id_list = manipulate_biosqldb.get_taxon_id_list(server, db_name)
 
-    sql_head = 'INSERT INTO comparative_tables_EC (id,' % db_name
+    sql_head = 'INSERT INTO comparative_tables_EC (id,'
 
     for taxon in taxon_id_list:
         sql_head += '`%s`,' % taxon
     sql_head = sql_head[0:-1] + ') values ('
 
     all_EC_ids_sql = 'select distinct ec from enzyme_seqfeature_id2ec t1 ' \
-                     ' inner join  enzyme_enzymes t2 on t1.ec_id=t2.enzyme_id;' % (db_name)
+                     ' inner join  enzyme_enzymes t2 on t1.ec_id=t2.enzyme_id;'
 
     all_ec_ids = [i[0] for i in server.adaptor.execute_and_fetchall(all_EC_ids_sql,)]
 
@@ -505,7 +493,7 @@ def collect_EC_accession(db_name):
               ' inner join annotation_seqfeature_id2locus t3 on t1.seqfeature_id=t3.seqfeature_id ' \
               ' where ec="%s" group by bioentry_id,ec) A ' \
               ' inner join bioentry B on A.bioentry_id=B.bioentry_id ' \
-              ' inner join biodatabase C on B.biodatabase_id=C.biodatabase_id where C.name="%s" ;' % (accession)
+              ' inner join biodatabase C on B.biodatabase_id=C.biodatabase_id where C.name="%s" ;' % (accession, db_name)
 
         data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
         sql_temp = sql_head + '"%s",' % accession
