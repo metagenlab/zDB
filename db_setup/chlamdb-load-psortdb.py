@@ -90,7 +90,7 @@ def load_sport_data(psortdb_output_files,
                                                   final_pred,
                                                   score))
     
-    sql = f'create index sfp on custom_tables_seqfeature_id2psortb (seqfeature_id)'                 
+    sql = f'create index ctsipsid on custom_tables_seqfeature_id2psortb (seqfeature_id)'                 
     server.adaptor.execute(sql,)
     server.commit()
 
@@ -98,6 +98,7 @@ def load_sport_data(psortdb_output_files,
 if __name__ == '__main__':
     import argparse
     import chlamdb_setup_utils
+    from chlamdb.biosqldb import manipulate_biosqldb
     
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", '--psortdb_output', type=str, help="BLAST output file(s)", required=True, nargs="+")
@@ -114,3 +115,5 @@ if __name__ == '__main__':
     load_sport_data(args.psortdb_output, 
                     args.db_name,
                     hash2locus_list)
+    
+    manipulate_biosqldb.update_config_table(args.db_name, "psortb_data")
