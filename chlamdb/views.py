@@ -2441,15 +2441,15 @@ def locusx(request, locus=None, menu=True):
 
             sql31 = f'select * from custom_tables_seqfeature_id2pdb_BBH where seqfeature_id={seqfeature_id};'
 
-            sql32 = f'select distinct ec,value from enzyme.seqfeature_id2ec_{biodb} t1 ' \
-                    f' inner join enzyme.enzymes t2 on t1.ec_id=t2.enzyme_id ' \
-                    f' inner join enzyme.enzymes_dat t3 on t1.ec_id=t3.enzyme_dat_id ' \
+            sql32 = f'select distinct ec,value from enzyme_seqfeature_id2ec t1 ' \
+                    f' inner join enzyme_enzymes t2 on t1.ec_id=t2.enzyme_id ' \
+                    f' inner join enzyme_enzymes_dat t3 on t1.ec_id=t3.enzyme_dat_id ' \
                     f' where seqfeature_id="{seqfeature_id}" and line="description";'
 
-            sql33 = f'select EC,definition,thrshld,score,evalue,t2.ko_accession from enzyme.seqfeature_id2ko_{biodb} t1 ' \
-                    f' inner join enzyme.ko_annotation t2 on t1.ko_id=t2.ko_id ' \
-                    f' inner join enzyme.ko2ec t3 on t2.ko_accession=t3.ko_id where seqfeature_id={seqfeature_id}; '
-
+            sql33 = f'select EC,definition,thrshld,score,evalue,t2.ko_accession from enzyme_seqfeature_id2ko t1 ' \
+                    f' inner join enzyme_ko_annotation t2 on t1.ko_id=t2.ko_id ' \
+                    f' inner join enzyme_ko2ec t3 on t2.ko_accession=t3.ko_id where seqfeature_id={seqfeature_id}; '
+            
             try:
                 ec_priam_data = server.adaptor.execute_and_fetchall(sql32,)
             except:
@@ -3193,11 +3193,11 @@ def fam(request, fam, type):
         elif type == 'EC':
             sql1 = f'select distinct seqfeature_id from enzyme_seqfeature_id2ec t1' \
                    f' inner join enzyme_enzymes t2 on t1.ec_id=t2.enzyme_id where ec="{fam}";' 
-            print(sql1)
+
             sql2 = 'select line,value from (select * from enzyme_enzymes where ec="%s") t1 ' \
                    ' inner join enzyme_enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id;' % (fam)
             path = fam.split('.')
-            print(sql2)
+
             external_link = 'https://www.qmul.ac.uk/sbcs/iubmb/enzyme/EC%s/%s/%s/%s.html' % (path[0], path[1], path[2], path[3])
 
             sql_pathways = 'select distinct pathway_name,pathway_category,description ' \
@@ -3213,14 +3213,14 @@ def fam(request, fam, type):
             except:
                 valid_id = False
 
-            sql_ko = f'select distinct t3.ko_accession,t3.definition from enzyme.ko2ec t1' \
-                     f' inner join enzyme.enzymes t2 on t1.enzyme_id=t2.enzyme_id ' \
-                     f' inner join enzyme.ko_annotation t3 on t1.ko_id=t3.ko_accession where t2.ec="{fam}";'
+            sql_ko = f'select distinct t3.ko_accession,t3.definition from enzyme_ko2ec t1' \
+                     f' inner join enzyme_enzymes t2 on t1.enzyme_id=t2.enzyme_id ' \
+                     f' inner join enzyme_ko_annotation t3 on t1.ko_id=t3.ko_accession where t2.ec="{fam}";'
             associated_ko = [list(i) for i in server.adaptor.execute_and_fetchall(sql_ko, )]
-            sql_ko_freq = f'select ko_accession,count(*) as n from (select distinct t3.ko_accession,seqfeature_id from enzyme.ko2ec t1 ' \
-                          f' inner join enzyme.enzymes t2 on t1.enzyme_id=t2.enzyme_id' \
-                          f' inner join enzyme.ko_annotation t3 on t1.ko_id=t3.ko_accession ' \
-                          f' inner join enzyme.seqfeature_id2ko_2019_06_PVC t4 on t3.ko_id=t4.ko_id ' \
+            sql_ko_freq = f'select ko_accession,count(*) as n from (select distinct t3.ko_accession,seqfeature_id from enzyme_ko2ec t1 ' \
+                          f' inner join enzyme_enzymes t2 on t1.enzyme_id=t2.enzyme_id' \
+                          f' inner join enzyme_ko_annotation t3 on t1.ko_id=t3.ko_accession ' \
+                          f' inner join enzyme_seqfeature_id2ko t4 on t3.ko_id=t4.ko_id ' \
                           f'where t2.ec="{fam}") A group by ko_accession;'
             ko2freq = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_ko_freq,))
 
