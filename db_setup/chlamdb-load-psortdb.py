@@ -69,8 +69,7 @@ def load_sport_data(psortdb_output_files,
     hash2psort_results = {}
     for psortdb_output in psortdb_output_files:
         hash2psort_results.update(parse_psort_results(psortdb_output))
-    
-    
+
     sql = f'select locus_tag, seqfeature_id from custom_tables_locus2seqfeature_id'
     locus_tag2seqfeature_id = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
     
@@ -110,7 +109,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     hash2locus_list = chlamdb_setup_utils.get_hash2locus_list(args.corresp_table)
-
 
     load_sport_data(args.psortdb_output, 
                     args.db_name,
