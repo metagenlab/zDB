@@ -8,11 +8,15 @@ channels:
  - plotly
 dependencies:
  - python>=3.6
- - django
- - plotly
+ - biopython>=1.76
+ - django>=3.0
+ - django-extensions
+ - django-crispy-forms
+ - django-redis
+ - gunicorn
  - celery
  - pip
- - django-extensions
+ - plotly
  - bibtexparser
  - cairo
  - r-cairo
@@ -20,6 +24,9 @@ dependencies:
  - r-gplots
  - r-gdtools
  - r-svglite
+ - r-rmysql
+ - rpy2
+ - r-ggplot2
  - pandas
  - qtconsole
  - ete3
@@ -30,21 +37,16 @@ dependencies:
  - pylibmc
  - simplejson
  - dill
- - gunicorn
  - numpy
  - pyqt
  - lxml
  - conda-build
  - reportlab
- - biopython=1.76
- - django-crispy-forms
  - mysqlclient
- - rpy2
- - r-ggplot2
  - circos
- - r-rmysql
- - blast
- - django-redis
+ - blast 
+ - seaborn
+
  - pip:
    - cython
    - django-citations
