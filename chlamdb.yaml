@@ -12,7 +12,6 @@ dependencies:
  - django>=3.0
  - django-extensions
  - django-crispy-forms
- - django-redis
  - gunicorn
  - celery
  - pip
@@ -46,8 +45,10 @@ dependencies:
  - circos
  - blast 
  - seaborn
+ - ipython
 
  - pip:
    - cython
    - django-citations
    - django-celery-results
+   - django-redis

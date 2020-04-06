@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    {% load staticfiles %}
+    {% load static %}
     {% include "chlamdb/header.html" %}
     <script type="text/javascript" src="{% static 'js/mark.min.js' %}"></script>
 </head>
@@ -59,7 +59,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% load staticfiles %}
+                                    {% load static %}
                                     {% for values in search_result %}
                                     <tr>
                                         <td>{{values.0}}</td>
@@ -283,7 +283,7 @@ table td.wrapcol {
         </tr>
     </thead>
     <tbody>
-        {% load staticfiles %}
+        {% load static %}
         {% for values in locus_list %}
         <tr>
             <td>{{values.0}}</td>
