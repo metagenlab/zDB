@@ -2,9 +2,9 @@
 
 
 def retrieve_pdb_data():
-    
+
     import urllib.request
-    
+
     '''
     0 IDCODE, 
     1 HEADER, 
@@ -37,8 +37,8 @@ def retrieve_pdb_data():
         pdb2data[data[0]]["RESOLUTION"] = data[6]
         pdb2data[data[0]]["METHOD"] = data[7]
     return pdb2data
-    
-    
+
+
 def load_pdb_data(blast_output_files,
                   db_name,
                   hash2locus_list):
@@ -55,9 +55,9 @@ def load_pdb_data(blast_output_files,
     server.adaptor.execute(sql,)
     
     sql_template = f'insert into custom_tables_seqfeature_id2pdb_BBH values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-    
+
     pdb2data = retrieve_pdb_data()
-    
+
     problem_list = []
     
     for blast_file in blast_output_files:
@@ -101,15 +101,15 @@ def load_pdb_data(blast_output_files,
                 
                 for locus in hash2locus_list[query_hash]:
                     server.adaptor.execute(sql_template, (locus_tag2seqfeature_id[locus],
-                                                 hit_accession,
-                                                 header,
-                                                 compound,
-                                                 source,
-                                                 resolution,
-                                                 method,
-                                                 identity,
-                                                 score,
-                                                 e_value))
+                                                          hit_accession,
+                                                          header,
+                                                          compound,
+                                                          source,
+                                                          resolution,
+                                                          method,
+                                                          identity,
+                                                          score,
+                                                          e_value))
                     
     sql = f'create index ctsipsid on custom_tables_seqfeature_id2pdb_BBH (seqfeature_id)'                 
     server.adaptor.execute(sql,)
