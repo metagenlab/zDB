@@ -1269,9 +1269,9 @@ def extract_ko(request):
                     path_str = ''
                     for path in i[4].split(','):
                         try:
-                            path_str+='<a href="http://www.genome.jp/dbget-bin/www_bget?map%s">%s</a><br>' % (path[2:], map2description['map'+path[2:]])
+                            path_str+='<a href="/KEGG_mapp_ko/map%s">%s</a><br>' % (path[2:], map2description['map'+path[2:]])
                         except:
-                            path_str+='<a href="http://www.genome.jp/dbget-bin/www_bget?map%s">%s</a><br>' % (path[2:], path)
+                            path_str+='<a href="/KEGG_mapp_ko/map%s">%s</a><br>' % (path[2:], path)
                     ko2description_dico[i[0]][0].append(path_str[0:-1])
                 else:
                     ko2description_dico[i[0]][0].append('-')
@@ -1279,7 +1279,7 @@ def extract_ko(request):
                 if i[5] != '-':
                     mod_str = ''
                     for mod in i[5].split(','):
-                        mod_str+='<a href="http://www.genome.jp/dbget-bin/www_bget?md:%s">%s</a><br>' % (mod, module2category[mod])
+                        mod_str+='<a href="/KEGG_module_map/%s">%s</a><br>' % (mod, module2category[mod])
                     ko2description_dico[i[0]][0].append(mod_str[0:-5])
                 else:
                     ko2description_dico[i[0]][0].append('-')
