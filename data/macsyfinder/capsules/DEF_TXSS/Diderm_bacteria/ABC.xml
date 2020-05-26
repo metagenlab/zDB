@@ -1,0 +1,25 @@
+<system inter_gene_max_space="8" min_mandatory_genes_required="4" min_genes_required="4"> 
+<gene name="KpsM" presence="mandatory"/>       
+<gene name="KpsT" presence="mandatory"/>
+<gene name="KpsE" presence="mandatory"/>
+<gene name="KpsD2" presence="mandatory"/>
+
+	<gene name="KpsC" presence="accessory"/>
+    <gene name="KpsS" presence="accessory"/>
+    
+   		<gene name="KpsF" presence="accessory"/>
+    	<gene name="KpsU" presence="accessory"/>
+         <gene name="Glu_Tr_2" presence="accessory"/>
+         <gene name="Glycos_transf_1" presence="accessory" />
+     	 <gene name="Ugd" presence="accessory" />
+     	 <gene name="WchA" presence="accessory" />
+     	 <gene name="NTP_Tr" presence="accessory"  />
+     	 <gene name="Man_Deh" presence="accessory" />
+      	<gene name="Epimerase" presence="accessory"/>    
+     	<gene name="GDP_Man_Dehyd" presence="accessory"/> 
+         <gene name="Acetyltransf_1" presence="accessory"/>
+      	    		
+    		<gene name="Wzb" presence="forbidden"/>
+			<gene name="YmcB" presence="forbidden"/>
+			<gene name="Wzx" presence="forbidden"/>      
+</system>

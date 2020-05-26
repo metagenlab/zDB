@@ -1,0 +1,13 @@
+<system inter_gene_max_space="30" min_mandatory_genes_required="3" min_genes_required="5">  
+	<gene name="virb4" presence="mandatory" system_ref="CONJ" />
+    <gene name="tcpA" presence="mandatory"/>
+    <gene name="MOBB" presence="mandatory" system_ref="CONJ" />
+
+    <gene name="FA_orf13" presence="accessory" />
+    <gene name="FA_orf14" presence="accessory" />
+    <gene name="FA_orf15" presence="accessory" />
+    <gene name="FA_orf17a" presence="accessory" />
+    <gene name="FA_orf17b" presence="accessory" />
+    <gene name="FA_orf19" presence="accessory" />
+    <gene name="FA_orf23" presence="accessory" />
+</system>

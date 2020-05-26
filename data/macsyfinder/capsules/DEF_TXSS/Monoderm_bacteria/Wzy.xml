@@ -1,0 +1,22 @@
+<system inter_gene_max_space="8" min_mandatory_genes_required="4" min_genes_required="5" > 
+<gene name="Wzx" presence="mandatory"/>       
+<gene name="Wzy.select2" presence="mandatory"/>
+<gene name="Wzz" presence="mandatory"/>    
+<gene name="Wze" presence="mandatory"/>
+<gene name="Wzg" presence="mandatory"/>
+<gene name="Wzh" presence="mandatory"/>
+
+		<gene name="Wzi" presence="accessory" />
+    	<gene name="KpsF" presence="accessory"/>
+    	<gene name="KpsU" presence="accessory"/>
+         <gene name="Glu_Tr_2" presence="accessory"/>
+         <gene name="Gly_Tr" presence="accessory"/>
+     	 <gene name="PolyST" presence="accessory" />
+     	 <gene name="Ugd" presence="accessory" />
+     	 <gene name="WchA" presence="accessory" />
+     	 <gene name="NTP_Tr" presence="accessory"/>
+     	 <gene name="Man_Deh" presence="accessory"/>
+      	<gene name="NeuD" presence="accessory" />    
+      	
+
+</system>

@@ -1,0 +1,33 @@
+<system inter_gene_max_space="30" min_mandatory_genes_required="3" min_genes_required="5">  
+	<gene name="virb4" presence="mandatory" system_ref="CONJ" />
+    <gene name="t4cp1" presence="mandatory" system_ref="CONJ" />
+    <gene name="MOBB" presence="mandatory" system_ref="CONJ" />
+
+    <gene name="FATA_cd411" presence="accessory" />
+    <gene name="FATA_cd419_1" presence="accessory" />
+    <gene name="FATA_cd419a" presence="accessory" />
+    <gene name="FATA_cd419b" presence="accessory" />
+    <gene name="FATA_cd424" presence="accessory" />
+    <gene name="FATA_gbs1346" presence="accessory" />
+    <gene name="FATA_gbs1347" presence="accessory" />
+    <gene name="FATA_gbs1350" presence="accessory" />
+    <gene name="FATA_gbs1354" presence="accessory" />
+    <gene name="FATA_gbs1365" presence="accessory" />
+    <gene name="FATA_gbs1369" presence="accessory" />
+    <gene name="FATA_prgB" presence="accessory" />
+    <gene name="FATA_prgC" presence="accessory" />
+    <gene name="FATA_prgF" presence="accessory" />
+    <gene name="FATA_prgHa" presence="accessory" />
+    <gene name="FATA_prgHb" presence="accessory" />
+    <gene name="FATA_prgIa" presence="accessory" />
+    <gene name="FATA_prgIb" presence="accessory" />
+    <gene name="FATA_prgIc" presence="accessory" />
+    <gene name="FATA_prgK" presence="accessory" />
+    <gene name="FATA_prgL" presence="accessory" />
+    <gene name="FATA_trsC" presence="accessory" />
+    <gene name="FATA_trsD" presence="accessory" />
+    <gene name="FATA_trsF" presence="accessory" />
+    <gene name="FATA_trsG" presence="accessory" />
+    <gene name="FATA_trsJ" presence="accessory" />
+    <gene name="FATA_trsL" presence="accessory" />
+</system>

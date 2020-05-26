@@ -163,6 +163,9 @@ def get_idmapping_crossreferences(databases_dir, table):
     # TODO : heavy SQL request. Group it in a single
     # query to speed up.
     # uniparc_accession IN (...)
+    # TP: those tables are very big (hundreds of millon of rows), 
+    # I'm not sure that filtering with a large number of values 
+    # would be faster 
     with open(table, 'r') as f:
         f.readline()
         for row in f:
@@ -311,6 +314,9 @@ def get_PMID_data():
 
 # Removed error handling possibly leading
 # to endless loop. A quick death is usually better.
+# TODO: we should improve the error handling rather than 
+# remove it (with eg a max number of retry) 
+
 def uniprot_accession2score(uniprot_accession_list):
     # https://www.uniprot.org/uniprot/?query=id:V8TQN7+OR+id:V8TR74&format=xml
     link = "http://www.uniprot.org/uniprot/?query=id:%s&columns=id,annotation%%20score&format=tab" % ("+OR+id:".join(uniprot_accession_list))
@@ -412,7 +418,11 @@ def get_uniparc_mapping(databases_dir, fasta_file):
             # the indices don't correspond to the SQL query return values
             # Besides, if there is only one active record, we select the first
             # one in the list anyway instead of the active one. Is this the correct
-            # behaviour?
+            # behaviour? TP: Yes it is the intended behaviour: all rows have the same UP 
+            # accession, but we have to check that there is at least one active cross-reference.
+            # If all entries are dead, it means that the sequence was removed from 
+            # all cross-referenced databases. In that case, we consider it as a "new"
+            # sequence and annotate it "de novo" with interproscan.
             mapping_uniparc_records.append(record)
             all_status = [i[6] for i in hits]
             if 1 in all_status:
@@ -870,6 +880,10 @@ def get_string_mapping(fasta_file, database_dir):
 # get_nr_sequences to have less lines of code and 
 # be more efficient
 # TODO : check with Trestan
+# TP: I'm not sure what you mean but we need to extract all 
+# protein sequences from each input genbank files. The 
+# redudancy of protein sequences is dealt with later on.
+
 def convert_gbk_to_faa(gbf_file, edited_gbf):
     records = SeqIO.parse(gbf_file, 'genbank')
     edited_records = open(edited_gbf, 'w')
@@ -991,8 +1005,8 @@ def setup_orthology_db(fasta_file, nr_mapping_file, orthogroup):
 
 # This function parses the result of orthofinder/orthoMCL, 
 # retrieves the groups of orthologs detected by the tools
-# and returns the core orthologs (i.e. the ortholog present
-# in all samples)
+# and returns the core single copy orthologs (i.e. the 
+# ortholog present in all samples)
 #
 # Orthofinder output file : Orthogroup_ID: locus1 locus2... locusN
 def orthofinder2core_groups(fasta_list,
@@ -1037,6 +1051,15 @@ def orthofinder2core_groups(fasta_list,
 
     # Paralogs will have several copies per genomes (df > 1)
     # Why are they removed?
+    # TP: we use single copy genes to reconstruct the phylogeny 
+    # of the species using a supermatrix approach 
+    # (see https://www.cell.com/trends/ecology-evolution/fulltext/S0169-5347%2806%2900332-6)
+    # The phylogeny of individual single copy genes is expected to be 
+    # the most similar to the species phylogeny. 
+    # NOTE: We allow for missing data ("n_missing" parameter) because 
+    # the inclusion of incomplete genomes in the dataset can significantly
+    # impact the number of identified single copy genes. This parameter 
+    # should be as low as possible.
     groups_with_paralogs = df[(df > 1).sum(axis=1) > 0].index
     df = df.drop(groups_with_paralogs)
 
@@ -1114,6 +1137,8 @@ def get_refseq_hits_taxonomy(hit_table, database_dir):
 
     # TODO : make a single query using join on the two tables would probably
     # be more efficient and spare some lines of code
+    # TP: I think I did it on purpose because both tables are 
+    # very big (respectively >815 million & >120 million of rows)
     template_annotation = 'select accession, description, sequence_length from refseq where accession in ("%s")'
     template_taxid = 'select accession, taxid from accession2taxid where accession in ("%s")'
 
@@ -1194,12 +1219,16 @@ def concatenate_core_orthogroups(fasta_files):
     with open(out_name, "w") as handle:
         AlignIO.write(MSA, handle, "fasta")
 
-# Note : removed poor error handling
+# NOTE: removed poor error handling
 # (infinite recursion with infinite waiting time is 
 # something goes wrong: better to crash fast than 
 # a slow agonizing death)
+# TODO: we should improve the error handling rather than remove it 
+# because errors can occur (kind of randomly) with Entez (those errors
+# are not reproducible, this is why I did not care dealing with the 
+# infinite call)
 def refseq_accession2fasta(accession_list):
-    Entrez.email = "trestan.pillonel@unil.ch"
+    Entrez.email = "trestan.pillonel@chuv.ch"
     handle = Entrez.efetch(db='protein', id=','.join(accession_list), rettype="fasta", retmode="text")
     records = [i for i in SeqIO.parse(handle, "fasta")]
     return records
@@ -1241,6 +1270,7 @@ def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
             orthogroup2locus2top_hits[orthogroup] = {}
         if locus_tag not in orthogroup2locus2top_hits[orthogroup]:
             orthogroup2locus2top_hits[orthogroup][locus_tag] = []
+        # keep up to n_hits
         if len(orthogroup2locus2top_hits[orthogroup][locus_tag]) < n_hits:
             orthogroup2locus2top_hits[orthogroup][locus_tag].append(hit_id)
 
@@ -1248,6 +1278,8 @@ def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
     # why not select on orthogroups in orthogroup2locus2top_hits?
     # would be more efficient and spare some lines of code
     # as this is done in the loop below
+    # TP: I'm not sure whether filtering on thousand of values is
+    # really more efficient
     sql = """SELECT orthogroup, t1.locus_tag, sequence 
      FROM locus_tag2orthogroup t1 INNER JOIN locus_tag2sequence_hash t2 ON t1.locus_tag=t2.locus_tag 
      INNER JOIN sequence_hash2aa_sequence t3 ON t2.sequence_hash=t3.sequence_hash"""
@@ -1286,8 +1318,10 @@ def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
 
 
 # modified so as to send a single query
-# Note : uniprot_acc_list may contain duplicates
+# NOTE : uniprot_acc_list may contain duplicates
 # that need to be removed
+# TP: It should not happen since duplicates are removed from the
+# NextFlow channel
 def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
     conn = sqlite3.connect(database_dir + "/goa/goa_uniprot.db")
     cursor = conn.cursor()

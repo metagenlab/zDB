@@ -1,0 +1,19 @@
+<system inter_gene_max_space="5" min_mandatory_genes_required="4" min_genes_required="4" > 
+   
+<gene name="YshA" presence="mandatory"/>
+<gene name="YihO" presence="mandatory"/>
+<gene name="YihQ" presence="mandatory"/>
+<gene name="YihS" presence="mandatory"/>
+<gene name="YihT" presence="mandatory"/>
+<gene name="YihU" presence="mandatory"/>
+<gene name="YihV" presence="mandatory"/>
+<gene name="YihW" presence="mandatory"/>
+
+		<gene name="Wzy.select2" presence="accessory"/>
+		<gene name="Wzz" presence="accessory" />   
+	 
+    		<gene name="Wzx" presence="forbidden" />		
+    		<gene name="KpsM" presence="forbidden" />       
+			<gene name="KpsT" presence="forbidden" />
+</system>
+
