@@ -93,12 +93,10 @@ process copy_local_assemblies {
     cpus 1
 
     when:
-    params.local_sample_sheet || params.local_assemblies
+    params.local_sample_sheet
 
-	// Mixing inputs from local assemblies annotated with Prokka
-	// and local annotated genomes in .gbk format
     input:
-        file local_gbk from local_genomes.mix(gbk_prokka_filtered)
+        file local_gbk from local_genomes
 
     output:
         file "${local_gbk}.gz" into raw_local_gbffs
@@ -109,7 +107,7 @@ process copy_local_assemblies {
     """
 }
 
-if(!params.prokka && !params.local_sample_sheet) {
+if(!params.local_assemblies && !params.local_sample_sheet) {
 	raw_local_gbffs = Channel.empty()	
 }
 
@@ -213,7 +211,7 @@ if(params.ncbi_sample_sheet == false) {
   }
 }
 
-all_raw_gbff = raw_ncbi_gbffs.mix(raw_local_gbffs)
+all_raw_gbff = raw_ncbi_gbffs.mix(raw_local_gbffs).mix(gbk_prokka_filtered)
 
 process gbk_check {
   publishDir 'data/gbk_edited', mode: 'copy', overwrite: true

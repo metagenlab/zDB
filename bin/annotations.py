@@ -678,7 +678,11 @@ def check_gbk(gbff_files, minimal_contig_length=1000):
     accession2count = {}
     for genome_number, gbff_file in enumerate(gbff_files):
 
-        records = list(SeqIO.parse(gzip.open(gbff_file, "rt"), "genbank"))
+        records = None
+        if gbff_file[-len(".gbk"):] == ".gbk":
+            records = list(SeqIO.parse(gbff_file, "genbank"))
+        else:
+            records = list(SeqIO.parse(gzip.open(gbff_file, "rt"), "genbank"))
 
         for record in records:
             n_missing, total = count_missing_locus_tags(record)
