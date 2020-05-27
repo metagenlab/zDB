@@ -399,9 +399,6 @@ def get_uniparc_mapping(databases_dir, fasta_file):
     no_mapping_uniparc_records = []
     mapping_uniparc_records = []
 
-    # might be better for performances to run a single query if this function
-    # were to become a bottleneck
-    # WHERE sequence_hash IN (hsh1, hsh2, ... hshN) instead of the current version
     for record in records:
         match = False
         sql = """SELECT t1.uniparc_id, uniparc_accession, accession,taxon_id, description, db_name, status
@@ -414,11 +411,7 @@ def get_uniparc_mapping(databases_dir, fasta_file):
             no_mapping_uniparc_records.append(record)
             no_mapping_uniprot_records.append(record)
         else:
-            # NOTE : the following code seems buggy
-            # the indices don't correspond to the SQL query return values
-            # Besides, if there is only one active record, we select the first
-            # one in the list anyway instead of the active one. Is this the correct
-            # behaviour? TP: Yes it is the intended behaviour: all rows have the same UP 
+            # All rows have the same UP 
             # accession, but we have to check that there is at least one active cross-reference.
             # If all entries are dead, it means that the sequence was removed from 
             # all cross-referenced databases. In that case, we consider it as a "new"
@@ -876,14 +869,6 @@ def get_string_mapping(fasta_file, database_dir):
           string_map.write("%s\t%s\n" % (record.id, hit[0]))
 
 
-# Maybe possible to compact this one with 
-# get_nr_sequences to have less lines of code and 
-# be more efficient
-# TODO : check with Trestan
-# TP: I'm not sure what you mean but we need to extract all 
-# protein sequences from each input genbank files. The 
-# redudancy of protein sequences is dealt with later on.
-
 def convert_gbk_to_faa(gbf_file, edited_gbf):
     records = SeqIO.parse(gbf_file, 'genbank')
     edited_records = open(edited_gbf, 'w')
@@ -925,6 +910,9 @@ def filter_sequences(fasta_file):
 
     SeqIO.write(processed_records, "filtered_sequences.faa", "fasta")
 
+# TODO: for the sake of correctness, although this is not likely, if the checksum
+# are identical, the sequences should be compared (different sequences may end up
+# having the same checksum).
 def get_nr_sequences(fasta_file, genomes_list):
     locus2genome = {}
     for fasta in genomes_list:
@@ -1135,10 +1123,6 @@ def get_refseq_hits_taxonomy(hit_table, database_dir):
     sql_template = 'insert into refseq_hits values (?,?,?,?)'
     hits = []
 
-    # TODO : make a single query using join on the two tables would probably
-    # be more efficient and spare some lines of code
-    # TP: I think I did it on purpose because both tables are 
-    # very big (respectively >815 million & >120 million of rows)
     template_annotation = 'select accession, description, sequence_length from refseq where accession in ("%s")'
     template_taxid = 'select accession, taxid from accession2taxid where accession in ("%s")'
 

@@ -6,6 +6,16 @@
  */
 
 
+if (params.local_assemblies) {
+    Channel.fromPath(params.local_assemblies_tsv)
+        .splitCsv(header: true, sep: '\t')
+        .map { row -> file(params.local_assemblies_link_dir + "/" + row.draft_genome) }
+        .set { to_prokka_local_assemblies }
+} else {
+    // declare an empty channel to avoid any complaints from nextflow
+    Channel.empty().set { to_prokka_local_assemblies }
+}
+
 // Each Sample
 if (params.ncbi_sample_sheet != false){
   Channel.fromPath( file(params.ncbi_sample_sheet) )
@@ -21,44 +31,38 @@ if (params.ncbi_sample_sheet != false){
 }
 
 process prokka {
-	publishDir 'data/prokka_output', mode: 'copy', overwrite: true
-
-	container "$params.annotation_container"
+	container "$params.prokka_container"
 
 	// NOTE : according to Prokka documentation, a linear acceleration
 	// is obtained up to 8 processes and after that, the overhead becomes
 	// more important
 	cpus 8
 
-	when:
-	params.prokka
-
 	input:
-	file genome_fasta from Channel.fromPath(params.fna_dir + "/*.fna")
+	    file genome_fasta from to_prokka_local_assemblies
 
 	output:
-	file "prokka_results/*.gbk" into gbk_from_local_assembly
+	    file "$output_dir/${output_file_prefix}.gbk" into gbk_from_local_assembly
 
 	script:
+    output_dir = "prokka_results"
+    output_file_prefix = "${genome_fasta.baseName}"
 	"""
-	prokka $genome_fasta --outdir prokka_results --prefix ${genome_fasta.baseName} \\
+	prokka $genome_fasta --outdir $output_dir --prefix ${output_file_prefix} \\
 		 --centre X --compliant --cpus ${task.cpus}
 	"""
 }
 
 // leave all the contigs with no coding region (check_gbk doesn't like them)
 process prokka_filter_CDS {
-	publishDir 'data/prokka_output_filtered', mode: 'copy', overwrite: true
+	publishDir 'data/prokka_output_filtered', overwrite: true
 	container "$params.annotation_container"
 
 	input:
-	file prokka_file from gbk_from_local_assembly.collect()
-
-	when:
-	params.prokka
+	    file prokka_file from gbk_from_local_assembly.collect()
 
 	output:
-	file "*_filtered.gbk" into gbk_prokka_filtered
+	    file "*_filtered.gbk" into gbk_prokka_filtered
 
 	script:
 	"""
@@ -72,9 +76,6 @@ process prokka_filter_CDS {
 	"""
 }
 
-if(!params.prokka) {
-	gbk_prokka_filtered = Channel.empty()
-}
 
 
 if(params.local_sample_sheet){
@@ -92,15 +93,15 @@ process copy_local_assemblies {
     cpus 1
 
     when:
-    params.local_sample_sheet || params.prokka
+    params.local_sample_sheet || params.local_assemblies
 
 	// Mixing inputs from local assemblies annotated with Prokka
 	// and local annotated genomes in .gbk format
     input:
-    file local_gbk from local_genomes.mix(gbk_prokka_filtered.flatMap())
+        file local_gbk from local_genomes.mix(gbk_prokka_filtered)
 
     output:
-    file "${local_gbk}.gz" into raw_local_gbffs
+        file "${local_gbk}.gz" into raw_local_gbffs
 
     script:
     """
@@ -266,8 +267,8 @@ faa_locus1.into { faa_genomes1
                   faa_genomes2
                   faa_genomes3
                   faa_genomes4
-                  faa_genomes5
-                  faa_genomes6 
+                  to_checkm
+                  to_macsysfinder 
                   inc_effectors_prediction }
 
 faa_locus2.collectFile(name: 'merged.faa', newLine: true)
@@ -301,24 +302,22 @@ process get_nr_sequences {
 
 nr_seqs.collectFile(name: 'merged_nr.faa', newLine: true)
 .into { merged_faa_chunks
-        merged_faa1
-        merged_faa2
-        merged_faa3
-        merged_faa4
-        merged_faa5
-        merged_faa6
-        merged_faa7 }
+        to_uniparc_mapping
+        to_string_mapping
+        to_tcdb_mapping
+        to_pdb_mapping
+        to_oma_mapping
+        to_setup_orthology_db
+        to_filter_sequences }
 
 merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
-.into { faa_chunks1
-        faa_chunks2
-        faa_chunks3
-        faa_chunks4
-        faa_chunks5
-        faa_chunks6
-        faa_chunks7
-        faa_chunks8
-        faa_chunks9 }
+.into { to_rpsblast_COG
+        to_blast_swissprot
+        to_plat_refseq
+        to_diamond_refseq
+        to_kofamscan
+        to_PRIAM
+        to_psortb }
 
 process prepare_orthofinder {
 
@@ -501,7 +500,7 @@ process orthogroups_phylogeny_with_fasttree3 {
 
 process orthogroups_phylogeny_with_iqtree {
 
-  container "$params.annotation_container"
+  container "$params.iqtree_container"
   cpus 2
   publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: true
 
@@ -529,7 +528,7 @@ process orthogroups_phylogeny_with_iqtree {
 
 process orthogroups_phylogeny_with_iqtree_no_boostrap {
 
-  container "$params.annotation_container"
+  container "$params.iqtree_container"
   cpus 2
   publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: true
 
@@ -634,7 +633,7 @@ process checkm_analyse {
   params.checkm
 
   input:
-  file genome_list from faa_genomes5.collect()
+  file genome_list from to_checkm.collect()
 
   output:
   file "checkm_results/*" into checkm_analysis
@@ -657,7 +656,7 @@ process rpsblast_COG {
   params.cog == true
 
   input:
-  file 'seq' from faa_chunks1
+  file 'seq' from to_rpsblast_COG
 
   output:
   file 'blast_result' into blast_result
@@ -673,7 +672,7 @@ blast_result.collectFile(name: 'annotation/COG/blast_COG.tab')
 
 process blast_swissprot {
 
-  container "$params.annotation_container"
+  container "$params.blast_container"
 
   publishDir 'annotation/blast_swissprot', mode: 'copy', overwrite: true
 
@@ -683,7 +682,7 @@ process blast_swissprot {
   params.blast_swissprot
 
   input:
-  file(seq) from faa_chunks3
+  file(seq) from to_blast_swissprot
 
   output:
   file '*tab' into swissprot_blast
@@ -707,7 +706,7 @@ process plast_refseq {
   params.plast_refseq == true
 
   input:
-  file(seq) from faa_chunks5
+  file(seq) from to_plat_refseq
 
   output:
   file '*tab' into refseq_plast
@@ -725,8 +724,6 @@ process plast_refseq {
   """
 }
 
-// cut sequences in smaller chunks to speed up execution?
-// use a caching method to speed up queries if two identical sequences come up?
 process diamond_refseq {
 
   publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
@@ -738,7 +735,7 @@ process diamond_refseq {
   params.diamond_refseq
 
   input:
-  file(seq) from faa_chunks6
+  file(seq) from to_diamond_refseq
 
   output:
   file '*tab' into refseq_diamond
@@ -779,7 +776,7 @@ process get_uniparc_mapping {
   params.uniparc == true
 
   input:
-  file(seq) from merged_faa1
+  file(seq) from to_uniparc_mapping
 
   output:
   file 'uniparc_mapping.tab' into uniparc_mapping_tab
@@ -867,7 +864,7 @@ process get_string_mapping {
   params.string == true
 
   input:
-  file(seq) from merged_faa2
+  file(seq) from to_string_mapping
 
 
   output:
@@ -945,7 +942,7 @@ process get_tcdb_mapping {
   params.tcdb == true
 
   input:
-  file(seq) from merged_faa3
+  file(seq) from to_tcdb_mapping
 
 
   output:
@@ -1003,7 +1000,7 @@ process get_pdb_mapping {
   params.pdb == true
 
   input:
-  file(seq) from merged_faa4
+  file(seq) from to_pdb_mapping
 
 
   output:
@@ -1029,7 +1026,7 @@ process get_oma_mapping {
   params.oma == true
 
   input:
-  file(seq) from merged_faa5
+  file(seq) from to_oma_mapping
 
 
   output:
@@ -1118,7 +1115,7 @@ process execute_kofamscan {
   params.ko == true
 
   input:
-  file(seq) from faa_chunks7
+  file(seq) from to_kofamscan
 
   output:
   file '*tab'
@@ -1146,7 +1143,7 @@ process execute_PRIAM {
   params.PRIAM
 
   input:
-  file(seq) from faa_chunks8
+  file(seq) from to_PRIAM
 
   output:
   file 'results/PRIAM_*/ANNOTATION/sequenceECs.txt' into PRIAM_results
@@ -1175,7 +1172,7 @@ process setup_orthology_db {
   input:
   file nr_mapping_file from nr_mapping
   file orthogroup from orthogroups_2
-  file nr_fasta from merged_faa6
+  file nr_fasta from to_setup_orthology_db
 
   output:
   file 'orthology.db' into orthology_db
@@ -1333,7 +1330,7 @@ process filter_sequences {
   params.effector_prediction
 
   input: 
-    file nr_fasta from merged_faa7
+    file nr_fasta from to_filter_sequences
 
   output:
     file "filtered_sequences.faa" into filtered_sequences
@@ -1462,7 +1459,7 @@ process execute_macsyfinder_T3SS {
   params.macsyfinder == true
 
   input:
-  file(genome) from faa_genomes6
+  file(genome) from to_macsysfinder
 
   output:
   file "macsyfinder-${genome.baseName}/macsyfinder.conf"
@@ -1520,7 +1517,7 @@ process execute_psortb {
   params.psortb == true
 
   input:
-  file(chunk) from faa_chunks9
+  file(chunk) from to_psortb
 
   output:
   file "psortb_${chunk}.txt" into psortb_results
