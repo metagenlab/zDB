@@ -1032,14 +1032,13 @@ process execute_interproscan_no_uniparc_matches {
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
   container "$params.annotation_container"
 
-  cpus 2
-  memory '16 GB'
+  cpus 4
 
   when:
   params.interproscan
 
   input:
-  file(seq) from no_uniparc_mapping_faa.splitFasta( by: 500, file: "no_uniparc_match_chunk_" )
+  file(seq) from no_uniparc_mapping_faa.splitFasta( by: 200, file: "no_uniparc_match_chunk_" )
 
   output:
   file '*gff3' into interpro_gff3_no_uniparc
