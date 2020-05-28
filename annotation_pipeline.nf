@@ -90,8 +90,6 @@ if(params.local_sample_sheet){
 process copy_local_assemblies {
     publishDir 'data/gbk_local', mode: 'copy', overwrite: true
 
-    cpus 1
-
     when:
     params.local_sample_sheet
 
@@ -132,8 +130,6 @@ if(params.ncbi_sample_sheet == false) {
     input:
     each accession from assembly_accession_list
 
-    cpus 1
-
     output:
     file '*.gbff.gz' into raw_ncbi_gbffs
 
@@ -162,8 +158,6 @@ if(params.ncbi_sample_sheet == false) {
 
     input:
     each accession from assembly_accession_list_refseq
-
-    cpus 1
 
     output:
     file '*.gbff.gz' optional true into raw_ncbi_gbffs_refseq
@@ -195,8 +189,6 @@ if(params.ncbi_sample_sheet == false) {
 
     input:
     file accession_list from raw_ncbi_gbffs_refseq.collect()
-
-    cpus 1
 
     output:
     file 'refseq_corresp.tab'
@@ -240,8 +232,6 @@ process convert_gbk_to_faa {
   container "$params.annotation_container"
 
   echo false
-
-  cpus 1
 
   input:
   each file(edited_gbk) from edited_gbks
@@ -477,7 +467,6 @@ process orthogroups_phylogeny_with_raxml {
 process orthogroups_phylogeny_with_fasttree3 {
 
   container "$params.annotation_container"
-  cpus 4
   publishDir 'orthology/orthogroups_phylogenies_fasttree', mode: 'copy', overwrite: true
 
   when:
@@ -520,7 +509,7 @@ process orthogroups_phylogeny_with_iqtree {
 
   script:
   """
-  iqtree -nt 2 -s ${og} -alrt 1000 -bb 1000 -pre ${og.getBaseName()}
+  iqtree -nt ${task.cpus} -s ${og} -alrt 1000 -bb 1000 -pre ${og.getBaseName()}
   """
 }
 
@@ -547,14 +536,13 @@ process orthogroups_phylogeny_with_iqtree_no_boostrap {
 
   script:
   """
-  iqtree -nt 2 -s ${og} -pre ${og.getBaseName()}
+  iqtree -nt ${task.cpus} -s ${og} -pre ${og.getBaseName()}
   """
 }
 
 process get_core_orthogroups {
 
   container "$params.annotation_container"
-  cpus 1
   memory '16 GB'
   echo false
   publishDir 'orthology/core_groups', mode: 'copy', overwrite: true
@@ -726,7 +714,7 @@ process diamond_refseq {
 
   publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
 
-  cpus 4
+  cpus 2
   container "$params.annotation_container"
 
   when:
@@ -966,7 +954,6 @@ process tcdb_gblast3 {
 
   publishDir 'annotation/tcdb_mapping', mode: 'copy', overwrite: true
 
-  cpus 1
   maxForks 20
 
   echo false
@@ -1045,14 +1032,14 @@ process execute_interproscan_no_uniparc_matches {
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
   container "$params.annotation_container"
 
-  cpus 20
+  cpus 2
   memory '16 GB'
 
   when:
   params.interproscan
 
   input:
-  file(seq) from no_uniparc_mapping_faa.splitFasta( by: 2000, file: "no_uniparc_match_chunk_" )
+  file(seq) from no_uniparc_mapping_faa.splitFasta( by: 1000, file: "no_uniparc_match_chunk_" )
 
   output:
   file '*gff3' into interpro_gff3_no_uniparc
@@ -1075,7 +1062,7 @@ process execute_interproscan_uniparc_matches {
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
   container "$params.annotation_container"
 
-  cpus	20
+  cpus 4
   memory '8 GB'
 
   when:
@@ -1106,7 +1093,7 @@ process execute_kofamscan {
 
   container "$params.annotation_container"
 
-  cpus 4
+  cpus 2
   memory '8 GB'
 
   when:
@@ -1123,7 +1110,7 @@ process execute_kofamscan {
 
   // Hack for now
   """
-  ${params.databases_dir}/kegg/exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list --cpu ${task.cpus} -o ${n}.tab
+  ${params.databases_dir}/kegg/exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list.txt --cpu ${task.cpus} -o ${n}.tab
   """
 }
 
@@ -1161,7 +1148,6 @@ process setup_orthology_db {
   publishDir 'orthology/', mode: 'link', overwrite: true
   container "$params.annotation_container"
 
-  cpus 4
   memory '8 GB'
 
   when:
@@ -1190,7 +1176,6 @@ process setup_diamond_refseq_db {
   container "$params.annotation_container"
   publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
   echo false
-  cpus 4
   memory '8 GB'
 
   when:
@@ -1244,7 +1229,6 @@ process get_diamond_refseq_top_hits {
   container "$params.annotation_container"
   publishDir 'annotation/diamond_refseq_BBH_phylogenies', mode: 'copy', overwrite: true
   echo false
-  cpus 4
   memory '8 GB'
 
   when:
