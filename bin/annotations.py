@@ -914,9 +914,7 @@ def filter_sequences(fasta_file):
 
     SeqIO.write(processed_records, "filtered_sequences.faa", "fasta")
 
-# TODO: for the sake of correctness, although this is not likely, if the checksum
-# are identical, the sequences should be compared (different sequences may end up
-# having the same checksum).
+# all faa files are merged into fasta_file
 def get_nr_sequences(fasta_file, genomes_list):
     locus2genome = {}
     for fasta in genomes_list:
@@ -926,7 +924,7 @@ def get_nr_sequences(fasta_file, genomes_list):
     nr_fasta = open('nr.faa', 'w')
     nr_mapping = open('nr_mapping.tab', 'w')
 
-    checksum_nr_list = []
+    hsh_checksum_list = {}
 
     records = SeqIO.parse(fasta_file, "fasta")
     updated_records = []
@@ -937,11 +935,32 @@ def get_nr_sequences(fasta_file, genomes_list):
         nr_mapping.write("%s\t%s\t%s\n" % (record.id,
                                           checksum,
                                           locus2genome[record.id]))
-        if checksum not in checksum_nr_list:
-            checksum_nr_list.append(checksum)
+        if checksum not in hsh_checksum_list:
+            hsh_checksum_list[checksum] = [record]
             record.id = checksum
             record.name = ""
             updated_records.append(record)
+        else:
+            # NOTE: having same hash does not mean that the sequences are identical: as
+            # the hash space is smaller than the sequence space, it means that collision
+            # are unavoidable (but not probable) and record with same hashes should be compared
+            # https://www.uniprot.org/help/uniparc (sequence comparison)
+            #
+            # the list of records having the same checksum, but potentially, 
+            # different sequences -> compare them: python does so 
+            # comparing the sequences as strings, assuming a similar alphabet
+            lst_records = hsh_checksum_list[checksum]
+            sequence = record.seq
+            has_identical = False
+            for prev_record in lst_records:
+                if prev_record.seq == sequence:
+                    has_identical = True
+                    break
+            if not has_identical:
+                lst_records.append(record)
+                record.id = checksum + "-" + len(lst_records)
+                record.name = ""
+                updated_records.append(record)
 
     SeqIO.write(updated_records, nr_fasta, "fasta")
 

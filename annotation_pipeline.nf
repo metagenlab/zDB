@@ -1039,7 +1039,7 @@ process execute_interproscan_no_uniparc_matches {
   params.interproscan
 
   input:
-  file(seq) from no_uniparc_mapping_faa.splitFasta( by: 1000, file: "no_uniparc_match_chunk_" )
+  file(seq) from no_uniparc_mapping_faa.splitFasta( by: 500, file: "no_uniparc_match_chunk_" )
 
   output:
   file '*gff3' into interpro_gff3_no_uniparc

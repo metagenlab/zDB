@@ -91,7 +91,7 @@
 
 ## priority 1
 
-- [ ] Build a set a containers that contains all tools necessary to run the pipeline (i.e. Kofam_scan, etc) so that it can be run without having to debug it first
+- [X] Build a set a containers that contains all tools necessary to run the pipeline (i.e. Kofam_scan, etc) so that it can be run without having to debug it first
 - [ ] TCDB: no exact match first, directly blast against db
 - [ ] PDB: no exact match first, directly blast against db
 - [ ] STRING no exact match first, directly blast against db
