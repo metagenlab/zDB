@@ -160,12 +160,6 @@ def get_idmapping_crossreferences(databases_dir, table):
         INNER JOIN database t3 ON t2.db_id=t3.db_id 
         WHERE uniparc_accession=?;"""
 
-    # TODO : heavy SQL request. Group it in a single
-    # query to speed up.
-    # uniparc_accession IN (...)
-    # TP: those tables are very big (hundreds of millon of rows), 
-    # I'm not sure that filtering with a large number of values 
-    # would be faster 
     with open(table, 'r') as f:
         f.readline()
         for row in f:
@@ -178,7 +172,7 @@ def get_idmapping_crossreferences(databases_dir, table):
                 uniprot_accession = crossref[0]
                 db_name = crossref[1]
                 db_accession = crossref[2]
-                o.write("%s\\t%s\\t%s\\t%s\\n" % ( checksum,
+                o.write("%s\t%s\t%s\t%s\n" % ( checksum,
                                                uniprot_accession,
                                                db_name,
                                                db_accession))
@@ -188,16 +182,10 @@ def get_uniparc_crossreferences(databases_dir, table):
     cursor = conn.cursor()
     o = open("uniparc_crossreferences.tab", "w")
 
-    # TODO : where do those keyword come from? 
-    # would be good to have them in variable names
-    # or if they are static, actually precompute the entries to speed
-    # up the query and simplify the code
     sql = """SELECT db_name, accession, status 
         FROM uniparc_cross_references t1 INNER JOIN crossref_databases t2 ON t1.db_id=t2.db_id 
         WHERE uniparc_id=? AND db_name NOT IN ("SEED", "PATRIC", "EPO", "JPO", "KIPO", "USPTO");"""
 
-    # TODO : speed up the database accesses
-    # by making a single big query
     with open(table, 'r') as f:
         # skip header
         f.readline()
@@ -211,7 +199,7 @@ def get_uniparc_crossreferences(databases_dir, table):
                 db_name = crossref[0]
                 db_accession = crossref[1]
                 entry_status = crossref[2]
-                o.write("%s\\t%s\\t%s\\t%s\\n" % ( checksum,
+                o.write("%s\t%s\t%s\t%s\n" % ( checksum,
                                           db_name,
                                           db_accession,
                                           entry_status))
@@ -222,7 +210,7 @@ def get_oma_mapping(databases_dir, fasta_file):
     cursor = conn.cursor()
     oma_map = open('oma_mapping.tab', 'w')
     no_oma_mapping = open('no_oma_mapping.faa', 'w')
-    oma_map.write("locus_tag\\toma_id\\n")
+    oma_map.write("locus_tag\toma_id\n")
     records = SeqIO.parse(fasta_file, "fasta")
     no_oma_mapping_records = []
 
@@ -235,7 +223,7 @@ def get_oma_mapping(databases_dir, fasta_file):
         if len(hits) == 0:
             no_oma_mapping_records.append(record)
         for hit in hits:
-            oma_map.write("%s\\t%s\\n" % (record.id, hit[0]))
+            oma_map.write("%s\t%s\n" % (record.id, hit[0]))
     SeqIO.write(no_oma_mapping_records, no_oma_mapping, "fasta")
 
 def pmid2abstract_info(pmid_list):
@@ -391,8 +379,8 @@ def get_uniparc_mapping(databases_dir, fasta_file):
     no_uniparc_mapping = open('no_uniparc_mapping.faa', 'w')
     uniparc_mapping_faa = open('uniparc_mapping.faa', 'w')
 
-    uniparc_map.write("locus_tag\\tuniparc_id\\tuniparc_accession\\tstatus\\n")
-    uniprot_map.write("locus_tag\\tuniprot_accession\\ttaxon_id\\tdescription\\n")
+    uniparc_map.write("locus_tag\tuniparc_id\tuniparc_accession\tstatus\n")
+    uniprot_map.write("locus_tag\tuniprot_accession\ttaxon_id\tdescription\n")
 
     records = SeqIO.parse(fasta_file, "fasta")
     no_mapping_uniprot_records = []
@@ -422,11 +410,11 @@ def get_uniparc_mapping(databases_dir, fasta_file):
                 status = 'active'
             else:
                 status = 'dead'
-            uniparc_map.write(f"{record.id}\\t{hits[0][0]}\\t{hits[0][1]}\\t{status}\\n")
+            uniparc_map.write(f"{record.id}\t{hits[0][0]}\t{hits[0][1]}\t{status}\n")
             for uniprot_hit in hits:
                 if uniprot_hit[5] in ["UniProtKB/Swiss-Prot", "UniProtKB/TrEMBL"] and uniprot_hit[6] == 1:
                     match = True
-                    uniprot_map.write("%s\\t%s\\t%s\\t%s\\t%s\\n" % (record.id,
+                    uniprot_map.write("%s\t%s\t%s\t%s\t%s\n" % (record.id,
                                                                  uniprot_hit[2],
                                                                  uniprot_hit[3],
                                                                  uniprot_hit[4],
@@ -798,8 +786,6 @@ def string_id2pubmed_id_list(accession):
     return pid_list
 
 
-# TODO may be interesting to parellize the queries if performance were
-# to become an issue
 def get_string_PMID_mapping(string_map):
     o = open("string_mapping_PMID.tab", "w")
     with open(string_map, 'r') as f:

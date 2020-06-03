@@ -1093,7 +1093,6 @@ process execute_kofamscan {
   container "$params.annotation_container"
 
   cpus 2
-  memory '8 GB'
 
   when:
   params.ko == true
