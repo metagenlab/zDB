@@ -35,8 +35,8 @@ process prokka {
 
 	// NOTE : according to Prokka documentation, a linear acceleration
 	// is obtained up to 8 processes and after that, the overhead becomes
-	// more important
-	cpus 8
+	// more important. 
+    cpus 4
 
 	input:
 	    file genome_fasta from to_prokka_local_assemblies
@@ -331,8 +331,6 @@ process prepare_orthofinder {
 process blast_orthofinder {
 
   container "$params.annotation_container"
-
-  cpus 2
 
   input:
   file complete_dir from result_dir
@@ -636,8 +634,6 @@ process rpsblast_COG {
   
   container "$params.annotation_container"
 
-  cpus 4
-
   when:
   params.cog == true
 
@@ -662,8 +658,6 @@ process blast_swissprot {
 
   publishDir 'annotation/blast_swissprot', mode: 'copy', overwrite: true
 
-  cpus 4
-
   when:
   params.blast_swissprot
 
@@ -685,8 +679,6 @@ process blast_swissprot {
 process plast_refseq {
 
   publishDir 'annotation/plast_refseq', mode: 'copy', overwrite: true
-
-  cpus 12
 
   when:
   params.plast_refseq == true
@@ -714,7 +706,6 @@ process diamond_refseq {
 
   publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
 
-  cpus 2
   container "$params.annotation_container"
 
   when:
@@ -1032,8 +1023,6 @@ process execute_interproscan_no_uniparc_matches {
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
   container "$params.annotation_container"
 
-  cpus 4
-
   when:
   params.interproscan
 
@@ -1060,9 +1049,6 @@ process execute_interproscan_uniparc_matches {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
   container "$params.annotation_container"
-
-  cpus 4
-  memory '8 GB'
 
   when:
   params.interproscan
@@ -1092,8 +1078,6 @@ process execute_kofamscan {
 
   container "$params.annotation_container"
 
-  cpus 2
-
   when:
   params.ko == true
 
@@ -1118,9 +1102,6 @@ process execute_PRIAM {
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
   container "$params.chlamdb_container"
-
-  cpus 2
-  memory '4 GB'
 
   when:
   params.PRIAM
@@ -1512,13 +1493,11 @@ process blast_pdb {
   publishDir 'annotation/pdb_mapping', mode: 'copy', overwrite: true
   container "$params.annotation_container"
 
-  cpus 4
-
   when:
-  params.pdb == true
+  params.pdb
 
   input:
-  file(seq) from no_pdb_mapping.splitFasta( by: 1000, file: "chunk_" )
+  file(seq) from no_pdb_mapping.splitFasta( by: 500, file: "chunk_" )
 
   output:
   file '*tab' into pdb_blast
@@ -1604,6 +1583,24 @@ process get_uniprot_goa_mapping {
   """
 }
 
+
+process create_db {
+    output:
+        file db_name into chlamdb
+
+    when:
+        params.chlamdb_setup
+
+    script:
+    db_name="$params.chlamdb.db_name"
+    """
+    #!/usr/bin/env python
+
+    import chlamdb
+    
+    chlamdb.setup_chlamdb("$db_name", "$params.chlamdb.db_type")
+    """
+}
 
 workflow.onComplete {
   // Display complete message
