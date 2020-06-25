@@ -1226,7 +1226,10 @@ def refseq_accession2fasta(accession_list):
     records = [i for i in SeqIO.parse(handle, "fasta")]
     return records
 
-def get_diamond_refseq_top_hits(databases_dir, phylum_filter, n_hits):
+def get_diamond_refseq_top_hits(params):
+    databases_dir = params["databases_dir"]
+    phylum_filter = params["refseq_diamond_BBH_phylogeny_phylum_filter"]
+    n_hits = params["refseq_diamond_BBH_phylogeny_top_n_hits"]
     conn = sqlite3.connect("orthology.db")
     cursor = conn.cursor()
     #sql1 = 'create table diamond_top_%s_nr_hits(orthogroup varchar, hit_accession, hit_sequence)' % ${params.refseq_diamond_BBH_phylogeny_top_n_hits}

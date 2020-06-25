@@ -1,9 +1,11 @@
 
-def create_data_table(biodb, db_type):
+def create_data_table(kwargs):
 
+    db_type = kwargs["chlamdb.db_type"]
+    db_name = kwargs["chlamdb.db_name"]
     if db_type=="sqlite":
         import sqlite3
-        conn = sqlite3.connect(biodb)
+        conn = sqlite3.connect(db_name)
         cursor = conn.cursor()
     else:
         import os
@@ -13,8 +15,9 @@ def create_data_table(biodb, db_type):
         conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                     user="root", # your username
                                     passwd=sqlpsw, # your password
-                                    db=biodb) # name of the data base
+                                    db=db_name) # name of the data base
         cursor = conn.cursor()
+
 
     entry_list = [
         ("gbk_files", "mandatory", False),
@@ -69,57 +72,44 @@ def create_data_table(biodb, db_type):
         cursor.execute(sql % (row[0], row[1], row[2]),)
     conn.commit()
     
-def setup_biodb(biodb_name, db_type="biosql"):
-    import urllib.request
+def setup_biodb(kwargs):
     import sys
     import os
     from subprocess import Popen, PIPE
     
     sqlpsw = os.environ['SQLPSW']
+    db_type = kwargs["chlamdb.db_type"]
+    db_name = kwargs["chlamdb.db_name"]
+    schema_dir = kwargs["chlamdb.biosql_schema_dir"]
+
     if db_type=="sqlite":
         import sqlite3
-
-        conn = sqlite3.connect(biodb_name)
+        conn = sqlite3.connect(db_name)
         cursor = conn.cursor()
-    
-        url_biosql_scheme = 'https://raw.githubusercontent.com/biosql/biosql/master/sql/biosqldb-sqlite.sql'
+        url_biosql_scheme = 'biosqldb-sqlite.sql'
     else:
         import MySQLdb
-        
         sqlpsw = os.environ['SQLPSW']
-
         conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                     user="root", # your username
                                     passwd=sqlpsw) # name of the data base
         cursor = conn.cursor()
-
-        sys.stdout.write("Creating mysql database...\n")
-
-        sql_db = f'CREATE DATABASE IF NOT EXISTS {biodb_name};'
+        sql_db = f'CREATE DATABASE IF NOT EXISTS {db_name};'
         cursor.execute(sql_db,)
         conn.commit()
-        cursor.execute(f"use {biodb_name};",)
-        url_biosql_scheme = 'https://raw.githubusercontent.com/biosql/biosql/master/sql/biosqldb-mysql.sql'
+        cursor.execute(f"use {db_name};",)
+        url_biosql_scheme = 'biosqldb-mysql.sql'
 
-    sys.stdout.write('Downloading Biosql scheme from %s ...\n' % url_biosql_scheme)
-    request = urllib.request.Request(url_biosql_scheme)
-    page = urllib.request.urlopen(request)
-    
-    with open("/tmp/biosql.sql", "wb") as f:
-        content = page.read()
-        f.write(content)
-
-    sys.stdout.write("Importing Biosql schema...\n")
     if db_type=="sqlite":
-        err_code = os.system(f"sqlite3 {biodb_name} < /tmp/biosql.sql")
+        err_code = os.system(f"sqlite3 {db_name} < {schema_dir}/{url_biosql_scheme}")
     else:
-        err_code = os.system(f"mysql -uroot -p{sqlpsw} {biodb_name} < /tmp/biosql.sql")
+        err_code = os.system(f"mysql -uroot -p{sqlpsw} {db_name} < {schema_dir}/{url_biosql_scheme}")
 
     if err_code == 0:
         sys.stdout.write("OK")
     else:
         raise IOError("Problem loading sql schema:", err_code)
     
-def setup_chlamdb(db_name, db_type):
-    setup_biodb(db_name, db_type)
-    create_data_table(db_name, db_type)
+def setup_chlamdb(**kwargs):
+    setup_biodb(kwargs)
+    create_data_table(kwargs)

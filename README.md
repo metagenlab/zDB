@@ -32,6 +32,9 @@
 
 # ToDo Containers
 
+# ToDo BKM
+- [ ] simplify local inputs by merging input files for assemblies and local genbank files
+
 - [ ]  add interproscan in a standard location
 
 # DONE

@@ -5,6 +5,62 @@
  *
  */
 
+/*
+* Helper function for gen_python_args
+*/
+def gen_arg_string_s(String name, String element) {
+    return "\"" + name + "\" : " + element
+}
+
+def gen_arg_string_m(String name, Map m) {
+    acc = []
+    for (el in m) {
+        acc += gen_arg_string(name + "." + el.key, el.value)
+    }
+    return acc
+}
+
+// really ugly, but since nextflow does not allow
+// multiple function with the same name but different signature, 
+// this is the only solution
+def gen_arg_string(String s, Object o) {
+    prefix = "\"" + s + "\" : "
+    if(o instanceof String){
+        return prefix + "\"" + (String)o + "\""
+    } else if(o instanceof Boolean) {
+        Boolean b = (Boolean)o
+        return prefix + (b ? "True" : "False")
+    } else if(o instanceof Integer){
+        Integer i = (Integer)o
+        return prefix + i
+    } else if(o instanceof Map) {
+        return gen_arg_string_m(s, o)
+    } else if(o instanceof List) {
+        // for now, only list of string are supported
+        acc = []
+        for (el in (List)o) {
+            acc += "\"" + (String)el + "\""
+        }
+        return prefix + "[" + acc.join(", ") + "]"
+    }else {
+        print("wrong type for " + s + " " + o)
+        assert(false)
+    }
+}
+
+/*
+* This function generates a string that can be interpreted as map by python, from params.
+* The idea is to be able to pass the parameters to external python scripts
+*/
+def gen_python_args() {
+    acc = []
+    for (parameter in params) {
+        acc += gen_arg_string(parameter.key, parameter.value)
+    }
+    return "{" + acc.join(", ") + "}"
+}
+
+str_pythonized_params = gen_python_args()
 
 if (params.local_assemblies) {
     Channel.fromPath(params.local_assemblies_tsv)
@@ -75,8 +131,6 @@ process prokka_filter_CDS {
 		annotations.filter_out_unannotated(i)
 	"""
 }
-
-
 
 if(params.local_sample_sheet){
 	local_genomes = Channel.fromPath(params.local_sample_sheet)
@@ -298,7 +352,7 @@ nr_seqs.collectFile(name: 'merged_nr.faa', newLine: true)
         to_setup_orthology_db
         to_filter_sequences }
 
-merged_faa_chunks.splitFasta( by: 1000, file: "chunk_" )
+merged_faa_chunks.splitFasta( by: 300, file: "chunk_" )
 .into { to_rpsblast_COG
         to_blast_swissprot
         to_plat_refseq
@@ -1223,11 +1277,10 @@ process get_diamond_refseq_top_hits {
 
   script:
   """
-	#!/usr/bin/env python
-	import annotations
-	annotations.get_diamond_refseq_top_hits("$params.databases_dir",
-	$params.refseq_diamond_BBH_phylogeny_phylum_filter,
-	$params.refseq_diamond_BBH_phylogeny_top_n_hits)
+    #!/usr/bin/env python
+    import annotations
+    kwargs = $str_pythonized_params
+    annotations.get_diamond_refseq_top_hits(kwargs)
   """
 }
 
@@ -1583,7 +1636,6 @@ process get_uniprot_goa_mapping {
   """
 }
 
-
 process create_db {
     output:
         file db_name into chlamdb
@@ -1598,7 +1650,8 @@ process create_db {
 
     import chlamdb
     
-    chlamdb.setup_chlamdb("$db_name", "$params.chlamdb.db_type")
+    kwargs = ${gen_python_args()}
+    chlamdb.setup_chlamdb(**kwargs)
     """
 }
 
