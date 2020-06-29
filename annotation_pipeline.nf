@@ -279,6 +279,8 @@ process gbk_check {
   """
 }
 
+edited_gbks.into { to_load_gbk_into_db; to_convert_gbk_to_faa }
+
 process convert_gbk_to_faa {
 
   publishDir 'data/faa_locus', mode: 'copy', overwrite: true
@@ -288,7 +290,7 @@ process convert_gbk_to_faa {
   echo false
 
   input:
-  each file(edited_gbk) from edited_gbks
+  each file(edited_gbk) from to_convert_gbk_to_faa
 
   output:
   file "*.faa" into faa_files
@@ -1638,7 +1640,7 @@ process get_uniprot_goa_mapping {
 
 process create_db {
     output:
-        file db_name into chlamdb
+        file db_name into chlamdb_load_gbk
 
     when:
         params.chlamdb_setup
@@ -1653,6 +1655,21 @@ process create_db {
     kwargs = ${gen_python_args()}
     chlamdb.setup_chlamdb(**kwargs)
     """
+}
+
+process load_gbk_in_db {
+	input:
+		file gbks from to_load_gbk_into_db
+		file db into chlamdb_load_gbk
+
+	output:
+		
+	script:
+	"""
+	import chlamdb
+	kwargs = ${str_pythonized_params}
+	chlamdb.load_gbk(kwargs)
+	"""
 }
 
 workflow.onComplete {

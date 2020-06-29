@@ -1,6 +1,30 @@
+import os
+import sys
+
+# to litteral
+# encases the string into quotes
+def quote(v):
+    return f"\"{to_l}\""
+
+class DB:
+
+    def Get_DB(db_type):
+        return None
+
+    def insert_cds(self, args):
+        taxon_id = args["taxon_id"]
+        accession = args["accession"]
+        sql1 = (
+            f"INSERT INTO feature_tables.genomes_cds(taxon_id,"
+            f"genome_accession, start, end, strand, gene, product, translation)"
+            f"values ({taxon_id}, {quote(accession)}, {start}, {end}, {strand}"
+            f"        {quote(gene)}, {quote(product)}, {quote(translation)})"
+        )
+        server.adaptor.execute(sql1,)
+        server.commit()
+
 
 def create_data_table(kwargs):
-
     db_type = kwargs["chlamdb.db_type"]
     db_name = kwargs["chlamdb.db_name"]
     if db_type=="sqlite":
@@ -73,23 +97,20 @@ def create_data_table(kwargs):
     conn.commit()
     
 def setup_biodb(kwargs):
-    import sys
-    import os
-    from subprocess import Popen, PIPE
-    
     sqlpsw = os.environ['SQLPSW']
     db_type = kwargs["chlamdb.db_type"]
     db_name = kwargs["chlamdb.db_name"]
     schema_dir = kwargs["chlamdb.biosql_schema_dir"]
+    err_code = 0
 
     if db_type=="sqlite":
         import sqlite3
         conn = sqlite3.connect(db_name)
         cursor = conn.cursor()
         url_biosql_scheme = 'biosqldb-sqlite.sql'
+        err_code = os.system(f"sqlite3 {db_name} < {schema_dir}/{url_biosql_scheme}")
     else:
         import MySQLdb
-        sqlpsw = os.environ['SQLPSW']
         conn = MySQLdb.connect(host="localhost", # your host, usually localhost
                                     user="root", # your username
                                     passwd=sqlpsw) # name of the data base
@@ -99,17 +120,20 @@ def setup_biodb(kwargs):
         conn.commit()
         cursor.execute(f"use {db_name};",)
         url_biosql_scheme = 'biosqldb-mysql.sql'
-
-    if db_type=="sqlite":
-        err_code = os.system(f"sqlite3 {db_name} < {schema_dir}/{url_biosql_scheme}")
-    else:
         err_code = os.system(f"mysql -uroot -p{sqlpsw} {db_name} < {schema_dir}/{url_biosql_scheme}")
 
-    if err_code == 0:
-        sys.stdout.write("OK")
-    else:
+    if err_code != 0:
         raise IOError("Problem loading sql schema:", err_code)
     
 def setup_chlamdb(**kwargs):
     setup_biodb(kwargs)
     create_data_table(kwargs)
+
+def load_gbk(gbks, args):
+    db_name = args["chlamdb.db_name"]
+
+    for gbk in gbks:
+        records = [i for i in SeqIO.parse(gbk_name, 'genbank')]
+        assert( len(records) == 1)
+        db_name.load(records)
+        server_name.adaptor.commit()
