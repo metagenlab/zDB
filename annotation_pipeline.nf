@@ -1650,23 +1650,25 @@ process create_db {
     """
     #!/usr/bin/env python
 
-    import chlamdb
+    import chlamdb_gen
     
     kwargs = ${gen_python_args()}
     chlamdb.setup_chlamdb(**kwargs)
     """
 }
 
+
 process load_gbk_in_db {
 	input:
 		file gbks from to_load_gbk_into_db
-		file db into chlamdb_load_gbk
+		file db from chlamdb_load_gbk
 
-	output:
-		
+    output:
+        file db_name
+
 	script:
 	"""
-	import chlamdb
+	import chlamdb_gen
 	kwargs = ${str_pythonized_params}
 	chlamdb.load_gbk(kwargs)
 	"""

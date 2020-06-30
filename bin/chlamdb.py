@@ -8,132 +8,137 @@ def quote(v):
 
 class DB:
 
-    def Get_DB(db_type):
-        return None
+    def __init__(self, server, db_name):
+        self.server = server
+        self.db_name = db_name
+
+    def create_indices_on_cds(self):
+        sql_index1 = 'create index ftgcga on feature_tables_genomes_cds(genome_accession)'    
+        sql_index2 = 'create index ftgctx on feature_tables_genomes_cds(taxon_id)'
+        sql_index3 = 'create index ftgrga on feature_tables_genomes_rrna(taxon_id)'
+        sql_index4 = 'create index ftgrtx on feature_tables_genomes_rrna(genome_accession)'    
+        sql_index5 = 'create index ftcain on feature_tables_cds_accessions(id_name)'
+        sql_index6 = 'create index ftcait on feature_tables_cds_accessions(id_type)'
+        
+        server.adaptor.execute(sql_index1,)
+        server.adaptor.execute(sql_index2,)
+        server.adaptor.execute(sql_index3,)
+        server.adaptor.execute(sql_index4,)
+        server.adaptor.execute(sql_index5,)
+        server.adaptor.execute(sql_index6,)
+
+    def create_cds_tables(self):
+        sql_cds = 'CREATE table IF NOT EXISTS feature_tables_genomes_cds' \
+           ' (prot_primary_id INT AUTO_INCREMENT PRIMARY KEY,' \
+           ' taxon_id INT,' \
+           ' genome_accession VARCHAR(40),' \
+           ' start INT,' \
+           ' end INT,' \
+           ' strand INT,' \
+           ' gene varchar(20),' \
+           ' product TEXT,' \
+           ' translation TEXT)'
+        sql_rrna = 'CREATE table IF NOT EXISTS feature_tables_genomes_rrna' \
+            ' (rrna_primary_id INT AUTO_INCREMENT PRIMARY KEY,' \
+            ' taxon_id INT,' \
+            ' genome_accession VARCHAR(40),' \
+            ' start INT,' \
+            ' end INT,' \
+            ' strand INT,' \
+            ' product TEXT)'
+        sql_synonyms = 'CREATE table IF NOT EXISTS feature_tables_cds_accessions' \
+            ' (prot_primary_id INT,' \
+            ' id_type varchar(40),' \
+            ' id_name varchar(40))' \
+        #' FOREIGN KEY (prot_primary_id) REFERENCES feature_tables_genomes_cds(prot_primary_id))'
+        self.server.adaptor.execute(sql_cds,)
+        self.server.adaptor.execute(sql_rrna,)
+        self.server.adaptor.execute(sql_synonyms,)
+
+    def get_taxid_from_accession(self, accession):
+        sql = (
+            f"SELECT taxon_id "
+            f"FROM bioentry t1 INNER JOIN biodatabase "
+            f"ON t1.biodatabase_id = t2.biodatabase_id "
+            f"WHERE t2.name={quote(self.db_name)} AND t1.accession={quote(accession)}"
+        )
+        return self.server.adaptor.execute_and_fetchall(sql,)[0][0]
+
+    def insert_rRNA_in_feature_table(self, args):
+        taxon_id = args["taxon_id"]
+        accession = args["accession"]
+        start = args["start"]
+        end = args["end"]
+        strand = args["strand"]
+        product = args["product"]
+        sql = (
+            f"INSERT INTO feature_tables_genomes_rrna"
+            f"(taxon_id, genome_accession, start, end, strand, product)"
+            f"VALUES"
+            f"({taxon_id, {accession}, {start}, {end}, {strand}, {product})"
+        )
+        self.server.adaptor.execute(sql,)
 
     def insert_cds(self, args):
         taxon_id = args["taxon_id"]
         accession = args["accession"]
+        start = args["start"]
+        end = args["end"]
+        strand = args["strand"]
+        gene = args["gene"]
+        product = args["product"]
+        translation = args["translation"]
+        old_locus_tag = args["old_locus_tag"]
+        taxon_id = args["taxon_id"]
+
         sql1 = (
-            f"INSERT INTO feature_tables.genomes_cds(taxon_id,"
-            f"genome_accession, start, end, strand, gene, product, translation)"
-            f"values ({taxon_id}, {quote(accession)}, {start}, {end}, {strand}"
+            f"INSERT INTO feature_tables_genomes_cds"
+            f"(taxon_id, genome_accession, start, end, strand, gene, product, translation)"
+            f"VALUES ({taxon_id}, {quote(accession)}, {start}, {end}, {strand}"
             f"        {quote(gene)}, {quote(product)}, {quote(translation)})"
         )
         server.adaptor.execute(sql1,)
-        server.commit()
+        cds_id = server.adaptor.cursor.lastrowid
+        sql2 = 'INSERT into feature_tables_cds_accessions(prot_primary_id, id_type, id_name) values (' \
+               ' %s, "%s", "%s")'
+        server.adaptor.execute(sql2 % (cds_id, 'protein_id', protein_id),)
+        server.adaptor.execute(sql2 % (cds_id, 'locus_tag', locus_tag),)
+        if old_locus_tag:
+            server.adaptor.execute(sql2 % (cds_id, 'old_locus_tag', old_locus_tag),)
 
+    def set_status_in_config_table(self, status_name, status_val):
+        sql = f"update biodb_config set status={status_val} where name={quote(status_name)};"
+        self.server.adaptor.execute(sql,)
 
-def create_data_table(kwargs):
-    db_type = kwargs["chlamdb.db_type"]
-    db_name = kwargs["chlamdb.db_name"]
-    if db_type=="sqlite":
-        import sqlite3
-        conn = sqlite3.connect(db_name)
-        cursor = conn.cursor()
-    else:
-        import os
-        import MySQLdb
+    # wrapper methods
+    def commit(self):
+        self.server.commit()
+
+    def load_gbk_records(self, records):
+        self.server.load(records)
+        self.server.adaptor.commit()
+
+    # Maybe return different instance of a subclass depending on the type
+    # of database? Would allow to avoid code duplication if several database
+    # types are to be included.
+    def load_db(params):
         sqlpsw = os.environ['SQLPSW']
+        db_type = params["chlamdb.db_type"]
+        db_name = params["chlamdb.db_name"]
 
-        conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                    user="root", # your username
-                                    passwd=sqlpsw, # your password
-                                    db=db_name) # name of the data base
-        cursor = conn.cursor()
+        if db_type != "sqlite":
+            server = BioSeqDatabase.open_database(driver="MySQLdb", 
+                                                  user="root",
+                                                  passwd = sqlpsw, 
+                                                  host = "127.0.0.1", 
+                                                  db=db_name, 
+                                                  charset='utf8',
+                                                  use_unicode=True)
+        else:
+            server = BioSeqDatabase.open_database(driver="sqlite3", 
+                                                  user="root",
+                                                  passwd = sqlpsw, 
+                                                  host = "127.0.0.1",
+                                                  db=f"{db_name}.db")
 
-
-    entry_list = [
-        ("gbk_files", "mandatory", False),
-        ("orthology_data", "mandatory", False),
-        ("orthology_comparative", "mandatory", False),
-        ("orthology_comparative_accession", "mandatory", False),
-        ("orthology_consensus_annotation", "mandatory", False),
-        ("orthogroup_alignments", "mandatory", False),
-        ("old_locus_table", "mandatory", False),
-        ("reference_phylogeny", "mandatory", False),
-        ("taxonomy_table", "mandatory", False),
-        ("genome_statistics", "mandatory", False),
-        ("BLAST_database", "optional", False),
-        ("gene_phylogenies", "optional", False),
-        ("interpro_data", "optional", False),
-        ("interpro_comparative", "optional", False),
-        ("interpro_comparative_accession", "optional", False),
-        ("priam_data", "optional", False),
-        ("priam_comparative", "optional", False),
-        ("priam_comparative_accession", "optional", False),
-        ("COG_data", "optional", False),
-        ("COG_comparative", "optional", False),
-        ("COG_comparative_accession", "optional", False),
-        ("KEGG_data", "optional", False),
-        ("KEGG_comparative", "optional", False),
-        ("KEGG_comparative_accession", "optional", False),
-        ("pfam_comparative", "optional", False),
-        ("pfam_comparative_accession", "optional", False),       
-        ("TCDB_data", "optional", False),
-        ("psortb_data", "optional", False),
-        ("T3SS_data", "optional", False),
-        ("PDB_data", "optional", False),
-        ("BLAST_refseq", "optional", False),
-        ("BLAST_swissprot", "optional", False),
-        ("BBH_phylogenies", "optional", False),
-        ("GC_statistics", "optional", False),
-        ("gene_clusters", "optional", False),
-        ("phylogenetic_profile", "optional", False),
-        ("synonymous_table", "optional", False),
-        ("interpro_taxonomy", "optional", False), # interpro taxnonomy statistics
-        ("pfam_taxonomy", "optional", False), #  taxnonomy statistics
-        ("COG_taxonomy", "optional", False) # COG taxnonomy statistics
-    ]
-    
-    sql = 'create table biodb_config (name varchar(200), type varchar(200), status BOOLEAN)'
-    
-    cursor.execute(sql)
-    conn.commit()
-    
-    sql = 'insert into biodb_config values ("%s", "%s", %s)'
-    for row in entry_list:
-        cursor.execute(sql % (row[0], row[1], row[2]),)
-    conn.commit()
-    
-def setup_biodb(kwargs):
-    sqlpsw = os.environ['SQLPSW']
-    db_type = kwargs["chlamdb.db_type"]
-    db_name = kwargs["chlamdb.db_name"]
-    schema_dir = kwargs["chlamdb.biosql_schema_dir"]
-    err_code = 0
-
-    if db_type=="sqlite":
-        import sqlite3
-        conn = sqlite3.connect(db_name)
-        cursor = conn.cursor()
-        url_biosql_scheme = 'biosqldb-sqlite.sql'
-        err_code = os.system(f"sqlite3 {db_name} < {schema_dir}/{url_biosql_scheme}")
-    else:
-        import MySQLdb
-        conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                    user="root", # your username
-                                    passwd=sqlpsw) # name of the data base
-        cursor = conn.cursor()
-        sql_db = f'CREATE DATABASE IF NOT EXISTS {db_name};'
-        cursor.execute(sql_db,)
-        conn.commit()
-        cursor.execute(f"use {db_name};",)
-        url_biosql_scheme = 'biosqldb-mysql.sql'
-        err_code = os.system(f"mysql -uroot -p{sqlpsw} {db_name} < {schema_dir}/{url_biosql_scheme}")
-
-    if err_code != 0:
-        raise IOError("Problem loading sql schema:", err_code)
-    
-def setup_chlamdb(**kwargs):
-    setup_biodb(kwargs)
-    create_data_table(kwargs)
-
-def load_gbk(gbks, args):
-    db_name = args["chlamdb.db_name"]
-
-    for gbk in gbks:
-        records = [i for i in SeqIO.parse(gbk_name, 'genbank')]
-        assert( len(records) == 1)
-        db_name.load(records)
-        server_name.adaptor.commit()
+        return DB(server, db_name)
