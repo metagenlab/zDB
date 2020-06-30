@@ -75,7 +75,7 @@ class DB:
             f"INSERT INTO feature_tables_genomes_rrna"
             f"(taxon_id, genome_accession, start, end, strand, product)"
             f"VALUES"
-            f"({taxon_id, {accession}, {start}, {end}, {strand}, {product})"
+            f"({taxon_id}, {accession}, {start}, {end}, {strand}, {product})"
         )
         self.server.adaptor.execute(sql,)
 
@@ -101,8 +101,8 @@ class DB:
         cds_id = server.adaptor.cursor.lastrowid
         sql2 = 'INSERT into feature_tables_cds_accessions(prot_primary_id, id_type, id_name) values (' \
                ' %s, "%s", "%s")'
-        server.adaptor.execute(sql2 % (cds_id, 'protein_id', protein_id),)
-        server.adaptor.execute(sql2 % (cds_id, 'locus_tag', locus_tag),)
+        server.adaptor.execute(sql2 % (cds_id, 'protein_id', args["protein_id"]),)
+        server.adaptor.execute(sql2 % (cds_id, 'locus_tag', args["locus_tag"]),)
         if old_locus_tag:
             server.adaptor.execute(sql2 % (cds_id, 'old_locus_tag', old_locus_tag),)
 

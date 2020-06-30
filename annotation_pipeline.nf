@@ -1653,7 +1653,7 @@ process create_db {
     import chlamdb_gen
     
     kwargs = ${gen_python_args()}
-    chlamdb.setup_chlamdb(**kwargs)
+    chlamdb_gen.setup_chlamdb(**kwargs)
     """
 }
 
@@ -1667,10 +1667,13 @@ process load_gbk_in_db {
         file db_name
 
 	script:
+    db_name="$params.chlamdb.db_name"
 	"""
+    #!/usr/bin/env python
+
 	import chlamdb_gen
 	kwargs = ${str_pythonized_params}
-	chlamdb.load_gbk(kwargs)
+	chlamdb_gen.load_gbk($gbks, kwargs)
 	"""
 }
 
