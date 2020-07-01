@@ -79,7 +79,7 @@ class DB:
             f"INSERT INTO feature_tables_genomes_rrna"
             f"(taxon_id, genome_accession, start, end, strand, product)"
             f"VALUES"
-            f"({taxon_id}, {accession}, {start}, {end}, {strand}, {product})"
+            f"({taxon_id}, {quote(accession)}, {start}, {end}, {strand}, {quote(product)})"
         )
         print(sql)
         self.server.adaptor.execute(sql,)
