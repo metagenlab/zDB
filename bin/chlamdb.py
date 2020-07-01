@@ -1,10 +1,14 @@
 import os
 import sys
 
+from BioSQL import BioSeqDatabase
+from Bio import SeqIO
+
+
 # to litteral
 # encases the string into quotes
 def quote(v):
-    return f"\"{to_l}\""
+    return f"\"{v}\""
 
 class DB:
 
@@ -58,7 +62,7 @@ class DB:
     def get_taxid_from_accession(self, accession):
         sql = (
             f"SELECT taxon_id "
-            f"FROM bioentry t1 INNER JOIN biodatabase "
+            f"FROM bioentry t1 INNER JOIN biodatabase t2 "
             f"ON t1.biodatabase_id = t2.biodatabase_id "
             f"WHERE t2.name={quote(self.db_name)} AND t1.accession={quote(accession)}"
         )
@@ -77,6 +81,7 @@ class DB:
             f"VALUES"
             f"({taxon_id}, {accession}, {start}, {end}, {strand}, {product})"
         )
+        print(sql)
         self.server.adaptor.execute(sql,)
 
     def insert_cds(self, args):
@@ -94,29 +99,31 @@ class DB:
         sql1 = (
             f"INSERT INTO feature_tables_genomes_cds"
             f"(taxon_id, genome_accession, start, end, strand, gene, product, translation)"
-            f"VALUES ({taxon_id}, {quote(accession)}, {start}, {end}, {strand}"
+            f"VALUES ({taxon_id}, {quote(accession)}, {start}, {end}, {strand},"
             f"        {quote(gene)}, {quote(product)}, {quote(translation)})"
         )
-        server.adaptor.execute(sql1,)
-        cds_id = server.adaptor.cursor.lastrowid
+        self.server.adaptor.execute(sql1,)
+        cds_id = self.server.adaptor.cursor.lastrowid
         sql2 = 'INSERT into feature_tables_cds_accessions(prot_primary_id, id_type, id_name) values (' \
                ' %s, "%s", "%s")'
-        server.adaptor.execute(sql2 % (cds_id, 'protein_id', args["protein_id"]),)
-        server.adaptor.execute(sql2 % (cds_id, 'locus_tag', args["locus_tag"]),)
+        self.server.adaptor.execute(sql2 % (cds_id, 'protein_id', args["protein_id"]),)
+        self.server.adaptor.execute(sql2 % (cds_id, 'locus_tag', args["locus_tag"]),)
         if old_locus_tag:
-            server.adaptor.execute(sql2 % (cds_id, 'old_locus_tag', old_locus_tag),)
+            self.server.adaptor.execute(sql2 % (cds_id, 'old_locus_tag', old_locus_tag),)
 
     def set_status_in_config_table(self, status_name, status_val):
         sql = f"update biodb_config set status={status_val} where name={quote(status_name)};"
         self.server.adaptor.execute(sql,)
 
+    def create_biosql_database(self, args):
+        self.server.new_database(self.db_name)
+
     # wrapper methods
     def commit(self):
         self.server.commit()
 
-    def load_gbk_records(self, records):
-        self.server.load(records)
-        self.server.adaptor.commit()
+    def load_gbk_wrapper(self, records):
+        self.server[self.db_name].load(records)
 
     # Maybe return different instance of a subclass depending on the type
     # of database? Would allow to avoid code duplication if several database
@@ -139,6 +146,5 @@ class DB:
                                                   user="root",
                                                   passwd = sqlpsw, 
                                                   host = "127.0.0.1",
-                                                  db=f"{db_name}.db")
-
+                                                  db=f"{db_name}")
         return DB(server, db_name)

@@ -1639,6 +1639,8 @@ process get_uniprot_goa_mapping {
 }
 
 process create_db {
+    publishDir "db"
+
     output:
         file db_name into chlamdb_load_gbk
 
@@ -1649,6 +1651,7 @@ process create_db {
     db_name="$params.chlamdb.db_name"
     """
     #!/usr/bin/env python
+    # j'en ai marre
 
     import chlamdb_gen
     
@@ -1670,10 +1673,11 @@ process load_gbk_in_db {
     db_name="$params.chlamdb.db_name"
 	"""
     #!/usr/bin/env python
+    import chlamdb_gen
 
-	import chlamdb_gen
-	kwargs = ${str_pythonized_params}
-	chlamdb_gen.load_gbk($gbks, kwargs)
+    kwargs = ${str_pythonized_params}
+    gbk_list = "${gbks}".split()
+    chlamdb_gen.load_gbk(gbk_list, kwargs)
 	"""
 }
 
