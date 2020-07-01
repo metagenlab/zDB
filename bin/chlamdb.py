@@ -24,12 +24,12 @@ class DB:
         sql_index5 = 'create index ftcain on feature_tables_cds_accessions(id_name)'
         sql_index6 = 'create index ftcait on feature_tables_cds_accessions(id_type)'
         
-        server.adaptor.execute(sql_index1,)
-        server.adaptor.execute(sql_index2,)
-        server.adaptor.execute(sql_index3,)
-        server.adaptor.execute(sql_index4,)
-        server.adaptor.execute(sql_index5,)
-        server.adaptor.execute(sql_index6,)
+        self.server.adaptor.execute(sql_index1,)
+        self.server.adaptor.execute(sql_index2,)
+        self.server.adaptor.execute(sql_index3,)
+        self.server.adaptor.execute(sql_index4,)
+        self.server.adaptor.execute(sql_index5,)
+        self.server.adaptor.execute(sql_index6,)
 
     def create_cds_tables(self):
         sql_cds = 'CREATE table IF NOT EXISTS feature_tables_genomes_cds' \
