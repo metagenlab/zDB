@@ -5,6 +5,16 @@ from BioSQL import BioSeqDatabase
 from Bio import SeqIO
 
 
+# This file defines a class DB, that encapsulates all the SQL requests
+# necessary to create the chlamdb database.
+# In the future, the goal is to import all database queries needed by the
+# chlamdb website as methods of this class.
+#
+# This improves code readability by removing SQL queries from the main python
+# code and more importantly, it would allow to change of database without having
+# to modify chlamdb's code.
+
+
 # to litteral
 # encases the string into quotes
 def quote(v):
