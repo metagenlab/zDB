@@ -80,7 +80,7 @@ class DB:
 
     def add_orthogroups_to_seq(self, hsh_locus_to_group, hsh_locus_to_feature_id, orthogroup_term_id):
         rank = 1
-        for locus, group_id in hsh_locus_to_feature_id.items():
+        for locus, group_id in hsh_locus_to_group.items():
             feature_id = hsh_locus_to_feature_id[locus]
             insert = (
                 f"INSERT INTO seqfeature_qualifier_value "
@@ -115,16 +115,18 @@ class DB:
             "INNER JOIN term ON ortho_table.term_id = term.term_id AND term.name=\"orthogroup\" "
             "INNER JOIN seqfeature AS feature ON feature.seqfeature_id=ortho_table.seqfeature_id "
             "INNER JOIN bioentry AS entry ON entry.bioentry_id=feature.bioentry_id "
-            "GROUP BY value, taxon_id "
-            "ORDER BY value;"
+            "GROUP BY value, taxon_id; "
         )
         results = self.server.adaptor.execute_and_fetchall(query,)
-        arr_group = []
+        size = max([int(group) for group, taxid, cnt in results])
+        arr_group = [None]*(size+1)
         for line in results:
-            taxid, group, cnt = line[0], int(line[1]), int(line[2])
-            if group==len(arr_group):
-                arr_group.append({})
+            group, taxid, cnt = int(line[0]), line[1], int(line[2])
+            print(f"{taxid} -> {group}:{cnt}")
             hsh_taxid_to_count = arr_group[group]
+            if hsh_taxid_to_count==None:
+                hsh_taxid_to_count = {}
+                arr_group[group] = hsh_taxid_to_count
             hsh_taxid_to_count[taxid] = cnt
         return arr_group
 
@@ -143,6 +145,7 @@ class DB:
                 size += cnt
                 if cnt>0:
                     n_genomes += 1
+            print(f"{group} : {size}, {n_genomes}")
             sql = (
                 f"INSERT INTO orthology_orthogroup VALUES("
                 f"{group}, {size}, {n_genomes}"
@@ -235,7 +238,7 @@ class DB:
         ontology_id = self.server.adaptor.execute_and_fetchall(sql1)[0][0]
         sql2 = f"INSERT INTO term (name, ontology_id) VALUES (\"orthogroup\", {ontology_id});"
         self.server.adaptor.execute(sql2)
-        return ontology_id
+        return self.server.adaptor.cursor.lastrowid
 
     # wrapper methods
     def commit(self):

@@ -7,17 +7,14 @@ import chlamdb
 from Bio import SeqIO
 
 def parse_orthofinder_output_file(output_file):
-    orthomcl_groups2proteins= []
     protein_id2orthogroup_id = {}
     parsing = open(output_file, 'r')
 
-    for line_no, line in enumerate(parsing):
-        orthomcl_groups2proteins.append([])
+    for group, line in enumerate(parsing):
         tokens = line.strip().split(' ')[1:]
         for locus in tokens:
-            protein_id2orthogroup_id[locus] = line_no
-            orthomcl_groups2proteins[line_no].append(locus)
-    return protein_id2orthogroup_id, orthomcl_groups2proteins
+            protein_id2orthogroup_id[locus] = group
+    return protein_id2orthogroup_id
 
 # TODO: import the two following functions into the chlamdb file to remove
 # all database code from this file
@@ -172,7 +169,7 @@ def load_gbk(gbks, args):
 def load_orthofinder_results(orthofinder_output, args):
     db = chlamdb.DB.load_db(args)
     orthogroup_feature_id = db.setup_orthology_table()
-    hsh_prot_to_group, lst_group_to_prot = parse_orthofinder_output_file(orthofinder_output)
+    hsh_prot_to_group = parse_orthofinder_output_file(orthofinder_output)
     hsh_locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id()
     db.add_orthogroups_to_seq(hsh_prot_to_group, hsh_locus_to_feature_id, orthogroup_feature_id)
 
