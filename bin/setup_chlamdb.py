@@ -182,6 +182,5 @@ def load_orthofinder_results(orthofinder_output, args):
     db.create_orthology_table(arr_cnt_tables)
     db.load_orthology_table(arr_cnt_tables, arr_taxon_ids)
     # db.create_locus_to_feature_table()
-    db.create_orthology_indices()
     db.set_status_in_config_table("orthology_data", 1)
     db.commit()

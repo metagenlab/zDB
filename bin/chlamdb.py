@@ -151,7 +151,7 @@ class DB:
             self.server.adaptor.execute(sql,)
 
     def load_orthology_table(self, arr_count_tables, arr_taxon_ids):
-        to_sql_format = ", ".join([f"{taxid} INT" for taxid in arr_taxon_ids])
+        to_sql_format = ", ".join([f"`{taxid}` INT" for taxid in arr_taxon_ids])
         create_table_sql = (
             f"CREATE TABLE comparative_tables_orthology (orthogroup INT NOT NULL, "
             f"{to_sql_format} "
@@ -168,7 +168,6 @@ class DB:
                 f"VALUES ({group}, {to_insert})" 
             )
             self.server.adaptor.execute(sql,)
-
 
     # on hold: is this table really necessary if the indices are built
     # def create_locus_to_seqfeature_table(self):
