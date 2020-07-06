@@ -86,7 +86,7 @@ class DB:
                 f"INSERT INTO seqfeature_qualifier_value "
                 f"VALUES ({feature_id}, {orthogroup_term_id}, {rank}, {quote(group_id)})"
             )
-            self.adaptor.execute(insert)
+            self.server.adaptor.execute(insert)
 
     def get_hsh_locus_to_seqfeature_id(self):
         query = (
@@ -113,11 +113,12 @@ class DB:
             "SELECT value, taxon_id, count(*) "
             "FROM seqfeature_qualifier_value as ortho_table "
             "INNER JOIN term ON ortho_table.term_id = term.term_id AND term.name=\"orthogroup\" "
-            "INNER JOIN bioentry AS entry ON entry.bioentry_id=ortho_table.bioentry_id "
+            "INNER JOIN seqfeature AS feature ON feature.seqfeature_id=ortho_table.seqfeature_id "
+            "INNER JOIN bioentry AS entry ON entry.bioentry_id=feature.bioentry_id "
             "GROUP BY value, taxon_id "
             "ORDER BY value;"
         )
-        results = server.adaptor.execute_and_fetchall(sql,)
+        results = self.server.adaptor.execute_and_fetchall(query,)
         arr_group = []
         for line in results:
             taxid, group, cnt = line[0], int(line[1]), int(line[2])
@@ -125,7 +126,7 @@ class DB:
                 arr_group.append({})
             hsh_taxid_to_count = arr_group[group]
             hsh_taxid_to_count[taxid] = cnt
-        return hsh_taxid_to_count
+        return arr_group
 
     def create_orthology_table(self, arr_cnt_tables):
         sql = (
@@ -150,10 +151,10 @@ class DB:
             self.server.adaptor.execute(sql,)
 
     def load_orthology_table(self, arr_count_tables, arr_taxon_ids):
-        to_sql_format = [f"{taxid} INT" for taxid in arr_taxon_ids]
+        to_sql_format = ", ".join([f"{taxid} INT" for taxid in arr_taxon_ids])
         create_table_sql = (
             f"CREATE TABLE comparative_tables_orthology (orthogroup INT NOT NULL, "
-            f"{\", \".join(to_sql_format)} "
+            f"{to_sql_format} "
             f", PRIMARY KEY(orthogroup)"
             f", FOREIGN KEY(orthogroup) REFERENCES orthology_orthogroup(orthogroup_id)"
             f")"
@@ -161,12 +162,13 @@ class DB:
         self.server.adaptor.execute(create_table_sql)
 
         for group, hsh_taxid_to_count in enumerate(arr_count_tables):
-            to_insert = [f"{hsh_taxid_to_count.get(taxid, 0)}" for taxid in arr_taxon_ids]
+            to_insert = ", ".join([f"{hsh_taxid_to_count.get(taxid, 0)}" for taxid in arr_taxon_ids])
             sql = (
                 f"INSERT INTO comparative_tables_orthology "
-                f"VALUES ({group}, {\", \".join(to_insert)})" 
+                f"VALUES ({group}, {to_insert})" 
             )
             self.server.adaptor.execute(sql,)
+
 
     # on hold: is this table really necessary if the indices are built
     # def create_locus_to_seqfeature_table(self):
@@ -231,9 +233,9 @@ class DB:
 
     def setup_orthology_table(self):
         sql1 = 'SELECT ontology_id FROM ontology WHERE name="SeqFeature Keys"'
-        ontology_id = server.adaptor.execute_and_fetchall(sql1)[0][0]
+        ontology_id = self.server.adaptor.execute_and_fetchall(sql1)[0][0]
         sql2 = f"INSERT INTO term (name, ontology_id) VALUES (\"orthogroup\", {ontology_id});"
-        server.adaptor.execute(sql2)
+        self.server.adaptor.execute(sql2)
         return ontology_id
 
     # wrapper methods

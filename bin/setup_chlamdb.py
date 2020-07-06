@@ -176,10 +176,12 @@ def load_orthofinder_results(orthofinder_output, args):
     hsh_locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id()
     db.add_orthogroups_to_seq(hsh_prot_to_group, hsh_locus_to_feature_id, orthogroup_feature_id)
 
-    arr_cnt_tables = get_orthogroup_count_table()
-    arr_taxon_ids = db.taxon_id()
+    arr_cnt_tables = db.get_orthogroup_count_table()
+    arr_taxon_ids = db.taxon_ids()
 
     db.create_orthology_table(arr_cnt_tables)
     db.load_orthology_table(arr_cnt_tables, arr_taxon_ids)
     # db.create_locus_to_feature_table()
+    db.create_orthology_indices()
+    db.set_status_in_config_table("orthology_data", 1)
     db.commit()

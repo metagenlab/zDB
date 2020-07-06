@@ -1698,7 +1698,7 @@ process load_orthofinder_in_db {
     import setup_chlamdb
 
     kwargs = ${str_pythonized_params}
-    setup_chlamdb.load_orthofinder_results($orthofinder, kwargs)
+    setup_chlamdb.load_orthofinder_results("$orthofinder", kwargs)
     """
 }
 
