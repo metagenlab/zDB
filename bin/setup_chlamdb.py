@@ -7,17 +7,16 @@ import chlamdb
 from Bio import SeqIO
 
 def parse_orthofinder_output_file(output_file):
-    orthomcl_groups2proteins= {}
+    orthomcl_groups2proteins= []
     protein_id2orthogroup_id = {}
     parsing = open(output_file, 'r')
 
     for line_no, line in enumerate(parsing):
-        group = f"group_{line_no}"
-        orthomcl_groups2proteins[group] = []
+        orthomcl_groups2proteins.append([])
         tokens = line.strip().split(' ')[1:]
-        for protein in tokens:
-            protein_id2orthogroup_id[protein] = group
-            orthomcl_groups2proteins[group].append(protein)
+        for locus in tokens:
+            protein_id2orthogroup_id[locus] = line_no
+            orthomcl_groups2proteins[line_no].append(locus)
     return protein_id2orthogroup_id, orthomcl_groups2proteins
 
 # TODO: import the two following functions into the chlamdb file to remove
@@ -167,4 +166,20 @@ def load_gbk(gbks, args):
         insert_gbk(db, gbk)
     db.set_status_in_config_table("gbk_files", 1)
     db.create_indices_on_cds()
+    db.commit()
+
+
+def load_orthofinder_results(orthofinder_output, args):
+    db = chlamdb.DB.load_db(args)
+    orthogroup_feature_id = db.setup_orthology_table()
+    hsh_prot_to_group, lst_group_to_prot = parse_orthofinder_output_file(orthofinder_output)
+    hsh_locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id()
+    db.add_orthogroups_to_seq(hsh_prot_to_group, hsh_locus_to_feature_id, orthogroup_feature_id)
+
+    arr_cnt_tables = get_orthogroup_count_table()
+    arr_taxon_ids = db.taxon_id()
+
+    db.create_orthology_table(arr_cnt_tables)
+    db.load_orthology_table(arr_cnt_tables, arr_taxon_ids)
+    # db.create_locus_to_feature_table()
     db.commit()

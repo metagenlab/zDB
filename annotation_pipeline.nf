@@ -444,7 +444,8 @@ process orthofinder_main {
 
 orthogroups
 .into { orthogroups_1
-        orthogroups_2}
+        orthogroups_2
+        to_load_orthofinder_in_db_2 }
 
 process orthogroups2fasta {
   container "$params.annotation_container"
@@ -1667,7 +1668,7 @@ process load_gbk_in_db {
 		file db from chlamdb_load_gbk
 
     output:
-        file db_name
+        file db_name into to_load_orthofinder_in_db_1
 
 	script:
     db_name="$params.chlamdb.db_name"
@@ -1679,6 +1680,26 @@ process load_gbk_in_db {
     gbk_list = "${gbks}".split()
     setup_chlamdb.load_gbk(gbk_list, kwargs)
 	"""
+}
+
+process load_orthofinder_in_db {
+    publishDir "db/orthofinder"
+    input:
+        file db from to_load_orthofinder_in_db_1
+        file orthofinder from to_load_orthofinder_in_db_2
+
+    output:
+        file db_name
+
+    script:
+    db_name = "$params.chlamdb.db_name"
+    """
+    #!/usr/bin/env python
+    import setup_chlamdb
+
+    kwargs = ${str_pythonized_params}
+    setup_chlamdb.load_orthofinder_results($orthofinder, kwargs)
+    """
 }
 
 workflow.onComplete {

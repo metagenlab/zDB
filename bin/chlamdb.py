@@ -78,6 +78,107 @@ class DB:
         )
         return self.server.adaptor.execute_and_fetchall(sql,)[0][0]
 
+    def add_orthogroups_to_seq(self, hsh_locus_to_group, hsh_locus_to_feature_id, orthogroup_term_id):
+        rank = 1
+        for locus, group_id in hsh_locus_to_feature_id.items():
+            feature_id = hsh_locus_to_feature_id[locus]
+            insert = (
+                f"INSERT INTO seqfeature_qualifier_value "
+                f"VALUES ({feature_id}, {orthogroup_term_id}, {rank}, {quote(group_id)})"
+            )
+            self.adaptor.execute(insert)
+
+    def get_hsh_locus_to_seqfeature_id(self):
+        query = (
+            "SELECT t2.value, t1.seqfeature_id "
+            "FROM seqfeature as t1 "
+            "INNER JOIN seqfeature_qualifier_value AS t2 ON t1.seqfeature_id=t2.seqfeature_id "
+            "INNER JOIN term as t3 on t3.term_id=t2.term_id AND t3.name=\"locus_tag\""
+        )
+        results = self.server.adaptor.execute_and_fetchall(query,)
+        hsh_results = {}
+        for line in results:
+            hsh_results[line[0]] = line[1]
+        return hsh_results
+
+    # For each taxon, get the number of protein present in each of the existing
+    # ortholog group
+    # Returns a table of maps, organized as follows:
+    #  group 0: hsh taxid -> number of proteins of taxid in group 0
+    #  group 1: hsh taxid -> number of proteins of taxid in group 1
+    #  ... 
+    #  group N: hsh taxid -> number of proteins of taxid in group N
+    def get_orthogroup_count_table(self):
+        query = (
+            "SELECT value, taxon_id, count(*) "
+            "FROM seqfeature_qualifier_value as ortho_table "
+            "INNER JOIN term ON ortho_table.term_id = term.term_id AND term.name=\"orthogroup\" "
+            "INNER JOIN bioentry AS entry ON entry.bioentry_id=ortho_table.bioentry_id "
+            "GROUP BY value, taxon_id "
+            "ORDER BY value;"
+        )
+        results = server.adaptor.execute_and_fetchall(sql,)
+        arr_group = []
+        for line in results:
+            taxid, group, cnt = line[0], int(line[1]), int(line[2])
+            if group==len(arr_group):
+                arr_group.append({})
+            hsh_taxid_to_count = arr_group[group]
+            hsh_taxid_to_count[taxid] = cnt
+        return hsh_taxid_to_count
+
+    def create_orthology_table(self, arr_cnt_tables):
+        sql = (
+            f"CREATE TABLE IF NOT EXISTS orthology_orthogroup( "
+            f"orthogroup_id INTEGER, orthogroup_size INT, n_genomes INT,"
+            f"PRIMARY KEY(orthogroup_id))"
+        )
+        self.server.adaptor.execute(sql,)
+
+        for group, hsh_cnt_tables in enumerate(arr_cnt_tables):
+            size = 0
+            n_genomes = 0
+            for taxon_id, cnt in hsh_cnt_tables.items():
+                size += cnt
+                if cnt>0:
+                    n_genomes += 1
+            sql = (
+                f"INSERT INTO orthology_orthogroup VALUES("
+                f"{group}, {size}, {n_genomes}"
+                f")"
+            )
+            self.server.adaptor.execute(sql,)
+
+    def load_orthology_table(self, arr_count_tables, arr_taxon_ids):
+        to_sql_format = [f"{taxid} INT" for taxid in arr_taxon_ids]
+        create_table_sql = (
+            f"CREATE TABLE comparative_tables_orthology (orthogroup INT NOT NULL, "
+            f"{\", \".join(to_sql_format)} "
+            f", PRIMARY KEY(orthogroup)"
+            f", FOREIGN KEY(orthogroup) REFERENCES orthology_orthogroup(orthogroup_id)"
+            f")"
+        )
+        self.server.adaptor.execute(create_table_sql)
+
+        for group, hsh_taxid_to_count in enumerate(arr_count_tables):
+            to_insert = [f"{hsh_taxid_to_count.get(taxid, 0)}" for taxid in arr_taxon_ids]
+            sql = (
+                f"INSERT INTO comparative_tables_orthology "
+                f"VALUES ({group}, {\", \".join(to_insert)})" 
+            )
+            self.server.adaptor.execute(sql,)
+
+    # on hold: is this table really necessary if the indices are built
+    # def create_locus_to_seqfeature_table(self):
+
+    def taxon_ids(self):
+        query = "SELECT taxon_id FROM bioentry GROUP BY taxon_id";
+        result = self.server.adaptor.execute_and_fetchall(query,)
+        arr_taxon_ids = []
+        for line in result:
+            arr_taxon_ids.append(int(line[0]))
+        return arr_taxon_ids
+
     def insert_rRNA_in_feature_table(self, args):
         taxon_id = args["taxon_id"]
         accession = args["accession"]
@@ -127,6 +228,13 @@ class DB:
 
     def create_biosql_database(self, args):
         self.server.new_database(self.db_name)
+
+    def setup_orthology_table(self):
+        sql1 = 'SELECT ontology_id FROM ontology WHERE name="SeqFeature Keys"'
+        ontology_id = server.adaptor.execute_and_fetchall(sql1)[0][0]
+        sql2 = f"INSERT INTO term (name, ontology_id) VALUES (\"orthogroup\", {ontology_id});"
+        server.adaptor.execute(sql2)
+        return ontology_id
 
     # wrapper methods
     def commit(self):
