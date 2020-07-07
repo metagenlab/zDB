@@ -98,8 +98,35 @@ class DB:
         results = self.server.adaptor.execute_and_fetchall(query,)
         hsh_results = {}
         for line in results:
-            hsh_results[line[0]] = line[1]
+            hsh_results[line[0]] = int(line[1])
         return hsh_results
+
+    def get_locus_to_og(self):
+        query = (
+            f"SELECT locus.value, og.value"
+            f"FROM seqfeature_qualifier_value as og "
+            f"INNER JOIN term AS term_og ON term_og.term_id=og.term_id AND term_og.name=\"orthogroup\" "
+            f"INNER JOIN seqfeature_qualifier_value as locus ON locus.seqfeature_id=og.seqfeature_id "
+            f"INNER JOIN term AS term_locus ON term_locus.term_id=locus.term_id "
+            f"  AND term_locus.name=\"locus_tag\";"
+        )
+        query_results = self.server.adaptor.execute_and_fetchall(query,)
+        locus_to_og = {}
+        for locus, og in query_results:
+            locus_to_og[locus] = int(og)
+        return locus_to_og
+
+    def create_new_og_matrix(self):
+        query = (
+            f"CREATE TABLE orthology_identity ( "
+            f"orthogroup INT, "
+            f"id_1 INT, id_2 INT, identity FLOAT(5), "
+            f"PRIMARY KEY(orthogroup, id_1, id_2), "
+            f"FOREIGN KEY(orthogroup) REFERENCES orthology_orthogroup(orthogroup_id)"
+            f"FOREIGN KEY(id_1) REFERENCES seqfeature(seqfeature_id)"
+            f"FOREIGN KEY(id_2) REFERENCES seqfeature(seqfeature_id))"
+        )
+        self.server.adaptor.execute(query, )
 
     # For each taxon, get the number of protein present in each of the existing
     # ortholog group
@@ -122,7 +149,6 @@ class DB:
         arr_group = [None]*(size+1)
         for line in results:
             group, taxid, cnt = int(line[0]), line[1], int(line[2])
-            print(f"{taxid} -> {group}:{cnt}")
             hsh_taxid_to_count = arr_group[group]
             if hsh_taxid_to_count==None:
                 hsh_taxid_to_count = {}
@@ -130,11 +156,29 @@ class DB:
             hsh_taxid_to_count[taxid] = cnt
         return arr_group
 
+    def load_og_matrix(self, matrix):
+        for orthogroup_id, id_1, id_2, identity in matrix:
+            query = (
+                f"INSERT INTO orthology_identity "
+                f"VALUES ({orthogroup_id}, {id_1}, {id_2}, {identity});"
+            )
+            print(query)
+            self.server.adaptor.execute(query,)
+
+    def load_og_averages(self, averages):
+        for og, average in averages:
+            sql = (
+                f"UPDATE orthology_orthogroup "
+                f"SET average_identity = {average} "
+                f"WHERE orthogroup_id = {og};"
+            )
+            self.server.adaptor.execute(sql,)
+
     def create_orthology_table(self, arr_cnt_tables):
         sql = (
             f"CREATE TABLE IF NOT EXISTS orthology_orthogroup( "
-            f"orthogroup_id INTEGER, orthogroup_size INT, n_genomes INT,"
-            f"PRIMARY KEY(orthogroup_id))"
+            f"orthogroup_id INTEGER, orthogroup_size INT, n_genomes INT, average_identity FLOAT(5), "
+            f"PRIMARY KEY(orthogroup_id)) "
         )
         self.server.adaptor.execute(sql,)
 
@@ -145,13 +189,22 @@ class DB:
                 size += cnt
                 if cnt>0:
                     n_genomes += 1
-            print(f"{group} : {size}, {n_genomes}")
             sql = (
                 f"INSERT INTO orthology_orthogroup VALUES("
-                f"{group}, {size}, {n_genomes}"
+                f"{group}, {size}, {n_genomes}, NULL"
                 f")"
             )
             self.server.adaptor.execute(sql,)
+
+    # NOTE: may be more efficient to create indices on a combination of keys, depending
+    # on how the table is used.
+    def create_og_matrix_indices(self):
+        sql_1 = "CREATE INDEX oio ON orthology_identity(orthogroup);"
+        sql_2 = "CREATE INDEX oiid_1 ON orthology_identity(id_1);"
+        sql_3 = "CREATE INDEX oiid_2 ON orthology_identity(id_2);"
+        self.server.adaptor.execute(sql_1,)
+        self.server.adaptor.execute(sql_2,)
+        self.server.adaptor.execute(sql_3,)
 
     def load_orthology_table(self, arr_count_tables, arr_taxon_ids):
         to_sql_format = ", ".join([f"`{taxid}` INT" for taxid in arr_taxon_ids])
@@ -171,9 +224,6 @@ class DB:
                 f"VALUES ({group}, {to_insert})" 
             )
             self.server.adaptor.execute(sql,)
-
-    # on hold: is this table really necessary if the indices are built
-    # def create_locus_to_seqfeature_table(self):
 
     def taxon_ids(self):
         query = "SELECT taxon_id FROM bioentry GROUP BY taxon_id";
@@ -196,7 +246,6 @@ class DB:
             f"VALUES"
             f"({taxon_id}, {quote(accession)}, {start}, {end}, {strand}, {quote(product)})"
         )
-        print(sql)
         self.server.adaptor.execute(sql,)
 
     def insert_cds(self, args):

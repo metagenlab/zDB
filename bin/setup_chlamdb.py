@@ -5,14 +5,23 @@ import re
 import chlamdb
 
 from Bio import SeqIO
+from Bio import AlignIO
+
+# assumes orthofinder named: OG000N
+# returns the N as int
+def get_og_id(string):
+    return int(string[2:])
 
 def parse_orthofinder_output_file(output_file):
     protein_id2orthogroup_id = {}
     parsing = open(output_file, 'r')
 
-    for group, line in enumerate(parsing):
-        tokens = line.strip().split(' ')[1:]
-        for locus in tokens:
+    for line in parsing:
+        tokens = line.strip().split(' ')
+
+        # Skips the ":" at the end of the orthgroup id
+        group = get_og_id(tokens[0][:-1])
+        for locus in tokens[1:]:
             protein_id2orthogroup_id[locus] = group
     return protein_id2orthogroup_id
 
@@ -180,4 +189,59 @@ def load_orthofinder_results(orthofinder_output, args):
     db.load_orthology_table(arr_cnt_tables, arr_taxon_ids)
     # db.create_locus_to_feature_table()
     db.set_status_in_config_table("orthology_data", 1)
+    db.commit()
+
+# Note: as this is an alignment, the lengths are the same
+def get_identity(seq1, seq2):
+    identity = 0
+    aligned = 0
+    identical = 0
+    gaps_1 = 0
+    gaps_2 = 0
+
+    assert(len(seq1) == len(seq2))
+    for i in range(len(seq1)):
+        if seq1[i]=="-":
+            gaps_1 += 1
+        if seq2[i]=="-":
+            gaps_2 += 1
+        if seq1[i]=="-" or seq2[i]=="-":
+            continue
+        if seq1[i]==seq2[i]:
+            identical += 1
+        aligned += 1
+
+    if aligned/(len(seq1)-gaps_1) < 0.3 or aligned/(len(seq2)-gaps_2) < 0.3:
+        return 0
+    return 100*(identical/float(aligned))
+    
+def load_alignments_results(args, alignment_files):
+    db = chlamdb.DB.load_db(args)
+    db.create_new_og_matrix()
+    locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id()
+
+    # assumes filename of the format OG00N_mafft.faa, with the orthogroup
+    # being the integer following the OG string
+    matrix = []
+    averages = []
+    for alignment in alignment_files:
+        align = AlignIO.read(alignment, "fasta")
+        orthogroup = get_og_id(alignment.split("_")[0])
+        ttl = 0.0
+        n = 0
+        for i in range(len(align)):
+            for j in range(i+1, len(align)):
+                alignment_1 = align[i]
+                alignment_2 = align[j]
+                id_1 = locus_to_feature_id[alignment_1.name]
+                id_2 = locus_to_feature_id[alignment_2.name]
+                identity = get_identity(alignment_1, alignment_2)
+                ttl += identity
+                n += 1
+                matrix.append( (orthogroup, id_1, id_2, identity) )
+        averages.append((orthogroup, float(ttl)/ n))
+    db.load_og_matrix(matrix)
+    db.load_og_averages(averages)
+    db.create_og_matrix_indices()
+    db.set_status_in_config_table("orthogroup_alignments", 1)
     db.commit()

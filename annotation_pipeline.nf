@@ -445,7 +445,7 @@ process orthofinder_main {
 orthogroups
 .into { orthogroups_1
         orthogroups_2
-        to_load_orthofinder_in_db_2 }
+        to_load_orthofinder_in_db }
 
 process orthogroups2fasta {
   container "$params.annotation_container"
@@ -488,10 +488,11 @@ process align_with_mafft {
 }
 
 /* Get only alignments with more than than two sequences */
-mafft_alignments.collect().into {all_alignments_1
+mafft_alignments.collect().into { all_alignments_1
                                  all_alignments_2
                                  all_alignments_3
-                                 all_alignments_4}
+                                 all_alignments_4
+                                 to_load_alignment }
 
 all_alignments_1.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 3 }.set { alignments_larget_tah_3_seqs }
 all_alignments_2.flatten().map { it }.filter { (it.text =~ /(>)/).size() == 3 }.set { alignments_3_seqs }
@@ -1642,6 +1643,11 @@ process get_uniprot_goa_mapping {
 process create_db {
     publishDir "db"
 
+    input:
+		file gbks from to_load_gbk_into_db
+        file orthofinder from to_load_orthofinder_in_db
+        file alignments from to_load_alignment
+
     output:
         file db_name into chlamdb_load_gbk
 
@@ -1652,55 +1658,20 @@ process create_db {
     db_name="$params.chlamdb.db_name"
     """
     #!/usr/bin/env python
-    # j'en ai marre
 
     import setup_chlamdb
     
     kwargs = ${gen_python_args()}
-    setup_chlamdb.setup_chlamdb(**kwargs)
-    """
-}
-
-
-process load_gbk_in_db {
-	input:
-		file gbks from to_load_gbk_into_db
-		file db from chlamdb_load_gbk
-
-    output:
-        file db_name into to_load_orthofinder_in_db_1
-
-	script:
-    db_name="$params.chlamdb.db_name"
-	"""
-    #!/usr/bin/env python
-    import setup_chlamdb
-
-    kwargs = ${str_pythonized_params}
     gbk_list = "${gbks}".split()
+    alignments_lst = "$alignments".split()
+
+    setup_chlamdb.setup_chlamdb(**kwargs)
     setup_chlamdb.load_gbk(gbk_list, kwargs)
-	"""
-}
-
-process load_orthofinder_in_db {
-    publishDir "db/orthofinder"
-    input:
-        file db from to_load_orthofinder_in_db_1
-        file orthofinder from to_load_orthofinder_in_db_2
-
-    output:
-        file db_name
-
-    script:
-    db_name = "$params.chlamdb.db_name"
-    """
-    #!/usr/bin/env python
-    import setup_chlamdb
-
-    kwargs = ${str_pythonized_params}
     setup_chlamdb.load_orthofinder_results("$orthofinder", kwargs)
+    setup_chlamdb.load_alignments_results(kwargs, alignments_lst)
     """
 }
+
 
 workflow.onComplete {
   // Display complete message
