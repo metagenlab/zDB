@@ -1037,8 +1037,6 @@ def orthofinder2core_groups(fasta_list,
             genome = locus2genome[locus]
             df.loc[group_id, genome] += 1
 
-    # why is this necessary? entries are already 
-    # numeric values
     df =df.apply(pd.to_numeric, args=('coerce',))
 
     n_genomes = len(set(locus2genome.values()))
@@ -1046,21 +1044,9 @@ def orthofinder2core_groups(fasta_list,
     freq_missing = (n_genomes-float(n_missing))/n_genomes
     limit = freq_missing*n_genomes
 
-    # Paralogs will have several copies per genomes (df > 1)
-    # Why are they removed?
-    # TP: we use single copy genes to reconstruct the phylogeny 
-    # of the species using a supermatrix approach 
-    # (see https://www.cell.com/trends/ecology-evolution/fulltext/S0169-5347%2806%2900332-6)
-    # The phylogeny of individual single copy genes is expected to be 
-    # the most similar to the species phylogeny. 
-    # NOTE: We allow for missing data ("n_missing" parameter) because 
-    # the inclusion of incomplete genomes in the dataset can significantly
-    # impact the number of identified single copy genes. This parameter 
-    # should be as low as possible.
     groups_with_paralogs = df[(df > 1).sum(axis=1) > 0].index
     df = df.drop(groups_with_paralogs)
 
-    # should be an equality?
     core_groups = df[(df == 1).sum(axis=1) >= limit].index.tolist()
 
     return core_groups, orthogroup2locus_list, locus2genome
@@ -1176,32 +1162,17 @@ def concatenate_core_orthogroups(fasta_files):
     all_seq_data = {}
     for one_fasta in fasta_files:
         all_seq_data[one_fasta] = {}
-        with open(one_fasta) as f:
-            alignment = AlignIO.read(f, "fasta")
-            for record in alignment:
-                if record.id not in taxons:
-                    taxons.append(record.id)
+        for record in AlignIO.read(one_fasta, "fasta"):
+            if record.id not in taxons:
+                taxons.append(record.id)
             all_seq_data[one_fasta][record.id] = record
-
 
     # building dictionnary of the form: dico[one_fasta][one_taxon] = sequence
     concat_data = {}
-
-    start_stop_list = []
-    start = 0
-    stop = 0
-
     for one_fasta in fasta_files:
-        start = stop + 1
-        stop = start + len(all_seq_data[one_fasta][list(all_seq_data[one_fasta].keys())[0]]) - 1
-        start_stop_list.append([start, stop])
-        print(len(taxons))
         for taxon in taxons:
-            # check if the considered taxon is present in the record
-            if taxon not in all_seq_data[one_fasta]:
-                 # if taxon absent, create SeqRecord object "-"*len(alignments): gap of the size of the alignment
-                seq = Seq("-"*len(all_seq_data[one_fasta][list(all_seq_data[one_fasta].keys())[0]]))
-                all_seq_data[one_fasta][taxon] = SeqRecord(seq, id=taxon)
+            # since core orthogroups, all taxids should be present everywhere
+            assert(taxon in all_seq_data[one_fasta])
             if taxon not in concat_data:
                 concat_data[taxon] = all_seq_data[one_fasta][taxon]
             else:
@@ -1212,10 +1183,6 @@ def concatenate_core_orthogroups(fasta_files):
     with open(out_name, "w") as handle:
         AlignIO.write(MSA, handle, "fasta")
 
-# NOTE: removed poor error handling
-# (infinite recursion with infinite waiting time is 
-# something goes wrong: better to crash fast than 
-# a slow agonizing death)
 # TODO: we should improve the error handling rather than remove it 
 # because errors can occur (kind of randomly) with Entez (those errors
 # are not reproducible, this is why I did not care dealing with the 

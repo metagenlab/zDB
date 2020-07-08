@@ -79,6 +79,7 @@ def create_data_table(kwargs):
                                     db=db_name) # name of the data base
         cursor = conn.cursor()
     entry_list = [
+        ("minimal", "mandatory", False)
         ("gbk_files", "mandatory", False),
         ("orthology_data", "mandatory", False),
         ("orthology_comparative", "mandatory", False),

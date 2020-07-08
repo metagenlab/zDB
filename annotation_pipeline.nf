@@ -637,6 +637,8 @@ process concatenate_core_orthogroups {
 
   """
   #!/usr/bin/env python
+
+  # bugfix
   import annotations
   fasta_files = "${core_groups}".split(" ")
   annotations.concatenate_core_orthogroups(fasta_files)

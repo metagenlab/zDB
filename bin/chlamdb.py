@@ -162,7 +162,6 @@ class DB:
                 f"INSERT INTO orthology_identity "
                 f"VALUES ({orthogroup_id}, {id_1}, {id_2}, {identity});"
             )
-            print(query)
             self.server.adaptor.execute(query,)
 
     def load_og_averages(self, averages):
