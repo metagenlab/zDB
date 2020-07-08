@@ -310,8 +310,8 @@ def uniprot_accession2score(uniprot_accession_list):
     link = "http://www.uniprot.org/uniprot/?query=id:%s&columns=id,annotation%%20score&format=tab" % ("+OR+id:".join(uniprot_accession_list))
 
     page = urllib.request.urlopen(link)
-    data = page.read().decode('utf-8').split('\\n')
-    rows = [i.rstrip().split('\\t') for i in data]
+    data = page.read().decode('utf-8').split('\n')
+    rows = [i.rstrip().split('\t') for i in data]
     unirpot2score = {}
     for row in rows:
         if len(row) > 0:
@@ -329,9 +329,9 @@ def get_uniprot_data(databases_dir, table):
     cursor = conn.cursor()
     uniprot_table = open(table, 'r')
     uniprot_data = open('uniprot_data.tab', 'w')
-    uniprot_data.write("uniprot_accession\\tuniprot_score\\tuniprot_status\\tproteome\\tcomment_function\\tec_number\\tcomment_subunit\\tgene\\trecommendedName_fullName\\tproteinExistence\\tdevelopmentalstage\\tcomment_similarity\\tcomment_catalyticactivity\\tcomment_pathway\\tkeywords\\n")
+    uniprot_data.write("uniprot_accession\tuniprot_score\tuniprot_status\tproteome\tcomment_function\tec_number\tcomment_subunit\tgene\trecommendedName_fullName\tproteinExistence\tdevelopmentalstage\tcomment_similarity\tcomment_catalyticactivity\tcomment_pathway\tkeywords\n")
 
-    uniprot_accession_list = [row.rstrip().split("\\t")[1].split(".")[0] for row in uniprot_table if row.rstrip().split("\\t")[1] != 'uniprot_accession']
+    uniprot_accession_list = [row.rstrip().split("\t")[1].split(".")[0] for row in uniprot_table if row.rstrip().split("\t")[1] != 'uniprot_accession']
     uniprot_accession_chunks = chunks(uniprot_accession_list, 300)
 
     sql_uniprot_annot = 'SELECT * FROM uniprot_annotation WHERE uniprot_accession IN ("%s");'
@@ -363,7 +363,7 @@ def get_uniprot_data(databases_dir, table):
             proteome = uniprot_annotation[12]
             reviewed = uniprot_annotation[14]
 
-            uniprot_data.write("%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n"
+            uniprot_data.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n"
                     % (uniprot_accession, uniprot_score, reviewed, proteome, comment_function, ec_number,
                        comment_subunit, gene, recommendedName_fullName, proteinExistence,
                        developmentalstage, comment_similarity, comment_catalyticactivity,
@@ -436,7 +436,7 @@ def refseq_locus_mapping(accessions_list):
                         refseq_locus_tag = feature.qualifiers["locus_tag"][0]
                         protein_id = feature.qualifiers["protein_id"][0]
                         old_locus_tag = feature.qualifiers["old_locus_tag"][0]
-                        o.write(f"{old_locus_tag}\\t{refseq_locus_tag}\\t{protein_id}\\n")
+                        o.write(f"{old_locus_tag}\t{refseq_locus_tag}\t{protein_id}\n")
 
 def download_assembly_refseq(accession):
     Entrez.email = "trestan.pillonel@chuv.ch"
@@ -779,7 +779,7 @@ def filter_out_unannotated(gbk_file):
 def string_id2pubmed_id_list(accession):
     link = 'http://string-db.org/api/tsv/abstractsList?identifiers=%s' % accession
     try:
-        data = urllib.request.urlopen(link).read().rstrip().decode('utf-8').split('\\n')[1:]
+        data = urllib.request.urlopen(link).read().rstrip().decode('utf-8').split('\n')[1:]
     except urllib.URLError:
         return False
     pid_list = [row.split(':')[1] for row in data]
@@ -1274,10 +1274,10 @@ def get_diamond_refseq_top_hits(params):
         if len(refseq_sequence_records) > 0:
             with open(group + "_nr_hits.faa", 'w') as f:
                 for one_ortholog in ortho_sequences:
-                    f.write(">%s\\n%s\\n" % (one_ortholog[0], one_ortholog[1]))
+                    f.write(">%s\n%s\n" % (one_ortholog[0], one_ortholog[1]))
                 for record in refseq_sequence_records:
                     name = record.name
-                    f.write(">%s\\n%s\\n" % (name, str(record.seq)))
+                    f.write(">%s\n%s\n" % (name, str(record.seq)))
 
 
 # modified so as to send a single query
@@ -1303,7 +1303,7 @@ def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
         reference = go[1]
         evidence_code = go[2]
         category = go[3]
-        o.write(f"{accession_base}\\t{GO_id}\\t{reference}\\t{evidence_code}\\t{category}\\n")
+        o.write(f"{accession_base}\t{GO_id}\t{reference}\t{evidence_code}\t{category}\n")
 
 def setup_diamond_refseq_db(diamond_tsv_files_list):
     conn = sqlite3.connect("diamond_refseq.db")
@@ -1320,7 +1320,7 @@ def setup_diamond_refseq_db(diamond_tsv_files_list):
 
     diamond_file_list = diamond_tsv_files_list.split(' ')
     for one_file in diamond_file_list:
-        diamond_table = pd.read_csv(one_file, sep="\\t")
+        diamond_table = pd.read_csv(one_file, sep="\t")
         accession = ''
         count = ''
         # add hit count as first column
@@ -1348,4 +1348,5 @@ def setup_diamond_refseq_db(diamond_tsv_files_list):
     sql = 'select distinct sseqid from diamond_refseq'
     with open("nr_refseq_hits.tab", 'w') as f:
         for acc in cursor.execute(sql,):
-            f.write("%s\\n" % acc[0])
+            f.write(f"{acc[0]}\n")
+

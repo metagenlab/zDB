@@ -214,7 +214,7 @@ def get_identity(seq1, seq2):
     if aligned/(len(seq1)-gaps_1) < 0.3 or aligned/(len(seq2)-gaps_2) < 0.3:
         return 0
     return 100*(identical/float(aligned))
-    
+
 def load_alignments_results(args, alignment_files):
     db = chlamdb.DB.load_db(args)
     db.create_new_og_matrix()
