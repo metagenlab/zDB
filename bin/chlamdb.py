@@ -206,27 +206,27 @@ class DB:
         self.server.adaptor.execute(sql_2,)
         self.server.adaptor.execute(sql_3,)
 
-    def load_orthology_table(self, arr_count_tables, arr_taxon_ids):
-        to_sql_format = ", ".join([f"`{taxid}` INT" for taxid in arr_taxon_ids])
+    def load_orthology_table(self, arr_count_tables):
         create_table_sql = (
-            f"CREATE TABLE comparative_tables_orthology (orthogroup INT NOT NULL, "
-            f"{to_sql_format} "
-            f", PRIMARY KEY(orthogroup)"
+            f"CREATE TABLE comparative_tables_orthology (orthogroup INT, "
+            f" taxid INT, count INT"
+            f", PRIMARY KEY(orthogroup, taxid)"
             f", FOREIGN KEY(orthogroup) REFERENCES orthology_orthogroup(orthogroup_id)"
+            f", FOREIGN KEY(taxid) REFERENCES taxon(taxon_id)"
             f")"
         )
         self.server.adaptor.execute(create_table_sql)
 
         for group, hsh_taxid_to_count in enumerate(arr_count_tables):
-            to_insert = ", ".join([f"{hsh_taxid_to_count.get(taxid, 0)}" for taxid in arr_taxon_ids])
-            sql = (
-                f"INSERT INTO comparative_tables_orthology "
-                f"VALUES ({group}, {to_insert})" 
-            )
-            self.server.adaptor.execute(sql,)
+            for taxid, count in hsh_taxid_to_count.items():
+                sql = (
+                    f"INSERT INTO comparative_tables_orthology "
+                    f"VALUES ({group}, {taxid}, {count})" 
+                )
+                self.server.adaptor.execute(sql,)
 
     def taxon_ids(self):
-        query = "SELECT taxon_id FROM bioentry GROUP BY taxon_id";
+        query = "SELECT taxon_id FROM taxon";
         result = self.server.adaptor.execute_and_fetchall(query,)
         arr_taxon_ids = []
         for line in result:
