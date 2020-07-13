@@ -950,6 +950,10 @@ def get_nr_sequences(fasta_file, genomes_list):
 
     SeqIO.write(updated_records, nr_fasta, "fasta")
 
+
+# see if this is useful to simplify the tables design to a single table
+# to speed up, may be also worth it to keep orthogroup as integers
+# String comparison is indeed much slower than integer comparison.
 def setup_orthology_db(fasta_file, nr_mapping_file, orthogroup):
   fasta_dict = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"))
 
@@ -1096,6 +1100,8 @@ def accession2taxid_entrez(accession):
     # record['Length']
     return int(record['TaxId'])
 
+
+# TODO: implement multithreading to run the SQL/web queries in parallel
 def get_refseq_hits_taxonomy(hit_table, database_dir):
     conn = sqlite3.connect("refseq_taxonomy.db")
     cursor = conn.cursor()
@@ -1106,7 +1112,10 @@ def get_refseq_hits_taxonomy(hit_table, database_dir):
 
     conn_taxid = sqlite3.connect(database_dir + "/ncbi-taxonomy/prot_accession2taxid.db")
     cursor_taxid = conn_taxid.cursor() 
-    sql = 'create table refseq_hits (accession varchar(200), taxid INTEGER, description TEXT, length INTEGER)'
+    sql = (
+         "CREATE TABLE refseq_hits " 
+         "(accession VARCHAR(200), taxid INTEGER, description TEXT, length INTEGER)"
+    )
     cursor.execute(sql,)
     conn.commit()
 
@@ -1118,19 +1127,27 @@ def get_refseq_hits_taxonomy(hit_table, database_dir):
     sql_template = 'insert into refseq_hits values (?,?,?,?)'
     hits = []
 
-    template_annotation = 'select accession, description, sequence_length from refseq where accession in ("%s")'
-    template_taxid = 'select accession, taxid from accession2taxid where accession in ("%s")'
-
     for acc_list in chunk_lists:
         filter = '","'.join(acc_list)
-        data_annotation = cursor_refseq.execute(template_annotation % filter,).fetchall()
-        data_taxid = cursor_taxid.execute(template_taxid % filter,).fetchall()
+
+        query_args = ", ".join([f"\"{accession}\"" for accession in acc_list])
+        template_annotation = (
+            f"SELECT accession, description, sequence_length "
+            f"FROM refseq WHERE accession IN ({query_args})"
+        )
+        print(template_annotation)
+        template_taxid = (
+            f"SELECT accession, taxid "
+            f"FROM accession2taxid WHERE accession IN ({query_args})"
+        )
+        print(template_taxid)
+        data_annotation = cursor_refseq.execute(template_annotation, ).fetchall()
+        data_taxid = cursor_taxid.execute(template_taxid, ).fetchall()
         accession2taxid = {}
 
         for row in data_taxid:
             accession2taxid[row[0]] = row[1]
         for annot in data_annotation:
-            annot = list(annot)
             accession = annot[0]
             seq_length = annot[2]
             # AccessionVersion, TaxId, Title, Length
@@ -1139,12 +1156,12 @@ def get_refseq_hits_taxonomy(hit_table, database_dir):
             if accession in accession2taxid:
                 taxid = accession2taxid[accession]
             else:
+                print("Web query")
                 taxid = accession2taxid_entrez(accession)
             hits.append([accession, taxid, description, seq_length])
 
     cursor.executemany(sql_template, hits)
     conn.commit()
-    # index accession and taxid columns
     sql_index_1 = 'create index acc on refseq_hits (accession);'
     sql_index_2 = 'create index taxid on refseq_hits (taxid);'
 
@@ -1237,12 +1254,6 @@ def get_diamond_refseq_top_hits(params):
         if len(orthogroup2locus2top_hits[orthogroup][locus_tag]) < n_hits:
             orthogroup2locus2top_hits[orthogroup][locus_tag].append(hit_id)
 
-    # retrieve aa sequences
-    # why not select on orthogroups in orthogroup2locus2top_hits?
-    # would be more efficient and spare some lines of code
-    # as this is done in the loop below
-    # TP: I'm not sure whether filtering on thousand of values is
-    # really more efficient
     sql = """SELECT orthogroup, t1.locus_tag, sequence 
      FROM locus_tag2orthogroup t1 INNER JOIN locus_tag2sequence_hash t2 ON t1.locus_tag=t2.locus_tag 
      INNER JOIN sequence_hash2aa_sequence t3 ON t2.sequence_hash=t3.sequence_hash"""
@@ -1267,7 +1278,6 @@ def get_diamond_refseq_top_hits(params):
         nr_top_hit = list(set([hit for hits_list in top_hits for hit in hits_list])) # flatten list... yeah, ugly.
         split_lists = chunks(nr_top_hit, 50)
 
-        # multithreading here would be nice to run queries in parallel
         for one_list in split_lists:
             refseq_sequence_records += refseq_accession2fasta(one_list)
 
@@ -1279,12 +1289,6 @@ def get_diamond_refseq_top_hits(params):
                     name = record.name
                     f.write(">%s\n%s\n" % (name, str(record.seq)))
 
-
-# modified so as to send a single query
-# NOTE : uniprot_acc_list may contain duplicates
-# that need to be removed
-# TP: It should not happen since duplicates are removed from the
-# NextFlow channel
 def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
     conn = sqlite3.connect(database_dir + "/goa/goa_uniprot.db")
     cursor = conn.cursor()

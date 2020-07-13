@@ -1183,11 +1183,13 @@ process execute_PRIAM {
 PRIAM_results.collectFile(name: 'annotation/PRIAM/sequenceECs.txt')
 
 
+// create a database containing the following tables:
+// - sequences hash -> sequence aa
+// - locus tag -> sequence hash
+// - locus tag -> orthogroup
 process setup_orthology_db {
-  publishDir 'orthology/', mode: 'link', overwrite: true
+  publishDir 'orthology/', overwrite: true
   container "$params.annotation_container"
-
-  memory '8 GB'
 
   when:
   params.refseq_diamond_BBH_phylogeny
@@ -1210,15 +1212,16 @@ process setup_orthology_db {
 }
 
 
+// transfers the diamond matches to a sqlite database
+// NOTE: may be worth to only store the needed fields and limit
+// the number of hits to what is needed
 process setup_diamond_refseq_db {
 
   container "$params.annotation_container"
   publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
-  echo false
-  memory '8 GB'
 
   when:
-  params.refseq_diamond_BBH_phylogeny == true
+  params.refseq_diamond_BBH_phylogeny
 
   input:
   file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
@@ -1230,18 +1233,27 @@ process setup_diamond_refseq_db {
   script:
   """
 	#!/usr/bin/env python
+    
+    # bugfix
 	import annotations
 	annotations.setup_diamond_refseq_db("$diamond_tsv_list")
   """
 }
 
 
+// Get the taxids of all the accessions that were matched by diamond
+// insert them in refseq_taxonomy.db
+// Table is :
+//  accession, taxid, description and length
+// 
+// Note: this may be slow as it relies on db queries + web queries for 
+// the accession number that couldn't be resolved locally
+
+// TODO : test! this generated an empty database on the last run
 process get_refseq_hits_taxonomy {
 
   publishDir 'annotation/diamond_refseq/', mode: 'copy', overwrite: true
   container "$params.annotation_container"
-
-  echo true
 
   when:
   params.diamond_refseq_taxonomy
@@ -1256,6 +1268,7 @@ process get_refseq_hits_taxonomy {
 
   """
 	#!/usr/bin/env python
+    # test
 
 	import annotations
 	annotations.get_refseq_hits_taxonomy("$refseq_hit_table", "$params.databases_dir")
@@ -1267,8 +1280,6 @@ process get_diamond_refseq_top_hits {
 
   container "$params.annotation_container"
   publishDir 'annotation/diamond_refseq_BBH_phylogenies', mode: 'copy', overwrite: true
-  echo false
-  memory '8 GB'
 
   when:
   params.refseq_diamond_BBH_phylogeny
@@ -1297,7 +1308,7 @@ process align_refseq_BBH_with_mafft {
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_alignments', mode: 'copy', overwrite: true
 
   when:
-  params.refseq_diamond_BBH_phylogeny == true
+  params.refseq_diamond_BBH_phylogeny
 
   input:
   file og from diamond_refseq_hits_fasta.flatten().collate( 20 )
@@ -1323,9 +1334,6 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   container "$params.annotation_container"
   cpus 4
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_phylogenies', mode: 'copy', overwrite: true
-
-  when:
-  params.refseq_diamond_BBH_phylogeny == true
 
   input:
   each file(og) from diamond_BBH_alignments
