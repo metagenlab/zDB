@@ -1277,7 +1277,6 @@ def get_diamond_refseq_top_hits(params):
         top_hits = [orthogroup2locus2top_hits[group][i] for i in orthogroup2locus2top_hits[group]]
         nr_top_hit = list(set([hit for hits_list in top_hits for hit in hits_list])) # flatten list... yeah, ugly.
         split_lists = chunks(nr_top_hit, 50)
-
         for one_list in split_lists:
             refseq_sequence_records += refseq_accession2fasta(one_list)
 

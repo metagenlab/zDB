@@ -88,6 +88,30 @@ class DB:
             )
             self.server.adaptor.execute(insert)
 
+    def create_hash_table(self, to_load):
+        # 16 is for the length of the CRC hash converted to string
+        # 4 is for the potential suffix if two hashes are identical
+        # -> for now a "-n" is added at the end of the hash. Adding
+        # 4 of length accounts for the "-" and a pessimistic 3 digits in case
+        # there are lots of collisions
+        hash_len = len("CRC-") + 16 + 4
+        sql = (
+            f"CREATE TABLE sequence_hash_dictionnary (seqfeature_id, hash VARCHAR({hash_len})," 
+            " sequence TEXT, "
+            " PRIMARY KEY(seqfeature_id), "
+            " FOREIGN KEY(seqfeature_id) REFERENCES seqfeature(seqfeature_id));"
+        )
+        self.server.adaptor.execute(sql,)
+        sql = (
+            "INSERT INTO sequence_hash_dictionnary VALUES (?, ?, ?);"
+        )
+        self.server.adaptor.executemany(sql, to_load)
+
+        sql = "CREATE INDEX shd_id on sequence_hash_dictionnary (seqfeature_id)"
+        self.server.adaptor.execute(sql)
+        sql = "CREATE INDEX shd_hsh on sequence_hash_dictionnary (hash)"
+        self.server.adaptor.execute(sql)
+
     def get_hsh_locus_to_seqfeature_id(self):
         query = (
             "SELECT t2.value, t1.seqfeature_id "
@@ -280,6 +304,37 @@ class DB:
 
     def create_biosql_database(self, args):
         self.server.new_database(self.db_name)
+
+    def create_refseq_hits_table(self):
+        sql = (
+            f"CREATE TABLE diamond_refseq(hit_count INT, qseqid INT, "
+            f"sseqid INT, pident FLOAT, length INT, mismatch INT, "
+            f"gapopen INT, qstart INT, qend INT, sstart INT, "
+            f"send INT, evalue FLOAT, bitscore FLOAT, "
+            f"PRIMARY KEY (hit_count, qseqid), "
+            f"FOREIGN KEY(qseqid) REFERENCES seqfeature(seqfeature_id));"
+        )
+        self.server.adaptor.execute(sql,)
+
+    def hash_to_seqfeature(self):
+        query = (
+            "SELECT seqfeature_id, hash FROM sequence_hash_dictionnary;"
+        )
+        results = self.server.adaptor.execute_and_fetchall(query,)
+        hsh = {}
+        for line in results:
+            seqfeature_id = int(line[0])
+            crc_hsh = line[1]
+            hsh[crc_hsh] = seqfeature_id
+        return hsh
+
+    def load_refseq_hits(self, data):
+        entry = ",".join(["?"] * len(data[0]))
+        sql = (
+            f"INSERT INTO diamond_refseq VALUES ({entry})"
+        )
+        self.server.adaptor.executemany(sql, data)
+
 
     def setup_orthology_table(self):
         sql1 = 'SELECT ontology_id FROM ontology WHERE name="SeqFeature Keys"'

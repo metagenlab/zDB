@@ -3,6 +3,7 @@ import sys
 import re
 
 import chlamdb
+import pandas as pd
 
 from Bio import SeqIO
 from Bio import AlignIO
@@ -214,6 +215,59 @@ def get_identity(seq1, seq2):
     if aligned/(len(seq1)-gaps_1) < 0.3 or aligned/(len(seq2)-gaps_2) < 0.3:
         return 0
     return 100*(identical/float(aligned))
+
+def load_refseq_matches(args, diamond_tsvs):
+    db = chlamdb.DB.load_db(args)
+    db.create_refseq_hits_table()
+
+
+    # map accessions to id
+    sseqid_hsh = {}
+    sseqid_id = 0
+
+    # Note : add multithreading here?
+    query_hash_to_seqfeature_id = db.hash_to_seqfeature()
+    for tsv in diamond_tsvs:
+        hit_table = pd.read_csv(tsv, sep="\t")
+        hit_count = 0
+        seqfeature_id = None
+        query_hash = None
+        data = []
+        for index, row in hit_table.iterrows():
+            # remove version number
+            match_accession = row[1].split(".")[0]
+            if match_accession not in sseqid_hsh:
+                sseqid_hsh[match_accession] = sseqid_id
+                sseqid_id += 1
+
+            if query_hash==row[0]:
+                hit_count += 1
+            else:
+                hit_count = 0
+                query_hash = row[0]
+                seqfeature_id = query_hash_to_seqfeature_id[query_hash]
+            lst_args = row.tolist()
+            data.append([hit_count, seqfeature_id, sseqid_hsh[match_accession]] + lst_args[2:])
+            set_sseqids.add(match_accession)
+        db.load_refseq_hits(data)
+    # see which indices are better fitted
+    # db.create_refseq_hits_indices()
+    db.commit()
+    return sseqid_hsh
+
+def load_seq_hashes(args, nr_mapping, nr_fasta):
+    db = chlamdb.DB.load_db(args)
+    fasta_dict = SeqIO.to_dict(SeqIO.parse(nr_fasta, "fasta"))
+    hsh_locus_to_id = db.get_hsh_locus_to_seqfeature_id()
+
+    to_load = []
+    for line in open(nr_mapping, "r"):
+        record_id, hsh, genome = line.split("\t")
+        sequence = str(fasta_dict[hsh].seq)
+        seqfeature_id = hsh_locus_to_id[record_id]
+        to_load.append( (seqfeature_id, hsh, sequence) )
+    db.create_hash_table(to_load)
+    db.commit()
 
 def load_alignments_results(args, alignment_files):
     db = chlamdb.DB.load_db(args)

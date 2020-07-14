@@ -332,7 +332,7 @@ process get_nr_sequences {
   output:
 
   file 'nr.faa' into nr_seqs
-  file 'nr_mapping.tab' into nr_mapping
+  file 'nr_mapping.tab' into nr_mapping_to_db_setup
 
   script:
   fasta_file = seq.name
@@ -351,7 +351,7 @@ nr_seqs.collectFile(name: 'merged_nr.faa', newLine: true)
         to_tcdb_mapping
         to_pdb_mapping
         to_oma_mapping
-        to_setup_orthology_db
+        to_db_setup
         to_filter_sequences }
 
 merged_faa_chunks.splitFasta( by: 300, file: "chunk_" )
@@ -1187,7 +1187,7 @@ PRIAM_results.collectFile(name: 'annotation/PRIAM/sequenceECs.txt')
 // - sequences hash -> sequence aa
 // - locus tag -> sequence hash
 // - locus tag -> orthogroup
-process setup_orthology_db {
+/* process setup_orthology_db {
   publishDir 'orthology/', overwrite: true
   container "$params.annotation_container"
 
@@ -1210,11 +1210,12 @@ process setup_orthology_db {
   annotations.setup_orthology_db("${nr_fasta}", "${nr_mapping_file}", "${orthogroup}")
   """
 }
-
+ */
 
 // transfers the diamond matches to a sqlite database
 // NOTE: may be worth to only store the needed fields and limit
 // the number of hits to what is needed
+/*
 process setup_diamond_refseq_db {
 
   container "$params.annotation_container"
@@ -1239,6 +1240,7 @@ process setup_diamond_refseq_db {
 	annotations.setup_diamond_refseq_db("$diamond_tsv_list")
   """
 }
+*/
 
 
 // Get the taxids of all the accessions that were matched by diamond
@@ -1249,7 +1251,7 @@ process setup_diamond_refseq_db {
 // Note: this may be slow as it relies on db queries + web queries for 
 // the accession number that couldn't be resolved locally
 
-// TODO : test! this generated an empty database on the last run
+/*
 process get_refseq_hits_taxonomy {
 
   publishDir 'annotation/diamond_refseq/', mode: 'copy', overwrite: true
@@ -1265,7 +1267,6 @@ process get_refseq_hits_taxonomy {
   file 'refseq_taxonomy.db' into refseq_hit_taxid_mapping_db
 
   script:
-
   """
 	#!/usr/bin/env python
     # test
@@ -1274,8 +1275,10 @@ process get_refseq_hits_taxonomy {
 	annotations.get_refseq_hits_taxonomy("$refseq_hit_table", "$params.databases_dir")
   """
 }
+*/
 
 
+/*
 process get_diamond_refseq_top_hits {
 
   container "$params.annotation_container"
@@ -1300,7 +1303,9 @@ process get_diamond_refseq_top_hits {
     annotations.get_diamond_refseq_top_hits(kwargs)
   """
 }
+*/
 
+/*
 process align_refseq_BBH_with_mafft {
 
   container "$params.annotation_container"
@@ -1346,6 +1351,7 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   FastTree ${og} > ${og.baseName}.nwk
   """
 }
+*/
 
 
 // Filter out small sequences and ambiguous AA
@@ -1657,6 +1663,9 @@ process create_db {
 		file gbks from to_load_gbk_into_db
         file orthofinder from to_load_orthofinder_in_db
         file alignments from to_load_alignment
+        file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
+        file nr_mapping_file from nr_mapping_to_db_setup
+        file nr_fasta from to_db_setup
 
     output:
         file db_name into chlamdb_load_gbk
@@ -1674,11 +1683,16 @@ process create_db {
     kwargs = ${gen_python_args()}
     gbk_list = "${gbks}".split()
     alignments_lst = "$alignments".split()
+    diamond_tab_files = "$diamond_tsv_list".split()
 
     setup_chlamdb.setup_chlamdb(**kwargs)
     setup_chlamdb.load_gbk(gbk_list, kwargs)
+
+    # kept for now, need to check whether this is really necessary to keep the hash
+    setup_chlamdb.load_seq_hashes(kwargs, "$nr_mapping_file", "$nr_fasta")
     setup_chlamdb.load_orthofinder_results("$orthofinder", kwargs)
     setup_chlamdb.load_alignments_results(kwargs, alignments_lst)
+    nr_hits_set = setup_chlamdb.load_refseq_matches(kwargs, diamond_tab_files)
     """
 }
 
