@@ -781,6 +781,7 @@ process diamond_refseq {
 
   n = seq.name
   """
+  # new version of the database
   diamond blastp -p ${task.cpus} -d $params.databases_dir/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
   """
 }
@@ -1668,7 +1669,7 @@ process create_db {
         file nr_fasta from to_db_setup
 
     output:
-        file db_name into chlamdb_load_gbk
+        file db_name into db_gen
 
     when:
         params.chlamdb_setup
@@ -1692,9 +1693,24 @@ process create_db {
     setup_chlamdb.load_seq_hashes(kwargs, "$nr_mapping_file", "$nr_fasta")
     setup_chlamdb.load_orthofinder_results("$orthofinder", kwargs)
     setup_chlamdb.load_alignments_results(kwargs, alignments_lst)
-    nr_hits_set = setup_chlamdb.load_refseq_matches(kwargs, diamond_tab_files)
+    hsh_sseqid = setup_chlamdb.load_refseq_matches(kwargs, diamond_tab_files)
+    setup_chlamdb.load_refseq_matches_infos(kwargs, hsh_sseqid)
     """
 }
+
+/*
+process in_test {
+
+    input:
+        file curr_db from db_gen
+
+    output:
+        file curr_db
+
+    script:
+    """
+    """
+}*/
 
 
 workflow.onComplete {

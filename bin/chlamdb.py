@@ -4,6 +4,8 @@ import sys
 from BioSQL import BioSeqDatabase
 from Bio import SeqIO
 
+import sqlite3
+
 
 # This file defines a class DB, that encapsulates all the SQL requests
 # necessary to create the chlamdb database.
@@ -111,6 +113,51 @@ class DB:
         self.server.adaptor.execute(sql)
         sql = "CREATE INDEX shd_hsh on sequence_hash_dictionnary (hash)"
         self.server.adaptor.execute(sql)
+
+    def create_diamond_refseq_match_id(self):
+        query = (
+            "CREATE TABLE diamond_refseq_match_id ( "
+            "match_id INT, accession VARCHAR(200), taxid INT, description, length INT, "
+            "PRIMARY KEY(match_id));"
+        )
+        self.server.adaptor.execute(query,)
+
+    def load_diamond_refseq_match_id(self, data):
+        fmt = ",".join(["?"] * len(data[0]))
+        query = (
+            f"INSERT INTO diamond_refseq_match_id VALUES({fmt});"
+        )
+        self.server.adaptor.executemany(query, data)
+
+    def get_accession_to_taxid(self, accession, params):
+        conn_refseq = sqlite3.connect(params["databases_dir"] + "/ncbi-taxonomy/prot_accession2taxid.db")
+        cursor = conn_refseq.cursor()
+
+        query_string = ",".join(["\"" + a + "\"" for a in accession])
+        query = (
+            f"SELECT accession, taxid FROM accession2taxid "
+            f"WHERE accession IN ({query_string});" 
+        )
+        results = cursor.execute(query,).fetchall()
+        hsh_results = {}
+        for line in results:
+            hsh_results[line[0]] = int(line[1])
+        return hsh_results
+
+    def get_accession_to_prot(self, accession, params):
+        conn_refseq = sqlite3.connect(params["databases_dir"] + "/refseq/merged_refseq.db")
+        cursor = conn_refseq.cursor()
+
+        fmt_string = ",".join(["\"" + a + "\"" for a in accession])
+        query = (
+            f"SELECT accession, description, sequence_length FROM refseq "
+            f"WHERE accession IN ({fmt_string});"
+        )
+        results = cursor.execute(query,).fetchall()
+        hsh_results = {}
+        for line in results:
+            hsh_results[line[0]] = (line[1], int(line[2]))
+        return hsh_results
 
     def get_hsh_locus_to_seqfeature_id(self):
         query = (

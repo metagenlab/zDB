@@ -220,7 +220,6 @@ def load_refseq_matches(args, diamond_tsvs):
     db = chlamdb.DB.load_db(args)
     db.create_refseq_hits_table()
 
-
     # map accessions to id
     sseqid_hsh = {}
     sseqid_id = 0
@@ -248,12 +247,34 @@ def load_refseq_matches(args, diamond_tsvs):
                 seqfeature_id = query_hash_to_seqfeature_id[query_hash]
             lst_args = row.tolist()
             data.append([hit_count, seqfeature_id, sseqid_hsh[match_accession]] + lst_args[2:])
-            set_sseqids.add(match_accession)
         db.load_refseq_hits(data)
     # see which indices are better fitted
     # db.create_refseq_hits_indices()
     db.commit()
     return sseqid_hsh
+
+def chunks(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i:i+n]
+
+def load_refseq_matches_infos(args, hsh_sseqids):
+    db = chlamdb.DB.load_db(args)
+    db.create_diamond_refseq_match_id()
+
+    # ugly
+    for chunk in chunks(list(hsh_sseqids.keys()), 2000):
+        hsh_accession_to_taxid = db.get_accession_to_taxid(chunk, args)
+        hsh_accession_to_prot = db.get_accession_to_prot(chunk, args)
+
+        data = []
+        # Note: need to add some error handling in case the accession is not found
+        # in the databases
+        for key in chunk:
+            taxid = hsh_accession_to_taxid[key]
+            description, length = hsh_accession_to_prot[key]
+            data.append([hsh_sseqids[key], key, taxid, description, length])
+        db.load_diamond_refseq_match_id(data)
+    db.commit()
 
 def load_seq_hashes(args, nr_mapping, nr_fasta):
     db = chlamdb.DB.load_db(args)
