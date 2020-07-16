@@ -8,6 +8,8 @@ from Bio import AlignIO
 from Bio.Align import MultipleSeqAlignment
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
+import chlamdb
+
 import pandas as pd
 import sys
 import sqlite3
@@ -1209,6 +1211,12 @@ def refseq_accession2fasta(accession_list):
     handle = Entrez.efetch(db='protein', id=','.join(accession_list), rettype="fasta", retmode="text")
     records = [i for i in SeqIO.parse(handle, "fasta")]
     return records
+
+# For each orthogroup, get the best non-PVC hits
+def get_diamond_top_hits(params):
+    db = chlamdb.DB.load_db(params)
+
+
 
 def get_diamond_refseq_top_hits(params):
     databases_dir = params["databases_dir"]

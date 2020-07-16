@@ -95,7 +95,10 @@ class DB:
         # 4 is for the potential suffix if two hashes are identical
         # -> for now a "-n" is added at the end of the hash. Adding
         # 4 of length accounts for the "-" and a pessimistic 3 digits in case
-        # there are lots of collisions
+        # there are lots of collisions.
+        #
+        # TODO: to optimize disk space usage, may use the max length of the hashes
+        # instead, as collisions are unlikely.
         hash_len = len("CRC-") + 16 + 4
         sql = (
             f"CREATE TABLE sequence_hash_dictionnary (seqfeature_id, hash VARCHAR({hash_len})," 
@@ -104,10 +107,7 @@ class DB:
             " FOREIGN KEY(seqfeature_id) REFERENCES seqfeature(seqfeature_id));"
         )
         self.server.adaptor.execute(sql,)
-        sql = (
-            "INSERT INTO sequence_hash_dictionnary VALUES (?, ?, ?);"
-        )
-        self.server.adaptor.executemany(sql, to_load)
+        self.load_data_into_table("sequence_hash_dictionnary", to_load)
 
         sql = "CREATE INDEX shd_id on sequence_hash_dictionnary (seqfeature_id)"
         self.server.adaptor.execute(sql)
@@ -117,17 +117,84 @@ class DB:
     def create_diamond_refseq_match_id(self):
         query = (
             "CREATE TABLE diamond_refseq_match_id ( "
-            "match_id INT, accession VARCHAR(200), taxid INT, description, length INT, "
+            "match_id INT, accession VARCHAR(200), taxid INT, description TEXT, length INT, "
             "PRIMARY KEY(match_id));"
         )
         self.server.adaptor.execute(query,)
 
     def load_diamond_refseq_match_id(self, data):
-        fmt = ",".join(["?"] * len(data[0]))
-        query = (
-            f"INSERT INTO diamond_refseq_match_id VALUES({fmt});"
+        self.load_data_into_table("diamond_refseq_match_id", data)
+
+    def create_refseq_hits_taxonomy(self):
+        sql = (
+            "CREATE TABLE IF NOT EXISTS refseq_hits_taxonomy(taxid INT, superkingdom INT, pylum INT, "
+            "class INT, order_id INT, family INT, genus INT, specie INT, PRIMARY KEY(taxid));"
         )
-        self.server.adaptor.executemany(query, data)
+        self.server.adaptor.execute(sql)
+
+    def create_taxonomy_mapping(self, hsh):
+        sql = (
+            "CREATE TABLE taxonomy_mapping(taxid INT, "
+            "rank TEXT, value TEXT, PRIMARY KEY(taxid));"
+        )
+        self.server.adaptor.execute(sql)
+        lst_values = []
+        for key, (rank, value) in hsh.items():
+            lst_values.append( (key, rank, value) )
+        self.load_data_into_table("taxonomy_mapping", lst_values)
+
+    def load_data_into_table(self, table, data):
+        fmt_string = ", ".join(["?"] * len(data[0]))
+        sql_string = f"INSERT into {table} VALUES ({fmt_string});"
+        self.server.adaptor.executemany(sql_string, data)
+
+    def load_refseq_hits_taxonomy(self, data):
+        self.load_data_into_table("refseq_hits_taxonomy", data)
+
+    def get_all_taxids(self):
+        query = (
+            "SELECT DISTINCT taxid from diamond_refseq_match_id;"
+        )
+        results = self.server.adaptor.execute_and_fetchall(query,)
+        taxids = []
+        for line in results:
+            taxids.append(int(line[0]))
+        return taxids
+
+    hsh_taxo_key = {
+            "superkingdom" : (1, 2),
+            "phylum" :       (3, 4),
+            "class" :        (5, 6),
+            "order" :        (7, 8),
+            "family" :       (9, 10),
+            "genus" :        (11, 12),
+            "species" :      (13, 14)
+    }
+    def parse_taxo(self, results):
+        # taxid
+        lst = [ results[0] ]
+        for (idx_name, idx_taxid) in self.hsh_taxo_key.values():
+            lst.append( results[idx_name] )
+            lst.append( results[idx_taxid] )
+        return lst
+
+    def get_linear_taxonomy(self, args, taxids):
+        conn_refseq = sqlite3.connect(args["databases_dir"] + "/ncbi-taxonomy/linear_taxonomy.db")
+        cursor = conn_refseq.cursor()
+
+        query_string = ",".join([str(i) for i in taxids])
+        query = (
+            "SELECT tax_id, `superkingdom`, superkingdom_taxid, "
+            " `phylum`, phylum_taxid, `class`, class_taxid, "
+            " `order`, order_taxid, `family`, family_taxid, "
+            " `genus`, genus_taxid, `species`, species_taxid "
+            f"FROM ncbi_taxonomy WHERE tax_id IN ({query_string});"
+        )
+        results = cursor.execute(query, ).fetchall()
+        lst_results = []
+        for line in results:
+            lst_results.append(self.parse_taxo(line))
+        return lst_results
 
     def get_accession_to_taxid(self, accession, params):
         conn_refseq = sqlite3.connect(params["databases_dir"] + "/ncbi-taxonomy/prot_accession2taxid.db")
@@ -354,7 +421,7 @@ class DB:
 
     def create_refseq_hits_table(self):
         sql = (
-            f"CREATE TABLE diamond_refseq(hit_count INT, qseqid INT, "
+            f"CREATE TABLE IF NOT EXISTS diamond_refseq(hit_count INT, qseqid INT, "
             f"sseqid INT, pident FLOAT, length INT, mismatch INT, "
             f"gapopen INT, qstart INT, qend INT, sstart INT, "
             f"send INT, evalue FLOAT, bitscore FLOAT, "
@@ -376,12 +443,7 @@ class DB:
         return hsh
 
     def load_refseq_hits(self, data):
-        entry = ",".join(["?"] * len(data[0]))
-        sql = (
-            f"INSERT INTO diamond_refseq VALUES ({entry})"
-        )
-        self.server.adaptor.executemany(sql, data)
-
+        self.load_data_into_table("diamond_refseq", data)
 
     def setup_orthology_table(self):
         sql1 = 'SELECT ontology_id FROM ontology WHERE name="SeqFeature Keys"'
@@ -408,7 +470,6 @@ class DB:
             "FROM bioentry entry INNER JOIN biosequence as sequence "
             " ON entry.bioentry_id=sequence.bioentry_id"
         )
-
 
     # wrapper methods
     def commit(self):

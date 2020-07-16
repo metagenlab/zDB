@@ -257,6 +257,29 @@ def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i+n]
 
+def load_refseq_matches_linear_taxonomy(args):
+    db = chlamdb.DB.load_db(args)
+    db.create_refseq_hits_taxonomy()
+
+    taxids = db.get_all_taxids()
+    hsh_taxid_to_name = {}
+    hsh_taxo_key = db.hsh_taxo_key
+    for chunk in chunks(taxids, 2000):
+        query_results = db.get_linear_taxonomy(args, chunk)
+        results_only_taxids = []
+        for result in query_results:
+            only_taxids = []
+            only_taxids.append(result[0])
+            for rank, (idx_name, idx_taxid) in hsh_taxo_key.items():
+                if result[idx_taxid] not in hsh_taxid_to_name:
+                    hsh_taxid_to_name[result[idx_taxid]] = (rank, result[idx_name]) 
+                only_taxids.append(result[idx_taxid])
+            results_only_taxids.append(only_taxids)
+        db.load_refseq_hits_taxonomy(results_only_taxids)
+
+    db.create_taxonomy_mapping(hsh_taxid_to_name)
+    db.commit()
+
 def load_refseq_matches_infos(args, hsh_sseqids):
     db = chlamdb.DB.load_db(args)
     db.create_diamond_refseq_match_id()

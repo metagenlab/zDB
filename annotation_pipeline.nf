@@ -1687,30 +1687,47 @@ process create_db {
     diamond_tab_files = "$diamond_tsv_list".split()
 
     setup_chlamdb.setup_chlamdb(**kwargs)
+    print("Loading gbks")
     setup_chlamdb.load_gbk(gbk_list, kwargs)
 
     # kept for now, need to check whether this is really necessary to keep the hash
+    print("Loading seq hashes")
     setup_chlamdb.load_seq_hashes(kwargs, "$nr_mapping_file", "$nr_fasta")
+
+    print("Loading orthofinder results")
     setup_chlamdb.load_orthofinder_results("$orthofinder", kwargs)
+
+    print("Loading alignments")
     setup_chlamdb.load_alignments_results(kwargs, alignments_lst)
+
+    print("Loading refseq matches")
     hsh_sseqid = setup_chlamdb.load_refseq_matches(kwargs, diamond_tab_files)
+
+    print("Loading refseq matches infos")
     setup_chlamdb.load_refseq_matches_infos(kwargs, hsh_sseqid)
+
+    print("Loading refseq matches taxonomy")
+    setup_chlamdb.load_refseq_matches_linear_taxonomy(kwargs)
     """
 }
 
-/*
 process in_test {
-
     input:
         file curr_db from db_gen
 
     output:
-        file curr_db
+        file "*_nr_hits.faa" into diamond_refseq_hits_fasta
 
     script:
     """
+    #!/usr/bin/env python
+
+    import annotations
+
+    kwargs = ${gen_python_args()}
+    annotations.get_diamond_top_hits(kwargs)
     """
-}*/
+}
 
 
 workflow.onComplete {
