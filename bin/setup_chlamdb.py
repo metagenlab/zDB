@@ -278,8 +278,10 @@ def load_refseq_matches_linear_taxonomy(args):
         db.load_refseq_hits_taxonomy(results_only_taxids)
 
     db.create_taxonomy_mapping(hsh_taxid_to_name)
+    db.create_refseq_hits_taxonomy_indices()
     db.commit()
 
+# hsh_sseqids: maps accession to 
 def load_refseq_matches_infos(args, hsh_sseqids):
     db = chlamdb.DB.load_db(args)
     db.create_diamond_refseq_match_id()
@@ -297,6 +299,7 @@ def load_refseq_matches_infos(args, hsh_sseqids):
             description, length = hsh_accession_to_prot[key]
             data.append([hsh_sseqids[key], key, taxid, description, length])
         db.load_diamond_refseq_match_id(data)
+    db.create_diamond_refseq_match_id_indices()
     db.commit()
 
 def load_seq_hashes(args, nr_mapping, nr_fasta):

@@ -1212,11 +1212,28 @@ def refseq_accession2fasta(accession_list):
     records = [i for i in SeqIO.parse(handle, "fasta")]
     return records
 
-# For each orthogroup, get the best non-PVC hits
+# For each orthogroup, get the best non-PVC hits, ordered by hit count
+# get the sequences for the n best hits and add output them in a file
+# with the sequences from the orthogroup.
 def get_diamond_top_hits(params):
     db = chlamdb.DB.load_db(params)
+    hsh_non_pvc = db.get_non_PVC_refseq_matches()
 
+    # The following line may cause the creation of a black hole when
+    # Refseq is loaded in Asterix's memory. Let's hope it does not happen.
+    seq_dict = SeqIO.to_dict(SeqIO.open(params["databases_dir"]+"/refseq/merged.faa"))
+    for orthogroup, non_pvc_match_accessions in hsh_non_pvc.items():
+        output_file = open(f"OG{orthogroup}_nr_hits.faa", "w")
 
+        # returns a list of [locus_tag, sequence]
+        sequences = db.get_all_sequences_for_orthogroup(orthogroup)
+        for locus_tag, sequence in sequences:
+            output_file.write(f">{locus_tag}\n")
+            output_file.write(sequence)
+            output_file.write("\n")
+        for accession in non_pvc_match_accessions:
+            record = seq_dict[accession]
+            SeqIO.write(output_file, record)
 
 def get_diamond_refseq_top_hits(params):
     databases_dir = params["databases_dir"]

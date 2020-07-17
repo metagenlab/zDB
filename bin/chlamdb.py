@@ -114,6 +114,70 @@ class DB:
         sql = "CREATE INDEX shd_hsh on sequence_hash_dictionnary (hash)"
         self.server.adaptor.execute(sql)
 
+    # Returns a hash that maps the accesion the orthogroup it was linked to
+    # Note: this function already filters the top n hits
+    def get_non_PVC_refseq_matches(self, params):
+        pvc = params["refseq_diamond_BBH_phylogeny_phylum_filter"]
+        max_hit_count = params["refseq_diamond_BBH_phylogeny_top_n_hits"]
+        pvc_fmt_string = ",".join([f"\"{phylum}\"" for phylum in pvc])
+        query = (
+            "SELECT refseq_hit.qseq_id, refseq_hit_id.accession, feature.value, refseq_hit.hit_count "
+            "FROM diamond_refseq AS refseq_hit "
+            "INNER JOIN diamond_refseq_match_id AS refseq_hit_id "
+            "   ON refseq_hit.sseqid=refseq_hit_id.match_id "
+            " INNER JOIN seqfeature_qualifier_value as feature "
+            "   ON feature.seqfeature_id=refseq_hit.qseqid "
+            "INNER JOIN term as t ON t.term_id = feature.term_id AND t.name=\"orthogroup\" "
+            "INNER JOIN refseq_hits_taxonomy AS taxo ON taxo.taxid=refseq_hit_id.taxid "
+            "INNER JOIN taxonomy_mapping taxo_name "
+            "   ON taxo.pylum=taxo_name.taxid AND taxo_name.value NOT IN ({pvc_fmt_string}) "
+            "ORDER BY refseq_hit.qseqid ASC, hit_count ASC);"
+        )
+        results = self.server.execute_and_fetchall()
+
+        # The following code relies on the results being grouped by qseqid
+        # and ordered by hit count by the SQL query
+        hsh_results = {}
+        curr_tab = []
+        curr_qseq_id = None
+        curr_count = 0
+
+        # The accession not in curr_tab are not really efficient, particularly
+        # since they compare strings and perform in O(n). May need to improve
+        # on it lots of sequences are added for each orthogroup.
+        for result in results:
+            qseqid, accession, orthogroup = result[0], result[1], result[2]
+            if qseqid != curr_qseq_id:
+                curr_tab = hsh_results.get(orthogroup, [])
+                hsh_results[orthogroup] = curr_tab
+                if accession not in curr_tab:
+                    curr_tab.append(accession)
+                curr_count = 1
+                curr_qseq_id = qseqid
+            elif curr_count < max_hit_count:
+                if accession not in curr_tab:
+                    curr_tab.append(accession)
+                curr_count += 1
+        return hsh_results
+
+    def get_all_sequences_for_orthogroup(self, orthogroup):
+        query = (
+            "SELECT locus.value, seq.sequence "
+            "FROM seqfeature_qualifier_value AS ortho "
+            "INNER JOIN term as ortho_term "
+            "   ON ortho_term.term_id=ortho.term_id AND ortho_term.name=\"orthogroup\" "
+            "INNER JOIN sequence_hash_dictionnary as seq ON seq.seqfeature_id = ortho.seqfeature_id "
+            "INNER JOIN seqfeature_qualifier_value locus ON locus.seqfeature_id=ortho.seqfeature_id "
+            "INNER JOIN term as locus_term "
+            "   ON locus_term.term_id=locus.term_id AND locus_term.name=\"locus_tag\" "
+            f"WHERE ortho.value={orthogroup};"
+        )
+        results = self.server.adaptor.execute(query,)
+        tab = []
+        for result in results:
+            tab.append([result[0], result[1]])
+        return tab
+
     def create_diamond_refseq_match_id(self):
         query = (
             "CREATE TABLE diamond_refseq_match_id ( "
@@ -125,10 +189,22 @@ class DB:
     def load_diamond_refseq_match_id(self, data):
         self.load_data_into_table("diamond_refseq_match_id", data)
 
+    def create_diamond_refseq_match_id(self):
+        query = (
+            "CREATE INDEX drmii ON diamond_refseq_match_id(match_id);"
+        )
+        self.server.adaptor.execute(query,)
+
     def create_refseq_hits_taxonomy(self):
         sql = (
-            "CREATE TABLE IF NOT EXISTS refseq_hits_taxonomy(taxid INT, superkingdom INT, pylum INT, "
+            "CREATE TABLE IF NOT EXISTS refseq_hits_taxonomy(taxid INT, superkingdom INT, phylum INT, "
             "class INT, order_id INT, family INT, genus INT, specie INT, PRIMARY KEY(taxid));"
+        )
+        self.server.adaptor.execute(sql)
+
+    def create_refseq_hits_taxonomy_indices(self):
+        sql = (
+            "CREATE INDEX rhti ON refseq_hits_taxonomy(taxid)"
         )
         self.server.adaptor.execute(sql)
 
