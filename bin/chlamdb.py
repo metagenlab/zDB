@@ -121,7 +121,7 @@ class DB:
         max_hit_count = params["refseq_diamond_BBH_phylogeny_top_n_hits"]
         pvc_fmt_string = ",".join([f"\"{phylum}\"" for phylum in pvc])
         query = (
-            "SELECT refseq_hit.qseq_id, refseq_hit_id.accession, feature.value, refseq_hit.hit_count "
+            "SELECT refseq_hit.qseqid, refseq_hit_id.accession, feature.value, refseq_hit.hit_count "
             "FROM diamond_refseq AS refseq_hit "
             "INNER JOIN diamond_refseq_match_id AS refseq_hit_id "
             "   ON refseq_hit.sseqid=refseq_hit_id.match_id "
@@ -130,10 +130,10 @@ class DB:
             "INNER JOIN term as t ON t.term_id = feature.term_id AND t.name=\"orthogroup\" "
             "INNER JOIN refseq_hits_taxonomy AS taxo ON taxo.taxid=refseq_hit_id.taxid "
             "INNER JOIN taxonomy_mapping taxo_name "
-            "   ON taxo.pylum=taxo_name.taxid AND taxo_name.value NOT IN ({pvc_fmt_string}) "
-            "ORDER BY refseq_hit.qseqid ASC, hit_count ASC);"
+            f"   ON taxo.pylum=taxo_name.taxid AND taxo_name.value NOT IN ({pvc_fmt_string}) "
+            "ORDER BY refseq_hit.qseqid ASC, hit_count ASC;"
         )
-        results = self.server.execute_and_fetchall()
+        results = self.server.adaptor.execute_and_fetchall(query, )
 
         # The following code relies on the results being grouped by qseqid
         # and ordered by hit count by the SQL query
@@ -172,7 +172,7 @@ class DB:
             "   ON locus_term.term_id=locus.term_id AND locus_term.name=\"locus_tag\" "
             f"WHERE ortho.value={orthogroup};"
         )
-        results = self.server.adaptor.execute(query,)
+        results = self.server.adaptor.execute_and_fetchall(query,)
         tab = []
         for result in results:
             tab.append([result[0], result[1]])

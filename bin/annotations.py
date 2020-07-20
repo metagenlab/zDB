@@ -21,6 +21,8 @@ import datetime
 import logging
 import http.client
 
+import mmap
+
 from ftplib import FTP
 
 # Heuristic to detect T3SS effectors inc proteins
@@ -1212,16 +1214,57 @@ def refseq_accession2fasta(accession_list):
     records = [i for i in SeqIO.parse(handle, "fasta")]
     return records
 
+# As the merged_refseq file is quite big, parse it manually to extract
+# the sequences of interest
+# Returns the list of accessions and sequences
+# Parameters:
+# - refseq_mmap: the memory map of the refseq file that will be read
+# - to_find: the lookup table
+#
+# Note: it assumes refseq.faa starts with a record (i.e. a ">"), that the accession
+# length is 12 chars and that it is followed by a version number.
+def get_sequences(refseq, hsh_accessions):
+    accession_starts = bytes(">", "utf-8")
+    len_accession = 12
+    found = 0
+
+    ttl_to_find = len(hsh_accessions)
+    start_index = refseq.find(accession_starts)
+    assert(start_index != -1)
+
+    while found<ttl_to_find and start_index!=-1:
+        next_record = refseq.find(accession_starts, start_index+1)
+        refseq.seek(start_index+1)
+        curr_accession = refseq.read(len_accession).decode("utf-8")
+        refseq.seek(start_index)
+        if curr_accession in hsh_accessions:
+            found += 1
+            if next_record != -1:
+                record = refseq.read(next_record-start_index).decode("utf-8")
+            else:
+                record = refseq.read(refseq.size()-start_index).decode("utf-8")
+
+            hsh_accessions[curr_accession] = record
+
+        start_index = next_record
+
 # For each orthogroup, get the best non-PVC hits, ordered by hit count
 # get the sequences for the n best hits and add output them in a file
 # with the sequences from the orthogroup.
 def get_diamond_top_hits(params):
     db = chlamdb.DB.load_db(params)
-    hsh_non_pvc = db.get_non_PVC_refseq_matches()
+    hsh_non_pvc = db.get_non_PVC_refseq_matches(params)
 
-    # The following line may cause the creation of a black hole when
-    # Refseq is loaded in Asterix's memory. Let's hope it does not happen.
-    seq_dict = SeqIO.to_dict(SeqIO.open(params["databases_dir"]+"/refseq/merged.faa"))
+    hsh_accessions = {}
+    for orthogroup, non_pvc_match_accessions in hsh_non_pvc.items():
+        for accession in non_pvc_match_accessions:
+            hsh_accessions[accession] = None
+
+    refseq_merged = open(params["databases_dir"]+"/refseq/merged.faa", "r")
+    refseq_mmap = mmap.mmap(refseq_merged.fileno(), 0, access=mmap.ACCESS_READ)
+    print("Getting sequences")
+    get_sequences(refseq_mmap, hsh_accessions)
+
     for orthogroup, non_pvc_match_accessions in hsh_non_pvc.items():
         output_file = open(f"OG{orthogroup}_nr_hits.faa", "w")
 
@@ -1232,8 +1275,11 @@ def get_diamond_top_hits(params):
             output_file.write(sequence)
             output_file.write("\n")
         for accession in non_pvc_match_accessions:
-            record = seq_dict[accession]
-            SeqIO.write(output_file, record)
+            record = hsh_accessions[accession]
+            if record == None:
+                print(f"Missing record: {accession}")
+            else:
+                output_file.write(record)
 
 def get_diamond_refseq_top_hits(params):
     databases_dir = params["databases_dir"]
