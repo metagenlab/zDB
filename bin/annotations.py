@@ -1221,11 +1221,9 @@ def refseq_accession2fasta(accession_list):
 # - refseq_mmap: the memory map of the refseq file that will be read
 # - to_find: the lookup table
 #
-# Note: it assumes refseq.faa starts with a record (i.e. a ">"), that the accession
-# length is 12 chars and that it is followed by a version number.
+# Assumes there is a "." for the version at the end of every accession
 def get_sequences(refseq, hsh_accessions):
     accession_starts = bytes(">", "utf-8")
-    len_accession = 12
     found = 0
 
     ttl_to_find = len(hsh_accessions)
@@ -1234,8 +1232,9 @@ def get_sequences(refseq, hsh_accessions):
 
     while found<ttl_to_find and start_index!=-1:
         next_record = refseq.find(accession_starts, start_index+1)
+        end_accession = refseq.find(bytes(".", "utf-8"), start_index+1)
         refseq.seek(start_index+1)
-        curr_accession = refseq.read(len_accession).decode("utf-8")
+        curr_accession = refseq.read(end_accession-start_index-1).decode("utf-8")
         refseq.seek(start_index)
         if curr_accession in hsh_accessions:
             found += 1
@@ -1245,7 +1244,6 @@ def get_sequences(refseq, hsh_accessions):
                 record = refseq.read(refseq.size()-start_index).decode("utf-8")
 
             hsh_accessions[curr_accession] = record
-
         start_index = next_record
 
 # For each orthogroup, get the best non-PVC hits, ordered by hit count
@@ -1262,7 +1260,6 @@ def get_diamond_top_hits(params):
 
     refseq_merged = open(params["databases_dir"]+"/refseq/merged.faa", "r")
     refseq_mmap = mmap.mmap(refseq_merged.fileno(), 0, access=mmap.ACCESS_READ)
-    print("Getting sequences")
     get_sequences(refseq_mmap, hsh_accessions)
 
     for orthogroup, non_pvc_match_accessions in hsh_non_pvc.items():
