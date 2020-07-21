@@ -1215,7 +1215,7 @@ def refseq_accession2fasta(accession_list):
     return records
 
 # As the merged_refseq file is quite big, parse it manually to extract
-# the sequences of interest
+# the sequences of interest.
 # Returns the list of accessions and sequences
 # Parameters:
 # - refseq_mmap: the memory map of the refseq file that will be read
@@ -1249,6 +1249,9 @@ def get_sequences(refseq, hsh_accessions):
 # For each orthogroup, get the best non-PVC hits, ordered by hit count
 # get the sequences for the n best hits and add output them in a file
 # with the sequences from the orthogroup.
+#
+# The sequences are retrieved from the merged.faa file. There should not
+# be any misses, as this file was used to generate the index used by diamond.
 def get_diamond_top_hits(params):
     db = chlamdb.DB.load_db(params)
     hsh_non_pvc = db.get_non_PVC_refseq_matches(params)
@@ -1258,6 +1261,7 @@ def get_diamond_top_hits(params):
         for accession in non_pvc_match_accessions:
             hsh_accessions[accession] = None
 
+    # use a memory map strategy as the file is quite large
     refseq_merged = open(params["databases_dir"]+"/refseq/merged.faa", "r")
     refseq_mmap = mmap.mmap(refseq_merged.fileno(), 0, access=mmap.ACCESS_READ)
     get_sequences(refseq_mmap, hsh_accessions)

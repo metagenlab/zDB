@@ -1306,53 +1306,6 @@ process get_diamond_refseq_top_hits {
 }
 */
 
-/*
-process align_refseq_BBH_with_mafft {
-
-  container "$params.annotation_container"
-
-  publishDir 'orthology/orthogroups_refseq_diamond_BBH_alignments', mode: 'copy', overwrite: true
-
-  when:
-  params.refseq_diamond_BBH_phylogeny
-
-  input:
-  file og from diamond_refseq_hits_fasta.flatten().collate( 20 )
-
-  output:
-  file "*_mafft.faa" into mafft_alignments_refseq_BBH
-
-  script:
-  """
-  unset MAFFT_BINARIES
-  for faa in ${og}; do
-  mafft --anysymbol \$faa > \${faa/.faa/_mafft.faa}
-  done
-  """
-}
-
-mafft_alignments_refseq_BBH.flatten().set{ diamond_BBH_alignments }
-
-process orthogroup_refseq_BBH_phylogeny_with_fasttree {
-
-  // Note : not sure fasttree is actually included in
-  // annotation_container
-  container "$params.annotation_container"
-  cpus 4
-  publishDir 'orthology/orthogroups_refseq_diamond_BBH_phylogenies', mode: 'copy', overwrite: true
-
-  input:
-  each file(og) from diamond_BBH_alignments
-
-  output:
-    file "${og.baseName}.nwk"
-
-  script:
-  """
-  FastTree ${og} > ${og.baseName}.nwk
-  """
-}
-*/
 
 
 // Filter out small sequences and ambiguous AA
@@ -1711,16 +1664,20 @@ process create_db {
     """
 }
 
-process in_test {
+process extract_non_PVC_best_hits_sequences {
     input:
         file curr_db from db_gen
 
+    when:
+        params.refseq_diamond_BBH_phylogeny
+
     output:
-        file "*_nr_hits.faa" into diamond_refseq_hits_fasta
+        file "*_nr_hits.faa" into diamond_best_hits
 
     script:
     """
     #!/usr/bin/env python
+    # final version?
 
     import annotations
 
@@ -1728,6 +1685,45 @@ process in_test {
     annotations.get_diamond_top_hits(kwargs)
     """
 }
+
+process align_refseq_BBH_with_mafft {
+  container "$params.annotation_container"
+
+  publishDir 'orthology/orthogroups_refseq_diamond_BBH_alignments', mode: 'copy', overwrite: true
+
+  input:
+    file og from diamond_best_hits.flatten().collate( 20 )
+
+  output:
+  file "*_mafft.faa" into mafft_alignments_refseq_BBH
+
+  script:
+  """
+  unset MAFFT_BINARIES
+  for faa in ${og}; do
+  mafft --anysymbol \$faa > \${faa/.faa/_mafft.faa}
+  done
+  """
+}
+
+mafft_alignments_refseq_BBH.flatten().set{ diamond_BBH_alignments }
+
+process orthogroup_refseq_BBH_phylogeny_with_fasttree {
+  container "$params.annotation_container"
+  publishDir 'orthology/orthogroups_refseq_diamond_BBH_phylogenies', mode: 'copy', overwrite: true
+
+  input:
+  each file(og) from diamond_BBH_alignments
+
+  output:
+    file "${og.baseName}.nwk"
+
+  script:
+  """
+  FastTree ${og} > ${og.baseName}.nwk
+  """
+}
+
 
 
 workflow.onComplete {
