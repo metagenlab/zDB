@@ -80,18 +80,45 @@ def create_data_table(kwargs):
                                     db=db_name) # name of the data base
         cursor = conn.cursor()
     entry_list = [
-        ("minimal", "mandatory", False),
+        # Done
         ("gbk_files", "mandatory", False),
+
+        # Done
         ("orthology_data", "mandatory", False),
+
+        # Done: may be removed as the data is already in the database and the result
+        # can be generated on the fly.
+        # Note: not all data was generated as it can be generated on the fly.
         ("orthology_comparative", "mandatory", False),
+
+        # this is one load tables that can generated on the fly
+        # will need to write the queries
         ("orthology_comparative_accession", "mandatory", False),
+
+        # this is one load tables that can generated on the fly
+        # will need to write the queries
         ("orthology_consensus_annotation", "mandatory", False),
+
+        # Done
         ("orthogroup_alignments", "mandatory", False),
+
+        # wut?
         ("old_locus_table", "mandatory", False),
+
+        # WIP
         ("reference_phylogeny", "mandatory", False),
+
+        # Done
         ("taxonomy_table", "mandatory", False),
+
+        # this is one load tables that can generated on the fly
+        # will need to write the queries/functions
         ("genome_statistics", "mandatory", False),
+
+        ############# Optional ###################
         ("BLAST_database", "optional", False),
+
+        # WIP
         ("gene_phylogenies", "optional", False),
         ("interpro_data", "optional", False),
         ("interpro_comparative", "optional", False),
@@ -113,6 +140,8 @@ def create_data_table(kwargs):
         ("PDB_data", "optional", False),
         ("BLAST_refseq", "optional", False),
         ("BLAST_swissprot", "optional", False),
+
+        # WIP
         ("BBH_phylogenies", "optional", False),
         ("GC_statistics", "optional", False),
         ("gene_clusters", "optional", False),
@@ -345,4 +374,15 @@ def load_alignments_results(args, alignment_files):
     db.load_og_averages(averages)
     db.create_og_matrix_indices()
     db.set_status_in_config_table("orthogroup_alignments", 1)
+    db.commit()
+
+def load_reference_phylogeny(kwargs, tree):
+    db = chlamdb.DB.load_db(kwargs)
+
+    newick_file = open(tree, "r")
+    newick_string = newick_file.readline()
+
+    # Note: will need to rename the nodes. Currently, they are named after
+    # the filename, this will need to be changed to the taxid.
+    db.load_reference_phylogeny(newick_string)
     db.commit()

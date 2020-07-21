@@ -528,24 +528,12 @@ class DB:
         self.server.adaptor.execute(sql2)
         return self.server.adaptor.cursor.lastrowid
 
-    def create_genome_statistics_table(self):
-        sql = (
-            "CREATE TABLE genomes_infos ("
-            "bioentry_id INT, " 
-            "GC FLOAT, n_CDS INT, n_contigs INT, genome_size INT, "
-            "n_tRNA INT, n_16S INT, n_23S INT, n_5S INT, "
-            "percent_non_coding FLOAT, big_contig_length INT "
-            "n_no_CDS INT, n_no_BBH_chlamydiae INT, " 
-            "PRIMARY KEY(bioentry_id), FOREIGN KEY bioentry_id bioentry(bioentry_id));"
-        )
-        self.server.adaptor.execute(sql, )
+    def load_reference_phylogeny(self, tree):
+        sql = "CREATE TABLE reference_phylogeny (tree TEXT);"
+        self.server.adaptor.execute(sql,)
 
-    def load_genome_statistic_table(self):
-        query = (
-            "SELECT bioentry_id, seq "
-            "FROM bioentry entry INNER JOIN biosequence as sequence "
-            " ON entry.bioentry_id=sequence.bioentry_id"
-        )
+        sql = "INSERT INTO reference_phylogeny VALUES (?);"
+        self.server.adaptor.execute(sql, tree)
 
     # wrapper methods
     def commit(self):

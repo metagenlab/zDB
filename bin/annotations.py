@@ -958,6 +958,8 @@ def get_nr_sequences(fasta_file, genomes_list):
 # see if this is useful to simplify the tables design to a single table
 # to speed up, may be also worth it to keep orthogroup as integers
 # String comparison is indeed much slower than integer comparison.
+# NOTE: redundant code, kept for now until chlamdb is fully functional with 
+# the new version
 def setup_orthology_db(fasta_file, nr_mapping_file, orthogroup):
   fasta_dict = SeqIO.to_dict(SeqIO.parse(fasta_file, "fasta"))
 
@@ -1106,6 +1108,8 @@ def accession2taxid_entrez(accession):
 
 
 # TODO: implement multithreading to run the SQL/web queries in parallel
+# NOTE: redundant code, kept for now until chlamdb is fully functional with 
+# the new version
 def get_refseq_hits_taxonomy(hit_table, database_dir):
     conn = sqlite3.connect("refseq_taxonomy.db")
     cursor = conn.cursor()
@@ -1208,6 +1212,8 @@ def concatenate_core_orthogroups(fasta_files):
 # because errors can occur (kind of randomly) with Entez (those errors
 # are not reproducible, this is why I did not care dealing with the 
 # infinite call)
+# NOTE: redundant code, kept for now until chlamdb is fully functional with 
+# the new version
 def refseq_accession2fasta(accession_list):
     Entrez.email = "trestan.pillonel@chuv.ch"
     handle = Entrez.efetch(db='protein', id=','.join(accession_list), rettype="fasta", retmode="text")
@@ -1282,6 +1288,8 @@ def get_diamond_top_hits(params):
             else:
                 output_file.write(record)
 
+# NOTE: redundant code, kept for now until chlamdb is fully functional with 
+# the new version
 def get_diamond_refseq_top_hits(params):
     databases_dir = params["databases_dir"]
     phylum_filter = params["refseq_diamond_BBH_phylogeny_phylum_filter"]
@@ -1380,6 +1388,9 @@ def get_uniprot_goa_mapping(database_dir, uniprot_acc_list):
         category = go[3]
         o.write(f"{accession_base}\t{GO_id}\t{reference}\t{evidence_code}\t{category}\n")
 
+
+# NOTE: redundant code, kept for now until chlamdb is fully functional with 
+# the new version
 def setup_diamond_refseq_db(diamond_tsv_files_list):
     conn = sqlite3.connect("diamond_refseq.db")
     cursor = conn.cursor()

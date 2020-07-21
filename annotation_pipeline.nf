@@ -659,7 +659,7 @@ process build_core_phylogeny_with_fasttree {
   file 'msa.faa' from core_msa
 
   output:
-  file 'core_genome_phylogeny.nwk'
+    file 'core_genome_phylogeny.nwk' into core_genome_phylogeny
 
   script:
   '''
@@ -1664,9 +1664,11 @@ process create_db {
     """
 }
 
+db_gen.into { to_BBH; db_taxo }
+
 process extract_non_PVC_best_hits_sequences {
     input:
-        file curr_db from db_gen
+        file curr_db from to_BBH
 
     when:
         params.refseq_diamond_BBH_phylogeny
@@ -1716,7 +1718,7 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   each file(og) from diamond_BBH_alignments
 
   output:
-    file "${og.baseName}.nwk"
+    file "${og.baseName}.nwk" into BBH_phylogenies
 
   script:
   """
@@ -1724,7 +1726,31 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   """
 }
 
+BBH_phylogenies.collect().into {BBH_phylogenies_to_db}
 
+process load_taxo_stats_into_db {
+
+    input:
+        file db from db_taxo
+        file BBH_phylogeny_trees from BBH_phylogenies_to_db
+        file core_phylogeny from core_genome_phylogeny
+
+    output:
+        file db
+
+    script:
+    """
+    #!/usr/bin/env python
+
+    import setup_chlamdb
+
+    kwargs = ${gen_python_args()}
+
+    setup_chlamdb.load_reference_phylogeny(kwargs, "$core_phylogeny")
+    # setup_chlamdb.load_og_phylogenies(kwargs)
+    # setup_chlamdb.load_BBH_phylogenies(kwargs)
+    """
+}
 
 workflow.onComplete {
   // Display complete message
