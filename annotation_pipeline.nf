@@ -1137,7 +1137,7 @@ process execute_kofamscan {
 
   publishDir 'annotation/KO', mode: 'copy', overwrite: true
 
-  container "$params.annotation_container"
+  container "$params.kegg_container"
 
   when:
   params.ko == true
@@ -1151,9 +1151,8 @@ process execute_kofamscan {
   script:
   n = seq.name
 
-  // Hack for now
   """
-  ${params.databases_dir}/kegg/exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list.txt --cpu ${task.cpus} -o ${n}.tab
+  exec_annotation ${n} -p ${params.databases_dir}/kegg/profiles/prokaryote.hal -k ${params.databases_dir}/kegg/ko_list.txt --cpu ${task.cpus} -o ${n}.tab
   """
 }
 
