@@ -520,6 +520,8 @@ process orthogroups_phylogeny_with_raxml {
 }
 */
 
+
+// ToDo: group alignments to avoid using a process per alignment
 process orthogroups_phylogeny_with_fasttree3 {
 
   container "$params.annotation_container"
@@ -1745,9 +1747,12 @@ process load_taxo_stats_into_db {
 
     kwargs = ${gen_python_args()}
 
+    BBH_list = "$BBH_phylogeny_trees".split(" ")
+    gene_list = "$gene_phylogeny".split(" ")
+
     setup_chlamdb.load_reference_phylogeny(kwargs, "$core_phylogeny")
-    # setup_chlamdb.load_og_phylogenies(kwargs)
-    # setup_chlamdb.load_BBH_phylogenies(kwargs)
+    setup_chlamdb.load_gene_phylogenies(kwargs, gene_list)
+    setup_chlamdb.load_BBH_phylogenies(kwargs, BBH_list)
     """
 }
 

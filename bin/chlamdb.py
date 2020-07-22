@@ -409,6 +409,24 @@ class DB:
             )
             self.server.adaptor.execute(sql,)
 
+    def create_BBH_phylogeny_table(self, data):
+        sql = (
+            "CREATE TABLE BBH_phylogeny (orthogroup_id INTEGER, tree TEXT, "
+            "PRIMARY_KEY(orthogroup_id), "
+            " FOREIGN KEY orthogroup_id REFERENCES orthology_orthogroup(orthogroup_id));"
+        )
+        self.server.adaptor.execute(sql,)
+        self.load_data_into_table("BBH_phylogeny", data)
+
+    def create_gene_phylogeny_table(self, data):
+        sql = (
+            "CREATE TABLE gene_phylogeny (orthogroup_id INTEGER, tree TEXT, "
+            "PRIMARY_KEY(orthogroup_id), "
+            " FOREIGN KEY orthogroup_id REFERENCES orthology_orthogroup(orthogroup_id));"
+        )
+        self.server.adaptor.execute(sql,)
+        self.load_data_into_table("gene_phylogeny", data)
+
     # NOTE: may be more efficient to create indices on a combination of keys, depending
     # on how the table is used.
     def create_og_matrix_indices(self):

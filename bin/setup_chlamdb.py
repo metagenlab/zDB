@@ -5,6 +5,8 @@ import re
 import chlamdb
 import pandas as pd
 
+import ete3
+
 from Bio import SeqIO
 from Bio import AlignIO
 
@@ -118,7 +120,7 @@ def create_data_table(kwargs):
         ############# Optional ###################
         ("BLAST_database", "optional", False),
 
-        # WIP
+        # Done
         ("gene_phylogenies", "optional", False),
         ("interpro_data", "optional", False),
         ("interpro_comparative", "optional", False),
@@ -141,7 +143,7 @@ def create_data_table(kwargs):
         ("BLAST_refseq", "optional", False),
         ("BLAST_swissprot", "optional", False),
 
-        # WIP
+        # Done
         ("BBH_phylogenies", "optional", False),
         ("GC_statistics", "optional", False),
         ("gene_clusters", "optional", False),
@@ -374,6 +376,34 @@ def load_alignments_results(args, alignment_files):
     db.load_og_averages(averages)
     db.create_og_matrix_indices()
     db.set_status_in_config_table("orthogroup_alignments", 1)
+    db.commit()
+
+# Note: the trees are stored in files with name formatted as:
+# OGN_nr_hits_mafft.nwk. To retrieve the orthogroup, parse the filename
+# and convert it to int.
+#
+# Note2: from a database design perspective, may be worth to put all the 
+# phylogenies in the same table (BBH/gene and reference) and reference them
+# on the orthogroup id and/or a term_id
+def load_BBH_phylogenies(kwargs, lst_orthogroups):
+    db = chlamdb.DB.load_db(kwargs)
+    data = []
+
+    for tree in lst_orthogroups:
+        t = ete3.Tree(tree)
+        og_id = int(tree.split("_")[0][2:])
+        data.append( (og_id, t.write()) )
+    db.create_BBH_phylogeny_table(data)
+    db.commit()
+
+def load_gene_phylogenies(kwargs, lst_orthogroups):
+    db = chlamdb.DB.load_db(kwargs)
+    data = []
+    for tree in lst_orthogroups:
+        t = ete3.Tree(tree)
+        og_id = int(tree.split("_")[0][2:])
+        data.append( (og_id, t.write()) )
+    db.create_gene_phylogeny_table(data)
     db.commit()
 
 def load_reference_phylogeny(kwargs, tree):
