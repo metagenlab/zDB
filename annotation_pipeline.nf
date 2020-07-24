@@ -534,7 +534,7 @@ process orthogroups_phylogeny_with_fasttree3 {
   each file(og) from alignement_larger_than_2_seqs
 
   output:
-    file "${og.baseName}.nwk"
+    file "${og.baseName}.nwk" into gene_phylogeny
 
   script:
   """
@@ -694,10 +694,10 @@ process checkm_analyse {
 
 process rpsblast_COG {
   
-  container "$params.annotation_container"
+  container "$params.blast_container"
 
   when:
-  params.cog == true
+  params.cog
 
   input:
   file 'seq' from to_rpsblast_COG
@@ -712,7 +712,7 @@ process rpsblast_COG {
   """
 }
 
-blast_result.collectFile(name: 'annotation/COG/blast_COG.tab')
+blast_result.collectFile(name: 'annotation/COG/blast_COG.tab').set { COG_to_load_db }
 
 process blast_swissprot {
 
@@ -1641,26 +1641,26 @@ process create_db {
     diamond_tab_files = "$diamond_tsv_list".split()
 
     setup_chlamdb.setup_chlamdb(**kwargs)
-    print("Loading gbks")
+    print("Loading gbks", flush=True)
     setup_chlamdb.load_gbk(gbk_list, kwargs)
 
     # kept for now, need to check whether this is really necessary to keep the hash
-    print("Loading seq hashes")
+    print("Loading seq hashes", flush=True)
     setup_chlamdb.load_seq_hashes(kwargs, "$nr_mapping_file", "$nr_fasta")
 
-    print("Loading orthofinder results")
+    print("Loading orthofinder results", flush=True)
     setup_chlamdb.load_orthofinder_results("$orthofinder", kwargs)
 
-    print("Loading alignments")
+    print("Loading alignments", flush=True)
     setup_chlamdb.load_alignments_results(kwargs, alignments_lst)
 
-    print("Loading refseq matches")
+    print("Loading refseq matches", flush=True)
     hsh_sseqid = setup_chlamdb.load_refseq_matches(kwargs, diamond_tab_files)
 
-    print("Loading refseq matches infos")
+    print("Loading refseq matches infos", flush=True)
     setup_chlamdb.load_refseq_matches_infos(kwargs, hsh_sseqid)
 
-    print("Loading refseq matches taxonomy")
+    print("Loading refseq matches taxonomy", flush=True)
     setup_chlamdb.load_refseq_matches_linear_taxonomy(kwargs)
     """
 }
@@ -1716,14 +1716,17 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_phylogenies', mode: 'copy', overwrite: true
 
   input:
-  each file(og) from diamond_BBH_alignments
+    file og from diamond_BBH_alignments.collate(200)
 
   output:
-    file "${og.baseName}.nwk" into BBH_phylogenies
+    file "*.nwk" into BBH_phylogenies
 
   script:
   """
-  FastTree ${og} > ${og.baseName}.nwk
+    for orthogroup in $og;
+    do
+        FastTree \$orthogroup > \${orthogroup/.faa/.nwk}
+    done
   """
 }
 
@@ -1735,9 +1738,10 @@ process load_taxo_stats_into_db {
         file db from db_taxo
         file BBH_phylogeny_trees from BBH_phylogenies_to_db
         file core_phylogeny from core_genome_phylogeny
+        file gene_phylogeny
 
     output:
-        file db
+        file db_to_COG
 
     script:
     """
@@ -1753,6 +1757,25 @@ process load_taxo_stats_into_db {
     setup_chlamdb.load_reference_phylogeny(kwargs, "$core_phylogeny")
     setup_chlamdb.load_gene_phylogenies(kwargs, gene_list)
     setup_chlamdb.load_BBH_phylogenies(kwargs, BBH_list)
+    """
+}
+
+process load_COG_into_db {
+    input:
+        file db from db_to_COG
+        file cog_file from COG_to_load_db
+
+    when:
+    false
+    
+    script:
+    """
+    #!/usr/bin/env python
+
+    import setup_chlamdb
+    
+    kwargs = ${gen_python_args()}
+    setup_chlamdb.load_cog(kwargs, $cog_file)
     """
 }
 

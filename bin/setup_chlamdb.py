@@ -107,7 +107,7 @@ def create_data_table(kwargs):
         # wut?
         ("old_locus_table", "mandatory", False),
 
-        # WIP
+        # Done
         ("reference_phylogeny", "mandatory", False),
 
         # Done
@@ -128,9 +128,12 @@ def create_data_table(kwargs):
         ("priam_data", "optional", False),
         ("priam_comparative", "optional", False),
         ("priam_comparative_accession", "optional", False),
+
+        # WIP
         ("COG_data", "optional", False),
         ("COG_comparative", "optional", False),
         ("COG_comparative_accession", "optional", False),
+
         ("KEGG_data", "optional", False),
         ("KEGG_comparative", "optional", False),
         ("KEGG_comparative_accession", "optional", False),
@@ -318,10 +321,9 @@ def load_refseq_matches_infos(args, hsh_sseqids):
     db.create_diamond_refseq_match_id()
 
     # ugly
-    for chunk in chunks(list(hsh_sseqids.keys()), 2000):
+    for iteration, chunk in enumerate(chunks(list(hsh_sseqids.keys()), 5000)):
         hsh_accession_to_taxid = db.get_accession_to_taxid(chunk, args)
         hsh_accession_to_prot = db.get_accession_to_prot(chunk, args)
-
         data = []
         # Note: need to add some error handling in case the accession is not found
         # in the databases
@@ -378,6 +380,60 @@ def load_alignments_results(args, alignment_files):
     db.set_status_in_config_table("orthogroup_alignments", 1)
     db.commit()
 
+def load_cog(kwargs, cog_filename):
+    db = chlamdb.DB.load_db(kwargs)
+
+    # TODO: avoid hardcoding file names. May be worth it to explicitely
+    # add them to the nextflow process for more clarity.
+    cog2cdd_file = open(params["databases_dir"]+"/COG/cog_corresp.tab", "r")
+    cog2length_file = open(params["databases_dir"]+"/COG/cog_length.tab", "r")
+    fun_names_file = open(params["databases_dir"]+"/COG/fun2003-2014.tab")
+    cog_names_file = open(params["databases_dir"]+"/COG/cognames2003-2014.tab") 
+
+    hsh_cdd_to_cog = {}
+    for line in cog2cdd_file:
+        tokens = line.split("\t")
+        hsh_cdd_to_cog[tokens[1]] = int(tokens[0][3:])
+
+    # maybe an overkill: it seems like COG are ordered
+    # it should be possible to only use an array instead of 
+    # an hash table
+    hsh_cog_to_length = {}
+    for line in cog2length_file:
+        tokens = line.split("\t")
+        hsh_cog_to_length[int(tokens[0][3:])] = int(tokens[1])
+
+    cog_ref_data = []
+    for line in cog_names_file:
+        tokens = line.split("\t")
+        cog_id = int(tokens[0][3:])
+        fun = tokens[1]
+        description = tokens[2]
+        cog_ref_data.append( (cog_id, fun, description) )
+    db.load_cog_ref_data(cog_ref_data)
+
+    cog_fun_data = []
+    for line in fun_names_file:
+        function, description = line.split("\t") 
+        cog_fun_data.append( (function, description) )
+    db.load_cog_fun_data(cog_fun_data)
+    
+    hsh_to_seqfeature = db.hash_to_seqfeature()
+    hsh_seq_to_length = db.seqfeature_to_prot_length()
+    cogs_hits = pd.read_csv(cog_filename, sep="\t")
+    data = []
+    for index, row in cogs_hits.iterrows():
+        seqfeature = hsh_to_seqfeature[row[0]]
+        #  cdd in the form cdd:N
+        cog = hsh_cdd_to_cog[row[1].split(":")[1]]
+
+        # NOTE: need to compute the hit coverage and the query coverage
+        lst_args = row.tolist()
+        data.append([seqfeature, cog] + lst_args[2:])
+    db.load_cog_hits(data)
+    db.set_status_in_config_table("COG_data", 1)
+    db.commit()
+
 # Note: the trees are stored in files with name formatted as:
 # OGN_nr_hits_mafft.nwk. To retrieve the orthogroup, parse the filename
 # and convert it to int.
@@ -394,7 +450,7 @@ def load_BBH_phylogenies(kwargs, lst_orthogroups):
         og_id = int(tree.split("_")[0][2:])
         data.append( (og_id, t.write()) )
     db.create_BBH_phylogeny_table(data)
-    db.commit()
+    db.set_status_in_config_table("BBH_phylogenies", 1)
 
 def load_gene_phylogenies(kwargs, lst_orthogroups):
     db = chlamdb.DB.load_db(kwargs)
@@ -404,7 +460,7 @@ def load_gene_phylogenies(kwargs, lst_orthogroups):
         og_id = int(tree.split("_")[0][2:])
         data.append( (og_id, t.write()) )
     db.create_gene_phylogeny_table(data)
-    db.commit()
+    db.set_status_in_config_table("gene_phylogenies", 1)
 
 def load_reference_phylogeny(kwargs, tree):
     db = chlamdb.DB.load_db(kwargs)
@@ -415,4 +471,4 @@ def load_reference_phylogeny(kwargs, tree):
     # Note: will need to rename the nodes. Currently, they are named after
     # the filename, this will need to be changed to the taxid.
     db.load_reference_phylogeny(newick_string)
-    db.commit()
+    db.set_status_in_config_table("reference_phylogeny", 1)

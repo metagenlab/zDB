@@ -130,7 +130,7 @@ class DB:
             "INNER JOIN term as t ON t.term_id = feature.term_id AND t.name=\"orthogroup\" "
             "INNER JOIN refseq_hits_taxonomy AS taxo ON taxo.taxid=refseq_hit_id.taxid "
             "INNER JOIN taxonomy_mapping taxo_name "
-            f"   ON taxo.pylum=taxo_name.taxid AND taxo_name.value NOT IN ({pvc_fmt_string}) "
+            f"   ON taxo.phylum=taxo_name.taxid AND taxo_name.value NOT IN ({pvc_fmt_string}) "
             "ORDER BY refseq_hit.qseqid ASC, hit_count ASC;"
         )
         results = self.server.adaptor.execute_and_fetchall(query, )
@@ -189,7 +189,7 @@ class DB:
     def load_diamond_refseq_match_id(self, data):
         self.load_data_into_table("diamond_refseq_match_id", data)
 
-    def create_diamond_refseq_match_id(self):
+    def create_diamond_refseq_match_id_indices(self):
         query = (
             "CREATE INDEX drmii ON diamond_refseq_match_id(match_id);"
         )
@@ -302,6 +302,33 @@ class DB:
             hsh_results[line[0]] = (line[1], int(line[2]))
         return hsh_results
 
+    def load_cog_hits(self, data):
+        sql = (
+            "CREATE TABLE cog_hits (seqfeature_id INT, "
+            " hit_cog_id INT, query_start INT, query_end INT, hit_start INT, "
+            " hit_end INT, query_coverage FLOAT, hit_coverage FLOAT, identity FLOAT, "
+            " evalue FLOAT, bitscore FLOAT, PRIMARY KEY (seqfeature_id, hit_cog_id), "
+            " FOREIGN KEY(hit_cog_id) REFERENCES cog_names(cog_id), "
+            " FOREIGN KEY(seqfeature_id) REFERENCES seqfeature(seqfeature_id));"
+        )
+        self.server.adaptor.execute(sql,)
+        self.load_data_into_table("cog_hits", data)
+
+    def load_cog_fun_data(self, data):
+        sql = (
+            "CREATE TABLE cog_functions (function CHAR(1), description TEXT);"
+        )
+        self.server.adaptor.execute(sql)
+        self.load_data_into_table("cog_functions", data)
+    
+    def load_cog_ref_data(self, data):
+        sql = (
+            "CREATE TABLE cog_names (cog_id INTEGER, function CHAR(1), description TEXT, "
+            "PRIMARY KEY(cog_id));"
+        )
+        self.server.adaptor.execute(sql)
+        self.load_data_into_table("cog_names", data)
+
     def get_hsh_locus_to_seqfeature_id(self):
         query = (
             "SELECT t2.value, t1.seqfeature_id "
@@ -412,8 +439,8 @@ class DB:
     def create_BBH_phylogeny_table(self, data):
         sql = (
             "CREATE TABLE BBH_phylogeny (orthogroup_id INTEGER, tree TEXT, "
-            "PRIMARY_KEY(orthogroup_id), "
-            " FOREIGN KEY orthogroup_id REFERENCES orthology_orthogroup(orthogroup_id));"
+            " PRIMARY KEY(orthogroup_id), "
+            " FOREIGN KEY(orthogroup_id) REFERENCES orthology_orthogroup(orthogroup_id));"
         )
         self.server.adaptor.execute(sql,)
         self.load_data_into_table("BBH_phylogeny", data)
@@ -421,11 +448,12 @@ class DB:
     def create_gene_phylogeny_table(self, data):
         sql = (
             "CREATE TABLE gene_phylogeny (orthogroup_id INTEGER, tree TEXT, "
-            "PRIMARY_KEY(orthogroup_id), "
-            " FOREIGN KEY orthogroup_id REFERENCES orthology_orthogroup(orthogroup_id));"
+            "PRIMARY KEY(orthogroup_id), "
+            " FOREIGN KEY(orthogroup_id) REFERENCES orthology_orthogroup(orthogroup_id));"
         )
         self.server.adaptor.execute(sql,)
         self.load_data_into_table("gene_phylogeny", data)
+
 
     # NOTE: may be more efficient to create indices on a combination of keys, depending
     # on how the table is used.
@@ -524,6 +552,19 @@ class DB:
         )
         self.server.adaptor.execute(sql,)
 
+    def seqfeature_to_prot_length(self):
+        query = (
+            "SELECT seqfeature_id, length(value) FROM seqfeature_qualifier_value AS value "
+            " INNER JOIN term ON term.term_id=value.term_ID AND term.name=\"translation\";" 
+        )
+        results = self.server.adaptor.execute_and_fetchall(query,)
+        hsh = {}
+        for line in results:
+            seqfeature_id = int(line[0])
+            length = int(line[1])
+            hsh[seqfeature_id] = length
+        return hsh
+
     def hash_to_seqfeature(self):
         query = (
             "SELECT seqfeature_id, hash FROM sequence_hash_dictionnary;"
@@ -547,11 +588,11 @@ class DB:
         return self.server.adaptor.cursor.lastrowid
 
     def load_reference_phylogeny(self, tree):
-        sql = "CREATE TABLE reference_phylogeny (tree TEXT);"
+        sql = "CREATE TABLE IF NOT EXISTS reference_phylogeny (tree TEXT);"
         self.server.adaptor.execute(sql,)
 
-        sql = "INSERT INTO reference_phylogeny VALUES (?);"
-        self.server.adaptor.execute(sql, tree)
+        sql = f"INSERT INTO reference_phylogeny VALUES (\"{tree}\");"
+        self.server.adaptor.execute(sql,)
 
     # wrapper methods
     def commit(self):
