@@ -308,6 +308,7 @@ class DB:
             " hit_cog_id INT, query_start INT, query_end INT, hit_start INT, "
             " hit_end INT, query_coverage FLOAT, hit_coverage FLOAT, identity FLOAT, "
             " evalue FLOAT, bitscore FLOAT, PRIMARY KEY (seqfeature_id, hit_cog_id), "
+            " PRIMARY KEY(seqfeature_id, hit_cog_id), "
             " FOREIGN KEY(hit_cog_id) REFERENCES cog_names(cog_id), "
             " FOREIGN KEY(seqfeature_id) REFERENCES seqfeature(seqfeature_id));"
         )

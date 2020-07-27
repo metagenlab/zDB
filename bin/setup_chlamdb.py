@@ -425,11 +425,21 @@ def load_cog(kwargs, cog_filename):
     for index, row in cogs_hits.iterrows():
         seqfeature = hsh_to_seqfeature[row[0]]
         #  cdd in the form cdd:N
-        cog = hsh_cdd_to_cog[row[1].split(":")[1]]
+        cog = int(hsh_cdd_to_cog[row[1].split(":")[1]])
+        identity = float(row[2])
+        evalue = float(row[10])
+        bitscore = float(row[11])
+        query_start = int(row[6])
+        query_end = int(row[7])
+        hit_start = int(row[8])
+        hit_end = int(row[9])
 
-        # NOTE: need to compute the hit coverage and the query coverage
-        lst_args = row.tolist()
-        data.append([seqfeature, cog] + lst_args[2:])
+        query_coverage = round((query_end-query_start)/hsh_seq_to_length[seqfeature], 2)
+        hit_coverage = round((hit_end-hit_start)/hsh_cog_to_length[cog], 2)
+        entry = [seqfeature, cog, query_start, query_end, hit_start]
+        entry += [hit_end, query_coverage, hit_coverage, identity]
+        entry += [evalue, bitscore]
+        data.append(entry)
     db.load_cog_hits(data)
     db.set_status_in_config_table("COG_data", 1)
     db.commit()
