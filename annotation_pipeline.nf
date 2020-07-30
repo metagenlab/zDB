@@ -1612,6 +1612,7 @@ process get_uniprot_goa_mapping {
 }
 
 process create_db {
+    // creates the basic version of the database
     publishDir "db"
 
     input:
@@ -1665,27 +1666,49 @@ process create_db {
     """
 }
 
-db_gen.into { to_BBH; db_taxo }
-
 process extract_non_PVC_best_hits_sequences {
     input:
-        file curr_db from to_BBH
-
-    when:
-        params.refseq_diamond_BBH_phylogeny
+        file curr_db from db_gen
 
     output:
         file "*_nr_hits.faa" into diamond_best_hits
+        file curr_db into to_load_genomes_summary
+
+    script:
+    if(params.refseq_diamond_BBH_phylogeny)
+        """
+        #!/usr/bin/env python
+        # final version?
+
+        import annotations
+
+        kwargs = ${gen_python_args()}
+        annotations.get_diamond_top_hits(kwargs)
+        """
+    else
+        // Note: this is a hack to ensure that two processes
+        // do not try to write in the database at the same time
+        // and make the whole pipeline crash
+        """
+        # to make nextflow happy
+        touch null_nr_hits.faa
+        """
+}
+
+process load_genomes_summary {
+    input:
+        file curr_db from to_load_genomes_summary
+
+    output:
+        file curr_db into to_load_taxonomy
 
     script:
     """
     #!/usr/bin/env python
-    # final version?
 
-    import annotations
-
+    import setup_chlamdb
     kwargs = ${gen_python_args()}
-    annotations.get_diamond_top_hits(kwargs)
+    setup_chlamdb.load_genomes_summary(kwargs)
     """
 }
 
@@ -1733,15 +1756,14 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 BBH_phylogenies.collect().into {BBH_phylogenies_to_db}
 
 process load_taxo_stats_into_db {
-
     input:
-        file db from db_taxo
+        file db from to_load_taxonomy
         file BBH_phylogeny_trees from BBH_phylogenies_to_db
         file core_phylogeny from core_genome_phylogeny
         file gene_phylogeny
 
     output:
-        file db_to_COG
+        file db into to_load_COG
 
     script:
     """
@@ -1762,21 +1784,23 @@ process load_taxo_stats_into_db {
 
 process load_COG_into_db {
     input:
-        file db from db_to_COG
+        file db from to_load_COG
         file cog_file from COG_to_load_db
-
-    when:
-    false
     
     script:
-    """
-    #!/usr/bin/env python
+    if(params.cog)
+        """
+        #!/usr/bin/env python
 
-    import setup_chlamdb
-    
-    kwargs = ${gen_python_args()}
-    setup_chlamdb.load_cog(kwargs, $cog_file)
-    """
+        import setup_chlamdb
+        
+        kwargs = ${gen_python_args()}
+        setup_chlamdb.load_cog(kwargs, $cog_file)
+        """
+    else
+        """
+        echo \"Not supposed to load COG, passing\"
+        """
 }
 
 workflow.onComplete {

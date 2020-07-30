@@ -2,7 +2,8 @@ import os
 import sys
 import re
 
-import chlamdb
+from chlamdb_utils import db_utils
+
 import pandas as pd
 
 import ete3
@@ -58,7 +59,7 @@ def setup_biodb(kwargs):
 
     # not really logical to me, but creating a database
     # from the biosql is necessary
-    db = chlamdb.DB.load_db(kwargs)
+    db = db_utils.DB.load_db(kwargs)
     db.create_biosql_database(kwargs)
     db.commit()
     if err_code != 0:
@@ -198,7 +199,7 @@ def setup_chlamdb(**kwargs):
     create_data_table(kwargs)
 
 def load_gbk(gbks, args):
-    db = chlamdb.DB.load_db(args)
+    db = db_utils.DB.load_db(args)
 
     db.create_cds_tables()
     for gbk in gbks:
@@ -212,7 +213,7 @@ def load_gbk(gbks, args):
 
 
 def load_orthofinder_results(orthofinder_output, args):
-    db = chlamdb.DB.load_db(args)
+    db = db_utils.DB.load_db(args)
     orthogroup_feature_id = db.setup_orthology_table()
     hsh_prot_to_group = parse_orthofinder_output_file(orthofinder_output)
     hsh_locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id()
@@ -251,7 +252,7 @@ def get_identity(seq1, seq2):
     return 100*(identical/float(aligned))
 
 def load_refseq_matches(args, diamond_tsvs):
-    db = chlamdb.DB.load_db(args)
+    db = db_utils.DB.load_db(args)
     db.create_refseq_hits_table()
 
     # map accessions to id
@@ -292,7 +293,7 @@ def chunks(lst, n):
         yield lst[i:i+n]
 
 def load_refseq_matches_linear_taxonomy(args):
-    db = chlamdb.DB.load_db(args)
+    db = db_utils.DB.load_db(args)
     db.create_refseq_hits_taxonomy()
 
     taxids = db.get_all_taxids()
@@ -317,7 +318,7 @@ def load_refseq_matches_linear_taxonomy(args):
 
 # hsh_sseqids: maps accession to 
 def load_refseq_matches_infos(args, hsh_sseqids):
-    db = chlamdb.DB.load_db(args)
+    db = db_utils.DB.load_db(args)
     db.create_diamond_refseq_match_id()
 
     # ugly
@@ -336,7 +337,7 @@ def load_refseq_matches_infos(args, hsh_sseqids):
     db.commit()
 
 def load_seq_hashes(args, nr_mapping, nr_fasta):
-    db = chlamdb.DB.load_db(args)
+    db = db_utils.DB.load_db(args)
     fasta_dict = SeqIO.to_dict(SeqIO.parse(nr_fasta, "fasta"))
     hsh_locus_to_id = db.get_hsh_locus_to_seqfeature_id()
 
@@ -350,7 +351,7 @@ def load_seq_hashes(args, nr_mapping, nr_fasta):
     db.commit()
 
 def load_alignments_results(args, alignment_files):
-    db = chlamdb.DB.load_db(args)
+    db = db_utils.DB.load_db(args)
     db.create_new_og_matrix()
     locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id()
 
@@ -381,7 +382,7 @@ def load_alignments_results(args, alignment_files):
     db.commit()
 
 def load_cog(kwargs, cog_filename):
-    db = chlamdb.DB.load_db(kwargs)
+    db = db_utils.DB.load_db(kwargs)
 
     # TODO: avoid hardcoding file names. May be worth it to explicitely
     # add them to the nextflow process for more clarity.
@@ -452,7 +453,7 @@ def load_cog(kwargs, cog_filename):
 # phylogenies in the same table (BBH/gene and reference) and reference them
 # on the orthogroup id and/or a term_id
 def load_BBH_phylogenies(kwargs, lst_orthogroups):
-    db = chlamdb.DB.load_db(kwargs)
+    db = db_utils.DB.load_db(kwargs)
     data = []
 
     for tree in lst_orthogroups:
@@ -463,7 +464,7 @@ def load_BBH_phylogenies(kwargs, lst_orthogroups):
     db.set_status_in_config_table("BBH_phylogenies", 1)
 
 def load_gene_phylogenies(kwargs, lst_orthogroups):
-    db = chlamdb.DB.load_db(kwargs)
+    db = db_utils.DB.load_db(kwargs)
     data = []
     for tree in lst_orthogroups:
         t = ete3.Tree(tree)
@@ -473,7 +474,7 @@ def load_gene_phylogenies(kwargs, lst_orthogroups):
     db.set_status_in_config_table("gene_phylogenies", 1)
 
 def load_reference_phylogeny(kwargs, tree):
-    db = chlamdb.DB.load_db(kwargs)
+    db = db_utils.DB.load_db(kwargs)
 
     newick_file = open(tree, "r")
     newick_string = newick_file.readline()
@@ -482,3 +483,40 @@ def load_reference_phylogeny(kwargs, tree):
     # the filename, this will need to be changed to the taxid.
     db.load_reference_phylogeny(newick_string)
     db.set_status_in_config_table("reference_phylogeny", 1)
+
+
+# Several values will be inserted in the seqfeature_qualifier_value table, under different
+# term_id
+# - the GC of the genomes, under the gc term_id
+# - the length, under length term_id
+# - the number of contigs, under the n_contigs term_id
+# - the number of contigs without BBH hits to Chlamydiae
+# - the coding density
+def load_genomes_summary(kwargs):
+    db = db_utils.DB.load_db(kwargs)
+    hsh_seq = db.get_genomes_sequences()
+    hsh_seq_to_length_coding = db.get_coding_region_total_length()
+
+    gcs = []
+    lengths = []
+    no_contigs = []
+    coding_densities = []
+    for entry_id, sequence in hsh_seq.items():
+        sequence_without_N = line[1].replace("N", "")
+
+        # During the annotation procedure, contigs are merged, with the insertion
+        # of 200 "N"s between them.
+        no_contig = sequence.count(1 + len(sequence)-len(sequence_without_N)/200)
+        length = len(sequence_without_N)
+        gc = GC(sequence_without_N)
+        coding_density = round(100*hsh_seq_to_length_coding[entry_id]/length, 2)
+
+        gcs.append( (entry_id, gc) )
+        lengths.append( (entry_id, length) )
+        no_contigs.append( (entry_id, no_contig))
+        coding_densities.append( (entry_id, coding_density) )
+    db.load_genomes_gc(gcs)
+    db.load_genomes_lengths(lengths)
+    db.load_genomes_n_contigs(no_contigs)
+    db.load_genomes_coding_density(coding_densities)
+    db.commit()
