@@ -8,7 +8,10 @@ from Bio import AlignIO
 from Bio.Align import MultipleSeqAlignment
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
-import chlamdb
+from chlamdb_utils import db_utils
+
+import setup_chlamdb
+
 
 import pandas as pd
 import sys
@@ -1259,7 +1262,7 @@ def get_sequences(refseq, hsh_accessions):
 # The sequences are retrieved from the merged.faa file. There should not
 # be any misses, as this file was used to generate the index used by diamond.
 def get_diamond_top_hits(params):
-    db = chlamdb.DB.load_db(params)
+    db = db_utils.DB.load_db(params)
     hsh_non_pvc = db.get_non_PVC_refseq_matches(params)
 
     hsh_accessions = {}

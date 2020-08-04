@@ -73,7 +73,7 @@ if (params.local_assemblies) {
 }
 
 // Each Sample
-if (params.ncbi_sample_sheet != false){
+if (params.ncbi_sample_sheet){
   Channel.fromPath( file(params.ncbi_sample_sheet) )
                       .splitCsv(header: true, sep: '\t')
                       .map{ row -> "$row.Genbank" } 
@@ -84,6 +84,15 @@ if (params.ncbi_sample_sheet != false){
                       .map{ row -> "$row.RefSeq" }
                       .set{ assembly_accession_list_refseq }
 
+}
+
+if(params.local_sample_sheet){
+	local_genomes = Channel.fromPath(params.local_sample_sheet)
+				  .splitCsv(header: true, sep: '\t')
+				  .map{row -> "$row.gbk_path" }
+				  .map { file(it) }
+} else {
+	local_genomes = Channel.empty()
 }
 
 process prokka {
@@ -132,14 +141,6 @@ process prokka_filter_CDS {
 	"""
 }
 
-if(params.local_sample_sheet){
-	local_genomes = Channel.fromPath(params.local_sample_sheet)
-				  .splitCsv(header: true, sep: '\t')
-				  .map{row -> "$row.gbk_path" }
-				  .map { file(it) }
-} else {
-	local_genomes = Channel.empty()
-} 
 
 process copy_local_assemblies {
     publishDir 'data/gbk_local', mode: 'copy', overwrite: true
@@ -172,7 +173,7 @@ if(params.ncbi_sample_sheet == false) {
 
 	container "$params.annotation_container"
 
-    publishDir 'data/gbk_ncbi', mode: 'copy', overwrite: true
+    publishDir 'data/gbk_ncbi'
 
     maxForks 2
     maxRetries 3
@@ -531,14 +532,16 @@ process orthogroups_phylogeny_with_fasttree3 {
   params.orthogroups_phylogeny_with_fasttree
 
   input:
-  each file(og) from alignement_larger_than_2_seqs
+    file og from alignement_larger_than_2_seqs.collate(50)
 
   output:
-    file "${og.baseName}.nwk" into gene_phylogeny
+    file "*.nwk" into gene_phylogeny
 
   script:
   """
-  FastTree ${og} > ${og.baseName}.nwk
+    for i in ${og}; do
+        FastTree \$i > \${i/.faa/.nwk}
+    done
   """
 }
 

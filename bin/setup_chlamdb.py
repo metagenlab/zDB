@@ -6,10 +6,9 @@ from chlamdb_utils import db_utils
 
 import pandas as pd
 
-import ete3
-
 from Bio import SeqIO
 from Bio import AlignIO
+from Bio import SeqUtils
 
 # assumes orthofinder named: OG000N
 # returns the N as int
@@ -44,6 +43,7 @@ def setup_biodb(kwargs):
         cursor = conn.cursor()
         url_biosql_scheme = 'biosqldb-sqlite.sql'
         err_code = os.system(f"sqlite3 {db_name} < {schema_dir}/{url_biosql_scheme}")
+        conn.execute("pragma journal_mode=wal")
     else:
         import MySQLdb
         conn = MySQLdb.connect(host="localhost", # your host, usually localhost
@@ -205,7 +205,6 @@ def load_gbk(gbks, args):
     for gbk in gbks:
         records = [i for i in SeqIO.parse(gbk, 'genbank')]
         db.load_gbk_wrapper(records)
-        assert(len(records) == 1)
         insert_gbk(db, gbk)
     db.set_status_in_config_table("gbk_files", 1)
     db.create_indices_on_cds()
@@ -321,8 +320,9 @@ def load_refseq_matches_infos(args, hsh_sseqids):
     db = db_utils.DB.load_db(args)
     db.create_diamond_refseq_match_id()
 
-    # ugly
+    # ugly and very slow, to be improved
     for iteration, chunk in enumerate(chunks(list(hsh_sseqids.keys()), 5000)):
+        print(iteration, flush=True)
         hsh_accession_to_taxid = db.get_accession_to_taxid(chunk, args)
         hsh_accession_to_prot = db.get_accession_to_prot(chunk, args)
         data = []
@@ -502,13 +502,13 @@ def load_genomes_summary(kwargs):
     no_contigs = []
     coding_densities = []
     for entry_id, sequence in hsh_seq.items():
-        sequence_without_N = line[1].replace("N", "")
+        sequence_without_N = sequence.replace("N", "")
 
         # During the annotation procedure, contigs are merged, with the insertion
         # of 200 "N"s between them.
-        no_contig = sequence.count(1 + len(sequence)-len(sequence_without_N)/200)
+        no_contig = sequence.count("N" * 200) + 1
         length = len(sequence_without_N)
-        gc = GC(sequence_without_N)
+        gc = SeqUtils.GC(sequence_without_N)
         coding_density = round(100*hsh_seq_to_length_coding[entry_id]/length, 2)
 
         gcs.append( (entry_id, gc) )
