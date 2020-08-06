@@ -10,6 +10,8 @@ from Bio import SeqIO
 from Bio import AlignIO
 from Bio import SeqUtils
 
+import ete3
+
 # assumes orthofinder named: OG000N
 # returns the N as int
 def get_og_id(string):
@@ -167,32 +169,6 @@ def create_data_table(kwargs):
     for row in entry_list:
         cursor.execute(sql % (row[0], row[1], row[2]),)
     conn.commit()
-    
-def insert_gbk(db, one_gbk):
-    input_file = open(one_gbk, "r")
-    records = SeqIO.parse(input_file, 'genbank')
-    for record in records:
-        params = {}
-        params["accession"] = record.id.split('.')[0]
-        params["taxon_id"] = db.get_taxid_from_accession(params["accession"])
-        for feature in record.features:
-            if feature.type == 'CDS' and not 'pseudo' in feature.qualifiers:
-                params["start"] = re.sub('>|<','', str(feature.location.start))
-                params["end"] = re.sub('>|<','', str(feature.location.end))
-                params["strand"] = feature.strand
-                params["gene"] = feature.qualifiers.get("gene", ['-'])[0]
-                params["product"] = feature.qualifiers.get("product", ['-'])[0]
-                params["locus_tag"] = feature.qualifiers["locus_tag"][0]
-                params["old_locus_tag"] = feature.qualifiers.get("old_locus_tag", [False])[0]
-                params["protein_id"] = feature.qualifiers.get("protein_id", ['.'])[0]
-                params["translation"] = feature.qualifiers.get("translation", ['-'])[0]
-                db.insert_cds(params)
-            elif feature.type == 'rRNA':
-                params["start"] = re.sub('>|<','', str(feature.location.start))
-                params["end"] = re.sub('>|<','', str(feature.location.end))
-                params["strand"] = feature.strand
-                params["product"] = feature.qualifiers.get("product", ["-"])[0]
-                db.insert_rRNA_in_feature_table(params)
 
 def setup_chlamdb(**kwargs):
     setup_biodb(kwargs)
@@ -200,16 +176,20 @@ def setup_chlamdb(**kwargs):
 
 def load_gbk(gbks, args):
     db = db_utils.DB.load_db(args)
-
-    db.create_cds_tables()
+    data = []
     for gbk in gbks:
         records = [i for i in SeqIO.parse(gbk, 'genbank')]
-        db.load_gbk_wrapper(records)
-        insert_gbk(db, gbk)
-    db.set_status_in_config_table("gbk_files", 1)
-    db.create_indices_on_cds()
-    db.commit()
 
+        # hack to link the bioentry to the filename, useful later for parsing and
+        # storing checkM results in the dtb.
+        for record in records:
+            db.load_gbk_wrapper([record])
+            bioentry_id = db.server.adaptor.last_id("bioentry")
+            data.append( (bioentry_id, gbk.replace(".gbk", "")) )
+
+    db.load_filenames(data)
+    db.set_status_in_config_table("gbk_files", 1)
+    db.commit()
 
 def load_orthofinder_results(orthofinder_output, args):
     db = db_utils.DB.load_db(args)
@@ -381,8 +361,8 @@ def load_alignments_results(args, alignment_files):
     db.set_status_in_config_table("orthogroup_alignments", 1)
     db.commit()
 
-def load_cog(kwargs, cog_filename):
-    db = db_utils.DB.load_db(kwargs)
+def load_cog(params, cog_filename):
+    db = db_utils.DB.load_db(params)
 
     # TODO: avoid hardcoding file names. May be worth it to explicitely
     # add them to the nextflow process for more clarity.
@@ -394,7 +374,7 @@ def load_cog(kwargs, cog_filename):
     hsh_cdd_to_cog = {}
     for line in cog2cdd_file:
         tokens = line.split("\t")
-        hsh_cdd_to_cog[tokens[1]] = int(tokens[0][3:])
+        hsh_cdd_to_cog[tokens[1].strip()] = int(tokens[0][3:])
 
     # maybe an overkill: it seems like COG are ordered
     # it should be possible to only use an array instead of 
@@ -405,11 +385,18 @@ def load_cog(kwargs, cog_filename):
         hsh_cog_to_length[int(tokens[0][3:])] = int(tokens[1])
 
     cog_ref_data = []
-    for line in cog_names_file:
+    # necessary to track, as some cogs listed in the CDD to COG mapping table
+    # are not present in those descriptors
+    hsh_cog_ids = {} 
+    for line_no, line in enumerate(cog_names_file):
+        # pass header
+        if line_no == 0:
+            continue
         tokens = line.split("\t")
         cog_id = int(tokens[0][3:])
+        hsh_cog_ids[cog_id] = True
         fun = tokens[1]
-        description = tokens[2]
+        description = tokens[2].strip()
         cog_ref_data.append( (cog_id, fun, description) )
     db.load_cog_ref_data(cog_ref_data)
 
@@ -418,6 +405,7 @@ def load_cog(kwargs, cog_filename):
         function, description = line.split("\t") 
         cog_fun_data.append( (function, description) )
     db.load_cog_fun_data(cog_fun_data)
+    db.commit()
     
     hsh_to_seqfeature = db.hash_to_seqfeature()
     hsh_seq_to_length = db.seqfeature_to_prot_length()
@@ -427,6 +415,9 @@ def load_cog(kwargs, cog_filename):
         seqfeature = hsh_to_seqfeature[row[0]]
         #  cdd in the form cdd:N
         cog = int(hsh_cdd_to_cog[row[1].split(":")[1]])
+        if cog not in hsh_cog_ids:
+            print("Unknown cog id: ", cog, " skipping this entry")
+            continue
         identity = float(row[2])
         evalue = float(row[10])
         bitscore = float(row[11])
@@ -462,6 +453,7 @@ def load_BBH_phylogenies(kwargs, lst_orthogroups):
         data.append( (og_id, t.write()) )
     db.create_BBH_phylogeny_table(data)
     db.set_status_in_config_table("BBH_phylogenies", 1)
+    db.commit()
 
 def load_gene_phylogenies(kwargs, lst_orthogroups):
     db = db_utils.DB.load_db(kwargs)
@@ -472,6 +464,7 @@ def load_gene_phylogenies(kwargs, lst_orthogroups):
         data.append( (og_id, t.write()) )
     db.create_gene_phylogeny_table(data)
     db.set_status_in_config_table("gene_phylogenies", 1)
+    db.commit()
 
 def load_reference_phylogeny(kwargs, tree):
     db = db_utils.DB.load_db(kwargs)
@@ -483,6 +476,7 @@ def load_reference_phylogeny(kwargs, tree):
     # the filename, this will need to be changed to the taxid.
     db.load_reference_phylogeny(newick_string)
     db.set_status_in_config_table("reference_phylogeny", 1)
+    db.commit()
 
 
 # Several values will be inserted in the seqfeature_qualifier_value table, under different
@@ -519,4 +513,17 @@ def load_genomes_summary(kwargs):
     db.load_genomes_lengths(lengths)
     db.load_genomes_n_contigs(no_contigs)
     db.load_genomes_coding_density(coding_densities)
+    db.commit()
+
+def load_checkm_results(params, checkm_results):
+    db = db_utils.DB.load_db(params)
+    tab = pd.read_table(checkm_results)
+
+    hsh_filename_to_bioentry = db.get_filenames_to_bioentry()
+    data = []
+    for index, row in tab.iterrows():
+        values = (hsh_filename_to_bioentry[row["Bin Id"]], row["Completeness"], row["Contamination"])
+        data.append(values)
+
+    db.load_checkm_results(data)
     db.commit()

@@ -499,6 +499,7 @@ all_alignments_1.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 3 }.s
 all_alignments_2.flatten().map { it }.filter { (it.text =~ /(>)/).size() == 3 }.set { alignments_3_seqs }
 all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.set { alignement_larger_than_2_seqs }
 
+alignement_larger_than_2_seqs.collate(50).set { to_fasttree_orthogroups } 
 /*
 process orthogroups_phylogeny_with_raxml {
 
@@ -532,7 +533,7 @@ process orthogroups_phylogeny_with_fasttree3 {
   params.orthogroups_phylogeny_with_fasttree
 
   input:
-    file og from alignement_larger_than_2_seqs.collate(50)
+    file og from to_fasttree_orthogroups
 
   output:
     file "*.nwk" into gene_phylogeny
@@ -690,7 +691,7 @@ process checkm_analyse {
 
   """
   checkm analyze --genes -x faa $params.databases_dir/checkm/bacteria.ms . checkm_results -t 8 --nt
-  checkm qa $params.databases_dir/checkm/bacteria.ms checkm_results -o 2 --tab_table > checkm_results.tab
+  checkm qa $params.databases_dir/checkm/bacteria.ms checkm_results -o 2 --tab_table -f checkm_results.tab
   """
 }
 
@@ -1625,6 +1626,7 @@ process create_db {
         file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
         file nr_mapping_file from nr_mapping_to_db_setup
         file nr_fasta from to_db_setup
+        file checkm_results from checkm_table
 
     output:
         file db_name into db_gen
@@ -1636,6 +1638,7 @@ process create_db {
     db_name="$params.chlamdb.db_name"
     """
     #!/usr/bin/env python
+    #foo
 
     import setup_chlamdb
     
@@ -1666,8 +1669,12 @@ process create_db {
 
     print("Loading refseq matches taxonomy", flush=True)
     setup_chlamdb.load_refseq_matches_linear_taxonomy(kwargs)
+
+    print("Loading checkm results", flush=True)
+    setup_chlamdb.load_checkm_results(kwargs, "$checkm_results")
     """
 }
+
 
 process extract_non_PVC_best_hits_sequences {
     input:
@@ -1735,14 +1742,12 @@ process align_refseq_BBH_with_mafft {
   """
 }
 
-mafft_alignments_refseq_BBH.flatten().set{ diamond_BBH_alignments }
-
 process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   container "$params.annotation_container"
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_phylogenies', mode: 'copy', overwrite: true
 
   input:
-    file og from diamond_BBH_alignments.collate(200)
+    file og from mafft_alignments_refseq_BBH
 
   output:
     file "*.nwk" into BBH_phylogenies
@@ -1756,7 +1761,7 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
   """
 }
 
-BBH_phylogenies.collect().into {BBH_phylogenies_to_db}
+BBH_phylogenies.collect().set { BBH_phylogenies_to_db }
 
 process load_taxo_stats_into_db {
     input:
@@ -1771,6 +1776,7 @@ process load_taxo_stats_into_db {
     script:
     """
     #!/usr/bin/env python
+    # foo
 
     import setup_chlamdb
 
@@ -1789,6 +1795,9 @@ process load_COG_into_db {
     input:
         file db from to_load_COG
         file cog_file from COG_to_load_db
+
+    output:
+        file db into to_load_checkM
     
     script:
     if(params.cog)
@@ -1798,7 +1807,7 @@ process load_COG_into_db {
         import setup_chlamdb
         
         kwargs = ${gen_python_args()}
-        setup_chlamdb.load_cog(kwargs, $cog_file)
+        setup_chlamdb.load_cog(kwargs, "$cog_file")
         """
     else
         """
