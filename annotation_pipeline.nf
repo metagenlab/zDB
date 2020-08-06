@@ -64,8 +64,8 @@ str_pythonized_params = gen_python_args()
 
 if (params.local_assemblies) {
     Channel.fromPath(params.local_assemblies_tsv)
-        .splitCsv(header: true, sep: '\t')
-        .map { row -> file(params.local_assemblies_link_dir + "/" + row.draft_genome) }
+        .splitCsv(header: true, strip: true)
+        .map { row -> tuple(row.name, file(params.local_assemblies_link_dir + "/" + row.draft_genome)) }
         .set { to_prokka_local_assemblies }
 } else {
     // declare an empty channel to avoid any complaints from nextflow
@@ -95,6 +95,8 @@ if(params.local_sample_sheet){
 	local_genomes = Channel.empty()
 }
 
+// TODO: add the possibility to specify genus informations
+// in the config file
 process prokka {
 	container "$params.prokka_container"
 
@@ -104,7 +106,7 @@ process prokka {
     cpus 4
 
 	input:
-	    file genome_fasta from to_prokka_local_assemblies
+	    tuple (val(name), file(genome_fasta)) from to_prokka_local_assemblies
 
 	output:
 	    file "$output_dir/${output_file_prefix}.gbk" into gbk_from_local_assembly
@@ -114,7 +116,7 @@ process prokka {
     output_file_prefix = "${genome_fasta.baseName}"
 	"""
 	prokka $genome_fasta --outdir $output_dir --prefix ${output_file_prefix} \\
-		 --centre X --compliant --cpus ${task.cpus}
+		 --centre X --compliant --cpus ${task.cpus} --strain ${name} --genus Rhabdochlamydia --species \" \"
 	"""
 }
 
@@ -1089,6 +1091,7 @@ process execute_interproscan_no_uniparc_matches {
 
   publishDir 'annotation/interproscan', mode: 'copy', overwrite: true
   container "$params.annotation_container"
+  cpus 16
 
   when:
   params.interproscan
@@ -1776,7 +1779,7 @@ process load_taxo_stats_into_db {
     script:
     """
     #!/usr/bin/env python
-    # foo
+    # foobar
 
     import setup_chlamdb
 

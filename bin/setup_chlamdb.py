@@ -10,7 +10,6 @@ from Bio import SeqIO
 from Bio import AlignIO
 from Bio import SeqUtils
 
-import ete3
 
 # assumes orthofinder named: OG000N
 # returns the N as int
@@ -444,6 +443,8 @@ def load_cog(params, cog_filename):
 # phylogenies in the same table (BBH/gene and reference) and reference them
 # on the orthogroup id and/or a term_id
 def load_BBH_phylogenies(kwargs, lst_orthogroups):
+    import ete3
+
     db = db_utils.DB.load_db(kwargs)
     data = []
 
@@ -456,6 +457,8 @@ def load_BBH_phylogenies(kwargs, lst_orthogroups):
     db.commit()
 
 def load_gene_phylogenies(kwargs, lst_orthogroups):
+    import ete3
+
     db = db_utils.DB.load_db(kwargs)
     data = []
     for tree in lst_orthogroups:
@@ -467,17 +470,21 @@ def load_gene_phylogenies(kwargs, lst_orthogroups):
     db.commit()
 
 def load_reference_phylogeny(kwargs, tree):
+    import ete3
     db = db_utils.DB.load_db(kwargs)
 
     newick_file = open(tree, "r")
     newick_string = newick_file.readline()
+    hsh_filename_to_bioentry = db.get_filenames_to_bioentry()
 
-    # Note: will need to rename the nodes. Currently, they are named after
-    # the filename, this will need to be changed to the taxid.
-    db.load_reference_phylogeny(newick_string)
+    # convert leaf names to bioentry_id instead of filename
+    tree = ete3.Tree(newick_string)
+    for leaf in tree.iter_leaves():
+        leaf.name = hsh_filename_to_bioentry[leaf.name]
+
+    db.load_reference_phylogeny(tree.write())
     db.set_status_in_config_table("reference_phylogeny", 1)
     db.commit()
-
 
 # Several values will be inserted in the seqfeature_qualifier_value table, under different
 # term_id
