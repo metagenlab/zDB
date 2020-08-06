@@ -102,6 +102,8 @@ from chlamdb.tasks import KEGG_map_ko_organism_task
 from chlamdb.tasks import basic_tree_task
 from chlamdb.celeryapp import app as celery_app
 
+from chlamdb_utils import db_utils
+
 db_driver = settings.DB_DRIVER
 biodb = settings.BIODB
 optional2status, missing_mandatory = manipulate_biosqldb.check_config(biodb)
@@ -254,19 +256,12 @@ def logout_view(request):
 def home(request):
     from ete3 import TreeStyle
     from chlamdb.phylo_tree_display import phylo_tree_bar
-    from chlamdb.biosqldb import manipulate_biosqldb
     from ete3 import Tree
-    biodb = settings.BIODB
-    server, db = manipulate_biosqldb.load_db(biodb)
-    sql = 'select * from genomes_info'
 
-    genomes_data = server.adaptor.execute_and_fetchall(sql,)
-
-    sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
-               ' where t2.name="%s";' % biodb
-
-    server, db = manipulate_biosqldb.load_db(biodb)
-    tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb)
+    genomes_data = db.get_genomes_infos()
+    tree = db.get_reference_phylogeny()
 
     # Posibility to plot a subtree only: eg of filter based an genome accession:
     '''
@@ -277,11 +272,8 @@ def home(request):
     '''
 
     path = settings.BASE_DIR + '/assets/temp/species_tree.svg'
-    asset_path = '/temp/species_tree.svg'
-
     # plot phylo only of not already in assets
-    if not os.path.exists(settings.BASE_DIR + '/assets/temp/species_tree.svg'):
-        
+    if not os.path.exists(path):
         t1 = Tree(tree)
         R = t1.get_midpoint_outgroup()
         t1.set_outgroup(R)
@@ -294,18 +286,14 @@ def home(request):
             pass
         t1.ladderize()
         '''
-        t, tss = phylo_tree_bar.plot_heat_tree(t1, biodb)
+        t, tss = phylo_tree_bar.plot_heat_tree(t1, biodb, prev_data=genomes_data)
 
         tss.show_branch_support = False
         #t.render("test2.svg", tree_style=ts)
 
         t.render(path, dpi=500, tree_style=tss)
 
-    sql_n_genomes = 'select count(*) from (select distinct taxon_id from bioentry t1 ' \
-                    ' inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id where t2.name="%s") A;' % biodb
-
-    n_genomes = server.adaptor.execute_and_fetchall(sql_n_genomes,)[0][0]
-
+    n_genomes = db.get_n_genomes()
     print(my_locals(locals()))
     print("-------------")
     print(my_locals(my_locals(locals())))

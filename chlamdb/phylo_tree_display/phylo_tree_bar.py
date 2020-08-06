@@ -682,16 +682,17 @@ def plot_tree_barplot(tree_file,
     #print t1
     return t1, tss
 
-def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, bw_scale=True):
-    from chlamdb.biosqldb import manipulate_biosqldb
+# as this function is called from "home" in views.py and the caller
+# already has most of the required informations, prev_data allows
+# to pass the informations to avoid the repetition of sql queries.
+def plot_heat_tree(tree_file, biodb="chlamydia_04_16", prev_data = None, exclude_outgroup=False, bw_scale=True):
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
     import matplotlib as mpl
+    from chlamdb_utils import db_utils
 
-    server, db = manipulate_biosqldb.load_db(biodb)
+    db = db_utils.DB.load_db_from_name(biodb)
 
-    sql_biodatabase_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
-    db_id = server.adaptor.execute_and_fetchall(sql_biodatabase_id,)[0][0]
     if type(tree_file) == str:
         t1 = Tree(tree_file)
         try:
@@ -710,36 +711,28 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
     tss.guiding_lines_color = "gray"
     tss.show_leaf_name = False
 
-    #print "tree", t1
+    if prev_data == None:
+        # table containing genomes information, with first column containing the accession
+        prev_data = db.get_genomes_infos()
+    checkm_results = db.get_checkm_results()
+    hsh_accession2entry = db.get_accession_to_entry()
 
-    sql1 = 'select taxon_id, description from bioentry where biodatabase_id=%s and description not like "%%%%plasmid%%%%"' % db_id
-    sql2 = 'select t2.taxon_id, t1.GC from genomes_info as t1 inner join bioentry as t2 ' \
-           ' on t1.accession=t2.accession where t2.biodatabase_id=%s and t1.description not like "%%%%plasmid%%%%";' % (biodb, db_id)
-    sql3 = 'select t2.taxon_id, t1.genome_size from genomes_info as t1 ' \
-           ' inner join bioentry as t2 on t1.accession=t2.accession ' \
-           ' where t2.biodatabase_id=%s and t1.description not like "%%%%plasmid%%%%";' % (biodb, db_id)
-    sql4 = 'select t2.taxon_id,percent_non_coding from genomes_info as t1 ' \
-           ' inner join bioentry as t2 on t1.accession=t2.accession ' \
-           ' where t2.biodatabase_id=%s and t1.description not like "%%%%plasmid%%%%";' % (biodb, db_id)
-           
-    sql_checkm_completeness = 'select taxon_id, completeness from custom_tables_checkm;' % biodb
-    sql_checkm_contamination = 'select taxon_id,contamination from custom_tables_checkm;' % biodb
-
-    try:
-        taxon_id2completeness = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_checkm_completeness))
-        taxon_id2contamination = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_checkm_contamination))
-    except:
-        taxon_id2completeness = False
-    #taxon2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql1,))
-
-    taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb, filter_names=True)
-
-    taxon2gc = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
-    taxon2genome_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql3,))
-    taxon2coding_density = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql4,))
-
-
+    entry2completeness = {}
+    entry2contamination = {}
+    entry2description = {}
+    entry2gc = {}
+    entry2genome_size = {}
+    entry2cd = {}
+    for accession, gc, nprot, ncontigs, size, pnd, desc in prev_data:
+        entry_id = str(hsh_accession2entry[accession])
+        entry2completeness[entry_id] = checkm_results[accession]["completeness"]
+        entry2contamination[entry_id] = checkm_results[accession]["contamination"]
+        entry2description[entry_id] = desc
+        entry2gc[entry_id] = gc
+        entry2genome_size[entry_id] = size
+        entry2cd[entry_id] = pnd
     my_taxons = [lf.name for lf in t1.iter_leaves()]
+    print(entry2genome_size)
 
     # Calculate the midpoint node
 
@@ -747,26 +740,22 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         excluded = str(list(t1.iter_leaves())[0].name)
         my_taxons.pop(my_taxons.index(excluded))
 
-
-    genome_sizes = [float(taxon2genome_size[i]) for i in my_taxons]
-    gc_list = [float(taxon2gc[i]) for i in my_taxons]
-    fraction_list = [float(taxon2coding_density[i]) for i in my_taxons]
-
-
+    min_genome_size = min(entry2genome_size.values())
+    max_genome_size = max(entry2genome_size.values())
+    min_gc = min(entry2gc.values())
+    max_gc = max(entry2gc.values())
+    min_cd = min(entry2cd.values())
+    max_cd = max(entry2cd.values())
     value=1
-
-    max_genome_size = max(genome_sizes)#3424182#
-    max_gc = max(gc_list) #48.23
 
     cmap = cm.YlGnBu#YlOrRd#OrRd
 
-    norm = mpl.colors.Normalize(vmin=min(genome_sizes)-100000, vmax=max(genome_sizes))
+    norm = mpl.colors.Normalize(vmin=min_genome_size-100000, vmax=max_genome_size)
     m1 = cm.ScalarMappable(norm=norm, cmap=cmap)
-    norm = mpl.colors.Normalize(vmin=min(gc_list), vmax=max(gc_list))
+    norm = mpl.colors.Normalize(vmin=min_gc, vmax=max_gc)
     m2 = cm.ScalarMappable(norm=norm, cmap=cmap)
-    norm = mpl.colors.Normalize(vmin=min(fraction_list), vmax=max(fraction_list))
+    norm = mpl.colors.Normalize(vmin=min_cd, vmax=max_cd)
     m3 = cm.ScalarMappable(norm=norm, cmap=cmap)
-
 
     for i, lf in enumerate(t1.iter_leaves()):
         #if taxon2description[lf.name] == 'Pirellula staleyi DSM 6068':
@@ -812,7 +801,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
             #lf.add_face(n, 6, position="aligned")
             tss.aligned_header.add_face(n, 6)
             
-            if taxon_id2completeness:
+            if entry2completeness:
                 n = TextFace('Completeness (%)')
                 n.margin_top = 1
                 n.margin_right = 1
@@ -846,11 +835,11 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
 
         #print '------ %s' % lf.name
         if exclude_outgroup and i == 0:
-            lf.name = taxon2description[lf.name]
+            lf.name = entry2description[lf.name]
             #print '#######################'
             continue
 
-        n = TextFace('  %s ' % str(round(taxon2genome_size[lf.name]/float(1000000),2)))
+        n = TextFace('  %s ' % str(round(entry2genome_size[lf.name]/float(1000000),2)))
         n.margin_top = 1
         n.margin_right = 1
         n.margin_left = 0
@@ -862,13 +851,13 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         lf.add_face(n, 2, position="aligned")
         #if max_genome_size > 3424182:
         #    max_genome_size = 3424182
-        fraction_biggest = (float(taxon2genome_size[lf.name])/max_genome_size)*100
+        fraction_biggest = (float(entry2genome_size[lf.name])/max_genome_size)*100
         fraction_rest = 100-fraction_biggest
-        if taxon2description[lf.name] == 'Rhabdochlamydia helveticae T3358':
+        if entry2description[lf.name] == 'Rhabdochlamydia helveticae T3358':
             col = '#fc8d59'
         else:
             if not bw_scale:
-                col = rgb2hex(m1.to_rgba(float(taxon2genome_size[lf.name])))  # 'grey'
+                col = rgb2hex(m1.to_rgba(float(entry2genome_size[lf.name])))  # 'grey'
             else:
                 col = '#fc8d59'
 
@@ -880,13 +869,13 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         b.margin_left = 0
         lf.add_face(b, 3, position="aligned")
 
-        fraction_biggest = (float(taxon2gc[lf.name])/max_gc)*100
+        fraction_biggest = (float(entry2gc[lf.name])/max_gc)*100
         fraction_rest = 100-fraction_biggest
-        if taxon2description[lf.name] == 'Rhabdochlamydia helveticae T3358':
+        if entry2description[lf.name] == 'Rhabdochlamydia helveticae T3358':
             col = '#91bfdb'
         else:
             if not bw_scale:
-                col = rgb2hex(m2.to_rgba(float(taxon2gc[lf.name])))
+                col = rgb2hex(m2.to_rgba(float(entry2gc[lf.name])))
             else:
                 col = '#91bfdb'
         b = StackedBarFace([fraction_biggest, fraction_rest], width=100, height=9,colors=[col, 'white'])
@@ -898,7 +887,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
 
 
         lf.add_face(b, 5, position="aligned")
-        n = TextFace('  %s ' % str(round(float(taxon2gc[lf.name]),2)))
+        n = TextFace('  %s ' % str(round(float(entry2gc[lf.name]),2)))
         n.margin_top = 1
         n.margin_right = 0
         n.margin_left = 0
@@ -909,14 +898,14 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         lf.add_face(n, 4, position="aligned")
 
 
-        if taxon2description[lf.name] == 'Rhabdochlamydia helveticae T3358':
+        if entry2description[lf.name] == 'Rhabdochlamydia helveticae T3358':
             col = '#99d594'
         else:
             if not bw_scale:
-                col = rgb2hex(m3.to_rgba(float(taxon2coding_density[lf.name])))
+                col = rgb2hex(m3.to_rgba(float(entry2cd[lf.name])))
             else:
                 col = '#99d594'
-        n = TextFace('  %s ' % str(float(taxon2coding_density[lf.name])))
+        n = TextFace('  %s ' % str(float(entry2cd[lf.name])))
         n.margin_top = 1
         n.margin_right = 0
         n.margin_left = 0
@@ -926,8 +915,8 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         n.inner_background.color = "white"
         n.opacity = 1.
         lf.add_face(n, 6, position="aligned")
-        fraction = (float(taxon2coding_density[lf.name])/max(taxon2coding_density.values()))*100
-        fraction_rest = ((max(taxon2coding_density.values()) - taxon2coding_density[lf.name])/float(max(taxon2coding_density.values())))*100
+        fraction = (float(entry2cd[lf.name])/max(entry2cd.values()))*100
+        fraction_rest = ((max(entry2cd.values()) - entry2cd[lf.name])/float(max(entry2cd.values())))*100
         #print 'fraction, rest', fraction, fraction_rest
         b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=[col, 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
         b.rotation = 0
@@ -938,8 +927,8 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
         lf.add_face(b, 7, position="aligned")
         
         
-        if taxon_id2completeness:
-            n = TextFace('  %s ' % str(float(taxon_id2completeness[lf.name])))
+        if entry2completeness:
+            n = TextFace('  %s ' % str(float(entry2completeness[lf.name])))
             n.margin_top = 1
             n.margin_right = 0
             n.margin_left = 0
@@ -949,7 +938,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
             n.inner_background.color = "white"
             n.opacity = 1.
             lf.add_face(n, 8, position="aligned")
-            fraction = float(taxon_id2completeness[lf.name])
+            fraction = float(entry2completeness[lf.name])
             fraction_rest = 100-fraction
             #print 'fraction, rest', fraction, fraction_rest
             b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=["#d7191c", 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
@@ -961,7 +950,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
             lf.add_face(b, 9, position="aligned")
             
             
-            n = TextFace('  %s ' % str(float(taxon_id2contamination[lf.name])))
+            n = TextFace('  %s ' % str(float(entry2contamination[lf.name])))
             n.margin_top = 1
             n.margin_right = 0
             n.margin_left = 0
@@ -971,7 +960,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
             n.inner_background.color = "white"
             n.opacity = 1.
             lf.add_face(n, 10, position="aligned")
-            fraction = float(taxon_id2contamination[lf.name])
+            fraction = float(entry2contamination[lf.name])
             fraction_rest = 100-fraction
             #print 'fraction, rest', fraction, fraction_rest
             b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=["black", 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
@@ -985,7 +974,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", exclude_outgroup=False, b
             
         
                 #lf.name = taxon2description[lf.name]
-        n = TextFace(taxon2description[lf.name], fgcolor = "black", fsize = 9, fstyle = 'italic')
+        n = TextFace(entry2description[lf.name], fgcolor = "black", fsize = 9, fstyle = 'italic')
         n.margin_right = 30
         lf.add_face(n, 0)
 

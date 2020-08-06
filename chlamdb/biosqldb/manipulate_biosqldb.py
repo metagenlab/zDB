@@ -105,6 +105,7 @@ def load_db(db_name,
     import os
     sqlpsw = os.environ['SQLPSW']
     home_folder = os.environ['HOME']
+    print(f"Looking up db at {home_folder}/{db_name}.db, psswd: {sqlpsw}")
 
     if not sqlite:
         server = BioSeqDatabase.open_database(driver="MySQLdb", 
@@ -120,7 +121,9 @@ def load_db(db_name,
                                               passwd = sqlpsw, 
                                               host = "127.0.0.1",
                                               db=f"{home_folder}/{db_name}.db")
+    return server, None
 
+"""
     if db_name:
         try:
             db = server[db_name]
@@ -134,6 +137,7 @@ def load_db(db_name,
                 sys.exit("Stopping execution")
     else:
         return server
+"""
 
 def _to_dict(tuple_list):
     temp_dict = {}
