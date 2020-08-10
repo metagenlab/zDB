@@ -236,14 +236,12 @@ def load_refseq_matches(args, diamond_tsvs):
     # map accessions to id
     sseqid_hsh = {}
     sseqid_id = 0
-
-    # Note : add multithreading here?
-    query_hash_to_seqfeature_id = db.hash_to_seqfeature()
     for tsv in diamond_tsvs:
         hit_table = pd.read_csv(tsv, sep="\t")
         hit_count = 0
         seqfeature_id = None
         query_hash = None
+        query_hash_64b = None
         data = []
         for index, row in hit_table.iterrows():
             # remove version number
@@ -256,10 +254,10 @@ def load_refseq_matches(args, diamond_tsvs):
                 hit_count += 1
             else:
                 hit_count = 0
+                query_hash_64b = hsh_from_s(row[0][len("CRC-"):])
                 query_hash = row[0]
-                seqfeature_id = query_hash_to_seqfeature_id[query_hash]
             lst_args = row.tolist()
-            data.append([hit_count, seqfeature_id, sseqid_hsh[match_accession]] + lst_args[2:])
+            data.append([hit_count, query_hash_64b, sseqid_hsh[match_accession]] + lst_args[2:])
         db.load_refseq_hits(data)
     # see which indices are better fitted
     # db.create_refseq_hits_indices()
@@ -315,18 +313,37 @@ def load_refseq_matches_infos(args, hsh_sseqids):
     db.create_diamond_refseq_match_id_indices()
     db.commit()
 
-def load_seq_hashes(args, nr_mapping, nr_fasta):
+# This is a hack to be able to store 64bit unsigned values into 
+# sqlite3's 64 signed value. Values higher than 0x7FFFFFFFFFFFFFFF could not
+# be inserted into sqlite3 if unsigned as sqlite3 integers are 64bits signed integer.
+def hsh_from_s(s):
+    v = int(s, 16)
+    if v > 0x7FFFFFFFFFFFFFFF:
+        return v-0x10000000000000000
+    return v
+
+def load_seq_hashes(args, nr_mapping):
     db = db_utils.DB.load_db(args)
-    fasta_dict = SeqIO.to_dict(SeqIO.parse(nr_fasta, "fasta"))
     hsh_locus_to_id = db.get_hsh_locus_to_seqfeature_id()
 
-    to_load = []
+    to_load_hsh_to_seqid = {}
     for line in open(nr_mapping, "r"):
         record_id, hsh, genome = line.split("\t")
-        sequence = str(fasta_dict[hsh].seq)
         seqfeature_id = hsh_locus_to_id[record_id]
-        to_load.append( (seqfeature_id, hsh, sequence) )
-    db.create_hash_table(to_load)
+
+        short_hsh = hsh[len("CRC-"):]
+        int_from_64b_hash = hsh_from_s(short_hsh)
+        if short_hsh not in to_load_hsh_to_seqid:
+            to_load_hsh_to_seqid[int_from_64b_hash] = [seqfeature_id]
+        else:
+            to_load_hsh_to_seqid[int_from_64b_hash].append(seqfeature_id)
+
+    to_load = []
+    for hsh_64b, seqids in to_load_hsh_to_seqid.items():
+        for seqid in seqids:
+            to_load.append( (hsh_64b, seqid) )
+
+    db.create_seq_hash_to_seqid(to_load)
     db.commit()
 
 def load_alignments_results(args, alignment_files):
@@ -406,12 +423,15 @@ def load_cog(params, cog_filename):
     db.load_cog_fun_data(cog_fun_data)
     db.commit()
     
-    hsh_to_seqfeature = db.hash_to_seqfeature()
     hsh_seq_to_length = db.seqfeature_to_prot_length()
     cogs_hits = pd.read_csv(cog_filename, sep="\t")
     data = []
+
+    # TODO: check with Trestan whether it is necessary to keep only the 
+    # best cog hit for every feature or if all of them should be included in the db.
+    # This might mess the cog count in the main page of chlamdb.
     for index, row in cogs_hits.iterrows():
-        seqfeature = hsh_to_seqfeature[row[0]]
+        hsh = hsh_from_s(row[0][len("CRC-"):])
         #  cdd in the form cdd:N
         cog = int(hsh_cdd_to_cog[row[1].split(":")[1]])
         if cog not in hsh_cog_ids:
@@ -427,7 +447,7 @@ def load_cog(params, cog_filename):
 
         query_coverage = round((query_end-query_start)/hsh_seq_to_length[seqfeature], 2)
         hit_coverage = round((hit_end-hit_start)/hsh_cog_to_length[cog], 2)
-        entry = [seqfeature, cog, query_start, query_end, hit_start]
+        entry = [hsh, cog, query_start, query_end, hit_start]
         entry += [hit_end, query_coverage, hit_coverage, identity]
         entry += [evalue, bitscore]
         data.append(entry)

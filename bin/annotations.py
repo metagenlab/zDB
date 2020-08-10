@@ -924,6 +924,8 @@ def get_nr_sequences(fasta_file, genomes_list):
 
     for record in records:
 
+        # NOTE: the case is important for crc64, need to check whether it
+        # is necessary to make all entries lower/upper case to ensure consistency.
         checksum = CheckSum.crc64(record.seq)
         nr_mapping.write("%s\t%s\t%s\n" % (record.id,
                                           checksum,

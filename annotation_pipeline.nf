@@ -354,7 +354,6 @@ nr_seqs.collectFile(name: 'merged_nr.faa', newLine: true)
         to_tcdb_mapping
         to_pdb_mapping
         to_oma_mapping
-        to_db_setup
         to_filter_sequences }
 
 merged_faa_chunks.splitFasta( by: 300, file: "chunk_" )
@@ -1628,7 +1627,6 @@ process create_db {
         file alignments from to_load_alignment
         file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
         file nr_mapping_file from nr_mapping_to_db_setup
-        file nr_fasta from to_db_setup
         file checkm_results from checkm_table
 
     output:
@@ -1656,7 +1654,7 @@ process create_db {
 
     # kept for now, need to check whether this is really necessary to keep the hash
     print("Loading seq hashes", flush=True)
-    setup_chlamdb.load_seq_hashes(kwargs, "$nr_mapping_file", "$nr_fasta")
+    setup_chlamdb.load_seq_hashes(kwargs, "$nr_mapping_file")
 
     print("Loading orthofinder results", flush=True)
     setup_chlamdb.load_orthofinder_results("$orthofinder", kwargs)
