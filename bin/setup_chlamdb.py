@@ -333,9 +333,10 @@ def load_seq_hashes(args, nr_mapping):
 
         short_hsh = hsh[len("CRC-"):]
         int_from_64b_hash = hsh_from_s(short_hsh)
-        if short_hsh not in to_load_hsh_to_seqid:
+        if int_from_64b_hash not in to_load_hsh_to_seqid:
             to_load_hsh_to_seqid[int_from_64b_hash] = [seqfeature_id]
         else:
+            print("Multiple entries for", int_from_64b_hash)
             to_load_hsh_to_seqid[int_from_64b_hash].append(seqfeature_id)
 
     to_load = []
