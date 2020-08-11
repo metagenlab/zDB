@@ -1676,7 +1676,6 @@ process create_db {
     """
 }
 
-
 process extract_non_PVC_best_hits_sequences {
     input:
         file curr_db from db_gen

@@ -424,7 +424,7 @@ def load_cog(params, cog_filename):
     db.load_cog_fun_data(cog_fun_data)
     db.commit()
     
-    hsh_seq_to_length = db.seqfeature_to_prot_length()
+    hsh_to_length = db.hsh_to_prot_length()
     cogs_hits = pd.read_csv(cog_filename, sep="\t")
     data = []
 
@@ -446,7 +446,7 @@ def load_cog(params, cog_filename):
         hit_start = int(row[8])
         hit_end = int(row[9])
 
-        query_coverage = round((query_end-query_start)/hsh_seq_to_length[seqfeature], 2)
+        query_coverage = round((query_end-query_start)/hsh_to_length[hsh], 2)
         hit_coverage = round((hit_end-hit_start)/hsh_cog_to_length[cog], 2)
         entry = [hsh, cog, query_start, query_end, hit_start]
         entry += [hit_end, query_coverage, hit_coverage, identity]
