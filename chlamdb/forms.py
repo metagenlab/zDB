@@ -28,7 +28,7 @@ class GenerateRandomUserForm(forms.Form):
         required=True,
     )
 
-def get_accessions(database_name, all=False, plasmid=False):
+def get_accessions(db, all=False, plasmid=False):
 
     from chlamdb.biosqldb import manipulate_biosqldb
     server, db = manipulate_biosqldb.load_db(biodb)

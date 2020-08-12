@@ -1,33 +1,26 @@
 #!/usr/bin/python
 
-def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by_cog_id=False):
-    from chlamdb.biosqldb import manipulate_biosqldb
+# As a COG can have several functions, it is necessary to post-process the data
+# for those COGs that have several functions :
+#  remove the entries and add one to the count of all functions
+#  e.g. if COG has functions ECL, with a count of 3, remove the entry
+#  and add 3 to entry E, entry C and entry L.
+def simplify(hsh_data):
+    hsh_simplified = {}
+    for bioentry, hsh_funct_to_count in hsh_data.items():
+        hsh_entry = {}
+        for function, count in hsh_funct_to_count.items():
+            for i in range(0, len(function)):
+                curr = hsh_entry.get(function[i], 0)
+                hsh_entry[function[i]] = curr + count
+        hsh_simplified[bioentry] = hsh_entry
+    return hsh_simplified
+
+def plot_cog_heatmap(db, ref_tree, bioentry_ids=None, taxon_id_list=None, frequency=False, group_by_cog_id=False):
     from chlamdb.phylo_tree_display import ete_motifs
 
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
-
-    db_id = server.adaptor.execute_and_fetchall(sql,)[0][0]
-    
-    # RESTRICT TO AS SUBSET OF THE TAXON AVAILABLE
-
-    sql = ''
-
-    if len(taxon_id_list) > 0:
-        filter = ',' .join(taxon_id_list)
-
-        sql = 'select taxon_id, code, count(*) as n from COG_seqfeature_id2best_COG_hit t1 ' \
-              ' inner join biosqldb.bioentry t2 on t1.bioentry_id=t2.bioentry_id' \
-              ' inner join COG_cog_id2cog_category t3 on t1.hit_cog_id=t3.COG_id ' \
-              ' inner join COG_code2category t4 on t3.category_id=t4.category_id ' \
-              ' where t2.biodatabase_id=%s and taxon_id in (%s)' \
-              ' group by taxon_id, code;' % (biodb,
-                db_id,
-                filter)
-
-        print (sql)
-    else:
+    if False:
+        # NOTE: need to check with Trestan whether this code is still necessary
         if not group_by_cog_id:
             sql = 'select taxon_id,functon,count(*) as n ' \
                   ' from COG_locus_tag2gi_hit t1 ' \
@@ -40,69 +33,53 @@ def plot_cog_eatmap(biodb, ref_tree, taxon_id_list=[], frequency=False, group_by
                   ' group by taxon_id,t1.COG_id) A inner join COG_cog_names_2014 B on A.COG_id=B.COG_id ' \
                   ' group by A.taxon_id,B.functon;' % (biodb, biodb)
 
-    data = server.adaptor.execute_and_fetchall(sql,)
+    hsh_data = db.get_COG_counts(bioentry_ids=bioentry_ids, taxon_ids=taxon_id_list)
+    hsh_data = simplify(hsh_data)
 
     if frequency:
-        '''
-        ATTENTION: based on total annotated with COG and not genome size
-        
-        '''
-        sql = 'select taxon_id, count(*) as n from COG_seqfeature_id2best_COG_hit t1' \
-              ' inner join biosqldb.bioentry t2 on t1.bioentry_id=t2.bioentry_id' \
-              ' where t2.biodatabase_id=%s group by taxon_id;' % (biodb, db_id)
-        taxon_id2count = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        # based on total annotated with COG and not genome size
 
+        bioentry_to_count = {}
+        for bioentry, hsh_func_to_count in hsh_data.items():
+            bioentry_to_count[bioentry] = sum(hsh_func_to_count.values())
         code2taxon2count = {}
         cog_list = []
-
     else:
-        sql = 'select taxon_id, count(*) from orthology_detail t1 left join COG_locus_tag2gi_hit t2 ' \
-              ' on t1.locus_tag=t2.locus_tag where COG_id is NULL group by t1.taxon_id;' % (biodb,  biodb)
-
-        taxon2count_no_GOG = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-        sql = 'select taxon_id, count(*) from orthology_detail group by taxon_id' % biodb
-
-        taxon2proteome_size = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
+        bioentryid2count_no_GOG = db.get_n_prot_without_cog(taxons=taxon_id_list, bioentries=bioentry_ids)
+        bioentryid2proteome_size = db.n_CDS(taxons=taxon_id_list, bioentries=bioentry_ids)
 
         code2taxon2count = {}
         code2taxon2count['-'] = {}
         code2taxon2count['TOTAL'] = {}
-        for taxon in taxon2count_no_GOG:
-            if taxon in taxon_id_list:
-                code2taxon2count['-'][taxon] = int(taxon2count_no_GOG[taxon])
-                code2taxon2count['TOTAL'][taxon] = int(taxon2proteome_size[taxon])
+        for bioentry, cnt in bioentryid2count_no_GOG.items():
+            if (bioentry_ids != None and bioentry in bioentry_ids):
+                code2taxon2count['-'][bioentry] = cnt
+                code2taxon2count['TOTAL'][bioentry] = bioentryid2proteome_size[bioentry]
 
         cog_list = ['TOTAL', '-']
 
-    sql = 'select code, description from COG_code2category;'
-    code2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-    for row in data:
-        descr = "%s (%s)" % (code2description[row[1]], row[1])
-        if descr not in cog_list:
-            cog_list.append(descr)
-        if descr not in code2taxon2count:
-            code2taxon2count[descr] = {}
+    code2description = db.get_cog_code_description()
+    for bioentry, hsh_count in hsh_data.items():
+        for funct, count in hsh_count.items():
+            descr = f"{code2description[funct]} ({funct})"
+            if descr not in cog_list:
+                cog_list.append(descr)
+            if descr not in code2taxon2count:
+                code2taxon2count[descr] = {}
             if frequency:
-                code2taxon2count[descr][str(row[0])] = round((float(row[2])/float(taxon_id2count[str(row[0])]))*100,2)
+                code2taxon2count[descr][str(bioentry)] = round((float(count)/(bioentry_to_count[bioentry]))*100,2)
             else:
-                code2taxon2count[descr][str(row[0])] = int(row[2])
-        else:
-            if frequency:
-                code2taxon2count[descr][str(row[0])] = round((float(row[2])/float(taxon_id2count[str(row[0])]))*100,2)
-            else:
-                code2taxon2count[descr][str(row[0])] = int(row[2])
+                code2taxon2count[descr][str(bioentry)] = count
 
-
-
-    tree2 = ete_motifs.multiple_profiles_heatmap(biodb,
+    leaf_to_name = db.get_genomes_description()
+    tree2 = ete_motifs.multiple_profiles_heatmap(None,
                                                 cog_list,
                                                 code2taxon2count,
                                                 show_labels=True,
                                                 column_scale=True,
                                                 tree=ref_tree,
-                                                as_float=frequency)
+                                                as_float=frequency,
+                                                leaf_to_name=leaf_to_name)
     return tree2
 
 

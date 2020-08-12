@@ -271,6 +271,7 @@ def home(request):
     taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
     '''
 
+    asset_path = "/temp/species_tree.svg"
     path = settings.BASE_DIR + '/assets/temp/species_tree.svg'
     # plot phylo only of not already in assets
     if not os.path.exists(path):
@@ -3517,55 +3518,34 @@ def fam_interpro(request, fam, type):
 
 
 def COG_phylo_heatmap(request, frequency):
-    biodb = settings.BIODB
+    biodb = settings.BIODB_DB_PATH
 
-    if request.method == 'GET': 
-        from ete3 import Tree
-        from chlamdb.phylo_tree_display import ete_motifs
-        from chlamdb.plots import cog_heatmap
-        server, db = manipulate_biosqldb.load_db(biodb)
+    if request.method != "GET":
+        return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
 
-        if frequency == 'True':
-            freq = True
-        else:
-            freq = False
+    from ete3 import Tree
+    from chlamdb.phylo_tree_display import ete_motifs
+    from chlamdb.plots import cog_heatmap
 
-        sql_tree = 'select tree from reference_phylogeny as t1 inner join biodatabase as t2 on t1.biodatabase_id=t2.biodatabase_id where name="%s";' % biodb
+    db = db_utils.DB.load_db_from_name(biodb)
+    tree = db.get_reference_phylogeny()
+    t1 = Tree(tree)
+    R = t1.get_midpoint_outgroup()
+    t1.set_outgroup(R)
+    t1.ladderize()
+    tree, style = cog_heatmap.plot_cog_heatmap(db, t1, frequency=frequency)
 
-        tree = server.adaptor.execute_and_fetchall(sql_tree)[0][0]
+    path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
+    asset_path = '/temp/COG_tree.svg'
+    tree.render(path, dpi=600, tree_style=style)
 
+    #path2 = settings.BASE_DIR + '/assets/temp/COG_tree_%s_complete.svg' % module_name
+    #asset_path2 = '/assets/temp/KEGG_tree_%s_complete.svg' % module_name
 
-        acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
-        filter = '"' + '","'.join(acc_list) + '"'
-        sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
-        taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
-
-        t1 = Tree(tree)
-        R = t1.get_midpoint_outgroup()
-        t1.set_outgroup(R)
-        '''
-        try:
-            t1.prune(taxon_list)
-        except:
-            pass
-        '''
-        t1.ladderize()
-        #t1 = Tree(tree)
-        taxon_list = [i.name for i in t1.iter_leaves()]
-        #taxon_list = ['59','67', '1279767', '1279774', '1279496', '48', '46', '55', '87925', '1279815', '62', '1279822', '66', '59', '52', '49', '64', '60', '804807', '886707', '283', '314', '1069693', '1069694', '1137444', '1143376', '313', '1172027', '1172028', '1035343', '307', '293', '1279839', '1279497']
-        tree, style = cog_heatmap.plot_cog_eatmap(biodb, t1, taxon_list, freq)
-
-        path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
-        asset_path = '/temp/COG_tree.svg'
-        tree.render(path, dpi=600, tree_style=style)
-
-        #path2 = settings.BASE_DIR + '/assets/temp/COG_tree_%s_complete.svg' % module_name
-        #asset_path2 = '/assets/temp/KEGG_tree_%s_complete.svg' % module_name
-
-        #tree2.render(path2, dpi=800, h=600)
-        envoi = True
-        path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
-        asset_path = '/temp/COG_tree.svg'
+    #tree2.render(path2, dpi=800, h=600)
+    envoi = True
+    path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
+    asset_path = '/temp/COG_tree.svg'
 
     return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
 

@@ -723,16 +723,15 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", prev_data = None, exclude
     entry2gc = {}
     entry2genome_size = {}
     entry2cd = {}
-    for accession, gc, nprot, ncontigs, size, pnd, desc in prev_data:
+    for accession, gc, nprot, ncontigs, size, pc, desc in prev_data:
         entry_id = str(hsh_accession2entry[accession])
         entry2completeness[entry_id] = checkm_results[accession]["completeness"]
         entry2contamination[entry_id] = checkm_results[accession]["contamination"]
         entry2description[entry_id] = desc
         entry2gc[entry_id] = gc
         entry2genome_size[entry_id] = size
-        entry2cd[entry_id] = pnd
+        entry2cd[entry_id] = 100.0 - float(pc)
     my_taxons = [lf.name for lf in t1.iter_leaves()]
-    print(entry2genome_size)
 
     # Calculate the midpoint node
 
@@ -801,34 +800,33 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", prev_data = None, exclude
             #lf.add_face(n, 6, position="aligned")
             tss.aligned_header.add_face(n, 6)
             
-            if entry2completeness:
-                n = TextFace('Completeness (%)')
-                n.margin_top = 1
-                n.margin_right = 1
-                n.margin_left = 20
-                n.margin_bottom = 1
-                n.inner_background.color = "white"
-                n.opacity = 1.
-                n.rotation = -25
-                #lf.add_face(n, 7, position="aligned")
-                tss.aligned_header.add_face(n, 9)
-                n = TextFace('')
-                #lf.add_face(n, 6, position="aligned")
-                tss.aligned_header.add_face(n, 8) 
+            n = TextFace('Completeness (%)')
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 20
+            n.margin_bottom = 1
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            n.rotation = -25
+            #lf.add_face(n, 7, position="aligned")
+            tss.aligned_header.add_face(n, 9)
+            n = TextFace('')
+            #lf.add_face(n, 6, position="aligned")
+            tss.aligned_header.add_face(n, 8) 
 
-                n = TextFace('Contamination (%)')
-                n.margin_top = 1
-                n.margin_right = 1
-                n.margin_left = 20
-                n.margin_bottom = 1
-                n.inner_background.color = "white"
-                n.opacity = 1.
-                n.rotation = -25
-                #lf.add_face(n, 7, position="aligned")
-                tss.aligned_header.add_face(n, 11)
-                n = TextFace('')
-                #lf.add_face(n, 6, position="aligned")
-                tss.aligned_header.add_face(n, 10) 
+            n = TextFace('Contamination (%)')
+            n.margin_top = 1
+            n.margin_right = 1
+            n.margin_left = 20
+            n.margin_bottom = 1
+            n.inner_background.color = "white"
+            n.opacity = 1.
+            n.rotation = -25
+            #lf.add_face(n, 7, position="aligned")
+            tss.aligned_header.add_face(n, 11)
+            n = TextFace('')
+            #lf.add_face(n, 6, position="aligned")
+            tss.aligned_header.add_face(n, 10) 
 
 
         value+=1
@@ -853,13 +851,10 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", prev_data = None, exclude
         #    max_genome_size = 3424182
         fraction_biggest = (float(entry2genome_size[lf.name])/max_genome_size)*100
         fraction_rest = 100-fraction_biggest
-        if entry2description[lf.name] == 'Rhabdochlamydia helveticae T3358':
-            col = '#fc8d59'
+        if not bw_scale:
+            col = rgb2hex(m1.to_rgba(float(entry2genome_size[lf.name])))  # 'grey'
         else:
-            if not bw_scale:
-                col = rgb2hex(m1.to_rgba(float(entry2genome_size[lf.name])))  # 'grey'
-            else:
-                col = '#fc8d59'
+            col = '#fc8d59'
 
         b = StackedBarFace([fraction_biggest, fraction_rest], width=100, height=9,colors=[col, 'white'])
         b.rotation= 0
@@ -871,13 +866,10 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", prev_data = None, exclude
 
         fraction_biggest = (float(entry2gc[lf.name])/max_gc)*100
         fraction_rest = 100-fraction_biggest
-        if entry2description[lf.name] == 'Rhabdochlamydia helveticae T3358':
-            col = '#91bfdb'
+        if not bw_scale:
+            col = rgb2hex(m2.to_rgba(float(entry2gc[lf.name])))
         else:
-            if not bw_scale:
-                col = rgb2hex(m2.to_rgba(float(entry2gc[lf.name])))
-            else:
-                col = '#91bfdb'
+            col = '#91bfdb'
         b = StackedBarFace([fraction_biggest, fraction_rest], width=100, height=9,colors=[col, 'white'])
         b.rotation= 0
         b.inner_border.color = "black"
@@ -898,14 +890,11 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", prev_data = None, exclude
         lf.add_face(n, 4, position="aligned")
 
 
-        if entry2description[lf.name] == 'Rhabdochlamydia helveticae T3358':
-            col = '#99d594'
+        if not bw_scale:
+            col = rgb2hex(m3.to_rgba(float(entry2cd[lf.name])))
         else:
-            if not bw_scale:
-                col = rgb2hex(m3.to_rgba(float(entry2cd[lf.name])))
-            else:
-                col = '#99d594'
-        n = TextFace('  %s ' % str(float(entry2cd[lf.name])))
+            col = '#99d594'
+        n = TextFace('  %s ' % str(round(float(entry2cd[lf.name]), 2)))
         n.margin_top = 1
         n.margin_right = 0
         n.margin_left = 0
@@ -927,49 +916,48 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", prev_data = None, exclude
         lf.add_face(b, 7, position="aligned")
         
         
-        if entry2completeness:
-            n = TextFace('  %s ' % str(float(entry2completeness[lf.name])))
-            n.margin_top = 1
-            n.margin_right = 0
-            n.margin_left = 0
-            n.margin_right = 0
-            n.margin_bottom = 1
-            n.fsize = 7
-            n.inner_background.color = "white"
-            n.opacity = 1.
-            lf.add_face(n, 8, position="aligned")
-            fraction = float(entry2completeness[lf.name])
-            fraction_rest = 100-fraction
-            #print 'fraction, rest', fraction, fraction_rest
-            b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=["#d7191c", 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
-            b.rotation = 0
-            b.margin_right = 1
-            b.inner_border.color = "black"
-            b.inner_border.width = 0
-            b.margin_left = 5
-            lf.add_face(b, 9, position="aligned")
-            
-            
-            n = TextFace('  %s ' % str(float(entry2contamination[lf.name])))
-            n.margin_top = 1
-            n.margin_right = 0
-            n.margin_left = 0
-            n.margin_right = 0
-            n.margin_bottom = 1
-            n.fsize = 7
-            n.inner_background.color = "white"
-            n.opacity = 1.
-            lf.add_face(n, 10, position="aligned")
-            fraction = float(entry2contamination[lf.name])
-            fraction_rest = 100-fraction
-            #print 'fraction, rest', fraction, fraction_rest
-            b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=["black", 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
-            b.rotation = 0
-            b.margin_right = 1
-            b.inner_border.color = "black"
-            b.inner_border.width = 0
-            b.margin_left = 5
-            lf.add_face(b, 11, position="aligned")
+        n = TextFace('  %s ' % str(float(entry2completeness[lf.name])))
+        n.margin_top = 1
+        n.margin_right = 0
+        n.margin_left = 0
+        n.margin_right = 0
+        n.margin_bottom = 1
+        n.fsize = 7
+        n.inner_background.color = "white"
+        n.opacity = 1.
+        lf.add_face(n, 8, position="aligned")
+        fraction = float(entry2completeness[lf.name])
+        fraction_rest = 100-fraction
+        #print 'fraction, rest', fraction, fraction_rest
+        b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=["#d7191c", 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
+        b.rotation = 0
+        b.margin_right = 1
+        b.inner_border.color = "black"
+        b.inner_border.width = 0
+        b.margin_left = 5
+        lf.add_face(b, 9, position="aligned")
+        
+        
+        n = TextFace('  %s ' % str(float(entry2contamination[lf.name])))
+        n.margin_top = 1
+        n.margin_right = 0
+        n.margin_left = 0
+        n.margin_right = 0
+        n.margin_bottom = 1
+        n.fsize = 7
+        n.inner_background.color = "white"
+        n.opacity = 1.
+        lf.add_face(n, 10, position="aligned")
+        fraction = float(entry2contamination[lf.name])
+        fraction_rest = 100-fraction
+        #print 'fraction, rest', fraction, fraction_rest
+        b = StackedBarFace([fraction, fraction_rest], width=100, height=9,colors=["black", 'white'])# 1-round(float(taxon2coding_density[lf.name]), 2)
+        b.rotation = 0
+        b.margin_right = 1
+        b.inner_border.color = "black"
+        b.inner_border.width = 0
+        b.margin_left = 5
+        lf.add_face(b, 11, position="aligned")
             
             
         
