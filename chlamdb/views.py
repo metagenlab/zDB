@@ -1725,16 +1725,10 @@ def venn_interpro(request):
 
 
 def extract_cog(request):
-    biodb = settings.BIODB
-
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    extract_form_class = make_extract_form(biodb, 
-                                           plasmid=True, 
-                                           label="COG")
-
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb)
+    extract_form_class = make_extract_form(db, plasmid=True, label="COG")
     if request.method == 'POST': 
-
         form = extract_form_class(request.POST)
 
         #form2 = ContactForm(request.POST)

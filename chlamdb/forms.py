@@ -29,31 +29,12 @@ class GenerateRandomUserForm(forms.Form):
     )
 
 def get_accessions(db, all=False, plasmid=False):
-
-    from chlamdb.biosqldb import manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db(biodb)
-    if not plasmid:
-        #print "no plasmid"
-        sql ='SELECT bioentry.taxon_id, bioentry.description FROM bioentry ' \
-             'inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id ' \
-             'where biodatabase.name ="%s"and bioentry.description not like "%%%%plasmid%%%%" and bioentry.description not like "%%%%phage%%%%"' \
-             'order by bioentry.description' % database_name #
-    else:
-        #print 'plasmid'
-        sql ='SELECT bioentry.accession, bioentry.description FROM bioentry ' \
-             'inner join biodatabase on bioentry.biodatabase_id = biodatabase.biodatabase_id ' \
-             'where biodatabase.name ="%s"' \
-             'order by bioentry.description' % database_name
-             
-    result = server.adaptor.execute_and_fetchall(sql, )
-    accession_list = [i for i in result]
-    #print "acc", accession_list
+    indexing = ("bioentry", "accession")[plasmid]
+    result = db.get_genomes_description(indexing=indexing, exclude_plasmids=plasmid)
     accession_choices = []
 
-    for accession in accession_list:
-        accession_choices.append((accession[0], accession[1]))
-
-
+    for index, description in result.items():
+        accession_choices.append( (index,  description) )
     import re
     accessions = {}
     for i, accession in enumerate(accession_choices):
@@ -450,11 +431,7 @@ def make_kegg_form(database_name):
 def make_extract_form(database_name, 
                       plasmid=False, 
                       label="Orthologs"):
-
-    if not plasmid:
-        accession_choices = get_accessions(database_name)
-    else:
-        accession_choices = get_accessions(database_name, plasmid=True)
+    accession_choices = get_accessions(database_name, plasmid)
 
     class ExtractForm(forms.Form):
         FREQ_CHOICES = ((0, 0),(1, 1), (2,2), (3,3), (4,4), (5,5), (6,6), (7,7), (8,8), (9,9), (10,10))
