@@ -85,9 +85,6 @@ def create_data_table(kwargs):
         cursor = conn.cursor()
     entry_list = [
         # Done
-        ("gbk_files", "mandatory", False),
-
-        # Done
         ("orthology_data", "mandatory", False),
 
         # Done: may be removed as the data is already in the database and the result
@@ -106,7 +103,6 @@ def create_data_table(kwargs):
         # Done
         ("orthogroup_alignments", "mandatory", False),
 
-        # wut?
         ("old_locus_table", "mandatory", False),
 
         # Done
@@ -115,8 +111,7 @@ def create_data_table(kwargs):
         # Done
         ("taxonomy_table", "mandatory", False),
 
-        # this is one load tables that can generated on the fly
-        # will need to write the queries/functions
+        # Done
         ("genome_statistics", "mandatory", False),
 
         ############# Optional ###################
@@ -124,6 +119,7 @@ def create_data_table(kwargs):
 
         # Done
         ("gene_phylogenies", "optional", False),
+
         ("interpro_data", "optional", False),
         ("interpro_comparative", "optional", False),
         ("interpro_comparative_accession", "optional", False),
@@ -131,7 +127,7 @@ def create_data_table(kwargs):
         ("priam_comparative", "optional", False),
         ("priam_comparative_accession", "optional", False),
 
-        # WIP
+        # Done: will need to rewrite the queries
         ("COG_data", "optional", False),
         ("COG_comparative", "optional", False),
         ("COG_comparative_accession", "optional", False),
@@ -203,6 +199,9 @@ def load_orthofinder_results(orthofinder_output, args):
     db.load_orthology_table(arr_cnt_tables)
     # db.create_locus_to_feature_table()
     db.set_status_in_config_table("orthology_data", 1)
+    db.set_status_in_config_table("orthology_comparative", 1)
+    db.set_status_in_config_table("orthology_comparative_accession", 1)
+    db.set_status_in_config_table("orthology_consensus_annotation", 1)
     db.commit()
 
 # Note: as this is an alignment, the lengths are the same
@@ -418,7 +417,9 @@ def load_cog(params, cog_filename):
     db.load_cog_ref_data(cog_ref_data)
 
     cog_fun_data = []
-    for line in fun_names_file:
+    for line_no, line in enumerate(fun_names_file):
+        if line_no==0:
+            continue
         function, description = line.split("\t") 
         cog_fun_data.append( (function, description) )
     db.load_cog_fun_data(cog_fun_data)
@@ -454,6 +455,8 @@ def load_cog(params, cog_filename):
         data.append(entry)
     db.load_cog_hits(data)
     db.set_status_in_config_table("COG_data", 1)
+    db.set_status_in_config_table("COG_comparative", 1)
+    db.set_status_in_config_table("COG_comparative_accession", 1)
     db.commit()
 
 # Note: the trees are stored in files with name formatted as:
@@ -541,6 +544,7 @@ def load_genomes_summary(kwargs):
     db.load_genomes_lengths(lengths)
     db.load_genomes_n_contigs(no_contigs)
     db.load_genomes_coding_density(coding_densities)
+    db.set_status_in_config_table("genome_statistics", 1)
     db.commit()
 
 def load_checkm_results(params, checkm_results):
