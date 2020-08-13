@@ -411,7 +411,7 @@ def load_cog(params, cog_filename):
         tokens = line.split("\t")
         cog_id = int(tokens[0][3:])
         hsh_cog_ids[cog_id] = True
-        fun = tokens[1]
+        fun = tokens[1].strip()
         description = tokens[2].strip()
         cog_ref_data.append( (cog_id, fun, description) )
     db.load_cog_ref_data(cog_ref_data)
@@ -421,7 +421,7 @@ def load_cog(params, cog_filename):
         if line_no==0:
             continue
         function, description = line.split("\t") 
-        cog_fun_data.append( (function, description) )
+        cog_fun_data.append( (function.strip(), description.strip()) )
     db.load_cog_fun_data(cog_fun_data)
     db.commit()
     
