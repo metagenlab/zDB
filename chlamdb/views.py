@@ -1903,11 +1903,9 @@ def venn_cog(request, accessions=False):
     db = db_utils.DB.load_db_from_name(biodb)
     venn_form_class = make_venn_from(db, plasmid=accessions, limit=6, label="COG")
     if request.method == 'POST': 
-
         form_venn = venn_form_class(request.POST)
 
         if form_venn.is_valid():  
-
             targets = form_venn.cleaned_data['targets']
 
             # NOTE: will probably need to implement a method on both bioentry
@@ -1916,31 +1914,26 @@ def venn_cog(request, accessions=False):
             genome_desc = db.get_genomes_description(indexing_type="int")
 
             all_cog_list = []
-            series = '['
-
+            series_tab = []
             for target in [int(t) for t in targets]:
-                template_serie = '{name: "%s", data: %s}'
+                template_serie = "{{name: \"{}\", data: {data}}}"
                 cogs = cog_hits[target]
                 all_cog_list += cogs
-                data = '"' + '","'.join([f"COG{cog}" for cog in cogs]) + '"'
-                series+=template_serie % (genome_desc[target], cogs) + ','
-                # if not accessions:
-                #    series+=template_serie % (, cogs) + ','
-                # else:
-                # series+=template_serie % (accession2genome[target], cogs) + ','
-            series = series[0:-1] + ']'
+                data = ",".join(f"\"{cog}\"" for cog in cogs)
+                series_tab.append( f"{{name: \"{genome_desc[target]}\", data: [{data}]}}" )
+            series = "[" + ",".join(series_tab) + "]"
 
-            cog2description = []
+            cog2description_l = []
             data = db.get_cog_summaries(all_cog_list)
             for name, func, func_descr, cog_descr in data:
-                cog2description.append('h["%s"] = "%s (%s) </td><td>%s";' % (name,
-                                                                        func,
-                                                                        func_descr,
-                                                                        cog_descr))
+                # NOTE: will need to remove the strip when the bug in the database will be fixed
+                cog2description_l.append(f"h[\"{name}\"] = \"{func} ({func_descr.strip()}) </td><td>{cog_descr}\"")
+            cog2description = ";".join(cog2description_l)
             envoi_venn = True
 
     else:  
         form_venn = venn_form_class()
+
     return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
 
 

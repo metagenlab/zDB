@@ -9,12 +9,7 @@
 
 
 	var h = new Object(); // or just {}
-	{% autoescape off %}
-	{% for i in description_dico %}
-	{{i}}
-	{% endfor %}
-	{% endautoescape %}
-	<!-- h['Marilyn Monroe'] = 1; -->
+	{{ description_dico|safe }}
 
     $(document).ready(function(){
       $('#example').jvenn({
