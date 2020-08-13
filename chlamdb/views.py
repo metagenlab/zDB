@@ -1895,15 +1895,13 @@ def venn_ko(request):
 
 
 def venn_cog(request, accessions=False):
-    biodb = settings.BIODB
+    biodb = settings.BIODB_DB_PATH
     if accessions == 'False' or accessions == 'F':
         accessions = False
 
     display_form = True
-
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    venn_form_class = make_venn_from(biodb, plasmid=accessions, limit=6, label="COG")
+    db = db_utils.DB.load_db_from_name(biodb)
+    venn_form_class = make_venn_from(db, plasmid=accessions, limit=6, label="COG")
     if request.method == 'POST': 
 
         form_venn = venn_form_class(request.POST)
@@ -1912,52 +1910,37 @@ def venn_cog(request, accessions=False):
 
             targets = form_venn.cleaned_data['targets']
 
-            server, db = manipulate_biosqldb.load_db(biodb)
+            # NOTE: will probably need to implement a method on both bioentry
+            # on accession (the latter is still missing)
+            cog_hits = db.get_cog_hits(targets)
+            genome_desc = db.get_genomes_description(indexing_type="int")
 
             all_cog_list = []
             series = '['
 
-            taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
-            accession2genome = manipulate_biosqldb.accession2description(server, biodb)
-            for target in targets:
+            for target in [int(t) for t in targets]:
                 template_serie = '{name: "%s", data: %s}'
-                if not accessions:
-                    sql ='select id from comparative_tables_COG where `%s` > 0' % (target)
-                else:
-                    sql ='select id from comparative_tables_COG_accessions where `%s` > 0' % (target)
-                #print sql
-                cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
+                cogs = cog_hits[target]
                 all_cog_list += cogs
-                data = '"' + '","'.join(cogs) + '"'
-                if not accessions:
-
-                    series+=template_serie % (taxon_id2genome[target], cogs) + ','
-                else:
-                    series+=template_serie % (accession2genome[target], cogs) + ','
+                data = '"' + '","'.join([f"COG{cog}" for cog in cogs]) + '"'
+                series+=template_serie % (genome_desc[target], cogs) + ','
+                # if not accessions:
+                #    series+=template_serie % (, cogs) + ','
+                # else:
+                # series+=template_serie % (accession2genome[target], cogs) + ','
             series = series[0:-1] + ']'
 
-
-            #h['Marilyn Monroe'] = 1;
-
             cog2description = []
-            sql = 'select COG_name, t3.code,t3.description,A.description from COG_cog_names_2014 A ' \
-                  ' inner join COG_cog_id2cog_category t2 on A.COG_id=t2.COG_id ' \
-                  ' inner join COG_code2category t3 on t2.category_id=t3.category_id;'
-
-            data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-            for i in data:
-                if i in all_cog_list:
-                    cog2description.append('h["%s"] = "%s (%s) </td><td>%s";' % (i,
-                                                                            data[i][1],
-                                                                            data[i][0],
-                                                                            data[i][2]))
-                else:
-                    pass
+            data = db.get_cog_summaries(all_cog_list)
+            for name, func, func_descr, cog_descr in data:
+                cog2description.append('h["%s"] = "%s (%s) </td><td>%s";' % (name,
+                                                                        func,
+                                                                        func_descr,
+                                                                        cog_descr))
             envoi_venn = True
 
     else:  
         form_venn = venn_form_class()
-
     return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
 
 

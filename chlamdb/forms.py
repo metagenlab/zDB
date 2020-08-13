@@ -202,9 +202,9 @@ def make_metabo_from(database_name, add_box=False):
     return MetaboForm
 
 
-def make_venn_from(database_name, plasmid=False, label="Orthologs", limit=None):
+def make_venn_from(db, plasmid=False, label="Orthologs", limit=None):
 
-    accession_choices = get_accessions(database_name, plasmid=plasmid)
+    accession_choices = get_accessions(db, plasmid=plasmid)
 
     class VennForm(forms.Form):
         # orthologs_in = forms.MultipleChoiceField(label='%s conserved in' % label, choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % "17", "class":"selectpicker", "data-live-search":"true"}), required = False)
