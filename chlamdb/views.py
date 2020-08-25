@@ -3107,6 +3107,61 @@ def gc_locus(request, locus_tag):
 
     return render(request, 'chlamdb/gc_locus.html', my_locals(locals()))
 
+# ToDo: add error handling
+# NOTE: all protein are included in an orthogroup (even if they are in a singleton
+# group).
+def fam_cog(request, cog_id):
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
+
+    if request.method != "GET":
+        return render(request, 'chlamdb/fam.html', my_locals(locals()))
+
+    seqids = db.get_all_seqfeature_for_cog(cog_id)
+    
+    orthogroups = db.get_og(seqids)
+    cog_info = db.get_cog_summaries([cog_id], only_cog_desc=True)
+    hsh_gene_locs = db.get_gene_loc(seqids, as_hash=True)
+    hsh_prot_infos = db.get_proteins_info(seqids)
+    hsh_organisms = db.get_organism(seqids, as_hash=True)
+
+    all_locus_data = []
+    group_count = []
+
+    for index, seqid in enumerate(seqids):
+        if seqid not in orthogroups:
+            continue
+        og = orthogroups[seqid]
+        if og not in group_count:
+            group_count.append(og)
+
+        strand, start, end = hsh_gene_locs[seqid]
+        organism = hsh_organisms[seqid]
+
+        locus, prot_id, gene, product = hsh_prot_infos[seqid]
+        if gene==None:
+            gene = ""
+
+        data = (index, og, locus, prot_id, start, end, strand, gene, product, organism)
+        all_locus_data.append(data)
+
+    # ref_tree = db.get_reference_phylogeny()
+
+    # tree, style = ete_motifs.multiple_profiles_heatmap(biodb,
+    #                                                  labels,
+    #                                                   merged_dico,
+    #                                                   taxon2group2value=taxon2orthogroup2ec,
+    #                                                   highlight_first_column=True)
+    big = len(seqids) > 30
+    fam = f"COG{cog_id}"
+    info = [cog_info[0][2], ""]
+    type = "cog"
+
+    path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
+    # asset_path = '/temp/fam_tree_%s.png' % fam
+    # tree.render(path, dpi=300, tree_style=style)
+    return render(request, 'chlamdb/fam.html', my_locals(locals()))
+
 
 def fam(request, fam, type):
     biodb = settings.BIODB
@@ -3115,10 +3170,10 @@ def fam(request, fam, type):
         valid_id = True
 
         server, db = manipulate_biosqldb.load_db(biodb)
+        # should have be redirected in fam_cog instead
+        assert(type != "cog")
 
         print ('-- family request: biodb %s -- type %s -- name %s' % (biodb, type, fam))
-
-        #sql1 = 'SELECT column_name FROM information_schema.columns WHERE table_name="orthology_detail_chlamydia_03_15"'
         if type =='pfam':
             sql1 =   'select seqfeature_id from interpro_signature t1 ' \
                      ' inner join interpro_interpro t2 on t1.signature_id=t2.signature_id ' \

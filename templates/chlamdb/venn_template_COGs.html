@@ -34,7 +34,7 @@
 			value += '</ul>\n<table id="cog_table" class="table"><thead><tr><th>ID</th><th>Category</th><th>Description</th><th>Link</th></tr></thead><tbody>';
 			for (val in this.list) {
                 <!-- h[this.list[val]] -->
-				value += '<tr><td><a href="/chlamdb/fam/' + this.list[val] + '/cog"'+
+				value += '<tr><td><a href="/chlamdb/fam_cog/' + this.list[val] +
 						 '">'+  this.list[val] + '</a></td><td>' + h[this.list[val]]
 						+ '</td><td><a href="http://string-db.org/newstring_cgi/show_network_section.pl?all_channels_on=1&advanced_menu=yes&interactive=yes&network_flavor=evidence&targetmode=cogs&identifier=' + this.list[val] +'">STRING</a></td></tr>';
 			}

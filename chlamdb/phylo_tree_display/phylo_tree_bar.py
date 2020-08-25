@@ -730,7 +730,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", prev_data = None, exclude
         entry2description[entry_id] = desc
         entry2gc[entry_id] = gc
         entry2genome_size[entry_id] = size
-        entry2cd[entry_id] = 100.0 - float(pc)
+        entry2cd[entry_id] = pc
     my_taxons = [lf.name for lf in t1.iter_leaves()]
 
     # Calculate the midpoint node
