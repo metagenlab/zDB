@@ -38,6 +38,7 @@
 - [ ] ensure that the database creation is coherent with the options that were run (the optional analysis), with particular care for diamond refseq
 - [ ] add interproscan in a standard location
 - [ ] implement the possibility to add genomes on the fly (necessary to have the same config, probably)
+- [ ] implement to way to generate a gbk with the consensus annotations for draft genomes (using the annotations from cog, orthogroups, etc), this should be doable straight from the information stored in the biosql database
 
 # DONE
 
