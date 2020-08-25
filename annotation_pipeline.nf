@@ -1617,8 +1617,9 @@ process get_uniprot_goa_mapping {
   """
 }
 
+// TODO: this code will need to be modified depending on the options that were
+// specified (e.g. if diamond refseq wasn't invoked).
 process create_db {
-    // creates the basic version of the database
     publishDir "db"
 
     input:
@@ -1676,6 +1677,8 @@ process create_db {
     """
 }
 
+// TODO: need to ensure that the rest of the code works if diamond
+// wasn't run --> no best hits, so mafft would not be necessary
 process extract_non_PVC_best_hits_sequences {
     input:
         file curr_db from db_gen

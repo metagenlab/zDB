@@ -34,8 +34,10 @@
 
 # ToDo BKM
 - [ ] simplify local inputs by merging input files for assemblies and local genbank files
-
-- [ ]  add interproscan in a standard location
+- [ ] add a name parameter for the local input, to identify the genomes in chlamdb (and in the genbank files)
+- [ ] ensure that the database creation is coherent with the options that were run (the optional analysis), with particular care for diamond refseq
+- [ ] add interproscan in a standard location
+- [ ] implement the possibility to add genomes on the fly (necessary to have the same config, probably)
 
 # DONE
 
