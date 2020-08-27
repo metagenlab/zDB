@@ -61,7 +61,7 @@ def plot_cog_heatmap(db, ref_tree, bioentry_ids=None, taxon_id_list=None, freque
     code2description = db.get_cog_code_description()
     for bioentry, hsh_count in hsh_data.items():
         for funct, count in hsh_count.items():
-            descr = f"{code2description[funct]} ({funct})"
+            descr = f"{code2description[funct].strip()} ({funct.strip()})"
             if descr not in cog_list:
                 cog_list.append(descr)
             if descr not in code2taxon2count:

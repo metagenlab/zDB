@@ -3118,6 +3118,7 @@ def fam_cog(request, cog_id):
         return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
     seqids = db.get_all_seqfeature_for_cog(cog_id)
+    # what if seqids is empty?
     
     orthogroups = db.get_og(seqids)
     cog_info = db.get_cog_summaries([cog_id], only_cog_desc=True)
@@ -3170,7 +3171,6 @@ def fam_cog(request, cog_id):
             temp_table = [format_cog(cog) for cog, count in cog_count_tuple]
             taxon2group2ec[str(bioentry)][format_orthogroup(og)] = temp_table
 
-    print(taxon2group2ec)
     fam = format_cog(cog_id)
     labels = [fam] + [format_orthogroup(og) for og in group_count]
     tree, style = ete_motifs.multiple_profiles_heatmap(None,
@@ -3579,6 +3579,7 @@ def COG_phylo_heatmap(request, frequency):
     from ete3 import Tree
     from chlamdb.phylo_tree_display import ete_motifs
     from chlamdb.plots import cog_heatmap
+    print(frequency)
 
     db = db_utils.DB.load_db_from_name(biodb)
     tree = db.get_reference_phylogeny()
@@ -3588,21 +3589,12 @@ def COG_phylo_heatmap(request, frequency):
     t1.ladderize()
     tree, style = cog_heatmap.plot_cog_heatmap(db, t1, frequency=frequency)
 
-    path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
-    asset_path = '/temp/COG_tree.svg'
+    path = settings.BASE_DIR + f"/assets/temp/COG_tree_{frequency}.svg"
+    asset_path = f"/temp/COG_tree_{frequency}.svg"
     tree.render(path, dpi=600, tree_style=style)
-
-    #path2 = settings.BASE_DIR + '/assets/temp/COG_tree_%s_complete.svg' % module_name
-    #asset_path2 = '/assets/temp/KEGG_tree_%s_complete.svg' % module_name
-
-    #tree2.render(path2, dpi=800, h=600)
     envoi = True
-    path = settings.BASE_DIR + '/assets/temp/COG_tree.svg'
-    asset_path = '/temp/COG_tree.svg'
-
+    freq = frequency
     return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
-
-
 
 def plot_hist(data, xlab, ylab, title, abline, div_id):
 

@@ -21,7 +21,7 @@
                                     <li ><a href="{% url 'extract_cog'  %}">Detailed comparison</a></li>
                                     <li><a href="{% url 'venn_cog'  %}">Venn diagram</a></li>
                                     <li><a href="{% url 'cog_barchart'  %}">COG categories barchart</a></li>
-                                    {% if freq %}
+                                    {% if freq == "True" %}
                                         <li class="active"><a href="{% url 'COG_phylo_heatmap'  True %}">COG heatmap freq.</a></li>
                                         <li><a href="{% url 'COG_phylo_heatmap'  False %}">COG heatmap counts</a></li>
                                     {% else %}
