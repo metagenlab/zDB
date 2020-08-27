@@ -3575,11 +3575,13 @@ def COG_phylo_heatmap(request, frequency):
 
     if request.method != "GET":
         return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
+    freq = True
+    if frequency=="False":
+        freq = False
 
     from ete3 import Tree
     from chlamdb.phylo_tree_display import ete_motifs
     from chlamdb.plots import cog_heatmap
-    print(frequency)
 
     db = db_utils.DB.load_db_from_name(biodb)
     tree = db.get_reference_phylogeny()
@@ -3587,13 +3589,13 @@ def COG_phylo_heatmap(request, frequency):
     R = t1.get_midpoint_outgroup()
     t1.set_outgroup(R)
     t1.ladderize()
-    tree, style = cog_heatmap.plot_cog_heatmap(db, t1, frequency=frequency)
+    tree, style = cog_heatmap.plot_cog_heatmap(db, t1, frequency=freq)
 
-    path = settings.BASE_DIR + f"/assets/temp/COG_tree_{frequency}.svg"
-    asset_path = f"/temp/COG_tree_{frequency}.svg"
+    freq = frequency
+    path = settings.BASE_DIR + f"/assets/temp/COG_tree_{freq}.svg"
+    asset_path = f"/temp/COG_tree_{freq}.svg"
     tree.render(path, dpi=600, tree_style=style)
     envoi = True
-    freq = frequency
     return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
 
 def plot_hist(data, xlab, ylab, title, abline, div_id):

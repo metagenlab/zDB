@@ -926,7 +926,6 @@ def multiple_profiles_heatmap(biodb,
         column2max = {}
         for column in column_labels:
             values = [float(i) for i in group2taxon2count[column].values()]
-            #print values, column
             norm = mpl.colors.Normalize(vmin=min(values), vmax=max(values))
             cmap = cm.OrRd
             m = cm.ScalarMappable(norm=norm, cmap=cmap)
