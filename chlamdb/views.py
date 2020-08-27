@@ -1838,13 +1838,6 @@ def extract_cog(request):
 
     return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
 
-
-
-
-
-
-
-
 def venn_ko(request):
     biodb = settings.BIODB
 
@@ -1893,6 +1886,8 @@ def venn_ko(request):
     return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
 
 
+def format_cog(cog_id):
+    return f"COG{cog_id:04d}"
 
 def venn_cog(request, accessions=False):
     biodb = settings.BIODB_DB_PATH
@@ -1916,10 +1911,9 @@ def venn_cog(request, accessions=False):
             all_cog_list = []
             series_tab = []
             for target in [int(t) for t in targets]:
-                template_serie = "{{name: \"{}\", data: {data}}}"
                 cogs = cog_hits[target]
                 all_cog_list += cogs
-                data = ",".join(f"\"{cog}\"" for cog in cogs)
+                data = ",".join(f"\"{format_cog(cog)}\"" for cog in cogs)
                 series_tab.append( f"{{name: \"{genome_desc[target]}\", data: [{data}]}}" )
             series = "[" + ",".join(series_tab) + "]"
 
@@ -1927,7 +1921,7 @@ def venn_cog(request, accessions=False):
             data = db.get_cog_summaries(all_cog_list)
             for name, func, func_descr, cog_descr in data:
                 # NOTE: will need to remove the strip when the bug in the database will be fixed
-                cog2description_l.append(f"h[\"{name}\"] = \"{func} ({func_descr.strip()}) </td><td>{cog_descr}\"")
+                cog2description_l.append(f"h[\"{format_cog(name)}\"] = \"{func} ({func_descr.strip()}) </td><td>{cog_descr}\"")
             cog2description = ";".join(cog2description_l)
             envoi_venn = True
 
@@ -3107,12 +3101,18 @@ def gc_locus(request, locus_tag):
 
     return render(request, 'chlamdb/gc_locus.html', my_locals(locals()))
 
-# ToDo: add error handling
-# NOTE: all protein are included in an orthogroup (even if they are in a singleton
+
+def format_orthogroup(og):
+    return f"group_{og}"
+
+# TODO : add error handling
+# NOTE : all protein are included in an orthogroup (even if they are in a singleton
 # group).
 def fam_cog(request, cog_id):
+    from chlamdb.phylo_tree_display import ete_motifs
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
+    cog_id = int(cog_id)
 
     if request.method != "GET":
         return render(request, 'chlamdb/fam.html', my_locals(locals()))
@@ -3124,7 +3124,6 @@ def fam_cog(request, cog_id):
     hsh_gene_locs = db.get_gene_loc(seqids, as_hash=True)
     hsh_prot_infos = db.get_proteins_info(seqids)
     hsh_organisms = db.get_organism(seqids, as_hash=True)
-
     all_locus_data = []
     group_count = []
 
@@ -3137,29 +3136,47 @@ def fam_cog(request, cog_id):
 
         strand, start, end = hsh_gene_locs[seqid]
         organism = hsh_organisms[seqid]
-
         locus, prot_id, gene, product = hsh_prot_infos[seqid]
         if gene==None:
             gene = ""
-
         data = (index, og, locus, prot_id, start, end, strand, gene, product, organism)
         all_locus_data.append(data)
 
-    # ref_tree = db.get_reference_phylogeny()
+    ref_tree = db.get_reference_phylogeny()
+    leaf_to_name = db.get_genomes_description(indexing="bioentry", exclude_plasmids=True)
+    hsh_og_count = db.get_og_count(group_count)
+    hsh_cog_count = db.get_cog_counts([cog_id])
 
-    # tree, style = ete_motifs.multiple_profiles_heatmap(biodb,
-    #                                                  labels,
-    #                                                   merged_dico,
-    #                                                   taxon2group2value=taxon2orthogroup2ec,
-    #                                                   highlight_first_column=True)
-    big = len(seqids) > 30
-    fam = f"COG{cog_id}"
+    # build the hash table in the format necessary for multiple_profile_heatmap
+    dico_tree = {}
+    for og in group_count:
+        dico_tree[format_orthogroup(og)] = {}
+    dico_tree[format_cog(cog_id)] = {}
+
+    for bioentry, og_count_tuple in hsh_og_count.items():
+        for og, count in og_count_tuple:
+            dico_tree[format_orthogroup(og)][str(bioentry)] = count
+
+    # there should be only one
+    for bioentry, cog_count_tuple in hsh_cog_count.items():
+        for cog, count in cog_count_tuple:
+            dico_tree[format_cog(cog)][str(bioentry)] = count
+
+    fam = format_cog(cog_id)
+    labels = [fam] + [format_orthogroup(og) for og in group_count]
+    tree, style = ete_motifs.multiple_profiles_heatmap(None,
+                                                      labels,
+                                                      dico_tree,
+                                                      # taxon2group2value=aggregate_data,
+                                                      highlight_first_column=True,
+                                                      tree=ref_tree,
+                                                      leaf_to_name=leaf_to_name)
+    big = len(labels) > 30
     info = [cog_info[0][2], ""]
     type = "cog"
-
     path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
-    # asset_path = '/temp/fam_tree_%s.png' % fam
-    # tree.render(path, dpi=300, tree_style=style)
+    asset_path = '/temp/fam_tree_%s.png' % fam
+    tree.render(path, dpi=300, tree_style=style)
     return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
 
