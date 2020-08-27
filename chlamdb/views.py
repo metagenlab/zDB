@@ -3185,6 +3185,8 @@ def fam_cog(request, cog_id):
     type = "cog"
     path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
     asset_path = '/temp/fam_tree_%s.png' % fam
+    menu = True
+    envoi = True
     tree.render(path, dpi=300, tree_style=style)
     return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
