@@ -53,8 +53,8 @@ def plot_cog_heatmap(db, ref_tree, bioentry_ids=None, taxon_id_list=None, freque
         code2taxon2count['TOTAL'] = {}
         for bioentry, cnt in bioentryid2count_no_GOG.items():
             if bioentry_ids == None or bioentry in bioentry_ids:
-                code2taxon2count['-'][bioentry] = cnt
-                code2taxon2count['TOTAL'][bioentry] = bioentryid2proteome_size[bioentry]
+                code2taxon2count['-'][str(bioentry)] = cnt
+                code2taxon2count['TOTAL'][str(bioentry)] = bioentryid2proteome_size[bioentry]
 
         cog_list = ['TOTAL', '-']
 
