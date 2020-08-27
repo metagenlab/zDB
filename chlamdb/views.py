@@ -3147,7 +3147,7 @@ def fam_cog(request, cog_id):
     hsh_og_count = db.get_og_count(group_count)
     hsh_cog_count = db.get_cog_counts([cog_id])
 
-    # build the hash table in the format necessary for multiple_profile_heatmap
+    # build the different hashes necessary for multiple_profiles_heatmap
     dico_tree = {}
     for og in group_count:
         dico_tree[format_orthogroup(og)] = {}
@@ -3156,18 +3156,27 @@ def fam_cog(request, cog_id):
     for bioentry, og_count_tuple in hsh_og_count.items():
         for og, count in og_count_tuple:
             dico_tree[format_orthogroup(og)][str(bioentry)] = count
-
-    # there should be only one
     for bioentry, cog_count_tuple in hsh_cog_count.items():
         for cog, count in cog_count_tuple:
             dico_tree[format_cog(cog)][str(bioentry)] = count
 
+    taxon2group2ec = {}
+    for bioentry, og_count_tuple in hsh_og_count.items():
+        if not bioentry in hsh_cog_count:
+            continue
+        cog_count_tuple = hsh_cog_count[bioentry]
+        taxon2group2ec[str(bioentry)] = {}
+        for og, count in og_count_tuple:
+            temp_table = [format_cog(cog) for cog, count in cog_count_tuple]
+            taxon2group2ec[str(bioentry)][format_orthogroup(og)] = temp_table
+
+    print(taxon2group2ec)
     fam = format_cog(cog_id)
     labels = [fam] + [format_orthogroup(og) for og in group_count]
     tree, style = ete_motifs.multiple_profiles_heatmap(None,
                                                       labels,
                                                       dico_tree,
-                                                      # taxon2group2value=aggregate_data,
+                                                      taxon2group2value=taxon2group2ec,
                                                       highlight_first_column=True,
                                                       tree=ref_tree,
                                                       leaf_to_name=leaf_to_name)
