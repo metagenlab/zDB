@@ -5944,45 +5944,19 @@ def orthogroup_list_cog_barchart(request, accessions=False):
 
 
 def cog_barchart(request):
-    biodb = settings.BIODB
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    venn_form_class = make_venn_from(biodb)
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb)
+    venn_form_class = make_venn_from(db)
 
     if request.method == 'POST':
         form = venn_form_class(request.POST)
 
         if form.is_valid():
 
-            target_taxons = form.cleaned_data['targets']
-
-            biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
-            biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
-
-            sql_taxon = 'select taxon_id,description from bioentry ' \
-                        ' where biodatabase_id=%s and taxon_id in (%s) and description not like "%%%%plasmid%%%%"' % (biodb_id,','.join(target_taxons))
-
-            taxon2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_taxon,))
-
-            sql = 'select A.taxon_id,D.code,D.description, count(*) as n from (select t1.*,t2.taxon_id ' \
-                  ' from COG_locus_tag2gi_hit as t1 ' \
-                  ' inner join bioentry as t2 on t1.accession=t2.accession ' \
-                  ' where biodatabase_id=%s and  taxon_id in (%s)) A ' \
-                  ' inner join COG_cog_names_2014 as B on A.COG_id=B.COG_name ' \
-                  ' inner join COG_cog_id2cog_category C on B.COG_id=C.COG_id ' \
-                  ' inner join COG_code2category D on C.category_id=D.category_id ' \
-                  ' group by taxon_id,D.category_id;' % (biodb_id,','.join(target_taxons))
-
-            data = server.adaptor.execute_and_fetchall(sql,)
-
-
-
-            category_dico = {}
-
-
-            for line in data:
-                if line[1] not in category_dico:
-                    category_dico[line[1]] = line[2]
+            target_bioentries = [int(i) for i in form.cleaned_data['targets']]
+            hsh_counts = db.get_cog_counts_per_category(target_bioentries)
+            taxon2description = db.get_genomes_description(entries = target_bioentries)
+            category_dico = db.get_cog_code_description()
 
             # create a dictionnary to convert cog category description and one letter code
             category_map = 'var description2category = {'
@@ -5995,17 +5969,27 @@ def cog_barchart(request):
                 taxon_map+='"%s":"%s",' % (i, taxon2description[i])
             taxon_map = taxon_map[0:-1] + '};'
 
-
+            # Not too happy with this code and its level of indentation
+            # Could also be made faster by avoiding string comparisons and list lookup
             taxon2category2count = {}
             all_categories = []
-            for line in data:
-                if line[0] not in taxon2category2count:
-                    taxon2category2count[line[0]] = {}
-                    taxon2category2count[line[0]][line[2]] = line[3]
-                else:
-                    taxon2category2count[line[0]][line[2]] = line[3]
-                if line[2] not in all_categories:
-                    all_categories.append(line[2])
+            for bioentry, lst_cnt in hsh_counts.items():
+                bioentry_str = str(bioentry)
+                if bioentry_str not in taxon2category2count:
+                    taxon2category2count[bioentry_str] = {}
+
+                for func, cnt in lst_cnt:
+                    # a cog can have multiple functions
+                    for i in range(0, len(func)):
+                        f = func[i]
+                        category = category_dico[f]
+                        if category in taxon2category2count[bioentry_str]:
+                            taxon2category2count[bioentry_str][category] += cnt
+                        else:
+                            taxon2category2count[bioentry_str][category] = cnt
+                            if category not in all_categories:
+                                all_categories.append(category)
+
             labels_template = '[\n' \
                               '%s\n' \
                               ']\n'
@@ -6023,10 +6007,8 @@ def cog_barchart(request):
             for taxon in taxon2category2count:
                 one_category_list = []
                 for category in all_categories:
-                    try:
-                        one_category_list.append(taxon2category2count[taxon][category])
-                    except:
-                        one_category_list.append(0)
+                    count = taxon2category2count[taxon].get(category, 0)
+                    one_category_list.append(count)
                 one_category_list = [str(i) for i in one_category_list]
 
                 all_series_templates.append(one_serie_template % (taxon, ','.join(one_category_list)))
@@ -6054,7 +6036,7 @@ def cog_barchart(request):
                 },]
             '''
 
-            circos_url = '?h=' + ('&h=').join(target_taxons)
+            circos_url = '?h=' + ('&h=').join([str(i) for i in target_bioentries])
             envoi = True
     else:  
         form = venn_form_class()
