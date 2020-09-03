@@ -3181,7 +3181,7 @@ def fam_cog(request, cog_id):
                                                       tree=ref_tree,
                                                       leaf_to_name=leaf_to_name)
     big = len(labels) > 30
-    info = [cog_info[0][2], ""]
+    info = [cog_info[cog_id][1], ""]
     type = "cog"
     path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
     asset_path = '/temp/fam_tree_%s.png' % fam
