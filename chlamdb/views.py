@@ -4684,52 +4684,41 @@ def sunburst(request, locus):
 
     return render(request, 'chlamdb/sunburst.html', my_locals(locals()))
 
-def get_cog(request, taxon, category):
-    biodb = settings.BIODB
+def get_cog(request, bioentry, category):
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb)
 
-    '''
-
-    get list of COG for a given taxon and category
-
-    :param biodb: biosqldb name
-    :param taxon: taxon id
-    :param category: ane letter COG category
-    :return:
-    '''
-
-
-    server, db = manipulate_biosqldb.load_db(biodb)
-
+    # used for CIRCOS plos generation
     target_taxons = [i for i in request.GET.getlist('h')]
+    cog_hits = db.get_cog_hits([bioentry], index_by_seqid=True)
 
-    biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
+    cog_ids = set()
+    seqids = []
+    for seqid, ids in cog_hits.items():
+        seqids.append(seqid)
+        for cog_id in ids:
+            cog_ids.add(cog_id)
 
-    biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
+    cog_summaries = db.get_cog_summaries(list(cog_ids), only_cog_desc=True)
+    prot_infos = db.get_proteins_info(seqids)
+    organisms = db.get_organism([bioentry], id_type = "bioentry")
 
-    sql = 'select A.description,locus_tag,COG_name, B.description, D.description from (' \
-          ' select description,locus_tag,COG_id from COG_locus_tag2gi_hit as t1 inner join bioentry as t2 ' \
-          ' on t1.accession=t2.accession where biodatabase_id=%s and taxon_id=%s) A ' \
-          ' inner join COG_cog_names_2014 as B on A.COG_id=B.COG_name ' \
-          ' inner join COG_cog_id2cog_category C on B.COG_id=C.COG_id ' \
-          ' inner join COG_code2category D on C.category_id=D.category_id where D.code="%s";' % (biodb_id,
-                                                                                                 taxon,
-                                                                                                 category)
+    data = []
+    locus_list = []
+    for seqid, hits in cog_hits.items():
+        for cog_hit in hits:
+            cog_func, cog_desc = cog_summaries[cog_hit]
+            if category not in cog_func:
+                continue
+            locus_tag = prot_infos[seqid][0]
+            product = prot_infos[seqid][3]
+            data.append([organisms[int(bioentry)], locus_tag, format_cog(cog_hit), cog_desc, product])
+            locus_list.append(locus_tag)
 
-    data = server.adaptor.execute_and_fetchall(sql,)
-
-    locus_list = [line[1] for line in data]
-
-    sql = 'select locus_tag,product from orthology_detail where locus_tag in (%s)' % ('"' + '","'.join(locus_list) + '"')
-
-
-    locus2annot = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-    circos_url = '?ref=%s&' % taxon
-    target_taxons.pop(target_taxons.index(taxon))
+    circos_url = '?ref=%s&' % bioentry
+    target_taxons.pop(target_taxons.index(bioentry))
     circos_url += "t="+('&t=').join((target_taxons)) + '&h=' + ('&h=').join(locus_list)
-
     data_type = 'cog'
-
     return render(request, 'chlamdb/cog_info.html', my_locals(locals()))
 
 def get_cog_multiple(request, category, accessions=False):
