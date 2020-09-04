@@ -146,13 +146,13 @@
                                             <th>Category</th>
                                             <th>Name</th>
                                             <th>present in (/{{include|length}})</th>
-                                            <th>freq complete database {{max_n}}</th>
+                                            <th>freq complete database (max: {{max_n}})</th>
                                         </tr>
                                     </thead>
 
                                     {% for value in cog_data %}
                                         <tr>
-                                            <td><a href="{% url 'fam' value.0 'cog' %}">{{value.0}}</a></td>
+                                            <td><a href="{% url 'fam_cog' value.0 %}">{{value.0}}</a></td>
                                             <td>{{value.1}} ({{value.2}})</td>
                                             <td>{{value.3}}</td>
                                             <td>{{value.4}}</td>

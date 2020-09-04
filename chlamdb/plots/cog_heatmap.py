@@ -33,7 +33,7 @@ def plot_cog_heatmap(db, ref_tree, bioentry_ids=None, taxon_id_list=None, freque
                   ' group by taxon_id,t1.COG_id) A inner join COG_cog_names_2014 B on A.COG_id=B.COG_id ' \
                   ' group by A.taxon_id,B.functon;' % (biodb, biodb)
 
-    hsh_data = db.get_COG_counts(bioentry_ids=bioentry_ids, taxon_ids=taxon_id_list)
+    hsh_data = db.get_cog_count_for_genomes(bioentry_ids=bioentry_ids, taxon_ids=taxon_id_list)
     hsh_data = simplify(hsh_data)
 
     if frequency:

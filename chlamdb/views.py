@@ -1728,114 +1728,96 @@ def extract_cog(request):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
     extract_form_class = make_extract_form(db, plasmid=True, label="COG")
-    if request.method == 'POST': 
-        form = extract_form_class(request.POST)
 
-        #form2 = ContactForm(request.POST)
-        if form.is_valid():  
-            from chlamdb.biosqldb import biosql_own_sql_tables
-
-            include = form.cleaned_data['orthologs_in']
-            exclude = form.cleaned_data['no_orthologs_in']
-            n_missing = form.cleaned_data['frequency']
-            reference_taxon = form.cleaned_data['reference']
-            if reference_taxon == "None":
-                reference_taxon = include[0]
-            try:
-                accessions = request.POST['checkbox_accessions']
-                accessions = True
-            except:
-                accessions = False
-                accession2taxon = manipulate_biosqldb.accession2taxon_id(server, biodb)
-                include = [str(accession2taxon[i]) for i in include]
-                exclude = [str(accession2taxon[i]) for i in exclude]
-                reference_taxon = accession2taxon[reference_taxon]
-
-            if int(n_missing)>=len(include):
-                wrong_n_missing = True
-            else:
-                server, db = manipulate_biosqldb.load_db(biodb)
-
-
-                freq_missing = (len(include)-float(n_missing))/len(include)
-
-                # get sub matrix and complete matrix
-
-                mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                              "COG",
-                                                                              "id",
-                                                                              include,
-                                                                              exclude,
-                                                                              freq_missing,
-                                                                              accessions=accessions,
-                                                                              cache=cache)
-
-
-                match_groups = mat.index.tolist()
-                # get count in subgroup
-                cog2count = dict((mat > 0).sum(axis=1))
-                # get count in complete database
-                cog2count_all = dict((mat_all > 0).sum(axis=1))
-
-                max_n = max(cog2count_all.values())
-
-                # GET max frequency for template
-                sum_group = len(match_groups)
-
-                # get data for each matching cog
-                cog_data = []
-                for i in match_groups:
-                    sql = 'select COG_name,t3.code, t3.description, t1.description ' \
-                          ' from COG_cog_names_2014 t1 inner join COG_cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
-                          ' inner join COG_code2category t3 on t2.category_id=t3.category_id where COG_name ="%s"' % i
-                    try:
-                        tmp = list(server.adaptor.execute_and_fetchall(sql,)[0])
-                    except:
-                        tmp = [i, "-", "-", "-"]
-                    cog_data.append(tmp+[cog2count[tmp[0]], cog2count_all[tmp[0]]])
-
-                cog_list = '"' + '","'.join(match_groups) + '"'
-
-                biodb_id = server.adaptor.execute_and_fetchall('select biodatabase_id from biodatabase where name="%s"' % biodb,)[0][0]
-
-                if not accessions:
-                    locus_list_sql = 'select locus_tag from (select taxon_id,locus_tag,COG_id from COG_locus_tag2gi_hit as t1 ' \
-                                     ' inner join bioentry as t2 on t1.accession=t2.accession ' \
-                                     ' where biodatabase_id=%s) A ' \
-                                     ' where A.taxon_id=%s and A.COG_id in (%s);' % (biodb_id,
-                                                                                    reference_taxon,
-                                                                                    cog_list)
-                else:
-                    locus_list_sql = 'select locus_tag from COG_locus_tag2gi_hit' \
-                                     ' where accession="%s" and COG_id in (%s);' % (reference_taxon,
-                                                                                    cog_list)
-
-                locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-                
-                
-                target_circos_taxons = include + exclude
-                taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
-                taxon_out_url = "&o="+("&o=").join(exclude)
-                circos_url = '?ref=%s&' % reference_taxon
-                circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
-
-                locus2annot, \
-                locus_tag2cog_catego, \
-                locus_tag2cog_name, \
-                locus_tag2ko, \
-                pathway2category, \
-                module2category, \
-                ko2ko_pathways, \
-                ko2ko_modules,\
-                locus2interpro = get_locus_annotations(biodb, locus_list)
-
-
-
-                envoi_extract = True
-
-    else:  
+    if request.method != "POST":
         form = extract_form_class()
+        return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
 
+    form = extract_form_class(request.POST)
+    if not form.is_valid():
+        return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
+
+    # list of bioentries
+    include = form.cleaned_data['orthologs_in']
+    exclude = form.cleaned_data['no_orthologs_in']
+    n_missing = form.cleaned_data['frequency']
+    reference = form.cleaned_data['reference']
+    if reference == "None":
+        reference = include[0]
+
+    if int(n_missing)>=len(include):
+        wrong_n_missing = True
+        return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
+
+    cog_hits = db.get_cog_hits(include + exclude, only_best_hit=True)
+    limit = len(include)-int(n_missing)
+    to_exclude = set()
+    for bioentry in exclude:
+        for cog_id in cog_hits[int(bioentry)]:
+            to_exclude.add(cog_id)
+    hsh_cog_counts = {}
+    for bioentry, cogs in cog_hits.items():
+        for cog in cogs:
+            cnt = hsh_cog_counts.get(cog, 0)
+            hsh_cog_counts[cog] = cnt+1
+
+    selected_cog_ids = []
+    for cog_id, count in hsh_cog_counts.items():
+        if count>=limit and not cog_id in to_exclude:
+            selected_cog_ids.append(cog_id)
+
+    cogs_summaries = db.get_cog_summaries(selected_cog_ids)
+    cog_data = []
+    for cog_id, func, func_descr, cog_descr in cogs_summaries:
+        # TODO: add the number of occurences in all genomes in place of the "-"
+        data = (format_cog(cog_id), func, func_descr, cog_descr, hsh_cog_counts[cog_id], "-")
+        cog_data.append(data)
+
+    # match_groups = mat.index.tolist()
+    # get count in subgroup
+    # cog2count = dict((mat > 0).sum(axis=1))
+    # get count in complete database
+    # cog2count_all = dict((mat_all > 0).sum(axis=1))
+    # the cog with the highest number of occurences in all genomes
+    max_n = 0#  max(cog2count_all.values())
+
+    sum_group = len(selected_cog_ids)
+
+    # get data for each matching cog
+    '''
+    cog_list = '"' + '","'.join(match_groups) + '"'
+
+    if not accessions:
+        locus_list_sql = 'select locus_tag from (select taxon_id,locus_tag,COG_id from COG_locus_tag2gi_hit as t1 ' \
+                         ' inner join bioentry as t2 on t1.accession=t2.accession ' \
+                         ' where biodatabase_id=%s) A ' \
+                         ' where A.taxon_id=%s and A.COG_id in (%s);' % (biodb_id,
+                                                                        reference_taxon,
+                                                                        cog_list)
+    else:
+        locus_list_sql = 'select locus_tag from COG_locus_tag2gi_hit' \
+                         ' where accession="%s" and COG_id in (%s);' % (reference_taxon,
+                                                                        cog_list)
+
+    locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
+    '''
+    
+    target_circos_taxons = include + exclude
+    taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
+    taxon_out_url = "&o="+("&o=").join(exclude)
+    circos_url = '?ref=%s&' % reference
+    # circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
+
+    locus2annot = {} 
+    locus_tag2cog_catego = {}
+    locus_tag2cog_name = {}
+    locus_tag2ko = {}
+    pathway2category = {}
+    module2category = {}
+    ko2ko_pathways = {}
+    ko2ko_modules = {}
+    locus2interpro = {} #  get_locus_annotations(biodb, locus_list)
+    envoi_extract = True
     return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
 
 def venn_ko(request):
