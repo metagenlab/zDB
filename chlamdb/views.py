@@ -4702,6 +4702,7 @@ def get_cog(request, bioentry, category):
     cog_summaries = db.get_cog_summaries(list(cog_ids), only_cog_desc=True)
     prot_infos = db.get_proteins_info(seqids)
     organisms = db.get_organism([bioentry], id_type = "bioentry")
+    functions = db.get_cog_code_description()
 
     data = []
     locus_list = []
@@ -4715,6 +4716,7 @@ def get_cog(request, bioentry, category):
             data.append([organisms[int(bioentry)], locus_tag, format_cog(cog_hit), cog_desc, product])
             locus_list.append(locus_tag)
 
+    description = functions[category]
     circos_url = '?ref=%s&' % bioentry
     target_taxons.pop(target_taxons.index(bioentry))
     circos_url += "t="+('&t=').join((target_taxons)) + '&h=' + ('&h=').join(locus_list)
