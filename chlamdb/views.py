@@ -1905,7 +1905,7 @@ def venn_cog(request, accessions=False):
 
             # NOTE: will probably need to implement a method on both bioentry
             # on accession (the latter is still missing)
-            cog_hits = db.get_cog_hits(targets)
+            cog_hits = db.get_cog_hits(targets, only_best_hit=True)
             genome_desc = db.get_genomes_description(indexing_type="int")
 
             all_cog_list = []
@@ -3112,7 +3112,7 @@ def fam_cog(request, cog_id):
     from chlamdb.phylo_tree_display import ete_motifs
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
-    cog_id = int(cog_id)
+    cog_id = int(cog_id[3:])
 
     if request.method != "GET":
         return render(request, 'chlamdb/fam.html', my_locals(locals()))
@@ -4690,7 +4690,7 @@ def get_cog(request, bioentry, category):
 
     # used for CIRCOS plos generation
     target_taxons = [i for i in request.GET.getlist('h')]
-    cog_hits = db.get_cog_hits([bioentry], index_by_seqid=True)
+    cog_hits = db.get_cog_hits([bioentry], index_by_seqid=True, only_best_hit=True)
 
     cog_ids = set()
     seqids = []
@@ -4720,7 +4720,6 @@ def get_cog(request, bioentry, category):
     circos_url = '?ref=%s&' % bioentry
     target_taxons.pop(target_taxons.index(bioentry))
     circos_url += "t="+('&t=').join((target_taxons)) + '&h=' + ('&h=').join(locus_list)
-    data_type = 'cog'
     return render(request, 'chlamdb/cog_info.html', my_locals(locals()))
 
 def get_cog_multiple(request, category, accessions=False):
@@ -5964,12 +5963,12 @@ def cog_barchart(request):
             # Could also be made faster by avoiding string comparisons and list lookup
             taxon2category2count = {}
             all_categories = []
-            for bioentry, lst_cnt in hsh_counts.items():
+            for bioentry, hsh_cnt in hsh_counts.items():
                 bioentry_str = str(bioentry)
                 if bioentry_str not in taxon2category2count:
                     taxon2category2count[bioentry_str] = {}
 
-                for func, cnt in lst_cnt:
+                for func, cnt in hsh_cnt.items():
                     # a cog can have multiple functions
                     for i in range(0, len(func)):
                         f = func[i]
