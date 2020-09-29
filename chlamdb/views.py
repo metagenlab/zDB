@@ -1722,8 +1722,6 @@ def venn_interpro(request):
         form_venn = venn_form_class()
     return render(request, 'chlamdb/venn_interpro.html', my_locals(locals()))
 
-
-
 def extract_cog(request):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
@@ -1755,9 +1753,16 @@ def extract_cog(request):
     for bioentry in exclude:
         for cog_id in cog_hits[int(bioentry)]:
             to_exclude.add(cog_id)
+
     hsh_cog_counts = {}
-    for bioentry, cogs in cog_hits.items():
-        for cog in cogs:
+    for bioentry in include:
+
+        # albeit not really efficient, necessary as a genome may have the same 
+        # cog several times, and this would mess up the rest of the code
+        # may be interesting to use a different data structure (e.g. a DataFrame from pandas
+        # to speed up the code).
+        unique_cogs = set(cog_hits[int(bioentry)])
+        for cog in unique_cogs:
             cnt = hsh_cog_counts.get(cog, 0)
             hsh_cog_counts[cog] = cnt+1
 
@@ -1766,49 +1771,63 @@ def extract_cog(request):
         if count>=limit and not cog_id in to_exclude:
             selected_cog_ids.append(cog_id)
 
-    cogs_summaries = db.get_cog_summaries(selected_cog_ids)
+    if len(selected_cog_ids) == 0:
+        no_match = True
+        return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
+
+    all_database = db.get_all_seqfeature_for_cog(selected_cog_ids)
+    hsh_cog_count_all = {}
+    for seqid, cog_id in all_database.items():
+        cur_count = hsh_cog_count_all.get(cog_id, 0)
+        hsh_cog_count_all[cog_id] = cur_count + 1
+
+    cat_count = {}
+    cogs_summaries = db.get_cog_summaries(list(hsh_cog_count_all.keys()))
+    cogs_funct = db.get_cog_code_description()
     cog_data = []
-    for cog_id, func, func_descr, cog_descr in cogs_summaries:
-        # TODO: add the number of occurences in all genomes in place of the "-"
-        data = (format_cog(cog_id), func, func_descr, cog_descr, hsh_cog_counts[cog_id], "-")
-        cog_data.append(data)
+    for cog_id in selected_cog_ids:
+        count = hsh_cog_count_all[cog_id]
+        for func, func_descr, cog_descr in cogs_summaries[cog_id]:
+            data = (format_cog(cog_id), func, func_descr, cog_descr, hsh_cog_counts[cog_id], str(count))
+            cog_data.append(data)
 
-    # match_groups = mat.index.tolist()
-    # get count in subgroup
-    # cog2count = dict((mat > 0).sum(axis=1))
-    # get count in complete database
-    # cog2count_all = dict((mat_all > 0).sum(axis=1))
-    # the cog with the highest number of occurences in all genomes
-    max_n = 0#  max(cog2count_all.values())
+            inc, not_incl = cat_count.get(func, (0, 0))
+            cat_count[func] = (inc+hsh_cog_counts[cog_id], not_incl)
 
+    # get the categories for all cogs
+    for cog_id, details_lst in cogs_summaries.items():
+        for func, func_descr, cog_descr in details_lst:
+            inc, not_incl = cat_count.get(func, (0, 0))
+            cat_count[func] = (inc, not_incl+hsh_cog_count_all[cog_id])
+
+    max_n = max(hsh_cog_count_all.values())
     sum_group = len(selected_cog_ids)
 
-    # get data for each matching cog
-    '''
-    cog_list = '"' + '","'.join(match_groups) + '"'
-
-    if not accessions:
-        locus_list_sql = 'select locus_tag from (select taxon_id,locus_tag,COG_id from COG_locus_tag2gi_hit as t1 ' \
-                         ' inner join bioentry as t2 on t1.accession=t2.accession ' \
-                         ' where biodatabase_id=%s) A ' \
-                         ' where A.taxon_id=%s and A.COG_id in (%s);' % (biodb_id,
-                                                                        reference_taxon,
-                                                                        cog_list)
-    else:
-        locus_list_sql = 'select locus_tag from COG_locus_tag2gi_hit' \
-                         ' where accession="%s" and COG_id in (%s);' % (reference_taxon,
-                                                                        cog_list)
-
-    locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-    '''
-    
     target_circos_taxons = include + exclude
     taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
     taxon_out_url = "&o="+("&o=").join(exclude)
     circos_url = '?ref=%s&' % reference
     # circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
 
-    locus2annot = {} 
+    # Code to generate the barchart diagrams
+    cat_map_str = ",".join([f"\"{func}\": \"{descr}\"" for func, descr in cogs_funct.items()])
+    category_map = f"var category_description = {{ {cat_map_str} }};"
+    ttl_sel = sum([c1 for func, (c1, c2) in cat_count.items()])
+    ttl_all = sum([c2 for func, (c1, c2) in cat_count.items()])
+
+    cat_count_comp = ",".join([f"\"{func}\" : [\"{c2}\", \"{c1}\"]" for func, (c1, c2) in cat_count.items()])
+    category_count_complete = f"var category_count_complete = {{ {cat_count_comp} }};"
+
+    serie_selection_val = [str(round(float(c1)/ttl_sel, 2)) for func, (c1, c2) in cat_count.items()]
+    serie_all_val = [str(round(float(c2)/ttl_all, 2)) for func, (c1, c2) in cat_count.items()]
+    serie_selection = f"{{ labels: \"selection\", values: [{','.join(serie_selection_val)}] }}"
+    serie_all = f"{{ labels: \"complete genomes\", values: [{','.join(serie_all_val)}] }}"
+    series_str = ",".join([serie_all, serie_selection])
+    series = f"[ {series_str} ]"
+    labels_str = ",".join([f"\"{funct}\"" for funct in cat_count.keys()])
+    labels = f"[ {labels_str} ]"
+
+    locus2annot = {}
     locus_tag2cog_catego = {}
     locus_tag2cog_name = {}
     locus_tag2ko = {}
@@ -3099,7 +3118,8 @@ def fam_cog(request, cog_id):
     if request.method != "GET":
         return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
-    seqids = db.get_all_seqfeature_for_cog(cog_id)
+    hsh_seqids = db.get_all_seqfeature_for_cog([cog_id])
+    seqids = list(hsh_seqids.keys())
     # what if seqids is empty?
     
     orthogroups = db.get_og(seqids)
@@ -3140,7 +3160,7 @@ def fam_cog(request, cog_id):
         for og, count in og_count_tuple:
             dico_tree[format_orthogroup(og)][str(bioentry)] = count
     for bioentry, cog_count_tuple in hsh_cog_count.items():
-        for cog, count in cog_count_tuple:
+        for cog, count in cog_count_tuple.items():
             dico_tree[format_cog(cog)][str(bioentry)] = count
 
     taxon2group2ec = {}
@@ -3150,7 +3170,7 @@ def fam_cog(request, cog_id):
         cog_count_tuple = hsh_cog_count[bioentry]
         taxon2group2ec[str(bioentry)] = {}
         for og, count in og_count_tuple:
-            temp_table = [format_cog(cog) for cog, count in cog_count_tuple]
+            temp_table = [format_cog(cog) for cog in cog_count_tuple.keys()]
             taxon2group2ec[str(bioentry)][format_orthogroup(og)] = temp_table
 
     fam = format_cog(cog_id)
@@ -5354,147 +5374,6 @@ def ko_subset_barchart(request, type):
 
     return render(request, 'chlamdb/ko_subset_barchart.html', my_locals(locals()))
 
-def cog_subset_barchart(request, accessions=False):
-    biodb = settings.BIODB
-    if accessions == 'False' or accessions == 'F':
-        accessions = False
-
-
-    '''
-
-    create COG category barchart of selected COGs
-    url parameters:
-                    i: taxons to include
-                    o: taxons to exclude
-                    m: frequ missing (allow COG to miss in m incided genomes)
-
-    create dictionnary of counts for each category
-    :param request:
-    :param biodb:
-    :return:
-    '''
-
-    from chlamdb.biosqldb import biosql_own_sql_tables
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    include = [i for i in request.GET.getlist('i')]
-    exclude = [i for i in request.GET.getlist('o')]
-    # if not exclude taxon
-    if exclude[0] == '':
-        exclude = []
-    n_missing = request.GET.getlist('m')[0]
-
-    freq_missing = (len(include)-float(n_missing))/len(include)
-
-    # get sub matrix and complete matrix
-    if not accessions:
-        mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                      "COG",
-                                                                      "id",
-                                                                      include,
-                                                                      exclude,
-                                                                      freq_missing,
-                                                                              cache=cache)
-    else:
-        mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                      "COG",
-                                                                      "id",
-                                                                      include,
-                                                                      exclude,
-                                                                      freq_missing,
-                                                                      accessions=True,
-                                                                              cache=cache)
-    match_groups_subset = mat.index.tolist()
-
-
-    sql = 'select t3.code, count(*) from COG_cog_names_2014 t1 ' \
-          ' inner join COG_cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
-          ' inner join COG_code2category t3 on t2.category_id=t3.category_id ' \
-          ' where COG_name in (%s) group by t3.description;' % ('"'+'","'.join(match_groups_subset)+'"')
-
-    data_subset = server.adaptor.execute_and_fetchall(sql,)
-
-
-    # on récupère tous les cogs des génomes inclus pour faire une comparaison
-    filter = '`' + '`>0 or `'.join(include) + '`>0'
-    if not accessions:
-        sql = 'select id from comparative_tables_COG where (%s)' % (filter)
-    else:
-        sql = 'select id from comparative_tables_COG_accessions where (%s)' % (filter)
-    match_groups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-
-    sql = 'select t3.code, count(*) from COG_cog_names_2014 t1 ' \
-          ' inner join COG_cog_id2cog_category t2 on t1.COG_id=t2.COG_id ' \
-          ' inner join COG_code2category t3 on t2.category_id=t3.category_id ' \
-          ' where COG_name in (%s) group by t3.description;' % ('"'+'","'.join(match_groups)+'"')
-    data_all_include = server.adaptor.execute_and_fetchall(sql,)
-
-    # count total
-    total_subset = sum([i[1] for i in data_subset])
-    total_all_include = sum([i[1] for i in data_all_include])
-
-    # calculate freq of each category, add missing categories in the 2 dictionnaries
-    category2freq_subset = {}
-    category2count_subset = {}
-    for i in data_subset:
-        category2freq_subset[i[0]] = float(i[1])/total_subset
-        category2count_subset[i[0]] = i[1]
-    category2freq_all = {}
-    category2count_all = {}
-    for i in data_all_include:
-        category2freq_all[i[0]] = float(i[1])/total_all_include
-        category2count_all[i[0]] = i[1]
-        if i[0] not in category2freq_subset:
-            category2freq_subset[i[0]] = 0
-            category2count_subset[i[0]] = 0
-    for cat in category2freq_subset:
-       if cat not in category2freq_all:
-           category2freq_all[cat] = 0
-           category2count_all[cat] = 0
-
-    labels_template = '[\n' \
-                      '%s\n' \
-                      ']\n'
-
-    serie_template = '[%s\n' \
-                     ']\n'
-
-    one_serie_template = '{\n' \
-                         'label: "%s",\n' \
-                         'values: [%s]\n' \
-                         '},\n'
-    ref_serie = []
-    all_serie = []
-    for cat in category2freq_all.keys():
-
-        ref_serie.append(str(round(category2freq_subset[cat],4)*100))
-        all_serie.append(str(round(category2freq_all[cat],4)*100))
-
-    serie_all = one_serie_template % ("complete genomes", ','.join(all_serie))
-    serie_target = one_serie_template % ("selection", ','.join(ref_serie))
-
-    series = serie_template % ''.join([serie_all, serie_target])
-    labels = labels_template % ('"'+'","'.join([str(i) for i in category2freq_all.keys()]) + '"')
-
-    sql = 'select * from COG_code2category'
-    category_description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-    category_map = 'var category_description = {'
-    for i in category_description:
-        category_map+='"%s":"%s",' % (i, category_description[i])
-    category_map = category_map[0:-1] + '};'
-
-    category_count_complete = 'var category_count_complete = {'
-    for i in category2count_all:
-        category_count_complete+='"%s":["%s", "%s"],' % (i, category2count_all[i], category2count_subset[i])
-    category_count_complete = category_count_complete[0:-1] + '};'
-
-    taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
-    taxon_out_url = "&o="+("&o=").join(exclude)
-
-    return render(request, 'chlamdb/cog_subset_barchart.html', my_locals(locals()))
-
-
 def compare_homologs(request):
     biodb = settings.BIODB
 
@@ -5987,26 +5866,6 @@ def cog_barchart(request):
 
             series = serie_template % ''.join(all_series_templates)
             labels = labels_template % ('"'+'","'.join(all_categories) + '"')
-
-            '''
-              labels: [
-                'resilience', 'maintainability', 'accessibility',
-                'uptime', 'functionality', 'impact'
-              ]
-              series: [
-                {
-                  label: '2012',
-                  values: [4, 8, 15, 16, 23, 42]
-                },
-                {
-                  label: '2013',
-                  values: [12, 43, 22, 11, 73, 25]
-                },
-                {
-                  label: '2014',
-                  values: [31, 28, 14, 8, 15, 21]
-                },]
-            '''
 
             circos_url = '?h=' + ('&h=').join([str(i) for i in target_bioentries])
             envoi = True
