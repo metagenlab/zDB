@@ -1920,9 +1920,10 @@ def venn_cog(request, accessions=False):
 
             cog2description_l = []
             data = db.get_cog_summaries(all_cog_list)
-            for name, func, func_descr, cog_descr in data:
+            for name, lst_results in data.items():
                 # NOTE: will need to remove the strip when the bug in the database will be fixed
-                cog2description_l.append(f"h[\"{format_cog(name)}\"] = \"{func} ({func_descr.strip()}) </td><td>{cog_descr}\"")
+                for func, func_descr, cog_descr in lst_results:
+                    cog2description_l.append(f"h[\"{format_cog(name)}\"] = \"{func} ({func_descr.strip()}) </td><td>{cog_descr}\"")
             cog2description = ";".join(cog2description_l)
             envoi_venn = True
 
