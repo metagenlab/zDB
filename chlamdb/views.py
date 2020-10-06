@@ -6263,80 +6263,96 @@ def identity_heatmap(request):
     return render(request, 'chlamdb/identity_heatmap.html', my_locals(locals()))
 
 
+# For now, only works for COGs
 def pan_genome(request, type):
-    biodb = settings.BIODB
-    server, db = manipulate_biosqldb.load_db(biodb)
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb)
 
-    venn_form_class = make_venn_from(biodb)
+    venn_form_class = make_venn_from(db, plasmid=False)
 
-    if request.method == 'POST':
-        form = venn_form_class(request.POST)
-        if form.is_valid():
-            from chlamdb.plots import core_pan_genome_plots
-            import numpy
-            import pandas
-
-
-            taxon_list = form.cleaned_data['targets']
-
-            filter = '`'+'`,`'.join(taxon_list)+'`'
-            if type == 'orthology':
-                sql = 'select  orthogroup from comparative_tables_%s' % (type)
-                group_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-            else:
-                sql = 'select  id from comparative_tables_%s' % (type)
-                group_list = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-
-            sql = 'select %s from comparative_tables_%s' % (filter, type)
-
-            data = numpy.array([list(i) for i in server.adaptor.execute_and_fetchall(sql,)])
-
-            count_df = pandas.DataFrame(data, columns=taxon_list, index=group_list)
-            t = count_df[(count_df == 1).sum(axis=1) == len(taxon_list)]
-            t2 = count_df[(count_df == 1).sum(axis=1) == len(taxon_list)-1]
-
-            path = settings.BASE_DIR + '/assets/temp/pangenome.svg'
-            asset_path = '/temp/pangenome.svg'
-            path2 = settings.BASE_DIR + '/assets/temp/pangenome_barplot.svg'
-            asset_path2 = '/temp/pangenome_barplot.svg'
-
-            if type == 'orthology':
-                xlab = 'Number of genomes'
-                ylab = 'Number of orthologous groups'
-            if type == 'ko':
-                xlab = 'Number of genomes'
-                ylab = 'Number of Kegg Orthologous groups'
-            if type == 'EC':
-                xlab = 'Number of genomes'
-                ylab = 'Number of EC'
-            if type == 'Pfam':
-                xlab = 'Number of genomes'
-                ylab = 'Number of Pfam domains'
-            if type == 'interpro':
-                xlab = 'Number of genomes'
-                ylab = 'Number of Interpro Entries'
-            if type == 'COG':
-                xlab = 'Number of genomes'
-                ylab = 'Number of COG'
-
-
-
-
-            total, core, core_minus1 = core_pan_genome_plots.core_pan_genome_plot(data,
-                                                                                  output_path=path,
-                                                                                  xlab=xlab,
-                                                                                  ylab=ylab)
-
-            counts_n_genomes = core_pan_genome_plots.pan_genome_barplot(data, output_path=path2)
-            genome_count_list = []
-            for i, count in enumerate(counts_n_genomes):
-                genome_count_list.append([i+1, count])
-            envoi = True
-    else:  
+    if request.method != "POST":
         form = venn_form_class()
+        return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
+
+    form = venn_form_class(request.POST)
+    if not form.is_valid():
+        # should add an error message
+        form = venn_form_class()
+        return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
+
+    import seaborn as sn
+    import matplotlib.pyplot as plt
+    import pandas as pd
+
+    bioentries = form.cleaned_data['targets']
+    df_hits = db.get_cog_hits(bioentries, only_best_hit=True, as_count=True)
+    target2description = db.get_genomes_description(bioentries)
+    df_hits.columns = [target2description[str(i)] for i in list(df_hits.columns.values)]
+
+    path2 = settings.BASE_DIR + '/assets/temp/pangenome_barplot.svg'
+    asset_path2 = '/temp/pangenome_barplot.svg'
+    n_cogs_per_genome = df_hits.count(axis=0).sort_values()
+
+    fig, ax = plt.subplots()
+    barplot = ax.bar(list(n_cogs_per_genome.index), list(n_cogs_per_genome.values))
+    ax.set_ylabel("COG count")
+    ax.set_xticklabels(list(n_cogs_per_genome.index), rotation=45, horizontalalignment="right")
+    fig.tight_layout()
+    fig.savefig(path2)
+
+    hsh_shared_count = {}
+    hsh_total_count = {}
+    for cog, pres in df_hits[n_cogs_per_genome.index[0]].items():
+        if pd.isnull(pres):
+            continue
+        hsh_shared_count[cog] = 1
+        hsh_total_count[cog] = 1
+
+    total_cogs = [n_cogs_per_genome.values[0]]
+    shared_cogs = []
+    for i in range(1, len(bioentries)):
+        cur_total = total_cogs[-1]
+        cur_shared = 0
+        for cog, pres in df_hits[n_cogs_per_genome.index[i]].items():
+            if pd.isnull(pres):
+                continue
+            v = hsh_shared_count.get(cog, 0)
+            if v==i:
+                cur_shared += 1
+                hsh_shared_count[cog] = i+1
+            if cog not in hsh_total_count:
+                cur_total += 1
+                hsh_total_count[cog] = 1
+        total_cogs.append(cur_total)
+        shared_cogs.append(cur_shared)
+
+    path = settings.BASE_DIR + '/assets/temp/pangenome.svg'
+    asset_path = '/temp/pangenome.svg'
+    fig, ax = plt.subplots()
+
+    ax.plot([i for i in range(1, len(bioentries)+1)], total_cogs)
+    ax2 = ax.twinx()
+    ax2.plot([i for i in range(2, len(bioentries)+1)], shared_cogs, color="red")
+
+    ax2.set_ylabel("Number of shared COG")
+    ax.set_xlabel("Number of genomes")
+    ax.set_ylabel("Number of COG in pangenome")
+
+    fig.tight_layout()
+    fig.savefig(path)
+
+    # Serie with the number of genomes having a given cog
+    common_cogs = df_hits.count(axis=1)
+    core = len(common_cogs[common_cogs == len(bioentries)])
+    # cogs present in all but one genome
+    core_minus1 = len(common_cogs[common_cogs == len(bioentries)-1])
+    total = len(df_hits.index)
+
+    genome_count_list = []
+    for i, count in enumerate(n_cogs_per_genome):
+        genome_count_list.append([i+1, count])
+    envoi = True
     return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
-
-
 
 
 def core_genome_missing(request, type):
@@ -11908,45 +11924,41 @@ def interactions(request, locus_tag):
 
     return render(request, 'chlamdb/interactions.html', my_locals(locals()))
 
+# Only works for COG for now
 def plot_heatmap(request, type):
-    biodb = settings.BIODB
+    import seaborn as sns
+    from datetime import datetime
 
-    server, db = manipulate_biosqldb.load_db(biodb)
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb)
+    form_class = make_venn_from(db, plasmid=False)
 
-    form_class = make_venn_from(biodb, plasmid=True)
-
-    if request.method == 'POST':
-
-        form_venn = form_class(request.POST)
-
-        if form_venn.is_valid():
-            targets = form_venn.cleaned_data['targets']
-
-            try:
-                accessions = request.POST['checkbox_accessions']
-                accessions = True
-            except:
-                accessions = False
-                accession2taxon = manipulate_biosqldb.accession2taxon_id(server, biodb)
-                targets = [str(accession2taxon[i]) for i in targets]
-            
-            task = plot_heatmap_task.delay(biodb,
-                                           targets, 
-                                           accessions,
-                                           type)
-            task_id = task.id
-            return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
-        else:
-            return HttpResponse(json.dumps({'task_id': None}), content_type='application/json')
-
-    else:
+    if request.method != "POST":
         form_venn = form_class()
+        return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
+
+    # Request is POST
+    form_venn = form_class(request.POST)
+    if not form_venn.is_valid():
+        return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
+
+    target_bioentries = [int(i) for i in form_venn.cleaned_data['targets']]
+    mat = db.get_cog_hits(target_bioentries, only_best_hit=True, as_count=True)
+    target2description = db.get_genomes_description(target_bioentries)
+    bioentries_list = [i for i in list(mat.columns.values)]
+    mat.columns = [target2description[str(i)] for i in bioentries_list]
+    m = mat.transpose()
+    m = m.fillna(0)
+
+    cur_time = datetime.now().strftime("%H%M%S")
+
+    filename = f"heatmap_{cur_time}.png"
+    path = settings.BASE_DIR + '/assets/temp/' + filename
+    asset_path = '/temp/' + filename
+    cm = sns.clustermap(m)
+    cm.savefig(path)
+    envoi_heatmap = True
     return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
-
-
-
-
-
 
 def profile_interactions(request, orthogroup, distance):
     biodb = settings.BIODB

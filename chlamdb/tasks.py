@@ -1731,59 +1731,30 @@ def phylogeny_task(biodb,
 
 
 @shared_task
-def plot_heatmap_task(biodb,
-                      targets, 
-                      accessions,
-                      type):
-
-    from chlamdb.biosqldb import manipulate_biosqldb
-    from chlamdb.biosqldb import biosql_own_sql_tables
+def plot_heatmap_task(biodb, targets, type):
     from chlamdb.plots import heatmap
     import numpy as np
     import time
-        
-    server, db = manipulate_biosqldb.load_db(biodb)
-    
+
     current_task.update_state(state='PROGRESS',
                               meta={'current': 1,
                                     'total': 2,
                                     'percent': 50,
                                     'description': "Get data"})
 
+    # Not too happy with this solution. Really need a database connection
+    # manager.
+    db = db_utils.DB.load_db_from_name(biodb)
     # particularity of orthology table
     if type == 'orthology':
         col_id = 'orthogroup'
     else:
         col_id = 'id'
 
-    if not accessions:
-        # get sub matrix and complete matrix
-        taxon2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
-        mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                    type,
-                                                                    col_id,
-                                                                    targets,
-                                                                    [],
-                                                                    ratio=1/float(len(targets)),
-                                                                    single_copy=False,
-                                                                    accessions=accessions,
-                                                                        cache=cache)
-        taxon_list = [i.split("_")[1] for i in list(mat.columns.values)]
-        labels = [taxon2description[i] for i in taxon_list]
-
-    else:
-        accession2description = manipulate_biosqldb.accession2description(server,biodb)
-        mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                    type,
-                                                                    'id',
-                                                                    targets,
-                                                                    [],
-                                                                    ratio=1/float(len(targets)),
-                                                                    single_copy=False,
-                                                                    accessions=accessions,
-                                                                    cache=cache)
-        accession_list = list(mat.columns.values)
-        labels = [accession2description[i] for i in accession_list]
+    mat = db.get_cog_hits(targets, only_best_hits=True, as_count=True)
+    target2description = db.get_genomes_description(targets)
+    bioentries_list = [i for i in list(mat.columns.values)]
+    labels = [target2description[i] for i in bioentries_list]
 
     m = np.array(mat.transpose())
     m = m.astype(float)
@@ -1801,7 +1772,7 @@ def plot_heatmap_task(biodb,
                                     'description': "Plotting"})
 
     heatmap.heatmap_pangenome(m,
-                                output=path,
+                    output=path,
                     breaks="-0.5, 0.5, 1.5, 2.5",
                     rows=labels,
                     format="png",
@@ -1825,12 +1796,11 @@ def plot_heatmap_task(biodb,
 
     html = template.render(Context(locals()))
 
-    current_task.update_state(state='SECCESS',
+    current_task.update_state(state='SUCCESS',
                               meta={'current': 2,
                                     'total': 2,
                                     'percent': 100,
                                     'description': "Done"})
-
     return html
 
 
