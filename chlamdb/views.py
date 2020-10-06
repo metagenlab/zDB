@@ -6330,10 +6330,12 @@ def pan_genome(request, type):
     asset_path = '/temp/pangenome.svg'
     fig, ax = plt.subplots()
 
-    ax.plot([i for i in range(1, len(bioentries)+1)], total_cogs)
+    ax.plot(total_cogs)
     ax2 = ax.twinx()
-    ax2.plot([i for i in range(2, len(bioentries)+1)], shared_cogs, color="red")
+    ax2.plot([i for i in range(1, len(bioentries))], shared_cogs, color="red")
 
+    ax.set_xticks([i for i in range(0, len(bioentries))])
+    ax.set_xticklabels(n_cogs_per_genome.index, rotation=45, horizontalalignment="right")
     ax2.set_ylabel("Number of shared COG")
     ax.set_xlabel("Number of genomes")
     ax.set_ylabel("Number of COG in pangenome")
