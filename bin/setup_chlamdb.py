@@ -26,6 +26,7 @@ def parse_orthofinder_output_file(output_file):
         # Skips the ":" at the end of the orthgroup id
         group = get_og_id(tokens[0][:-1])
         for locus in tokens[1:]:
+            assert locus not in protein_id2orthogroup_id
             protein_id2orthogroup_id[locus] = group
     return protein_id2orthogroup_id
 
@@ -85,20 +86,7 @@ def create_data_table(kwargs):
         cursor = conn.cursor()
     entry_list = [
         # Done
-        ("orthology_data", "mandatory", False),
-
-        # Done: may be removed as the data is already in the database and the result
-        # can be generated on the fly.
-        # Note: not all data was generated as it can be generated on the fly.
-        ("orthology_comparative", "mandatory", False),
-
-        # this is one load tables that can generated on the fly
-        # will need to write the queries
-        ("orthology_comparative_accession", "mandatory", False),
-
-        # this is one load tables that can generated on the fly
-        # will need to write the queries
-        ("orthology_consensus_annotation", "mandatory", False),
+        ("orthology", "mandatory", False),
 
         # Done
         ("orthogroup_alignments", "mandatory", False),
@@ -128,9 +116,7 @@ def create_data_table(kwargs):
         ("priam_comparative_accession", "optional", False),
 
         # Done: will need to rewrite the queries
-        ("COG_data", "optional", False),
-        ("COG_comparative", "optional", False),
-        ("COG_comparative_accession", "optional", False),
+        ("COG", "optional", False),
 
         ("KEGG_data", "optional", False),
         ("KEGG_comparative", "optional", False),
@@ -188,20 +174,11 @@ def load_gbk(gbks, args):
 
 def load_orthofinder_results(orthofinder_output, args):
     db = db_utils.DB.load_db(args)
-    orthogroup_feature_id = db.setup_orthology_table()
     hsh_prot_to_group = parse_orthofinder_output_file(orthofinder_output)
     hsh_locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id()
-    db.add_orthogroups_to_seq(hsh_prot_to_group, hsh_locus_to_feature_id, orthogroup_feature_id)
-
-    arr_cnt_tables = db.get_orthogroup_count_table()
-
-    db.create_orthology_table(arr_cnt_tables)
-    db.load_orthology_table(arr_cnt_tables)
-    # db.create_locus_to_feature_table()
-    db.set_status_in_config_table("orthology_data", 1)
-    db.set_status_in_config_table("orthology_comparative", 1)
-    db.set_status_in_config_table("orthology_comparative_accession", 1)
-    db.set_status_in_config_table("orthology_consensus_annotation", 1)
+    hits_to_load = [(hsh_locus_to_feature_id[locus], group) for locus, group in hsh_prot_to_group.items()]
+    db.load_og_hits(hits_to_load)
+    db.set_status_in_config_table("orthology", 1)
     db.commit()
 
 # Note: as this is an alignment, the lengths are the same
@@ -258,8 +235,7 @@ def load_refseq_matches(args, diamond_tsvs):
             lst_args = row.tolist()
             data.append([hit_count, query_hash_64b, sseqid_hsh[match_accession]] + lst_args[2:])
         db.load_refseq_hits(data)
-    # see which indices are better fitted
-    # db.create_refseq_hits_indices()
+    db.create_refseq_hits_indices()
     db.commit()
     return sseqid_hsh
 
@@ -267,49 +243,120 @@ def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i+n]
 
-def load_refseq_matches_linear_taxonomy(args):
-    db = db_utils.DB.load_db(args)
-    db.create_refseq_hits_taxonomy()
+def get_prot(refseq_file, hsh_accessions):
+    from io import StringIO
+    import mmap
 
-    taxids = db.get_all_taxids()
+    refseq_merged = open(refseq_file, "r")
+    refseq = mmap.mmap(refseq_merged.fileno(), 0, access=mmap.ACCESS_READ)
+    accession_starts = bytes(">", "utf-8")
+    found = 0
+    hsh_results = {}
+    ttl_to_find = len(hsh_accessions)
+    start_index = refseq.find(accession_starts)
+
+    while found<ttl_to_find and start_index!=-1:
+        next_record = refseq.find(accession_starts, start_index+1)
+        end_accession = refseq.find(bytes(".", "utf-8"), start_index+1)
+        refseq.seek(start_index+1)
+
+        # Not the easiest to read, but avoids to have to parse every single
+        # record in refseq
+        curr_accession = refseq.read(end_accession-start_index-1).decode("utf-8")
+        refseq.seek(start_index)
+        if curr_accession in hsh_accessions:
+            found += 1
+            if next_record != -1:
+                buf = refseq.read(next_record-start_index).decode("utf-8")
+            else:
+                buf = refseq.read(refseq.size()-start_index).decode("utf-8")
+
+            # StringIO simulates a file. There should be only one record in the list.
+            record = next(SeqIO.parse(StringIO(buf), "fasta"))
+            hsh_results[curr_accession] = record
+        start_index = next_record
+    return hsh_results
+
+# Heavy-duty function, with several things performed to avoid database
+# queries and running too many times acrosse refseq_merged.faa :
+#  * get the mapping between accession to taxid
+#  * get the linear taxonomy for all taxids that were extracted at the previous step
+#  * extract the protein informations for 
+#  * for all protein of all orthogroup, get the non-PVC hits and output them in OG.fasta
+def load_refseq_matches_infos(args, hsh_sseqids):
+    db = db_utils.DB.load_db(args)
+
+    hsh_accession_to_taxid = {}
+    for iteration, chunk in enumerate(chunks(list(hsh_sseqids.keys()), 5000)):
+        hsh_temp = db.get_accession_to_taxid(chunk, args)
+        hsh_accession_to_taxid.update(hsh_temp)
+
+    taxid_set = set(hsh_accession_to_taxid.values())
+    non_pvc_taxids = set()
+    pvc = args.get("refseq_diamond_BBH_phylogeny_phylum_filter", [])
+    to_avoid = set()
     hsh_taxid_to_name = {}
     hsh_taxo_key = db.hsh_taxo_key
-    for chunk in chunks(taxids, 2000):
+    results_only_taxids = []
+
+    # yuck!
+    for chunk in chunks(list(taxid_set), 2000):
         query_results = db.get_linear_taxonomy(args, chunk)
-        results_only_taxids = []
         for result in query_results:
             only_taxids = []
             only_taxids.append(result[0])
             for rank, (idx_name, idx_taxid) in hsh_taxo_key.items():
                 if result[idx_taxid] not in hsh_taxid_to_name:
-                    hsh_taxid_to_name[result[idx_taxid]] = (rank, result[idx_name]) 
+                    hsh_taxid_to_name[result[idx_taxid]] = (rank, result[idx_name])
+                    if rank=="phylum" and result[idx_name] in pvc:
+                        print("avoiding : ", result[idx_name]) 
+                        to_avoid.add(result[idx_taxid])
+                if result[idx_taxid] not in to_avoid:
+                    non_pvc_taxids.add(result[0])
                 only_taxids.append(result[idx_taxid])
             results_only_taxids.append(only_taxids)
-        db.load_refseq_hits_taxonomy(results_only_taxids)
 
+    db.create_refseq_hits_taxonomy()
+    db.load_refseq_hits_taxonomy(results_only_taxids)
     db.create_taxonomy_mapping(hsh_taxid_to_name)
     db.create_refseq_hits_taxonomy_indices()
-    db.commit()
 
-# hsh_sseqids: maps accession to 
-def load_refseq_matches_infos(args, hsh_sseqids):
-    db = db_utils.DB.load_db(args)
+    refseq = args["databases_dir"] + "/refseq/merged.faa"
+    hsh_accession_to_record = get_prot(refseq, hsh_sseqids)
+
     db.create_diamond_refseq_match_id()
-
-    # ugly and very slow, to be improved
-    for iteration, chunk in enumerate(chunks(list(hsh_sseqids.keys()), 5000)):
-        print(iteration, flush=True)
-        hsh_accession_to_taxid = db.get_accession_to_taxid(chunk, args)
-        hsh_accession_to_prot = db.get_accession_to_prot(chunk, args)
-        data = []
-        # Note: need to add some error handling in case the accession is not found
-        # in the databases
-        for key in chunk:
-            taxid = hsh_accession_to_taxid[key]
-            description, length = hsh_accession_to_prot[key]
-            data.append([hsh_sseqids[key], key, taxid, description, length])
-        db.load_diamond_refseq_match_id(data)
+    refseq_match_id = []
+    for accession, taxid in hsh_accession_to_taxid.items():
+        record = hsh_accession_to_record[accession]
+        data = [hsh_sseqids[accession], accession, taxid, record.description, len(record)]
+        refseq_match_id.append(data)
+    db.load_diamond_refseq_match_id(refseq_match_id)
     db.create_diamond_refseq_match_id_indices()
+
+    if args.get("refseq_diamond_BBH_phylogeny", True):
+        max_hits = args.get("refseq_diamond_BBH_phylogeny_top_n_hits", 3)
+        all_og = db.get_all_orthogroups(min_size=3)
+        for og in all_og:
+            refseq_matches = db.get_diamond_match_for_og(og)
+            to_keep = []
+            cur_accesion, cur_count = None, 0
+            for accession, taxid in refseq_matches:
+                if taxid in to_avoid:
+                    continue
+                if accession != cur_accesion:
+                    cur_accesion = accession
+                    cur_count = 0
+                if cur_count == max_hits:
+                    continue
+                to_keep.append(hsh_accession_to_record[accession])
+                cur_count += 1
+            sequences = db.get_all_sequences_for_orthogroup(og)
+            SeqIO.write(to_keep + sequences, f"{og}_nr_hits.faa", "fasta")
+    else:
+        # just create a empty file to avoid a tantrum of nextflow for a missing file
+        f = open("null_nr_hits.fasta", "w")
+        f.write("My hovercraft is full of eels")
+        f.close()
     db.commit()
 
 # This is a hack to be able to store 64bit unsigned values into 
@@ -335,7 +382,6 @@ def load_seq_hashes(args, nr_mapping):
         if int_from_64b_hash not in to_load_hsh_to_seqid:
             to_load_hsh_to_seqid[int_from_64b_hash] = [seqfeature_id]
         else:
-            print("Multiple entries for", int_from_64b_hash)
             to_load_hsh_to_seqid[int_from_64b_hash].append(seqfeature_id)
 
     to_load = []
@@ -354,12 +400,9 @@ def load_alignments_results(args, alignment_files):
     # assumes filename of the format OG00N_mafft.faa, with the orthogroup
     # being the integer following the OG string
     matrix = []
-    averages = []
     for alignment in alignment_files:
         align = AlignIO.read(alignment, "fasta")
         orthogroup = get_og_id(alignment.split("_")[0])
-        ttl = 0.0
-        n = 0
         for i in range(len(align)):
             for j in range(i+1, len(align)):
                 alignment_1 = align[i]
@@ -367,12 +410,8 @@ def load_alignments_results(args, alignment_files):
                 id_1 = locus_to_feature_id[alignment_1.name]
                 id_2 = locus_to_feature_id[alignment_2.name]
                 identity = get_identity(alignment_1, alignment_2)
-                ttl += identity
-                n += 1
                 matrix.append( (orthogroup, id_1, id_2, identity) )
-        averages.append((orthogroup, float(ttl)/ n))
     db.load_og_matrix(matrix)
-    db.load_og_averages(averages)
     db.create_og_matrix_indices()
     db.set_status_in_config_table("orthogroup_alignments", 1)
     db.commit()
@@ -403,7 +442,7 @@ def load_cog(params, cog_filename):
     cog_ref_data = []
     # necessary to track, as some cogs listed in the CDD to COG mapping table
     # are not present in those descriptors
-    hsh_cog_ids = {} 
+    hsh_cog_ids = {}
     for line_no, line in enumerate(cog_names_file):
         # pass header
         if line_no == 0:
@@ -425,38 +464,30 @@ def load_cog(params, cog_filename):
     db.load_cog_fun_data(cog_fun_data)
     db.commit()
     
-    hsh_to_length = db.hsh_to_prot_length()
-    cogs_hits = pd.read_csv(cog_filename, sep="\t")
+    # NOTE(BM): this is a dumb piece of code. It would be possible to avoid
+    # useless sorting by exploiting the ordering of the result file (results
+    # are already sorted starting from the best hit).
+    cogs_hits = pd.read_csv(cog_filename, sep="\t", header=None,
+        names=["seq_hsh", "cdd", "pident", "length", "mismatch", "gapopen", "qstart",
+            "qend", "sstart", "send", "evalue", "bitscore"])
     data = []
 
-    # TODO: check with Trestan whether it is necessary to keep only the 
-    # best cog hit for every feature or if all of them should be included in the db.
-    # This might mess the cog count in the main page of chlamdb.
-    for index, row in cogs_hits.iterrows():
-        hsh = hsh_from_s(row[0][len("CRC-"):])
+    # Select only the best hits
+    min_hits = cogs_hits.groupby("seq_hsh")[["cdd", "evalue"]].min()
+
+    for index, row in min_hits.iterrows():
+        hsh = hsh_from_s(index[len("CRC-"):])
         #  cdd in the form cdd:N
-        cog = int(hsh_cdd_to_cog[row[1].split(":")[1]])
+        cog = int(hsh_cdd_to_cog[row["cdd"].split(":")[1]])
         if cog not in hsh_cog_ids:
             print("Unknown cog id: ", cog, " skipping this entry")
             continue
-        identity = float(row[2])
-        evalue = float(row[10])
-        bitscore = float(row[11])
-        query_start = int(row[6])
-        query_end = int(row[7])
-        hit_start = int(row[8])
-        hit_end = int(row[9])
-
-        query_coverage = round((query_end-query_start)/hsh_to_length[hsh], 2)
-        hit_coverage = round((hit_end-hit_start)/hsh_cog_to_length[cog], 2)
-        entry = [hsh, cog, query_start, query_end, hit_start]
-        entry += [hit_end, query_coverage, hit_coverage, identity]
-        entry += [evalue, bitscore]
+        evalue = float(row["evalue"])
+        entry = [hsh, cog, evalue]
         data.append(entry)
+
     db.load_cog_hits(data)
-    db.set_status_in_config_table("COG_data", 1)
-    db.set_status_in_config_table("COG_comparative", 1)
-    db.set_status_in_config_table("COG_comparative_accession", 1)
+    db.set_status_in_config_table("COG", 1)
     db.commit()
 
 # Note: the trees are stored in files with name formatted as:
@@ -510,7 +541,7 @@ def load_reference_phylogeny(kwargs, tree):
     db.set_status_in_config_table("reference_phylogeny", 1)
     db.commit()
 
-# Several values will be inserted in the seqfeature_qualifier_value table, under different
+# Several values will be inserted in the bioentry_qualifier_value table, under different
 # term_id
 # - the GC of the genomes, under the gc term_id
 # - the length, under length term_id

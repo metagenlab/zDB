@@ -63,9 +63,9 @@ def gen_python_args() {
 str_pythonized_params = gen_python_args()
 
 if (params.local_assemblies) {
-    Channel.fromPath(params.local_assemblies_tsv)
+    Channel.fromPath(params.local_assemblies)
         .splitCsv(header: true, strip: true)
-        .map { row -> tuple(row.name, file(params.local_assemblies_link_dir + "/" + row.draft_genome)) }
+        .map { row -> tuple(row.name, file(row.draft_genome)) }
         .set { to_prokka_local_assemblies }
 } else {
     // declare an empty channel to avoid any complaints from nextflow
@@ -1617,8 +1617,6 @@ process get_uniprot_goa_mapping {
   """
 }
 
-// TODO: this code will need to be modified depending on the options that were
-// specified (e.g. if diamond refseq wasn't invoked).
 process create_db {
     publishDir "db"
 
@@ -1626,7 +1624,6 @@ process create_db {
 		file gbks from to_load_gbk_into_db
         file orthofinder from to_load_orthofinder_in_db
         file alignments from to_load_alignment
-        file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
         file nr_mapping_file from nr_mapping_to_db_setup
         file checkm_results from checkm_table
 
@@ -1640,14 +1637,12 @@ process create_db {
     db_name="$params.chlamdb.db_name"
     """
     #!/usr/bin/env python
-    #foo
 
     import setup_chlamdb
     
     kwargs = ${gen_python_args()}
     gbk_list = "${gbks}".split()
     alignments_lst = "$alignments".split()
-    diamond_tab_files = "$diamond_tsv_list".split()
 
     setup_chlamdb.setup_chlamdb(**kwargs)
     print("Loading gbks", flush=True)
@@ -1661,26 +1656,16 @@ process create_db {
     setup_chlamdb.load_orthofinder_results("$orthofinder", kwargs)
 
     print("Loading alignments", flush=True)
-    setup_chlamdb.load_alignments_results(kwargs, alignments_lst)
-
-    print("Loading refseq matches", flush=True)
-    hsh_sseqid = setup_chlamdb.load_refseq_matches(kwargs, diamond_tab_files)
-
-    print("Loading refseq matches infos", flush=True)
-    setup_chlamdb.load_refseq_matches_infos(kwargs, hsh_sseqid)
-
-    print("Loading refseq matches taxonomy", flush=True)
-    setup_chlamdb.load_refseq_matches_linear_taxonomy(kwargs)
+    # setup_chlamdb.load_alignments_results(kwargs, alignments_lst)
 
     print("Loading checkm results", flush=True)
     setup_chlamdb.load_checkm_results(kwargs, "$checkm_results")
     """
 }
 
-// TODO: need to ensure that the rest of the code works if diamond
-// wasn't run --> no best hits, so mafft would not be necessary
-process extract_non_PVC_best_hits_sequences {
+process load_refseq_results {
     input:
+        file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
         file curr_db from db_gen
 
     output:
@@ -1688,24 +1673,19 @@ process extract_non_PVC_best_hits_sequences {
         file curr_db into to_load_genomes_summary
 
     script:
-    if(params.refseq_diamond_BBH_phylogeny)
-        """
-        #!/usr/bin/env python
-        # final version?
+    """
+    #!/usr/bin/env python
+    import setup_chlamdb
+    
+    kwargs = ${gen_python_args()}
+    diamond_tab_files = "$diamond_tsv_list".split()
 
-        import annotations
+    print("Loading refseq matches", flush=True)
+    hsh_sseqid = setup_chlamdb.load_refseq_matches(kwargs, diamond_tab_files)
 
-        kwargs = ${gen_python_args()}
-        annotations.get_diamond_top_hits(kwargs)
-        """
-    else
-        // Note: this is a hack to ensure that two processes
-        // do not try to write in the database at the same time
-        // and make the whole pipeline crash
-        """
-        # to make nextflow happy
-        touch null_nr_hits.faa
-        """
+    print("Loading refseq matches infos", flush=True)
+    setup_chlamdb.load_refseq_matches_infos(kwargs, hsh_sseqid)
+    """
 }
 
 process load_genomes_summary {

@@ -26,7 +26,6 @@ import http.client
 
 import mmap
 
-from ftplib import FTP
 
 # Heuristic to detect T3SS effectors inc proteins
 # according to https://doi.org/10.1093/dnares/10.1.9
@@ -446,6 +445,8 @@ def refseq_locus_mapping(accessions_list):
                         o.write(f"{old_locus_tag}\t{refseq_locus_tag}\t{protein_id}\n")
 
 def download_assembly_refseq(accession):
+    from ftplib import FTP
+
     Entrez.email = "trestan.pillonel@chuv.ch"
     Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
     if accession=="":
@@ -471,6 +472,8 @@ def download_assembly_refseq(accession):
         print("no genbank annotation for ${accession}")
 
 def download_assembly(accession):
+    from ftplib import FTP
+
     Entrez.email = "trestan.pillonel@chuv.ch"
     Entrez.api_key = "719f6e482d4cdfa315f8d525843c02659408"
 
@@ -487,7 +490,7 @@ def download_assembly(accession):
       ftp_path = re.findall('<FtpPath type="RefSeq">ftp[^<]*<', assembly_record['DocumentSummarySet']['DocumentSummary'][0]['Meta'])[0][50:-1]
     else:
         raise("${accession} assembly not annotated! --- exit ---")
-    ftp=FTP('ftp.ncbi.nih.gov')
+    ftp=FTP('ftp.ncbi.nlm.nih.gov')
     ftp.login("anonymous","trestan.pillonel@unil.ch")
     ftp.cwd(ftp_path)
     filelist=ftp.nlst()
@@ -1273,6 +1276,7 @@ def get_diamond_top_hits(params):
             hsh_accessions[accession] = None
 
     # use a memory map strategy as the file is quite large
+    print("foo ", len(hsh_non_pvc))
     refseq_merged = open(params["databases_dir"]+"/refseq/merged.faa", "r")
     refseq_mmap = mmap.mmap(refseq_merged.fileno(), 0, access=mmap.ACCESS_READ)
     get_sequences(refseq_mmap, hsh_accessions)
