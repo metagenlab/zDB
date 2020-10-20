@@ -112,7 +112,6 @@ def my_locals(local_dico):
     local_dico["optional2status"] = optional2status
     local_dico["missing_mandatory"] = missing_mandatory
     return local_dico
-    
 
 @celery_app.task(bind=True)
 def debug_task(self):
@@ -469,84 +468,50 @@ def circos_homology(request):
 
 
 def extract_orthogroup(request):
-    biodb = settings.BIODB
-
-    '''
-
-    :param request:
-    :param biodb:
-    :param classification: either taxon_id or accession (merging plasmids or not)
-    :return:
-    '''
-
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    extract_form_class = make_extract_form(biodb, plasmid=True)
-
-    if request.method == 'POST': 
-
-        form = extract_form_class(request.POST)
-        
-        if 'locus_list' in request.POST:
-            print("locus list")
-
-        if form.is_valid():  
-
-            from chlamdb.biosqldb import biosql_own_sql_tables
-
-            include = form.cleaned_data['orthologs_in']
-
-            exclude = form.cleaned_data['no_orthologs_in']
-
-            reference_taxon = form.cleaned_data['reference']
-
-            if reference_taxon == "None":
-                reference_taxon = include[0]
-
-            try:
-                single_copy = request.POST['checkbox_single_copy']
-                single_copy = True
-            except:
-                single_copy = False
-            try:
-                accessions = request.POST['checkbox_accessions']
-                accessions = True
-                fasta_url='?a=T'
-            except:
-                accessions = False
-                fasta_url='?a=F'
-                accession2taxon = manipulate_biosqldb.accession2taxon_id(server, biodb)
-                include = [str(accession2taxon[i]) for i in include]
-                exclude = [str(accession2taxon[i]) for i in exclude]
-                reference_taxon = accession2taxon[reference_taxon]
-
-
-            n_missing = form.cleaned_data['frequency']
-
-            server, db = manipulate_biosqldb.load_db(biodb)
-
-            freq_missing = (len(include)-float(n_missing))/len(include)
-
-            task = extract_orthogroup_task.delay(biodb, 
-                                                 include,
-                                                 exclude,
-                                                 freq_missing,
-                                                 single_copy,
-                                                 accessions,
-                                                 reference_taxon,
-                                                 fasta_url,
-                                                 n_missing)
-            task_id = task.id
-
-            return HttpResponse(json.dumps({'task_id': task.id}), content_type='application/json')
-        else:
-            return HttpResponse(json.dumps({'task_id': None}), content_type='application/json')
-
-    else:  
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb)
+    extract_form_class = make_extract_form(db, plasmid=True)
+    if request.method != "POST":
         form = extract_form_class()
+        return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
+    form = extract_form_class(request.POST)
+    if not form.is_valid():
+        form = extract_form_class()
+        # add error message in web page
+        return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
+    
+    include = form.cleaned_data['orthologs_in']
+    exclude = form.cleaned_data['no_orthologs_in']
+    reference_taxon = form.cleaned_data['reference']
+    n_missing = form.cleaned_data['frequency']
+    single_copy = "checkbox_single_copy" in request.POST
+    if reference_taxon == "None":
+        reference_taxon = include[0]
+
+    try:
+        accessions = request.POST['checkbox_accessions']
+        accessions = True
+        fasta_url='?a=T'
+    except:
+        accessions = False
+        fasta_url='?a=F'
+        accession2taxon = manipulate_biosqldb.accession2taxon_id(server, biodb)
+        include = [str(accession2taxon[i]) for i in include]
+        exclude = [str(accession2taxon[i]) for i in exclude]
+        reference_taxon = accession2taxon[reference_taxon]
+    freq_missing = (len(include)-float(n_missing))/len(include)
+    task = extract_orthogroup_task.delay(biodb, 
+                                         include,
+                                         exclude,
+                                         freq_missing,
+                                         single_copy,
+                                         accessions,
+                                         reference_taxon,
+                                         fasta_url,
+                                         n_missing)
+    task_id = task.id
     return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
-
 
 
 def locus_list2orthogroups(request):
@@ -2191,6 +2156,41 @@ def extract_region(request):
     return render(request, 'chlamdb/extract_region.html', my_locals(locals()))
 
 
+def show_orthogroup(request, orthogroup):
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb)
+
+    import pandas as pd
+    import plotly.figure_factory as ff
+
+    # should contain a row number, the gene name and the number of occurence
+    # may be possible to use a groupby function of pandas to simplify this code
+    gene_infos = db.get_og_genes_infos(orthogroup)
+    n_occurences = genes_infos["name"].groupby("name").size()
+    n_products = gene_infos["n_product"].groupby("product").size()
+    gene_annotations = list(enumerate(n_occurences.tolist()))
+    product_annotations = list(enumerate(n_products.tolist()))
+
+    mean_protein_length = round(pd.mean(gene_infos["length"]),2)
+    std_protein_length = round(pd.std(gene_infos["length"]),2)
+    min_protein_length = pd.min(gene_infos["length"])
+    max_protein_length = pd.max(gene_infos["length"])
+    median_protein_length = round(pd.median(gene_infos["length"]),2)
+    length_distrib = len(gene_infos["length"]>1)
+    if length_distrib:
+        fig1 = ff.create_distplot(gene_infos["length"].tolist(), bin_size=20)
+        fig1.update_xaxes(range=[0, max_protein_length])
+        fig1.layout.margin.update({"l": 80, "r": 20, "b": 40, "t": 20, "pad": 10, })
+        html_plot_prot_length = manipulate_biosqldb.make_div(fig1, div_id="distplot")
+    
+    KO_annotations = []
+    COG_annotations = []
+
+    html_plot = ""
+    input_type = "orthogroup"
+    menu = True
+    return render(request, 'chlamdb/locus.html', my_locals(locals()))
+
 #
 def locusx(request, locus=None, menu=True):
     
@@ -3103,7 +3103,6 @@ def gc_locus(request, locus_tag):
 
     return render(request, 'chlamdb/gc_locus.html', my_locals(locals()))
 
-
 def format_orthogroup(og):
     return f"group_{og}"
 
@@ -3112,6 +3111,7 @@ def format_orthogroup(og):
 # group).
 def fam_cog(request, cog_id):
     from chlamdb.phylo_tree_display import ete_motifs
+
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb_path)
     cog_id = int(cog_id[3:])
@@ -3121,7 +3121,7 @@ def fam_cog(request, cog_id):
 
     hsh_seqids = db.get_all_seqfeature_for_cog([cog_id])
     seqids = list(hsh_seqids.keys())
-    # what if seqids is empty?
+    # what if seqids is empty? This should not happen,
     
     orthogroups = db.get_og(seqids)
     cog_info = db.get_cog_summaries([cog_id], only_cog_desc=True)
@@ -3148,8 +3148,10 @@ def fam_cog(request, cog_id):
 
     ref_tree = db.get_reference_phylogeny()
     leaf_to_name = db.get_genomes_description(indexing="bioentry", exclude_plasmids=True)
-    hsh_og_count = db.get_og_count(group_count)
+    df_og_count = db.get_og_count(group_count)
     hsh_cog_count = db.get_cog_counts([cog_id])
+
+    print(df_og_count)
 
     # build the different hashes necessary for multiple_profiles_heatmap
     dico_tree = {}
@@ -3157,22 +3159,25 @@ def fam_cog(request, cog_id):
         dico_tree[format_orthogroup(og)] = {}
     dico_tree[format_cog(cog_id)] = {}
 
-    for bioentry, og_count_tuple in hsh_og_count.items():
-        for og, count in og_count_tuple:
-            dico_tree[format_orthogroup(og)][str(bioentry)] = count
+    for index, values in df_og_count.iterrows():
+        bioentry = values.bioentry
+        og = values.orthogroup
+        dico_tree[format_orthogroup(og)][str(bioentry)] = values["count"]
     for bioentry, cog_count_tuple in hsh_cog_count.items():
         for cog, count in cog_count_tuple.items():
             dico_tree[format_cog(cog)][str(bioentry)] = count
 
     taxon2group2ec = {}
-    for bioentry, og_count_tuple in hsh_og_count.items():
+    for index, values in df_og_count.iterrows():
+        bioentry = values.bioentry
         if not bioentry in hsh_cog_count:
             continue
+        og = values.orthogroup
         cog_count_tuple = hsh_cog_count[bioentry]
-        taxon2group2ec[str(bioentry)] = {}
-        for og, count in og_count_tuple:
-            temp_table = [format_cog(cog) for cog in cog_count_tuple.keys()]
-            taxon2group2ec[str(bioentry)][format_orthogroup(og)] = temp_table
+        if str(bioentry) not in taxon2group2ec:
+            taxon2group2ec[str(bioentry)] = {}
+        temp_table = [format_cog(cog) for cog in cog_count_tuple.keys()]
+        taxon2group2ec[str(bioentry)][format_orthogroup(og)] = temp_table
 
     fam = format_cog(cog_id)
     labels = [fam] + [format_orthogroup(og) for og in group_count]
@@ -3572,15 +3577,12 @@ def fam_interpro(request, fam, type):
     return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
 
-
 def COG_phylo_heatmap(request, frequency):
     biodb = settings.BIODB_DB_PATH
 
     if request.method != "GET":
         return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
-    freq = True
-    if frequency=="False":
-        freq = False
+    freq = frequency!="False"
 
     from ete3 import Tree
     from chlamdb.phylo_tree_display import ete_motifs
@@ -3600,6 +3602,7 @@ def COG_phylo_heatmap(request, frequency):
     tree.render(path, dpi=600, tree_style=style)
     envoi = True
     return render(request, 'chlamdb/COG_phylo_heatmap.html', my_locals(locals()))
+
 
 def plot_hist(data, xlab, ylab, title, abline, div_id):
 
@@ -4693,7 +4696,7 @@ def get_cog(request, bioentry, category):
 
     # used for CIRCOS plos generation
     target_taxons = [i for i in request.GET.getlist('h')]
-    cog_hits = db.get_cog_hits([bioentry], index_by_seqid=True, only_best_hit=True)
+    cog_hits = db.get_cog_hits([bioentry], index_by_seqid=True)
 
     cog_ids = set()
     seqids = []
@@ -6263,7 +6266,6 @@ def identity_heatmap(request):
     return render(request, 'chlamdb/identity_heatmap.html', my_locals(locals()))
 
 
-# For now, only works for COGs
 def pan_genome(request, type):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
@@ -6285,73 +6287,86 @@ def pan_genome(request, type):
     import pandas as pd
 
     bioentries = form.cleaned_data['targets']
-    df_hits = db.get_cog_hits(bioentries, only_best_hit=True, as_count=True)
+
+    if type == "COG":
+        df_hits = db.get_cog_hits(bioentries, as_count=True)
+        df_hits = df_hits.set_index(["bioentry", "cog"]).unstack(level=0, fill_value=0)
+        type_txt = "COG"
+    elif type == "orthology":
+        df_hits = db.get_og_count(bioentries, search_on="bioentry")
+        df_hits = df_hits.set_index(["bioentry", "orthogroup"]).unstack(level=0, fill_value=0)
+        type_txt = "orthologs"
+    else:
+        # should add an error message
+        form = venn_form_class()
+        return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
+
     target2description = db.get_genomes_description(bioentries)
-    df_hits.columns = [target2description[str(i)] for i in list(df_hits.columns.values)]
+    df_hits.columns = [target2description[str(i)] for i in df_hits["count"].columns.values]
 
     path2 = settings.BASE_DIR + '/assets/temp/pangenome_barplot.svg'
     asset_path2 = '/temp/pangenome_barplot.svg'
-    n_cogs_per_genome = df_hits.count(axis=0).sort_values()
+    n_entries_per_genome = df_hits[df_hits>0].count(axis=0).sort_values()
 
     fig, ax = plt.subplots()
-    barplot = ax.bar(list(n_cogs_per_genome.index), list(n_cogs_per_genome.values))
-    ax.set_ylabel("COG count")
-    ax.set_xticklabels(list(n_cogs_per_genome.index), rotation=45, horizontalalignment="right")
+    barplot = ax.bar(list(n_entries_per_genome.index), list(n_entries_per_genome.values))
+    ax.set_ylabel(f"{type} count")
+    ax.set_xticklabels(list(n_entries_per_genome.index), rotation=45, horizontalalignment="right")
     fig.tight_layout()
     fig.savefig(path2)
 
     hsh_shared_count = {}
     hsh_total_count = {}
-    for cog, pres in df_hits[n_cogs_per_genome.index[0]].items():
-        if pd.isnull(pres):
+    for entry, pres in df_hits[n_entries_per_genome.index[0]].items():
+        if pres==0:
             continue
-        hsh_shared_count[cog] = 1
-        hsh_total_count[cog] = 1
+        hsh_shared_count[entry] = 1
+        hsh_total_count[entry] = 1
 
-    total_cogs = [n_cogs_per_genome.values[0]]
-    shared_cogs = []
+    total_entries = [n_entries_per_genome.values[0]]
+    shared_entries = []
     for i in range(1, len(bioentries)):
-        cur_total = total_cogs[-1]
+        cur_total = total_entries[-1]
         cur_shared = 0
-        for cog, pres in df_hits[n_cogs_per_genome.index[i]].items():
-            if pd.isnull(pres):
+        for entry, pres in df_hits[n_entries_per_genome.index[i]].items():
+            if pres==0:
                 continue
-            v = hsh_shared_count.get(cog, 0)
+            v = hsh_shared_count.get(entry, 0)
             if v==i:
                 cur_shared += 1
-                hsh_shared_count[cog] = i+1
-            if cog not in hsh_total_count:
+                hsh_shared_count[entry] = i+1
+            if entry not in hsh_total_count:
                 cur_total += 1
-                hsh_total_count[cog] = 1
-        total_cogs.append(cur_total)
-        shared_cogs.append(cur_shared)
+                hsh_total_count[entry] = 1
+        total_entries.append(cur_total)
+        shared_entries.append(cur_shared)
 
     path = settings.BASE_DIR + '/assets/temp/pangenome.svg'
     asset_path = '/temp/pangenome.svg'
     fig, ax = plt.subplots()
 
-    ax.plot(total_cogs)
+    ax.plot(total_entries)
     ax2 = ax.twinx()
-    ax2.plot([i for i in range(1, len(bioentries))], shared_cogs, color="red")
+    ax2.plot([i for i in range(1, len(bioentries))], shared_entries, color="red")
 
     ax.set_xticks([i for i in range(0, len(bioentries))])
-    ax.set_xticklabels(n_cogs_per_genome.index, rotation=45, horizontalalignment="right")
-    ax2.set_ylabel("Number of shared COG")
-    ax.set_xlabel("Number of genomes")
-    ax.set_ylabel("Number of COG in pangenome")
+    ax.set_xticklabels(n_entries_per_genome.index, rotation=45, horizontalalignment="right")
+    ax2.set_ylabel(f"Number of shared {type_txt}")
+    ax.set_ylabel(f"Number of {type_txt} in pangenome")
 
     fig.tight_layout()
     fig.savefig(path)
 
     # Serie with the number of genomes having a given cog
-    common_cogs = df_hits.count(axis=1)
-    core = len(common_cogs[common_cogs == len(bioentries)])
+    missing_entries = df_hits[df_hits == 0].count(axis=1)
+    core = len(missing_entries[missing_entries == 0])
+
     # cogs present in all but one genome
-    core_minus1 = len(common_cogs[common_cogs == len(bioentries)-1])
+    core_minus1 = len(missing_entries[missing_entries == 1])
     total = len(df_hits.index)
 
     genome_count_list = []
-    for i, count in enumerate(n_cogs_per_genome):
+    for i, count in enumerate(n_entries_per_genome):
         genome_count_list.append([i+1, count])
     envoi = True
     return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
@@ -11945,19 +11960,26 @@ def plot_heatmap(request, type):
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
     target_bioentries = [int(i) for i in form_venn.cleaned_data['targets']]
-    mat = db.get_cog_hits(target_bioentries, only_best_hit=True, as_count=True)
+
+    if type=="COG":
+        mat = db.get_cog_hits(target_bioentries, as_count=True)
+        mat = mat.set_index(["bioentry", "cog"]).unstack(level=0, fill_value=0)
+    elif type=="orthology":
+        mat = db.get_og_count(target_bioentries, search_on="bioentry")
+        mat = mat.set_index(["bioentry", "orthogroup"]).unstack(level=0, fill_value=0)
+    else:
+        form_venn = form_class()
+        return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
+
     target2description = db.get_genomes_description(target_bioentries)
-    bioentries_list = [i for i in list(mat.columns.values)]
-    mat.columns = [target2description[str(i)] for i in bioentries_list]
-    m = mat.transpose()
-    m = m.fillna(0)
+    mat.columns = [target2description[str(i)] for i in mat["count"].columns.values]
 
     cur_time = datetime.now().strftime("%H%M%S")
 
     filename = f"heatmap_{cur_time}.png"
     path = settings.BASE_DIR + '/assets/temp/' + filename
     asset_path = '/temp/' + filename
-    cm = sns.clustermap(m)
+    cm = sns.clustermap(mat)
     cm.savefig(path)
     envoi_heatmap = True
     return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))

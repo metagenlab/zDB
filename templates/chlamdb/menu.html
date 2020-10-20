@@ -89,7 +89,7 @@
                     <div class="sidebar-submenu" style="display:block;">
                       <ul id="submenu-3" class="panel-collapse collapse panel-switch in" role="menu">
                           <li class="item"><a href="{% url 'extract_orthogroup' %}">Orthogroups</a></li>
-                          {% if optional2status|keyvalue:"COG_comparative"%}
+                          {% if optional2status|keyvalue:"COG"%}
                               <li class="item"><a href="{% url 'extract_cog' %}">COGs</a></li>
                           {% endif %}
                           {% if optional2status|keyvalue:"pfam_comparative" %}
@@ -98,7 +98,7 @@
                           {% if optional2status|keyvalue:"interpro_comparative" %}
                               <li class="item"><a href="{% url 'extract_interpro' %}">Interpro entries</a></li>
                           {% endif %}
-                          {% if optional2status|keyvalue:"KEGG_comparative" %}
+                          {% if optional2status|keyvalue:"KEGG" %}
                               <!--<li class="item"><a href="{% url 'extract_EC' %}">EC numbers</a></li>-->
                               <li class="item"><a href="{% url 'extract_ko' %}">Kegg Orthologs</a></li>
                           {% endif %}

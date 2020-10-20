@@ -964,11 +964,7 @@ def multiple_profiles_heatmap(biodb,
     leaf_list = [i for i in t1.iter_leaves()]
     n_leaves = len(leaf_list)
 
-    longest_label = 0
-    for i in column_labels:
-        if len(i) > longest_label:
-            longest_label = len(i)
-
+    longest_label = max(len(i) for i in column_labels)
     for lf_count, lf in enumerate(t1.iter_leaves()):
         lf.branch_vertical_margin = 0
 

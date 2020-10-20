@@ -18,35 +18,21 @@ def simplify(hsh_data):
 
 def plot_cog_heatmap(db, ref_tree, bioentry_ids=None, taxon_id_list=None, frequency=False, group_by_cog_id=False):
     from chlamdb.phylo_tree_display import ete_motifs
-
-    if False:
-        # NOTE: need to check with Trestan whether this code is still necessary
-        if not group_by_cog_id:
-            sql = 'select taxon_id,functon,count(*) as n ' \
-                  ' from COG_locus_tag2gi_hit t1 ' \
-                  ' inner join COG_cog_names_2014 t2 on t1.COG_id=t2.COG_id ' \
-                  ' inner join biosqldb.bioentry as t3 on t1.accession=t3.accession ' \
-                  ' where biodatabase_id=%s group by taxon_id,functon' % (biodb, db_id)
-        else:
-            sql = ' select A.taxon_id,B.functon,count(*) from (select t1.COG_id, t3.taxon_id from COG_locus_tag2gi_hit t1 ' \
-                  ' inner join orthology_detail t3 on t1.locus_tag=t3.locus_tag ' \
-                  ' group by taxon_id,t1.COG_id) A inner join COG_cog_names_2014 B on A.COG_id=B.COG_id ' \
-                  ' group by A.taxon_id,B.functon;' % (biodb, biodb)
-
     hsh_data = db.get_cog_count_for_genomes(bioentry_ids=bioentry_ids, taxon_ids=taxon_id_list)
     hsh_data = simplify(hsh_data)
 
     if frequency:
-        # based on total annotated with COG and not genome size
-
         bioentry_to_count = {}
         for bioentry, hsh_func_to_count in hsh_data.items():
             bioentry_to_count[bioentry] = sum(hsh_func_to_count.values())
         code2taxon2count = {}
         cog_list = []
     else:
-        bioentryid2count_no_GOG = db.get_n_prot_without_cog()
+        bioentryid2count_no_GOG = {}
         bioentryid2proteome_size = db.n_CDS(taxons=taxon_id_list, bioentries=bioentry_ids)
+        for bioentry, hsh_func_to_count in hsh_data.items():
+            sum_cog = sum(hsh_func_to_count.values())
+            bioentryid2count_no_GOG[bioentry] = bioentryid2proteome_size[bioentry]-sum_cog
 
         code2taxon2count = {}
         code2taxon2count['-'] = {}
