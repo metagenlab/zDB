@@ -1191,130 +1191,6 @@ process execute_PRIAM {
 PRIAM_results.collectFile(name: 'annotation/PRIAM/sequenceECs.txt')
 
 
-// create a database containing the following tables:
-// - sequences hash -> sequence aa
-// - locus tag -> sequence hash
-// - locus tag -> orthogroup
-/* process setup_orthology_db {
-  publishDir 'orthology/', overwrite: true
-  container "$params.annotation_container"
-
-  when:
-  params.refseq_diamond_BBH_phylogeny
-
-  input:
-  file nr_mapping_file from nr_mapping
-  file orthogroup from orthogroups_2
-  file nr_fasta from to_setup_orthology_db
-
-  output:
-  file 'orthology.db' into orthology_db
-
-  script:
-  """
-  #!/usr/bin/env python
-
-  import annotations
-  annotations.setup_orthology_db("${nr_fasta}", "${nr_mapping_file}", "${orthogroup}")
-  """
-}
- */
-
-// transfers the diamond matches to a sqlite database
-// NOTE: may be worth to only store the needed fields and limit
-// the number of hits to what is needed
-/*
-process setup_diamond_refseq_db {
-
-  container "$params.annotation_container"
-  publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
-
-  when:
-  params.refseq_diamond_BBH_phylogeny
-
-  input:
-  file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
-
-  output:
-  file 'diamond_refseq.db' into diamond_refseq_db
-  file 'nr_refseq_hits.tab' into refseq_diamond_nr
-
-  script:
-  """
-	#!/usr/bin/env python
-    
-    # bugfix
-	import annotations
-	annotations.setup_diamond_refseq_db("$diamond_tsv_list")
-  """
-}
-*/
-
-
-// Get the taxids of all the accessions that were matched by diamond
-// insert them in refseq_taxonomy.db
-// Table is :
-//  accession, taxid, description and length
-// 
-// Note: this may be slow as it relies on db queries + web queries for 
-// the accession number that couldn't be resolved locally
-
-/*
-process get_refseq_hits_taxonomy {
-
-  publishDir 'annotation/diamond_refseq/', mode: 'copy', overwrite: true
-  container "$params.annotation_container"
-
-  when:
-  params.diamond_refseq_taxonomy
-
-  input:
-  file refseq_hit_table from refseq_diamond_nr
-
-  output:
-  file 'refseq_taxonomy.db' into refseq_hit_taxid_mapping_db
-
-  script:
-  """
-	#!/usr/bin/env python
-    # test
-
-	import annotations
-	annotations.get_refseq_hits_taxonomy("$refseq_hit_table", "$params.databases_dir")
-  """
-}
-*/
-
-
-/*
-process get_diamond_refseq_top_hits {
-
-  container "$params.annotation_container"
-  publishDir 'annotation/diamond_refseq_BBH_phylogenies', mode: 'copy', overwrite: true
-
-  when:
-  params.refseq_diamond_BBH_phylogeny
-
-  input:
-  file 'orthology.db' from orthology_db
-  file 'refseq_taxonomy.db' from refseq_hit_taxid_mapping_db
-  file 'diamond_refseq.db' from diamond_refseq_db
-
-  output:
-  file '*_nr_hits.faa' optional true into diamond_refseq_hits_fasta
-
-  script:
-  """
-    #!/usr/bin/env python
-    import annotations
-    kwargs = $str_pythonized_params
-    annotations.get_diamond_refseq_top_hits(kwargs)
-  """
-}
-*/
-
-
-
 // Filter out small sequences and ambiguous AA
 process filter_sequences {
 
@@ -1679,12 +1555,7 @@ process load_refseq_results {
     
     kwargs = ${gen_python_args()}
     diamond_tab_files = "$diamond_tsv_list".split()
-
-    print("Loading refseq matches", flush=True)
-    hsh_sseqid = setup_chlamdb.load_refseq_matches(kwargs, diamond_tab_files)
-
-    print("Loading refseq matches infos", flush=True)
-    setup_chlamdb.load_refseq_matches_infos(kwargs, hsh_sseqid)
+    setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files)
     """
 }
 
@@ -1709,6 +1580,9 @@ process align_refseq_BBH_with_mafft {
   container "$params.annotation_container"
 
   publishDir 'orthology/orthogroups_refseq_diamond_BBH_alignments', mode: 'copy', overwrite: true
+
+  when:
+    params.refseq_diamond_BBH_phylogeny
 
   input:
     file og from diamond_best_hits.flatten().collate( 20 )
@@ -1746,6 +1620,11 @@ process orthogroup_refseq_BBH_phylogeny_with_fasttree {
 
 BBH_phylogenies.collect().set { BBH_phylogenies_to_db }
 
+// Ugly hack
+if(!params.refseq_diamond_BBH_phylogeny) {
+    Channel.value("dummy").set { BBH_phylogenies_to_db }
+}
+
 process load_taxo_stats_into_db {
     input:
         file db from to_load_taxonomy
@@ -1770,7 +1649,8 @@ process load_taxo_stats_into_db {
 
     setup_chlamdb.load_reference_phylogeny(kwargs, "$core_phylogeny")
     setup_chlamdb.load_gene_phylogenies(kwargs, gene_list)
-    setup_chlamdb.load_BBH_phylogenies(kwargs, BBH_list)
+    if kwargs.get("refseq_diamond_BBH_phylogeny", True):
+        setup_chlamdb.load_BBH_phylogenies(kwargs, BBH_list)
     """
 }
 

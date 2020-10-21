@@ -205,40 +205,6 @@ def get_identity(seq1, seq2):
         return 0
     return 100*(identical/float(aligned))
 
-def load_refseq_matches(args, diamond_tsvs):
-    db = db_utils.DB.load_db(args)
-    db.create_refseq_hits_table()
-
-    # map accessions to id
-    sseqid_hsh = {}
-    sseqid_id = 0
-    for tsv in diamond_tsvs:
-        hit_table = pd.read_csv(tsv, sep="\t")
-        hit_count = 0
-        seqfeature_id = None
-        query_hash = None
-        query_hash_64b = None
-        data = []
-        for index, row in hit_table.iterrows():
-            # remove version number
-            match_accession = row[1].split(".")[0]
-            if match_accession not in sseqid_hsh:
-                sseqid_hsh[match_accession] = sseqid_id
-                sseqid_id += 1
-
-            if query_hash==row[0]:
-                hit_count += 1
-            else:
-                hit_count = 0
-                query_hash_64b = hsh_from_s(row[0][len("CRC-"):])
-                query_hash = row[0]
-            lst_args = row.tolist()
-            data.append([hit_count, query_hash_64b, sseqid_hsh[match_accession]] + lst_args[2:])
-        db.load_refseq_hits(data)
-    db.create_refseq_hits_indices()
-    db.commit()
-    return sseqid_hsh
-
 def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i+n]
@@ -277,44 +243,57 @@ def get_prot(refseq_file, hsh_accessions):
         start_index = next_record
     return hsh_results
 
+def remove_accession_version(accession):
+    return accession.split(".")[0]
+
+def simplify_hash(hsh):
+    return hsh_from_s(hsh[len("CRC-"):])
+
 # Heavy-duty function, with several things performed to avoid database
 # queries and running too many times acrosse refseq_merged.faa :
 #  * get the mapping between accession to taxid
 #  * get the linear taxonomy for all taxids that were extracted at the previous step
 #  * extract the protein informations for 
 #  * for all protein of all orthogroup, get the non-PVC hits and output them in OG.fasta
-def load_refseq_matches_infos(args, hsh_sseqids):
+def load_refseq_matches_infos(args, lst_diamond_files):
     db = db_utils.DB.load_db(args)
+    columns=["str_hsh", "accession", "pident", "length", "mismatch", "gapopen",
+            "qstart", "qend", "sstart", "send", "evalue", "bitscore"]
 
+    print("Reading tsvs", flush=True)
+    all_data = pd.DataFrame(columns=columns)
+    for tsv in lst_diamond_files:
+        hit_table = pd.read_csv(tsv, sep="\t", names=columns, header=None)
+        all_data = all_data.append(hit_table)
+
+    print("Initial size: ", len(all_data.index), flush=True)
+    all_data.accession = all_data.accession.map(remove_accession_version)
+    all_data.str_hsh = all_data.str_hsh.map(simplify_hash)
     hsh_accession_to_taxid = {}
-    for iteration, chunk in enumerate(chunks(list(hsh_sseqids.keys()), 5000)):
+
+    print("Obtaining accession to taxid", flush=True)
+    for chunk in chunks(all_data.accession.unique(), 5000):
         hsh_temp = db.get_accession_to_taxid(chunk, args)
         hsh_accession_to_taxid.update(hsh_temp)
+    all_data["taxid"] = all_data.accession.map(hsh_accession_to_taxid)
 
     taxid_set = set(hsh_accession_to_taxid.values())
     non_pvc_taxids = set()
     pvc = args.get("refseq_diamond_BBH_phylogeny_phylum_filter", [])
     to_avoid = set()
     hsh_taxid_to_name = {}
-    hsh_taxo_key = db.hsh_taxo_key
     results_only_taxids = []
 
-    # yuck!
-    for chunk in chunks(list(taxid_set), 2000):
+    print("Getting linear taxonomy", flush=True)
+    for chunk in chunks(list(taxid_set), 5000):
         query_results = db.get_linear_taxonomy(args, chunk)
         for result in query_results:
-            only_taxids = []
-            only_taxids.append(result[0])
-            for rank, (idx_name, idx_taxid) in hsh_taxo_key.items():
-                if result[idx_taxid] not in hsh_taxid_to_name:
-                    hsh_taxid_to_name[result[idx_taxid]] = (rank, result[idx_name])
-                    if rank=="phylum" and result[idx_name] in pvc:
-                        print("avoiding : ", result[idx_name]) 
-                        to_avoid.add(result[idx_taxid])
-                if result[idx_taxid] not in to_avoid:
-                    non_pvc_taxids.add(result[0])
-                only_taxids.append(result[idx_taxid])
-            results_only_taxids.append(only_taxids)
+            # Not necessary to keep those in the database
+            if result.phylum() in pvc:
+                continue
+            non_pvc_taxids.add(result.taxid())
+            results_only_taxids.append(result.get_all_taxids())
+            result.update_hash(hsh_taxid_to_name)
 
     db.create_refseq_hits_taxonomy()
     db.load_refseq_hits_taxonomy(results_only_taxids)
@@ -322,26 +301,44 @@ def load_refseq_matches_infos(args, hsh_sseqids):
     db.create_refseq_hits_taxonomy_indices()
 
     refseq = args["databases_dir"] + "/refseq/merged.faa"
-    hsh_accession_to_record = get_prot(refseq, hsh_sseqids)
+    print("Extracting records for refseq", flush=True)
+    hsh_accession_to_record = get_prot(refseq, hsh_accession_to_taxid)
+    hsh_accession_to_match_id = {}
 
     db.create_diamond_refseq_match_id()
     refseq_match_id = []
-    for accession, taxid in hsh_accession_to_taxid.items():
+    print("Loading refseq matches id", flush=True)
+
+    for sseqid, (accession, taxid) in enumerate(hsh_accession_to_taxid.items()):
+        hsh_accession_to_match_id[accession] = sseqid
         record = hsh_accession_to_record[accession]
-        data = [hsh_sseqids[accession], accession, taxid, record.description, len(record)]
+        data = [sseqid, accession, taxid, record.description, len(record)]
         refseq_match_id.append(data)
     db.load_diamond_refseq_match_id(refseq_match_id)
     db.create_diamond_refseq_match_id_indices()
 
+    print("Loading refseq matches", flush=True)
+    db.create_refseq_hits_table()
+    all_data = all_data[all_data.taxid.isin(non_pvc_taxids)]
+    all_data["count"] = all_data.groupby("str_hsh").cumcount()
+    all_data["match_id"] = all_data["accession"].map(hsh_accession_to_match_id)
+
+    print("after filtering: ", len(all_data), flush=True)
+    to_load = all_data[["count", "str_hsh", "match_id", "pident",
+        "length", "mismatch", "gapopen", "qstart", "qend", "sstart",
+        "send", "evalue", "bitscore"]]
+    db.load_refseq_hits(to_load.values.tolist())
+    db.create_refseq_hits_indices()
+
     if args.get("refseq_diamond_BBH_phylogeny", True):
-        max_hits = args.get("refseq_diamond_BBH_phylogeny_top_n_hits", 3)
+        max_hits = args.get("refseq_diamond_BBH_phylogeny_top_n_hits", 4)
         all_og = db.get_all_orthogroups(min_size=3)
         for og in all_og:
             refseq_matches = db.get_diamond_match_for_og(og)
             to_keep = []
             cur_accesion, cur_count = None, 0
             for accession, taxid in refseq_matches:
-                if taxid in to_avoid:
+                if taxid not in non_pvc_taxids:
                     continue
                 if accession != cur_accesion:
                     cur_accesion = accession
@@ -354,7 +351,7 @@ def load_refseq_matches_infos(args, hsh_sseqids):
             SeqIO.write(to_keep + sequences, f"{og}_nr_hits.faa", "fasta")
     else:
         # just create a empty file to avoid a tantrum of nextflow for a missing file
-        f = open("null_nr_hits.fasta", "w")
+        f = open("null_nr_hits.faa", "w")
         f.write("My hovercraft is full of eels")
         f.close()
     db.commit()
@@ -505,7 +502,7 @@ def load_BBH_phylogenies(kwargs, lst_orthogroups):
 
     for tree in lst_orthogroups:
         t = ete3.Tree(tree)
-        og_id = int(tree.split("_")[0][2:])
+        og_id = int(tree.split("_")[0])
         data.append( (og_id, t.write()) )
     db.create_BBH_phylogeny_table(data)
     db.set_status_in_config_table("BBH_phylogenies", 1)
