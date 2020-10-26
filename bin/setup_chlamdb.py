@@ -16,6 +16,9 @@ from Bio import SeqUtils
 def get_og_id(string):
     return int(string[2:])
 
+def get_ko_id(string):
+    return int(string[1:])
+
 def parse_orthofinder_output_file(output_file):
     protein_id2orthogroup_id = {}
     parsing = open(output_file, 'r')
@@ -574,6 +577,86 @@ def load_genomes_summary(kwargs):
     db.load_genomes_coding_density(coding_densities)
     db.set_status_in_config_table("genome_statistics", 1)
     db.commit()
+
+def simplify_ko(raw_ko):
+    return int(raw_ko[len("ko:K"):])
+
+def simplify_pathway(raw_pathway):
+    return int(raw_pathway[len("path:map"):])
+
+def simplify_module(raw_module):
+    return int(raw_module[len("md:M"):])
+
+
+def parse_REST_result(string, c1_name, c2_name):
+    entries = string.strip().split("\n")
+    to_cols = pd.DataFrame([entry.split("\t") for entry in entries],
+            columns=[c1_name, c2_name])
+    return to_cols
+
+
+def load_KO_references(params):
+    # API to facilitate access to the ko informations
+    from Bio.KEGG import REST
+
+    db = db_utils.DB.load_db(params)
+    ko_string = REST.kegg_list("KO").read()
+    ko_id_to_desc = parse_REST_result(ko_string, "ko", "desc")
+    ko_id_to_desc["ko_simplified"] = ko_id_to_desc["ko"].apply(simplify_ko)
+    db.load_ko_def(ko_id_to_desc[["ko_simplified", "desc"]].values.tolist())
+
+    path_string = REST.kegg_list("pathway").read()
+    path_id_to_desc = parse_REST_result(path_string, "pathway", "desc")
+    path_id_to_desc["pathway"] = path_id_to_desc["pathway"].apply(simplify_pathway)
+    db.load_ko_pathway(path_id_to_desc.values.tolist())
+
+    mod_string = REST.kegg_list("module").read()
+    mod_id_to_desc = parse_REST_result(mod_string, "module", "desc")
+    mod_id_to_desc["module"] = mod_id_to_desc["module"].apply(simplify_module)
+    db.load_ko_module(mod_id_to_desc.values.tolist())
+
+    ko_to_module_data = []
+    ko_to_pathway_data = []
+    for lst_ko in chunks(ko_id_to_desc["ko"].unique().tolist(), 200):
+        ko_to_module = REST.kegg_link("module", lst_ko).read()
+        if len(ko_to_module) > 1:
+            ko_to_module_desc = parse_REST_result(ko_to_module, "ko", "module")
+            ko_to_module_desc["ko"] = ko_to_module_desc["ko"].apply(simplify_ko)
+            ko_to_module_desc["module"] = ko_to_module_desc["module"].apply(simplify_module)
+            ko_to_module_data.append(ko_to_module_desc.drop_duplicates().values.tolist())
+
+        ko_to_pathway = REST.kegg_link("pathway", lst_ko).read()
+        if len(ko_to_pathway) > 1:
+            ko_to_pathway_desc = parse_REST_result(ko_to_pathway, "ko", "pathway")
+            ko_to_pathway_desc["ko"] = ko_to_pathway_desc["ko"].apply(simplify_ko)
+            ko_to_pathway_desc = ko_to_pathway_desc[ko_to_pathway_desc.pathway.str.startswith("path:map")]
+            ko_to_pathway_desc["pathway"] = ko_to_pathway_desc["pathway"].apply(simplify_pathway)
+            ko_to_pathway_data.append(ko_to_pathway_desc.drop_duplicates().values.tolist())
+    db.load_ko_to_pathway([elem for lst in ko_to_pathway_data for elem in lst])
+    db.load_ko_to_module([elem for lst in ko_to_module_data for elem in lst])
+    db.commit()
+
+
+def load_KO(params, ko_files):
+    db = db_utils.DB.load_db(params)
+    data = []
+    for ko_file in ko_files:
+        for ko_line in open(ko_file, "r"):
+            tokens = ko_line.split()
+            # ignore all but the best hits
+            if tokens[0] != "*":
+                continue
+            crc_raw, ko_str, thrs_str, score_str, evalue_str, *descr = tokens[1:]
+            hsh = simplify_hash(crc_raw)
+            ko = get_ko_id(ko_str)
+            thrs = float(thrs_str)
+            score = float(score_str)
+            evalue = float(evalue_str)
+            entry = [hsh, ko, thrs, score, evalue]
+            print(entry)
+            data.append(entry)
+    db.load_ko_hits(data)
+
 
 def load_checkm_results(params, checkm_results):
     db = db_utils.DB.load_db(params)

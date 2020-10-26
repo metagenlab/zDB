@@ -500,7 +500,10 @@ all_alignments_1.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 3 }.s
 all_alignments_2.flatten().map { it }.filter { (it.text =~ /(>)/).size() == 3 }.set { alignments_3_seqs }
 all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.set { alignement_larger_than_2_seqs }
 
-alignement_larger_than_2_seqs.collate(50).set { to_fasttree_orthogroups } 
+// This should be improved: as the order is non-deterministic, it isn't very resume
+// friendly
+alignement_larger_than_2_seqs.collate(50).set { to_fasttree_orthogroups }
+
 /*
 process orthogroups_phylogeny_with_raxml {
 
@@ -769,47 +772,34 @@ process plast_refseq {
   """
 }
 
-process diamond_refseq {
+if(params.diamond_refseq) {
+    process diamond_refseq {
 
-  publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
+      publishDir 'annotation/diamond_refseq', mode: 'copy', overwrite: true
 
-  container "$params.annotation_container"
+      container "$params.annotation_container"
 
-  when:
-  params.diamond_refseq
+      when:
+      params.diamond_refseq
 
-  input:
-  file(seq) from to_diamond_refseq
+      input:
+      file(seq) from to_diamond_refseq
 
-  output:
-  file '*tab' into refseq_diamond
+      output:
+      file '*tab' into refseq_diamond
 
-  script:
+      script:
 
-  n = seq.name
-  """
-  # new version of the database
-  diamond blastp -p ${task.cpus} -d $params.databases_dir/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
-  """
+      n = seq.name
+      """
+      # new version of the database
+      diamond blastp -p ${task.cpus} -d $params.databases_dir/refseq/merged_refseq.dmnd -q ${n} -o ${n}.tab --max-target-seqs 200 -e 0.01 --max-hsps 1
+      """
+    }
+
+    refseq_diamond.collectFile().set { refseq_diamond_results_sqlitedb }
 }
 
-refseq_diamond.collectFile().set { refseq_diamond_results_sqlitedb }
-
-
-//refseq_diamond_results_taxid_mapping
-//.splitCsv(header: false, sep: '\t')
-//.map{row ->
-//    def protein_accession = row[1]
-//    return "${protein_accession}"
-//}
-//.unique()
-//.collectFile(name: 'nr_refseq_hits.tab', newLine: true)
-//.set {refseq_diamond_nr}
-
-//.collate( 300 )
-//.set {
-//    nr_refseq_hits_chunks
-//}
 
 process get_uniparc_mapping {
 
@@ -1154,7 +1144,7 @@ process execute_kofamscan {
   file(seq) from to_kofamscan
 
   output:
-  file '*tab'
+  file '*tab' into to_load_KO
 
   script:
   n = seq.name
@@ -1532,31 +1522,38 @@ process create_db {
     setup_chlamdb.load_orthofinder_results("$orthofinder", kwargs)
 
     print("Loading alignments", flush=True)
-    # setup_chlamdb.load_alignments_results(kwargs, alignments_lst)
+    setup_chlamdb.load_alignments_results(kwargs, alignments_lst)
 
     print("Loading checkm results", flush=True)
     setup_chlamdb.load_checkm_results(kwargs, "$checkm_results")
     """
 }
 
-process load_refseq_results {
-    input:
-        file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
-        file curr_db from db_gen
+if(!params.diamond_refseq) {
+    db_gen.set { to_load_genomes_summary }
+    Channel.empty().set { diamond_best_hits }
+} else {
 
-    output:
-        file "*_nr_hits.faa" into diamond_best_hits
-        file curr_db into to_load_genomes_summary
+    process load_refseq_results {
+        input:
+            file diamond_tsv_list from refseq_diamond_results_sqlitedb.collect()
+            file curr_db from db_gen
 
-    script:
-    """
-    #!/usr/bin/env python
-    import setup_chlamdb
-    
-    kwargs = ${gen_python_args()}
-    diamond_tab_files = "$diamond_tsv_list".split()
-    setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files)
-    """
+        output:
+            file "*_nr_hits.faa" into diamond_best_hits
+            file curr_db into to_load_genomes_summary
+
+        script:
+        if(params.diamond_refseq)
+            """
+            #!/usr/bin/env python
+            import setup_chlamdb
+            
+            kwargs = ${gen_python_args()}
+            diamond_tab_files = "$diamond_tsv_list".split()
+            setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files)
+            """
+    }
 }
 
 process load_genomes_summary {
@@ -1638,7 +1635,6 @@ process load_taxo_stats_into_db {
     script:
     """
     #!/usr/bin/env python
-    # foobar
 
     import setup_chlamdb
 
@@ -1660,7 +1656,7 @@ process load_COG_into_db {
         file cog_file from COG_to_load_db
 
     output:
-        file db into to_load_checkM
+        file db into to_load_KO_db
     
     script:
     if(params.cog)
@@ -1675,6 +1671,34 @@ process load_COG_into_db {
     else
         """
         echo \"Not supposed to load COG, passing\"
+        """
+}
+
+process load_KO_into_db {
+    input:
+        file KO_results from to_load_KO.collect()
+        file db from to_load_KO_db
+
+    output:
+        file db
+
+    script:
+    if(params.ko)
+        """
+        #!/usr/bin/env python
+
+        kwargs = ${gen_python_args()}
+        ko_files = "${KO_results}".split()
+        import setup_chlamdb
+
+        # this last function should be exported in a separate script to generate
+        # the scaffold of a database
+        setup_chlamdb.load_KO_references(kwargs)
+        setup_chlamdb.load_KO(kwargs, ko_files)
+        """
+    else
+        """
+        echo \"Not supposed to load kegg orthologs, passing\"
         """
 }
 
