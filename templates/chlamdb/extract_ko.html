@@ -50,7 +50,7 @@
                             <li><a href="{% url 'module_barchart' %}">KO categories barchart</a></li>
                             <li><a href="{% url 'venn_ko' %}">Venn KO</a></li>
                             <li><a href="{% url 'plot_heatmap' 'ko' %}">Whole proteomes heatmaps</a></li>
-                            <li><a href="{% url 'pan_genome' 'COG' %}">Pan/Core genome plots</a></li>
+                            <li><a href="{% url 'pan_genome' 'ko' %}">Pan/Core genome plots</a></li>
                         </ul>
                     </nav>
 
@@ -128,11 +128,8 @@
 
                             <thead>
                                 <tr>
-                                <th></th>
                                     <th id="entete_locus">KO</th>
-                                    <th>Name</th>
                                     <th>Description</th>
-                                    <th>EC</th>
                                     <th>Kegg Pathways</th>
                                     <th>Kegg Modules</th>
                                     <th>present in (/{{include|length}})</th>
@@ -142,13 +139,12 @@
 
                             {% for value in match_groups_data %}
                                 <tr>
-                                    <td>{{value.0}}</td>
-                                    <td><a href="{% url 'fam' value.1 'ko' %}">{{value.1}}</a></td>
-                                    {% for value_2 in value.2 %}
-                                    <td>{{value_2|safe}}</td>
-                                    {% endfor %}
-                                    <td>{{value.3}}</td>
+                                    <td><a href="{% url 'fam_ko' value.0 %}">{{value.0}}</a></td>
+                                    <td>{{value.1}}</td>
+                                    <td>{{value.2|safe}}</td>
+                                    <td>{{value.3|safe}}</td>
                                     <td>{{value.4}}</td>
+                                    <td>{{value.5}}</td>
                                 </tr>
                             {% endfor %}
 

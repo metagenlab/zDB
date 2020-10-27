@@ -45,7 +45,7 @@
 
                       {% if envoi_comp %}
                           <ul>
-                              <li>Number of KO: {{ko2counts|length}} (at least present 1 time in one of the selected genomes).</li>
+                              <li>Number of KO: {{n_ko}} (at least present 1 time in one of the selected genomes).</li>
                           </ul>
                               <table class="sortable" id="mytable">
                                   <style>
@@ -60,17 +60,17 @@
                                   </style>
                                   <thead>
                                     <tr style="height:200px;">
-                                        <th valign="bottom">Orthogroup</th>
+                                        <th valign="bottom">KO</th>
                                         <th valign="bottom">Total count</th>
                                         {% for taxon in taxon_list %}
-                                            <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
+                                            <th id="entete_meta4" valign="bottom"><div class="rotate">{{taxon}}</div></th>
                                         {% endfor %}
                                         <th valign="bottom">Annot</th>
                                     </tr>
                                   </thead>
                                   <tbody>
                                     {% for key, values in ko2counts.items %}
-                                      <tr> <td><a href="{% url 'fam' key 'ko' %}" target="_top">{{key}}</a></td>
+									<tr> <td><a href="{% url 'fam_ko' ko2_print|keyvalue:key %}" target="_top">{{ko2_print|keyvalue:key}}</a></td>
                                           <td>{{ko2total_count|keyvalue:key}}</td>
                                           {% for taxon_count in values%}
                                                 {%if taxon_count != 0 %}

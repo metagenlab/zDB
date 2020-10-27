@@ -203,6 +203,8 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^help', views.help, name="help"),
 
                        url(r'^fam_cog/(COG[0-9]+)$', views.fam_cog, name="fam_cog"), 
+                       url(r'^fam_ko/(K[0-9]+)$', views.fam_ko, name="fam_ko"), 
+
 
                        url(r'^get_record/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)', views.get_record, name="get_record"),
                        url(r'^get-task-info/', views.get_task_info),

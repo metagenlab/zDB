@@ -104,6 +104,8 @@ from chlamdb.celeryapp import app as celery_app
 
 from chlamdb_utils import db_utils
 
+import pandas as pd
+
 db_driver = settings.DB_DRIVER
 biodb = settings.BIODB
 optional2status, missing_mandatory = manipulate_biosqldb.check_config(biodb)
@@ -1134,159 +1136,108 @@ def extract_pfam(request, classification="taxon_id"):
     return render(request, 'chlamdb/extract_Pfam.html', my_locals(locals()))
 
 
+def format_ko(ko_id):
+    return f"K{ko_id:05d}"
+
+
+def format_ko_path(hsh_pathways, ko):
+    pathways = hsh_pathways.get(ko, [])
+    if len(pathways) == 0:
+        return "-"
+    return "<br>".join([f"<a href=\"/KEGG_mapp_ko/map{i:05d}\">{d}</a>" for i, d in pathways])
+
+
+def format_ko_modules(hsh_modules, ko):
+    modules = hsh_modules.get(ko, [])
+    if len(modules) == 0:
+        return "-"
+    return "<br>".join([f"<a href=\"/KEGG_mapp_ko/md:M{i:05d}\">{d}</a>" for i, d in modules])
+
 
 def extract_ko(request):
-    biodb = settings.BIODB
-    '''
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb)
 
-    :param request:
-    :param biodb:
-    :param classification: either taxon_id or accession (merging plasmids or not)
-    :return:
-    '''
+    extract_form_class = make_extract_form(db, label="Kegg Orthologs")
 
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    extract_form_class = make_extract_form(biodb, label="Kegg Orthologs")
-
-    if request.method == 'POST': 
-
-        form = extract_form_class(request.POST)
-
-        if form.is_valid():  
-            from chlamdb.biosqldb import biosql_own_sql_tables
-
-            include = form.cleaned_data['orthologs_in']
-            exclude = form.cleaned_data['no_orthologs_in']
-            n_missing = form.cleaned_data['frequency']
-            reference_taxon = form.cleaned_data['reference']
-            if reference_taxon == "None":
-                reference_taxon = include[0]
-
-            if int(n_missing)>=len(include):
-                wrong_n_missing = True
-            else:
-                server, db = manipulate_biosqldb.load_db(biodb)
-
-
-                freq_missing = (len(include)-float(n_missing))/len(include)
-
-                # get sub matrix and complete matrix
-                mat, mat_all = biosql_own_sql_tables.get_comparative_subtable(biodb,
-                                                                              "ko",
-                                                                              "id",
-                                                                              include,
-                                                                              exclude,
-                                                                              freq_missing,
-                                                                              cache=cache)
-
-                match_groups = mat.index.tolist()
-
-                if len(match_groups) == 0:
-                    no_match = True
-                else:
-
-                    # get count in subgroup
-                    ko2count = dict((mat > 0).sum(axis=1))
-                    # get count in complete database
-                    ko2count_all = dict((mat_all > 0).sum(axis=1))
-
-                    max_n = max(ko2count_all.values())
-
-                    # GET max frequency for template
-                    sum_group = len(match_groups)
-
-            sql = 'select ec, value, pathway_name, pathway_category, description from ' \
-            ' (select enzyme_id, ec,value from enzyme_enzymes as t1 inner join enzyme_enzymes_dat as t2 on t1.enzyme_id=t2.enzyme_dat_id ' \
-            ' where line="description") A left join enzyme_kegg2ec as B on A.enzyme_id=B.ec_id ' \
-            ' left join enzyme_kegg_pathway on B.pathway_id=kegg_pathway.pathway_id;'
-
-            sql = 'select ko_accession, name, definition, EC, pathways, modules from enzyme_ko_annotation;'
-
-            ko2description_raw = server.adaptor.execute_and_fetchall(sql,)
-
-            ko2description_dico = {}
-
-
-            sql = 'select module_name,description from enzyme_kegg_module'
-            sql2 = 'select pathway_name,description from enzyme_kegg_pathway'
-            module2category = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-            map2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql2,))
-
-
-            for i in ko2description_raw:
-                #if i[3] != "1.0 Global and overview maps":
-
-                ko2description_dico[i[0]] = [list(i[1:4])]
-
-                if i[4] != '-':
-                    path_str = ''
-                    for path in i[4].split(','):
-                        try:
-                            path_str+='<a href="/KEGG_mapp_ko/map%s">%s</a><br>' % (path[2:], map2description['map'+path[2:]])
-                        except:
-                            path_str+='<a href="/KEGG_mapp_ko/map%s">%s</a><br>' % (path[2:], path)
-                    ko2description_dico[i[0]][0].append(path_str[0:-1])
-                else:
-                    ko2description_dico[i[0]][0].append('-')
-
-                if i[5] != '-':
-                    mod_str = ''
-                    for mod in i[5].split(','):
-                        mod_str+='<a href="/KEGG_module_map/%s">%s</a><br>' % (mod, module2category[mod])
-                    ko2description_dico[i[0]][0].append(mod_str[0:-5])
-                else:
-                    ko2description_dico[i[0]][0].append('-')
-
-
-            #enzyme2data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-            match_groups_data = []
-
-            for i, ko in enumerate(match_groups):
-                for one_pathway in ko2description_dico[ko]:
-                    match_groups_data.append([i, ko, one_pathway, ko2count[ko], ko2count_all[ko]])
-
-
-            ko_list = '"' + '","'.join(match_groups) + '"'
-
-            locus_list_sql = 'select locus_tag from enzyme_locus2ko where taxon_id=%s and ko_id in (%s);' % (reference_taxon,
-                                                                                                             ko_list)
-
-            locus_list = [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
-
-            circos_url = '?ref=%s&' % reference_taxon
-            circos_url+= "t="+('&t=').join((include + exclude)) + '&h=' + ('&h=').join(locus_list)
-
-
-            target_circos_taxons = include + exclude
-            
-            # url to get the barchart of selected KO
-            taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
-            taxon_out_url = "&o="+("&o=").join(exclude)
-            envoi_extract = True
-            mm = 'module'
-            pp = 'pathway'
-
-            locus2annot, \
-            locus_tag2cog_catego, \
-            locus_tag2cog_name, \
-            locus_tag2ko, \
-            pathway2category, \
-            module2category, \
-            ko2ko_pathways, \
-            ko2ko_modules,\
-            locus2interpro = get_locus_annotations(biodb, locus_list)
-
-
-
-
-
-    else:  
+    if request.method != "POST":
         form = extract_form_class()
+        return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
 
+    form = extract_form_class(request.POST)
+    if not form.is_valid():
+        return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
+
+    # form is valid and in post
+    include = [int(i) for i in form.cleaned_data['orthologs_in']]
+    exclude = [int(i) for i in form.cleaned_data['no_orthologs_in']]
+    n_missing = int(form.cleaned_data['frequency'])
+    reference_taxon = form.cleaned_data['reference']
+    if reference_taxon == "None":
+        reference_taxon = include[0]
+
+    if int(n_missing)>=len(include):
+        wrong_n_missing = True
+        return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
+
+    mat_include = db.get_ko_count(include)
+    mat_include = mat_include.set_index(["bioentry", "KO"]).unstack(level=0, fill_value=0)
+    mat_include.columns = [col for col in mat_include["count"].columns.values]
+    if len(exclude) > 0:
+        mat_exclude = db.get_ko_count(exclude)
+        mat_exclude = mat_exclude.set_index(["bioentry", "KO"]).unstack(level=0, fill_value=0)
+        mat_exclude.columns = [col for col in mat_exclude["count"].columns.values]
+        mat_exclude["sum_pos"] = mat_exclude[mat_exclude > 0].count(axis=1)
+        mat_exclude["exclude"] = mat_exclude.sum_pos > 0
+        neg_index = mat_exclude[mat_exclude.exclude].index
+    else:
+        neg_index = pd.Index([])
+
+    mat_include["sum_pos"] = mat_include[mat_include > 0].count(axis=1)
+    mat_include["selection"] = mat_include.sum_pos >= len(include)-n_missing
+    pos_index = mat_include[mat_include.selection].index
+    selection = pos_index.difference(neg_index).tolist()
+    if len(selection) == 0:
+        no_match = True
+        return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
+
+    ko_total_count = db.get_ko_total_count(selection)
+    ko_desc = db.get_ko_desc(selection)
+    ko_mod = db.get_ko_modules(selection)
+    ko_path = db.get_ko_pathways(selection)
+    match_groups_data = []
+    for ko in selection:
+        kof = format_ko(ko)
+        kod = ko_desc.get(ko, "-")
+        kop = format_ko_path(ko_path, ko)
+        kom = format_ko_modules(ko_mod, ko)
+        data = [kof, kod, kop, kom, mat_include.loc[ko].sum_pos, ko_total_count.loc[ko].bioentry]
+        match_groups_data.append(data)
+
+    # should contain the loci of the KO in the reference genome
+    max_n = ko_total_count["bioentry"].max()
+    locus_list = [] # [i[0] for i in server.adaptor.execute_and_fetchall(locus_list_sql,)]
+    circos_url = '?ref=%s&' % reference_taxon
+    circos_url+= "t="+('&t=').join((str(i) for i in include + exclude)) + '&h=' + ('&h=').join(locus_list)
+    target_circos_taxons = include + exclude
+
+    # url to get the barchart of selected KO
+    taxons_in_url = "?i="+("&i=").join(map(str, include)) + '&m=%s' % str(n_missing)
+    taxon_out_url = "&o="+("&o=").join(map(str, exclude))
+    envoi_extract = True
+    mm = 'module'
+    pp = 'pathway'
+
+    locus2annot = {}
+    locus_tag2cog_catego = {}
+    locus_tag2cog_name = {}
+    locus_tag2ko = {}
+    pathway2category = {}
+    module2category = {}
+    ko2ko_pathways = {}
+    ko2ko_modules = {}
+    locus2interpro = {}
     return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
-
 
 
 def extract_EC(request):
@@ -1712,7 +1663,8 @@ def extract_cog(request):
         wrong_n_missing = True
         return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
 
-    cog_hits = db.get_cog_hits(include + exclude, only_best_hit=True)
+    # NOTE: to re-implement with pandas
+    cog_hits = db.get_cog_hits(include + exclude)
     limit = len(include)-int(n_missing)
     to_exclude = set()
     for bioentry in exclude:
@@ -2160,7 +2112,6 @@ def show_orthogroup(request, orthogroup):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
 
-    import pandas as pd
     import plotly.figure_factory as ff
 
     # should contain a row number, the gene name and the number of occurence
@@ -3107,8 +3058,6 @@ def format_orthogroup(og):
     return f"group_{og}"
 
 # TODO : add error handling
-# NOTE : all protein are included in an orthogroup (even if they are in a singleton
-# group).
 def fam_cog(request, cog_id):
     from chlamdb.phylo_tree_display import ete_motifs
 
@@ -3150,8 +3099,6 @@ def fam_cog(request, cog_id):
     leaf_to_name = db.get_genomes_description(indexing="bioentry", exclude_plasmids=True)
     df_og_count = db.get_og_count(group_count)
     hsh_cog_count = db.get_cog_counts([cog_id])
-
-    print(df_og_count)
 
     # build the different hashes necessary for multiple_profiles_heatmap
     dico_tree = {}
@@ -3196,6 +3143,25 @@ def fam_cog(request, cog_id):
     menu = True
     envoi = True
     tree.render(path, dpi=300, tree_style=style)
+    return render(request, 'chlamdb/fam.html', my_locals(locals()))
+
+
+def fam_ko(request, ko_str):
+    ko_id = int(ko_str[len("K"):])
+
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
+
+    seqids = db.get_seqids_for_ko([ko_id])
+    orthogroups = db.get_og(seqids)
+    pathways = db.get_ko_pathways([ko_id])
+    modules = db.get_ko_modules([ko_id])
+    ko_desc = db.get_ko_desc([ko_id])
+
+    type = "KO"
+    fam = ko_str
+    menu = True
+    envoi = True
     return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
 
@@ -6266,6 +6232,8 @@ def identity_heatmap(request):
     return render(request, 'chlamdb/identity_heatmap.html', my_locals(locals()))
 
 
+# TODO: implement with plotly to avoid having to save a picture at 
+# every request + weird errors regarding Qt
 def pan_genome(request, type):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
@@ -6285,6 +6253,7 @@ def pan_genome(request, type):
     import seaborn as sn
     import matplotlib.pyplot as plt
     import pandas as pd
+    import time
 
     bioentries = form.cleaned_data['targets']
 
@@ -6296,6 +6265,11 @@ def pan_genome(request, type):
         df_hits = db.get_og_count(bioentries, search_on="bioentry")
         df_hits = df_hits.set_index(["bioentry", "orthogroup"]).unstack(level=0, fill_value=0)
         type_txt = "orthologs"
+    elif type == "ko":
+        df_hits = db.get_ko_count(bioentries)
+        print(df_hits)
+        type_txt = "KO"
+        df_hits = df_hits.set_index(["bioentry", "KO"]).unstack(level=0, fill_value=0)
     else:
         # should add an error message
         form = venn_form_class()
@@ -11941,7 +11915,6 @@ def interactions(request, locus_tag):
 
     return render(request, 'chlamdb/interactions.html', my_locals(locals()))
 
-# Only works for COG for now
 def plot_heatmap(request, type):
     import seaborn as sns
     from datetime import datetime
@@ -11967,6 +11940,9 @@ def plot_heatmap(request, type):
     elif type=="orthology":
         mat = db.get_og_count(target_bioentries, search_on="bioentry")
         mat = mat.set_index(["bioentry", "orthogroup"]).unstack(level=0, fill_value=0)
+    elif type == "ko":
+        mat = db.get_ko_count(target_bioentries)
+        mat = mat.set_index(["bioentry", "KO"]).unstack(level=0, fill_value=0)
     else:
         form_venn = form_class()
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
@@ -14130,44 +14106,35 @@ def orthogroup_comparison(request):
 
 
 def ko_comparison(request):
-    biodb = settings.BIODB
-    server, db = manipulate_biosqldb.load_db(biodb)
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
 
-    comp_metabo_form = make_metabo_from(biodb)
+    comp_metabo_form = make_metabo_from(db)
 
-    if request.method == 'POST': 
-        form = comp_metabo_form(request.POST)
-        if form.is_valid():
-            from chlamdb.biosqldb import biosql_own_sql_tables
-            taxon_list = form.cleaned_data['targets']
-
-            sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
-
-            database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
-
-            taxon_id2description = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
-
-            columns = '`' + '`,`'.join(taxon_list) + '`'
-            filter = '(`' + '`>0 or`'.join(taxon_list) + '`>0)'
-
-
-            sql = 'select ko_id, count(*) from enzyme_locus2ko group by ko_id;'
-
-            ko2total_count= manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-            sql = 'select id,%s from comparative_tables_ko where %s' % (columns, filter)
-
-            ko2counts = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-            sql = 'select ko_id,definition from enzyme_ko_annotation_v1'
-
-            ko2annot = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-            envoi_comp = True
-
-    else:  
+    if request.method != "POST":
         form = comp_metabo_form()
+        return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
 
+    form = comp_metabo_form(request.POST)
+    if not form.is_valid():
+        return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
+
+    include = [int(i) for i in form.cleaned_data['targets']]
+    mat_include = db.get_ko_count(include)
+    mat_include = mat_include.set_index(["bioentry", "KO"]).unstack(level=0, fill_value=0)
+    mat_include.columns = [col for col in mat_include["count"].columns.values]
+
+    ko2annot = db.get_ko_desc(mat_include.index.tolist())
+    ko2total_count = db.get_ko_total_count(mat_include.index.tolist())["bioentry"].to_dict()
+    ko2counts = mat_include.to_dict()
+    ko2counts = {}
+    ko2_print = {}
+    for key, values in mat_include.iterrows():
+        ko2counts[key] = values.values.tolist()
+        ko2_print[key] = format_ko(key)
+
+    hsh_gen_desc = db.get_genomes_description(include)
+    taxon_list = [hsh_gen_desc[str(col)] for col in mat_include.columns.values]
+    n_ko = len(mat_include.index.tolist())
+    envoi_comp = True
     return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
-
-
