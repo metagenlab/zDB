@@ -347,8 +347,7 @@ process get_nr_sequences {
   """
 }
 
-nr_seqs.collectFile(name: 'merged_nr.faa', newLine: true)
-.into { merged_faa_chunks
+nr_seqs.into { merged_faa_chunks
         to_uniparc_mapping
         to_string_mapping
         to_tcdb_mapping
@@ -702,25 +701,25 @@ process checkm_analyse {
 
 process rpsblast_COG {
   
+  publishDir 'annotation/COG', overwrite: true
   container "$params.blast_container"
 
   when:
   params.cog
 
   input:
-  file 'seq' from to_rpsblast_COG
+  file seq from to_rpsblast_COG
 
   output:
-  file 'blast_result' into blast_result
+  file result_file into COG_to_load_db
 
   script:
   n = seq.name
+  result_file = "${n}.tab"
   """
-  rpsblast -db $params.databases_dir/cdd/profiles/Cog -query seq -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > blast_result
+  rpsblast -db $params.databases_dir/cdd/profiles/Cog -query $seq -outfmt 6 -evalue 0.001 -num_threads ${task.cpus} > ${result_file}
   """
 }
-
-blast_result.collectFile(name: 'annotation/COG/blast_COG.tab').set { COG_to_load_db }
 
 process blast_swissprot {
 
@@ -1483,10 +1482,25 @@ process get_uniprot_goa_mapping {
   """
 }
 
-process create_db {
+process setup_db {
+    input:
+        file db_skeleton from Channel.fromPath("$params.chlamdb.chlamdb_base")
+
+    output:
+        file output_file into db_base
+
+    script:
+    output_file = "db_$workflow.runName"
+    """
+    cp $db_skeleton $output_file
+    """
+}
+
+process load_base_db {
     publishDir "db"
 
     input:
+        file db_base
 		file gbks from to_load_gbk_into_db
         file orthofinder from to_load_orthofinder_in_db
         file alignments from to_load_alignment
@@ -1500,7 +1514,7 @@ process create_db {
         params.chlamdb_setup
 
     script:
-    db_name="$params.chlamdb.db_name"
+    db_name="$db_base"
     """
     #!/usr/bin/env python
 
@@ -1510,22 +1524,21 @@ process create_db {
     gbk_list = "${gbks}".split()
     alignments_lst = "$alignments".split()
 
-    setup_chlamdb.setup_chlamdb(**kwargs)
     print("Loading gbks", flush=True)
-    setup_chlamdb.load_gbk(gbk_list, kwargs)
+    setup_chlamdb.load_gbk(gbk_list, kwargs, "$db_base")
 
     # kept for now, need to check whether this is really necessary to keep the hash
     print("Loading seq hashes", flush=True)
-    setup_chlamdb.load_seq_hashes(kwargs, "$nr_mapping_file")
+    setup_chlamdb.load_seq_hashes(kwargs, "$nr_mapping_file", "$db_base")
 
     print("Loading orthofinder results", flush=True)
-    setup_chlamdb.load_orthofinder_results("$orthofinder", kwargs)
+    setup_chlamdb.load_orthofinder_results("$orthofinder", kwargs, "$db_base")
 
     print("Loading alignments", flush=True)
-    setup_chlamdb.load_alignments_results(kwargs, alignments_lst)
+    setup_chlamdb.load_alignments_results(kwargs, alignments_lst, "$db_base")
 
     print("Loading checkm results", flush=True)
-    setup_chlamdb.load_checkm_results(kwargs, "$checkm_results")
+    setup_chlamdb.load_checkm_results(kwargs, "$checkm_results", "$db_base")
     """
 }
 
@@ -1569,7 +1582,7 @@ process load_genomes_summary {
 
     import setup_chlamdb
     kwargs = ${gen_python_args()}
-    setup_chlamdb.load_genomes_summary(kwargs)
+    setup_chlamdb.load_genomes_summary(kwargs, "$curr_db")
     """
 }
 
@@ -1643,17 +1656,17 @@ process load_taxo_stats_into_db {
     BBH_list = "$BBH_phylogeny_trees".split(" ")
     gene_list = "$gene_phylogeny".split(" ")
 
-    setup_chlamdb.load_reference_phylogeny(kwargs, "$core_phylogeny")
-    setup_chlamdb.load_gene_phylogenies(kwargs, gene_list)
+    setup_chlamdb.load_reference_phylogeny(kwargs, "$core_phylogeny", "$db")
+    setup_chlamdb.load_gene_phylogenies(kwargs, gene_list, "$db")
     if kwargs.get("refseq_diamond_BBH_phylogeny", True):
-        setup_chlamdb.load_BBH_phylogenies(kwargs, BBH_list)
+        setup_chlamdb.load_BBH_phylogenies(kwargs, BBH_list, "$db")
     """
 }
 
 process load_COG_into_db {
     input:
         file db from to_load_COG
-        file cog_file from COG_to_load_db
+        file cog_file from COG_to_load_db.collect()
 
     output:
         file db into to_load_KO_db
@@ -1666,7 +1679,8 @@ process load_COG_into_db {
         import setup_chlamdb
         
         kwargs = ${gen_python_args()}
-        setup_chlamdb.load_cog(kwargs, "$cog_file")
+        cog_files = "${cog_file}".split()
+        setup_chlamdb.load_cog(kwargs, cog_files, "$db")
         """
     else
         """
@@ -1693,8 +1707,7 @@ process load_KO_into_db {
 
         # this last function should be exported in a separate script to generate
         # the scaffold of a database
-        setup_chlamdb.load_KO_references(kwargs)
-        setup_chlamdb.load_KO(kwargs, ko_files)
+        setup_chlamdb.load_KO(kwargs, ko_files, "$db")
         """
     else
         """

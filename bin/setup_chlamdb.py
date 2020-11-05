@@ -2,7 +2,7 @@ import os
 import sys
 import re
 
-from chlamdb_utils import db_utils
+from metagenlab_libs import db_utils
 
 import pandas as pd
 
@@ -33,133 +33,9 @@ def parse_orthofinder_output_file(output_file):
             protein_id2orthogroup_id[locus] = group
     return protein_id2orthogroup_id
 
-# TODO: import the two following functions into the chlamdb file to remove
-# all database code from this file
-def setup_biodb(kwargs):
-    sqlpsw = os.environ['SQLPSW']
-    db_type = kwargs["chlamdb.db_type"]
-    db_name = kwargs["chlamdb.db_name"]
-    schema_dir = kwargs["chlamdb.biosql_schema_dir"]
-    err_code = 0
 
-    if db_type=="sqlite":
-        import sqlite3
-        conn = sqlite3.connect(db_name)
-        cursor = conn.cursor()
-        url_biosql_scheme = 'biosqldb-sqlite.sql'
-        err_code = os.system(f"sqlite3 {db_name} < {schema_dir}/{url_biosql_scheme}")
-        conn.execute("pragma journal_mode=wal")
-    else:
-        import MySQLdb
-        conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                    user="root", # your username
-                                    passwd=sqlpsw) # name of the data base
-        cursor = conn.cursor()
-        sql_db = f'CREATE DATABASE IF NOT EXISTS {db_name};'
-        cursor.execute(sql_db,)
-        conn.commit()
-        cursor.execute(f"use {db_name};",)
-        url_biosql_scheme = 'biosqldb-mysql.sql'
-        err_code = os.system(f"mysql -uroot -p{sqlpsw} {db_name} < {schema_dir}/{url_biosql_scheme}")
-
-    # not really logical to me, but creating a database
-    # from the biosql is necessary
-    db = db_utils.DB.load_db(kwargs)
-    db.create_biosql_database(kwargs)
-    db.commit()
-    if err_code != 0:
-        raise IOError("Problem loading sql schema:", err_code)
-
-def create_data_table(kwargs):
-    db_type = kwargs["chlamdb.db_type"]
-    db_name = kwargs["chlamdb.db_name"]
-    if db_type=="sqlite":
-        import sqlite3
-        conn = sqlite3.connect(db_name)
-        cursor = conn.cursor()
-    else:
-        import os
-        import MySQLdb
-        sqlpsw = os.environ['SQLPSW']
-
-        conn = MySQLdb.connect(host="localhost", # your host, usually localhost
-                                    user="root", # your username
-                                    passwd=sqlpsw, # your password
-                                    db=db_name) # name of the data base
-        cursor = conn.cursor()
-    entry_list = [
-        # Done
-        ("orthology", "mandatory", False),
-
-        # Done
-        ("orthogroup_alignments", "mandatory", False),
-
-        ("old_locus_table", "mandatory", False),
-
-        # Done
-        ("reference_phylogeny", "mandatory", False),
-
-        # Done
-        ("taxonomy_table", "mandatory", False),
-
-        # Done
-        ("genome_statistics", "mandatory", False),
-
-        ############# Optional ###################
-        ("BLAST_database", "optional", False),
-
-        # Done
-        ("gene_phylogenies", "optional", False),
-
-        ("interpro_data", "optional", False),
-        ("interpro_comparative", "optional", False),
-        ("interpro_comparative_accession", "optional", False),
-        ("priam_data", "optional", False),
-        ("priam_comparative", "optional", False),
-        ("priam_comparative_accession", "optional", False),
-
-        # Done: will need to rewrite the queries
-        ("COG", "optional", False),
-
-        ("KEGG_data", "optional", False),
-        ("KEGG_comparative", "optional", False),
-        ("KEGG_comparative_accession", "optional", False),
-        ("pfam_comparative", "optional", False),
-        ("pfam_comparative_accession", "optional", False),       
-        ("TCDB_data", "optional", False),
-        ("psortb_data", "optional", False),
-        ("T3SS_data", "optional", False),
-        ("PDB_data", "optional", False),
-        ("BLAST_refseq", "optional", False),
-        ("BLAST_swissprot", "optional", False),
-
-        # Done
-        ("BBH_phylogenies", "optional", False),
-        ("GC_statistics", "optional", False),
-        ("gene_clusters", "optional", False),
-        ("phylogenetic_profile", "optional", False),
-        ("synonymous_table", "optional", False),
-        ("interpro_taxonomy", "optional", False), # interpro taxnonomy statistics
-        ("pfam_taxonomy", "optional", False), #  taxnonomy statistics
-        ("COG_taxonomy", "optional", False) # COG taxnonomy statistics
-    ]
-    
-    sql = 'create table biodb_config (name varchar(200), type varchar(200), status BOOLEAN)'
-    
-    cursor.execute(sql)
-    conn.commit()
-    
-    sql = 'insert into biodb_config values ("%s", "%s", %s)'
-    for row in entry_list:
-        cursor.execute(sql % (row[0], row[1], row[2]),)
-    conn.commit()
-
-def setup_chlamdb(**kwargs):
-    setup_biodb(kwargs)
-    create_data_table(kwargs)
-
-def load_gbk(gbks, args):
-    db = db_utils.DB.load_db(args)
+def load_gbk(gbks, args, db_file):
+    db = db_utils.DB.load_db(db_file, args)
     data = []
     for gbk in gbks:
         records = [i for i in SeqIO.parse(gbk, 'genbank')]
@@ -175,14 +51,16 @@ def load_gbk(gbks, args):
     db.set_status_in_config_table("gbk_files", 1)
     db.commit()
 
-def load_orthofinder_results(orthofinder_output, args):
-    db = db_utils.DB.load_db(args)
+
+def load_orthofinder_results(orthofinder_output, args, db_file):
+    db = db_utils.DB.load_db(db_file, args)
     hsh_prot_to_group = parse_orthofinder_output_file(orthofinder_output)
     hsh_locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id()
     hits_to_load = [(hsh_locus_to_feature_id[locus], group) for locus, group in hsh_prot_to_group.items()]
     db.load_og_hits(hits_to_load)
     db.set_status_in_config_table("orthology", 1)
     db.commit()
+
 
 # Note: as this is an alignment, the lengths are the same
 def get_identity(seq1, seq2):
@@ -368,8 +246,8 @@ def hsh_from_s(s):
         return v-0x10000000000000000
     return v
 
-def load_seq_hashes(args, nr_mapping):
-    db = db_utils.DB.load_db(args)
+def load_seq_hashes(args, nr_mapping, db_file):
+    db = db_utils.DB.load_db(db_file, args)
     hsh_locus_to_id = db.get_hsh_locus_to_seqfeature_id()
 
     to_load_hsh_to_seqid = {}
@@ -392,8 +270,8 @@ def load_seq_hashes(args, nr_mapping):
     db.create_seq_hash_to_seqid(to_load)
     db.commit()
 
-def load_alignments_results(args, alignment_files):
-    db = db_utils.DB.load_db(args)
+def load_alignments_results(args, alignment_files, db_file):
+    db = db_utils.DB.load_db(db_file, args)
     db.create_new_og_matrix()
     locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id()
 
@@ -416,79 +294,30 @@ def load_alignments_results(args, alignment_files):
     db.set_status_in_config_table("orthogroup_alignments", 1)
     db.commit()
 
-def load_cog(params, cog_filename):
-    db = db_utils.DB.load_db(params)
 
-    # TODO: avoid hardcoding file names. May be worth it to explicitely
-    # add them to the nextflow process for more clarity.
-    cog2cdd_file = open(params["databases_dir"]+"/COG/cog_corresp.tab", "r")
-    cog2length_file = open(params["databases_dir"]+"/COG/cog_length.tab", "r")
-    fun_names_file = open(params["databases_dir"]+"/COG/fun2003-2014.tab")
-    cog_names_file = open(params["databases_dir"]+"/COG/cognames2003-2014.tab") 
+def load_cog(params, filelist, db_file):
+    db = db_utils.DB.load_db(db_file, params)
+    hsh_cdd_to_cog = db.get_cdd_to_cog()
 
-    hsh_cdd_to_cog = {}
-    for line in cog2cdd_file:
-        tokens = line.split("\t")
-        hsh_cdd_to_cog[tokens[1].strip()] = int(tokens[0][3:])
-
-    # maybe an overkill: it seems like COG are ordered
-    # it should be possible to only use an array instead of 
-    # an hash table
-    hsh_cog_to_length = {}
-    for line in cog2length_file:
-        tokens = line.split("\t")
-        hsh_cog_to_length[int(tokens[0][3:])] = int(tokens[1])
-
-    cog_ref_data = []
-    # necessary to track, as some cogs listed in the CDD to COG mapping table
-    # are not present in those descriptors
-    hsh_cog_ids = {}
-    for line_no, line in enumerate(cog_names_file):
-        # pass header
-        if line_no == 0:
-            continue
-        tokens = line.split("\t")
-        cog_id = int(tokens[0][3:])
-        hsh_cog_ids[cog_id] = True
-        fun = tokens[1].strip()
-        description = tokens[2].strip()
-        cog_ref_data.append( (cog_id, fun, description) )
-    db.load_cog_ref_data(cog_ref_data)
-
-    cog_fun_data = []
-    for line_no, line in enumerate(fun_names_file):
-        if line_no==0:
-            continue
-        function, description = line.split("\t") 
-        cog_fun_data.append( (function.strip(), description.strip()) )
-    db.load_cog_fun_data(cog_fun_data)
-    db.commit()
-    
-    # NOTE(BM): this is a dumb piece of code. It would be possible to avoid
-    # useless sorting by exploiting the ordering of the result file (results
-    # are already sorted starting from the best hit).
-    cogs_hits = pd.read_csv(cog_filename, sep="\t", header=None,
-        names=["seq_hsh", "cdd", "pident", "length", "mismatch", "gapopen", "qstart",
-            "qend", "sstart", "send", "evalue", "bitscore"])
     data = []
+    for chunk in filelist:
+        cogs_hits = pd.read_csv(chunk, sep="\t", header=None,
+            names=["seq_hsh", "cdd", "pident", "length", "mismatch", "gapopen", "qstart",
+                "qend", "sstart", "send", "evalue", "bitscore"])
 
-    # Select only the best hits
-    min_hits = cogs_hits.groupby("seq_hsh")[["cdd", "evalue"]].min()
-
-    for index, row in min_hits.iterrows():
-        hsh = hsh_from_s(index[len("CRC-"):])
-        #  cdd in the form cdd:N
-        cog = int(hsh_cdd_to_cog[row["cdd"].split(":")[1]])
-        if cog not in hsh_cog_ids:
-            print("Unknown cog id: ", cog, " skipping this entry")
-            continue
-        evalue = float(row["evalue"])
-        entry = [hsh, cog, evalue]
-        data.append(entry)
-
+        # Select only the best hits: using pandas clearly is an overkill here
+        min_hits = cogs_hits.groupby("seq_hsh")[["cdd", "evalue"]].min()
+        for index, row in min_hits.iterrows():
+            hsh = hsh_from_s(index[len("CRC-"):])
+            #  cdd in the form cdd:N
+            cog = hsh_cdd_to_cog[int(row["cdd"].split(":")[1])]
+            evalue = float(row["evalue"])
+            entry = [hsh, cog, evalue]
+            data.append(entry)
     db.load_cog_hits(data)
     db.set_status_in_config_table("COG", 1)
     db.commit()
+
 
 # Note: the trees are stored in files with name formatted as:
 # OGN_nr_hits_mafft.nwk. To retrieve the orthogroup, parse the filename
@@ -497,10 +326,10 @@ def load_cog(params, cog_filename):
 # Note2: from a database design perspective, may be worth to put all the 
 # phylogenies in the same table (BBH/gene and reference) and reference them
 # on the orthogroup id and/or a term_id
-def load_BBH_phylogenies(kwargs, lst_orthogroups):
+def load_BBH_phylogenies(kwargs, lst_orthogroups, db_file):
     import ete3
 
-    db = db_utils.DB.load_db(kwargs)
+    db = db_utils.DB.load_db(db_file, kwargs)
     data = []
 
     for tree in lst_orthogroups:
@@ -511,10 +340,10 @@ def load_BBH_phylogenies(kwargs, lst_orthogroups):
     db.set_status_in_config_table("BBH_phylogenies", 1)
     db.commit()
 
-def load_gene_phylogenies(kwargs, lst_orthogroups):
+def load_gene_phylogenies(kwargs, lst_orthogroups, db_file):
     import ete3
 
-    db = db_utils.DB.load_db(kwargs)
+    db = db_utils.DB.load_db(db_file, kwargs)
     data = []
     for tree in lst_orthogroups:
         t = ete3.Tree(tree)
@@ -524,9 +353,9 @@ def load_gene_phylogenies(kwargs, lst_orthogroups):
     db.set_status_in_config_table("gene_phylogenies", 1)
     db.commit()
 
-def load_reference_phylogeny(kwargs, tree):
+def load_reference_phylogeny(kwargs, tree, db_file):
     import ete3
-    db = db_utils.DB.load_db(kwargs)
+    db = db_utils.DB.load_db(db_file, kwargs)
 
     newick_file = open(tree, "r")
     newick_string = newick_file.readline()
@@ -548,8 +377,8 @@ def load_reference_phylogeny(kwargs, tree):
 # - the number of contigs, under the n_contigs term_id
 # - the number of contigs without BBH hits to Chlamydiae
 # - the coding density
-def load_genomes_summary(kwargs):
-    db = db_utils.DB.load_db(kwargs)
+def load_genomes_summary(kwargs, db_file):
+    db = db_utils.DB.load_db(db_file, kwargs)
     hsh_seq = db.get_genomes_sequences()
     hsh_seq_to_length_coding = db.get_coding_region_total_length()
 
@@ -581,64 +410,9 @@ def load_genomes_summary(kwargs):
 def simplify_ko(raw_ko):
     return int(raw_ko[len("ko:K"):])
 
-def simplify_pathway(raw_pathway):
-    return int(raw_pathway[len("path:map"):])
 
-def simplify_module(raw_module):
-    return int(raw_module[len("md:M"):])
-
-
-def parse_REST_result(string, c1_name, c2_name):
-    entries = string.strip().split("\n")
-    to_cols = pd.DataFrame([entry.split("\t") for entry in entries],
-            columns=[c1_name, c2_name])
-    return to_cols
-
-
-def load_KO_references(params):
-    # API to facilitate access to the ko informations
-    from Bio.KEGG import REST
-
-    db = db_utils.DB.load_db(params)
-    ko_string = REST.kegg_list("KO").read()
-    ko_id_to_desc = parse_REST_result(ko_string, "ko", "desc")
-    ko_id_to_desc["ko_simplified"] = ko_id_to_desc["ko"].apply(simplify_ko)
-    db.load_ko_def(ko_id_to_desc[["ko_simplified", "desc"]].values.tolist())
-
-    path_string = REST.kegg_list("pathway").read()
-    path_id_to_desc = parse_REST_result(path_string, "pathway", "desc")
-    path_id_to_desc["pathway"] = path_id_to_desc["pathway"].apply(simplify_pathway)
-    db.load_ko_pathway(path_id_to_desc.values.tolist())
-
-    mod_string = REST.kegg_list("module").read()
-    mod_id_to_desc = parse_REST_result(mod_string, "module", "desc")
-    mod_id_to_desc["module"] = mod_id_to_desc["module"].apply(simplify_module)
-    db.load_ko_module(mod_id_to_desc.values.tolist())
-
-    ko_to_module_data = []
-    ko_to_pathway_data = []
-    for lst_ko in chunks(ko_id_to_desc["ko"].unique().tolist(), 200):
-        ko_to_module = REST.kegg_link("module", lst_ko).read()
-        if len(ko_to_module) > 1:
-            ko_to_module_desc = parse_REST_result(ko_to_module, "ko", "module")
-            ko_to_module_desc["ko"] = ko_to_module_desc["ko"].apply(simplify_ko)
-            ko_to_module_desc["module"] = ko_to_module_desc["module"].apply(simplify_module)
-            ko_to_module_data.append(ko_to_module_desc.drop_duplicates().values.tolist())
-
-        ko_to_pathway = REST.kegg_link("pathway", lst_ko).read()
-        if len(ko_to_pathway) > 1:
-            ko_to_pathway_desc = parse_REST_result(ko_to_pathway, "ko", "pathway")
-            ko_to_pathway_desc["ko"] = ko_to_pathway_desc["ko"].apply(simplify_ko)
-            ko_to_pathway_desc = ko_to_pathway_desc[ko_to_pathway_desc.pathway.str.startswith("path:map")]
-            ko_to_pathway_desc["pathway"] = ko_to_pathway_desc["pathway"].apply(simplify_pathway)
-            ko_to_pathway_data.append(ko_to_pathway_desc.drop_duplicates().values.tolist())
-    db.load_ko_to_pathway([elem for lst in ko_to_pathway_data for elem in lst])
-    db.load_ko_to_module([elem for lst in ko_to_module_data for elem in lst])
-    db.commit()
-
-
-def load_KO(params, ko_files):
-    db = db_utils.DB.load_db(params)
+def load_KO(params, ko_files, db_name):
+    db = db_utils.DB.load_db(db_name, params)
     data = []
     for ko_file in ko_files:
         for ko_line in open(ko_file, "r"):
@@ -653,13 +427,14 @@ def load_KO(params, ko_files):
             score = float(score_str)
             evalue = float(evalue_str)
             entry = [hsh, ko, thrs, score, evalue]
-            print(entry)
             data.append(entry)
     db.load_ko_hits(data)
+    db.set_status_in_config_table("KEGG", 1)
+    db.commit()
 
 
-def load_checkm_results(params, checkm_results):
-    db = db_utils.DB.load_db(params)
+def load_checkm_results(params, checkm_results, db_file):
+    db = db_utils.DB.load_db(db_file, params)
     tab = pd.read_table(checkm_results)
 
     hsh_filename_to_bioentry = db.get_filenames_to_bioentry()

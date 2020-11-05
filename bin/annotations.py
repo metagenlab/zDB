@@ -8,7 +8,7 @@ from Bio import AlignIO
 from Bio.Align import MultipleSeqAlignment
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
-from chlamdb_utils import db_utils
+from metagenlab_libs import db_utils
 
 import setup_chlamdb
 
