@@ -161,9 +161,9 @@ def make_interpro_from(database_name):
     return InterproForm
 
 
-def make_metabo_from(database_name, add_box=False):
+def make_metabo_from(db, add_box=False):
 
-    accession_choices = get_accessions(database_name)
+    accession_choices = get_accessions(db)
 
     class MetaboForm(forms.Form):
         targets = forms.MultipleChoiceField(choices=accession_choices, widget=forms.SelectMultiple(attrs={'size':'%s' % (20), "class":"selectpicker", "data-live-search":"true"}), required = False)
@@ -631,19 +631,17 @@ def heatmap_form(database_name):
 
     return Heatmap
 
-def make_module_overview_form(database_name, sub_sub_cat=False):
-    from chlamdb.biosqldb import manipulate_biosqldb
-    server, db = manipulate_biosqldb.load_db(database_name)
-    if not sub_sub_cat:
-        sql = 'select distinct module_sub_cat from enzyme_kegg_module;'
-    else:
-        sql = 'select distinct module_sub_sub_cat from enzyme_kegg_module;'
-    categories = server.adaptor.execute_and_fetchall(sql,)
-    CHOICES = [(i[0],i[0]) for i in categories]
-    CHOICES.append(('microbial_metabolism', 'microbial_metabolism'))
+def make_module_overview_form(db, sub_sub_cat=False):
 
+    if sub_sub_cat:
+        categories = db.get_module_sub_categories()
+    else:
+        categories = db.get_module_categories()
+
+    CHOICES = [(cat_id, cat) for cat_id, cat in categories]
     class ModuleCatChoice(forms.Form):
         category = forms.ChoiceField(choices=CHOICES)
+
     return ModuleCatChoice
 
 def make_pathway_overview_form(database_name):

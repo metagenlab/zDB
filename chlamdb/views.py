@@ -102,7 +102,7 @@ from chlamdb.tasks import KEGG_map_ko_organism_task
 from chlamdb.tasks import basic_tree_task
 from chlamdb.celeryapp import app as celery_app
 
-from chlamdb_utils import db_utils
+from metagenlab_libs import db_utils
 
 import pandas as pd
 
@@ -260,7 +260,7 @@ def home(request):
     from ete3 import Tree
 
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb)
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
     genomes_data = db.get_genomes_infos()
     tree = db.get_reference_phylogeny()
 
@@ -1156,7 +1156,7 @@ def format_ko_modules(hsh_modules, ko):
 
 def extract_ko(request):
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb)
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
     extract_form_class = make_extract_form(db, label="Kegg Orthologs")
 
@@ -1756,51 +1756,46 @@ def extract_cog(request):
     envoi_extract = True
     return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
 
+
 def venn_ko(request):
-    biodb = settings.BIODB
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    venn_form_class = make_venn_from(biodb, limit=6)
+    venn_form_class = make_venn_from(db, limit=6)
     display_form = True
-    if request.method == 'POST': 
-
-        form_venn = venn_form_class(request.POST)
-
-        if form_venn.is_valid():  
-
-            targets = form_venn.cleaned_data['targets']
-
-            server, db = manipulate_biosqldb.load_db(biodb)
-
-            all_cog_list = []
-            series = '['
-            taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
-            for target in targets:
-                template_serie = '{name: "%s", data: %s}'
-                sql ='select id from comparative_tables_ko where `%s` > 0' % (target)
-                cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-                all_cog_list += cogs
-                data = '"' + '","'.join(cogs) + '"'
-                series+=template_serie % (taxon_id2genome[target], cogs) + ','
-            series = series[0:-1] + ']'
-
-            cog2description = []
-            sql = 'select * from enzyme_ko_annotation_v1'
-            data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-            for i in data:
-                if i in all_cog_list:
-
-                    ##print 'ok'
-                    cog2description.append('h["%s"] = "%s </td><td>%s";' % (i, data[i][0], data[i][1]))
-                else:
-                    pass
-
-            envoi_venn = True
-
-    else:  
+    if request.method != "POST":
         form_venn = venn_form_class()
+        return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
 
+    form_venn = venn_form_class(request.POST)
+    if not form_venn.is_valid():  
+        # add error message
+        form_venn = venn_form_class()
+        return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
+
+    bioentries = [int(b) for b in form_venn.cleaned_data["targets"]]
+    genomes = db.get_genomes_description(bioentries)
+    ko_counts = db.get_ko_count(bioentries)
+    ko_counts = ko_counts.set_index(["bioentry", "KO"])
+
+    fmt_data = []
+    ko_set = set()
+    for bioentry in bioentries:
+        kos = ko_counts.loc[bioentry].index.values
+        kos_str = ",".join(f"{to_s(format_ko(ko))}" for ko in kos)
+        genome = genomes[str(bioentry)]
+        fmt_data.append(f"{{name: {to_s(genome)}, data: [{kos_str}] }}")
+        ko_set = ko_set.union({ko for ko in kos })
+    series = "[" + ",".join(fmt_data) + "]"
+
+    ko_list = list(ko_set)
+    ko_descriptions = db.get_ko_desc(ko_list)
+    ko2description = []
+    for ko, ko_desc in ko_descriptions.items():
+        forbidden = "\""
+        ko_item = f"h[{to_s(format_ko(ko))}] = {forbidden}{ko_desc}{forbidden};"
+        ko2description.append(ko_item)
+    envoi_venn = True
     return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
 
 
@@ -4812,6 +4807,8 @@ def get_orthogroup_multiple_cog(request, category):
 
     return render(request, 'chlamdb/get_orthogroup_multiple_cog.html', my_locals(locals()))
 
+
+
 def get_ko_multiple(request, type, category):
     biodb = settings.BIODB
     '''
@@ -4874,9 +4871,7 @@ def get_ko_multiple(request, type, category):
 
 def cog_venn_subset(request, category):
     biodb = settings.BIODB
-
     server, db = manipulate_biosqldb.load_db(biodb)
-
     targets = [i for i in request.GET.getlist('h')]
     if len(targets)> 5:
         targets = targets[0:6]
@@ -4895,10 +4890,6 @@ def cog_venn_subset(request, category):
         data = '"' + '","'.join(cogs) + '"'
         series+=template_serie % (taxon_id2genome[target], cogs) + ','
     series = series[0:-1] + ']'
-
-
-    #h['Marilyn Monroe'] = 1;
-
     cog2description = []
     sql = 'select * from COG_cog_names_2014 where function="%s"' % category
     data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
@@ -4909,9 +4900,6 @@ def cog_venn_subset(request, category):
             pass
     display_form = False
     envoi_venn = True
-
-
-
     return render(request, 'chlamdb/venn_cogs.html', my_locals(locals()))
 
 
@@ -4972,16 +4960,12 @@ def ko_venn_subset(request, category):
             pass
     display_form = False
     envoi_venn = True
-
-
-
     return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
 
 
-
-
 def module_cat_info(request, taxon, category):
-    biodb = settings.BIODB
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb)
     import re
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -5019,122 +5003,72 @@ def module_cat_info(request, taxon, category):
     return render(request, 'chlamdb/cog_info.html', my_locals(locals()))
 
 
+def to_s(f):
+    return "\"" + str(f) + "\""
 
-
-
+def js_bioentries_to_description(hsh):
+    taxon_map = 'var taxon2description = { '
+    mid = ",".join(f"{to_s(bioentry):{to_s(description)}}"
+            for bioentry, description in hsh.items())
+    return taxon_map + mid + "}"
 
 def module_barchart(request):
     biodb = settings.BIODB
-    server, db = manipulate_biosqldb.load_db(biodb)
+    db = db_utils.DB.load_db_from_name(biodb)
 
     venn_form_class = make_venn_from(biodb)
-
-    if request.method == 'POST':
-        form = venn_form_class(request.POST)
-
-        if form.is_valid():
-
-            target_taxons = form.cleaned_data['targets']
-
-            biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
-            biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
-
-            sql_taxon = 'select taxon_id,description from bioentry where biodatabase_id=%s ' \
-                        ' and taxon_id in (%s) and description not like "%%%%plasmid%%%%"' % (biodb_id,','.join(target_taxons))
-
-            taxon2description = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_taxon,))
-
-            # taxon id, kegg category, category description, count
-            # il faut encore regrouper par taxon, ko id car si on a plein de paralogues, ça va biaiser le résutat
-            # on regroupe les locus tags car un KO peut être dans plusieurs modules d'une meme categorie
-            sql = 'select D.taxon_id,bb.module_sub_sub_cat, count(*) as n from (select A.*,B.module_id, C.module_sub_sub_cat from enzyme_locus2ko A inner join' \
-                  ' enzyme_module2ko_v1 as B on A.ko_id=B.ko_id inner join enzyme_kegg_module_v1 as C ' \
-                  ' on B.module_id=C.module_id group by A.locus_tag, C.module_sub_sub_cat) bb inner join orthology_detail as D on bb.locus_tag=D.locus_tag ' \
-                  ' where D.taxon_id in (%s) group by taxon_id,bb.module_sub_sub_cat;' % (','.join(target_taxons))
-            # merge des ko par taxon (on ne compte qu'une fois un taxon)
-            sql = 'select bb.taxon_id,bb.module_sub_sub_cat, count(*) as n from (select A.*,B.module_id, C.module_sub_sub_cat from enzyme_locus2ko A inner join' \
-                  ' enzyme_module2ko_v1 as B on A.ko_id=B.ko_id inner join enzyme_kegg_module_v1 as C ' \
-                  ' on B.module_id=C.module_id where A.taxon_id in (%s) group by taxon_id,ko_id,module_sub_sub_cat) bb ' \
-                  ' group by bb.taxon_id,bb.module_sub_sub_cat;' % (','.join(target_taxons))
-
-
-            data = server.adaptor.execute_and_fetchall(sql,)
-
-            taxon_map = 'var taxon2description = {'
-            for i in taxon2description:
-                taxon_map+='"%s":"%s",' % (i, taxon2description[i])
-            taxon_map = taxon_map[0:-1] + '};'
-
-            category_dico = {}
-
-
-            for line in data:
-                if line[1] not in category_dico:
-                    category_dico[line[1]] = line[2]
-
-
-            taxon2category2count = {}
-            all_categories = []
-            for line in data:
-                if line[0] not in taxon2category2count:
-                    taxon2category2count[line[0]] = {}
-                    taxon2category2count[line[0]][line[1]] = line[2]
-                else:
-                    taxon2category2count[line[0]][line[1]] = line[2]
-                if line[1] not in all_categories:
-                    all_categories.append(line[1])
-            labels_template = '[\n' \
-                              '%s\n' \
-                              ']\n'
-
-            serie_template = '[%s\n' \
-                             ']\n'
-
-            one_serie_template = '{\n' \
-                                 'label: "%s",\n' \
-                                 'values: [%s]\n' \
-                                 '},\n'
-
-
-            all_series_templates = []
-            for taxon in taxon2category2count:
-                one_category_list = []
-                for category in all_categories:
-                    try:
-                        one_category_list.append(taxon2category2count[taxon][category])
-                    except:
-                        one_category_list.append(0)
-                one_category_list = [str(i) for i in one_category_list]
-                all_series_templates.append(one_serie_template % (taxon, ','.join(one_category_list)))
-
-            series = serie_template % ''.join(all_series_templates)
-            labels = labels_template % ('"'+'","'.join(all_categories) + '"')
-
-            '''
-              labels: [
-                'resilience', 'maintainability', 'accessibility',
-                'uptime', 'functionality', 'impact'
-              ]
-              series: [
-                {
-                  label: '2012',
-                  values: [4, 8, 15, 16, 23, 42]
-                },
-                {
-                  label: '2013',
-                  values: [12, 43, 22, 11, 73, 25]
-                },
-                {
-                  label: '2014',
-                  values: [31, 28, 14, 8, 15, 21]
-                },]
-            '''
-
-            circos_url = '?h=' + ('&h=').join(target_taxons)
-            envoi = True
-    else:  
+    if request.method != "POST":
         form = venn_form_class()
+        return render(request, 'chlamdb/module_barplot.html', my_locals(locals()))
+
+    form = venn_form_class(request.POST)
+    if not form.is_valid():
+        form = venn_form_class()
+        return render(request, 'chlamdb/module_barplot.html', my_locals(locals()))
+
+    target_bioentries = form.cleaned_data['targets']
+    taxon2description = db.get_genomes_description(entries = target_bioentries)
+
+    # returns a dataframe with categories as index and bioentries as columns
+    ko_count_per_category = db.get_ko_count_per_category(target_bioentries)
+    ko_class_categories = db.get_ko_module_subcategories()
+
+    subcategories = ",".join(f"to_s({cat})" for cat in ko_class_categories["category"].values)
+    labels = f"labels: [{subcategories}]"
+
+    taxon_map = js_bioentries_to_description(taxon2description)
+
+    series_data = []
+    for entry, entry_data in ko_count_per_category.iteritems():
+        string = f"{{ label: {to_s(entry)}, values : [" + ",".join(entry_data.values) + "]}}"
+        series_data.append(string)
+    series = "series: [" + ",".join(series_data) + "]"
+
+    '''
+      labels: [
+        'resilience', 'maintainability', 'accessibility',
+        'uptime', 'functionality', 'impact'
+      ]
+      series: [
+        {
+          label: '2012',
+          values: [4, 8, 15, 16, 23, 42]
+        },
+        {
+          label: '2013',
+          values: [12, 43, 22, 11, 73, 25]
+        },
+        {
+          label: '2014',
+          values: [31, 28, 14, 8, 15, 21]
+        },]
+    '''
+
+    circos_url = '?h=' + ('&h=').join(target_bioentries)
+    envoi = True
+    form = venn_form_class()
     return render(request, 'chlamdb/module_barplot.html', my_locals(locals()))
+
 
 def add_comment(request, locus_tag):
     biodb = settings.BIODB
@@ -5339,10 +5273,8 @@ def ko_subset_barchart(request, type):
 
     taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
     taxon_out_url = "&o="+("&o=").join(exclude)
-
-
-
     return render(request, 'chlamdb/ko_subset_barchart.html', my_locals(locals()))
+
 
 def compare_homologs(request):
     biodb = settings.BIODB
@@ -13423,8 +13355,67 @@ def kegg_pathway_heatmap(request):
     return render(request, 'chlamdb/pathway_cat.html', my_locals(locals()))
 
 
-
 def kegg_module_subcat(request):
+    from chlamdb.phylo_tree_display import ete_motifs
+    from chlamdb.plots import module_heatmap
+    from metagenlab_libs import KO_module
+
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    module_overview_form = make_module_overview_form(db, True)
+    if request.method != "POST":
+        form = module_overview_form()
+        return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
+
+    form = module_overview_form(request.POST)
+    if not form.is_valid():
+        # TODO: add error message
+        form = module_overview_form()
+        return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
+
+    category = form.cleaned_data["category"]
+    leaf_to_name = db.get_genomes_description(indexing="bioentry", exclude_plasmids=True)
+    ko_count_subcat = db.get_ko_count_cat(category=category)
+    ko_count_subcat = ko_count_subcat.set_index(["bioentry", "module_id", "KO"])
+
+    grouped_count = ko_count_subcat.groupby(["bioentry", "module_id"]).sum()
+
+    all_module_ids = ko_count_subcat.index.get_level_values("module_id").tolist()
+    unique_module_ids = list(set(all_module_ids))
+    module_infos = db.get_modules_info(unique_module_ids)
+
+    expression_tree = {}
+    for module_id, descr, definition in module_infos:
+        parser = KO_module.ModuleParser(definition)
+        expression_tree[module_id] = parser.parse()
+
+    labels = [val[1] for val in module_infos]
+    hsh_mod_id_to_label = {val[0]: val[1] for val in module_infos}
+    group2taxon2count = {}
+    for index, row in grouped_count.iterrows():
+        group = hsh_mod_id_to_label[index[1]]
+        expr_tree = expression_tree[index[1]]
+        ko_values = ko_count_subcat.loc[index[0], index[1]].index.values
+        # number of missing ko, need to add this information to the phylogenetic tree
+        n_missing = expr_tree.get_n_missing(ko_count_subcat)
+        
+        sub_hsh = group2taxon2count.get(group, {})
+        sub_hsh[str(index[0])] = row.values[0]
+        group2taxon2count[group] = sub_hsh
+
+    ref_tree = db.get_reference_phylogeny()
+    rendered_tree, style = ete_motifs.multiple_profiles_heatmap(None,
+            labels, group2taxon2count,
+            tree=ref_tree,
+            leaf_to_name=leaf_to_name)
+    path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
+    asset_path = '/temp/metabo_tree.svg'
+    rendered_tree.render(path, dpi=500, w=800, tree_style=style)
+    envoi = True
+    return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
+
+
+def kegg_module_subcat_legacy(request):
     biodb = settings.BIODB
     from chlamdb.phylo_tree_display import ete_motifs
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -13480,6 +13471,28 @@ def kegg_module_subcat(request):
 
 
 def kegg_module(request):
+    from chlamdb.phylo_tree_display import ete_motifs
+    from chlamdb.plots import module_heatmap
+
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    module_overview_form = make_module_overview_form(db)
+
+    if request != "POST":
+        form = module_overview_form()
+        return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
+
+    form = module_overview_form(request.POST)
+    if not form.is_valid():
+        # TODO: add error message
+        form = module_overview_form()
+        return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
+
+    envoie = True
+    return render(request, 'chlamdb/module_overview.html', my_locals(locals()))
+
+
+def kegg_module_legacy(request):
     biodb = settings.BIODB
     from chlamdb.phylo_tree_display import ete_motifs
     server, db = manipulate_biosqldb.load_db(biodb)
@@ -13688,8 +13701,26 @@ def module2heatmap(request):
     return render(request, 'chlamdb/module2heatmap.html', my_locals(locals()))
 
 
-
 def module_comparison(request):
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+    comp_metabo_form = make_metabo_from(db)
+
+    if request != "POST":
+        form = comp_metabo_form()
+        return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
+
+    form = comp_metabo_form(request.POST)
+    if not form.is_valid():
+        # TODO: add error message
+        form = comp_metabo_form()
+        return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
+
+    envoie = True
+    return render(request, 'chlamdb/module_comp.html', my_locals(locals()))
+
+
+def module_comparison_legacy(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
 
@@ -14138,3 +14169,4 @@ def ko_comparison(request):
     n_ko = len(mat_include.index.tolist())
     envoi_comp = True
     return render(request, 'chlamdb/ko_comp.html', my_locals(locals()))
+

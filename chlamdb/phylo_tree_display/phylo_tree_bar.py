@@ -689,7 +689,7 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", prev_data = None, exclude
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
     import matplotlib as mpl
-    from chlamdb_utils import db_utils
+    from metagenlab_libs import db_utils
 
     db = db_utils.DB.load_db_from_name(biodb)
 

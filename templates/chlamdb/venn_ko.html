@@ -60,7 +60,7 @@
                               <form action="{% url "venn_ko" %}" method="post">
                                   {% csrf_token %}
                                   {{ form_venn.as_p }}
-                                  <input type="submit" name="venn" value="Compare COGs" id="venn_button" />
+                                  <input type="submit" name="venn" value="Compare KO" id="venn_button" />
 
                               </form>
 
@@ -68,7 +68,7 @@
               {% endif %}
                {% if envoi_venn %}
 
-                  {% include "chlamdb/venn_template_KO.html" with series=series description_dico=cog2description %}
+                  {% include "chlamdb/venn_template_KO.html" with series=series description_dico=ko2description %}
 
               {% endif %}
 
