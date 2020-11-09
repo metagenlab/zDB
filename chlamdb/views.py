@@ -3049,8 +3049,34 @@ def gc_locus(request, locus_tag):
 
     return render(request, 'chlamdb/gc_locus.html', my_locals(locals()))
 
+
+def get_all_prot_infos(db, seqids, orthogroups):
+    hsh_gene_locs = db.get_gene_loc(seqids, as_hash=True)
+    hsh_prot_infos = db.get_proteins_info(seqids)
+    hsh_organisms = db.get_organism(seqids, as_hash=True)
+    group_count = []
+    all_locus_data = []
+
+    for index, seqid in enumerate(seqids):
+        if seqid not in orthogroups:
+            continue
+        og = orthogroups[seqid]
+        if og not in group_count:
+            group_count.append(og)
+
+        strand, start, end = hsh_gene_locs[seqid]
+        organism = hsh_organisms[seqid]
+        locus, prot_id, gene, product = hsh_prot_infos[seqid]
+        if gene==None:
+            gene = ""
+        data = (index, og, locus, prot_id, start, end, strand, gene, product, organism)
+        all_locus_data.append(data)
+    return all_locus_data, group_count
+
+
 def format_orthogroup(og):
     return f"group_{og}"
+
 
 # TODO : add error handling
 def fam_cog(request, cog_id):
@@ -3069,26 +3095,7 @@ def fam_cog(request, cog_id):
     
     orthogroups = db.get_og(seqids)
     cog_info = db.get_cog_summaries([cog_id], only_cog_desc=True)
-    hsh_gene_locs = db.get_gene_loc(seqids, as_hash=True)
-    hsh_prot_infos = db.get_proteins_info(seqids)
-    hsh_organisms = db.get_organism(seqids, as_hash=True)
-    all_locus_data = []
-    group_count = []
-
-    for index, seqid in enumerate(seqids):
-        if seqid not in orthogroups:
-            continue
-        og = orthogroups[seqid]
-        if og not in group_count:
-            group_count.append(og)
-
-        strand, start, end = hsh_gene_locs[seqid]
-        organism = hsh_organisms[seqid]
-        locus, prot_id, gene, product = hsh_prot_infos[seqid]
-        if gene==None:
-            gene = ""
-        data = (index, og, locus, prot_id, start, end, strand, gene, product, organism)
-        all_locus_data.append(data)
+    all_locus_data, group_count = get_all_prot_infos(db, seqids, orthogroups)
 
     ref_tree = db.get_reference_phylogeny()
     leaf_to_name = db.get_genomes_description(indexing="bioentry", exclude_plasmids=True)
@@ -3141,19 +3148,33 @@ def fam_cog(request, cog_id):
     return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
 
+def format_pathway(pat_id):
+    return f"map{pat_id:05d}"
+
+def format_module(mod_id):
+    return f"M{mod_id:05d}"
+
+# TODO: add error handling
+# code cleanup to do!!!
 def fam_ko(request, ko_str):
     ko_id = int(ko_str[len("K"):])
-
     biodb_path = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb_path)
+    db = db_utils.DB.load_db(biodb_path, settings.BIODB_CONF)
 
     seqids = db.get_seqids_for_ko([ko_id])
-    orthogroups = db.get_og(seqids)
+    hsh_seqid_to_og = db.get_og(seqids)
+
     pathways = db.get_ko_pathways([ko_id])
     modules = db.get_ko_modules([ko_id])
-    ko_desc = db.get_ko_desc([ko_id])
+    modules_data = db.get_modules_info([values[0][0] for key, values in modules.items()])
+    ko_description = db.get_ko_desc([ko_id])
+    all_locus_data, group_count = get_all_prot_infos(db, seqids, hsh_seqid_to_og)
 
-    type = "KO"
+    # NOTE: to fix should have to get the first index
+    pathway_data = [(format_pathway(infos[0][0]), infos[0][1]) for ko_id, infos in pathways.items()]
+    module_data = [(format_module(dat[0]), dat[3], dat[4], dat[1]) for dat in modules_data]
+    ko_desc = ko_description[ko_id]
+    type = "ko"
     fam = ko_str
     menu = True
     envoi = True
@@ -4653,7 +4674,7 @@ def sunburst(request, locus):
 
 def get_cog(request, bioentry, category):
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb)
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
     # used for CIRCOS plos generation
     target_taxons = [i for i in request.GET.getlist('h')]
