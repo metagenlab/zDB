@@ -13449,11 +13449,11 @@ def kegg_module_subcat(request):
         parser = KO_module.ModuleParser(definition)
         expression_tree[module_id] = parser.parse()
 
-    labels = [val[1] for val in module_infos]
+    labels = [format_module(val[0]) for val in module_infos]
     hsh_mod_id_to_label = {val[0]: val[1] for val in module_infos}
     group2taxon2count = {}
     for index, row in grouped_count.iterrows():
-        group = hsh_mod_id_to_label[index[1]]
+        group = format_module(index[1])
         expr_tree = expression_tree[index[1]]
         ko_values = ko_count_subcat.loc[index[0], index[1]].index.values
         # number of missing ko, need to add this information to the phylogenetic tree
