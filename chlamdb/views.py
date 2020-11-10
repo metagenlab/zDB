@@ -3154,9 +3154,9 @@ def format_pathway(pat_id):
 def format_module(mod_id):
     return f"M{mod_id:05d}"
 
-# TODO: add error handling
-# code cleanup to do!!!
 def fam_ko(request, ko_str):
+    from chlamdb.phylo_tree_display import ete_motifs
+
     ko_id = int(ko_str[len("K"):])
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb_path, settings.BIODB_CONF)
@@ -3166,16 +3166,56 @@ def fam_ko(request, ko_str):
 
     pathways = db.get_ko_pathways([ko_id])
     modules = db.get_ko_modules([ko_id])
-    modules_data = db.get_modules_info([values[0][0] for key, values in modules.items()])
+    modules_id = [mod_id for key, values in modules.items() for mod_id, desc in values]
+    modules_data = db.get_modules_info(modules_id)
     ko_description = db.get_ko_desc([ko_id])
     all_locus_data, group_count = get_all_prot_infos(db, seqids, hsh_seqid_to_og)
 
-    # NOTE: to fix should have to get the first index
-    pathway_data = [(format_pathway(infos[0][0]), infos[0][1]) for ko_id, infos in pathways.items()]
+    # quasi copy-past from fam_cog... this really needs some refactoring
+    # TODO
+    ref_tree = db.get_reference_phylogeny()
+    leaf_to_name = db.get_genomes_description(indexing="bioentry", exclude_plasmids=True)
+    df_og_count = db.get_og_count(group_count)
+    hsh_ko_count = db.get_ko_count_for_ko(ko_id)
+    dico_tree = {}
+    for og in group_count:
+        dico_tree[format_orthogroup(og)] = {}
+    dico_tree[format_ko(ko_id)] = {}
+
+    for index, values in df_og_count.iterrows():
+        bioentry = values.bioentry
+        og = values.orthogroup
+        dico_tree[format_orthogroup(og)][str(bioentry)] = values["count"]
+    for bioentry, count in hsh_ko_count.items():
+        dico_tree[format_ko(ko_id)][str(bioentry)] = count
+
+    taxon2group2ec = {}
+    for index, values in df_og_count.iterrows():
+        bioentry = values.bioentry
+        if not bioentry in hsh_ko_count:
+            continue
+        og = values.orthogroup
+        if str(bioentry) not in taxon2group2ec:
+            taxon2group2ec[str(bioentry)] = {}
+        taxon2group2ec[str(bioentry)][format_orthogroup(og)] = [format_ko(ko_id)]
+
+    fam = ko_str
+    labels = [fam] + [format_orthogroup(og) for og in group_count]
+    tree, style = ete_motifs.multiple_profiles_heatmap(None,
+                                                      labels,
+                                                      dico_tree,
+                                                      taxon2group2value=taxon2group2ec,
+                                                      highlight_first_column=True,
+                                                      tree=ref_tree,
+                                                      leaf_to_name=leaf_to_name)
+    pathway_data = [(format_pathway(pat_id), pat_desc)
+            for ko_id, infos in pathways.items() for pat_id, pat_desc in infos]
     module_data = [(format_module(dat[0]), dat[3], dat[4], dat[1]) for dat in modules_data]
     ko_desc = ko_description[ko_id]
+    path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
+    asset_path = '/temp/fam_tree_%s.png' % fam
+    tree.render(path, dpi=300, tree_style=style)
     type = "ko"
-    fam = ko_str
     menu = True
     envoi = True
     return render(request, 'chlamdb/fam.html', my_locals(locals()))
@@ -6220,7 +6260,6 @@ def pan_genome(request, type):
         type_txt = "orthologs"
     elif type == "ko":
         df_hits = db.get_ko_count(bioentries)
-        print(df_hits)
         type_txt = "KO"
         df_hits = df_hits.set_index(["bioentry", "KO"]).unstack(level=0, fill_value=0)
     else:
@@ -13406,7 +13445,7 @@ def kegg_module_subcat(request):
     module_infos = db.get_modules_info(unique_module_ids)
 
     expression_tree = {}
-    for module_id, descr, definition in module_infos:
+    for module_id, descr, definition, *other in module_infos:
         parser = KO_module.ModuleParser(definition)
         expression_tree[module_id] = parser.parse()
 
