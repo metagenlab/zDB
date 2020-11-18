@@ -1151,7 +1151,7 @@ def format_ko_modules(hsh_modules, ko):
     modules = hsh_modules.get(ko, [])
     if len(modules) == 0:
         return "-"
-    return "<br>".join([f"<a href=\"/KEGG_mapp_ko/md:M{i:05d}\">{d}</a>" for i, d in modules])
+    return "<br>".join([f"<a href=\"/KEGG_module_map/M{i:05d}\">{d}</a>" for i, d in modules])
 
 
 def extract_ko(request):
@@ -1654,45 +1654,37 @@ def extract_cog(request):
     # list of bioentries
     include = form.cleaned_data['orthologs_in']
     exclude = form.cleaned_data['no_orthologs_in']
-    n_missing = form.cleaned_data['frequency']
+    n_missing = int(form.cleaned_data['frequency'])
     reference = form.cleaned_data['reference']
     if reference == "None":
         reference = include[0]
 
-    if int(n_missing)>=len(include):
+    if n_missing>=len(include):
         wrong_n_missing = True
         return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
 
-    # NOTE: to re-implement with pandas
-    cog_hits = db.get_cog_hits(include + exclude)
-    limit = len(include)-int(n_missing)
-    to_exclude = set()
-    for bioentry in exclude:
-        for cog_id in cog_hits[int(bioentry)]:
-            to_exclude.add(cog_id)
+    cog_include = db.get_cog_hits(include, as_count=True)
+    cog_include = cog_include.set_index(["bioentry", "cog"]).unstack(level=0, fill_value=0)
+    cog_include.columns = [col for col in cog_include["count"].columns.values]
+    if len(exclude)>0:
+        cog_exclude = db.get_cog_hits(exclude, as_count=True)
+        cog_exclude = cog_exclude.set_index(["bioentry", "cog"]).unstack(level=0, fill_value=0)
+        cog_exclude.columns = [col for col in cog_exclude["count"].columns.values]
+        cog_exclude["sum_pos"] = cog_exclude[cog_exclude > 0].count(axis=1)
+        cog_exclude["exclude"] = cog_exclude.sum_pos > 0
+        neg_index = cog_exclude[cog_exclude.exclude].index
+    else:
+        neg_index = pd.Index([])
 
-    hsh_cog_counts = {}
-    for bioentry in include:
-
-        # albeit not really efficient, necessary as a genome may have the same 
-        # cog several times, and this would mess up the rest of the code
-        # may be interesting to use a different data structure (e.g. a DataFrame from pandas
-        # to speed up the code).
-        unique_cogs = set(cog_hits[int(bioentry)])
-        for cog in unique_cogs:
-            cnt = hsh_cog_counts.get(cog, 0)
-            hsh_cog_counts[cog] = cnt+1
-
-    selected_cog_ids = []
-    for cog_id, count in hsh_cog_counts.items():
-        if count>=limit and not cog_id in to_exclude:
-            selected_cog_ids.append(cog_id)
-
-    if len(selected_cog_ids) == 0:
+    cog_include["sum_pos"] = cog_include[cog_include > 0].count(axis=1)
+    cog_include["selection"] = cog_include.sum_pos >= len(include)-n_missing
+    pos_index = cog_include[cog_include.selection].index
+    selection = pos_index.difference(neg_index).tolist()
+    if len(selection) == 0:
         no_match = True
-        return render(request, 'chlamdb/extract_cogs.html', my_locals(locals()))
+        return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
 
-    all_database = db.get_all_seqfeature_for_cog(selected_cog_ids)
+    all_database = db.get_all_seqfeature_for_cog(selection)
     hsh_cog_count_all = {}
     for seqid, cog_id in all_database.items():
         cur_count = hsh_cog_count_all.get(cog_id, 0)
@@ -1702,14 +1694,18 @@ def extract_cog(request):
     cogs_summaries = db.get_cog_summaries(list(hsh_cog_count_all.keys()))
     cogs_funct = db.get_cog_code_description()
     cog_data = []
-    for cog_id in selected_cog_ids:
+    for cog_id in selection:
         count = hsh_cog_count_all[cog_id]
+
+        # some cogs do not have a description, skip those
+        if cog_id not in cogs_summaries:
+            continue
         for func, func_descr, cog_descr in cogs_summaries[cog_id]:
-            data = (format_cog(cog_id), func, func_descr, cog_descr, hsh_cog_counts[cog_id], str(count))
+            data = (format_cog(cog_id), func, func_descr, cog_descr, cog_include.loc[cog_id].sum_pos, str(count))
             cog_data.append(data)
 
             inc, not_incl = cat_count.get(func, (0, 0))
-            cat_count[func] = (inc+hsh_cog_counts[cog_id], not_incl)
+            cat_count[func] = (inc+cog_include.loc[cog_id].sum_pos, not_incl)
 
     # get the categories for all cogs
     for cog_id, details_lst in cogs_summaries.items():
@@ -1718,7 +1714,7 @@ def extract_cog(request):
             cat_count[func] = (inc, not_incl+hsh_cog_count_all[cog_id])
 
     max_n = max(hsh_cog_count_all.values())
-    sum_group = len(selected_cog_ids)
+    sum_group = len(selection)
 
     target_circos_taxons = include + exclude
     taxons_in_url = "?i="+("&i=").join(include) + '&m=%s' % str(n_missing)
@@ -1818,7 +1814,7 @@ def venn_cog(request, accessions=False):
 
             # NOTE: will probably need to implement a method on both bioentry
             # on accession (the latter is still missing)
-            cog_hits = db.get_cog_hits(targets, only_best_hit=True)
+            cog_hits = db.get_cog_hits(targets)
             genome_desc = db.get_genomes_description(indexing_type="int")
 
             all_cog_list = []
@@ -4397,86 +4393,82 @@ def interpro_taxonomy_with_homologs(request, domain, percentage):
     return render(request, 'chlamdb/interpro_taxonomy_homologs.html', my_locals(locals()))
 
 
-
 def KEGG_module_map(request, module_name):
-    biodb = settings.BIODB
+    from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn 
+    from metagenlab_libs.KO_module import ModuleParser
+    from ete3 import Tree
 
+    if request.method != "GET":
+        return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
 
-    #cache.clear()
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
-    if request.method == 'GET': 
-        from chlamdb.phylo_tree_display import ete_motifs
-        server, db = manipulate_biosqldb.load_db(biodb)
+    try:
+        module_id = int(module_name[len("M"):])
+    except:
+        # add error message: module not formated correctly
+        valid_id = False
+        return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
 
-        sql = 'select module_sub_cat,module_sub_sub_cat,description,t3.ko_accession,t3.definition ' \
-              ' from enzyme_module2ko as t1 ' \
-              ' inner join enzyme_kegg_module as t2 on t1.module_id=t2.module_id ' \
-              ' inner join enzyme_ko_annotation t3 on t1.ko_id=t3.ko_id where module_name="%s";' % (module_name)
+    module_infos = db.get_modules_info([module_id])
+    if len(module_infos) != 1:
+        # add error message
+        return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
+    else:
+        mod_id, module_descr, module_def, cat, sub_cat = module_infos[0]
 
-        map_data = server.adaptor.execute_and_fetchall(sql,)
+    parser = ModuleParser(module_def)
+    expr_tree = parser.parse()
 
-        ko_list = [i[3] for i in map_data]
-
-        # get list of all orthogroups with corresponding ko
-        sql = 'select distinct orthogroup,ko_accession from enzyme_kegg_module t1 ' \
-              ' inner join enzyme_module2ko t2 on t1.module_id=t2.module_id ' \
-              ' inner join enzyme_ko_annotation t3 on t2.ko_id=t3.ko_id ' \
-              ' inner join enzyme_seqfeature_id2ko t4 on t3.ko_id=t4.ko_id ' \
-              ' inner join orthology_detail t5 on t4.seqfeature_id=t5.seqfeature_id ' \
-              ' where t1.module_name="%s";' % (module_name)
-
-        orthogroup_data = server.adaptor.execute_and_fetchall(sql,)
-
-        ko2orthogroups = {}
-        orthogroup_list = []
-        for i in orthogroup_data:
-            if i[1] not in ko2orthogroups:
-                ko2orthogroups[i[1]] = [i[0]]
-            else:
-                ko2orthogroups[i[1]].append(i[0])
-            orthogroup_list.append(i[0])
-
-        taxon2orthogroup2count = ete_motifs.get_taxon2name2count(biodb, orthogroup_list, type="orthogroup")
-        taxon2ko2count = ete_motifs.get_taxon2name2count(biodb, ko_list, type="ko")
-
-        labels = ko_list
-        tree, style = ete_motifs.multiple_profiles_heatmap(biodb, labels, taxon2ko2count)
-
-        tree2, style2 = ete_motifs.combined_profiles_heatmap(biodb,
-                                                     labels,
-                                                     taxon2orthogroup2count,
-                                                     taxon2ko2count,
-                                                     ko2orthogroups)
-
-
-        if len(labels) > 40:
-            big = True
-            path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.png' % module_name
-            asset_path = '/temp/KEGG_tree_%s.png' % module_name
-            tree.render(path, dpi=1200, tree_style=style)
-
-
-
-        else:
-            big = False
-            path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % module_name
-            asset_path = '/temp/KEGG_tree_%s.svg' % module_name
-            tree.render(path, dpi=800, tree_style=style)
-
-            path2 = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s_complete.svg' % module_name
-            asset_path2 = '/temp/KEGG_tree_%s_complete.svg' % module_name
-
-            tree2.render(path2, dpi=800, tree_style=style2)
-
-
-        ko_url = '+' + '+'.join(ko_list)
+    ko_ids = db.get_module_kos(module_id)
+    map_data = [(format_ko(ko_id), ko_desc) for ko_id, ko_desc in db.get_ko_desc(ko_ids).items()]
+    leaf_to_name = db.get_genomes_description(indexing="bioentry")
+    mat = db.get_ko_count_for_ko(ko_ids)
+    if len(mat.index) == 0:
+        # should add an error message: no gene was associated for any
+        # of the KO of the current module
         envoi = True
         menu = True
         valid_id = True
+        return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
 
+    mat = mat.set_index(["bioentry", "ko_id"]).unstack(level=1, fill_value=0)
+    mat.columns = [col for col in mat["count"].columns.values]
+    tree = Tree(db.get_reference_phylogeny())
+    R = tree.get_midpoint_outgroup()
+    tree.set_outgroup(R)
+    tree.ladderize()
+    e_tree = EteTree(tree)
 
+    for column in mat.columns:
+        values = mat[column].to_dict()
+        new_col = SimpleColorColumn(values)
+        new_col.header = format_ko(column)
+        e_tree.add_column(new_col)
+
+    hsh_n_missing = {}
+    for bioentry, _ in leaf_to_name.items():
+        index = int(bioentry)
+        if index not in mat.index:
+            n_missing = expr_tree.get_n_missing({})
+        else:
+            n_missing = expr_tree.get_n_missing(mat.loc[index].to_dict())
+        hsh_n_missing[index] = n_missing
+
+    completeness = ModuleCompletenessColumn(hsh_n_missing, "Missing")
+    e_tree.add_column(completeness)
+    e_tree.rename_leaves(leaf_to_name)
+
+    big = len(mat.columns) >= 40
+    dpi = 800 if big else 1200
+    path = settings.BASE_DIR + '/assets/temp/KEGG_tree_%s.svg' % module_name
+    asset_path = '/temp/KEGG_tree_%s.svg' % module_name
+    e_tree.render(path, dpi=dpi)
+    envoi = True
+    menu = True
+    valid_id = True
     return render(request, 'chlamdb/KEGG_module_map.html', my_locals(locals()))
-
 
 
 def kegg_multi(request, map_name, ko_name):
@@ -13442,8 +13434,13 @@ def kegg_module_subcat(request):
 
     all_module_ids = ko_count_subcat.index.get_level_values("module_id").tolist()
     unique_module_ids = list(set(all_module_ids))
-    module_infos = db.get_modules_info(unique_module_ids)
 
+    if len(unique_module_ids) == 0:
+        # add error message : no module found
+        envoi = True
+        return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
+
+    module_infos = db.get_modules_info(unique_module_ids)
     expression_tree = {}
     for module_id, descr, definition, *other in module_infos:
         parser = KO_module.ModuleParser(definition)

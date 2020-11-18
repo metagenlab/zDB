@@ -35,13 +35,13 @@
                    
                    {% endif %}
 
-                       <h3> {% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %} </h3>
+                       <h3> {{ module_name }} </h3>
                          <div class="panel panel-success" style="width:80%; top: 400px; margin: 10px 10px 10px 10px">
                             <div class="panel-heading" style="width:100%">
                                 <h3 class="panel-title">Help</h3>
                             </div>
                             <p style="margin: 10px 10px 10px 10px; line-height: 180%">
-                                Informations about Kegg Module: {% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %} <br>
+                                Informations about Kegg Module: {{ module_name }} <br>
                                 KO list, phylogenetic profile of each KO, interactive KEGG map and external informations.
                             </p>
                         </div>
@@ -51,15 +51,12 @@
                             <li><a href="#tab3" data-toggle="tab">Profile + homologs</a></li>
 
                             <li><a href="#tab66" data-toggle="tab" onclick="window.open('http://www.genome.jp/kegg-bin/show_module?{{module_name}}{{ko_url}}', 'orthoIDframe2'); return false">Informations</a></li>
-
                         </ul>
 
                         <div id="my-tab-content" class="tab-content">
                             <div class="tab-pane active" id="tab1">
                                 <ol>
-                                    <li>KEGG {% with map_data|first as first_doc %}{{ first_doc.0 }}{% endwith %} ::
-                                        {% with map_data|first as first_doc %}{{ first_doc.2 }}{% endwith %} ::
-                                        ({% with map_data|first as first_doc %}{{ first_doc.1 }}{% endwith %})
+                                    <li>KEGG {{ cat }} :: {{ module_descr }} :: ({{ sub_cat }})
                                 </ol>
                                 <table class="display" id="ko_list">
                                     <thead>
@@ -71,8 +68,8 @@
                                     <tbody>
                                         {% for values in map_data%}
                                             <tr>
-                                                <td><a href="{% url 'fam'  values.3 'ko' %}" target="_top">{{values.3}}</a></td>
-                                                <td>{{values.4}}</td>
+                                                <td><a href="{% url 'fam_ko'  values.0 %}" target="_top">{{values.0}}</a></td>
+                                                <td>{{values.1}}</td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
