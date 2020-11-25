@@ -4728,6 +4728,8 @@ def get_cog(request, bioentry, category):
     locus_list = []
     for seqid, hits in cog_hits.items():
         for cog_hit in hits:
+            if cog_hit not in cog_summaries:
+                continue
             cog_func, cog_desc = cog_summaries[cog_hit]
             if category not in cog_func:
                 continue
@@ -5061,15 +5063,14 @@ def to_s(f):
 
 def js_bioentries_to_description(hsh):
     taxon_map = 'var taxon2description = { '
-    mid = ",".join(f"{to_s(bioentry):{to_s(description)}}"
-            for bioentry, description in hsh.items())
-    return taxon_map + mid + "}"
+    mid = ",".join(f"{to_s(bioentry)}:{to_s(description)}" for bioentry, description in hsh.items())
+    return taxon_map + mid + "};"
 
 def module_barchart(request):
-    biodb = settings.BIODB
-    db = db_utils.DB.load_db_from_name(biodb)
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
-    venn_form_class = make_venn_from(biodb)
+    venn_form_class = make_venn_from(db)
     if request.method != "POST":
         form = venn_form_class()
         return render(request, 'chlamdb/module_barplot.html', my_locals(locals()))
@@ -5081,42 +5082,36 @@ def module_barchart(request):
 
     target_bioentries = form.cleaned_data['targets']
     taxon2description = db.get_genomes_description(entries = target_bioentries)
+    ko_counts = db.get_ko_count(target_bioentries)
+    ko_ids = ko_counts["KO"].unique()
+    ko_module_ids = db.get_ko_modules(ko_ids.tolist(), as_pandas=True, compact=True)
+    ko_modules_info = db.get_modules_info(ko_module_ids["module_id"].unique().tolist(), as_pandas=True)
 
-    # returns a dataframe with categories as index and bioentries as columns
-    ko_count_per_category = db.get_ko_count_per_category(target_bioentries)
-    ko_class_categories = db.get_ko_module_subcategories()
-
-    subcategories = ",".join(f"to_s({cat})" for cat in ko_class_categories["category"].values)
-    labels = f"labels: [{subcategories}]"
-
+    merged = ko_counts.merge(ko_module_ids, left_on="KO", right_on="ko_id", how="inner")
+    merged = merged.merge(ko_modules_info, left_on="module_id", right_on="module_id", how="inner")
+    cat_count = merged[["bioentry", "subcat", "count"]].groupby(["bioentry", "subcat"]).sum()
+    subcategories_list = cat_count.index.unique(level="subcat").to_list()
+    subcategories = ",".join(f"{to_s(cat)}" for cat in subcategories_list)
+    labels = f"[{subcategories}]"
     taxon_map = js_bioentries_to_description(taxon2description)
 
     series_data = []
-    for entry, entry_data in ko_count_per_category.iteritems():
-        string = f"{{ label: {to_s(entry)}, values : [" + ",".join(entry_data.values) + "]}}"
+
+    # not ideal, but I'm really fed up with multi-indices. Be my guest
+    # if you want to improve on this.
+    cat_count_dict = cat_count.to_dict()["count"]
+    bioentries = cat_count.index.unique(level="bioentry")
+    for bioentry in bioentries:
+        entry_data = []
+        for subcat in subcategories_list:
+            if (bioentry, subcat) in cat_count_dict:
+                entry_data.append(cat_count_dict[(bioentry, subcat)])
+            else:
+                entry_data.append(0)
+        str_entry_data = (str(entry) for entry in entry_data)
+        string = f"{{ label: {to_s(bioentry)}, values : [" + ",".join(str_entry_data) + "]}"
         series_data.append(string)
-    series = "series: [" + ",".join(series_data) + "]"
-
-    '''
-      labels: [
-        'resilience', 'maintainability', 'accessibility',
-        'uptime', 'functionality', 'impact'
-      ]
-      series: [
-        {
-          label: '2012',
-          values: [4, 8, 15, 16, 23, 42]
-        },
-        {
-          label: '2013',
-          values: [12, 43, 22, 11, 73, 25]
-        },
-        {
-          label: '2014',
-          values: [31, 28, 14, 8, 15, 21]
-        },]
-    '''
-
+    series = "[" + ",".join(series_data) + "]"
     circos_url = '?h=' + ('&h=').join(target_bioentries)
     envoi = True
     form = venn_form_class()
