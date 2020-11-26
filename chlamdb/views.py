@@ -4960,60 +4960,42 @@ def cog_venn_subset(request, category):
 
 
 def ko_venn_subset(request, category):
-    biodb = settings.BIODB
-    server, db = manipulate_biosqldb.load_db(biodb)
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
 
-    import re
+    category = category.replace("+", " ")
+    try:
+        targets = [int(i) for i in request.GET.getlist('h')]
+    except:
+        # add an error message
+        return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
 
-    category = re.sub('\+', ' ', category)
-
-    targets = [i for i in request.GET.getlist('h')]
-    if len(targets)> 5:
+    if len(targets)>5:
         targets = targets[0:6]
 
-    server, db = manipulate_biosqldb.load_db(biodb)
+    genomes = db.get_genomes_description(targets)
+    ko_counts = db.get_ko_count_cat(category=None, bioentries=targets, category_name=category)
+    ko_counts = ko_counts.set_index(["bioentry", "KO"])
 
-    all_cog_list = []
-    series = '['
-    taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
-    for target in targets:
-        template_serie = '{name: "%s", data: %s}'
-        sql = 'select A.id from (select id from comparative_tables_ko where `%s` > 0) A' \
-              ' inner join enzyme_module2ko_v1 as t2 on A.id=t2.ko_id inner JOIN ' \
-              ' enzyme_kegg_module_v1 as t3 on t2.module_id=t3.module_id where module_sub_sub_cat="%s";' % (target, category)
+    # shameful copy/cape from venn_ko
+    fmt_data = []
+    ko_set = set()
+    for bioentry in targets:
+        kos = ko_counts.loc[bioentry].index.values
+        kos_str = ",".join(f"{to_s(format_ko(ko))}" for ko in kos)
+        genome = genomes[str(bioentry)]
+        fmt_data.append(f"{{name: {to_s(genome)}, data: [{kos_str}] }}")
+        ko_set = ko_set.union({ko for ko in kos })
+    series = "[" + ",".join(fmt_data) + "]"
 
-        cogs = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-        all_cog_list += cogs
-        data = '"' + '","'.join(cogs) + '"'
-        series+=template_serie % (taxon_id2genome[target], cogs) + ','
-    series = series[0:-1] + ']'
+    ko_list = list(ko_set)
+    ko_descriptions = db.get_ko_desc(ko_list)
+    ko2description = []
+    for ko, ko_desc in ko_descriptions.items():
+        forbidden = "\""
+        ko_item = f"h[{to_s(format_ko(ko))}] = {forbidden}{ko_desc}{forbidden};"
+        ko2description.append(ko_item)
 
-
-    #h['Marilyn Monroe'] = 1;
-
-    cog2description = []
-    sql = 'select * from enzyme_ko_annotation_v1 as t1 inner join enzyme_module2ko_v1 as t2 on t1.ko_id=t2.ko_id inner JOIN ' \
-              ' enzyme_kegg_module_v1 as t3 on t2.module_id=t3.module_id where module_sub_sub_cat="%s"' % category
-    data = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-    for i in data:
-        if i in all_cog_list:
-            pathways_string = ''
-            module_string = ''
-            if data[i][3] != '-':
-                pathdata = data[i][3].split(',')
-                for y in pathdata:
-                    pathways_string+='<a href=/chlamdb/KEGG_mapp/%s>%s</a>, ' % (re.sub('ko', 'map',y), re.sub('ko', 'map',y))
-            if data[i][4] != '-':
-                moduledata = data[i][4].split(',')
-                for y in moduledata:
-                    module_string+='<a href=/chlamdb/KEGG_module_map/%s>%s</a>, ' % (y, y)
-
-            cog2description.append('h["%s"] = "%s </td><td>%s</td><td>%s</td><td>%s";' % (i, data[i][0],
-                                                                                          data[i][1],
-                                                                                          module_string[0:-2],
-                                                                                          pathways_string[0:-2]))
-        else:
-            pass
     display_form = False
     envoi_venn = True
     return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
