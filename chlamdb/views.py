@@ -3157,7 +3157,7 @@ def fam_ko(request, ko_str):
     biodb_path = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb_path, settings.BIODB_CONF)
 
-    seqids = db.get_seqids_for_ko([ko_id])
+    seqids = db.get_seqids_for_ko([ko_id], only_seqids=True)
     hsh_seqid_to_og = db.get_og(seqids)
 
     pathways = db.get_ko_pathways([ko_id])
@@ -4738,6 +4738,7 @@ def get_cog(request, bioentry, category):
             data.append([organisms[int(bioentry)], locus_tag, format_cog(cog_hit), cog_desc, product])
             locus_list.append(locus_tag)
 
+    data_type = "cog"
     description = functions[category]
     circos_url = '?ref=%s&' % bioentry
     target_taxons.pop(target_taxons.index(bioentry))
@@ -5018,43 +5019,45 @@ def ko_venn_subset(request, category):
     return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
 
 
-def module_cat_info(request, taxon, category):
-    biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb)
-    import re
-    server, db = manipulate_biosqldb.load_db(biodb)
-
+def module_cat_info(request, bioentry, category):
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db(biodb_path, settings.BIODB_CONF)
     target_taxons = [i for i in request.GET.getlist('h')]
+    organisms = db.get_genomes_description([bioentry])
+    if len(organisms) == 0 or bioentry not in organisms:
+        return render(request, 'chlamdb/cog_info.html', my_locals(locals()))
+    else:
+        organism = organisms[bioentry]
 
-    category = re.sub('\+', ' ', category)
-    biodb_id_sql = 'select biodatabase_id from biodatabase where name="%s"' % biodb
-
-    biodb_id = server.adaptor.execute_and_fetchall(biodb_id_sql,)[0][0]
+    category = category.replace("+", " ")
+    ko_counts = db.get_ko_count([bioentry], keep_seqids=True)
+    ko_modules = db.get_ko_modules(ko_counts["KO"].values.tolist(), as_pandas=True, compact=True)
+    ko_modules_info = db.get_modules_info(ko_modules["module_id"].values.tolist(), as_pandas=True)
+    filtered_modules = ko_modules_info[ko_modules_info.subcat == category]
+    selected_kos = filtered_modules.merge(ko_modules, left_on="module_id",
+            right_on="module_id", how="inner")["ko_id"].unique()
+    selected_seqids = ko_counts[ko_counts.KO.isin(selected_kos)]#selected_kos.merge(ko_counts, left_on="ko_id",
+            #right_on="KO", how="inner")
+    seqids = selected_seqids["seqid"].unique().tolist()
+    hsh_to_prot = db.get_proteins_info(seqids, bioentries=[bioentry])
+    hsh_ko_desc = db.get_ko_desc(selected_kos.tolist())
 
     # description, locus, KO, KO name, KO description
-    sql = 'select B.description, A.locus_tag,A.ko_id, A.ko_description from ' \
-          ' (select t1.locus_tag,t1.ko_id,t3.module_sub_sub_cat, t3.description,t1.taxon_id,t2.ko_description ' \
-          ' from enzyme_locus2ko t1 inner join enzyme_module2ko_v1 as t2 on t1.ko_id=t2.ko_id ' \
-          ' inner join enzyme_kegg_module_v1 as t3 on t2.module_id=t3.module_id ' \
-          ' where module_sub_sub_cat="%s" and taxon_id=%s) A inner join ' \
-          ' (select taxon_id, description from bioentry where biodatabase_id=%s and ' \
-          ' description not like "%%%%plasmid%%%%") B on A.taxon_id=B.taxon_id group by locus_tag,ko_id;' % (category, taxon, biodb_id)
-
-    data = server.adaptor.execute_and_fetchall(sql,)
-
+    data = []
+    for index, row in selected_seqids[["KO", "seqid"]].iterrows():
+        seqid, ko_id = row.seqid, row.KO
+        if seqid not in hsh_to_prot:
+            continue
+        locus, prot_id, gene, product = hsh_to_prot[seqid]
+        ko_desc = hsh_ko_desc[ko_id]
+        piece = [organism, locus, format_ko(ko_id), ko_desc, product]
+        data.append(piece)
+    description = category
     locus_list = [line[1] for line in data]
-
-    sql = 'select locus_tag,product from orthology_detail where locus_tag in (%s)' % ('"' + '","'.join(locus_list) + '"')
-
-    locus2annot = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql,))
-
-    circos_url = '?ref=%s&' % taxon
-
-    target_taxons.pop(target_taxons.index(taxon))
+    circos_url = '?ref=%s&' % bioentry
+    target_taxons.pop(target_taxons.index(bioentry))
     circos_url += "t="+('&t=').join((target_taxons)) + '&h=' + ('&h=').join(locus_list)
-
     data_type = 'ko'
-
     return render(request, 'chlamdb/cog_info.html', my_locals(locals()))
 
 
@@ -5082,24 +5085,25 @@ def module_barchart(request):
 
     target_bioentries = form.cleaned_data['targets']
     taxon2description = db.get_genomes_description(entries = target_bioentries)
-    ko_counts = db.get_ko_count(target_bioentries)
+    ko_counts = db.get_ko_count(target_bioentries, keep_seqids=True)
     ko_ids = ko_counts["KO"].unique()
     ko_module_ids = db.get_ko_modules(ko_ids.tolist(), as_pandas=True, compact=True)
     ko_modules_info = db.get_modules_info(ko_module_ids["module_id"].unique().tolist(), as_pandas=True)
 
     merged = ko_counts.merge(ko_module_ids, left_on="KO", right_on="ko_id", how="inner")
     merged = merged.merge(ko_modules_info, left_on="module_id", right_on="module_id", how="inner")
-    cat_count = merged[["bioentry", "subcat", "count"]].groupby(["bioentry", "subcat"]).sum()
+    cat_count = merged[["bioentry", "subcat", "seqid"]].groupby(["bioentry", "subcat"]).nunique()
     subcategories_list = cat_count.index.unique(level="subcat").to_list()
     subcategories = ",".join(f"{to_s(cat)}" for cat in subcategories_list)
     labels = f"[{subcategories}]"
+
     taxon_map = js_bioentries_to_description(taxon2description)
 
     series_data = []
 
     # not ideal, but I'm really fed up with multi-indices. Be my guest
     # if you want to improve on this.
-    cat_count_dict = cat_count.to_dict()["count"]
+    cat_count_dict = cat_count["seqid"].to_dict()
     bioentries = cat_count.index.unique(level="bioentry")
     for bioentry in bioentries:
         entry_data = []
@@ -13464,61 +13468,6 @@ def kegg_module_subcat(request):
     asset_path = '/temp/metabo_tree.svg'
     rendered_tree.render(path, dpi=500, w=800, tree_style=style)
     envoi = True
-    return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
-
-
-def kegg_module_subcat_legacy(request):
-    biodb = settings.BIODB
-    from chlamdb.phylo_tree_display import ete_motifs
-    server, db = manipulate_biosqldb.load_db(biodb)
-    module_overview_form = make_module_overview_form(biodb, sub_sub_cat=True)#get_locus_annotations_form(biodb)
-
-    if request.method == 'POST': 
-        form = module_overview_form(request.POST)
-        if form.is_valid():
-            from chlamdb.plots import module_heatmap
-
-            sql_biodb_id = 'select biodatabase_id from biodatabase where name="%s"' % biodb
-
-            database_id = server.adaptor.execute_and_fetchall(sql_biodb_id,)[0][0]
-
-            category = form.cleaned_data['category']
-            if category != 'microbial_metabolism':
-                sql = 'select module_name from enzyme_kegg_module_v1 where module_sub_sub_cat="%s";' % (category)
-                modules = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-            else:
-                sql = 'select t1.module_name ' \
-                      ' from enzyme_microbial_metabolism_map01120 t1 inner join enzyme_kegg_module_v1 t2 on t1.module_name=t2.module_name ' \
-                      ' order by module_sub_cat,module_sub_sub_cat;'
-                modules = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-
-            sql_tree = 'select tree from reference_phylogeny t1 inner join biodatabase t2 on t1.biodatabase_id=t2.biodatabase_id ' \
-                       ' where t2.name="%s";' % biodb
-            server, db = manipulate_biosqldb.load_db(biodb)
-            tree = server.adaptor.execute_and_fetchall(sql_tree,)[0][0]
-
-
-            tree, style = module_heatmap.plot_module_heatmap(biodb,
-                            tree,
-                            modules,
-                            taxon_id_list = [],
-                            rotate=False)
-            #style.rotation = 90
-
-
-
-
-            path = settings.BASE_DIR + '/assets/temp/metabo_tree.svg'
-            asset_path = '/temp/metabo_tree.svg'
-            tree.render(path, dpi=500, w=800, tree_style=style)
-
-
-            envoi = True
-
-
-    else:  
-        form = module_overview_form()
-
     return render(request, 'chlamdb/module_subcat.html', my_locals(locals()))
 
 
