@@ -411,10 +411,14 @@ def simplify_ko(raw_ko):
     return int(raw_ko[len("ko:K"):])
 
 
+# NOTE:
+# Several KO marked as significant can be assigned to the same locus
+# only take the hit with the lowest evalue (the first in the list)
 def load_KO(params, ko_files, db_name):
     db = db_utils.DB.load_db(db_name, params)
     data = []
     for ko_file in ko_files:
+        curr_hsh = None
         for ko_line in open(ko_file, "r"):
             tokens = ko_line.split()
             # ignore all but the best hits
@@ -422,6 +426,12 @@ def load_KO(params, ko_files, db_name):
                 continue
             crc_raw, ko_str, thrs_str, score_str, evalue_str, *descr = tokens[1:]
             hsh = simplify_hash(crc_raw)
+            if hsh == curr_hsh:
+                # skip the entries that were classified as significant, but
+                # with a higher e-value
+                continue
+            else:
+                curr_hsh = hsh
             ko = get_ko_id(ko_str)
             thrs = float(thrs_str)
             score = float(score_str)
