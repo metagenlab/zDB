@@ -468,12 +468,15 @@ def circos_homology(request):
     return render(request, 'chlamdb/circos_homology.html', my_locals(locals()))
 
 
-def format_lst_to_html(lst_elem):
+def format_lst_to_html(lst_elem, add_count=True):
     dict_elem = {}
     for elem in lst_elem:
         cnt = dict_elem.get(elem, 0)
         dict_elem[elem] = cnt+1
-    return "<br/>".join(f"{k} ({v})" for k,v in dict_elem.items())
+    if add_count:
+        return "<br/>".join(f"{k} ({v})" for k,v in dict_elem.items())
+    else:
+        return "<br/>".join(f"{k}" for k,v in dict_elem.items())
 
 
 def extract_orthogroup(request):
@@ -504,9 +507,6 @@ def extract_orthogroup(request):
         return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
 
     og_counts_in = db.get_og_count(include, search_on="bioentry")
-    og_counts_in = og_counts_in.set_index(["bioentry", "orthogroup"]).unstack(level=0, fill_value=0)
-    og_counts_in.columns = [col for col in og_counts_in["count"].columns.values]
-
     if not single_copy:
         og_counts_in["presence"] = og_counts_in[og_counts_in > 0].count(axis=1)
     else:
@@ -515,8 +515,6 @@ def extract_orthogroup(request):
     og_counts_in["selection"] = og_counts_in.presence >= (len(include)-n_missing)
     if len(exclude) > 0:
         mat_exclude = db.get_og_count(exclude, search_on="bioentry")
-        mat_exclude = mat_exclude.set_index(["bioentry", "orthogroup"]).unstack(level=0, fill_value=0)
-        mat_exclude.columns = [col for col in mat_exclude["count"].columns.values]
         mat_exclude["presence"] = mat_exclude[mat_exclude > 0].count(axis=1)
         mat_exclude["exclude"] = mat_exclude.presence > 0
         neg_index = mat_exclude[mat_exclude.exclude].index
@@ -533,9 +531,11 @@ def extract_orthogroup(request):
     # this should be re-implemented in a more scalable way (will explode as the number of 
     # orthogroups and genome grow). Alternatively, could also be precomputed or stored in cache.
     count_all_genomes = db.get_og_count(selection, search_on="orthogroup")
-    count_all_genomes = count_all_genomes.set_index(["bioentry", "orthogroup"]).unstack(level=0, fill_value=0)
-    count_all_genomes.columns = [col for col in count_all_genomes["count"].columns.values]
-    orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(axis=1)
+
+    if not single_copy:
+        orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(axis=1)
+    else:
+        orthogroup2count_all = count_all_genomes[count_all_genomes == 1].count(axis=1)
     max_n = orthogroup2count_all.max()
     match_groups_data = []
 
@@ -968,91 +968,58 @@ def locus_annotation(request, display_form):
     return render(request, 'chlamdb/locus_annotation.html', my_locals(locals()))
 
 
-
 def venn_orthogroup(request):
-    biodb = settings.BIODB
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
 
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    venn_form_class = make_venn_from(biodb, plasmid=True)
-
-    if request.method == 'POST': 
-
-        form_venn = venn_form_class(request.POST)
-
-        if  form_venn.is_valid():
-            targets = form_venn.cleaned_data['targets']
-
-            try:
-                accessions = request.POST['checkbox_accessions']
-                accessions = True
-            except:
-                accessions = False
-                accession2taxon = manipulate_biosqldb.accession2taxon_id(server, biodb)
-                targets = [str(accession2taxon[i]) for i in targets]
-
-            server, db = manipulate_biosqldb.load_db(biodb)
-
-            all_orthogroups_list = []
-            series = '['
-            taxon_id2genome = manipulate_biosqldb.taxon_id2genome_description(server, biodb)
-            accession2genome = manipulate_biosqldb.accession2description(server, biodb)
-            for target in targets:
-                template_serie = '{name: "%s", data: %s}'
-                if not accessions:
-                    sql ='select orthogroup from comparative_tables_orthology where `%s` > 0' % (target)
-                else:
-                    sql ='select id from comparative_tables_orthology_accessions where %s > 0' % (target)
-
-                orthogroups = [i[0] for i in server.adaptor.execute_and_fetchall(sql,)]
-                all_orthogroups_list += orthogroups
-                data = '"' + '","'.join(orthogroups) + '"'
-                if not accessions:
-                    series+=template_serie % (taxon_id2genome[target], orthogroups) + ','
-                else:
-                    series+=template_serie % (accession2genome[target], orthogroups) + ','
-            series = series[0:-1] + ']'
-
-
-            #h['Marilyn Monroe'] = 1;
-
-            orthogroup2description = ''
-            sql = 'select orthogroup, gene from orthology_detail'
-            data = server.adaptor.execute_and_fetchall(sql,)
-            orthogroup2genes = {}
-            for i in data:
-                if i[0] not in orthogroup2genes:
-                    orthogroup2genes[i[0]] = [i[1]]
-                else:
-                    if i[1] in orthogroup2genes[i[0]]:
-                        pass
-                    else:
-                        orthogroup2genes[i[0]].append(i[1])
-            sql = 'select orthogroup, product from orthology_detail'
-            data = server.adaptor.execute_and_fetchall(sql,)
-            orthogroup2product = {}
-            for i in data:
-                if i[0] not in orthogroup2product:
-                    orthogroup2product[i[0]] = [i[1]]
-                else:
-                    if i[1] in orthogroup2product[i[0]]:
-                        pass
-                    else:
-                        orthogroup2product[i[0]].append(i[1])
-
-            for i in orthogroup2genes:
-                if i in all_orthogroups_list:
-                    genes = '<br>'.join(orthogroup2genes[i])
-                    products = '<br>'.join(orthogroup2product[i])
-                    orthogroup2description+='h["%s"] = "%s</td><td>%s;"\n' % (i, genes, products)
-                else:
-                    continue
-
-            envoi_venn = True
-    else:  
+    venn_form_class = make_venn_from(db, limit=6)
+    if request.method != "POST":
         form_venn = venn_form_class()
-    return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
+        return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
 
+    form_venn = venn_form_class(request.POST)
+    if not form_venn.is_valid():
+        return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
+
+    try:
+        targets = [int(t) for t in form_venn.cleaned_data['targets']]
+    except:
+        # add error message
+        return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
+    genomes = db.get_genomes_description(targets)
+    og_count = db.get_og_count(targets, search_on="bioentry")
+
+    fmt_data = []
+    for bioentry in targets:
+        ogs = og_count[bioentry]
+        ogs_str = ",".join(f"{to_s(format_orthogroup(og))}" for og, cnt in ogs.iteritems() if cnt > 0)
+        genome = genomes[str(bioentry)]
+        fmt_data.append(f"{{name: {to_s(genome)}, data: [{ogs_str}] }}")
+    series = "[" + ",".join(fmt_data) + "]"
+
+    og_list = og_count.index.tolist()
+    annotations = db.get_genes_from_og(orthogroups=og_list, bioentries=targets)
+    grouped = annotations.groupby("orthogroup")
+    genes = grouped["gene"].apply(list)
+    products = grouped["product"].apply(list)
+
+    orthogroup2description = []
+    for og in og_list:
+        forbidden = "\""
+        gene_data = "-"
+        if og in genes.index:
+            g = genes.loc[og]
+            gene_data = format_lst_to_html(g, add_count=False)
+        prod_data = "-"
+        if og in products.index:
+            p = products.loc[og]
+            prod_data = format_lst_to_html(p, add_count=False)
+        og_info = gene_data + "</td><td>" + prod_data
+        og_item = f"h[{to_s(format_orthogroup(og))}] = {forbidden}{og_info}{forbidden};"
+        orthogroup2description.append(og_item)
+    orthogroup2description = "\n".join(orthogroup2description)
+    envoi_venn = True
+    return render(request, 'chlamdb/venn_orthogroup.html', my_locals(locals()))
 
 
 def extract_pfam(request, classification="taxon_id"):
@@ -3224,21 +3191,19 @@ def fam_ko(request, ko_str):
     dico_tree[format_ko(ko_id)] = {}
 
     for index, values in df_og_count.iterrows():
-        bioentry = values.bioentry
-        og = values.orthogroup
-        dico_tree[format_orthogroup(og)][str(bioentry)] = values["count"]
+        for entry, count in values.iteritems():
+            dico_tree[format_orthogroup(index)][str(entry)] = count
     for bioentry, count in hsh_ko_count.items():
         dico_tree[format_ko(ko_id)][str(bioentry)] = count
 
     taxon2group2ec = {}
     for index, values in df_og_count.iterrows():
-        bioentry = values.bioentry
-        if not bioentry in hsh_ko_count:
-            continue
-        og = values.orthogroup
-        if str(bioentry) not in taxon2group2ec:
-            taxon2group2ec[str(bioentry)] = {}
-        taxon2group2ec[str(bioentry)][format_orthogroup(og)] = [format_ko(ko_id)]
+        for entry, count in values.iteritems():
+            if not entry in hsh_ko_count:
+                continue
+            if str(entry) not in taxon2group2ec:
+                taxon2group2ec[str(entry)] = {}
+            taxon2group2ec[str(entry)][format_orthogroup(index)] = [format_ko(ko_id)]
 
     fam = ko_str
     labels = [fam] + [format_orthogroup(og) for og in group_count]
