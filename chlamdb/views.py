@@ -465,13 +465,21 @@ def circos_homology(request):
 
     else:  
         form = circos_orthology_form_class()
-
     return render(request, 'chlamdb/circos_homology.html', my_locals(locals()))
+
+
+def format_lst_to_html(lst_elem):
+    dict_elem = {}
+    for elem in lst_elem:
+        cnt = dict_elem.get(elem, 0)
+        dict_elem[elem] = cnt+1
+    return "<br/>".join(f"{k} ({v})" for k,v in dict_elem.items())
 
 
 def extract_orthogroup(request):
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb)
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+
     extract_form_class = make_extract_form(db, plasmid=True)
     if request.method != "POST":
         form = extract_form_class()
@@ -483,36 +491,73 @@ def extract_orthogroup(request):
         # add error message in web page
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
     
-    include = form.cleaned_data['orthologs_in']
-    exclude = form.cleaned_data['no_orthologs_in']
+    include = [int(i) for i in form.cleaned_data['orthologs_in']]
+    exclude = [int(i) for i in form.cleaned_data['no_orthologs_in']]
     reference_taxon = form.cleaned_data['reference']
-    n_missing = form.cleaned_data['frequency']
+    n_missing = int(form.cleaned_data['frequency'])
     single_copy = "checkbox_single_copy" in request.POST
     if reference_taxon == "None":
         reference_taxon = include[0]
 
-    try:
-        accessions = request.POST['checkbox_accessions']
-        accessions = True
-        fasta_url='?a=T'
-    except:
-        accessions = False
-        fasta_url='?a=F'
-        accession2taxon = manipulate_biosqldb.accession2taxon_id(server, biodb)
-        include = [str(accession2taxon[i]) for i in include]
-        exclude = [str(accession2taxon[i]) for i in exclude]
-        reference_taxon = accession2taxon[reference_taxon]
-    freq_missing = (len(include)-float(n_missing))/len(include)
-    task = extract_orthogroup_task.delay(biodb, 
-                                         include,
-                                         exclude,
-                                         freq_missing,
-                                         single_copy,
-                                         accessions,
-                                         reference_taxon,
-                                         fasta_url,
-                                         n_missing)
-    task_id = task.id
+    if n_missing>=len(include):
+        wrong_n_missing = True
+        return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
+
+    og_counts_in = db.get_og_count(include, search_on="bioentry")
+    og_counts_in = og_counts_in.set_index(["bioentry", "orthogroup"]).unstack(level=0, fill_value=0)
+    og_counts_in.columns = [col for col in og_counts_in["count"].columns.values]
+
+    if not single_copy:
+        og_counts_in["presence"] = og_counts_in[og_counts_in > 0].count(axis=1)
+    else:
+        og_counts_in["presence"] = og_counts_in[og_counts_in == 1].count(axis=1)
+
+    og_counts_in["selection"] = og_counts_in.presence >= (len(include)-n_missing)
+    if len(exclude) > 0:
+        mat_exclude = db.get_og_count(exclude, search_on="bioentry")
+        mat_exclude = mat_exclude.set_index(["bioentry", "orthogroup"]).unstack(level=0, fill_value=0)
+        mat_exclude.columns = [col for col in mat_exclude["count"].columns.values]
+        mat_exclude["presence"] = mat_exclude[mat_exclude > 0].count(axis=1)
+        mat_exclude["exclude"] = mat_exclude.presence > 0
+        neg_index = mat_exclude[mat_exclude.exclude].index
+    else:
+        neg_index = pd.Index([])
+
+    pos_index = og_counts_in[og_counts_in.selection].index
+    selection = pos_index.difference(neg_index).tolist()
+    sum_group = len(selection)
+    if len(selection) == 0:
+        no_match = True
+        return render(request, 'chlamdb/extract_ko.html', my_locals(locals()))
+
+    # this should be re-implemented in a more scalable way (will explode as the number of 
+    # orthogroups and genome grow). Alternatively, could also be precomputed or stored in cache.
+    count_all_genomes = db.get_og_count(selection, search_on="orthogroup")
+    count_all_genomes = count_all_genomes.set_index(["bioentry", "orthogroup"]).unstack(level=0, fill_value=0)
+    count_all_genomes.columns = [col for col in count_all_genomes["count"].columns.values]
+    orthogroup2count_all = count_all_genomes[count_all_genomes > 0].count(axis=1)
+    max_n = orthogroup2count_all.max()
+    match_groups_data = []
+
+    annotations = db.get_genes_from_og(orthogroups=selection, bioentries=include)
+    grouped = annotations.groupby("orthogroup")
+    genes = grouped["gene"].apply(list)
+    products = grouped["product"].apply(list)
+
+    for row, count in orthogroup2count_all.iteritems():
+        cnt_in = og_counts_in.loc[row].presence
+        gene_data = "-"
+        if row in genes.index:
+            g = genes.loc[row]
+            gene_data = format_lst_to_html(g)
+        prod_data = "-"
+        if row in products.index:
+            p = products.loc[row]
+            prod_data = format_lst_to_html(p)
+        entry = [row, format_orthogroup(row), gene_data, prod_data, cnt_in, count]
+        match_groups_data.append(entry)
+
+    envoi_extract = True
     return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
 
