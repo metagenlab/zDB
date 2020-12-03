@@ -14075,8 +14075,48 @@ def pfam_comparison(request):
     return render(request, 'chlamdb/pfam_comp.html', my_locals(locals()))
 
 
-
 def orthogroup_comparison(request):
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
+
+    comp_metabo_form = make_metabo_from(db)
+    if request.method != 'POST': 
+        form = comp_metabo_form(request.POST)
+        return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
+
+    form = comp_metabo_form(request.POST)
+    if not form.is_valid():
+        return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
+
+    try:
+        bioentries = [int(i) for i in form.cleaned_data["targets"]]
+    except:
+        # TODO: add error message
+        return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
+
+    genomes = db.get_genomes_description(bioentries)
+    og_count = db.get_og_count(bioentries, search_on="bioentry")
+    og_count.columns = [genomes[str(col)] for col in og_count.columns]
+    annotations = db.get_genes_from_og(orthogroups=og_count.index.tolist(), bioentries=bioentries)
+    products = annotations.groupby("orthogroup")["product"].apply(list)
+    n_orthogroups = len(og_count.index)
+
+    og_data = []
+    for og, items in og_count.iterrows():
+        piece = [format_orthogroup(og)]
+        piece.append(items.tolist())
+        if og in products.index:
+            piece.append(format_lst_to_html(products.loc[og]))
+        else:
+            piece.append("-")
+        og_data.append(piece)
+
+    genomes_list = og_count.columns.tolist()
+    envoi_comp = True
+    return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
+
+
+def orthogroup_comparison_legacy(request):
     biodb = settings.BIODB
     server, db = manipulate_biosqldb.load_db(biodb)
 

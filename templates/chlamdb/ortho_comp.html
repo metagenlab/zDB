@@ -62,7 +62,7 @@
                       </p>
                       </div>
 
-                              Number of orthogroups exhiniting > 1 copy (in one ore multiple genomes) in at least 1 out of {{taxon_list|length}} selected genomes: {{orthogroups2counts|length}}
+                              Number of orthogroups exhiniting more than 1 copy (in one ore multiple genomes) in at least 1 out of {{bioentries|length}} selected genomes: {{n_orthogroups}}
 
                               <table class="sortable" id="mytable">
                                   <style>
@@ -80,28 +80,24 @@
 
                                     <tr style="height:200px;">
                                         <th valign="bottom">Orthogroup</th>
-                                        <th valign="bottom">Total count</th>
-                                        {% for taxon in taxon_list %}
-                                            <th id="entete_meta4" valign="bottom"><div class="rotate">{{ taxon_id2description|keyvalue:taxon}}</div></th>
+                                        {% for genome in genomes_list %}
+                                            <th id="entete_meta4" valign="bottom"><div class="rotate">{{genome}}</div></th>
                                         {% endfor %}
-                                        <th valign="bottom">Annot</th>
+                                        <th valign="bottom">Annotation</th>
                                     </tr>
                                   </thead>
                                   <tbody>
-                                  {% for key, values in orthogroups2counts.items %}
-                                      <tr> <td><a href="{% url 'locusx'  key True%}">{{key}}</a></td>
-                                          <td>{{orthogroups2total_count|keyvalue:key}}</td>
-                                          {% for taxon_count in values%}
-                                                {%if taxon_count != 0 %}
-                                                <td data-hist="{{taxon_count}}">{{taxon_count}}</td>
+                                  {% for items in og_data %}
+                                      <tr> <td><a href="{% url 'locusx'  items.0 True%}">{{items.0}}</a></td>
+                                          {% for count in items.1%}
+                                                {%if count != 0 %}
+                                                <td data-hist="{{count}}">{{count}}</td>
                                                 {% else %}
-                                                 <td>{{taxon_count}}</td>
+                                                 <td>{{count}}</td>
                                                 {% endif %}
                                           {% endfor %}
                                           <td>
-                                          {% for values in group2annot|keyvalue:key %}
-                                              {{values.0}}({{values.1}})<br/>
-                                          {%endfor%}
+										  {{items.2}}
                                           </td>
                                       </tr>
                               {% endfor %}
