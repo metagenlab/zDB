@@ -36,7 +36,7 @@
 			for (name in this.listnames) {
 				value += '<li id="list_strains">' +this.listnames[name] + "</li>";
 			}
-			value += '</ul>\n<table id="ko_table" class="sortable"><tr><th>ID</th><th>Description</th></tr>';
+			value += '</ul>\n<table id="ko_table" class="sortable"><tr><th style="text-align: center; padding: 5px 20px">ID</th><th style="padding: 5px 20px;">Description</th></tr>';
 			for (val in this.list) {
                 <!-- h[this.list[val]] -->
 				value += '<tr><td><a href="/chlamdb/fam_ko/' + this.list[val] +
