@@ -1564,7 +1564,7 @@ if(!params.diamond_refseq) {
             
             kwargs = ${gen_python_args()}
             diamond_tab_files = "$diamond_tsv_list".split()
-            setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files)
+            setup_chlamdb.load_refseq_matches_infos(kwargs, diamond_tab_files, "$curr_db")
             """
     }
 }

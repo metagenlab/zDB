@@ -136,8 +136,8 @@ def simplify_hash(hsh):
 #  * get the linear taxonomy for all taxids that were extracted at the previous step
 #  * extract the protein informations for 
 #  * for all protein of all orthogroup, get the non-PVC hits and output them in OG.fasta
-def load_refseq_matches_infos(args, lst_diamond_files):
-    db = db_utils.DB.load_db(args)
+def load_refseq_matches_infos(args, lst_diamond_files, db_file):
+    db = db_utils.DB.load_db(db_file, args)
     columns=["str_hsh", "accession", "pident", "length", "mismatch", "gapopen",
             "qstart", "qend", "sstart", "send", "evalue", "bitscore"]
 
@@ -235,6 +235,7 @@ def load_refseq_matches_infos(args, lst_diamond_files):
         f = open("null_nr_hits.faa", "w")
         f.write("My hovercraft is full of eels")
         f.close()
+    db.set_status_in_config_table("BLAST_database", 1)
     db.commit()
 
 # This is a hack to be able to store 64bit unsigned values into 
