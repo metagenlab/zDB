@@ -63,23 +63,20 @@ function clearBox(elementID)
                 <li><a href="#12" data-toggle="tab" onclick="window.open('{% url 'homologs' data.0 data.1 %}', 'frame12'); return false">Homologs <span class="badge">{{homologues}}</span><br></a></li>
                 {% else %}
                      <li class="active"><a href="#tab33" data-toggle="tab">Overview<br></a></li>
+					 {%if optional2status|keyvalue:"BLAST_database" %}
                      <li><a href="#12" data-toggle="tab" onclick="window.open('{% url 'homologs' data.0 data.1 %}', 'frame12'); return false">Homologs <span class="badge">{{homologues}}</span><br></a></li>
+					{% endif %}
                 {% endif %}
 
                 {% if input_type == 'locus_tag'%}
                 <li><a href="#1" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' locus %}', 'frame1'); return false">Phylogenetic distribution</a></li>
                 {%else%}
-                <li><a href="#1" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' data.0 %}', 'frame1'); return false">Phylogenetic distribution</a></li>
+                <li><a href="#1" data-toggle="tab" onclick="window.open('{% url 'orthogroup_conservation_tree' og %}', 'frame1'); return false">Phylogenetic distribution</a></li>
                 {%endif%}
 
                 {% if align_path %}
                 <li><a href="#tab55" data-toggle="tab">MSA</a></li>
                 {% endif %}
-                <!--<li><a href="#2" data-toggle="tab" onclick="window.open('{% url 'orthogroup_identity' data.0 True %}', 'frame2'); return false">Orthogroup conservation</a></li>-->
-
-                <!--{% if cog_data %}
-                <li><a href="#tab66" data-toggle="tab" onclick="window.open('{% url 'string_page' cog_data.0 genome_accession %}', 'orthoIDframe'); return false">string interactions</a></li>
-                {% endif %}-->
 
                 {% if input_type != 'orthogroup' %}
                     <li><a href="#5" data-toggle="tab" onclick="window.open('{% url 'plot_neighborhood' data.1 %}', 'frame5'); return false">Region</a></li>
@@ -104,11 +101,11 @@ function clearBox(elementID)
                     {% endif %}
                 {% endif %}
 
-                {% if homologues > 2 and optional2status|keyvalue:"gene_phylogenies" or optional2status|keyvalue:"BBH_phylogenies" %}
-                <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'phylogeny' data.0 %}', 'frame9'); return false">Orthogroup phylogeny</a></li>
+                {% if homologues > 2 and optional2status|keyvalue:"gene_phylogenies" %}
+                <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'phylogeny' og %}', 'frame9'); return false">Orthogroup phylogeny</a></li>
                 {% endif %}
 
-                {% if closest_phylo %}
+				{% if homologues > 2 and optional2status|keyvalue:"BBH_phylogenies" %}
                     <li><a href="#9" data-toggle="tab" onclick="window.open('{% url 'refseq_swissprot_tree' data.0 %}', 'frame9'); return false">Best hit phylogeny</a></li>
                 {% endif %}
               </ul>
@@ -1264,7 +1261,7 @@ function clearBox(elementID)
               {% else %}
                   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.48.1/plotly.min.js"></script>
                   <div class="tab-pane active" id="tab33">
-                    <h3>Orthogroup: {{locus}} -- {{homologues}} members: overview of the annotation</h3>
+                    <h3>Orthogroup: {{og}} -- {{homologues}} members: overview of the annotation</h3>
 
 
                   <div class="panel panel-success" style="width:80%; top: 200px; margin: 10px 10px 10px 10px">
@@ -1298,8 +1295,8 @@ function clearBox(elementID)
                                             {% for row in gene_annotations %}
                                               <tr>
                                                 <td>{{row.0}}</td>
-                                                <td>{{row.2}}</td>
-                                                <td>{{row.1}}</td>  
+                                                <td>{{row.1}}</td>
+                                                <td>{{row.2}}</td>  
                                               </tr>
                                             {% endfor %}
                                         </body>
@@ -1378,8 +1375,8 @@ function clearBox(elementID)
                                             {% for row in product_annotations %}
                                               <tr>
                                                 <td>{{row.0}}</td>
-                                                <td>{{row.2}}</td>
-                                                <td>{{row.1}}</td>  
+                                                <td>{{row.1}}</td>
+                                                <td>{{row.2}}</td>  
                                               </tr>
                                             {% endfor %}
                                         </body>
@@ -1486,57 +1483,6 @@ function clearBox(elementID)
                                   </div>
                                 </div>
                               {% endif %}
-
-                              <div class="row">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading">
-                                      <h3 class="panel-title">Pfam domains organization</h3>
-                                    </div>
-                                        
-                                          <div>
-                                          <table class="table" id="domains_table">
-                                              <thead>
-                                              <tr>
-                                                  <th>Occurence</th>
-                                                  <th>Topology</th>
-                                              </tr>
-                                              </thead>
-                                              <tbody>
-                                                  {% for key, value in topo2count.items %}
-                                                      <tr>
-                                                          <td>{{value}}</td>
-                                                          <td> 
-                                                              {% for domain in key %}
-                                                               --<a title="{{ domain2description|keyvalue:domain }}" type="button" href="{% url 'fam' domain 'pfam' %}" class="pfam_domain" style="background-color:{{ domain2color|keyvalue:domain }};">{{domain}}</a>--
-                                                              {% endfor %}
-                                                          </td>
-                                                      </tr>
-                                                  {% endfor %}
-                                              </tbody>
-                                          </table>
-
-                                            
-
-                                            
-                                          </div>
-                                        
-                                </div>
-                              </div>
-
-
-
-                              <div class="row">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading">
-                                      <h3 class="panel-title">Number of predicted Transmembrane domains</h3>
-                                    </div>
-                                        
-                                          <div style="width:{{plot_width}}px">
-                                            {{html_plot|safe}}
-                                          </div>
-                                        
-                                </div>
-                              </div>
 
 
                               {% if length_distrib %}

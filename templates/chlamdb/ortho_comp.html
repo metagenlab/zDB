@@ -88,7 +88,7 @@
                                   </thead>
                                   <tbody>
                                   {% for items in og_data %}
-                                      <tr> <td><a href="{% url 'locusx'  items.0 True%}">{{items.0}}</a></td>
+                                      <tr> <td><a href="{% url 'orthogroup'  items.0 %}">{{items.0}}</a></td>
                                           {% for count in items.1%}
                                                 {%if count != 0 %}
                                                 <td data-hist="{{count}}">{{count}}</td>

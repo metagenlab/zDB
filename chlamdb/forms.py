@@ -29,8 +29,7 @@ class GenerateRandomUserForm(forms.Form):
     )
 
 def get_accessions(db, all=False, plasmid=False):
-    indexing = ("bioentry", "accession")[plasmid]
-    result = db.get_genomes_description(indexing=indexing, exclude_plasmids=plasmid)
+    result = db.get_genomes_description(exclude_plasmids=not plasmid)
     accession_choices = []
 
     for index, description in result.items():
@@ -431,7 +430,7 @@ def make_kegg_form(database_name):
 def make_extract_form(database_name, 
                       plasmid=False, 
                       label="Orthologs"):
-    accession_choices = get_accessions(database_name, plasmid)
+    accession_choices = get_accessions(database_name, plasmid=plasmid)
 
     class ExtractForm(forms.Form):
         FREQ_CHOICES = ((0, 0),(1, 1), (2,2), (3,3), (4,4), (5,5), (6,6), (7,7), (8,8), (9,9), (10,10))

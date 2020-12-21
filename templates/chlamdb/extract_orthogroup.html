@@ -141,7 +141,7 @@
 							<tbody>
 							{% for value in match_groups_data %}
 								<tr>
-									<td style="text-align: center;"><a href="{% url 'locusx' value.0 True%}">{{value.1}}</a></td>
+									<td style="text-align: center;"><a href="{% url 'orthogroup' value.1 %}">{{value.1}}</a></td>
 									<td>{{value.2|safe}}</td>
 									<td>{{value.3|safe}}</td>
 									<td style="text-align: center;">{{value.4}}</td>

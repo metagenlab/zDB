@@ -40,8 +40,7 @@
 
 			for (val in this.list) {
                 <!-- h[this.list[val]] -->
-				value += '<tr><td><a href="' + "{% url 'locusx' %}" + '/'+
-						this.list[val] + '">'+  this.list[val] + '</a></td><td>' + h[this.list[val]]
+				value += '<tr><td><a href=/orthogroup/' + this.list[val] + '>'+  this.list[val] + '</a></td><td>' + h[this.list[val]]
 						+ '</td></tr>';
 			}
 		    value += '</table>';

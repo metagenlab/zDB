@@ -50,11 +50,6 @@
               <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
               <a onclick='exportPNG("pfam_tree", "pfam_tree");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
 
-               <div>
-                    <object type="image/svg+xml" data="{% static asset_path %}" id="pfam_tree">
-                    </object>
-                   <img src="{% static "/scales/scale_identity_red.png" %}" id="circos_legend"  width="160" style="position: absolute; top: 200px; left: 600px;">
-               </div>
             </div>
             <div class="tab-pane" id="tab2" style="height:8800px">
                 <iframe name="orthoIDframe2" id="theFrame2" scrolling="no" width="100%" height="8800px"></iframe>

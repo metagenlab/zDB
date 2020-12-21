@@ -4,19 +4,17 @@
                     /* no reference genome by default */
                     var x=document.getElementById("id_reference");
                     for (var i = 0; i < x.options.length; i++) {
-                        $("#id_reference").children("option[value^='" + x.options[i].value + "']").hide()
+                        $("#id_reference").children("option[value^=" + x.options[i].value + "]").hide()
                     }
 
                     /* don't show plasmids by default */
                     var y=document.getElementById("id_orthologs_in");
                     for (var i = 0; i < y.options.length; i++) {
                         if (y.options[i].text.includes('plasmid')) {
-                            console.log(y.options[i].value);
-                            $("#id_orthologs_in").children("option[value^='" + y.options[i].value + "']").hide();
-                            $("#id_no_orthologs_in").children("option[value^='" + y.options[i].value + "']").hide()
+                            $("#id_orthologs_in").children("option[value^=" + y.options[i].value + "]").hide();
+                            $("#id_no_orthologs_in").children("option[value^=" + y.options[i].value + "]").hide();
                         } else {
-                            console.log(y.options[i].value);
-                            $("#id_orthologs_in").children("option[value^='" + y.options[i].value + "']").show()
+                            $("#id_orthologs_in").children("option[value^=" + y.options[i].value + "]").show();
                         }
                     }
 
@@ -42,7 +40,7 @@
                                 }
 
                             }
-                        };
+                        }
                         var x=document.getElementById("id_no_orthologs_in");
                         for (var i = 0; i < x.options.length; i++) {
                             if(x.options[i].selected == true){
@@ -73,6 +71,7 @@
                                         $("#id_orthologs_in").children("option[value^=" + y.options[i].value + "]").show()
                                         $("#id_no_orthologs_in").children("option[value^=" + y.options[i].value + "]").show()
                                     } else {
+										console.log("Hiding " + y.options[i].value);
                                         $("#id_orthologs_in").children("option[value^=" + y.options[i].value + "]").hide()
                                         $("#id_no_orthologs_in").children("option[value^=" + y.options[i].value + "]").hide()
                                     }
