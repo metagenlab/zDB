@@ -999,7 +999,7 @@ def venn_orthogroup(request):
 
     # includes not only the chromosomes, but also the plasmids
     all_targets = db.get_bioentries_in_taxon(targets)
-    genomes = db.get_genomes_description(targets, indexing="taxon", indexing_type="int")
+    genomes = db.get_genomes_description(targets, indexing="taxon_id", indexing_type="int")
     og_count = db.get_og_count(all_targets["bioentry"].tolist(),
             search_on="bioentry", indexing="taxon_id")
 
@@ -6284,14 +6284,14 @@ def pan_genome(request, type):
     import time
 
     bioentries = form.cleaned_data['targets']
+    bioentries = db.get_bioentries_in_taxon(bioentries)["bioentry"].tolist()
 
     if type == "COG":
         df_hits = db.get_cog_hits(bioentries, as_count=True)
         df_hits = df_hits.set_index(["bioentry", "cog"]).unstack(level=0, fill_value=0)
         type_txt = "COG"
     elif type == "orthology":
-        df_hits = db.get_og_count(bioentries, search_on="bioentry")
-        df_hits = df_hits.set_index(["bioentry", "orthogroup"]).unstack(level=0, fill_value=0)
+        df_hits = db.get_og_count(bioentries, search_on="bioentry", indexing="taxon_id")
         type_txt = "orthologs"
     elif type == "ko":
         df_hits = db.get_ko_count(bioentries)
@@ -6302,9 +6302,9 @@ def pan_genome(request, type):
         form = venn_form_class()
         return render(request, 'chlamdb/pan_genome.html', my_locals(locals()))
 
-    target2description = db.get_genomes_description(bioentries)
-    df_hits.columns = [target2description[str(i)] for i in df_hits["count"].columns.values]
-
+    target2description = db.get_genomes_description(bioentries,
+            indexing="taxon_id", indexing_type="int", exclude_plasmids=True)
+    df_hits.columns = [target2description[i] for i in df_hits.columns.values]
     path2 = settings.BASE_DIR + '/assets/temp/pangenome_barplot.svg'
     asset_path2 = '/temp/pangenome_barplot.svg'
     n_entries_per_genome = df_hits[df_hits>0].count(axis=0).sort_values()
@@ -6326,7 +6326,7 @@ def pan_genome(request, type):
 
     total_entries = [n_entries_per_genome.values[0]]
     shared_entries = []
-    for i in range(1, len(bioentries)):
+    for i in range(1, len(n_entries_per_genome)):
         cur_total = total_entries[-1]
         cur_shared = 0
         for entry, pres in df_hits[n_entries_per_genome.index[i]].items():
@@ -6348,9 +6348,9 @@ def pan_genome(request, type):
 
     ax.plot(total_entries)
     ax2 = ax.twinx()
-    ax2.plot([i for i in range(1, len(bioentries))], shared_entries, color="red")
+    ax2.plot([i for i in range(1, len(n_entries_per_genome))], shared_entries, color="red")
 
-    ax.set_xticks([i for i in range(0, len(bioentries))])
+    ax.set_xticks([i for i in range(0, len(n_entries_per_genome))])
     ax.set_xticklabels(n_entries_per_genome.index, rotation=45, horizontalalignment="right")
     ax2.set_ylabel(f"Number of shared {type_txt}")
     ax.set_ylabel(f"Number of {type_txt} in pangenome")
