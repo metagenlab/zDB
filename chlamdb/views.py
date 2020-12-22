@@ -472,7 +472,6 @@ def format_lst_to_html(lst_elem, add_count=True):
     for elem in lst_elem:
         if pd.isna(elem):
             elem = "-"
-        print(elem)
         cnt = dict_elem.get(elem, 0)
         dict_elem[elem] = cnt+1
     if add_count:
@@ -14088,7 +14087,7 @@ def orthogroup_comparison(request):
         return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
 
     all_targets = db.get_bioentries_in_taxon(bioentries)
-    genomes = db.get_genomes_description(bioentries, indexing="taxon", indexing_type="int")
+    genomes = db.get_genomes_description(bioentries, indexing="taxon_id", indexing_type="int")
 
     og_count = db.get_og_count(all_targets["bioentry"].tolist(),
             search_on="bioentry", indexing="taxon_id")
