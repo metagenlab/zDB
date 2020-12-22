@@ -90,7 +90,6 @@ from django.http import StreamingHttpResponse
 from chlamdb.forms import GenerateRandomUserForm
 from chlamdb.tasks import run_circos
 from chlamdb.tasks import run_circos_main
-from chlamdb.tasks import extract_orthogroup_task
 from chlamdb.tasks import extract_interpro_task
 from chlamdb.tasks import plot_neighborhood_task
 from chlamdb.tasks import TM_tree_task
@@ -11956,21 +11955,22 @@ def plot_heatmap(request, type):
         form_venn = form_class()
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
-    # Request is POST
     form_venn = form_class(request.POST)
     if not form_venn.is_valid():
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
-    diff_plasmid = form_venn.cleaned_data.get("checkbox_accessions", False)
-    print(diff_plasmid)
+    diff_plasmid = "checkbox_accessions" in request.POST
     target_bioentries = [int(i) for i in form_venn.cleaned_data['targets']]
+    indexing = "bioentry"
+    if not diff_plasmid:
+        target_bioentries = db.get_bioentries_in_taxon(target_bioentries)["bioentry"].tolist()
+        indexing = "taxon_id"
 
     if type=="COG":
         mat = db.get_cog_hits(target_bioentries, as_count=True)
         mat = mat.set_index(["bioentry", "cog"]).unstack(level=0, fill_value=0)
     elif type=="orthology":
-        mat = db.get_og_count(target_bioentries, search_on="bioentry")
-        mat = mat.set_index(["bioentry", "orthogroup"]).unstack(level=0, fill_value=0)
+        mat = db.get_og_count(target_bioentries, search_on="bioentry", indexing=indexing)
     elif type == "ko":
         mat = db.get_ko_count(target_bioentries)
         mat = mat.set_index(["bioentry", "KO"]).unstack(level=0, fill_value=0)
@@ -11978,9 +11978,9 @@ def plot_heatmap(request, type):
         form_venn = form_class()
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
-    target2description = db.get_genomes_description(target_bioentries)
-    mat.columns = [target2description[str(i)] for i in mat["count"].columns.values]
-
+    target2description = db.get_genomes_description(target_bioentries, indexing=indexing,
+            indexing_type="int")
+    mat.columns = [target2description[i] for i in mat.columns.values]
     cur_time = datetime.now().strftime("%H%M%S")
 
     filename = f"heatmap_{cur_time}.png"
