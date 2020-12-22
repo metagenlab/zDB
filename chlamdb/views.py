@@ -471,6 +471,9 @@ def circos_homology(request):
 def format_lst_to_html(lst_elem, add_count=True):
     dict_elem = {}
     for elem in lst_elem:
+        if pd.isna(elem):
+            elem = "-"
+        print(elem)
         cnt = dict_elem.get(elem, 0)
         dict_elem[elem] = cnt+1
     if add_count:
@@ -11940,13 +11943,14 @@ def interactions(request, locus_tag):
 
     return render(request, 'chlamdb/interactions.html', my_locals(locals()))
 
+
 def plot_heatmap(request, type):
     import seaborn as sns
     from datetime import datetime
 
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db_from_name(biodb)
-    form_class = make_venn_from(db, plasmid=False)
+    form_class = make_venn_from(db, plasmid=True)
 
     if request.method != "POST":
         form_venn = form_class()
@@ -11957,6 +11961,8 @@ def plot_heatmap(request, type):
     if not form_venn.is_valid():
         return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
 
+    diff_plasmid = form_venn.cleaned_data.get("checkbox_accessions", False)
+    print(diff_plasmid)
     target_bioentries = [int(i) for i in form_venn.cleaned_data['targets']]
 
     if type=="COG":
@@ -11984,6 +11990,7 @@ def plot_heatmap(request, type):
     cm.savefig(path)
     envoi_heatmap = True
     return render(request, 'chlamdb/plot_heatmap.html', my_locals(locals()))
+
 
 def profile_interactions(request, orthogroup, distance):
     biodb = settings.BIODB
@@ -14080,10 +14087,14 @@ def orthogroup_comparison(request):
         # TODO: add error message
         return render(request, 'chlamdb/ortho_comp.html', my_locals(locals()))
 
-    genomes = db.get_genomes_description(bioentries)
-    og_count = db.get_og_count(bioentries, search_on="bioentry")
-    og_count.columns = [genomes[str(col)] for col in og_count.columns]
-    annotations = db.get_genes_from_og(orthogroups=og_count.index.tolist(), bioentries=bioentries)
+    all_targets = db.get_bioentries_in_taxon(bioentries)
+    genomes = db.get_genomes_description(bioentries, indexing="taxon", indexing_type="int")
+
+    og_count = db.get_og_count(all_targets["bioentry"].tolist(),
+            search_on="bioentry", indexing="taxon_id")
+    og_count.columns = [genomes[col] for col in og_count.columns]
+    annotations = db.get_genes_from_og(orthogroups=og_count.index.tolist(),
+            bioentries=all_targets["bioentry"].tolist())
     products = annotations.groupby("orthogroup")["product"].apply(list)
     n_orthogroups = len(og_count.index)
 
