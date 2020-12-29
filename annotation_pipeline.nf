@@ -62,14 +62,22 @@ def gen_python_args() {
 
 str_pythonized_params = gen_python_args()
 
+
 if (params.local_assemblies) {
     Channel.fromPath(params.local_assemblies)
         .splitCsv(header: true, strip: true)
         .map { row -> tuple(row.name, file(row.draft_genome)) }
+        .into { to_prokka_local_assemblies_1; gbk_from_local_assembly_f; error_search }
+
+    to_prokka_local_assemblies_1.filter { it[1].extension == "fasta" }
         .set { to_prokka_local_assemblies }
-} else {
-    // declare an empty channel to avoid any complaints from nextflow
-    Channel.empty().set { to_prokka_local_assemblies }
+
+    gbk_from_local_assembly_f.filter { it[1].extension == "gbk" }
+        .map { it[1] }
+        .set { gbk_from_local_assembly_2 }
+
+    error_search.filter { it[1].extension!="gbk" && it[1].extension != fasta}
+        .subscribe { error "Unsupported file extension" }
 }
 
 // Each Sample
@@ -109,7 +117,7 @@ process prokka {
 	    tuple (val(name), file(genome_fasta)) from to_prokka_local_assemblies
 
 	output:
-	    file "$output_dir/${output_file_prefix}.gbk" into gbk_from_local_assembly
+	    file "$output_dir/${output_file_prefix}.gbk" into gbk_from_local_assembly_1
 
 	script:
     output_dir = "prokka_results"
@@ -120,7 +128,10 @@ process prokka {
 	"""
 }
 
-// leave all the contigs with no coding region (check_gbk doesn't like them)
+gbk_from_local_assembly_1.mix(gbk_from_local_assembly_2).set { gbk_from_local_assembly }
+
+// leave all the contigs with no coding region
+// NOTE: should be merged with one of the downstream functions (e.g. check_gbk)
 process prokka_filter_CDS {
 	publishDir 'data/prokka_output_filtered', overwrite: true
 	container "$params.annotation_container"
@@ -503,30 +514,6 @@ all_alignments_4.flatten().map { it }.filter { (it.text =~ /(>)/).size() > 2 }.s
 // friendly
 alignement_larger_than_2_seqs.collate(50).set { to_fasttree_orthogroups }
 
-/*
-process orthogroups_phylogeny_with_raxml {
-
-  echo false
-  container "$params.annotation_container"
-  cpus 4
-  publishDir 'orthology/orthogroups_phylogenies', mode: 'copy', overwrite: false
-
-  input:
-  each file(og) from large_alignments
-
-  output:
-    file "${og}.nwk"
-
-  script:
-  """
-  raxmlHPC -m PROTGAMMALG -p 12345 -s ${og} -n ${og.getBaseName()} -c 4 -T 4;
-  raxmlHPC -f J -m PROTGAMMALG -s ${og} -p 12345 -t RAxML_result.${og.getBaseName()} -n sh_test_${og.getBaseName()} -T 4
-  """
-}
-*/
-
-
-// ToDo: group alignments to avoid using a process per alignment
 process orthogroups_phylogeny_with_fasttree3 {
 
   container "$params.annotation_container"
@@ -550,32 +537,31 @@ process orthogroups_phylogeny_with_fasttree3 {
 }
 
 
-process orthogroups_phylogeny_with_iqtree {
+if(params.orthogroups_phylogenies_iqtree) {
+    process orthogroups_phylogeny_with_iqtree {
 
-  container "$params.iqtree_container"
-  cpus 2
-  publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: true
+      container "$params.iqtree_container"
+      cpus 2
+      publishDir 'orthology/orthogroups_phylogenies_iqtree', mode: 'copy', overwrite: true
 
-  when:
-  params.orthogroups_phylogeny_with_iqtree
+      input:
+      each file(og) from alignments_larget_tah_3_seqs
 
-  input:
-  each file(og) from alignments_larget_tah_3_seqs
+      output:
+        file "${og.getBaseName()}.iqtree"
+        file "${og.getBaseName()}.treefile"
+        file "${og.getBaseName()}.log"
+        file "${og.getBaseName()}.bionj"
+        file "${og.getBaseName()}.ckp.gz"
+        file "${og.getBaseName()}.mldist"
+        file "${og.getBaseName()}.model.gz"
+        file "${og.getBaseName()}.splits.nex"
 
-  output:
-    file "${og.getBaseName()}.iqtree"
-    file "${og.getBaseName()}.treefile"
-    file "${og.getBaseName()}.log"
-    file "${og.getBaseName()}.bionj"
-    file "${og.getBaseName()}.ckp.gz"
-    file "${og.getBaseName()}.mldist"
-    file "${og.getBaseName()}.model.gz"
-    file "${og.getBaseName()}.splits.nex"
-
-  script:
-  """
-  iqtree -nt ${task.cpus} -s ${og} -alrt 1000 -bb 1000 -pre ${og.getBaseName()}
-  """
+      script:
+      """
+      iqtree -nt ${task.cpus} -s ${og} -alrt 1000 -bb 1000 -pre ${og.getBaseName()}
+      """
+    }
 }
 
 process orthogroups_phylogeny_with_iqtree_no_boostrap {
@@ -1208,6 +1194,7 @@ filtered_sequences.splitFasta( by: 5000, file: "chunk_" ).into{ nr_faa_large_seq
                                                                     nr_faa_large_sequences_chunks3
                                                                     nr_faa_large_sequences_chunks4 }
 
+/*
 process execute_BPBAac {
 
   container "$params.chlamdb_container"
@@ -1364,7 +1351,7 @@ process execute_T3SS_inc_protein_prediction {
   for genome in genomes_list:
     annotations.T3SS_inc_proteins_detection(genome, genome + "${suffix}")
   """
-}
+} */
 
 // TODO see if this is interesting to make smaller chunks
 // to speed up execution
@@ -1517,6 +1504,7 @@ process load_base_db {
     db_name="$db_base"
     """
     #!/usr/bin/env python
+    # lil modification
 
     import setup_chlamdb
     

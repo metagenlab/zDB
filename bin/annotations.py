@@ -499,6 +499,45 @@ def download_assembly(accession):
         ftp.retrbinary("RETR " + file, open(file, "wb").write)
 
 
+def merge_plasmids(plasmids_records):
+    """
+    Same idea as for merge_gbk: some plasmids may be composed of several contigs.
+    The identification is based on the name in the /plasmid qualifier in the feature:
+    if the name is the same, then the contigs are grouped with a 200*N assembly gap and the 
+    informations from the first contig is kept.
+    """
+
+    hsh_name_to_records = {}
+    untouched_records = []
+
+    # group the records in fonction of the plasmid name
+    for record in plasmids_records:
+        found_name = False
+        for feature in record.features:
+            if feature.type != "source":
+                continue
+            if "plasmid" not in feature.qualifiers:
+                continue
+            names = feature.qualifiers["plasmid"]
+            if len(names) == 0:
+                continue
+            name = names[0]
+            lst = hsh_name_to_records.get(name, [])
+            lst.append(record)
+            hsh_name_to_records[name] = lst
+            found_name = True
+            break
+
+        if not found_name:
+            untouched_records.append(record)
+
+    modified_records = []
+    for name, records in hsh_name_to_records.items():
+        modified_records.append(merge_gbk(records))
+
+    return untouched_records + modified_records
+
+
 def merge_gbk(gbk_records, filter_size=0, gi=False):
     '''
     merge multiple contigs into a single DNA molecule with 200*N between contigs
@@ -557,23 +596,18 @@ def merge_gbk(gbk_records, filter_size=0, gi=False):
 
     return merged_rec
 
+
 def filter_plasmid(record_list):
     plasmid_record_list = []
     chromosome_record_list = []
 
     for record in record_list:
-        # plasmid.annotations['organism']
-        if record.features[0].type == 'source':
-            if 'plasmid' in record.description or "plasmid" in record.features[0].qualifiers:
-                plasmid_record_list.append(record)
-            else:
-                chromosome_record_list.append(record)
+        if setup_chlamdb.is_plasmid(record):
+            plasmid_record_list.append(record)
         else:
-            if 'plasmid' in record.description:
-                plasmid_record_list.append(record)
-            else:
-                chromosome_record_list.append(record)
-    return (chromosome_record_list, plasmid_record_list)
+            chromosome_record_list.append(record)
+    return chromosome_record_list, plasmid_record_list
+
 
 def count_missing_locus_tags(gbk_record):
     count_CDS = 0
@@ -693,6 +727,7 @@ def check_gbk(gbff_files, minimal_contig_length=1000):
         plasmid_reannot = False
         chromosome_reannot = False
 
+        plasmids = merge_plasmids(plasmids)
         for n_plasmid, plasmid in enumerate(plasmids):
             annot_check = is_annotated(plasmid)
             if annot_check:

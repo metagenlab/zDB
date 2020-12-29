@@ -34,9 +34,25 @@ def parse_orthofinder_output_file(output_file):
     return protein_id2orthogroup_id
 
 
+def is_plasmid(record):
+    # XXX: after discussion with Trestan, chose to keep it
+    # as it allows to catch malformated genbanks that do not
+    # specify plasmids correctly. An alternative way would be 
+    # to just ignore it.
+    if "plasmid" in record.description:
+        return True
+
+    for fet in record.features:
+        if fet.type == "source" and "plasmid" in fet.qualifiers:
+            return True
+    return False
+
+
 def load_gbk(gbks, args, db_file):
     db = db_utils.DB.load_db(db_file, args)
     data = []
+     
+    bioentry_plasmids = []
     for gbk in gbks:
         records = [i for i in SeqIO.parse(gbk, 'genbank')]
 
@@ -45,9 +61,11 @@ def load_gbk(gbks, args, db_file):
         for record in records:
             db.load_gbk_wrapper([record])
             bioentry_id = db.server.adaptor.last_id("bioentry")
+            bioentry_plasmids.append((bioentry_id, is_plasmid(record)))
             data.append( (bioentry_id, gbk.replace(".gbk", "")) )
 
     db.load_filenames(data)
+    db.update_plasmid_status(bioentry_plasmids)
     db.set_status_in_config_table("gbk_files", 1)
     db.commit()
 
@@ -55,7 +73,7 @@ def load_gbk(gbks, args, db_file):
 def load_orthofinder_results(orthofinder_output, args, db_file):
     db = db_utils.DB.load_db(db_file, args)
     hsh_prot_to_group = parse_orthofinder_output_file(orthofinder_output)
-    hsh_locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id()
+    hsh_locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id(only_CDS=True)
     hits_to_load = [(hsh_locus_to_feature_id[locus], group) for locus, group in hsh_prot_to_group.items()]
     db.load_og_hits(hits_to_load)
     db.set_status_in_config_table("orthology", 1)
@@ -249,7 +267,7 @@ def hsh_from_s(s):
 
 def load_seq_hashes(args, nr_mapping, db_file):
     db = db_utils.DB.load_db(db_file, args)
-    hsh_locus_to_id = db.get_hsh_locus_to_seqfeature_id()
+    hsh_locus_to_id = db.get_hsh_locus_to_seqfeature_id(only_CDS=True)
 
     to_load_hsh_to_seqid = {}
     for line in open(nr_mapping, "r"):
@@ -274,7 +292,7 @@ def load_seq_hashes(args, nr_mapping, db_file):
 def load_alignments_results(args, alignment_files, db_file):
     db = db_utils.DB.load_db(db_file, args)
     db.create_new_og_matrix()
-    locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id()
+    locus_to_feature_id = db.get_hsh_locus_to_seqfeature_id(only_CDS=True)
 
     # assumes filename of the format OG00N_mafft.faa, with the orthogroup
     # being the integer following the OG string
