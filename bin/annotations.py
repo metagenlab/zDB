@@ -533,16 +533,19 @@ def merge_plasmids(plasmids_records):
 
     modified_records = []
     for name, records in hsh_name_to_records.items():
-        modified_records.append(merge_gbk(records))
+        modified_records.append(merge_gbk(records, plasmids=True))
 
     return untouched_records + modified_records
 
 
-def merge_gbk(gbk_records, filter_size=0, gi=False):
+def merge_gbk(gbk_records, filter_size=0, gi=False, plasmids=False):
     '''
     merge multiple contigs into a single DNA molecule with 200*N between contigs
     keep source description from the first record
     remove contigs smaller than <filter_size>
+
+    For plasmids: keep the first accession, as having several entries with the 
+    same accession would profoundly hurt BioSQL.
 
     :param gbk_records:
     :param filter_size:
@@ -576,8 +579,9 @@ def merge_gbk(gbk_records, filter_size=0, gi=False):
                     my_feature = SeqFeature(my_feature_location, type="assembly_gap")
                     merged_rec.features.append(my_feature)
 
+    accession_index = 0 if plasmids else -1
     try:
-        merged_rec.id = gbk_records[0].annotations["accessions"][-1]
+        merged_rec.id = gbk_records[0].annotations["accessions"][accession_index]
     except KeyError:
         merged_rec.id = gbk_records[0].id
 
@@ -585,15 +589,14 @@ def merge_gbk(gbk_records, filter_size=0, gi=False):
         merged_rec.annotations["gi"] = gi
 
     merged_rec.description = "%s" % gbk_records[0].annotations["organism"]
-    merged_rec.annotations = gbk_records[0].annotations                                             
+    merged_rec.annotations = gbk_records[0].annotations
     try:
-        merged_rec.name = gbk_records[0].annotations["accessions"][-1]
+        merged_rec.name = gbk_records[0].annotations["accessions"][accession_index]
     except KeyError:
         merged_rec.name = gbk_records[0].id
     my_start_pos = ExactPosition(0)
     my_end_pos = ExactPosition(len(merged_rec))
     merged_rec.features[0].location = FeatureLocation(my_start_pos, my_end_pos)
-
     return merged_rec
 
 

@@ -59,6 +59,7 @@ def load_gbk(gbks, args, db_file):
         # hack to link the bioentry to the filename, useful later for parsing and
         # storing checkM results in the dtb.
         for record in records:
+            print(record)
             db.load_gbk_wrapper([record])
             bioentry_id = db.server.adaptor.last_id("bioentry")
             bioentry_plasmids.append((bioentry_id, is_plasmid(record)))
