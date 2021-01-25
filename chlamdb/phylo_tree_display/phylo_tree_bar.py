@@ -685,13 +685,12 @@ def plot_tree_barplot(tree_file,
 # as this function is called from "home" in views.py and the caller
 # already has most of the required informations, prev_data allows
 # to pass the informations to avoid the repetition of sql queries.
-def plot_heat_tree(tree_file, biodb="chlamydia_04_16", prev_data = None, exclude_outgroup=False, bw_scale=True):
+def plot_heat_tree(tree_file, db, prev_data = None, exclude_outgroup=False, bw_scale=True):
     import matplotlib.cm as cm
     from matplotlib.colors import rgb2hex
     import matplotlib as mpl
     from metagenlab_libs import db_utils
 
-    db = db_utils.DB.load_db_from_name(biodb)
 
     if type(tree_file) == str:
         t1 = Tree(tree_file)
@@ -725,8 +724,9 @@ def plot_heat_tree(tree_file, biodb="chlamydia_04_16", prev_data = None, exclude
     entry2cd = {}
     for accession, gc, nprot, ncontigs, size, pc, desc in prev_data:
         entry_id = str(hsh_accession2entry[accession])
-        entry2completeness[entry_id] = checkm_results[accession]["completeness"]
-        entry2contamination[entry_id] = checkm_results[accession]["contamination"]
+        if accession in checkm_results:
+            entry2completeness[entry_id] = checkm_results[accession]["completeness"]
+            entry2contamination[entry_id] = checkm_results[accession]["contamination"]
         entry2description[entry_id] = desc
         entry2gc[entry_id] = gc
         entry2genome_size[entry_id] = size

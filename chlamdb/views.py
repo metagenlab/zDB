@@ -258,36 +258,22 @@ def home(request):
     from chlamdb.phylo_tree_display import phylo_tree_bar
     from ete3 import Tree
 
-    biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
-    genomes_data = db.get_genomes_infos()
-    tree = db.get_reference_phylogeny()
+    biodb_path = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db_from_name(biodb_path)
 
-    # Posibility to plot a subtree only: eg of filter based an genome accession:
-    '''
-    acc_list = ['NC_010655',u'NC_013720',u'NZ_CP006571', u'NZ_AWUS01000000', u'NZ_APJW00000000', u'NC_002620', u'NZ_CCJF00000000', u'NZ_AYKJ01000000', u'NC_000117', u'LNES01000000', u'LJUH01000000', u'NC_004552', u'NC_003361', u'NC_007899', u'NC_015408', u'NC_000922', u'NC_015470', u'NZ_CCEJ000000000', u'CWGJ01000001', u'NZ_JSDQ00000000', u'NZ_BASK00000000', u'NZ_JRXI00000000', u'NZ_BAWW00000000', u'NZ_ACZE00000000', u'NC_015702', u'NZ_BBPT00000000', u'NZ_JSAN00000000', u'NC_005861', u'FCNU01000001', u'NZ_LN879502', u'NZ_BASL00000000', u'Rht', u'CCSC01000000', u'NC_015713', u'NC_014225']
-    filter = '"' + '","'.join(acc_list) + '"'
-    sql = 'select taxon_id from bioentry where biodatabase_id=102 and accession in (%s)' % filter
-    taxon_list = [str(i[0]) for i in server.adaptor.execute_and_fetchall(sql,)]
-    '''
+    genomes_data = db.get_genomes_infos(filter_out_plasmids=False)
+    tree = db.get_reference_phylogeny()
 
     asset_path = "/temp/species_tree.svg"
     path = settings.BASE_DIR + '/assets/temp/species_tree.svg'
+
     # plot phylo only of not already in assets
     if not os.path.exists(path):
         t1 = Tree(tree)
         R = t1.get_midpoint_outgroup()
         t1.set_outgroup(R)
         
-        # the tree has to be pruned in we want to plot a subtree only
-        '''
-        try:
-            t2 = t1.prune(taxon_list)
-        except:
-            pass
-        t1.ladderize()
-        '''
-        t, tss = phylo_tree_bar.plot_heat_tree(t1, biodb, prev_data=genomes_data)
+        t, tss = phylo_tree_bar.plot_heat_tree(t1, db, prev_data=genomes_data)
 
         tss.show_branch_support = False
         #t.render("test2.svg", tree_style=ts)
@@ -295,10 +281,6 @@ def home(request):
         t.render(path, dpi=500, tree_style=tss)
 
     n_genomes = db.get_n_genomes()
-    print(my_locals(locals()))
-    print("-------------")
-    print(my_locals(my_locals(locals())))
-
     return render(request, 'chlamdb/home.html', my_locals(locals()))
 
 
@@ -480,6 +462,20 @@ def format_lst_to_html(lst_elem, add_count=True):
         return "<br/>".join(f"{k}" for k,v in dict_elem.items())
 
 
+def get_optional_annotations_header(db):
+    header = []
+    config_table = db.get_config_table()
+    if config_table.get("KEGG", False):
+        header.append("KO")
+    if config_table.get("COG", False):
+        header.append("COG")
+    return header
+
+
+def get_optional_annotations(db, seqids=None):
+    return []
+
+
 def extract_orthogroup(request):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
@@ -523,7 +519,7 @@ def extract_orthogroup(request):
 
     og_counts_in["selection"] = og_counts_in.presence >= (len(include)-n_missing)
     if len(exclude) > 0:
-        mat_exclude = db.get_og_count(exclude, search_on=search_key, indexing=search_key)
+        mat_exclude = db.get_og_count(exclude, search_on="bioentry", indexing=search_key)
         mat_exclude["presence"] = mat_exclude[mat_exclude > 0].count(axis=1)
         mat_exclude["exclude"] = mat_exclude.presence > 0
         neg_index = mat_exclude[mat_exclude.exclude].index
@@ -549,21 +545,28 @@ def extract_orthogroup(request):
     match_groups_data = []
 
     annotations = db.get_genes_from_og(orthogroups=selection, bioentries=include)
-    print(annotations)
     if annotations.empty:
         no_match = True
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
 
+    
+    optional_annotations = get_optional_annotations(db, seqids=annotations.index.tolist())
+    # merge optional_annotations and annotations by seqid
     grouped = annotations.groupby("orthogroup")
     genes = grouped["gene"].apply(list)
     products = grouped["product"].apply(list)
+
+    table_headers = ["Orthogroup", "Genes", "Products"]
+    table_headers.extend(get_optional_annotations_header(db))
+    table_headers.extend([f"Present in {len(include)}", f"Freq complete database (/{max_n})"])
 
     for row, count in orthogroup2count_all.iteritems():
         cnt_in = og_counts_in.loc[row].presence
         g = genes.loc[row]
         gene_data = format_lst_to_html("-" if pd.isna(entry) else entry for entry in g)
         prod_data = format_lst_to_html(products.loc[row])
-        entry = [row, format_orthogroup(row), gene_data, prod_data, cnt_in, count]
+        column_header = [row, format_orthogroup(row)]
+        entry = [column_header, gene_data, prod_data, cnt_in, count]
         match_groups_data.append(entry)
 
     envoi_extract = True
@@ -1663,9 +1666,11 @@ def venn_interpro(request):
         form_venn = venn_form_class()
     return render(request, 'chlamdb/venn_interpro.html', my_locals(locals()))
 
+
 def extract_cog(request):
     biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db_from_name(biodb)
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+
     extract_form_class = make_extract_form(db, plasmid=True, label="COG")
 
     if request.method != "POST":
@@ -1681,6 +1686,7 @@ def extract_cog(request):
     exclude = form.cleaned_data['no_orthologs_in']
     n_missing = int(form.cleaned_data['frequency'])
     reference = form.cleaned_data['reference']
+    diff_plasmid = form.cleaned_data["checkbox_accessions"]
     if reference == "None":
         reference = include[0]
 
@@ -1839,20 +1845,22 @@ def venn_cog(request, sep_plasmids=False):
 
         if form_venn.is_valid():  
             targets = form_venn.cleaned_data['targets']
-            cog_hits = db.get_cog_hits(targets)
-            genome_desc = db.get_genomes_description(indexing_type="int")
 
-            all_cog_list = []
+            all_targets = db.get_bioentries_in_taxon(bioentries=targets)["bioentry"].tolist()
+            cog_hits = db.get_cog_hits(all_targets, indexing="taxon_id")
+            genome_desc = db.get_genomes_description(entries=targets, indexing_type="int")
+
             series_tab = []
-            for target in [int(t) for t in targets]:
+            for target, description in genome_desc.items():
                 cogs = cog_hits[target]
-                all_cog_list += cogs
-                data = ",".join(f"\"{format_cog(cog)}\"" for cog in cogs)
+                non_zero_cogs = cogs[cogs > 0]
+                data = ",".join(f"\"{format_cog(cog)}\"" for cog, count in non_zero_cogs.iteritems())
                 series_tab.append( f"{{name: \"{genome_desc[target]}\", data: [{data}]}}" )
             series = "[" + ",".join(series_tab) + "]"
 
             cog2description_l = []
-            data = db.get_cog_summaries(all_cog_list)
+            data = db.get_cog_summaries(cog_hits.index.tolist())
+
             for name, lst_results in data.items():
                 # NOTE: will need to remove the strip when the bug in the database will be fixed
                 for func, func_descr, cog_descr in lst_results:
@@ -2181,6 +2189,7 @@ def orthogroup(request, og):
         min_protein_length = lengths.min()
         mean_protein_length = f"{lengths.mean():.1f}"
         median_protein_length = f"{lengths.median():.1f}"
+        print(lengths.tolist())
         fig1 = ff.create_distplot([lengths.tolist()], ["Sequence length"], bin_size=20)
         fig1.update_xaxes(range=[0, max_protein_length])
         fig1.layout.margin.update({"l": 80, "r": 20, "b": 40, "t": 20, "pad": 10, })
@@ -2198,6 +2207,22 @@ def locus(request, locus):
 
 
 def locusx(request, locus=None, menu=True):
+    biodb = settings.BIODB_DB_PATH
+    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
+
+    # TODO: add error messages
+    if locus==None:
+        return render(request, 'chlamdb/locus.html', my_locals(locals()))
+
+    seqid = db.get_CDS_from_locus_tag(locus)
+    if seqid==None:
+        return render(request, 'chlamdb/locus.html', my_locals(locals()))
+
+
+    return render(request, 'chlamdb/locus.html', my_locals(locals()))
+
+
+def locusx_legacy(request, locus=None, menu=True):
     
     biodb = settings.BIODB
     print ('-- locus or search term: %s -- biodb %s' % (locus, biodb))
@@ -13492,8 +13517,6 @@ def kegg_module_subcat(request):
     from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
     from metagenlab_libs.ete_phylo import KOAndCompleteness
     from ete3 import Tree
-    from chlamdb.phylo_tree_display import ete_motifs
-    from chlamdb.plots import module_heatmap
     from metagenlab_libs import KO_module
 
     biodb = settings.BIODB_DB_PATH

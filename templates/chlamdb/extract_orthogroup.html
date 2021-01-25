@@ -130,22 +130,22 @@
 
 							<thead>
 								<tr>
-								<th style="text-align: center;padding: 5px 20px" id="entete_locus">Orthogroup</th>
-								<th style="padding: 5px 20px">Genes</th>
-								<th style="padding: 5px 20px">Products</th>
-								<th style="padding: 5px 20px; text-align:center;">Present in (/{{include|length}})</th>
-								<th style="padding: 5px 20px; text-align:center;">Freq complete database (/{{max_n}})</th>
+								{% for value in table_headers %}
+									<th style="text-align:center; padding: 5px 20px"> {{value|safe}} </th>
+								{% endfor %}
 								</tr>
 							</thead>
 
 							<tbody>
 							{% for value in match_groups_data %}
 								<tr>
-									<td style="text-align: center;"><a href="{% url 'orthogroup' value.1 %}">{{value.1}}</a></td>
-									<td>{{value.2|safe}}</td>
-									<td>{{value.3|safe}}</td>
-									<td style="text-align: center;">{{value.4}}</td>
-									<td style="text-align: center;">{{value.5}}</td>
+									{% for entry in value %}
+									{% if forloop.first %}
+										<td style="text-align: center;"><a href="{% url 'orthogroup' entry.0 %}">{{entry.1}}</a></td>
+									{% else %}
+										<td style="text-align: center;">{{entry|safe}}</td>
+									{% endif %}
+									{% endfor %}
 								</tr>
 							{% endfor %}
 							</tbody>
