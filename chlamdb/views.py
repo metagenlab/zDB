@@ -449,31 +449,48 @@ def circos_homology(request):
     return render(request, 'chlamdb/circos_homology.html', my_locals(locals()))
 
 
-def format_lst_to_html(lst_elem, add_count=True):
+def format_lst_to_html(lst_elem, add_count=True, format_func=None):
+    if format_func==None:
+        format_func = lambda x:x
+
     dict_elem = {}
     for elem in lst_elem:
         if pd.isna(elem):
             elem = "-"
         cnt = dict_elem.get(elem, 0)
         dict_elem[elem] = cnt+1
-    if add_count:
-        return "<br/>".join(f"{k} ({v})" for k,v in dict_elem.items())
-    else:
-        return "<br/>".join(f"{k}" for k,v in dict_elem.items())
+
+    elems = []
+    for k, v in dict_elem.items():
+        if k != "-":
+            token = format_func(k)
+        else:
+            token = k
+        if add_count and k!="-":
+            elems.append(f"{token} ({v})")
+        else:
+            elems.append(f"{token}")
+    return "<br/>".join(elems)
 
 
-def get_optional_annotations_header(db):
+def get_optional_annotations(db, seqids):
     header = []
     config_table = db.get_config_table()
+    annotations = []
     if config_table.get("KEGG", False):
         header.append("KO")
+        cog_hits = db.get_cog_hits(seqids, indexing="seqid", search_on="seqid")
+        annotations.append(cog_hits)
     if config_table.get("COG", False):
         header.append("COG")
-    return header
+        ko_hits = db.get_ko_hits(seqids)
+        annotations.append(ko_hits)
 
-
-def get_optional_annotations(db, seqids=None):
-    return []
+    if len(annotations)==2:
+        return header, annotations[0].join(annotations[1])
+    elif len(annotations)==1:
+        return header, annotations[0]
+    return header, pd.DataFrame()
 
 
 def extract_orthogroup(request):
@@ -548,16 +565,22 @@ def extract_orthogroup(request):
     if annotations.empty:
         no_match = True
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
-
     
-    optional_annotations = get_optional_annotations(db, seqids=annotations.index.tolist())
-    # merge optional_annotations and annotations by seqid
+    opt_header, optional_annotations = get_optional_annotations(db, seqids=annotations.index.tolist())
+    annotations = annotations.join(optional_annotations)
     grouped = annotations.groupby("orthogroup")
     genes = grouped["gene"].apply(list)
     products = grouped["product"].apply(list)
 
+    if "COG" in opt_header:
+        cogs = grouped["cog"].apply(list)
+
+    if "KO" in opt_header:
+        kos = grouped["KO"].apply(list)
+
+
     table_headers = ["Orthogroup", "Genes", "Products"]
-    table_headers.extend(get_optional_annotations_header(db))
+    table_headers.extend(opt_header)
     table_headers.extend([f"Present in {len(include)}", f"Freq complete database (/{max_n})"])
 
     for row, count in orthogroup2count_all.iteritems():
@@ -566,7 +589,12 @@ def extract_orthogroup(request):
         gene_data = format_lst_to_html("-" if pd.isna(entry) else entry for entry in g)
         prod_data = format_lst_to_html(products.loc[row])
         column_header = [row, format_orthogroup(row)]
-        entry = [column_header, gene_data, prod_data, cnt_in, count]
+        optional = []
+        if "KO" in opt_header and row in kos:
+            optional.append(format_lst_to_html(kos.loc[row], add_count=True, format_func=format_ko_url))
+        if "COG" in opt_header and row in cogs:
+            optional.append(format_lst_to_html(cogs.loc[row], add_count=True, format_func=format_cog_url))
+        entry = [column_header, gene_data, prod_data, *optional, cnt_in, count]
         match_groups_data.append(entry)
 
     envoi_extract = True
@@ -1164,8 +1192,14 @@ def extract_pfam(request, classification="taxon_id"):
     return render(request, 'chlamdb/extract_Pfam.html', my_locals(locals()))
 
 
-def format_ko(ko_id):
-    return f"K{ko_id:05d}"
+def format_ko(ko_id, as_url=False):
+    base = f"K{int(ko_id):05d}"
+    if not as_url:
+        return base
+    return f"<a href=\"/fam_ko/{base}\">{base}</a>"
+
+def format_ko_url(ko_id):
+    return format_ko(ko_id, as_url=True)
 
 
 def format_ko_path(hsh_pathways, ko):
@@ -1826,8 +1860,14 @@ def venn_ko(request):
     return render(request, 'chlamdb/venn_ko.html', my_locals(locals()))
 
 
-def format_cog(cog_id):
-    return f"COG{cog_id:04d}"
+def format_cog(cog_id, as_url=False):
+    base = f"COG{int(cog_id):04d}"
+    if as_url==False:
+        return base
+    return f"<a href=\"/fam_cog/{base}\">{base}</a>"
+
+def format_cog_url(cog_id):
+    return format_cog(cog_id, as_url=True)
 
 def venn_cog(request, sep_plasmids=False):
     """
@@ -2212,12 +2252,15 @@ def locusx(request, locus=None, menu=True):
 
     # TODO: add error messages
     if locus==None:
+        valid_id = False
         return render(request, 'chlamdb/locus.html', my_locals(locals()))
 
     seqid = db.get_CDS_from_locus_tag(locus)
     if seqid==None:
+        valid = False
         return render(request, 'chlamdb/locus.html', my_locals(locals()))
 
+    input_type = "locus_tag"
 
     return render(request, 'chlamdb/locus.html', my_locals(locals()))
 
