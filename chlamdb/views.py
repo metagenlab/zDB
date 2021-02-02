@@ -579,7 +579,6 @@ def extract_orthogroup(request):
 
     annotations = db.get_genes_from_og(orthogroups=selection, bioentries=include,
         terms=["gene", "product", "locus_tag"])
-    print(annotations)
     if annotations.empty:
         no_match = True
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
