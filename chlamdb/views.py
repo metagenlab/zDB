@@ -493,6 +493,22 @@ def get_optional_annotations(db, seqids):
     return header, pd.DataFrame()
 
 
+def get_table_details(db, annotations):
+    header = ["Orthogroup", "Organism", "Locus", "Gene", "Product"]
+    hsh_organisms = db.get_organism(annotations.index.tolist())
+    infos = []
+    for seqid, data in annotations.iterrows():
+        organism = hsh_organisms[seqid]
+        og = format_orthogroup(data.orthogroup, to_url=True)
+        gene = data.gene
+        if pd.isna(data.gene):
+            gene = "-"
+        locus = format_locus(data.locus_tag, to_url=True)
+        entry = [og, organism, locus, gene, data["product"]]
+        infos.append(entry)
+    return header, infos
+
+
 def extract_orthogroup(request):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
@@ -561,12 +577,15 @@ def extract_orthogroup(request):
     max_n = orthogroup2count_all.max()
     match_groups_data = []
 
-    annotations = db.get_genes_from_og(orthogroups=selection, bioentries=include)
+    annotations = db.get_genes_from_og(orthogroups=selection, bioentries=include,
+        terms=["gene", "product", "locus_tag"])
+    print(annotations)
     if annotations.empty:
         no_match = True
         return render(request, 'chlamdb/extract_orthogroup.html', my_locals(locals()))
     
     opt_header, optional_annotations = get_optional_annotations(db, seqids=annotations.index.tolist())
+    details_header, details_data = get_table_details(db, annotations)
     annotations = annotations.join(optional_annotations)
     grouped = annotations.groupby("orthogroup")
     genes = grouped["gene"].apply(list)
@@ -588,7 +607,7 @@ def extract_orthogroup(request):
         g = genes.loc[row]
         gene_data = format_lst_to_html("-" if pd.isna(entry) else entry for entry in g)
         prod_data = format_lst_to_html(products.loc[row])
-        column_header = [row, format_orthogroup(row)]
+        column_header = format_orthogroup(row)
         optional = []
         if "KO" in opt_header and row in kos:
             optional.append(format_lst_to_html(kos.loc[row], add_count=True, format_func=format_ko_url))
@@ -3185,9 +3204,9 @@ def get_all_prot_infos(db, seqids, orthogroups):
     all_locus_data = []
 
     for index, seqid in enumerate(seqids):
-        if seqid not in orthogroups:
-            continue
-        og = orthogroups[seqid]
+        # NOTE: all seqids are attributed an orthogroup, the case where
+        # seqid is not in orthogroups should therefore not arise.
+        og = orthogroups.loc[seqid].orthogroup
         if og not in group_count:
             group_count.append(og)
 
@@ -3201,8 +3220,17 @@ def get_all_prot_infos(db, seqids, orthogroups):
     return all_locus_data, group_count
 
 
-def format_orthogroup(og):
-    return f"group_{og}"
+def format_orthogroup(og, to_url=False):
+    base_str = f"group_{og}"
+    if to_url:
+        return f"<a href=\"/orthogroup/{base_str}\">{base_str}</a>"
+    return base_str
+
+
+def format_locus(locus, to_url=False):
+    if to_url:
+        return f"<a href=\"/locus/{locus}\">{locus}</a>"
+    return locus
 
 
 # TODO : add error handling
@@ -3216,62 +3244,35 @@ def fam_cog(request, cog_id):
     if request.method != "GET":
         return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
-    hsh_seqids = db.get_all_seqfeature_for_cog([cog_id])
-    seqids = list(hsh_seqids.keys())
-    # what if seqids is empty? This should not happen,
-    
-    orthogroups = db.get_og(seqids)
+    df_seqid_to_cog = db.get_cog_hits([cog_id], indexing="seqid", search_on="cog")
+    if len(df_seqid_to_cog)==0:
+        return render(request, 'chlamdb/fam.html', my_locals(locals()))
+
+    seqids = df_seqid_to_cog.index.tolist()
+    orthogroups = db.get_og_count(seqids, search_on="seqid", indexing="seqid")
     cog_info = db.get_cog_summaries([cog_id], only_cog_desc=True)
     all_locus_data, group_count = get_all_prot_infos(db, seqids, orthogroups)
 
     ref_tree = db.get_reference_phylogeny()
     leaf_to_name = db.get_genomes_description(indexing="bioentry", exclude_plasmids=True)
+
     df_og_count = db.get_og_count(group_count)
-    hsh_cog_count = db.get_cog_counts([cog_id])
+    df_cog_count = db.get_cog_hits(ids=[cog_id], indexing="bioentry", search_on="cog")
 
     # build the different hashes necessary for multiple_profiles_heatmap
-    dico_tree = {}
-    for og in group_count:
-        dico_tree[format_orthogroup(og)] = {}
-    dico_tree[format_cog(cog_id)] = {}
+    # TODO: reimplement using the new tree building lib. CAVE: need to
+    # use seqid for the clustering
 
-    for index, values in df_og_count.iterrows():
-        bioentry = values.bioentry
-        og = values.orthogroup
-        dico_tree[format_orthogroup(og)][str(bioentry)] = values["count"]
-    for bioentry, cog_count_tuple in hsh_cog_count.items():
-        for cog, count in cog_count_tuple.items():
-            dico_tree[format_cog(cog)][str(bioentry)] = count
-
-    taxon2group2ec = {}
-    for index, values in df_og_count.iterrows():
-        bioentry = values.bioentry
-        if not bioentry in hsh_cog_count:
-            continue
-        og = values.orthogroup
-        cog_count_tuple = hsh_cog_count[bioentry]
-        if str(bioentry) not in taxon2group2ec:
-            taxon2group2ec[str(bioentry)] = {}
-        temp_table = [format_cog(cog) for cog in cog_count_tuple.keys()]
-        taxon2group2ec[str(bioentry)][format_orthogroup(og)] = temp_table
-
+    group_count = [format_orthogroup(og) for og in group_count]
     fam = format_cog(cog_id)
-    labels = [fam] + [format_orthogroup(og) for og in group_count]
-    tree, style = ete_motifs.multiple_profiles_heatmap(None,
-                                                      labels,
-                                                      dico_tree,
-                                                      taxon2group2value=taxon2group2ec,
-                                                      highlight_first_column=True,
-                                                      tree=ref_tree,
-                                                      leaf_to_name=leaf_to_name)
-    big = len(labels) > 30
+    big = False #len(labels) > 30
     info = [cog_info[cog_id][1], ""]
     type = "cog"
     path = settings.BASE_DIR + '/assets/temp/fam_tree_%s.png' % fam
     asset_path = '/temp/fam_tree_%s.png' % fam
     menu = True
     envoi = True
-    tree.render(path, dpi=300, tree_style=style)
+    # tree.render(path, dpi=300, tree_style=style)
     return render(request, 'chlamdb/fam.html', my_locals(locals()))
 
 

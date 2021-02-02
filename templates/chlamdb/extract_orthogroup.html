@@ -92,25 +92,11 @@
 			  <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
 				  <li class="active"><a href="#red" data-toggle="tab">Orthogroups</a></li>
 				  <li><a href="#orange" data-toggle="tab">Table detail</a></li>
-				  <li><a href="#tab2" data-toggle="tab">Locus list reference</a></li>
 			  </ul>
 
 			  <div id="my-tab-content" class="tab-content">
 				  <div class="tab-pane active" id="red">
 					<div style="padding-top:10px;">
-						<div id="export_bouttons_groups">
-							<a href="{% url 'get_fasta' %}{{fasta_url_noref}}" class="btn btn-success">Download fasta</a>
-							
-							<form name="circos_form" id="circos_form" action="{% url 'circos_main' %}" method="post">
-								<input type="hidden" name="reference_taxon" value="{{ reference_taxon }}">
-								<input type="hidden" name="target_list" value="{{ target_circos_taxons }}">
-								<input type="hidden" name="highlight" value="{{ locus_list }}">
-								<button class="btn btn-success">Show on circular map</button>
-							</form>
-							
-							<!-- should re-import the orthogroup_cog_barchart thingy here from tasks.py -->
-							<br/>
-						</div>
 
 						<h3>Number of orthogroups: {{ sum_group }} </h3>
 
@@ -141,7 +127,7 @@
 								<tr>
 									{% for entry in value %}
 									{% if forloop.first %}
-										<td style="text-align: center;"><a href="{% url 'orthogroup' entry.0 %}">{{entry.1}}</a></td>
+										<td style="text-align: center;"><a href="{% url 'orthogroup' entry %}">{{entry}}</a></td>
 									{% else %}
 										<td style="text-align: center;">{{entry|safe}}</td>
 									{% endif %}
@@ -166,147 +152,24 @@
 						  <table class="display" id="cog_table">
 							  <thead>
 								  <tr>
-									  <th></th>
-									  <th>Orthogroup</th>
-									  <th>Locus</th>
-									  <th>Protein id</th>
-									  <th>Start</th>
-									  <th>Stop</th>
-									  <th>S.</th>
-									  <th>Gene</th>
-									  <th>nH</th>
-									  <th>nG</th>
-									  <th>TM</th>
-									  <th>SP</th>
-									  <th>Product</th>
-									  <th>Organism</th>
-									  <th>Translation</th>
+								  {% for value in details_header %}
+									<th style="text-align:center; padding: 5px 30px"> {{value|safe}} </th>
+								  {% endfor %}
 								  </tr>
 							  </thead>
+
 							  <tbody>
 
-								  {% for values in extract_result %}
+								  {% for entry in details_data %}
 									  <tr>
-										  <td>{{values.0}}</td>
-										  <td><a href="{% url 'locusx' values.1 True %}"  target="_top">{{values.1}}</a></td>
-										  <td>{{values.2}}</td>
-										  <td>{{values.3}}</td>
-										  <td>{{values.4}}</td>
-										  <td>{{values.5}}</td>
-										  <td>{{values.6}}</td>
-										  <td>{{values.7}}</td>
-										  <td>{{values.8}}</td>
-										  <td>{{values.9}}</td>
-										  <td>{{values.10}}</td>
-										  <td>{{values.11}}</td>
-										  <td>{{values.12}}</td>
-										  <td>{{values.13}}</td>
-										  <td>{{values.14}}</td>
+										  {% for values in entry %}
+										  <td style="text-align: center;"> {{ values|safe }} </td>
+										  {% endfor %}
 									  </tr>
 								  {% endfor %}
 							  </tbody>
 						  </table>
 				  </div>
-				  <div class="tab-pane" id="tab2">
-
-					  <h3> Locus annotation </h3>
-					  <div id="export_bouttons_groups" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
-						  <a href="{% url "get_fasta" %}{{fasta_url_ref}}" class="btn btn-success">Download fasta</a>
-						  <button class="btn btn-success">Show on circular map</button>
-
-					  <br/>
-					  </div>
-					  <table id="reference_table" class="table">
-						  <thead>
-							  <tr>
-								  <th></th>
-								  <th id="entete_locus">Orthogroup</th>
-								  <th id="entete_locus">Locus</th>
-								  <th style="width:10px">C</th>
-								  <th style="width:70px">COGn</th>
-								  <th style="width:55px">KO</th>
-								  <th style="width:260px">Pathways</th>
-								  <th style="width:230px">Modules</th>
-								  <th style="width:230px">Interpro</th>
-								  <th id="entete_gene">Gene</th>
-								  <th id="entete_n">nH</th>
-								  <th id="entete_n">nG</th>
-								  <th id="entete_n">TM</th>
-								  <th id="entete_n">SP</th>
-								  <th id="entete_product">Product</th>
-
-
-							  </tr>
-						  </thead>
-						  <tbody>
-
-							  {%for values in locus2annot%}
-							  <tr>
-								  <td>{{values.0}}</td>
-								  <td>{{values.1}}</td>
-								  <td><a href="{% url 'locusx' values.2 True %}" target="_top">{{values.2}}</a></td>
-								  <td>{{locus_tag2cog_catego|keyvalue:values.2}}</td>
-								  {% with locus_tag2cog_name|keyvalue:values.2 as name %}
-									  {% if name == '-' %}
-										  <td>{{locus_tag2cog_name|keyvalue:values.2}}</td>
-									  {% else %}
-										  <td><a href="{% url "fam" name 'cog'%}" target="_top">{{locus_tag2cog_name|keyvalue:values.2}}</a></td>
-									  {% endif %}
-								  {%endwith%}
-								  {% with locus_tag2ko|keyvalue:values.2 as oneko %}
-									  {% if oneko == '-' %}
-										  <td>{{locus_tag2ko|keyvalue:values.2}}</td>
-										  <td>-</td>
-										  <td>-</td>
-									  {% else %}
-										  <td><a href="{% url "fam" oneko 'ko'%}" target="_top">{{locus_tag2ko|keyvalue:values.2}}</a></td>
-										  {% with ko2ko_pathways|keyvalue:oneko as name %}
-											  {% if name == '-' %}
-												  <td>-</td>
-											  {% else %}
-												  <td>{{name|safe}}</td>
-											  {% endif %}
-										  {%endwith%}
-										  {% with ko2ko_modules|keyvalue:oneko as name %}
-											  {% if name == '-' %}
-												  <td>-</td>
-											  {% else %}
-												  <td>{{name|safe}}</td>
-											  {% endif %}
-										  {%endwith%}
-									  {% endif %}
-
-
-								  {%endwith%}
-								  {% with locus2interpro|keyvalue:values.2 as interpro_data %}
-								  <td>
-									  {% for one_interpro in interpro_data %}
-									  {% if one_interpro.0 != '-' %}
-										  <a href="{% url 'fam' one_interpro.0 'interpro' %}" target="_top">{{one_interpro.0}}</a> /
-									  {%else%}
-										  {{one_interpro.0}}
-									  {%endif%}
-										  {{one_interpro.1}} </br>
-									  {% endfor %}
-									  {%endwith%}
-								  </td>
-								  <td>{{values.7}}</td>
-								  <td>{{values.8}}</td>
-								  <td>{{values.9}}</td>
-								  <td>{{values.10}}</td>
-								  <td>{{values.11}}</td>
-								  <td>{{values.12}}</td>
-
-							  </tr>
-
-							  {%endfor%}
-						  </tbody>
-					  </table>
-
-
-
-				  </div>
-
 			  </div>
         </div>
 		{% endif %}
