@@ -1,124 +1,46 @@
-<!DOCTYPE html>
 
+<div id="content"> 
 
-<html>
+	<h3> Homologs for group: {{orthogroup}} (Identified with Orthofinder)</h3>
 
+	<div class="container-fluid">
+		<div class="col-lg-12">
+			<div style="padding-top:20px">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title">Homologs</h3>
+					</div>
+					<div class="panel-body">
+						{{homologues|length}} homologs were identified in {{n_genomes}} with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>.
+					</div>
+				</div>
+			</div>
 
+			<div class="row">
+				<table class="display" id="homologs"> <!--  class="sortable" -->
+					<thead>
+						<tr>
+							{% for entry in headers %}
+							<th> {{entry}}  </th>
+							{% endfor %}
+						</tr>
+					</thead>
+					<tbody>
+						{% for values in homologues %}
+						<tr>
+						{% for entry in values %}
+						<td> {{entry|safe}}</td>
+						{% endfor %}
+						</tr>
 
-<head>
-{% load static %}
-{% load static %}
-{% get_static_prefix as STATIC_PREFIX %}
-
-{% include "chlamdb/header.html" %}
-
-</head>
-
-<body>
-<div id="container2">
-
-    <div id="content"> 
-
-            <h3> Homologs for group: {{orthogroup}} (Identified with Orthofinder)</h3>
-
-              <div class="container-fluid">
-                <div class="col-lg-12">
-                    <div style="padding-top:20px">
-                      <div class="panel panel-default">
-                        <div class="panel-heading">
-                          <h3 class="panel-title">Homologs</h3>
-                        </div>
-                        <div class="panel-body">
-                          {{homologues|length}} homologs were identified in {{ data.8 }} genomes with <a href="https://github.com/davidemms/OrthoFinder">OrthoFinder</a>.
-                        </div>
-                      </div>
-                    </div>
-
-                      <div class="row">
-
-                             <table class="display" id="homologs"> <!--  class="sortable" -->
-                                  <thead>
-                                      <tr>
-                                          <th></th>
-                                          
-                                          <th>Locus tag</th>
-                                          {% if locus_tag %}
-                                              <th>ID(%)</th>
-                                          {% endif %}
-                                          {% if locus2uniprot_annotation %}
-                                              <th>Uniprot Status</th>
-                                              <th>Annot. score</th>
-                                              <th>Gene (uniprot/refseq)</th>
-                                          {% else %}
-                                              <th>Gene</th>
-                                          {% endif %}
-                                          <th>TM</th>
-                                          <th>SP</th>
-                                          <th>Organism</th>
-                                          {% if locus2uniprot_annotation %}
-                                              <th>Product (uniprot/refseq)</th>
-                                              <th>Function</th>
-                                          {% else %}
-                                              <th>Product</th>
-                                          {% endif %}                        
-                                          
-                                      </tr>
-                                  </thead>
-                                  <tbody>
-                                      {% for values in homologues %}
-
-                                      <!-- 1locus_tag,2gene,3product,4organism ,5orthogroup_size,6n_genomes,7TM,8SP,9comment_function-->
-                                      <!-- 10gene  | 11annotation_score | 12uniprot_status | 13recommendedName_fullName -->
-
-                                          
-                                          <tr>
-                                              <td>{{values.0}}</td>
-                                              <td><a href="{% url 'locusx' values.1 True %}" target="_top">{{values.1}}</a></td>
-                                              {% if locus_tag %}
-                                                  <td>{{values.9}}</td> <!-- identity -->
-                                              {% endif %}
-                                              {% if locus2uniprot_annotation %}
-                                                  {% if values.12 == 'reviewed' or values.12 == '1' %}
-                                                      <td style="color:red">RW </td>  <!-- review <img src="{{ STATIC_URL }}scales/reviewed.gif" id="rw">-->
-                                                  {%else%}
-                                                      <td>UR</td> <!-- review <img src="{{ STATIC_URL }}scales/unreviewed.gif" id="uw">-->
-                                                  {%endif%}
-                                                  <td>{{values.11}}</td> <!-- annotation score -->
-                                              {%endif%}    
-                                              
-                                              {% if locus2uniprot_annotation %}
-                                                  <td>{{values.2}} <br> {{values.10}}</td> <!-- gene -->
-                                              {%else%} <!-- only basic anotation-->
-                                                  <td>{{values.2}} <br>
-                                              {% endif %}
-                                              <td>{{values.7}}</td> <!-- tm -->
-                                              <td>{{values.8}}</td> <!-- sp -->
-                                              <td>{{values.4}}</td> <!-- organism -->
-                                              {% if locus2uniprot_annotation %}
-                                                  <td>{{values.3}} <br> {{values.13}}</td> <!-- gene -->
-                                                  <td>{{values.9}}</td> <!-- gene -->
-                                              {%else%} <!-- only basic anotation-->
-                                                  <td>{{values.3}} <br>
-                                              {% endif %}
-                                              
-                                          </tr>
-
-                                      {% endfor %}
-                                  </tbody>
-                              </table>
-                            </div>
-                          </div>
-                  </div>
-
-             
-
-        </div>
-
-
-    </div>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
 </div>
 
-</body>
 <script>
 
   $(document).ready(function() {
@@ -145,7 +67,3 @@
   } );
 
 </script>
-
-
-
-</html>

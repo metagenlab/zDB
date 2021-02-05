@@ -2198,16 +2198,67 @@ def format_lst(lst):
     return hsh_values
 
 
-def orthogroup(request, og):
+def tab_homologs(infos, hsh_organism):
+    n_genomes = len(set(hsh_organism.values()))
+    if n_genomes==1:
+        n_genomes = "1 genome"
+    else:
+        n_genomes = f"{n_genomes} genomes"
+
+    headers = ["", "Locus tag", "Organism", "Gene", "Product"]
+    homologues = []
+    index = 0
+    for seqid, data in infos.iterrows():
+        organism = hsh_organism[seqid]
+        locus_fmt = format_locus(data.locus_tag, to_url=True)
+        entry = [index+1, locus_fmt, organism, format_gene(data.gene), data["product"]]
+        homologues.append(entry)
+        index += 1
+
+    return {"orthogroup": orthogroup,
+            "n_genomes": n_genomes,
+            "headers": headers,
+            "homologues": homologues }
+
+
+def tab_lengths(n_homologues, annotations):
     import plotly.figure_factory as ff
 
+    length_distrib = n_homologues > 1
+    if not length_distrib:
+        return {"length_distrib": False}
+
+    lengths = annotations["length"]
+    max_protein_length = lengths.max()
+    std_protein_length = f"{lengths.std():.1f}"
+    min_protein_length = lengths.min()
+    mean_protein_length = f"{lengths.mean():.1f}"
+    median_protein_length = f"{lengths.median():.1f}"
+    if len(lengths.unique()) > 1:
+        fig1 = ff.create_distplot([lengths.tolist()], ["Sequence length"], bin_size=20)
+        fig1.update_xaxes(range=[0, max_protein_length])
+        fig1.layout.margin.update({"l": 80, "r": 20, "b": 40, "t": 20, "pad": 10, })
+        html_plot_prot_length = manipulate_biosqldb.make_div(fig1, div_id="distplot")
+    else:
+        return { "length_distrib": True, "single_length": True, "prot_length": lengths[0] }
+
+    return {"length_distrib": True,
+            "max_protein_length": max_protein_length,
+            "std_protein_length": std_protein_length,
+            "min_protein_length": min_protein_length,
+            "mean_protein_length": mean_protein_length,
+            "median_protein_length": median_protein_length,
+            "html_plot_prot_length": html_plot_prot_length }
+
+
+def orthogroup(request, og):
     tokens = og.split("_")
     try:
         og_id = int(tokens[1])
     except:
         menu = True
         invalid_id = True
-        return render(request, "chlamdb/locus.html", my_locals(locals()))
+        return render(request, "chlamdb/og.html", my_locals(locals()))
     else:
         valid_id = True
 
@@ -2218,12 +2269,14 @@ def orthogroup(request, og):
     og_counts = db.get_og_count([og_id], search_on="orthogroup")
     if len(og_counts.index) == 0:
         valid_id = False
-        return render(request, "chlamdb/locus.html", my_locals(locals()))
+        return render(request, "chlamdb/og.html", my_locals(locals()))
 
-    annotations = db.get_genes_from_og(orthogroups=[og_id], terms=["gene", "product", "length"])
+    annotations = db.get_genes_from_og(orthogroups=[og_id],
+            terms=["locus_tag", "gene", "product", "length"])
+    hsh_organisms = db.get_organism(annotations.index.tolist())
     hsh_genes = format_lst(annotations["gene"].tolist())
     hsh_products = format_lst(annotations["product"].tolist())
-    homologues = og_counts.loc[og_id].sum()
+    n_homologues = og_counts.loc[og_id].sum()
 
     gene_annotations = []
     for index, values in enumerate(hsh_genes.items()):
@@ -2239,23 +2292,20 @@ def orthogroup(request, og):
             product = "-"
         product_annotations.append([index+1, product, cnt])
 
-    length_distrib = homologues > 1
-    if length_distrib:
-        lengths = annotations["length"]
-        max_protein_length = lengths.max()
-        std_protein_length = f"{lengths.std():.1f}"
-        min_protein_length = lengths.min()
-        mean_protein_length = f"{lengths.mean():.1f}"
-        median_protein_length = f"{lengths.median():.1f}"
-        print(lengths.tolist())
-        fig1 = ff.create_distplot([lengths.tolist()], ["Sequence length"], bin_size=20)
-        fig1.update_xaxes(range=[0, max_protein_length])
-        fig1.layout.margin.update({"l": 80, "r": 20, "b": 40, "t": 20, "pad": 10, })
-        html_plot_prot_length = manipulate_biosqldb.make_div(fig1, div_id="distplot")
-
-    input_type = "orthogroup"
-    menu = True
-    return render(request, "chlamdb/locus.html", my_locals(locals()))
+    length_tab_ctx = tab_lengths(n_homologues, annotations)
+    homolog_tab_ctx = tab_homologs(annotations, hsh_organisms)
+    context = {
+        "valid_id": valid_id,
+        "optional2status": optional2status,
+        "n_homologues": n_homologues,
+        "og": og,
+        "menu": True,
+        "gene_annotations": gene_annotations,
+        "product_annotations": product_annotations,
+        **homolog_tab_ctx,
+        **length_tab_ctx
+    }
+    return render(request, "chlamdb/og.html", context)
 
 
 def locus(request, locus):
@@ -8464,71 +8514,11 @@ def interpro_taxonomy(request):
         form = interpro_form_class()
     return render(request, 'chlamdb/interpro_taxonomy.html', my_locals(locals()))
 
-
-
-
-
-def homologs(request, orthogroup, locus_tag=False):
-
-    from chlamdb.biosqldb import orthogroup_identity_db
-    biodb = settings.BIODB
-    server, db = manipulate_biosqldb.load_db(biodb)
-
-    if request.method == 'GET': 
-
-        server, db = manipulate_biosqldb.load_db(biodb)
-
-        sql_main_annot = 'select locus_tag, gene,product,organism,orthogroup_size,n_genomes,TM,SP from ' \
-                         ' orthology_detail where orthogroup="%s"' % (orthogroup)
-
-        sql_uniprot_annot =  'select C.comment_function,C.gene,D.annotation_score,D.uniprot_status,C.recommendedName_fullName ' \
-                             ' from (select locus_tag from ' \
-                             ' orthology_detail where orthogroup="%s") A ' \
-                             ' inner join custom_tables_locus2seqfeature_id B on A.locus_tag=B.locus_tag ' \
-                             ' left join custom_tables_uniprot_annotation as C on B.seqfeature_id=C.seqfeature_id ' \
-                             ' left join custom_tables_uniprot_id2seqfeature_id as D on B.seqfeature_id=D.seqfeature_id;' % (orthogroup)
-        
-        # TODO: deal with uniprot data properly  
-        sql_uniprot_annot = 'select * from orthology_orthogroup t1 ' \
-                            ' inner join orthology_seqfeature_id2orthogroup t2 on t1.orthogroup_id=t2.orthogroup_id ' \
-                            ' left join custom_tables_uniprot_annotation t3 on t2.seqfeature_id=t3.seqfeature_id ' \
-                            ' left join custom_tables_uniprot_id2seqfeature_id as t4 on t2.seqfeature_id=t4.seqfeature_id'
-
-        homologues = list(server.adaptor.execute_and_fetchall(sql_main_annot, ))
-        
-        try:
-            locus2uniprot_annotation = manipulate_biosqldb.to_dict(server.adaptor.execute_and_fetchall(sql_uniprot_annot, ))
-        except:
-            locus2uniprot_annotation = False
-        
-        for i, row in enumerate(homologues):
-            homologues[i] = ['-' if v is None else v for v in list(row)]
-
-
-        if locus_tag:
-            # add identity column
-            if len(homologues) > 1:
-                orthogroup2identity_dico = orthogroup_identity_db.orthogroup2identity_dico(biodb, orthogroup)
-
-                for count, value in enumerate(homologues):
-                    value = list(value)
-                    locus_2 = value[0]
-                    homologues[count] = [count+1] + value + [orthogroup2identity_dico[locus_tag][locus_2]]
-            else:
-                homologues[0] = [1] + homologues[0] + [100]
-        else:
-            for count, value in enumerate(homologues):
-                value = list(value)
-                homologues[count] = [count+1] + value
-
-        return render(request, 'chlamdb/homologs.html', my_locals(locals()))
-
-    return render(request, 'chlamdb/homologs.html', my_locals(locals()))
-
-
-
-
-
+def format_gene(gene):
+    if pd.isna(gene):
+        return "-"
+    else:
+        return gene
 
 
 def blastswissprot(request, locus_tag):
@@ -12284,17 +12274,21 @@ def orthogroup_conservation_tree(request, orthogroup):
         return render(request, 'chlamdb/orthogroup_conservation.html', my_locals(locals()))
 
     ref_phylogeny = db.get_reference_phylogeny()
-    leaf_to_name = db.get_genomes_description()
-    count = db.get_og_count([group], search_on="orthogroup")
+    leaf_to_name = db.get_genomes_description(indexing="taxon_id")
+    
+    # Note: as the orthogroup may either be in a plasmid or in the chromosome
+    # of the bacteria, we need to index by taxon to group them (index on taxon)
+    count = db.get_og_count([group], search_on="orthogroup", indexing="taxon_id")
+
     tree = Tree(ref_phylogeny)
     R = tree.get_midpoint_outgroup()
     tree.set_outgroup(R)
     tree.ladderize()
     e_tree = EteTree(tree)
+
     e_tree.add_column(SimpleColorColumn.fromSeries(count.loc[group], header=format_orthogroup(group)))
     e_tree.rename_leaves(leaf_to_name)
 
-    orthogroup = 15
     dpi = 1200
     input_type = "orthogroup"
     asset_path = '/temp/og_conservation%s.svg' % group

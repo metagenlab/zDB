@@ -63,9 +63,7 @@ function clearBox(elementID)
                 <li><a href="#12" data-toggle="tab" onclick="window.open('{% url 'homologs' data.0 data.1 %}', 'frame12'); return false">Homologs <span class="badge">{{homologues}}</span><br></a></li>
                 {% else %}
                      <li class="active"><a href="#tab33" data-toggle="tab">Overview<br></a></li>
-					 {%if optional2status|keyvalue:"BLAST_database" %}
-                     <li><a href="#12" data-toggle="tab" onclick="window.open('{% url 'homologs' data.0 data.1 %}', 'frame12'); return false">Homologs <span class="badge">{{homologues}}</span><br></a></li>
-					{% endif %}
+					 <li><a href="#12" data-toggle="tab" onclick="window.open('www.google.com', 'frame12'); return false">Homologs <span class="badge">{{homologues}}</span><br></a></li>
                 {% endif %}
 
                 {% if input_type == 'locus_tag'%}

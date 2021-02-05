@@ -130,7 +130,6 @@ urlpatterns = [        url('^robots.txt$', TemplateView.as_view(template_name='r
                        url(r'^extract_region/$', views.extract_region, name="extract_region"),
                        url(r'^circos_homology/$', views.circos_homology, name="circos_homology"),
                        url(r'^search/$', views.search, name="search"),
-                       url(r'^homologs/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)$', views.homologs, name="homologs"),
                        url(r'^homologs/([a-zA-Z0-9_]+)$', views.homologs, name="homologs"),
                        url(r'^interpro/$', views.interpro, name="interpro"),
                        url(r'^blast/$', views.blast, name="blast"),
