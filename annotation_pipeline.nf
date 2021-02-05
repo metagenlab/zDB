@@ -377,7 +377,7 @@ merged_faa_chunks.splitFasta( by: 300, file: "chunk_" )
 
 process prepare_orthofinder {
 
-  container "$params.annotation_container"
+  container "$params.orthofinder_container"
 
   when:
   params.orthofinder
@@ -398,7 +398,7 @@ process prepare_orthofinder {
 
 process blast_orthofinder {
 
-  container "$params.annotation_container"
+  container "$params.blast_container"
 
   input:
   file complete_dir from result_dir
@@ -427,7 +427,7 @@ process blast_orthofinder {
 
 process orthofinder_main {
 
-  container "$params.annotation_container"
+  container "$params.orthofinder_container"
 
   publishDir 'orthology', mode: 'copy', overwrite: true
   echo true
@@ -446,8 +446,6 @@ process orthofinder_main {
 
   script:
   """
-  echo "${complete_dir.baseName}"
-  ls
   orthofinder -og -t ${task.cpus} -a ${task.cpus} \
 	-b ./Results_$params.orthofinder_output_dir/WorkingDirectory/ > of_grouping.txt \
 	-n "$params.orthofinder_output_dir"
@@ -1504,7 +1502,7 @@ process load_base_db {
     db_name="$db_base"
     """
     #!/usr/bin/env python
-    # lil modification
+    # small modifiction
 
     import setup_chlamdb
     

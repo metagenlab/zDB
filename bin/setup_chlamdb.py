@@ -49,23 +49,35 @@ def is_plasmid(record):
 
 
 def load_gbk(gbks, args, db_file):
+    """
+    NOTE:
+
+    This function assumes that only one organism is present in each 
+    genbank file. An arbitraty taxon_id is assigned to each genbank file
+    to differentiate the organisms in chlamdb. It has nothing to do
+    with the taxon id from NCBI. It just is an identifier to group
+    all the bioentries from a bacteria together (its chromosomes and plasmids).
+    """
     db = db_utils.DB.load_db(db_file, args)
     data = []
      
     bioentry_plasmids = []
-    for gbk in gbks:
+    bioentry_to_taxid = []
+    for taxon_id, gbk in enumerate(gbks):
         records = [i for i in SeqIO.parse(gbk, 'genbank')]
 
-        # hack to link the bioentry to the filename, useful later for parsing and
-        # storing checkM results in the dtb.
         for record in records:
-            print(record)
             db.load_gbk_wrapper([record])
             bioentry_id = db.server.adaptor.last_id("bioentry")
             bioentry_plasmids.append((bioentry_id, is_plasmid(record)))
-            data.append( (bioentry_id, gbk.replace(".gbk", "")) )
+            bioentry_to_taxid.append( (bioentry_id, taxon_id+1) )
+
+        # hack to link the bioentry to the filename, useful later for parsing and
+        # storing checkM results in the dtb.
+        data.append( (taxon_id, gbk.replace(".gbk", "")) )
 
     db.load_filenames(data)
+    db.update_taxon_ids(bioentry_to_taxid)
     db.update_plasmid_status(bioentry_plasmids)
     db.set_status_in_config_table("gbk_files", 1)
     db.commit()
@@ -360,7 +372,11 @@ def load_BBH_phylogenies(kwargs, lst_orthogroups, db_file):
     db.set_status_in_config_table("BBH_phylogenies", 1)
     db.commit()
 
+
 def load_gene_phylogenies(kwargs, lst_orthogroups, db_file):
+    """
+    NOTE: the leafs of those tree are locus tags
+    """
     import ete3
 
     db = db_utils.DB.load_db(db_file, kwargs)
@@ -373,22 +389,24 @@ def load_gene_phylogenies(kwargs, lst_orthogroups, db_file):
     db.set_status_in_config_table("gene_phylogenies", 1)
     db.commit()
 
+
 def load_reference_phylogeny(kwargs, tree, db_file):
     import ete3
     db = db_utils.DB.load_db(db_file, kwargs)
 
     newick_file = open(tree, "r")
     newick_string = newick_file.readline()
-    hsh_filename_to_bioentry = db.get_filenames_to_bioentry()
+    hsh_filename_to_taxon = db.get_filenames_to_taxon_id()
 
-    # convert leaf names to bioentry_id instead of filename
+    # convert leaf names to taxon_id instead of filename
     tree = ete3.Tree(newick_string)
     for leaf in tree.iter_leaves():
-        leaf.name = hsh_filename_to_bioentry[leaf.name]
+        leaf.name = hsh_filename_to_taxon[leaf.name]
 
     db.load_reference_phylogeny(tree.write())
     db.set_status_in_config_table("reference_phylogeny", 1)
     db.commit()
+
 
 # Several values will be inserted in the bioentry_qualifier_value table, under different
 # term_id
@@ -467,11 +485,12 @@ def load_checkm_results(params, checkm_results, db_file):
     db = db_utils.DB.load_db(db_file, params)
     tab = pd.read_table(checkm_results)
 
-    hsh_filename_to_bioentry = db.get_filenames_to_bioentry()
+    hsh_filename_to_taxid = db.get_filenames_to_taxon_id()
     data = []
     for index, row in tab.iterrows():
-        values = (hsh_filename_to_bioentry[row["Bin Id"]], row["Completeness"], row["Contamination"])
+        values = (hsh_filename_to_taxid[row["Bin Id"]], row["Completeness"], row["Contamination"])
         data.append(values)
 
     db.load_checkm_results(data)
     db.commit()
+
