@@ -2205,7 +2205,7 @@ def tab_homologs(infos, hsh_organism):
     else:
         n_genomes = f"{n_genomes} genomes"
 
-    headers = ["", "Locus tag", "Organism", "Gene", "Product"]
+    headers = ["", "Locus tag", "Source", "Gene", "Product"]
     homologues = []
     index = 0
     for seqid, data in infos.iterrows():
@@ -2251,6 +2251,68 @@ def tab_lengths(n_homologues, annotations):
             "html_plot_prot_length": html_plot_prot_length }
 
 
+def tab_og_conservation_tree(db, group):
+    from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
+    from ete3 import Tree
+    
+    ref_phylogeny = db.get_reference_phylogeny()
+    leaf_to_name = db.get_genomes_description(indexing="taxon_id", exclude_plasmids=True)
+    
+    # Note: as the orthogroup may either be in a plasmid or in the chromosome
+    # of the bacteria, we need to index by taxon to group them (index on taxon)
+    count = db.get_og_count([group], search_on="orthogroup", indexing="taxon_id")
+
+    tree = Tree(ref_phylogeny)
+    R = tree.get_midpoint_outgroup()
+    tree.set_outgroup(R)
+    tree.ladderize()
+    e_tree = EteTree(tree)
+
+    e_tree.add_column(SimpleColorColumn.fromSeries(count.loc[group], header=format_orthogroup(group)))
+    e_tree.rename_leaves(leaf_to_name)
+
+    dpi = 1200
+    input_type = "orthogroup"
+    asset_path = f"/temp/og_conservation{group}.svg"
+    path = settings.BASE_DIR + '/assets/' + asset_path
+    e_tree.render(path, dpi=dpi)
+    return {"asset_path": asset_path}
+
+
+def og_tab_get_kegg_annot(db, seqids):
+    return {}
+
+
+def og_tab_get_cog_annot(db, seqids):
+    cog_hits = db.get_cog_hits(seqids, indexing="seqid", search_on="seqid")
+
+    if cog_hits.empty:
+        return {}
+
+    n_entries = cog_hits["cog"].value_counts()
+    cog_summ = db.get_cog_summaries(n_entries.index.tolist())
+    cog_entries = []
+    for cog_id, count in n_entries.iteritems():
+        entry = [format_cog(cog_id, as_url=True), count]
+        funcs = []
+        func_descrs = []
+        cog_descrs = []
+        for func, func_descr, cog_descr in cog_summ[cog_id]:
+            funcs.append(func)
+            func_descrs.append(func_descr)
+            cog_descrs.append(cog_descr)
+        entry.append("<br>".join(cog_descrs))
+        entry.append("<br>".join(funcs))
+        entry.append("<br>".join(func_descrs))
+        cog_entries.append(entry)
+
+    cog_header = ["COG", "Occurences", "Description", "Category", "Category description"]
+    return {
+        "cog_header": cog_header,
+        "cog_entries": cog_entries
+    }
+
+
 def orthogroup(request, og):
     tokens = og.split("_")
     try:
@@ -2273,6 +2335,7 @@ def orthogroup(request, og):
 
     annotations = db.get_genes_from_og(orthogroups=[og_id],
             terms=["locus_tag", "gene", "product", "length"])
+
     hsh_organisms = db.get_organism(annotations.index.tolist())
     hsh_genes = format_lst(annotations["gene"].tolist())
     hsh_products = format_lst(annotations["product"].tolist())
@@ -2292,6 +2355,14 @@ def orthogroup(request, og):
             product = "-"
         product_annotations.append([index+1, product, cnt])
 
+    cog_ctx, kegg_ctx = {}, {}
+    if optional2status.get("COG", False):
+        cog_ctx = og_tab_get_cog_annot(db, annotations.index.tolist())
+
+    if optional2status.get("KEGG", False):
+        kegg_ctx = og_tab_get_kegg_annot(db, annotations.index.tolist())
+
+    og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
     homolog_tab_ctx = tab_homologs(annotations, hsh_organisms)
     context = {
@@ -2303,7 +2374,10 @@ def orthogroup(request, og):
         "gene_annotations": gene_annotations,
         "product_annotations": product_annotations,
         **homolog_tab_ctx,
-        **length_tab_ctx
+        **length_tab_ctx,
+        **og_conserv_ctx,
+        **cog_ctx,
+        **kegg_ctx
     }
     return render(request, "chlamdb/og.html", context)
 
@@ -12259,44 +12333,6 @@ def similarity_network(request, orthogroup, annotation):
 
     return render(request, 'chlamdb/similarity_network.html', my_locals(locals()))
 
-
-def orthogroup_conservation_tree(request, orthogroup):
-    from metagenlab_libs.ete_phylo import EteTree, SimpleColorColumn, ModuleCompletenessColumn
-    from ete3 import Tree
-    
-    biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
-    tokens = orthogroup.split("_")
-    try:
-        group = int(tokens[1])
-    except:
-        # add error message
-        return render(request, 'chlamdb/orthogroup_conservation.html', my_locals(locals()))
-
-    ref_phylogeny = db.get_reference_phylogeny()
-    leaf_to_name = db.get_genomes_description(indexing="taxon_id")
-    
-    # Note: as the orthogroup may either be in a plasmid or in the chromosome
-    # of the bacteria, we need to index by taxon to group them (index on taxon)
-    count = db.get_og_count([group], search_on="orthogroup", indexing="taxon_id")
-
-    tree = Tree(ref_phylogeny)
-    R = tree.get_midpoint_outgroup()
-    tree.set_outgroup(R)
-    tree.ladderize()
-    e_tree = EteTree(tree)
-
-    e_tree.add_column(SimpleColorColumn.fromSeries(count.loc[group], header=format_orthogroup(group)))
-    e_tree.rename_leaves(leaf_to_name)
-
-    dpi = 1200
-    input_type = "orthogroup"
-    asset_path = '/temp/og_conservation%s.svg' % group
-    path = settings.BASE_DIR + '/assets/' + asset_path
-    e_tree.render(path, dpi=dpi)
-    profile_match_jac = False
-    profile_match_eucl = False
-    return render(request, 'chlamdb/orthogroup_conservation.html', my_locals(locals()))
 
 
 def orthogroup_conservation_tree_legacy(request, orthogroup_or_locus):

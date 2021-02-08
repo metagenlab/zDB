@@ -1,110 +1,19 @@
-<!DOCTYPE html>
+{% load static %}
+{% load custom_tags %}
 
-
-<html>
-
-
-
-<head>
-    {% load static %}
-    {% load static %}
-    {% get_static_prefix as STATIC_PREFIX %}
-    {% include "chlamdb/header.html" %}
-
-</head>
-
-<body height="2000px">
 <h3>Distribution of {{orthogroup}} homologs</h3>
 
 
-        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-            <li class="active"><a href="#tab1" data-toggle="tab">Orthogroup profile</a></li>
-            {% if profile_match_jac %}
-            <li><a href="#tab2" data-toggle="tab" onclick="window.open('{% url 'profile_interactions' orthogroup "jac" %}', 'orthoIDframe2'); return false">Similar profiles (jaccard distance)</a></li>
-            {% endif %}
-            {% if profile_match_eucl %}
-            <li><a href="#tab3" data-toggle="tab" onclick="window.open('{% url 'profile_interactions' orthogroup "eucl" %}', 'orthoIDframe3'); return false">Similar profiles (euclidean distance)</a></li>
-            {% endif %}
-        </ul>
+<div class="tab-pane active" id="tab1">
+  <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
+	  <div class="panel-heading" style="width:100%">
+		  <h3 class="panel-title">Help</h3>
+	  </div>
+	  <p style="margin: 10px 10px 10px 10px; line-height: 180%"> Number of homologs (first column and blue bar chart) in each genome.</p>
+  </div>
 
+  <object type="image/svg+xml" data="{% static asset_path %}"></object>
 
-        <div id="my-tab-content" class="tab-content">
-            <div class="tab-pane active" id="tab1">
+  <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
 
-              {%if input_type != 'orthogroup' %}
-              <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
-                  <div class="panel-heading" style="width:100%">
-                      <h3 class="panel-title">Help</h3>
-                  </div>
-                  <p style="margin: 10px 10px 10px 10px; line-height: 180%"> Number of homologs (first column and blue bar chart) and amino acid identity of the most similar ortholog in the corresponding genome as compared to the reference protein</p>
-              </div>
-              {% else %}
-              <div class="panel panel-success" style="width:100%; top: 200px; margin: 10px 10px 10px 10px">
-                  <div class="panel-heading" style="width:100%">
-                      <h3 class="panel-title">Help</h3>
-                  </div>
-                  <p style="margin: 10px 10px 10px 10px; line-height: 180%"> Number of homologs (first column and blue bar chart) in each genome.</p>
-              </div>
-              {% endif %}
-
-              <a download="profile.svg" class="btn" href="{% static asset_path %}"><i class="fa fa-download"></i> Download SVG</a>
-              <a onclick='exportPNG("pfam_tree", "pfam_tree");' class="btn" id="png_button"><i class="fa fa-download"></i> Download PNG</a>
-
-            </div>
-            <div class="tab-pane" id="tab2" style="height:8800px">
-                <iframe name="orthoIDframe2" id="theFrame2" scrolling="no" width="100%" height="8800px"></iframe>
-            </div>
-            <div class="tab-pane" id="tab3" style="height:8800px">
-                <iframe name="orthoIDframe3" id="theFrame2" scrolling="no" width="100%" height="8800px"></iframe>
-            </div>
-        </div>
-</body>
-
-<script>
-
-
-
-$(document).ready(function() {
-
-  var locus_list = {{locus_list|safe}}
-
-  var checkExist = setInterval(function() {
-     if ($('#pfam_tree').length) {
-        console.log("Exists!");
-        var a = document.getElementById("pfam_tree");
-        console.log(a)
-
-        // Get the SVG document inside the Object tag
-        var svgDoc = a.contentDocument;
-        console.log(svgDoc);
-        var svg = svgDoc.querySelector("svg");
-
-        var test_match = svg.querySelectorAll('svg text')
-        /* console.log(test_match);*/
-
-        [].forEach.call(
-            svg.querySelectorAll('svg text'),
-            function (el) {
-                /* console.log(el.innerHTML.trim())*/
-                if (locus_list.includes(el.innerHTML.trim())) {
-                /* console.log(el.innerHTML); */
-                el.style = "cursor: pointer;";
-                el.setAttribute( "onmouseover", "this.style.fill='blue';this.style['font-weight']='600';this.style['font-size']='12pt';")
-                el.setAttribute( "onmouseout", "this.style.fill='black';this.style['font-weight']='400';this.style['font-size']='11pt'")
-                $(el).click(function(evt){window.open("/chlamdb/locusx/" + el.innerHTML.trim() + "/True", "_top");});
-
-              }
-            }
-        );
-
-
-
-        clearInterval(checkExist);
-     }
-  }, 100);
-
-});
-
-</script>
-
-</html>
+</div>

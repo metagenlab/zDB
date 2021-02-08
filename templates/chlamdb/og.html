@@ -14,22 +14,13 @@
 <body>
 
 
-{% if not menu %}
-<div class="container-fluid" id="container_no_margin" height="100%">
-
-{% else %}
-<div class="container-fluid" id="main_container">
-{% endif %}
-
 <div class="row">
 <div id="wrapper">
   <div id="page-content-wrapper">
 	<div class="row">
 	  <div class="col-lg-12 col-md-12 col-sm-12">
 
-	  {% if menu %}
-		  {% include "chlamdb/menu.html" %}
-	  {% endif %}
+	  {% include "chlamdb/menu.html" %}
 
 	  {% if not valid_id %}
 		  <div class="alert alert-warning" role="alert" style="width:50%"><a>Unknown accession! Accept protein ids, locus tags and orthogroup IDs</a></div>
@@ -38,13 +29,13 @@
 
 		<ul class="nav nav-tabs">
 			<li class="active">
-				<a data-toggle="tab" href="#tab33">Overview</a>
+				<a data-toggle="tab" href="#overview_tab">Overview</a>
 			</li>
 			<li>
-				<a href="#12" data-toggle="tab">Homologs <span class="badge">{{n_homologues}}</span></a>
+				<a href="#homologs_tab" data-toggle="tab">Homologs <span class="badge">{{n_homologues}}</span></a>
 			</li>
 			<li>
-				<a href="#1" data-toggle="tab">Phylogenetic distribution</a>
+				<a href="#og_distribution_tab" data-toggle="tab">Phylogenetic distribution</a>
 			</li>
 
 		{% if homologues > 2 and optional2status|keyvalue:"gene_phylogenies" %}
@@ -59,11 +50,15 @@
 	
 		  <div class="tab-content">
 
-		  <div class="tab-pane" id="12">
+		  <div class="tab-pane" id="homologs_tab">
 			  {% include "chlamdb/homologs.html" %}
 		  </div>
 
-		  <div class="tab-pane active" id="tab33">
+		  <div class="tab-pane" id="og_distribution_tab">
+			  {% include "chlamdb/orthogroup_conservation.html" %}
+		  </div>
+
+		  <div class="tab-pane active" id="overview_tab">
 			<h3>Orthogroup: {{og}} -- {{n_homologues}} members: overview of the annotation</h3>
 
 
@@ -195,7 +190,7 @@
 			  <div class="col-md-12 col-lg-8">
 				  <div class="container-fluid">
 
-					 {% if COG_annotations|length > 0 %}
+					 {% if cog_entries|length > 0 %}
 						<div class="row">
 						  <div class="panel panel-default">
 							<div class="panel-heading">
@@ -203,27 +198,24 @@
 							</div>
 								<table class="table table-striped" style="width: 100%">
 									<thead>
-									  <tr>
-										  <th>#</th>
-										  <th>COG</th>
-										  <th>Occurence</th>
-										  <th>Description</th>
-										  <th>Category</th>
-										  <th>Category description</th>
-									  </tr>
-									</thead>
-									<tbody>
-										{% for row in COG_annotations %}
+
 										  <tr>
-											<td>{{row.0}}</td>
-											<td><a href="{% url 'fam' row.1 'cog' %}">{{row.1}}</a></td>
-											<td>{{row.3}}</td> 
-											<td>{{row.2}}</td> 
-											<td>{{row.4}}</td>
-											<td>{{row.5}}</td>
+											  {% for h in cog_header %}
+												  <th> {{h|safe}} </th>
+											  {% endfor %}
 										  </tr>
+									</thead>
+
+									<tbody>
+										{% for row in cog_entries %}
+										<tr>
+											{% for entry in row %}
+											<td> {{ entry|safe }}</td>
+											{% endfor %}
+										</tr>
 										{% endfor %}
 									</tbody>
+
 								</table>
 						  </div>
 						</div>
