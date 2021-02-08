@@ -74,7 +74,7 @@ def load_gbk(gbks, args, db_file):
 
         # hack to link the bioentry to the filename, useful later for parsing and
         # storing checkM results in the dtb.
-        data.append( (taxon_id, gbk.replace(".gbk", "")) )
+        data.append( (taxon_id+1, gbk.replace(".gbk", "")) )
 
     db.load_filenames(data)
     db.update_taxon_ids(bioentry_to_taxid)
