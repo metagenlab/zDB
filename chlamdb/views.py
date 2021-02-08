@@ -2240,7 +2240,7 @@ def tab_lengths(n_homologues, annotations):
         fig1.layout.margin.update({"l": 80, "r": 20, "b": 40, "t": 20, "pad": 10, })
         html_plot_prot_length = manipulate_biosqldb.make_div(fig1, div_id="distplot")
     else:
-        return { "length_distrib": True, "single_length": True, "prot_length": lengths[0] }
+        return { "length_distrib": True, "single_length": True, "prot_length": lengths.iloc[0]}
 
     return {"length_distrib": True,
             "max_protein_length": max_protein_length,
