@@ -483,7 +483,7 @@ def get_optional_annotations(db, seqids):
         annotations.append(cog_hits)
     if config_table.get("COG", False):
         header.append("COG")
-        ko_hits = db.get_ko_hits(seqids)
+        ko_hits = db.get_ko_hits(seqids, indexing="seqid", search_on="seqid", )
         annotations.append(ko_hits)
 
     if len(annotations)==2:
@@ -594,8 +594,7 @@ def extract_orthogroup(request):
         cogs = grouped["cog"].apply(list)
 
     if "KO" in opt_header:
-        kos = grouped["KO"].apply(list)
-
+        kos = grouped["ko"].apply(list)
 
     table_headers = ["Orthogroup", "Genes", "Products"]
     table_headers.extend(opt_header)
@@ -2280,7 +2279,30 @@ def tab_og_conservation_tree(db, group):
 
 
 def og_tab_get_kegg_annot(db, seqids):
-    return {}
+    ko_hits = db.get_ko_hits(seqids, indexing="seqid", search_on="seqid")
+    if ko_hits.empty:
+        return {}
+
+    n_occurences = ko_hits["ko"].value_counts()
+    ko_ids = n_occurences.index.tolist()
+    ko_descr = db.get_ko_desc(ko_ids)
+    ko_pathways = db.get_ko_pathways(ko_ids)
+    ko_modules = db.get_ko_modules(ko_ids)
+        
+    ko_entries = []
+    for ko_id, count in n_occurences.iteritems():
+        entry = [format_ko(ko_id, as_url=True), count]
+        descr = ko_descr.get(ko_id, "-")
+        entry.append(descr)
+        entry.append(format_ko_path(ko_pathways, ko_id))
+        entry.append(format_ko_modules(ko_modules, ko_id))
+        ko_entries.append(entry)
+
+    ko_header = ["KO", "Occurences", "Description", "Modules", "Pathways"]
+    return {
+        "ko_entries": ko_entries,
+        "ko_header": ko_header
+    }
 
 
 def og_tab_get_cog_annot(db, seqids):
@@ -2301,7 +2323,7 @@ def og_tab_get_cog_annot(db, seqids):
             funcs.append(func)
             func_descrs.append(func_descr)
             cog_descrs.append(cog_descr)
-        entry.append("<br>".join(cog_descrs))
+        entry.append(cog_descrs.pop())
         entry.append("<br>".join(funcs))
         entry.append("<br>".join(func_descrs))
         cog_entries.append(entry)

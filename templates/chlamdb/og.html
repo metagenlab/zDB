@@ -222,7 +222,7 @@
 					  {% endif %}
 
 
-					 {% if KO_annotations|length > 0 %}
+					 {% if ko_entries|length > 0 %}
 						<div class="row">
 						  <div class="panel panel-default">
 							<div class="panel-heading">
@@ -231,45 +231,18 @@
 							<table class="table table-striped" style="width: 100%">
 								<thead>
 								  <tr>
-									  <th>#</th>
-									  <th>KO</th>
-									  <th>Occurence</th>
-									  <th>Name</th>
-									  <th>Definition</th>
-									  <th>EC</th>
-									  <th>pathways</th>
-									  <th>modules</th>
+									  {% for entry in ko_header %}
+									  	<th> {{entry|safe}} </th>
+									  {% endfor %}
 								  </tr>
 								</thead>
 								<tbody>
-									{% for row in KO_annotations %}
-									  <tr>
-										<td>{{row.0}}</td>
-										<td><a href="{% url 'fam' row.1 'ko' %}">{{row.1}}</a></td>
-										<td>{{row.2}}</td> 
-										<td>{{row.3}}</td> 
-										<td>{{row.4}}</td>
-										<td>{{row.5}}</td>
-										
-										<td>
-											{% for pathway in row.6 %}
-												{% if pathway != '-' %}
-													<a href="{% url 'KEGG_mapp_ko' pathway %}">{{pathway}}</a>
-												{% else %}
-													-
-												{% endif %}
+									{% for row in ko_entries %}
+										<tr>
+											{% for e in row %}
+												<td> {{e|safe}}</td>
 											{% endfor %}
-										</td>
-										<td>
-											{% for module in row.7%}
-												{% if module != '-' %}
-													 <a href="{% url 'KEGG_module_map' module %}">{{module}}</a>
-												{% else %}
-													-
-												{% endif %}
-											{% endfor %}
-										</td>
-									  </tr>
+										</tr>
 									{% endfor %}
 								</tbody>
 							</table>
