@@ -2415,12 +2415,26 @@ def orthogroup(request, og):
     }
     return render(request, "chlamdb/og.html", context)
 
+def tab_general(seqid, hsh_organism, gene_loc, annot):
+    organism = hsh_organism[seqid]
+    strand, beg, end = gene_loc[seqid]
+    _, gene, locus_tag, product, length = annot.loc[seqid]
+    return {
+        "locus_tag": locus_tag,
+        "organism": organism,
+        "strand": strand,
+        "gene": gene,
+        "start": beg,
+        "end": end,
+        "nucl_length": end-beg,
+        "length": length
+    }
+
 
 def locusx(request, locus=None, menu=True):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
     
-    # TODO: add error messages
     if locus==None:
         valid_id = False
         return render(request, 'chlamdb/locus.html', my_locals(locals()))
@@ -2441,9 +2455,8 @@ def locusx(request, locus=None, menu=True):
     all_og_c = db.get_og_count([og_id], search_on="orthogroup")
     all_org  = db.get_organism(og_annot.index.tolist(), as_hash=True)
 
-    strand, beg, end = gene_loc[seqid]
-
     homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
+    general_tab     = tab_general(seqid, all_org, gene_loc, og_annot)
     n_homologues = all_og_c.loc[og_id].sum()
 
     kegg_ctx = {}
@@ -2458,7 +2471,8 @@ def locusx(request, locus=None, menu=True):
         "n_homologues": n_homologues,
         "og_id": format_orthogroup(og_id, to_url=True),
         **kegg_ctx,
-        **homolog_tab_ctx
+        **homolog_tab_ctx,
+        **general_tab
     }
     return render(request, 'chlamdb/locus.html', context)
 

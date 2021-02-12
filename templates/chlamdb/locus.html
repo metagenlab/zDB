@@ -117,29 +117,25 @@ function clearBox(elementID)
                                   <table id="panel_table" class="table table-striped" style="width: 100%">
 
                                       <tr>
-                                          <th>Organism</th>
-                                          <td>{{ data.12 }}</td>
+                                          <th>Source</th>
+                                          <td>{{organism}}</td>
                                       </tr>
                                       <tr>
-                                          <th>locus_tag</th>
-                                          <td>{{ data.1 }}</td>
+                                          <th>Locus tag</th>
+                                          <td>{{locus_tag}}</td>
                                       </tr>
 
-                                      <th>gene</th>
-                                          <td>{{ data.6 }}</td>
-                                      </tr>
-                                      <tr>
-                                          <th>protein_id</th>
-                                          <td>{{ data.2 }}</td>
+                                      <th>Gene</th>
+                                          <td>{{gene}}</td>
                                       </tr>
                                       <tr>
                                           <th>Location</th>
-                                          <td>{{ data.3 }} - {{ data.4 }} (strand: {{ data.5 }})</td>
+                                          <td>{{start}} - {{end}} (strand: {{strand}})</td>
                                       </tr>
 
                                       <tr>
                                           <th>Length</th>
-                                          <td>{{ nucl_length }} (nucleotides) / {{aa_length}} (amino acids)</td>
+                                          <td>{{nucl_length}} (nucleotides) / {{length}} (amino acids)</td>
                                       </tr>
                                       
                                   </table>
@@ -183,7 +179,7 @@ function clearBox(elementID)
                                        <td></td>
                                    </tr>
                                    <th>N. genomes <a href="#" data-delay='{"show":"50", "hide":"1000"}' data-toggle="tooltip" title='Number of genomes encoding one or several homologs of this protein. See the tab "homologs" for details'><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a></th>
-                                       <td>{{ data.8 }}</td>
+                                       <td>{{n_genomes}}</td>
                                        <td></td>
                                    </tr>
                                    {%if cog_data %}
