@@ -2197,7 +2197,7 @@ def format_lst(lst):
     return hsh_values
 
 
-def tab_homologs(infos, hsh_organism):
+def tab_homologs(db, infos, hsh_organism, ref_seqid=None, og=None):
     n_genomes = len(set(hsh_organism.values()))
     if n_genomes==1:
         n_genomes = "1 genome"
@@ -2205,12 +2205,24 @@ def tab_homologs(infos, hsh_organism):
         n_genomes = f"{n_genomes} genomes"
 
     headers = ["", "Locus tag", "Source", "Gene", "Product"]
+    identities = None
+    if ref_seqid!=None:
+        identities = db.get_og_identity(og, ref_seqid)
+        headers.insert(2 , "Identity")
+
     homologues = []
     index = 0
     for seqid, data in infos.iterrows():
         organism = hsh_organism[seqid]
         locus_fmt = format_locus(data.locus_tag, to_url=True)
         entry = [index+1, locus_fmt, organism, format_gene(data.gene), data["product"]]
+        if ref_seqid!=None:
+            if seqid==ref_seqid:
+                ident = "-"
+            else:
+                ident = round(identities.loc[seqid].identity, 1)
+            entry.insert(2, ident)
+
         homologues.append(entry)
         index += 1
 
@@ -2386,7 +2398,7 @@ def orthogroup(request, og):
 
     og_conserv_ctx = tab_og_conservation_tree(db, og_id)
     length_tab_ctx = tab_lengths(n_homologues, annotations)
-    homolog_tab_ctx = tab_homologs(annotations, hsh_organisms)
+    homolog_tab_ctx = tab_homologs(db, annotations, hsh_organisms)
     context = {
         "valid_id": valid_id,
         "optional2status": optional2status,
@@ -2404,29 +2416,51 @@ def orthogroup(request, og):
     return render(request, "chlamdb/og.html", context)
 
 
-def locus(request, locus):
-    biodb = settings.BIODB_DB_PATH
-    db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
-    return render(request, "chlamdb/locus.html", my_locals(locals()))
-
-
 def locusx(request, locus=None, menu=True):
     biodb = settings.BIODB_DB_PATH
     db = db_utils.DB.load_db(biodb, settings.BIODB_CONF)
-
+    
     # TODO: add error messages
     if locus==None:
         valid_id = False
         return render(request, 'chlamdb/locus.html', my_locals(locals()))
 
-    seqid = db.get_CDS_from_locus_tag(locus)
-    if seqid==None:
+    try:
+        seqid = db.get_seqid(locus_tag=locus)
+    except:
         valid = False
         return render(request, 'chlamdb/locus.html', my_locals(locals()))
 
-    input_type = "locus_tag"
+    valid_id = True
+    optional2status = db.get_config_table()
+    gene_loc = db.get_gene_loc([seqid])
+    og_inf   = db.get_og_count([seqid], search_on="seqid", indexing="seqid")
+    og_id    = int(og_inf.loc[seqid].orthogroup) # need to convert from numpy64 to int
+    og_annot = db.get_genes_from_og(orthogroups=[og_id],
+            terms=["locus_tag", "gene", "product", "length"])
+    all_og_c = db.get_og_count([og_id], search_on="orthogroup")
+    all_org  = db.get_organism(og_annot.index.tolist(), as_hash=True)
 
-    return render(request, 'chlamdb/locus.html', my_locals(locals()))
+    strand, beg, end = gene_loc[seqid]
+
+    homolog_tab_ctx = tab_homologs(db, og_annot, all_org, seqid, og_id)
+    n_homologues = all_og_c.loc[og_id].sum()
+
+    kegg_ctx = {}
+    if optional2status.get("KEGG", False):
+        kegg_ctx = og_tab_get_kegg_annot(db, [seqid])
+
+    context = {
+        "valid_id": valid_id,
+        "optional2status": optional2status,
+        "menu": True,
+        "data": ["foo", "bar"],
+        "n_homologues": n_homologues,
+        "og_id": format_orthogroup(og_id, to_url=True),
+        **kegg_ctx,
+        **homolog_tab_ctx
+    }
+    return render(request, 'chlamdb/locus.html', context)
 
 
 def locusx_legacy(request, locus=None, menu=True):
@@ -3374,7 +3408,7 @@ def format_orthogroup(og, to_url=False):
 
 def format_locus(locus, to_url=False):
     if to_url:
-        return f"<a href=\"/locus/{locus}\">{locus}</a>"
+        return f"<a href=\"/locusx/{locus}\">{locus}</a>"
     return locus
 
 
